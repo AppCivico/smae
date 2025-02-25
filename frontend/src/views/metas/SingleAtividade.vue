@@ -2,7 +2,7 @@
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import SimpleIndicador from '@/components/metas/SimpleIndicador.vue';
 import TagsDeMetas from '@/components/metas/TagsDeMetas.vue';
-import PlanosMetasRelacionados from '@/components/PlanosMetasRelacionados.vue';
+import RelacionamentosComOutrosCompromissos from '@/components/RelacionamentosComOutrosCompromissos.vue';
 import combinadorDeListas from '@/helpers/combinadorDeListas.ts';
 import { useAtividadesStore } from '@/stores/atividades.store';
 import { useAuthStore } from '@/stores/auth.store';
@@ -38,15 +38,6 @@ const {
 async function iniciar() {
   if (singleAtividade.value.id !== atividadeId) {
     await AtividadesStore.getByIdReal(atividadeId);
-  }
-
-  if (['pdm', 'programaDeMetas'].includes(route.meta.entidadeMãe)) {
-    if (singleAtividade.value.id) {
-      AtividadesStore.getRelacionados({
-        atividade_id: singleAtividade.value.id,
-        pdm_id: activePdm.value.id,
-      });
-    }
   }
 }
 
@@ -193,113 +184,11 @@ iniciar();
         parent_field="atividade_id"
       />
 
-      <div
-        v-if="relacionadosAtividade?.projetos?.length"
-        class="mt2 mb2"
-      >
-        <h2 class="m2">
-          Projetos associados
-        </h2>
-        <table class="tablemain">
-          <col>
-          <col>
-          <col>
-          <col>
-          <thead>
-            <th>Portfólio </th>
-            <th>Código</th>
-            <th> Nome </th>
-            <th>Etapa</th>
-          </thead>
-          <tbody>
-            <tr
-              v-for="(projeto, index) in relacionadosAtividade.projetos"
-              :key="index"
-            >
-              <td>
-                {{ projeto.portfolio?.titulo || '-' }}
-              </td>
-              <td>
-                {{ projeto.codigo || '-' }}
-              </td>
-              <td>
-                {{ projeto.nome || '-' }}
-              </td>
-              <td>
-                {{ projeto.projeto_etapa?.descricao || '-' }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div
-        v-if="relacionadosAtividade?.obras?.length"
-        class="mt2 mb2"
-      >
-        <h2 class="">
-          Obras associadas
-        </h2>
-
-        <table class="tablemain">
-          <col>
-          <col>
-          <col>
-          <col>
-          <col>
-          <col>
-          <col>
-          <thead>
-            <th>
-              Código da obra
-            </th>
-            <th>Nome</th>
-            <th>
-              Tipo obra/intervenção
-            </th>
-            <th>
-              Subprefeitura
-            </th>
-            <th>
-              Equipamento
-            </th>
-            <th>
-              Status
-            </th>
-            <th>
-              Percentual concluído
-            </th>
-          </thead>
-          <tbody>
-            <tr
-              v-for="(obra, index) in relacionadosAtividade.obras"
-              :key="index"
-            >
-              <td>{{ obra.codigo }}</td>
-              <td>
-                {{ obra.nome }}
-              </td>
-              <td>
-                {{ obra.tipo_intervencao?.nome || '-' }}
-              </td>
-              <td>
-                {{ obra.subprefeituras?.map(x => x.descricao).join(', ') || '-' }}
-              </td>
-              <td>
-                {{ obra.equipamento?.nome || '-' }}
-              </td>
-              <td>
-                {{ obra.status || '-' }}
-              </td>
-              <td>
-                {{ obra.percentual_concluido || '-' }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <PlanosMetasRelacionados :relacionamentos="relacionadosAtividade?.metas" />
+      <RelacionamentosComOutrosCompromissos
+        class="mt2"
+        :atividade-id="singleAtividade.id"
+        :pdm-id="activePdm.id"
+      />
     </template>
     <template v-else-if="singleAtividade.loading">
       <div class="p1">
