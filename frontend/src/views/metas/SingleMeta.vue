@@ -238,9 +238,7 @@ iniciar();
               </div>
             </div>
           </div>
-          <div
-            class="flex g2 mb2"
-          >
+          <div class="flex g2 mb2">
             <div
               v-if="EquipesStore.equipesPorIds(singleMeta.ps_ponto_focal.equipes).length"
               class="mr2 f1"
@@ -333,7 +331,8 @@ iniciar();
               :key="ini.id"
               class="board_variavel mb2"
             >
-              <header class="p1">
+              <header class="p1 ge mb1">
+                <!-- Cabeçalho -->
                 <div class="flex center g2 mb1">
                   <SmaeLink
                     :to="`${parentlink}/iniciativas/${ini.id}`"
@@ -355,7 +354,7 @@ iniciar();
                     class="f1 mt1"
                   >
                     <h2 class="mb1">
-                      {{ ini.titulo }}
+                      {{ ini.codigo }} - {{ ini.titulo }}
                     </h2>
                   </SmaeLink>
 
@@ -394,76 +393,77 @@ iniciar();
                     </button>
                   </div>
                 </div>
-                <div class="f1 ml2">
-                  <div class="flex g2 ml2">
-                    <div class="mr1 f0">
-                      <div class="t12 uc w700 mb05 tc300">
-                        Código
-                      </div>
-                      <div class="t13">
-                        {{ ini.codigo }}
-                      </div>
+                <!-- Fim cabeçalho -->
+                <!-- Órgãos-->
+                <div class="flex g2 mb2">
+                  <!-- Responsável -->
+                  <div class="mr2 f1">
+                    <div class="t12 uc w700 mb05 tc300">
+                      Órgãos Responsáveis
                     </div>
-                    <div class="mr1 f0">
-                      <div class="t12 uc w700 mb05 tc300">
-                        Órgãos Responsáveis
-                      </div>
-                      <div class="t13">
-                        {{
-                          combinadorDeListas(
-                            orgaoIniciativa = EquipesStore.equipesPorIds(ini.ps_ponto_focal.equipes).reduce((amount, item) => {
-                              amount.push(item.orgao.sigla + " - " + item.orgao.descricao);
-                              return amount;
-                            }, []))
-                        }}     
-                      </div>
+                    <div class="t13">
+                      {{
+                        combinadorDeListas(
+                          orgaoIniciativa = EquipesStore.equipesPorIds(ini.ps_ponto_focal.equipes).reduce((amount, item) => {
+                            amount.push(item.orgao.sigla + " - " + item.orgao.descricao);
+                            return amount;
+                          }, []))
+                      }}     
                     </div>
-                    <div class="mr1 f1">
-                      <div class="t12 uc w700 mb05 tc300">
-                        Equipe do órgão responsável
-                      </div>
-                      <div class="t13">
-                        {{
-                          ini.ps_ponto_focal.equipes.length === 0
-                            ? '-' :
-                              combinadorDeListas(
-                                EquipesStore.equipesPorIds(ini.ps_ponto_focal.equipes),
-                                false,
-                                'titulo',
-                              ) }}
-                      </div>
+                  </div>
+                  <!-- Monitoramento -->
+                  <div class="mr2 f1">
+                    <div class="t12 uc w700 mb05 tc300">
+                      Órgãos Monitoramento
                     </div>
-                    <div class="f1">
-                      <div class="t12 uc w700 mb05 tc300">
-                        Órgãos Monitoramento
-                      </div>
-                      <div class="t13">
-                        {{
-                          combinadorDeListas(
-                            orgaoIniciativa = EquipesStore.equipesPorIds(ini.ps_tecnico_cp.equipes).reduce((amount, item) => {
-                              amount.push(item.orgao.sigla + " - " + item.orgao.descricao);
-                              return amount;
-                            }, []))
-                        }}     
-                      </div>
-                    </div>
-                    <div class="f1">
-                      <div class="t12 uc w700 mb05 tc300">
-                        Equipe técnica responsável
-                      </div>
-                      <div class="t13">
-                        {{
-                          ini.ps_tecnico_cp.equipes.length === 0
-                            ? '-' :
-                              combinadorDeListas(
-                                EquipesStore.equipesPorIds(ini.ps_tecnico_cp.equipes),
-                                false,
-                                'titulo',
-                              ) }}
-                      </div>
+                    <div class="t13">
+                      {{
+                        combinadorDeListas(
+                          orgaoIniciativa = EquipesStore.equipesPorIds(ini.ps_tecnico_cp.equipes).reduce((amount, item) => {
+                            amount.push(item.orgao.sigla + " - " + item.orgao.descricao);
+                            return amount;
+                          }, []))
+                      }}     
                     </div>
                   </div>
                 </div>
+                <!-- Fim órgãos -->
+                <!-- Equipes -->
+                <div class="flex g2 mb2">
+                  <!-- Responsável -->
+                  <div class="mr2 f1">
+                    <div class="t12 uc w700 mb05 tc300">
+                      Equipe do órgão responsável
+                    </div>
+                    <div class="t13">
+                      {{
+                        ini.ps_ponto_focal.equipes.length === 0
+                          ? '-' :
+                            combinadorDeListas(
+                              EquipesStore.equipesPorIds(ini.ps_ponto_focal.equipes),
+                              false,
+                              'titulo',
+                            ) }}
+                    </div>
+                  </div>
+                  <!-- Técnica -->
+                  <div class="mr2 f1">
+                    <div class="t12 uc w700 mb05 tc300">
+                      Equipe técnica monitoramento
+                    </div>
+                    <div class="t13">
+                      {{
+                        ini.ps_tecnico_cp.equipes.length === 0
+                          ? '-' :
+                            combinadorDeListas(
+                              EquipesStore.equipesPorIds(ini.ps_tecnico_cp.equipes),
+                              false,
+                              'titulo',
+                            ) }}
+                    </div>
+                  </div>
+                </div>
+                <!-- Fim de equipes -->
               </header>
             </div>
           </template>
