@@ -1010,8 +1010,6 @@ export class DistribuicaoRecursoService {
                 }
                 delete dto.registros_sei;
 
-                if (dto.valor == 0) throw new HttpException('valor| Valor do repasse não pode ser zero.', 400);
-
                 if (self.empenho == false && dto.empenho && dto.empenho == true && dto.data_empenho == undefined)
                     throw new HttpException('data_empenho| Obrigatório quando for empenho.', 400);
 
