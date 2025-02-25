@@ -132,16 +132,8 @@ iniciar();
 
   <div class="boards">
     <template v-if="singleIniciativa.id">
-      <div class="flex g2">
-        <div class="mr2">
-          <div class="t12 uc w700 mb05 tamarelo">
-            Código
-          </div>
-          <div class="t13">
-            {{ singleIniciativa.codigo }}
-          </div>
-        </div>
-        <div class="mr1 f0">
+      <div class="flex g2 mb2">
+        <div class="mr2 f1">
           <div class="t12 uc w700 mb05 tamarelo">
             Órgãos Responsáveis
           </div>
@@ -155,22 +147,7 @@ iniciar();
             }}     
           </div>
         </div>
-        <div
-          v-if="EquipesStore.equipesPorIds(singleIniciativa.ps_ponto_focal.equipes).length"
-          class="mr2"
-        >
-          <div class="t12 uc w700 mb05 tamarelo">
-            Equipes Responsáveis
-          </div>
-          <div class="t13">
-            {{ combinadorDeListas(
-              EquipesStore.equipesPorIds(singleIniciativa.ps_ponto_focal.equipes),
-              false,
-              'titulo',
-            ) }}
-          </div>
-        </div>
-        <div class="mr1 f0">
+        <div class="mr2 f1">
           <div class="t12 uc w700 mb05 tamarelo">
             Órgãos Monitoramento
           </div>
@@ -184,9 +161,27 @@ iniciar();
             }}     
           </div>
         </div>
+      </div>
+      <div class="flex g2 mb2">
+        <div
+          v-if="EquipesStore.equipesPorIds(singleIniciativa.ps_ponto_focal.equipes).length"
+          class="mr2 f1"
+        >
+          <div class="t12 uc w700 mb05 tamarelo">
+            Equipes Responsáveis
+          </div>
+          <div class="t13">
+            {{ combinadorDeListas(
+              EquipesStore.equipesPorIds(singleIniciativa.ps_ponto_focal.equipes),
+              false,
+              'titulo',
+            ) }}
+          </div>
+        </div>
+
         <div
           v-if="EquipesStore.equipesPorIds(singleIniciativa.ps_tecnico_cp.equipes).length"
-          class="mr2"
+          class="mr2 f1"
         >
           <div class="t12 uc w700 mb05 tamarelo">
             Equipe técnica de monitoramento
@@ -263,7 +258,7 @@ iniciar();
             :key="ini.id"
             class="board_variavel mb2"
           >
-            <header class="p1">
+            <header class="p1 ge mb1">
               <div class="flex center g2 mb1">
                 <SmaeLink
                   :to="`${parentlink}/atividades/${ini.id}`"
@@ -283,7 +278,7 @@ iniciar();
                   class="f1 mt1"
                 >
                   <h2 class="mb1">
-                    {{ ini.titulo }}
+                    {{ ini.codigo }} - {{ ini.titulo }}
                   </h2>
                 </SmaeLink>
                 <div class="f0">
@@ -310,45 +305,36 @@ iniciar();
                   ><use xlink:href="#i_waste" /></svg>
                 </button>
               </div>
-              <div class="f1 ml2">
-                <div class="flex g2 ml2">
-                  <div class="mr1 f0">
-                    <div class="t12 uc w700 mb05 tc300">
-                      Código
-                    </div>
-                    <div class="t13">
-                      {{ ini.codigo }}
-                    </div>
+              <!-- Fim do cabeçalho -->
+              <div class="flex g2 mb2">
+                <div class="mr1 f0">
+                  <div class="t12 uc w700 mb05 tc300">
+                    Órgãos Responsáveis
                   </div>
-                  <div class="mr1 f0">
-                    <div class="t12 uc w700 mb05 tc300">
-                      Órgãos Responsáveis
-                    </div>
-                    <div class="t13">
-                      {{
-                        combinadorDeListas(
-                          orgaoIniciativa = EquipesStore.equipesPorIds(ini.ps_ponto_focal.equipes).reduce((amount, item) => {
-                            amount.push(item.orgao.sigla + " - " + item.orgao.descricao);
-                            return amount;
-                          }, []))
-                      }}     
-                    </div>
-                  </div>                  
-                  <div class="mr1 f1">
-                    <div class="t12 uc w700 mb05 tc300">
-                      Órgão participante
-                    </div>
-                    <div class="t13">
-                      {{ ini?.orgaos_participantes?.map(x => x.orgao.descricao).join(', ') }}
-                    </div>
+                  <div class="t13">
+                    {{
+                      combinadorDeListas(
+                        orgaoIniciativa = EquipesStore.equipesPorIds(ini.ps_ponto_focal.equipes).reduce((amount, item) => {
+                          amount.push(item.orgao.sigla + " - " + item.orgao.descricao);
+                          return amount;
+                        }, []))
+                    }}     
                   </div>
-                  <div class="f1">
-                    <div class="t12 uc w700 mb05 tc300">
-                      Responsável na coordenadoria de planejamento
-                    </div>
-                    <div class="t13">
-                      {{ ini?.coordenadores_cp?.map(x => x.nome_exibicao).join(', ') }}
-                    </div>
+                </div>                  
+                <div class="mr1 f1">
+                  <div class="t12 uc w700 mb05 tc300">
+                    Órgão participante
+                  </div>
+                  <div class="t13">
+                    {{ ini?.orgaos_participantes?.map(x => x.orgao.descricao).join(', ') }}
+                  </div>
+                </div>
+                <div class="f1">
+                  <div class="t12 uc w700 mb05 tc300">
+                    Responsável na coordenadoria de planejamento
+                  </div>
+                  <div class="t13">
+                    {{ ini?.coordenadores_cp?.map(x => x.nome_exibicao).join(', ') }}
                   </div>
                 </div>
               </div>

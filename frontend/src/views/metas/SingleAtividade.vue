@@ -87,18 +87,13 @@ iniciar();
   </div>
   <div class="boards">
     <template v-if="singleAtividade.id">
-      <div class="flex g2">
-        <div class="mr2">
+      
+      <!-- Órgãos -->
+      <div class="flex g2 mb2">
+        <!-- Responsável -->
+        <div class="mr2 f1">
           <div class="t12 uc w700 mb05 tamarelo">
-            Código
-          </div>
-          <div class="t13">
-            {{ singleAtividade.codigo }}
-          </div>
-        </div>
-        <div class="mr1 f0">
-          <div class="t12 uc w700 mb05 tamarelo">
-            Órgãos Responsáveis
+            Órgãos responsáveis
           </div>
           <div class="t13">
             {{
@@ -110,24 +105,11 @@ iniciar();
             }}     
           </div>
         </div>
-        <div
-          v-if="EquipesStore.equipesPorIds(singleAtividade.ps_ponto_focal.equipes).length"
-          class="mr2"
-        >
+        <!-- Fim responsável -->
+        <!-- Monitoramento -->
+        <div class="mr2 f1">
           <div class="t12 uc w700 mb05 tamarelo">
-            Equipes responsáveis
-          </div>
-          <div class="t13">
-            {{ combinadorDeListas(
-              EquipesStore.equipesPorIds(singleAtividade.ps_ponto_focal.equipes),
-              false,
-              'titulo',
-            ) }}
-          </div>
-        </div>
-        <div class="mr1 f0">
-          <div class="t12 uc w700 mb05 tamarelo">
-            Órgãos Monitoramento
+            Órgãos monitoramento
           </div>
           <div class="t13">
             {{
@@ -138,24 +120,48 @@ iniciar();
                 }, []))
             }}     
           </div>
-        </div>        
-        <div
-          v-if="EquipesStore.equipesPorIds(singleAtividade.ps_tecnico_cp.equipes).length"
-          class="mr2"
-        >
-          <div class="t12 uc w700 mb05 tamarelo">
-            Equipe técnica de monitoramento
-          </div>
-          <div class="t13">
-            {{ combinadorDeListas(
-              EquipesStore.equipesPorIds(singleAtividade.ps_tecnico_cp.equipes),
-              false,
-              'titulo',
-            ) }}
-          </div>
-        </div>
+        </div> 
+        <!-- Fim monitoramento -->
       </div>
-
+      <!-- Fim de órgãos -->
+      <!-- Equipes -->
+      <div class="flex g2 mb2">
+        <!-- Responsável -->
+          <div
+            v-if="EquipesStore.equipesPorIds(singleAtividade.ps_ponto_focal.equipes).length"
+            class="mr2 f1"
+          >
+            <div class="t12 uc w700 mb05 tamarelo">
+              Equipes responsáveis
+            </div>
+            <div class="t13">
+              {{ combinadorDeListas(
+                EquipesStore.equipesPorIds(singleAtividade.ps_ponto_focal.equipes),
+                false,
+                'titulo',
+              ) }}
+            </div>
+          </div>
+          <!-- Fim responsável -->
+          <!-- Técnica -->
+          <div
+            v-if="EquipesStore.equipesPorIds(singleAtividade.ps_tecnico_cp.equipes).length"
+            class="mr2 f1"
+          >
+            <div class="t12 uc w700 mb05 tamarelo">
+              Equipe técnica de monitoramento
+            </div>
+            <div class="t13">
+              {{ combinadorDeListas(
+                EquipesStore.equipesPorIds(singleAtividade.ps_tecnico_cp.equipes),
+                false,
+                'titulo',
+              ) }}
+            </div>
+          </div>
+        <!-- Fim de técnica -->
+      </div>
+      <!-- Fim equipes -->
       <div v-if="singleAtividade?.tags.length">
         <hr class="mt2 mb2">
         <TagsDeMetas :lista-de-tags="singleAtividade.tags" />
