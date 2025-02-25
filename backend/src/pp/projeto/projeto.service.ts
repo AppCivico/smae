@@ -276,14 +276,17 @@ const getOrderByConfigView = (
         throw new BadRequestException('Ordenação por regiões não é mais suportada');
     }
 
-    const direction = ordem_direcao === 'asc' ? 'asc' : 'desc';
+    const directionSort: {
+        sort: Prisma.SortOrder;
+        nulls: Prisma.NullsOrder;
+    } = ordem_direcao === 'asc' ? { sort: 'asc', nulls: 'last' } : { sort: 'desc', nulls: 'last' };
 
     switch (ordem_coluna) {
         case 'previsao_custo':
-            return [{ previsao_custo: direction, nulls: 'last' }, { codigo: 'asc' }];
+            return [{ previsao_custo: directionSort }, { codigo: 'asc' }];
 
         case 'previsao_termino':
-            return [{ previsao_termino: direction, nulls: 'last' }, { codigo: 'asc' }];
+            return [{ previsao_termino: directionSort }, { codigo: 'asc' }];
 
         default:
             throw new BadRequestException(`ordem_coluna ${ordem_coluna} não é suportada`);
@@ -302,33 +305,38 @@ const getOrderByConfig = (
         throw new BadRequestException('Ordenação por regiões não é mais suportada');
     }
 
-    const direction = ordem_direcao === 'asc' ? 'asc' : 'desc';
+    const directionSort: {
+        sort: Prisma.SortOrder;
+        nulls: Prisma.NullsOrder;
+    } = ordem_direcao === 'asc' ? { sort: 'asc', nulls: 'last' } : { sort: 'desc', nulls: 'last' };
 
     switch (ordem_coluna) {
+        // colunas 'not null' não podem ficar com o "NULL'... que beleza...
         case 'id':
         case 'nome':
-        case 'codigo':
         case 'status':
         case 'registrado_em':
-            return [{ [ordem_coluna]: direction, nulls: 'last' }, { codigo: 'asc' }];
+            return [{ [ordem_coluna]: ordem_direcao }, { codigo: 'asc' }];
+        case 'codigo':
+            return [{ [ordem_coluna]: directionSort }, { codigo: 'asc' }];
 
         case 'portfolio_titulo':
-            return [{ portfolio: { titulo: direction, nulls: 'last' } }, { codigo: 'asc' }];
+            return [{ portfolio: { titulo: ordem_direcao } }, { codigo: 'asc' }];
 
         case 'grupo_tematico_nome':
-            return [{ grupo_tematico: { nome: direction, nulls: 'last' } }, { codigo: 'asc' }];
+            return [{ grupo_tematico: { nome: ordem_direcao } }, { codigo: 'asc' }];
 
         case 'tipo_intervencao_nome':
-            return [{ tipo_intervencao: { nome: direction, nulls: 'last' } }, { codigo: 'asc' }];
+            return [{ tipo_intervencao: { nome: ordem_direcao } }, { codigo: 'asc' }];
 
         case 'equipamento_nome':
-            return [{ equipamento: { nome: direction, nulls: 'last' } }, { codigo: 'asc' }];
+            return [{ equipamento: { nome: ordem_direcao } }, { codigo: 'asc' }];
 
         case 'orgao_origem_nome':
-            return [{ orgao_origem: { descricao: direction, nulls: 'last' } }, { codigo: 'asc' }];
+            return [{ orgao_origem: { descricao: ordem_direcao } }, { codigo: 'asc' }];
         case 'projeto_etapa':
         case 'projeto_etapa_id':
-            return [{ projeto_etapa: { descricao: direction, nulls: 'last' } }, { codigo: 'asc' }];
+            return [{ projeto_etapa: { descricao: ordem_direcao } }, { codigo: 'asc' }];
 
         default:
             throw new BadRequestException(`ordem_coluna ${ordem_coluna} não é suportada`);
