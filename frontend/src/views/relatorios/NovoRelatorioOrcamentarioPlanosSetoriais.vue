@@ -34,7 +34,6 @@ const initialValues = computed(() => ({
     fim: dateIgnorarTimezone(`${currentYear}-12-01`, 'MM/yyyy'),
     orgaos: [],
   },
-  salvar_arquivo: false,
 }));
 
 async function onSubmit(values) {
@@ -42,19 +41,13 @@ async function onSubmit(values) {
   try {
     carga.parametros.inicio = monthAndYearToDate(carga.parametros.inicio);
     carga.parametros.fim = monthAndYearToDate(carga.parametros.fim);
-    if (!carga.salvar_arquivo) {
-      carga.salvar_arquivo = false;
-    }
 
     const r = await relatoriosStore.insert(carga);
-    const msg = 'Dados salvos com sucesso!';
+    const msg = 'Relatório em processamento, acompanhe na tela de listagem';
 
     if (r === true) {
       alertStore.success(msg);
-
-      if (carga.salvar_arquivo && route.meta?.rotaDeEscape) {
-        router.push({ name: route.meta.rotaDeEscape });
-      }
+      router.push({ name: route.meta.rotaDeEscape });
     }
   } catch (error) {
     alertStore.error(error);
@@ -76,7 +69,7 @@ PlanosSetoriaisStore.buscarTudo();
   </div>
 
   <Form
-    v-slot="{ errors, isSubmitting, values }"
+    v-slot="{ errors, isSubmitting }"
     :validation-schema="schema"
     :initial-values="initialValues"
     @submit="onSubmit"
@@ -154,50 +147,64 @@ PlanosSetoriaisStore.buscarTudo();
           {{ errors['parametros.fim'] }}
         </div>
       </div>
+      <div class="f1">
+        <LabelFromYup
+          name="eh_publico"
+          :schema="schema"
+          required
+        />
+        <Field
+          name="eh_publico"
+          as="select"
+          class="inputtext light"
+          :class="{
+            error: errors['eh_publico'],
+            loading: PlanosSetoriaisStore.PlanosSetoriais?.loading
+          }"
+          :disabled="PlanosSetoriaisStore.PlanosSetoriais?.loading"
+        >
+          <option>
+            Selecionar
+          </option>
+          <option :value="true">
+            Sim
+          </option>
+          <option :value="false">
+            Não
+          </option>
+        </Field>
+        <div
+          v-if="errors['eh_publico']"
+          class="error-msg"
+        >
+          {{ errors['eh_publico'] }}
+        </div>
+      </div>
     </div>
 
     <div class="mb2">
-      <div class="pl2">
-        <label class="block mb1">
-          <Field
-            name="parametros.tipo"
-            type="radio"
-            value="Consolidado"
-            class="inputcheckbox"
-            :class="{ 'error': errors['parametros.tipo'] }"
-          />
-          <span>Consolidado</span>
-        </label>
-        <label class="block mb1">
-          <Field
-            name="parametros.tipo"
-            type="radio"
-            value="Analitico"
-            class="inputcheckbox"
-            :class="{ 'error': errors['parametros.tipo'] }"
-          />
-          <span>Analítico</span>
-        </label>
-      </div>
+      <label class="block mb1">
+        <Field
+          name="parametros.tipo"
+          type="radio"
+          value="Consolidado"
+          class="inputcheckbox"
+          :class="{ 'error': errors['parametros.tipo'] }"
+        />
+        <span>Consolidado</span>
+      </label>
+      <label class="block mb1">
+        <Field
+          name="parametros.tipo"
+          type="radio"
+          value="Analitico"
+          class="inputcheckbox"
+          :class="{ 'error': errors['parametros.tipo'] }"
+        />
+        <span>Analítico</span>
+      </label>
       <div class="error-msg">
         {{ errors['parametros.tipo'] }}
-      </div>
-    </div>
-
-    <div class="mb2">
-      <div class="pl2">
-        <label class="block">
-          <Field
-            name="salvar_arquivo"
-            type="checkbox"
-            :value="true"
-            class="inputcheckbox"
-          />
-          <span :class="{ 'error': errors.salvar_arquivo }">Salvar relatório no sistema</span>
-        </label>
-      </div>
-      <div class="error-msg">
-        {{ errors.salvar_arquivo }}
       </div>
     </div>
 
@@ -206,10 +213,9 @@ PlanosSetoriaisStore.buscarTudo();
       <button
         type="submit"
         class="btn big"
-        :disabled="PlanosSetoriaisStore.PlanosSetoriais?.loading ||
-          isSubmitting"
+        :disabled="PlanosSetoriaisStore.PlanosSetoriais?.loading || isSubmitting"
       >
-        {{ values.salvar_arquivo ? "baixar e salvar" : "apenas baixar" }}
+        Criar relatório
       </button>
       <hr class="ml2 f1">
     </div>

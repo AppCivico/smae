@@ -11,6 +11,8 @@ import { useAlertStore } from '@/stores/alert.store';
 import { usePlanosSimplificadosStore } from '@/stores/planosMetasSimplificados.store';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store.ts';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
+// Mantendo comportamento legado
+// eslint-disable-next-line import/no-cycle
 import { useTagsStore } from '@/stores/tags.store';
 import { relatórioMensalPS as schema } from '@/consts/formSchemas';
 import months from '@/consts/months';
@@ -45,7 +47,6 @@ const initialValues = ref({
     tags: [],
     listar_variaveis_regionalizadas: false,
   },
-  salvar_arquivo: false,
 });
 
 async function onSubmit(values) {
@@ -53,14 +54,11 @@ async function onSubmit(values) {
 
   try {
     const r = await relatoriosStore.insert(carga);
-    const msg = 'Dados salvos com sucesso!';
+    const msg = 'Relatório em processamento, acompanhe na tela de listagem';
 
     if (r === true) {
       alertStore.success(msg);
-
-      if (carga.salvar_arquivo && route.meta?.rotaDeEscape) {
-        router.push({ name: route.meta.rotaDeEscape });
-      }
+      router.push({ name: route.meta.rotaDeEscape });
     }
   } catch (error) {
     alertStore.error(error);
@@ -97,86 +95,122 @@ if (!listaDePlanosDisponiveis.value.length) {
       type="hidden"
     />
 
-    <div class="flex g2 mb2">
-      <div class="f1">
-        <label class="label">
-          Plano Setorial&nbsp;<span class="tvermelho">*</span>
-        </label>
-        <Field
-          name="parametros.plano_setorial_id"
-          as="select"
-          class="inputtext light mb1"
-          :class="{
-            loading: loading,
-            error: errors['parametros.plano_setorial_id']
-          }"
-          :disabled="loading"
-        >
-          <option value="">
-            Selecionar
-          </option>
-          <option
-            v-for="item in listaDePlanosDisponiveis"
-            :key="item.id"
-            :value="item.id"
+    <div class="flex column g1 mb2">
+      <div class="flex g2">
+        <div class="f1">
+          <label class="label">
+            Plano Setorial&nbsp;<span class="tvermelho">*</span>
+          </label>
+          <Field
+            name="parametros.plano_setorial_id"
+            as="select"
+            class="inputtext light"
+            :class="{
+              loading: loading,
+              error: errors['parametros.plano_setorial_id']
+            }"
+            :disabled="loading"
           >
-            {{ item.nome }}
-          </option>
-        </Field>
+            <option value="">
+              Selecionar
+            </option>
+            <option
+              v-for="item in listaDePlanosDisponiveis"
+              :key="item.id"
+              :value="item.id"
+            >
+              {{ item.nome }}
+            </option>
+          </Field>
 
-        <ErrorMessage name="parametros.plano_setorial_id" />
-      </div>
+          <ErrorMessage name="parametros.plano_setorial_id" />
+        </div>
 
-      <div class="f1">
-        <label
-          for="mes"
-          class="label"
-        >
-          Mês <span class="tvermelho">*</span>
-        </label>
-        <Field
-          name="parametros.mes"
-          as="select"
-          class="inputtext light mb1"
-          :class="{ 'error': errors['parametros.mes'] }"
-          :disabled="loading"
-        >
-          <option value="">
-            Selecionar
-          </option>
-          <option
-            v-for="item, k in months"
-            :key="k"
-            :value="k + 1"
+        <div class="f1">
+          <label
+            for="mes"
+            class="label"
           >
-            {{ item }}
-          </option>
-        </Field>
+            Mês <span class="tvermelho">*</span>
+          </label>
+          <Field
+            name="parametros.mes"
+            as="select"
+            class="inputtext light"
+            :class="{ 'error': errors['parametros.mes'] }"
+            :disabled="loading"
+          >
+            <option value="">
+              Selecionar
+            </option>
+            <option
+              v-for="item, k in months"
+              :key="k"
+              :value="k + 1"
+            >
+              {{ item }}
+            </option>
+          </Field>
 
-        <ErrorMessage name="parametros.mes" />
+          <ErrorMessage name="parametros.mes" />
+        </div>
+        <div class="f1">
+          <label
+            for="ano"
+            class="label"
+          >
+            ano <span class="tvermelho">*</span>
+          </label>
+          <Field
+            id="ano"
+            placeholder="2003"
+            name="parametros.ano"
+            type="number"
+            class="inputtext light"
+            :class="{ 'error': errors['parametro.ano'] }"
+            min="2003"
+          />
+
+          <ErrorMessage name="parametros.ano" />
+        </div>
+
+        <div class="f1">
+          <LabelFromYup
+            name="eh_publico"
+            :schema="schema"
+            required
+          />
+          <Field
+            name="eh_publico"
+            as="select"
+            class="inputtext light"
+            :class="{
+              error: errors['eh_publico'],
+              loading: chamadasPendentes.planosSimplificados
+            }"
+            :disabled="chamadasPendentes.planosSimplificados"
+          >
+            <option>
+              Selecionar
+            </option>
+            <option :value="true">
+              Sim
+            </option>
+            <option :value="false">
+              Não
+            </option>
+          </Field>
+          <div
+            v-if="errors['eh_publico']"
+            class="error-msg"
+          >
+            {{ errors['eh_publico'] }}
+          </div>
+        </div>
       </div>
-      <div class="f1">
-        <label
-          for="ano"
-          class="label"
-        >
-          ano <span class="tvermelho">*</span>
-        </label>
-        <Field
-          id="ano"
-          placeholder="2003"
-          name="parametros.ano"
-          type="number"
-          class="inputtext light mb1"
-          :class="{ 'error': errors['parametro.ano'] }"
-          min="2003"
-        />
-
-        <ErrorMessage name="parametros.ano" />
-      </div>
 
       <div class="f1">
-        <label class="mt1 block">
+        <label class="block">
           <Field
             name="parametros.listar_variaveis_regionalizadas"
             type="checkbox"
@@ -230,25 +264,6 @@ if (!listaDePlanosDisponiveis.value.length) {
       <ErrorMessage name="parametros.tags" />
     </div>
 
-    <hr>
-
-    <div class="mb2 mt2">
-      <div class="pl2">
-        <label class="block">
-          <Field
-            name="salvar_arquivo"
-            type="checkbox"
-            :value="true"
-            :unchecked-value="false"
-            class="inputcheckbox"
-          />
-          <span :class="{ 'error': errors.salvar_arquivo }">Salvar relatório no sistema</span>
-        </label>
-      </div>
-
-      <ErrorMessage name="salvar_arquivo" />
-    </div>
-
     <FormErrorsList :errors="errors" />
 
     <div class="flex spacebetween center mb2">
@@ -256,10 +271,9 @@ if (!listaDePlanosDisponiveis.value.length) {
       <button
         type="submit"
         class="btn big"
-        :disabled="loading ||
-          isSubmitting"
+        :disabled="loading || isSubmitting"
       >
-        {{ values.salvar_arquivo ? "baixar e salvar" : "apenas baixar" }}
+        Criar relatório
       </button>
       <hr class="ml2 f1">
     </div>

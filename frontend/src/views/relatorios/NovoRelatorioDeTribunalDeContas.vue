@@ -30,7 +30,6 @@ const valoresIniciais = {
     tipo_id: null,
     tipo: 'Geral',
   },
-  salvar_arquivo: false,
 
 };
 
@@ -49,17 +48,17 @@ const tiposDisponíveis = computed(() => (values.parametros.esfera
 
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   try {
-    const msg = 'Dados salvos com sucesso!';
+    const msg = 'Relatório em processamento, acompanhe na tela de listagem';
 
     // Converte os valores dos anos de string para number, atendendo o que a API espera
-    valoresControlados.parametros.ano_inicio = parseInt(valoresControlados.parametros.ano_inicio);
-    valoresControlados.parametros.ano_fim = parseInt(valoresControlados.parametros.ano_fim);
+    valoresControlados.parametros
+      .ano_inicio = parseInt(valoresControlados.parametros.ano_inicio, 10);
+    valoresControlados.parametros
+      .ano_fim = parseInt(valoresControlados.parametros.ano_fim, 10);
 
     if (await relatoriosStore.insert(valoresControlados)) {
       alertStore.success(msg);
-      if (valoresControlados.salvar_arquivo && route.meta?.rotaDeEscape) {
-        router.push({ name: route.meta.rotaDeEscape });
-      }
+      router.push({ name: route.meta.rotaDeEscape });
     }
   } catch (error) {
     alertStore.error(error);
@@ -225,6 +224,35 @@ const formularioSujo = useIsFormDirty();
           class="error-msg"
         />
       </div>
+
+      <div class="f1">
+        <LabelFromYup
+          name="eh_publico"
+          :schema="schema"
+          required
+        />
+        <Field
+          name="eh_publico"
+          as="select"
+          class="inputtext light"
+        >
+          <option>
+            Selecionar
+          </option>
+          <option :value="true">
+            Sim
+          </option>
+          <option :value="false">
+            Não
+          </option>
+        </Field>
+        <div
+          v-if="errors['eh_publico']"
+          class="error-msg"
+        >
+          {{ errors['eh_publico'] }}
+        </div>
+      </div>
     </div>
 
     <Field
@@ -234,27 +262,6 @@ const formularioSujo = useIsFormDirty();
       class="inputcheckbox"
       :class="{ 'error': errors['parametros.tipo'] }"
     />
-
-    <div class="mb2">
-      <div class="pl2">
-        <label class="block">
-          <Field
-            name="salvar_arquivo"
-            type="checkbox"
-            :value="true"
-            :unchecked-value="false"
-            class="inputcheckbox"
-          />
-          <span :class="{ 'error': errors.salvar_arquivo }">Salvar relatório no sistema</span>
-        </label>
-      </div>
-      <div
-        v-if="errors['salvar_arquivo']"
-        class="error-msg"
-      >
-        {{ errors['salvar_arquivo'] }}
-      </div>
-    </div>
 
     <FormErrorsList :errors="errors" />
 
@@ -267,7 +274,7 @@ const formularioSujo = useIsFormDirty();
           ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
           : null"
       >
-        {{ values.salvar_arquivo ? "baixar e salvar" : "apenas baixar" }}
+        Criar relatório
       </button>
       <hr class="ml2 f1">
     </div>
