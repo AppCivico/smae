@@ -268,6 +268,35 @@ export const ProjetoGetPermissionSet = async (
     return permissionsBaseSet;
 };
 
+const getOrderByConfigView = (
+    ordem_coluna: string,
+    ordem_direcao: 'asc' | 'desc'
+): Prisma.Enumerable<Prisma.ViewProjetoV2OrderByWithRelationInput> => {
+    if (ordem_coluna === 'regioes') {
+        throw new BadRequestException('Ordenação por regiões não é mais suportada');
+    }
+
+    const directionSort: {
+        sort: Prisma.SortOrder;
+        nulls: Prisma.NullsOrder;
+    } = ordem_direcao === 'asc' ? { sort: 'asc', nulls: 'last' } : { sort: 'desc', nulls: 'last' };
+
+    switch (ordem_coluna) {
+        case 'previsao_custo':
+            return [{ previsao_custo: directionSort }, { codigo: 'asc' }];
+
+        case 'previsao_termino':
+            return [{ previsao_termino: directionSort }, { codigo: 'asc' }];
+
+        default:
+            throw new BadRequestException(`ordem_coluna ${ordem_coluna} não é suportada`);
+    }
+};
+
+const isOrderByConfigView = (ordem_coluna: string): boolean => {
+    return ordem_coluna.startsWith('previsao_custo') || ordem_coluna.startsWith('previsao_termino');
+};
+
 const getOrderByConfig = (
     ordem_coluna: string,
     ordem_direcao: 'asc' | 'desc'
@@ -276,35 +305,41 @@ const getOrderByConfig = (
         throw new BadRequestException('Ordenação por regiões não é mais suportada');
     }
 
-    const direction = ordem_direcao === 'asc' ? 'asc' : 'desc';
+    const directionSort: {
+        sort: Prisma.SortOrder;
+        nulls: Prisma.NullsOrder;
+    } = ordem_direcao === 'asc' ? { sort: 'asc', nulls: 'last' } : { sort: 'desc', nulls: 'last' };
 
     switch (ordem_coluna) {
+        // colunas 'not null' não podem ficar com o "NULL'... que beleza...
         case 'id':
         case 'nome':
-        case 'codigo':
         case 'status':
         case 'registrado_em':
-            return [{ [ordem_coluna]: direction }, { codigo: 'asc' }];
+            return [{ [ordem_coluna]: ordem_direcao }, { codigo: 'asc' }];
+        case 'codigo':
+            return [{ [ordem_coluna]: directionSort }, { codigo: 'asc' }];
 
         case 'portfolio_titulo':
-            return [{ portfolio: { titulo: direction } }, { codigo: 'asc' }];
+            return [{ portfolio: { titulo: ordem_direcao } }, { codigo: 'asc' }];
 
         case 'grupo_tematico_nome':
-            return [{ grupo_tematico: { nome: direction } }, { codigo: 'asc' }];
+            return [{ grupo_tematico: { nome: ordem_direcao } }, { codigo: 'asc' }];
 
         case 'tipo_intervencao_nome':
-            return [{ tipo_intervencao: { nome: direction } }, { codigo: 'asc' }];
+            return [{ tipo_intervencao: { nome: ordem_direcao } }, { codigo: 'asc' }];
 
         case 'equipamento_nome':
-            return [{ equipamento: { nome: direction } }, { codigo: 'asc' }];
+            return [{ equipamento: { nome: ordem_direcao } }, { codigo: 'asc' }];
 
         case 'orgao_origem_nome':
-            return [{ orgao_origem: { descricao: direction } }, { codigo: 'asc' }];
+            return [{ orgao_origem: { descricao: ordem_direcao } }, { codigo: 'asc' }];
         case 'projeto_etapa':
         case 'projeto_etapa_id':
-            return [{ projeto_etapa: { descricao: direction } }, { codigo: 'asc' }];
+            return [{ projeto_etapa: { descricao: ordem_direcao } }, { codigo: 'asc' }];
+
         default:
-            return [{ codigo: 'asc' }];
+            throw new BadRequestException(`ordem_coluna ${ordem_coluna} não é suportada`);
     }
 };
 
@@ -1110,16 +1145,32 @@ export class ProjetoService {
         const permissionsSet = await ProjetoGetPermissionSet('MDO', user, false);
         const filterSet = this.getProjetoV2WhereSet(filters, palavrasChave, user.id);
 
-        const projetoIds = await this.prisma.projeto.findMany({
-            where: {
-                registrado_em: { lte: now },
-                AND: [...permissionsSet, ...filterSet],
-            },
-            select: { id: true },
-            orderBy: getOrderByConfig(filters.ordem_coluna, filters.ordem_direcao),
-            skip: offset,
-            take: ipp,
-        });
+        let projetoIds;
+        if (isOrderByConfigView(filters.ordem_coluna)) {
+            projetoIds = await this.prisma.viewProjetoV2.findMany({
+                where: {
+                    projeto: {
+                        registrado_em: { lte: now },
+                        AND: [...permissionsSet, ...filterSet],
+                    },
+                },
+                select: { id: true },
+                orderBy: getOrderByConfigView(filters.ordem_coluna, filters.ordem_direcao),
+                skip: offset,
+                take: ipp,
+            });
+        } else {
+            projetoIds = await this.prisma.projeto.findMany({
+                where: {
+                    registrado_em: { lte: now },
+                    AND: [...permissionsSet, ...filterSet],
+                },
+                select: { id: true },
+                orderBy: getOrderByConfig(filters.ordem_coluna, filters.ordem_direcao),
+                skip: offset,
+                take: ipp,
+            });
+        }
 
         const linhas = await this.prisma.viewProjetoMDO.findMany({
             where: {
@@ -1239,16 +1290,32 @@ export class ProjetoService {
         const permissionsSet = await ProjetoGetPermissionSet(tipo, user, false);
         const filterSet = this.getProjetoV2WhereSet(filters, palavrasChave, user.id);
 
-        const projetoIds = await this.prisma.projeto.findMany({
-            where: {
-                registrado_em: { lte: now },
-                AND: [...permissionsSet, ...filterSet],
-            },
-            select: { id: true },
-            orderBy: getOrderByConfig(filters.ordem_coluna, filters.ordem_direcao),
-            skip: offset,
-            take: ipp,
-        });
+        let projetoIds;
+        if (isOrderByConfigView(filters.ordem_coluna)) {
+            projetoIds = await this.prisma.viewProjetoV2.findMany({
+                where: {
+                    projeto: {
+                        registrado_em: { lte: now },
+                        AND: [...permissionsSet, ...filterSet],
+                    },
+                },
+                select: { id: true },
+                orderBy: getOrderByConfigView(filters.ordem_coluna, filters.ordem_direcao),
+                skip: offset,
+                take: ipp,
+            });
+        } else {
+            projetoIds = await this.prisma.projeto.findMany({
+                where: {
+                    registrado_em: { lte: now },
+                    AND: [...permissionsSet, ...filterSet],
+                },
+                select: { id: true },
+                orderBy: getOrderByConfig(filters.ordem_coluna, filters.ordem_direcao),
+                skip: offset,
+                take: ipp,
+            });
+        }
 
         const linhas = await this.prisma.viewProjetoV2.findMany({
             where: {
@@ -2736,13 +2803,6 @@ export class ProjetoService {
                 },
                 select: { id: true, orgao_id: true },
             });
-            if (!user.hasSomeRoles(['Projeto.administrador', 'ProjetoMDO.administrador'])) {
-                if (
-                    !user.hasSomeRoles(['Projeto.administrador_no_orgao', 'ProjetoMDO.administrador_no_orgao']) ||
-                    user.orgao_id != gp.orgao_id
-                )
-                    throw new BadRequestException('Sem permissão para adicionar grupo de portfólio no projeto.');
-            }
 
             await prismaTx.projetoGrupoPortfolio.create({
                 data: {
@@ -2757,13 +2817,6 @@ export class ProjetoService {
         for (const prevPortRow of prevVersions) {
             // pula as que continuam na lista
             if (dto.grupo_portfolio.filter((r) => r == prevPortRow.grupo_portfolio_id)[0]) continue;
-            if (!user.hasSomeRoles(['Projeto.administrador', 'ProjetoMDO.administrador'])) {
-                if (
-                    !user.hasSomeRoles(['Projeto.administrador_no_orgao', 'ProjetoMDO.administrador_no_orgao']) ||
-                    user.orgao_id != prevPortRow.GrupoPortfolio.orgao_id
-                )
-                    throw new BadRequestException('Sem permissão para remover grupo de portfólio no projeto.');
-            }
 
             // remove o relacionamento
             await prismaTx.projetoGrupoPortfolio.update({

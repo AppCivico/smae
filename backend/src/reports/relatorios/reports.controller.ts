@@ -29,15 +29,13 @@ export class ReportsController {
         'Reports.executar.Projetos',
         'Reports.executar.MDO',
         'Reports.executar.PlanoSetorial',
+        'Reports.executar.ProgramaDeMetas',
     ])
     @ApiOkResponse({
         description: 'Recebe o arquivo do relatório, ou msg de erro em JSON',
         type: '',
     })
-    async create(
-        @Body() dto: CreateReportDto,
-        @CurrentUser() user: PessoaFromJwt
-    ): Promise<RecordWithId> {
+    async create(@Body() dto: CreateReportDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         const sistema = user.assertOneModuloSistema('criar', 'Relatórios');
 
         return await this.reportsService.saveReport(dto, null, user, sistema);
@@ -51,6 +49,7 @@ export class ReportsController {
         'Reports.executar.Projetos',
         'Reports.executar.MDO',
         'Reports.executar.PlanoSetorial',
+        'Reports.executar.ProgramaDeMetas',
     ])
     @ApiPaginatedResponse(RelatorioDto)
     async findAll(
@@ -68,6 +67,7 @@ export class ReportsController {
         'Reports.remover.Projetos',
         'Reports.remover.MDO',
         'Reports.remover.PlanoSetorial',
+        'Reports.remover.ProgramaDeMetas',
     ])
     @ApiResponse({ description: 'sucesso ao remover', status: 204 })
     @HttpCode(HttpStatus.NO_CONTENT)

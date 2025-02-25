@@ -33,6 +33,7 @@ import { PdmDto, PlanoSetorialDto } from './dto/pdm.dto';
 import { UpdatePdmOrcamentoConfigDto } from './dto/update-pdm-orcamento-config.dto';
 import { UpdatePdmDto } from './dto/update-pdm.dto';
 import { ListPdmDocument } from './entities/list-pdm-document.entity';
+import { PdmCicloService } from './pdm.ciclo.service';
 import { PdmService } from './pdm.service';
 
 @ApiTags('PDM')
@@ -48,7 +49,9 @@ export class PdmController {
         @Inject(forwardRef(() => MacroTemaService))
         private readonly eixoService: MacroTemaService,
         @Inject(forwardRef(() => TagService))
-        private readonly tagService: TagService
+        private readonly tagService: TagService,
+
+        private readonly pdmCicloService: PdmCicloService
     ) {}
 
     @Post()
@@ -68,7 +71,7 @@ export class PdmController {
         let orcamento_config: OrcamentoConfig[] | null | undefined = undefined;
 
         if (filters.ativo && linhas[0] && linhas[0].id) {
-            ciclo_fisico_ativo = await this.pdmService.getCicloAtivo(linhas[0].id);
+            ciclo_fisico_ativo = await this.pdmCicloService.getCicloAtivo(linhas[0].id);
             orcamento_config = await this.pdmService.getOrcamentoConfig(this.tipoPdm, linhas[0].id);
         }
 

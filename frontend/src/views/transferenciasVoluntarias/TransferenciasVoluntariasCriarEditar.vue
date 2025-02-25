@@ -84,6 +84,12 @@ async function salvarTransferencia(cargaManipulada) {
       ? 'Dados salvos com sucesso!'
       : 'Item adicionado com sucesso!';
 
+    if (cargaManipulada.parlamentares) {
+      cargaManipulada.parlamentares = cargaManipulada.parlamentares.filter(
+        (item) => item.parlamentar_id,
+      );
+    }
+
     if (props.transferenciaId) {
       r = await TransferenciasVoluntarias.salvarItem(cargaManipulada, props.transferenciaId);
     } else {

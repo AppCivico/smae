@@ -5364,6 +5364,8 @@ model Eleicao {
     ano                 Int
     atual_para_mandatos Boolean
 
+    removido_em DateTime? @db.Timestamptz(6)
+
     mandatos        ParlamentarMandato[]
     comparecimentos EleicaoComparecimento[]
 

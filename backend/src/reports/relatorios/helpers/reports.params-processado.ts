@@ -2,8 +2,15 @@ import { InputJsonValue } from '@prisma/client/runtime/library';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { CreateReportDto } from '../dto/create-report.dto';
 import { RelatorioParamDto } from '../entities/report.entity';
-import { FonteRelatorio } from '@prisma/client';
+import { FonteRelatorio, ParlamentarCargo, TipoRelatorio } from '@prisma/client';
+import { EnumHumano } from 'src/reports/utils/utils.service';
 type RelatorioProcesado = Record<string, string | Array<string>>;
+
+// Mapeamento de enums por valor
+const enumMap: Record<string, typeof ParlamentarCargo | typeof TipoRelatorio> = {
+    cargo: ParlamentarCargo,
+    tipo: TipoRelatorio,
+};
 
 function nomeTabelaColParametro(nomeChave: string): { tabela: string; coluna: string } | undefined {
     const tabelaConfig: Record<string, { coluna: string; chaves?: string[] }> = {
@@ -20,6 +27,7 @@ function nomeTabelaColParametro(nomeChave: string): { tabela: string; coluna: st
         indicador: { coluna: 'titulo' },
         partido: { coluna: 'nome' },
         regiao: { coluna: 'descricao', chaves: ['regioes'] },
+        eleicao: { coluna: 'ano' },
     };
 
     const mapeamento = Object.entries(tabelaConfig).reduce(
@@ -103,7 +111,7 @@ export const BuildParametrosProcessados = async (
     }
 
     for (const paramKey of Object.keys(parametros)) {
-        const valor = parametros[paramKey];
+        let valor = parametros[paramKey];
         if (!valor) continue;
 
         const nomeChave = paramKey
@@ -112,18 +120,31 @@ export const BuildParametrosProcessados = async (
 
         parametros_processados[nomeChave] = valor.toString();
 
+        // Verifica se o valor possui um mapeamento para tabela e coluna.
+        // Caso não possua, verifica se é um enum.
+        // Caso não seja nenhum dos dois, pula para o próximo.
         const nomeTabelaCol = nomeTabelaColParametro(nomeChave);
-        if (!nomeTabelaCol) continue;
+        if (!nomeTabelaCol) {
+            const enumMapKey = enumMap[nomeChave];
 
-        if (typeof valor === 'number') {
-            const query = `SELECT COALESCE(${nomeTabelaCol.coluna}, '') AS nome, removido_em FROM ${nomeTabelaCol.tabela} WHERE id = ${valor}`;
+            if (enumMapKey) {
+                valor = EnumHumano(enumMapKey, valor);
+                parametros_processados[nomeChave] = valor;
+                continue;
+            }
+
+            continue;
+        }
+
+        if (typeof valor === 'number' && nomeTabelaCol) {
+            const query = `SELECT COALESCE(${nomeTabelaCol.coluna}::text, '') AS nome, removido_em FROM ${nomeTabelaCol.tabela} WHERE id = ${valor}`;
             const rowNome = await prisma.$queryRawUnsafe<Array<{ nome: string; removido_em: Date | undefined }>>(query);
             if (rowNome.length > 0) {
                 parametros_processados[nomeChave] = rowNome[0].removido_em
                     ? '(Removido) ' + rowNome[0].nome
                     : rowNome[0].nome;
             }
-        } else if (Array.isArray(valor)) {
+        } else if (Array.isArray(valor) && nomeTabelaCol) {
             if (valor.length === 0) continue;
 
             const joinedValues = valor.join(',');

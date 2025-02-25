@@ -94,6 +94,8 @@ export const ProjetoMdoOrderEnum = {
     registrado_em: 'registrado_em',
     projeto_etapa: 'projeto_etapa',
     projeto_etapa_id: 'projeto_etapa',
+    previsao_custo: 'previsao_custo',
+    previsao_termino: 'previsao_termino',
 };
 export type ProjetoMdoOrderEnum = keyof typeof ProjetoMdoOrderEnum;
 
