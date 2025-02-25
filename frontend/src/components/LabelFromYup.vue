@@ -21,6 +21,10 @@ const props = defineProps({
     type: Object,
     default: () => null,
   },
+  classeLabel: {
+    type: Boolean,
+    default: true,
+  },
 });
 
 const caminhoNoSchema = computed(() => {
@@ -46,13 +50,13 @@ const caminhoNoSchema = computed(() => {
 <template>
   <component
     :is="as"
-    :class="{ label: as !== 'legend' }"
+    :class="{ label: classeLabel && as !== 'legend' }"
     :for="as !== 'label'
       ? undefined
       : name || $attrs.for || null"
   >
     <slot name="prepend" />
-    <slot>
+    <slot :label="caminhoNoSchema?.spec?.label || name">
       <pre
         v-if="!caminhoNoSchema"
         v-ScrollLockDebug

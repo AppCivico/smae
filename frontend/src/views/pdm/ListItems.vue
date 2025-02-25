@@ -1,4 +1,11 @@
 <script setup>
+import {
+  onMounted,
+  onUpdated,
+  reactive,
+  ref,
+} from 'vue';
+import { storeToRefs } from 'pinia';
 import { Dashboard } from '@/components';
 import {
   useAlertStore,
@@ -11,13 +18,6 @@ import { default as AddEditMacrotemas } from '@/views/pdm/AddEditMacrotemas.vue'
 import { default as AddEditSubtemas } from '@/views/pdm/AddEditSubtemas.vue';
 import { default as AddEditTags } from '@/views/pdm/AddEditTags.vue';
 import { default as AddEditTemas } from '@/views/pdm/AddEditTemas.vue';
-import { default as EdicaoOrcamento } from '@/views/pdm/EdicaoOrcamento.vue';
-import { storeToRefs } from 'pinia';
-import {
-  onMounted, onUpdated,
-  reactive,
-  ref,
-} from 'vue';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -59,19 +59,8 @@ function deleteArquivo(pdmid, id) {
     PdMStore.deleteArquivo(pdmid, id);
   }, 'Remover');
 }
-
-function abreEdicaoOrcamento(id) {
-  editModalStore.modal(EdicaoOrcamento, {
-    pdm_id: id,
-    checkClose: () => {
-      alertStore.confirmAction('Deseja sair sem salvar as alterações?', () => {
-        editModalStore.clear();
-        alertStore.clear();
-      });
-    },
-  }, 'small');
-}
 </script>
+
 <template>
   <Dashboard>
     <div class="flex spacebetween center mb2">
@@ -137,34 +126,37 @@ function abreEdicaoOrcamento(id) {
               <td>{{ item.descricao }}</td>
               <td>{{ item.prefeito }}</td>
               <td>{{ item.ativo ? 'Sim' : 'Não' }}</td>
-              <td style="text-align: right;">
-                <a
-                  v-if="perm?.CadastroPdm?.editar"
+              <td class="tr">
+                <SmaeLink
                   class="tprimary mr1 tipinfo left"
-                  @click="abreEdicaoOrcamento(item.id)"
+                  :to="{
+                    name: 'pdm.permissoes-orcamento',
+                    params: {
+                      pdm_id: item.id
+                    }
+                  }"
                 >
                   <svg
                     width="20"
                     height="20"
                   ><use xlink:href="#i_calendar" /></svg>
                   <div>Permissões para edições no orçamento</div>
-                </a>
-                <template v-if="perm?.CadastroPdm?.editar">
-                  <router-link
-                    :to="{
-                      name: 'editarPdm',
-                      params: {
-                        pdm_id: item.id
-                      }
-                    }"
-                    class="tprimary tipinfo"
-                  >
-                    <svg
-                      width="20"
-                      height="20"
-                    ><use xlink:href="#i_edit" /></svg><div>Editar</div>
-                  </router-link>
-                </template>
+                </SmaeLink>
+
+                <SmaeLink
+                  class="tprimary tipinfo"
+                  :to="{
+                    name: 'editarPdm',
+                    params: {
+                      pdm_id: item.id
+                    }
+                  }"
+                >
+                  <svg
+                    width="20"
+                    height="20"
+                  ><use xlink:href="#i_edit" /></svg><div>Editar</div>
+                </SmaeLink>
               </td>
             </tr>
             <tz>
