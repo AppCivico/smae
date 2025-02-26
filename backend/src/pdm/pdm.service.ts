@@ -10,6 +10,7 @@ import {
 import { PdmPerfilTipo, PerfilResponsavelEquipe, Prisma, TipoPdm } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { LoggerWithLog } from '../common/LoggerWithLog';
 import { ReadOnlyBooleanType } from '../common/TypeReadOnly';
 import { Date2YMD } from '../common/date2ymd';
 import { PdmModoParaTipo, TipoPdmType } from '../common/decorators/current-tipo-pdm';
@@ -172,6 +173,7 @@ export class PdmService {
     ) {}
 
     async create(tipo: TipoPdmType, dto: CreatePdmDto, user: PessoaFromJwt) {
+        const logger = LoggerWithLog('PdmService.create');
         if (tipo == '_PDM') {
             if (!user.hasSomeRoles(['CadastroPdm.inserir'])) {
                 throw new ForbiddenException('Você não tem permissão para inserir Programas de Metas');
@@ -265,9 +267,11 @@ export class PdmService {
                     pdm_anteriores: dto.pdm_anteriores,
                     tipo: PdmModoParaTipo(tipo),
                     ativo: false,
+                    sistema: tipo == 'PDM_AS_PS' ? 'ProgramaDeMetas' : tipo == '_PDM' ? 'PDM' : 'PlanoSetorial',
                 },
-                select: { id: true },
             });
+            logger.log(`PDM criado com ID: ${pdm.id} e tipo: ${tipo}`);
+            logger.log(`dto: ${JSON.stringify(pdm)}`);
 
             if (dto.ps_admin_cp || dto.ps_tecnico_cp || dto.ps_ponto_focal) {
                 this.logger.log(`criando ps_admin_cp / ps_tecnico_cp / ps_ponto_focal`);
@@ -280,7 +284,8 @@ export class PdmService {
                         ps_ponto_focal: dto.ps_ponto_focal,
                     },
                     user,
-                    prismaTx
+                    prismaTx,
+                    logger
                 );
             }
 
@@ -288,18 +293,20 @@ export class PdmService {
                 this.logger.log(`Chamando monta_ciclos_pdm...`);
                 await prismaTx.$queryRaw`select monta_ciclos_pdm(${pdm.id}::int, false)`;
             } else {
-                await prismaTx.pdmCicloConfig.create({
-                    data: {
-                        pdm_id: pdm.id,
-                        data_fim: dto.data_fim,
+                await this.pdmCicloService.updateCicloConfig(
+                    tipo,
+                    pdm.id,
+                    {
                         data_inicio: dto.data_inicio,
-                        meses: [],
+                        data_fim: dto.data_fim,
+                        meses: dto.meses ?? [],
                     },
-                });
-                // não chama a função de iniciar os ciclos? se chamar já vai preparar os ciclos e não deixar
-                // o usuário mudar o inicio/fim
+                    user,
+                    prismaTx
+                );
             }
 
+            await logger.saveLogs(prismaTx, user.getLogData());
             return pdm;
         });
 
@@ -374,6 +381,7 @@ export class PdmService {
                 ps_admin_cps: true,
                 orgao_admin_id: true,
                 considerar_atraso_apos: true,
+                sistema: true,
             },
             orderBy: [{ ativo: 'desc' }, { data_inicio: 'desc' }, { data_fim: 'desc' }],
         });
@@ -385,7 +393,6 @@ export class PdmService {
                     logo = this.uploadService.getDownloadToken(pdm.arquivo_logo_id, '30d').download_token;
                 }
                 const pode_editar = await this.calcPodeEditar({ ...pdm, tipo: tipo }, user);
-                console.log(pode_editar);
 
                 return {
                     id: pdm.id,
@@ -420,6 +427,7 @@ export class PdmService {
                         pdm.periodo_do_ciclo_participativo_inicio
                     ),
                     considerar_atraso_apos: Date2YMD.toStringOrNull(pdm.considerar_atraso_apos),
+                    sistema: pdm.sistema,
                 } satisfies ListPdm;
             })
         );
@@ -519,6 +527,7 @@ export class PdmService {
             possui_atividade: pdm.possui_atividade,
             nivel_orcamento: pdm.nivel_orcamento,
             tipo: pdm.tipo,
+            sistema: pdm.sistema,
 
             pode_editar: await this.calcPodeEditar({ ...pdm, tipo }, user),
             data_fim: Date2YMD.toStringOrNull(pdm.data_fim),
@@ -697,11 +706,13 @@ export class PdmService {
         id: number,
         dto: UpdatePdmDto,
         user: PessoaFromJwt,
-        prismaCtx?: Prisma.TransactionClient
+        prismaCtx?: Prisma.TransactionClient,
+        loggerCtx?: LoggerWithLog
     ) {
         const pdm = await this.loadPdm(tipo, id, user, 'ReadWrite', prismaCtx);
         const prismaTx = prismaCtx || this.prisma;
-        console.log(tipo, dto);
+        const logger = loggerCtx || LoggerWithLog('PdmService.update');
+        logger.log(`updatePdmDto: ${JSON.stringify(dto)}`);
         await this.verificarPrivilegiosEdicao(dto, user, { ...pdm, tipo: tipo });
         if (tipo == '_PDM') {
             if (dto.nivel_orcamento == null) throw new BadRequestException('Nível de Orçamento é obrigatório no PDM.');
@@ -780,6 +791,35 @@ export class PdmService {
                             desativado_em: now,
                         },
                     });
+            }
+
+            if (
+                (pdm.sistema == 'PlanoSetorial' || pdm.sistema == 'ProgramaDeMetas') &&
+                ('meses' in dto || 'data_inicio' in dto || 'data_fim' in dto)
+            ) {
+                const cicloConfigAtiva = await prismaTx.pdmCicloConfig.findFirst({
+                    where: {
+                        pdm_id: id,
+                        ultima_revisao: true,
+                    },
+                });
+
+                const mesesSorted = dto.meses?.sort((a, b) => a - b).join(',');
+                const currentMeses = cicloConfigAtiva?.meses.sort((a, b) => a - b).join(',');
+
+                if (mesesSorted != currentMeses || dto.data_inicio != pdm.data_inicio || dto.data_fim != pdm.data_fim) {
+                    await this.pdmCicloService.updateCicloConfig(
+                        tipo,
+                        pdm.id,
+                        {
+                            data_inicio: dto.data_inicio,
+                            data_fim: dto.data_fim,
+                            meses: dto.meses,
+                        },
+                        user,
+                        prismaTx
+                    );
+                }
             }
 
             await prismaTx.pdm.update({

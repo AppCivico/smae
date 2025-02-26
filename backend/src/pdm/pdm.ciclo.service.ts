@@ -3,15 +3,17 @@ import { Cron } from '@nestjs/schedule';
 import { CicloFisicoFase, PdmPerfilTipo, Prisma } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { VariavelService } from 'src/variavel/variavel.service';
+import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { CONST_BOT_USER_ID } from '../common/consts';
 import { Date2YMD, DateYMD, SYSTEM_TIMEZONE } from '../common/date2ymd';
+import { TipoPdmType } from '../common/decorators/current-tipo-pdm';
 import { JOB_PDM_CICLO_LOCK } from '../common/dto/locks';
+import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { LoggerWithLog } from '../common/LoggerWithLog';
 import { PrismaService } from '../prisma/prisma.service';
 import { UploadService } from '../upload/upload.service';
-import { CicloFisicoDto } from './dto/list-pdm.dto';
 import { UpdatePdmCicloConfigDto } from './dto/create-pdm.dto';
-import { TipoPdmType } from '../common/decorators/current-tipo-pdm';
-import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
-import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { CicloFisicoDto } from './dto/list-pdm.dto';
 
 type CicloFisicoResumo = {
     id: number;
@@ -190,10 +192,12 @@ export class PdmCicloService {
                 this.logger.log(`Processamento bem-sucedido para lote de ${chunk.length} PDMs/PS`);
             } catch (error) {
                 if (chunk.length === 1) {
+                    const logger = LoggerWithLog('PdmCicloService.processPdmIdsInChunks');
+                    logger.error(`Falha ao processar PDM/PS ${chunk[0]}: ${error.message}`, error.stack);
                     // Se somente um item falhar, logar e seguir em frente
                     this.logger.error(`Falha ao processar PDM/PS ${chunk[0]}: ${error.message}`, error.stack);
 
-                    // aqui complica, pq na teoria iriamos marcar o erro no ciclo_fisico, mas essa linha não foi gerada ainda, rs
+                    await logger.saveLogs(this.prisma, { pessoa_id: CONST_BOT_USER_ID });
                 } else {
                     // Dividir o lote em dois e tentar novamente
                     const halfSize = Math.max(1, Math.ceil(chunk.length / 2));
@@ -227,7 +231,7 @@ export class PdmCicloService {
                 tipo: { in: ['PDM'] },
                 removido_em: null,
                 AND: {
-                    PdmCiloConfig: {
+                    PdmCicloConfig: {
                         none: {},
                     },
                 },
@@ -491,9 +495,15 @@ export class PdmCicloService {
         _tipo: TipoPdmType,
         pdmId: number,
         dto: UpdatePdmCicloConfigDto,
-        user: PessoaFromJwt
+        user: PessoaFromJwt,
+        prismaCtx?: Prisma.TransactionClient | undefined
     ): Promise<RecordWithId> {
-        if (dto.meses.length > 0 && !dto.data_inicio)
+        const pdm = await this.prisma.pdm.findUniqueOrThrow({
+            where: { id: pdmId },
+            select: { sistema: true },
+        });
+        if (pdm.sistema === 'PDM') throw new Error('Operação não permitida para PDMs antigos');
+        if (dto.meses && dto.meses.length > 0 && !dto.data_inicio)
             throw new Error('Data de início é obrigatória quando há meses configurados');
 
         const countExistentes = await this.prisma.cicloFisico.count({
@@ -506,7 +516,7 @@ export class PdmCicloService {
             throw new Error('Já existe um ciclo físico do tipo antigo para este Programa de Metas');
 
         const now = new Date();
-        return await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+        const performUpdate = async (prismaTx: Prisma.TransactionClient) => {
             await prismaTx.pdmCicloConfig.updateMany({
                 where: {
                     pdm_id: pdmId,
@@ -531,19 +541,38 @@ export class PdmCicloService {
             const config = await prismaTx.pdmCicloConfig.create({
                 data: {
                     pdm_id: pdmId,
-                    meses: dto.meses ?? previousData?.meses,
-                    data_inicio: dto.data_inicio ?? previousData?.data_inicio,
-                    data_fim: dto.data_fim ?? previousData?.data_fim,
+                    meses: dto.meses ?? previousData?.meses ?? [],
+                    data_inicio: dto.data_inicio ?? previousData?.data_inicio ?? null,
+                    data_fim: dto.data_fim ?? previousData?.data_fim ?? null,
                     ultima_revisao: true,
                     criado_por: user.id,
                 },
                 select: { id: true },
             });
 
+            this.logger.log(`Ciclo config created with id: ${config.id}`);
+
             // Call function to update future cycles
             await prismaTx.$queryRaw`SELECT atualiza_ciclos_config(${pdmId})`;
 
             return config;
-        });
+        };
+
+        let ret;
+        if (prismaCtx) {
+            ret = await performUpdate(prismaCtx);
+        } else {
+            ret = await this.prisma.$transaction(
+                async (prismaTx: Prisma.TransactionClient) => {
+                    return await performUpdate(prismaTx);
+                },
+                {
+                    isolationLevel: 'Serializable',
+                    maxWait: 5000,
+                    timeout: 5000,
+                }
+            );
+        }
+        return ret;
     }
 }

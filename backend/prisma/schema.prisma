@@ -825,7 +825,8 @@ model Pdm {
     SubTema             SubTema[]
     Meta                Meta[]
 
-    tipo TipoPdm @default(PDM)
+    tipo    TipoPdm       @default(PDM)
+    sistema ModuloSistema @default(SMAE)
 
     paineis_de_meta Painel[]
 
@@ -858,7 +859,7 @@ model Pdm {
     PdmPerfil                          PdmPerfil[]
     Diretorio                          Diretorio[]
     view_pdm_meta_iniciativa_atividade view_pdm_meta_iniciativa_atividade[]
-    PdmCiloConfig                      PdmCicloConfig[]
+    PdmCicloConfig                     PdmCicloConfig[]
 
     @@index([ativo])
     @@map("pdm")
