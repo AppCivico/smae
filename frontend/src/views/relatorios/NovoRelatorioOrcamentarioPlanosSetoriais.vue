@@ -1,15 +1,15 @@
 <script setup>
-import { Field, Form, useIsFormDirty } from 'vee-validate';
-import { computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
+import { relatórioOrçamentárioPlanosSetoriais as schema } from '@/consts/formSchemas';
+import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
+import maskMonth from '@/helpers/maskMonth';
+import monthAndYearToDate from '@/helpers/monthAndYearToDate';
 import { useAlertStore } from '@/stores/alert.store';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
-import TituloDaPagina from '@/components/TituloDaPagina.vue';
-import maskMonth from '@/helpers/maskMonth';
-import monthAndYearToDate from '@/helpers/monthAndYearToDate';
-import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
-import { relatórioOrçamentárioPlanosSetoriais as schema } from '@/consts/formSchemas';
+import { Field, Form, useIsFormDirty } from 'vee-validate';
+import { computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute();
 const alertStore = useAlertStore();
@@ -74,20 +74,24 @@ PlanosSetoriaisStore.buscarTudo();
     :initial-values="initialValues"
     @submit="onSubmit"
   >
+    <Field
+      name="parametros.tipo_pdm"
+      type="hidden"
+      :value="$route.meta.tipoPdmParaRelatorio"
+    />
+
     <div class="flex g2 mb2">
       <div class="f1">
-        <!--<label class="label">
-          <abbr title="Plano Setorial">Plano Setorial</abbr>
-          <span class="tvermelho">*</span>-->
         <label
-          for="pdm_id"
+          for="parametros.pdm_id"
           class="label"
-        >Plano Setorial
+        >{{ $route.meta.tituloSingular }}
           <span class="tvermelho">
             *
           </span>
         </label>
         <Field
+          id="parametros.pdm_id"
           name="parametros.pdm_id"
           as="select"
           class="inputtext light mb1"

@@ -58,14 +58,6 @@ const NovoRelatórioOrçamentárioPortfolioObras = defineAsyncComponent({
   loader: () => import('@/views/relatorios/NovoRelatorioOrcamentarioPortfolioObras.vue'),
   loadingComponent: LoadingComponent,
 });
-const NovoRelatórioDePrevisãoDeCustoPlanosSetoriais = defineAsyncComponent({
-  loader: () => import('@/views/relatorios/NovoRelatorioDePrevisaoDeCustoPlanosSetoriais.vue'),
-  loadingComponent: LoadingComponent,
-});
-const NovoRelatórioOrçamentárioPlanosSetoriais = defineAsyncComponent({
-  loader: () => import('@/views/relatorios/NovoRelatorioOrcamentarioPlanosSetoriais.vue'),
-  loadingComponent: LoadingComponent,
-});
 
 export default {
   path: '/relatorios',
@@ -89,6 +81,10 @@ export default {
       /// PlanoSetorial
       'planoSetorial.RelatóriosMensais',
       'planoSetorial.RelatóriosSemestraisOuAnuais',
+
+      /// ProgramaDeMetas
+      'programaDeMetas.RelatóriosMensais',
+      'programaDeMetas.RelatóriosSemestraisOuAnuais',
 
       /// Projetos
       'RelatóriosDeProjeto',
@@ -620,145 +616,6 @@ export default {
           meta: {
             título: 'Novo relatório orçamentário de portfólio de obras',
             rotaDeEscape: 'RelatóriosOrçamentáriosPortfolioObras',
-          },
-        },
-      ],
-    },
-
-    // ******** Planos Setoriais ******** //
-    {
-      path: 'ps/mensal',
-      component: () => import('@/views/relatorios/planosSetoriais/RelatoriosMensaisRaizPS.vue'),
-      meta: {
-        entidadeMãe: 'planoSetorial',
-        título: 'Relatórios Mensais',
-        títuloParaMenu: undefined,
-        limitarÀsPermissões: [
-          'Reports.executar.PlanoSetorial',
-          'Reports.executar.ProgramaDeMetas',
-        ],
-      },
-      children: [
-        {
-          path: '',
-          name: 'planoSetorial.RelatóriosMensais',
-          component: ListaDeRelatorios,
-          meta: {
-            fonteDoRelatorio: 'PSMonitoramentoMensal',
-            rotaNovoRelatorio: 'planoSetorial.novoRelatórioMensal',
-          },
-        },
-        {
-          component: () => import('@/views/relatorios/planosSetoriais/NovoMensalPS.vue'),
-          path: 'novo',
-          name: 'planoSetorial.novoRelatórioMensal',
-          meta: {
-            título: 'Novo relatório mensal',
-            rotaDeEscape: 'planoSetorial.RelatóriosMensais',
-            rotasParaMigalhasDePão: ['planoSetorial.RelatóriosMensais'],
-          },
-        },
-      ],
-    },
-
-    {
-      path: 'ps/semestral-ou-anual',
-      meta: {
-        entidadeMãe: 'planoSetorial',
-        título: 'Relatórios Semestrais e Anuais',
-        títuloParaMenu: undefined,
-        tituloSingular: 'Plano Setorial',
-        limitarÀsPermissões: [
-          'Reports.executar.PlanoSetorial',
-          'Reports.executar.ProgramaDeMetas',
-        ],
-      },
-
-      children: [
-        {
-          path: '',
-          name: 'planoSetorial.RelatóriosSemestraisOuAnuais',
-          component: ListaDeRelatorios,
-          meta: {
-            fonteDoRelatorio: 'PSIndicadores',
-            rotaNovoRelatorio: 'planoSetorial.novoRelatórioSemestralOuAnual',
-          },
-        },
-        {
-          path: 'novo',
-          name: 'planoSetorial.novoRelatórioSemestralOuAnual',
-          component: () => NovoSemestralOuAnual,
-          meta: {
-            título: 'Novo relatório semestral ou anual',
-            rotaDeEscape: 'planoSetorial.RelatóriosSemestraisOuAnuais',
-            rotasParaMigalhasDePão: ['planoSetorial.RelatóriosSemestraisOuAnuais'],
-          },
-        },
-      ],
-    },
-
-    {
-      path: 'previsao-de-custo-planos-setoriais',
-      meta: {
-        entidadeMãe: 'planoSetorial',
-        título: 'Relatórios de previsão de custo',
-        títuloParaMenu: undefined,
-        limitarÀsPermissões: [
-          'Reports.executar.PlanoSetorial',
-          'Reports.executar.ProgramaDeMetas',
-        ],
-      },
-      children: [
-        {
-          path: '',
-          name: 'RelatóriosDePrevisãoDeCustoPlanosSetoriais',
-          component: ListaDeRelatorios,
-          meta: {
-            fonteDoRelatorio: 'PSPrevisaoCusto',
-            rotaNovoRelatorio: 'novoRelatórioDePrevisãoDeCustoPlanosSetoriais',
-          },
-        },
-        {
-          path: 'novo',
-          name: 'novoRelatórioDePrevisãoDeCustoPlanosSetoriais',
-          component: NovoRelatórioDePrevisãoDeCustoPlanosSetoriais,
-          meta: {
-            rotaDeEscape: 'RelatóriosDePrevisãoDeCustoPlanosSetoriais',
-            título: 'Novo relatório de previsão de custo',
-            rotasParaMigalhasDePão: ['RelatóriosDePrevisãoDeCustoPlanosSetoriais'],
-          },
-        },
-      ],
-    },
-
-    {
-      path: 'orcamentarios-planos-setoriais',
-      meta: {
-        título: 'Relatórios orçamentários',
-        títuloParaMenu: undefined,
-        limitarÀsPermissões: [
-          'Reports.executar.PlanoSetorial',
-          'Reports.executar.ProgramaDeMetas',
-        ],
-      },
-      children: [
-        {
-          path: '',
-          name: 'RelatóriosOrçamentáriosPlanosSetoriais',
-          component: ListaDeRelatorios,
-          meta: {
-            fonteDoRelatorio: 'PSOrcamento',
-            rotaNovoRelatorio: 'novoRelatórioOrçamentárioPlanosSetoriais',
-          },
-        },
-        {
-          path: 'novo',
-          name: 'novoRelatórioOrçamentárioPlanosSetoriais',
-          component: NovoRelatórioOrçamentárioPlanosSetoriais,
-          meta: {
-            título: 'Novo relatório orçamentário',
-            rotaDeEscape: 'RelatóriosOrçamentáriosPlanosSetoriais',
-            rotasParaMigalhasDePão: ['RelatóriosOrçamentáriosPlanosSetoriais'],
           },
         },
       ],

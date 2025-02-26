@@ -95,13 +95,22 @@ if (!listaDePlanosDisponiveis.value.length) {
       type="hidden"
     />
 
+    <Field
+      name="parametros.tipo_pdm"
+      type="hidden"
+      :value="$route.meta.tipoPdmParaRelatorio"
+    />
+
     <div class="flex column g1 mb2">
       <div class="flex g2">
         <div class="f1">
-          <label class="label">
-            Plano Setorial&nbsp;<span class="tvermelho">*</span>
+          <label class="label"
+            for="parametros.plano_setorial_id"
+          >
+            {{ $route.meta.tituloSingular }}&nbsp;<span class="tvermelho">*</span>
           </label>
           <Field
+            id="parametros.plano_setorial_id"
             name="parametros.plano_setorial_id"
             as="select"
             class="inputtext light"

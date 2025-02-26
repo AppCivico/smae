@@ -1,13 +1,13 @@
 <script setup>
-import { computed } from 'vue';
-import { storeToRefs } from 'pinia';
-import { useRoute, useRouter } from 'vue-router';
-import { Field, Form, useIsFormDirty } from 'vee-validate';
-import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
-import truncate from '@/helpers/texto/truncate';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import { relatórioDePrevisãoDeCustoPlanosSetoriais as schema } from '@/consts/formSchemas';
+import truncate from '@/helpers/texto/truncate';
 import { useAlertStore } from '@/stores/alert.store';
+import { storeToRefs } from 'pinia';
+import { Field, Form, useIsFormDirty } from 'vee-validate';
+import { computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 // Mantendo comportamento legado
 // eslint-disable-next-line import/no-cycle
 import { usePdMStore } from '@/stores/pdm.store';
@@ -129,12 +129,21 @@ iniciar();
     :initial-values="initialValues"
     @submit="onSubmit"
   >
+    <Field
+      name="parametros.tipo_pdm"
+      type="hidden"
+      :value="$route.meta.tipoPdmParaRelatorio"
+    />
+
     <div class="flex g2 mb2">
       <div class="f1">
         <LabelFromYup
           name="pdm_id"
           :schema="schema.fields.parametros"
-        />
+        >
+          {{ $route.meta.tituloSingular }}
+          <span class="tvermelho">*</span>
+        </LabelFromYup>
         <Field
           v-model="initialValues.parametros.pdm_id"
           name="parametros.pdm_id"
