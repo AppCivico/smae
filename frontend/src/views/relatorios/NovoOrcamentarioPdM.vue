@@ -153,7 +153,7 @@ onMounted(() => {
           }"
           :disabled="PdMStore.PdM?.loading"
         >
-          <option>
+          <option :value="null">
             Selecionar
           </option>
           <option :value="true">

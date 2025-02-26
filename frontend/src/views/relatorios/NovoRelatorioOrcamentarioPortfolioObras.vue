@@ -149,7 +149,7 @@ portfolioObrasStore.buscarTudo();
           }"
           :disabled="loading"
         >
-          <option>
+          <option :value="null">
             Selecionar
           </option>
           <option :value="true">

@@ -383,7 +383,7 @@ ParlamentaresStore.buscarTudo({ ipp: 500, possui_mandatos: true });
           }"
           :disabled="ÓrgãosStore.organs?.loading"
         >
-          <option>
+          <option :value="null">
             Selecionar
           </option>
           <option :value="true">

@@ -163,7 +163,7 @@ PlanosSetoriaisStore.buscarTudo();
           }"
           :disabled="PlanosSetoriaisStore.PlanosSetoriais?.loading"
         >
-          <option>
+          <option :value="null">
             Selecionar
           </option>
           <option :value="true">

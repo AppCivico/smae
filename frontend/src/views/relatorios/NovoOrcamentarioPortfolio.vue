@@ -167,7 +167,7 @@ portfolioStore.buscarTudo();
           }"
           :disabled="portfolioStore.chamadasPendentes.lista"
         >
-          <option>
+          <option :value="null">
             Selecionar
           </option>
           <option :value="true">

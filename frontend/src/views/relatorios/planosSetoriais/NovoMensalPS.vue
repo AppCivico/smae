@@ -190,7 +190,7 @@ if (!listaDePlanosDisponiveis.value.length) {
             }"
             :disabled="chamadasPendentes.planosSimplificados"
           >
-            <option>
+            <option :value="null">
               Selecionar
             </option>
             <option :value="true">

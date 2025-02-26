@@ -125,7 +125,7 @@ iniciar();
           }"
           :disabled="portfolioObrasStore.chamadasPendentes.lista"
         >
-          <option>
+          <option :value="null">
             Selecionar
           </option>
           <option :value="true">
@@ -287,7 +287,7 @@ iniciar();
           }"
           :disabled="portfolioObrasStore.chamadasPendentes.lista"
         >
-          <option>
+          <option :value="null">
             Selecionar
           </option>
           <option :value="true">
