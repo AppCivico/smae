@@ -701,7 +701,7 @@ export default {
       path: 'previsao-de-custo-planos-setoriais',
       meta: {
         entidadeMãe: 'planoSetorial',
-        título: 'Relatórios de previsão de custo de Planos Setoriais',
+        título: 'Relatórios de previsão de custo',
         títuloParaMenu: undefined,
         limitarÀsPermissões: [
           'Reports.executar.PlanoSetorial',
@@ -724,7 +724,7 @@ export default {
           component: NovoRelatórioDePrevisãoDeCustoPlanosSetoriais,
           meta: {
             rotaDeEscape: 'RelatóriosDePrevisãoDeCustoPlanosSetoriais',
-            título: 'Novo relatório de previsão de custo de Planos Setoriais',
+            título: 'Novo relatório de previsão de custo',
             rotasParaMigalhasDePão: ['RelatóriosDePrevisãoDeCustoPlanosSetoriais'],
           },
         },
@@ -734,7 +734,7 @@ export default {
     {
       path: 'orcamentarios-planos-setoriais',
       meta: {
-        título: 'Relatórios orçamentários de Planos Setoriais',
+        título: 'Relatórios orçamentários',
         títuloParaMenu: undefined,
         limitarÀsPermissões: [
           'Reports.executar.PlanoSetorial',
@@ -756,7 +756,7 @@ export default {
           name: 'novoRelatórioOrçamentárioPlanosSetoriais',
           component: NovoRelatórioOrçamentárioPlanosSetoriais,
           meta: {
-            título: 'Novo relatório orçamentário de Planos Setoriais',
+            título: 'Novo relatório orçamentário',
             rotaDeEscape: 'RelatóriosOrçamentáriosPlanosSetoriais',
             rotasParaMigalhasDePão: ['RelatóriosOrçamentáriosPlanosSetoriais'],
           },
