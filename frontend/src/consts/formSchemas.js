@@ -1939,6 +1939,19 @@ export const parlamentar = object({
     ),
 });
 
+export const permissaoEdicaoOrcamento = object().shape({
+  execucao_disponivel_meses: array().label('Meses disponíveis'),
+  orcamento_config: array().of(object().shape({
+    ano_referencia: number(),
+    execucao_disponivel_meses: array().label('Meses disponíveis'),
+    execucao_disponivel: boolean().label('Execução orçamentaria'),
+    id: number(),
+    pdm_id: number(),
+    planejado_disponivel: boolean().label('Orçamento planejado'),
+    previsao_custo_disponivel: boolean().label('Previsão de custo'),
+  })),
+});
+
 export const pessoaNaEquipeDeParlamentar = object({
   email: string()
     .email()
@@ -2826,18 +2839,6 @@ export const relatórioDePrevisãoDeCustoPdM = relatorioValidacaoBase.concat(
   }),
 );
 
-export const permissaoEdicaoOrcamento = object().shape({
-  execucao_disponivel_meses: array().label('Meses disponíveis'),
-  orcamento_config: array().of(object().shape({
-    ano_referencia: number(),
-    execucao_disponivel_meses: array().label('Meses disnponíveis'),
-    execucao_disponivel: boolean().label('Execução orçamentaria'),
-    id: number(),
-    pdm_id: number(),
-    planejado_disponivel: boolean().label('Orçamento planejado'),
-    previsao_custo_disponivel: boolean().label('Previsão de custo'),
-  })),
-});
 export const relatórioDePrevisãoDeCustoPlanosSetoriais = relatorioValidacaoBase.concat(object()
   .shape({
     fonte: string()
