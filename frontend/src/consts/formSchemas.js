@@ -3218,7 +3218,9 @@ export const relatórioMensal = object({
       .label('Painéis')
       .nullable(),
   }),
-  salvar_arquivo: boolean(),
+  eh_publico: boolean()
+    .label('Relatório Público')
+    .required(),
 });
 
 export const relatórioMensalPS = object({

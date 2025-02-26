@@ -3,10 +3,16 @@ import AutocompleteField from '@/components/AutocompleteField2.vue';
 import { relatórioMensal as schema } from '@/consts/formSchemas';
 import months from '@/consts/months';
 import { useAlertStore } from '@/stores/alert.store';
+// Mantendo comportamento legado
+// eslint-disable-next-line import/no-cycle
 import { useMetasStore } from '@/stores/metas.store';
 import { usePaineisStore } from '@/stores/paineis.store';
+// Mantendo comportamento legado
+// eslint-disable-next-line import/no-cycle
 import { usePdMStore } from '@/stores/pdm.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
+// Mantendo comportamento legado
+// eslint-disable-next-line import/no-cycle
 import { useTagsStore } from '@/stores/tags.store';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
@@ -35,25 +41,17 @@ const initialValues = ref({
     tags: [],
     paineis: [],
   },
-  salvar_arquivo: false,
 });
 
 async function onSubmit(values) {
   const carga = values;
   try {
-    if (!carga.salvar_arquivo) {
-      carga.salvar_arquivo = false;
-    }
-
     const r = await relatoriosStore.insert(carga);
-    const msg = 'Dados salvos com sucesso!';
+    const msg = 'Relatório em processamento, acompanhe na tela de listagem';
 
     if (r === true) {
       alertStore.success(msg);
-
-      if (carga.salvar_arquivo && route.meta?.rotaDeEscape) {
-        router.push({ name: route.meta.rotaDeEscape });
-      }
+      router.push({ name: route.meta.rotaDeEscape });
     }
   } catch (error) {
     alertStore.error(error);
@@ -182,6 +180,34 @@ onMounted(async () => {
           {{ errors['parametros.ano'] }}
         </div>
       </div>
+      <div class="f1">
+        <LabelFromYup
+          name="eh_publico"
+          :schema="schema"
+          required
+        />
+        <Field
+          name="eh_publico"
+          as="select"
+          class="inputtext light"
+        >
+          <option>
+            Selecionar
+          </option>
+          <option :value="true">
+            Sim
+          </option>
+          <option :value="false">
+            Não
+          </option>
+        </Field>
+        <div
+          v-if="errors['eh_publico']"
+          class="error-msg"
+        >
+          {{ errors['eh_publico'] }}
+        </div>
+      </div>
     </div>
     <div class="mb2">
       <LabelFromYup
@@ -255,25 +281,6 @@ onMounted(async () => {
       </div>
     </div>
 
-    <hr>
-
-    <div class="mb2 mt2">
-      <div class="pl2">
-        <label class="block">
-          <Field
-            name="salvar_arquivo"
-            type="checkbox"
-            :value="true"
-            class="inputcheckbox"
-          />
-          <span :class="{ 'error': errors.salvar_arquivo }">Salvar relatório no sistema</span>
-        </label>
-      </div>
-      <div class="error-msg">
-        {{ errors.salvar_arquivo }}
-      </div>
-    </div>
-
     <div class="flex spacebetween center mb2">
       <hr class="mr2 f1">
       <button
@@ -282,7 +289,7 @@ onMounted(async () => {
         :disabled="loading ||
           isSubmitting"
       >
-        {{ values.salvar_arquivo ? "baixar e salvar" : "apenas baixar" }}
+        Criar relatório
       </button>
       <hr class="ml2 f1">
     </div>
