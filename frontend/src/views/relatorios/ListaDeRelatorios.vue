@@ -28,9 +28,9 @@ const fonte = computed(() => route.meta.fonteDoRelatorio);
 const temAlgumRelatorioEmProcessamento = computed(() => relatóriosStore
   .lista.some((relatorio) => !relatorio.arquivo && !relatorio.processamento.err_msg));
 
-async function carregarRelatorios() {
+function carregarRelatorios() {
   if (abaVisivel) {
-    await relatóriosStore.getAll({ fonte: fonte.value });
+    relatóriosStore.getAll({ fonte: fonte.value });
   }
 }
 
