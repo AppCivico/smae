@@ -287,6 +287,17 @@ export class PdmService {
             if (tipo == '_PDM') {
                 this.logger.log(`Chamando monta_ciclos_pdm...`);
                 await prismaTx.$queryRaw`select monta_ciclos_pdm(${pdm.id}::int, false)`;
+            } else {
+                await prismaTx.pdmCicloConfig.create({
+                    data: {
+                        pdm_id: pdm.id,
+                        data_fim: dto.data_fim,
+                        data_inicio: dto.data_inicio,
+                        meses: [],
+                    },
+                });
+                // não chama a função de iniciar os ciclos? se chamar já vai preparar os ciclos e não deixar
+                // o usuário mudar o inicio/fim
             }
 
             return pdm;
