@@ -800,40 +800,44 @@ export class PainelEstrategicoService {
         body: AnyPageTokenJwtBody;
     }> {
         const quantidade_rows = (await this.prisma.$queryRawUnsafe(`select
-                                   count(*)::int
-                               from
-                                   (select
-                                        pr.id,
-                                        pr.orgao_responsavel_id
-                                    from projeto pr
-                                    where   pr.removido_em is null
-                                      and pr.arquivado = false
-                                      and pr.tipo = 'PP'
-                                     ${portifolio_filter}
-                                    union
-                                    select
-                                        p.id,
-                                        p.orgao_responsavel_id
-                                    from projeto p,
-                                         portfolio_projeto_compartilhado pp
-                                    where pp.projeto_id = p.id
-                                      and pp.removido_em is null
-                                      and p.removido_em is null
-                                      and p.arquivado = false
-                                      and p.tipo = 'PP'
-                                      ${portifolio_filter2}) p
-                                       inner join (select vp.nome,
-                                                          vp.id                          as projeto_id,
-                                                          sum(orcr.soma_valor_empenho)   as soma_valor_empenho,
-                                                          sum(orcr.soma_valor_liquidado) as soma_valor_liquidado
-                                                   from orcamento_realizado orcr
-                                                            left join view_projetos vp on orcr.projeto_id = vp.id
-                                                            inner join projeto p on p.id = vp.id
-                                                   where p.tipo = 'PP'
-                                                     and p.removido_em is null
-                                                     and orcr.removido_em is null
-                                                   group by vp.nome, vp.id) orc on orc.projeto_id = p.id
-                                                   ${whereFilter}`)) as any;
+            count(*)::int
+        from
+            (select
+                 pr.id,
+                 pr.orgao_responsavel_id
+             from projeto pr
+             where   pr.removido_em is null
+               and pr.arquivado = false
+               and pr.tipo = 'PP'
+              ${portifolio_filter}
+             union
+             select
+                 p.id,
+                 p.orgao_responsavel_id
+             from projeto p,
+                  portfolio_projeto_compartilhado pp
+             where pp.projeto_id = p.id
+               and pp.removido_em is null
+               and p.removido_em is null
+               and p.arquivado = false
+               and p.tipo = 'PP'
+               ${portifolio_filter2}) p
+                LEFT JOIN ( -- Changed from INNER JOIN to LEFT JOIN
+                 select
+                     vp.nome,
+                     vp.id as projeto_id,
+                     COALESCE(sum(orcr.soma_valor_empenho), 0) as soma_valor_empenho,
+                     COALESCE(sum(orcr.soma_valor_liquidado), 0) as soma_valor_liquidado
+                 from orcamento_realizado orcr
+                 left join view_projetos vp on orcr.projeto_id = vp.id
+                 inner join projeto p on p.id = vp.id
+                 where p.tipo = 'PP'
+                     and p.removido_em is null
+                     and orcr.removido_em is null
+                 group by vp.nome, vp.id
+             ) orc on orc.projeto_id = p.id
+            ${whereFilter}`)) as any;
+
         const body = {
             search_hash: Object2Hash(filter),
             ipp: ipp!,
