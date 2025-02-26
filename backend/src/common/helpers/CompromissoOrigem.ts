@@ -26,15 +26,26 @@ export class CompromissoOrigemHelper {
 
         // Remove duplicados e self-relations
         const uniqueOrigens = origens.reduce((acc, current) => {
-            const isDuplicate = acc.some(
-                (item) =>
-                    (item.atividade_id && item.atividade_id === current.atividade_id) ||
-                    (item.iniciativa_id && item.iniciativa_id === current.iniciativa_id) ||
-                    (item.meta_id && item.meta_id === current.meta_id)
-            );
+            const isDuplicate = acc.some((item) => {
+                // Apenas considera duplicado se for a mesma entidade
+                return (
+                    (item.atividade_id !== null &&
+                        current.atividade_id !== null &&
+                        item.atividade_id === current.atividade_id) ||
+                    (item.iniciativa_id !== null &&
+                        current.iniciativa_id !== null &&
+                        item.iniciativa_id === current.iniciativa_id) ||
+                    (item.meta_id !== null && current.meta_id !== null && item.meta_id === current.meta_id)
+                );
+            });
+
+            // Apenas considera self-reference se for apenas apontando exatamente pro mesmo nivel
             const isSelfRelation =
-                (entityType === 'meta' && current.meta_id === entityId) ||
-                (entityType === 'iniciativa' && current.iniciativa_id === entityId) ||
+                (entityType === 'meta' &&
+                    current.meta_id === entityId &&
+                    !current.iniciativa_id &&
+                    !current.atividade_id) ||
+                (entityType === 'iniciativa' && current.iniciativa_id === entityId && !current.atividade_id) ||
                 (entityType === 'atividade' && current.atividade_id === entityId);
 
             if (!isDuplicate && !isSelfRelation) {
@@ -164,6 +175,8 @@ export class CompromissoOrigemHelper {
                 throw new HttpException(`origem_tipo ${origem_tipo} não é suportado`, 500);
             }
 
+            console.log('after vla', dto);
+
             dto.meta_id = meta_id;
             dto.iniciativa_id = iniciativa_id;
             dto.atividade_id = atividade_id;
@@ -228,6 +241,8 @@ export class CompromissoOrigemHelper {
 
                 dto.iniciativa_id = dto.atividade_id = null;
             }
+
+            console.log(dto);
 
             if (dto.origem_outro)
                 throw new HttpException('origem_outro| Não deve ser enviado caso origem_tipo seja PdmSistema', 400);
