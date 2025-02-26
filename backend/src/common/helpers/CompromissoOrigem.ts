@@ -252,7 +252,7 @@ export class CompromissoOrigemHelper {
             projeto: 'Projeto',
             meta: 'Meta',
             iniciativa: 'Iniciativa',
-            atividade: 'Meta',
+            atividade: 'Atividade',
         };
         return map[entityType];
     }
