@@ -5,7 +5,11 @@ import { IndicadoresService } from '../indicadores/indicadores.service';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
 import { DefaultCsvOptions, FileOutput, ReportableService, UtilsService } from '../utils/utils.service';
 import { CreatePsMonitoramentoMensalFilterDto } from './dto/create-ps-monitoramento-mensal-filter.dto';
-import { RelPsMonitoramentoMensalVariaveis, RelPsMonitRetorno } from './entities/ps-monitoramento-mensal.entity';
+import {
+    RelPSMonitoramentoMensalCicloMetasDto,
+    RelPsMonitoramentoMensalVariaveis,
+    RelPsMonitRetorno,
+} from './entities/ps-monitoramento-mensal.entity';
 
 const {
     Parser,
@@ -34,8 +38,13 @@ export class PSMonitoramentoMensal implements ReportableService {
             },
             user
         );
+
+        // Query para extrair dados de arquivo de metas do ciclo.
+        const ciclo_metas = await this.buscaMetasCiclo(params, user);
+
         return {
             monitoramento: monitoramento,
+            ciclo_metas: ciclo_metas,
             ...indicadores,
         };
     }
@@ -52,6 +61,7 @@ export class PSMonitoramentoMensal implements ReportableService {
         const { metas } = await this.utils.applyFilter(
             {
                 ...params,
+                tipo_pdm: 'PS',
                 pdm_id: params.pdm_id ?? params.plano_setorial_id,
             },
             { iniciativas: false, atividades: false },
@@ -149,10 +159,18 @@ export class PSMonitoramentoMensal implements ReportableService {
                             sv.data_valor + periodicidade_intervalo(v.periodicidade) as data_proximo_ciclo,
                             coalesce(nullif(vgcaP.informacoes_complementares,''), ${case_when_lib}) as analise_qualitativa_coleta,
                             coalesce(nullif(vgcaV.informacoes_complementares,''), ${case_when_lib}) as analise_qualitativa_aprovador,
-                            coalesce(nullif(vgcaL.informacoes_complementares,''), ${case_when_lib}) as analise_qualitativa_liberador
+                            coalesce(nullif(vgcaL.informacoes_complementares,''), ${case_when_lib}) as analise_qualitativa_liberador,
+                            v.orgao_proprietario_id,
+                            variavel_orgao_proprietario.sigla as orgao_proprietario_sigla,
+                            v.medicao_orgao_id as orgao_coleta_id,
+                            variavel_orgao_coleta.sigla as orgao_coleta_sigla,
+                            vgcal_cp.nome_exibicao as analise_qualitativa_pessoa,
+                            pessoa_conferencia.nome_exibicao as analise_qualitativa_conferencia_pessoa
                     FROM view_variaveis_pdm vvp
                     INNER JOIN indicador i ON vvp.indicador_id = i.id
                     INNER JOIN variavel v ON v.id = vvp.variavel_id :listar_variaveis_regionalizadas
+                    LEFT JOIN orgao variavel_orgao_proprietario ON variavel_orgao_proprietario.id = v.orgao_proprietario_id
+                    LEFT JOIN orgao variavel_orgao_coleta ON variavel_orgao_coleta.id = v.medicao_orgao_id
                     LEFT JOIN regiao r ON v.regiao_id = r.id
                     INNER JOIN serie_variavel sv ON sv.variavel_id = v.id and sv.data_valor = :mesAno ::date
                         AND conferida = ${conferida}::boolean
@@ -176,7 +194,7 @@ export class PSMonitoramentoMensal implements ReportableService {
                         and vgcaL.aprovada = true
                     LEFT JOIN pessoa vgcal_cp ON vgcaL.criado_por = vgcal_cp.id
                     LEFT JOIN variavel_categorica_valor vcv ON vcv.id = sv.variavel_categorica_valor_id
-
+                    LEFT JOIN pessoa pessoa_conferencia ON vgcaV.criado_por = pessoa_conferencia.id
                    where i.removido_em is null
                         and v.removido_em is null
                         and vvp.meta_id IN (:metas)`;
@@ -192,6 +210,70 @@ export class PSMonitoramentoMensal implements ReportableService {
         const linhasVariaveis = (await this.prisma.$queryRawUnsafe(sql)) as any;
 
         return linhasVariaveis as RelPsMonitoramentoMensalVariaveis[];
+    }
+
+    // TODO: aprimorar/otimizar parte de filtros para não repetir código.
+    private async buscaMetasCiclo(
+        params: CreatePsMonitoramentoMensalFilterDto,
+        user: PessoaFromJwt | null
+    ): Promise<RelPSMonitoramentoMensalCicloMetasDto[]> {
+        if (!params.plano_setorial_id) params.plano_setorial_id = undefined;
+        if (!params.pdm_id) params.pdm_id = undefined;
+
+        if (!params.pdm_id && !params.plano_setorial_id) throw new BadRequestException('Informe o parâmetro pdm_id');
+
+        const { metas } = await this.utils.applyFilter(
+            {
+                ...params,
+                pdm_id: params.pdm_id ?? params.plano_setorial_id,
+                tipo_pdm: 'PS',
+            },
+            { iniciativas: true, atividades: true },
+            user
+        );
+        const metasArr = metas.map((r) => r.id);
+        if (metasArr.length > 10000)
+            throw new BadRequestException('Mais de 10000 indicadores encontrados, por favor refine a busca.');
+
+        const paramMesAno = params.ano + '-' + params.mes + '-01';
+
+        // Query para extrair dados de arquivo de metas do ciclo.
+        // retorno deve ser no modelo RelPSMonitoramentoMensalCicloMetasDto
+        // os dados principais vem da tabela ciclo_fisico, e será feito join com as tables meta_ciclo_fisico_analise e meta_ciclo_fisico_risco
+        // para trazer informações adicionais.
+        const sql = `select
+                m.id as meta_id,
+                m.codigo as meta_codigo,
+                i.id as iniciativa_id,
+                i.codigo as iniciativa_codigo,
+                a.id as atividade_id,
+                a.codigo as atividade_codigo,
+                coalesce(mcf.informacoes_complementares,'') as analise_qualitativa,
+                mcf.referencia_data as analise_qualitativa_data,
+                coalesce(mcr.detalhamento,'') as risco_detalhamento,
+                coalesce(mcr.ponto_de_atencao,'') as risco_ponto_atencao,
+                coalesce(mcfec.comentario,'') as fechamento_comentario
+            from ciclo_fisico cf
+            left join meta m on m.ciclo_fisico_id = cf.id and m.removido_em is null
+            left join iniciativa i on i.meta_id = m.id and i.removido_em is null
+            left join atividade a on a.iniciativa_id = i.id and a.removido_em is null
+            left join meta_ciclo_fisico_analise mcf on mcf.ciclo_fisico_id = cf.id and mcf.removido_em is null and mcf.ultima_revisao = true
+            left join meta_ciclo_fisico_risco mcr on mcr.ciclo_fisico_id = cf.id and mcr.removido_em is null and mcr.ultima_revisao = true
+            left join meta_ciclo_fisico_fechamento mcfec on mcfec.ciclo_fisico_id = cf.id and mcfec.removido_em is null and mcfec.ultima_revisao = true
+            where m.id in (:metas)
+            and cf.pdm_id = :pdm_id
+            and mcf.referencia_data = :mesAno ::date
+            and mcr.referencia_data = :mesAno ::date
+            and mcfec.referencia_data = :mesAno ::date`;
+
+        // Fazendo replace de :metas, :mesAno e :pdm_id
+        const sqlMetas = sql
+            .replace(':metas', metasArr.length ? metasArr.toString() : '0')
+            .replace(/:mesAno/g, "'" + paramMesAno + "'")
+            .replace(':pdm_id', params.pdm_id!.toString());
+
+        const linhasMetas = (await this.prisma.$queryRawUnsafe(sqlMetas)) as any;
+        return linhasMetas as RelPSMonitoramentoMensalCicloMetasDto[];
     }
 
     //TODO implementar paginação para evitar memory overflow
