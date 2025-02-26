@@ -1594,21 +1594,18 @@ export class MetaService {
                                 ? {
                                       rel_meta_id: dto.meta_id,
                                       relacionamento: 'Meta',
-                                      NOT: { meta_id: dto.meta_id },
                                   }
                                 : {},
                             dto.iniciativa_id
                                 ? {
                                       rel_iniciativa_id: dto.iniciativa_id,
                                       relacionamento: 'Iniciativa',
-                                      NOT: { iniciativa_id: dto.iniciativa_id },
                                   }
                                 : {},
                             dto.atividade_id
                                 ? {
                                       rel_atividade_id: dto.atividade_id,
                                       relacionamento: 'Atividade',
-                                      NOT: { atividade_id: dto.atividade_id },
                                   }
                                 : {},
                         ],

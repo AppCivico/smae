@@ -1,4 +1,6 @@
-import { defineStore } from 'pinia';
+import consolidarDiretorios from '@/helpers/consolidarDiretorios';
+import dateTimeToDate from '@/helpers/dateTimeToDate';
+import simplificadorDeOrigem from '@/helpers/simplificadorDeOrigem';
 import { PaginatedWithPagesDto } from '@back/common/dto/paginated.dto';
 import type {
   DadosCodTituloMetaDto,
@@ -17,10 +19,8 @@ import type {
   ProjetoProxyPdmMetaDto,
 } from '@back/pp/projeto/entities/projeto.proxy-pdm-meta.entity';
 import type { DiretorioItemDto } from '@back/upload/dto/diretorio.dto';
-import dateTimeToDate from '@/helpers/dateTimeToDate';
+import { defineStore } from 'pinia';
 import mapIniciativas from './helpers/mapIniciativas';
-import consolidarDiretorios from '@/helpers/consolidarDiretorios';
-import simplificadorDeOrigem from '@/helpers/simplificadorDeOrigem';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -403,8 +403,11 @@ export const useProjetosStore = defineStore('projetos', {
       equipe: emFoco?.equipe.map((x) => x.pessoa.id) || [],
       fonte_recursos: emFoco?.fonte_recursos || null,
       geolocalizacao: emFoco?.geolocalizacao?.map((x) => x.token) || [],
+      grupo_portfolio: emFoco?.grupo_portfolio?.map((x) => x.id) || null,
       meta_codigo: emFoco?.meta_codigo || '',
       orgao_gestor_id: emFoco?.orgao_gestor?.id || null,
+      orgaos_participantes: emFoco?.orgaos_participantes?.map((x) => x.id) || null,
+      orgao_responsavel_id: emFoco?.orgao_responsavel?.id || null,
       origem_outro: emFoco?.origem_outro || '',
       origens_extra: Array.isArray(emFoco?.origens_extra)
         ? emFoco.origens_extra.map((origem) => simplificadorDeOrigem(origem, { origem_tipo: 'PdmSistema' }))
@@ -420,8 +423,6 @@ export const useProjetosStore = defineStore('projetos', {
       regiao_id: emFoco?.regiao?.id || null,
       responsavel_id: emFoco?.responsavel?.id || null,
       resumo: emFoco?.resumo || '',
-      orgaos_participantes: emFoco?.orgaos_participantes?.map((x) => x.id) || null,
-      orgao_responsavel_id: emFoco?.orgao_responsavel?.id || null,
       // eslint-disable-next-line max-len
       responsaveis_no_orgao_gestor: emFoco?.responsaveis_no_orgao_gestor?.map((x) => x.id) || null,
     }),

@@ -347,6 +347,7 @@ export const useParlamentaresStore = defineStore('parlamentaresStore', {
             representatividade = mandato.representatividade
               .find((y) => Number(representatividadeId) === y.id);
             if (representatividade) {
+              representatividade.mandato_id = mandato.id || 0;
               representatividade.mandato = {
                 tipo: mandato.eleicao?.tipo,
                 ano: mandato.eleicao?.ano,
