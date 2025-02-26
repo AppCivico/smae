@@ -858,9 +858,32 @@ model Pdm {
     PdmPerfil                          PdmPerfil[]
     Diretorio                          Diretorio[]
     view_pdm_meta_iniciativa_atividade view_pdm_meta_iniciativa_atividade[]
+    PdmCiloConfig                      PdmCicloConfig[]
 
     @@index([ativo])
     @@map("pdm")
+}
+
+model PdmCicloConfig {
+    id Int @id @default(autoincrement())
+
+    meses       Int[]     @default([])
+    data_inicio DateTime? @db.Date()
+    data_fim    DateTime? @db.Date()
+
+    pdm_id Int
+    pdm    Pdm @relation(fields: [pdm_id], references: [id])
+
+    ultima_revisao Boolean?
+
+    criado_por   Int?
+    removido_por Int?
+
+    criado_em   DateTime  @default(now()) @db.Timestamptz(6)
+    removido_em DateTime? @db.Timestamptz(6)
+
+    @@unique([pdm_id, ultima_revisao])
+    @@map("pdm_ciclo_config")
 }
 
 enum PdmPerfilTipo {
@@ -2592,6 +2615,11 @@ model CicloFasesPdmConfig {
     @@map("ciclo_fases_pdm_config")
 }
 
+enum TipoCicloFisico {
+    PDM
+    CicloConfig
+}
+
 // ciclos após abertura
 model CicloFisico {
     id Int @id @default(autoincrement())
@@ -2602,6 +2630,8 @@ model CicloFisico {
     ciclo_fase_atual_id Int?
     CicloFaseAtual      CicloFisicoFase? @relation("atual", fields: [ciclo_fase_atual_id], references: [id])
     ativo               Boolean          @default(false)
+
+    tipo TipoCicloFisico @default(PDM)
 
     acordar_ciclo_em                      DateTime?
     acordar_ciclo_errmsg                  String?
@@ -2627,6 +2657,7 @@ model CicloFisico {
     // create unique index ix_ciclo_fisico_uniq_ativo on ciclo_fisico(ativo) where ativo=true;
     // existe mais um index aqui, que não está no prisma que não suporta partial index
 
+    @@unique([pdm_id, data_ciclo])
     @@index([pdm_id])
     @@index([data_ciclo])
     @@map("ciclo_fisico")

@@ -25,7 +25,7 @@ import { SubTemaService } from '../subtema/subtema.service';
 import { TagService } from '../tag/tag.service';
 import { TemaService } from '../tema/tema.service';
 import { CreatePdmDocumentDto, UpdatePdmDocumentDto } from './dto/create-pdm-document.dto';
-import { CreatePdmDto } from './dto/create-pdm.dto';
+import { CreatePdmDto, UpdatePdmCicloConfigDto } from './dto/create-pdm.dto';
 import { DetalhePSDto, DetalhePdmDto } from './dto/detalhe-pdm.dto';
 import { FilterPdmDetailDto, FilterPdmDto } from './dto/filter-pdm.dto';
 import { CicloFisicoDto, ListPdmDto, OrcamentoConfig } from './dto/list-pdm.dto';
@@ -200,7 +200,10 @@ export class PlanoSetorialController {
     static readonly WritePerms: ListaDePrivilegios[] = PermsPS;
     static readonly OrcamentoWritePerms: ListaDePrivilegios[] = PermsPS;
 
-    constructor(private readonly pdmService: PdmService) {}
+    constructor(
+        private readonly pdmService: PdmService,
+        private readonly pdmCicloService: PdmCicloService
+    ) {}
 
     @Post()
     @ApiBearerAuth('access-token')
@@ -280,6 +283,19 @@ export class PlanoSetorialController {
             pdm: pdm as PlanoSetorialDto,
             orcamento_config: await this.pdmService.getOrcamentoConfig(tipo, +params.id),
         } satisfies DetalhePSDto;
+    }
+
+    @Patch(':id/ciclo-config')
+    @ApiBearerAuth('access-token')
+    @Roles([...PlanoSetorialController.WritePerms])
+    async updateCicloConfig(
+        @Param() params: FindOneParams,
+        @Body() dto: UpdatePdmCicloConfigDto,
+        @CurrentUser() user: PessoaFromJwt,
+        @TipoPDM() tipo: TipoPdmType
+    ): Promise<RecordWithId> {
+        await this.pdmService.getDetail(tipo, +params.id, user, 'ReadWrite', false);
+        return await this.pdmCicloService.updateCicloConfig(tipo, +params.id, dto, user);
     }
 
     @Patch(':id/orcamento-config')
