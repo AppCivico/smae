@@ -21,7 +21,6 @@ const route = useRoute();
 
 const PdMStore = usePdMStore();
 const alertStore = useAlertStore();
-const formularioSujo = useIsFormDirty();
 
 const { singlePdm } = storeToRefs(PdMStore);
 
@@ -35,8 +34,9 @@ const initialValues = computed(() => ({
 
 const { handleSubmit, resetForm } = useForm({
   validationSchema: schema,
-  initialValues: initialValues.value,
 });
+
+const formularioSujo = useIsFormDirty();
 
 async function iniciar() {
   await PdMStore.getById(route.params.pdm_id);
