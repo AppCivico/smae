@@ -93,7 +93,7 @@ onMounted(async () => {
     <CheckClose />
   </div>
   <Form
-    v-slot="{ errors, isSubmitting, values }"
+    v-slot="{ errors, isSubmitting, resetField, values }"
     :validation-schema="schema"
     :initial-values="initialValues"
     @submit="onSubmit"
@@ -114,6 +114,7 @@ onMounted(async () => {
             error: errors['parametros.pdm_id']
           }"
           :disabled="loading"
+          @update:model-value="resetField('parametros.tags', { value: [] })"
         >
           <option value="">
             Selecionar

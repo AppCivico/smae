@@ -85,7 +85,7 @@ if (!listaDePlanosDisponiveis.value.length) {
   </header>
 
   <Form
-    v-slot="{ errors, isSubmitting, values }"
+    v-slot="{ errors, isSubmitting, resetField, values }"
     :validation-schema="schema"
     :initial-values="initialValues"
     @submit="onSubmit"
@@ -110,6 +110,10 @@ if (!listaDePlanosDisponiveis.value.length) {
               error: errors['parametros.plano_setorial_id']
             }"
             :disabled="loading"
+            @update:model-value="() => {
+              resetField('parametros.metas', { value: [] });
+              resetField('parametros.tags', { value: [] });
+            }"
           >
             <option value="">
               Selecionar
@@ -226,6 +230,7 @@ if (!listaDePlanosDisponiveis.value.length) {
 
       <ErrorMessage name="parametros.listar_variaveis_regionalizadas" />
     </div>
+
     <div class="mb2">
       <LabelFromYup
         name="meta"

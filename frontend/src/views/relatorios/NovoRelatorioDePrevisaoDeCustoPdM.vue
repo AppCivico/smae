@@ -116,7 +116,7 @@ iniciar();
     <CheckClose />
   </div>
   <Form
-    v-slot="{ errors, isSubmitting, setFieldValue, values }"
+    v-slot="{ errors, isSubmitting, resetField, setFieldValue, values }"
     :validation-schema="schema"
     :initial-values="initialValues"
     @submit="onSubmit"
@@ -135,6 +135,7 @@ iniciar();
             mb1"
           :class="{ 'error': errors['parametros.pdm_id'] }"
           :disabled="loading"
+          @update:model-value="resetField('parametros.tags', { value: [] })"
         >
           <option value="">
             Selecionar
