@@ -496,6 +496,15 @@ export class PdmCicloService {
         if (dto.meses.length > 0 && !dto.data_inicio)
             throw new Error('Data de início é obrigatória quando há meses configurados');
 
+        const countExistentes = await this.prisma.cicloFisico.count({
+            where: {
+                pdm_id: pdmId,
+                tipo: 'PDM',
+            },
+        });
+        if (countExistentes > 0)
+            throw new Error('Já existe um ciclo físico do tipo antigo para este Programa de Metas');
+
         const now = new Date();
         return await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             await prismaTx.pdmCicloConfig.updateMany({
