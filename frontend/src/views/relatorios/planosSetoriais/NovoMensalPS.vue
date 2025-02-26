@@ -1,22 +1,22 @@
 <script setup>
-import { ref } from 'vue';
-import { storeToRefs } from 'pinia';
-import { useRoute, useRouter } from 'vue-router';
-import {
-  ErrorMessage, Field, Form, useIsFormDirty,
-} from 'vee-validate';
-import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import { useAlertStore } from '@/stores/alert.store';
 import { usePlanosSimplificadosStore } from '@/stores/planosMetasSimplificados.store';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store.ts';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage, Field, Form, useIsFormDirty,
+} from 'vee-validate';
+import { ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 // Mantendo comportamento legado
 // eslint-disable-next-line import/no-cycle
-import { useTagsStore } from '@/stores/tags.store';
 import { relatórioMensalPS as schema } from '@/consts/formSchemas';
 import months from '@/consts/months';
 import nulificadorTotal from '@/helpers/nulificadorTotal';
+import { useTagsStore } from '@/stores/tags.store';
 
 const route = useRoute();
 const router = useRouter();
@@ -115,7 +115,7 @@ if (!listaDePlanosDisponiveis.value.length) {
               resetField('parametros.tags', { value: [] });
             }"
           >
-            <option value="">
+            <option :value="null">
               Selecionar
             </option>
             <option
