@@ -123,69 +123,113 @@ iniciar();
 
   <div class="boards">
     <template v-if="singleIniciativa.id">
-      <div class="flex g2 mb2">
-        <div class="mr2 f1">
-          <div class="t12 uc w700 mb05 tamarelo">
-            Órgãos Responsáveis
+      <!-- Se for PDM antigo -->
+      <div v-if="route.meta.entidadeMãe === 'pdm'">
+        <div class="flex g2">
+          <div
+            v-if="EquipesStore.equipesPorIds(singleIniciativa.ps_ponto_focal.equipes).length"
+            class="mr2"
+          >
+            <div class="t12 uc w700 mb05 tamarelo">
+              Equipes Responsáveis
+            </div>
+            <div class="t13">
+              {{ combinadorDeListas(
+                EquipesStore.equipesPorIds(singleIniciativa.ps_ponto_focal.equipes),
+                false,
+                'titulo',
+              ) }}
+            </div>
           </div>
-          <div class="t13">
-            {{
-              combinadorDeListas(
-                orgaoIniciativa = EquipesStore.equipesPorIds(singleIniciativa.ps_ponto_focal.equipes).reduce((amount, item) => {
-                  amount.push(item.orgao.sigla + " - " + item.orgao.descricao);
-                  return amount;
-                }, []))
-            }}     
-          </div>
-        </div>
-        <div class="mr2 f1">
-          <div class="t12 uc w700 mb05 tamarelo">
-            Órgãos Monitoramento
-          </div>
-          <div class="t13">
-            {{
-              combinadorDeListas(
-                orgaoIniciativa = EquipesStore.equipesPorIds(singleIniciativa.ps_tecnico_cp.equipes).reduce((amount, item) => {
-                  amount.push(item.orgao.sigla + " - " + item.orgao.descricao);
-                  return amount;
-                }, []))
-            }}     
-          </div>
-        </div>
-      </div>
-      <div class="flex g2 mb2">
-        <div
-          v-if="EquipesStore.equipesPorIds(singleIniciativa.ps_ponto_focal.equipes).length"
-          class="mr2 f1"
-        >
-          <div class="t12 uc w700 mb05 tamarelo">
-            Equipes Responsáveis
-          </div>
-          <div class="t13">
-            {{ combinadorDeListas(
-              EquipesStore.equipesPorIds(singleIniciativa.ps_ponto_focal.equipes),
-              false,
-              'titulo',
-            ) }}
-          </div>
-        </div>
 
-        <div
-          v-if="EquipesStore.equipesPorIds(singleIniciativa.ps_tecnico_cp.equipes).length"
-          class="mr2 f1"
-        >
-          <div class="t12 uc w700 mb05 tamarelo">
-            Equipe técnica de monitoramento
-          </div>
-          <div class="t13">
-            {{ combinadorDeListas(
-              EquipesStore.equipesPorIds(singleIniciativa.ps_tecnico_cp.equipes),
-              false,
-              'titulo',
-            ) }}
+          <div
+            v-if="EquipesStore.equipesPorIds(singleIniciativa.ps_tecnico_cp.equipes).length"
+            class="mr2"
+          >
+            <div class="t12 uc w700 mb05 tamarelo">
+              Equipe técnica do administrador do plano
+            </div>
+            <div class="t13">
+              {{ combinadorDeListas(
+                EquipesStore.equipesPorIds(singleIniciativa.ps_tecnico_cp.equipes),
+                false,
+                'titulo',
+              ) }}
+            </div>
           </div>
         </div>
       </div>
+      <!-- Fim do se for PDM antigo -->
+      <!-- Se for PDM novo -->
+      <div v-else>
+        <!-- Órgãos -->
+        <div class="flex g2 mb2">
+          <div class="mr2 f1">
+            <div class="t12 uc w700 mb05 tamarelo">
+              Órgãos Responsáveis
+            </div>
+            <div class="t13">
+              {{
+                combinadorDeListas(
+                  orgaoIniciativa = EquipesStore.equipesPorIds(singleIniciativa.ps_ponto_focal.equipes).reduce((amount, item) => {
+                    amount.push(item.orgao.sigla + " - " + item.orgao.descricao);
+                    return amount;
+                  }, []))
+              }}     
+            </div>
+          </div>
+          <div class="mr2 f1">
+            <div class="t12 uc w700 mb05 tamarelo">
+              Órgãos Monitoramento
+            </div>
+            <div class="t13">
+              {{
+                combinadorDeListas(
+                  orgaoIniciativa = EquipesStore.equipesPorIds(singleIniciativa.ps_tecnico_cp.equipes).reduce((amount, item) => {
+                    amount.push(item.orgao.sigla + " - " + item.orgao.descricao);
+                    return amount;
+                  }, []))
+              }}     
+            </div>
+          </div>
+        </div>
+        <!-- Fim de órgãos -->
+        <!-- Equipes -->
+        <div class="flex g2 mb2">
+          <div
+            v-if="EquipesStore.equipesPorIds(singleIniciativa.ps_ponto_focal.equipes).length"
+            class="mr2 f1"
+          >
+            <div class="t12 uc w700 mb05 tamarelo">
+              Equipes Responsáveis
+            </div>
+            <div class="t13">
+              {{ combinadorDeListas(
+                EquipesStore.equipesPorIds(singleIniciativa.ps_ponto_focal.equipes),
+                false,
+                'titulo',
+              ) }}
+            </div>
+          </div>
+          <div
+            v-if="EquipesStore.equipesPorIds(singleIniciativa.ps_tecnico_cp.equipes).length"
+            class="mr2 f1"
+          >
+            <div class="t12 uc w700 mb05 tamarelo">
+              Equipe técnica de monitoramento
+            </div>
+            <div class="t13">
+              {{ combinadorDeListas(
+                EquipesStore.equipesPorIds(singleIniciativa.ps_tecnico_cp.equipes),
+                false,
+                'titulo',
+              ) }}
+            </div>
+          </div>
+        </div>
+        <!-- Fim de equipes -->
+      </div>
+      <!-- Fim do se for PDM novo -->
 
       <div
         v-if="singleIniciativa?.tags.length"
