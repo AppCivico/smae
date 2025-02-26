@@ -54,7 +54,6 @@ export class CompromissoOrigemHelper {
                 return acc;
             }
         }, [] as UpsertOrigemDto[]);
-
         const updated = uniqueOrigens
             .filter((o) => o.id !== undefined)
             .filter((oNew) => {
@@ -175,8 +174,6 @@ export class CompromissoOrigemHelper {
                 throw new HttpException(`origem_tipo ${origem_tipo} não é suportado`, 500);
             }
 
-            console.log('after vla', dto);
-
             dto.meta_id = meta_id;
             dto.iniciativa_id = iniciativa_id;
             dto.atividade_id = atividade_id;
@@ -241,8 +238,6 @@ export class CompromissoOrigemHelper {
 
                 dto.iniciativa_id = dto.atividade_id = null;
             }
-
-            console.log(dto);
 
             if (dto.origem_outro)
                 throw new HttpException('origem_outro| Não deve ser enviado caso origem_tipo seja PdmSistema', 400);
