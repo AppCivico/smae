@@ -87,19 +87,6 @@ export const useMetasStore = defineStore({
         return false;
       }
     },
-    async getRelacionados(params) {
-      try {
-        if (params.meta_id && params.pdm_id) {
-          const response = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta)}/relacionados/`, params);
-          this.relacionadosMeta = response;
-          return true;
-        }
-        throw new Error('ID da meta ou do PdM não fornecido.');
-      } catch (error) {
-        this.relacionadosMeta = { error };
-        return false;
-      }
-    },
     async getById(id) {
       try {
         this.singleMeta = { loading: true };
