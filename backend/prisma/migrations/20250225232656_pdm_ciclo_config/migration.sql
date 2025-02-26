@@ -10,6 +10,15 @@ CREATE TYPE "TipoCicloFisico" AS ENUM ('PDM', 'CicloConfig');
 -- AlterTable
 ALTER TABLE "ciclo_fisico" ADD COLUMN     "tipo" "TipoCicloFisico" NOT NULL DEFAULT 'PDM';
 
+ALTER TABLE "pdm" ADD COLUMN     "sistema" "ModuloSistema" NOT NULL DEFAULT 'SMAE';
+
+update pdm set sistema = 'PDM' where tipo = 'PDM';
+update pdm set sistema = 'PlanoSetorial' where tipo = 'PS';
+
+update pdm set sistema = 'ProgramaDeMetas' where tipo = 'PDM' and id  >= (
+    select min(id) from pdm where tipo = 'PS'
+);
+
 -- CreateTable
 CREATE TABLE "pdm_ciclo_config" (
     "id" SERIAL NOT NULL,

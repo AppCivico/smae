@@ -20,7 +20,6 @@ import {
 import { DateTransform } from '../../auth/transforms/date.transform';
 import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
 import { IdTituloDto } from '../../common/dto/IdTitulo.dto';
-import { IsDateYMD } from '../../auth/decorators/date.decorator';
 
 export class CreatePSEquipeAdminCPDto {
     /**
@@ -85,7 +84,37 @@ export class RetornoPSEquipePontoFocalDto {
     equipes: number[] | IdTituloDto[];
 }
 
-export class CreatePdmDto {
+export class UpdatePdmCicloConfigDto {
+    /**
+     * Meses em que os ciclos devem ser abertos (1-12)
+     * @example [1, 3, 6, 9]
+     */
+    @IsOptional()
+    @IsArray()
+    @IsInt({ each: true })
+    @Min(1, { each: true })
+    @Max(12, { each: true })
+    meses?: number[];
+
+    /**
+     * Data de inicio
+     * @example YYYY-MM-DD
+     */
+    @IsOptional()
+    @IsOnlyDate()
+    @Transform(DateTransform)
+    data_inicio?: Date | null;
+    /**
+     * Data de fim
+     * @example YYYY-MM-DD
+     */
+    @IsOptional()
+    @IsOnlyDate()
+    @Transform(DateTransform)
+    data_fim?: Date | null;
+}
+
+export class CreatePdmDto extends UpdatePdmCicloConfigDto {
     /**
      * Nome
      */
@@ -116,24 +145,6 @@ export class CreatePdmDto {
     @IsString({ message: 'equipe técnica: Precisa ser alfanumérico' })
     @MaxLength(2500, { message: 'equipe técnica: Máximo 2500 caracteres' })
     equipe_tecnica: string | null;
-
-    /**
-     * Data de inicio
-     * @example YYYY-MM-DD
-     */
-    @IsOptional()
-    @IsOnlyDate()
-    @Transform(DateTransform)
-    data_inicio: Date | null;
-
-    /**
-     * Data de fim
-     * @example YYYY-MM-DD
-     */
-    @IsOptional()
-    @IsOnlyDate()
-    @Transform(DateTransform)
-    data_fim: Date | null;
 
     /**
      * Data de publicação
@@ -342,31 +353,3 @@ export class CreatePdmDto {
     @Min(1, { each: true, message: 'ID precisa ser maior que 0' })
     pdm_anteriores?: number[];
 }
-
-export class UpdatePdmCicloConfigDto {
-    /**
-     * Meses em que os ciclos devem ser abertos (1-12)
-     * @example [1, 3, 6, 9]
-     */
-    @IsArray()
-    @IsInt({ each: true })
-    @Min(1, { each: true })
-    @Max(12, { each: true })
-    meses: number[];
-
-    /**
-     * Data de início para geração dos ciclos
-     * @example "2023-01-01"
-     */
-    @IsOptional()
-    @IsDateYMD()
-    data_inicio?: Date;
-
-    /**
-     * Data de fim para geração dos ciclos
-     * @example "2025-12-31"
-     */
-    @IsOptional()
-    @IsDateYMD()
-    data_fim?: Date;
-  }
