@@ -48,7 +48,6 @@ if (!lista.length) {
 
   <LocalFilter
     v-model="listaFiltradaPorTermoDeBusca"
-    class="mb2"
     :lista="lista"
   />
 
@@ -57,7 +56,7 @@ if (!lista.length) {
     aria-labelledby="titulo-da-pagina"
     tabindex="0"
   >
-    <table class="tablemain">
+    <table class="tablemain mt2">
       <col>
       <col>
       <col>
