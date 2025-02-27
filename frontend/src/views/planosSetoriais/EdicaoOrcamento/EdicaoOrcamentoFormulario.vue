@@ -3,7 +3,7 @@ import {
   ErrorMessage,
   Field, FieldArray, useForm, useIsFormDirty,
 } from 'vee-validate';
-import { toRef } from 'vue';
+import { onMounted, toRef } from 'vue';
 import CheckClose from '@/components/CheckClose.vue';
 import LabelFromYup from '@/components/LabelFromYup.vue';
 import TituloDaPagina from '@/components/TituloDaPagina.vue';
@@ -15,7 +15,7 @@ const mesesDisponíveis = months.map((x, i) => ({ nome: x, id: i + 1 }));
 const camposSelecaoConfig = ['previsao_custo_disponivel', 'planejado_disponivel', 'execucao_disponivel'];
 
 type Props = {
-  orcamentoConfig: Record<string, unknown>
+  orcamentoConfig: any
 };
 type Emits = {
   submit: [Record<string, unknown>]
@@ -25,17 +25,22 @@ const emits = defineEmits<Emits>();
 
 const orcamentoConfig = toRef(props.orcamentoConfig);
 
-const { handleSubmit } = useForm({
+const { handleSubmit, resetForm, meta } = useForm({
   validationSchema: schema,
-  initialValues: {
-    orcamento_config: orcamentoConfig.value,
-  },
 });
 
 const formularioSujo = useIsFormDirty();
 
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   emits('submit', valoresControlados);
+});
+
+onMounted(() => {
+  resetForm({
+    values: {
+      orcamento_config: orcamentoConfig.value,
+    },
+  });
 });
 </script>
 
