@@ -116,13 +116,14 @@ iniciar();
 <template>
   <MigalhasDePao class="mb1" />
 
-  <div class="flex spacebetween center mb2">
+  <header class="flex spacebetween center mb2">
     <TituloDaPagina />
 
     <hr class="ml2 f1">
 
     <CheckClose :formulario-sujo="formularioSujo" />
-  </div>
+  </header>
+
   <Form
     v-slot="{ errors, isSubmitting, resetField, setFieldValue, values }"
     :validation-schema="schema"

@@ -59,14 +59,13 @@ PlanosSetoriaisStore.buscarTudo();
 
 <template>
   <MigalhasDePao class="mb1" />
-
-  <div class="flex spacebetween center mb2">
+  <header class="flex spacebetween center mb2">
     <TituloDaPagina />
 
     <hr class="ml2 f1">
 
     <CheckClose :formulario-sujo="formularioSujo" />
-  </div>
+  </header>
 
   <Form
     v-slot="{ errors, isSubmitting }"
@@ -211,6 +210,8 @@ PlanosSetoriaisStore.buscarTudo();
         {{ errors['parametros.tipo'] }}
       </div>
     </div>
+
+    <FormErrorsList :errors="errors" />
 
     <div class="flex spacebetween center mb2">
       <hr class="mr2 f1">
