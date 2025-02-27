@@ -77,6 +77,7 @@
               v-for="coluna in colunas"
               :key="`linha--${linhaIndex}-${coluna.chave}`"
               class="smae-table__cell"
+              :formatador="coluna.formatador"
               :linha="linha"
               :caminho="coluna.chave"
             >
@@ -172,6 +173,8 @@ type Props =
     dados: Linhas
     replicarCabecalho?: boolean
     rolagemHorizontal?: boolean
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    formatador?: Function
     personalizarLinhas?: {
       parametro: string,
       alvo: unknown,
