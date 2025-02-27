@@ -41,6 +41,7 @@ export class PdmDto {
     pode_editar: boolean;
     tipo: TipoPdm;
     sistema: ModuloSistema;
+    meses: number[]
 }
 
 export class PlanoSetorialAnteriorDto {
