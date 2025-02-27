@@ -80,37 +80,39 @@ iniciar();
     <template v-if="singleAtividade.id">
       <!-- Se for PDM antigo -->
       <div v-if="route.meta.entidadeMãe === 'pdm'">
-        <div class="flex g2">
-          <div class="mr2">
-          </div>
-          <div
-            v-if="EquipesStore.equipesPorIds(singleAtividade.ps_ponto_focal.equipes).length"
-            class="mr2"
-          >
+        <div class="flex g2 mb2">
+          <div class="mr1 f0">
             <div class="t12 uc w700 mb05 tamarelo">
-              Equipes responsáveis
+              Órgão responsável
             </div>
             <div class="t13">
-              {{ combinadorDeListas(
-                EquipesStore.equipesPorIds(singleAtividade.ps_ponto_focal.equipes),
-                false,
-                'titulo',
-              ) }}
+              {{ singleAtividade.orgaos_participantes.filter((x) =>
+                x.responsavel).map(x => x.orgao.descricao).join(', ') }}
+            </div>
+          </div>              
+          <div
+            v-if="singleAtividade.orgaos_participantes.filter(x => !x.responsavel).length"
+            class="f1"
+          >
+            <div class="t12 uc w700 mb05 tamarelo">
+              Órgão participante
+            </div>
+            <div class="t13">
+              {{
+                singleAtividade.orgaos_participantes
+                  .filter(x => !x.responsavel).map(x => x.orgao.descricao).join(', ')
+              }}
             </div>
           </div>
           <div
-            v-if="EquipesStore.equipesPorIds(singleAtividade.ps_tecnico_cp.equipes).length"
-            class="mr2"
+            v-if="singleAtividade.coordenadores_cp"
+            class="f1"
           >
             <div class="t12 uc w700 mb05 tamarelo">
-              Equipe técnica de monitoramento
+              Responsável na coordenadoria de planejamento
             </div>
             <div class="t13">
-              {{ combinadorDeListas(
-                EquipesStore.equipesPorIds(singleAtividade.ps_tecnico_cp.equipes),
-                false,
-                'titulo',
-              ) }}
+              {{ singleAtividade.coordenadores_cp.map(x => x.nome_exibicao).join(', ') }}
             </div>
           </div>
         </div>
