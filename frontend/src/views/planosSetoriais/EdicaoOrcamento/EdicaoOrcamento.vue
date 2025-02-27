@@ -37,8 +37,7 @@ async function handleEnviarDados(valoresControlados) {
 <template>
   <div class="edicao-orcamento">
     <EdicaoOrcamentoFormulario
-      v-if="emFoco"
-      :orcamento-config="emFoco.orcamento_config"
+      :orcamento-config="emFoco?.orcamento_config"
       @submit="handleEnviarDados"
     />
   </div>
