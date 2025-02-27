@@ -64,7 +64,7 @@ export class MfListAnaliseQualitativaDto {
     arquivos: ArquivoAnaliseQualitativaDocumentoDto[];
 }
 
-export class AnaliseQualitativaDto {
+export class CreateAnaliseQualitativaDto {
     @IsInt()
     @Transform(({ value }: any) => +value)
     ciclo_fisico_id: number;

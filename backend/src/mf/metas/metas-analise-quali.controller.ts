@@ -8,7 +8,7 @@ import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { MfService } from '../mf.service';
 import {
     AnaliseQualitativaDocumentoDto,
-    AnaliseQualitativaDto,
+    CreateAnaliseQualitativaDto,
     FilterAnaliseQualitativaDto,
     MfListAnaliseQualitativaDto,
 } from './../metas/dto/mf-meta-analise-quali.dto';
@@ -82,7 +82,7 @@ export class MetasAnaliseQualiController {
         schema: { allOf: refs(RecordWithId, RequestInfoDto) },
     })
     async AddMetaAnaliseQualitativa(
-        @Body() dto: AnaliseQualitativaDto,
+        @Body() dto: CreateAnaliseQualitativaDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId & RequestInfoDto> {
         const start = Date.now();
