@@ -328,7 +328,7 @@ export class PSMonitoramentoMensal implements ReportableService {
         const indicadores = await this.indicadoresService.toFileOutput(
             {
                 ...params,
-                pdm_id: params.plano_setorial_id,
+                pdm_id: params.pdm_id,
                 tipo_pdm: 'PS',
                 periodo: 'Geral',
                 tipo: 'Mensal',
