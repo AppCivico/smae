@@ -388,7 +388,53 @@ iniciar();
                 <!-- Fim cabeçalho -->
                 <!-- Se for PDM antigo -->
                 <div v-if="route.meta.entidadeMãe === 'pdm'">
+                  
+                  
+                  
+                  
+                  
                   <div class="flex g2 mb2">
+                    <div class="mr1 f0">
+                      <div class="t12 uc w700 mb05 tc300">
+                        Órgão responsável
+                      </div>
+                      <div class="t13">
+                        {{ ini.orgaos_participantes.filter((x) =>
+                          x.responsavel).map(x => x.orgao.descricao).join(', ') }}
+                      </div>
+                    </div>
+              
+                    <div
+                      v-if="ini.orgaos_participantes.filter(x => !x.responsavel).length"
+                      class="f1"
+                    >
+                      <div class="t12 uc w700 mb05 tc300">
+                        Órgão participante
+                      </div>
+                      <div class="t13">
+                        {{
+                          ini.orgaos_participantes
+                            .filter(x => !x.responsavel).map(x => x.orgao.descricao).join(', ')
+                        }}
+                      </div>
+                    </div>
+                    <div
+                      v-if="ini.coordenadores_cp"
+                      class="f1"
+                    >
+                      <div class="t12 uc w700 mb05 tc300">
+                        Responsável na coordenadoria de planejamento
+                      </div>
+                      <div class="t13">
+                        {{ ini.coordenadores_cp.map(x => x.nome_exibicao).join(', ') }}
+                      </div>
+                    </div>
+                  </div>
+
+
+
+
+<!--
                     <div class="mr1 f1">
                       <div class="t12 uc w700 mb05 tc300">
                         Equipe do órgão responsável
@@ -420,6 +466,10 @@ iniciar();
                       </div>
                     </div>
                   </div>
+
+-->
+
+
                 </div>
                 <!-- Fim do se for PDM antigo -->
                 <!-- Se for PDM novo -->
