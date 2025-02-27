@@ -124,7 +124,6 @@ iniciar();
   <div class="boards">
     <template v-if="singleIniciativa.id">
       <!-- Se for PDM antigo -->
-<<<<<<< HEAD
       <div v-if="route.meta.entidadeMãe === 'pdm'">    
         <div class="flex g2">
           <div class="mr2">
@@ -228,32 +227,6 @@ iniciar();
           >
             <div class="t12 uc w700 mb05 tamarelo">
               Equipe técnica de monitoramento
-=======
-      <div v-if="route.meta.entidadeMãe === 'pdm'">
-        <div class="flex g2">
-          <div
-            v-if="EquipesStore.equipesPorIds(singleIniciativa.ps_ponto_focal.equipes).length"
-            class="mr2"
-          >
-            <div class="t12 uc w700 mb05 tamarelo">
-              Equipes Responsáveis
-            </div>
-            <div class="t13">
-              {{ combinadorDeListas(
-                EquipesStore.equipesPorIds(singleIniciativa.ps_ponto_focal.equipes),
-                false,
-                'titulo',
-              ) }}
-            </div>
-          </div>
-
-          <div
-            v-if="EquipesStore.equipesPorIds(singleIniciativa.ps_tecnico_cp.equipes).length"
-            class="mr2"
-          >
-            <div class="t12 uc w700 mb05 tamarelo">
-              Equipe técnica do administrador do plano
->>>>>>> homol
             </div>
             <div class="t13">
               {{ combinadorDeListas(
@@ -474,34 +447,9 @@ iniciar();
                   </div>
                 </div>
                 <!-- Fim de equipes -->
-<<<<<<< HEAD
               </div>
               <!-- Fim do se for PDM novo -->
           </header>
-=======
-
-
-      </div>
-      <!-- Fim do se for PDM novo -->
-
-            </header>
-          </div>
-        </template>
-
-        <div
-          v-if="Atividades[iniciativaId]?.loading"
-          class="board_vazio"
-        >
-          <div class="tc">
-            <div class="p1">
-              <span>Carregando</span> <svg
-                class="ml1 ib"
-                width="20"
-                height="20"
-              ><use xlink:href="#i_spin" /></svg>
-            </div>
-          </div>
->>>>>>> homol
         </div>
       </template>
 

@@ -387,13 +387,7 @@ iniciar();
                 </div>
                 <!-- Fim cabeçalho -->
                 <!-- Se for PDM antigo -->
-                <div v-if="route.meta.entidadeMãe === 'pdm'">
-<<<<<<< HEAD
-                  
-                  
-                  
-                  
-                  
+                <div v-if="route.meta.entidadeMãe === 'pdm'">        
                   <div class="flex g2 mb2">
                     <div class="mr1 f0">
                       <div class="t12 uc w700 mb05 tc300">
@@ -431,64 +425,6 @@ iniciar();
                       </div>
                     </div>
                   </div>
-
-
-
-
-<!--
-                    <div class="mr1 f1">
-                      <div class="t12 uc w700 mb05 tc300">
-                        Equipe do órgão responsável
-                      </div>
-                      <div class="t13">
-                        {{
-                          ini.ps_ponto_focal.equipes.length === 0
-                            ? '-' :
-                              combinadorDeListas(
-                                EquipesStore.equipesPorIds(ini.ps_ponto_focal.equipes),
-                                false,
-                                'titulo',
-                              ) }}
-                      </div>
-                    </div>
-=======
-                  <div class="flex g2 mb2">
-                    <div class="mr1 f1">
-                      <div class="t12 uc w700 mb05 tc300">
-                        Equipe do órgão responsável
-                      </div>
-                      <div class="t13">
-                        {{
-                          ini.ps_ponto_focal.equipes.length === 0
-                            ? '-' :
-                              combinadorDeListas(
-                                EquipesStore.equipesPorIds(ini.ps_ponto_focal.equipes),
-                                false,
-                                'titulo',
-                              ) }}
-                      </div>
-                    </div>
->>>>>>> homol
-                    <div class="f1">
-                      <div class="t12 uc w700 mb05 tc300">
-                        Equipe técnica responsável
-                      </div>
-                      <div class="t13">
-                        {{
-                          ini.ps_tecnico_cp.equipes.length === 0
-                            ? '-' :
-                              combinadorDeListas(
-                                EquipesStore.equipesPorIds(ini.ps_tecnico_cp.equipes),
-                                false,
-                                'titulo',
-                              ) }}
-                      </div>
-                    </div>
-                  </div>
-
--->
-
-
                 </div>
                 <!-- Fim do se for PDM antigo -->
                 <!-- Se for PDM novo -->
