@@ -454,6 +454,7 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
         path: 'relatorios',
         meta: {
           tipoPdmParaRelatorio: parametrosPagina.tipoPdmParaRelatorio,
+          limitarÀsPermissões: parametrosPagina.privilegiosParaRelatorio,
         },
         children: [
           {
@@ -462,7 +463,7 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
             meta: {
               título: 'Relatórios Mensais',
               títuloParaMenu: undefined,
-              limitarÀsPermissões: parametrosPagina.privilegiosParaRelatorio,
+              fonteDoRelatorio: 'PSMonitoramentoMensal',
             },
             children: [
               {
@@ -470,7 +471,6 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
                 name: `${entidadeMãe}.RelatóriosMensais`,
                 component: ListaDeRelatorios,
                 meta: {
-                  fonteDoRelatorio: 'PSMonitoramentoMensal',
                   rotaNovoRelatorio: `${entidadeMãe}.novoRelatórioMensal`,
                 },
               },
@@ -492,7 +492,7 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
             meta: {
               título: 'Relatórios Semestrais e Anuais',
               títuloParaMenu: undefined,
-              limitarÀsPermissões: parametrosPagina.privilegiosParaRelatorio,
+              fonteDoRelatorio: 'PSIndicadores',
             },
 
             children: [
@@ -501,7 +501,6 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
                 name: `${entidadeMãe}.RelatóriosSemestraisOuAnuais`,
                 component: ListaDeRelatorios,
                 meta: {
-                  fonteDoRelatorio: 'PSIndicadores',
                   rotaNovoRelatorio: `${entidadeMãe}.novoRelatórioSemestralOuAnual`,
                 },
               },
@@ -523,26 +522,27 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
             meta: {
               título: 'Relatórios de previsão de custo',
               títuloParaMenu: undefined,
-              limitarÀsPermissões: parametrosPagina.privilegiosParaRelatorio,
+              fonteDoRelatorio: 'PSPrevisaoCusto',
             },
             children: [
               {
                 path: '',
-                name: 'RelatóriosDePrevisãoDeCustoPlanosSetoriais',
+                name: `${entidadeMãe}.RelatóriosDePrevisãoDeCustoPlanosSetoriais`,
                 component: ListaDeRelatorios,
                 meta: {
-                  fonteDoRelatorio: 'PSPrevisaoCusto',
-                  rotaNovoRelatorio: 'novoRelatórioDePrevisãoDeCustoPlanosSetoriais',
+                  rotaNovoRelatorio: `${entidadeMãe}.novoRelatórioDePrevisãoDeCustoPlanosSetoriais`,
                 },
               },
               {
                 path: 'novo',
-                name: 'novoRelatórioDePrevisãoDeCustoPlanosSetoriais',
+                name: `${entidadeMãe}.novoRelatórioDePrevisãoDeCustoPlanosSetoriais`,
                 component: () => import('@/views/relatorios/NovoRelatorioDePrevisaoDeCustoPlanosSetoriais.vue'),
                 meta: {
-                  rotaDeEscape: 'RelatóriosDePrevisãoDeCustoPlanosSetoriais',
+                  rotaDeEscape: `${entidadeMãe}.RelatóriosDePrevisãoDeCustoPlanosSetoriais`,
                   título: 'Novo relatório de previsão de custo',
-                  rotasParaMigalhasDePão: ['RelatóriosDePrevisãoDeCustoPlanosSetoriais'],
+                  rotasParaMigalhasDePão: [
+                    `${entidadeMãe}.RelatóriosDePrevisãoDeCustoPlanosSetoriais`,
+                  ],
                 },
               },
             ],
@@ -553,29 +553,27 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
             meta: {
               título: 'Relatórios orçamentários',
               títuloParaMenu: undefined,
-              limitarÀsPermissões: [
-                'Reports.executar.PlanoSetorial',
-                'Reports.executar.ProgramaDeMetas',
-              ],
+              fonteDoRelatorio: 'PSOrcamento',
             },
             children: [
               {
                 path: '',
-                name: 'RelatóriosOrçamentáriosPlanosSetoriais',
+                name: `${entidadeMãe}.RelatóriosOrçamentáriosPlanosSetoriais`,
                 component: ListaDeRelatorios,
                 meta: {
-                  fonteDoRelatorio: 'PSOrcamento',
-                  rotaNovoRelatorio: 'novoRelatórioOrçamentárioPlanosSetoriais',
+                  rotaNovoRelatorio: `${entidadeMãe}.novoRelatórioOrçamentárioPlanosSetoriais`,
                 },
               },
               {
                 path: 'novo',
-                name: 'novoRelatórioOrçamentárioPlanosSetoriais',
+                name: `${entidadeMãe}.novoRelatórioOrçamentárioPlanosSetoriais`,
                 component: () => import('@/views/relatorios/NovoRelatorioOrcamentarioPlanosSetoriais.vue'),
                 meta: {
                   título: 'Novo relatório orçamentário',
-                  rotaDeEscape: 'RelatóriosOrçamentáriosPlanosSetoriais',
-                  rotasParaMigalhasDePão: ['RelatóriosOrçamentáriosPlanosSetoriais'],
+                  rotaDeEscape: `${entidadeMãe}.RelatóriosOrçamentáriosPlanosSetoriais`,
+                  rotasParaMigalhasDePão: [
+                    `${entidadeMãe}.RelatóriosOrçamentáriosPlanosSetoriais`,
+                  ],
                 },
               },
             ],

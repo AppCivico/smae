@@ -81,10 +81,14 @@ export default {
       /// PlanoSetorial
       'planoSetorial.RelatóriosMensais',
       'planoSetorial.RelatóriosSemestraisOuAnuais',
+      'planoSetorial.RelatóriosDePrevisãoDeCustoPlanosSetoriais',
+      'planoSetorial.RelatóriosOrçamentáriosPlanosSetoriais',
 
       /// ProgramaDeMetas
       'programaDeMetas.RelatóriosMensais',
       'programaDeMetas.RelatóriosSemestraisOuAnuais',
+      'programaDeMetas.RelatóriosDePrevisãoDeCustoPlanosSetoriais',
+      'programaDeMetas.RelatóriosOrçamentáriosPlanosSetoriais',
 
       /// Projetos
       'RelatóriosDeProjeto',
@@ -104,10 +108,6 @@ export default {
       'RelatóriosDeStatusObras',
       'RelatóriosDePrevisãoDeCustoPortfolioObras',
       'RelatóriosOrçamentáriosPortfolioObras',
-
-      // Planos Setoriais
-      'RelatóriosDePrevisãoDeCustoPlanosSetoriais',
-      'RelatóriosOrçamentáriosPlanosSetoriais',
     ],
   },
 
@@ -154,6 +154,7 @@ export default {
         título: 'Relatórios Semestrais e Anuais',
         títuloParaMenu: 'Relatório Semestral/Anual',
         limitarÀsPermissões: 'Reports.executar.PDM',
+        fonteDoRelatorio: 'Indicadores',
       },
       children: [
         {
@@ -161,7 +162,6 @@ export default {
           name: 'pdm.RelatóriosSemestraisOuAnuais',
           component: ListaDeRelatorios,
           meta: {
-            fonteDoRelatorio: 'Indicadores',
             rotaNovoRelatorio: 'pdm.novoRelatórioSemestralOuAnual',
           },
         },
