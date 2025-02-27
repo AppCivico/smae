@@ -49,4 +49,4 @@ import { MfDashMetasService } from './dash/metas.service';
     ],
     exports: [MetasAnaliseQualiService, MetasRiscoService, MetasFechamentoService, MetasService],
 })
-export class MetasModule {}
+export class MonitMetasModule {}

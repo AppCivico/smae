@@ -2,6 +2,7 @@ import { Transform, Type } from 'class-transformer';
 import { IsBoolean, IsInt, IsNumber, IsOptional } from 'class-validator';
 import { DateTransform } from '../../auth/transforms/date.transform';
 import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
+import { NumberTransform } from '../../auth/transforms/number.transform';
 
 export class UpdatePdmCicloDto {
     /**
@@ -64,4 +65,16 @@ export class FilterPdmCiclo {
     @IsInt()
     @Type(() => Number)
     ano?: number;
+}
+
+export class FilterPsCiclo extends FilterPdmCiclo {
+    @IsOptional()
+    @IsInt()
+    meta_id?: number;
+}
+
+export class FilterMonitCicloDto {
+    @IsInt()
+    @Transform(NumberTransform)
+    meta_id: number;
 }

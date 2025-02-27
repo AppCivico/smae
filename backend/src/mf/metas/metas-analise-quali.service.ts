@@ -7,7 +7,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { UploadService } from '../../upload/upload.service';
 import {
     AnaliseQualitativaDocumentoDto,
-    AnaliseQualitativaDto,
+    CreateAnaliseQualitativaDto,
     FilterAnaliseQualitativaDto,
     MfListAnaliseQualitativaDto,
 } from './../metas/dto/mf-meta-analise-quali.dto';
@@ -199,7 +199,7 @@ export class MetasAnaliseQualiService {
                 removido_em: null,
             },
         });
-        if (!arquivo) throw new HttpException('404', 404);
+        if (!arquivo) throw new HttpException('Documento não encontrado ou já removido', 404);
         const now = new Date(Date.now());
 
         const performWrite = async (prismaTx: Prisma.TransactionClient): Promise<void> => {
@@ -226,7 +226,7 @@ export class MetasAnaliseQualiService {
     }
 
     async addMetaAnaliseQualitativa(
-        dto: AnaliseQualitativaDto,
+        dto: CreateAnaliseQualitativaDto,
         config: PessoaAcessoPdm,
         user: PessoaFromJwt,
         prismaCtx?: Prisma.TransactionClient | undefined
@@ -239,7 +239,7 @@ export class MetasAnaliseQualiService {
     }
 
     async addMetaAnaliseQualitativaInterno(
-        dto: AnaliseQualitativaDto,
+        dto: CreateAnaliseQualitativaDto,
         user: PessoaFromJwt,
         prismaCtx?: Prisma.TransactionClient | undefined
     ): Promise<RecordWithId> {
