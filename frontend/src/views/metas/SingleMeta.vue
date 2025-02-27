@@ -324,7 +324,6 @@ iniciar();
               class="board_variavel mb2"
             >
               <header class="p1 ge mb1">
-                <!-- Cabeçalho -->
                 <div class="flex center g2 mb1">
                   <SmaeLink
                     :to="`${parentlink}/iniciativas/${ini.id}`"
@@ -385,8 +384,6 @@ iniciar();
                     </button>
                   </div>
                 </div>
-                <!-- Fim cabeçalho -->
-                <!-- Se for PDM antigo -->
                 <div v-if="route.meta.entidadeMãe === 'pdm'">        
                   <div class="flex g2 mb2">
                     <div class="mr1 f0">
@@ -426,12 +423,8 @@ iniciar();
                     </div>
                   </div>
                 </div>
-                <!-- Fim do se for PDM antigo -->
-                <!-- Se for PDM novo -->
                 <div v-else>
-                  <!-- Órgãos-->
                   <div class="flex g2 mb2">
-                    <!-- Responsável -->
                     <div class="mr2 f1">
                       <div class="t12 uc w700 mb05 tc300">
                         Órgãos Responsáveis
@@ -446,7 +439,6 @@ iniciar();
                         }}     
                       </div>
                     </div>
-                    <!-- Monitoramento -->
                     <div class="mr2 f1">
                       <div class="t12 uc w700 mb05 tc300">
                         Órgãos Monitoramento
@@ -462,10 +454,7 @@ iniciar();
                       </div>
                     </div>
                   </div>
-                  <!-- Fim órgãos -->
-                  <!-- Equipes -->
                   <div class="flex g2 mb2">
-                    <!-- Responsável -->
                     <div class="mr2 f1">
                       <div class="t12 uc w700 mb05 tc300">
                         Equipe do órgão responsável
@@ -481,7 +470,6 @@ iniciar();
                               ) }}
                       </div>
                     </div>
-                    <!-- Técnica -->
                     <div class="mr2 f1">
                       <div class="t12 uc w700 mb05 tc300">
                         Equipe técnica monitoramento
@@ -498,9 +486,7 @@ iniciar();
                       </div>
                     </div>
                   </div>
-                  <!-- Fim de equipes -->
                 </div>
-                <!-- Fim do se for PDM novo -->
               </header>
             </div>
           </template>
