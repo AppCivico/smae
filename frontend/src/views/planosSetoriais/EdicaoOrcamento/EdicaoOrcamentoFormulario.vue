@@ -1,9 +1,9 @@
 <script setup lang="ts">
+import { watch } from 'vue';
 import {
   ErrorMessage,
   Field, FieldArray, useForm, useIsFormDirty,
 } from 'vee-validate';
-import { onMounted, toRef } from 'vue';
 import CheckClose from '@/components/CheckClose.vue';
 import LabelFromYup from '@/components/LabelFromYup.vue';
 import TituloDaPagina from '@/components/TituloDaPagina.vue';
@@ -23,9 +23,7 @@ type Emits = {
 const props = defineProps<Props>();
 const emits = defineEmits<Emits>();
 
-const orcamentoConfig = toRef(props.orcamentoConfig);
-
-const { handleSubmit, resetForm, meta } = useForm({
+const { handleSubmit, resetForm } = useForm({
   validationSchema: schema,
 });
 
@@ -35,13 +33,13 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   emits('submit', valoresControlados);
 });
 
-onMounted(() => {
+watch(() => props.orcamentoConfig, () => {
   resetForm({
     values: {
-      orcamento_config: orcamentoConfig.value,
+      orcamento_config: props.orcamentoConfig,
     },
   });
-});
+}, { immediate: true });
 </script>
 
 <template>

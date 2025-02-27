@@ -217,7 +217,7 @@ export const usePlanosSetoriaisStore = (prefixo: string) => defineStore(prefixo 
       this.chamadasPendentes.arvoreDeMetas = false;
     },
 
-    async atualizarPermissoesOrcamento(id: number, params: Record<string, unknown>) {
+    async atualizarPermissoesOrcamento(id: number, params: Record<string, unknown>): Promise<void> {
       await this.requestS.patch(`${baseUrl}/plano-setorial/${id}/orcamento-config`, params);
     },
   },
