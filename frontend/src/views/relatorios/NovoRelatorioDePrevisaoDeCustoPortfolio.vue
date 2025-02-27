@@ -190,7 +190,7 @@ iniciar();
           }"
           :disabled="projetosStore.chamadasPendentes.lista"
         >
-          <option>
+          <option :value="null">
             Selecionar
           </option>
           <option :value="true">

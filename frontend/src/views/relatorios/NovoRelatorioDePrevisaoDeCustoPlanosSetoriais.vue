@@ -1,17 +1,23 @@
 <script setup>
-import { computed } from 'vue';
-import { storeToRefs } from 'pinia';
-import { useRoute, useRouter } from 'vue-router';
-import { Field, Form, useIsFormDirty } from 'vee-validate';
-import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
-import truncate from '@/helpers/texto/truncate';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import { relatórioDePrevisãoDeCustoPlanosSetoriais as schema } from '@/consts/formSchemas';
+import truncate from '@/helpers/texto/truncate';
 import { useAlertStore } from '@/stores/alert.store';
+import { storeToRefs } from 'pinia';
+import { Field, Form, useIsFormDirty } from 'vee-validate';
+import { computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+// Mantendo comportamento legado
+// eslint-disable-next-line import/no-cycle
 import { usePdMStore } from '@/stores/pdm.store';
+// Mantendo comportamento legado
+// eslint-disable-next-line import/no-cycle
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
-import { useTagsStore } from '@/stores/tags.store.js';
+// Mantendo comportamento legado
+// eslint-disable-next-line import/no-cycle
+import { useTagsStore } from '@/stores/tags.store';
 
 const alertStore = useAlertStore();
 const PdMStore = usePdMStore();
@@ -48,7 +54,6 @@ const initialValues = computed(() => ({
     meta_id: null,
     tags: [],
   },
-  salvar_arquivo: false,
 }));
 
 async function buscarMetaSimplificada(valorOuEvento) {
@@ -62,10 +67,6 @@ async function buscarMetaSimplificada(valorOuEvento) {
 async function onSubmit(values) {
   const carga = values;
   try {
-    if (!carga.salvar_arquivo) {
-      carga.salvar_arquivo = false;
-    }
-
     switch (true) {
       case !!carga.atividade_id:
         delete carga.iniciativa_id;
@@ -87,14 +88,11 @@ async function onSubmit(values) {
     }
 
     const r = await relatoriosStore.insert(carga);
-    const msg = 'Dados salvos com sucesso!';
+    const msg = 'Relatório em processamento, acompanhe na tela de listagem';
 
     if (r === true) {
       alertStore.success(msg);
-
-      if (carga.salvar_arquivo && route.meta?.rotaDeEscape) {
-        await router.push({ name: route.meta.rotaDeEscape });
-      }
+      await router.push({ name: route.meta.rotaDeEscape });
     }
   } catch (error) {
     alertStore.error(error);
@@ -116,17 +114,16 @@ iniciar();
 </script>
 
 <template>
-  <MigalhasDePao class="mb1" />
-
-  <div class="flex spacebetween center mb2">
+  <header class="flex spacebetween center mb2">
     <TituloDaPagina />
 
     <hr class="ml2 f1">
 
     <CheckClose :formulario-sujo="formularioSujo" />
-  </div>
+  </header>
+
   <Form
-    v-slot="{ errors, isSubmitting, setFieldValue, values }"
+    v-slot="{ errors, isSubmitting, resetField, setFieldValue, values }"
     :validation-schema="schema"
     :initial-values="initialValues"
     @submit="onSubmit"
@@ -136,7 +133,10 @@ iniciar();
         <LabelFromYup
           name="pdm_id"
           :schema="schema.fields.parametros"
-        />
+        >
+          {{ $route.meta.tituloSingular }}
+          <span class="tvermelho">*</span>
+        </LabelFromYup>
         <Field
           v-model="initialValues.parametros.pdm_id"
           name="parametros.pdm_id"
@@ -145,6 +145,7 @@ iniciar();
             mb1"
           :class="{ 'error': errors['parametros.pdm_id'] }"
           :disabled="loading"
+          @update:model-value="resetField('parametros.metas', { value: [] })"
         >
           <option value="">
             Selecionar
@@ -323,22 +324,38 @@ iniciar();
           {{ errors['parametros.ano'] }}
         </div>
       </div>
-    </div>
-
-    <div class="mb2">
-      <div class="pl2">
-        <label class="block">
-          <Field
-            name="salvar_arquivo"
-            type="checkbox"
-            :value="true"
-            class="inputcheckbox"
-          />
-          <span :class="{ 'error': errors.salvar_arquivo }">Salvar relatório no sistema</span>
-        </label>
-      </div>
-      <div class="error-msg">
-        {{ errors.salvar_arquivo }}
+      <div class="f1">
+        <LabelFromYup
+          name="eh_publico"
+          :schema="schema"
+          required
+        />
+        <Field
+          name="eh_publico"
+          as="select"
+          class="inputtext light"
+          :class="{
+            error: errors['eh_publico'],
+            loading: loading
+          }"
+          :disabled="loading"
+        >
+          <option :value="null">
+            Selecionar
+          </option>
+          <option :value="true">
+            Sim
+          </option>
+          <option :value="false">
+            Não
+          </option>
+        </Field>
+        <div
+          v-if="errors['eh_publico']"
+          class="error-msg"
+        >
+          {{ errors['eh_publico'] }}
+        </div>
       </div>
     </div>
 
@@ -351,7 +368,7 @@ iniciar();
         class="btn big"
         :disabled="isSubmitting || Object.keys(errors)?.length"
       >
-        {{ values.salvar_arquivo ? "baixar e salvar" : "apenas baixar" }}
+        Criar relatório
       </button>
       <hr class="ml2 f1">
     </div>

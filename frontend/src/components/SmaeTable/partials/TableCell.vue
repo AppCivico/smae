@@ -13,7 +13,7 @@
         :caminho="caminho"
         :linha="linha"
       >
-        {{ conteudoColuna || '-' }}
+        {{ formatador ? formatador(conteudoColuna) : conteudoColuna || '-' }}
       </slot>
     </td>
   </slot>
@@ -28,6 +28,8 @@ defineOptions({ inheritAttrs: false });
 
 export type ParametrosDaColuna = {
   linha: Linha
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  formatador?: Function
   caminho: string
 };
 

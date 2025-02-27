@@ -995,6 +995,11 @@ p {
   }
 }
 
+/* Inline */
+.inline {
+  display: inline !important;
+}
+
 /* Width */
 .min-width {
   --min-width: 50rem;
@@ -1302,6 +1307,11 @@ p {
   &:hover {
     color: @primary;
     background: @amarelo;
+  }
+
+  &:focus-visible {
+    outline: 2px solid @c400;
+    outline-offset: 2px;
   }
 
   svg {

@@ -1,15 +1,15 @@
 <script setup>
-import { Field, Form, useIsFormDirty } from 'vee-validate';
-import { computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
+import { relatórioOrçamentárioPlanosSetoriais as schema } from '@/consts/formSchemas';
+import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
+import maskMonth from '@/helpers/maskMonth';
+import monthAndYearToDate from '@/helpers/monthAndYearToDate';
 import { useAlertStore } from '@/stores/alert.store';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
-import TituloDaPagina from '@/components/TituloDaPagina.vue';
-import maskMonth from '@/helpers/maskMonth';
-import monthAndYearToDate from '@/helpers/monthAndYearToDate';
-import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
-import { relatórioOrçamentárioPlanosSetoriais as schema } from '@/consts/formSchemas';
+import { Field, Form, useIsFormDirty } from 'vee-validate';
+import { computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute();
 const alertStore = useAlertStore();
@@ -34,7 +34,6 @@ const initialValues = computed(() => ({
     fim: dateIgnorarTimezone(`${currentYear}-12-01`, 'MM/yyyy'),
     orgaos: [],
   },
-  salvar_arquivo: false,
 }));
 
 async function onSubmit(values) {
@@ -42,19 +41,13 @@ async function onSubmit(values) {
   try {
     carga.parametros.inicio = monthAndYearToDate(carga.parametros.inicio);
     carga.parametros.fim = monthAndYearToDate(carga.parametros.fim);
-    if (!carga.salvar_arquivo) {
-      carga.salvar_arquivo = false;
-    }
 
     const r = await relatoriosStore.insert(carga);
-    const msg = 'Dados salvos com sucesso!';
+    const msg = 'Relatório em processamento, acompanhe na tela de listagem';
 
     if (r === true) {
       alertStore.success(msg);
-
-      if (carga.salvar_arquivo && route.meta?.rotaDeEscape) {
-        router.push({ name: route.meta.rotaDeEscape });
-      }
+      router.push({ name: route.meta.rotaDeEscape });
     }
   } catch (error) {
     alertStore.error(error);
@@ -65,36 +58,32 @@ PlanosSetoriaisStore.buscarTudo();
 </script>
 
 <template>
-  <MigalhasDePao class="mb1" />
-
-  <div class="flex spacebetween center mb2">
+  <header class="flex spacebetween center mb2">
     <TituloDaPagina />
 
     <hr class="ml2 f1">
 
     <CheckClose :formulario-sujo="formularioSujo" />
-  </div>
+  </header>
 
   <Form
-    v-slot="{ errors, isSubmitting, values }"
+    v-slot="{ errors, isSubmitting }"
     :validation-schema="schema"
     :initial-values="initialValues"
     @submit="onSubmit"
   >
     <div class="flex g2 mb2">
       <div class="f1">
-        <!--<label class="label">
-          <abbr title="Plano Setorial">Plano Setorial</abbr>
-          <span class="tvermelho">*</span>-->
         <label
-          for="pdm_id"
+          for="parametros.pdm_id"
           class="label"
-        >Plano Setorial
+        >{{ $route.meta.tituloSingular }}
           <span class="tvermelho">
             *
           </span>
         </label>
         <Field
+          id="parametros.pdm_id"
           name="parametros.pdm_id"
           as="select"
           class="inputtext light mb1"
@@ -154,62 +143,77 @@ PlanosSetoriaisStore.buscarTudo();
           {{ errors['parametros.fim'] }}
         </div>
       </div>
+      <div class="f1">
+        <LabelFromYup
+          name="eh_publico"
+          :schema="schema"
+          required
+        />
+        <Field
+          name="eh_publico"
+          as="select"
+          class="inputtext light"
+          :class="{
+            error: errors['eh_publico'],
+            loading: PlanosSetoriaisStore.PlanosSetoriais?.loading
+          }"
+          :disabled="PlanosSetoriaisStore.PlanosSetoriais?.loading"
+        >
+          <option :value="null">
+            Selecionar
+          </option>
+          <option :value="true">
+            Sim
+          </option>
+          <option :value="false">
+            Não
+          </option>
+        </Field>
+        <div
+          v-if="errors['eh_publico']"
+          class="error-msg"
+        >
+          {{ errors['eh_publico'] }}
+        </div>
+      </div>
     </div>
 
     <div class="mb2">
-      <div class="pl2">
-        <label class="block mb1">
-          <Field
-            name="parametros.tipo"
-            type="radio"
-            value="Consolidado"
-            class="inputcheckbox"
-            :class="{ 'error': errors['parametros.tipo'] }"
-          />
-          <span>Consolidado</span>
-        </label>
-        <label class="block mb1">
-          <Field
-            name="parametros.tipo"
-            type="radio"
-            value="Analitico"
-            class="inputcheckbox"
-            :class="{ 'error': errors['parametros.tipo'] }"
-          />
-          <span>Analítico</span>
-        </label>
-      </div>
+      <label class="block mb1">
+        <Field
+          name="parametros.tipo"
+          type="radio"
+          value="Consolidado"
+          class="inputcheckbox"
+          :class="{ 'error': errors['parametros.tipo'] }"
+        />
+        <span>Consolidado</span>
+      </label>
+      <label class="block mb1">
+        <Field
+          name="parametros.tipo"
+          type="radio"
+          value="Analitico"
+          class="inputcheckbox"
+          :class="{ 'error': errors['parametros.tipo'] }"
+        />
+        <span>Analítico</span>
+      </label>
       <div class="error-msg">
         {{ errors['parametros.tipo'] }}
       </div>
     </div>
 
-    <div class="mb2">
-      <div class="pl2">
-        <label class="block">
-          <Field
-            name="salvar_arquivo"
-            type="checkbox"
-            :value="true"
-            class="inputcheckbox"
-          />
-          <span :class="{ 'error': errors.salvar_arquivo }">Salvar relatório no sistema</span>
-        </label>
-      </div>
-      <div class="error-msg">
-        {{ errors.salvar_arquivo }}
-      </div>
-    </div>
+    <FormErrorsList :errors="errors" />
 
     <div class="flex spacebetween center mb2">
       <hr class="mr2 f1">
       <button
         type="submit"
         class="btn big"
-        :disabled="PlanosSetoriaisStore.PlanosSetoriais?.loading ||
-          isSubmitting"
+        :disabled="PlanosSetoriaisStore.PlanosSetoriais?.loading || isSubmitting"
       >
-        {{ values.salvar_arquivo ? "baixar e salvar" : "apenas baixar" }}
+        Criar relatório
       </button>
       <hr class="ml2 f1">
     </div>
