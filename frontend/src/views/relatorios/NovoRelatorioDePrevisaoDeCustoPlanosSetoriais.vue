@@ -128,12 +128,6 @@ iniciar();
     :initial-values="initialValues"
     @submit="onSubmit"
   >
-    <Field
-      name="parametros.tipo_pdm"
-      type="hidden"
-      :value="$route.meta.tipoPdmParaRelatorio"
-    />
-
     <div class="flex g2 mb2">
       <div class="f1">
         <LabelFromYup

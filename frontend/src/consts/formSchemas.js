@@ -3170,8 +3170,8 @@ export const relatórioMensal = object({
 
 export const relatórioMensalPS = relatorioValidacaoBase.concat(object({
   parametros: object({
-    plano_setorial_id: string()
-      .label('Plano setorial')
+    pdm_id: string()
+      .label('PdM/Plano setorial')
       .nullable()
       .required(),
     meta: array()

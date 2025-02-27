@@ -8,7 +8,6 @@ export type EntidadesPossiveis = 'planoSetorial' | 'programaDeMetas';
 export type ParametrosPagina = {
   tituloSingular: string;
   tituloPlural: string;
-  tipoPdmParaRelatorio: 'PDM' | 'PS';
   segmentoRaiz: string;
   privilegioRaiz: string[] | string;
   privilegiosParaRelatorio: string[] | string;
@@ -22,7 +21,6 @@ function getParametrosPagina(entidadeMãe: EntidadesPossiveis): ParametrosPagina
         tituloSingular: 'Plano Setorial',
         tituloPlural: 'Planos Setoriais',
         segmentoRaiz: '/plano-setorial',
-        tipoPdmParaRelatorio: 'PS',
         privilegioRaiz: [
           'CadastroPS.',
           'ReferencialEm.Equipe.PS',
@@ -38,7 +36,6 @@ function getParametrosPagina(entidadeMãe: EntidadesPossiveis): ParametrosPagina
         tituloSingular: 'Programa de Meta',
         tituloPlural: 'Programa de Metas',
         segmentoRaiz: '/programa-de-meta',
-        tipoPdmParaRelatorio: 'PDM',
         privilegioRaiz: [
           'CadastroPDM.',
           'ReferencialEm.Equipe.ProgramaDeMetas',
@@ -453,7 +450,6 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
       {
         path: 'relatorios',
         meta: {
-          tipoPdmParaRelatorio: parametrosPagina.tipoPdmParaRelatorio,
           desabilitarMigalhasDePãoPadrão: false,
           limitarÀsPermissões: parametrosPagina.privilegiosParaRelatorio,
         },

@@ -41,7 +41,7 @@ const initialValues = ref({
   fonte: 'PSMonitoramentoMensal',
   parametros: {
     metas: [],
-    plano_setorial_id: null,
+    pdm_id: null,
     mes: null,
     ano: new Date().getFullYear(),
     tags: [],
@@ -93,28 +93,23 @@ if (!listaDePlanosDisponiveis.value.length) {
       type="hidden"
     />
 
-    <Field
-      name="parametros.tipo_pdm"
-      type="hidden"
-      :value="$route.meta.tipoPdmParaRelatorio"
-    />
-
     <div class="flex column g1 mb2">
       <div class="flex g2">
         <div class="f1">
-          <label class="label"
-            for="parametros.plano_setorial_id"
+          <label
+            class="label"
+            for="parametros.pdm_id"
           >
             {{ $route.meta.tituloSingular }}&nbsp;<span class="tvermelho">*</span>
           </label>
           <Field
-            id="parametros.plano_setorial_id"
-            name="parametros.plano_setorial_id"
+            id="parametros.pdm_id"
+            name="parametros.pdm_id"
             as="select"
             class="inputtext light"
             :class="{
               loading: loading,
-              error: errors['parametros.plano_setorial_id']
+              error: errors['parametros.pdm_id']
             }"
             :disabled="loading"
             @update:model-value="() => {
@@ -134,7 +129,7 @@ if (!listaDePlanosDisponiveis.value.length) {
             </option>
           </Field>
 
-          <ErrorMessage name="parametros.plano_setorial_id" />
+          <ErrorMessage name="parametros.pdm_id" />
         </div>
 
         <div class="f1">
@@ -248,7 +243,7 @@ if (!listaDePlanosDisponiveis.value.length) {
         name="parametros.metas"
         :controlador="{ busca: '', participantes: values.parametros.metas || [] }"
         label="titulo"
-        :grupo="planosPorId[values.parametros.plano_setorial_id]?.metas || []"
+        :grupo="planosPorId[values.parametros.pdm_id]?.metas || []"
         :class="{
           error: errors['parametros.meta'],
         }"
@@ -265,11 +260,11 @@ if (!listaDePlanosDisponiveis.value.length) {
       <AutocompleteField
         name="parametros.tags"
         :controlador="{ busca: '', participantes: values.parametros.tags || [] }"
-        :grupo="filtradasPorPdM(values.parametros.plano_setorial_id)"
+        :grupo="filtradasPorPdM(values.parametros.pdm_id)"
         label="descricao"
         :class="{
           error: errors['parametros.tags'],
-          loading: filtradasPorPdM(values.parametros.plano_setorial_id)?.loading,
+          loading: filtradasPorPdM(values.parametros.pdm_id)?.loading,
         }"
       />
 
