@@ -5,6 +5,7 @@ import { TipoPdm } from '@prisma/client';
 import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 
 export class FiltroMetasIniAtividadeDto {
+    @IsOptional()
     @IsNumber()
     @Type(() => Number)
     pdm_id?: number;
