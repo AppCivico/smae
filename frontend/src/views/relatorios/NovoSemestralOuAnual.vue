@@ -84,8 +84,6 @@ onMounted(async () => {
 </script>
 
 <template>
-  <MigalhasDePao class="mb1" />
-
   <header class="flex spacebetween center mb2">
     <TituloDaPagina />
 

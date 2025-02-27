@@ -454,6 +454,7 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
         path: 'relatorios',
         meta: {
           tipoPdmParaRelatorio: parametrosPagina.tipoPdmParaRelatorio,
+          desabilitarMigalhasDePãoPadrão: false,
           limitarÀsPermissões: parametrosPagina.privilegiosParaRelatorio,
         },
         children: [
