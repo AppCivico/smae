@@ -1,5 +1,5 @@
-import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
 import type { RouteLocation } from 'vue-router';
+import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
 import metasRoutes from './metas.routes';
 
 const ListaDeRelatorios = () => import('@/views/relatorios/ListaDeRelatorios.vue');
@@ -145,6 +145,21 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
               ],
               rotaDeEscape: `${entidadeMãe}.planosSetoriaisListar`,
               título: `Editar ${parametrosPagina.tituloSingular}`,
+            },
+          },
+          {
+            path: 'permissoes-orcamento',
+            name: `${entidadeMãe}.permissoesOrcamento`,
+            component: () => import('@/views/planosSetoriais/EdicaoOrcamento/EdicaoOrcamento.vue'),
+            meta: {
+              limitarÀsPermissões: [
+                'CadastroPS.administrador',
+                'CadastroPDM.administrador',
+                'CadastroPS.administrador_no_orgao',
+                'CadastroPDM.administrador_no_orgao',
+              ],
+              rotaDeEscape: `${entidadeMãe}.planosSetoriaisListar`,
+              título: `Permissões para edição do orçamento de ${parametrosPagina.tituloSingular}`,
             },
           },
           {
