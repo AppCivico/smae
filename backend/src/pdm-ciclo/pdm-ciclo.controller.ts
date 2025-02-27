@@ -7,15 +7,19 @@ import { TipoPDM, TipoPdmType } from '../common/decorators/current-tipo-pdm';
 import { FindOneParams, FindThreeParams, FindTwoParams } from '../common/decorators/find-params';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { MetaSetorialController } from '../meta/meta.controller';
-import {
-    AnaliseQualitativaDocumentoDto,
-    CreateAnaliseQualitativaDto,
-    MfListAnaliseQualitativaDto,
-} from '../mf/metas/dto/mf-meta-analise-quali.dto';
-import { FechamentoDto, MfListFechamentoDto } from '../mf/metas/dto/mf-meta-fechamento.dto';
-import { MfListRiscoDto, RiscoDto } from '../mf/metas/dto/mf-meta-risco.dto';
+import { AnaliseQualitativaDocumentoDto, CreateAnaliseQualitativaDto } from '../mf/metas/dto/mf-meta-analise-quali.dto';
+import { FechamentoDto } from '../mf/metas/dto/mf-meta-fechamento.dto';
+import { RiscoDto } from '../mf/metas/dto/mf-meta-risco.dto';
 import { FilterMonitCicloDto, FilterPdmCiclo, UpdatePdmCicloDto } from './dto/update-pdm-ciclo.dto';
-import { CiclosRevisaoDto, ListPdmCicloDto, ListPdmCicloV2Dto, ListPSCicloDto } from './entities/pdm-ciclo.entity';
+import {
+    CiclosRevisaoDto,
+    ListPdmCicloDto,
+    ListPdmCicloV2Dto,
+    ListPSCicloDto,
+    PsListAnaliseQualitativaDto,
+    PsListFechamentoDto,
+    PsListRiscoDto,
+} from './entities/pdm-ciclo.entity';
 import { PdmCicloService } from './pdm-ciclo.service';
 import { PsCicloService } from './ps-ciclo.service';
 
@@ -163,23 +167,13 @@ export class PsCicloController {
         @Query() dto: FilterMonitCicloDto,
         @CurrentUser() user: PessoaFromJwt,
         @TipoPDM() tipo: TipoPdmType
-    ): Promise<MfListAnaliseQualitativaDto> {
-        await this.psCicloService.metaService.assertMetaWriteOrThrow(
+    ): Promise<PsListAnaliseQualitativaDto> {
+        return await this.psCicloService.getMetaAnaliseQualitativaWithPrevious(
             tipo,
+            +params.id,
+            +params.id2,
             dto.meta_id,
-            user,
-            'monitoramento de análise qualitativa',
-            'readonly'
-        );
-
-        return await this.psCicloService.analiseService.getMetaAnaliseQualitativa(
-            {
-                ciclo_fisico_id: +params.id2,
-                meta_id: dto.meta_id,
-                apenas_ultima_revisao: false,
-            },
-            null,
-            null
+            user
         );
     }
 
@@ -191,24 +185,8 @@ export class PsCicloController {
         @Query() dto: FilterMonitCicloDto,
         @CurrentUser() user: PessoaFromJwt,
         @TipoPDM() tipo: TipoPdmType
-    ): Promise<MfListRiscoDto> {
-        await this.psCicloService.metaService.assertMetaWriteOrThrow(
-            tipo,
-            dto.meta_id,
-            user,
-            'monitoramento de risco',
-            'readonly'
-        );
-
-        return await this.psCicloService.riscoService.getMetaRisco(
-            {
-                ciclo_fisico_id: +params.id2,
-                meta_id: dto.meta_id,
-                apenas_ultima_revisao: false,
-            },
-            null,
-            null
-        );
+    ): Promise<PsListRiscoDto> {
+        return await this.psCicloService.getMetaRiscoWithPrevious(tipo, +params.id, +params.id2, dto.meta_id, user);
     }
 
     @Get(':id/ciclo/:id2/fechamento')
@@ -219,23 +197,13 @@ export class PsCicloController {
         @Query() dto: FilterMonitCicloDto,
         @CurrentUser() user: PessoaFromJwt,
         @TipoPDM() tipo: TipoPdmType
-    ): Promise<MfListFechamentoDto> {
-        await this.psCicloService.metaService.assertMetaWriteOrThrow(
+    ): Promise<PsListFechamentoDto> {
+        return await this.psCicloService.getMetaFechamentoWithPrevious(
             tipo,
+            +params.id,
+            +params.id2,
             dto.meta_id,
-            user,
-            'monitoramento de fechamento',
-            'readonly'
-        );
-
-        return await this.psCicloService.fechamentoService.getMetaFechamento(
-            {
-                ciclo_fisico_id: +params.id2,
-                meta_id: dto.meta_id,
-                apenas_ultima_revisao: false,
-            },
-            null,
-            null
+            user
         );
     }
 }

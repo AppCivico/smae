@@ -12,7 +12,15 @@ import { MetasFechamentoService } from '../mf/metas/metas-fechamento.service';
 import { MetasRiscoService } from '../mf/metas/metas-risco.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { FilterPsCiclo } from './dto/update-pdm-ciclo.dto';
-import { CicloFisicoPSDto, CicloRevisaoDto, CiclosRevisaoDto, ListPSCicloDto } from './entities/pdm-ciclo.entity';
+import {
+    CicloFisicoPSDto,
+    CicloRevisaoDto,
+    CiclosRevisaoDto,
+    ListPSCicloDto,
+    PsListAnaliseQualitativaDto,
+    PsListFechamentoDto,
+    PsListRiscoDto,
+} from './entities/pdm-ciclo.entity';
 
 /**
  * Gerencia ciclos do Planejamento Estratégico e controla permissões
@@ -21,10 +29,10 @@ import { CicloFisicoPSDto, CicloRevisaoDto, CiclosRevisaoDto, ListPSCicloDto } f
 export class PsCicloService {
     constructor(
         private readonly prisma: PrismaService,
-        readonly metaService: MetaService,
-        readonly riscoService: MetasRiscoService,
-        readonly fechamentoService: MetasFechamentoService,
-        readonly analiseService: MetasAnaliseQualiService
+        private readonly metaService: MetaService,
+        private readonly riscoService: MetasRiscoService,
+        private readonly fechamentoService: MetasFechamentoService,
+        private readonly analiseService: MetasAnaliseQualiService
     ) {}
 
     /**
@@ -350,5 +358,161 @@ export class PsCicloService {
     ): Promise<RecordWithId> {
         await this.verificaPermissaoEscritaBase(tipo, metaId, cicloId, user, false);
         return await this.fechamentoService.addMetaFechamentoInterno(dto, user);
+    }
+
+    private async findPreviousCycle(currentCycleId: number, pdmId: number): Promise<number | null> {
+        const currentCycle = await this.prisma.cicloFisico.findUnique({
+            where: { id: currentCycleId },
+            select: { data_ciclo: true },
+        });
+
+        if (!currentCycle) return null;
+
+        const previousCycle = await this.prisma.cicloFisico.findFirst({
+            where: {
+                pdm_id: pdmId,
+                data_ciclo: {
+                    lt: currentCycle.data_ciclo,
+                },
+            },
+            orderBy: { data_ciclo: 'desc' },
+        });
+
+        return previousCycle ? previousCycle.id : null;
+    }
+
+    /**
+     * Obtém análise qualitativa atual e anterior
+     */
+    async getMetaAnaliseQualitativaWithPrevious(
+        tipo: TipoPdmType,
+        pdmId: number,
+        cicloId: number,
+        metaId: number,
+        user: PessoaFromJwt
+    ): Promise<PsListAnaliseQualitativaDto> {
+        await this.metaService.assertMetaWriteOrThrow(
+            tipo,
+            metaId,
+            user,
+            'monitoramento de análise qualitativa',
+            'readonly'
+        );
+
+        const currentData = await this.analiseService.getMetaAnaliseQualitativa(
+            {
+                ciclo_fisico_id: cicloId,
+                meta_id: metaId,
+                apenas_ultima_revisao: false,
+            },
+            null,
+            null
+        );
+
+        const previousCycleId = await this.findPreviousCycle(cicloId, pdmId);
+
+        let previousData = null;
+        if (previousCycleId) {
+            previousData = await this.analiseService.getMetaAnaliseQualitativa(
+                {
+                    ciclo_fisico_id: previousCycleId,
+                    meta_id: metaId,
+                    apenas_ultima_revisao: false,
+                },
+                null,
+                null
+            );
+        }
+
+        return {
+            corrente: currentData,
+            anterior: previousData,
+        };
+    }
+
+    /**
+     * Obtém riscos atual e anterior
+     */
+    async getMetaRiscoWithPrevious(
+        tipo: TipoPdmType,
+        pdmId: number,
+        cicloId: number,
+        metaId: number,
+        user: PessoaFromJwt
+    ): Promise<PsListRiscoDto> {
+        await this.metaService.assertMetaWriteOrThrow(tipo, metaId, user, 'monitoramento de risco', 'readonly');
+
+        const currentData = await this.riscoService.getMetaRisco(
+            {
+                ciclo_fisico_id: cicloId,
+                meta_id: metaId,
+                apenas_ultima_revisao: false,
+            },
+            null,
+            null
+        );
+
+        const previousCycleId = await this.findPreviousCycle(cicloId, pdmId);
+
+        let previousData = null;
+        if (previousCycleId) {
+            previousData = await this.riscoService.getMetaRisco(
+                {
+                    ciclo_fisico_id: previousCycleId,
+                    meta_id: metaId,
+                    apenas_ultima_revisao: false,
+                },
+                null,
+                null
+            );
+        }
+
+        return {
+            corrente: currentData,
+            anterior: previousData,
+        };
+    }
+
+    /**
+     * Obtém fechamentos atual e anterior
+     */
+    async getMetaFechamentoWithPrevious(
+        tipo: TipoPdmType,
+        pdmId: number,
+        cicloId: number,
+        metaId: number,
+        user: PessoaFromJwt
+    ): Promise<PsListFechamentoDto> {
+        await this.metaService.assertMetaWriteOrThrow(tipo, metaId, user, 'monitoramento de fechamento', 'readonly');
+
+        const currentData = await this.fechamentoService.getMetaFechamento(
+            {
+                ciclo_fisico_id: cicloId,
+                meta_id: metaId,
+                apenas_ultima_revisao: false,
+            },
+            null,
+            null
+        );
+
+        const previousCycleId = await this.findPreviousCycle(cicloId, pdmId);
+
+        let previousData = null;
+        if (previousCycleId) {
+            previousData = await this.fechamentoService.getMetaFechamento(
+                {
+                    ciclo_fisico_id: previousCycleId,
+                    meta_id: metaId,
+                    apenas_ultima_revisao: false,
+                },
+                null,
+                null
+            );
+        }
+
+        return {
+            corrente: currentData,
+            anterior: previousData,
+        };
     }
 }

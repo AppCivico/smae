@@ -1,8 +1,8 @@
 import { IsDateYMD } from '../../auth/decorators/date.decorator';
 import { DateYMD } from '../../common/date2ymd';
-import { MfAnaliseQualitativaDto } from '../../mf/metas/dto/mf-meta-analise-quali.dto';
-import { MfFechamentoDto } from '../../mf/metas/dto/mf-meta-fechamento.dto';
-import { MfRiscoDto } from '../../mf/metas/dto/mf-meta-risco.dto';
+import { MfAnaliseQualitativaDto, MfListAnaliseQualitativaDto } from '../../mf/metas/dto/mf-meta-analise-quali.dto';
+import { MfFechamentoDto, MfListFechamentoDto } from '../../mf/metas/dto/mf-meta-fechamento.dto';
+import { MfListRiscoDto, MfRiscoDto } from '../../mf/metas/dto/mf-meta-risco.dto';
 import { CicloFisicoDto } from '../../pdm/dto/list-pdm.dto';
 
 export class ListPdmCicloDto {
@@ -65,4 +65,19 @@ export class CicloRevisaoDto {
 export class CiclosRevisaoDto {
     atual: CicloRevisaoDto;
     anterior: CicloRevisaoDto | null;
+}
+
+export class PsListAnaliseQualitativaDto {
+    corrente: MfListAnaliseQualitativaDto;
+    anterior: MfListAnaliseQualitativaDto | null;
+}
+
+export class PsListRiscoDto {
+    corrente: MfListRiscoDto;
+    anterior: MfListRiscoDto | null;
+}
+
+export class PsListFechamentoDto {
+    corrente: MfListFechamentoDto;
+    anterior: MfListFechamentoDto | null;
 }
