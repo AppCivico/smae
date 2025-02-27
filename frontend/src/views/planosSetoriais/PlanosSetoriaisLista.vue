@@ -1,12 +1,12 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { ref } from 'vue';
+import { useRoute } from 'vue-router';
 import LocalFilter from '@/components/LocalFilter.vue';
 import { planoSetorial as schema } from '@/consts/formSchemas';
 import truncate from '@/helpers/texto/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store.ts';
-import { storeToRefs } from 'pinia';
-import { ref } from 'vue';
-import { useRoute } from 'vue-router';
 
 const route = useRoute();
 
@@ -62,8 +62,7 @@ if (!lista.length) {
       <col>
       <col>
       <col class="col--minimum">
-      <col class="col--botão-de-ação">
-      <col class="col--botão-de-ação">
+      <col>
       <thead>
         <tr>
           <th>
@@ -79,7 +78,6 @@ if (!lista.length) {
             {{ schema.fields.ativo.spec.label }}
           </th>
           <th />
-          <th />
         </tr>
       </thead>
       <tbody>
@@ -88,13 +86,13 @@ if (!lista.length) {
           :key="item.id"
         >
           <th>
-            <router-link
+            <SmaeLink
               :to="{
                 name: `${route.meta.entidadeMãe}.planosSetoriaisResumo`,
                 params: { planoSetorialId: item.id } }"
             >
               {{ item.nome }}
-            </router-link>
+            </SmaeLink>
           </th>
           <td>
             {{ truncate(item?.descricao, 36) }}
@@ -103,25 +101,40 @@ if (!lista.length) {
             {{ item.prefeito }}
           </td>
           <td>{{ item.ativo ? 'Sim' : 'Não' }}</td>
-          <td>
-            <router-link
+          <td class="tr">
+            <SmaeLink
               v-if="item.pode_editar"
+              class="tprimary mr1 tipinfo left"
               :to="{
                 name: `${route.meta.entidadeMãe}.planosSetoriaisEditar`,
                 params: { planoSetorialId: item.id }
               }"
-              class="tprimary"
             >
               <svg
                 width="20"
                 height="20"
               ><use xlink:href="#i_edit" /></svg>
-            </router-link>
-          </td>
-          <td>
+            </SmaeLink>
+
+            <SmaeLink
+              class="tprimary mr1 tipinfo left"
+              :to="{
+                name: `${route.meta.entidadeMãe}.permissoesOrcamento`,
+                params: {
+                  planoSetorialId: item.id
+                }
+              }"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_calendar" /></svg>
+              <div>Permissões para edições no orçamento</div>
+            </SmaeLink>
+
             <button
               v-if="item.pode_editar"
-              class="like-a__text"
+              class="like-a__text mr1"
               arial-label="excluir"
               title="excluir"
               @click="excluirPlano(item.id, item.nome)"
@@ -129,10 +142,11 @@ if (!lista.length) {
               <svg
                 width="20"
                 height="20"
-              ><use xlink:href="#i_remove" /></svg>
+              ><use xlink:href="#i_waste" /></svg>
             </button>
           </td>
         </tr>
+
         <tr v-if="chamadasPendentes.lista">
           <td colspan="6">
             Carregando
