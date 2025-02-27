@@ -503,6 +503,14 @@ export class PdmService {
             pdm.logo = this.uploadService.getDownloadToken(pdm.arquivo_logo_id, '30d').download_token;
         }
 
+        const pdmConfig = await this.prisma.pdmCicloConfig.findFirst({
+            where: {
+                pdm_id: id,
+                ultima_revisao: true,
+            },
+            select: { meses: true },
+        });
+
         const pdmInfo: PdmDto = {
             id: pdm.id,
             nome: pdm.nome,
@@ -528,7 +536,7 @@ export class PdmService {
             nivel_orcamento: pdm.nivel_orcamento,
             tipo: pdm.tipo,
             sistema: pdm.sistema,
-
+            meses: pdmConfig?.meses ?? [],
             pode_editar: await this.calcPodeEditar({ ...pdm, tipo }, user),
             data_fim: Date2YMD.toStringOrNull(pdm.data_fim),
             data_inicio: Date2YMD.toStringOrNull(pdm.data_inicio),
