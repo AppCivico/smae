@@ -134,6 +134,17 @@ export class PdmCicloService {
                     {
                         OR: [{ data_fim: null }, { data_fim: { gte: hoje } }],
                     },
+                    {
+                        pdm: {
+                            CicloFisico: {
+                                some: {
+                                    acordar_ciclo_em: {
+                                        lte: new Date(Date.now()),
+                                    },
+                                },
+                            },
+                        },
+                    },
                 ],
             },
             select: {
@@ -179,7 +190,7 @@ export class PdmCicloService {
                         // Usa UNNEST para processar todos os IDs de uma vez
                         await prismaTx.$queryRaw`
                             WITH pdm_ids AS (SELECT unnest(${chunk}::int[]) AS id)
-                            SELECT atualiza_ciclos_config(id) FROM pdm_ids
+                            SELECT atualiza_ciclos_config(id)::text FROM pdm_ids
                         `;
                     },
                     {
@@ -553,7 +564,7 @@ export class PdmCicloService {
             this.logger.log(`Ciclo config created with id: ${config.id}`);
 
             // Call function to update future cycles
-            await prismaTx.$queryRaw`SELECT atualiza_ciclos_config(${pdmId})`;
+            await prismaTx.$queryRaw`SELECT atualiza_ciclos_config(${pdmId}::int)::text`;
 
             return config;
         };

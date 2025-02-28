@@ -7,6 +7,7 @@ DECLARE
     vCurrentYear INT;
     vNextCycleDate DATE;
     vActiveCycle RECORD;
+    vPreviousActiveCycle RECORD;
     vFirstDayOfMonth BOOLEAN;
 
     vNovoCicloId INT;
@@ -62,8 +63,8 @@ BEGIN
                 -- Criar data para este mês e ano
                 vCycleDate := make_date(vYear, vMonth, 1);
 
-                -- Verificar se a data está dentro do intervalo
-                IF vCycleDate >= vStartDate AND vCycleDate <= vEndDate THEN
+                -- Verificar se a data está dentro do intervalo E não é futura
+                IF vCycleDate >= vStartDate AND vCycleDate <= vEndDate AND vCycleDate <= vToday THEN
                     -- Lembrar o último ciclo criado
                     vLastCycleDate := vCycleDate;
 
@@ -169,8 +170,15 @@ BEGIN
         )
         SELECT id INTO vNovoCicloId FROM new_cycle;
 
+        SELECT * INTO vPreviousActiveCycle
+        FROM ciclo_fisico
+        WHERE pdm_id = pPdmId
+        AND ativo = true
+        AND id != vNovoCicloId
+        LIMIT 1;
+
         -- Fecha o ciclo ativo anterior, se existir
-        IF vActiveCycle IS NOT NULL AND vActiveCycle.id != vNovoCicloId THEN
+        IF vPreviousActiveCycle IS NOT NULL THEN
             PERFORM fechar_ciclo_anterior(pPdmId, vNovoCicloId);
         END IF;
     ELSE
