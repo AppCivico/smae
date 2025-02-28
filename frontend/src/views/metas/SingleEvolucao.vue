@@ -5,8 +5,8 @@ import {
 } from 'vue';
 import { useRoute } from 'vue-router';
 import EsperarEntrarNaTela from '@/components/EsperarEntrarNaTela.vue';
-import EvolucaoGraph from '@/components/EvolucaoGraph.vue';
 import OverlayIndisponivel from '@/components/OverlayIndisponivel.vue';
+import GraficoLinhasEvolucao from '@/components/GraficoLinhasEvolucao.vue';
 import GraficoHeatmapVariavelCategorica from '@/components/GraficoHeatmapVariavelCategorica.vue';
 import EvolucaoDeMetaIniciativaAtividade from '@/components/metas/EvolucaoDeMetaIniciativaAtividade.vue';
 import GruposDeSerie from '@/components/metas/GruposDeSerie.vue';
@@ -196,10 +196,9 @@ watch([parentId, parentField], iniciar, { immediate: true });
                 v-if="ValoresInd[ind.id]?.variavel?.variavel_categorica_id"
                 :valores="ValoresInd[ind.id]"
               />
-              <EvolucaoGraph
+              <GraficoLinhasEvolucao
                 v-else
-                :dataserie="ValoresInd[ind.id]"
-                :casas-decimais="ind.casas_decimais"
+                :valores="ValoresInd[ind.id]"
               />
               <OverlayIndisponivel
                 v-if="ind.recalculando"

@@ -19,6 +19,7 @@ import {
   GridComponent,
   LegendComponent,
   MarkLineComponent,
+  MarkPointComponent,
   TitleComponent,
   TooltipComponent,
   VisualMapComponent,
@@ -44,6 +45,7 @@ use([
   LineChart,
   HeatmapChart,
   MarkLineComponent,
+  MarkPointComponent,
 ]);
 
 provide(THEME_KEY, 'light');
