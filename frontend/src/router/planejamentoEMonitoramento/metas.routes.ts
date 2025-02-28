@@ -81,6 +81,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
           `${entidadeMãe}.meta`,
           `${entidadeMãe}.painelDaMeta`,
           `${entidadeMãe}.evoluçãoDaMeta`,
+          `${entidadeMãe}.monitoramentoDeMetas`,
           `${entidadeMãe}.cronogramaDaMeta`,
         ];
 
@@ -195,8 +196,6 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
     },
     {
       path: ':meta_id',
-      name: `${entidadeMãe}.meta`,
-      component: SingleMeta,
       meta: {
         títuloParaMenu: 'Resumo',
         rotasParaMenuSecundário: () => rotasParaMenuSecundário(
@@ -204,6 +203,60 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
           usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
         ),
       },
+      children: [
+        {
+          name: `${entidadeMãe}.meta`,
+          path: '',
+          component: SingleMeta,
+        },
+        {
+          name: `${entidadeMãe}.monitoramentoDeMetas`,
+          path: 'monitoramento',
+          meta: {
+            título: 'Histórico de Monitoramento',
+            títuloParaMenu: undefined,
+          },
+          component: () => import('@/views/monitoramentoDeMetas/MonitoramentoDeMetasLista.vue'),
+          children: [
+            {
+              name: 'monitoramentoDeMetasAnaliseDeRisco',
+              path: 'analise-de-risco/:cicloId',
+              meta: {
+                título: 'Analise de Risco',
+                títuloParaMenu: undefined,
+              },
+              component: () => import('@/views/monitoramentoDeMetas/MonitoramentoDeMetasAnaliseDeRisco.vue'),
+            },
+            {
+              name: 'monitoramentoDeMetasRegistroDeFechamento',
+              path: 'registro-de-fechamento/:cicloId',
+              meta: {
+                título: 'Registro de Fechamento',
+                títuloParaMenu: undefined,
+              },
+              component: () => import('@/views/monitoramentoDeMetas/MonitoramentoDeMetasRegistroDeFechamento.vue'),
+            },
+            {
+              name: 'monitoramentoDeMetasAnaliseQualitativa',
+              path: 'analise-qualitativa/:cicloId',
+              meta: {
+                título: 'Análise Qualitativa',
+                títuloParaMenu: undefined,
+              },
+              component: () => import('@/views/monitoramentoDeMetas/MonitoramentoDeMetasAnaliseQualitativa.vue'),
+            },
+            {
+              name: 'monitoramentoDeMetasAnaliseQualitativa',
+              path: 'analise-qualitativa/:cicloId',
+              meta: {
+                título: 'Análise Qualitativa',
+                títuloParaMenu: undefined,
+              },
+              component: () => import('@/views/monitoramentoDeMetas/MonitoramentoDeMetasAnaliseQualitativa.vue'),
+            },
+          ],
+        },
+      ],
     },
     {
       path: ':meta_id/indicadores/novo',
