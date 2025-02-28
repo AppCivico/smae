@@ -61,7 +61,7 @@ class RetornoDbRegiao extends RetornoDb {
 }
 
 const {
-    AsyncParser,
+    Parser,
     transforms: { flatten },
 } = require('json2csv');
 const defaultTransform = [flatten({ paths: [] })];
@@ -513,53 +513,165 @@ export class IndicadoresService implements ReportableService {
         if (params.periodo == 'Mensal' && params.tipo !== 'Geral')
             throw new HttpException('Necessário enviar tipo Geral para o periodo Mensal', 400);
 
+        // no atual momento, tudo aqui é uma reimplementação completa do método asJSON
+        // porém, desta nova forma é possível gerar arquivos CSV a partir dos dados do streaming
+        // sem a necessidade de armazenar todos os dados em memória duma vez
         this.logger.verbose(`Gerando arquivos CSV para ${JSON.stringify(params)}`);
         const indicadores = await this.filtraIndicadores(params, user);
         this.logger.verbose(`Indicadores encontrados: ${indicadores.length}`);
 
         await ctx.progress(1);
 
+        let linhas: RelIndicadoresDto[] = [];
+
+        this.logger.debug(`Iniciando query de dados`);
+        const linhasDataStream = new Readable({ objectMode: true, read() {} });
+        await Promise.all([
+            this.queryData(
+                indicadores.map((r) => r.id),
+                params,
+                linhasDataStream
+            ),
+            Stream2PromiseIntoArray(linhasDataStream, linhas),
+        ]);
+        this.logger.debug(`Query de dados finalizada`);
+
         const pdm = await this.prisma.pdm.findUniqueOrThrow({ where: { id: params.pdm_id } });
         const out: FileOutput[] = [];
 
-        // Generate indicadores.csv using streaming
-        if (indicadores.length > 0) {
-            out.push(
-                await this.streamIndicadoresToCSV(
-                    indicadores.map((r) => r.id),
-                    params,
-                    pdm,
-                    'indicadores.csv'
-                )
-            );
-        }
+        this.logger.debug(`Iniciando geração de arquivos CSV`);
+        const camposMetaIniAtv = [
+            { value: 'meta.codigo', label: 'Código da Meta' },
+            { value: 'meta.titulo', label: 'Título da Meta' },
+            { value: 'meta.id', label: 'ID da Meta' },
+            {
+                value: (row: RetornoDb) => {
+                    if (!row.meta_tags || !Array.isArray(row.meta_tags)) return '';
+                    return row.meta_tags.map((t) => t.descricao).join(';');
+                },
+                label: 'Meta Tags',
+            },
+            {
+                value: (row: RetornoDb) => {
+                    if (!row.meta_tags || !Array.isArray(row.meta_tags)) return '';
+                    return row.meta_tags.map((t) => t.id).join(';');
+                },
+                label: 'Tags IDs',
+            },
+            { value: 'iniciativa.codigo', label: 'Código da ' + pdm.rotulo_iniciativa },
+            { value: 'iniciativa.titulo', label: 'Título da ' + pdm.rotulo_iniciativa },
+            { value: 'iniciativa.id', label: 'ID da ' + pdm.rotulo_iniciativa },
+            { value: 'atividade.codigo', label: 'Código da ' + pdm.rotulo_atividade },
+            { value: 'atividade.titulo', label: 'Título da ' + pdm.rotulo_atividade },
+            { value: 'atividade.id', label: 'ID da ' + pdm.rotulo_atividade },
 
-        // Generate regioes.csv using streaming
-        if (indicadores.length > 0) {
-            out.push(
-                await this.streamRegioesToCSV(
-                    indicadores.map((r) => r.id),
-                    params,
-                    pdm,
-                    'regioes.csv'
-                )
-            );
-        }
+            { value: 'indicador.codigo', label: 'Código do Indicador' },
+            { value: 'indicador.titulo', label: 'Título do Indicador' },
+            { value: 'indicador.contexto', label: pdm.rotulo_contexto_meta },
+            { value: 'indicador.complemento', label: pdm.rotulo_complementacao_meta },
+            { value: 'indicador.id', label: 'ID do Indicador' },
+        ];
 
-        // Add info.json
-        out.push({
-            name: 'info.json',
-            buffer: Buffer.from(
-                JSON.stringify({
-                    params: params,
-                    horario: Date2YMD.tzSp2UTC(new Date()),
-                }),
-                'utf8'
+        if (params.tipo_pdm == 'PS') camposMetaIniAtv.unshift({ value: 'pdm_nome', label: 'Plano Setorial' });
+
+        this.logger.debug(`Gerando CSV de indicadores`);
+        if (linhas.length) {
+            const json2csvParser = new Parser({
+                ...DefaultCsvOptions,
+                transforms: defaultTransform,
+                fields: [
+                    ...camposMetaIniAtv,
+                    { value: 'data_referencia', label: 'Data de Referência' },
+                    'serie',
+                    'data',
+                    'valor',
+                ],
+            });
+            const linhasBuff = json2csvParser.parse(linhas);
+            this.logger.debug(`CSV de indicadores gerado`);
+            out.push({
+                name: 'indicadores.csv',
+                buffer: Buffer.from(linhasBuff, 'utf8'),
+            });
+
+            linhas = [];
+        }
+        await ctx.progress(50);
+
+        this.logger.debug(`Iniciando geração de CSV de regiões`);
+        let regioes: RelIndicadoresVariaveisDto[] = [];
+        const regioesDataStream = new Readable({ objectMode: true, read() {} });
+        this.logger.debug(`Iniciando query de dados de regiões`);
+
+        await Promise.all([
+            this.queryDataRegiao(
+                indicadores.map((r) => r.id),
+                params,
+                regioesDataStream
             ),
-        });
+            Stream2PromiseIntoArray(regioesDataStream, regioes),
+        ]);
+        this.logger.debug(`Query de dados de regiões finalizada`);
+
+        this.logger.debug(`Gerando CSV de regiões`);
+        if (regioes.length) {
+            const json2csvParser = new Parser({
+                ...DefaultCsvOptions,
+                transforms: defaultTransform,
+                fields: [
+                    ...camposMetaIniAtv,
+                    { value: 'variavel.orgao.id', label: 'ID do órgão' },
+                    { value: 'variavel.orgao.sigla', label: 'Sigla do órgão' },
+
+                    { value: 'variavel.codigo', label: 'Código da Variável' },
+                    { value: 'variavel.titulo', label: 'Título da Variável' },
+                    { value: 'variavel.id', label: 'ID da Variável' },
+
+                    { value: 'regiao_id', label: 'ID da região' },
+
+                    { value: 'regiao_nivel_4.id', label: 'ID do Distrito' },
+                    { value: 'regiao_nivel_4.codigo', label: 'Código do Distrito' },
+                    { value: 'regiao_nivel_4.descricao', label: 'Descrição do Distrito' },
+
+                    { value: 'regiao_nivel_3.id', label: 'ID do Subprefeitura' },
+                    { value: 'regiao_nivel_3.codigo', label: 'Código da Subprefeitura' },
+                    { value: 'regiao_nivel_3.descricao', label: 'Descrição da Subprefeitura' },
+
+                    { value: 'regiao_nivel_2.id', label: 'ID da Região' },
+                    { value: 'regiao_nivel_2.codigo', label: 'Código da Região' },
+                    { value: 'regiao_nivel_2.descricao', label: 'Descrição da Região' },
+                    { value: 'data_referencia', label: 'Data de Referência' },
+
+                    'serie',
+                    'data',
+                    'valor',
+                    { value: 'valor_categorica', label: 'Valor Categórica' },
+                ],
+            });
+            const linhasBuff = json2csvParser.parse(regioes);
+            this.logger.debug(`CSV de regiões gerado`);
+            out.push({
+                name: 'regioes.csv',
+                buffer: Buffer.from(linhasBuff, 'utf8'),
+            });
+            regioes = [];
+        }
+        this.logger.debug(`CSVs gerados`);
 
         await ctx.progress(99);
-        return out;
+        return [
+            {
+                name: 'info.json',
+                buffer: Buffer.from(
+                    JSON.stringify({
+                        params: params,
+                        horario: Date2YMD.tzSp2UTC(new Date()),
+                    }),
+                    'utf8'
+                ),
+            },
+            ...out,
+        ];
     }
 
     private async streamRowsInto(regioesDb: Regiao[] | null, stream: Readable, prismaTxn: Prisma.TransactionClient) {
@@ -616,7 +728,7 @@ export class IndicadoresService implements ReportableService {
                               },
                           }
                         : undefined,
-                    ...('regiao_id' in row && regioesDb ? await this.convertRowsRegiao(row) : {}),
+                    ...('regiao_id' in row && regioesDb ? this.convertRowsRegiao(regioesDb, row) : {}),
                 });
             }
         }
@@ -624,206 +736,18 @@ export class IndicadoresService implements ReportableService {
         stream.push(null);
     }
 
-    private async streamIndicadoresToCSV(
-        indicadoresIds: number[],
-        params: CreateRelIndicadorDto,
-        pdm: any,
-        filename: string
-    ): Promise<FileOutput> {
-        const camposMetaIniAtv = [
-            { value: 'meta.codigo', label: 'Código da Meta' },
-            { value: 'meta.titulo', label: 'Título da Meta' },
-            { value: 'meta.id', label: 'ID da Meta' },
-            {
-                value: (row: RetornoDb) => {
-                    if (!row.meta_tags || !Array.isArray(row.meta_tags)) return '';
-                    return row.meta_tags.map((t) => t.descricao).join(';');
-                },
-                label: 'Meta Tags',
-            },
-            {
-                value: (row: RetornoDb) => {
-                    if (!row.meta_tags || !Array.isArray(row.meta_tags)) return '';
-                    return row.meta_tags.map((t) => t.id).join(';');
-                },
-                label: 'Tags IDs',
-            },
-            { value: 'iniciativa.codigo', label: 'Código da ' + pdm.rotulo_iniciativa },
-            { value: 'iniciativa.titulo', label: 'Título da ' + pdm.rotulo_iniciativa },
-            { value: 'iniciativa.id', label: 'ID da ' + pdm.rotulo_iniciativa },
-            { value: 'atividade.codigo', label: 'Código da ' + pdm.rotulo_atividade },
-            { value: 'atividade.titulo', label: 'Título da ' + pdm.rotulo_atividade },
-            { value: 'atividade.id', label: 'ID da ' + pdm.rotulo_atividade },
-            { value: 'indicador.codigo', label: 'Código do Indicador' },
-            { value: 'indicador.titulo', label: 'Título do Indicador' },
-            { value: 'indicador.contexto', label: pdm.rotulo_contexto_meta },
-            { value: 'indicador.complemento', label: pdm.rotulo_complementacao_meta },
-            { value: 'indicador.id', label: 'ID do Indicador' },
-        ];
-
-        if (params.tipo_pdm == 'PS') camposMetaIniAtv.unshift({ value: 'pdm_nome', label: 'Plano Setorial' });
-
-        const fields = [
-            ...camposMetaIniAtv,
-            { value: 'data_referencia', label: 'Data de Referência' },
-            'serie',
-            'data',
-            'valor',
-        ];
-
-        const query = `
-            SELECT * FROM _report_data
-            WHERE indicador_id IN (${indicadoresIds.join(',')})
-        `;
-
-        return this.streamQueryToCSV(query, [], fields, filename);
-    }
-
-    private async streamRegioesToCSV(
-        indicadoresIds: number[],
-        params: CreateRelIndicadorDto,
-        pdm: any,
-        filename: string
-    ): Promise<FileOutput> {
-        const camposMetaIniAtv = [
-            { value: 'meta.codigo', label: 'Código da Meta' },
-            { value: 'meta.titulo', label: 'Título da Meta' },
-            { value: 'meta.id', label: 'ID da Meta' },
-            {
-                value: (row: RetornoDb) => {
-                    if (!row.meta_tags || !Array.isArray(row.meta_tags)) return '';
-                    return row.meta_tags.map((t) => t.descricao).join(';');
-                },
-                label: 'Meta Tags',
-            },
-            {
-                value: (row: RetornoDb) => {
-                    if (!row.meta_tags || !Array.isArray(row.meta_tags)) return '';
-                    return row.meta_tags.map((t) => t.id).join(';');
-                },
-                label: 'Tags IDs',
-            },
-            { value: 'iniciativa.codigo', label: 'Código da ' + pdm.rotulo_iniciativa },
-            { value: 'iniciativa.titulo', label: 'Título da ' + pdm.rotulo_iniciativa },
-            { value: 'iniciativa.id', label: 'ID da ' + pdm.rotulo_iniciativa },
-            { value: 'atividade.codigo', label: 'Código da ' + pdm.rotulo_atividade },
-            { value: 'atividade.titulo', label: 'Título da ' + pdm.rotulo_atividade },
-            { value: 'atividade.id', label: 'ID da ' + pdm.rotulo_atividade },
-            { value: 'indicador.codigo', label: 'Código do Indicador' },
-            { value: 'indicador.titulo', label: 'Título do Indicador' },
-            { value: 'indicador.contexto', label: pdm.rotulo_contexto_meta },
-            { value: 'indicador.complemento', label: pdm.rotulo_complementacao_meta },
-            { value: 'indicador.id', label: 'ID do Indicador' },
-        ];
-
-        const fields = [
-            ...camposMetaIniAtv,
-            { value: 'variavel.orgao.id', label: 'ID do órgão' },
-            { value: 'variavel.orgao.sigla', label: 'Sigla do órgão' },
-            { value: 'variavel.codigo', label: 'Código da Variável' },
-            { value: 'variavel.titulo', label: 'Título da Variável' },
-            { value: 'variavel.id', label: 'ID da Variável' },
-            { value: 'regiao_id', label: 'ID da região' },
-            { value: 'regiao_nivel_4.id', label: 'ID do Distrito' },
-            { value: 'regiao_nivel_4.codigo', label: 'Código do Distrito' },
-            { value: 'regiao_nivel_4.descricao', label: 'Descrição do Distrito' },
-            { value: 'regiao_nivel_3.id', label: 'ID do Subprefeitura' },
-            { value: 'regiao_nivel_3.codigo', label: 'Código da Subprefeitura' },
-            { value: 'regiao_nivel_3.descricao', label: 'Descrição da Subprefeitura' },
-            { value: 'regiao_nivel_2.id', label: 'ID da Região' },
-            { value: 'regiao_nivel_2.codigo', label: 'Código da Região' },
-            { value: 'regiao_nivel_2.descricao', label: 'Descrição da Região' },
-            { value: 'data_referencia', label: 'Data de Referência' },
-            'serie',
-            'data',
-            'valor',
-            { value: 'valor_categorica', label: 'Valor Categórica' },
-        ];
-
-        const query = `
-            SELECT * FROM _report_data_regioes
-            WHERE indicador_id IN (${indicadoresIds.join(',')})
-        `;
-
-        return this.streamQueryToCSV(query, [], fields, filename);
-    }
-
-    private async streamQueryToCSV(query: string, params: any[], fields: any[], filename: string): Promise<FileOutput> {
-        const parser = new AsyncParser({
-            ...DefaultCsvOptions,
-            fields,
-            transforms: defaultTransform,
-            withBOM: true,
-        });
-
-        const chunks: Buffer[] = [];
-
-        parser.processor
-            .on('data', (chunk: Buffer) => chunks.push(chunk))
-            .on('end', () => {})
-            .on('error', (err: Error) => {
-                throw err;
-            });
-
-        const cursor = await this.prisma.$queryRawUnsafe<any>(query, ...params);
-
-        for await (const row of cursor) {
-            parser.input.push(JSON.stringify(this.transformRow(row)));
-        }
-
-        parser.input.push(null);
-        await new Promise((resolve) => parser.processor.on('finish', resolve));
-
-        return { name: filename, buffer: Buffer.concat(chunks) };
-    }
-
-    private async transformRow(row: any): Promise<any> {
-        if (row.valor_json) {
-            row.valor = row.valor_json.valor_nominal;
-            row.valor_categorica = row.valor_json.valor_categorica;
-        }
-
-        return {
-            pdm_nome: row.pdm_nome,
-            indicador: {
-                codigo: row.indicador_codigo,
-                titulo: row.indicador_titulo,
-                contexto: row.indicador_contexto,
-                complemento: row.indicador_complemento,
-                id: +row.indicador_id,
-            },
-            meta: row.meta_id ? { codigo: row.meta_codigo, titulo: row.meta_titulo, id: +row.meta_id } : null,
-            meta_tags: row.meta_tags ? row.meta_tags : null,
-            iniciativa: row.iniciativa_id
-                ? { codigo: row.iniciativa_codigo, titulo: row.iniciativa_titulo, id: +row.iniciativa_id }
-                : null,
-            atividade: row.atividade_id
-                ? { codigo: row.atividade_codigo, titulo: row.atividade_titulo, id: +row.atividade_id }
-                : null,
-            data: row.data,
-            data_referencia: row.data_referencia,
-            serie: row.serie,
-            valor: row.valor,
-            variavel: row.variavel_id
-                ? {
-                      codigo: row.variavel_codigo,
-                      titulo: row.variavel_titulo,
-                      id: +row.variavel_id,
-                      orgao: {
-                          id: +row.orgao_id,
-                          sigla: row.orgao_sigla,
-                      },
-                  }
-                : undefined,
-            ...('regiao_id' in row ? await this.convertRowsRegiao(row) : {}),
-        };
-    }
-
-    private async convertRowsRegiao(row: RetornoDbRegiao): Promise<any> {
-        const regiao_by_id: Record<number, Regiao> = {};
-        const regioes = await this.prisma.regiao.findMany({ where: { removido_em: null } });
-
-        for (const r of regioes) {
+    convertRowsRegiao(
+        regioesDb: Regiao[],
+        db: RetornoDbRegiao
+    ): {
+        regiao_nivel_4: RegiaoDto | null;
+        regiao_nivel_3: RegiaoDto | null;
+        regiao_nivel_2: RegiaoDto | null;
+        regiao_nivel_1: RegiaoDto | null;
+        regiao_id: number;
+    } {
+        const regiao_by_id: Record<number, (typeof regioesDb)[0]> = {};
+        for (const r of regioesDb) {
             regiao_by_id[r.id] = r;
         }
 
@@ -831,7 +755,7 @@ export class IndicadoresService implements ReportableService {
         let regiao_nivel_3: number | null = null;
         let regiao_nivel_2: number | null = null;
         let regiao_nivel_1: number | null = null;
-        const regiao_id: number = row.regiao_id;
+        const regiao_id: number = db.regiao_id;
 
         const regiao = regiao_by_id[regiao_id];
         if (regiao) {
@@ -861,7 +785,7 @@ export class IndicadoresService implements ReportableService {
         };
     }
 
-    private render_regiao(regiao_by_id: Record<number, Regiao>, regiao_id: number | null): RegiaoDto | null {
+    render_regiao(regiao_by_id: Record<number, Regiao>, regiao_id: number | null): RegiaoDto | null {
         if (!regiao_id) return null;
         if (!regiao_by_id[regiao_id]) return null;
 
