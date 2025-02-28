@@ -65,6 +65,7 @@ export class FilterPdmCiclo {
 export class FilterPsCiclo extends FilterPdmCiclo {
     @IsOptional()
     @IsInt()
+    @Transform(NumberTransform)
     meta_id?: number;
 }
 
