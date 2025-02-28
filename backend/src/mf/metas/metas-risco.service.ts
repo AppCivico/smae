@@ -3,9 +3,9 @@ import { PessoaAcessoPdm, Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { Date2YMD } from '../../common/date2ymd';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
+import { HtmlSanitizer } from '../../common/html-sanitizer';
 import { PrismaService } from '../../prisma/prisma.service';
 import { FilterRiscoDto, MfListRiscoDto, RiscoDto } from './../metas/dto/mf-meta-risco.dto';
-import { HtmlSanitizer } from '../../common/html-sanitizer';
 
 @Injectable()
 export class MetasRiscoService {
@@ -30,6 +30,10 @@ export class MetasRiscoService {
         config: PessoaAcessoPdm | null,
         user: PessoaFromJwt | null
     ): Promise<MfListRiscoDto> {
+        return this.getMetaRiscoInterno(dto);
+    }
+
+    async getMetaRiscoInterno(dto: FilterRiscoDto): Promise<MfListRiscoDto> {
         const analisesResult = await this.prisma.metaCicloFisicoRisco.findMany({
             where: {
                 ciclo_fisico_id: dto.ciclo_fisico_id,
@@ -70,10 +74,15 @@ export class MetasRiscoService {
     }
 
     async addMetaRisco(dto: RiscoDto, config: PessoaAcessoPdm, user: PessoaFromJwt): Promise<RecordWithId> {
-        const now = new Date(Date.now());
         if (config.perfil == 'ponto_focal') {
             throw new HttpException('Você não pode adicionar analise de risco.', 400);
         }
+
+        return this.addMetaRiscoInterno(dto, user);
+    }
+
+    async addMetaRiscoInterno(dto: RiscoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+        const now = new Date(Date.now());
         const ciclo = await this.carregaCicloPorId(dto.ciclo_fisico_id);
 
         const id = await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient): Promise<number> => {

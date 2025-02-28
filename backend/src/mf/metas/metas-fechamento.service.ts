@@ -29,6 +29,10 @@ export class MetasFechamentoService {
         config: PessoaAcessoPdm | null,
         user: PessoaFromJwt | null
     ): Promise<MfListFechamentoDto> {
+        return this.getMetaFechamentoInterno(dto);
+    }
+
+    async getMetaFechamentoInterno(dto: FilterFechamentoDto): Promise<MfListFechamentoDto> {
         const analisesResult = await this.prisma.metaCicloFisicoFechamento.findMany({
             where: {
                 ciclo_fisico_id: dto.ciclo_fisico_id,
@@ -67,10 +71,15 @@ export class MetasFechamentoService {
     }
 
     async addMetaFechamento(dto: FechamentoDto, config: PessoaAcessoPdm, user: PessoaFromJwt): Promise<RecordWithId> {
-        const now = new Date(Date.now());
         if (config.perfil == 'ponto_focal') {
             throw new HttpException('Você não pode criar Fechamentos.', 400);
         }
+
+        return this.addMetaFechamentoInterno(dto, user);
+    }
+
+    async addMetaFechamentoInterno(dto: FechamentoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+        const now = new Date(Date.now());
         const ciclo = await this.carregaCicloPorId(dto.ciclo_fisico_id);
 
         const id = await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient): Promise<number> => {
