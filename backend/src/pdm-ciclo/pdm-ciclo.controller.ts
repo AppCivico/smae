@@ -58,11 +58,19 @@ export class PdmCicloController {
 export class PsCicloController {
     constructor(private readonly psCicloService: PsCicloService) {}
 
-    @Get(':pdm_id/ciclo')
+    @Get(':id/ciclo')
     @ApiBearerAuth('access-token')
     @Roles(MetaSetorialController.ReadPerm)
-    async findAll(@Query() params: FilterPsCiclo, @TipoPDM() tipo: TipoPdmType): Promise<ListPSCicloDto> {
-        return await this.psCicloService.findAll(tipo, params);
+    async findAll(
+        @Param() params: FindOneParams,
+        @Query() dto: FilterPsCiclo,
+        @TipoPDM() tipo: TipoPdmType
+    ): Promise<ListPSCicloDto> {
+        return await this.psCicloService.findAll(tipo,
+            params.id,
+            {
+            ...dto,
+        });
     }
 
     @Get(':id/ciclo/:id2/monitoramento')
