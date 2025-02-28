@@ -1,16 +1,20 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import {
+  computed,
+  defineOptions,
+} from 'vue';
+import { useRoute } from 'vue-router';
 import { planoSetorial as schema } from '@/consts/formSchemas';
 import dateToField from '@/helpers/dateToField';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store.ts';
 import { useUsersStore } from '@/stores/users.store';
-import { storeToRefs } from 'pinia';
-import {
-  defineOptions,
-} from 'vue';
-import { useRoute } from 'vue-router';
+import months from '@/consts/months';
+import combinadorDeListas from '@/helpers/combinadorDeListas';
 
 defineOptions({ inheritAttrs: false });
+const mesesDisponiveis = computed(() => months.map((x, i) => ({ nome: x, id: i + 1 })));
 
 const route = useRoute();
 
@@ -160,6 +164,17 @@ usersStore.buscarPessoasSimplificadas();
     </div>
 
     <div class="flex flexwrap g2 mb2">
+      <dl class="f1 mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.meses.spec.label }}
+        </dt>
+        <dd class="t13">
+          {{ combinadorDeListas(emFoco?.meses.map(mes => mesesDisponiveis[mes]), '','nome') }}
+        </dd>
+      </dl>
+    </div>
+
+    <div class="flex flexwrap g2 mb2">
       <dl
         v-if="emFoco?.possui_tema"
         class="f1 mb1 fb15em"
@@ -295,12 +310,8 @@ usersStore.buscarPessoasSimplificadas();
               <template v-if="pessoasSimplificadasPorId[pessoa]">
                 {{ pessoasSimplificadasPorId[pessoa].nome_exibicao ||
                   pessoasSimplificadasPorId[pessoa] }}
-                <template
-                  v-if="órgãosPorId[pessoasSimplificadasPorId[pessoa].orgao_id]?.sigla"
-                >
-                  (<abbr
-                    :title="órgãosPorId[pessoasSimplificadasPorId[pessoa].orgao_id]?.descricao"
-                  >
+                <template v-if="órgãosPorId[pessoasSimplificadasPorId[pessoa].orgao_id]?.sigla">
+                  (<abbr :title="órgãosPorId[pessoasSimplificadasPorId[pessoa].orgao_id]?.descricao">
                     {{ órgãosPorId[pessoasSimplificadasPorId[pessoa].orgao_id]?.sigla }}
                   </abbr>)
                 </template>
@@ -322,9 +333,7 @@ usersStore.buscarPessoasSimplificadas();
         <dt class="t12 uc w700 mb05 tamarelo">
           {{ schema.fields.legislacao_de_instituicao.spec.label }}
         </dt>
-        <dd
-          class="t13"
-        >
+        <dd class="t13">
           {{ emFoco?.legislacao_de_instituicao || '-' }}
         </dd>
       </dl>
@@ -357,12 +366,8 @@ usersStore.buscarPessoasSimplificadas();
                 {{ item }}
               </template>
 
-              <template
-                v-if="item.orgao_admin"
-              >
-                (<abbr
-                  :title="item.orgao_admin?.descricao"
-                >
+              <template v-if="item.orgao_admin">
+                (<abbr :title="item.orgao_admin?.descricao">
                   {{ item.orgao_admin?.sigla || item.orgao_admin }}
                 </abbr>)
               </template>

@@ -25,6 +25,7 @@ const router = useRouter();
 const route = useRoute();
 
 const mesesDisponiveis = computed(() => months.map((x, i) => ({ nome: x, id: i + 1 })));
+const ehPdm = computed(() => ['pdm', 'PDM'].includes(emFoco.value?.sistema));
 
 const alertStore = useAlertStore();
 
@@ -319,30 +320,6 @@ watch(itemParaEdicao, (novoValor) => {
             :class="{ 'error': errors.prefeito }"
           />
           <ErrorMessage name="prefeito" />
-        </div>
-      </div>
-      <div class="flex flexwrap g2 mb1">
-        <div
-          v-if="emFoco?.sistema !== 'PDM'"
-          class="f1"
-        >
-          <LabelFromYup
-            name="meses"
-            :schema="schema"
-          />
-
-          <Field
-            v-slot="{ value, handleChange }"
-            name="meses"
-          >
-            <AutocompleteField
-              name="meses"
-              :controlador="{ busca: '', participantes: value || [] }"
-              :v-model="handleChange"
-              :grupo="mesesDisponiveis"
-              label="nome"
-            />
-          </Field>
         </div>
       </div>
 
@@ -676,6 +653,62 @@ watch(itemParaEdicao, (novoValor) => {
           <ErrorMessage name="nivel_orcamento" />
         </div>
       </div>
+
+      <hr class="mb2">
+
+      <div class="flex flexwrap g2 mb1">
+        <div
+          v-if="!ehPdm"
+          class="f1"
+        >
+          <LabelFromYup
+            name="meses"
+            :schema="schema"
+          />
+
+          <Field
+            v-slot="{ value, handleChange }"
+            name="meses"
+          >
+            <AutocompleteField
+              name="meses"
+              :controlador="{ busca: '', participantes: value || [] }"
+              :v-model="handleChange"
+              :grupo="mesesDisponiveis"
+              label="nome"
+            />
+          </Field>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <!-- <div class="flex flexwrap g2 mb1">
+        <div
+          v-if="!ehPdm"
+          class="f1"
+        >
+          <LabelFromYup
+            name="meses"
+            :schema="schema"
+          />
+
+          <Field
+            v-slot="{ value, handleChange }"
+            name="meses"
+          >
+            <AutocompleteField
+              name="meses"
+              :controlador="{ busca: '', participantes: value || [] }"
+              :v-model="handleChange"
+              :grupo="mesesDisponiveis"
+              label="nome"
+            />
+          </Field>
+        </div>
+      </div>
+
+      <hr class="mt2"> -->
     </fieldset>
 
     <fieldset>

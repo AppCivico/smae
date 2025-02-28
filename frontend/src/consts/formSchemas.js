@@ -1612,7 +1612,7 @@ export const planoSetorial = object({
     .nullable()
     .max(50000),
   meses: array()
-    .label('Meses disnponíveis'),
+    .label('Meses monitorados - ciclo físico'),
   monitoramento_orcamento: boolean()
     .label('Monitoramento de orçamento')
     .nullable(),
