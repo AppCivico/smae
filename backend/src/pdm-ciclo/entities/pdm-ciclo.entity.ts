@@ -6,6 +6,14 @@ import { MfFechamentoDto, MfListFechamentoDto } from '../../mf/metas/dto/mf-meta
 import { MfListRiscoDto, MfRiscoDto } from '../../mf/metas/dto/mf-meta-risco.dto';
 import { CicloFisicoDto } from '../../pdm/dto/list-pdm.dto';
 
+export const DocumentoEditavelTipo = {
+    analise: 'analise',
+    risco: 'risco',
+    fechamento: 'fechamento',
+} as const;
+
+export type DocumentoEditavelTipo = (typeof DocumentoEditavelTipo)[keyof typeof DocumentoEditavelTipo];
+
 export class ListPdmCicloDto {
     linhas: CicloFisicoDto[];
 }
@@ -53,8 +61,15 @@ export class UltimaRevisao {
 
 export class ListPSCicloDto {
     linhas: CicloFisicoPSDto[];
-
     ultima_revisao: UltimaRevisao | null;
+
+    @ApiProperty({
+        enum: DocumentoEditavelTipo,
+        isArray: true,
+        enumName: 'DocumentoEditavelTipo',
+        example: ['analise', 'risco'],
+    })
+    documentos_editaveis: DocumentoEditavelTipo[];
 }
 
 export class CicloRevisaoDto {
@@ -62,14 +77,6 @@ export class CicloRevisaoDto {
     risco: MfRiscoDto | null;
     fechamento: MfFechamentoDto | null;
 }
-
-export const DocumentoEditavelTipo = {
-    analise: 'analise',
-    risco: 'risco',
-    fechamento: 'fechamento',
-} as const;
-
-export type DocumentoEditavelTipo = (typeof DocumentoEditavelTipo)[keyof typeof DocumentoEditavelTipo];
 
 export class CiclosRevisaoDto {
     atual: CicloRevisaoDto;
@@ -86,14 +93,38 @@ export class CiclosRevisaoDto {
 export class PsListAnaliseQualitativaDto {
     corrente: MfListAnaliseQualitativaDto;
     anterior: MfListAnaliseQualitativaDto | null;
+
+    @ApiProperty({
+        enum: DocumentoEditavelTipo,
+        isArray: true,
+        enumName: 'DocumentoEditavelTipo',
+        example: ['analise'],
+    })
+    documentos_editaveis: DocumentoEditavelTipo[];
 }
 
 export class PsListRiscoDto {
     corrente: MfListRiscoDto;
     anterior: MfListRiscoDto | null;
+
+    @ApiProperty({
+        enum: DocumentoEditavelTipo,
+        isArray: true,
+        enumName: 'DocumentoEditavelTipo',
+        example: ['risco'],
+    })
+    documentos_editaveis: DocumentoEditavelTipo[];
 }
 
 export class PsListFechamentoDto {
     corrente: MfListFechamentoDto;
     anterior: MfListFechamentoDto | null;
+
+    @ApiProperty({
+        enum: DocumentoEditavelTipo,
+        isArray: true,
+        enumName: 'DocumentoEditavelTipo',
+        example: ['fechamento'],
+    })
+    documentos_editaveis: DocumentoEditavelTipo[];
 }
