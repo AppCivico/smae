@@ -16,6 +16,7 @@ import {
     CicloFisicoPSDto,
     CicloRevisaoDto,
     CiclosRevisaoDto,
+    DocumentoEditavelTipo,
     ListPSCicloDto,
     PsListAnaliseQualitativaDto,
     PsListFechamentoDto,
@@ -145,6 +146,50 @@ export class PsCicloService {
     }
 
     /**
+     * Determina quais documentos podem ser editados com base no fluxo
+     */
+    private async determinaDocumentosEditaveis(
+        metaId: number,
+        cicloId: number,
+        cicloAtivo: boolean
+    ): Promise<DocumentoEditavelTipo[]> {
+        if (!cicloAtivo) return [];
+
+        const [analiseExistente, riscoExistente, fechamentoExistente] = await Promise.all([
+            this.prisma.metaCicloFisicoAnalise.count({
+                where: { meta_id: metaId, ciclo_fisico_id: cicloId, ultima_revisao: true, removido_em: null },
+            }),
+            this.prisma.metaCicloFisicoRisco.count({
+                where: { meta_id: metaId, ciclo_fisico_id: cicloId, ultima_revisao: true, removido_em: null },
+            }),
+            this.prisma.metaCicloFisicoFechamento.count({
+                where: { meta_id: metaId, ciclo_fisico_id: cicloId, ultima_revisao: true, removido_em: null },
+            }),
+        ]);
+
+        // Se o fechamento já existe, nada mais pode ser editado
+        if (fechamentoExistente) return [];
+
+        // Documentos editáveis baseados no fluxo
+        const documentosEditaveis: DocumentoEditavelTipo[] = [];
+
+        // Análise pode ser editada se não houver fechamento
+        documentosEditaveis.push('analise');
+
+        // Risco pode ser editado se houver análise e não houver fechamento
+        if (analiseExistente) {
+            documentosEditaveis.push('risco');
+        }
+
+        // Fechamento pode ser editado se houver risco e análise
+        if (analiseExistente && riscoExistente) {
+            documentosEditaveis.push('fechamento');
+        }
+
+        return documentosEditaveis;
+    }
+
+    /**
      * Verifica permissão de escrita e estado do ciclo
      */
     private async verificaPermissaoEscritaBase(
@@ -152,7 +197,8 @@ export class PsCicloService {
         metaId: number,
         cicloId: number,
         user: PessoaFromJwt,
-        verificarFechamento = false
+        verificarFechamento = false,
+        tipoDocumento?: DocumentoEditavelTipo
     ): Promise<boolean> {
         await this.metaService.assertMetaWriteOrThrow(tipo, metaId, user, 'monitoramento', 'readwrite');
 
@@ -163,6 +209,20 @@ export class PsCicloService {
 
         if (verificarFechamento) {
             await this.verificaFechamento(metaId, cicloId);
+        }
+
+        if (tipoDocumento) {
+            const documentosEditaveis = await this.determinaDocumentosEditaveis(metaId, cicloId, cicloAtivo);
+
+            if (!documentosEditaveis.includes(tipoDocumento)) {
+                const mensagens = {
+                    analise: 'Não é possível editar a análise no estado atual do ciclo',
+                    risco: 'É necessário realizar a análise qualitativa antes do risco',
+                    fechamento:
+                        'É necessário realizar a análise qualitativa e a avaliação de risco antes do fechamento',
+                };
+                throw new ForbiddenException(mensagens[tipoDocumento]);
+            }
         }
 
         return true;
@@ -184,6 +244,7 @@ export class PsCicloService {
             throw new ForbiddenException('Ciclo não encontrado');
         }
 
+        // Get all monitoring documents for this meta and cycle
         const [analiseAtual, riscoAtual, fechamentoAtual] = await Promise.all([
             this.analiseService.getMetaAnaliseQualitativa(
                 {
@@ -216,6 +277,9 @@ export class PsCicloService {
             ),
         ]);
 
+        // Determine quais documentos podem ser editados
+        const documentosEditaveis = await this.determinaDocumentosEditaveis(metaId, cicloId, cicloAtual.ativo);
+
         const atual: CicloRevisaoDto = {
             analise: analiseAtual.analises.length > 0 ? analiseAtual.analises[0] : null,
             risco: riscoAtual.riscos.length > 0 ? riscoAtual.riscos[0] : null,
@@ -234,54 +298,52 @@ export class PsCicloService {
             },
         });
 
-        if (!cicloAnterior) {
-            return {
-                atual,
-                anterior: null,
+        let anterior: CicloRevisaoDto | null = null;
+
+        if (cicloAnterior) {
+            const [analiseAnterior, riscoAnterior, fechamentoAnterior] = await Promise.all([
+                this.analiseService.getMetaAnaliseQualitativa(
+                    {
+                        ciclo_fisico_id: cicloAnterior.id,
+                        meta_id: metaId,
+                        apenas_ultima_revisao: true,
+                    },
+                    null,
+                    null
+                ),
+
+                this.riscoService.getMetaRisco(
+                    {
+                        ciclo_fisico_id: cicloAnterior.id,
+                        meta_id: metaId,
+                        apenas_ultima_revisao: true,
+                    },
+                    null,
+                    null
+                ),
+
+                this.fechamentoService.getMetaFechamento(
+                    {
+                        ciclo_fisico_id: cicloAnterior.id,
+                        meta_id: metaId,
+                        apenas_ultima_revisao: true,
+                    },
+                    null,
+                    null
+                ),
+            ]);
+
+            anterior = {
+                analise: analiseAnterior.analises.length > 0 ? analiseAnterior.analises[0] : null,
+                risco: riscoAnterior.riscos.length > 0 ? riscoAnterior.riscos[0] : null,
+                fechamento: fechamentoAnterior.fechamentos.length > 0 ? fechamentoAnterior.fechamentos[0] : null,
             };
         }
-
-        const [analiseAnterior, riscoAnterior, fechamentoAnterior] = await Promise.all([
-            this.analiseService.getMetaAnaliseQualitativa(
-                {
-                    ciclo_fisico_id: cicloAnterior.id,
-                    meta_id: metaId,
-                    apenas_ultima_revisao: true,
-                },
-                null,
-                null
-            ),
-
-            this.riscoService.getMetaRisco(
-                {
-                    ciclo_fisico_id: cicloAnterior.id,
-                    meta_id: metaId,
-                    apenas_ultima_revisao: true,
-                },
-                null,
-                null
-            ),
-
-            this.fechamentoService.getMetaFechamento(
-                {
-                    ciclo_fisico_id: cicloAnterior.id,
-                    meta_id: metaId,
-                    apenas_ultima_revisao: true,
-                },
-                null,
-                null
-            ),
-        ]);
-
-        const anterior: CicloRevisaoDto = {
-            analise: analiseAnterior.analises.length > 0 ? analiseAnterior.analises[0] : null,
-            risco: riscoAnterior.riscos.length > 0 ? riscoAnterior.riscos[0] : null,
-            fechamento: fechamentoAnterior.fechamentos.length > 0 ? fechamentoAnterior.fechamentos[0] : null,
-        };
 
         return {
             atual,
             anterior,
+            documentos_editaveis: documentosEditaveis,
         };
     }
 
@@ -296,7 +358,8 @@ export class PsCicloService {
         dto: CreateAnaliseQualitativaDto,
         user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        await this.verificaPermissaoEscritaBase(tipo, metaId, cicloId, user, true);
+        await this.verificaPermissaoEscritaBase(tipo, metaId, cicloId, user, true, 'analise');
+
         return await this.analiseService.addMetaAnaliseQualitativaInterno(dto, user);
     }
 
@@ -311,7 +374,7 @@ export class PsCicloService {
         dto: AnaliseQualitativaDocumentoDto,
         user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        await this.verificaPermissaoEscritaBase(tipo, metaId, cicloId, user, true);
+        await this.verificaPermissaoEscritaBase(tipo, metaId, cicloId, user, true, 'analise');
         return await this.analiseService.addMetaAnaliseQualitativaDocumentoInterno(dto, user);
     }
 
@@ -326,7 +389,7 @@ export class PsCicloService {
         documentoId: number,
         user: PessoaFromJwt
     ): Promise<void> {
-        await this.verificaPermissaoEscritaBase(tipo, metaId, cicloId, user, true);
+        await this.verificaPermissaoEscritaBase(tipo, metaId, cicloId, user, true, 'analise');
         await this.analiseService.deleteMetaAnaliseQualitativaDocumentoInterno(documentoId, user);
     }
 
@@ -341,7 +404,7 @@ export class PsCicloService {
         dto: RiscoDto,
         user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        await this.verificaPermissaoEscritaBase(tipo, metaId, cicloId, user, true);
+        await this.verificaPermissaoEscritaBase(tipo, metaId, cicloId, user, true, 'risco');
         return await this.riscoService.addMetaRiscoInterno(dto, user);
     }
 
@@ -356,7 +419,7 @@ export class PsCicloService {
         dto: FechamentoDto,
         user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        await this.verificaPermissaoEscritaBase(tipo, metaId, cicloId, user, false);
+        await this.verificaPermissaoEscritaBase(tipo, metaId, cicloId, user, false, 'fechamento');
         return await this.fechamentoService.addMetaFechamentoInterno(dto, user);
     }
 

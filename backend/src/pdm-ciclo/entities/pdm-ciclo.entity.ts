@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { IsDateYMD } from '../../auth/decorators/date.decorator';
 import { DateYMD } from '../../common/date2ymd';
 import { MfAnaliseQualitativaDto, MfListAnaliseQualitativaDto } from '../../mf/metas/dto/mf-meta-analise-quali.dto';
@@ -62,9 +63,24 @@ export class CicloRevisaoDto {
     fechamento: MfFechamentoDto | null;
 }
 
+export const DocumentoEditavelTipo = {
+    analise: 'analise',
+    risco: 'risco',
+    fechamento: 'fechamento',
+} as const;
+
+export type DocumentoEditavelTipo = (typeof DocumentoEditavelTipo)[keyof typeof DocumentoEditavelTipo];
+
 export class CiclosRevisaoDto {
     atual: CicloRevisaoDto;
     anterior: CicloRevisaoDto | null;
+    @ApiProperty({
+        enum: DocumentoEditavelTipo,
+        isArray: true,
+        enumName: 'DocumentoEditavelTipo',
+        example: ['analise', 'risco'],
+    })
+    documentos_editaveis: DocumentoEditavelTipo[];
 }
 
 export class PsListAnaliseQualitativaDto {
