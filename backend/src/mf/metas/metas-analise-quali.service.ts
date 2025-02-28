@@ -39,6 +39,10 @@ export class MetasAnaliseQualiService {
         config: PessoaAcessoPdm | null,
         user: PessoaFromJwt | null
     ): Promise<MfListAnaliseQualitativaDto> {
+        return this.getMetaAnaliseQualitativaInterno(dto);
+    }
+
+    async getMetaAnaliseQualitativaInterno(dto: FilterAnaliseQualitativaDto): Promise<MfListAnaliseQualitativaDto> {
         const analisesResult = await this.prisma.metaCicloFisicoAnalise.findMany({
             where: {
                 ciclo_fisico_id: dto.ciclo_fisico_id,
@@ -119,10 +123,18 @@ export class MetasAnaliseQualiService {
         config: PessoaAcessoPdm,
         user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        const now = new Date(Date.now());
         if (config.perfil == 'ponto_focal') {
             throw new HttpException('Você não pode enviar analise qualitativa.', 400);
         }
+
+        return this.addMetaAnaliseQualitativaDocumentoInterno(dto, user);
+    }
+
+    async addMetaAnaliseQualitativaDocumentoInterno(
+        dto: AnaliseQualitativaDocumentoDto,
+        user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        const now = new Date(Date.now());
         const ciclo = await this.carregaCicloPorId(dto.ciclo_fisico_id);
 
         const id = await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient): Promise<number> => {
@@ -147,6 +159,14 @@ export class MetasAnaliseQualiService {
     }
 
     async deleteMetaAnaliseQualitativaDocumento(id: number, config: PessoaAcessoPdm, user: PessoaFromJwt) {
+        if (config.perfil == 'ponto_focal') {
+            throw new HttpException('Você não pode remover analise qualitativa.', 400);
+        }
+
+        return this.deleteMetaAnaliseQualitativaDocumentoInterno(id, user);
+    }
+
+    async deleteMetaAnaliseQualitativaDocumentoInterno(id: number, user: PessoaFromJwt) {
         const arquivo = await this.prisma.metaCicloFisicoAnaliseDocumento.findFirst({
             where: {
                 id: id,
@@ -155,10 +175,6 @@ export class MetasAnaliseQualiService {
         });
         if (!arquivo) throw new HttpException('404', 404);
         const now = new Date(Date.now());
-
-        if (config.perfil == 'ponto_focal') {
-            throw new HttpException('Você não pode remover analise qualitativa.', 400);
-        }
 
         await this.prisma.metaCicloFisicoAnaliseDocumento.update({
             where: { id: id },
@@ -171,10 +187,15 @@ export class MetasAnaliseQualiService {
         config: PessoaAcessoPdm,
         user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        const now = new Date(Date.now());
         if (config.perfil == 'ponto_focal') {
             throw new HttpException('Você não pode enviar analise qualitativa.', 400);
         }
+
+        return this.addMetaAnaliseQualitativaInterno(dto, user);
+    }
+
+    async addMetaAnaliseQualitativaInterno(dto: AnaliseQualitativaDto, user: PessoaFromJwt): Promise<RecordWithId> {
+        const now = new Date(Date.now());
         const ciclo = await this.carregaCicloPorId(dto.ciclo_fisico_id);
 
         const id = await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient): Promise<number> => {
