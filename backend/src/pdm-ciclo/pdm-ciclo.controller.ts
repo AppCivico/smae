@@ -10,7 +10,7 @@ import { MetaSetorialController } from '../meta/meta.controller';
 import { AnaliseQualitativaDocumentoDto, CreateAnaliseQualitativaDto } from '../mf/metas/dto/mf-meta-analise-quali.dto';
 import { FechamentoDto } from '../mf/metas/dto/mf-meta-fechamento.dto';
 import { RiscoDto } from '../mf/metas/dto/mf-meta-risco.dto';
-import { FilterMonitCicloDto, FilterPdmCiclo, UpdatePdmCicloDto } from './dto/update-pdm-ciclo.dto';
+import { FilterMonitCicloDto, FilterPdmCiclo, FilterPsCiclo, UpdatePdmCicloDto } from './dto/update-pdm-ciclo.dto';
 import {
     CiclosRevisaoDto,
     ListPdmCicloDto,
@@ -58,10 +58,10 @@ export class PdmCicloController {
 export class PsCicloController {
     constructor(private readonly psCicloService: PsCicloService) {}
 
-    @Get(':id/ciclo')
+    @Get(':pdm_id/ciclo')
     @ApiBearerAuth('access-token')
     @Roles(MetaSetorialController.ReadPerm)
-    async findAll(@Query() params: FilterPdmCiclo, @TipoPDM() tipo: TipoPdmType): Promise<ListPSCicloDto> {
+    async findAll(@Query() params: FilterPsCiclo, @TipoPDM() tipo: TipoPdmType): Promise<ListPSCicloDto> {
         return await this.psCicloService.findAll(tipo, params);
     }
 
