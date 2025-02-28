@@ -63,6 +63,7 @@ export class PsCicloService {
         });
 
         let ultimaRevisao = null;
+        let documentos_editaveis: DocumentoEditavelTipo[] = [];
 
         if (params.meta_id) {
             const latestCycle = ciclos.length > 0 ? ciclos[0] : null;
@@ -105,12 +106,22 @@ export class PsCicloService {
                 const fechamento = fechamentoData.fechamentos.length > 0 ? fechamentoData.fechamentos[0] : null;
 
                 ultimaRevisao = { analise, risco, fechamento };
+
+                // Determina documentos editáveis para o ciclo ativo
+                if (latestCycle.ativo) {
+                    documentos_editaveis = await this.determinaDocumentosEditaveis(
+                        params.meta_id,
+                        latestCycle.id,
+                        latestCycle.ativo
+                    );
+                }
             }
         }
 
         return {
             linhas: retorno,
             ultima_revisao: ultimaRevisao,
+            documentos_editaveis,
         };
     }
 
@@ -487,9 +498,14 @@ export class PsCicloService {
             );
         }
 
+        // Determina documentos editáveis
+        const cicloAtivo = await this.verificaCicloAtivo(cicloId);
+        const documentos_editaveis = await this.determinaDocumentosEditaveis(metaId, cicloId, cicloAtivo);
+
         return {
             corrente: currentData,
             anterior: previousData,
+            documentos_editaveis,
         };
     }
 
@@ -530,9 +546,14 @@ export class PsCicloService {
             );
         }
 
+        // Determina documentos editáveis
+        const cicloAtivo = await this.verificaCicloAtivo(cicloId);
+        const documentos_editaveis = await this.determinaDocumentosEditaveis(metaId, cicloId, cicloAtivo);
+
         return {
             corrente: currentData,
             anterior: previousData,
+            documentos_editaveis,
         };
     }
 
@@ -573,9 +594,14 @@ export class PsCicloService {
             );
         }
 
+        // Determina documentos editáveis
+        const cicloAtivo = await this.verificaCicloAtivo(cicloId);
+        const documentos_editaveis = await this.determinaDocumentosEditaveis(metaId, cicloId, cicloAtivo);
+
         return {
             corrente: currentData,
             anterior: previousData,
+            documentos_editaveis,
         };
     }
 }
