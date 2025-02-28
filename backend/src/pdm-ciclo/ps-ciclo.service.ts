@@ -148,6 +148,8 @@ export class PsCicloService {
             where: {
                 meta_id: metaId,
                 ciclo_fisico_id: cicloId,
+                removido_em: null,
+                ultima_revisao: true,
             },
         });
 
