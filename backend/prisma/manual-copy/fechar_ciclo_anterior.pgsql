@@ -17,7 +17,7 @@ BEGIN
             meta_id,
             ciclo_fisico_id,
             referencia_data,
-            informacoes_complementares,
+            comentario,
             criado_em,
             criado_por,
             ultima_revisao

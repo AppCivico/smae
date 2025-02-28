@@ -43,3 +43,7 @@ CREATE UNIQUE INDEX "ciclo_fisico_pdm_id_data_ciclo_key" ON "ciclo_fisico"("pdm_
 
 -- AddForeignKey
 ALTER TABLE "pdm_ciclo_config" ADD CONSTRAINT "pdm_ciclo_config_pdm_id_fkey" FOREIGN KEY ("pdm_id") REFERENCES "pdm"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+drop index if exists ix_ciclo_fisico_uniq_ativo;
+
+create unique index ix_ciclo_fisico_uniq_ativo on ciclo_fisico(ativo) where ativo=true and tipo='PDM';
