@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { Date2YMD } from '../common/date2ymd';
 import { TipoPdmType } from '../common/decorators/current-tipo-pdm';
@@ -128,14 +128,11 @@ export class PsCicloService {
     /**
      * Verifica ciclo ativo e retorna estado
      */
-    private async verificaCicloAtivo(cicloId: number): Promise<boolean> {
+    private async verificaCicloAtivo(pdmId: number, cicloId: number): Promise<boolean> {
         const ciclo = await this.prisma.cicloFisico.findUnique({
-            where: { id: cicloId },
+            where: { id: cicloId, pdm_id: pdmId, pdm: { removido_em: null } },
         });
-
-        if (!ciclo) {
-            throw new ForbiddenException('Ciclo não encontrado');
-        }
+        if (!ciclo) throw new BadRequestException('Ciclo não encontrado');
 
         return ciclo.ativo;
     }
@@ -154,7 +151,7 @@ export class PsCicloService {
         });
 
         if (fechamentoExistente) {
-            throw new ForbiddenException('Não é possível editar a análise após o fechamento do ciclo para esta meta');
+            throw new BadRequestException('Não é possível editar a análise após o fechamento do ciclo para esta meta');
         }
     }
 
@@ -207,6 +204,7 @@ export class PsCicloService {
      */
     private async verificaPermissaoEscritaBase(
         tipo: TipoPdmType,
+        pdmId: number,
         metaId: number,
         cicloId: number,
         user: PessoaFromJwt,
@@ -215,9 +213,9 @@ export class PsCicloService {
     ): Promise<boolean> {
         await this.metaService.assertMetaWriteOrThrow(tipo, metaId, user, 'monitoramento', 'readwrite');
 
-        const cicloAtivo = await this.verificaCicloAtivo(cicloId);
+        const cicloAtivo = await this.verificaCicloAtivo(pdmId, cicloId);
         if (!cicloAtivo) {
-            throw new ForbiddenException('Não é possível editar um ciclo inativo');
+            throw new BadRequestException('Não é possível editar um ciclo inativo');
         }
 
         if (verificarFechamento) {
@@ -234,7 +232,7 @@ export class PsCicloService {
                     fechamento:
                         'É necessário realizar a análise qualitativa e a avaliação de risco antes do fechamento',
                 };
-                throw new ForbiddenException(mensagens[tipoDocumento]);
+                throw new BadRequestException(mensagens[tipoDocumento]);
             }
         }
 
@@ -243,18 +241,19 @@ export class PsCicloService {
 
     async getCicloRevisoes(
         tipo: TipoPdmType,
-        metaId: number,
+        pdmId: number,
         cicloId: number,
+        metaId: number,
         user: PessoaFromJwt
     ): Promise<CiclosRevisaoDto> {
         await this.metaService.assertMetaWriteOrThrow(tipo, metaId, user, 'monitoramento', 'readonly');
 
         const cicloAtual = await this.prisma.cicloFisico.findUnique({
-            where: { id: cicloId },
+            where: { id: cicloId, pdm_id: pdmId, pdm: { removido_em: null } },
         });
 
         if (!cicloAtual) {
-            throw new ForbiddenException('Ciclo não encontrado');
+            throw new BadRequestException('Ciclo não encontrado');
         }
 
         // Get all monitoring documents for this meta and cycle
@@ -373,7 +372,7 @@ export class PsCicloService {
         dto: CreateAnaliseQualitativaDto,
         user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        await this.verificaPermissaoEscritaBase(tipo, metaId, cicloId, user, true, 'analise');
+        await this.verificaPermissaoEscritaBase(tipo, pdmId, metaId, cicloId, user, true, 'analise');
 
         return await this.analiseService.addMetaAnaliseQualitativaInterno(dto, user);
     }
@@ -389,7 +388,7 @@ export class PsCicloService {
         dto: AnaliseQualitativaDocumentoDto,
         user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        await this.verificaPermissaoEscritaBase(tipo, metaId, cicloId, user, true, 'analise');
+        await this.verificaPermissaoEscritaBase(tipo, pdmId, metaId, cicloId, user, true, 'analise');
         return await this.analiseService.addMetaAnaliseQualitativaDocumentoInterno(dto, user);
     }
 
@@ -404,7 +403,7 @@ export class PsCicloService {
         documentoId: number,
         user: PessoaFromJwt
     ): Promise<void> {
-        await this.verificaPermissaoEscritaBase(tipo, metaId, cicloId, user, true, 'analise');
+        await this.verificaPermissaoEscritaBase(tipo, pdmId, metaId, cicloId, user, true, 'analise');
         await this.analiseService.deleteMetaAnaliseQualitativaDocumentoInterno(documentoId, user);
     }
 
@@ -419,7 +418,7 @@ export class PsCicloService {
         dto: RiscoDto,
         user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        await this.verificaPermissaoEscritaBase(tipo, metaId, cicloId, user, true, 'risco');
+        await this.verificaPermissaoEscritaBase(tipo, pdmId, metaId, cicloId, user, true, 'risco');
         return await this.riscoService.addMetaRiscoInterno(dto, user);
     }
 
@@ -434,7 +433,7 @@ export class PsCicloService {
         dto: FechamentoDto,
         user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        await this.verificaPermissaoEscritaBase(tipo, metaId, cicloId, user, false, 'fechamento');
+        await this.verificaPermissaoEscritaBase(tipo, pdmId, metaId, cicloId, user, false, 'fechamento');
         return await this.fechamentoService.addMetaFechamentoInterno(dto, user);
     }
 
@@ -503,7 +502,7 @@ export class PsCicloService {
         }
 
         // Determina documentos editáveis
-        const cicloAtivo = await this.verificaCicloAtivo(cicloId);
+        const cicloAtivo = await this.verificaCicloAtivo(pdmId, cicloId);
         const documentos_editaveis = await this.determinaDocumentosEditaveis(metaId, cicloId, cicloAtivo);
 
         return {
@@ -552,7 +551,7 @@ export class PsCicloService {
         }
 
         // Determina documentos editáveis
-        const cicloAtivo = await this.verificaCicloAtivo(cicloId);
+        const cicloAtivo = await this.verificaCicloAtivo(pdmId, cicloId);
         const documentos_editaveis = await this.determinaDocumentosEditaveis(metaId, cicloId, cicloAtivo);
 
         return {
@@ -600,7 +599,7 @@ export class PsCicloService {
         }
 
         // Determina documentos editáveis
-        const cicloAtivo = await this.verificaCicloAtivo(cicloId);
+        const cicloAtivo = await this.verificaCicloAtivo(pdmId, cicloId);
         const documentos_editaveis = await this.determinaDocumentosEditaveis(metaId, cicloId, cicloAtivo);
 
         return {

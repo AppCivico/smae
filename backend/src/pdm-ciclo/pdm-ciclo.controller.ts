@@ -74,7 +74,7 @@ export class PsCicloController {
         @CurrentUser() user: PessoaFromJwt,
         @TipoPDM() tipo: TipoPdmType
     ): Promise<CiclosRevisaoDto> {
-        return await this.psCicloService.getCicloRevisoes(tipo, dto.meta_id, params.id2, user);
+        return await this.psCicloService.getCicloRevisoes(tipo, params.id, params.id2, dto.meta_id, user);
     }
 
     @Post(':id/ciclo/:id2/analise')
