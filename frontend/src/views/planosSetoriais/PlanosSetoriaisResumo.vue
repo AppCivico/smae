@@ -10,11 +10,10 @@ import dateToField from '@/helpers/dateToField';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store.ts';
 import { useUsersStore } from '@/stores/users.store';
-import months from '@/consts/months';
+import { mapaDeMeses } from '@/consts/months';
 import combinadorDeListas from '@/helpers/combinadorDeListas';
 
 defineOptions({ inheritAttrs: false });
-const mesesDisponiveis = computed(() => months.map((x, i) => ({ nome: x, id: i + 1 })));
 
 const route = useRoute();
 
@@ -169,7 +168,7 @@ usersStore.buscarPessoasSimplificadas();
           {{ schema.fields.meses.spec.label }}
         </dt>
         <dd class="t13">
-          {{ combinadorDeListas(emFoco?.meses.map(mes => mesesDisponiveis[mes]), '','nome') }}
+          {{ combinadorDeListas(emFoco?.meses.map(mes => mapaDeMeses[mes]), '','nome') }}
         </dd>
       </dl>
     </div>
@@ -311,7 +310,9 @@ usersStore.buscarPessoasSimplificadas();
                 {{ pessoasSimplificadasPorId[pessoa].nome_exibicao ||
                   pessoasSimplificadasPorId[pessoa] }}
                 <template v-if="órgãosPorId[pessoasSimplificadasPorId[pessoa].orgao_id]?.sigla">
-                  (<abbr :title="órgãosPorId[pessoasSimplificadasPorId[pessoa].orgao_id]?.descricao">
+                  (<abbr
+                    :title="órgãosPorId[pessoasSimplificadasPorId[pessoa].orgao_id]?.descricao"
+                  >
                     {{ órgãosPorId[pessoasSimplificadasPorId[pessoa].orgao_id]?.sigla }}
                   </abbr>)
                 </template>

@@ -1,4 +1,4 @@
-export default [
+const meses = [
   'Janeiro',
   'Fevereiro',
   'Março',
@@ -12,3 +12,7 @@ export default [
   'Novembro',
   'Dezembro',
 ];
+
+export const mapaDeMeses = meses.map((x, i) => ({ nome: x, id: i + 1 }));
+
+export default meses;
