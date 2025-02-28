@@ -229,51 +229,58 @@ export class IndicadoresService implements ReportableService {
         where dt.dt >= i.inicio_medicao AND dt.dt < i.fim_medicao + (select periodicidade_intervalo(i.periodicidade))
         `;
 
-        await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
-            if (dto.tipo == 'Mensal' && dto.mes) {
-                await this.rodaQueryMensalAnalitico(prismaTxn, sql, dto.ano, dto.mes);
-                await this.streamRowsInto(null, stream, prismaTxn);
-            } else if (dto.periodo == 'Anual' && dto.tipo == 'Analitico') {
-                await this.rodaQueryAnualAnalitico(prismaTxn, sql, anoInicial);
+        await this.prisma.$transaction(
+            async (prismaTxn: Prisma.TransactionClient) => {
+                if (dto.tipo == 'Mensal' && dto.mes) {
+                    await this.rodaQueryMensalAnalitico(prismaTxn, sql, dto.ano, dto.mes);
+                    await this.streamRowsInto(null, stream, prismaTxn);
+                } else if (dto.periodo == 'Anual' && dto.tipo == 'Analitico') {
+                    await this.rodaQueryAnualAnalitico(prismaTxn, sql, anoInicial);
 
-                for (let ano = anoInicial + 1; ano <= dto.ano; ano++) {
-                    await this.rodaQueryAnualAnalitico(prismaTxn, this.replaceCreateToInsert(sql), ano);
-                }
+                    for (let ano = anoInicial + 1; ano <= dto.ano; ano++) {
+                        await this.rodaQueryAnualAnalitico(prismaTxn, this.replaceCreateToInsert(sql), ano);
+                    }
 
-                await this.streamRowsInto(null, stream, prismaTxn);
-            } else if (dto.periodo == 'Anual' && dto.tipo == 'Consolidado') {
-                await this.rodaQueryAnualConsolidado(prismaTxn, sql, dto.ano);
+                    await this.streamRowsInto(null, stream, prismaTxn);
+                } else if (dto.periodo == 'Anual' && dto.tipo == 'Consolidado') {
+                    await this.rodaQueryAnualConsolidado(prismaTxn, sql, dto.ano);
 
-                await this.streamRowsInto(null, stream, prismaTxn);
-            } else if (dto.periodo == 'Semestral' && dto.tipo == 'Consolidado') {
-                const tipo = dto.semestre == 'Primeiro' ? 'Primeiro' : 'Segundo';
-                const ano = dto.ano;
+                    await this.streamRowsInto(null, stream, prismaTxn);
+                } else if (dto.periodo == 'Semestral' && dto.tipo == 'Consolidado') {
+                    const tipo = dto.semestre == 'Primeiro' ? 'Primeiro' : 'Segundo';
+                    const ano = dto.ano;
 
-                await this.rodaQuerySemestralConsolidado(tipo, ano, prismaTxn, sql);
+                    await this.rodaQuerySemestralConsolidado(tipo, ano, prismaTxn, sql);
 
-                await this.streamRowsInto(null, stream, prismaTxn);
-            } else if (dto.periodo == 'Semestral' && dto.tipo == 'Analitico') {
-                const tipo = dto.semestre == 'Primeiro' ? 'Primeiro' : 'Segundo';
-                const ano = anoInicial;
+                    await this.streamRowsInto(null, stream, prismaTxn);
+                } else if (dto.periodo == 'Semestral' && dto.tipo == 'Analitico') {
+                    const tipo = dto.semestre == 'Primeiro' ? 'Primeiro' : 'Segundo';
+                    const ano = anoInicial;
 
-                const semestreInicio = tipo === 'Segundo' ? ano + '-12-01' : ano + '-06-01';
-
-                await this.rodaQuerySemestralAnalitico(prismaTxn, sql, semestreInicio, tipo);
-
-                for (let ano = anoInicial + 1; ano <= dto.ano; ano++) {
                     const semestreInicio = tipo === 'Segundo' ? ano + '-12-01' : ano + '-06-01';
 
-                    await this.rodaQuerySemestralAnalitico(
-                        prismaTxn,
-                        this.replaceCreateToInsert(sql),
-                        semestreInicio,
-                        tipo
-                    );
-                }
+                    await this.rodaQuerySemestralAnalitico(prismaTxn, sql, semestreInicio, tipo);
 
-                await this.streamRowsInto(null, stream, prismaTxn);
+                    for (let ano = anoInicial + 1; ano <= dto.ano; ano++) {
+                        const semestreInicio = tipo === 'Segundo' ? ano + '-12-01' : ano + '-06-01';
+
+                        await this.rodaQuerySemestralAnalitico(
+                            prismaTxn,
+                            this.replaceCreateToInsert(sql),
+                            semestreInicio,
+                            tipo
+                        );
+                    }
+
+                    await this.streamRowsInto(null, stream, prismaTxn);
+                }
+            },
+            {
+                maxWait: 1000000,
+                timeout: 60 * 1000 * 15,
+                isolationLevel: 'Serializable',
             }
-        });
+        );
     }
 
     private async rodaQuerySemestralAnalitico(
@@ -456,51 +463,58 @@ export class IndicadoresService implements ReportableService {
         const regioes = await this.prisma.regiao.findMany({
             where: { removido_em: null },
         });
-        await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
-            if (dto.tipo == 'Mensal' && dto.mes) {
-                await this.rodaQueryMensalAnalitico(prismaTxn, sql, dto.ano, dto.mes);
-                await this.streamRowsInto(regioes, stream, prismaTxn);
-            } else if (dto.periodo == 'Anual' && dto.tipo == 'Analitico') {
-                await this.rodaQueryAnualAnalitico(prismaTxn, sql, anoInicial);
+        await this.prisma.$transaction(
+            async (prismaTxn: Prisma.TransactionClient) => {
+                if (dto.tipo == 'Mensal' && dto.mes) {
+                    await this.rodaQueryMensalAnalitico(prismaTxn, sql, dto.ano, dto.mes);
+                    await this.streamRowsInto(regioes, stream, prismaTxn);
+                } else if (dto.periodo == 'Anual' && dto.tipo == 'Analitico') {
+                    await this.rodaQueryAnualAnalitico(prismaTxn, sql, anoInicial);
 
-                for (let ano = anoInicial + 1; ano <= dto.ano; ano++) {
-                    await this.rodaQueryAnualAnalitico(prismaTxn, this.replaceCreateToInsert(sql), ano);
-                }
+                    for (let ano = anoInicial + 1; ano <= dto.ano; ano++) {
+                        await this.rodaQueryAnualAnalitico(prismaTxn, this.replaceCreateToInsert(sql), ano);
+                    }
 
-                await this.streamRowsInto(regioes, stream, prismaTxn);
-            } else if (dto.periodo == 'Anual' && dto.tipo == 'Consolidado') {
-                await this.rodaQueryAnualConsolidado(prismaTxn, sql, dto.ano);
+                    await this.streamRowsInto(regioes, stream, prismaTxn);
+                } else if (dto.periodo == 'Anual' && dto.tipo == 'Consolidado') {
+                    await this.rodaQueryAnualConsolidado(prismaTxn, sql, dto.ano);
 
-                await this.streamRowsInto(regioes, stream, prismaTxn);
-            } else if (dto.periodo == 'Semestral' && dto.tipo == 'Consolidado') {
-                const tipo = dto.semestre == 'Primeiro' ? 'Primeiro' : 'Segundo';
-                const ano = dto.ano;
+                    await this.streamRowsInto(regioes, stream, prismaTxn);
+                } else if (dto.periodo == 'Semestral' && dto.tipo == 'Consolidado') {
+                    const tipo = dto.semestre == 'Primeiro' ? 'Primeiro' : 'Segundo';
+                    const ano = dto.ano;
 
-                await this.rodaQuerySemestralConsolidado(tipo, ano, prismaTxn, sql);
+                    await this.rodaQuerySemestralConsolidado(tipo, ano, prismaTxn, sql);
 
-                await this.streamRowsInto(regioes, stream, prismaTxn);
-            } else if (dto.periodo == 'Semestral' && dto.tipo == 'Analitico') {
-                const tipo = dto.semestre == 'Primeiro' ? 'Primeiro' : 'Segundo';
-                const ano = anoInicial;
+                    await this.streamRowsInto(regioes, stream, prismaTxn);
+                } else if (dto.periodo == 'Semestral' && dto.tipo == 'Analitico') {
+                    const tipo = dto.semestre == 'Primeiro' ? 'Primeiro' : 'Segundo';
+                    const ano = anoInicial;
 
-                const semestreInicio = tipo === 'Segundo' ? ano + '-12-01' : ano + '-06-01';
-
-                await this.rodaQuerySemestralAnalitico(prismaTxn, sql, semestreInicio, tipo);
-
-                for (let ano = anoInicial + 1; ano <= dto.ano; ano++) {
                     const semestreInicio = tipo === 'Segundo' ? ano + '-12-01' : ano + '-06-01';
 
-                    await this.rodaQuerySemestralAnalitico(
-                        prismaTxn,
-                        this.replaceCreateToInsert(sql),
-                        semestreInicio,
-                        tipo
-                    );
-                }
+                    await this.rodaQuerySemestralAnalitico(prismaTxn, sql, semestreInicio, tipo);
 
-                await this.streamRowsInto(regioes, stream, prismaTxn);
+                    for (let ano = anoInicial + 1; ano <= dto.ano; ano++) {
+                        const semestreInicio = tipo === 'Segundo' ? ano + '-12-01' : ano + '-06-01';
+
+                        await this.rodaQuerySemestralAnalitico(
+                            prismaTxn,
+                            this.replaceCreateToInsert(sql),
+                            semestreInicio,
+                            tipo
+                        );
+                    }
+
+                    await this.streamRowsInto(regioes, stream, prismaTxn);
+                }
+            },
+            {
+                maxWait: 1000000,
+                timeout: 60 * 1000 * 15,
+                isolationLevel: 'Serializable',
             }
-        });
+        );
     }
 
     async toFileOutput(
