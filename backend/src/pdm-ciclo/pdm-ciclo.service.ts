@@ -13,22 +13,12 @@ export class PdmCicloService {
     async findAll(params: FilterPdmCiclo): Promise<CicloFisicoDto[]> {
         const retorno: CicloFisicoDto[] = [];
 
-        // O filtro de "ano" afeta o data ciclo. E ele deve funcionar junto com o filtro de "apenas_futuro".
         const ciclos = await this.prisma.cicloFisico.findMany({
             where: {
                 pdm_id: params.pdm_id,
-                AND: [
-                    {
-                        data_ciclo: {
-                            gte: params.apenas_futuro ? new Date(Date.now()) : undefined,
-                        },
-                    },
-                    {
-                        data_ciclo: {
-                            gte: params.ano ? new Date(params.ano, 0, 1) : undefined,
-                        },
-                    },
-                ],
+                data_ciclo: {
+                    gt: params.apenas_futuro ? new Date(Date.now()) : undefined,
+                },
             },
             include: {
                 fases: true,
