@@ -1,7 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsDateYMD } from '../../auth/decorators/date.decorator';
 import { DateYMD } from '../../common/date2ymd';
-import { MfAnaliseQualitativaDto, MfListAnaliseQualitativaDto } from '../../mf/metas/dto/mf-meta-analise-quali.dto';
+import {
+    ArquivoAnaliseQualitativaDocumentoDto,
+    MfAnaliseQualitativaDto,
+    MfListAnaliseQualitativaDto,
+} from '../../mf/metas/dto/mf-meta-analise-quali.dto';
 import { MfFechamentoDto, MfListFechamentoDto } from '../../mf/metas/dto/mf-meta-fechamento.dto';
 import { MfListRiscoDto, MfRiscoDto } from '../../mf/metas/dto/mf-meta-risco.dto';
 import { CicloFisicoDto } from '../../pdm/dto/list-pdm.dto';
@@ -76,6 +80,11 @@ export class CicloRevisaoDto {
     analise: MfAnaliseQualitativaDto | null;
     risco: MfRiscoDto | null;
     fechamento: MfFechamentoDto | null;
+    @ApiProperty({
+        type: ArquivoAnaliseQualitativaDocumentoDto,
+        isArray: true,
+    })
+    arquivos: ArquivoAnaliseQualitativaDocumentoDto[] | null;
 }
 
 export class CiclosRevisaoDto {
@@ -93,6 +102,11 @@ export class CiclosRevisaoDto {
 export class PsListAnaliseQualitativaDto {
     corrente: MfListAnaliseQualitativaDto;
     anterior: MfListAnaliseQualitativaDto | null;
+    @ApiProperty({
+        type: ArquivoAnaliseQualitativaDocumentoDto,
+        isArray: true,
+    })
+    arquivos: ArquivoAnaliseQualitativaDocumentoDto[] | null;
 
     @ApiProperty({
         enum: DocumentoEditavelTipo,
