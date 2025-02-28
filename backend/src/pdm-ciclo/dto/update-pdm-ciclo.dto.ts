@@ -3,6 +3,7 @@ import { IsBoolean, IsInt, IsOptional } from 'class-validator';
 import { DateTransform } from '../../auth/transforms/date.transform';
 import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
 import { NumberTransform } from '../../auth/transforms/number.transform';
+import { OmitType } from '@nestjs/mapped-types';
 
 export class UpdatePdmCicloDto {
     /**
@@ -62,7 +63,7 @@ export class FilterPdmCiclo {
     apenas_futuro?: boolean;
 }
 
-export class FilterPsCiclo extends FilterPdmCiclo {
+export class FilterPsCiclo extends OmitType(FilterPdmCiclo, ['pdm_id']) {
     @IsOptional()
     @IsInt()
     @Transform(NumberTransform)

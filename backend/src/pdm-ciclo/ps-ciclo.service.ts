@@ -39,14 +39,19 @@ export class PsCicloService {
     /**
      * Busca ciclos disponíveis com base nos filtros
      */
-    async findAll(tipo: TipoPdmType, params: FilterPsCiclo, user?: PessoaFromJwt): Promise<ListPSCicloDto> {
+    async findAll(
+        tipo: TipoPdmType,
+        pdm_id: number,
+        params: FilterPsCiclo,
+        user?: PessoaFromJwt
+    ): Promise<ListPSCicloDto> {
         if (params.meta_id && user) {
             await this.metaService.assertMetaWriteOrThrow(tipo, params.meta_id, user, 'monitoramento', 'readonly');
         }
 
         const ciclos = await this.prisma.cicloFisico.findMany({
             where: {
-                pdm_id: params.pdm_id,
+                pdm_id: pdm_id,
                 data_ciclo: {
                     gt: params.apenas_futuro ? new Date(Date.now()) : undefined,
                 },
