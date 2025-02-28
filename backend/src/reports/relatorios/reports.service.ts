@@ -513,8 +513,8 @@ export class ReportsService {
                 await this.verificaRelatorioFila();
             },
             {
-                maxWait: 1000000,
-                timeout: 60 * 1000 * 15,
+                maxWait: 30000,
+                timeout: 60 * 1000 * 5,
                 isolationLevel: 'Serializable',
             }
         );
