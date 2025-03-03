@@ -509,7 +509,8 @@ export class PdmCicloService {
         user: PessoaFromJwt,
         prismaCtx?: Prisma.TransactionClient | undefined
     ): Promise<RecordWithId> {
-        const pdm = await this.prisma.pdm.findUniqueOrThrow({
+        const prisma = prismaCtx ?? this.prisma;
+        const pdm = await prisma.pdm.findUniqueOrThrow({
             where: { id: pdmId },
             select: { sistema: true },
         });
@@ -517,7 +518,7 @@ export class PdmCicloService {
         if (dto.meses && dto.meses.length > 0 && !dto.data_inicio)
             throw new Error('Data de início é obrigatória quando há meses configurados');
 
-        const countExistentes = await this.prisma.cicloFisico.count({
+        const countExistentes = await prisma.cicloFisico.count({
             where: {
                 pdm_id: pdmId,
                 tipo: 'PDM',
