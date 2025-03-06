@@ -225,7 +225,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
               name: 'monitoramentoDeMetasAnaliseDeRisco',
               path: 'analise-de-risco/:cicloId',
               meta: {
-                título: 'Analise de Risco',
+                título: 'Análise de Risco',
                 títuloParaMenu: undefined,
               },
               component: () => import('@/views/monitoramentoDeMetas/MonitoramentoDeMetasAnaliseDeRisco.vue'),
@@ -238,15 +238,6 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
                 títuloParaMenu: undefined,
               },
               component: () => import('@/views/monitoramentoDeMetas/MonitoramentoDeMetasRegistroDeFechamento.vue'),
-            },
-            {
-              name: 'monitoramentoDeMetasAnaliseQualitativa',
-              path: 'analise-qualitativa/:cicloId',
-              meta: {
-                título: 'Análise Qualitativa',
-                títuloParaMenu: undefined,
-              },
-              component: () => import('@/views/monitoramentoDeMetas/MonitoramentoDeMetasAnaliseQualitativa.vue'),
             },
             {
               name: 'monitoramentoDeMetasAnaliseQualitativa',
