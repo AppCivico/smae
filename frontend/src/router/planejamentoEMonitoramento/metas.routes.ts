@@ -222,7 +222,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
               component: () => import('@/views/monitoramentoDeMetas/MonitoramentoDeMetasLista.vue'),
             },
             {
-              name: 'monitoramentoDeMetasAnaliseDeRisco',
+              name: `${entidadeMãe}.monitoramentoDeMetasAnaliseDeRisco`,
               path: 'analise-de-risco/:cicloId',
               meta: {
                 título: 'Análise de Risco',
@@ -231,7 +231,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
               component: () => import('@/views/monitoramentoDeMetas/MonitoramentoDeMetasAnaliseDeRisco.vue'),
             },
             {
-              name: 'monitoramentoDeMetasRegistroDeFechamento',
+              name: `${entidadeMãe}.monitoramentoDeMetasRegistroDeFechamento`,
               path: 'registro-de-fechamento/:cicloId',
               meta: {
                 título: 'Registro de Fechamento',
@@ -240,7 +240,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
               component: () => import('@/views/monitoramentoDeMetas/MonitoramentoDeMetasRegistroDeFechamento.vue'),
             },
             {
-              name: 'monitoramentoDeMetasAnaliseQualitativa',
+              name: `${entidadeMãe}.monitoramentoDeMetasAnaliseQualitativa`,
               path: 'analise-qualitativa/:cicloId',
               meta: {
                 título: 'Análise Qualitativa',
