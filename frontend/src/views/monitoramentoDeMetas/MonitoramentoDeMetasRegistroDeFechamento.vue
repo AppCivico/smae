@@ -1,5 +1,6 @@
 <script setup>
 import TextEditor from '@/components/TextEditor.vue';
+import { monitoramentoDeMetasFechamento as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useMonitoramentoDeMetasStore } from '@/stores/monitoramentoDeMetas.store';
 import { storeToRefs } from 'pinia';
@@ -34,6 +35,7 @@ const {
   errors, handleSubmit, isSubmitting, resetField, resetForm, setFieldValue, values,
 } = useForm({
   initialValues: fechamentoEmFocoParaEdicao.value,
+  validationSchema: schema,
 });
 
 const formularioSujo = useIsFormDirty();

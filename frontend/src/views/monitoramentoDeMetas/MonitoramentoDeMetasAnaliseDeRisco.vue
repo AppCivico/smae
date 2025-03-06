@@ -1,5 +1,6 @@
 <script setup>
 import TextEditor from '@/components/TextEditor.vue';
+import { monitoramentoDeMetasRisco as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useMonitoramentoDeMetasStore } from '@/stores/monitoramentoDeMetas.store';
 import { storeToRefs } from 'pinia';
@@ -35,6 +36,7 @@ const {
   errors, handleSubmit, isSubmitting, resetField, resetForm, setFieldValue, values,
 } = useForm({
   initialValues: riscoEmFocoParaEdicao.value,
+  validationSchema: schema,
 });
 
 const formularioSujo = useIsFormDirty();
