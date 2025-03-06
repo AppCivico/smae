@@ -232,6 +232,11 @@ export class PSMonitoramentoMensal implements ReportableService {
             user
         );
         const metasArr = metas.map((r) => r.id);
+
+        console.log("============");
+        console.log(metasArr);
+        console.log("============");
+
         if (metasArr.length > 10000)
             throw new BadRequestException('Mais de 10000 indicadores encontrados, por favor refine a busca.');
 
@@ -260,8 +265,7 @@ export class PSMonitoramentoMensal implements ReportableService {
             left join meta_ciclo_fisico_analise mcf on mcf.ciclo_fisico_id = cf.id and mcf.removido_em is null and mcf.ultima_revisao = true
             left join meta_ciclo_fisico_risco mcr on mcr.ciclo_fisico_id = cf.id and mcr.removido_em is null and mcr.ultima_revisao = true
             left join meta_ciclo_fisico_fechamento mcfec on mcfec.ciclo_fisico_id = cf.id and mcfec.removido_em is null and mcfec.ultima_revisao = true
-            where m.id in (:metas)
-            and cf.pdm_id = :pdm_id
+            where cf.pdm_id = :pdm_id
             and mcf.referencia_data = :mesAno ::date
             and mcr.referencia_data = :mesAno ::date
             and mcfec.referencia_data = :mesAno ::date`;
@@ -325,6 +329,9 @@ export class PSMonitoramentoMensal implements ReportableService {
             });
         }
 
+        const cicloMetasFile = await this.toFileOutputMetasCiclo(params, ctx, user);
+        out.push(...cicloMetasFile);
+
         const indicadores = await this.indicadoresService.toFileOutput(
             {
                 ...params,
@@ -338,6 +345,58 @@ export class PSMonitoramentoMensal implements ReportableService {
         );
         for (const indicador of indicadores) {
             out.push(indicador);
+        }
+        return out;
+    }
+
+    async toFileOutputMetasCiclo(
+        params: CreatePsMonitoramentoMensalFilterDto,
+        ctx: ReportContext,
+        user: PessoaFromJwt | null
+    ): Promise<FileOutput[]> {
+        const rows = await this.buscaMetasCiclo(params, user);
+
+        console.log("================");
+        console.log(rows);
+        console.log("================");
+
+        console.log("================");
+        console.log(params);
+        console.log("================");
+
+        await ctx.progress(40);
+
+        const fieldsCSV = [
+            { value: 'meta_id', label: 'ID da Meta' },
+            { value: 'meta_codigo', label: 'Código da Meta' },
+            { value: 'iniciativa_id', label: 'ID da Iniciativa' },
+            { value: 'iniciativa_codigo', label: 'Código da Iniciativa' },
+            { value: 'atividade_id', label: 'ID da Atividade' },
+            { value: 'atividade_codigo', label: 'Código da Atividade' },
+            { value: 'analise_qualitativa', label: 'Analise Qualitativa' },
+            { value: 'analise_qualitativa_data', label: 'Data da Analise Qualitativa' },
+            { value: 'risco_detalhamento', label: 'Detalhamento do Risco' },
+            { value: 'risco_ponto_atencao', label: 'Ponto de Atenção do Risco' },
+            { value: 'fechamento_comentario', label: 'Comentário de Fechamento' },
+        ];
+
+        const out: FileOutput[] = [];
+        if (rows.length) {
+            const json2csvParser = new Parser({
+                ...DefaultCsvOptions,
+                transforms: defaultTransform,
+                fields: fieldsCSV,
+            });
+
+            const linhas = json2csvParser.parse(rows);
+            out.push({
+                name: 'monitoramento-mensal-metas-ciclo-ps.csv',
+                buffer: Buffer.from(linhas, 'utf8'),
+            });
+
+            console.log("================");
+            console.log(linhas);
+            console.log("================");
         }
         return out;
     }
