@@ -1,12 +1,22 @@
 <script setup>
+import TextEditor from '@/components/TextEditor.vue';
+import { useAlertStore } from '@/stores/alert.store';
 import { useMonitoramentoDeMetasStore } from '@/stores/monitoramentoDeMetas.store';
 import { storeToRefs } from 'pinia';
-import { computed, watchEffect } from 'vue';
-import { useRoute } from 'vue-router';
+import {
+  ErrorMessage,
+  Field,
+  useForm,
+  useIsFormDirty,
+} from 'vee-validate';
+import { computed, watch, watchEffect } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute();
+const router = useRouter();
 
 const monitoramentoDeMetasStore = useMonitoramentoDeMetasStore(route.meta.entidadeMãe);
+const alertStore = useAlertStore();
 
 const {
   chamadasPendentes,
@@ -20,6 +30,39 @@ const analiseEmFocoParaEdicao = computed(() => ({
   meta_id: route.params.meta_id,
 }));
 
+const {
+  errors, handleSubmit, isSubmitting, resetField, resetForm, setFieldValue, values,
+} = useForm({
+  initialValues: analiseEmFoco.value,
+});
+
+const formularioSujo = useIsFormDirty();
+
+const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
+  try {
+    if (await monitoramentoDeMetasStore.salvarAnaliseDeCiclo(
+      route.params.planoSetorialId,
+      route.params.cicloId,
+      valoresControlados,
+    )) {
+      alertStore.success('Análise de risco atualizada!');
+      if (route.meta.rotaDeEscape) {
+        router.push({
+          name: route.meta.rotaDeEscape,
+          params: route.params,
+          query: route.query,
+        });
+      }
+    }
+  } catch (error) {
+    alertStore.error(error);
+  }
+});
+
+watch(analiseEmFocoParaEdicao, (novoValor) => {
+  resetForm({ values: novoValor });
+});
+
 watchEffect(() => {
   monitoramentoDeMetasStore
     .buscarAnaliseDoCiclo(route.params.planoSetorialId, route.params.cicloId, {
@@ -31,6 +74,10 @@ watchEffect(() => {
   <MigalhasDePao />
 
   Analise Qualitativa
+
+  <CheckClose
+    :formulario-sujo="formularioSujo"
+  />
 
   <div class="debug flex flexwrap g2 mb1">
     <pre class="fb100 mb0">chamadasPendentes.analiseEmFoco: {{ chamadasPendentes.analiseEmFoco }}</pre>
@@ -49,5 +96,57 @@ watchEffect(() => {
       cols="30"
       rows="30"
     >analiseEmFocoParaEdicao: {{ analiseEmFocoParaEdicao }}</textarea>
+
+    <textarea
+      class="f1"
+      readonly
+      cols="30"
+      rows="30"
+    >values: {{ values }}</textarea>
   </div>
+
+  <form
+    :disabled="isSubmitting"
+    :aria-busy="isSubmitting || chamadasPendentes.riscoEmFoco"
+    @submit.prevent="onSubmit"
+  >
+    <Field
+      name="ciclo_fisico_id"
+      type="hidden"
+    />
+    <Field
+      name="meta_id"
+      type="hidden"
+    />
+
+    <Field
+      v-slot="{ field }"
+      name="informacoes_complementares"
+    >
+      <TextEditor
+        v-bind="field"
+      />
+    </Field>
+    <ErrorMessage
+      class="error-msg"
+      name="informacoes_complementares"
+    />
+
+    <FormErrorsList :errors="errors" />
+
+    <div class="flex spacebetween center mb2">
+      <hr class="mr2 f1">
+      <button
+        class="btn big"
+        type="submit"
+        :disabled="isSubmitting || Object.keys(errors)?.length"
+        :title="Object.keys(errors)?.length
+          ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
+          : null"
+      >
+        Salvar
+      </button>
+      <hr class="ml2 f1">
+    </div>
+  </form>
 </template>
