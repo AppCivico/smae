@@ -1,7 +1,7 @@
 <script setup>
 import { useMonitoramentoDeMetasStore } from '@/stores/monitoramentoDeMetas.store';
 import { storeToRefs } from 'pinia';
-import { watchEffect } from 'vue';
+import { computed, watchEffect } from 'vue';
 import { useRoute } from 'vue-router';
 
 const route = useRoute();
@@ -13,6 +13,12 @@ const {
   erros,
   analiseEmFoco,
 } = storeToRefs(monitoramentoDeMetasStore);
+
+const analiseEmFocoParaEdicao = computed(() => ({
+  ciclo_fisico_id: route.params.cicloId,
+  informacoes_complementares: analiseEmFoco.value?.corrente.analises[0].informacoes_complementares,
+  meta_id: route.params.meta_id,
+}));
 
 watchEffect(() => {
   monitoramentoDeMetasStore
@@ -36,5 +42,12 @@ watchEffect(() => {
       cols="30"
       rows="30"
     >analiseEmFoco: {{ analiseEmFoco }}</textarea>
+
+    <textarea
+      class="f1"
+      readonly
+      cols="30"
+      rows="30"
+    >analiseEmFocoParaEdicao: {{ analiseEmFocoParaEdicao }}</textarea>
   </div>
 </template>
