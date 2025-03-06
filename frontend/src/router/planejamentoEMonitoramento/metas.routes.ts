@@ -210,14 +210,17 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
           component: SingleMeta,
         },
         {
-          name: `${entidadeMãe}.monitoramentoDeMetas`,
           path: 'monitoramento',
           meta: {
             título: 'Histórico de Monitoramento',
             títuloParaMenu: undefined,
           },
-          component: () => import('@/views/monitoramentoDeMetas/MonitoramentoDeMetasLista.vue'),
           children: [
+            {
+              name: `${entidadeMãe}.monitoramentoDeMetas`,
+              path: '',
+              component: () => import('@/views/monitoramentoDeMetas/MonitoramentoDeMetasLista.vue'),
+            },
             {
               name: 'monitoramentoDeMetasAnaliseDeRisco',
               path: 'analise-de-risco/:cicloId',
