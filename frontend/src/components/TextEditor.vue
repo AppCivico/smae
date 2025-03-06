@@ -31,7 +31,10 @@ onMounted(() => {
     ],
     content: props.modelValue || props.value,
     onUpdate: () => {
-      emit('update:modelValue', editor.value.getHTML());
+      // @see https://github.com/ueberdosis/tiptap/issues/154#issuecomment-2182692943
+      const content = editor.value.getText() ? editor.value.getHTML() : '';
+
+      emit('update:modelValue', content);
     },
   });
 });
