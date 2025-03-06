@@ -12,6 +12,7 @@ BEGIN
         AND cf.id != pNovoCicloId
         AND cf.tipo = 'CicloConfig'
     LOOP
+        raise notice 'Fechando ciclo anterior %', vCicloAnterior.id;
         -- Insere registros de fechamento para todas as metas não completas em uma única operação
         INSERT INTO meta_ciclo_fisico_fechamento (
             meta_id,
@@ -52,6 +53,7 @@ BEGIN
         AND mcff.id IS NULL  -- Apenas metas sem fechamento existente
         AND (mcfa.id IS NULL OR mcfr.id IS NULL); -- Análise ou risco não preenchidos
 
+        raise notice 'Marcando ciclo anterior % como inativo', vCicloAnterior.id;
         -- Marca o ciclo anterior como inativo
         UPDATE ciclo_fisico
         SET ativo = false,
