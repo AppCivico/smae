@@ -31,7 +31,7 @@ export class RefreshMetaService implements TaskableService {
                     () =>
                         this.prisma.$queryRaw`select atualiza_meta_status_consolidado(
                                 ${inputParams.meta_id}::int,
-                                (select id from ciclo_fisico where ativo)
+                                (select id from ciclo_fisico where ativo and tipo='PDM')
                               );`,
                     10,
                     100,
