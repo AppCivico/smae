@@ -178,7 +178,7 @@ BEGIN
         LIMIT 1;
 
         -- Fecha o ciclo ativo anterior, se existir
-        IF vPreviousActiveCycle IS NOT NULL THEN
+        IF FOUND THEN
             PERFORM fechar_ciclo_anterior(pPdmId, vNovoCicloId);
         END IF;
     ELSE
