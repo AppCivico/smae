@@ -277,13 +277,5 @@ export const useMonitoramentoDeMetasStore = (prefixo: PrefixosValidos) => define
       acc[ano].push(ciclo);
       return acc;
     }, {} as Record<string, CicloFisicoPSDto[]>),
-
-    fechamentoEmFocoParaEdicao({ fechamentoEmFoco }) {
-      return {
-        ciclo_fisico_id: this.route.params.cicloId,
-        comentario: fechamentoEmFoco?.corrente.fechamentos[0].comentario,
-        meta_id: this.route.params.metaId,
-      };
-    },
   },
 })();
