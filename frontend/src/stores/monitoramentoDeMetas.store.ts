@@ -278,15 +278,6 @@ export const useMonitoramentoDeMetasStore = (prefixo: PrefixosValidos) => define
       return acc;
     }, {} as Record<string, CicloFisicoPSDto[]>),
 
-    riscoEmFocoParaEdicao({ riscoEmFoco }) {
-      return {
-        ciclo_fisico_id: this.route.params.cicloId,
-        detalhamento: riscoEmFoco?.corrente.riscos[0].detalhamento,
-        meta_id: this.route.params.metaId,
-        ponto_de_atencao: riscoEmFoco?.corrente.riscos[0].ponto_de_atencao,
-      };
-    },
-
     fechamentoEmFocoParaEdicao({ fechamentoEmFoco }) {
       return {
         ciclo_fisico_id: this.route.params.cicloId,
