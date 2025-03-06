@@ -360,4 +360,11 @@ export class PlanoSetorialController {
         await this.pdmService.remove_document(tipo, params.id, params.id2, user);
         return;
     }
+
+    @Patch('trigger-crontab-sync')
+    @ApiBearerAuth('access-token')
+    @Roles(['SMAE.superadmin'])
+    async triggerCrontabSync(): Promise<string> {
+        return await this.pdmCicloService.processTransactionForCycles();
+    }
 }
