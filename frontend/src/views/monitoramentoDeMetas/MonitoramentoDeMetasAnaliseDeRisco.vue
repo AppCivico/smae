@@ -17,7 +17,7 @@ const {
 const riscoEmFocoParaEdicao = computed(() => ({
   ciclo_fisico_id: route.params.cicloId,
   detalhamento: riscoEmFoco.value?.corrente.riscos[0].detalhamento,
-  meta_id: route.params.metaId,
+  meta_id: route.params.meta_id,
   ponto_de_atencao: riscoEmFoco.value?.corrente.riscos[0].ponto_de_atencao,
 }));
 
