@@ -74,6 +74,10 @@ export class PdmCicloService {
     async handleCron() {
         if (process.env['DISABLE_PDM_CRONTAB']) return;
 
+        await this.processTransactionForCycles();
+    }
+
+    async processTransactionForCycles(): Promise<string> {
         await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient) => {
                 this.logger.debug(`Adquirindo lock para verificação dos ciclos`);
@@ -86,7 +90,7 @@ export class PdmCicloService {
             `;
                 if (!locked[0].locked) {
                     this.logger.debug(`Já está em processamento...`);
-                    return;
+                    return 'Já está em processamento...';
                 }
 
                 // Process active PDMs with configuration-based cycles
@@ -115,9 +119,10 @@ export class PdmCicloService {
                 isolationLevel: 'Serializable',
             }
         );
+        return 'ok';
     }
 
-    private async processConfigBasedCycles(hoje: DateYMD) {
+    async processConfigBasedCycles(hoje: DateYMD) {
         this.logger.debug(`Processando ciclos configurados via PdmCicloConfig ${hoje}...`);
 
         // Verifica se há alguma configuração de ciclo ativa
@@ -132,7 +137,18 @@ export class PdmCicloService {
                 },
                 AND: [
                     {
-                        OR: [{ data_fim: null }, { data_fim: { gte: hoje } }],
+                        OR: [
+                            { data_fim: null },
+                            {
+                                data_fim: {
+                                    gte: DateTime.fromISO(hoje, {
+                                        zone: SYSTEM_TIMEZONE,
+                                    })
+                                        .startOf('day')
+                                        .toJSDate(),
+                                },
+                            },
+                        ],
                     },
                     {
                         pdm: {
