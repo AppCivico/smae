@@ -205,6 +205,13 @@ export class PlanoSetorialController {
         private readonly pdmCicloService: PdmCicloService
     ) {}
 
+    @Patch('processa-ciclos')
+    @ApiBearerAuth('access-token')
+    @Roles(['SMAE.superadmin'])
+    async triggerCrontabSync(): Promise<string> {
+        return await this.pdmCicloService.processTransactionForCycles();
+    }
+
     @Post()
     @ApiBearerAuth('access-token')
     @Roles(PermsPS)
@@ -359,12 +366,5 @@ export class PlanoSetorialController {
     ): Promise<void> {
         await this.pdmService.remove_document(tipo, params.id, params.id2, user);
         return;
-    }
-
-    @Patch('trigger-crontab-sync')
-    @ApiBearerAuth('access-token')
-    @Roles(['SMAE.superadmin'])
-    async triggerCrontabSync(): Promise<string> {
-        return await this.pdmCicloService.processTransactionForCycles();
     }
 }
