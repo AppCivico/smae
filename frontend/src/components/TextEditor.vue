@@ -1,14 +1,22 @@
 <script setup>
-import {
-  ref, watch, onMounted, onBeforeUnmount, defineOptions,
-} from 'vue';
 import StarterKit from '@tiptap/starter-kit';
 import { Editor, EditorContent } from '@tiptap/vue-3';
+import {
+  defineOptions,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  watch,
+} from 'vue';
 
 defineOptions({ inheritAttrs: false });
 
 const props = defineProps({
   modelValue: {
+    type: String,
+    default: '',
+  },
+  value: {
     type: String,
     default: '',
   },
@@ -21,7 +29,7 @@ onMounted(() => {
     extensions: [
       StarterKit,
     ],
-    content: props.modelValue,
+    content: props.modelValue || props.value,
     onUpdate: () => {
       emit('update:modelValue', editor.value.getHTML());
     },
@@ -32,7 +40,9 @@ onBeforeUnmount(() => {
   editor.value.destroy();
 });
 
-watch(() => props.modelValue, (value) => {
+watch(() => [props.modelValue, props.value], ([newModelValue, newValue]) => {
+  const value = newModelValue || newValue;
+
   const isSame = editor.value.getHTML() === value;
   if (!isSame) {
     editor.value.commands.setContent(value, false);
