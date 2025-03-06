@@ -277,5 +277,15 @@ export const useMonitoramentoDeMetasStore = (prefixo: PrefixosValidos) => define
       acc[ano].push(ciclo);
       return acc;
     }, {} as Record<string, CicloFisicoPSDto[]>),
+
+    anoMaisRecente() {
+      const anos = Object.keys(this.ciclosPorAno);
+
+      const anoMaisRecente = Number(anos[anos.length - 1]);
+
+      return Number.isNaN(anoMaisRecente)
+        ? undefined
+        : anoMaisRecente;
+    },
   },
 })();
