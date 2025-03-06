@@ -60,57 +60,6 @@ watchEffect(() => {
       rows="30"
     >listaDeCiclos: {{ listaDeCiclos }}</textarea>
   </div>
-
-  <p>
-    <router-link
-      :to="{
-        name: $route.name,
-        params: {
-          ...$route.params,
-          planoSetorialId: 11,
-          meta_id: 118
-        }
-      }"
-    >
-      teste
-    </router-link>
-  </p>
-
-  <button
-    @click="monitoramentoDeMetasStore.buscarCiclo(
-      $route.params.planoSetorialId,
-      642,
-      { meta_id: $route.params.meta_id, pdm_id: $route.params.planoSetorialId, ciclo_id: 642 })"
-  >
-    buscarCiclo 642
-  </button>
-
-  <button
-    @click="monitoramentoDeMetasStore.buscarAnaliseDoCiclo(
-      $route.params.planoSetorialId,
-      642,
-      { meta_id: $route.params.meta_id, pdm_id: $route.params.planoSetorialId, ciclo_id: 642 })"
-  >
-    buscarAnaliseDoCiclo 642
-  </button>
-
-  <button
-    @click="monitoramentoDeMetasStore.buscarRiscoDoCiclo(
-      $route.params.planoSetorialId,
-      642,
-      { meta_id: $route.params.meta_id, pdm_id: $route.params.planoSetorialId, ciclo_id: 642 })"
-  >
-    buscarRiscoDoCiclo 642
-  </button>
-
-  <button
-    @click="monitoramentoDeMetasStore.buscarFechamentoDoCiclo(
-      $route.params.planoSetorialId,
-      642,
-      { meta_id: $route.params.meta_id, pdm_id: $route.params.planoSetorialId, ciclo_id: 642 })"
-  >
-    buscarFechamentoDoCiclo 642
-  </button>
 </template>
 
 <style lang="less" modules>
