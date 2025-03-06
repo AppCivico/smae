@@ -1186,6 +1186,7 @@ export const monitoramentoDeMetasRisco = monitoramentoDeMetasBase.concat(
       .required(),
     ponto_de_atencao: string()
       .label('Ponto de atenção')
+      .max(10240)
       .nullable(),
   }),
 );
