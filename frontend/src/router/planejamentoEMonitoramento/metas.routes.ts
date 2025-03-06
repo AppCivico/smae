@@ -569,30 +569,37 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
     },
     {
       path: ':meta_id/cronograma/:cronograma_id/etapas/:etapa_id',
-      component: SingleCronograma,
-      props: { group: 'etapas' },
-      meta: {
-        rotaDeEscape: `${entidadeMãe}.cronogramaDaMeta`,
-        rotasParaMenuSecundário: () => rotasParaMenuSecundário(
-          'meta',
-          usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
-        ),
-      },
+      children: [
+        {
+          path: '',
+          name: `${entidadeMãe}.etapaCronograma`,
+          component: SingleCronograma,
+          props: { group: 'etapas' },
+          meta: {
+            rotaDeEscape: `${entidadeMãe}.cronogramaDaMeta`,
+            rotasParaMenuSecundário: () => rotasParaMenuSecundário(
+              'meta',
+              usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
+            ),
+          },
+        },
+        {
+          path: ':fase_id',
+          name: `${entidadeMãe}.faseCronograma.edit`,
+          component: import('@/views/metas/EditarFaseCronograma/EditarFaseCronograma.vue'),
+          props: { group: 'fase' },
+          meta: {
+            rotaDeEscape: `${entidadeMãe}.etapaCronograma`,
+            rotasParaMenuSecundário: () => rotasParaMenuSecundário(
+              'meta',
+              usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
+            ),
+          },
+        },
+      ],
     },
     {
       path: ':meta_id/cronograma/:cronograma_id/etapas/:etapa_id/novo',
-      component: SingleCronograma,
-      props: { group: 'fase' },
-      meta: {
-        rotaDeEscape: `${entidadeMãe}.cronogramaDaMeta`,
-        rotasParaMenuSecundário: () => rotasParaMenuSecundário(
-          'meta',
-          usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
-        ),
-      },
-    },
-    {
-      path: ':meta_id/cronograma/:cronograma_id/etapas/:etapa_id/:fase_id',
       component: SingleCronograma,
       props: { group: 'fase' },
       meta: {
@@ -1110,9 +1117,11 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         },
         {
           path: ':iniciativa_id/cronograma/:cronograma_id/etapas/:etapa_id/:fase_id',
+          // name: 'teste2',
           component: SingleCronograma,
           props: { group: 'fase' },
           meta: {
+            teste: 1,
             rotaDeEscape: `${entidadeMãe}.cronogramaDaMeta`,
             rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
           },

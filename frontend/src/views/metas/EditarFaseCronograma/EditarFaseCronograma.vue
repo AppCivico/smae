@@ -2,21 +2,22 @@
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, Form } from 'vee-validate';
 import { computed, ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import MapaCampo from '@/components/geo/MapaCampo.vue';
 import { fase as schema } from '@/consts/formSchemas';
-import { router } from '@/router';
 import {
   useAlertStore, useCronogramasStore, useEditModalStore, useEtapasStore, useRegionsStore,
 } from '@/stores';
 import { useEquipesStore } from '@/stores/equipes.store';
-import temDescendenteEmOutraRegião from './auxiliares/temDescendenteEmOutraRegiao.ts';
+// import temDescendenteEmOutraRegião from './auxiliares/temDescendenteEmOutraRegiao.ts';
+import temDescendenteEmOutraRegião from '../auxiliares/temDescendenteEmOutraRegiao.ts';
 
 const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();
 
 const route = useRoute();
+const router = useRouter();
 // mantendo comportamento legado
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const { meta_id } = route.params;
@@ -39,11 +40,11 @@ const { fase_id } = route.params;
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const { subfase_id } = route.params;
 
-const props = defineProps(['props']);
+const props = defineProps(['group']);
 
 const alertaDeExclusãoDeVariável = 'Atenção! Prosseguir excluirá a variável!';
 
-const group = ref(props?.props?.group);
+const group = ref(props?.group);
 
 const parentVar = atividade_id ?? iniciativa_id ?? meta_id ?? false;
 // mantendo comportamento legado
@@ -252,8 +253,8 @@ function maskDate(el) {
   // eslint-disable-next-line eqeqeq
   if (kC != 8 && kC != 46) {
     if (data.length === 2) {
-    // mantendo comportamento legado
-    // eslint-disable-next-line no-multi-assign
+      // mantendo comportamento legado
+      // eslint-disable-next-line no-multi-assign
       el.target.value = data += '/';
     } else if (data.length === 5) {
       // mantendo comportamento legado
@@ -356,7 +357,7 @@ const geolocalizaçãoPorToken = computed(() => (currentFase.value?.loading
 })();
 </script>
 <template>
-  <h1>EXCLUIR ARQUIVO</h1>
+  {{ $props }}
   <div class="minimodal">
     <div class="flex spacebetween center mb2">
       <h2>{{ title }}</h2>
@@ -368,7 +369,9 @@ const geolocalizaçãoPorToken = computed(() => (currentFase.value?.loading
         <svg
           width="12"
           height="12"
-        ><use xlink:href="#i_x" /></svg>
+        >
+          <use xlink:href="#i_x" />
+        </svg>
       </button>
     </div>
     <template v-if="!(currentFase?.loading || currentFase?.error) && oktogo">
@@ -494,9 +497,8 @@ const geolocalizaçãoPorToken = computed(() => (currentFase.value?.loading
           <select
             v-model="level1"
             class="inputtext light mb1"
-            :disabled="
-              minLevel >= 1
-                || temDescendenteEmOutraRegião(values.regiao_id, values.etapa_filha, 1)"
+            :disabled="minLevel >= 1
+              || temDescendenteEmOutraRegião(values.regiao_id, values.etapa_filha, 1)"
             @change="lastlevel"
           >
             <option value="">
@@ -514,37 +516,35 @@ const geolocalizaçãoPorToken = computed(() => (currentFase.value?.loading
             <select
               v-model="level2"
               class="inputtext light mb1"
-              :disabled="
-                minLevel >= 2
-                  || temDescendenteEmOutraRegião(values.regiao_id, values.etapa_filha, 2)"
+              :disabled="minLevel >= 2
+                || temDescendenteEmOutraRegião(values.regiao_id, values.etapa_filha, 2)"
               @change="lastlevel"
             >
               <option value="">
                 Selecione
               </option>
               <option
-                v-for="(rr) in tempRegions[0]?.children.find(x=> x.id == level1)?.children"
+                v-for="(rr) in tempRegions[0]?.children.find(x => x.id == level1)?.children"
                 :key="rr.id"
                 :value="rr.id"
               >
                 {{ rr.descricao }}
               </option>
             </select>
-            <template v-if="level2!==null">
+            <template v-if="level2 !== null">
               <select
                 v-model="level3"
                 class="inputtext light mb1"
-                :disabled="
-                  minLevel >= 3
-                    || temDescendenteEmOutraRegião(values.regiao_id, values.etapa_filha, 3)"
+                :disabled="minLevel >= 3
+                  || temDescendenteEmOutraRegião(values.regiao_id, values.etapa_filha, 3)"
                 @change="lastlevel"
               >
                 <option value="">
                   Selecione
                 </option>
                 <option
-                  v-for="(rrr) in tempRegions[0]?.children.find(x=> x.id ==
-                    level1)?.children.find(x=>x.id == level2)?.children"
+                  v-for="(rrr) in tempRegions[0]?.children.find(x => x.id ==
+                    level1)?.children.find(x => x.id == level2)?.children"
                   :key="rrr.id"
                   :value="rrr.id"
                 >
@@ -600,9 +600,7 @@ const geolocalizaçãoPorToken = computed(() => (currentFase.value?.loading
           </div>
         </div>
 
-        <div
-          class="mb1"
-        >
+        <div class="mb1">
           <legend class="label mt2 mb1legend">
             Localização&nbsp;<span
               v-if="values.endereco_obrigatorio && values.termino_real"
@@ -644,9 +642,7 @@ const geolocalizaçãoPorToken = computed(() => (currentFase.value?.loading
                 );
               }"
             >
-            <label
-              for="associar-variavel"
-            >
+            <label for="associar-variavel">
               Associar variável
             </label>
           </div>
