@@ -1,4 +1,6 @@
 <script setup>
+import DetalhamentoDeCiclo from '@/components/monitoramentoDeMetas/DetalhamentoDeCiclo.vue';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import { useMonitoramentoDeMetasStore } from '@/stores/monitoramentoDeMetas.store';
 import { storeToRefs } from 'pinia';
 import { watchEffect } from 'vue';
@@ -28,10 +30,13 @@ watchEffect(() => {
 <template>
   <MigalhasDePao />
 
-  Monitoramento de metas
+  <TituloDaPagina />
 
-  <div class="debug flex flexwrap g2 mb1">
-    <pre class="fb100 mb0">chamadasPendentes.listaDeCiclos: {{ chamadasPendentes.listaDeCiclos }}</pre>
+  <!-- eslint-disable -->
+  <div class="debug flex flexwrap g2 mb1" hidden>
+    <pre class="fb100 mb0">
+      chamadasPendentes.listaDeCiclos: {{ chamadasPendentes.listaDeCiclos }}
+    </pre>
     <pre class="fb100 mb0">erros.listaDeCiclos: {{ erros.listaDeCiclos }}</pre>
     <pre class="fb100 mb0">cicloAtivo: {{ cicloAtivo }}</pre>
 
@@ -60,6 +65,53 @@ watchEffect(() => {
       rows="30"
     >listaDeCiclos: {{ listaDeCiclos }}</textarea>
   </div>
+  <!-- eslint-disable -->
+
+  <LoadingComponent v-if="chamadasPendentes.listaDeCiclos" />
+
+  <template v-else>
+    <DetalhamentoDeCiclo
+      :id="`ciclo--${cicloAtivo.id}`"
+      :ciclo-atual="true"
+      :ciclo="cicloAtivo || null"
+      :meta-id="$route.params.meta_id"
+    />
+  </template>
+
+  <div
+    v-if="Array.isArray(listaDeCiclos) && listaDeCiclos?.length"
+    class="ciclos-anterioes"
+  >
+    <div class="titulo-monitoramento titulo-monitoramento--passado mb2">
+      <h2 class="tc500 t20 titulo-monitoramento__text">
+        <span class="w400">
+          Ciclos Anteriores
+        </span>
+      </h2>
+    </div>
+
+    <!--
+    <AutocompleteField
+      :controlador="{
+        busca: '',
+        participantes: anosSelecionados || []
+      }"
+      :grupo="anosDisponiveis || []"
+      :aria-busy="false"
+      label="ano"
+    />
+    -->
+    <DetalhamentoDeCiclo
+      v-for="ciclo in listaDeCiclos"
+      :id="`ciclo--${ciclo.id}`"
+      :key="ciclo.id"
+      :ciclo="ciclo"
+      :meta-id="$route.params.meta_id"
+      :open="$route.hash === `#ciclo--${ciclo.id}`
+        ? true
+        : false"
+    />
+  </div>
 </template>
 
 <style lang="less" modules>
@@ -83,6 +135,10 @@ watchEffect(() => {
   background-color: #f7c234;
   box-shadow: 0 0 0 5px #fff, 0 0 0 6px #e3e5e8;
   background-image: none;
+}
+
+.titulo-monitoramento--passado:before {
+  filter: grayscale(1);
 }
 
 .titulo-monitoramento__text {
