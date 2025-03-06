@@ -229,7 +229,7 @@ export const useMonitoramentoDeMetasStore = (prefixo: PrefixosValidos) => define
       this.erros.documento = null;
 
       try {
-        const resposta = await this.requestS.post(`${baseUrl}/api/plano-setorial/${pdmId}/ciclo/${cicloId}/analise/documento`, params) as RecordWithId;
+        const resposta = await this.requestS.post(`${baseUrl}/plano-setorial/${pdmId}/ciclo/${cicloId}/analise/documento`, params) as RecordWithId;
 
         this.chamadasPendentes.documento = false;
 
