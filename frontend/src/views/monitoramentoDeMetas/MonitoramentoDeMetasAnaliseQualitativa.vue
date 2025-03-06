@@ -27,7 +27,7 @@ const {
 
 const analiseEmFocoParaEdicao = computed(() => ({
   ciclo_fisico_id: route.params.cicloId,
-  informacoes_complementares: analiseEmFoco.value?.corrente.analises[0].informacoes_complementares,
+  informacoes_complementares: analiseEmFoco.value?.corrente.analises[0]?.informacoes_complementares,
   meta_id: route.params.meta_id,
 }));
 

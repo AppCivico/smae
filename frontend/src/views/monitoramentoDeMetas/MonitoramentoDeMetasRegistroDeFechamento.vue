@@ -27,7 +27,7 @@ const {
 
 const fechamentoEmFocoParaEdicao = computed(() => ({
   ciclo_fisico_id: route.params.cicloId,
-  comentario: fechamentoEmFoco.value?.corrente.fechamentos[0].comentario,
+  comentario: fechamentoEmFoco.value?.corrente.fechamentos[0]?.comentario,
   meta_id: route.params.meta_id,
 }));
 
