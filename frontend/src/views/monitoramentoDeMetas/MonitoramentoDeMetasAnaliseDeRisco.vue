@@ -80,9 +80,11 @@ watchEffect(() => {
     :formulario-sujo="formularioSujo"
   />
 
+  <ErrorComponent :erro="erros.riscoEmFoco" />
+
   <form
     :disabled="isSubmitting"
-    :aria-busy="isSubmitting"
+    :aria-busy="isSubmitting || chamadasPendentes.riscoEmFoco"
     @submit.prevent="onSubmit"
   >
     <Field
