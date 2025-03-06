@@ -1,6 +1,116 @@
-<script setup></script>
+<script setup>
+import { useMonitoramentoDeMetasStore } from '@/stores/monitoramentoDeMetas.store';
+import { storeToRefs } from 'pinia';
+import { watchEffect } from 'vue';
+import { useRoute } from 'vue-router';
+
+const route = useRoute();
+
+const monitoramentoDeMetasStore = useMonitoramentoDeMetasStore(route.meta.entidadeMãe);
+
+const {
+  chamadasPendentes,
+  ciclosPorAno,
+  ciclosPorId,
+  cicloAtivo,
+  erros,
+  listaDeCiclos,
+  ultimaRevisao,
+} = storeToRefs(monitoramentoDeMetasStore);
+
+watchEffect(() => {
+  monitoramentoDeMetasStore
+    .buscarListaDeCiclos(route.params.planoSetorialId, {
+      meta_id: route.params.meta_id,
+    });
+});
+</script>
 <template>
+  <MigalhasDePao />
+
   Monitoramento de metas
+
+  <div class="debug flex flexwrap g2 mb1">
+    <pre class="fb100 mb0">chamadasPendentes.listaDeCiclos: {{ chamadasPendentes.listaDeCiclos }}</pre>
+    <pre class="fb100 mb0">erros.listaDeCiclos: {{ erros.listaDeCiclos }}</pre>
+    <pre class="fb100 mb0">cicloAtivo: {{ cicloAtivo }}</pre>
+
+    <textarea
+      class="f1"
+      readonly
+      cols="30"
+      rows="30"
+    >ciclosPorId: {{ ciclosPorId }}</textarea>
+    <textarea
+      class="f1"
+      readonly
+      cols="30"
+      rows="30"
+    >ciclosPorAno: {{ ciclosPorAno }}</textarea>
+    <textarea
+      class="f1"
+      readonly
+      cols="30"
+      rows="30"
+    >ultimaRevisao: {{ ultimaRevisao }}</textarea>
+    <textarea
+      class="f1"
+      readonly
+      cols="30"
+      rows="30"
+    >listaDeCiclos: {{ listaDeCiclos }}</textarea>
+  </div>
+
+  <p>
+    <router-link
+      :to="{
+        name: $route.name,
+        params: {
+          ...$route.params,
+          planoSetorialId: 11,
+          meta_id: 118
+        }
+      }"
+    >
+      teste
+    </router-link>
+  </p>
+
+  <button
+    @click="monitoramentoDeMetasStore.buscarCiclo(
+      $route.params.planoSetorialId,
+      642,
+      { meta_id: $route.params.meta_id, pdm_id: $route.params.planoSetorialId, ciclo_id: 642 })"
+  >
+    buscarCiclo 642
+  </button>
+
+  <button
+    @click="monitoramentoDeMetasStore.buscarAnaliseDoCiclo(
+      $route.params.planoSetorialId,
+      642,
+      { meta_id: $route.params.meta_id, pdm_id: $route.params.planoSetorialId, ciclo_id: 642 })"
+  >
+    buscarAnaliseDoCiclo 642
+  </button>
+
+  <button
+    @click="monitoramentoDeMetasStore.buscarRiscoDoCiclo(
+      $route.params.planoSetorialId,
+      642,
+      { meta_id: $route.params.meta_id, pdm_id: $route.params.planoSetorialId, ciclo_id: 642 })"
+  >
+    buscarRiscoDoCiclo 642
+  </button>
+
+  <button
+    @click="monitoramentoDeMetasStore.buscarFechamentoDoCiclo(
+      $route.params.planoSetorialId,
+      642,
+      { meta_id: $route.params.meta_id, pdm_id: $route.params.planoSetorialId, ciclo_id: 642 })"
+  >
+    buscarFechamentoDoCiclo 642
+  </button>
 </template>
 
 <style lang="less" modules>
