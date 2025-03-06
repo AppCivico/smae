@@ -11,7 +11,6 @@ import { JOB_PDM_CICLO_LOCK } from '../common/dto/locks';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { LoggerWithLog } from '../common/LoggerWithLog';
 import { PrismaService } from '../prisma/prisma.service';
-import { UploadService } from '../upload/upload.service';
 import { UpdatePdmCicloConfigDto } from './dto/create-pdm.dto';
 import { CicloFisicoDto } from './dto/list-pdm.dto';
 
@@ -34,7 +33,7 @@ export class PdmCicloService {
     private readonly logger = new Logger(PdmCicloService.name);
     constructor(
         private readonly prisma: PrismaService,
-        @Inject(forwardRef(() => UploadService))
+        @Inject(forwardRef(() => VariavelService))
         private readonly variavelService: VariavelService
     ) {}
 
