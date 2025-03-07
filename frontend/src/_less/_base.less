@@ -1024,6 +1024,14 @@ p {
   border: 0 !important;
 }
 
+.disabled {
+  color: @c400;
+}
+
+[aria-disabled="true"] {
+  .disabled;
+}
+
 /* Components */
 .accordeon {
   cursor: pointer;
@@ -1403,7 +1411,7 @@ p {
   &[aria-disabled='true'],
   &.disabled {
     .bgc50;
-    .tc300;
+    .disabled;
     cursor: default;
   }
 }
@@ -2027,7 +2035,7 @@ input[type='radio'] {
   &[aria-disabled='true'],
   &:disabled {
     background: @c50;
-    color: @c400;
+    .disabled;
   }
 
   &:focus {
