@@ -4,7 +4,7 @@
     ref="detailsElem"
     :open="$props.open || $props.cicloAtual"
     :class="cicloAtual ? 'ciclo-atual' : 'ciclo-passado'"
-    @toggle="handleToggle"
+    @toggle.prevent="handleToggle"
   >
     <summary :class="cicloAtual ? 'ciclo-atual__summary' : ''">
       <div
@@ -24,7 +24,10 @@
         </h2>
       </template>
     </summary>
-    <LoadingComponent v-if="chamadasPendentes.ciclosDetalhadosPorId[ciclo.id]" />
+    <LoadingComponent
+      v-if="chamadasPendentes.ciclosDetalhadosPorId[ciclo.id]"
+      class="mb2"
+    />
     <div
       v-else
       class="details-content"

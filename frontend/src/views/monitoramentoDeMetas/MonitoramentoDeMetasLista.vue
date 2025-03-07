@@ -1,9 +1,11 @@
 <script setup>
 import DetalhamentoDeCiclo from '@/components/monitoramentoDeMetas/DetalhamentoDeCiclo.vue';
 import TituloDaPagina from '@/components/TituloDaPagina.vue';
+import AutocompleteField2 from '@/components/AutocompleteField2.vue';
+import FormularioQueryString from '@/components/FormularioQueryString.vue';
 import { useMonitoramentoDeMetasStore } from '@/stores/monitoramentoDeMetas.store';
 import { storeToRefs } from 'pinia';
-import { watchEffect } from 'vue';
+import { watchEffect, computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 const route = useRoute();
@@ -18,7 +20,21 @@ const {
   erros,
   listaDeCiclos,
   ultimaRevisao,
+  anoMaisRecente,
 } = storeToRefs(monitoramentoDeMetasStore);
+
+const anosDisponiveis = computed(() => {
+  if (!ciclosPorAno.value) {
+    return [];
+  }
+  const anos = Object.keys(ciclosPorAno.value);
+  return anos.map((ano) => ({ ano, id: ano }));
+});
+
+const anosSelecionados = ref([anoMaisRecente.value]);
+
+const listaDeCiclosFiltrados = computed(() => anosSelecionados.value
+  .flatMap((ano) => ciclosPorAno.value[ano] || []));
 
 watchEffect(() => {
   monitoramentoDeMetasStore
@@ -33,7 +49,7 @@ watchEffect(() => {
   <TituloDaPagina />
 
   <!-- eslint-disable -->
-  <div class="debug flex flexwrap g2 mb1" hidden>
+  <div class="debug flex flexwrap g2 mb1 hidden">
     <pre class="fb100 mb0">
       chamadasPendentes.listaDeCiclos: {{ chamadasPendentes.listaDeCiclos }}
     </pre>
@@ -67,50 +83,51 @@ watchEffect(() => {
   </div>
   <!-- eslint-disable -->
 
-  <LoadingComponent v-if="chamadasPendentes.listaDeCiclos" />
+  <div class="flex column g2">
+    <LoadingComponent v-if="chamadasPendentes.listaDeCiclos" />
 
-  <template v-else>
-    <DetalhamentoDeCiclo
-      :id="`ciclo--${cicloAtivo.id}`"
-      :ciclo-atual="true"
-      :ciclo="cicloAtivo || null"
-      :meta-id="$route.params.meta_id"
-    />
-  </template>
+    <template v-else>
+      <DetalhamentoDeCiclo
+        :id="`ciclo--${cicloAtivo.id}`"
+        :ciclo-atual="true"
+        :ciclo="cicloAtivo || null"
+        :meta-id="$route.params.meta_id"
+      />
+    </template>
 
-  <div
-    v-if="Array.isArray(listaDeCiclos) && listaDeCiclos?.length"
-    class="ciclos-anterioes"
-  >
-    <div class="titulo-monitoramento titulo-monitoramento--passado mb2">
-      <h2 class="tc500 t20 titulo-monitoramento__text">
-        <span class="w400">
-          Ciclos Anteriores
-        </span>
-      </h2>
+    <div
+      v-if="Array.isArray(listaDeCiclos) && listaDeCiclos?.length"
+      class="ciclos-anterioes"
+    >
+      <div class="titulo-monitoramento titulo-monitoramento--passado mb2">
+        <h2 class="tc500 t20 titulo-monitoramento__text">
+          <span class="w400">
+            Ciclos Anteriores
+          </span>
+        </h2>
+      </div>
+      <AutocompleteField2
+        name="anos"
+        model-value="anosSelecionados"
+        :controlador="{
+          busca: '',
+          participantes: [anoMaisRecente],
+        }"
+        :grupo="anosDisponiveis"
+        :aria-busy="false"
+        label="ano"
+      />
+      <DetalhamentoDeCiclo
+        v-for="ciclo in listaDeCiclosFiltrados"
+        :id="`ciclo--${ciclo.id}`"
+        :key="ciclo.id"
+        :ciclo="ciclo"
+        :meta-id="$route.params.meta_id"
+        :open="$route.hash === `#ciclo--${ciclo.id}`
+          ? true
+          : false"
+      />
     </div>
-
-    <!--
-    <AutocompleteField
-      :controlador="{
-        busca: '',
-        participantes: anosSelecionados || []
-      }"
-      :grupo="anosDisponiveis || []"
-      :aria-busy="false"
-      label="ano"
-    />
-    -->
-    <DetalhamentoDeCiclo
-      v-for="ciclo in listaDeCiclos"
-      :id="`ciclo--${ciclo.id}`"
-      :key="ciclo.id"
-      :ciclo="ciclo"
-      :meta-id="$route.params.meta_id"
-      :open="$route.hash === `#ciclo--${ciclo.id}`
-        ? true
-        : false"
-    />
   </div>
 </template>
 
