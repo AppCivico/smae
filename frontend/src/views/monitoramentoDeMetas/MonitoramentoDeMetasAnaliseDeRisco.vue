@@ -1,4 +1,7 @@
 <script setup>
+import TextEditor from '@/components/TextEditor.vue';
+import dateToTitle from '@/helpers/dateToTitle';
+import { dateToShortDate } from '@/helpers/dateToDate';
 import { monitoramentoDeMetasRisco as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useMonitoramentoDeMetasStore } from '@/stores/monitoramentoDeMetas.store';
@@ -29,6 +32,15 @@ const riscoEmFocoParaEdicao = computed(() => ({
   detalhamento: riscoEmFoco.value?.corrente.riscos[0]?.detalhamento,
   meta_id: route.params.meta_id,
   ponto_de_atencao: riscoEmFoco.value?.corrente.riscos[0]?.ponto_de_atencao,
+  referencia_data: riscoEmFoco.value?.corrente.riscos[0]?.referencia_data,
+}));
+
+const riscoAnterior = computed(() => ({
+  detalhamento: riscoEmFoco.value?.anterior.riscos[0]?.detalhamento,
+  ponto_de_atencao: riscoEmFoco.value?.anterior.riscos[0]?.ponto_de_atencao,
+  referencia_data: riscoEmFoco.value?.anterior.riscos[0]?.referencia_data,
+  criador: riscoEmFoco.value?.anterior.riscos[0]?.criador,
+  criado_em: riscoEmFoco.value?.anterior.riscos[0]?.criado_em,
 }));
 
 const {
@@ -75,15 +87,20 @@ watchEffect(() => {
 <template>
   <MigalhasDePao />
 
-  Analise de risco
+  <div class="flex spacebetween center mb2">
+    <TítuloDePágina />
 
-  <CheckClose
-    :formulario-sujo="formularioSujo"
-  />
+    <hr class="ml2 f1">
+
+    <CheckClose
+      :formulario-sujo="formularioSujo"
+    />
+  </div>
 
   <ErrorComponent :erro="erros.riscoEmFoco" />
 
   <form
+    class="flex column g2"
     :disabled="isSubmitting"
     :aria-busy="isSubmitting || chamadasPendentes.riscoEmFoco"
     @submit.prevent="onSubmit"
@@ -97,25 +114,114 @@ watchEffect(() => {
       type="hidden"
     />
 
-    <Field
-      as="textarea"
-      name="detalhamento"
-    />
+    <div class="titulo-monitoramento mb2">
+      <h2 class="tc500 t20 titulo-monitoramento__text">
+        <span class="w400">
+          Ciclo Atual: {{ dateToTitle(riscoEmFocoParaEdicao.referencia_data) }}
+        </span>
+      </h2>
+    </div>
+
+    <div class="label-com-botao">
+      <button
+        class="label-com-botao__botao btn bgnone tcprimary outline"
+        type="button"
+        @click="setFieldValue('detalhamento', riscoAnterior.detalhamento)"
+      >
+        Repetir anterior
+      </button>
+      <label
+        for="detalhamento"
+        class="label-com-botao__label"
+      >
+        Detalhamento
+      </label>
+      <div class="label-com-botao__campo">
+        <Field
+          v-slot="{ field }"
+          name="detalhamento"
+        >
+          <TextEditor
+            v-bind="field"
+          />
+        </Field>
+      </div>
+    </div>
+
     <ErrorMessage
       class="error-msg"
       name="detalhamento"
     />
 
-    <Field
-      as="textarea"
-      name="ponto_de_atencao"
-    />
+    <div class="label-com-botao">
+      <button
+        class="label-com-botao__botao btn bgnone tcprimary outline"
+        type="button"
+        @click="setFieldValue('ponto_de_atencao', riscoAnterior.ponto_de_atencao)"
+      >
+        Repetir anterior
+      </button>
+
+      <label class="label-com-botao__label">
+        Pontos de Atenção
+      </label>
+      <div class="label-com-botao__campo">
+        <Field
+          v-slot="{ field }"
+          name="ponto_de_atencao"
+        >
+          <TextEditor
+            v-bind="field"
+          />
+        </Field>
+      </div>
+    </div>
     <ErrorMessage
       class="error-msg"
       name="ponto_de_atencao"
     />
 
     <FormErrorsList :errors="errors" />
+
+    <div class="titulo-monitoramento titulo-monitoramento--passado mb2">
+      <h2 class="tc500 t20 titulo-monitoramento__text">
+        <span class="w400">
+          {{ dateToTitle(riscoAnterior.referencia_data) }}
+        </span>
+      </h2>
+    </div>
+    <div class="t12 uc w700 mb05 tc300">
+      Detalhamento
+      <hr class="f1 mt025">
+      <div
+        class="t13 contentStyle"
+        v-html="riscoAnterior?.detalhamento || '-'"
+      />
+    </div>
+    <div class="t12 uc w700 mb05 tc300">
+      Pontos de Atenção
+      <hr class="f1 mt025">
+      <div
+        class="t13 contentStyle"
+        v-html="riscoAnterior?.ponto_de_atencao || '-'"
+      />
+      <footer
+        v-if="riscoAnterior?.criador?.nome_exibicao || riscoAnterior?.criado_em"
+        class="tc600"
+      >
+        <p>
+          Analisado
+          <template v-if="riscoAnterior.criador?.nome_exibicao">
+            por <strong>{{ riscoAnterior.criador.nome_exibicao }}</strong>
+          </template>
+          <template v-if="riscoAnterior.criado_em">
+            em <time :datetime="riscoAnterior.criado_em">
+              {{ dateToShortDate(riscoAnterior.criado_em) }}
+            </time>.
+          </template>
+        </p>
+      </footer>
+    </div>
 
     <div class="flex spacebetween center mb2">
       <hr class="mr2 f1">
@@ -133,3 +239,36 @@ watchEffect(() => {
     </div>
   </form>
 </template>
+<style>
+.label-com-botao {
+  gap: 0.5rem;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.5rem 2rem;
+}
+
+.label-com-botao::before {
+  content: "";
+  width: 100%;
+  height: 1px;
+  order: 2;
+  background-color: #e3e5e8;
+}
+
+.label-com-botao__botao {
+  order: 2;
+}
+
+.label-com-botao__label {
+  order: 1;
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+}
+
+.label-com-botao__campo {
+  order: 3;
+  grid-column: -1 / 1;
+}
+</style>
