@@ -1,5 +1,4 @@
 <script setup>
-import TextEditor from '@/components/TextEditor.vue';
 import { monitoramentoDeMetasRisco as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useMonitoramentoDeMetasStore } from '@/stores/monitoramentoDeMetas.store';
@@ -99,26 +98,18 @@ watchEffect(() => {
     />
 
     <Field
-      v-slot="{ field }"
+      as="textarea"
       name="detalhamento"
-    >
-      <TextEditor
-        v-bind="field"
-      />
-    </Field>
+    />
     <ErrorMessage
       class="error-msg"
       name="detalhamento"
     />
 
     <Field
-      v-slot="{ field }"
+      as="textarea"
       name="ponto_de_atencao"
-    >
-      <TextEditor
-        v-bind="field"
-      />
-    </Field>
+    />
     <ErrorMessage
       class="error-msg"
       name="ponto_de_atencao"

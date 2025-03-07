@@ -1,5 +1,4 @@
 <script setup>
-import TextEditor from '@/components/TextEditor.vue';
 import { monitoramentoDeMetasFechamento as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useMonitoramentoDeMetasStore } from '@/stores/monitoramentoDeMetas.store';
@@ -122,13 +121,9 @@ watchEffect(() => {
     />
 
     <Field
-      v-slot="{ field }"
+      as="textarea"
       name="comentario"
-    >
-      <TextEditor
-        v-bind="field"
-      />
-    </Field>
+    />
     <ErrorMessage
       class="error-msg"
       name="comentario"
