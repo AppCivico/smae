@@ -22,7 +22,7 @@ const tiposDeDocumentosStore = useTiposDeDocumentosStore();
 
 defineOptions({ inheritAttrs: false });
 
-const emit = defineEmits(['envioBemSucedido', 'envioMalSucedido']);
+const emit = defineEmits(['envioBemSucedido', 'envioMalSucedido', 'arquivoRemovido']);
 
 const model = defineModel({
   required: true,
@@ -66,6 +66,7 @@ const erro = ref('');
 const zonaAtiva = ref(false);
 const ativacaoDoArquivoPendente = ref(false);
 const tipoDocumentoId = ref(0);
+const nomeDoArquivo = ref('');
 
 const { handleChange, errors } = useField(name, { required: props.required }, {
   initialValue: model.value,
@@ -87,10 +88,10 @@ const listaDeExtensoesAceitas = computed(() => {
 });
 
 const extensoesAceitasComoTexto = computed(() => (listaDeExtensoesAceitas.value
-  ? listaDeExtensoesAceitas.value.reduce((acc, cur) => `${acc}${cur}, `, '').slice(0, -1)
+  ? listaDeExtensoesAceitas.value.reduce((acc, cur) => `${acc}${cur}, `, '').slice(0, -2)
   : undefined));
 
-const ehImagem = computed(() => (listaDeExtensoesAceitas.value
+const ehImagem = computed(() => (listaDeExtensoesAceitas.value?.length
   ? listaDeExtensoesAceitas.value
     .every((item) => formatosDeImagem.includes(item.trim().toLowerCase()))
   : false));
@@ -99,6 +100,8 @@ function removerArquivo() {
   handleChange('');
 
   model.value = '';
+
+  emit('arquivoRemovido');
 }
 
 async function enviarArquivo(e) {
@@ -125,11 +128,18 @@ async function enviarArquivo(e) {
     const u = await requestS.upload(`${baseUrl}/upload`, formData);
 
     if (u.upload_token) {
+      const {
+        name: nomeOriginal,
+        size: tamanhoBytes,
+      } = files[0];
+
       model.value = u.upload_token;
       ativacaoDoArquivoPendente.value = true;
+      nomeDoArquivo.value = nomeOriginal;
+
       emit('envioBemSucedido', {
-        nome_original: files[0].name,
-        tamanho_bytes: files[0].size,
+        nome_original: nomeOriginal,
+        tamanho_bytes: tamanhoBytes,
         ...u,
       });
     } else {
@@ -179,7 +189,7 @@ watch(() => props.tipo, (novoValor) => {
 
     <template v-else>
       <div
-        v-if="$props.tipo === 'DOCUMENTO'"
+        v-if="$props.tipo === 'DOCUMENTO' && !model"
         class="f1"
       >
         <label class="label">Tipo de Documento <span class="tvermelho">*</span></label>
@@ -242,8 +252,8 @@ watch(() => props.tipo, (novoValor) => {
           >
           <span
             v-else
-            class="campo-de-arquivo__token"
-          >{{ model }}</span>
+            class="campo-de-arquivo__token f1"
+          >{{ nomeDoArquivo || model }}</span>
           <button
             v-if="model"
             class="campo-de-arquivo__botao-de-remoção like-a__link"
