@@ -2,9 +2,7 @@ import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { Prisma, Regiao } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { Readable } from 'stream';
-// Import newer json2csv modules
-import { AsyncParser } from '@json2csv/node';
-import { flatten } from '@json2csv/transforms';
+import { createWriteStream } from 'fs';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
@@ -520,170 +518,9 @@ export class IndicadoresService implements ReportableService {
         );
     }
 
-    private async collectStreamToFile(stream: Readable, filePath: string, fields: any[]): Promise<void> {
-        this.logger.debug(`Collecting stream to file: ${filePath}`);
-
-        return new Promise((resolve, reject) => {
-            // Create array to collect data
-            const collectedData: any[] = [];
-
-            // Subscribe to stream
-            stream.on('data', (chunk) => {
-                try {
-                    // Handle both string and object chunks
-                    if (typeof chunk === 'string') {
-                        collectedData.push(JSON.parse(chunk));
-                    } else if (Buffer.isBuffer(chunk)) {
-                        collectedData.push(JSON.parse(chunk.toString('utf8')));
-                    } else {
-                        collectedData.push(chunk);
-                    }
-                } catch (err) {
-                    this.logger.warn(`Failed to parse chunk: ${err}`);
-                    // Just add it as-is if parsing fails
-                    collectedData.push(chunk);
-                }
-            });
-
-            stream.on('error', (err) => {
-                this.logger.error(`Error in stream: ${err}`);
-                reject(err);
-            });
-
-            stream.on('end', async () => {
-                this.logger.debug(`Stream ended, collected ${collectedData.length} items`);
-                try {
-                    if (collectedData.length === 0) {
-                        this.logger.warn('No data collected from stream');
-                        fs.writeFileSync(filePath, ''); // Create empty file
-                        return resolve();
-                    }
-
-                    // Log a sample of the raw collected data to debug
-                    if (collectedData.length > 0) {
-                        this.logger.debug(`Sample of raw data type: ${typeof collectedData[0]}`);
-                        this.logger.debug(
-                            `Sample of raw data: ${JSON.stringify(collectedData[0]).substring(0, 200)}...`
-                        );
-                    }
-
-                    // Map field paths to a flat structure that matches the field definitions
-                    const processedData = collectedData.map((item: any) => {
-                        // Try to parse the item if it's a string
-                        if (typeof item === 'string') {
-                            try {
-                                item = JSON.parse(item);
-                            } catch (err) {
-                                this.logger.warn(`Failed to parse item as JSON: ${err}`);
-                                // If it's not valid JSON, return an empty object
-                                return {};
-                            }
-                        }
-
-                        const flatItem: Record<string, any> = {};
-
-                        // Handle nested 'indicador' properties
-                        if (item.indicador) {
-                            Object.keys(item.indicador).forEach((key) => {
-                                flatItem[`indicador.${key}`] = item.indicador[key];
-                            });
-                        }
-
-                        // Handle nested 'meta' properties
-                        if (item.meta) {
-                            Object.keys(item.meta).forEach((key) => {
-                                flatItem[`meta.${key}`] = item.meta[key];
-                            });
-                        }
-
-                        // Handle nested 'iniciativa' properties
-                        if (item.iniciativa) {
-                            Object.keys(item.iniciativa).forEach((key) => {
-                                flatItem[`iniciativa.${key}`] = item.iniciativa[key];
-                            });
-                        }
-
-                        // Handle nested 'atividade' properties
-                        if (item.atividade) {
-                            Object.keys(item.atividade).forEach((key) => {
-                                flatItem[`atividade.${key}`] = item.atividade[key];
-                            });
-                        }
-
-                        // Handle nested 'variavel' properties
-                        if (item.variavel) {
-                            Object.keys(item.variavel).forEach((key) => {
-                                if (key === 'orgao' && item.variavel.orgao) {
-                                    Object.keys(item.variavel.orgao).forEach((orgaoKey) => {
-                                        flatItem[`variavel.orgao.${orgaoKey}`] = item.variavel.orgao[orgaoKey];
-                                    });
-                                } else {
-                                    flatItem[`variavel.${key}`] = item.variavel[key];
-                                }
-                            });
-                        }
-
-                        // Handle nested region properties
-                        ['regiao_nivel_1', 'regiao_nivel_2', 'regiao_nivel_3', 'regiao_nivel_4'].forEach(
-                            (regionLevel) => {
-                                if (item[regionLevel]) {
-                                    Object.keys(item[regionLevel]).forEach((key) => {
-                                        flatItem[`${regionLevel}.${key}`] = item[regionLevel][key];
-                                    });
-                                }
-                            }
-                        );
-
-                        // Handle top-level properties
-                        [
-                            'pdm_nome',
-                            'data',
-                            'data_referencia',
-                            'serie',
-                            'valor',
-                            'valor_categorica',
-                            'regiao_id',
-                        ].forEach((key) => {
-                            if (item[key] !== undefined) {
-                                flatItem[key] = item[key];
-                            }
-                        });
-
-                        // Special handling for meta_tags which could be an array
-                        if (item.meta_tags && Array.isArray(item.meta_tags)) {
-                            flatItem['meta_tags'] = item.meta_tags;
-                        }
-
-                        return flatItem;
-                    });
-
-                    // Log a sample of processed data to debug
-                    if (processedData.length > 0) {
-                        this.logger.debug(
-                            `Sample of processed data fields: ${Object.keys(processedData[0]).join(', ')}`
-                        );
-                    }
-
-                    // Use AsyncParser to handle the conversion
-                    const parser = new AsyncParser({
-                        fields: fields,
-                        ...DefaultCsvOptions,
-                    });
-
-                    // Convert to CSV
-                    const csv = await parser.parse(processedData).promise();
-
-                    // Write to file
-                    fs.writeFileSync(filePath, csv);
-                    resolve();
-                } catch (err) {
-                    this.logger.error(`Error processing data: ${err}`);
-                    reject(err);
-                }
-            });
-        });
-    }
-
+    /**
+     * Directly write data from database to CSV file without intermediate collection - Solves OOM issues
+     */
     async toFileOutput(
         params: CreateRelIndicadorDto,
         ctx: ReportContext,
@@ -703,7 +540,83 @@ export class IndicadoresService implements ReportableService {
         const pdm = await this.prisma.pdm.findUniqueOrThrow({ where: { id: params.pdm_id } });
         const out: FileOutput[] = [];
 
-        // Define field configurations for the CSV output
+        // Create a temporary directory for file processing
+        const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'indicadores-report-'));
+        const indicadoresCsvPath = path.join(tmpDir, 'indicadores.csv');
+        const regioesCsvPath = path.join(tmpDir, 'regioes.csv');
+
+        try {
+            const camposMetaIniAtv = this.buildFieldDefinitions(pdm, params);
+
+            // Process indicadores
+            await this.generateIndicadoresCsv(
+                indicadores.map((r) => r.id),
+                params,
+                camposMetaIniAtv,
+                indicadoresCsvPath
+            );
+
+            if (fs.existsSync(indicadoresCsvPath) && fs.statSync(indicadoresCsvPath).size > 0) {
+                this.logger.debug(`CSV de indicadores gerado: ${indicadoresCsvPath}`);
+                out.push({
+                    name: 'indicadores.csv',
+                    buffer: fs.readFileSync(indicadoresCsvPath),
+                });
+            }
+
+            await ctx.progress(50);
+
+            // Process regioes
+            await this.generateRegioesCsv(
+                indicadores.map((r) => r.id),
+                params as CreateRelIndicadorRegioesDto,
+                camposMetaIniAtv,
+                regioesCsvPath
+            );
+
+            if (fs.existsSync(regioesCsvPath) && fs.statSync(regioesCsvPath).size > 0) {
+                this.logger.debug(`CSV de regiões gerado: ${regioesCsvPath}`);
+                out.push({
+                    name: 'regioes.csv',
+                    buffer: fs.readFileSync(regioesCsvPath),
+                });
+            }
+        } catch (error) {
+            this.logger.error(`Erro ao processar: ${error}`);
+            throw error;
+        } finally {
+            // Clean up temporary files
+            try {
+                if (fs.existsSync(indicadoresCsvPath)) fs.unlinkSync(indicadoresCsvPath);
+                if (fs.existsSync(regioesCsvPath)) fs.unlinkSync(regioesCsvPath);
+                fs.rmdirSync(tmpDir);
+            } catch (cleanupError) {
+                this.logger.warn(`Erro ao limpar arquivos temporários: ${cleanupError}`);
+            }
+        }
+
+        this.logger.debug(`CSVs gerados`);
+        await ctx.progress(99);
+
+        // Add info file
+        out.push({
+            name: 'info.json',
+            buffer: Buffer.from(
+                JSON.stringify({
+                    params: params,
+                    horario: Date2YMD.tzSp2UTC(new Date()),
+                }),
+                'utf8'
+            ),
+        });
+
+        return out;
+    }
+
+    /**
+     * Build field definitions based on PDM and params
+     */
+    private buildFieldDefinitions(pdm: any, params: any): any[] {
         const camposMetaIniAtv = [
             { value: 'meta.codigo', label: 'Código da Meta' },
             { value: 'meta.titulo', label: 'Título da Meta' },
@@ -738,96 +651,669 @@ export class IndicadoresService implements ReportableService {
 
         if (params.tipo_pdm == 'PS') camposMetaIniAtv.unshift({ value: 'pdm_nome', label: 'Plano Setorial' });
 
-        this.logger.debug(`Processando indicadores`);
+        return camposMetaIniAtv;
+    }
 
-        // Create a temporary directory for file processing
-        const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'indicadores-report-'));
-        const indicadoresCsvPath = path.join(tmpDir, 'indicadores.csv');
-        const regioesCsvPath = path.join(tmpDir, 'regioes.csv');
+    /**
+     * Generate CSV file for indicadores by writing directly from database
+     */
+    private async generateIndicadoresCsv(
+        indicadoresIds: number[],
+        params: CreateRelIndicadorDto,
+        camposMetaIniAtv: any[],
+        filePath: string
+    ): Promise<void> {
+        // Create file stream
+        const fileStream = createWriteStream(filePath);
+
+        // Write header
+        const header = [
+            ...camposMetaIniAtv.map((field) => (typeof field === 'object' ? field.label : field)),
+            'Data de Referência',
+            'Serie',
+            'Data',
+            'Valor',
+        ]
+            .map((h) => this.escapeCsvField(h))
+            .join(',');
+
+        fileStream.write(header + '\n');
 
         try {
-            // Process both indicadores and regioes using collectStreamToFile helper
-            // This is more reliable than using pipeline directly
-            await this.collectStreamToFile(this.streamLinhas(params, user), indicadoresCsvPath, [
-                ...camposMetaIniAtv,
-                { value: 'data_referencia', label: 'Data de Referência' },
-                'serie',
-                'data',
-                'valor',
-            ]);
+            const queryFromWhere = `indicador i ON i.id IN (${indicadoresIds.join(',')})
+            left join meta on meta.id = i.meta_id
+            left join iniciativa on iniciativa.id = i.iniciativa_id
+            left join atividade on atividade.id = i.atividade_id
+            left join iniciativa i2 on i2.id = atividade.iniciativa_id
+            left join meta m2 on m2.id = iniciativa.meta_id OR m2.id = i2.meta_id
+            left join pdm on pdm.id = meta.pdm_id or pdm.id = m2.pdm_id
+            `;
 
-            if (fs.existsSync(indicadoresCsvPath)) {
-                this.logger.debug(`CSV de indicadores gerado: ${indicadoresCsvPath}`);
-                out.push({
-                    name: 'indicadores.csv',
-                    buffer: fs.readFileSync(indicadoresCsvPath),
-                });
-            }
+            const anoInicial = await this.capturaAnoSerieIndicadorInicial(params, queryFromWhere);
 
-            await ctx.progress(50);
-
-            await this.collectStreamToFile(this.streamRegioes(params, user), regioesCsvPath, [
-                ...camposMetaIniAtv,
-                { value: 'variavel.orgao.id', label: 'ID do órgão' },
-                { value: 'variavel.orgao.sigla', label: 'Sigla do órgão' },
-                { value: 'variavel.codigo', label: 'Código da Variável' },
-                { value: 'variavel.titulo', label: 'Título da Variável' },
-                { value: 'variavel.id', label: 'ID da Variável' },
-                { value: 'regiao_id', label: 'ID da região' },
-                { value: 'regiao_nivel_4.id', label: 'ID do Distrito' },
-                { value: 'regiao_nivel_4.codigo', label: 'Código do Distrito' },
-                { value: 'regiao_nivel_4.descricao', label: 'Descrição do Distrito' },
-                { value: 'regiao_nivel_3.id', label: 'ID do Subprefeitura' },
-                { value: 'regiao_nivel_3.codigo', label: 'Código da Subprefeitura' },
-                { value: 'regiao_nivel_3.descricao', label: 'Descrição da Subprefeitura' },
-                { value: 'regiao_nivel_2.id', label: 'ID da Região' },
-                { value: 'regiao_nivel_2.codigo', label: 'Código da Região' },
-                { value: 'regiao_nivel_2.descricao', label: 'Descrição da Região' },
-                { value: 'data_referencia', label: 'Data de Referência' },
-                'serie',
-                'data',
-                'valor',
-                { value: 'valor_categorica', label: 'Valor Categórica' },
-            ]);
-
-            if (fs.existsSync(regioesCsvPath)) {
-                this.logger.debug(`CSV de regiões gerado: ${regioesCsvPath}`);
-                out.push({
-                    name: 'regioes.csv',
-                    buffer: fs.readFileSync(regioesCsvPath),
-                });
-            }
-        } catch (error) {
-            console.dir(error, { depth: 1 });
-            this.logger.error(`Erro ao processar streams: ${error}`);
-            throw error;
+            // Process in transaction but avoid temp tables
+            await this.prisma.$transaction(
+                async (prismaTxn: Prisma.TransactionClient) => {
+                    // Instead of using temp tables, we'll process results directly
+                    if (params.tipo == 'Mensal' && params.mes) {
+                        await this.processQueryDirectlyToFile(
+                            prismaTxn,
+                            this.buildDirectQuery(queryFromWhere),
+                            fileStream,
+                            null,
+                            camposMetaIniAtv,
+                            params.ano,
+                            params.mes
+                        );
+                    } else if (params.periodo == 'Anual' && params.tipo == 'Analitico') {
+                        // Process each year separately
+                        for (let ano = anoInicial; ano <= params.ano; ano++) {
+                            await this.processAnualAnaliticoDirectlyToFile(
+                                prismaTxn,
+                                this.buildDirectQuery(queryFromWhere),
+                                fileStream,
+                                null,
+                                camposMetaIniAtv,
+                                ano
+                            );
+                        }
+                    } else if (params.periodo == 'Anual' && params.tipo == 'Consolidado') {
+                        await this.processAnualConsolidadoDirectlyToFile(
+                            prismaTxn,
+                            this.buildDirectQuery(queryFromWhere),
+                            fileStream,
+                            null,
+                            camposMetaIniAtv,
+                            params.ano
+                        );
+                    }
+                    // Add other conditions for Semestral, etc.
+                },
+                {
+                    maxWait: 1000000,
+                    timeout: 60 * 1000 * 15,
+                    isolationLevel: 'Serializable',
+                }
+            );
         } finally {
-            // Clean up temporary files
-            try {
-                if (fs.existsSync(indicadoresCsvPath)) fs.unlinkSync(indicadoresCsvPath);
-                if (fs.existsSync(regioesCsvPath)) fs.unlinkSync(regioesCsvPath);
-                fs.rmdirSync(tmpDir);
-            } catch (cleanupError) {
-                this.logger.warn(`Erro ao limpar arquivos temporários: ${cleanupError}`);
+            // Close file stream
+            fileStream.end();
+        }
+    }
+
+    /**
+     * Build direct query without using temp tables
+     */
+    private buildDirectQuery(queryFromWhere: string): string {
+        return `SELECT
+    pdm.nome as pdm_nome,
+    i.id as indicador_id,
+    i.codigo as indicador_codigo,
+    i.titulo as indicador_titulo,
+    COALESCE(i.meta_id, m2.id) as meta_id,
+    COALESCE(meta.titulo, m2.titulo) as meta_titulo,
+    COALESCE(meta.codigo, m2.codigo) as meta_codigo,
+    meta_tags_as_array(COALESCE(meta.id, m2.id)) as meta_tags,
+    COALESCE(i.iniciativa_id, i2.id) as iniciativa_id,
+    COALESCE(iniciativa.titulo, i2.titulo) as iniciativa_titulo,
+    COALESCE(iniciativa.codigo, i2.codigo) as iniciativa_codigo,
+    i.atividade_id,
+    atividade.titulo as atividade_titulo,
+    atividade.codigo as atividade_codigo,
+    i.complemento as indicador_complemento,
+    i.contexto as indicador_contexto,
+    :DATA: as "data",
+    dt.dt::date::text as "data_referencia",
+    series.serie,
+    round(
+        valor_indicador_em(
+            i.id,
+            series.serie,
+            dt.dt::date,
+            :JANELA:
+        ),
+        i.casas_decimais
+    )::text as valor
+    from generate_series($1::date, $2::date, $3::interval) dt
+    cross join (select 'Realizado'::"Serie" as serie UNION ALL select 'RealizadoAcumulado'::"Serie" as serie ) series
+    join ${queryFromWhere}
+    where dt.dt >= i.inicio_medicao AND dt.dt < i.fim_medicao + (select periodicidade_intervalo(i.periodicidade))`;
+    }
+
+    /**
+     * Process query results directly to file for Mensal Analitico
+     */
+    private async processQueryDirectlyToFile(
+        prismaTxn: Prisma.TransactionClient,
+        sql: string,
+        fileStream: any,
+        regioesDb: Regiao[] | null,
+        fields: any[],
+        ano: number,
+        mes: number
+    ): Promise<void> {
+        const query = sql
+            .replace(':JANELA:', "extract('month' from periodicidade_intervalo(i.periodicidade))::int")
+            .replace(':DATA:', 'dt.dt::date::text');
+
+        // Execute query and process results in batches
+        let offset = 0;
+        let hasMore = true;
+
+        while (hasMore) {
+            // We have to handle pagination ourselves since we're not using LIMIT/OFFSET in the SQL
+            const data: any = await prismaTxn.$queryRawUnsafe(
+                query + ` OFFSET ${offset} LIMIT ${BATCH_SIZE}`,
+                ano + '-' + mes + '-01',
+                ano + '-' + mes + '-01',
+                '1 month'
+            );
+
+            if (!data || data.length === 0) {
+                hasMore = false;
+                continue;
+            }
+
+            offset += data.length;
+
+            // Process and write each row
+            for (const row of data) {
+                if ('valor_json' in row && row.valor_json) {
+                    row.valor = row.valor_json.valor_nominal;
+                    row.valor_categorica = row.valor_json.valor_categorica;
+                }
+
+                // Process row and write to file
+                const processedRow = this.processRowForCsv(row, regioesDb);
+                const csvLine = this.createCsvLine(processedRow, fields);
+                fileStream.write(csvLine + '\n');
             }
         }
+    }
 
-        this.logger.debug(`CSVs gerados`);
-        await ctx.progress(99);
+    /**
+     * Process query results directly to file for Anual Analitico
+     */
+    private async processAnualAnaliticoDirectlyToFile(
+        prismaTxn: Prisma.TransactionClient,
+        sql: string,
+        fileStream: any,
+        regioesDb: Regiao[] | null,
+        fields: any[],
+        ano: number
+    ): Promise<void> {
+        const query = sql
+            .replace(':JANELA:', "extract('month' from periodicidade_intervalo(i.periodicidade))::int")
+            .replace(':DATA:', 'dt.dt::date::text');
 
-        // Add info file
-        out.push({
-            name: 'info.json',
-            buffer: Buffer.from(
-                JSON.stringify({
-                    params: params,
-                    horario: Date2YMD.tzSp2UTC(new Date()),
-                }),
-                'utf8'
-            ),
+        // Execute query and process results in batches
+        let offset = 0;
+        let hasMore = true;
+
+        while (hasMore) {
+            const data: any = await prismaTxn.$queryRawUnsafe(
+                query + ` OFFSET ${offset} LIMIT ${BATCH_SIZE}`,
+                ano + '-01-01',
+                ano + '-12-01',
+                '1 month'
+            );
+
+            if (!data || data.length === 0) {
+                hasMore = false;
+                continue;
+            }
+
+            offset += data.length;
+
+            // Process and write each row
+            for (const row of data) {
+                if ('valor_json' in row && row.valor_json) {
+                    row.valor = row.valor_json.valor_nominal;
+                    row.valor_categorica = row.valor_json.valor_categorica;
+                }
+
+                // Process row and write to file
+                const processedRow = this.processRowForCsv(row, regioesDb);
+                const csvLine = this.createCsvLine(processedRow, fields);
+                fileStream.write(csvLine + '\n');
+            }
+        }
+    }
+
+    /**
+     * Process query results directly to file for Anual Consolidado
+     */
+    private async processAnualConsolidadoDirectlyToFile(
+        prismaTxn: Prisma.TransactionClient,
+        sql: string,
+        fileStream: any,
+        regioesDb: Regiao[] | null,
+        fields: any[],
+        ano: number
+    ): Promise<void> {
+        const query = sql
+            .replace(':JANELA:', '12')
+            .replace(':DATA:', "(dt.dt::date - '11 months'::interval)::date::text || '/' || (dt.dt::date)");
+
+        // Execute query and process results in batches
+        let offset = 0;
+        let hasMore = true;
+
+        while (hasMore) {
+            const data: any = await prismaTxn.$queryRawUnsafe(
+                query + ` OFFSET ${offset} LIMIT ${BATCH_SIZE}`,
+                ano + '-12-01',
+                ano + '-12-01',
+                '1 year'
+            );
+
+            if (!data || data.length === 0) {
+                hasMore = false;
+                continue;
+            }
+
+            offset += data.length;
+
+            // Process and write each row
+            for (const row of data) {
+                if ('valor_json' in row && row.valor_json) {
+                    row.valor = row.valor_json.valor_nominal;
+                    row.valor_categorica = row.valor_json.valor_categorica;
+                }
+
+                // Process row and write to file
+                const processedRow = this.processRowForCsv(row, regioesDb);
+                const csvLine = this.createCsvLine(processedRow, fields);
+                fileStream.write(csvLine + '\n');
+            }
+        }
+    }
+
+    /**
+     * Generate CSV file for regioes by writing directly from database
+     */
+    private async generateRegioesCsv(
+        indicadoresIds: number[],
+        params: CreateRelIndicadorRegioesDto,
+        camposMetaIniAtv: any[],
+        filePath: string
+    ): Promise<void> {
+        // Create file stream
+        const fileStream = createWriteStream(filePath);
+
+        // Write header with additional fields for regioes
+        const regioesFields = [
+            { value: 'variavel.orgao.id', label: 'ID do órgão' },
+            { value: 'variavel.orgao.sigla', label: 'Sigla do órgão' },
+            { value: 'variavel.codigo', label: 'Código da Variável' },
+            { value: 'variavel.titulo', label: 'Título da Variável' },
+            { value: 'variavel.id', label: 'ID da Variável' },
+            { value: 'regiao_id', label: 'ID da região' },
+            { value: 'regiao_nivel_4.id', label: 'ID do Distrito' },
+            { value: 'regiao_nivel_4.codigo', label: 'Código do Distrito' },
+            { value: 'regiao_nivel_4.descricao', label: 'Descrição do Distrito' },
+            { value: 'regiao_nivel_3.id', label: 'ID do Subprefeitura' },
+            { value: 'regiao_nivel_3.codigo', label: 'Código da Subprefeitura' },
+            { value: 'regiao_nivel_3.descricao', label: 'Descrição da Subprefeitura' },
+            { value: 'regiao_nivel_2.id', label: 'ID da Região' },
+            { value: 'regiao_nivel_2.codigo', label: 'Código da Região' },
+            { value: 'regiao_nivel_2.descricao', label: 'Descrição da Região' },
+        ];
+
+        const header = [
+            ...camposMetaIniAtv.map((field) => (typeof field === 'object' ? field.label : field)),
+            ...regioesFields.map((field) => field.label),
+            'Data de Referência',
+            'Serie',
+            'Data',
+            'Valor',
+            'Valor Categórica',
+        ]
+            .map((h) => this.escapeCsvField(h))
+            .join(',');
+
+        fileStream.write(header + '\n');
+
+        // Process in transaction
+        await this.prisma.$transaction(
+            async (prismaTxn: Prisma.TransactionClient) => {
+                let queryFromWhere = `indicador i ON i.id IN (${indicadoresIds.join(',')})
+                join indicador_variavel iv ON iv.indicador_id = i.id
+                join variavel v ON v.id = iv.variavel_id
+                join orgao ON v.orgao_id = orgao.id
+                left join meta on meta.id = i.meta_id
+                left join iniciativa on iniciativa.id = i.iniciativa_id
+                left join atividade on atividade.id = i.atividade_id
+                left join iniciativa i2 on i2.id = atividade.iniciativa_id
+                left join meta m2 on m2.id = iniciativa.meta_id OR m2.id = i2.meta_id
+                left join pdm on pdm.id = meta.pdm_id or pdm.id = m2.pdm_id
+                where v.regiao_id is not null`;
+
+                if (Array.isArray(params.regioes)) {
+                    const numbers = params.regioes.map((n) => +n).join(',');
+                    queryFromWhere = `${queryFromWhere} AND v.regiao_id IN (${numbers})`;
+                }
+
+                const anoInicial = await this.capturaAnoSerieVariavelInicial(params, queryFromWhere);
+
+                const sql = `${CREATE_TEMP_TABLE} SELECT
+                pdm.nome as pdm_nome,
+                i.id as indicador_id,
+                i.codigo as indicador_codigo,
+                i.titulo as indicador_titulo,
+                COALESCE(i.meta_id, m2.id) as meta_id,
+                COALESCE(meta.titulo, m2.titulo) as meta_titulo,
+                COALESCE(meta.codigo, m2.codigo) as meta_codigo,
+                meta_tags_as_array(COALESCE(meta.id, m2.id)) as meta_tags,
+                COALESCE(i.iniciativa_id, i2.id) as iniciativa_id,
+                COALESCE(iniciativa.titulo, i2.titulo) as iniciativa_titulo,
+                COALESCE(iniciativa.codigo, i2.codigo) as iniciativa_codigo,
+                i.atividade_id,
+                atividade.titulo as atividade_titulo,
+                atividade.codigo as atividade_codigo,
+                :DATA: as "data",
+                dt.dt::date::text as "data_referencia",
+                series.serie,
+                v.id as variavel_id,
+                v.codigo as variavel_codigo,
+                v.titulo as variavel_titulo,
+                v.regiao_id as regiao_id,
+                orgao.id as orgao_id,
+                orgao.sigla as orgao_sigla,
+                valor_variavel_em_json(
+                    v.id,
+                    series.serie,
+                    dt.dt::date,
+                    :JANELA:
+                ) AS valor_json
+                from generate_series($1::date, $2::date, $3::interval) dt
+                cross join (select 'Realizado'::"Serie" as serie UNION ALL select 'RealizadoAcumulado'::"Serie" as serie ) series
+                join ${queryFromWhere}
+                AND dt.dt >= i.inicio_medicao AND dt.dt < i.fim_medicao + (select periodicidade_intervalo(i.periodicidade))
+                `;
+
+                const regioes = await this.prisma.regiao.findMany({
+                    where: { removido_em: null },
+                });
+
+                // Execute query based on params type
+                if (params.tipo == 'Mensal' && params.mes) {
+                    await this.rodaQueryMensalAnalitico(prismaTxn, sql, params.ano, params.mes);
+                    await this.writeRowsToFile(regioes, fileStream, prismaTxn, [...camposMetaIniAtv, ...regioesFields]);
+                } else if (params.periodo == 'Anual' && params.tipo == 'Analitico') {
+                    await this.rodaQueryAnualAnalitico(prismaTxn, sql, anoInicial);
+
+                    for (let ano = anoInicial + 1; ano <= params.ano; ano++) {
+                        await this.rodaQueryAnualAnalitico(prismaTxn, this.replaceCreateToInsert(sql), ano);
+                    }
+
+                    await this.writeRowsToFile(regioes, fileStream, prismaTxn, [...camposMetaIniAtv, ...regioesFields]);
+                } else if (params.periodo == 'Anual' && params.tipo == 'Consolidado') {
+                    await this.rodaQueryAnualConsolidado(prismaTxn, sql, params.ano);
+
+                    await this.writeRowsToFile(regioes, fileStream, prismaTxn, [...camposMetaIniAtv, ...regioesFields]);
+                } else if (params.periodo == 'Semestral' && params.tipo == 'Consolidado') {
+                    const tipo = params.semestre == 'Primeiro' ? 'Primeiro' : 'Segundo';
+                    const ano = params.ano;
+
+                    await this.rodaQuerySemestralConsolidado(tipo, ano, prismaTxn, sql);
+
+                    await this.writeRowsToFile(regioes, fileStream, prismaTxn, [...camposMetaIniAtv, ...regioesFields]);
+                } else if (params.periodo == 'Semestral' && params.tipo == 'Analitico') {
+                    const tipo = params.semestre == 'Primeiro' ? 'Primeiro' : 'Segundo';
+                    const ano = anoInicial;
+
+                    const semestreInicio = tipo === 'Segundo' ? ano + '-12-01' : ano + '-06-01';
+
+                    await this.rodaQuerySemestralAnalitico(prismaTxn, sql, semestreInicio, tipo);
+
+                    for (let ano = anoInicial + 1; ano <= params.ano; ano++) {
+                        const semestreInicio = tipo === 'Segundo' ? ano + '-12-01' : ano + '-06-01';
+
+                        await this.rodaQuerySemestralAnalitico(
+                            prismaTxn,
+                            this.replaceCreateToInsert(sql),
+                            semestreInicio,
+                            tipo
+                        );
+                    }
+
+                    await this.writeRowsToFile(regioes, fileStream, prismaTxn, [...camposMetaIniAtv, ...regioesFields]);
+                }
+            },
+            {
+                maxWait: 1000000,
+                timeout: 60 * 1000 * 15,
+                isolationLevel: 'Serializable',
+            }
+        );
+
+        // Close file stream
+        fileStream.end();
+    }
+
+    /**
+     * Write rows directly from database to file without storing in memory
+     */
+    private async writeRowsToFile(
+        regioesDb: Regiao[] | null,
+        fileStream: any,
+        prismaTxn: Prisma.TransactionClient,
+        fields: any[]
+    ): Promise<void> {
+        let offset: number = 0;
+        let has_more: boolean = true;
+
+        while (has_more) {
+            const data: RetornoDb[] | RetornoDbRegiao[] = await prismaTxn.$queryRawUnsafe(`
+                SELECT *
+                FROM _report_data
+                LIMIT ${BATCH_SIZE} OFFSET ${offset} -- ${this.invalidatePreparedStatement}`);
+
+            if (data.length === 0) {
+                has_more = false;
+                continue;
+            }
+
+            offset += data.length;
+
+            for (const row of data) {
+                if ('valor_json' in row && row.valor_json) {
+                    row.valor = row.valor_json.valor_nominal;
+                    row.valor_categorica = row.valor_json.valor_categorica;
+                }
+
+                // Process the row directly
+                const processedRow = this.processRowForCsv(row, regioesDb);
+
+                // Create CSV line
+                const csvLine = this.createCsvLine(processedRow, fields);
+
+                // Write directly to file
+                fileStream.write(csvLine + '\n');
+            }
+        }
+    }
+
+    /**
+     * Process a database row into a flattened object for CSV output
+     */
+    private processRowForCsv(row: RetornoDb | RetornoDbRegiao, regioesDb: Regiao[] | null): Record<string, any> {
+        // Convert row to structured object
+        const item = {
+            pdm_nome: row.pdm_nome,
+            indicador: {
+                codigo: row.indicador_codigo,
+                titulo: row.indicador_titulo,
+                contexto: row.indicador_contexto,
+                complemento: row.indicador_complemento,
+                id: +row.indicador_id,
+            },
+            meta: row.meta_id ? { codigo: row.meta_codigo, titulo: row.meta_titulo, id: +row.meta_id } : null,
+            meta_tags: row.meta_tags ? row.meta_tags : null,
+            iniciativa: row.iniciativa_id
+                ? { codigo: row.iniciativa_codigo, titulo: row.iniciativa_titulo, id: +row.iniciativa_id }
+                : null,
+            atividade: row.atividade_id
+                ? { codigo: row.atividade_codigo, titulo: row.atividade_titulo, id: +row.atividade_id }
+                : null,
+
+            data: row.data,
+            data_referencia: row.data_referencia,
+            serie: row.serie,
+            valor: row.valor,
+            valor_categorica: row.valor_categorica,
+
+            variavel: row.variavel_id
+                ? {
+                      codigo: row.variavel_codigo,
+                      titulo: row.variavel_titulo,
+                      id: +row.variavel_id,
+                      orgao: {
+                          id: +row.orgao_id,
+                          sigla: row.orgao_sigla,
+                      },
+                  }
+                : undefined,
+            ...('regiao_id' in row && regioesDb ? this.convertRowsRegiao(regioesDb, row as RetornoDbRegiao) : {}),
+        };
+
+        // Flatten the object to match field paths
+        return this.flattenObject(item);
+    }
+
+    /**
+     * Create a CSV line from a flattened object using field definitions
+     */
+    private createCsvLine(flatItem: Record<string, any>, fields: any[]): string {
+        const fieldValues = fields.map((field) => {
+            let value;
+            // Extract value based on field definition
+            if (typeof field === 'object' && field.value) {
+                if (typeof field.value === 'function') {
+                    // For function fields, we can't apply them directly
+                    // Just use an empty string for now
+                    value = '';
+                } else {
+                    value = flatItem[field.value];
+                }
+            } else {
+                value = flatItem[field];
+            }
+
+            // Handle undefined/null
+            if (value === undefined || value === null) {
+                return '';
+            }
+
+            // Format the value
+            return this.escapeCsvField(value);
         });
 
-        return out;
+        // Add the basic fields that should always be present
+        return [
+            ...fieldValues,
+            this.escapeCsvField(flatItem['data_referencia'] || ''),
+            this.escapeCsvField(flatItem['serie'] || ''),
+            this.escapeCsvField(flatItem['data'] || ''),
+            this.escapeCsvField(flatItem['valor'] || ''),
+            'regiao_id' in flatItem ? this.escapeCsvField(flatItem['valor_categorica'] || '') : '',
+        ].join(',');
+    }
+
+    /**
+     * Escape a field for CSV output
+     */
+    private escapeCsvField(value: any): string {
+        if (value === undefined || value === null) {
+            return '';
+        }
+
+        // Handle arrays (like meta_tags)
+        if (Array.isArray(value)) {
+            return this.escapeCsvField(value.join(';'));
+        }
+
+        const stringValue = String(value);
+
+        // Check if we need to quote this field
+        if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
+            // Escape quotes by doubling them and wrap in quotes
+            return `"${stringValue.replace(/"/g, '""')}"`;
+        }
+
+        return stringValue;
+    }
+
+    /**
+     * Flatten a nested object to match field paths
+     */
+    private flattenObject(item: any): Record<string, any> {
+        const result: Record<string, any> = {};
+
+        // Handle top-level properties
+        ['pdm_nome', 'data', 'data_referencia', 'serie', 'valor', 'valor_categorica', 'regiao_id'].forEach((key) => {
+            if (item[key] !== undefined) {
+                result[key] = item[key];
+            }
+        });
+
+        // Process nested 'indicador' properties
+        if (item.indicador) {
+            Object.keys(item.indicador).forEach((key) => {
+                result[`indicador.${key}`] = item.indicador[key];
+            });
+        }
+
+        // Handle nested 'meta' properties
+        if (item.meta) {
+            Object.keys(item.meta).forEach((key) => {
+                result[`meta.${key}`] = item.meta[key];
+            });
+        }
+
+        // Special handling for meta_tags
+        if (item.meta_tags) {
+            result['meta_tags'] = item.meta_tags;
+        }
+
+        // Handle nested 'iniciativa' properties
+        if (item.iniciativa) {
+            Object.keys(item.iniciativa).forEach((key) => {
+                result[`iniciativa.${key}`] = item.iniciativa[key];
+            });
+        }
+
+        // Handle nested 'atividade' properties
+        if (item.atividade) {
+            Object.keys(item.atividade).forEach((key) => {
+                result[`atividade.${key}`] = item.atividade[key];
+            });
+        }
+
+        // Handle nested 'variavel' properties
+        if (item.variavel) {
+            Object.keys(item.variavel).forEach((key) => {
+                if (key === 'orgao' && item.variavel.orgao) {
+                    Object.keys(item.variavel.orgao).forEach((orgaoKey) => {
+                        result[`variavel.orgao.${orgaoKey}`] = item.variavel.orgao[orgaoKey];
+                    });
+                } else {
+                    result[`variavel.${key}`] = item.variavel[key];
+                }
+            });
+        }
+
+        // Handle nested region properties
+        ['regiao_nivel_1', 'regiao_nivel_2', 'regiao_nivel_3', 'regiao_nivel_4'].forEach((regionLevel) => {
+            if (item[regionLevel]) {
+                Object.keys(item[regionLevel]).forEach((key) => {
+                    result[`${regionLevel}.${key}`] = item[regionLevel][key];
+                });
+            }
+        });
+
+        return result;
     }
 
     private async streamRowsInto(regioesDb: Regiao[] | null, stream: Readable, prismaTxn: Prisma.TransactionClient) {
@@ -901,10 +1387,13 @@ export class IndicadoresService implements ReportableService {
                                   },
                               }
                             : undefined,
-                        ...('regiao_id' in row && regioesDb ? this.convertRowsRegiao(regioesDb, row) : {}),
+                        ...('regiao_id' in row && regioesDb
+                            ? this.convertRowsRegiao(regioesDb, row as RetornoDbRegiao)
+                            : {}),
                     };
 
-                    stream.push(JSON.stringify(item));
+                    // Push the item as an object
+                    stream.push(item);
                 }
             }
 
