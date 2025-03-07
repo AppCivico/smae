@@ -1,4 +1,4 @@
-import { ListIndicadoresDto } from "../../indicadores/entities/indicadores.entity";
+import { ListIndicadoresDto } from '../../indicadores/entities/indicadores.entity';
 
 export class RelPsMonitoramentoMensalVariaveis {
     indicador_id: number;
@@ -24,8 +24,30 @@ export class RelPsMonitoramentoMensalVariaveis {
     analise_qualitativa_coleta: string | null;
     analise_qualitativa_aprovador: string | null;
     analise_qualitativa_liberador: string | null;
+    analise_qualitativa_pessoa: string | null;
+    analise_qualitativa_conferencia_pessoa: string | null;
+    orgao_proprietario_id: number | null;
+    orgao_proprietario_sigla: string | null;
+    orgao_coleta_id: number | null;
+    orgao_coleta_sigla: string | null;
 }
 
-export class RelPsMonitRetorno extends ListIndicadoresDto{
+export class RelPSMonitoramentoMensalCicloMetasDto {
+    ps_id?: number;
+    meta_id: number;
+    meta_codigo: string;
+    iniciativa_id: number | null;
+    iniciativa_codigo: string | null;
+    atividade_id: number | null;
+    atividade_codigo: string | null;
+    analise_qualitativa: string | null;
+    analise_qualitativa_data: string | null;
+    risco_detalhamento: string | null;
+    risco_ponto_atencao: string | null;
+    fechamento_comentario: string | null;
+}
+
+export class RelPsMonitRetorno extends ListIndicadoresDto {
     monitoramento: RelPsMonitoramentoMensalVariaveis[];
+    ciclo_metas: RelPSMonitoramentoMensalCicloMetasDto[];
 }
