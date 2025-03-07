@@ -520,16 +520,29 @@ export class IndicadoresService implements ReportableService {
         );
     }
 
-    private async collectStreamToFile<T>(stream: Readable, filePath: string, fields: any[]): Promise<void> {
+    private async collectStreamToFile(stream: Readable, filePath: string, fields: any[]): Promise<void> {
         this.logger.debug(`Collecting stream to file: ${filePath}`);
 
         return new Promise((resolve, reject) => {
             // Create array to collect data
-            const collectedData: T[] = [];
+            const collectedData: any[] = [];
 
             // Subscribe to stream
             stream.on('data', (chunk) => {
-                collectedData.push(chunk);
+                try {
+                    // Handle both string and object chunks
+                    if (typeof chunk === 'string') {
+                        collectedData.push(JSON.parse(chunk));
+                    } else if (Buffer.isBuffer(chunk)) {
+                        collectedData.push(JSON.parse(chunk.toString('utf8')));
+                    } else {
+                        collectedData.push(chunk);
+                    }
+                } catch (err) {
+                    this.logger.warn(`Failed to parse chunk: ${err}`);
+                    // Just add it as-is if parsing fails
+                    collectedData.push(chunk);
+                }
             });
 
             stream.on('error', (err) => {
@@ -540,15 +553,125 @@ export class IndicadoresService implements ReportableService {
             stream.on('end', async () => {
                 this.logger.debug(`Stream ended, collected ${collectedData.length} items`);
                 try {
+                    if (collectedData.length === 0) {
+                        this.logger.warn('No data collected from stream');
+                        fs.writeFileSync(filePath, ''); // Create empty file
+                        return resolve();
+                    }
+
+                    // Log a sample of the raw collected data to debug
+                    if (collectedData.length > 0) {
+                        this.logger.debug(`Sample of raw data type: ${typeof collectedData[0]}`);
+                        this.logger.debug(
+                            `Sample of raw data: ${JSON.stringify(collectedData[0]).substring(0, 200)}...`
+                        );
+                    }
+
+                    // Map field paths to a flat structure that matches the field definitions
+                    const processedData = collectedData.map((item: any) => {
+                        // Try to parse the item if it's a string
+                        if (typeof item === 'string') {
+                            try {
+                                item = JSON.parse(item);
+                            } catch (err) {
+                                this.logger.warn(`Failed to parse item as JSON: ${err}`);
+                                // If it's not valid JSON, return an empty object
+                                return {};
+                            }
+                        }
+
+                        const flatItem: Record<string, any> = {};
+
+                        // Handle nested 'indicador' properties
+                        if (item.indicador) {
+                            Object.keys(item.indicador).forEach((key) => {
+                                flatItem[`indicador.${key}`] = item.indicador[key];
+                            });
+                        }
+
+                        // Handle nested 'meta' properties
+                        if (item.meta) {
+                            Object.keys(item.meta).forEach((key) => {
+                                flatItem[`meta.${key}`] = item.meta[key];
+                            });
+                        }
+
+                        // Handle nested 'iniciativa' properties
+                        if (item.iniciativa) {
+                            Object.keys(item.iniciativa).forEach((key) => {
+                                flatItem[`iniciativa.${key}`] = item.iniciativa[key];
+                            });
+                        }
+
+                        // Handle nested 'atividade' properties
+                        if (item.atividade) {
+                            Object.keys(item.atividade).forEach((key) => {
+                                flatItem[`atividade.${key}`] = item.atividade[key];
+                            });
+                        }
+
+                        // Handle nested 'variavel' properties
+                        if (item.variavel) {
+                            Object.keys(item.variavel).forEach((key) => {
+                                if (key === 'orgao' && item.variavel.orgao) {
+                                    Object.keys(item.variavel.orgao).forEach((orgaoKey) => {
+                                        flatItem[`variavel.orgao.${orgaoKey}`] = item.variavel.orgao[orgaoKey];
+                                    });
+                                } else {
+                                    flatItem[`variavel.${key}`] = item.variavel[key];
+                                }
+                            });
+                        }
+
+                        // Handle nested region properties
+                        ['regiao_nivel_1', 'regiao_nivel_2', 'regiao_nivel_3', 'regiao_nivel_4'].forEach(
+                            (regionLevel) => {
+                                if (item[regionLevel]) {
+                                    Object.keys(item[regionLevel]).forEach((key) => {
+                                        flatItem[`${regionLevel}.${key}`] = item[regionLevel][key];
+                                    });
+                                }
+                            }
+                        );
+
+                        // Handle top-level properties
+                        [
+                            'pdm_nome',
+                            'data',
+                            'data_referencia',
+                            'serie',
+                            'valor',
+                            'valor_categorica',
+                            'regiao_id',
+                        ].forEach((key) => {
+                            if (item[key] !== undefined) {
+                                flatItem[key] = item[key];
+                            }
+                        });
+
+                        // Special handling for meta_tags which could be an array
+                        if (item.meta_tags && Array.isArray(item.meta_tags)) {
+                            flatItem['meta_tags'] = item.meta_tags;
+                        }
+
+                        return flatItem;
+                    });
+
+                    // Log a sample of processed data to debug
+                    if (processedData.length > 0) {
+                        this.logger.debug(
+                            `Sample of processed data fields: ${Object.keys(processedData[0]).join(', ')}`
+                        );
+                    }
+
                     // Use AsyncParser to handle the conversion
                     const parser = new AsyncParser({
                         fields: fields,
-                        transforms: [flatten({})],
                         ...DefaultCsvOptions,
                     });
 
                     // Convert to CSV
-                    const csv = await parser.parse(collectedData).promise();
+                    const csv = await parser.parse(processedData).promise();
 
                     // Write to file
                     fs.writeFileSync(filePath, csv);
@@ -781,7 +904,6 @@ export class IndicadoresService implements ReportableService {
                         ...('regiao_id' in row && regioesDb ? this.convertRowsRegiao(regioesDb, row) : {}),
                     };
 
-                    // Push the object directly, not a Buffer
                     stream.push(JSON.stringify(item));
                 }
             }
