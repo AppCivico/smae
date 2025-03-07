@@ -114,7 +114,7 @@ watchEffect(() => {
       type="hidden"
     />
 
-    <div class="titulo-monitoramento mb2">
+    <div class="titulo-monitoramento">
       <h2 class="tc500 t20 titulo-monitoramento__text">
         <span class="w400">
           Ciclo Atual: {{ dateToTitle(riscoEmFocoParaEdicao.referencia_data) }}
@@ -183,7 +183,7 @@ watchEffect(() => {
 
     <FormErrorsList :errors="errors" />
 
-    <div class="titulo-monitoramento titulo-monitoramento--passado mb2">
+    <div class="titulo-monitoramento titulo-monitoramento--passado">
       <h2 class="tc500 t20 titulo-monitoramento__text">
         <span class="w400">
           {{ dateToTitle(riscoAnterior.referencia_data) }}
@@ -205,23 +205,24 @@ watchEffect(() => {
         class="t13 contentStyle"
         v-html="riscoAnterior?.ponto_de_atencao || '-'"
       />
-      <footer
-        v-if="riscoAnterior?.criador?.nome_exibicao || riscoAnterior?.criado_em"
-        class="tc600"
-      >
-        <p>
-          Analisado
-          <template v-if="riscoAnterior.criador?.nome_exibicao">
-            por <strong>{{ riscoAnterior.criador.nome_exibicao }}</strong>
-          </template>
-          <template v-if="riscoAnterior.criado_em">
-            em <time :datetime="riscoAnterior.criado_em">
-              {{ dateToShortDate(riscoAnterior.criado_em) }}
-            </time>.
-          </template>
-        </p>
-      </footer>
     </div>
+
+    <footer
+      v-if="riscoAnterior?.criador?.nome_exibicao || riscoAnterior?.criado_em"
+      class="tc600"
+    >
+      <p>
+        Analisado
+        <template v-if="riscoAnterior.criador?.nome_exibicao">
+          por <strong>{{ riscoAnterior.criador.nome_exibicao }}</strong>
+        </template>
+        <template v-if="riscoAnterior.criado_em">
+          em <time :datetime="riscoAnterior.criado_em">
+            {{ dateToShortDate(riscoAnterior.criado_em) }}
+          </time>.
+        </template>
+      </p>
+    </footer>
 
     <div class="flex spacebetween center mb2">
       <hr class="mr2 f1">
