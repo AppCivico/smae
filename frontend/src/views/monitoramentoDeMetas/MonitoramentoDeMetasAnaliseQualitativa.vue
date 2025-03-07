@@ -1,4 +1,6 @@
 <script setup>
+import EnvioDeArquivos from '@/components/monitoramentoDeMetas/EnvioDeArquivos.vue';
+import SmallModal from '@/components/SmallModal.vue';
 import TextEditor from '@/components/TextEditor.vue';
 import { monitoramentoDeMetasAnalise as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
@@ -10,7 +12,9 @@ import {
   useForm,
   useIsFormDirty,
 } from 'vee-validate';
-import { computed, watch, watchEffect } from 'vue';
+import {
+  computed, nextTick, ref, watch, watchEffect,
+} from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute();
@@ -25,6 +29,8 @@ const {
   analiseEmFoco,
 } = storeToRefs(monitoramentoDeMetasStore);
 
+const exibirSeletorDeArquivo = ref(false);
+
 const analiseEmFocoParaEdicao = computed(() => ({
   ciclo_fisico_id: route.params.cicloId,
   informacoes_complementares: analiseEmFoco.value?.corrente.analises[0]?.informacoes_complementares,
@@ -32,7 +38,7 @@ const analiseEmFocoParaEdicao = computed(() => ({
 }));
 
 const {
-  errors, handleSubmit, isSubmitting, resetField, resetForm, setFieldValue, values,
+  errors, handleSubmit, isSubmitting, resetField, resetForm, setFieldValue, values, controlledValues,
 } = useForm({
   initialValues: analiseEmFoco.value,
   validationSchema: schema,
@@ -47,7 +53,7 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
       route.params.cicloId,
       valoresControlados,
     )) {
-      alertStore.success('Análise de risco atualizada!');
+      alertStore.success('Análise qualitativa atualizada!');
       if (route.meta.rotaDeEscape) {
         router.push({
           name: route.meta.rotaDeEscape,
@@ -60,6 +66,17 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
     alertStore.error(error);
   }
 });
+
+async function encerrarInclusaoDeArquivos() {
+  exibirSeletorDeArquivo.value = false;
+
+  await monitoramentoDeMetasStore
+    .buscarAnaliseDoCiclo(route.params.planoSetorialId, route.params.cicloId, {
+      meta_id: route.params.meta_id,
+    });
+
+  await nextTick();
+}
 
 watch(analiseEmFocoParaEdicao, (novoValor) => {
   resetForm({ values: novoValor });
@@ -107,6 +124,10 @@ watchEffect(() => {
     >values: {{ values }}</textarea>
   </div>
 
+  <pre>
+analiseEmFoco?.corrente?.arquivos?.length: {{ analiseEmFoco?.corrente?.arquivos?.length }}
+</pre>
+
   <form
     :disabled="isSubmitting"
     :aria-busy="isSubmitting || chamadasPendentes.riscoEmFoco"
@@ -151,4 +172,19 @@ watchEffect(() => {
       <hr class="ml2 f1">
     </div>
   </form>
+
+  <button
+    type="button"
+    @click="exibirSeletorDeArquivo = !exibirSeletorDeArquivo"
+  >
+    Adicionar documento
+  </button>
+
+  <SmallModal
+    v-if="exibirSeletorDeArquivo"
+    has-close-button
+    @close="exibirSeletorDeArquivo = false"
+  >
+    <EnvioDeArquivos @envio-bem-sucedido="encerrarInclusaoDeArquivos" />
+  </SmallModal>
 </template>
