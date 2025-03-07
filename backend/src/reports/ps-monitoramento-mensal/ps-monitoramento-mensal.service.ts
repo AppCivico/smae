@@ -345,7 +345,7 @@ export class PSMonitoramentoMensal implements ReportableService {
                 ],
             });
 
-            const linhas = json2csvParser.parse(rows);
+            const linhas = json2csvParser.parse(cicloMetasRows);
             out.push({
                 name: 'monitoramento-mensal-metas-ciclo-ps.csv',
                 buffer: Buffer.from(linhas, 'utf8'),
