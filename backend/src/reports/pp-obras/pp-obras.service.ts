@@ -415,7 +415,7 @@ export class PPObrasService implements ReportableService {
                 LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
                 LEFT JOIN projeto_etapa pe ON pe.id = projeto.projeto_etapa_id
                 LEFT JOIN empreendimento ON empreendimento.id = projeto.empreendimento_id
-                ${whereCond.whereString}
+                ${whereCond.whereString.replace('projeto.portfolio_id', 'port_array.portfolio_id')}
                 `,
                 whereCond.queryParams,
                 'obras.csv'
@@ -747,7 +747,14 @@ export class PPObrasService implements ReportableService {
                 },
                 select: { projeto_id: true },
             });
-            allowed.push(...allowed_shared.map((n) => ({ id: n.projeto_id })));
+
+            // Adicionando projetos compartilhados.
+            // Deve ser adicionado apenas projetos que não sejam originalmente do portfolio utilizado no filtro.
+            allowed.push(
+                ...allowed_shared
+                    .filter((n) => !allowed.find((m) => m.id === n.projeto_id))
+                    .map((n) => ({ id: n.projeto_id }))
+            );
 
             if (allowed.length === 0) {
                 return { whereString: 'WHERE false', queryParams: [] };
@@ -765,11 +772,11 @@ export class PPObrasService implements ReportableService {
             paramIndex++;
         }
 
-        //if (filters.portfolio_id) {
-        //    whereConditions.push(`projeto.portfolio_id = $${paramIndex}`);
-        //    queryParams.push(filters.portfolio_id);
-        //    paramIndex++;
-        //}
+        if (filters.portfolio_id) {
+            whereConditions.push(`projeto.portfolio_id = $${paramIndex}`);
+            queryParams.push(filters.portfolio_id);
+            paramIndex++;
+        }
 
         if (filters.orgao_responsavel_id) {
             whereConditions.push(`projeto.orgao_responsavel_id = $${paramIndex}`);
