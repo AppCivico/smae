@@ -1,7 +1,6 @@
 <script setup>
 import DetalhamentoDeCiclo from '@/components/monitoramentoDeMetas/DetalhamentoDeCiclo.vue';
-import TituloDaPagina from '@/components/TituloDaPagina.vue';
-import AutocompleteField2 from '@/components/AutocompleteField2.vue';
+import AutocompleteField from '@/components/AutocompleteField2.vue';
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
 import { useMonitoramentoDeMetasStore } from '@/stores/monitoramentoDeMetas.store';
 import { storeToRefs } from 'pinia';
@@ -46,7 +45,7 @@ watchEffect(() => {
 <template>
   <MigalhasDePao />
 
-  <TituloDaPagina />
+  <TituloDePagina />
 
   <!-- eslint-disable -->
   <div class="debug flex flexwrap g2 mb1 hidden">
@@ -106,7 +105,7 @@ watchEffect(() => {
           </span>
         </h2>
       </div>
-      <AutocompleteField2
+      <AutocompleteField
         name="anos"
         model-value="anosSelecionados"
         :controlador="{
