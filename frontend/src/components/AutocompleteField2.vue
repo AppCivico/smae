@@ -80,7 +80,7 @@ function buscar(e, item, g, label) {
   e.stopPropagation();
   if (e.keyCode === 13) {
     const i = g.find((x) => !item.participantes.includes(x.id)
-      && x[label].toLowerCase().includes(item.busca.toLowerCase()));
+      && String(x[label]).toLowerCase().includes(item.busca.toLowerCase()));
     if (i) {
       pushId(item.participantes, i.id);
     }
@@ -107,7 +107,7 @@ export default {
       <ul>
         <li
           v-for="r in grupo.filter((x) => !control.participantes.includes(x.id)
-            && x[label]?.toLowerCase().includes(control.busca.toLowerCase()))"
+            && String(x[label])?.toLowerCase().includes(control.busca.toLowerCase()))"
           :key="r.id"
         >
           <button
