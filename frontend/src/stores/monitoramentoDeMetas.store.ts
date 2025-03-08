@@ -278,14 +278,18 @@ export const useMonitoramentoDeMetasStore = (prefixo: PrefixosValidos) => define
       return acc;
     }, {} as Record<string, CicloFisicoPSDto[]>),
 
+    anosDisponiveis() {
+      return Object.keys(this.ciclosPorAno).reduce((acc, ano) => {
+        const anoMaisRecente = Number(ano);
+        if (!Number.isNaN(anoMaisRecente)) {
+          acc.push(anoMaisRecente);
+        }
+        return acc;
+      }, [] as number[]);
+    },
+
     anoMaisRecente() {
-      const anos = Object.keys(this.ciclosPorAno);
-
-      const anoMaisRecente = Number(anos[anos.length - 1]);
-
-      return Number.isNaN(anoMaisRecente)
-        ? undefined
-        : anoMaisRecente;
+      return this.anosDisponiveis[this.anosDisponiveis.length - 1];
     },
   },
 })();

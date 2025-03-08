@@ -4,7 +4,11 @@ import AutocompleteField from '@/components/AutocompleteField2.vue';
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
 import { useMonitoramentoDeMetasStore } from '@/stores/monitoramentoDeMetas.store';
 import { storeToRefs } from 'pinia';
-import { watchEffect, computed, ref } from 'vue';
+import {
+  computed,
+  ref,
+  watch,
+} from 'vue';
 import { useRoute } from 'vue-router';
 
 const route = useRoute();
@@ -22,25 +26,30 @@ const {
   anoMaisRecente,
 } = storeToRefs(monitoramentoDeMetasStore);
 
-const anosDisponiveis = computed(() => {
-  if (!ciclosPorAno.value) {
-    return [];
-  }
-  const anos = Object.keys(ciclosPorAno.value);
-  return anos.map((ano) => ({ ano, id: ano }));
-});
+const anosDisponiveis = computed(() => monitoramentoDeMetasStore.anosDisponiveis
+  .map((ano) => ({ ano, id: ano })));
 
-const anosSelecionados = ref([anoMaisRecente.value]);
+const anosSelecionados = ref([]);
 
-const listaDeCiclosFiltrados = computed(() => anosSelecionados.value
-  .flatMap((ano) => ciclosPorAno.value[ano] || []));
+const listaDeCiclosFiltrados = computed(() => (!anosSelecionados.value.length
+  ? listaDeCiclos.value
+  : anosSelecionados.value
+    .flatMap((ano) => ciclosPorAno.value[ano] || [])));
 
-watchEffect(() => {
-  monitoramentoDeMetasStore
-    .buscarListaDeCiclos(route.params.planoSetorialId, {
-      meta_id: route.params.meta_id,
-    });
-});
+watch(
+  [() => route.params.planoSetorialId, () => route.params.meta_id],
+  ([planoSetorialId, metaId]) => {
+    monitoramentoDeMetasStore
+      .buscarListaDeCiclos(planoSetorialId, {
+        meta_id: metaId,
+      }).then(() => {
+        if (anoMaisRecente.value !== undefined) {
+          anosSelecionados.value = [anoMaisRecente.value];
+        }
+      });
+  },
+  { immediate: true },
+);
 </script>
 <template>
   <MigalhasDePao />
@@ -107,10 +116,10 @@ watchEffect(() => {
       </div>
       <AutocompleteField
         name="anos"
-        model-value="anosSelecionados"
+        @change="anosSelecionados = $event"
         :controlador="{
           busca: '',
-          participantes: [anoMaisRecente],
+          participantes: anosSelecionados,
         }"
         :grupo="anosDisponiveis"
         :aria-busy="false"
