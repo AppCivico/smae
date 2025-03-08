@@ -87,15 +87,15 @@ watchEffect(() => {
 
     <template v-else>
       <DetalhamentoDeCiclo
-        :id="`ciclo--${cicloAtivo.id}`"
+        :id="`ciclo--${cicloAtivo?.id}`"
         :ciclo-atual="true"
-        :ciclo="cicloAtivo || null"
+        :ciclo="cicloAtivo"
         :meta-id="$route.params.meta_id"
       />
     </template>
 
     <div
-      v-if="Array.isArray(listaDeCiclos) && listaDeCiclos?.length"
+      v-if="listaDeCiclos?.length"
       class="ciclos-anterioes"
     >
       <div class="titulo-monitoramento titulo-monitoramento--passado mb2">
