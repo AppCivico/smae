@@ -57,7 +57,7 @@ watch(
   <TituloDePagina />
 
   <!-- eslint-disable -->
-  <div class="debug flex flexwrap g2 mb1 hidden">
+  <div class="debug flex flexwrap g2 mb1 hidden" hidden>
     <pre class="fb100 mb0">
       chamadasPendentes.listaDeCiclos: {{ chamadasPendentes.listaDeCiclos }}
     </pre>
