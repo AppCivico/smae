@@ -170,7 +170,19 @@ export class OrcamentoService implements ReportableService {
                     meta_id: filtroMetas ? { in: filtroMetas } : undefined,
                     projeto_id: dto.projeto_id ? dto.projeto_id : undefined,
                     ...(dto.portfolio_id
-                        ? { projeto: { portfolio_id: dto.portfolio_id, tipo: dto.tipo_projeto } }
+                        ? {
+                              projeto_id: { 'not': null },
+                              OR: [
+                                  { projeto: { portfolio_id: dto.portfolio_id } },
+                                  {
+                                      projeto: {
+                                          portfolios_compartilhados: {
+                                              some: { portfolio_id: dto.portfolio_id, removido_em: null },
+                                          },
+                                      },
+                                  },
+                              ],
+                          }
                         : {}),
                     removido_em: null,
                     OR: orgaoMatch.length === 0 ? undefined : orgaoMatch,
@@ -187,7 +199,21 @@ export class OrcamentoService implements ReportableService {
             where: {
                 meta_id: filtroMetas ? { in: filtroMetas } : undefined,
                 projeto_id: dto.projeto_id ? dto.projeto_id : undefined,
-                ...(dto.portfolio_id ? { projeto: { portfolio_id: dto.portfolio_id } } : {}),
+                ...(dto.portfolio_id
+                    ? {
+                          projeto_id: { 'not': null },
+                          OR: [
+                              { projeto: { portfolio_id: dto.portfolio_id } },
+                              {
+                                  projeto: {
+                                      portfolios_compartilhados: {
+                                          some: { portfolio_id: dto.portfolio_id, removido_em: null },
+                                      },
+                                  },
+                              },
+                          ],
+                      }
+                    : {}),
                 removido_em: null,
                 OR: orgaoMatch.length === 0 ? undefined : orgaoMatch,
 
