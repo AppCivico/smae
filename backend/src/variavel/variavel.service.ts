@@ -1934,6 +1934,25 @@ export class VariavelService {
         dataInicio?: Date,
         dataFim?: Date
     ) {
+        const [indicadorInfo, variavelInfo] = await Promise.all([
+            this.prisma.indicador.findFirst({
+                where: { id: indicadorId },
+                select: {
+                    periodicidade: true,
+                },
+            }),
+            this.prisma.variavel.findFirst({
+                where: { id: variavelId },
+                select: {
+                    periodicidade: true,
+                },
+            }),
+        ]);
+        if (!indicadorInfo || !variavelInfo) throw new HttpException('Variável ou indicador não encontrados', 400);
+
+        // Verifica se a periodicidade da variavel é igual a do indicador, se não for, não faz nada
+        if (indicadorInfo.periodicidade != variavelInfo.periodicidade) return;
+
         let periodoValido: string[] = [];
         if (!dataInicio && !dataFim) {
             periodoValido = await this.util.gerarPeriodoVariavelEntreDatas(variavelId, indicadorId);
