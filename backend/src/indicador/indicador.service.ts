@@ -681,7 +681,11 @@ export class IndicadorService {
                 // vai apagar a serie_variavel
                 if (tipoParam === '_PDM') {
                     const variaveis = await prismaTx.indicadorVariavel.findMany({
-                        where: { indicador_id: indicador.id, indicador_origem_id: null },
+                        where: {
+                            indicador_id: indicador.id,
+                            indicador_origem_id: null,
+                            variavel: { periodicidade: indicador.periodicidade },
+                        },
                     });
                     for (const variavel of variaveis) {
                         await this.variavelService.trataPeriodosSerieVariavel(
