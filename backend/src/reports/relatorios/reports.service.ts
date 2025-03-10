@@ -113,7 +113,7 @@ export class ReportsService {
         } else if (dto.fonte === 'Orcamento' || dto.fonte === 'PrevisaoCusto') {
             parametros.tipo_pdm = 'PDM';
         } else if (dto.fonte === 'PSOrcamento' || dto.fonte === 'PSPrevisaoCusto') {
-            //parametros.tipo_pdm = 'PS';
+            parametros.tipo_pdm = 'PS';
         } else if (dto.fonte === 'PSIndicadores' || dto.fonte === 'PSMonitoramentoMensal') {
             parametros.tipo_pdm = 'PS';
         } else if (dto.fonte === 'Indicadores') {
