@@ -227,6 +227,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
               meta: {
                 título: 'Análise de Risco',
                 títuloParaMenu: undefined,
+                rotaDeEscape: `${entidadeMãe}.monitoramentoDeMetas`,
               },
               component: () => import('@/views/monitoramentoDeMetas/MonitoramentoDeMetasAnaliseDeRisco.vue'),
             },
@@ -236,6 +237,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
               meta: {
                 título: 'Registro de Fechamento',
                 títuloParaMenu: undefined,
+                rotaDeEscape: `${entidadeMãe}.monitoramentoDeMetas`,
               },
               component: () => import('@/views/monitoramentoDeMetas/MonitoramentoDeMetasRegistroDeFechamento.vue'),
             },
@@ -245,6 +247,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
               meta: {
                 título: 'Análise Qualitativa',
                 títuloParaMenu: undefined,
+                rotaDeEscape: `${entidadeMãe}.monitoramentoDeMetas`,
               },
               component: () => import('@/views/monitoramentoDeMetas/MonitoramentoDeMetasAnaliseQualitativa.vue'),
             },
