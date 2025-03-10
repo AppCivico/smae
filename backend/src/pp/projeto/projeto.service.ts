@@ -680,7 +680,6 @@ export class ProjetoService {
                         secretario_executivo: dto.secretario_executivo,
                         secretario_responsavel: dto.secretario_responsavel,
                         modalidade_contratacao_id: dto.modalidade_contratacao_id,
-                        tipo_aditivo_id: dto.tipo_aditivo_id,
                         projeto_programa_id: dto.programa_id,
 
                         colaboradores_no_orgao: dto.colaboradores_no_orgao ?? [],
@@ -1762,7 +1761,6 @@ export class ProjetoService {
                 mdo_observacoes: true,
                 modalidade_contratacao: { select: { id: true, nome: true } },
                 programa: { select: { id: true, nome: true } },
-                tipo_aditivo: { select: { id: true, nome: true } },
                 ProjetoOrigem: {
                     where: {
                         removido_em: null,
@@ -2009,7 +2007,7 @@ export class ProjetoService {
                 mdo_observacoes: projeto.mdo_observacoes,
                 modalidade_contratacao: projeto.modalidade_contratacao,
                 programa: projeto.programa,
-                tipo_aditivo: projeto.tipo_aditivo,
+                tipo_aditivo: null,
             };
 
             ret = {
@@ -2633,7 +2631,6 @@ export class ProjetoService {
                     mdo_previsao_inauguracao: dto.mdo_previsao_inauguracao,
                     mdo_observacoes: dto.mdo_observacoes,
                     modalidade_contratacao_id: dto.modalidade_contratacao_id,
-                    tipo_aditivo_id: dto.tipo_aditivo_id,
                     projeto_programa_id: dto.programa_id,
 
                     // EDIT: nao é mais TODO, bug virou feature: orgao_colaborador_id vai ser NULL e o

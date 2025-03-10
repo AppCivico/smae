@@ -3688,7 +3688,7 @@ model Projeto {
     previsao_inicio           DateTime?         @db.Date() // data de inicio é o ponto fixo, entao se mudar a duracao no frontend, ajusta o final
     previsao_termino          DateTime?         @db.Date()
     previsao_duracao          Int?
-    tipo_aditivo_id           Int?
+    tipo_aditivo_id           Int?              @ignore
     modalidade_contratacao_id Int?
     projeto_programa_id       Int?
 
@@ -3713,7 +3713,7 @@ model Projeto {
     empreendimento_id            Int?
     empreendimento               Empreendimento?  @relation(fields: [empreendimento_id], references: [id])
 
-    tipo_aditivo           TipoAditivo?           @relation(fields: [tipo_aditivo_id], references: [id])
+    tipo_aditivo           TipoAditivo?           @relation(fields: [tipo_aditivo_id], references: [id]) @ignore
     modalidade_contratacao ModalidadeContratacao? @relation(fields: [modalidade_contratacao_id], references: [id])
     programa               ProjetoPrograma?       @relation(fields: [projeto_programa_id], references: [id])
 

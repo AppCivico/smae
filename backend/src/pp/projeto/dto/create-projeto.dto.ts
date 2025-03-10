@@ -488,8 +488,7 @@ export class CreateProjetoDto {
      */
     @IsOptional()
     @IsInt({ message: '$property| tipo_aditivo_id precisa ser inteiro' })
-    @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
-    @ValidateIf((object, value) => value !== null)
+    @ApiProperty({deprecated: true})
     tipo_aditivo_id?: number | null;
 
     /**

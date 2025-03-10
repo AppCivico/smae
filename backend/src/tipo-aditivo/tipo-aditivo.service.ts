@@ -69,6 +69,7 @@ export class ProjetoTipoAditivoService {
             if (similarExists > 0)
                 throw new HttpException('Nome igual ou semelhante já existe em outro registro ativo', 400);
         }
+        // verificar os contratos..
 
         await this.prisma.tipoAditivo.update({
             where: { id: id },
@@ -86,14 +87,6 @@ export class ProjetoTipoAditivoService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
-        const emUso = await this.prisma.projeto.count({
-            where: {
-                removido_em: null,
-                tipo_aditivo_id: id,
-            },
-        });
-        if (emUso > 0) throw new HttpException('Registro em uso em Projetos.', 400);
-
         const created = await this.prisma.tipoAditivo.updateMany({
             where: { id: id },
             data: {
