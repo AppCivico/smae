@@ -23,7 +23,6 @@ import PaineisExternosRaiz from '@/views/paineisExternos/PaineisExternosRaiz.vue
 import FluxosCriarEditar from '@/views/fluxosProjeto/FluxosCriarEditar.vue';
 import FluxosLista from '@/views/fluxosProjeto/FluxosLista.vue';
 import FluxosRaiz from '@/views/fluxosProjeto/FluxosRaiz.vue';
-import WorkflowRaiz from '@/views/workflow/WorkflowRaiz.vue';
 
 import EtapasCriarEditar from '@/views/etapasProjeto/EtapasCriarEditar.vue';
 import EtapasLista from '@/views/etapasProjeto/EtapasLista.vue';
@@ -583,7 +582,7 @@ export default [
       {
         path: '/workflow',
         name: 'Workflow',
-        component: WorkflowRaiz,
+        component: () => import('@/views/workflow/WorkflowRaiz.vue'),
         meta: {
           título: 'Workflow',
           entidadeMãe: 'TransferenciasVoluntarias',
@@ -592,7 +591,7 @@ export default [
             'fluxosListar',
             'TransferenciasVoluntarias.etapasListar',
             'fasesListar',
-            'tarefasListar',
+            'workflow.TarefasListar',
             'situacaoListar',
             'statusDistribuicaoListar',
           ],
@@ -728,7 +727,7 @@ export default [
           },
           {
             path: 'tarefas',
-            name: 'tarefasRaiz',
+            name: 'workflow.TarefasRaiz',
             component: TarefasRaiz,
             meta: {
               título: 'Tarefas',
@@ -737,7 +736,7 @@ export default [
 
             children: [
               {
-                name: 'tarefasListar',
+                name: 'workflow.TarefasListar',
                 path: '',
                 component: TarefasLista,
                 meta: {
@@ -745,7 +744,7 @@ export default [
                 },
               },
               {
-                name: 'TransferenciasVoluntarias.tarefasCriar',
+                name: 'workflow.TarefasCriar',
                 path: 'nova',
                 component: TarefasCriarEditar,
                 meta: {
@@ -754,7 +753,7 @@ export default [
               },
               {
                 path: ':tarefasId',
-                name: 'TransferenciasVoluntarias.TarefasEditar', // o que eu boto aqui
+                name: 'workflow.TarefasEditar',
                 component: TarefasCriarEditar,
                 props: ({ params }) => ({
                   ...params,

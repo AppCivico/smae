@@ -1,10 +1,13 @@
 <script setup>
-import { useTarefasProjetosStore } from '@/stores/tarefasProjeto.store.js';
-import { onUnmounted} from 'vue';
-const tarefasProjetos = useTarefasProjetosStore();
+import { useWorkflowTarefasStore } from '@/stores/workflowTarefas.store';
+import { onUnmounted } from 'vue';
 
-tarefasProjetos.buscarTudo();
-onUnmounted(() => { tarefasProjetos.$reset(); });
+const workflowTarefas = useWorkflowTarefasStore();
+
+workflowTarefas.buscarTudo();
+onUnmounted(() => {
+  workflowTarefas.$reset();
+});
 </script>
 <template>
   <router-view />

@@ -1,17 +1,17 @@
 <script setup>
 import { tarefasProjeto as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
-import { useTarefasProjetosStore } from '@/stores/tarefasProjeto.store';
+import { useWorkflowTarefasStore } from '@/stores/workflowTarefas.store';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, Form } from 'vee-validate';
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const alertStore = useAlertStore();
-const tarefasProjetos = useTarefasProjetosStore();
+const workflowTarefas = useWorkflowTarefasStore();
 const router = useRouter();
 const route = useRoute();
-const { chamadasPendentes, erro, lista } = storeToRefs(tarefasProjetos);
+const { chamadasPendentes, erro, lista } = storeToRefs(workflowTarefas);
 
 const props = defineProps({
   tarefasId: {
@@ -31,13 +31,13 @@ async function onSubmit(_, { controlledValues: carga }) {
       ? 'Dados salvos com sucesso!'
       : 'Item adicionado com sucesso!';
 
-    const resposta = await tarefasProjetos.salvarItem(carga, props.tarefasId);
+    const resposta = await workflowTarefas.salvarItem(carga, props.tarefasId);
 
     if (resposta) {
       alertStore.success(msg);
-      tarefasProjetos.$reset();
-      tarefasProjetos.buscarTudo();
-      router.push({ name: 'tarefasListar' });
+      workflowTarefas.$reset();
+      workflowTarefas.buscarTudo();
+      router.push({ name: 'workflow.TarefasListar' });
     }
   } catch (error) {
     alertStore.error(error);
