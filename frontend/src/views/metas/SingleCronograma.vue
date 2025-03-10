@@ -1,4 +1,10 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import {
+  computed,
+  watchEffect,
+} from 'vue';
+import { useRoute } from 'vue-router';
 import MapaExibir from '@/components/geo/MapaExibir.vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import { useAlertStore } from '@/stores/alert.store';
@@ -10,12 +16,6 @@ import { useMetasStore } from '@/stores/metas.store';
 import AddEditEtapa from '@/views/metas/AddEditEtapa.vue';
 import AddEditFase from '@/views/metas/AddEditFase.vue';
 import AddEditMonitorar from '@/views/metas/AddEditMonitorar.vue';
-import { storeToRefs } from 'pinia';
-import {
-  computed,
-  watchEffect,
-} from 'vue';
-import { useRoute } from 'vue-router';
 import achatarGeoLocalizacao from './helpers/achatarGeoLocalizacao';
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
 
@@ -481,7 +481,7 @@ watchEffect(() => {
                 'CadastroMetaPDM.administrador_no_pdm',
                 'SMAE.GrupoVariavel.participante',
               ])
-              && singleMeta?.pode_editar"
+                && singleMeta?.pode_editar"
               class="dropbtn right"
             >
               <span class=""><svg
@@ -935,9 +935,19 @@ watchEffect(() => {
                   style="flex-basis:20px; height: calc(20px + 1rem);"
                 >
                   <SmaeLink
-                    v-if="!r.cronograma_origem_etapa
-                      || r.cronograma_origem_etapa.id == singleCronograma?.id"
-                    :to="`${parentLink}/cronograma/${singleCronograma?.id}/etapas/${r.etapa.id}/${rr.id}/${rrr.id}`"
+                    v-if="
+                      !r.cronograma_origem_etapa
+                        || r.cronograma_origem_etapa.id == singleCronograma?.id
+                    "
+                    :to="{
+                      name: '.subfaseCronograma.edit',
+                      params: {
+                        cronograma_id: singleCronograma.id,
+                        etapa_id: r.etapa.id,
+                        fase_id: rr.id,
+                        subfase_id: rrr.id
+                      }
+                    }"
                   >
                     <svg
                       width="20"

@@ -7,38 +7,32 @@ import AutocompleteField from '@/components/AutocompleteField2.vue';
 import MapaCampo from '@/components/geo/MapaCampo.vue';
 import { fase as schema } from '@/consts/formSchemas';
 import {
-  useAlertStore, useCronogramasStore, useEditModalStore, useEtapasStore, useRegionsStore,
+  useAlertStore, useAuthStore, useCronogramasStore, useEditModalStore, useEtapasStore, useRegionsStore,
 } from '@/stores';
 import { useEquipesStore } from '@/stores/equipes.store';
-// import temDescendenteEmOutraRegião from './auxiliares/temDescendenteEmOutraRegiao.ts';
 import temDescendenteEmOutraRegião from '../auxiliares/temDescendenteEmOutraRegiao.ts';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
+import CheckClose from '@/components/CheckClose.vue';
+import LabelFromYup from '@/components/LabelFromYup.vue';
 
-const editModalStore = useEditModalStore();
+const authStore = useAuthStore();
 const alertStore = useAlertStore();
+const editModalStore = useEditModalStore();
 
 const route = useRoute();
 const router = useRouter();
 // mantendo comportamento legado
 // eslint-disable-next-line @typescript-eslint/naming-convention
-const { meta_id } = route.params;
-// mantendo comportamento legado
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const { iniciativa_id } = route.params;
-// mantendo comportamento legado
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const { atividade_id } = route.params;
-// mantendo comportamento legado
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const { cronograma_id } = route.params;
-// mantendo comportamento legado
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const { etapa_id } = route.params;
-// mantendo comportamento legado
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const { fase_id } = route.params;
-// mantendo comportamento legado
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const { subfase_id } = route.params;
+
+const {
+  meta_id,
+  iniciativa_id,
+  atividade_id,
+  cronograma_id,
+  etapa_id,
+  fase_id,
+  subfase_id,
+} = route.params;
 
 const props = defineProps(['group']);
 
@@ -73,7 +67,7 @@ const EquipesStore = useEquipesStore();
 EquipesStore.buscarTudo();
 const { lista } = storeToRefs(EquipesStore);
 
-const title = ref(`Adicionar ${group.value}`);
+const titulo = ref(`Adicionar ${group.value}`);
 const level1 = ref(null);
 const level2 = ref(null);
 const level3 = ref(null);
@@ -91,7 +85,19 @@ const oktogo = ref(0);
 const minLevel = ref(0);
 
 const usersAvailable = ref([]);
-const responsaveis = ref({ participantes: [], busca: '' });
+
+const permissaoLiberada = computed(() => {
+  const ehAdmin = authStore.temPermissãoPara([
+    'CadastroMetaPS.administrador_no_pdm', // sṍ pode editar de acordo com o perfil
+    'CadastroPS.administrador', // edita qualquer item
+    'CadastroPS.administrador_no_orgao', // edita qualquer meta onde o órgão é responsavel? SIM
+    'CadastroMetaPDM.administrador_no_pdm',
+    'CadastroPDM.administrador',
+    'CadastroPDM.administrador_no_orgao',
+  ]);
+
+  return ehAdmin;
+});
 
 async function getRegionByParent(r_id, cur) {
   await RegionsStore.filterRegions({ id: r_id });
@@ -140,8 +146,6 @@ async function onSubmit(values) {
     let r;
 
     const concluirEnvio = async () => {
-      values.responsaveis = responsaveis.value.participantes;
-
       values.regiao_id = singleCronograma.value.regionalizavel && Number(values.regiao_id)
         ? Number(values.regiao_id)
         : null;
@@ -149,6 +153,8 @@ async function onSubmit(values) {
       values.peso = Number(values.peso) ?? null;
       values.percentual_execucao = Number(values.percentual_execucao) ?? null;
       values.etapa_pai_id = currentParent;
+      values.ps_ponto_focal = { equipes: values.equipes };
+      delete values.equipes;
 
       let rota = false;
       // mantendo comportamento legado
@@ -207,13 +213,7 @@ async function onSubmit(values) {
     alertStore.error(error);
   }
 }
-async function checkClose() {
-  alertStore.confirm('Deseja sair sem salvar as alterações?', () => {
-    editModalStore.clear();
-    alertStore.clear();
-    router.go(-1);
-  });
-}
+
 function lastlevel() {
   let r;
   if (level1.value) {
@@ -244,6 +244,7 @@ function lastlevel() {
   }
   regiao_id_mount.value = r;
 }
+
 function maskDate(el) {
   // mantendo comportamento legado
   // eslint-disable-next-line no-restricted-globals
@@ -282,6 +283,7 @@ const valoresIniciais = computed(() => (currentFase.value?.loading
   : {
     ...currentFase.value,
     geolocalizacao: currentFase.value?.geolocalizacao?.map((x) => x.token) || [],
+    equipes: currentFase.value?.ps_ponto_focal?.equipes || [],
   }));
 
 const geolocalizaçãoPorToken = computed(() => (currentFase.value?.loading
@@ -294,86 +296,86 @@ const geolocalizaçãoPorToken = computed(() => (currentFase.value?.loading
   }, {})
 ));
 
-(async () => {
-  await EtapasStore.getById(cronograma_id, etapa_id);
-  const p0 = singleEtapa.value.etapa;
-  let pc;
-  let p1;
-  let noregion = true;
-  if (group.value === 'subfase' && subfase_id) {
-    title.value = 'Editar subfase';
-    // mantendo comportamento legado
-    // eslint-disable-next-line eqeqeq
-    p1 = await p0?.etapa_filha?.find((x) => x.id == fase_id) ?? {};
-    pc = p1;
-    // mantendo comportamento legado
-    // eslint-disable-next-line eqeqeq
-    const p2 = p1?.etapa_filha?.find((x) => x.id == subfase_id) ?? {};
-    currentFase.value = p2.id ? p2 : { error: 'Subfase não encontrada' };
-    if (p1?.regiao_id) {
-      getRegionByParent(p1.regiao_id, p2?.regiao_id);
-      noregion = false;
-    }
-  } else if (group.value === 'subfase') {
-    title.value = 'Adicionar subfase';
-    // mantendo comportamento legado
-    // eslint-disable-next-line eqeqeq
-    p1 = await p0?.etapa_filha?.find((x) => x.id == fase_id) ?? {};
-    pc = p1;
-    if (p1?.regiao_id) {
-      getRegionByParent(p1.regiao_id);
-      noregion = false;
-    }
-  } else if (group.value === 'fase' && fase_id) {
-    title.value = `Editar ${group.value}`;
-    pc = p0;
-    // mantendo comportamento legado
-    // eslint-disable-next-line eqeqeq
-    p1 = await p0?.etapa_filha?.find((x) => x.id == fase_id) ?? {};
-    currentFase.value = p1.id ? p1 : { error: 'Fase não encontrada' };
-    if (p1?.regiao_id) {
-      getRegionByParent(singleEtapa.value.etapa.regiao_id, p1?.regiao_id);
-      noregion = false;
-    }
-  } else {
-    pc = p0;
-  }
-  if (currentFase.value?.responsaveis) {
-    responsaveis.value.participantes = currentFase.value.responsaveis
+async function iniciar() {
+  try {
+    await EtapasStore.getById(cronograma_id, etapa_id);
+    const p0 = singleEtapa.value.etapa;
+    let pc;
+    let p1;
+    let noregion = true;
+
+    if (group.value === 'subfase' && subfase_id) {
+      titulo.value = 'Editar subfase';
       // mantendo comportamento legado
-      // eslint-disable-next-line no-nested-ternary
-      .map((x) => (x.id ? x.id : x.pessoa ? x.pessoa.id : null));
-  }
-  if (pc?.responsaveis) {
+      // eslint-disable-next-line eqeqeq
+      p1 = await p0?.etapa_filha?.find((x) => x.id == fase_id) ?? {};
+      pc = p1;
+      // mantendo comportamento legado
+      // eslint-disable-next-line eqeqeq
+      const p2 = p1?.etapa_filha?.find((x) => x.id == subfase_id) ?? {};
+      currentFase.value = p2.id ? p2 : { error: 'Subfase não encontrada' };
+      if (p1?.regiao_id) {
+        getRegionByParent(p1.regiao_id, p2?.regiao_id);
+        noregion = false;
+      }
+    } else if (group.value === 'subfase') {
+      titulo.value = 'Adicionar subfase';
+      // mantendo comportamento legado
+      // eslint-disable-next-line eqeqeq
+      p1 = await p0?.etapa_filha?.find((x) => x.id == fase_id) ?? {};
+      pc = p1;
+      if (p1?.regiao_id) {
+        getRegionByParent(p1.regiao_id);
+        noregion = false;
+      }
+    } else if (group.value === 'fase' && fase_id) {
+      titulo.value = `Editar ${group.value}`;
+      pc = p0;
+      // mantendo comportamento legado
+      // eslint-disable-next-line eqeqeq
+      p1 = await p0?.etapa_filha?.find((x) => x.id == fase_id) ?? {};
+      currentFase.value = p1.id ? p1 : { error: 'Fase não encontrada' };
+      if (p1?.regiao_id) {
+        getRegionByParent(singleEtapa.value.etapa.regiao_id, p1?.regiao_id);
+        noregion = false;
+      }
+    } else {
+      pc = p0;
+      currentFase.value = pc;
+    }
+
+    if (pc?.responsaveis) {
     // mantendo comportamento legado
     // eslint-disable-next-line no-nested-ternary
-    usersAvailable.value = pc.responsaveis.map((x) => (x.id ? x : x.pessoa ? x.pessoa : null));
-  }
+      usersAvailable.value = pc.responsaveis.map((x) => (x.id ? x : x.pessoa ? x.pessoa : null));
+    }
 
-  if (noregion && singleEtapa.value?.etapa?.regiao_id) {
-    getRegionByParent(singleEtapa.value.etapa.regiao_id);
+    if (noregion && singleEtapa.value?.etapa?.regiao_id) {
+      getRegionByParent(singleEtapa.value.etapa.regiao_id);
+    }
+    oktogo.value = 1;
+  } catch (e) {
+    console.error('ERRO', e);
   }
-  oktogo.value = 1;
-})();
+}
+
+iniciar();
 </script>
+
 <template>
-  {{ $props }}
   <div class="minimodal">
-    <div class="flex spacebetween center mb2">
-      <h2>{{ title }}</h2>
+    <div class="flex spacebetween center">
+      <TituloDaPagina>
+        {{ titulo }}
+      </TituloDaPagina>
+
       <hr class="ml2 f1">
-      <button
-        class="btn round ml2"
-        @click="checkClose"
-      >
-        <svg
-          width="12"
-          height="12"
-        >
-          <use xlink:href="#i_x" />
-        </svg>
-      </button>
+
+      <CheckClose />
     </div>
+
+    -{{ valoresIniciais }}-
+
     <template v-if="!(currentFase?.loading || currentFase?.error) && oktogo">
       <Form
         v-slot="{ errors, isSubmitting, setFieldValue, values }"
@@ -381,397 +383,470 @@ const geolocalizaçãoPorToken = computed(() => (currentFase.value?.loading
         :initial-values="valoresIniciais"
         @submit="onSubmit"
       >
-        <div>
-          <label class="label">Nome <span class="tvermelho">*</span></label>
-          <Field
-            name="titulo"
-            type="text"
-            class="inputtext light mb1"
-            :class="{ 'error': errors.titulo }"
-          />
-          <div class="error-msg">
-            {{ errors.titulo }}
-          </div>
-        </div>
-        <div class="flex g2">
-          <div class="f1">
-            <label class="label">Ordem</label>
-            <Field
-              name="ordem"
-              type="number"
-              class="inputtext light mb1"
-              :class="{ 'error': errors.ordem }"
+        <fieldset>
+          <div>
+            <LabelFromYup
+              :schema="schema"
+              name="titulo"
             />
-            <div class="error-msg">
-              {{ errors.ordem }}
-            </div>
-          </div>
-          <div class="f1">
-            <label class="label">Ponderador</label>
-            <Field
-              name="peso"
-              type="number"
-              step="1"
-              min="0"
-              class="inputtext light mb1"
-              :class="{ 'error': errors.peso }"
-            />
-            <div class="error-msg">
-              {{ errors.peso }}
-            </div>
-          </div>
-          <div class="f1">
-            <label class="label">Execução %</label>
-            <Field
-              :disabled="values.n_filhos_imediatos"
-              name="percentual_execucao"
-              type="number"
-              step="1"
-              min="0"
-              max="100"
-              class="inputtext light mb1"
-              :class="{ 'error': errors.percentual_execucao }"
-            />
-            <div class="error-msg">
-              {{ errors.percentual_execucao }}
-            </div>
-          </div>
-        </div>
-        <div>
-          <label class="label">Descrição</label>
-          <Field
-            name="descricao"
-            as="textarea"
-            rows="3"
-            class="inputtext light mb1"
-            :class="{ 'error': errors.descricao }"
-          />
-          <div class="error-msg">
-            {{ errors.descricao }}
-          </div>
-        </div>
 
-        <hr class="mt2 mb2">
-
-        <div v-if="$route.meta.entidadeMãe === 'pdm'">
-          <label class="label">
-            Responsável
-          </label>
-          <div class="f1 mb1">
-            <AutocompleteField
-              :controlador="responsaveis"
-              :grupo="usersAvailable"
-              label="nome_exibicao"
+            <Field
+              name="titulo"
+              type="text"
+              class="inputtext light mb1"
+              :class="{ 'error': errors.titulo }"
+              :disabled="!permissaoLiberada"
             />
-          </div>
-        </div>
 
-        <div v-if="['planoSetorial', 'programaDeMetas'].includes($route.meta.entidadeMãe)">
-          <label class="label">
-            Equipe Responsável
-          </label>
-          <div class="flex mb1">
+            <ErrorMessage name="titulo" />
+          </div>
+
+          <div
+            v-if="permissaoLiberada"
+            class="flex g2"
+          >
             <div class="f1">
+              <LabelFromYup
+                :schema="schema"
+                name="ordem"
+              />
+
+              <Field
+                name="ordem"
+                type="number"
+                class="inputtext light mb1"
+                :class="{ 'error': errors.ordem }"
+              />
+
+              <ErrorMessage name="ordem" />
+            </div>
+
+            <div class="f1">
+              <LabelFromYup
+                :schema="schema"
+                name="peso"
+              />
+
+              <Field
+                name="peso"
+                type="number"
+                step="1"
+                min="0"
+                class="inputtext light mb1"
+                :class="{ 'error': errors.peso }"
+              />
+
+              <ErrorMessage name="peso" />
+            </div>
+          </div>
+
+          <div v-if="permissaoLiberada">
+            <LabelFromYup
+              :schema="schema"
+              name="descricao"
+            />
+
+            <Field
+              name="descricao"
+              as="textarea"
+              rows="3"
+              class="inputtext light mb1"
+              :class="{ 'error': errors.descricao }"
+            />
+
+            <ErrorMessage name="descricao" />
+          </div>
+        </fieldset>
+
+        <fieldset v-if="permissaoLiberada">
+          <div v-if="$route.meta.entidadeMãe === 'pdm'">
+            <LabelFromYup
+              :schema="schema"
+              name="responsaveis"
+            />
+
+            <Field
+              v-slot="{ value, handleChange }"
+              name="responsaveis"
+            >
               <AutocompleteField
+                :controlador="{ participantes: value || [], busca: '' }"
+                :grupo="usersAvailable"
+                label="nome_exibicao"
+                class="f1 mb1"
+                @change="handleChange"
+              />
+            </Field>
+
+            <ErrorMessage name="responsavel" />
+          </div>
+
+          <div v-if="['planoSetorial', 'programaDeMetas'].includes($route.meta.entidadeMãe)">
+            <LabelFromYup
+              :schema="schema"
+              name="equipes"
+            />
+
+            <Field
+              v-slot="{ value, handleChange }"
+              name="equipes"
+            >
+              <AutocompleteField
+                class="flex mb1"
                 :controlador="{
                   busca: '',
-                  participantes: values?.ps_ponto_focal?.equipes || [],
+                  participantes: value || [],
                 }"
                 :grupo="pegaPsTecnicoCpCompleto(singleEtapa.etapa?.ps_ponto_focal?.equipes)"
                 label="titulo"
+                @change="handleChange"
               />
-            </div>
+            </Field>
+
+            <ErrorMessage name="equipes" />
           </div>
-        </div>
+        </fieldset>
 
-        <hr
-          v-if="singleCronograma.regionalizavel && tempRegions.length"
-          class="mt2 mb2"
-        >
-
-        <div
-          v-if="singleCronograma.regionalizavel && tempRegions.length"
-          class="mb1"
-        >
-          <label class="label">Região</label>
-          <select
-            v-model="level1"
-            class="inputtext light mb1"
-            :disabled="minLevel >= 1
-              || temDescendenteEmOutraRegião(values.regiao_id, values.etapa_filha, 1)"
-            @change="lastlevel"
+        <fieldset>
+          <div
+            v-if="permissaoLiberada && singleCronograma.regionalizavel && tempRegions.length"
+            class="mb1"
           >
-            <option value="">
-              Selecione
-            </option>
-            <option
-              v-for="(r) in tempRegions[0]?.children"
-              :key="r.id"
-              :value="r.id"
-            >
-              {{ r.descricao }}
-            </option>
-          </select>
-          <template v-if="level1 !== null">
+            <label class="label">Região</label>
             <select
-              v-model="level2"
+              v-model="level1"
               class="inputtext light mb1"
-              :disabled="minLevel >= 2
-                || temDescendenteEmOutraRegião(values.regiao_id, values.etapa_filha, 2)"
+              :disabled="minLevel >= 1
+                || temDescendenteEmOutraRegião(values.regiao_id, values.etapa_filha, 1)"
               @change="lastlevel"
             >
               <option value="">
                 Selecione
               </option>
               <option
-                v-for="(rr) in tempRegions[0]?.children.find(x => x.id == level1)?.children"
-                :key="rr.id"
-                :value="rr.id"
+                v-for="(r) in tempRegions[0]?.children"
+                :key="r.id"
+                :value="r.id"
               >
-                {{ rr.descricao }}
+                {{ r.descricao }}
               </option>
             </select>
-            <template v-if="level2 !== null">
+            <template v-if="level1 !== null">
               <select
-                v-model="level3"
+                v-model="level2"
                 class="inputtext light mb1"
-                :disabled="minLevel >= 3
-                  || temDescendenteEmOutraRegião(values.regiao_id, values.etapa_filha, 3)"
+                :disabled="minLevel >= 2
+                  || temDescendenteEmOutraRegião(values.regiao_id, values.etapa_filha, 2)"
                 @change="lastlevel"
               >
                 <option value="">
                   Selecione
                 </option>
                 <option
-                  v-for="(rrr) in tempRegions[0]?.children.find(x => x.id ==
-                    level1)?.children.find(x => x.id == level2)?.children"
-                  :key="rrr.id"
-                  :value="rrr.id"
+                  v-for="(rr) in tempRegions[0]?.children.find(x => x.id == level1)?.children"
+                  :key="rr.id"
+                  :value="rr.id"
                 >
-                  {{ rrr.descricao }}
+                  {{ rr.descricao }}
                 </option>
               </select>
+              <template v-if="level2 !== null">
+                <select
+                  v-model="level3"
+                  class="inputtext light mb1"
+                  :disabled="minLevel >= 3
+                    || temDescendenteEmOutraRegião(values.regiao_id, values.etapa_filha, 3)"
+                  @change="lastlevel"
+                >
+                  <option value="">
+                    Selecione
+                  </option>
+                  <option
+                    v-for="(rrr) in tempRegions[0]?.children.find(x => x.id ==
+                      level1)?.children.find(x => x.id == level2)?.children"
+                    :key="rrr.id"
+                    :value="rrr.id"
+                  >
+                    {{ rrr.descricao }}
+                  </option>
+                </select>
+              </template>
+              <template v-else>
+                <input
+                  class="inputtext light mb1"
+                  type="text"
+                  disabled
+                  value="Selecione uma subprefeitura"
+                >
+              </template>
             </template>
             <template v-else>
               <input
                 class="inputtext light mb1"
                 type="text"
                 disabled
-                value="Selecione uma subprefeitura"
+                value="Selecione uma região"
               >
             </template>
-          </template>
-          <template v-else>
-            <input
-              class="inputtext light mb1"
-              type="text"
-              disabled
-              value="Selecione uma região"
-            >
-          </template>
-          <Field
-            v-model="regiao_id_mount"
-            name="regiao_id"
-            type="hidden"
-            :class="{ 'error': errors.regiao_id }"
-          />
-          <div class="error-msg">
-            {{ errors.regiao_id }}
+            <Field
+              v-model="regiao_id_mount"
+              name="regiao_id"
+              type="hidden"
+              :class="{ 'error': errors.regiao_id }"
+            />
+            <div class="error-msg">
+              {{ errors.regiao_id }}
+            </div>
           </div>
-        </div>
 
-        <div class="mb1">
-          <Field
-            id="endereco_obrigatorio"
-            name="endereco_obrigatorio"
-            type="checkbox"
-            :value="true"
-            :unchecked-value="false"
-            class="inputcheckbox"
-          />
-          <label
-            for="endereco_obrigatorio"
-            :class="{ 'error': errors.endereco_obrigatorio }"
-          >
-            Endereço obrigatório
-          </label>
-          <div class="error-msg">
-            {{ errors.endereco_obrigatorio }}
-          </div>
-        </div>
-
-        <div class="mb1">
-          <legend class="label mt2 mb1legend">
-            Localização&nbsp;<span
-              v-if="values.endereco_obrigatorio && values.termino_real"
-              class="tvermelho"
-            >*</span>
-          </legend>
-
-          <MapaCampo
-            v-model="values.geolocalizacao"
-            name="geolocalizacao"
-            :geolocalização-por-token="geolocalizaçãoPorToken"
-          />
-
-          <ErrorMessage
-            name="geolocalizacao"
-            class="error-msg"
-          />
-        </div>
-
-        <hr class="mt2 mb2">
-
-        <div class="flex flexwrap g2">
-          <div class="fb100">
-            <input
-              id="associar-variavel"
-              name="associar-variavel"
+          <div class="mb1">
+            <Field
+              id="endereco_obrigatorio"
+              name="endereco_obrigatorio"
               type="checkbox"
-              :checked="!!values.variavel"
-              :value="{}"
-              :unchecked-value="null"
+              :value="true"
+              :unchecked-value="false"
               class="inputcheckbox"
-              @change="($e) => {
-                setFieldValue('variavel', $e.target.checked
-                  ? {
-                    codigo: valoresIniciais?.variavel?.codigo || '',
-                    titulo: valoresIniciais?.variavel?.titulo || '',
-                  }
-                  : null
-                );
-              }"
+              :disabled="!permissaoLiberada"
+            />
+
+            <LabelFromYup
+              :schema="schema"
+              name="endereco_obrigatorio"
+              class="inline ml05"
+            />
+
+            <ErrorMessage name="endereco_obrigatorio" />
+          </div>
+
+          <div class="mb1">
+            <LabelFromYup
+              :schema="schema"
+              name="geolocalizacao"
+              as="legend"
+            />
+
+            <Field
+              name="geolocalizacao"
             >
-            <label for="associar-variavel">
-              Associar variável
-            </label>
+              <MapaCampo
+                v-model="values.geolocalizacao"
+                name="geolocalizacao"
+                :geolocalização-por-token="geolocalizaçãoPorToken"
+              />
+            </Field>
+
+            <ErrorMessage name="geolocalizacao" />
           </div>
+        </fieldset>
+
+        <fieldset v-if="permissaoLiberada">
           <div
-            v-if="!!values.variavel"
-            class="fb100 flex g2"
+            class="flex flexwrap g2"
           >
-            <div class="f1">
-              <LabelFromYup
-                :schema="schema.fields.variavel"
-                :required="true"
-                name="codigo"
-              />
-              <Field
-                name="variavel.codigo"
-                type="text"
-                class="inputtext light mb1"
-                :class="{ 'error': errors['variavel.codigo'] }"
-                maxlength="60"
-              />
-              <div class="error-msg">
-                {{ errors['variavel.codigo'] }}
+            <div class="fb100">
+              <input
+                id="associar-variavel"
+                name="associar-variavel"
+                type="checkbox"
+                :checked="!!values.variavel"
+                :value="{}"
+                :unchecked-value="null"
+                class="inputcheckbox"
+                @change="ev =>
+                  setFieldValue('variavel', ev.target.checked ?
+                    {
+                      codigo: valoresIniciais?.variavel?.codigo || '',
+                      titulo: valoresIniciais?.variavel?.titulo || '',
+                    } : null
+                  )
+                "
+              >
+
+              <label for="associar-variavel">
+                Associar variável
+              </label>
+            </div>
+
+            <div
+              v-if="!!values.variavel"
+              class="fb100 flex g2"
+            >
+              <div class="f1">
+                <LabelFromYup
+                  :schema="schema.fields.variavel"
+                  :required="true"
+                  name="codigo"
+                />
+
+                <Field
+                  name="variavel.codigo"
+                  type="text"
+                  class="inputtext light mb1"
+                  :class="{ 'error': errors['variavel.codigo'] }"
+                  maxlength="60"
+                />
+
+                <ErrorMessage name="variavel.codigo" />
+              </div>
+
+              <div class="f1">
+                <LabelFromYup
+                  :schema="schema.fields.variavel"
+                  :required="true"
+                  name="titulo"
+                />
+                <Field
+                  name="variavel.titulo"
+                  type="text"
+                  class="inputtext light mb1"
+                  :class="{ 'error': errors['variavel.titulo'] }"
+                  maxlength="256"
+                />
+
+                <ErrorMessage name="variavel.titulo" />
               </div>
             </div>
-            <div class="f1">
+
+            <div
+              v-if="valoresIniciais?.variavel?.id && !values.variavel"
+              class="error-msg"
+            >
+              {{ alertaDeExclusãoDeVariável }}
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <div
+            v-if="permissaoLiberada"
+            class="flex g2"
+          >
+            <div
+
+              class="f1"
+            >
               <LabelFromYup
-                :schema="schema.fields.variavel"
-                :required="true"
-                name="titulo"
+                :schema="schema"
+                name="inicio_previsto"
               />
+
               <Field
-                name="variavel.titulo"
+                name="inicio_previsto"
                 type="text"
                 class="inputtext light mb1"
-                :class="{ 'error': errors['variavel.titulo'] }"
-                maxlength="256"
+                :class="{ 'error': errors.inicio_previsto }"
+                maxlength="10"
+                placeholder="dd/mm/aaaa"
+                @keyup="maskDate"
               />
-              <div class="error-msg">
-                {{ errors['variavel.titulo'] }}
-              </div>
-            </div>
-          </div>
-          <div
-            v-if="valoresIniciais?.variavel?.id && !values.variavel"
-            class="error-msg"
-          >
-            {{ alertaDeExclusãoDeVariável }}
-          </div>
-        </div>
 
-        <hr class="mt2 mb2">
+              <ErrorMessage name="inicio_previsto" />
+            </div>
 
-        <div class="flex g2">
-          <div class="f1">
-            <label class="label">Início previsto <span class="tvermelho">*</span></label>
-            <Field
-              name="inicio_previsto"
-              type="text"
-              class="inputtext light mb1"
-              :class="{ 'error': errors.inicio_previsto }"
-              maxlength="10"
-              placeholder="dd/mm/aaaa"
-              @keyup="maskDate"
-            />
-            <div class="error-msg">
-              {{ errors.inicio_previsto }}
+            <div class="f1">
+              <LabelFromYup
+                :schema="schema"
+                name="termino_previsto"
+              />
+
+              <Field
+                name="termino_previsto"
+                type="text"
+                class="inputtext light mb1"
+                :class="{ 'error': errors.termino_previsto }"
+                maxlength="10"
+                placeholder="dd/mm/aaaa"
+                @keyup="maskDate"
+              />
+
+              <ErrorMessage name="termino_previsto" />
             </div>
           </div>
-          <div class="f1">
-            <label class="label">Término previsto <span class="tvermelho">*</span></label>
-            <Field
-              name="termino_previsto"
-              type="text"
-              class="inputtext light mb1"
-              :class="{ 'error': errors.termino_previsto }"
-              maxlength="10"
-              placeholder="dd/mm/aaaa"
-              @keyup="maskDate"
-            />
-            <div class="error-msg">
-              {{ errors.termino_previsto }}
+
+          <div class="flex g2">
+            <div class="f1">
+              <LabelFromYup
+                :schema="schema"
+                name="inicio_real"
+              />
+
+              <Field
+                name="inicio_real"
+                type="text"
+                class="inputtext light mb1"
+                :class="{ 'error': errors.inicio_real }"
+                maxlength="10"
+                placeholder="dd/mm/aaaa"
+                @keyup="maskDate"
+              />
+
+              <ErrorMessage name="inicio_real" />
+            </div>
+
+            <div class="f1">
+              <LabelFromYup
+                :schema="schema"
+                name="termino_real"
+              />
+
+              <Field
+                name="termino_real"
+                type="text"
+                class="inputtext light mb1"
+                :class="{ 'error': errors.termino_real }"
+                maxlength="10"
+                placeholder="dd/mm/aaaa"
+                @keyup="maskDate"
+                @change="($e) => {
+                  if (!currentFase.n_filhos_imediatos) {
+                    setFieldValue('percentual_execucao', $e.target.value
+                      ? 100
+                      : valoresIniciais.percentual_execucao
+                    );
+                  }
+                }"
+              />
+
+              <ErrorMessage name="termino_real" />
             </div>
           </div>
-        </div>
-        <div class="flex g2">
-          <div class="f1">
-            <label class="label">Início real</label>
-            <Field
-              name="inicio_real"
-              type="text"
-              class="inputtext light mb1"
-              :class="{ 'error': errors.inicio_real }"
-              maxlength="10"
-              placeholder="dd/mm/aaaa"
-              @keyup="maskDate"
-            />
-            <div class="error-msg">
-              {{ errors.inicio_real }}
+
+          <div class="flex g2">
+            <div class="f1">
+              <LabelFromYup
+                :schema="schema"
+                name="percentual_execucao"
+              />
+
+              <Field
+                :disabled="values.n_filhos_imediatos"
+                name="percentual_execucao"
+                type="number"
+                step="1"
+                min="0"
+                max="100"
+                class="inputtext light mb1"
+                :class="{ 'error': errors.percentual_execucao }"
+              />
+
+              <ErrorMessage name="percentual_execucao" />
+            </div>
+
+            <div
+              class="f1"
+              type="hidden"
+            >
+              <span />
             </div>
           </div>
-          <div class="f1">
-            <label class="label">Término real</label>
-            <Field
-              name="termino_real"
-              type="text"
-              class="inputtext light mb1"
-              :class="{ 'error': errors.termino_real }"
-              maxlength="10"
-              placeholder="dd/mm/aaaa"
-              @keyup="maskDate"
-              @change="($e) => {
-                if (!currentFase.n_filhos_imediatos) {
-                  setFieldValue('percentual_execucao', $e.target.value
-                    ? 100
-                    : valoresIniciais.percentual_execucao
-                  );
-                }
-              }"
-            />
-            <div class="error-msg">
-              {{ errors.termino_real }}
-            </div>
-          </div>
-        </div>
+        </fieldset>
 
         <FormErrorsList :errors="errors" />
 
         <div class="flex spacebetween center mb2">
           <hr class="mr2 f1">
+
           <button
             class="btn big"
             type="submit"
@@ -783,9 +858,11 @@ const geolocalizaçãoPorToken = computed(() => (currentFase.value?.loading
         </div>
       </Form>
     </template>
+
     <template v-if="currentFase?.loading || !oktogo">
       <span class="spinner">Carregando</span>
     </template>
+
     <template v-if="currentFase?.error">
       <div class="error p1">
         <div class="error-msg">

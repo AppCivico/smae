@@ -715,11 +715,16 @@ export const execuçãoOrçamentária = object()
 export const fase = object()
   .shape({
     descricao: string()
-      .nullable(),
+      .nullable()
+      .label('Descrição'),
+    equipes: array()
+      .nullable()
+      .label('Equipe Responsável'),
     endereco_obrigatorio: boolean()
-      .nullable(),
+      .nullable()
+      .label('Endereço obrigatório'),
     geolocalizacao: array()
-      .label('Endereços')
+      .label('Endereços ou Localização?')
       .of(
         string()
           .min(10, 'Endereço inválido'),
@@ -731,12 +736,15 @@ export const fase = object()
       }),
     inicio_previsto: string()
       .required('Preencha a data')
-      .matches(regEx['day/month/year'], 'Formato inválido'),
+      .matches(regEx['day/month/year'], 'Formato inválido')
+      .label('Início previsto'),
     inicio_real: string()
       .nullable()
-      .matches(regEx['day/month/year'], 'Formato inválido'),
+      .matches(regEx['day/month/year'], 'Formato inválido')
+      .label('Início real'),
     ordem: string()
-      .nullable(),
+      .nullable()
+      .label('Ordem'),
     percentual_execucao: number()
       .integer()
       .label('Execução')
@@ -751,16 +759,19 @@ export const fase = object()
       .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
     regiao_id: string()
       .nullable(),
+    responsaveis: array().label('Responsável'),
     termino_previsto: string()
       .required('Preencha a data')
-      .matches(regEx['day/month/year'], 'Formato inválido'),
+      .matches(regEx['day/month/year'], 'Formato inválido')
+      .label('Término previsto'),
     termino_real: string()
-      .label('Término real')
       .nullable()
       .fieldUntilToday()
-      .matches(regEx['day/month/year'], 'Formato inválido'),
+      .matches(regEx['day/month/year'], 'Formato inválido')
+      .label('Término real'),
     titulo: string()
-      .required('Preencha o título'),
+      .required('Preencha o título')
+      .label('Nome'),
     variavel: object()
       .label('Variável Associada')
       .shape({
