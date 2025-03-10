@@ -99,7 +99,7 @@ watchEffect(() => {
   </div>
 
   <!-- eslint-disable -->
-  <div class="debug flex flexwrap g2 mb1">
+  <div class="debug flex flexwrap g2 mb1" hidden>
     <pre class="fb100 mb0">chamadasPendentes.fechamentoEmFoco: {{ chamadasPendentes.fechamentoEmFoco }}</pre>
     <pre class="fb100 mb0">erros.fechamentoEmFoco: {{ erros.fechamentoEmFoco }}</pre>
 

@@ -46,10 +46,10 @@
             <dt class="t12 uc w700 mb05 tc300">
               <div class="flex spacebetween">
                 Informações complementares
-                <router-link
+                <SmaeLink
                   v-if="cicloAtual"
                   :to="{
-                    name: `${route.meta.entidadeMãe}.monitoramentoDeMetasAnaliseQualitativa`,
+                    name: `.monitoramentoDeMetasAnaliseQualitativa`,
                     params: { cicloId: ciclo.id }
                   }"
                   class="tprimary"
@@ -60,7 +60,7 @@
                   >
                     <use xlink:href="#i_edit" />
                   </svg>
-                </router-link>
+                </SmaeLink>
               </div>
               <hr class="f1 mt025">
             </dt>
@@ -155,10 +155,10 @@
             <dt class="t12 uc w700 mb05 tc300">
               <div class="flex spacebetween">
                 Detalhamento
-                <router-link
+                <SmaeLink
                   v-if="cicloAtual"
                   :to="{
-                    name: `${route.meta.entidadeMãe}.monitoramentoDeMetasAnaliseDeRisco`,
+                    name: `.monitoramentoDeMetasAnaliseDeRisco`,
                     params: { cicloId: ciclo.id }
                   }"
                   class="tprimary"
@@ -169,7 +169,7 @@
                   >
                     <use xlink:href="#i_edit" />
                   </svg>
-                </router-link>
+                </SmaeLink>
               </div>
               <hr class="f1 mt025">
             </dt>
@@ -219,10 +219,10 @@
             <dt class="t12 uc w700 mb05 tc300">
               <div class="flex spacebetween">
                 Comentários
-                <router-link
+                <SmaeLink
                   v-if="cicloAtual"
                   :to="{
-                    name: `${route.meta.entidadeMãe}.monitoramentoDeMetasRegistroDeFechamento`,
+                    name: `.monitoramentoDeMetasRegistroDeFechamento`,
                     params: { cicloId: ciclo.id }
                   }"
                   class="tprimary"
@@ -233,7 +233,7 @@
                   >
                     <use xlink:href="#i_edit" />
                   </svg>
-                </router-link>
+                </SmaeLink>
               </div>
             </dt>
             <dd
