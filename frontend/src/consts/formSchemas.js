@@ -1150,6 +1150,47 @@ export const modalidadeContratacao = object({
     .required(),
 });
 
+const monitoramentoDeMetasBase = object()
+  .shape({
+    ciclo_fisico_id: number()
+      .label('Ciclo físico')
+      .required(),
+    meta_id: number()
+      .label('Meta')
+      .required(),
+  });
+
+export const monitoramentoDeMetasAnalise = monitoramentoDeMetasBase.concat(
+  object({
+    informacoes_complementares: string()
+      .label('Informações complementares')
+      .max(10240)
+      .required(),
+  }),
+);
+
+export const monitoramentoDeMetasFechamento = monitoramentoDeMetasBase.concat(
+  object({
+    comentario: string()
+      .label('Comentário')
+      .max(10240)
+      .required(),
+  }),
+);
+
+export const monitoramentoDeMetasRisco = monitoramentoDeMetasBase.concat(
+  object({
+    detalhamento: string()
+      .label('Detalhamento')
+      .max(10240)
+      .required(),
+    ponto_de_atencao: string()
+      .label('Ponto de atenção')
+      .max(10240)
+      .nullable(),
+  }),
+);
+
 export const monitoramentoDePlanoDeAção = object()
   .shape({
     descricao: string()

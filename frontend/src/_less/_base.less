@@ -1024,6 +1024,14 @@ p {
   border: 0 !important;
 }
 
+.disabled {
+  color: @c400;
+}
+
+[aria-disabled="true"] {
+  .disabled;
+}
+
 /* Components */
 .accordeon {
   cursor: pointer;
@@ -1403,7 +1411,7 @@ p {
   &[aria-disabled='true'],
   &.disabled {
     .bgc50;
-    .tc300;
+    .disabled;
     cursor: default;
   }
 }
@@ -2027,7 +2035,7 @@ input[type='radio'] {
   &[aria-disabled='true'],
   &:disabled {
     background: @c50;
-    color: @c400;
+    .disabled;
   }
 
   &:focus {
@@ -3223,3 +3231,69 @@ pre {
   background-color: #E2EAFE;
   border-radius: 10px;
 }
+
+// @todo onde a gente põe essas coisas?
+.titulo-monitoramento {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: linear-gradient(to right, #e3e5e8, #e3e5e8) no-repeat center;
+  background-position: center;
+  background-size: 100% 1px;
+  background-repeat: no-repeat;
+}
+
+.titulo-monitoramento:before {
+  position: relative;
+  right: auto;
+  content: '';
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  background-color: #f7c234;
+  box-shadow: 0 0 0 5px #fff, 0 0 0 6px #e3e5e8;
+  background-image: none;
+}
+
+.titulo-monitoramento--passado:before {
+  filter: grayscale(1);
+}
+
+.titulo-monitoramento__text {
+  margin: 0;
+  padding: 0 0.5rem 0 0.5rem;
+  background-color: #fff;
+}
+
+.label-com-botao {
+  gap: 0.5rem;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.5rem 2rem;
+}
+
+.label-com-botao::before {
+  content: "";
+  width: 100%;
+  height: 1px;
+  order: 2;
+  background-color: #e3e5e8;
+}
+
+.label-com-botao__botao {
+  order: 2;
+}
+
+.label-com-botao__label {
+  order: 1;
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+}
+
+.label-com-botao__campo {
+  order: 3;
+  grid-column: -1 / 1;
+}
+
