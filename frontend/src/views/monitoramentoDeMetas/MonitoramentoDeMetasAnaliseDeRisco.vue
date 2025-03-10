@@ -25,6 +25,7 @@ const {
   chamadasPendentes,
   erros,
   riscoEmFoco,
+  cicloAtivo,
 } = storeToRefs(monitoramentoDeMetasStore);
 
 const riscoEmFocoParaEdicao = computed(() => ({
@@ -117,7 +118,7 @@ watchEffect(() => {
     <div class="titulo-monitoramento">
       <h2 class="tc500 t20 titulo-monitoramento__text">
         <span class="w400">
-          Ciclo Atual: {{ dateToTitle(riscoEmFocoParaEdicao.referencia_data) }}
+          Ciclo Atual: {{ dateToTitle(cicloAtivo.data_ciclo) }}
         </span>
       </h2>
     </div>
@@ -126,6 +127,9 @@ watchEffect(() => {
       <button
         class="label-com-botao__botao btn bgnone tcprimary outline"
         type="button"
+        :disabled="!riscoAnterior?.detalhamento"
+        :aria-disabled="!riscoAnterior?.detalhamento"
+        :title="!riscoAnterior?.detalhamento ? 'Nenhum detalhamento anterior' : ''"
         @click="setFieldValue('detalhamento', riscoAnterior.detalhamento)"
       >
         Repetir anterior
@@ -157,6 +161,9 @@ watchEffect(() => {
       <button
         class="label-com-botao__botao btn bgnone tcprimary outline"
         type="button"
+        :disabled="!riscoAnterior?.ponto_de_atencao"
+        :aria-disabled="!riscoAnterior?.ponto_de_atencao"
+        :title="!riscoAnterior?.ponto_de_atencao ? 'Nenhum ponto de atenção anterior' : ''"
         @click="setFieldValue('ponto_de_atencao', riscoAnterior.ponto_de_atencao)"
       >
         Repetir anterior
@@ -190,39 +197,46 @@ watchEffect(() => {
         </span>
       </h2>
     </div>
-    <div class="t12 uc w700 mb05 tc300">
-      Detalhamento
-      <hr class="f1 mt025">
-      <div
-        class="t13 contentStyle"
-        v-html="riscoAnterior?.detalhamento || '-'"
-      />
-    </div>
-    <div class="t12 uc w700 mb05 tc300">
-      Pontos de Atenção
-      <hr class="f1 mt025">
-      <div
-        class="t13 contentStyle"
-        v-html="riscoAnterior?.ponto_de_atencao || '-'"
-      />
-    </div>
-
-    <footer
-      v-if="riscoAnterior?.criador?.nome_exibicao || riscoAnterior?.criado_em"
-      class="tc600"
-    >
-      <p>
-        Analisado
-        <template v-if="riscoAnterior.criador?.nome_exibicao">
-          por <strong>{{ riscoAnterior.criador.nome_exibicao }}</strong>
-        </template>
-        <template v-if="riscoAnterior.criado_em">
-          em <time :datetime="riscoAnterior.criado_em">
-            {{ dateToShortDate(riscoAnterior.criado_em) }}
-          </time>.
-        </template>
+    <template v-if="!riscoAnterior.criado_em">
+      <p class="t12 tc300 w700">
+        Nenhum risco anterior encontrado.
       </p>
-    </footer>
+    </template>
+    <template v-else>
+      <div class="t12 uc w700 mb05 tc300">
+        Detalhamento
+        <hr class="f1 mt025">
+        <div
+          class="t13 contentStyle"
+          v-html="riscoAnterior?.detalhamento || '-'"
+        />
+      </div>
+      <div class="t12 uc w700 mb05 tc300">
+        Pontos de Atenção
+        <hr class="f1 mt025">
+        <div
+          class="t13 contentStyle"
+          v-html="riscoAnterior?.ponto_de_atencao || '-'"
+        />
+      </div>
+
+      <footer
+        v-if="riscoAnterior?.criador?.nome_exibicao || riscoAnterior?.criado_em"
+        class="tc600"
+      >
+        <p>
+          Analisado
+          <template v-if="riscoAnterior.criador?.nome_exibicao">
+            por <strong>{{ riscoAnterior.criador.nome_exibicao }}</strong>
+          </template>
+          <template v-if="riscoAnterior.criado_em">
+            em <time :datetime="riscoAnterior.criado_em">
+              {{ dateToShortDate(riscoAnterior.criado_em) }}
+            </time>.
+          </template>
+        </p>
+      </footer>
+    </template>
 
     <div class="flex spacebetween center mb2">
       <hr class="mr2 f1">
