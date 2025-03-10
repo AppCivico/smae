@@ -306,7 +306,8 @@ export class ProjetoDetailBaseMdo {
     @IsDateYMD({ nullable: true })
     mdo_previsao_inauguracao: string | null;
     mdo_observacoes: string | null;
-    tipo_aditivo: IdNomeDto | null;
+    @ApiProperty({ deprecated: true })
+    tipo_aditivo: any;
     modalidade_contratacao: IdNomeDto | null;
     programa: IdNomeDto | null;
 
