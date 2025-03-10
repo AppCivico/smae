@@ -2744,6 +2744,8 @@ model MetaCicloFisicoAnaliseDocumento {
     arquivo_id Int
     arquivo    Arquivo @relation(fields: [arquivo_id], references: [id])
 
+    descricao String?
+
     criado_em  DateTime @default(now()) @db.Timestamptz(6)
     criado_por Int
 

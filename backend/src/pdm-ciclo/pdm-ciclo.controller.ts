@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiExtraModels, ApiOkResponse, ApiResponse, ApiTags, refs } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -7,9 +7,14 @@ import { TipoPDM, TipoPdmType } from '../common/decorators/current-tipo-pdm';
 import { FindOneParams, FindThreeParams, FindTwoParams } from '../common/decorators/find-params';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { MetaSetorialController } from '../meta/meta.controller';
-import { AnaliseQualitativaDocumentoDto, CreateAnaliseQualitativaDto } from '../mf/metas/dto/mf-meta-analise-quali.dto';
+import {
+    AnaliseQualitativaDocumentoDto,
+    CreateAnaliseQualitativaDto,
+    UpdateAnaliseQualitativaDocumentoDto,
+} from '../mf/metas/dto/mf-meta-analise-quali.dto';
 import { FechamentoDto } from '../mf/metas/dto/mf-meta-fechamento.dto';
 import { RiscoDto } from '../mf/metas/dto/mf-meta-risco.dto';
+import { RequestInfoDto } from '../mf/metas/dto/mf-meta.dto';
 import { FilterMonitCicloDto, FilterPdmCiclo, FilterPsCiclo, UpdatePdmCicloDto } from './dto/update-pdm-ciclo.dto';
 import {
     CiclosRevisaoDto,
@@ -66,9 +71,7 @@ export class PsCicloController {
         @Query() dto: FilterPsCiclo,
         @TipoPDM() tipo: TipoPdmType
     ): Promise<ListPSCicloDto> {
-        return await this.psCicloService.findAll(tipo,
-            params.id,
-            {
+        return await this.psCicloService.findAll(tipo, params.id, {
             ...dto,
         });
     }
@@ -123,6 +126,36 @@ export class PsCicloController {
         );
     }
 
+    @Patch(':id/ciclo/:id2/analise/documento/:id3')
+    @ApiBearerAuth('access-token')
+    @Roles(MetaSetorialController.WritePerm)
+    @ApiExtraModels(RecordWithId, RequestInfoDto)
+    @ApiOkResponse({
+        schema: { allOf: refs(RecordWithId, RequestInfoDto) },
+    })
+    async updateMetaAnaliseQualitativaDocumento(
+        @Param() params: FindThreeParams,
+        @Body() dto: UpdateAnaliseQualitativaDocumentoDto,
+        @Query() queryDto: FilterMonitCicloDto,
+        @CurrentUser() user: PessoaFromJwt,
+        @TipoPDM() tipo: TipoPdmType
+    ): Promise<RecordWithId & RequestInfoDto> {
+        const start = Date.now();
+        const result = await this.psCicloService.updateMetaAnaliseQualitativaDocumento(
+            tipo,
+            +params.id,
+            +params.id2,
+            queryDto.meta_id,
+            +params.id3,
+            dto,
+            user
+        );
+
+        return {
+            ...result,
+            requestInfo: { queryTook: Date.now() - start },
+        };
+    }
     @Delete(':id/ciclo/:id2/analise/documento/:id3')
     @ApiBearerAuth('access-token')
     @Roles(MetaSetorialController.WritePerm)

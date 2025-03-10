@@ -4,7 +4,11 @@ import { Date2YMD } from '../common/date2ymd';
 import { TipoPdmType } from '../common/decorators/current-tipo-pdm';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { MetaService } from '../meta/meta.service';
-import { AnaliseQualitativaDocumentoDto, CreateAnaliseQualitativaDto } from '../mf/metas/dto/mf-meta-analise-quali.dto';
+import {
+    AnaliseQualitativaDocumentoDto,
+    CreateAnaliseQualitativaDto,
+    UpdateAnaliseQualitativaDocumentoDto,
+} from '../mf/metas/dto/mf-meta-analise-quali.dto';
 import { FechamentoDto } from '../mf/metas/dto/mf-meta-fechamento.dto';
 import { RiscoDto } from '../mf/metas/dto/mf-meta-risco.dto';
 import { MetasAnaliseQualiService } from '../mf/metas/metas-analise-quali.service';
@@ -612,5 +616,38 @@ export class PsCicloService {
             anterior: previousData,
             documentos_editaveis,
         };
+    }
+
+    async updateMetaAnaliseQualitativaDocumento(
+        tipo: TipoPdmType,
+        pdmId: number,
+        cicloId: number,
+        metaId: number,
+        documentoId: number,
+        dto: UpdateAnaliseQualitativaDocumentoDto,
+        user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        await this.verificaPermissaoEscritaBase(tipo, pdmId, metaId, cicloId, user, true, 'analise');
+
+        const documento = await this.prisma.metaCicloFisicoAnaliseDocumento.findFirst({
+            where: {
+                id: documentoId,
+                meta_id: metaId,
+                ciclo_fisico_id: cicloId,
+                removido_em: null,
+            },
+        });
+
+        if (!documento) throw new BadRequestException('Documento não encontrado ou já removido');
+
+        const updated = await this.prisma.metaCicloFisicoAnaliseDocumento.update({
+            where: { id: documentoId },
+            data: {
+                descricao: dto.descricao,
+            },
+            select: { id: true },
+        });
+
+        return { id: updated.id };
     }
 }
