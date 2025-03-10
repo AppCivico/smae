@@ -1,4 +1,6 @@
 <script setup>
+import dateToTitle from '@/helpers/dateToTitle';
+import { dateToShortDate } from '@/helpers/dateToDate';
 import { monitoramentoDeMetasFechamento as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useMonitoramentoDeMetasStore } from '@/stores/monitoramentoDeMetas.store';
@@ -22,12 +24,24 @@ const {
   chamadasPendentes,
   erros,
   fechamentoEmFoco,
+  cicloAtivo,
 } = storeToRefs(monitoramentoDeMetasStore);
+
+if (!cicloAtivo.value) {
+  monitoramentoDeMetasStore
+    .buscarListaDeCiclos(route.params.planoSetorialId, { meta_id: route.params.meta_id });
+}
 
 const fechamentoEmFocoParaEdicao = computed(() => ({
   ciclo_fisico_id: route.params.cicloId,
   comentario: fechamentoEmFoco.value?.corrente.fechamentos[0]?.comentario,
   meta_id: route.params.meta_id,
+}));
+
+const fechamentoAnterior = computed(() => ({
+  comentario: fechamentoEmFoco.value?.anterior.fechamentos[0]?.comentario,
+  criador: fechamentoEmFoco.value?.anterior.fechamentos[0]?.criador,
+  criado_em: fechamentoEmFoco.value?.anterior.fechamentos[0]?.criado_em,
 }));
 
 const {
@@ -74,12 +88,17 @@ watchEffect(() => {
 <template>
   <MigalhasDePao />
 
-  Registro de fechamento
+  <div class="flex spacebetween center mb2">
+    <TítuloDePágina />
 
-  <CheckClose
-    :formulario-sujo="formularioSujo"
-  />
+    <hr class="ml2 f1">
 
+    <CheckClose
+      :formulario-sujo="formularioSujo"
+    />
+  </div>
+
+  <!-- eslint-disable -->
   <div class="debug flex flexwrap g2 mb1">
     <pre class="fb100 mb0">chamadasPendentes.fechamentoEmFoco: {{ chamadasPendentes.fechamentoEmFoco }}</pre>
     <pre class="fb100 mb0">erros.fechamentoEmFoco: {{ erros.fechamentoEmFoco }}</pre>
@@ -105,8 +124,10 @@ watchEffect(() => {
       rows="30"
     >values: {{ values }}</textarea>
   </div>
+  <!-- eslint-enable -->
 
   <form
+    class="flex column g2"
     :disabled="isSubmitting"
     :aria-busy="isSubmitting || chamadasPendentes.riscoEmFoco"
     @submit.prevent="onSubmit"
@@ -120,16 +141,87 @@ watchEffect(() => {
       type="hidden"
     />
 
-    <Field
-      as="textarea"
-      name="comentario"
-    />
+    <div class="titulo-monitoramento">
+      <h2 class="tc500 t20 titulo-monitoramento__text">
+        <span class="w400">
+          Ciclo Atual: {{ dateToTitle(cicloAtivo?.data_ciclo) }}
+        </span>
+      </h2>
+    </div>
+
+    <div class="label-com-botao">
+      <button
+        class="label-com-botao__botao btn bgnone tcprimary outline"
+        type="button"
+        :disabled="!fechamentoAnterior?.detalhamento"
+        :aria-disabled="!fechamentoAnterior?.detalhamento"
+        :title="!fechamentoAnterior?.detalhamento ? 'Nenhum detalhamento anterior' : ''"
+        @click="setFieldValue('detalhamento', fechamentoAnterior.detalhamento)"
+      >
+        Repetir anterior
+      </button>
+      <label
+        for="comentario"
+        class="label-com-botao__label"
+      >
+        Comentário
+      </label>
+      <div class="label-com-botao__campo">
+        <Field
+          as="textarea"
+          name="comentario"
+          rows="5"
+          class="inputtext light mb1"
+          :class="{ 'error': errors.comentario }"
+        />
+      </div>
+    </div>
     <ErrorMessage
       class="error-msg"
       name="comentario"
     />
 
     <FormErrorsList :errors="errors" />
+
+    <div class="titulo-monitoramento titulo-monitoramento--passado">
+      <h2 class="tc500 t20 titulo-monitoramento__text">
+        <span class="w400">
+          {{ dateToTitle(fechamentoAnterior.referencia_data) }}
+        </span>
+      </h2>
+    </div>
+    <template v-if="!fechamentoAnterior.criado_em">
+      <p class="t12 tc300 w700">
+        Nenhum fechamento anterior encontrado.
+      </p>
+    </template>
+    <template v-else>
+      <div class="t12 uc w700 mb05 tc300 flex column g1">
+        Comentários
+        <hr>
+        <div
+          class="t13 contentStyle"
+          v-html="fechamentoAnterior?.comentario || '-'"
+        />
+      </div>
+      <hr>
+      <footer
+        v-if="fechamentoAnterior?.criador?.nome_exibicao || fechamentoAnterior?.criado_em"
+        class="tc600"
+      >
+        <p>
+          Analisado
+          <template v-if="fechamentoAnterior.criador?.nome_exibicao">
+            por <strong>{{ fechamentoAnterior.criador.nome_exibicao }}</strong>
+          </template>
+          <template v-if="fechamentoAnterior.criado_em">
+            em <time :datetime="fechamentoAnterior.criado_em">
+              {{ dateToShortDate(fechamentoAnterior.criado_em) }}
+            </time>.
+          </template>
+        </p>
+      </footer>
+    </template>
 
     <div class="flex spacebetween center mb2">
       <hr class="mr2 f1">

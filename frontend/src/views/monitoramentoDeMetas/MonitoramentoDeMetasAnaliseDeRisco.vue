@@ -208,17 +208,17 @@ watchEffect(() => {
       </p>
     </template>
     <template v-else>
-      <div class="t12 uc w700 mb05 tc300">
+      <div class="t12 uc w700 mb05 tc300 flex column g1">
         Detalhamento
-        <hr class="f1 mt025">
+        <hr>
         <div
           class="t13 contentStyle"
           v-html="riscoAnterior?.detalhamento || '-'"
         />
       </div>
-      <div class="t12 uc w700 mb05 tc300">
+      <div class="t12 uc w700 mb05 tc300 flex column g1">
         Pontos de Atenção
-        <hr class="f1 mt025">
+        <hr>
         <div
           class="t13 contentStyle"
           v-html="riscoAnterior?.ponto_de_atencao || '-'"
@@ -259,36 +259,3 @@ watchEffect(() => {
     </div>
   </form>
 </template>
-<style>
-.label-com-botao {
-  gap: 0.5rem;
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: 0.5rem 2rem;
-}
-
-.label-com-botao::before {
-  content: "";
-  width: 100%;
-  height: 1px;
-  order: 2;
-  background-color: #e3e5e8;
-}
-
-.label-com-botao__botao {
-  order: 2;
-}
-
-.label-com-botao__label {
-  order: 1;
-  font-weight: 700;
-  font-size: 0.85rem;
-  text-transform: uppercase;
-}
-
-.label-com-botao__campo {
-  order: 3;
-  grid-column: -1 / 1;
-}
-</style>
