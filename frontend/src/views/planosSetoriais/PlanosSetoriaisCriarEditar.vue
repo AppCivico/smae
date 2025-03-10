@@ -682,35 +682,6 @@ watch(itemParaEdicao, (novoValor) => {
     </fieldset>
 
     <fieldset>
-      <!-- <div class="flex flexwrap g2 mb1">
-        <div
-          v-if="!ehPdm"
-          class="f1"
-        >
-          <LabelFromYup
-            name="meses"
-            :schema="schema"
-          />
-
-          <Field
-            v-slot="{ value, handleChange }"
-            name="meses"
-          >
-            <AutocompleteField
-              name="meses"
-              :controlador="{ busca: '', participantes: value || [] }"
-              :v-model="handleChange"
-              :grupo="mesesDisponiveis"
-              label="nome"
-            />
-          </Field>
-        </div>
-      </div>
-
-      <hr class="mt2"> -->
-    </fieldset>
-
-    <fieldset>
       <LabelFromYup
         :schema="schema"
         as="legend"
