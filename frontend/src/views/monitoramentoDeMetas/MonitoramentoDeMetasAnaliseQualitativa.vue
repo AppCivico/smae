@@ -1,4 +1,6 @@
 <script setup>
+import dateToTitle from '@/helpers/dateToTitle';
+import { dateToShortDate } from '@/helpers/dateToDate';
 import EnvioDeArquivos from '@/components/monitoramentoDeMetas/EnvioDeArquivos.vue';
 import SmallModal from '@/components/SmallModal.vue';
 import TextEditor from '@/components/TextEditor.vue';
@@ -27,7 +29,13 @@ const {
   chamadasPendentes,
   erros,
   analiseEmFoco,
+  cicloAtivo,
 } = storeToRefs(monitoramentoDeMetasStore);
+
+if (!cicloAtivo.value) {
+  monitoramentoDeMetasStore
+    .buscarListaDeCiclos(route.params.planoSetorialId, { meta_id: route.params.meta_id });
+}
 
 const exibirSeletorDeArquivo = ref(false);
 
@@ -37,8 +45,23 @@ const analiseEmFocoParaEdicao = computed(() => ({
   meta_id: route.params.meta_id,
 }));
 
+const analiseAnterior = computed(() => ({
+  ciclo_fisico_id: route.params.cicloId,
+  informacoes_complementares: analiseEmFoco.value?.corrente.analises[0]?.informacoes_complementares,
+  meta_id: route.params.meta_id,
+  criador: analiseEmFoco.value?.anterior.analises[0]?.criador,
+  criado_em: analiseEmFoco.value?.anterior.analises[0]?.criado_em,
+}));
+
 const {
-  errors, handleSubmit, isSubmitting, resetField, resetForm, setFieldValue, values, controlledValues,
+  errors,
+  handleSubmit,
+  isSubmitting,
+  resetField,
+  resetForm,
+  setFieldValue,
+  values,
+  controlledValues,
 } = useForm({
   initialValues: analiseEmFoco.value,
   validationSchema: schema,
@@ -92,13 +115,18 @@ watchEffect(() => {
 <template>
   <MigalhasDePao />
 
-  Analise Qualitativa
+  <div class="flex spacebetween center mb2">
+    <TítuloDePágina />
 
-  <CheckClose
-    :formulario-sujo="formularioSujo"
-  />
+    <hr class="ml2 f1">
 
-  <div class="debug flex flexwrap g2 mb1">
+    <CheckClose
+      :formulario-sujo="formularioSujo"
+    />
+  </div>
+
+  <!-- eslint-disable -->
+  <div class="debug flex flexwrap g2 mb1" hidden>
     <pre class="fb100 mb0">chamadasPendentes.analiseEmFoco: {{ chamadasPendentes.analiseEmFoco }}</pre>
     <pre class="fb100 mb0">erros.analiseEmFoco: {{ erros.analiseEmFoco }}</pre>
 
@@ -123,14 +151,12 @@ watchEffect(() => {
       rows="30"
     >values: {{ values }}</textarea>
   </div>
-
-  <pre>
-analiseEmFoco?.corrente?.arquivos?.length: {{ analiseEmFoco?.corrente?.arquivos?.length }}
-</pre>
+  <!-- eslint-enable -->
 
   <form
+    class="flex column g2"
     :disabled="isSubmitting"
-    :aria-busy="isSubmitting || chamadasPendentes.riscoEmFoco"
+    :aria-busy="isSubmitting || chamadasPendentes.analiseEmFoco"
     @submit.prevent="onSubmit"
   >
     <Field
@@ -142,20 +168,102 @@ analiseEmFoco?.corrente?.arquivos?.length: {{ analiseEmFoco?.corrente?.arquivos?
       type="hidden"
     />
 
-    <Field
-      v-slot="{ field }"
-      name="informacoes_complementares"
-    >
-      <TextEditor
-        v-bind="field"
-      />
-    </Field>
+    <div class="titulo-monitoramento">
+      <h2 class="tc500 t20 titulo-monitoramento__text">
+        <span class="w400">
+          Ciclo Atual: {{ dateToTitle(cicloAtivo?.data_ciclo) }}
+        </span>
+      </h2>
+    </div>
+
+    <div class="label-com-botao">
+      <button
+        class="label-com-botao__botao btn bgnone tcprimary outline"
+        type="button"
+        :disabled="!analiseAnterior?.detalhamento"
+        :aria-disabled="!analiseAnterior?.detalhamento"
+        :title="!analiseAnterior?.detalhamento ? 'Nenhuma informação complementar anterior' : ''"
+        @click="setFieldValue('detalhamento', analiseAnterior.informacoes_complementares)"
+      >
+        Repetir anterior
+      </button>
+      <label
+        for="detalhamento"
+        class="label-com-botao__label"
+      >
+        Informações complementares
+      </label>
+      <div class="label-com-botao__campo">
+        <Field
+          v-slot="{ field }"
+          name="informacoes_complementares"
+        >
+          <TextEditor
+            v-bind="field"
+          />
+        </Field>
+      </div>
+    </div>
     <ErrorMessage
       class="error-msg"
       name="informacoes_complementares"
     />
 
+    <div>
+      <button
+        type="button"
+        class="addlink mb1"
+        @click="exibirSeletorDeArquivo = !exibirSeletorDeArquivo"
+      >
+        <svg
+          width="20"
+          height="20"
+        ><use xlink:href="#i_+" /></svg> <span>Adicionar documentos</span>
+      </button>
+    </div>
+
     <FormErrorsList :errors="errors" />
+
+    <div class="titulo-monitoramento titulo-monitoramento--passado">
+      <h2 class="tc500 t20 titulo-monitoramento__text">
+        <span class="w400">
+          {{ dateToTitle(analiseAnterior.referencia_data) }}
+        </span>
+      </h2>
+    </div>
+
+    <template v-if="!analiseAnterior.criado_em">
+      <p class="t12 tc300 w700">
+        Nenhum análise anterior encontrada.
+      </p>
+    </template>
+    <template v-else>
+      <div class="t12 uc w700 mb05 tc300 flex column g1">
+        Informações complementares
+        <hr>
+        <div
+          class="t13 contentStyle"
+          v-html="analiseAnterior?.informacoes_complementares || '-'"
+        />
+      </div>
+      <hr>
+      <footer
+        v-if="analiseAnterior?.criador?.nome_exibicao || analiseAnterior?.criado_em"
+        class="tc600"
+      >
+        <p>
+          Analisado
+          <template v-if="analiseAnterior.criador?.nome_exibicao">
+            por <strong>{{ analiseAnterior.criador.nome_exibicao }}</strong>
+          </template>
+          <template v-if="analiseAnterior.criado_em">
+            em <time :datetime="analiseAnterior.criado_em">
+              {{ dateToShortDate(analiseAnterior.criado_em) }}
+            </time>.
+          </template>
+        </p>
+      </footer>
+    </template>
 
     <div class="flex spacebetween center mb2">
       <hr class="mr2 f1">
@@ -172,13 +280,6 @@ analiseEmFoco?.corrente?.arquivos?.length: {{ analiseEmFoco?.corrente?.arquivos?
       <hr class="ml2 f1">
     </div>
   </form>
-
-  <button
-    type="button"
-    @click="exibirSeletorDeArquivo = !exibirSeletorDeArquivo"
-  >
-    Adicionar documento
-  </button>
 
   <SmallModal
     v-if="exibirSeletorDeArquivo"
