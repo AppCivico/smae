@@ -1,6 +1,6 @@
 import { forwardRef, HttpException, Inject, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Cron } from '@nestjs/schedule';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { FonteRelatorio, ModuloSistema, Prisma, RelatorioVisibilidade, TipoRelatorio } from '@prisma/client';
 import * as crypto from 'crypto';
 import * as fs from 'fs';
@@ -115,7 +115,7 @@ export class ReportsService {
         } else if (dto.fonte === 'PSOrcamento' || dto.fonte === 'PSPrevisaoCusto') {
             //parametros.tipo_pdm = 'PS';
         } else if (dto.fonte === 'PSIndicadores' || dto.fonte === 'PSMonitoramentoMensal') {
-            //parametros.tipo_pdm = 'PS';
+            parametros.tipo_pdm = 'PS';
         } else if (dto.fonte === 'Indicadores') {
             parametros.tipo_pdm = 'PDM';
         }

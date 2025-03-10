@@ -173,6 +173,7 @@ export class IndicadoresService implements ReportableService {
             },
             select: { id: true },
         });
+
         return indicadores;
     }
 
@@ -702,7 +703,7 @@ export class IndicadoresService implements ReportableService {
         CROSS JOIN 
             (select 'Realizado'::"Serie" as serie UNION ALL select 'RealizadoAcumulado'::"Serie" as serie ) series
         JOIN 
-            indicador i ON i.id IN (${indicadores.map((r) => r.id).join(',')})
+            indicador i ON i.id IN (${indicadores.length ? indicadores.map((r) => r.id).join(',') : 0})
         LEFT JOIN 
             meta ON meta.id = i.meta_id
         LEFT JOIN 
@@ -732,7 +733,7 @@ export class IndicadoresService implements ReportableService {
                 // For Anual Analitico, query all months in the year
                 const anoInicial = await this.capturaAnoSerieIndicadorInicial(
                     params,
-                    `indicador i ON i.id IN (${indicadores.map((r) => r.id).join(',')})`
+                    `indicador i ON i.id IN (${indicadores.length ? indicadores.map((r) => r.id).join(',') : 0})`
                 );
 
                 for (let ano = anoInicial; ano <= params.ano; ano++) {
@@ -843,7 +844,7 @@ export class IndicadoresService implements ReportableService {
             }
 
             // Build the anoInicial query first
-            let queryFromWhere = `indicador i ON i.id IN (${indicadores.map((r) => r.id).join(',')})
+            let queryFromWhere = `indicador i ON i.id IN (${indicadores.length ? indicadores.map((r) => r.id).join(',') : 0})
         join indicador_variavel iv ON iv.indicador_id = i.id
         join variavel v ON v.id = iv.variavel_id
         join orgao ON v.orgao_id = orgao.id
@@ -909,7 +910,7 @@ export class IndicadoresService implements ReportableService {
         CROSS JOIN 
             (select 'Realizado'::"Serie" as serie UNION ALL select 'RealizadoAcumulado'::"Serie" as serie) series
         JOIN 
-            indicador i ON i.id IN (${indicadores.map((r) => r.id).join(',')})
+            indicador i ON i.id IN (${indicadores.length ? indicadores.map((r) => r.id).join(',') : 0})
         JOIN 
             indicador_variavel iv ON iv.indicador_id = i.id
         JOIN 
@@ -1136,93 +1137,6 @@ export class IndicadoresService implements ReportableService {
         } catch (error) {
             this.logger.error(`Error executing SQL: ${error}`);
             throw error;
-        }
-    }
-
-    /**
-     * Generate CSV file for indicadores by writing directly from database
-     */
-    private async generateIndicadoresCsv(
-        indicadoresIds: number[],
-        params: CreateRelIndicadorDto,
-        camposMetaIniAtv: any[],
-        filePath: string
-    ): Promise<void> {
-        // Create file stream
-        const fileStream = createWriteStream(filePath);
-
-        // Write header
-        const header = [
-            ...camposMetaIniAtv.map((field) => (typeof field === 'object' ? field.label : field)),
-            'Data de Referência',
-            'Serie',
-            'Data',
-            'Valor',
-        ]
-            .map((h) => this.escapeCsvField(h))
-            .join(',');
-
-        fileStream.write(header + '\n');
-
-        try {
-            const queryFromWhere = `indicador i ON i.id IN (${indicadoresIds.join(',')})
-            left join meta on meta.id = i.meta_id
-            left join iniciativa on iniciativa.id = i.iniciativa_id
-            left join atividade on atividade.id = i.atividade_id
-            left join iniciativa i2 on i2.id = atividade.iniciativa_id
-            left join meta m2 on m2.id = iniciativa.meta_id OR m2.id = i2.meta_id
-            left join pdm on pdm.id = meta.pdm_id or pdm.id = m2.pdm_id
-            `;
-
-            const anoInicial = await this.capturaAnoSerieIndicadorInicial(params, queryFromWhere);
-
-            // Process in transaction but avoid temp tables
-            await this.prisma.$transaction(
-                async (prismaTxn: Prisma.TransactionClient) => {
-                    // Instead of using temp tables, we'll process results directly
-                    if (params.tipo == 'Mensal' && params.mes) {
-                        await this.processQueryDirectlyToFile(
-                            prismaTxn,
-                            this.buildDirectQuery(queryFromWhere),
-                            fileStream,
-                            null,
-                            camposMetaIniAtv,
-                            params.ano,
-                            params.mes
-                        );
-                    } else if (params.periodo == 'Anual' && params.tipo == 'Analitico') {
-                        // Process each year separately
-                        for (let ano = anoInicial; ano <= params.ano; ano++) {
-                            await this.processAnualAnaliticoDirectlyToFile(
-                                prismaTxn,
-                                this.buildDirectQuery(queryFromWhere),
-                                fileStream,
-                                null,
-                                camposMetaIniAtv,
-                                ano
-                            );
-                        }
-                    } else if (params.periodo == 'Anual' && params.tipo == 'Consolidado') {
-                        await this.processAnualConsolidadoDirectlyToFile(
-                            prismaTxn,
-                            this.buildDirectQuery(queryFromWhere),
-                            fileStream,
-                            null,
-                            camposMetaIniAtv,
-                            params.ano
-                        );
-                    }
-                    // Add other conditions for Semestral, etc.
-                },
-                {
-                    maxWait: 1000000,
-                    timeout: 60 * 1000 * 15,
-                    isolationLevel: 'Serializable',
-                }
-            );
-        } finally {
-            // Close file stream
-            fileStream.end();
         }
     }
 
