@@ -28,6 +28,7 @@ import { AnyPageTokenJwtBody, PaginatedWithPagesDto, PAGINATION_TOKEN_TTL } from
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { IsArrayContentsChanged } from '../common/helpers/IsArrayContentsEqual';
 import { Object2Hash } from '../common/object2hash';
+import { SeriesArrayShuffle } from '../common/shuffleArray';
 import { MetaService } from '../meta/meta.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { VariavelCategoricaService } from '../variavel-categorica/variavel-categorica.service';
@@ -65,7 +66,6 @@ import {
 } from './entities/variavel.entity';
 import { SerieCompactToken } from './serie.token.encoder';
 import { VariavelUtilService } from './variavel.util.service';
-import { SeriesArrayShuffle } from '../common/shuffleArray';
 
 const SUPRA_SUFIXO = ' - Supra';
 /**
@@ -255,7 +255,7 @@ export class VariavelService {
                 },
                 select: { meta_id: true },
             });
-            await this.metaService.assertMetaWriteOrThrow('PDM', metaRow.meta_id, user, 'variavel do indicador');
+            await this.metaService.assertMetaWriteOrThrow('_PDM', metaRow.meta_id, user, 'variavel do indicador');
 
             this.fixIndicadorInicioFim(dto, indicador);
             await this.checkDup(dto, undefined, indicador.id);
@@ -1274,6 +1274,12 @@ export class VariavelService {
                     select: {
                         supraregional: true,
                         variavel_categorica_id: true,
+                        medicao_orgao: {
+                            select: {
+                                id: true,
+                                sigla: true,
+                            },
+                        },
                     },
                 },
                 orgao_proprietario: { select: { id: true, sigla: true, descricao: true } },
@@ -1380,6 +1386,12 @@ export class VariavelService {
                               parente_id: r.regiao.parente_id,
                               pdm_codigo_sufixo: r.regiao.pdm_codigo_sufixo,
                           } satisfies Regiao)
+                        : null,
+                    orgao_responsal_coleta: r.variavel.medicao_orgao
+                        ? {
+                              id: r.variavel.medicao_orgao.id,
+                              sigla: r.variavel.medicao_orgao.sigla,
+                          }
                         : null,
                 };
             }),
@@ -1688,6 +1700,10 @@ export class VariavelService {
             const gruposAtuais = self.VariavelGrupoResponsavelEquipe.map((v) => v.grupo_responsavel_equipe_id);
 
             let equipes_configuradas: boolean | undefined = undefined;
+
+            let medicao_orgao_id: number | undefined = undefined;
+            let validacao_orgao_id: number | undefined = undefined;
+            let liberacao_orgao_id: number | undefined = undefined;
             if (IsArrayContentsChanged(gruposRecebidos, gruposAtuais)) {
                 logger.log('Equipe responsáveis alteradas...');
                 equipes_configuradas = this.isEquipesConfiguradas(dto);
@@ -1696,6 +1712,11 @@ export class VariavelService {
                     where: { variavel_id: variavelId, removido_em: null },
                     data: { removido_em: now },
                 });
+
+                if (dto.medicao_orgao_id) medicao_orgao_id = dto.medicao_orgao_id;
+                if (dto.validacao_orgao_id) validacao_orgao_id = dto.validacao_orgao_id;
+                if (dto.liberacao_orgao_id) liberacao_orgao_id = dto.liberacao_orgao_id;
+
                 await this.insertEquipeResponsavel(dto, prismaTxn, variavelId, logger);
             }
 
@@ -1721,7 +1742,9 @@ export class VariavelService {
                     atraso_meses: dto.atraso_meses,
                     inicio_medicao: dto.inicio_medicao,
                     fim_medicao: dto.fim_medicao,
-
+                    medicao_orgao_id,
+                    validacao_orgao_id,
+                    liberacao_orgao_id,
                     dado_aberto: dto.dado_aberto,
                     metodologia: dto.metodologia,
                     descricao: dto.descricao,
@@ -2044,7 +2067,7 @@ export class VariavelService {
             },
             select: { meta_id: true },
         });
-        await this.metaService.assertMetaWriteOrThrow('PDM', metaRow.meta_id, user, 'variavel do indicador');
+        await this.metaService.assertMetaWriteOrThrow('_PDM', metaRow.meta_id, user, 'variavel do indicador');
         return indicadorViaVar;
     }
 
@@ -2168,6 +2191,13 @@ export class VariavelService {
     }
 
     private async validaCamposCategorica(dto: UpdateVariavelDto, op: 'create' | 'update') {
+        if (dto.inicio_medicao && dto.inicio_medicao.getDate() != 1) {
+            throw new HttpException('O início da medição deve ser no primeiro dia do mês.', 400);
+        }
+        if (dto.fim_medicao && dto.fim_medicao.getDate() != 1) {
+            throw new HttpException('O fim da medição deve ser no primeiro dia do mês.', 400);
+        }
+
         if (dto.variavel_categorica_id) {
             dto.ano_base = null;
             dto.valor_base = 0;
@@ -2194,7 +2224,7 @@ export class VariavelService {
         const medicao_orgao_id = dto.medicao_orgao_id ?? antigo.medicao_orgao_id;
         const validacao_orgao_id = dto.validacao_orgao_id ?? antigo.validacao_orgao_id;
         const liberacao_orgao_id = dto.liberacao_orgao_id ?? antigo.liberacao_orgao_id;
-
+        console.log(dto, antigo, medicao_orgao_id, validacao_orgao_id, liberacao_orgao_id);
         const grupoPrefetch = await this.prisma.grupoResponsavelEquipe.findMany({
             where: {
                 orgao_id: { in: [medicao_orgao_id, validacao_orgao_id, liberacao_orgao_id] },
@@ -2790,6 +2820,8 @@ export class VariavelService {
                             referencia_data: { in: dataValores },
                             removido_em: null,
                             ultima_revisao: true,
+                            fase: 'Liberacao',
+                            aprovada: true,
                         },
                         by: ['referencia_data'],
                         _count: true,
@@ -3068,6 +3100,7 @@ export class VariavelService {
                 if (ehAdminNoOrgao && variavel.orgao_proprietario_id !== orgao_id) {
                     throw new HttpException('Você não pode editar variáveis de outro órgão proprietário.', 400);
                 }
+                if (ehAdminNoOrgao) continue;
 
                 const variavelEquipes = variavel.VariavelGrupoResponsavelEquipe.filter(
                     (g) =>
@@ -3911,6 +3944,17 @@ export class VariavelService {
                 medicao_orgao_id: true,
                 validacao_orgao_id: true,
                 liberacao_orgao_id: true,
+
+                medicao_orgao: {
+                    select: { id: true, sigla: true },
+                },
+                validacao_orgao: {
+                    select: { id: true, sigla: true },
+                },
+                liberacao_orgao: {
+                    select: { id: true, sigla: true },
+                },
+
                 VariavelGrupoResponsavelEquipe: {
                     where: {
                         removido_em: null,
@@ -3999,6 +4043,11 @@ export class VariavelService {
                 validacao_orgao_id: detalhes.validacao_orgao_id,
                 liberacao_orgao_id: detalhes.liberacao_orgao_id,
                 orgao_proprietario: detalhes.orgao_proprietario!,
+
+                liberacao_orgao: detalhes.liberacao_orgao,
+                medicao_orgao: detalhes.medicao_orgao,
+                validacao_orgao: detalhes.validacao_orgao,
+
                 medicao_grupo_ids: detalhes.VariavelGrupoResponsavelEquipe.filter(
                     (e) => e.grupo_responsavel_equipe.perfil === 'Medicao'
                 ).map((e) => e.grupo_responsavel_equipe.id),

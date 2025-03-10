@@ -1,13 +1,14 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import {
+  defineOptions,
+} from 'vue';
+import { useRoute } from 'vue-router';
 import ErrorComponent from '@/components/ErrorComponent.vue';
 import GerenciadorDeArquivos from '@/components/GerenciadorDeArquivos.vue';
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import { useAlertStore } from '@/stores/alert.store';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store.ts';
-import { storeToRefs } from 'pinia';
-import {
-  defineOptions,
-} from 'vue';
 
 defineOptions({ inheritAttrs: false });
 defineProps({
@@ -20,9 +21,11 @@ defineProps({
   },
 });
 
+const route = useRoute();
+
 const alertStore = useAlertStore();
 
-const planosSetoriaisStore = usePlanosSetoriaisStore();
+const planosSetoriaisStore = usePlanosSetoriaisStore(route.meta.entidadeMãe);
 const {
   emFoco,
   chamadasPendentes,
@@ -50,10 +53,8 @@ iniciar();
     <router-link
       v-if="emFoco?.pode_editar"
       :to="{
-        name: 'planosSetoriaisNovoDocumento',
-        params: {
-          planoSetorialId
-        }
+        name: `${route.meta.entidadeMãe}.planosSetoriaisNovoDocumento`,
+        params: { planoSetorialId }
       }"
       class="btn ml2"
     >
@@ -71,12 +72,12 @@ iniciar();
     class="mb1"
     :rota-de-adição="emFoco?.pode_editar
       ? {
-        name: 'planosSetoriaisNovoDocumento'
+        name: `${route.meta.entidadeMãe}.planosSetoriaisNovoDocumento`,
       }
       : null"
     :rota-de-edição="emFoco?.pode_editar
       ? {
-        name: 'planosSetoriaisEditarDocumento'
+        name: `${route.meta.entidadeMãe}.planosSetoriaisEditarDocumento`
       }
       : null"
     @apagar="($params) => excluirArquivo($params)"

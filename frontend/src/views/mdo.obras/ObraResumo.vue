@@ -10,6 +10,7 @@ import createDataTree from '@/helpers/createDataTree';
 import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
 import subtractDates from '@/helpers/subtractDates';
+import combinadorDeListas from '@/helpers/combinadorDeListas';
 import { useObrasStore } from '@/stores/obras.store';
 import { useOrgansStore } from '@/stores/organs.store';
 
@@ -57,6 +58,29 @@ const exibeBlocoHabitacional = computed(() => {
       || foco?.programa;
 });
 
+const colaboradoresPorGrupo = computed(() => {
+  if (emFoco.value?.colaboradores_no_orgao.length === 0) {
+    return null;
+  }
+
+  const grupos = emFoco.value?.colaboradores_no_orgao.reduce((amount, item) => {
+    const { orgao, ...colaborador } = item;
+
+    if (!amount[item.orgao.sigla]) {
+      amount[item.orgao.sigla] = {
+        ...item.orgao,
+        colaboradores: [],
+      };
+    }
+
+    amount[item.orgao.sigla].colaboradores.push(colaborador);
+
+    return amount;
+  }, {});
+
+  return grupos;
+});
+
 defineProps({
   obraId: {
     type: Number,
@@ -76,7 +100,11 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
 
     <router-link
       v-if="emFoco?.id && !emFoco?.arquivado && !emFoco?.permissoes?.apenas_leitura"
-      :to="{ name: 'obrasEditar', params: { obraId: emFoco.id } }"
+      :to="{
+        name: 'obrasEditar',
+        params: { obraId: emFoco.id },
+        query: { escape: { name: 'obrasResumo' } }
+      }"
       class="btn big ml2"
     >
       Editar
@@ -421,7 +449,6 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
         :geo-json="mapasAgrupados.endereços"
         :camadas="mapasAgrupados.camadas"
         class="mb1"
-        :opcoes-do-painel-flutuante="{ permanent: true }"
         :opções-do-polígono="{
           fill: true,
           opacity: 0.5,
@@ -647,41 +674,42 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
         </div>
       </dl>
 
-      <dl class="flex g2 flexwrap">
-        <div class="f1 mb1">
-          <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.orgao_colaborador_id.spec.label }}
-          </dt>
-          <dd class="t13">
-            {{ emFoco?.orgao_colaborador?.sigla }} - {{ emFoco?.orgao_colaborador?.descricao }}
-          </dd>
-        </div>
-        <div class="f1 mb1">
-          <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.colaboradores_no_orgao.spec.label }}
-          </dt>
-          <dd class="t13">
-            <ul class="listaComoTexto">
-              <li v-if="!emFoco?.colaboradores_no_orgao?.length">
-                {{ '-' }}
-              </li>
-              <li
-                v-for="item in emFoco?.colaboradores_no_orgao"
-                :key="item.id"
-              >
-                {{ item.nome_exibicao }}
-              </li>
-            </ul>
-          </dd>
-        </div>
-        <div class="f1 mb1">
-          <!-- aqui só pra ajustar o layout -->
-        </div>
-      </dl>
+      <table class="orgaos-participantes-grupo mb1">
+        <thead>
+          <tr>
+            <th class="t12 uc w700 mb05 tamarelo tl">
+              {{ schema.fields.orgaos_participantes.spec.label }}
+            </th>
+
+            <th class="t12 uc w700 tamarelo tl">
+              {{ schema.fields.ponto_focal_colaborador.spec.label }}
+            </th>
+          </tr>
+        </thead>
+
+        <tbody v-if="colaboradoresPorGrupo">
+          <tr
+            v-for="grupoPortfolio in colaboradoresPorGrupo"
+            :key="grupoPortfolio.id"
+          >
+            <td>{{ grupoPortfolio.sigla }}</td>
+            <td>
+              {{ combinadorDeListas(grupoPortfolio.colaboradores, ', ', 'nome_exibicao') }}
+            </td>
+          </tr>
+        </tbody>
+
+        <tbody v-else>
+          <tr>
+            <td> - </td>
+            <td> - </td>
+          </tr>
+        </tbody>
+      </table>
 
       <dl
         v-if="emFoco?.orgaos_participantes?.length"
-        class="f1 mb1 fb100"
+        class="f1 mb1 fb100 mb1"
       >
         <dt class="t12 uc w700 mb05 tamarelo">
           {{ schema.fields.orgaos_participantes.spec.label }}
@@ -696,17 +724,30 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
         </dd>
       </dl>
 
-      <h2>{{ schema.fields.grupo_portfolio.spec.label }}</h2>
+      <dl class="mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.grupo_portfolio.spec.label }}
+        </dt>
 
-      <ul class="lista-com-ponto">
-        <li
-          v-for="grupoPorfolio in emFoco?.grupo_portfolio"
-          :key="grupoPorfolio.id"
-          class="mb1"
-        >
-          <span class="t13">{{ grupoPorfolio.titulo }}</span>
-        </li>
-      </ul>
+        <dd>
+          <ul v-if="emFoco?.grupo_portfolio.length !== 0">
+            <li
+              v-for="grupoPorfolio in emFoco?.grupo_portfolio"
+              :key="grupoPorfolio.id"
+              class="mb025"
+            >
+              <span class="t13">{{ grupoPorfolio.titulo }}</span>
+            </li>
+          </ul>
+
+          <span
+            v-else
+            class="t13"
+          >
+            Sem items para exibir
+          </span>
+        </dd>
+      </dl>
     </div>
 
     <hr
@@ -749,7 +790,7 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
       </div>
     </div>
 
-    <hr class="mb1 f1">
+    <hr class="mt1 mb1 f1">
   </div>
 
   <template v-if="emFoco?.status === 'Fechado'">
@@ -868,3 +909,29 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
     </div>
   </div>
 </template>
+
+<style lang="less" scoped>
+.orgaos-participantes-grupo {
+  width: 100%;
+
+  tr {
+    th, td {
+      &:not(:first-of-type) {
+        padding-left: .7rem;
+      }
+    }
+  }
+
+  tr {
+    border-bottom: 0.25rem solid transparent;
+
+    th:first-of-type {
+      width: 33.3333%;
+    }
+  }
+
+  thead tr {
+    border-bottom: 0.5rem solid transparent;
+  }
+}
+</style>

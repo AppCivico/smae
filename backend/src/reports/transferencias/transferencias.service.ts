@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Date2YMD } from '../../common/date2ymd';
 import { PrismaService } from '../../prisma/prisma.service';
-import { DefaultCsvOptions, FileOutput, ReportableService, ReportContext } from '../utils/utils.service';
+import { DefaultCsvOptions, FileOutput, ReportableService } from '../utils/utils.service';
 import { CreateRelTransferenciasDto, TipoRelatorioTransferencia } from './dto/create-transferencias.dto';
 import {
     RelTransferenciaCronogramaDto,
@@ -10,6 +10,7 @@ import {
 } from './entities/transferencias.entity';
 import { TarefaService } from 'src/pp/tarefa/tarefa.service';
 import { formataSEI } from 'src/common/formata-sei';
+import { ReportContext } from '../relatorios/helpers/reports.contexto';
 
 const {
     Parser,
@@ -210,8 +211,8 @@ export class TransferenciasService implements ReportableService {
                     transferencia_id: tarefaCronoId.transferencia_id!,
                     hirearquia: tarefasHierarquia[e.id],
                     tarefa: e.tarefa,
-                    inicio_planejado: Date2YMD.toStringOrNull(e.inicio_planejado),
-                    termino_planejado: Date2YMD.toStringOrNull(e.termino_planejado),
+                    inicio_planejado: e.inicio_planejado,
+                    termino_planejado: e.termino_planejado,
                     custo_estimado: e.custo_estimado,
                     duracao_planejado: e.duracao_planejado,
                 });
@@ -281,7 +282,7 @@ export class TransferenciasService implements ReportableService {
         }
 
         if (filters.orgao_gestor_id) {
-            whereConditions.push(`dt.orgao_gestor_id = $${paramIndex}`);
+            whereConditions.push(`dr.orgao_gestor_id = $${paramIndex}`);
             queryParams.push(filters.orgao_gestor_id);
             paramIndex++;
         }
@@ -390,7 +391,7 @@ export class TransferenciasService implements ReportableService {
         }
     }
 
-    async toFileOutput(params: CreateRelTransferenciasDto, ctx: ReportContext): Promise<FileOutput[]> {
+    async toFileOutput(params: CreateRelTransferenciasDto, _ctx: ReportContext): Promise<FileOutput[]> {
         //const dados = myInput as TransferenciasRelatorioDto;
         const dados = await this.asJSON(params);
 

@@ -1,15 +1,17 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
-import { ProjetoService, ProjetoStatusParaExibicao } from '../../pp/projeto/projeto.service';
+import { ProjetoGetPermissionSet, ProjetoService, ProjetoStatusParaExibicao } from '../../pp/projeto/projeto.service';
 import { PrismaService } from '../../prisma/prisma.service';
 
-import { ContratoPrazoUnidade, ProjetoStatus, StatusContrato, StatusRisco } from '@prisma/client';
+import { ContratoPrazoUnidade, ProjetoStatus, StatusContrato, StatusRisco, TipoProjeto } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { RiscoCalc } from 'src/common/RiscoCalc';
 import { TarefaService } from 'src/pp/tarefa/tarefa.service';
 import { TarefaUtilsService } from 'src/pp/tarefa/tarefa.service.utils';
+import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { ProjetoRiscoStatus } from '../../pp/risco/entities/risco.entity';
-import { DefaultCsvOptions, FileOutput, ReportContext, ReportableService } from '../utils/utils.service';
+import { ReportContext } from '../relatorios/helpers/reports.contexto';
+import { DefaultCsvOptions, FileOutput, ReportableService } from '../utils/utils.service';
 import { CreateRelProjetosDto } from './dto/create-projetos.dto';
 import {
     PPProjetosRelatorioDto,
@@ -18,6 +20,7 @@ import {
     RelProjetosContratosDto,
     RelProjetosCronogramaDto,
     RelProjetosDto,
+    RelProjetosGeolocDto,
     RelProjetosLicoesAprendidasDto,
     RelProjetosOrigemDto,
     RelProjetosPlanoAcaoDto,
@@ -242,8 +245,16 @@ class RetornoDbOrigens {
     atividade_titulo: string | null;
 }
 
+class RetornoDbLoc {
+    projeto_id: number;
+    endereco: string;
+    geojson: unknown;
+}
+
 @Injectable()
 export class PPProjetosService implements ReportableService {
+    private tipo: TipoProjeto = 'PP';
+
     constructor(
         private readonly prisma: PrismaService,
         @Inject(forwardRef(() => ProjetoService)) private readonly projetoService: ProjetoService,
@@ -251,7 +262,7 @@ export class PPProjetosService implements ReportableService {
         @Inject(forwardRef(() => TarefaUtilsService)) private readonly tarefasUtilsService: TarefaUtilsService
     ) {}
 
-    async asJSON(dto: CreateRelProjetosDto): Promise<PPProjetosRelatorioDto> {
+    async asJSON(dto: CreateRelProjetosDto, user: PessoaFromJwt | null): Promise<PPProjetosRelatorioDto> {
         const out_projetos: RelProjetosDto[] = [];
         const out_cronogramas: RelProjetosCronogramaDto[] = [];
         const out_riscos: RelProjetosRiscosDto[] = [];
@@ -262,11 +273,11 @@ export class PPProjetosService implements ReportableService {
         const out_contratos: RelProjetosContratosDto[] = [];
         const out_aditivos: RelProjetosAditivosDto[] = [];
         const out_origens: RelProjetosOrigemDto[] = [];
+        const out_enderecos: RelProjetosGeolocDto[] = [];
 
-        const whereCond = await this.buildFilteredWhereStr(dto);
+        const whereCond = await this.buildFilteredWhereStr(dto, user);
 
         await this.queryDataProjetos(whereCond, out_projetos);
-        await this.queryDataCronograma(whereCond, out_cronogramas);
         await this.queryDataRiscos(whereCond, out_riscos);
         await this.queryDataPlanosAcao(whereCond, out_planos_acao);
         await this.queryDataPlanosAcaoMonitoramento(whereCond, out_monitoramento_planos_acao);
@@ -275,6 +286,9 @@ export class PPProjetosService implements ReportableService {
         await this.queryDataContratos(whereCond, out_contratos);
         await this.queryDataAditivos(whereCond, out_aditivos);
         await this.queryDataOrigens(whereCond, out_origens);
+        await this.queryDataProjetosGeoloc(whereCond, out_enderecos);
+
+        await this.queryDataCronograma(whereCond, out_cronogramas);
 
         return {
             linhas: out_projetos,
@@ -287,11 +301,16 @@ export class PPProjetosService implements ReportableService {
             contratos: out_contratos,
             aditivos: out_aditivos,
             origens: out_origens,
+            enderecos: out_enderecos,
         };
     }
 
-    async toFileOutput(params: CreateRelProjetosDto, ctx: ReportContext): Promise<FileOutput[]> {
-        const dados = await this.asJSON(params);
+    async toFileOutput(
+        params: CreateRelProjetosDto,
+        ctx: ReportContext,
+        user: PessoaFromJwt | null
+    ): Promise<FileOutput[]> {
+        const dados = await this.asJSON(params, user);
         await ctx.progress(50);
 
         const out: FileOutput[] = [];
@@ -420,6 +439,18 @@ export class PPProjetosService implements ReportableService {
             });
         }
 
+        if (dados.enderecos.length) {
+            const json2csvParser = new Parser({
+                ...DefaultCsvOptions,
+                transforms: defaultTransform,
+            });
+            const linhas = json2csvParser.parse(dados.enderecos);
+            out.push({
+                name: 'enderecos.csv',
+                buffer: Buffer.from(linhas, 'utf8'),
+            });
+        }
+
         return [
             {
                 name: 'info.json',
@@ -435,11 +466,35 @@ export class PPProjetosService implements ReportableService {
         ];
     }
 
-    private async buildFilteredWhereStr(filters: CreateRelProjetosDto): Promise<WhereCond> {
+    private async buildFilteredWhereStr(filters: CreateRelProjetosDto, user: PessoaFromJwt | null): Promise<WhereCond> {
         const whereConditions: string[] = [];
         const queryParams: any[] = [];
 
         let paramIndex = 1;
+
+        if (user) {
+            const perms = await ProjetoGetPermissionSet(this.tipo, user, false);
+
+            const allowed = await this.prisma.projeto.findMany({
+                where: {
+                    AND: perms,
+                    // reduz o número de linhas pra não virar um "IN" gigante
+                    portfolio_id: filters.portfolio_id,
+                    codigo: filters.codigo ?? undefined,
+                    status: filters.status ?? undefined,
+                    removido_em: null,
+                },
+                select: { id: true },
+            });
+
+            if (allowed.length === 0) {
+                return { whereString: 'WHERE false', queryParams: [] };
+            }
+
+            whereConditions.push(`projeto.id = ANY($${paramIndex}::int[])`);
+            queryParams.push(allowed.map((n) => n.id));
+            paramIndex++;
+        }
 
         if (filters.portfolio_id) {
             whereConditions.push(`projeto.portfolio_id = $${paramIndex}`);
@@ -475,6 +530,10 @@ export class PPProjetosService implements ReportableService {
     private async queryDataProjetos(whereCond: WhereCond, out: RelProjetosDto[]) {
         const anoCorrente = DateTime.local({ locale: SYSTEM_TIMEZONE }).year;
 
+        // TODO: melhorar essa query
+        // Esse idx é utilizado no union, e em teoria o portfolio_id sempre é enviado.
+        // No entanto, lá na definição de filtros, caso o usuário não tenha permissão/a query não retorne nada (ver buildFilteredWhereStr),
+        // esse if irá ser pulado, portanto definindo o
         let portfolioParamIdx;
         if (whereCond.whereString.match(/portfolio_id = \$([0-9]+)/)) {
             const match = whereCond.whereString.match(/portfolio_id = \$([0-9]+)/);
@@ -624,7 +683,7 @@ export class PPProjetosService implements ReportableService {
           LEFT JOIN orgao orgao_gestor ON orgao_gestor.id = projeto.orgao_gestor_id
           LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
           LEFT JOIN projeto_etapa pe ON pe.id = projeto.projeto_etapa_id
-          WHERE ppc.removido_em IS NULL AND projeto.removido_em IS NULL AND ppc.portfolio_id = $${portfolioParamIdx}
+          WHERE ppc.removido_em IS NULL AND projeto.removido_em IS NULL AND ppc.portfolio_id = ${portfolioParamIdx !== undefined ? `$${portfolioParamIdx}` : '0'}
         `;
 
         const data: RetornoDbProjeto[] = await this.prisma.$queryRawUnsafe(sql, ...whereCond.queryParams);
@@ -755,8 +814,12 @@ export class PPProjetosService implements ReportableService {
 
         await this.putRowsCronogramaInto(data, out);
     }
-
     private async putRowsCronogramaInto(input: RetornoDbCronograma[], out: RelProjetosCronogramaDto[]) {
+        const projetoChecked = new Set<number>();
+
+        // Cache de tarefasHierarquia results por projeto_id
+        const tarefasHierarquiaCache: Record<number, Record<string, string>> = {};
+
         for (const db of input) {
             interface dependenciaRow {
                 id: number;
@@ -764,25 +827,38 @@ export class PPProjetosService implements ReportableService {
                 latencia: number;
             }
 
-            await this.projetoService.findOne('PP', db.projeto_id, undefined, 'ReadOnly');
+            if (!projetoChecked.has(db.projeto_id)) {
+                projetoChecked.add(db.projeto_id);
+                await this.projetoService.findOne(this.tipo, db.projeto_id, undefined, 'ReadOnly');
+            }
 
-            const tarefaCronoId = await this.prisma.tarefaCronograma.findFirst({
-                where: {
-                    projeto_id: db.projeto_id,
-                    removido_em: null,
-                },
-                select: { id: true },
-            });
+            let tarefasHierarquia: Record<string, string>;
 
-            let tarefasHierarquia: Record<string, string> = {};
-            if (tarefaCronoId) tarefasHierarquia = await this.tarefasService.tarefasHierarquia(tarefaCronoId.id);
+            if (tarefasHierarquiaCache[db.projeto_id]) {
+                tarefasHierarquia = tarefasHierarquiaCache[db.projeto_id];
+            } else {
+                const tarefaCronoId = await this.prisma.tarefaCronograma.findFirst({
+                    where: {
+                        projeto_id: db.projeto_id,
+                        removido_em: null,
+                    },
+                    select: { id: true },
+                });
+
+                if (tarefaCronoId) {
+                    tarefasHierarquia = await this.tarefasService.tarefasHierarquia(tarefaCronoId.id);
+                    tarefasHierarquiaCache[db.projeto_id] = tarefasHierarquia;
+                } else {
+                    tarefasHierarquia = {};
+                }
+            }
 
             out.push({
                 projeto_id: db.projeto_id,
                 projeto_codigo: db.projeto_codigo,
                 tarefa_id: db.id,
                 hirearquia: tarefasHierarquia[db.id],
-                numero: db.numero,
+                numero: db.nivel,
                 nivel: db.nivel,
                 tarefa: db.tarefa,
                 inicio_planejado: db.inicio_planejado ? Date2YMD.toString(db.inicio_planejado) : null,
@@ -1085,7 +1161,7 @@ export class PPProjetosService implements ReportableService {
                 WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL AND tipo_aditivo.habilita_valor = true GROUP BY contrato_aditivo.data ORDER BY contrato_aditivo.data DESC LIMIT 1
             ) AS valor_reajustado,
             (
-                SELECT valor FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL ORDER BY contrato_aditivo.data DESC LIMIT 1 
+                SELECT valor FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL ORDER BY contrato_aditivo.data DESC LIMIT 1
             ) AS valor_com_reajuste,
             (
                 SELECT max(data_termino_atualizada) FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL
@@ -1226,6 +1302,42 @@ export class PPProjetosService implements ReportableService {
                 iniciativa_titulo: db.iniciativa_titulo ?? null,
                 atividade_id: db.atividade_id ?? null,
                 atividade_titulo: db.atividade_titulo ?? null,
+            };
+        });
+    }
+
+    private async queryDataProjetosGeoloc(whereCond: WhereCond, out: RelProjetosGeolocDto[]) {
+        const sql = `
+            SELECT
+                projeto.id AS projeto_id,
+                geo.endereco_exibicao AS endereco,
+                geo.geom_geojson AS geojson
+            FROM projeto
+            JOIN portfolio ON projeto.portfolio_id = portfolio.id
+            JOIN geo_localizacao_referencia geo_r ON geo_r.projeto_id = projeto.id AND geo_r.removido_em IS NULL
+            JOIN geo_localizacao geo ON geo.id = geo_r.geo_localizacao_id
+            ${whereCond.whereString}
+        `;
+
+        const data: RetornoDbLoc[] = await this.prisma.$queryRawUnsafe(sql, ...whereCond.queryParams);
+
+        out.push(...this.convertRowsLoc(data));
+    }
+
+    private convertRowsLoc(input: RetornoDbLoc[]): RelProjetosGeolocDto[] {
+        interface JSONGeo {
+            properties: {
+                cep: string;
+            };
+        }
+
+        return input.map((db) => {
+            const geojson = db.geojson as JSONGeo;
+
+            return {
+                projeto_id: db.projeto_id,
+                endereco: db.endereco,
+                cep: geojson.properties.cep,
             };
         });
     }

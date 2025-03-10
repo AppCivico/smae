@@ -26,10 +26,15 @@ export default {
     pesoNoMenu: 3,
     limitarÀsPermissões: [
       'CadastroPS.administrador',
+      'CadastroPDM.administrador',
       'CadastroPS.administrador_no_orgao',
+      'CadastroPDM.administrador_no_orgao',
       'CadastroMetaPS.administrador_no_pdm',
+      'CadastroMetaPDM.administrador_no_pdm',
       'CadastroVariavelGlobal.administrador_no_orgao',
       'CadastroMetaPS.listar',
+      'CadastroMetaPDM.listar',
+      'SMAE.GrupoVariavel.participante',
     ],
     rotasParaMenuSecundário: ['variaveisListar', 'cicloAtualizacao'],
   },
@@ -65,7 +70,7 @@ export default {
       },
       children: [
         {
-          name: `${entidadeMãe}.variaveisResumo`,
+          name: 'variaveisResumo',
           path: 'resumo',
           component: () => import('@/views/variaveis/VariaveisResumo.vue'),
           meta: {

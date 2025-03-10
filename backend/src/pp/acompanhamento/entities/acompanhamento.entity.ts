@@ -1,18 +1,22 @@
 import { IdNomeDto } from 'src/common/dto/IdNome.dto';
+import { IsDateYMD } from '../../../auth/decorators/date.decorator';
 
 export class ProjetoAcompanhamentoRowDto {
     id: number;
     encaminhamento: string | null;
     responsavel: string | null;
-    prazo_encaminhamento: Date | null;
-    prazo_realizado: Date | null;
+    @IsDateYMD({ nullable: true })
+    prazo_encaminhamento: string | null;
+    @IsDateYMD({ nullable: true })
+    prazo_realizado: string | null;
     ordem: number;
     numero_identificador: string;
 }
 
 export class ProjetoAcompanhamento {
     id: number;
-    data_registro: Date;
+    @IsDateYMD()
+    data_registro: string;
     criado_em: Date;
     atualizado_em: Date | null;
     participantes: string;
@@ -36,7 +40,8 @@ export class ListProjetoAcompanhamentoDto {
 
 export class DetailProjetoAcompanhamentoDto {
     id: number;
-    data_registro: Date;
+    @IsDateYMD()
+    data_registro: string;
     participantes: string;
     ordem: number;
     detalhamento: string | null;

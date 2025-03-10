@@ -1,9 +1,10 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
+import { ModuloSistema } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { PessoaService } from '../pessoa/pessoa.service';
-import { MinhaContaDto } from './models/minha-conta.dto';
+import { MinhaContaDto, SessaoDto } from './models/minha-conta.dto';
 import { NovaSenhaDto } from './models/nova-senha.dto';
 
 @ApiTags('Minha Conta')
@@ -14,7 +15,39 @@ export class MinhaContaController {
     @Get('minha-conta')
     @ApiBearerAuth('access-token')
     getMe(@CurrentUser() user: PessoaFromJwt): MinhaContaDto {
-        return { sessao: user };
+        const sistemas_disponiveis: (ModuloSistema | undefined)[] = [
+            'PDM',
+            user.hasSomeRoles(['SMAE.liberar_pdm_as_ps']) ? 'ProgramaDeMetas' : undefined,
+            'Projetos',
+            'CasaCivil',
+            'MDO',
+            'PlanoSetorial',
+        ];
+
+        let sistemas: ModuloSistema[] = user.sistemas;
+        let modulos_sobrescritos = false;
+
+        // deixa o sistema agir naturalmente se não tiver marcado para sobrescrever
+        if (user.sobreescrever_modulos) {
+            sistemas = user.modulos_permitidos;
+            modulos_sobrescritos = !user.sistemas.every((sistema) => sistemas.includes(sistema));
+        }
+
+        sistemas = sistemas.filter((sistema) => sistema != 'SMAE');
+
+        return {
+            sessao: {
+                id: user.id,
+                nome_exibicao: user.nome_exibicao,
+                session_id: user.session_id,
+                privilegios: user.privilegios,
+                sistemas: sistemas,
+                sistemas_disponiveis: sistemas_disponiveis.filter((sistema) => sistema !== undefined),
+                orgao_id: user.orgao_id,
+                flags: user.flags,
+                modulos_sobrescritos,
+            } satisfies SessaoDto,
+        };
     }
 
     @Post('trocar-senha')

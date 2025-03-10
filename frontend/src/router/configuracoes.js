@@ -14,6 +14,8 @@ import {
   ListPdM,
 } from '@/views/pdm';
 
+import EdicaoOrcamento from '@/views/pdm/EdicaoOrcamento.vue';
+
 import PaineisExternosCriarEditar from '@/views/paineisExternos/PaineisExternosCriarEditar.vue';
 import PaineisExternosLista from '@/views/paineisExternos/PaineisExternosLista.vue';
 import PaineisExternosRaiz from '@/views/paineisExternos/PaineisExternosRaiz.vue';
@@ -46,6 +48,8 @@ import TarefasRaiz from '@/views/tv.tarefas/TarefasRaiz.vue';
 import StatusDistribuicaoCriarEditar from '@/views/statusesDistribuicao/StatusDistribuicaoCriarEditar.vue';
 import StatusDistribuicaoLista from '@/views/statusesDistribuicao/StatusDistribuicaoLista.vue';
 import StatusDistribuicaoRaiz from '@/views/statusesDistribuicao/StatusDistribuicaoRaiz.vue';
+
+import { useEquipesStore } from '@/stores/equipes.store';
 
 const PortfoliosCriarEditar = defineAsyncComponent({
   loader: () => import('@/views/portfolios/PortfoliosCriarEditar.vue'),
@@ -100,6 +104,7 @@ const rotasParaMenuPrincipal = [
   'paineisExternosListar',
   'equipesListar',
   'Workflow',
+  'programaDeMetas.planosSetoriaisListar',
 ];
 
 export default [
@@ -123,6 +128,7 @@ export default [
         'Projeto.administrar_portfolios',
         'ProjetoProgramaMDO.',
         'ProjetoTagMDO.',
+        'ReferencialEm.Equipe.ProgramaDeMetas',
       ],
       presenteNoMenu: true,
       pesoNoMenu: 5,
@@ -412,7 +418,7 @@ export default [
               },
             }),
             meta: {
-              título: 'Editar Equipe',
+              título: () => useEquipesStore().itemParaEdicao.titulo,
               rotaDeEscape: 'equipesListar',
               rotasParaMigalhasDePão: ['equipesListar'],
             },
@@ -992,8 +998,30 @@ export default [
       },
       {
         path: ':pdm_id',
-        name: 'editarPdm',
-        component: AddEditPdM,
+        meta: {
+          limitarÀsPermissões: [
+            'CadastroPdm.editar',
+          ],
+        },
+        children: [
+          {
+            path: '',
+            name: 'editarPdm',
+            component: AddEditPdM,
+          },
+          {
+            path: 'permissoes-orcamento',
+            name: 'pdm.permissoes-orcamento',
+            component: EdicaoOrcamento,
+            meta: {
+              título: 'Permissões para edição do orçamento',
+              rotaDeEscape: 'gerenciarPdm',
+              rotasParaMigalhasDePão: [
+                'gerenciarPdm',
+              ],
+            },
+          },
+        ],
       },
       {
         path: ':pdm_id/arquivos/novo',

@@ -195,4 +195,11 @@ export class PPObrasRelatorioDto {
     aditivos: RelObrasAditivosDto[];
     origens: RelObrasOrigemDto[];
     processos_sei: RelObrasSeiDto[];
+    enderecos: RelObrasGeolocDto[];
+}
+
+export class RelObrasGeolocDto {
+    obra_id: number;
+    endereco: string;
+    cep: string;
 }

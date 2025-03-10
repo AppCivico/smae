@@ -5,7 +5,7 @@ import CampoDePlanosMetasRelacionados from '@/components/CampoDePlanosMetasRelac
 import CampoDeTagsComBuscaPorCategoria from '@/components/CampoDeTagsComBuscaPorCategoria.vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import SimplificadorDeOrigem from '@/helpers/simplificadorDeOrigem';
-import truncate from '@/helpers/truncate';
+import truncate from '@/helpers/texto/truncate';
 import { router } from '@/router';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAtividadesStore } from '@/stores/atividades.store';
@@ -392,7 +392,7 @@ function filterResponsible(orgao_id) {
         ><use xlink:href="#i_+" /></svg> <span>Adicionar orgão participante</span></a>
       </template>
 
-      <fieldset v-if="$route.meta.entidadeMãe === 'planoSetorial'">
+      <fieldset v-if="['planoSetorial', 'programaDeMetas'].includes($route.meta.entidadeMãe)">
         <label class="label">Órgãos responsáveis</label>
         <div
           class="flex flexwrap g2 mb1"
@@ -431,9 +431,9 @@ function filterResponsible(orgao_id) {
         </div>
       </fieldset>
 
-      <fieldset v-if="$route.meta.entidadeMãe === 'planoSetorial'">
+      <fieldset v-if="['planoSetorial', 'programaDeMetas'].includes($route.meta.entidadeMãe)">
         <legend class="label">
-          Equipe Técnica de Administração do Plano
+          Equipe Técnica de Monitoramento
         </legend>
 
         <div>

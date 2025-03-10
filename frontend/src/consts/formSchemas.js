@@ -1,18 +1,4 @@
 /* eslint-disable no-template-curly-in-string */
-import {
-  addMethod,
-  array,
-  boolean,
-  date,
-  lazy,
-  mixed,
-  number,
-  object,
-  ref,
-  setLocale,
-  string,
-} from 'yup';
-import { isBefore, isAfter } from 'date-fns';
 import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import categoriaDeTransferencia from '@/consts/categoriaDeTransferencia';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
@@ -34,6 +20,21 @@ import tiposDeOrigens from '@/consts/tiposDeOrigens';
 import tiposNaEquipeDeParlamentar from '@/consts/tiposNaEquipeDeParlamentar';
 import tiposSituacaoSchema from '@/consts/tiposSituacaoSchema';
 import fieldToDate from '@/helpers/fieldToDate';
+import haDuplicatasNaLista from '@/helpers/haDuplicatasNaLista';
+import { isAfter, isBefore } from 'date-fns';
+import {
+  addMethod,
+  array,
+  boolean,
+  date,
+  lazy,
+  mixed,
+  number,
+  object,
+  ref,
+  setLocale,
+  string,
+} from 'yup';
 import tiposStatusDistribuicao from './tiposStatusDistribuicao';
 
 const dataMin = import.meta.env.VITE_DATA_MIN ? new Date(`${import.meta.env.VITE_DATA_MIN}`) : new Date('1900-01-01T00:00:00Z');
@@ -77,7 +78,14 @@ addMethod(string, 'nullableOuVazio', function _() {
 addMethod(date, 'nullableOuVazio', function _() {
   return this
     .nullable()
-    .transform((v) => (v === '' ? null : v));
+    .transform((v) => {
+      try {
+        v.toISOString();
+        return v;
+      } catch (e) {
+        return null;
+      }
+    });
 });
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -107,6 +115,16 @@ addMethod(mixed, 'inArray', function _(arrayToCompare, message = '${path} não e
     test(value) {
       return (this.resolve(arrayToCompare) || []).includes(value);
     },
+  });
+});
+
+addMethod(mixed, 'semDuplicatas', function semDuplicatas(message = '${path} não pode ter valores repetidos', params = {}) {
+  return this.test('semDuplicatas', message, function semDuplicatasTeste(value) {
+    const { path, createError } = this;
+
+    return haDuplicatasNaLista(value, params)
+      ? createError({ path, message })
+      : true;
   });
 });
 
@@ -152,6 +170,8 @@ setLocale({
 });
 
 // https://github.com/jquense/yup/issues/384#issuecomment-442958997
+
+const direcaoOpcoes = ['asc', 'desc', null];
 
 export const acompanhamento = object()
   .shape({
@@ -954,7 +974,7 @@ export const equipes = object({
     .nullable(),
   participantes: array()
     .label('Participantes alocados à equipe')
-    .required('Participantes inválidos'),
+    .nullable('Participantes inválidos'),
   perfil: mixed()
     .label('Tipo de equipe')
     .oneOf(Object.keys(tipoDePerfil))
@@ -1157,7 +1177,7 @@ export const obras = object({
   atividade_id: number()
     .nullable(),
   colaboradores_no_orgao: array()
-    .label('Ponto focal colaborador')
+    .label('Órgãos Colaboradores')
     .of(
       number()
         .min(1),
@@ -1919,6 +1939,19 @@ export const parlamentar = object({
     ),
 });
 
+export const permissaoEdicaoOrcamento = object().shape({
+  execucao_disponivel_meses: array().label('Meses disponíveis'),
+  orcamento_config: array().of(object().shape({
+    ano_referencia: number(),
+    execucao_disponivel_meses: array().label('Meses disponíveis'),
+    execucao_disponivel: boolean().label('Execução orçamentaria'),
+    id: number(),
+    pdm_id: number(),
+    planejado_disponivel: boolean().label('Orçamento planejado'),
+    previsao_custo_disponivel: boolean().label('Previsão de custo'),
+  })),
+});
+
 export const pessoaNaEquipeDeParlamentar = object({
   email: string()
     .email()
@@ -2644,6 +2677,48 @@ export const projeto = object()
       .max(20),
   });
 
+export const projetoFiltro = object().shape({
+  ipp: number()
+    .label('Itens por página')
+    .nullableOuVazio(),
+  nome: string()
+    .label('Nome')
+    .nullableOuVazio(),
+  ordem_coluna: string()
+    .label('Ordenar por')
+    .nullableOuVazio(),
+  ordem_direcao: string()
+    .label('Direção')
+    .oneOf(direcaoOpcoes)
+    .nullableOuVazio(),
+  orgao_responsavel_id: number()
+    .label('Órgão responsável')
+    .nullableOuVazio(),
+  palavra_chave: string()
+    .label('Palavra chave')
+    .nullableOuVazio(),
+  portfolio_id: number()
+    .label('Portfólio')
+    .nullableOuVazio(),
+  previsao_custo: string()
+    .label('Custo planejado'),
+  previsao_termino: string()
+    .label('Término planejado'),
+  projeto_etapa_id: number()
+    .label('Etapa')
+    .nullableOuVazio(),
+  registrado_em: date()
+    .label('data de registro')
+    .max(new Date())
+    .nullableOuVazio(),
+  revisado: boolean()
+    .label('Revisado')
+    .nullableOuVazio(),
+  status: string()
+    .label('Status')
+    .nullableOuVazio(),
+});
+
 export const região = object()
   .shape({
     descricao: string()
@@ -2685,9 +2760,17 @@ export const relatorioOrcamentarioPlanoSetorial = relatorioPlanoSetorialBase.sha
   },
 );
 
-export const relatórioDeAtividadesPendentes = object({
-  fonte: string()
-    .required(),
+const relatorioValidacaoBase = object()
+  .shape({
+    eh_publico: boolean()
+      .label('Relatório Público')
+      .nullable()
+      .required(),
+    fonte: string()
+      .required(),
+  });
+
+export const relatórioDeAtividadesPendentes = relatorioValidacaoBase.concat(object({
   parametros: object({
     partido_id: number()
       .label('Partido')
@@ -2706,12 +2789,9 @@ export const relatórioDeAtividadesPendentes = object({
       .nullable()
       .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
   }),
-  salvar_arquivo: boolean(),
-});
+}));
 
-export const relatórioDeParlamentares = object({
-  fonte: string()
-    .required(),
+export const relatórioDeParlamentares = relatorioValidacaoBase.concat(object({
   parametros: object({
     partido_id: number()
       .label('Partido')
@@ -2730,13 +2810,10 @@ export const relatórioDeParlamentares = object({
       .nullable()
       .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
   }),
-  salvar_arquivo: boolean(),
-});
+}));
 
-export const relatórioDePrevisãoDeCustoPdM = object()
-  .shape({
-    fonte: string()
-      .required(),
+export const relatórioDePrevisãoDeCustoPdM = relatorioValidacaoBase.concat(
+  object({
     parametros: object({
       atividade_id: string()
         .label('Atividade')
@@ -2759,10 +2836,10 @@ export const relatórioDePrevisãoDeCustoPdM = object()
         .label('Tags')
         .nullable(),
     }),
-    salvar_arquivo: boolean(),
-  });
+  }),
+);
 
-export const relatórioDePrevisãoDeCustoPlanosSetoriais = object()
+export const relatórioDePrevisãoDeCustoPlanosSetoriais = relatorioValidacaoBase.concat(object()
   .shape({
     fonte: string()
       .required(),
@@ -2788,13 +2865,10 @@ export const relatórioDePrevisãoDeCustoPlanosSetoriais = object()
         .label('Tags')
         .nullable(),
     }),
-    salvar_arquivo: boolean(),
-  });
+  }));
 
-export const relatórioDePrevisãoDeCustoPortfolio = object()
-  .shape({
-    fonte: string()
-      .required(),
+export const relatórioDePrevisãoDeCustoPortfolio = relatorioValidacaoBase.concat(
+  object({
     parametros: object({
       portfolio_id: number()
         .label('Portfólio')
@@ -2812,12 +2886,10 @@ export const relatórioDePrevisãoDeCustoPortfolio = object()
         .max(endYear, `\${label} não pode ser maior do que ${endYear}`)
         .required(),
     }),
-    salvar_arquivo: boolean(),
-  });
+  }),
+);
 
-export const relatórioDeProjeto = object({
-  fonte: string()
-    .required(),
+export const relatórioDeProjeto = relatorioValidacaoBase.concat(object({
   parametros: object({
     portfolio_id: number()
       .label('Portfólio')
@@ -2830,12 +2902,9 @@ export const relatórioDeProjeto = object({
       .required()
       .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
   }),
-  salvar_arquivo: boolean(),
-});
+}));
 
-export const relatórioDeStatus = object({
-  fonte: string()
-    .required(),
+export const relatórioDeStatus = relatorioValidacaoBase.concat(object({
   parametros: object({
     periodo_inicio: date()
       .label('Início do período')
@@ -2858,12 +2927,9 @@ export const relatórioDeStatus = object({
       .nullable()
       .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
   }),
-  salvar_arquivo: boolean(),
-});
+}));
 
-export const relatórioDeStatusObra = object({
-  fonte: string()
-    .required(),
+export const relatórioDeStatusObra = relatorioValidacaoBase.concat(object({
   parametros: object({
     periodo_inicio: date()
       .label('Início do período')
@@ -2886,12 +2952,9 @@ export const relatórioDeStatusObra = object({
       .nullable()
       .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
   }),
-  salvar_arquivo: boolean(),
-});
+}));
 
-export const relatórioDePortfolio = object({
-  fonte: string()
-    .required(),
+export const relatórioDePortfolio = relatorioValidacaoBase.concat(object({
   parametros: object({
     orgao_responsavel_id: number()
       .min(0)
@@ -2917,12 +2980,9 @@ export const relatórioDePortfolio = object({
         null,
       ]),
   }),
-  salvar_arquivo: boolean(),
-});
+}));
 
-export const relatórioDePortfolioObras = object({
-  fonte: string()
-    .required(),
+export const relatórioDePortfolioObras = relatorioValidacaoBase.concat(object({
   parametros: object({
     orgao_responsavel_id: number()
       .min(0)
@@ -2948,13 +3008,10 @@ export const relatórioDePortfolioObras = object({
       .nullable()
       .transform((v) => (!v ? null : v)),
   }),
-  salvar_arquivo: boolean(),
-});
+}));
 
-export const relatórioDePrevisãoDeCustoPortfolioObras = object()
-  .shape({
-    fonte: string()
-      .required(),
+export const relatórioDePrevisãoDeCustoPortfolioObras = relatorioValidacaoBase.concat(
+  object({
     parametros: object({
       portfolio_id: number()
         .label('Portfólio')
@@ -2972,12 +3029,10 @@ export const relatórioDePrevisãoDeCustoPortfolioObras = object()
         .max(endYear, `\${label} não pode ser maior do que ${endYear}`)
         .required(),
     }),
-    salvar_arquivo: boolean(),
-  });
+  }),
+);
 
-export const relatórioDeTransferênciasVoluntárias = object({
-  fonte: string()
-    .required(),
+export const relatórioDeTransferênciasVoluntárias = relatorioValidacaoBase.concat(object({
   parametros: object({
     ano: number()
       .label('Ano')
@@ -3028,12 +3083,9 @@ export const relatórioDeTransferênciasVoluntárias = object({
       ])
       .required('Escolha o tipo'),
   }),
-  salvar_arquivo: boolean(),
-});
+}));
 
-export const relatórioDeTribunalDeContas = object({
-  fonte: string()
-    .required(),
+export const relatórioDeTribunalDeContas = relatorioValidacaoBase.concat(object({
   parametros: object({
     ano_inicio: number()
       .label('Ano Início')
@@ -3060,12 +3112,9 @@ export const relatórioDeTribunalDeContas = object({
       ])
       .required('Escolha o tipo'),
   }),
-  salvar_arquivo: boolean(),
-});
+}));
 
-export const relatórioAtividadesPendentes = object({
-  fonte: string()
-    .required(),
+export const relatórioAtividadesPendentes = relatorioValidacaoBase.concat(object({
   parametros: object({
     esfera: mixed()
       .label('Esfera')
@@ -3086,8 +3135,7 @@ export const relatórioAtividadesPendentes = object({
       .label('Data de término previsto')
       .transform((v) => (v === '' ? null : v)),
   }),
-  salvar_arquivo: boolean(),
-});
+}));
 
 export const relatórioMensal = object({
   fonte: string()
@@ -3115,15 +3163,16 @@ export const relatórioMensal = object({
       .label('Painéis')
       .nullable(),
   }),
-  salvar_arquivo: boolean(),
+  eh_publico: boolean()
+    .label('Relatório Público')
+    .required(),
 });
 
-export const relatórioMensalPS = object({
-  fonte: string()
-    .required(),
+export const relatórioMensalPS = relatorioValidacaoBase.concat(object({
   parametros: object({
-    plano_setorial_id: string()
-      .label('Plano setorial')
+    pdm_id: string()
+      .label('PdM/Plano setorial')
+      .nullable()
       .required(),
     meta: array()
       .label('Metas')
@@ -3143,13 +3192,9 @@ export const relatórioMensalPS = object({
     listar_variaveis_regionalizadas: boolean()
       .label('Listar variáveis regionalizadas em todos os níveis'),
   }),
-  salvar_arquivo: boolean(),
-});
+}));
 
-export const relatórioOrçamentárioPdM = object({
-  fonte: string()
-    .required(),
-  salvar_arquivo: boolean(),
+export const relatórioOrçamentárioPdM = relatorioValidacaoBase.concat(object({
   parametros: object({
     pdm_id: string()
       .required('Escolha um PdM'),
@@ -3167,12 +3212,9 @@ export const relatórioOrçamentárioPdM = object({
       ])
       .required('Escolha o tipo'),
   }),
-});
+}));
 
-export const relatórioOrçamentárioPlanosSetoriais = object({
-  fonte: string()
-    .required(),
-  salvar_arquivo: boolean(),
+export const relatórioOrçamentárioPlanosSetoriais = relatorioValidacaoBase.concat(object({
   parametros: object({
     pdm_id: string()
       .label('Plano Setorial')
@@ -3191,12 +3233,9 @@ export const relatórioOrçamentárioPlanosSetoriais = object({
       ])
       .required('Escolha o tipo'),
   }),
-});
+}));
 
-export const relatórioOrçamentárioPortfolio = object({
-  fonte: string()
-    .required(),
-  salvar_arquivo: boolean(),
+export const relatórioOrçamentárioPortfolio = relatorioValidacaoBase.concat(object({
   parametros: object({
     portfolio_id: number()
       .label('Portfólio')
@@ -3219,12 +3258,9 @@ export const relatórioOrçamentárioPortfolio = object({
       ])
       .required(),
   }),
-});
+}));
 
-export const relatóriosOrçamentáriosPortfolioObras = object({
-  fonte: string()
-    .required(),
-  salvar_arquivo: boolean(),
+export const relatóriosOrçamentáriosPortfolioObras = relatorioValidacaoBase.concat(object({
   parametros: object({
     portfolio_id: number()
       .label('Portfólio')
@@ -3247,11 +3283,9 @@ export const relatóriosOrçamentáriosPortfolioObras = object({
       ])
       .required(),
   }),
-});
+}));
 
-export const relatórioSemestralOuAnual = object({
-  fonte: string()
-    .required(),
+export const relatórioSemestralOuAnual = relatorioValidacaoBase.concat(object({
   parametros: object({
     ano: number()
       .min(2003, 'A partir de 2003')
@@ -3275,8 +3309,7 @@ export const relatórioSemestralOuAnual = object({
       ])
       .required('Escolha o tipo'),
   }),
-  salvar_arquivo: boolean(),
-});
+}));
 
 export const representatividade = object()
   .shape({
@@ -3653,6 +3686,8 @@ export const usuário = object()
       .required('Preencha o e-mail')
       .email('E-mail inválido'),
     grupos: array(),
+    modulos_permitidos: array(),
+    sobreescrever_modulos: boolean(),
     lotacao: string()
       .label('Lotação')
       .required('Preencha a lotação'),

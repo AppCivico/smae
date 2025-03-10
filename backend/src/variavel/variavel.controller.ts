@@ -131,8 +131,9 @@ export class IndicadorVariavelPDMController {
 export const ROLES_ACESSO_VARIAVEL_PS: ListaDePrivilegios[] = [
     'CadastroVariavelGlobal.administrador_no_orgao',
     'CadastroMetaPS.listar',
+    'CadastroMetaPDM.listar',
     'CadastroVariavelGlobal.administrador',
-    ...ROLES_ACESSO_VARIAVEL_PDM,
+    'SMAE.GrupoVariavel.participante',
 ];
 
 @ApiTags('Variável Global')
@@ -142,6 +143,7 @@ export class VariavelGlobalController {
     public static WritePerm: ListaDePrivilegios[] = [
         'CadastroVariavelGlobal.administrador_no_orgao',
         'CadastroVariavelGlobal.administrador',
+        // NOTA: 2025-01-23: continuo achanando errado a escrita para participante
         'SMAE.GrupoVariavel.participante', // ʕ•ᴥ•ʔ
     ];
 

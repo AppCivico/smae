@@ -2,8 +2,7 @@
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import SimpleIndicador from '@/components/metas/SimpleIndicador.vue';
 import TagsDeMetas from '@/components/metas/TagsDeMetas.vue';
-import PlanosMetasRelacionados from '@/components/PlanosMetasRelacionados.vue';
-import statusObras from '@/consts/statusObras';
+import RelacionamentosComOutrosCompromissos from '@/components/RelacionamentosComOutrosCompromissos.vue';
 import combinadorDeListas from '@/helpers/combinadorDeListas.ts';
 import rolarTelaPara from '@/helpers/rolarTelaPara.ts';
 import { useAlertStore } from '@/stores/alert.store';
@@ -15,6 +14,7 @@ import { storeToRefs } from 'pinia';
 import { nextTick } from 'vue';
 import { useRoute } from 'vue-router';
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
+import { computed } from 'vue'
 
 defineOptions({
   inheritAttrs: false,
@@ -35,6 +35,30 @@ const IniciativasStore = useIniciativasStore();
 const { Iniciativas } = storeToRefs(IniciativasStore);
 const EquipesStore = useEquipesStore();
 
+const orgaosEquipeMeta = computed(() => {
+  if (singleMeta.value?.ps_ponto_focal?.equipes.length === 0) {
+    return null;
+  }
+  const equipesSelecionadasMeta = EquipesStore.equipesPorIds(singleMeta.value?.ps_ponto_focal?.equipes);
+  const orgaoMeta = equipesSelecionadasMeta.reduce((amount, item) => {
+    amount.push(item.orgao.sigla + " - " + item.orgao.descricao);
+    return amount;
+  }, []);
+  return combinadorDeListas(orgaoMeta);
+});
+
+const orgaosEquipeMetaMonitoramento = computed(() => {
+  if (singleMeta.value?.ps_tecnico_cp?.equipes.length === 0) {
+    return null;
+  }
+  const equipesSelecionadasMetaMonitoramento = EquipesStore.equipesPorIds(singleMeta.value?.ps_tecnico_cp?.equipes);
+  const orgaoMetaMonitoramento = equipesSelecionadasMetaMonitoramento.reduce((amount, item) => {
+    amount.push(item.orgao.sigla + " - " + item.orgao.descricao);
+    return amount;
+  }, []);
+  return combinadorDeListas(orgaoMetaMonitoramento);
+});
+
 async function iniciar() {
   const promessas = [];
 
@@ -52,12 +76,6 @@ async function iniciar() {
 
   if (promessas.length) {
     await Promise.allSettled(promessas);
-  }
-
-  if (metaId && activePdm.value.id) {
-    MetasStore.getRelacionados({
-      metaId, pdm_id: activePdm.value.id,
-    });
   }
 
   nextTick().then(() => {
@@ -101,10 +119,7 @@ iniciar();
       </div>
       <hr class="ml2 f1">
       <SmaeLink
-        v-if="temPermissãoPara([
-          'CadastroMeta.administrador_no_pdm',
-          'CadastroMetaPS.administrador_no_pdm'
-        ]) && activePdm?.pode_editar"
+        v-if="singleMeta?.pode_editar"
         :to="`/metas/editar/${singleMeta.id}`"
         class="btn big ml2"
       >
@@ -149,36 +164,102 @@ iniciar();
             </div>
           </div>
         </div>
+
         <hr class="mt2 mb2">
-        <div class="flex g2">
+
+        <div
+          v-if="route.meta.entidadeMãe === 'pdm'"
+          class="flex g2 mb2"
+        >
           <div
-            v-if="EquipesStore.equipesPorIds(singleMeta.ps_ponto_focal.equipes).length"
+            v-if="singleMeta.orgaos_participantes.filter(x => x.responsavel)"
             class="mr2 f1"
           >
             <div class="t12 uc w700 mb05 tamarelo">
-              Equipes Responsáveis
+              Órgão responsável
             </div>
             <div class="t13">
-              {{ combinadorDeListas(
-                EquipesStore.equipesPorIds(singleMeta.ps_ponto_focal.equipes),
-                false,
-                'titulo',
-              ) }}
+              {{ singleMeta.orgaos_participantes.filter((x) =>
+                x.responsavel).map(x => x.orgao.descricao).join(', ') }}
             </div>
           </div>
           <div
-            v-if="EquipesStore.equipesPorIds(singleMeta.ps_tecnico_cp.equipes).length"
+            v-if="singleMeta.orgaos_participantes.filter(x => !x.responsavel).length"
             class="mr2 f1"
           >
             <div class="t12 uc w700 mb05 tamarelo">
-              Equipe técnica do administrador do plano
+              Órgão participante
             </div>
             <div class="t13">
-              {{ combinadorDeListas(
-                EquipesStore.equipesPorIds(singleMeta.ps_tecnico_cp.equipes),
-                false,
-                'titulo',
-              ) }}
+              {{
+                singleMeta.orgaos_participantes
+                  .filter(x => !x.responsavel).map(x => x.orgao.descricao).join(', ')
+              }}
+            </div>
+          </div>
+          <div
+            v-if="singleMeta.coordenadores_cp"
+            class="mr2 f1"
+          >
+            <div class="t12 uc w700 mb05 tamarelo">
+              Responsável na coordenadoria de planejamento
+            </div>
+            <div class="t13">
+              {{ singleMeta.coordenadores_cp.map(x => x.nome_exibicao).join(', ') }}
+            </div>
+          </div>
+        </div>
+        <div
+          v-else
+        >
+          <div class="flex g2 mb2">
+            <div class="mr2 f1">
+              <div class="t12 uc w700 mb05 tamarelo">
+                Órgãos Responsáveis
+              </div>
+              <div class="t13">            
+                {{orgaosEquipeMeta}}
+              </div>
+            </div>
+            <div class="mr2 f1">
+              <div class="t12 uc w700 mb05 tamarelo">
+                Órgãos Monitoramento
+              </div>
+              <div class="t13">            
+                {{orgaosEquipeMetaMonitoramento}}
+              </div>
+            </div>
+          </div>
+          <div class="flex g2 mb2">
+            <div
+              v-if="EquipesStore.equipesPorIds(singleMeta.ps_ponto_focal.equipes).length"
+              class="mr2 f1"
+            >
+              <div class="t12 uc w700 mb05 tamarelo">
+                Equipes Responsáveis
+              </div>
+              <div class="t13">
+                {{ combinadorDeListas(
+                  EquipesStore.equipesPorIds(singleMeta.ps_ponto_focal.equipes),
+                  false,
+                  'titulo',
+                ) }}
+              </div>
+            </div>
+            <div
+              v-if="EquipesStore.equipesPorIds(singleMeta.ps_tecnico_cp.equipes).length"
+              class="mr2 f1"
+            >
+              <div class="t12 uc w700 mb05 tamarelo">
+                Equipe técnica de monitoramento
+              </div>
+              <div class="t13">
+                {{ combinadorDeListas(
+                  EquipesStore.equipesPorIds(singleMeta.ps_tecnico_cp.equipes),
+                  false,
+                  'titulo',
+                ) }}
+              </div>
             </div>
           </div>
         </div>
@@ -223,7 +304,8 @@ iniciar();
             <SmaeLink
               v-if="temPermissãoPara([
                 'CadastroMeta.administrador_no_pdm',
-                'CadastroMetaPS.administrador_no_pdm'
+                'CadastroMetaPS.administrador_no_pdm',
+                'CadastroMetaPDM.administrador_no_pdm'
               ])
                 && activePdm.possui_iniciativa
                 && activePdm?.pode_editar"
@@ -234,16 +316,15 @@ iniciar();
             </SmaeLink>
           </div>
 
-          <template
-            v-if="Array.isArray(Iniciativas[metaId])"
-          >
+          <template v-if="Array.isArray(Iniciativas[metaId])">
             <div
               v-for="ini in Iniciativas[metaId]"
               :id="`iniciativa__${ini.id}`"
               :key="ini.id"
               class="board_variavel mb2"
             >
-              <header class="p1">
+              <header class="p1 ge mb1">
+                <!-- Cabeçalho -->
                 <div class="flex center g2 mb1">
                   <SmaeLink
                     :to="`${parentlink}/iniciativas/${ini.id}`"
@@ -256,21 +337,26 @@ iniciar();
                       viewBox="0 0 32 38"
                       color="#8EC122"
                       xmlns="http://www.w3.org/2000/svg"
-                    ><use xlink:href="#i_iniciativa" /></svg>
+                    >
+                      <use xlink:href="#i_iniciativa" />
+                    </svg>
                   </SmaeLink>
                   <SmaeLink
                     :to="`${parentlink}/iniciativas/${ini.id}`"
                     class="f1 mt1"
                   >
                     <h2 class="mb1">
-                      {{ ini.titulo }}
+                      {{ ini.codigo }} - {{ ini.titulo }}
                     </h2>
                   </SmaeLink>
+
                   <div
                     v-if="temPermissãoPara([
                       'CadastroMeta.administrador_no_pdm',
-                      'CadastroMetaPS.administrador_no_pdm'
-                    ])"
+                      'CadastroMetaPS.administrador_no_pdm',
+                      'CadastroMetaPDM.administrador_no_pdm',
+                      'SMAE.GrupoVariavel.participante',
+                    ]) && singleMeta?.pode_editar"
                     class="f0 flex g1"
                   >
                     <SmaeLink
@@ -280,7 +366,9 @@ iniciar();
                       <svg
                         width="20"
                         height="20"
-                      ><use xlink:href="#i_edit" /></svg>
+                      >
+                        <use xlink:href="#i_edit" />
+                      </svg>
                     </SmaeLink>
                     <button
                       class="like-a__text"
@@ -291,38 +379,128 @@ iniciar();
                       <svg
                         width="20"
                         height="20"
-                      ><use xlink:href="#i_waste" /></svg>
+                      >
+                        <use xlink:href="#i_waste" />
+                      </svg>
                     </button>
                   </div>
                 </div>
-                <div class="f1 ml2">
-                  <div class="flex g2 ml2">
+                <!-- Fim cabeçalho -->
+                <!-- Se for PDM antigo -->
+                <div v-if="route.meta.entidadeMãe === 'pdm'">        
+                  <div class="flex g2 mb2">
                     <div class="mr1 f0">
                       <div class="t12 uc w700 mb05 tc300">
-                        Código
+                        Órgão responsável
                       </div>
                       <div class="t13">
-                        {{ ini.codigo }}
+                        {{ ini.orgaos_participantes.filter((x) =>
+                          x.responsavel).map(x => x.orgao.descricao).join(', ') }}
                       </div>
                     </div>
-                    <div class="mr1 f1">
+              
+                    <div
+                      v-if="ini.orgaos_participantes.filter(x => !x.responsavel).length"
+                      class="f1"
+                    >
                       <div class="t12 uc w700 mb05 tc300">
                         Órgão participante
                       </div>
                       <div class="t13">
-                        {{ ini?.orgaos_participantes?.map(x => x.orgao.descricao).join(', ') }}
+                        {{
+                          ini.orgaos_participantes
+                            .filter(x => !x.responsavel).map(x => x.orgao.descricao).join(', ')
+                        }}
                       </div>
                     </div>
-                    <div class="f1">
+                    <div
+                      v-if="ini.coordenadores_cp"
+                      class="f1"
+                    >
                       <div class="t12 uc w700 mb05 tc300">
                         Responsável na coordenadoria de planejamento
                       </div>
                       <div class="t13">
-                        {{ ini?.coordenadores_cp?.map(x => x.nome_exibicao).join(', ') }}
+                        {{ ini.coordenadores_cp.map(x => x.nome_exibicao).join(', ') }}
                       </div>
                     </div>
                   </div>
                 </div>
+                <!-- Fim do se for PDM antigo -->
+                <!-- Se for PDM novo -->
+                <div v-else>
+                  <!-- Órgãos-->
+                  <div class="flex g2 mb2">
+                    <!-- Responsável -->
+                    <div class="mr2 f1">
+                      <div class="t12 uc w700 mb05 tc300">
+                        Órgãos Responsáveis
+                      </div>
+                      <div class="t13">
+                        {{
+                          combinadorDeListas(
+                            orgaoIniciativa = EquipesStore.equipesPorIds(ini.ps_ponto_focal.equipes).reduce((amount, item) => {
+                              amount.push(item.orgao.sigla + " - " + item.orgao.descricao);
+                              return amount;
+                            }, []))
+                        }}     
+                      </div>
+                    </div>
+                    <!-- Monitoramento -->
+                    <div class="mr2 f1">
+                      <div class="t12 uc w700 mb05 tc300">
+                        Órgãos Monitoramento
+                      </div>
+                      <div class="t13">
+                        {{
+                          combinadorDeListas(
+                            orgaoIniciativa = EquipesStore.equipesPorIds(ini.ps_tecnico_cp.equipes).reduce((amount, item) => {
+                              amount.push(item.orgao.sigla + " - " + item.orgao.descricao);
+                              return amount;
+                            }, []))
+                        }}     
+                      </div>
+                    </div>
+                  </div>
+                  <!-- Fim órgãos -->
+                  <!-- Equipes -->
+                  <div class="flex g2 mb2">
+                    <!-- Responsável -->
+                    <div class="mr2 f1">
+                      <div class="t12 uc w700 mb05 tc300">
+                        Equipe do órgão responsável
+                      </div>
+                      <div class="t13">
+                        {{
+                          ini.ps_ponto_focal.equipes.length === 0
+                            ? '-' :
+                              combinadorDeListas(
+                                EquipesStore.equipesPorIds(ini.ps_ponto_focal.equipes),
+                                false,
+                                'titulo',
+                              ) }}
+                      </div>
+                    </div>
+                    <!-- Técnica -->
+                    <div class="mr2 f1">
+                      <div class="t12 uc w700 mb05 tc300">
+                        Equipe técnica monitoramento
+                      </div>
+                      <div class="t13">
+                        {{
+                          ini.ps_tecnico_cp.equipes.length === 0
+                            ? '-' :
+                              combinadorDeListas(
+                                EquipesStore.equipesPorIds(ini.ps_tecnico_cp.equipes),
+                                false,
+                                'titulo',
+                              ) }}
+                      </div>
+                    </div>
+                  </div>
+                  <!-- Fim de equipes -->
+                </div>
+                <!-- Fim do se for PDM novo -->
               </header>
             </div>
           </template>
@@ -337,7 +515,9 @@ iniciar();
                   class="ml1 ib"
                   width="20"
                   height="20"
-                ><use xlink:href="#i_spin" /></svg>
+                >
+                  <use xlink:href="#i_spin" />
+                </svg>
               </div>
             </div>
           </div>
@@ -347,120 +527,12 @@ iniciar();
           >
             {{ Iniciativas[metaId]?.error }}
           </ErrorComponent>
-
-          <div
-            v-if="relacionadosMeta?.projetos?.length"
-            class="mt2 mb2"
-          >
-            <div class="flex spacebetween center mt4 mb2">
-              <h2 class="mb0">
-                Projetos associados
-              </h2>
-              <hr class="ml2 f1">
-            </div>
-
-            <table class="tablemain">
-              <col>
-              <col>
-              <col>
-              <col>
-              <thead>
-                <th>Portfólio </th>
-                <th>Código</th>
-                <th> Nome </th>
-                <th>Etapa</th>
-              </thead>
-              <tbody>
-                <tr
-                  v-for="(projeto, index) in relacionadosMeta.projetos"
-                  :key="index"
-                >
-                  <td>
-                    {{ projeto.portfolio?.titulo || '-' }}
-                  </td>
-                  <td>
-                    {{ projeto.codigo || '-' }}
-                  </td>
-                  <td>
-                    {{ projeto.nome || '-' }}
-                  </td>
-                  <td>
-                    {{ projeto.projeto_etapa?.descricao || '-' }}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div
-            v-if="relacionadosMeta?.obras?.length"
-            class="mt2 mb2"
-          >
-            <div class="flex spacebetween center mt4 mb2">
-              <h2 class="mb0">
-                Obras associadas
-              </h2>
-              <hr class="ml2 f1">
-            </div>
-            <table class="tablemain">
-              <col>
-              <col>
-              <col>
-              <col>
-              <col>
-              <col>
-              <col>
-              <thead>
-                <th>
-                  Código da obra
-                </th>
-                <th>Nome</th>
-                <th>
-                  Tipo obra/intervenção
-                </th>
-                <th>
-                  Subprefeitura
-                </th>
-                <th>
-                  Equipamento
-                </th>
-                <th>
-                  Status
-                </th>
-                <th>
-                  Percentual concluído
-                </th>
-              </thead>
-              <tbody>
-                <tr
-                  v-for="(obra, index) in relacionadosMeta.obras"
-                  :key="index"
-                >
-                  <td>{{ obra.codigo }}</td>
-                  <td>
-                    {{ obra.nome }}
-                  </td>
-                  <td>
-                    {{ obra.tipo_intervencao?.nome || '-' }}
-                  </td>
-                  <td>
-                    {{ obra.subprefeituras?.map(x => x.descricao).join(', ') || '-' }}
-                  </td>
-                  <td>
-                    {{ obra.equipamento?.nome || '-' }}
-                  </td>
-                  <td>
-                    {{ statusObras[obra.status]?.nome || '-' }}
-                  </td>
-                  <td>
-                    {{ obra.percentual_concluido || '-' }}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
         </template>
-        <PlanosMetasRelacionados :relacionamentos="relacionadosMeta?.metas || []" />
+
+        <RelacionamentosComOutrosCompromissos
+          :pdm-id="activePdm.id"
+          :meta-id="metaId"
+        />
       </template>
       <template v-else-if="singleMeta?.loading">
         <div class="p1">
@@ -468,7 +540,9 @@ iniciar();
             class="ml1 ib"
             width="20"
             height="20"
-          ><use xlink:href="#i_spin" /></svg>
+          >
+            <use xlink:href="#i_spin" />
+          </svg>
         </div>
       </template>
       <template v-else-if="singleMeta.error">

@@ -1,6 +1,8 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
+import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { PdmCreateOrcamentoExecutadoDto } from './dto/create-orcamento-executado.dto';
 import { ListOrcamentoExecutadoDto } from './entities/orcamento-executado.entity';
 import { OrcamentoService } from './orcamento.service';
@@ -14,9 +16,10 @@ export class OrcamentoController {
     @ApiBearerAuth('access-token')
     @Roles(['Reports.executar.PDM'])
     async create(
-        @Body() createOrcamentoExecutadoDto: PdmCreateOrcamentoExecutadoDto
+        @Body() createOrcamentoExecutadoDto: PdmCreateOrcamentoExecutadoDto,
+        @CurrentUser() user: PessoaFromJwt
     ): Promise<ListOrcamentoExecutadoDto> {
-        return await this.orcamentoExecutadoService.asJSON(createOrcamentoExecutadoDto);
+        return await this.orcamentoExecutadoService.asJSON(createOrcamentoExecutadoDto, user);
     }
 }
 
@@ -29,8 +32,9 @@ export class PSOrcamentoController {
     @ApiBearerAuth('access-token')
     @Roles(['Reports.executar.PlanoSetorial'])
     async create(
-        @Body() createOrcamentoExecutadoDto: PdmCreateOrcamentoExecutadoDto
+        @Body() createOrcamentoExecutadoDto: PdmCreateOrcamentoExecutadoDto,
+        @CurrentUser() user: PessoaFromJwt
     ): Promise<ListOrcamentoExecutadoDto> {
-        return await this.orcamentoExecutadoService.asJSON(createOrcamentoExecutadoDto);
+        return await this.orcamentoExecutadoService.asJSON(createOrcamentoExecutadoDto, user);
     }
 }

@@ -5,6 +5,7 @@ import { IdSigla, IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 import { ParlamnetarIdNomes } from 'src/parlamentar/entities/parlamentar.entity';
 import { SeiIntegracaoDto } from '../../../sei-integracao/entities/sei-entidade.entity';
 import { IsBoolean, IsString, MaxLength } from 'class-validator';
+import { IsDateYMD } from '../../../auth/decorators/date.decorator';
 
 export class DistribuicaoRecursoDto {
     id: number;
@@ -16,21 +17,30 @@ export class DistribuicaoRecursoDto {
     valor_total: Decimal;
     valor_contrapartida: Decimal;
     custeio: Decimal;
+    pct_custeio: number | null;
     investimento: Decimal;
+    pct_investimento: number | null;
     empenho: Boolean | null;
-    data_empenho: Date | null;
+    @IsDateYMD({ nullable: true })
+    data_empenho: string | null;
     programa_orcamentario_estadual: String | null;
     programa_orcamentario_municipal: String | null;
     dotacao: String | null;
     proposta: String | null;
     contrato: String | null;
     convenio: String | null;
-    assinatura_termo_aceite: Date | null;
-    assinatura_municipio: Date | null;
-    assinatura_estado: Date | null;
-    vigencia: Date | null;
+    @IsDateYMD({ nullable: true })
+    assinatura_termo_aceite: string | null;
+    @IsDateYMD({ nullable: true })
+    assinatura_municipio: string | null;
+    @IsDateYMD({ nullable: true })
+    assinatura_estado: string | null;
+    @IsDateYMD({ nullable: true })
+    vigencia: string | null;
+
     aditamentos: AditamentosDto[];
-    conclusao_suspensiva: Date | null;
+    @IsDateYMD({ nullable: true })
+    conclusao_suspensiva: string | null;
     registros_sei: DistribuicaoRecursoSeiDto[] | null;
     pode_registrar_status: boolean;
     historico_status: DistribuicaoHistoricoStatusDto[];
@@ -57,8 +67,10 @@ export class DistribuicaoRecursoDetailDto extends DistribuicaoRecursoDto {
 }
 
 export class AditamentosDto {
-    data_vigencia: Date;
-    data_vigencia_corrente: Date;
+    @IsDateYMD()
+    data_vigencia: string;
+    @IsDateYMD()
+    data_vigencia_corrente: string;
     justificativa: string;
 }
 
@@ -85,7 +97,8 @@ export class SeiLidoStatusDto {
 
 export class DistribuicaoHistoricoStatusDto {
     id: number;
-    data_troca: Date;
+    @IsDateYMD()
+    data_troca: string;
     dias_no_status: number;
     motivo: string;
     orgao_responsavel: IdSigla | null;

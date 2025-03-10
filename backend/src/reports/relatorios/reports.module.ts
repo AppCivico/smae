@@ -20,10 +20,12 @@ import { PsMonitoramentoMensalModule } from '../ps-monitoramento-mensal/ps-monit
 import {
     CasaCivilAtividadesPendentesModule
 } from '../casa-civil-atividades-pendentes/casa-civil-atividades-pendentes.module';
+import { PessoaModule } from '../../pessoa/pessoa.module';
 
 @Module({
     imports: [
         PrismaModule,
+        forwardRef(() => PessoaModule),
         forwardRef(() => OrcamentoModule),
         forwardRef(() => UploadModule),
         forwardRef(() => IndicadoresModule),

@@ -1,9 +1,9 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
-import { TipoPdm } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { TipoPDM, TipoPdmType } from '../common/decorators/current-tipo-pdm';
 import { FindOneParams } from '../common/decorators/find-params';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { CreateEtapaDto } from '../etapa/dto/create-etapa.dto';
@@ -19,7 +19,7 @@ export const API_TAGS_CRONOGRAMA = 'Cronograma - PDM e PS';
 @ApiTags(API_TAGS_CRONOGRAMA)
 @Controller('cronograma')
 export class CronogramaController {
-    private tipo: TipoPdm = 'PDM';
+    private tipo: TipoPdmType = '_PDM';
     constructor(
         private readonly cronogramaService: CronogramaService,
         private readonly etapaService: EtapaService
@@ -76,13 +76,11 @@ export class CronogramaController {
     ): Promise<RecordWithId> {
         return await this.etapaService.create(this.tipo, +params.id, createEtapaDto, user);
     }
-
 }
 
 @ApiTags(API_TAGS_CRONOGRAMA)
 @Controller('plano-setorial-cronograma')
 export class CronogramaPSController {
-    private tipo: TipoPdm = 'PS';
     constructor(
         private readonly cronogramaService: CronogramaService,
         private readonly etapaService: EtapaService
@@ -93,9 +91,10 @@ export class CronogramaPSController {
     @Roles(MetaSetorialController.WritePerm)
     async create(
         @Body() createCronogramaDto: CreateCronogramaDto,
-        @CurrentUser() user: PessoaFromJwt
+        @CurrentUser() user: PessoaFromJwt,
+        @TipoPDM() tipo: TipoPdmType
     ): Promise<RecordWithId> {
-        return await this.cronogramaService.create(this.tipo, createCronogramaDto, user);
+        return await this.cronogramaService.create(tipo, createCronogramaDto, user);
     }
 
     @ApiBearerAuth('access-token')
@@ -103,9 +102,10 @@ export class CronogramaPSController {
     @Roles(MetaSetorialController.ReadPerm)
     async findAll(
         @Query() filters: FilterCronogramaDto,
-        @CurrentUser() user: PessoaFromJwt
+        @CurrentUser() user: PessoaFromJwt,
+        @TipoPDM() tipo: TipoPdmType
     ): Promise<ListCronogramaDto> {
-        return { linhas: await this.cronogramaService.findAll(this.tipo, filters, user) };
+        return { linhas: await this.cronogramaService.findAll(tipo, filters, user) };
     }
 
     @Patch(':id')
@@ -114,9 +114,10 @@ export class CronogramaPSController {
     async update(
         @Param() params: FindOneParams,
         @Body() updateCronogramaDto: UpdateCronogramaDto,
-        @CurrentUser() user: PessoaFromJwt
+        @CurrentUser() user: PessoaFromJwt,
+        @TipoPDM() tipo: TipoPdmType
     ) {
-        return await this.cronogramaService.update(this.tipo, +params.id, updateCronogramaDto, user);
+        return await this.cronogramaService.update(tipo, +params.id, updateCronogramaDto, user);
     }
 
     @Delete(':id')
@@ -124,8 +125,8 @@ export class CronogramaPSController {
     @Roles(MetaSetorialController.WritePerm)
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
-    async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
-        await this.cronogramaService.remove(this.tipo, +params.id, user);
+    async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt, @TipoPDM() tipo: TipoPdmType) {
+        await this.cronogramaService.remove(tipo, +params.id, user);
         return '';
     }
 
@@ -135,8 +136,9 @@ export class CronogramaPSController {
     async createEtapa(
         @Body() createEtapaDto: CreateEtapaDto,
         @Param() params: FindOneParams,
-        @CurrentUser() user: PessoaFromJwt
+        @CurrentUser() user: PessoaFromJwt,
+        @TipoPDM() tipo: TipoPdmType
     ): Promise<RecordWithId> {
-        return await this.etapaService.create(this.tipo, +params.id, createEtapaDto, user);
+        return await this.etapaService.create(tipo, +params.id, createEtapaDto, user);
     }
 }

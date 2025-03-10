@@ -8,6 +8,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { CreateContratoAditivoDto } from './dto/create-contrato-aditivo.dto';
 import { ContratoAditivoItemDto } from './entities/contrato-aditivo.entity';
 import { UpdateContratoAditivoDto } from './dto/update-contrato-aditivo.dto';
+import { Date2YMD } from '../../common/date2ymd';
 
 @Injectable()
 export class ContratoAditivoService {
@@ -81,6 +82,7 @@ export class ContratoAditivoService {
                 percentual_medido: true,
                 tipo_aditivo: {
                     select: {
+                        id: true,
                         nome: true,
                         habilita_valor: true,
                         habilita_valor_data_termino: true,
@@ -93,11 +95,12 @@ export class ContratoAditivoService {
             return {
                 id: aditivo.id,
                 numero: aditivo.numero,
-                data: aditivo.data,
-                data_termino_atualizada: aditivo.data_termino_atualizada,
+                data: Date2YMD.toStringOrNull(aditivo.data),
+                data_termino_atualizada: Date2YMD.toStringOrNull(aditivo.data_termino_atualizada),
                 valor: aditivo.valor,
                 percentual_medido: aditivo.percentual_medido,
                 tipo: {
+                    id: aditivo.tipo_aditivo.id,
                     nome: aditivo.tipo_aditivo.nome,
                     habilita_valor: aditivo.tipo_aditivo.habilita_valor,
                     habilita_valor_data_termino: aditivo.tipo_aditivo.habilita_valor_data_termino,

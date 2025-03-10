@@ -1,28 +1,25 @@
 import {
     BadRequestException,
-    forwardRef,
     HttpException,
-    Inject,
     Injectable,
     Logger,
-    NotFoundException,
+    NotFoundException
 } from '@nestjs/common';
 import { Prisma, TipoProjeto } from '@prisma/client';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
+import { Date2YMD } from '../../common/date2ymd';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { PrismaService } from '../../prisma/prisma.service';
+import { ProjetoGetPermissionSet } from '../projeto/projeto.service';
 import { CreatePortfolioDto } from './dto/create-portfolio.dto';
 import { UpdatePortfolioDto } from './dto/update-portfolio.dto';
 import { PortfolioDto, PortfolioOneDto } from './entities/portfolio.entity';
-import { ProjetoService } from '../projeto/projeto.service';
 
 @Injectable()
 export class PortfolioService {
     private readonly logger = new Logger(PortfolioService.name);
     constructor(
-        private readonly prisma: PrismaService,
-        @Inject(forwardRef(() => ProjetoService))
-        private readonly projetoService: ProjetoService
+        private readonly prisma: PrismaService
     ) {}
 
     async create(tipoProjeto: TipoProjeto, dto: CreatePortfolioDto, user: PessoaFromJwt): Promise<RecordWithId> {
@@ -136,6 +133,7 @@ export class PortfolioService {
 
         return {
             ...{ ...r, PortfolioGrupoPortfolio: undefined },
+            data_criacao: Date2YMD.toStringOrNull(r.data_criacao),
             grupo_portfolio: r.PortfolioGrupoPortfolio.map((rr) => rr.grupo_portfolio_id),
             orgaos: r.orgaos.map((rr) => rr.orgao_id),
         };
@@ -179,7 +177,7 @@ export class PortfolioService {
                     where: {
                         tipo: tipoProjeto,
                         removido_em: null,
-                        AND: this.projetoService.getProjetoWhereSet(tipoProjeto, user, false),
+                        AND: await ProjetoGetPermissionSet(tipoProjeto, user, false),
                     },
                 });
                 andIds = projetoRows.map((r) => r.portfolio_id);

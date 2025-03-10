@@ -49,6 +49,7 @@
     "@nestjs/serve-static": "^4.0.2",
     "@nestjs/swagger": "^7.4.2",
     "@prisma/client": "^5.21.1",
+    "@turf/simplify": "^7.2.0",
     "@types/geojson": "^7946.0.14",
     "adm-zip": "^0.5.16",
     "bcrypt": "^5.1.1",

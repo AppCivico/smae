@@ -1,6 +1,11 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import {
+  defineOptions,
+  onMounted, reactive, ref, watch,
+} from 'vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
-import truncate from '@/helpers/truncate';
+import truncate from '@/helpers/texto/truncate';
 import { useAuthStore } from '@/stores/auth.store';
 import { useEditModalStore } from '@/stores/editModal.store';
 import { useMetasStore } from '@/stores/metas.store';
@@ -10,11 +15,6 @@ import AddEditMacrotemas from '@/views/pdm/AddEditMacrotemas.vue';
 import AddEditSubtemas from '@/views/pdm/AddEditSubtemas.vue';
 import AddEditTags from '@/views/pdm/AddEditTags.vue';
 import AddEditTemas from '@/views/pdm/AddEditTemas.vue';
-import { storeToRefs } from 'pinia';
-import {
-  defineOptions,
-  onMounted, reactive, ref, watch,
-} from 'vue';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 defineOptions({
@@ -83,7 +83,10 @@ watch(() => props.group, (novoValor) => {
     <hr class="f1">
 
     <SmaeLink
-      v-if="temPermissãoPara('CadastroMetaPS.administrador_no_pdm') && activePdm?.pode_editar"
+      v-if="temPermissãoPara([
+        'CadastroMetaPS.administrador_no_pdm',
+        'CadastroMetaPDM.administrador_no_pdm'
+      ]) && activePdm?.pode_editar"
       class="btn big"
       to="/metas/novo"
     >
@@ -268,7 +271,13 @@ watch(() => props.group, (novoValor) => {
               class="meta flex center mb1"
             >
               <SmaeLink
-                :to="`/metas/${m.id}`"
+                :to="
+                  $route.meta.entidadeMãe === 'pdm'
+                    ? `/metas/${m.id}` : {
+                      name: `.meta`,
+                      params: { meta_id: m.id }
+                    }
+                "
                 class="flex center f1"
               >
                 <div class="farol" />
@@ -281,7 +290,13 @@ watch(() => props.group, (novoValor) => {
                   'CadastroMeta.administrador_no_pdm',
                   'CadastroMetaPs.administrador_no_pdm'
                 ])"
-                :to="`/metas/editar/${m.id}`"
+                :to="
+                  $route.meta.entidadeMãe === 'pdm' ?
+                    `/metas/editar/${m.id}` : {
+                      name: '.editarMeta',
+                      params: { meta_id: m.id }
+                    }
+                "
                 class="ml1 tprimary"
               >
                 <svg

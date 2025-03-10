@@ -11,6 +11,7 @@ import { IdTituloDto } from '../../../common/dto/IdTitulo.dto';
 import { ResumoDetalheOrigensDto } from '../../../common/dto/origem-pdm.dto';
 import { GeolocalizacaoDto } from '../../../geo-loc/entities/geo-loc.entity';
 import { ArquivoBaseDto } from '../../../upload/dto/create-upload.dto';
+import { IsDateYMD } from '../../../auth/decorators/date.decorator';
 
 export class ProjetoDto {
     id: number;
@@ -36,8 +37,8 @@ export class ProjetoMdoDto {
     nome: string;
     codigo: string | null;
     portfolio: IdTituloDto;
-    orgao_origem: IdSiglaDescricao;
-    grupo_tematico: IdNomeDto;
+    orgao_origem: IdSiglaDescricao | null;
+    grupo_tematico: IdNomeDto | null;
     tipo_intervencao: IdNomeDto | null;
     equipamento: IdNomeDto | null;
     empreendimento: IdNomeIdentificadorDto | null;
@@ -49,6 +50,16 @@ export class ProjetoMdoDto {
         description: 'Status da obra, apenas os que começam com MDO_...',
     })
     status: ProjetoStatus;
+}
+
+export class ProjetoV2Dto extends ProjetoMdoDto {
+    registrado_em: Date;
+    previsao_custo: number | null;
+    @IsDateYMD({ nullable: true })
+    previsao_termino: string | null;
+
+    orgao_responsavel: IdSiglaDescricao | null;
+    projeto_etapa: string | null;
 }
 
 export class ListProjetoDto {
@@ -187,18 +198,22 @@ export class ProjetoDetailDto extends ResumoDetalheOrigensDto {
     objeto: string;
     objetivo: string;
     publico_alvo: string | null;
-    previsao_inicio: Date | null;
+    @IsDateYMD({ nullable: true })
+    previsao_inicio: string | null;
     previsao_custo: number | null;
     previsao_duracao: number | null;
-    previsao_termino: Date | null;
+    @IsDateYMD({ nullable: true })
+    previsao_termino: string | null;
 
     previsao_calculada: boolean;
 
-    projecao_termino: Date | null;
+    @IsDateYMD({ nullable: true })
+    projecao_termino: string | null;
     percentual_concluido: number | null;
-
-    realizado_inicio: Date | null;
-    realizado_termino: Date | null;
+    @IsDateYMD({ nullable: true })
+    realizado_inicio: string | null;
+    @IsDateYMD({ nullable: true })
+    realizado_termino: string | null;
     realizado_custo: number | null;
 
     atraso: number | null;
@@ -229,8 +244,10 @@ export class ProjetoDetailDto extends ResumoDetalheOrigensDto {
     selecionado_em: Date | null;
     em_planejamento_em: Date | null;
 
-    data_aprovacao: Date | null;
-    data_revisao: Date | null;
+    @IsDateYMD({ nullable: true })
+    data_aprovacao: string | null;
+    @IsDateYMD({ nullable: true })
+    data_revisao: string | null;
     versao: string | null;
 
     eh_prioritario: boolean;
@@ -286,9 +303,11 @@ export class ProjetoDetailBaseMdo {
     mdo_n_unidades_habitacionais: number | null;
     mdo_n_familias_beneficiadas: number | null;
     mdo_n_unidades_atendidas: number | null;
-    mdo_previsao_inauguracao: Date | null;
+    @IsDateYMD({ nullable: true })
+    mdo_previsao_inauguracao: string | null;
     mdo_observacoes: string | null;
-    tipo_aditivo: IdNomeDto | null;
+    @ApiProperty({ deprecated: true })
+    tipo_aditivo: any;
     modalidade_contratacao: IdNomeDto | null;
     programa: IdNomeDto | null;
 

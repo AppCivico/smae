@@ -1,15 +1,4 @@
 <script setup>
-import AutocompleteField from '@/components/AutocompleteField2.vue';
-import CampoDeArquivo from '@/components/CampoDeArquivo.vue';
-import CampoDeEquipesComBuscaPorOrgao from '@/components/CampoDeEquipesComBuscaPorOrgao.vue';
-import { planoSetorial as schema } from '@/consts/formSchemas';
-import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
-import truncate from '@/helpers/truncate';
-import { useAlertStore } from '@/stores/alert.store';
-import { useAuthStore } from '@/stores/auth.store';
-import { useEquipesStore } from '@/stores/equipes.store';
-import { useOrgansStore } from '@/stores/organs.store';
-import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store.ts';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
@@ -19,6 +8,20 @@ import {
 } from 'vee-validate';
 import { ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import AutocompleteField from '@/components/AutocompleteField2.vue';
+import CampoDeArquivo from '@/components/CampoDeArquivo.vue';
+import CampoDeEquipesComBuscaPorOrgao from '@/components/CampoDeEquipesComBuscaPorOrgao.vue';
+import { planoSetorial as schema } from '@/consts/formSchemas';
+import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
+import truncate from '@/helpers/texto/truncate';
+import { useAlertStore } from '@/stores/alert.store';
+import { useAuthStore } from '@/stores/auth.store';
+import { useEquipesStore } from '@/stores/equipes.store';
+import { useOrgansStore } from '@/stores/organs.store';
+import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store.ts';
+
+const router = useRouter();
+const route = useRoute();
 
 const alertStore = useAlertStore();
 
@@ -34,7 +37,7 @@ const {
 const ÓrgãosStore = useOrgansStore();
 const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
 
-const planosSetoriaisStore = usePlanosSetoriaisStore();
+const planosSetoriaisStore = usePlanosSetoriaisStore(route.meta.entidadeMãe);
 const {
   chamadasPendentes,
   emFoco,
@@ -51,9 +54,6 @@ const props = defineProps({
     default: 0,
   },
 });
-
-const router = useRouter();
-const route = useRoute();
 
 // necessário por causa de 🤬
 const montarCampoEstático = ref(false);
@@ -83,7 +83,7 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
 
       if (route.meta.rotaDeEscape) {
         router.push({
-          name: 'planosSetoriaisResumo',
+          name: `${route.meta.entidadeMãe}.planosSetoriaisResumo`,
           params: { planoSetorialId: resposta.id },
         });
       }
@@ -130,11 +130,18 @@ watch(itemParaEdicao, (novoValor) => {
     :aria-busy="chamadasPendentes.emFoco && !emFoco"
     @submit="onSubmit"
   >
+    <Field
+      type="hidden"
+      name="tipo"
+    />
+
     <fieldset>
       <div
         v-if="planoSetorialId && temPermissãoPara([
           'CadastroPS.administrador',
+          'CadastroPDM.administrador',
           'CadastroPS.administrador_no_orgao',
+          'CadastroPDM.administrador_no_orgao',
         ])"
         class="flex flexwrap g2 mb1"
       >
@@ -229,6 +236,7 @@ watch(itemParaEdicao, (novoValor) => {
             @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
             @update:model-value="($v) => { setFieldValue('data_inicio', $v || null); }"
           />
+          <ErrorMessage name="data_inicio" />
         </div>
         <div class="f1 fb10em">
           <LabelFromYup
@@ -273,7 +281,9 @@ watch(itemParaEdicao, (novoValor) => {
             class="inputtext light mb1"
             :class="{ 'error': errors.periodo_do_ciclo_participativo_inicio }"
             @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
-            @update:model-value="($v) => { setFieldValue('periodo_do_ciclo_participativo_inicio', $v || null); }"
+            @update:model-value="($v) => {
+              setFieldValue('periodo_do_ciclo_participativo_inicio', $v || null)
+            }"
           />
           <ErrorMessage name="periodo_do_ciclo_participativo_inicio" />
         </div>
@@ -288,7 +298,9 @@ watch(itemParaEdicao, (novoValor) => {
             class="inputtext light mb1"
             :class="{ 'error': errors.periodo_do_ciclo_participativo_fim }"
             @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
-            @update:model-value="($v) => { setFieldValue('periodo_do_ciclo_participativo_fim', $v || null); }"
+            @update:model-value="($v) => {
+              setFieldValue('periodo_do_ciclo_participativo_fim', $v || null)
+            }"
           />
           <ErrorMessage name="periodo_do_ciclo_participativo_fim" />
         </div>
@@ -753,7 +765,7 @@ watch(itemParaEdicao, (novoValor) => {
       </div>
     </fieldset>
 
-    <fieldset>
+    <fieldset v-if="carga?.tipo === 'PS'">
       <div class="flex flexwrap g2 mb1">
         <div class="f1">
           <LabelFromYup

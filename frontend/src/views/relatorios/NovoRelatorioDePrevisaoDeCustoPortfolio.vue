@@ -1,14 +1,15 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { Field, Form, useIsFormDirty } from 'vee-validate';
+import { computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import MigalhasDePao from '@/components/MigalhasDePao.vue';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import { relatórioDePrevisãoDeCustoPortfolio as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
-import { storeToRefs } from 'pinia';
-import { Field, Form } from 'vee-validate';
-import { computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import CheckClose from '../../components/CheckClose.vue';
 
 const projetosStore = useProjetosStore();
 const alertStore = useAlertStore();
@@ -17,6 +18,8 @@ const relatoriosStore = useRelatoriosStore();
 const route = useRoute();
 const router = useRouter();
 const { current, loading } = storeToRefs(relatoriosStore);
+
+const formularioSujo = useIsFormDirty();
 
 const currentYear = new Date().getFullYear();
 
@@ -27,27 +30,22 @@ const initialValues = computed(() => ({
     portfolio_id: 0,
     projeto_id: null,
   },
-  salvar_arquivo: false,
 }));
 
 async function onSubmit(values) {
   const carga = values;
   try {
-    if (!carga.salvar_arquivo) {
-      carga.salvar_arquivo = false;
-    }
-
     if (carga.parametros.projeto_id === null) {
       delete carga.parametros.projeto_id;
     }
 
     const r = await relatoriosStore.insert(carga);
-    const msg = 'Dados salvos com sucesso!';
+    const msg = 'Relatório em processamento, acompanhe na tela de listagem';
 
     if (r === true) {
       alertStore.success(msg);
 
-      if (carga.salvar_arquivo && route.meta?.rotaDeEscape) {
+      if (route.meta?.rotaDeEscape) {
         await router.push({ name: route.meta.rotaDeEscape });
       }
     }
@@ -64,11 +62,16 @@ function iniciar() {
 iniciar();
 </script>
 <template>
-  <div class="flex spacebetween center mb2">
-    <h1>{{ $route.meta.título || $route.name }}</h1>
+  <MigalhasDePao class="mb1" />
+
+  <header class="flex spacebetween center mb2">
+    <TituloDaPagina />
+
     <hr class="ml2 f1">
-    <CheckClose />
-  </div>
+
+    <CheckClose :formulario-sujo="formularioSujo" />
+  </header>
+
   <Form
     v-slot="{ errors, isSubmitting, setFieldValue, values }"
     :validation-schema="schema"
@@ -152,40 +155,57 @@ iniciar();
 
       <div class="f1">
         <LabelFromYup
-            name="ano"
-            :schema="schema.fields.parametros"
-          />
+          name="ano"
+          :schema="schema.fields.parametros"
+        />
         <Field
           name="parametros.ano"
           type="text"
           class="inputtext light mb2"
           maxlength="4"
           :class="{ 'error': errors['parametros.ano'] }"
-        >
-        </Field>
+        />
         <div
           v-if="errors['parametros.ano']"
           class="error-msg"
         >
           {{ errors['parametros.ano'] }}
         </div>
-      </div>  
-    </div>
-
-    <div class="mb2">
-      <div class="pl2">
-        <label class="block">
-          <Field
-            name="salvar_arquivo"
-            type="checkbox"
-            :value="true"
-            class="inputcheckbox"
-          />
-          <span :class="{ 'error': errors.salvar_arquivo }">Salvar relatório no sistema</span>
-        </label>
       </div>
-      <div class="error-msg">
-        {{ errors.salvar_arquivo }}
+
+      <div class="f1">
+        <LabelFromYup
+          name="eh_publico"
+          :schema="schema"
+          required
+        />
+        <Field
+          name="eh_publico"
+          as="select"
+          class="inputtext light
+            mb1"
+          :class="{
+            error: errors['eh_publico'],
+            loading: projetosStore.chamadasPendentes.lista
+          }"
+          :disabled="projetosStore.chamadasPendentes.lista"
+        >
+          <option :value="null">
+            Selecionar
+          </option>
+          <option :value="true">
+            Sim
+          </option>
+          <option :value="false">
+            Não
+          </option>
+        </Field>
+        <div
+          v-if="errors['parametros.eh_publico']"
+          class="error-msg"
+        >
+          {{ errors['parametros.eh_publico'] }}
+        </div>
       </div>
     </div>
 
@@ -198,7 +218,7 @@ iniciar();
         class="btn big"
         :disabled="isSubmitting || Object.keys(errors)?.length"
       >
-        {{ values.salvar_arquivo ? "baixar e salvar" : "apenas baixar" }}
+        Criar relatório
       </button>
       <hr class="ml2 f1">
     </div>

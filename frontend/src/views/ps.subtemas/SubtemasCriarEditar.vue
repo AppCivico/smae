@@ -1,7 +1,9 @@
 <template>
   <div class="flex spacebetween center mb2">
-    <h1> <span v-if="!subtemaId">Novo</span> {{ titulo || "Subtema" }}</h1>
+    <TituloDaPagina />
+
     <hr class="ml2 f1">
+
     <CheckClose />
   </div>
   <Form
@@ -62,30 +64,21 @@
 </template>
 
 <script setup>
-import { subtema as schema } from '@/consts/formSchemas';
-import { useAlertStore } from '@/stores/alert.store';
-import { useSubtemasPsStore } from '@/stores/subtemasPs.store';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, Form } from 'vee-validate';
-import { computed, defineOptions } from 'vue';
+import { defineOptions } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useSubtemasPsStore } from '@/stores/subtemasPs.store';
+import { useAlertStore } from '@/stores/alert.store';
+import { subtema as schema } from '@/consts/formSchemas';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
 
 defineOptions({
   inheritAttrs: false,
 });
 
-const router = useRouter();
 const route = useRoute();
-const props = defineProps({
-  subtemaId: {
-    type: Number,
-    default: 0,
-  },
-});
-
-const titulo = typeof route?.meta?.título === 'function'
-  ? computed(() => route.meta.título())
-  : route?.meta?.título;
+const router = useRouter();
 
 const alertStore = useAlertStore();
 const subtemasStore = useSubtemasPsStore();
@@ -94,7 +87,7 @@ const { chamadasPendentes, erro, itemParaEdicao } = storeToRefs(subtemasStore);
 async function onSubmit(values) {
   try {
     let response;
-    const msg = props.subtemaId
+    const msg = route.params?.subtemaId
       ? 'Dados salvos com sucesso!'
       : 'Item adicionado com sucesso!';
 
@@ -111,7 +104,7 @@ async function onSubmit(values) {
     if (response) {
       alertStore.success(msg);
       subtemasStore.$reset();
-      router.push({ name: 'planosSetoriaisSubtemas' });
+      router.push({ name: `${route.meta.entidadeMãe}.planosSetoriaisSubtemas` });
     }
   } catch (error) {
     alertStore.error(error);

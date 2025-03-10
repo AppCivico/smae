@@ -3,7 +3,7 @@ import LabelFromYup from '@/components/LabelFromYup.vue';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import { relatórioDeTransferênciasVoluntárias as schema } from '@/consts/formSchemas';
 import interfacesDeTransferências from '@/consts/interfacesDeTransferências';
-import truncate from '@/helpers/truncate';
+import truncate from '@/helpers/texto/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePartidosStore } from '@/stores/partidos.store';
@@ -39,7 +39,6 @@ const valoresIniciais = {
     orgao_gestor_id: null,
     parlamentar_id: null,
   },
-  salvar_arquivo: false,
 };
 
 const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
@@ -55,13 +54,11 @@ const {
 
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   try {
-    const msg = 'Dados salvos com sucesso!';
+    const msg = 'Relatório em processamento, acompanhe na tela de listagem';
 
     if (await relatoriosStore.insert(valoresControlados)) {
       alertStore.success(msg);
-      if (valoresControlados.salvar_arquivo && route.meta?.rotaDeEscape) {
-        router.push({ name: route.meta.rotaDeEscape });
-      }
+      router.push({ name: route.meta.rotaDeEscape });
     }
   } catch (error) {
     alertStore.error(error);
@@ -370,6 +367,39 @@ ParlamentaresStore.buscarTudo({ ipp: 500, possui_mandatos: true });
           name="parametros.gestor_contrato"
         />
       </div>
+      <div class="f1">
+        <LabelFromYup
+          name="eh_publico"
+          :schema="schema"
+          required
+        />
+        <Field
+          name="eh_publico"
+          as="select"
+          class="inputtext light"
+          :class="{
+            error: errors['eh_publico'],
+            loading: ÓrgãosStore.organs?.loading
+          }"
+          :disabled="ÓrgãosStore.organs?.loading"
+        >
+          <option :value="null">
+            Selecionar
+          </option>
+          <option :value="true">
+            Sim
+          </option>
+          <option :value="false">
+            Não
+          </option>
+        </Field>
+        <div
+          v-if="errors['eh_publico']"
+          class="error-msg"
+        >
+          {{ errors['eh_publico'] }}
+        </div>
+      </div>
     </div> <!-- Terceira linha da tela - Fim -->
 
     <div class="flex flexwrap g2 mb2">
@@ -406,27 +436,6 @@ ParlamentaresStore.buscarTudo({ ipp: 500, possui_mandatos: true });
       :class="{ 'error': errors['parametros.tipo'] }"
     />
 
-    <div class="mb2">
-      <div class="pl2">
-        <label class="block">
-          <Field
-            name="salvar_arquivo"
-            type="checkbox"
-            :value="true"
-            :unchecked-value="false"
-            class="inputcheckbox"
-          />
-          <span :class="{ 'error': errors.salvar_arquivo }">Salvar relatório no sistema</span>
-        </label>
-      </div>
-      <div
-        v-if="errors['salvar_arquivo']"
-        class="error-msg"
-      >
-        {{ errors['salvar_arquivo'] }}
-      </div>
-    </div>
-
     <FormErrorsList :errors="errors" />
 
     <div class="flex spacebetween center mb2">
@@ -438,7 +447,7 @@ ParlamentaresStore.buscarTudo({ ipp: 500, possui_mandatos: true });
           ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
           : null"
       >
-        {{ values.salvar_arquivo ? "baixar e salvar" : "apenas baixar" }}
+        Criar relatório
       </button>
       <hr class="ml2 f1">
     </div>

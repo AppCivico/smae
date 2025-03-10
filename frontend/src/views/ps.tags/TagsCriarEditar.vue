@@ -1,7 +1,9 @@
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>{{ route?.meta?.título || "Tags" }}</h1>
+    <TituloDaPagina />
+
     <hr class="ml2 f1">
+
     <CheckClose />
   </div>
   <Form
@@ -102,11 +104,6 @@
 </template>
 
 <script setup>
-import CampoDeArquivo from '@/components/CampoDeArquivo.vue';
-import { tag as schema } from '@/consts/formSchemas';
-import { useAlertStore } from '@/stores/alert.store';
-import { useOdsStore } from '@/stores/odsPs.store';
-import { useTagsPsStore } from '@/stores/tagsPs.store';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
@@ -114,23 +111,22 @@ import {
 } from 'vee-validate';
 import { defineOptions } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import CampoDeArquivo from '@/components/CampoDeArquivo.vue';
+import { tag as schema } from '@/consts/formSchemas';
+import { useAlertStore } from '@/stores/alert.store';
+import { useOdsStore } from '@/stores/odsPs.store';
+import { useTagsPsStore } from '@/stores/tagsPs.store';
 
 defineOptions({
   inheritAttrs: false,
 });
 
 const route = useRoute();
-const props = defineProps({
-  tagId: {
-    type: Number,
-    default: 0,
-  },
-});
+const router = useRouter();
 
 const alertStore = useAlertStore();
 const tagsStore = useTagsPsStore();
 const odsStore = useOdsStore();
-const router = useRouter();
 
 const { chamadasPendentes, erro, itemParaEdicao } = storeToRefs(tagsStore);
 const {
@@ -140,7 +136,7 @@ const {
 async function onSubmit(values) {
   try {
     let response;
-    const msg = props.tagId
+    const msg = route.meta?.tagId
       ? 'Dados salvos com sucesso!'
       : 'Item adicionado com sucesso!';
 
@@ -157,7 +153,7 @@ async function onSubmit(values) {
     if (response) {
       alertStore.success(msg);
       tagsStore.$reset();
-      router.push({ name: 'planosSetoriaisTags' });
+      router.push({ name: `${route.meta.entidadeMãe}.planosSetoriaisTags` });
     }
   } catch (error) {
     alertStore.error(error);

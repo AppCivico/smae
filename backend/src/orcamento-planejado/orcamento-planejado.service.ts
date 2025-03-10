@@ -11,6 +11,8 @@ import {
     UpdateOrcamentoPlanejadoDto,
 } from './dto/orcamento-planejado.dto';
 import { OrcamentoPlanejado } from './entities/orcamento-planejado.entity';
+import { PlanoSetorialController } from '../pdm/pdm.controller';
+import { TipoPdmType } from '../common/decorators/current-tipo-pdm';
 
 @Injectable()
 export class OrcamentoPlanejadoService {
@@ -19,7 +21,7 @@ export class OrcamentoPlanejadoService {
         private readonly dotacaoService: DotacaoService
     ) {}
 
-    async create(dto: CreateOrcamentoPlanejadoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+    async create(tipo: TipoPdmType, dto: CreateOrcamentoPlanejadoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const dotacao = await this.prisma.dotacaoPlanejado.findFirst({
             where: { dotacao: dto.dotacao, ano_referencia: dto.ano_referencia },
             select: { id: true },
@@ -27,7 +29,7 @@ export class OrcamentoPlanejadoService {
         if (!dotacao) throw new HttpException('Dotação/projeto não foi ainda não foi importada no banco de dados', 400);
 
         const { meta_id, iniciativa_id, atividade_id } = await this.validaMetaIniAtv(dto);
-        await user.verificaPermissaoOrcamentoNaMeta(meta_id, this.prisma);
+        await user.verificaPermissaoOrcamentoPontoFocal(tipo, meta_id, this.prisma);
 
         const meta = await this.prisma.meta.findFirst({
             where: { id: meta_id, removido_em: null },
@@ -106,14 +108,19 @@ export class OrcamentoPlanejadoService {
         return created;
     }
 
-    async update(id: number, dto: UpdateOrcamentoPlanejadoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+    async update(
+        tipo: TipoPdmType,
+        id: number,
+        dto: UpdateOrcamentoPlanejadoDto,
+        user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         const orcamentoPlanejado = await this.prisma.orcamentoPlanejado.findFirst({
             where: { id: +id, removido_em: null },
         });
         if (!orcamentoPlanejado) throw new HttpException('Orçamento planejado não encontrado', 404);
 
         const { meta_id, iniciativa_id, atividade_id } = await this.validaMetaIniAtv(dto);
-        await user.verificaPermissaoOrcamentoNaMeta(meta_id, this.prisma);
+        await user.verificaPermissaoOrcamentoPontoFocal(tipo, meta_id, this.prisma);
 
         const meta = await this.prisma.meta.findFirstOrThrow({
             where: { id: meta_id, removido_em: null },
@@ -238,17 +245,22 @@ export class OrcamentoPlanejadoService {
         return { meta_id, iniciativa_id, atividade_id };
     }
 
-    async findAll(filters: FilterOrcamentoPlanejadoDto, user: PessoaFromJwt): Promise<OrcamentoPlanejado[]> {
+    async findAll(
+        tipo: TipoPdmType,
+        filters: FilterOrcamentoPlanejadoDto,
+        user: PessoaFromJwt
+    ): Promise<OrcamentoPlanejado[]> {
         let filterIdIn: undefined | number[] = undefined;
         if (
             !user.hasSomeRoles([
                 'CadastroMeta.administrador_orcamento',
                 // TODO mais um local pra adicionar permissão de acordo com o nivel do PS
-                'CadastroMetaPS.administrador_orcamento',
+                ...PlanoSetorialController.OrcamentoWritePerms,
             ])
         )
             filterIdIn = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_responsavel_orcamento);
 
+        // TODO: basicamente aqui obriga a meta a ser passada, então da pra usar o findIds pra verificar as perms
         const meta = await this.prisma.meta.findFirst({
             where: { id: filters.meta_id, removido_em: null },
             select: { pdm_id: true },
@@ -375,14 +387,14 @@ export class OrcamentoPlanejadoService {
         return rows;
     }
 
-    async remove(id: number, user: PessoaFromJwt) {
+    async remove(tipo: TipoPdmType, id: number, user: PessoaFromJwt) {
         const orcamentoPlanejado = await this.prisma.orcamentoPlanejado.findFirst({
             where: { id: +id, removido_em: null },
         });
         if (!orcamentoPlanejado || orcamentoPlanejado.meta_id === null)
             throw new HttpException('Orçamento planejado não encontrado', 404);
 
-        await user.verificaPermissaoOrcamentoNaMeta(orcamentoPlanejado.meta_id, this.prisma);
+        await user.verificaPermissaoOrcamentoPontoFocal(tipo, orcamentoPlanejado.meta_id, this.prisma);
 
         const now = new Date(Date.now());
 

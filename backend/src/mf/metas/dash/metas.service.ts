@@ -13,6 +13,7 @@ import {
     MfDashMetaAtualizadasDto,
     MfDashMetaPendenteDto,
 } from './dto/metas.dto';
+import { Date2YMD } from '../../../common/date2ymd';
 
 export class Arr {
     static mergeUnique(a: number[], b: number[]): number[] {
@@ -22,6 +23,10 @@ export class Arr {
     static intersection(a: number[], b: number[]): number[] {
         const setA = new Set(a);
         return b.filter((element) => setA.has(element));
+    }
+    static hasIntersection<T>(a: T[], b: T[]): boolean {
+        const setA = new Set(a);
+        return b.some((element) => setA.has(element));
     }
     static removeFrom(a: number[], b: number[]): number[] {
         const setB = new Set(b);
@@ -129,7 +134,8 @@ export class MfDashMetasService {
             ? !params.filtro_ponto_focal_variavel && !params.filtro_ponto_focal_cronograma
             : true;
 
-        if (params.retornar_pendentes) {//false
+        if (params.retornar_pendentes) {
+            //false
             const pendentes = await this.prisma.metaStatusConsolidadoCf.findMany({
                 where: {
                     ciclo_fisico_id: cicloFisicoId,
@@ -165,7 +171,8 @@ export class MfDashMetasService {
             if (retornar_detalhes) await this.populaDetalhes(ret.pendentes);
         }
 
-        if (params.retornar_atualizadas) {//true
+        if (params.retornar_atualizadas) {
+            //true
             const atualizadas = await this.prisma.metaStatusConsolidadoCf.findMany({
                 where: {
                     ciclo_fisico_id: cicloFisicoId,
@@ -202,14 +209,13 @@ export class MfDashMetasService {
                         retornar_detalhes && params.filtro_ponto_focal_cronograma ? false : undefined,
                 },
                 {
-                    pendente_cp_variavel:
-                        retornar_detalhes && params.filtro_ponto_focal_variavel ? false : undefined,
+                    pendente_cp_variavel: retornar_detalhes && params.filtro_ponto_focal_variavel ? false : undefined,
                 },
 
                 // again, no detalhe, n importa o status do orçamento
 
                 { orcamento_pendente: retornar_detalhes ? undefined : false },
-            ])
+            ]);
             console.log(atualizadas);
 
             ret.atualizadas = atualizadas.map(renderStatus);
@@ -252,13 +258,13 @@ export class MfDashMetasService {
 
                 if (r.variaveis_atrasadas > 0) {
                     referencias[r.meta_id].atrasos_variavel.push({
-                        data: r.mes,
+                        data: Date2YMD.toString(r.mes),
                         total: r.variaveis_atrasadas,
                     });
                 }
                 if (r.orcamento_atrasados > 0) {
                     referencias[r.meta_id].atrasos_orcamento.push({
-                        data: r.mes,
+                        data: Date2YMD.toString(r.mes),
                         total: r.orcamento_atrasados,
                     });
                 }

@@ -6,13 +6,15 @@ import { NumberArrayTransformOrUndef } from '../../../auth/transforms/number-arr
 import { BadRequestException } from '@nestjs/common';
 import { StringArrayTransform } from '../../../auth/transforms/string-array.transform';
 import { IdSigla, IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
+import { IsDateYMD } from '../../../auth/decorators/date.decorator';
 
 export class MfDashTransferenciasDto {
     @ApiProperty({ description: 'ID da transferência' })
     transferencia_id: number;
     identificador: string;
     atividade: string;
-    data: Date | null;
+    @IsDateYMD({nullable: true})
+    data: string | null;
     data_origem: string;
     orgaos: number[];
     esfera: string;

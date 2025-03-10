@@ -115,7 +115,7 @@ watchEffect(() => {
           type="button"
           class="tipinfo tprimary like-a__text"
           :to="{
-            name: `.variaveisResumo`,
+            name: 'variaveisResumo',
             params: { variavelId: variavel.id },
             query: $route.query,
           }"

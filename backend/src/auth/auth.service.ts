@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { ModuloSistema } from '@prisma/client';
 import { FeatureFlagService } from '../feature-flag/feature-flag.service';
 import { Pessoa } from '../pessoa/entities/pessoa.entity';
 import { PessoaService } from '../pessoa/pessoa.service';
@@ -11,7 +12,6 @@ import { JwtReducedAccessToken } from './models/JwtReducedAccessToken';
 import { PessoaFromJwt } from './models/PessoaFromJwt';
 import { ReducedAccessToken } from './models/ReducedAccessToken';
 import { SolicitarNovaSenhaRequestBody } from './models/SolicitarNovaSenhaRequestBody.dto';
-import { ModuloSistema } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -84,13 +84,16 @@ export class AuthService {
             id: pessoa.id as number,
             nome_exibicao: pessoa.nome_exibicao,
             session_id: 0,
-            modulos: modPriv.modulos,
             privilegios: modPriv.privilegios,
             sistemas: modPriv.sistemas,
             orgao_id: pessoa.pessoa_fisica?.orgao_id,
             flags: await this.featureFlagService.featureFlag(),
             modulo_sistema,
             ip: null,
+            perfis_equipe_pdm: pessoa.perfis_equipe_pdm,
+            perfis_equipe_ps: pessoa.perfis_equipe_ps,
+            modulos_permitidos: pessoa.modulos_permitidos,
+            sobreescrever_modulos: pessoa.sobreescrever_modulos,
         });
     }
 
@@ -108,13 +111,16 @@ export class AuthService {
             id: pessoa.id as number,
             nome_exibicao: pessoa.nome_exibicao,
             session_id: session_id,
-            modulos: modPriv.modulos,
             privilegios: modPriv.privilegios,
             sistemas: modPriv.sistemas,
             orgao_id: pessoa.pessoa_fisica?.orgao_id,
             flags: await this.featureFlagService.featureFlag(),
             modulo_sistema,
             ip: null,
+            perfis_equipe_pdm: pessoa.perfis_equipe_pdm,
+            perfis_equipe_ps: pessoa.perfis_equipe_ps,
+            modulos_permitidos: pessoa.modulos_permitidos,
+            sobreescrever_modulos: pessoa.sobreescrever_modulos,
         });
     }
 

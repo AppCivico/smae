@@ -9,10 +9,13 @@ import { computed, ref } from 'vue';
 import { usePdMStore } from '@/stores/pdm.store';
 import { useObrasStore } from '@/stores/obras.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
+import { useRoute } from 'vue-router';
 import FiltroPorOrgaoEUnidade from './FiltroPorOrgaoEUnidade.vue';
 import agrupaFilhos from './helpers/agrupaFilhos';
 import maiorData from './helpers/maiorData';
 import somaItems from './helpers/somaItems';
+
+const route = useRoute();
 
 const alertStore = useAlertStore();
 const props = defineProps({
@@ -51,6 +54,10 @@ const {
 
 const órgãoEUnidadeSelecionados = ref('');
 
+const permissoesDoItemEmFoco = computed(() => (route.params.entidadeMãe === 'obras'
+  ? permissõesDaObraEmFoco.value
+  : permissõesDoProjetoEmFoco.value));
+
 const linhasFiltradas = computed(() => (Array.isArray(OrcamentoCusteio.value[ano]) && órgãoEUnidadeSelecionados.value !== ''
   ? OrcamentoCusteio.value[ano]
     .filter((x) => x.parte_dotacao?.indexOf(órgãoEUnidadeSelecionados.value) === 0)
@@ -80,7 +87,6 @@ function restringirAZero() {
     OrcamentosStore.restringirPrevistoAZero(ano);
   }, 'Informar');
 }
-
 </script>
 <template>
   <div class="mb2">
@@ -195,7 +201,8 @@ function restringirAZero() {
             <LinhaCusteio
               :órgão-e-unidade-selecionados="órgãoEUnidadeSelecionados"
               :group="groups"
-              :permissao="config.previsao_custo_disponivel"
+              :permissao="config.previsao_custo_disponivel
+                && !permissoesDoItemEmFoco?.apenas_leitura"
               :parentlink="parentlink"
             />
           </tbody>
@@ -219,7 +226,8 @@ function restringirAZero() {
               <LinhaCusteio
                 :órgão-e-unidade-selecionados="órgãoEUnidadeSelecionados"
                 :group="g"
-                :permissao="config.previsao_custo_disponivel"
+                :permissao="config.previsao_custo_disponivel
+                  && !permissoesDoItemEmFoco?.apenas_leitura"
                 :parentlink="parentlink"
               />
             </tbody>
@@ -243,7 +251,8 @@ function restringirAZero() {
                 <LinhaCusteio
                   :órgão-e-unidade-selecionados="órgãoEUnidadeSelecionados"
                   :group="gg"
-                  :permissao="config.previsao_custo_disponivel"
+                  :permissao="config.previsao_custo_disponivel
+                    && !permissoesDoItemEmFoco?.apenas_leitura"
                   :parentlink="parentlink"
                 />
               </tbody>
@@ -256,7 +265,7 @@ function restringirAZero() {
         <SmaeLink
           v-if="config.previsao_custo_disponivel
             && ($route.meta?.rotaParaAdição || parentlink)
-            && (activePdm?.pode_editar || !permissõesDaObraEmFoco?.apenas_leitura || !permissõesDoProjetoEmFoco?.apenas_leitura)"
+            && (activePdm?.pode_editar || !permissoesDoItemEmFoco?.apenas_leitura)"
           :to="$route.meta?.rotaParaAdição
             ? { name: $route.meta.rotaParaAdição, params: { ano } }
             : `${parentlink}/orcamento/custo/${ano}`"
@@ -279,7 +288,7 @@ function restringirAZero() {
         </span>
 
         <button
-          v-if="!linhasFiltradas?.length && !previstoEhZero[ano] && (activePdm?.pode_editar || !permissõesDaObraEmFoco?.apenas_leitura || !permissõesDoProjetoEmFoco?.apenas_leitura)"
+          v-if="!linhasFiltradas?.length && !previstoEhZero[ano] && (activePdm?.pode_editar || !permissoesDoItemEmFoco?.apenas_leitura)"
           type="button"
           class="like-a__text addlink mt1 mb1"
           @click="restringirAZero"

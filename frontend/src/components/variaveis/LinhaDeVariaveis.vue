@@ -14,10 +14,15 @@
   </td>
   <td class="cell--nowrap">
     <abbr
-      v-if="$props.linha?.orgao"
-      :title="$props.linha?.orgao.descricao"
+      v-if="$props.linha?.orgao_responsal_coleta || $props.linha?.orgao"
+      :title="$props.linha.orgao_responsal_coleta.sigla || $props.linha.orgao.descricao"
     >
-      {{ $props.linha?.orgao.sigla || $props.linha?.orgao }}
+      {{
+        $props.linha.orgao_responsal_coleta.sigla
+          || $props.linha?.orgao_responsal_coleta
+          || $props.linha?.orgao.sigla
+          || $props.linha?.orgao
+      }}
     </abbr>
   </td>
   <td class="contentStyle">
@@ -29,15 +34,15 @@
         <component
           :is="temPermissãoPara([
             'CadastroPS.administrador',
-            'CadastroPS.administrador_no_orgao'
+            'CadastroPDM.administrador',
+            'CadastroPS.administrador_no_orgao',
+            'CadastroPDM.administrador_no_orgao',
           ])
             ? 'router-link'
             : 'span'"
           :to="{
-            name: 'planosSetoriaisResumo', params: {
-              planoSetorialId:
-                plano.id
-            }
+            name: `${route.meta.entidadeMãe}.planosSetoriaisResumo`,
+            params: { planoSetorialId: plano.id }
           }"
           :title="plano.nome?.length > 36 ? plano.nome : null"
         >
@@ -52,10 +57,11 @@
 </template>
 <script setup lang="ts">
 import type { VariavelGlobalItemDto, VariavelItemDto } from '@/../../backend/src/variavel/entities/variavel.entity';
-import truncate from '@/helpers/truncate';
-import { useAuthStore } from '@/stores/auth.store';
 import { storeToRefs } from 'pinia';
 import { defineProps } from 'vue';
+import { useRoute } from 'vue-router';
+import truncate from '@/helpers/texto/truncate';
+import { useAuthStore } from '@/stores/auth.store';
 
 defineOptions({
   inheritAttrs: false,
@@ -67,6 +73,8 @@ defineProps({
     default: null,
   },
 });
+
+const route = useRoute();
 
 const authStore = useAuthStore();
 

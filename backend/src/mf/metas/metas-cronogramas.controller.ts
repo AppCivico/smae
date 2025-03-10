@@ -44,7 +44,7 @@ export class MetasCronogramaController {
         filters.cronograma_etapa_ids = config.cronogramas_etapas;
 
         return {
-            linhas: await this.cronogramaService.findAll('PDM', filters, user),
+            linhas: await this.cronogramaService.findAll('_PDM', filters, user),
             requestInfo: { queryTook: Date.now() - start },
         };
     }
@@ -66,7 +66,7 @@ export class MetasCronogramaController {
         filters.cronograma_etapa_ids = config.cronogramas_etapas;
 
         return {
-            linhas: await this.cronogramaEtapaService.findAll('PDM', filters, user, true),
+            linhas: await this.cronogramaEtapaService.findAll('_PDM', filters, user, true),
             requestInfo: { queryTook: Date.now() - start },
         };
     }
@@ -85,7 +85,7 @@ export class MetasCronogramaController {
             throw new HttpException('Etapa não encontrada', 404);
         }
 
-        const ret = await this.etapaService.update('PDM', +params.id, updateEtapaDto, user, undefined, config);
+        const ret = await this.etapaService.update('_PDM', +params.id, updateEtapaDto, user, undefined, config);
 
         // basicamente, todos esses valores não temos aqui
         // então o melhor é na trigger do update da etapa, apagar invalidar esse status, pq ai

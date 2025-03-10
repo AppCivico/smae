@@ -9,6 +9,7 @@ import { IdSiglaDescricao } from '../../common/dto/IdSigla.dto';
 import { CreateIndicadorFormulaCompostaDto } from '../../indicador/dto/create-indicador.formula-composta.dto';
 import { IndicadorFormulaCompostaDto } from '../../indicador/entities/indicador.formula-composta.entity';
 import { IdCodTituloDto } from '../../common/dto/IdCodTitulo.dto';
+import { IsDateYMD } from '../../auth/decorators/date.decorator';
 
 export class PeriodoFormulaCompostaDto {
     periodo: string;
@@ -32,8 +33,10 @@ export class PSFormulaCompostaDto extends OmitType(IndicadorFormulaCompostaDto, 
     casas_decimais: number;
     periodicidade: Periodicidade | null;
     regionalizavel: boolean;
-    inicio_medicao: Date | null;
-    fim_medicao: Date | null;
+    @IsDateYMD({nullable: true})
+    inicio_medicao: string | null;
+    @IsDateYMD({nullable: true})
+    fim_medicao: string | null;
     orgao: IdSiglaDescricao | null;
     codigo: string | null;
     variavel_calc_erro: string | null;

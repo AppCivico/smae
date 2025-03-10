@@ -4,7 +4,8 @@ import { ParlamentarService } from 'src/parlamentar/parlamentar.service';
 import { Date2YMD } from '../../common/date2ymd';
 import { CsvWriterOptions, WriteCsvToFile } from '../../common/helpers/CsvWriter';
 import { PrismaService } from '../../prisma/prisma.service';
-import { DefaultCsvOptions, FileOutput, ReportContext, ReportableService } from '../utils/utils.service';
+import { ReportContext } from '../relatorios/helpers/reports.contexto';
+import { DefaultCsvOptions, FileOutput, ReportableService } from '../utils/utils.service';
 import { CreateRelParlamentaresDto } from './dto/create-parlamentares.dto';
 import { ParlamentaresRelatorioDto, RelParlamentaresDto } from './entities/parlamentares.entity';
 

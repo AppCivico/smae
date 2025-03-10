@@ -217,7 +217,7 @@ export class AeCronogramaTpTaskService implements TaskableService {
 
             parts.push({
                 t: 't',
-                c: `Prevista para ${Date2YMD.dbDateToDMY(t.termino_planejado)}, ${hierarquia} - ${ehMarco}${t.tarefa}${temAtraso}`,
+                c: `Prevista para ${Date2YMD.ymdToDMY(t.termino_planejado)}, ${hierarquia} - ${ehMarco}${t.tarefa}${temAtraso}`,
             });
         }
     }

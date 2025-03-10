@@ -3,14 +3,15 @@ import { defineStore } from 'pinia';
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 function caminhoParaApi(rotaMeta, segmentoOriginal) {
-  if (rotaMeta.entidadeMãe === 'pdm') {
-    return segmentoOriginal;
+  switch (rotaMeta.entidadeMãe) {
+    case 'pdm':
+      return segmentoOriginal;
+    case 'planoSetorial':
+    case 'programaDeMetas':
+      return `plano-setorial-${segmentoOriginal}`;
+    default:
+      throw new Error('Você precisa estar em algum módulo para executar essa ação.');
   }
-  if (rotaMeta.entidadeMãe === 'planoSetorial') {
-    return `plano-setorial-${segmentoOriginal}`;
-  }
-
-  throw new Error('Você precisa estar em algum módulo para executar essa ação.');
 }
 
 export const useEtapasStore = defineStore({
@@ -50,6 +51,8 @@ export const useEtapasStore = defineStore({
       }
       return null;
     },
+    // mantendo comportamento legado
+    // eslint-disable-next-line consistent-return
     async getAll(cronograma_id) {
       try {
         if (!this.Etapas[cronograma_id]) {
@@ -57,6 +60,8 @@ export const useEtapasStore = defineStore({
           const r = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta, 'cronograma-etapa')}?cronograma_id=${cronograma_id}`);
           this.Etapas[cronograma_id] = r.linhas.length
             ? r.linhas.map((x) => {
+              // mantendo comportamento legado
+              // eslint-disable-next-line eqeqeq
               if (x.cronograma_origem_etapa && x.cronograma_origem_etapa.id == cronograma_id) {
                 delete x.cronograma_origem_etapa;
               }
@@ -94,13 +99,21 @@ export const useEtapasStore = defineStore({
         this.Etapas[cronograma_id] = { error };
       }
     },
+    // mantendo comportamento legado
+    // eslint-disable-next-line consistent-return
     async getById(cronograma_id, etapa_id) {
       try {
+        // mantendo comportamento legado
+        // eslint-disable-next-line @typescript-eslint/no-throw-literal
         if (!cronograma_id) throw 'Cronograma inválido';
+        // mantendo comportamento legado
+        // eslint-disable-next-line @typescript-eslint/no-throw-literal
         if (!etapa_id) throw 'Etapa inválida';
         this.singleEtapa = { loading: true };
         if (!this.Etapas[cronograma_id]) await this.getAll(cronograma_id);
         this.singleEtapa = this.Etapas[cronograma_id].length
+          // mantendo comportamento legado
+          // eslint-disable-next-line eqeqeq
           ? this.Etapas[cronograma_id].find((u) => u.etapa_id == etapa_id)
           : {};
         return true;
@@ -109,20 +122,22 @@ export const useEtapasStore = defineStore({
       }
     },
     async insert(cronograma_id, params) {
-      params.inicio_previsto = this.fieldToDate(params.inicio_previsto);
-      params.termino_previsto = this.fieldToDate(params.termino_previsto);
-      params.inicio_real = this.fieldToDate(params.inicio_real);
-      params.termino_real = this.fieldToDate(params.termino_real);
-      const r = await this.requestS.post(`${baseUrl}/${caminhoParaApi(this.route.meta, 'cronograma')}/${cronograma_id}/etapa`, params);
+      const newParams = { ...params };
+      newParams.inicio_previsto = this.fieldToDate(params.inicio_previsto);
+      newParams.termino_previsto = this.fieldToDate(params.termino_previsto);
+      newParams.inicio_real = this.fieldToDate(params.inicio_real);
+      newParams.termino_real = this.fieldToDate(params.termino_real);
+      const r = await this.requestS.post(`${baseUrl}/${caminhoParaApi(this.route.meta, 'cronograma')}/${cronograma_id}/etapa`, newParams);
       if (r.id) return r.id;
       return false;
     },
     async update(id, params) {
-      params.inicio_previsto = this.fieldToDate(params.inicio_previsto);
-      params.termino_previsto = this.fieldToDate(params.termino_previsto);
-      params.inicio_real = this.fieldToDate(params.inicio_real);
-      params.termino_real = this.fieldToDate(params.termino_real);
-      if (await this.requestS.patch(`${baseUrl}/${caminhoParaApi(this.route.meta, 'etapa')}/${id}`, params)) return true;
+      const newParams = { ...params };
+      newParams.inicio_previsto = this.fieldToDate(params.inicio_previsto);
+      newParams.termino_previsto = this.fieldToDate(params.termino_previsto);
+      newParams.inicio_real = this.fieldToDate(params.inicio_real);
+      newParams.termino_real = this.fieldToDate(params.termino_real);
+      if (await this.requestS.patch(`${baseUrl}/${caminhoParaApi(this.route.meta, 'etapa')}/${id}`, newParams)) return true;
       return false;
     },
     async delete(id) {
@@ -132,15 +147,18 @@ export const useEtapasStore = defineStore({
       return false;
     },
     async monitorar(params) {
-      if (await this.requestS.post(`${baseUrl}/${caminhoParaApi(this.route.meta,'cronograma-etapa')}`, params)) return true;
+      if (await this.requestS.post(`${baseUrl}/${caminhoParaApi(this.route.meta, 'cronograma-etapa')}`, params)) return true;
       return false;
     },
     async getMonitoramento(cronograma_id, etapa_id) {
       try {
+        // Mantendo comportamento legado
+        // eslint-disable-next-line @typescript-eslint/no-throw-literal
         if (!cronograma_id) throw 'Cronograma inválido';
+        // eslint-disable-next-line @typescript-eslint/no-throw-literal
         if (!etapa_id) throw 'Etapa inválida';
         this.singleMonitoramento = { loading: true };
-        const r = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta,'cronograma-etapa')}?cronograma_id=${cronograma_id}&etapa_id=${etapa_id}`);
+        const r = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta, 'cronograma-etapa')}?cronograma_id=${cronograma_id}&etapa_id=${etapa_id}`);
         this.singleMonitoramento = r.linhas.length ? r.linhas[0] : {};
         return r.linhas.length ? r.linhas[0] : {};
       } catch (error) {

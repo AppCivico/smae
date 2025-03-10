@@ -2,7 +2,7 @@ import { ApiProperty, OmitType } from '@nestjs/swagger';
 import { Periodicidade, Serie } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { IdNomeDto } from '../../common/dto/IdNome.dto';
-import { IdSiglaDescricao } from '../../common/dto/IdSigla.dto';
+import { IdSigla, IdSiglaDescricao } from '../../common/dto/IdSigla.dto';
 import { IdTituloDto } from '../../common/dto/IdTitulo.dto';
 import { OrgaoResumo } from '../../orgao/entities/orgao.entity';
 import { SeriesAgrupadas, VariavelItemDto } from '../../variavel/entities/variavel.entity';
@@ -32,6 +32,10 @@ export class VariavelGlobalDetailDto extends OmitType(VariavelDetailDto, ['respo
     medicao_grupo_ids: number[] | null;
     validacao_grupo_ids: number[] | null;
     liberacao_grupo_ids: number[] | null;
+
+    medicao_orgao: IdSigla | null;
+    validacao_orgao: IdSigla | null;
+    liberacao_orgao: IdSigla | null;
 
     medicao_orgao_id: number | null;
     validacao_orgao_id: number | null;

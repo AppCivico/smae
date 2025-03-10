@@ -1,6 +1,7 @@
 import { ApiProperty, refs } from '@nestjs/swagger';
 import { FonteRelatorio } from '@prisma/client';
 import { IsBoolean, IsEnum, IsOptional } from 'class-validator';
+import { CreateRelObrasDto } from 'src/reports/pp-obras/dto/create-obras.dto';
 import { CreateRelProjetosDto } from 'src/reports/pp-projetos/dto/create-projetos.dto';
 import { CreateRelObraStatusDto, CreateRelProjetoStatusDto } from 'src/reports/pp-status/dto/create-projeto-status.dto';
 import { CreateRelPrevisaoCustoDto } from 'src/reports/previsao-custo/dto/create-previsao-custo.dto';
@@ -12,19 +13,13 @@ import {
     CreateRelObrasPrevisaoCustoDto,
     CreateRelProjetoPrevisaoCustoDto,
 } from 'src/reports/projeto-previsao-custo/dto/create-projeto-previsao-custo.dto';
+import { CreateCasaCivilAtividadesPendentesFilterDto } from '../../casa-civil-atividades-pendentes/dto/create-casa-civil-atv-pend-filter.dto';
 import { CreateRelIndicadorDto } from '../../indicadores/dto/create-indicadores.dto';
 import { CreateRelMonitoramentoMensalDto } from '../../monitoramento-mensal/dto/create-monitoramento-mensal.dto';
 import { PdmCreateOrcamentoExecutadoDto } from '../../orcamento/dto/create-orcamento-executado.dto';
 import { CreateRelProjetoDto } from '../../pp-projeto/dto/create-previsao-custo.dto';
+import { CreatePsMonitoramentoMensalFilterDto } from '../../ps-monitoramento-mensal/dto/create-ps-monitoramento-mensal-filter.dto';
 import { ReportValidatorOf } from '../report-validator-of';
-import { CreateRelObrasDto } from 'src/reports/pp-obras/dto/create-obras.dto';
-import {
-    CreatePsMonitoramentoMensalFilterDto
-} from '../../ps-monitoramento-mensal/dto/create-ps-monitoramento-mensal-filter.dto';
-import {
-    CreateCasaCivilAtividadesPendentesFilterDto
-} from '../../casa-civil-atividades-pendentes/dto/create-casa-civil-atv-pend-filter.dto';
-
 
 export class CreateReportDto {
     @ApiProperty({ enum: FonteRelatorio, enumName: 'FonteRelatorio' })
@@ -62,5 +57,5 @@ export class CreateReportDto {
 
     @IsOptional()
     @IsBoolean()
-    salvar_arquivo?: boolean;
+    eh_publico?: boolean;
 }

@@ -2,7 +2,7 @@
 import { Dashboard } from '@/components';
 import QuadroNotas from '@/components/notas/QuadroNotas.vue';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
-import truncate from '@/helpers/truncate';
+import truncate from '@/helpers/texto/truncate';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePanoramaTransferenciasStore } from '@/stores/panoramaTransferencias.store';
 import { usePartidosStore } from '@/stores/partidos.store';

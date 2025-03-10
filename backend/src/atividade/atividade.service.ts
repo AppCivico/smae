@@ -1,7 +1,9 @@
 import { BadRequestException, HttpException, Injectable, Logger } from '@nestjs/common';
-import { Prisma, TipoPdm } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { CronogramaAtrasoGrau } from 'src/common/dto/CronogramaAtrasoGrau.dto';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { UniqueNumbers } from '../common/UniqueNumbers';
+import { PdmModoParaTipo, TipoPdmType } from '../common/decorators/current-tipo-pdm';
 import { IdNomeExibicaoDto } from '../common/dto/IdNomeExibicao.dto';
 import { DetalheOrigensDto, ResumoOrigensMetasItemDto } from '../common/dto/origem-pdm.dto';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
@@ -17,7 +19,6 @@ import { AtividadeOrgaoParticipante, CreateAtividadeDto } from './dto/create-ati
 import { FilterAtividadeDto } from './dto/filter-atividade.dto';
 import { UpdateAtividadeDto } from './dto/update-atividade.dto';
 import { AtividadeDto, AtividadeOrgao } from './entities/atividade.entity';
-import { UniqueNumbers } from '../common/UniqueNumbers';
 
 interface AtividadeResponsavelChanges {
     added: {
@@ -35,11 +36,11 @@ export class AtividadeService {
     private readonly logger = new Logger(AtividadeService.name);
     constructor(
         private readonly prisma: PrismaService,
-        private readonly metaService: MetaService,
+        readonly metaService: MetaService,
         private readonly variavelService: VariavelService
     ) {}
 
-    async create(tipo: TipoPdm, dto: CreateAtividadeDto, user: PessoaFromJwt) {
+    async create(tipo: TipoPdmType, dto: CreateAtividadeDto, user: PessoaFromJwt) {
         const iniciativa = await this.prisma.iniciativa.findFirstOrThrow({
             where: { id: dto.iniciativa_id, removido_em: null },
             select: {
@@ -130,7 +131,7 @@ export class AtividadeService {
                     select: { id: true },
                 });
 
-                if (tipo == 'PDM') {
+                if (tipo == '_PDM') {
                     if (!orgaos_participantes || orgaos_participantes.length === 0)
                         throw new BadRequestException(
                             'orgaos_participantes| Precisa ter pelo menos um orgão participante'
@@ -309,7 +310,7 @@ export class AtividadeService {
         return arr;
     }
 
-    async findAll(tipo: TipoPdm, filters: FilterAtividadeDto, user: PessoaFromJwt) {
+    async findAll(tipo: TipoPdmType, filters: FilterAtividadeDto, user: PessoaFromJwt) {
         const iniciativa_id = filters?.iniciativa_id;
 
         const metaFilterSet = await this.metaService.getMetaFilterSet(tipo, user);
@@ -470,11 +471,11 @@ export class AtividadeService {
         return ret;
     }
 
-    async update(tipo: TipoPdm, id: number, dto: UpdateAtividadeDto, user: PessoaFromJwt) {
+    async update(tipo: TipoPdmType, id: number, dto: UpdateAtividadeDto, user: PessoaFromJwt) {
         const self = await this.prisma.atividade.findFirstOrThrow({
             where: {
                 id,
-                iniciativa: { meta: { pdm: { tipo } } },
+                iniciativa: { meta: { pdm: { tipo: PdmModoParaTipo(tipo) } } },
                 removido_em: null,
             },
             select: { iniciativa_id: true, iniciativa: { select: { meta_id: true } } },
@@ -518,7 +519,7 @@ export class AtividadeService {
             delete dto.ps_ponto_focal;
             delete dto.origens_extra;
 
-            if (tipo === 'PDM' && cp && !op)
+            if (tipo === '_PDM' && cp && !op)
                 throw new HttpException('é necessário enviar orgaos_participantes para alterar coordenadores_cp', 400);
 
             if (dto.codigo) {
@@ -578,7 +579,7 @@ export class AtividadeService {
                 });
             }
 
-            if (tipo == 'PDM') {
+            if (tipo == '_PDM') {
                 if (!op || op.length === 0)
                     throw new BadRequestException('orgaos_participantes| Precisa ter pelo menos um orgão participante');
                 if (!cp || cp.length === 0)
@@ -914,9 +915,9 @@ export class AtividadeService {
         }
     }
 
-    async remove(tipo: TipoPdm, id: number, user: PessoaFromJwt) {
+    async remove(tipo: TipoPdmType, id: number, user: PessoaFromJwt) {
         const self = await this.prisma.atividade.findFirstOrThrow({
-            where: { id, iniciativa: { meta: { pdm: { tipo } } }, removido_em: null },
+            where: { id, iniciativa: { meta: { pdm: { tipo: PdmModoParaTipo(tipo) } } }, removido_em: null },
             select: {
                 iniciativa_id: true,
                 iniciativa: {

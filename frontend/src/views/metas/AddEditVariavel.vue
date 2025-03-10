@@ -2,7 +2,7 @@
 import { variável } from '@/consts/formSchemas';
 import fieldToDate from '@/helpers/fieldToDate';
 import maskMonth from '@/helpers/maskMonth';
-import truncate from '@/helpers/truncate';
+import truncate from '@/helpers/texto/truncate';
 import { router } from '@/router';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAtividadesStore } from '@/stores/atividades.store';

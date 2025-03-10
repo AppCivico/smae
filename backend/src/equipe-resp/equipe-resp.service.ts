@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { PerfilResponsavelEquipe, Prisma } from '@prisma/client';
+import { CONST_PERFIL_PARTICIPANTE_EQUIPE } from 'src/common/consts';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { PessoaPrivilegioService } from '../auth/pessoaPrivilegio.service';
 import { LoggerWithLog } from '../common/LoggerWithLog';
@@ -7,7 +8,6 @@ import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateEquipeRespDto, UpdateEquipeRespDto } from './dto/equipe-resp.dto';
 import { EquipeRespItemDto, FilterEquipeRespDto } from './entities/equipe-resp.entity';
-import { CONST_PERFIL_PARTICIPANTE_EQUIPE } from 'src/common/consts';
 
 @Injectable()
 export class EquipeRespService {
@@ -198,6 +198,61 @@ export class EquipeRespService {
                 });
             }
         }
+        await this.recalculaPessoaPdmTipos(pessoaId, prismaTx);
+    }
+
+    async recalculaPessoaPdmTipos(pessoaId: number, prismaTx: Prisma.TransactionClient) {
+        const equipes = await prismaTx.grupoResponsavelEquipeParticipante.findMany({
+            where: {
+                pessoa_id: pessoaId,
+                removido_em: null,
+            },
+            select: { grupo_responsavel_equipe: { select: { id: true } } },
+        });
+
+        const perfisPdm = new Set<PerfilResponsavelEquipe>();
+        const perfisPs = new Set<PerfilResponsavelEquipe>();
+
+        // Get PDM types and their associated profiles
+        const pdmTiposEPerfis = await prismaTx.pdm.findMany({
+            where: {
+                removido_em: null,
+                PdmPerfil: {
+                    some: {
+                        equipe_id: { in: equipes.map((e) => e.grupo_responsavel_equipe.id) },
+                        removido_em: null,
+                    },
+                },
+            },
+            select: {
+                tipo: true,
+                PdmPerfil: {
+                    select: { equipe: { select: { perfil: true } } },
+                    where: {
+                        equipe_id: { in: equipes.map((e) => e.grupo_responsavel_equipe.id) },
+                        removido_em: null,
+                    },
+                },
+            },
+        });
+
+        for (const item of pdmTiposEPerfis) {
+            item.PdmPerfil.forEach((perfil) => {
+                if (item.tipo === 'PDM') {
+                    perfisPdm.add(perfil.equipe.perfil);
+                } else if (item.tipo === 'PS') {
+                    perfisPs.add(perfil.equipe.perfil);
+                }
+            });
+        }
+
+        await prismaTx.pessoa.update({
+            where: { id: pessoaId },
+            data: {
+                perfis_equipe_pdm: Array.from(perfisPdm),
+                perfis_equipe_ps: Array.from(perfisPs),
+            },
+        });
     }
 
     async findAll(filter: FilterEquipeRespDto): Promise<EquipeRespItemDto[]> {
@@ -412,7 +467,7 @@ export class EquipeRespService {
                     if (!temPriv) {
                         await this.pessoaPrivService.adicionaPerfilAcesso(
                             pessoaId,
-                            'SMAE.GrupoVariavel.participante',
+                            CONST_PERFIL_PARTICIPANTE_EQUIPE,
                             prismaTx
                         );
                     }

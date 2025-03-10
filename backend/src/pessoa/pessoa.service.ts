@@ -1,12 +1,16 @@
 import { BadRequestException, ForbiddenException, HttpException, Injectable, Logger } from '@nestjs/common';
-import { ModuloSistema, Pessoa, Prisma } from '@prisma/client';
+import { ModuloSistema, PerfilResponsavelEquipe, Pessoa, Prisma } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { uuidv7 } from 'uuidv7';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { ListaDePrivilegios } from '../common/ListaDePrivilegios';
 import { LoggerWithLog } from '../common/LoggerWithLog';
+import { CONST_PERFIL_PARTICIPANTE_EQUIPE, LISTA_PRIV_ADMIN } from '../common/consts';
 import { IdCodTituloDto } from '../common/dto/IdCodTitulo.dto';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { MathRandom } from '../common/math-random';
+import { EquipeRespService } from '../equipe-resp/equipe-resp.service';
+import { Arr } from '../mf/metas/dash/metas.service';
 import { NovaSenhaDto } from '../minha-conta/models/nova-senha.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePessoaDto } from './dto/create-pessoa.dto';
@@ -20,14 +24,12 @@ import {
 } from './dto/responsabilidade-pessoa.dto';
 import { UpdatePessoaDto } from './dto/update-pessoa.dto';
 import { ListaPrivilegiosModulos } from './entities/ListaPrivilegiosModulos';
-import { PessoaResponsabilidadesMetaService } from './pessoa.responsabilidades.metas.service';
-import { ListaDePrivilegios } from '../common/ListaDePrivilegios';
+import { ListPessoa } from './entities/list-pessoa.entity';
 import { Pessoa as PessoaDto } from './entities/pessoa.entity';
-import { EquipeRespService } from '../equipe-resp/equipe-resp.service';
-import { CONST_PERFIL_PARTICIPANTE_EQUIPE } from '../common/consts';
+import { PessoaResponsabilidadesMetaService } from './pessoa.responsabilidades.metas.service';
 
 const BCRYPT_ROUNDS = 10;
-const LISTA_PRIV_ADMIN: ListaDePrivilegios[] = ['SMAE.superadmin'];
+
 @Injectable()
 export class PessoaService {
     private readonly logger = new Logger(PessoaService.name);
@@ -52,6 +54,33 @@ export class PessoaService {
             nome_exibicao: pessoa.nome_exibicao,
             id: pessoa.id,
         };
+    }
+
+    async reportPessoaFromJwt(pessoaId: number, sistema: ModuloSistema | null): Promise<PessoaFromJwt> {
+        const pessoa = await this.findById(pessoaId);
+        if (!pessoa) throw new Error(`Pessoa ${pessoaId} não encontrada`);
+
+        if (pessoa.pessoa_fisica === null) throw new Error(`Pessoa ID ${pessoaId} não tem pessoa_fisica associada`);
+
+        const filterModulos = sistema == 'SMAE' || !sistema ? undefined : [sistema];
+
+        const modPriv = await this.listaPrivilegiosModulos(pessoa.id as number, filterModulos);
+
+        return new PessoaFromJwt({
+            id: pessoa.id as number,
+            nome_exibicao: pessoa.nome_exibicao,
+            session_id: 0,
+            privilegios: modPriv.privilegios,
+            sistemas: modPriv.sistemas,
+            orgao_id: pessoa.pessoa_fisica?.orgao_id,
+            flags: {} as any,
+            modulo_sistema: filterModulos as ModuloSistema[],
+            ip: null,
+            perfis_equipe_pdm: pessoa.perfis_equipe_pdm,
+            perfis_equipe_ps: pessoa.perfis_equipe_ps,
+            modulos_permitidos: pessoa.modulos_permitidos,
+            sobreescrever_modulos: pessoa.sobreescrever_modulos,
+        });
     }
 
     async senhaCorreta(senhaInformada: string, pessoa: Partial<Pessoa>) {
@@ -189,6 +218,14 @@ export class PessoaService {
 
     private async verificarPrivilegiosEdicao(id: number, updatePessoaDto: UpdatePessoaDto, user: PessoaFromJwt) {
         const ehAdmin = user.hasSomeRoles(LISTA_PRIV_ADMIN);
+
+        if (!ehAdmin) {
+            if (updatePessoaDto.sobreescrever_modulos !== undefined)
+                throw new ForbiddenException('Você não pode modificar sobreescrever_modulos');
+            if (updatePessoaDto.modulos_permitidos !== undefined)
+                throw new ForbiddenException('Você não pode modificar modulos_permitidos');
+        }
+
         if (user.hasSomeRoles(['SMAE.superadmin']) == false && updatePessoaDto.perfil_acesso_ids) {
             const oldPessoaPerfis = (
                 await this.prisma.pessoaPerfil.findMany({
@@ -329,7 +366,6 @@ export class PessoaService {
     async getDetail(pessoaId: number, user: PessoaFromJwt): Promise<DetalhePessoaDto> {
         const perfisVisiveis = await this.buscaPerfisVisiveis(user);
 
-        console.log('perfisVisiveis', perfisVisiveis);
         const equipes = await this.equipeRespService.findIdsPorParticipante(pessoaId);
         const pessoa = await this.prisma.pessoa.findFirst({
             where: {
@@ -366,6 +402,7 @@ export class PessoaService {
             select: { id: true, codigo: true, nome: true },
         });
 
+        const ehAdmin = user.hasSomeRoles(LISTA_PRIV_ADMIN);
         const listFixed: DetalhePessoaDto = {
             id: pessoa.id,
             nome_completo: pessoa.nome_completo,
@@ -386,7 +423,16 @@ export class PessoaService {
             grupos: pessoa.GruposDePaineisQueParticipo.map((e) => e.grupo_painel),
             responsavel_pelos_projetos,
             equipes,
+            modulos_permitidos: pessoa.modulos_permitidos,
+            sobreescrever_modulos: pessoa.sobreescrever_modulos,
+            permissoes: {
+                posso_editar_modulos: ehAdmin,
+            },
         };
+        if (listFixed.sobreescrever_modulos == false) {
+            // libera tudo exceto o modulo de metas novo
+            listFixed.modulos_permitidos = ['CasaCivil', 'MDO', 'PDM', 'PlanoSetorial', 'Projetos'];
+        }
 
         return listFixed;
     }
@@ -532,7 +578,12 @@ export class PessoaService {
                     nome_completo: updatePessoaDto.nome_completo,
                     nome_exibicao: updatePessoaDto.nome_exibicao,
                     email: updatePessoaDto.email,
-
+                    ...(user.hasSomeRoles(LISTA_PRIV_ADMIN)
+                        ? {
+                              sobreescrever_modulos: updatePessoaDto.sobreescrever_modulos,
+                              modulos_permitidos: updatePessoaDto.modulos_permitidos,
+                          }
+                        : {}),
                     pessoa_fisica: {
                         update: {
                             cargo: updatePessoaDto.cargo,
@@ -1196,6 +1247,15 @@ export class PessoaService {
                         senha_bloqueada: true,
                         senha_bloqueada_em: new Date(Date.now()),
                         pessoa_fisica_id: pessoaFisica ? pessoaFisica.id : null,
+                        ...(user.hasSomeRoles(LISTA_PRIV_ADMIN)
+                            ? {
+                                  sobreescrever_modulos: createPessoaDto.sobreescrever_modulos ?? false,
+                                  modulos_permitidos: createPessoaDto.modulos_permitidos ?? [],
+                              }
+                            : {
+                                  sobreescrever_modulos: false,
+                                  modulos_permitidos: [],
+                              }),
                     },
                 });
 
@@ -1252,36 +1312,12 @@ export class PessoaService {
         return await this.listaPerfilAcessoIdsPorSistema(sistema);
     }
 
-    async findAll(filters: FilterPessoaDto | undefined = undefined, user: PessoaFromJwt) {
+    async findAll(filters: FilterPessoaDto | undefined = undefined, user: PessoaFromJwt): Promise<ListPessoa[]> {
         const visiblePriv = await this.buscaPerfisVisiveis(user);
 
         this.logger.log(`buscando pessoas...`);
-        const selectColumns = {
-            id: true,
-            nome_completo: true,
-            nome_exibicao: true,
-            atualizado_em: true,
-            desativado_em: true,
-            desativado_motivo: true,
-            desativado: true,
-            email: true,
-            pessoa_fisica: {
-                select: {
-                    lotacao: true,
-                    orgao_id: true,
-                },
-            },
-            PessoaPerfil: {
-                select: {
-                    perfil_acesso_id: true,
-                },
-            },
-        };
 
         const filtrosExtra = this.filtrosPrivilegios(filters);
-        if (filters?.orgao_id) {
-            this.logger.log(`filtrando órgão é ${filters?.orgao_id}`);
-        }
 
         const listActive = await this.prisma.pessoa.findMany({
             orderBy: [{ desativado: 'asc' }, { nome_exibicao: 'asc' }],
@@ -1289,14 +1325,38 @@ export class PessoaService {
                 id: { gt: 0 },
                 NOT: { pessoa_fisica_id: null },
                 AND: filtrosExtra,
+                ...(filters?.orgao_id ? { pessoa_fisica: { orgao_id: filters.orgao_id } } : {}),
+            },
+            select: {
+                id: true,
+                nome_completo: true,
+                nome_exibicao: true,
+                atualizado_em: true,
+                desativado_em: true,
+                desativado_motivo: true,
+                desativado: true,
+                email: true,
                 pessoa_fisica: {
-                    orgao_id: filters?.orgao_id,
+                    select: {
+                        lotacao: true,
+                        orgao_id: true,
+                        orgao: {
+                            select: {
+                                sigla: true,
+                                id: true,
+                            },
+                        },
+                    },
+                },
+                PessoaPerfil: {
+                    select: {
+                        perfil_acesso_id: true,
+                    },
                 },
             },
-            select: selectColumns,
         });
 
-        const listFixed = listActive.map((p) => {
+        const listFixed: ListPessoa[] = listActive.map((p) => {
             return {
                 id: p.id,
                 nome_completo: p.nome_completo,
@@ -1306,6 +1366,7 @@ export class PessoaService {
                 desativado_em: p.desativado_em || undefined,
                 desativado: p.desativado,
                 email: p.email,
+                orgao: p.pessoa_fisica?.orgao ? p.pessoa_fisica.orgao : { id: 0, sigla: '' },
                 lotacao: p.pessoa_fisica?.lotacao ? p.pessoa_fisica.lotacao : undefined,
                 orgao_id: p.pessoa_fisica?.orgao_id || undefined,
                 perfil_acesso_ids: p.PessoaPerfil.map((e) => e.perfil_acesso_id).filter((e) => visiblePriv.includes(e)),
@@ -1549,32 +1610,96 @@ export class PessoaService {
                 WHERE removido_em IS NULL
             ),
             perms AS (
-                SELECT DISTINCT p.codigo AS cod_priv, m.codigo AS cod_modulos, unnest(m.modulo_sistema) AS modulo_sistema
+                SELECT DISTINCT p.codigo AS cod_priv, unnest(m.modulo_sistema) AS modulo_sistema
                 FROM filtered_pessoa_perfil pp
                 JOIN filtered_perfil_acesso pa ON pp.perfil_acesso_id = pa.id
                 JOIN perfil_privilegio priv ON priv.perfil_acesso_id = pa.id
                 JOIN privilegio p ON p.id = priv.privilegio_id
                 JOIN privilegio_modulo m ON p.modulo_id = m.id
+                LEFT JOIN pessoa pms ON pms.id = ${pessoaId} AND pms.sobreescrever_modulos=true
                 JOIN filter_modulos fm ON m.modulo_sistema && fm.modulos
+                    -- se a pessoa tem sobreescrever_modulos, então filtra mais uma vez
+                    -- apenas os módulos que ela tem permissão pela sobrescrita
+                    AND (pms.id IS NULL OR m.modulo_sistema && ARRAY_APPEND(pms.modulos_permitidos,'SMAE'))
+            ),
+            _pessoa AS (
+                SELECT perfis_equipe_ps, perfis_equipe_pdm
+                FROM pessoa
+                WHERE id = ${pessoaId}
             )
             SELECT
                 array_agg(DISTINCT cod_priv) AS privilegios,
-                array_agg(DISTINCT cod_modulos) AS modulos,
-                array_agg(DISTINCT modulo_sistema) AS sistemas
+                array_agg(DISTINCT modulo_sistema) AS sistemas,
+                (SELECT perfis_equipe_pdm FROM _pessoa) as perfis_equipe_pdm,
+                (SELECT perfis_equipe_ps FROM _pessoa) as perfis_equipe_ps
             FROM perms;
         `;
-        if (!dados[0] || dados[0].modulos === null || !Array.isArray(dados[0].modulos)) {
+        if (!dados[0] || dados[0].sistemas === null || !Array.isArray(dados[0].sistemas)) {
             throw new BadRequestException(`Seu usuário não tem mais permissões. Entre em contato com o administrador.`);
         }
         const ret = dados[0];
-        if (filterModulos.length == 2) {
+        const comSistemaDefinido = filterModulos.length == 2;
+        if (comSistemaDefinido) {
             const sistema = filterModulos.filter((v) => v != 'SMAE')[0];
             this.filtraPrivilegiosSMAE(sistema, ret);
         }
-        if (!ret.modulos.includes('SMAE')) ret.modulos.push('SMAE');
+        if (!ret.sistemas.includes('SMAE')) ret.sistemas.push('SMAE');
 
         if (ret.privilegios.includes('SMAE.login_suspenso'))
             throw new BadRequestException('Seu usuário está suspenso. Entre em contato com o administrador.');
+
+        const ehAdmin = (tipo: 'PS' | 'PDM') => {
+            return (
+                ret.privilegios.includes(`Cadastro${tipo}.administrador_no_orgao`) ||
+                ret.privilegios.includes(`Cadastro${tipo}.administrador`)
+            );
+        };
+
+        const configuracoesModulo: {
+            tipo: 'PDM' | 'PS';
+            modulo: 'ProgramaDeMetas' | 'PlanoSetorial';
+            chaveEquipe: 'perfis_equipe_pdm' | 'perfis_equipe_ps';
+            perfilEquipe: PerfilResponsavelEquipe[];
+            privilegios: ListaDePrivilegios[];
+        }[] = [
+            {
+                tipo: 'PDM',
+                modulo: 'ProgramaDeMetas',
+                chaveEquipe: 'perfis_equipe_pdm',
+                perfilEquipe: ['AdminPS', 'TecnicoPS', 'PontoFocalPS'],
+                privilegios: ['Menu.metas', 'ReferencialEm.Equipe.ProgramaDeMetas'],
+            },
+            {
+                tipo: 'PS',
+                modulo: 'PlanoSetorial',
+                chaveEquipe: 'perfis_equipe_ps',
+                perfilEquipe: ['AdminPS', 'TecnicoPS', 'PontoFocalPS'],
+                privilegios: ['ReferencialEm.Equipe.PS'],
+            },
+            {
+                tipo: 'PDM',
+                modulo: 'ProgramaDeMetas',
+                chaveEquipe: 'perfis_equipe_pdm',
+                perfilEquipe: ['Medicao', 'Validacao', 'Liberacao'],
+                privilegios: ['ReferencialEm.EquipeBanco.ProgramaDeMetas'],
+            },
+            {
+                tipo: 'PS',
+                modulo: 'PlanoSetorial',
+                chaveEquipe: 'perfis_equipe_ps',
+                perfilEquipe: ['Medicao', 'Validacao', 'Liberacao'],
+                privilegios: ['ReferencialEm.EquipeBanco.PS'],
+            },
+        ];
+
+        for (const config of configuracoesModulo) {
+            if (
+                (ehAdmin(config.tipo) || Arr.hasIntersection(ret[config.chaveEquipe], config.perfilEquipe)) &&
+                filterModulos.includes(config.modulo)
+            ) {
+                ret.privilegios.push(...config.privilegios);
+            }
+        }
 
         return ret;
     }
@@ -1624,16 +1749,18 @@ export class PessoaService {
             removePrivilegios('ModalidadeContratacao.');
         }
 
-        if (!(sistema == 'PDM' || sistema == 'PlanoSetorial')) {
+        if (!(sistema == 'PDM' || sistema == 'PlanoSetorial' || sistema == 'ProgramaDeMetas')) {
             removePrivilegios('CadastroOds.');
             removePrivilegios('CadastroUnidadeMedida.');
         }
-        //
-        //        if (!(sistema == 'PlanoSetorial')) {
-        //            removePrivilegios('FonteVariavel.');
-        //            removePrivilegios('AssuntoVariavel.');
-        //        }
-        //
+
+        if (!(sistema == 'PlanoSetorial' || sistema == 'ProgramaDeMetas')) {
+            removePrivilegios('CadastroVariavelGlobal.');
+            removePrivilegios('CadastroGrupoVariavel.');
+            removePrivilegios('CadastroVariavelCategorica.');
+            removePrivilegios('FonteVariavel.');
+            removePrivilegios('AssuntoVariavel.');
+        }
 
         if (sistema == 'CasaCivil') {
             removePrivilegios('CadastroPainelExterno.');

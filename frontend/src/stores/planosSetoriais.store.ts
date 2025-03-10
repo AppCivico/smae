@@ -1,13 +1,15 @@
+import type { RecordWithId } from '@back/common/dto/record-with-id.dto';
 import type {
   DadosCodTituloMetaDto,
-} from '@/../../backend/src/meta/dto/create-meta.dto';
-import type { DetalhePSDto } from '@/../../backend/src/pdm/dto/detalhe-pdm.dto';
-import type { ListPdmDto, OrcamentoConfig } from '@/../../backend/src/pdm/dto/list-pdm.dto';
-import type { PlanoSetorialDto } from '@/../../backend/src/pdm/dto/pdm.dto';
-import type { ListPdmDocument } from '@/../../backend/src/pdm/entities/list-pdm-document.entity';
-import type { ListPdm } from '@/../../backend/src/pdm/entities/list-pdm.entity';
-import dateTimeToDate from '@/helpers/dateTimeToDate';
+  ListDadosMetaIniciativaAtividadesDto,
+} from '@back/meta/dto/create-meta.dto';
+import type { DetalhePSDto } from '@back/pdm/dto/detalhe-pdm.dto';
+import type { ListPdmDto, OrcamentoConfig } from '@back/pdm/dto/list-pdm.dto';
+import type { PlanoSetorialDto } from '@back/pdm/dto/pdm.dto';
+import type { ListPdmDocument } from '@back/pdm/entities/list-pdm-document.entity';
+import type { ListPdm } from '@back/pdm/entities/list-pdm.entity';
 import { defineStore } from 'pinia';
+import dateTimeToDate from '@/helpers/dateTimeToDate';
 import mapIniciativas from './helpers/mapIniciativas';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -30,6 +32,12 @@ interface Erros {
 
 type EmFoco = PlanoSetorialDto & { orcamento_config?: OrcamentoConfig[] | null };
 
+export type TiposDeOrcamentosDisponiveis = {
+  execucao_disponivel?: boolean;
+  planejado_disponivel?: boolean;
+  previsao_custo_disponivel?: boolean;
+};
+
 interface Estado {
   lista: Lista;
   emFoco: EmFoco | null;
@@ -39,7 +47,7 @@ interface Estado {
   erros: Erros;
 }
 
-export const usePlanosSetoriaisStore = defineStore('planosSetoriais', {
+export const usePlanosSetoriaisStore = (prefixo: string) => defineStore(prefixo ? `${prefixo}.planosSetoriais` : 'planosSetoriais', {
   state: (): Estado => ({
     lista: [],
     emFoco: null,
@@ -65,7 +73,7 @@ export const usePlanosSetoriaisStore = defineStore('planosSetoriais', {
       this.erros.emFoco = null;
 
       try {
-        const resposta: DetalhePSDto | PlanoSetorialDto = await this.requestS.get(`${baseUrl}/plano-setorial/${id}`, params);
+        const resposta = await this.requestS.get(`${baseUrl}/plano-setorial/${id}`, params) as DetalhePSDto | PlanoSetorialDto;
 
         this.emFoco = 'pdm' in resposta
           ? {
@@ -86,7 +94,7 @@ export const usePlanosSetoriaisStore = defineStore('planosSetoriais', {
       this.erros.lista = null;
 
       try {
-        const { linhas } = await this.requestS.get(`${baseUrl}/plano-setorial`, params);
+        const { linhas } = await this.requestS.get(`${baseUrl}/plano-setorial`, params) as ListPdmDto;
         this.lista = linhas;
       } catch (erro: unknown) {
         this.erros.lista = erro;
@@ -110,14 +118,14 @@ export const usePlanosSetoriaisStore = defineStore('planosSetoriais', {
       }
     },
 
-    async salvarItem(params = {}, id = 0): Promise<boolean> {
+    async salvarItem(params = {}, id = 0): Promise<boolean | RecordWithId> {
       this.chamadasPendentes.emFoco = true;
       this.erros.emFoco = null;
 
       try {
         const resposta = id
-          ? await this.requestS.patch(`${baseUrl}/plano-setorial/${id}`, params)
-          : await this.requestS.post(`${baseUrl}/plano-setorial`, params);
+          ? await this.requestS.patch(`${baseUrl}/plano-setorial/${id}`, params) as RecordWithId
+          : await this.requestS.post(`${baseUrl}/plano-setorial`, params) as RecordWithId;
 
         this.chamadasPendentes.emFoco = false;
         return resposta;
@@ -133,7 +141,7 @@ export const usePlanosSetoriaisStore = defineStore('planosSetoriais', {
       this.erros.arquivos = null;
 
       try {
-        const resposta: ListPdmDocument = await this.requestS.get(`${baseUrl}/plano-setorial/${idDoPlanoSetorial || this.route.params.planoSetorialId}/documento`, params);
+        const resposta = await this.requestS.get(`${baseUrl}/plano-setorial/${idDoPlanoSetorial || this.route.params.planoSetorialId}/documento`, params) as ListPdmDocument;
 
         if (Array.isArray(resposta.linhas)) {
           this.arquivos = resposta.linhas;
@@ -162,7 +170,11 @@ export const usePlanosSetoriaisStore = defineStore('planosSetoriais', {
       }
     },
 
-    async associarArquivo(params = {}, id = 0, idDoPlanoSetorial = 0): Promise<boolean> {
+    async associarArquivo(
+      params = {},
+      id = 0,
+      idDoPlanoSetorial = 0,
+    ): Promise<boolean | RecordWithId> {
       this.chamadasPendentes.arquivos = true;
       this.erros.arquivos = null;
 
@@ -170,9 +182,9 @@ export const usePlanosSetoriaisStore = defineStore('planosSetoriais', {
         let resposta;
 
         if (id) {
-          resposta = await this.requestS.patch(`${baseUrl}/plano-setorial/${idDoPlanoSetorial || this.route.params.planoSetorialId}/documento/${id}`, params);
+          resposta = await this.requestS.patch(`${baseUrl}/plano-setorial/${idDoPlanoSetorial || this.route.params.planoSetorialId}/documento/${id}`, params) as RecordWithId;
         } else {
-          resposta = await this.requestS.post(`${baseUrl}/plano-setorial/${idDoPlanoSetorial || this.route.params.planoSetorialId}/documento`, params);
+          resposta = await this.requestS.post(`${baseUrl}/plano-setorial/${idDoPlanoSetorial || this.route.params.planoSetorialId}/documento`, params) as RecordWithId;
         }
 
         this.chamadasPendentes.arquivos = false;
@@ -189,7 +201,7 @@ export const usePlanosSetoriaisStore = defineStore('planosSetoriais', {
       this.erros.arvoreDeMetas = null;
 
       try {
-        const { linhas } = await this.requestS.get(`${baseUrl}/projeto/proxy/iniciativas-atividades`, params);
+        const { linhas } = await this.requestS.get(`${baseUrl}/projeto/proxy/iniciativas-atividades`, params) as ListDadosMetaIniciativaAtividadesDto;
 
         if (Array.isArray(linhas)) {
           linhas.forEach((cur:DadosCodTituloMetaDto) => {
@@ -205,59 +217,80 @@ export const usePlanosSetoriaisStore = defineStore('planosSetoriais', {
       this.chamadasPendentes.arvoreDeMetas = false;
     },
 
+    async atualizarPermissoesOrcamento(id: number, params: Record<string, unknown>): Promise<void> {
+      await this.requestS.patch(`${baseUrl}/plano-setorial/${id}/orcamento-config`, params);
+    },
   },
 
   getters: {
-    itemParaEdicao: ({ emFoco }) => ({
-      ...emFoco,
-      data_fim: emFoco?.data_fim
-        ? dateTimeToDate(emFoco.data_fim)
-        : null,
-      data_inicio: emFoco?.data_inicio
-        ? dateTimeToDate(emFoco.data_inicio)
-        : null,
-      data_publicacao: emFoco?.data_publicacao
-        ? dateTimeToDate(emFoco.data_publicacao)
-        : null,
-      equipe_tecnica: emFoco?.equipe_tecnica || '',
-      monitoramento_orcamento: !!emFoco?.monitoramento_orcamento,
-      nome: emFoco?.nome || '',
-      orgao_admin_id: emFoco?.orgao_admin?.id || null,
-      pdm_anteriores: Array.isArray(emFoco?.pdm_anteriores)
-        ? emFoco.pdm_anteriores.map((pdm) => pdm.id || pdm)
-        : [],
-      periodo_do_ciclo_participativo_fim: emFoco?.periodo_do_ciclo_participativo_fim
-        ? dateTimeToDate(emFoco.periodo_do_ciclo_participativo_fim)
-        : null,
-      periodo_do_ciclo_participativo_inicio: emFoco?.periodo_do_ciclo_participativo_inicio
-        ? dateTimeToDate(emFoco.periodo_do_ciclo_participativo_inicio)
-        : null,
-      possui_atividade: !!emFoco?.possui_atividade,
-      possui_complementacao_meta: !!emFoco?.possui_complementacao_meta,
-      possui_contexto_meta: !!emFoco?.possui_contexto_meta,
-      possui_iniciativa: !!emFoco?.possui_iniciativa,
-      possui_macro_tema: !!emFoco?.possui_macro_tema,
-      possui_sub_tema: !!emFoco?.possui_sub_tema,
-      possui_tema: !!emFoco?.possui_tema,
-      prefeito: emFoco?.prefeito || '',
-      ps_admin_cp: Array.isArray(emFoco?.ps_admin_cp?.equipes)
-        ? emFoco.ps_admin_cp
-        : { equipes: [] },
-      ps_ponto_focal: Array.isArray(emFoco?.ps_ponto_focal?.equipes)
-        ? emFoco.ps_ponto_focal
-        : { equipes: [] },
-      ps_tecnico_cp: Array.isArray(emFoco?.ps_tecnico_cp?.equipes)
-        ? emFoco.ps_tecnico_cp
-        : { equipes: [] },
-      rotulo_atividade: emFoco?.rotulo_atividade || '',
-      rotulo_complementacao_meta: emFoco?.rotulo_complementacao_meta || '',
-      rotulo_contexto_meta: emFoco?.rotulo_contexto_meta || '',
-      rotulo_iniciativa: emFoco?.rotulo_iniciativa || '',
-      rotulo_macro_tema: emFoco?.rotulo_macro_tema || '',
-      rotulo_sub_tema: emFoco?.rotulo_sub_tema || '',
-      rotulo_tema: emFoco?.rotulo_tema || '',
-      upload_logo: emFoco?.logo || null,
-    }),
+    itemParaEdicao({ emFoco }) {
+      let tipoPadrao;
+      switch (this.route.meta.entidadeMãe) {
+        case 'planoSetorial':
+          tipoPadrao = 'PS';
+          break;
+        case 'programaDeMetas':
+          tipoPadrao = 'PDM';
+          break;
+        default:
+          throw new Error('Módulo não pôde ser detectado');
+      }
+
+      return {
+        ...emFoco,
+
+        // campo oculto
+        tipo: emFoco?.tipo || tipoPadrao,
+
+        data_fim: emFoco?.data_fim
+          ? dateTimeToDate(emFoco.data_fim)
+          : null,
+        data_inicio: emFoco?.data_inicio
+          ? dateTimeToDate(emFoco.data_inicio)
+          : null,
+        data_publicacao: emFoco?.data_publicacao
+          ? dateTimeToDate(emFoco.data_publicacao)
+          : null,
+        equipe_tecnica: emFoco?.equipe_tecnica || '',
+        monitoramento_orcamento: !!emFoco?.monitoramento_orcamento,
+        nome: emFoco?.nome || '',
+        orgao_admin_id: emFoco?.orgao_admin?.id || null,
+        pdm_anteriores: Array.isArray(emFoco?.pdm_anteriores)
+          ? emFoco.pdm_anteriores.map((pdm) => pdm.id || pdm)
+          : [],
+        periodo_do_ciclo_participativo_fim: emFoco?.periodo_do_ciclo_participativo_fim
+          ? dateTimeToDate(emFoco.periodo_do_ciclo_participativo_fim)
+          : null,
+        periodo_do_ciclo_participativo_inicio: emFoco?.periodo_do_ciclo_participativo_inicio
+          ? dateTimeToDate(emFoco.periodo_do_ciclo_participativo_inicio)
+          : null,
+        possui_atividade: !!emFoco?.possui_atividade,
+        possui_complementacao_meta: !!emFoco?.possui_complementacao_meta,
+        possui_contexto_meta: !!emFoco?.possui_contexto_meta,
+        possui_iniciativa: !!emFoco?.possui_iniciativa,
+        possui_macro_tema: !!emFoco?.possui_macro_tema,
+        possui_sub_tema: !!emFoco?.possui_sub_tema,
+        possui_tema: !!emFoco?.possui_tema,
+        prefeito: emFoco?.prefeito || '',
+        ps_admin_cp: Array.isArray(emFoco?.ps_admin_cp?.equipes)
+          ? emFoco.ps_admin_cp
+          : { equipes: [] },
+        ps_ponto_focal: Array.isArray(emFoco?.ps_ponto_focal?.equipes)
+          ? emFoco.ps_ponto_focal
+          : { equipes: [] },
+        ps_tecnico_cp: Array.isArray(emFoco?.ps_tecnico_cp?.equipes)
+          ? emFoco.ps_tecnico_cp
+          : { equipes: [] },
+        rotulo_atividade: emFoco?.rotulo_atividade || '',
+        rotulo_complementacao_meta: emFoco?.rotulo_complementacao_meta || '',
+        rotulo_contexto_meta: emFoco?.rotulo_contexto_meta || '',
+        rotulo_iniciativa: emFoco?.rotulo_iniciativa || '',
+        rotulo_macro_tema: emFoco?.rotulo_macro_tema || '',
+        rotulo_sub_tema: emFoco?.rotulo_sub_tema || '',
+        rotulo_tema: emFoco?.rotulo_tema || '',
+        upload_logo: emFoco?.logo || null,
+      };
+    },
 
     arquivosPorId: ({ arquivos }: Estado) => {
       const result = arquivos.reduce((acc, cur) => ({
@@ -274,7 +307,7 @@ export const usePlanosSetoriaisStore = defineStore('planosSetoriais', {
       return result;
     },
 
-    orcamentosDisponiveisNoPlanoEmFoco: ({ emFoco }) => {
+    orcamentosDisponiveisNoPlanoEmFoco: ({ emFoco }):TiposDeOrcamentosDisponiveis => {
       const disponiveis = {
         execucao_disponivel: false,
         planejado_disponivel: false,
@@ -315,4 +348,4 @@ export const usePlanosSetoriaisStore = defineStore('planosSetoriais', {
     planosSetoriaisPorId: ({ lista }: Estado): { [k: number | string]: ListPdm } => lista
       .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
   },
-});
+})();

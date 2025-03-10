@@ -1,14 +1,12 @@
 <script setup>
 import { relatórioDePortfolioObras as schema } from '@/consts/formSchemas';
-import statuses from '@/consts/projectStatuses';
-import truncate from '@/helpers/truncate';
-import arrayToValueAndLabel from '@/helpers/arrayToValueAndLabel';
+import truncate from '@/helpers/texto/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store.ts';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';
-import { useRegionsStore } from '@/stores/regions.store.js';
+import { useRegionsStore } from '@/stores/regions.store';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
@@ -36,26 +34,19 @@ const initialValues = {
     orgao_responsavel_id: null,
     portfolio_id: null,
   },
-  salvar_arquivo: false,
 };
 
 async function onSubmit(values) {
   const carga = values;
 
   try {
-    if (!carga.salvar_arquivo) {
-      carga.salvar_arquivo = false;
-    }
-
     const msg = 'Dados salvos com sucesso!';
     const r = await relatoriosStore.insert(carga);
 
     if (r === true) {
       alertStore.success(msg);
 
-      if (carga.salvar_arquivo && route.meta?.rotaDeEscape) {
-        router.push({ name: route.meta.rotaDeEscape });
-      }
+      router.push({ name: route.meta.rotaDeEscape });
     }
   } catch (error) {
     alertStore.error(error);
@@ -79,7 +70,7 @@ iniciar();
     <CheckClose />
   </div>
   <Form
-    v-slot="{ errors, isSubmitting, values }"
+    v-slot="{ errors, isSubmitting, setFieldValue }"
     :validation-schema="schema"
     :initial-values="initialValues"
     @submit="onSubmit"
@@ -116,6 +107,39 @@ iniciar();
           class="error-msg"
         >
           {{ errors['parametros.portfolio_id'] }}
+        </div>
+      </div>
+      <div class="f1">
+        <LabelFromYup
+          name="eh_publico"
+          :schema="schema"
+          required
+        />
+        <Field
+          name="eh_publico"
+          as="select"
+          class="inputtext light"
+          :class="{
+            error: errors['eh_publico'],
+            loading: portfolioObrasStore.chamadasPendentes.lista
+          }"
+          :disabled="portfolioObrasStore.chamadasPendentes.lista"
+        >
+          <option :value="null">
+            Selecionar
+          </option>
+          <option :value="true">
+            Sim
+          </option>
+          <option :value="false">
+            Não
+          </option>
+        </Field>
+        <div
+          v-if="errors['eh_publico']"
+          class="error-msg"
+        >
+          {{ errors['eh_publico'] }}
         </div>
       </div>
       <div class="f1 mb1">
@@ -247,25 +271,38 @@ iniciar();
           {{ errors['parametros.periodo'] }}
         </div>
       </div>
-    </div>
-
-    <div class="mb2">
-      <div class="pl2">
-        <label class="block">
-          <Field
-            name="salvar_arquivo"
-            type="checkbox"
-            :value="true"
-            class="inputcheckbox"
-          />
-          <span :class="{ 'error': errors.salvar_arquivo }">Salvar relatório no sistema</span>
-        </label>
-      </div>
-      <div
-        v-if="errors.salvar_arquivo"
-        class="error-msg"
-      >
-        {{ errors.salvar_arquivo }}
+      <div class="f1">
+        <LabelFromYup
+          name="eh_publico"
+          :schema="schema"
+          required
+        />
+        <Field
+          name="eh_publico"
+          as="select"
+          class="inputtext light"
+          :class="{
+            error: errors['eh_publico'],
+            loading: portfolioObrasStore.chamadasPendentes.lista
+          }"
+          :disabled="portfolioObrasStore.chamadasPendentes.lista"
+        >
+          <option :value="null">
+            Selecionar
+          </option>
+          <option :value="true">
+            Sim
+          </option>
+          <option :value="false">
+            Não
+          </option>
+        </Field>
+        <div
+          v-if="errors['eh_publico']"
+          class="error-msg"
+        >
+          {{ errors['eh_publico'] }}
+        </div>
       </div>
     </div>
 
@@ -280,7 +317,7 @@ iniciar();
           ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
           : null"
       >
-        {{ values.salvar_arquivo ? "baixar e salvar" : "apenas baixar" }}
+        Criar relatório
       </button>
       <hr class="ml2 f1">
     </div>

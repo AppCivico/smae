@@ -1,8 +1,10 @@
 import { BadRequestException, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { GeoCamadaConfig, Prisma } from '@prisma/client';
+import * as turf from '@turf/simplify';
 import { Feature, GeoJSON, GeoJsonObject } from 'geojson';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { SmaeConfigService } from '../common/services/smae-config.service';
 import { GeoApiService } from '../geo-api/geo-api.service';
 import { PrismaService } from '../prisma/prisma.service';
 import {
@@ -14,12 +16,11 @@ import {
     GeoLocCamadaFullDto,
     GeoLocCamadaSimplesDto,
     GeoLocDto,
-    GeoLocDtoByLatLong as GeoLocDtoByLatLong,
+    GeoLocDtoByLatLong,
     GeolocalizacaoDto,
     RetornoCreateEnderecoDto,
     RetornoGeoLoc,
 } from './entities/geo-loc.entity';
-import { SmaeConfigService } from '../common/services/smae-config.service';
 
 class GeoTokenJwtBody {
     id: number;
@@ -235,6 +236,50 @@ export class GeoLocService {
         return ret;
     }
 
+    async processGeoJsonSimplification(): Promise<void> {
+        const geoCamadas = await this.prisma.geoCamada.findMany({
+            where: {
+                config: {
+                    simplificar_em: { not: null }, // resolution
+                },
+            },
+            select: {
+                id: true,
+                geom_geojson_original: true,
+                config: {
+                    select: {
+                        simplificar_em: true,
+                    },
+                },
+            },
+        });
+
+        for (const r of geoCamadas) {
+            const originalGeoJson = r.geom_geojson_original as any as GeoJSON;
+
+            if (originalGeoJson.type === 'Feature' && originalGeoJson.geometry.type === 'Polygon') {
+                try {
+                    const simplifiedGeoJson = turf.simplify(originalGeoJson, {
+                        tolerance: r.config.simplificar_em!,
+                        highQuality: false,
+                        mutate: true,
+                    });
+
+                    await this.prisma.geoCamada.update({
+                        where: { id: r.id },
+                        data: {
+                            geom_geojson: simplifiedGeoJson as unknown as Prisma.InputJsonValue,
+                        },
+                    });
+                } catch (error) {
+                    this.logger.error(`Error simplifying GeoJSON for id ${r.id}: ${error}`, 'GeoLocService');
+                }
+            } else {
+                this.logger.warn(`GeoJSON with id ${r.id} is not a Polygon. Skipping simplification.`, 'GeoLocService');
+            }
+        }
+    }
+
     private async criaCamada(
         dbConfig: {
             id: number;
@@ -298,9 +343,49 @@ export class GeoLocService {
     }
 
     async buscaCamadas(dto: FilterCamadasDto): Promise<GeoLocCamadaFullDto[]> {
+        let filtroRegioes: number[] | undefined = undefined;
+
+        if (dto.filha_de_regiao_id) {
+            const regioes = await this.prisma.$queryRaw<{ id: number }[]>`
+                WITH RECURSIVE subRegioes AS (
+                    -- Base case: começa com a região
+                    SELECT id, parente_id, nivel
+                    FROM regiao
+                    WHERE id = ${dto.filha_de_regiao_id}
+                    AND removido_em IS NULL
+                    UNION ALL
+                    -- Recursive case: busca os filhos
+                    SELECT r.id, r.parente_id, r.nivel
+                    FROM regiao r
+                    INNER JOIN subRegioes sr ON r.parente_id = sr.id
+                    WHERE r.removido_em IS NULL
+                )
+                SELECT id
+                FROM subRegioes
+                WHERE true
+                AND (
+                    ${dto.regiao_nivel_regionalizacao}::int IS NULL
+                    OR
+                    nivel = ${dto.regiao_nivel_regionalizacao}::int
+                )
+            `;
+
+            filtroRegioes = regioes.map((r) => r.id);
+        }
+
         const rows = await this.prisma.geoCamada.findMany({
             where: {
                 id: { in: dto.camada_ids },
+                nivel_regionalizacao: dto.camada_nivel_regionalizacao,
+                GeoCamadaRegiao: filtroRegioes
+                    ? {
+                          some: {
+                              regiao: {
+                                  id: filtroRegioes ? { in: filtroRegioes } : undefined,
+                              },
+                          },
+                      }
+                    : undefined,
             },
             select: {
                 id: true,
@@ -308,19 +393,50 @@ export class GeoLocService {
                 titulo: true,
                 geom_geojson: true,
                 config: true,
+                GeoCamadaRegiao: dto.retornar_regioes
+                    ? {
+                          select: {
+                              regiao: {
+                                  select: {
+                                      id: true,
+                                      descricao: true,
+                                      nivel: true,
+                                  },
+                              },
+                          },
+                      }
+                    : undefined,
             },
         });
 
         return rows
             .filter((r) => r.geom_geojson?.valueOf())
             .map((r) => {
+                const regiaoFiltro =
+                    dto.retornar_regioes && 'GeoCamadaRegiao' in r
+                        ? r.GeoCamadaRegiao.filter(
+                              (r) =>
+                                  !dto.regiao_nivel_regionalizacao ||
+                                  ('regiao' in r && dto.regiao_nivel_regionalizacao == (r as any).regiao.nivel)
+                          ).map((r) => {
+                              const regiao = (r as any).regiao;
+                              return {
+                                  id: regiao.id,
+                                  descricao: regiao.descricao,
+                                  nivel_regionalizacao: regiao.nivel,
+                              };
+                          })
+                        : undefined;
+
+                delete (r as any).GeoCamadaRegiao;
                 return {
                     ...r,
+                    regiao: regiaoFiltro,
                     descricao: r.config.descricao,
                     cor: r.config.cor,
                     nivel_regionalizacao: r.config.nivel_regionalizacao,
                     geom_geojson: r.geom_geojson?.valueOf() as GeoJSON,
-                };
+                } satisfies GeoLocCamadaFullDto;
             });
     }
 

@@ -7,6 +7,8 @@ import {
     CreateRelProjetoPrevisaoCustoDto,
 } from './dto/create-projeto-previsao-custo.dto';
 import { PrevisaoCustoService } from '../previsao-custo/previsao-custo.service';
+import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
+import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 
 @ApiTags('Relatórios - API')
 @Controller('relatorio/projeto-previsao-custo')
@@ -16,8 +18,11 @@ export class ProjetoPrevisaoCustoController {
     @Post()
     @ApiBearerAuth('access-token')
     @Roles(['Reports.executar.Projetos'])
-    async create(@Body() createPrevisaoCustDto: CreateRelProjetoPrevisaoCustoDto): Promise<ListPrevisaoCustoDto> {
-        return await this.previsaoCustoService.asJSON(createPrevisaoCustDto);
+    async create(
+        @Body() createPrevisaoCustDto: CreateRelProjetoPrevisaoCustoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<ListPrevisaoCustoDto> {
+        return await this.previsaoCustoService.asJSON(createPrevisaoCustDto, user);
     }
 }
 
@@ -29,7 +34,10 @@ export class ProjetoMDOPrevisaoCustoController {
     @Post()
     @ApiBearerAuth('access-token')
     @Roles(['Reports.executar.MDO'])
-    async create(@Body() createPrevisaoCustDto: CreateRelObrasPrevisaoCustoDto): Promise<ListPrevisaoCustoDto> {
-        return await this.previsaoCustoService.asJSON(createPrevisaoCustDto);
+    async create(
+        @Body() createPrevisaoCustDto: CreateRelObrasPrevisaoCustoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<ListPrevisaoCustoDto> {
+        return await this.previsaoCustoService.asJSON(createPrevisaoCustDto, user);
     }
 }

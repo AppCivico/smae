@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { FeatureFlagDto } from './FeatureFlagDto';
-import { ModuloSistema } from '@prisma/client';
+import { ModuloSistema, PerfilResponsavelEquipe } from '@prisma/client';
 import { ListaDePrivilegios } from '../../common/ListaDePrivilegios';
+import { FeatureFlagDto } from './FeatureFlagDto';
 
 export class PessoaFromJwtBase {
     @ApiProperty({ description: 'ID da Pessoa' })
@@ -17,9 +17,6 @@ export class PessoaFromJwtBase {
     @ApiProperty({ description: 'Lista de Módulos', enum: ModuloSistema, enumName: 'ModuloSistema' })
     sistemas: ModuloSistema[];
 
-    @ApiProperty({ description: 'Lista de Módulos dos privilégios' })
-    modulos: string[];
-
     orgao_id: undefined | number;
 
     flags: FeatureFlagDto;
@@ -27,4 +24,19 @@ export class PessoaFromJwtBase {
     modulo_sistema: ModuloSistema[];
 
     ip: string | null;
+
+    @ApiProperty({
+        description: 'Lista de perfis nas equipes que o usuário participa em Programa de Metas',
+        isArray: true,
+    })
+    perfis_equipe_pdm: PerfilResponsavelEquipe[];
+
+    @ApiProperty({
+        description: 'Lista de perfis nas equipes que o usuário participa em Planos Setoriais',
+        isArray: true,
+    })
+    perfis_equipe_ps: PerfilResponsavelEquipe[];
+
+    sobreescrever_modulos: boolean;
+    modulos_permitidos: ModuloSistema[];
 }

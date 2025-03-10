@@ -1,22 +1,4 @@
 <script setup>
-import AutocompleteField from '@/components/AutocompleteField2.vue';
-import CampoDeEquipesComBuscaPorOrgao from '@/components/CampoDeEquipesComBuscaPorOrgao.vue';
-import CampoDePlanosMetasRelacionados from '@/components/CampoDePlanosMetasRelacionados.vue';
-import CampoDeTagsComBuscaPorCategoria from '@/components/CampoDeTagsComBuscaPorCategoria.vue';
-import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
-import { meta as metaSchema } from '@/consts/formSchemas';
-import simplificarOrigem from '@/helpers/simplificadorDeOrigem';
-import truncate from '@/helpers/truncate';
-import { router } from '@/router';
-import { useAlertStore } from '@/stores/alert.store';
-import { useEquipesStore } from '@/stores/equipes.store';
-import { useMacrotemasStore } from '@/stores/macrotemas.store';
-import { useMetasStore } from '@/stores/metas.store';
-import { useOrgansStore } from '@/stores/organs.store';
-import { useSubtemasStore } from '@/stores/subtemas.store';
-import { useTagsStore } from '@/stores/tags.store';
-import { useTemasStore } from '@/stores/temas.store';
-import { useUsersStore } from '@/stores/users.store';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
@@ -31,6 +13,24 @@ import {
   watch,
 } from 'vue';
 import { useRoute } from 'vue-router';
+import AutocompleteField from '@/components/AutocompleteField2.vue';
+import CampoDeEquipesComBuscaPorOrgao from '@/components/CampoDeEquipesComBuscaPorOrgao.vue';
+import CampoDePlanosMetasRelacionados from '@/components/CampoDePlanosMetasRelacionados.vue';
+import CampoDeTagsComBuscaPorCategoria from '@/components/CampoDeTagsComBuscaPorCategoria.vue';
+import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
+import { meta as metaSchema } from '@/consts/formSchemas';
+import simplificarOrigem from '@/helpers/simplificadorDeOrigem';
+import truncate from '@/helpers/texto/truncate';
+import { router } from '@/router';
+import { useAlertStore } from '@/stores/alert.store';
+import { useEquipesStore } from '@/stores/equipes.store';
+import { useMacrotemasStore } from '@/stores/macrotemas.store';
+import { useMetasStore } from '@/stores/metas.store';
+import { useOrgansStore } from '@/stores/organs.store';
+import { useSubtemasStore } from '@/stores/subtemas.store';
+import { useTagsStore } from '@/stores/tags.store';
+import { useTemasStore } from '@/stores/temas.store';
+import { useUsersStore } from '@/stores/users.store';
 
 defineOptions({
   inheritAttrs: false,
@@ -156,13 +156,15 @@ const valoresIniciais = computed(() => ({
     : [],
 }));
 
+const isPlanejamentoEMonitoramento = computed(() => ['planoSetorial', 'programaDeMetas'].includes(route.meta.entidadeMãe));
+
 async function onSubmit(_, { controlledValues: values }) {
   try {
     const er = [];
 
     // remove orgaos_participantes de plano setorial pois a api
     // gera sozinha esse valor agora
-    if (route.meta.entidadeMãe === 'planoSetorial') {
+    if (isPlanejamentoEMonitoramento.value) {
       values.orgaos_participantes = [];
     }
 
@@ -222,9 +224,9 @@ async function checkDelete(id) {
 
           if (route.meta.entidadeMãe === 'pdm') {
             router.push({ name: 'pdm.metas' });
-          } else if (route.meta.entidadeMãe === 'planoSetorial') {
+          } else if (isPlanejamentoEMonitoramento.value) {
             router.push({
-              name: 'planoSetorial:listaDeMetas',
+              name: `${route.meta.entidadeMãe}.listaDeMetas`,
               params: {
                 planoSetorialId: route.params.planoSetorialId,
               },
@@ -620,7 +622,7 @@ watch(() => activePdm.value.id, async (novoValor) => {
       </template>
 
       <fieldset
-        v-if="$route.meta.entidadeMãe === 'planoSetorial'"
+        v-if="isPlanejamentoEMonitoramento"
         class="mb2"
       >
         <legend class="label">
@@ -666,11 +668,11 @@ watch(() => activePdm.value.id, async (novoValor) => {
       </fieldset>
 
       <fieldset
-        v-if="$route.meta.entidadeMãe === 'planoSetorial'"
+        v-if="isPlanejamentoEMonitoramento"
         class="mb2"
       >
         <legend class="label">
-          Equipe Técnica de Administração do Plano
+          Equipe Técnica de Monitoramento
         </legend>
 
         <div>

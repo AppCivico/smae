@@ -31,6 +31,7 @@ export class ProjetoProxyPdmMetasController {
             'Reports.executar.CasaCivil',
             'Reports.executar.PlanoSetorial',
             'Reports.executar.Projetos',
+            'Reports.executar.ProgramaDeMetas',
         ],
         'Consulta Metas e PDM do sistema'
     )
@@ -54,6 +55,7 @@ export class ProjetoProxyPdmMetasController {
         'Reports.executar.CasaCivil',
         'Reports.executar.PlanoSetorial',
         'Reports.executar.Projetos',
+        'Reports.executar.ProgramaDeMetas',
     ])
     async buscaMetasIniciativaAtividades(
         @Query('meta_ids', new ParseArrayPipe({ items: Number, separator: ',' })) ids: number[]

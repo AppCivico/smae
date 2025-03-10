@@ -18,6 +18,12 @@ export class DashboardService {
     async findAll(user: PessoaFromJwt, hostname: string): Promise<RetornoLinhasDashboardLinhasDto[]> {
         const liberados: RetornoLinhasDashboardLinhasDto[] = [];
 
+        // primeiro os Paineis externos
+        if (user.hasSomeRoles(['SMAE.espectador_de_painel_externo'])) {
+            await this.painelExterno(user, liberados, hostname);
+        }
+
+        // Depois os Metabase metabases
         const rows = await this.prisma.metabasePermissao.findMany({
             orderBy: [{ ordem: 'asc' }],
         });
@@ -39,9 +45,6 @@ export class DashboardService {
             }
         }
 
-        if (user.hasSomeRoles(['SMAE.espectador_de_painel_externo'])) {
-            await this.painelExterno(user, liberados, hostname);
-        }
         return liberados;
     }
 
@@ -69,6 +72,7 @@ export class DashboardService {
                 },
             },
         });
+        console.log(painelExterno);
 
         if (painelExterno.length === 0) return;
 
@@ -135,7 +139,7 @@ export class DashboardService {
                 if (!config['params']['tipo_pdm']) config['params']['tipo_pdm'] = 'PDM';
 
                 memory['metas_ids'] = (
-                    await this.metaService.findAllIds(config['params']['tipo_pdm'] == 'PDM' ? 'PDM' : 'PS', user)
+                    await this.metaService.findAllIds(config['params']['tipo_pdm'] == 'PDM' ? '_PDM' : '_PS', user)
                 ).map((p) => p.id);
                 if (memory['metas_ids'].length == 0) memory['metas_ids'] = [-1];
             }
@@ -158,7 +162,7 @@ export class DashboardService {
 
                 const jwt = sign(
                     {
-                        ...config
+                        ...config,
                     },
                     r.metabase_token,
                     { algorithm: 'HS256', expiresIn: 86400 }

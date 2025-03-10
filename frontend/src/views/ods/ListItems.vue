@@ -49,7 +49,7 @@ async function checkDelete({ id, titulo }) {
         :to="{ name: 'categorias.novo'}"
         class="btn big ml2"
       >
-        Nova categoria
+        Nova categoria de tags
       </router-link>
     </div>
 
@@ -109,7 +109,7 @@ async function checkDelete({ id, titulo }) {
               </router-link>
 
               <button
-                v-if="perm?.CadastroUnidadeMedida.remover"
+                v-if="perm?.CadastroOds.remover"
                 class="ml1 like-a__text"
                 @click="checkDelete(item)"
               >

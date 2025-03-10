@@ -1,12 +1,13 @@
 import { HttpException, Inject, Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
+import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { PdmModoParaTipo, TipoPdmType } from '../common/decorators/current-tipo-pdm';
+import { PdmService } from '../pdm/pdm.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateEixoDto } from './dto/create-macro-tema.dto';
 import { FilterEixoDto } from './dto/filter-macro-tema.dto';
 import { UpdateEixoDto } from './dto/update-macro-tema.dto';
-import { Prisma, TipoPdm } from '@prisma/client';
-import { RecordWithId } from 'src/common/dto/record-with-id.dto';
-import { PdmService } from '../pdm/pdm.service';
 
 @Injectable()
 export class MacroTemaService {
@@ -17,14 +18,14 @@ export class MacroTemaService {
         private readonly pdmService: PdmService
     ) {}
 
-    async create(tipo: TipoPdm, createEixoDto: CreateEixoDto, user: PessoaFromJwt) {
+    async create(tipo: TipoPdmType, createEixoDto: CreateEixoDto, user: PessoaFromJwt) {
         await this.pdmService.getDetail(tipo, createEixoDto.pdm_id, user, 'ReadWrite');
 
         const now = new Date(Date.now());
         const created = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             const pdm = await prismaTx.pdm.count({
                 where: {
-                    tipo,
+                    tipo: PdmModoParaTipo(tipo),
                     id: createEixoDto.pdm_id,
                     removido_em: null,
                 },
@@ -34,7 +35,7 @@ export class MacroTemaService {
             const descricaoExists = await prismaTx.macroTema.count({
                 where: {
                     pdm_id: createEixoDto.pdm_id,
-                    pdm: { tipo, id: createEixoDto.pdm_id },
+                    pdm: { tipo: PdmModoParaTipo(tipo), id: createEixoDto.pdm_id },
                     removido_em: null,
                     descricao: {
                         equals: createEixoDto.descricao,
@@ -59,12 +60,12 @@ export class MacroTemaService {
         return created;
     }
 
-    async findAll(tipo: TipoPdm, filters: FilterEixoDto) {
+    async findAll(tipo: TipoPdmType, filters: FilterEixoDto) {
         const listActive = await this.prisma.macroTema.findMany({
             where: {
                 removido_em: null,
                 pdm_id: filters.pdm_id,
-                pdm: { tipo, id: filters.pdm_id },
+                pdm: { tipo: PdmModoParaTipo(tipo), id: filters.pdm_id },
                 id: filters.id,
             },
             select: {
@@ -77,7 +78,7 @@ export class MacroTemaService {
         return listActive;
     }
 
-    async update(tipo: TipoPdm, id: number, updateEixoDto: UpdateEixoDto, user: PessoaFromJwt) {
+    async update(tipo: TipoPdmType, id: number, updateEixoDto: UpdateEixoDto, user: PessoaFromJwt) {
         delete updateEixoDto.pdm_id; // nao deixa editar o PDM
 
         const self = await this.prisma.macroTema.findFirstOrThrow({
@@ -108,7 +109,7 @@ export class MacroTemaService {
                 }
 
                 const macroTema = await prismaTx.macroTema.update({
-                    where: { id: id, pdm: { tipo } },
+                    where: { id: id, pdm: { tipo: PdmModoParaTipo(tipo) } },
                     data: {
                         atualizado_por: user.id,
                         atualizado_em: now,
@@ -124,7 +125,7 @@ export class MacroTemaService {
         return updated;
     }
 
-    async remove(tipo: TipoPdm, id: number, user: PessoaFromJwt) {
+    async remove(tipo: TipoPdmType, id: number, user: PessoaFromJwt) {
         const self = await this.prisma.macroTema.findFirstOrThrow({
             where: { id },
             select: { pdm_id: true },
@@ -135,7 +136,7 @@ export class MacroTemaService {
         if (emUso > 0) throw new HttpException('Eixo em uso em Metas.', 400);
 
         const created = await this.prisma.macroTema.updateMany({
-            where: { id: id, pdm: { tipo } },
+            where: { id: id, pdm: { tipo: PdmModoParaTipo(tipo) } },
             data: {
                 removido_por: user.id,
                 removido_em: new Date(Date.now()),

@@ -2,7 +2,7 @@
 import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import statuses from '@/consts/projectStatuses';
 import dateToDate from '@/helpers/dateToDate';
-import truncate from '@/helpers/truncate';
+import truncate from '@/helpers/texto/truncate';
 import { defineProps } from 'vue';
 import RolagemHorizontal from '../rolagem/RolagemHorizontal.vue';
 
@@ -101,7 +101,7 @@ defineProps({
               {{ projeto.meta?.codigo || ' - ' }}
             </td>
             <td class="tl">
-              {{ statuses[projeto.status] || projeto.status }}
+              {{ statuses[projeto.status]?.nome || projeto.status }}
             </td>
             <td class="tl">
               {{ projeto.etapa_atual || ' - ' }}

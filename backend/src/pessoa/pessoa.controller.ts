@@ -17,11 +17,15 @@ import {
 import { UpdatePessoaDto } from './dto/update-pessoa.dto';
 import { PessoaService } from './pessoa.service';
 import { PROJETO_READONLY_ROLES, PROJETO_READONLY_ROLES_MDO } from '../pp/projeto/projeto.controller';
+import { PessoaUtilsService } from './pessoa.utils.service';
 
 @ApiTags('Pessoa')
 @Controller('pessoa')
 export class PessoaController {
-    constructor(private readonly pessoaService: PessoaService) {}
+    constructor(
+        private readonly pessoaService: PessoaService,
+        private readonly pessoaUtilsService: PessoaUtilsService
+    ) {}
 
     @Post()
     @ApiBearerAuth('access-token')
@@ -49,13 +53,19 @@ export class PessoaController {
         'CadastroPS.administrador',
         'SMAE.GrupoVariavel.participante', // entrando no lugar de 'PS.admin_cp'/PS.tecnico_cp'/PS.ponto_focal'
         'CadastroMetaPS.listar',
-        'PS.admin_cp', // mantendo por enquanto para apresentação
-        'PS.tecnico_cp',
-        'PS.ponto_focal',
+        'CadastroMetaPDM.listar',
         'CadastroPessoa.administrador.MDO',
     ])
     async findAll(@Query() filters: FilterPessoaDto, @CurrentUser() user: PessoaFromJwt): Promise<ListPessoaDto> {
         return { linhas: await this.pessoaService.findAll(filters, user) };
+    }
+
+    @ApiBearerAuth('access-token')
+    @Patch('recalc-equipe')
+    @Roles(['SMAE.superadmin'])
+    async recalculaEquipeTodasPessoas(): Promise<string> {
+        await this.pessoaUtilsService.recalculaEquipeTodasPessoas();
+        return 'OK';
     }
 
     @ApiBearerAuth('access-token')
@@ -82,10 +92,9 @@ export class PessoaController {
         'CadastroPS.administrador',
         'SMAE.GrupoVariavel.participante', // entrando no lugar de 'PS.admin_cp'/PS.tecnico_cp'/PS.ponto_focal'
         'CadastroMetaPS.listar',
-        'PS.admin_cp', // mantendo por enquanto para apresentação
-        'PS.tecnico_cp',
-        'PS.ponto_focal',
+        'CadastroMetaPDM.listar',
         'CadastroPessoa.administrador.MDO',
+        'CadastroGrupoVariavel.colaborador_responsavel', // cadastra as equipes
         ...PROJETO_READONLY_ROLES,
         ...PROJETO_READONLY_ROLES_MDO,
     ])

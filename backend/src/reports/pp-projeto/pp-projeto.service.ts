@@ -9,7 +9,7 @@ import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { ProjetoService, ProjetoStatusParaExibicao } from '../../pp/projeto/projeto.service';
 import { ProjetoRiscoStatus } from '../../pp/risco/entities/risco.entity';
 import { PrismaService } from '../../prisma/prisma.service';
-import { DefaultCsvOptions, FileOutput, ReportContext, ReportableService } from '../utils/utils.service';
+import { DefaultCsvOptions, FileOutput, ReportableService } from '../utils/utils.service';
 import { CreateRelProjetoDto } from './dto/create-previsao-custo.dto';
 import {
     PPProjetoRelatorioDto,
@@ -24,6 +24,8 @@ import {
 import { Stream2Buffer } from '../../common/helpers/Streaming';
 import { StatusContrato, ContratoPrazoUnidade } from '@prisma/client';
 import { RelProjetosAditivosDto, RelProjetosContratosDto } from '../pp-projetos/entities/projetos.entity';
+import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
+import { ReportContext } from '../relatorios/helpers/reports.contexto';
 
 const {
     Parser,
@@ -96,11 +98,11 @@ export class PPProjetoService implements ReportableService {
         @Inject(forwardRef(() => AcompanhamentoService)) private readonly acompanhamentoService: AcompanhamentoService
     ) {}
 
-    async asJSON(dto: CreateRelProjetoDto): Promise<PPProjetoRelatorioDto> {
+    async asJSON(dto: CreateRelProjetoDto, user: PessoaFromJwt | null): Promise<PPProjetoRelatorioDto> {
         const projetoRow: ProjetoDetailDto = await this.projetoService.findOne(
             'PP',
             dto.projeto_id,
-            undefined,
+            user ?? undefined,
             'ReadOnly'
         );
 
@@ -121,16 +123,16 @@ export class PPProjetoService implements ReportableService {
             codigo: projetoRow.codigo,
             objeto: projetoRow.objeto,
             objetivo: projetoRow.objetivo,
-            data_aprovacao: Date2YMD.toStringOrNull(projetoRow.data_aprovacao),
-            data_revisao: Date2YMD.toStringOrNull(projetoRow.data_revisao),
+            data_aprovacao: projetoRow.data_aprovacao,
+            data_revisao: projetoRow.data_revisao,
             versao: projetoRow.versao,
             publico_alvo: projetoRow.publico_alvo,
-            previsao_inicio: Date2YMD.toStringOrNull(projetoRow.previsao_inicio),
+            previsao_inicio: projetoRow.previsao_inicio,
             previsao_custo: projetoRow.previsao_custo,
             previsao_duracao: projetoRow.previsao_duracao,
-            previsao_termino: Date2YMD.toStringOrNull(projetoRow.previsao_termino),
-            realizado_inicio: Date2YMD.toStringOrNull(projetoRow.realizado_inicio),
-            realizado_termino: Date2YMD.toStringOrNull(projetoRow.realizado_termino),
+            previsao_termino: projetoRow.previsao_termino,
+            realizado_inicio: projetoRow.realizado_inicio,
+            realizado_termino: projetoRow.realizado_termino,
             realizado_custo: projetoRow.realizado_custo,
             nao_escopo: projetoRow.nao_escopo,
             principais_etapas: projetoRow.principais_etapas,
@@ -143,7 +145,7 @@ export class PPProjetoService implements ReportableService {
             atraso: projetoRow.atraso,
             em_atraso: projetoRow.em_atraso,
             tolerancia_atraso: projetoRow.tolerancia_atraso,
-            projecao_termino: Date2YMD.toStringOrNull(projetoRow.projecao_termino),
+            projecao_termino: projetoRow.projecao_termino,
             realizado_duracao: projetoRow.realizado_duracao,
             percentual_concluido: projetoRow.percentual_concluido,
             portfolio_titulo: projetoRow.portfolio.titulo,
@@ -215,12 +217,12 @@ export class PPProjetoService implements ReportableService {
             return {
                 hirearquia: tarefasHierarquia[e.id],
                 tarefa: e.tarefa,
-                inicio_planejado: Date2YMD.toStringOrNull(e.inicio_planejado),
-                termino_planejado: Date2YMD.toStringOrNull(e.termino_planejado),
+                inicio_planejado: e.inicio_planejado,
+                termino_planejado: e.termino_planejado,
                 custo_estimado: e.custo_estimado,
                 duracao_planejado: e.duracao_planejado,
-                inicio_real: Date2YMD.toStringOrNull(e.inicio_real),
-                termino_real: Date2YMD.toStringOrNull(e.termino_real),
+                inicio_real: e.inicio_real,
+                termino_real: e.termino_real,
                 duracao_real: e.duracao_real,
                 percentual_concluido: e.percentual_concluido,
                 custo_real: e.custo_real,
@@ -248,7 +250,7 @@ export class PPProjetoService implements ReportableService {
             return {
                 codigo_risco: e.projeto_risco.codigo,
                 contramedida: e.contramedida,
-                prazo_contramedida: Date2YMD.toStringOrNull(e.prazo_contramedida),
+                prazo_contramedida: e.prazo_contramedida,
                 responsavel: e.responsavel,
                 medidas_de_contingencia: e.medidas_de_contingencia,
             };
@@ -260,7 +262,7 @@ export class PPProjetoService implements ReportableService {
                 id: a.id,
                 acompanhamento_tipo: a.acompanhamento_tipo ? a.acompanhamento_tipo.nome : null,
                 numero: a.ordem,
-                data_registro: Date2YMD.toStringOrNull(a.data_registro),
+                data_registro: a.data_registro,
                 participantes: a.participantes,
                 detalhamento: a.detalhamento,
                 observacao: a.observacao,
@@ -280,8 +282,8 @@ export class PPProjetoService implements ReportableService {
                     numero_encaminhamento: e.numero_identificador,
                     encaminhamento: e.encaminhamento,
                     responsavel: e.responsavel,
-                    prazo_encaminhamento: Date2YMD.toStringOrNull(e.prazo_encaminhamento),
-                    prazo_realizado: Date2YMD.toStringOrNull(e.prazo_realizado),
+                    prazo_encaminhamento: e.prazo_encaminhamento,
+                    prazo_realizado: e.prazo_realizado,
                 };
             });
         });
@@ -336,7 +338,7 @@ export class PPProjetoService implements ReportableService {
                 WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL AND tipo_aditivo.habilita_valor = true GROUP BY contrato_aditivo.data ORDER BY contrato_aditivo.data DESC LIMIT 1
             ) AS valor_reajustado,
             (
-                SELECT valor FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL ORDER BY contrato_aditivo.data DESC LIMIT 1 
+                SELECT valor FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL ORDER BY contrato_aditivo.data DESC LIMIT 1
             ) AS valor_com_reajuste,
             (
                 SELECT max(data_termino_atualizada) FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL
@@ -481,10 +483,33 @@ export class PPProjetoService implements ReportableService {
         });
     }
 
-    async toFileOutput(params: CreateRelProjetoDto, ctx: ReportContext): Promise<FileOutput[]> {
+    async toFileOutput(
+        params: CreateRelProjetoDto,
+        ctx: ReportContext,
+        user: PessoaFromJwt | null
+    ): Promise<FileOutput[]> {
         await ctx.progress(1);
         // relatório de apenas 1 item, por enquanto não há problemas de performance / memória
-        const dados = await this.asJSON(params);
+        const dados = await this.asJSON(params, user);
+
+        // relatorio está sendo gerado pelo sistema, vamos configurar a restrição de acesso de acordo
+        // com os dados do relatório
+        if (!user) {
+            const orgao_port = await this.prisma.portfolio.findFirstOrThrow({
+                where: { id: dados.detail.portfolio_id },
+                select: { orgaos: { select: { id: true } } },
+            });
+
+            ctx.setRestricaoAcesso({
+                portfolio_orgao_ids: orgao_port.orgaos.map((o) => o.id),
+//                roles: [
+//                    'Projeto.administrador_no_orgao',
+//                    'ProjetoMDO.administrador_no_orgao',
+//                    'Projeto.administrador',
+//                    'ProjetoMDO.administrador',
+//                ],
+            });
+        }
 
         await ctx.progress(40);
 
@@ -546,6 +571,7 @@ export class PPProjetoService implements ReportableService {
         await ctx.progress(65);
 
         if (dados.planos_acao.length) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const json2csvParser = new Parser({
                 ...DefaultCsvOptions,
                 transforms: defaultTransform,

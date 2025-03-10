@@ -4,7 +4,7 @@
     <hr class="ml2 f1">
     <SmaeLink
       v-if="psEmFoco?.pode_editar"
-      :to="{ name: 'planosSetoriaisNovoSubtema' }"
+      :to="{ name: `${route.meta.entidadeMãe}.planosSetoriaisNovoSubtema` }"
       class="btn big ml1"
     >
       Novo {{ titulo }}
@@ -31,7 +31,10 @@
         <td>
           <SmaeLink
             v-if="psEmFoco?.pode_editar"
-            :to="{ name: 'planosSetoriaisEditarSubtema', params: { subtemaId: item.id } }"
+            :to="{
+              name: `${route.meta.entidadeMãe}.planosSetoriaisEditarSubtema`,
+              params: { subtemaId: item.id }
+            }"
             class="tprimary"
           >
             <svg
@@ -42,7 +45,10 @@
         </td>
         <td>
           <button
-            v-if="temPermissãoPara('CadastroSubTemaPS.remover') && psEmFoco?.pode_editar"
+            v-if="temPermissãoPara([
+              'CadastroSubTemaPS.remover',
+              'CadastroSubTemaPDM.remover',
+            ]) && psEmFoco?.pode_editar"
             class="like-a__text"
             arial-label="excluir"
             title="excluir"
@@ -75,13 +81,13 @@
 </template>
 
 <script setup>
+import { storeToRefs } from 'pinia';
+import { computed, defineOptions } from 'vue';
+import { useRoute } from 'vue-router';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useSubtemasPsStore } from '@/stores/subtemasPs.store';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
-import { storeToRefs } from 'pinia';
-import { computed, defineOptions } from 'vue';
-import { useRoute } from 'vue-router';
 
 defineOptions({
   inheritAttrs: false,
@@ -99,7 +105,7 @@ const { temPermissãoPara } = storeToRefs(authStore);
 const subtemasStore = useSubtemasPsStore();
 const { lista, chamadasPendentes, erro } = storeToRefs(subtemasStore);
 
-const planosSetoriaisStore = usePlanosSetoriaisStore();
+const planosSetoriaisStore = usePlanosSetoriaisStore(route.meta.entidadeMãe);
 const { emFoco: psEmFoco } = storeToRefs(planosSetoriaisStore);
 
 async function excluirSubtema(id, descricao) {

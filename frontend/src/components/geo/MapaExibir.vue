@@ -12,6 +12,14 @@
       @ready="mapReady"
     />
   </KeepAlive>
+  <!-- @link https://stackoverflow.com/a/51033863/15425845 -->
+  <div
+    ref="elementoPainelFlutuante"
+    class="painel-flutuante__conteudo"
+    hidden
+  >
+    <component :is="() => conteudoPainelFlutuante" />
+  </div>
 </template>
 <script setup>
 import marcadorLaranja from '@/assets/icons/mapas/map-pin--laranja.svg';
@@ -26,14 +34,16 @@ import 'leaflet.markercluster/dist/leaflet.markercluster';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import 'leaflet/dist/leaflet.css';
-import { debounce } from 'lodash';
+import { debounce, merge } from 'lodash';
 import { storeToRefs } from 'pinia';
 import {
   defineEmits,
   defineOptions,
   defineProps,
+  nextTick,
   onMounted,
   ref,
+  useSlots,
   watch,
 } from 'vue';
 
@@ -46,6 +56,15 @@ const { camadas } = storeToRefs(RegionsStore);
 let marcadorNoMapa = null;
 const polígonosNoMapa = [];
 const geoJsonsNoMapa = [];
+
+const grupoDeElementosNoMapa = () => L.featureGroup(
+  []
+    .concat(polígonosNoMapa)
+    .concat(geoJsonsNoMapa),
+);
+
+const elementoPainelFlutuante = ref(null);
+const conteudoPainelFlutuante = ref(null);
 const elementoMapa = ref(null);
 const alturaCorrente = ref();
 
@@ -145,6 +164,8 @@ const emits = defineEmits([
   'update:modelValue',
 ]);
 
+const slots = useSlots();
+
 function adicionarMarcadorNoPonto(e) {
   // PRA-FAZER: não funciona ainda!
   if (e.latlng !== undefined) {
@@ -167,9 +188,23 @@ function marcadorFoiMovido() {
 }
 
 function atribuirPainelFlutuante(item, dados = null, opcoes = null) {
-  let conteudo = '';
-
+  let conteudo;
   switch (true) {
+    case !!slots['painel-flutuante']:
+      conteudo = () => {
+        // ocultar e reexibir o elemento para forçar a atualização da sua posição
+        elementoPainelFlutuante.value.setAttribute('hidden', '');
+        conteudoPainelFlutuante.value = slots['painel-flutuante'](dados);
+
+        nextTick(() => {
+          if (elementoPainelFlutuante.value.hasAttribute('hidden')) {
+            elementoPainelFlutuante.value.removeAttribute('hidden');
+          }
+        });
+
+        return elementoPainelFlutuante.value;
+      };
+      break;
     case !!dados?.titulo:
       conteudo = dados.titulo;
       break;
@@ -188,7 +223,9 @@ function atribuirPainelFlutuante(item, dados = null, opcoes = null) {
 
   if (conteudo) {
     item.bindTooltip(conteudo, {
-      direction: 'center',
+      direction: 'auto',
+      className: 'painel-flutuante',
+      sticky: true,
       ...props.opcoesDoPainelFlutuante,
       ...opcoes,
     });
@@ -262,6 +299,8 @@ function criarGeoJson(dados) {
       pointToLayer: (_geoJsonPoint, latlng) => L.marker(latlng, { icon: ícone }),
     });
 
+    atribuirPainelFlutuante(geoJson, dados?.properties);
+
     if (props.agruparMarcadores) {
       grupoDeMarcadores.addLayer(geoJson);
     } else {
@@ -270,10 +309,11 @@ function criarGeoJson(dados) {
   } else {
     geoJson = L.geoJSON(dados);
 
+    // o painel flutuante não pode ser adicionado depois da inserção no cluster
+    atribuirPainelFlutuante(geoJson, dados?.properties);
+
     geoJson.addTo(mapa);
   }
-
-  atribuirPainelFlutuante(geoJson, dados?.properties);
 
   geoJsonsNoMapa.push(geoJson);
 }
@@ -300,23 +340,28 @@ function prepararGeoJsonS(items) {
       mapa.addLayer(grupoDeMarcadores);
     }
 
-    const grupo = L.featureGroup(geoJsonsNoMapa);
-    mapa.fitBounds(grupo.getBounds());
+    mapa.fitBounds(grupoDeElementosNoMapa().getBounds());
   }
 }
 
 function criarPolígono(dadosDoPolígono) {
-  const opções = {
-    ...props.opçõesDoPolígono,
-  };
+  let config = {};
 
+  // mapear propriedade para manter compatibilidade com o backend
   if (dadosDoPolígono.config?.cor) {
-    opções.color = dadosDoPolígono.config?.cor;
+    config.color = dadosDoPolígono.config?.cor;
   }
 
+  config = {
+    config,
+    // mapear propriedade para manter compatibilidade com o backend
+    ...props.opçõesDoPolígono,
+    ...dadosDoPolígono.config,
+  };
+
   const polígono = dadosDoPolígono.geom_geojson
-    ? L.geoJSON(dadosDoPolígono.geom_geojson, opções).addTo(mapa)
-    : L.polygon(dadosDoPolígono.coordenadas, opções).addTo(mapa);
+    ? L.geoJSON(dadosDoPolígono.geom_geojson, config).addTo(mapa)
+    : L.polygon(dadosDoPolígono.coordenadas, config).addTo(mapa);
   polígono.id = dadosDoPolígono.id;
 
   atribuirPainelFlutuante(polígono, dadosDoPolígono);
@@ -350,12 +395,17 @@ async function prepararCamadas(camadasFornecidas = props.camadas) {
     : acc), []);
 
   if (camadasABuscar.length) {
-    await RegionsStore.buscarCamadas(camadasFornecidas.map((x) => x.id));
+    await RegionsStore.buscarCamadas({
+      camada_ids: camadasFornecidas.map((x) => x.id),
+    });
   }
 
   const camadasSelecionadas = camadasFornecidas
     .reduce((acc, cur) => (camadas?.value?.[cur.id]?.geom_geojson?.geometry.type === 'Polygon'
-      ? acc.concat(camadas?.value?.[cur.id])
+      ? acc.concat({
+        ...camadas?.value?.[cur.id],
+        config: merge({}, camadas?.value?.[cur.id].config, cur.config),
+      })
       : acc), []);
   chamarDesenhoDePolígonosNovos(camadasSelecionadas);
 }
@@ -404,6 +454,10 @@ async function iniciarMapa(element) {
     criarMarcadores([props.marcador]);
   }
 
+  if (props.marcadores?.length) {
+    criarMarcadores(props.marcadores);
+  }
+
   if (props.geoJson) {
     if (Array.isArray(props.geoJson)) {
       prepararGeoJsonS(props.geoJson);
@@ -436,7 +490,11 @@ function removerMapa() {
 const observer = new IntersectionObserver((entries) => {
   if (!mapa) {
     if (entries[0].isIntersecting === true && elementoMapa.value) {
-      iniciarMapa(elementoMapa.value);
+      iniciarMapa(elementoMapa.value).then((foo) => {
+        nextTick(() => {
+          mapa.fitBounds(grupoDeElementosNoMapa().getBounds(), { animate: true });
+        });
+      });
     }
   }
 }, { threshold: [0.25] });
@@ -446,6 +504,12 @@ useResizeObserver(elementoMapa, debounce(async (entries) => {
   const { height } = entry.contentRect;
 
   alturaCorrente.value = `${height}px`;
+
+  nextTick(() => {
+    if (mapa) {
+      mapa.fitBounds(grupoDeElementosNoMapa().getBounds(), { animate: true });
+    }
+  });
 }, 400));
 
 onMounted(() => {
@@ -491,9 +555,146 @@ watch(() => props.polígonos, (valorNovo) => {
 </script>
 <style lang="less">
 .mapa {
+  flex-grow: 1;
+
   &:focus {
     outline: 1px solid @c400;
     outline-style: solid !important;
+  }
+}
+
+.leaflet-interactive:focus {
+  outline: 0;
+  stroke-opacity: 0.85;
+}
+
+.painel-flutuante {
+  font-size: 0.857143rem;
+  width: 6em;
+
+  min-width: min-content;
+  max-width: fit-content;
+  padding: 0.5em;
+  box-shadow: 0px 6px 4.5px 0px #00000080;
+  border-radius: 12px;
+  background-color: @branco;
+  border: 2px solid @c400;
+  font-weight: 500;
+
+  // larguras duplicadas no container. Por que? Não sei. Algum conflito com o
+  // cálculo de largura pelo plugin do Leaflet
+  @media screen and (min-width: 480px) {
+    width: 10em;
+  }
+
+  @media screen and (min-width: 800px) {
+    font-size: 1rem;
+    width: 15em;
+  }
+
+  @media screen and (min-width: 1024px) {
+    width: 25em;
+    padding: 0.75em 0.5em;
+  }
+
+  @media screen and (min-width: 1980px) {
+    font-size: 1.285714rem;
+  }
+
+  &::before {
+    content: none;
+  }
+
+  // contornar erro de exibição de painel flutuante obsoleto
+  &:empty {
+    display: none;
+  }
+}
+
+.painel-flutuante__conteudo {
+  white-space: normal;
+  max-width: fit-content;
+  width: 6em;
+
+  :last-child {
+    margin-bottom: 0;
+  }
+
+  :only-child {
+    margin-bottom: 0;
+
+    @media screen and (max-width: 1024px) {
+      padding-bottom: 0;
+      border: 0;
+    }
+  }
+
+  // larguras duplicadas no wrapper. Por que? Não sei. Algum conflito com o
+  // cálculo de largura pelo plugin do Leaflet
+  @media screen and (min-width: 480px) {
+    width: 10em;
+  }
+
+  @media screen and (min-width: 800px) {
+    width: 15em;
+  }
+
+  @media screen and (min-width: 1024px) {
+    width: 25em;
+  }
+}
+
+.painel-flutuante__titulo {
+  font-weight: 700;
+  font-size: 1em;
+  margin-bottom: 0.75em;
+  border-bottom: 1px solid @c300;
+  padding-bottom: calc(0.375em - 1px);
+
+  @media screen and (min-width: 1980px) {
+    font-size: 1.111111rem;
+  }
+}
+
+.painel-flutuante dl {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1em 1.25em;
+  min-width: min-content;
+  font-size: 100%;
+
+  @media screen and (min-width: 800px) {
+    grid-template-columns: 1fr 1fr;
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 1px;
+      height: 100%;
+      background-color: @c300;
+    }
+  }
+
+  div {
+    min-width: 0;
+  }
+
+  dt {
+    font-weight: 400;
+    color: @cinza-medio;
+    margin-bottom: 0.25em;
+    font-size: 100%;
+  }
+
+  dd {
+    font-weight: 600;
+    font-size: 100%;
+    text-overflow: ellipsis;
+    overflow: hidden;
   }
 }
 </style>

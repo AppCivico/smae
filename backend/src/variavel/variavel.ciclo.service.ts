@@ -756,6 +756,7 @@ export class VariavelCicloService {
                 valor_nominal: true,
             },
         });
+        console.log(valoresSerieVariavel);
 
         // carrega a ultima linha de cada uma das analises
         const fases: VariavelFase[] = ['Liberacao', 'Preenchimento', 'Validacao'];
@@ -818,11 +819,73 @@ export class VariavelCicloService {
         // Se estiver na fase de Preenchimento sem análise prévia, usa os valores da série
         // Para outras fases ou quando houver análise, prioriza os valores do formulário
         const useSerieVariavel = cicloCorrente.fase === 'Preenchimento' && !ultimaAnalise; // ultimaAnalise=Form Enviado
-        const valoresFormatados = this.formatarValores(
-            variavel,
-            useSerieVariavel ? valoresSerieVariavel : [],
-            ultimaAnalise?.valores as any as IUltimaAnaliseValor[]
-        );
+
+        let valoresFormatados: VariavelValorDto[];
+
+        if (useSerieVariavel) {
+            valoresFormatados = this.formatarValores(variavel, valoresSerieVariavel, []);
+        } else {
+            const valoresForm = ultimaAnalise?.valores as any as IUltimaAnaliseValor[];
+            if (Array.isArray(valoresForm)) {
+                for (const v of valoresForm) {
+                    // seta a variavel mãe no item q está sem (form do preenchido natural)
+                    if (!v.variavel_id) v.variavel_id = variavel_id;
+                }
+            }
+
+            const remapSeriesVariavel: ValorSerieInterface[] = [];
+
+            // busca Realizado and RealizadoAcumulado duma vez
+            const getSerieVariavel = (variableId: number) => {
+                const realizado = valoresSerieVariavel.find(
+                    (v) => v.variavel_id === variableId && v.serie === 'Realizado'
+                );
+                const realizadoAcumulado = valoresSerieVariavel.find(
+                    (v) => v.variavel_id === variableId && v.serie === 'RealizadoAcumulado'
+                );
+                return { realizado, realizadoAcumulado };
+            };
+
+            const variavelProcessadas = new Set<number>();
+
+            // Primeiro, pra cada form
+            if (valoresForm && Array.isArray(valoresForm)) {
+                for (const valorForm of valoresForm) {
+                    const { realizado, realizadoAcumulado } = getSerieVariavel(valorForm.variavel_id);
+                    variavelProcessadas.add(valorForm.variavel_id);
+
+                    // se tem o RealizadoAcumulado e Realizado, então recalcula o acumulado do form baseado
+                    // no acumulado anterior
+                    if (realizadoAcumulado && valorForm.valor_realizado) {
+                        const valorRecalc =
+                            parseFloat(realizadoAcumulado.valor_nominal.toString()) -
+                            (realizado ? parseFloat(realizado.valor_nominal.toString()) : 0) +
+                            parseFloat(valorForm.valor_realizado);
+
+                        remapSeriesVariavel.push({
+                            variavel_id: valorForm.variavel_id,
+                            serie: 'RealizadoAcumulado',
+                            valor_nominal: { toString: () => valorRecalc.toString() },
+                        });
+                    }
+                }
+            }
+
+            // se sobrou alguma variável sem form, adiciona o Realizado e RealizadoAcumulado
+            for (const valor of remapSeriesVariavel) {
+                if (variavelProcessadas.has(valor.variavel_id)) continue;
+
+                const { realizado, realizadoAcumulado } = getSerieVariavel(valor.variavel_id);
+
+                if (realizado) {
+                    remapSeriesVariavel.push(realizado);
+                    if (realizadoAcumulado) remapSeriesVariavel.push(realizadoAcumulado);
+                    variavelProcessadas.add(valor.variavel_id);
+                }
+            }
+
+            valoresFormatados = this.formatarValores(variavel, remapSeriesVariavel, valoresForm);
+        }
 
         const uploadsFormatados = this.formatarUploads(uploads);
 
@@ -898,7 +961,6 @@ export class VariavelCicloService {
             }
         }
 
-        // Primeiro, preenche os valores com os valores do formulário
         // Isso vai ou preencher os valores do formulário
         // ou preencher os buracos onde os valores do form não existem
         for (const valor of valores) {

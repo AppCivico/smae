@@ -1,9 +1,10 @@
 import { BadRequestException, HttpException, Injectable, Logger } from '@nestjs/common';
-import { Prisma, TipoPdm } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { CronogramaEtapaService } from 'src/cronograma-etapas/cronograma-etapas.service';
 import { UpdateCronogramaEtapaDto } from 'src/cronograma-etapas/dto/update-cronograma-etapa.dto';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { CONST_CRONO_VAR_CATEGORICA_ID } from '../common/consts';
+import { PdmModoParaTipo, TipoPdmType } from '../common/decorators/current-tipo-pdm';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { CreateGeoEnderecoReferenciaDto } from '../geo-loc/entities/geo-loc.entity';
 import { GeoLocService, UpsertEnderecoDto } from '../geo-loc/geo-loc.service';
@@ -64,7 +65,7 @@ export class EtapaService {
         private readonly variavelService: VariavelService
     ) {}
 
-    async create(tipo: TipoPdm, cronogramaId: number, dto: CreateEtapaDto, user: PessoaFromJwt) {
+    async create(tipo: TipoPdmType, cronogramaId: number, dto: CreateEtapaDto, user: PessoaFromJwt) {
         const metaRow = await this.prisma.view_meta_cronograma.findFirstOrThrow({
             where: { cronograma_id: cronogramaId },
             select: { meta_id: true },
@@ -114,7 +115,7 @@ export class EtapaService {
                     select: { id: true },
                 });
 
-                if (tipo === 'PDM') {
+                if (tipo === '_PDM') {
                     if (Array.isArray(dto.responsaveis))
                         await prismaTx.etapaResponsavel.createMany({
                             data: await this.buildEtapaResponsaveis(etapa.id, dto.responsaveis),
@@ -197,7 +198,7 @@ export class EtapaService {
     }
 
     async update(
-        tipo: TipoPdm,
+        tipo: TipoPdmType,
         id: number,
         dto: UpdateEtapaDto,
         user: PessoaFromJwt,
@@ -394,7 +395,7 @@ export class EtapaService {
             if (dto.termino_real && inicioReal && dto.termino_real < inicioReal)
                 throw new BadRequestException(MSG_TERM_ANTERIOR_INI_REAL);
 
-            if (tipo === 'PS') {
+            if (tipo === '_PS' || tipo == 'PDM_AS_PS') {
                 if (dto.ps_ponto_focal) {
                     const etapaInfo = await prismaTx.etapa.findFirstOrThrow({
                         where: { id },
@@ -438,7 +439,7 @@ export class EtapaService {
                     );
                 }
                 // não há responsáveis para PS no sistema legado, então limpa tudo
-                await this.updateResponsaveis([], self, prismaTx);
+                if (tipo !== 'PDM_AS_PS') await this.updateResponsaveis([], self, prismaTx);
             } else {
                 await this.updateResponsaveis(dto.responsaveis, self, prismaTx);
             }
@@ -660,7 +661,7 @@ export class EtapaService {
     }
 
     private async upsertVariavel(
-        tipoPdm: TipoPdm,
+        tipoPdm: TipoPdmType,
         self: {
             variavel_id: number | null;
         },
@@ -680,7 +681,7 @@ export class EtapaService {
         now: Date
     ) {
         if (self.variavel_id === null && dto.variavel) {
-            if (tipoPdm == 'PDM') {
+            if (tipoPdm == '_PDM') {
                 if (!dto.variavel.codigo || !dto.variavel.titulo)
                     throw new BadRequestException('Código e título da variável são obrigatórios');
             } else {
@@ -719,7 +720,7 @@ export class EtapaService {
             if (!indicadorInfo || !indicadorInfo.indicador?.id)
                 throw new BadRequestException('Indicador da etapa não foi encontrado, não é possível criar a variável');
 
-            if (tipoPdm == 'PS' && !dto.variavel.codigo) {
+            if ((tipoPdm == '_PS' || tipoPdm == 'PDM_AS_PS') && !dto.variavel.codigo) {
                 dto.variavel.codigo = await this.variavelService.geraCodigoVariavel('Global', {
                     inicio_medicao: indicadorInfo.indicador.inicio_medicao,
                     periodicidade: indicadorInfo.indicador.periodicidade,
@@ -737,7 +738,7 @@ export class EtapaService {
                 user,
                 prismaTx,
                 now,
-                tipoPdm == 'PS' ? 'Global' : 'PDM'
+                tipoPdm == '_PS' || tipoPdm == 'PDM_AS_PS' ? 'Global' : 'PDM'
             );
 
             for (const r of etapaAtualizada.responsaveis) {
@@ -762,7 +763,7 @@ export class EtapaService {
                 where: { id: self.variavel_id },
                 data: {
                     titulo: dto.variavel.titulo,
-                    codigo: tipoPdm == 'PS' ? undefined : dto.variavel.codigo,
+                    codigo: tipoPdm == '_PS' || tipoPdm == 'PDM_AS_PS' ? undefined : dto.variavel.codigo,
                 },
             });
         } else if (self.variavel_id && dto.variavel === null) {
@@ -777,14 +778,16 @@ export class EtapaService {
     }
 
     private async buscaOrgaoId(
-        tipoPdm: TipoPdm,
+        tipo: TipoPdmType,
         dto: UpdateEtapaDto,
         responsaveis: { pessoa_id: number }[],
         prismaTx: Prisma.TransactionClient
     ): Promise<number> {
         const orgaos = new Set<number>();
 
-        if (tipoPdm === 'PS') {
+        const tipoPdm = PdmModoParaTipo(tipo);
+
+        if (tipo === '_PS' || tipo == 'PDM_AS_PS') {
             if (!dto.ps_ponto_focal?.equipes.length) {
                 throw new BadRequestException(
                     'É necessário ter pelo menos uma equipe de ponto focal para gerar a variável.'
@@ -1176,7 +1179,7 @@ export class EtapaService {
         await Promise.all(promises);
     }
 
-    async remove(tipo: TipoPdm, etapa_id: number, user: PessoaFromJwt) {
+    async remove(tipo: TipoPdmType, etapa_id: number, user: PessoaFromJwt) {
         const metaRow = await this.prisma.view_etapa_rel_meta.findFirstOrThrow({
             where: { etapa_id: etapa_id },
             select: { meta_id: true },

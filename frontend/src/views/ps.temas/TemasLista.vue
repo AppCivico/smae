@@ -4,7 +4,7 @@
     <hr class="ml2 f1">
     <SmaeLink
       v-if="psEmFoco?.pode_editar"
-      :to="{ name: 'planosSetoriaisNovoTema' }"
+      :to="{ name: `${route.meta.entidadeMãe}.planosSetoriaisNovoTema` }"
       class="btn big ml1"
     >
       Novo {{ titulo }}
@@ -31,7 +31,10 @@
         <td>
           <SmaeLink
             v-if="psEmFoco?.pode_editar"
-            :to="{ name: 'planosSetoriaisEditarTema', params: { temaId: item.id } }"
+            :to="{
+              name: `${route.meta.entidadeMãe}.planosSetoriaisEditarTema`,
+              params: { temaId: item.id }
+            }"
             class="tprimary"
           >
             <svg
@@ -42,7 +45,10 @@
         </td>
         <td>
           <button
-            v-if="temPermissãoPara('CadastroTemaPS.remover') && psEmFoco?.pode_editar"
+            v-if="temPermissãoPara([
+              'CadastroTemaPS.remover',
+              'CadastroTemaPDM.remover',
+            ]) && psEmFoco?.pode_editar"
             class="like-a__text"
             arial-label="excluir"
             title="excluir"
@@ -74,13 +80,13 @@
   </table>
 </template>
 <script setup>
+import { storeToRefs } from 'pinia';
+import { computed, defineOptions } from 'vue';
+import { useRoute } from 'vue-router';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useTemasPsStore } from '@/stores/temasPs.store';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
-import { storeToRefs } from 'pinia';
-import { computed, defineOptions } from 'vue';
-import { useRoute } from 'vue-router';
 
 defineOptions({
   inheritAttrs: false,
@@ -98,7 +104,7 @@ const { temPermissãoPara } = storeToRefs(authStore);
 const temasStore = useTemasPsStore();
 const { lista, chamadasPendentes, erro } = storeToRefs(temasStore);
 
-const planosSetoriaisStore = usePlanosSetoriaisStore();
+const planosSetoriaisStore = usePlanosSetoriaisStore(route.meta.entidadeMãe);
 const { emFoco: psEmFoco } = storeToRefs(planosSetoriaisStore);
 
 async function excluirTema(id, descricao) {

@@ -5,7 +5,7 @@ import patterns from '@/consts/patterns';
 import dinheiro from '@/helpers/dinheiro';
 import requestS from '@/helpers/requestS.ts';
 import retornarQuaisOsRecentesDosItens from '@/helpers/retornarQuaisOsMaisRecentesDosItensDeOrcamento';
-import truncate from '@/helpers/truncate';
+import truncate from '@/helpers/texto/truncate';
 import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
@@ -158,6 +158,7 @@ async function buscarCompartilhamentos(pdm, ano, dotação, extras) {
         break;
 
       case 'planoSetorial':
+      case 'programaDeMetas':
         caminhoNaApi = `${baseUrl}/plano-setorial-orcamento-realizado/compartilhados-no-pdm`;
         break;
       default:

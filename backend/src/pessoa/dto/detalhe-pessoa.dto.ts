@@ -1,9 +1,14 @@
+import { ModuloSistema } from '@prisma/client';
 import { IdNomeDto } from '../../common/dto/IdNome.dto';
 
 export class ProjetosResponsavelDto {
     id: number;
     codigo: string | null;
     nome: string;
+}
+
+export class PessoaMetaPermissoesDto {
+    posso_editar_modulos: boolean;
 }
 
 export class DetalhePessoaDto {
@@ -25,4 +30,9 @@ export class DetalhePessoaDto {
     orgao_id?: number | undefined;
     perfil_acesso_ids: number[];
     responsavel_pelos_projetos: ProjetosResponsavelDto[];
+
+    sobreescrever_modulos: boolean;
+    modulos_permitidos: ModuloSistema[];
+
+    permissoes: PessoaMetaPermissoesDto;
 }

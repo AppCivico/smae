@@ -4,7 +4,7 @@
     <hr class="ml2 f1">
     <SmaeLink
       v-if="psEmFoco?.pode_editar"
-      :to="{ name: 'planosSetoriaisNovaTag' }"
+      :to="{ name: '.novaTag' }"
       class="btn big ml1"
     >
       Nova tag
@@ -50,7 +50,10 @@
         <td>
           <SmaeLink
             v-if="psEmFoco?.pode_editar"
-            :to="{ name: 'planosSetoriaisEditarTag', params: { tagId: item.id } }"
+            :to="{
+              name: '.editarTag',
+              params: { tagId: item.id }
+            }"
             class="tprimary"
           >
             <svg
@@ -61,7 +64,10 @@
         </td>
         <td>
           <button
-            v-if="temPermissãoPara('CadastroTagPS.remover') && psEmFoco?.pode_editar"
+            v-if="temPermissãoPara([
+              'CadastroTagPS.remover',
+              'CadastroTagPDM.remover',
+            ]) && psEmFoco?.pode_editar"
             class="like-a__text"
             arial-label="excluir"
             title="excluir"
@@ -93,12 +99,12 @@
   </table>
 </template>
 <script setup>
-import { useAlertStore } from '@/stores/alert.store';
-import { useAuthStore } from '@/stores/auth.store';
-import { useTagsPsStore } from '@/stores/tagsPs.store';
 import { storeToRefs } from 'pinia';
 import { defineOptions } from 'vue';
 import { useRoute } from 'vue-router';
+import { useAlertStore } from '@/stores/alert.store';
+import { useAuthStore } from '@/stores/auth.store';
+import { useTagsPsStore } from '@/stores/tagsPs.store';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
 
 defineOptions({
@@ -116,7 +122,7 @@ const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 const { lista, chamadasPendentes, erro } = storeToRefs(tagsStore);
 
-const planosSetoriaisStore = usePlanosSetoriaisStore();
+const planosSetoriaisStore = usePlanosSetoriaisStore(route.meta.entidadeMãe);
 const { emFoco: psEmFoco } = storeToRefs(planosSetoriaisStore);
 
 async function excluirTag(id, descricao) {

@@ -1,0 +1,59 @@
+<mjml>
+  <mj-include path="../components/head.mjml" />
+
+  <mj-body background-color="#011c50">
+    <mj-include path="../components/header.mjml" />
+
+
+    <mj-section background-color="#fff">
+      <mj-column>
+        <mj-text>
+          <p>Seu relatório está pronto!</p>
+        </mj-text>
+
+        <mj-text>
+            <p style="font-weight: 600; color: #333; margin-bottom: 8px;">Tipo: [% fonte %]</p>
+            <p style="font-weight: 600; color: #333; margin-bottom: 8px;">Data de criação: [% data_criacao %]</p>
+        </mj-text>
+
+        [% IF parametros.0 %]
+        <mj-text>
+        <div style="margin-top: 16px;">
+            <p style="font-weight: 600; color: #333; margin-bottom: 8px;">Parâmetros:</p>
+            <div style="padding-left: 16px; border-left: 2px solid #e0e0e0;">
+            [% FOREACH p IN parametros %]
+                [% IF p.value %]
+                    <div style="margin: 12px 0;">
+                    <span style="font-weight: 500; color: #666; display: block; margin-bottom: 4px;">
+                        [% p.key %]:
+                    </span>
+                    
+                    [% IF p.value.0 %]
+                        <ul style="margin: 0; padding-left: 20px; color: #444; list-style-type: disc;">
+                        [% FOREACH item IN p.value %]
+                            <li style="margin-bottom: 4px;">[% item %]</li>
+                        [% END %]
+                        </ul>
+                    [% ELSE %]
+                        <div style="color: #444; padding-left: 8px;">
+                        [% p.value %]
+                        </div>
+                    [% END %]
+                    </div>
+                [% END %]
+            [% END %]
+            </div>
+        </div>
+        </mj-text>
+        [% END %]
+
+        <mj-button href="[% link %]">Acessar sistema</mj-button>
+
+      </mj-column>
+    </mj-section>
+
+    <mj-include path="../components/footer.mjml" />
+
+  </mj-body>
+
+</mjml>

@@ -310,6 +310,11 @@ input ~ span[role='alert'],
 }
 
 /* Tipografia */
+.ff-regular {
+  font-family: Roboto, serif;
+  font-weight: 600;
+}
+
 .ff-slab {
   font-family: "Roboto Slab", serif;
   font-weight: 600;
@@ -815,6 +820,11 @@ p {
   grid-column: -1 / 1;
 }
 
+/* Position */
+.relative {
+  position: relative !important;
+}
+
 /* Flex */
 .flex {
   display: flex !important;
@@ -983,6 +993,11 @@ p {
   .fb50em {
     flex-basis: 50em !important;
   }
+}
+
+/* Inline */
+.inline {
+  display: inline !important;
 }
 
 /* Width */
@@ -1292,6 +1307,11 @@ p {
   &:hover {
     color: @primary;
     background: @amarelo;
+  }
+
+  &:focus-visible {
+    outline: 2px solid @c400;
+    outline-offset: 2px;
   }
 
   svg {
@@ -1753,6 +1773,11 @@ p {
       background: @cinza-claro-azulado;
     }
   }
+}
+
+.filtro-sujo {
+  filter: grayscale(1) blur(2px) opacity(0.35);
+  pointer-events: none;
 }
 
 // apenas para abrigar as regras comuns a todos os checkboxes e radios, porque
@@ -2653,6 +2678,10 @@ table {
 .lista-com-ponto {
   &ul, li {
     list-style: inside;
+  }
+
+  li {
+    margin-bottom: 0.13rem;
   }
 }
 

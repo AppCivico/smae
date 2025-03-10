@@ -10,7 +10,7 @@ import {
     IsInt,
     IsOptional,
     IsString,
-    MaxLength
+    MaxLength,
 } from 'class-validator';
 import {
     NumberArrayTransformOrEmpty,
@@ -18,6 +18,7 @@ import {
 } from '../../../auth/transforms/number-array.transform';
 import { NumberTransform } from '../../../auth/transforms/number.transform';
 import { StringArrayTransform } from '../../../auth/transforms/string-array.transform';
+import { IsOnlyDate } from '../../../common/decorators/IsDateOnly';
 
 export class FilterProjetoDto {
     @IsOptional()
@@ -91,6 +92,10 @@ export const ProjetoMdoOrderEnum = {
     regioes: 'regioes',
     status: 'status',
     registrado_em: 'registrado_em',
+    projeto_etapa: 'projeto_etapa',
+    projeto_etapa_id: 'projeto_etapa',
+    previsao_custo: 'previsao_custo',
+    previsao_termino: 'previsao_termino',
 };
 export type ProjetoMdoOrderEnum = keyof typeof ProjetoMdoOrderEnum;
 
@@ -141,6 +146,11 @@ export class FilterProjetoMDODto extends IntersectionType(FilterProjetoDto, Proj
     equipamento_id?: number[];
 
     @IsOptional()
+    @IsInt({ each: true })
+    @Transform(NumberArrayTransformOrEmpty)
+    projeto_etapa_id?: number[];
+
+    @IsOptional()
     @IsInt()
     @Transform(NumberTransform)
     ipp?: number = 25;
@@ -168,4 +178,19 @@ export class FilterProjetoMDODto extends IntersectionType(FilterProjetoDto, Proj
     @IsBoolean({ message: '$property| Precisa ser um boolean' })
     @Transform(({ value }: any) => value === 'true')
     revisado?: boolean;
+
+    @IsOptional()
+    @IsOnlyDate()
+    @IsString()
+    registrado_em?: string;
+
+    @IsOptional()
+    @IsOnlyDate()
+    @IsString()
+    registrado_em_de?: string;
+
+    @IsOptional()
+    @IsOnlyDate()
+    @IsString()
+    registrado_em_ate?: string;
 }

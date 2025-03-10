@@ -100,20 +100,27 @@ const geolocalizaçãoPorToken = computed(() => (
     }, {})
 ));
 
-const valoresIniciais = computed(() => (singleEtapa.value?.loading
-  || singleEtapa.value?.error
-  || !singleEtapa.value?.id
-  ? {
-    peso: 1,
-    percentual_execucao: 0,
-    endereco_obrigatorio: false,
-    geolocalizacao: [],
-    variavel: null,
+const valoresIniciais = computed(() => {
+  if (singleEtapa.value?.loading || singleEtapa.value?.error || !singleEtapa.value?.id) {
+    return {
+      peso: 1,
+      percentual_execucao: 0,
+      endereco_obrigatorio: false,
+      geolocalizacao: [],
+      variavel: null,
+      inicio_previsto: '',
+      termino_previsto: '',
+      inicio_real: '',
+      termino_real: '',
+    };
   }
-  : {
-    ...singleEtapa.value?.etapa,
-    geolocalizacao: singleEtapa.value?.etapa?.geolocalizacao?.map((x) => x.token) || [],
-  }));
+
+  const { etapa } = singleEtapa.value;
+  return {
+    ...etapa,
+    geolocalizacao: etapa.geolocalizacao?.map((x) => x.token) || [],
+  };
+});
 
 const {
   errors, handleSubmit, isSubmitting, resetForm, setFieldValue, values,
@@ -293,6 +300,7 @@ const onSubmit = handleSubmit(async () => {
 
 function redefinirVariavel(habilitar = false) {
   const valorInicial = route.meta.entidadeMãe === 'planoSetorial'
+    || route.meta.entidadeMãe === 'programaDeMetas'
     ? {
       codigo: singleEtapa.value?.variavel?.codigo || 'GERAR_CODIGO',
       titulo: singleEtapa.value?.variavel?.titulo || '',
@@ -475,7 +483,7 @@ watch(valoresIniciais, (novoValor) => {
         </div>
       </template>
 
-      <template v-if="$route.meta.entidadeMãe === 'planoSetorial'">
+      <template v-if="['planoSetorial', 'programaDeMetas'].includes($route.meta.entidadeMãe)">
         <label class="label">Equipe Responsável<span class="tvermelho">*</span></label>
         <div class="flex">
           <div class="f1 mb1">
@@ -664,7 +672,8 @@ watch(valoresIniciais, (novoValor) => {
         >
           <div
             class="f1"
-            :hidden="$route.meta.entidadeMãe === 'planoSetorial' && !singleEtapa.value?.variavel"
+            :hidden="['planoSetorial', 'programaDeMetas'].includes($route.meta.entidadeMãe)
+              && !singleEtapa.value?.variavel"
           >
             <LabelFromYup
               :schema="schema.fields.variavel"
@@ -731,7 +740,7 @@ watch(valoresIniciais, (novoValor) => {
             :class="{ 'error': errors.inicio_previsto }"
             maxlength="10"
             placeholder="dd/mm/aaaa"
-            @keyup="maskDate"
+            @input="maskDate"
           />
           <div class="error-msg">
             {{ errors.inicio_previsto }}
@@ -746,7 +755,7 @@ watch(valoresIniciais, (novoValor) => {
             :class="{ 'error': errors.termino_previsto }"
             maxlength="10"
             placeholder="dd/mm/aaaa"
-            @keyup="maskDate"
+            @input="maskDate"
           />
           <div class="error-msg">
             {{ errors.termino_previsto }}

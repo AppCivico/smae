@@ -317,7 +317,6 @@ export class PatchOrcamentoRealizadoConcluidoDto {
      * meta_id
      * @example "42"
      */
-    @IsOptional()
     @IsInt({ message: '$property| meta_id precisa ser positivo' })
     meta_id: number;
 

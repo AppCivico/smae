@@ -6,6 +6,7 @@ import LoadingComponent from '@/components/LoadingComponent.vue';
 import MigalhasDePão from '@/components/MigalhasDePao.vue';
 import SmaeLink from '@/components/SmaeLink.vue';
 import TítuloDePágina from '@/components/TituloDaPagina.vue';
+import selecionarMultiplasOpcoes from '@/diretivas/selecionarMultiplasOpcoes';
 import type { RequestS } from '@/helpers/requestS';
 import requestS from '@/helpers/requestS';
 import consoleNaTemplate from '@/plugins/consoleNaTemplate';
@@ -112,6 +113,10 @@ app.directive('ScrollLockDebug', {
   },
 });
 
+app.directive('selecionar-multiplas-opcoes', {
+  mounted: (el) => selecionarMultiplasOpcoes(el),
+});
+
 app.directive('focus', {
   mounted: async (el, binding) => {
     const { modifiers, value } = binding;
@@ -134,8 +139,10 @@ app.component('FormErrorsList', FormErrorsList);
 app.component('LabelFromYup', LabelFromYup);
 app.component('LoadingComponent', LoadingComponent);
 app.component('MigalhasDePão', MigalhasDePão);
+app.component('MigalhasDePao', MigalhasDePão);
 app.component('SmaeLink', SmaeLink);
 app.component('TítuloDePágina', TítuloDePágina);
+app.component('TítuloDePagina', TítuloDePágina);
 
 app.use(pinia);
 app.use(router);

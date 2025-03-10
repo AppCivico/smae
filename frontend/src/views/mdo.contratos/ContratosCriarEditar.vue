@@ -2,7 +2,7 @@
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import { contratoDeObras } from '@/consts/formSchemas';
-import truncate from '@/helpers/truncate';
+import truncate from '@/helpers/texto/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useContratosStore } from '@/stores/contratos.store.ts';
 import { useDotaçãoStore } from '@/stores/dotacao.store.ts';

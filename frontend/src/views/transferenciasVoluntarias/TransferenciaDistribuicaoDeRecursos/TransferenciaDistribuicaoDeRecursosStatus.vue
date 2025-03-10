@@ -15,25 +15,23 @@
     <table class="tablemain mb2">
       <thead>
         <tr>
-          <th>DATA</th>
-          <th>STATUS</th>
-          <th>ÓRGÃO</th>
-          <th>RESPONSÁVEL</th>
-          <th>MOTIVO</th>
-          <th>TOTAL DE DIAS NO STATUS</th>
+          <th>Data</th>
+          <th>Status</th>
+          <th>Órgão</th>
+          <th>Responsável</th>
+          <th>Motivo</th>
+          <th>Total de dias no status</th>
           <th />
         </tr>
       </thead>
 
-      <tbody>
+      <tbody :aria-busy="chamadasPendentes.emFoco">
         <tr
           v-for="item in historicoStatus"
           :key="item.id"
         >
           <td>
-            {{
-              item.data_troca ? item.data_troca.split('T')[0].split('-').reverse().join('/') : ''
-            }}
+            {{ item.data_troca ? dateToDate(item.data_troca) : '' }}
           </td>
           <td>{{ item.status_base?.nome || item.status_customizado?.nome }}</td>
           <td>{{ item.orgao_responsavel?.sigla }}</td>
@@ -59,7 +57,16 @@
           </td>
         </tr>
 
-        <tr v-if="historicoStatus.length === 0">
+        <tr v-if="chamadasPendentes.emFoco">
+          <td
+            colspan="999"
+          >
+            <LoadingComponent class="horizontal">
+              Carregando histórico de status
+            </LoadingComponent>
+          </td>
+        </tr>
+        <tr v-else-if="historicoStatus.length === 0">
           <td
             class="text-center"
             colspan="6"
@@ -96,16 +103,15 @@
 </template>
 
 <script setup>
+import dateToDate from '@/helpers/dateToDate';
+import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
+import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import { storeToRefs } from 'pinia';
-import { useRoute, useRouter } from 'vue-router';
 import { useIsFormDirty } from 'vee-validate';
 import {
   computed, onMounted, onUnmounted, ref,
 } from 'vue';
-
-import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
-import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
-
+import { useRoute, useRouter } from 'vue-router';
 import TransferenciasDistribuicaoStatusCriarEditar from './TransferenciasDistribuicaoStatusCriarEditar.vue';
 
 const distribuicaoRecursos = useDistribuicaoRecursosStore();

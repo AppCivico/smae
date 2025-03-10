@@ -4,7 +4,7 @@
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import tipoDePerfil from '@/consts/tipoDePerfil';
 import requestS from '@/helpers/requestS.ts';
-import truncate from '@/helpers/truncate';
+import truncate from '@/helpers/texto/truncate';
 import { useOrgansStore } from '@/stores/organs.store';
 import { storeToRefs } from 'pinia';
 import { useField } from 'vee-validate';
@@ -220,7 +220,7 @@ watch(() => props.valoresIniciais, async (novoValor) => {
             :title="orgao.descricao?.length > 36 ? orgao.descricao : undefined"
             :disabled="mapaDeOrgaos[orgao.id] && listaDeOrgaos[idx].id !== orgao.id"
           >
-            {{ orgao.id }} - {{ orgao.sigla }} - {{ truncate(orgao.descricao, 36) }}
+            {{ orgao.sigla }} - {{ truncate(orgao.descricao, 36) }}
           </option>
         </select>
       </div>

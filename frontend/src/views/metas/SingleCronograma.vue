@@ -7,107 +7,99 @@ import { useCronogramasStore } from '@/stores/cronogramas.store';
 import { useEditModalStore } from '@/stores/editModal.store';
 import { useEtapasStore } from '@/stores/etapas.store';
 import { useMetasStore } from '@/stores/metas.store';
-import { default as AddEditEtapa } from '@/views/metas/AddEditEtapa.vue';
-import { default as AddEditFase } from '@/views/metas/AddEditFase.vue';
-import { default as AddEditMonitorar } from '@/views/metas/AddEditMonitorar.vue';
+import AddEditEtapa from '@/views/metas/AddEditEtapa.vue';
+import AddEditFase from '@/views/metas/AddEditFase.vue';
+import AddEditMonitorar from '@/views/metas/AddEditMonitorar.vue';
 import { storeToRefs } from 'pinia';
 import {
-  computed, watch, reactive, ref,
+  computed,
+  watchEffect,
 } from 'vue';
 import { useRoute } from 'vue-router';
+import achatarGeoLocalizacao from './helpers/achatarGeoLocalizacao';
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
+
+const props = defineProps(['group', 'recorte']);
+const route = useRoute();
 
 const alertStore = useAlertStore();
 const authStore = useAuthStore();
 const EtapasStore = useEtapasStore();
 const { temPermissãoPara } = storeToRefs(authStore);
-
-const props = defineProps(['group', 'recorte']);
-const route = useRoute();
-const meta_id = reactive(route.params.meta_id);
-const iniciativa_id = reactive(route.params.iniciativa_id);
-const atividade_id = reactive(route.params.atividade_id);
-
-const MetasStore = useMetasStore();
-const { activePdm } = storeToRefs(MetasStore);
-MetasStore.getPdM();
-
-const parentlink = `${meta_id ? `/metas/${meta_id}` : ''}${iniciativa_id ? `/iniciativas/${iniciativa_id}` : ''}${atividade_id ? `/atividades/${atividade_id}` : ''}`;
-const parentVar = atividade_id ?? iniciativa_id ?? meta_id ?? false;
-const parentField = atividade_id ? 'atividade_id' : iniciativa_id ? 'iniciativa_id' : meta_id ? 'meta_id' : false;
-const parentLabel = ref(atividade_id ? '-' : iniciativa_id ? '-' : meta_id ? 'Meta' : false);
-(async () => {
-  await MetasStore.getPdM();
-  if (atividade_id) parentLabel.value = activePdm.value.rotulo_atividade;
-  else if (iniciativa_id) parentLabel.value = activePdm.value.rotulo_iniciativa;
-})();
-
 const CronogramasStore = useCronogramasStore();
 const { singleCronograma, singleCronogramaEtapas } = storeToRefs(CronogramasStore);
 const editModalStore = useEditModalStore();
 
-function mapearAtrasoParaCor(grau) {
-  switch (grau.toLowerCase()) {
-    case 'alto':
-      return 'vermelho';
+const MetasStore = useMetasStore();
+const { activePdm, singleMeta } = storeToRefs(MetasStore);
 
-    case 'moderado':
-      return 'laranja';
+const metaId = computed(() => {
+  const id = Number(route.params.meta_id);
+  return Number.isNaN(id) ? undefined : id;
+});
+const iniciativaId = computed(() => {
+  const id = Number(route.params.iniciativa_id);
+  return Number.isNaN(id) ? undefined : id;
+});
+const atividadeId = computed(() => {
+  const id = Number(route.params.atividade_id);
+  return Number.isNaN(id) ? undefined : id;
+});
 
-    case 'concluido':
-      return 'verde';
-
-    default:
-      return null;
+const parentLink = computed(() => {
+  let link = '';
+  if (metaId?.value) {
+    link += `/metas/${metaId?.value}`;
   }
-}
 
-function achatarGeoLocalização(data) {
-  let geoLocalizaçãoAchatada = [];
+  if (iniciativaId?.value) {
+    link += `/iniciativas/${iniciativaId?.value}`;
+  }
 
-  data.forEach((item) => {
-    if (item?.etapa?.geolocalizacao?.length > 0) {
-      geoLocalizaçãoAchatada = geoLocalizaçãoAchatada
-        .concat(item.etapa.geolocalizacao.map((x) => {
-          if (!x?.endereco?.properties?.atraso_grau) {
-            // eslint-disable-next-line no-param-reassign
-            x.endereco.properties.cor_do_marcador = mapearAtrasoParaCor(item.atraso_grau);
-          }
+  if (atividadeId?.value) {
+    link += `/atividades/${atividadeId?.value}`;
+  }
 
-          return x;
-        }));
-    }
+  return link;
+});
 
-    if (item?.geolocalizacao?.length > 0) {
-      geoLocalizaçãoAchatada = geoLocalizaçãoAchatada
-        .concat(item.geolocalizacao.map((x) => {
-          if (!x?.endereco?.properties?.atraso_grau) {
-            // eslint-disable-next-line no-param-reassign
-            x.endereco.properties.cor_do_marcador = mapearAtrasoParaCor(item.atraso_grau);
-          }
+const parentVar = computed(() => atividadeId?.value
+  ?? iniciativaId?.value
+  ?? metaId?.value
+  ?? false);
 
-          return x;
-        }));
-    }
+const parentField = computed(() => {
+  if (atividadeId?.value) {
+    return 'atividade_id';
+  }
 
-    if (item?.etapa?.etapa_filha?.length > 0) {
-      geoLocalizaçãoAchatada = geoLocalizaçãoAchatada
-        .concat(achatarGeoLocalização(item.etapa.etapa_filha));
-    }
+  if (iniciativaId?.value) {
+    return 'iniciativa_id';
+  }
 
-    if (item?.etapa_filha?.length > 0) {
-      geoLocalizaçãoAchatada = geoLocalizaçãoAchatada
-        .concat(achatarGeoLocalização(item.etapa_filha));
-    }
-  });
+  if (metaId?.value) {
+    return 'meta_id';
+  }
 
-  return geoLocalizaçãoAchatada;
-}
+  return false;
+});
+
+const parentLabel = computed(() => {
+  if (atividadeId?.value) {
+    return activePdm.value.rotulo_atividade;
+  }
+
+  if (iniciativaId?.value) {
+    return activePdm.value.rotulo_iniciativa;
+  }
+
+  return 'Meta';
+});
 
 const marcadoresDasEtapas = computed(() => (singleCronogramaEtapas.value?.loading
   || !singleCronogramaEtapas.value.length
   ? []
-  : achatarGeoLocalização(singleCronogramaEtapas.value)
+  : achatarGeoLocalizacao(singleCronogramaEtapas.value)
     .map((x) => x.endereco)));
 
 function excluirEtapa(id) {
@@ -116,22 +108,34 @@ function excluirEtapa(id) {
     if (r) {
       EtapasStore.clear();
       CronogramasStore.clear();
-      CronogramasStore.getActiveByParent(parentVar, parentField);
+      CronogramasStore.getActiveByParent(parentVar.value, parentField.value);
     }
   }, 'Excluir');
 }
 
-CronogramasStore.clearEdit();
-CronogramasStore.getActiveByParent(parentVar, parentField);
+watchEffect(() => {
+  MetasStore.getPdM();
 
-function start() {
-  if (props.group == 'etapas') editModalStore.modal(AddEditEtapa, props);
-  if (props.group == 'fase') editModalStore.modal(AddEditFase, props);
-  if (props.group == 'subfase') editModalStore.modal(AddEditFase, props);
-  if (props.group == 'monitorar') editModalStore.modal(AddEditMonitorar, props);
-}
+  CronogramasStore.clearEdit();
+  CronogramasStore.getActiveByParent(parentVar.value, parentField.value);
 
-watch(() => props.group, () => { start(); }, { immediate: true });
+  switch (props.group) {
+    case 'etapas':
+      editModalStore.modal(AddEditEtapa, props);
+      break;
+    case 'fase':
+    case 'subfase':
+      editModalStore.modal(AddEditFase, props);
+      break;
+    case 'monitorar':
+      editModalStore.modal(AddEditMonitorar, props);
+      break;
+
+    default:
+      editModalStore.$reset();
+      break;
+  }
+});
 </script>
 <template>
   <MigalhasDeMetas class="mb1" />
@@ -154,11 +158,14 @@ watch(() => props.group, () => { start(); }, { immediate: true });
     <SmaeLink
       v-if="temPermissãoPara([
         'CadastroMeta.administrador_no_pdm',
-        'CadastroMetaPS.administrador_no_pdm'
+        'CadastroMetaPS.administrador_no_pdm',
+        'CadastroMetaPDM.administrador_no_pdm',
+        'SMAE.GrupoVariavel.participante',
       ])
         && !singleCronograma?.loading
-        && singleCronograma?.id"
-      :to="`${parentlink}/cronograma/${singleCronograma?.id}`"
+        && singleCronograma?.id
+        && singleMeta?.pode_editar"
+      :to="`${parentLink}/cronograma/${singleCronograma?.id}`"
       class="btn ml2"
     >
       Editar Cronograma
@@ -166,10 +173,13 @@ watch(() => props.group, () => { start(); }, { immediate: true });
     <div
       v-if="temPermissãoPara([
         'CadastroMeta.administrador_no_pdm',
-        'CadastroMetaPS.administrador_no_pdm'
+        'CadastroMetaPS.administrador_no_pdm',
+        'CadastroMetaPDM.administrador_no_pdm',
+        'SMAE.GrupoVariavel.participante',
       ])
-        && !singleCronograma?.loading && singleCronograma?.id
-      "
+        && !singleCronograma?.loading
+        && singleCronograma?.id
+        && singleMeta?.pode_editar"
       class="ml1 dropbtn"
     >
       <span class="btn">Nova etapa</span>
@@ -178,9 +188,11 @@ watch(() => props.group, () => { start(); }, { immediate: true });
           <SmaeLink
             v-if="temPermissãoPara([
               'CadastroMeta.administrador_no_pdm',
-              'CadastroMetaPS.administrador_no_pdm'
+              'CadastroMetaPS.administrador_no_pdm',
+              'CadastroMetaPDM.administrador_no_pdm',
+              'SMAE.GrupoVariavel.participante',
             ])"
-            :to="`${parentlink}/cronograma/${singleCronograma?.id}/etapas/novo`"
+            :to="`${parentLink}/cronograma/${singleCronograma?.id}/etapas/novo`"
           >
             Etapa da {{ parentLabel }}
           </SmaeLink>
@@ -189,10 +201,11 @@ watch(() => props.group, () => { start(); }, { immediate: true });
           <SmaeLink
             v-if="temPermissãoPara([
               'CadastroMeta.administrador_no_pdm',
-              'CadastroMetaPS.administrador_no_pdm'
+              'CadastroMetaPS.administrador_no_pdm',
+              'CadastroMetaPDM.administrador_no_pdm'
             ])
-              && activePdm.possui_iniciativa && meta_id && !iniciativa_id"
-            :to="`${parentlink}/cronograma/${singleCronograma?.id}/monitorar/iniciativa`"
+              && activePdm.possui_iniciativa && metaId && !iniciativaId"
+            :to="`${parentLink}/cronograma/${singleCronograma?.id}/monitorar/iniciativa`"
           >
             A partir de {{ activePdm.rotulo_iniciativa }}
           </SmaeLink>
@@ -201,10 +214,11 @@ watch(() => props.group, () => { start(); }, { immediate: true });
           <SmaeLink
             v-if="temPermissãoPara([
               'CadastroMeta.administrador_no_pdm',
-              'CadastroMetaPS.administrador_no_pdm'
+              'CadastroMetaPS.administrador_no_pdm',
+              'CadastroMetaPDM.administrador_no_pdm'
             ])
-              && activePdm.possui_atividade && meta_id && !atividade_id"
-            :to="`${parentlink}/cronograma/${singleCronograma?.id}/monitorar/atividade`"
+              && activePdm.possui_atividade && metaId && !atividadeId"
+            :to="`${parentLink}/cronograma/${singleCronograma?.id}/monitorar/atividade`"
           >
             A partir de {{ activePdm.rotulo_atividade }}
           </SmaeLink>
@@ -306,7 +320,6 @@ watch(() => props.group, () => { start(); }, { immediate: true });
     <MapaExibir
       v-if="marcadoresDasEtapas.length"
       :geo-json="marcadoresDasEtapas"
-      :opcoes-do-painel-flutuante="{ permanent: true }"
       class="mb2"
       zoom="16"
     />
@@ -421,7 +434,7 @@ watch(() => props.group, () => { start(); }, { immediate: true });
                 height="24"
               ><use xlink:href="#i_variavel" /></svg>
               <div>
-                Vínculada à variável
+                Vinculada à variável
                 <strong v-if="r.etapa?.variavel?.codigo">
                   {{ r.etapa.variavel.codigo }}
                 </strong>
@@ -464,8 +477,11 @@ watch(() => props.group, () => { start(); }, { immediate: true });
             <div
               v-if="temPermissãoPara([
                 'CadastroMeta.administrador_no_pdm',
-                'CadastroMetaPS.administrador_no_pdm'
-              ])"
+                'CadastroMetaPS.administrador_no_pdm',
+                'CadastroMetaPDM.administrador_no_pdm',
+                'SMAE.GrupoVariavel.participante',
+              ])
+              && singleMeta?.pode_editar"
               class="dropbtn right"
             >
               <span class=""><svg
@@ -477,7 +493,7 @@ watch(() => props.group, () => { start(); }, { immediate: true });
                   <SmaeLink
                     v-if="!r.cronograma_origem_etapa
                       || r.cronograma_origem_etapa.id == singleCronograma?.id"
-                    :to="`${parentlink}/cronograma/${singleCronograma?.id}/etapas/${r.etapa.id}`"
+                    :to="`${parentLink}/cronograma/${singleCronograma?.id}/etapas/${r.etapa.id}`"
                   >
                     Editar Etapa
                   </SmaeLink>
@@ -486,7 +502,7 @@ watch(() => props.group, () => { start(); }, { immediate: true });
                   <SmaeLink
                     v-if="r.cronograma_origem_etapa
                       && r.cronograma_origem_etapa?.id != singleCronograma?.id"
-                    :to="`${parentlink}/cronograma/${singleCronograma?.id}/monitorar/${r.etapa.id}`"
+                    :to="`${parentLink}/cronograma/${singleCronograma?.id}/monitorar/${r.etapa.id}`"
                   >
                     Editar Monitoramento
                   </SmaeLink>
@@ -589,16 +605,22 @@ watch(() => props.group, () => { start(); }, { immediate: true });
             <div
               v-if="temPermissãoPara([
                 'CadastroMeta.administrador_no_pdm',
-                'CadastroMetaPS.administrador_no_pdm'
-              ])"
+                'CadastroMetaPS.administrador_no_pdm',
+                'CadastroMetaPDM.administrador_no_pdm',
+                'SMAE.GrupoVariavel.participante',
+              ])
+                && singleMeta?.pode_editar"
               class="ml1 f0"
               style="flex-basis:20px;"
             />
             <div
               v-if="temPermissãoPara([
                 'CadastroMeta.administrador_no_pdm',
-                'CadastroMetaPS.administrador_no_pdm'
-              ])"
+                'CadastroMetaPS.administrador_no_pdm',
+                'CadastroMetaPDM.administrador_no_pdm',
+                'SMAE.GrupoVariavel.participante',
+              ])
+                && singleMeta?.pode_editar"
               class="ml1 f0"
               style="flex-basis:20px;"
             />
@@ -682,8 +704,11 @@ watch(() => props.group, () => { start(); }, { immediate: true });
             <div
               v-if="temPermissãoPara([
                 'CadastroMeta.administrador_no_pdm',
-                'CadastroMetaPS.administrador_no_pdm'
-              ])"
+                'CadastroMetaPS.administrador_no_pdm',
+                'CadastroMetaPDM.administrador_no_pdm',
+                'SMAE.GrupoVariavel.participante',
+              ])
+                && singleMeta?.pode_editar"
               class="ml1 f0 flex center mr05"
               style="flex-basis:20px; height: calc(20px + 1rem);"
             >
@@ -706,15 +731,18 @@ watch(() => props.group, () => { start(); }, { immediate: true });
             <div
               v-if="temPermissãoPara([
                 'CadastroMeta.administrador_no_pdm',
-                'CadastroMetaPS.administrador_no_pdm'
-              ])"
+                'CadastroMetaPS.administrador_no_pdm',
+                'CadastroMetaPDM.administrador_no_pdm',
+                'SMAE.GrupoVariavel.participante',
+              ])
+                && singleMeta?.pode_editar"
               class="ml1 f0 flex center mr05"
               style="flex-basis:20px; height: calc(20px + 1rem);"
             >
               <SmaeLink
                 v-if="!r.cronograma_origem_etapa
                   || r.cronograma_origem_etapa.id == singleCronograma?.id"
-                :to="`${parentlink}/cronograma/${singleCronograma?.id}/etapas/${r.etapa.id}/${rr.id}`"
+                :to="`${parentLink}/cronograma/${singleCronograma?.id}/etapas/${r.etapa.id}/${rr.id}`"
               >
                 <svg
                   width="20"
@@ -759,16 +787,22 @@ watch(() => props.group, () => { start(); }, { immediate: true });
               <div
                 v-if="temPermissãoPara([
                   'CadastroMeta.administrador_no_pdm',
-                  'CadastroMetaPS.administrador_no_pdm'
-                ])"
+                  'CadastroMetaPS.administrador_no_pdm',
+                  'CadastroMetaPDM.administrador_no_pdm',
+                  'SMAE.GrupoVariavel.participante',
+                ])
+                  && singleMeta?.pode_editar"
                 class="ml1 f0"
                 style="flex-basis:20px;"
               />
               <div
                 v-if="temPermissãoPara([
                   'CadastroMeta.administrador_no_pdm',
-                  'CadastroMetaPS.administrador_no_pdm'
-                ])"
+                  'CadastroMetaPS.administrador_no_pdm',
+                  'CadastroMetaPDM.administrador_no_pdm',
+                  'SMAE.GrupoVariavel.participante',
+                ])
+                  && singleMeta?.pode_editar"
                 class="ml1 f0"
                 style="flex-basis:20px;"
               />
@@ -866,8 +900,11 @@ watch(() => props.group, () => { start(); }, { immediate: true });
                 <div
                   v-if="temPermissãoPara([
                     'CadastroMeta.administrador_no_pdm',
-                    'CadastroMetaPS.administrador_no_pdm'
-                  ])"
+                    'CadastroMetaPS.administrador_no_pdm',
+                    'CadastroMetaPDM.administrador_no_pdm',
+                    'SMAE.GrupoVariavel.participante',
+                  ])
+                    && singleMeta?.pode_editar"
                   class="ml1 f0 flex center mr05"
                 >
                   <button
@@ -889,15 +926,18 @@ watch(() => props.group, () => { start(); }, { immediate: true });
                 <div
                   v-if="temPermissãoPara([
                     'CadastroMeta.administrador_no_pdm',
-                    'CadastroMetaPS.administrador_no_pdm'
-                  ])"
+                    'CadastroMetaPS.administrador_no_pdm',
+                    'CadastroMetaPDM.administrador_no_pdm',
+                    'SMAE.GrupoVariavel.participante',
+                  ])
+                    && singleMeta?.pode_editar"
                   class="ml1 f0 flex center mr05"
                   style="flex-basis:20px; height: calc(20px + 1rem);"
                 >
                   <SmaeLink
                     v-if="!r.cronograma_origem_etapa
                       || r.cronograma_origem_etapa.id == singleCronograma?.id"
-                    :to="`${parentlink}/cronograma/${singleCronograma?.id}/etapas/${r.etapa.id}/${rr.id}/${rrr.id}`"
+                    :to="`${parentLink}/cronograma/${singleCronograma?.id}/etapas/${r.etapa.id}/${rr.id}/${rrr.id}`"
                   >
                     <svg
                       width="20"
@@ -912,14 +952,17 @@ watch(() => props.group, () => { start(); }, { immediate: true });
           <div
             v-if="temPermissãoPara([
               'CadastroMeta.administrador_no_pdm',
-              'CadastroMetaPS.administrador_no_pdm'
-            ])"
+              'CadastroMetaPS.administrador_no_pdm',
+              'CadastroMetaPDM.administrador_no_pdm',
+              'SMAE.GrupoVariavel.participante',
+            ])
+              && singleMeta?.pode_editar"
             class="pl3"
           >
             <SmaeLink
               v-if="!r.cronograma_origem_etapa
                 || r.cronograma_origem_etapa.id == singleCronograma?.id"
-              :to="`${parentlink}/cronograma/${singleCronograma?.id}/etapas/${r.etapa.id}/${rr.id}/novo`"
+              :to="`${parentLink}/cronograma/${singleCronograma?.id}/etapas/${r.etapa.id}/${rr.id}/novo`"
               class="addlink mt05 mb05"
             >
               <svg
@@ -933,14 +976,17 @@ watch(() => props.group, () => { start(); }, { immediate: true });
         <div
           v-if="temPermissãoPara([
             'CadastroMeta.administrador_no_pdm',
-            'CadastroMetaPS.administrador_no_pdm'
-          ])"
+            'CadastroMetaPS.administrador_no_pdm',
+            'CadastroMetaPDM.administrador_no_pdm',
+            'SMAE.GrupoVariavel.participante',
+          ])
+            && singleMeta?.pode_editar"
           class="pl1"
         >
           <SmaeLink
             v-if="!r.cronograma_origem_etapa
               || r.cronograma_origem_etapa.id == singleCronograma?.id"
-            :to="`${parentlink}/cronograma/${singleCronograma?.id}/etapas/${r.etapa.id}/novo`"
+            :to="`${parentLink}/cronograma/${singleCronograma?.id}/etapas/${r.etapa.id}/novo`"
             class="addlink"
           >
             <svg
@@ -961,12 +1007,18 @@ watch(() => props.group, () => { start(); }, { immediate: true });
       </div>
     </template>
     <div
-      v-else
+      v-else-if="temPermissãoPara([
+        'CadastroMeta.administrador_no_pdm',
+        'CadastroMetaPS.administrador_no_pdm',
+        'CadastroMetaPDM.administrador_no_pdm',
+        'SMAE.GrupoVariavel.participante',
+      ])
+        && singleMeta?.pode_editar"
       class="p1 bgc50"
     >
       <div class="tc">
         <SmaeLink
-          :to="`${parentlink}/cronograma/${singleCronograma?.id}/etapas/novo`"
+          :to="`${parentLink}/cronograma/${singleCronograma?.id}/etapas/novo`"
           class="btn mt1 mb1"
         >
           <span>Adicionar Etapa</span>
@@ -984,12 +1036,18 @@ watch(() => props.group, () => { start(); }, { immediate: true });
     </div>
   </template>
   <div
-    v-else
+    v-else-if="temPermissãoPara([
+      'CadastroMeta.administrador_no_pdm',
+      'CadastroMetaPS.administrador_no_pdm',
+      'CadastroMetaPDM.administrador_no_pdm',
+      'SMAE.GrupoVariavel.participante',
+    ])
+      && singleMeta?.pode_editar"
     class="p1 bgc50 mb2"
   >
     <div class="tc">
       <SmaeLink
-        :to="`${parentlink}/cronograma/novo`"
+        :to="`${parentLink}/cronograma/novo`"
         class="btn mt1 mb1"
       >
         <span>Adicionar Cronograma</span>

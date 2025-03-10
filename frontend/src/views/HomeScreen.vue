@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ModulosDoSistema, RotaInicial } from '@/consts/modulosDoSistema';
+import type { ModuloSistema, ModulosDoSistema, RotaInicial } from '@/consts/modulosDoSistema';
 import módulos from '@/consts/modulosDoSistema';
 import requestS from '@/helpers/requestS';
 import { useAcompanhamentosStore } from '@/stores/acompanhamentos.store';
@@ -13,6 +13,7 @@ import { useProcessosStore } from '@/stores/processos.store';
 import { useRegionsStore } from '@/stores/regions.store';
 import { useTarefasStore } from '@/stores/tarefas.store';
 import { useUsersStore } from '@/stores/users.store';
+import type { MinhaContaDto } from '@back/minha-conta/models/minha-conta.dto.ts';
 import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
@@ -32,7 +33,8 @@ const {
   rotaEhPermitida,
 } = storeToRefs(authStore);
 
-const módulosDisponíveis = ref([]);
+const modulosAcessiveis = ref<ModuloSistema[]>([]);
+const modulosDisponiveis = ref<ModuloSistema[]>([]);
 
 // PRA-FAZER: mover para o gerenciador de estado `auth.store`
 async function escolher(opção: keyof ModulosDoSistema) {
@@ -46,7 +48,6 @@ async function escolher(opção: keyof ModulosDoSistema) {
       localStorage.setItem('sistemaEscolhido', opção);
 
       if (dadosDoSistemaEscolhido.value?.rotaInicial) {
-        router.push(dadosDoSistemaEscolhido.value?.rotaInicial);
         const listaDeRotasPossiveis = !Array.isArray(dadosDoSistemaEscolhido.value?.rotaInicial)
           ? [dadosDoSistemaEscolhido.value?.rotaInicial]
           : dadosDoSistemaEscolhido.value?.rotaInicial;
@@ -85,12 +86,24 @@ async function iniciar() {
   emEspera.value = true;
   erro.value = null;
 
-  requestS.get(`${baseUrl}/minha-conta`, { 'smae-sistemas': Object.keys(módulos).join(',') })
+  requestS.get(`${baseUrl}/minha-conta`, null, { headers: { 'smae-sistemas': Object.keys(módulos).join(',') } })
     .then((resposta) => {
-      const { sessao: { sistemas } } = resposta;
+      const {
+        sessao: { sistemas, sistemas_disponiveis: sistemasDisponiveis },
+      } = resposta as MinhaContaDto;
+
       sessao.value = resposta.sessao;
+
       if (Array.isArray(sistemas)) {
-        módulosDisponíveis.value.splice(0, módulosDisponíveis.value.length, ...sistemas);
+        modulosAcessiveis.value.splice(0, modulosAcessiveis.value.length);
+
+        sistemas
+          .forEach((sistema: ModuloSistema) => {
+            if (sistema !== 'SMAE') {
+              modulosAcessiveis.value.push(sistema);
+            }
+          });
+        modulosDisponiveis.value.splice(0, modulosDisponiveis.value.length, ...sistemasDisponiveis);
       }
     })
     .catch((err) => {
@@ -127,23 +140,24 @@ iniciar();
     </div>
 
     <ul
-      v-if="Object.keys(módulos).length"
+      v-if="modulosDisponiveis.length"
       class="escolha-de-módulos__lista flex column g2 uc"
     >
       <li
-        v-for="(sistema, k) in módulos"
+        v-for="(sistema, k) in modulosDisponiveis"
         :key="k"
       >
         <button
           type="button"
           class="escolha-de-módulos__opção opção uc like-a__link tprimary tl t24 w700
         flex g05 center"
-          :disabled="!sistema?.rotaInicial || !módulosDisponíveis.includes(k)"
-          @click="escolher(k)"
+          :disabled="!módulos[sistema as keyof ModulosDoSistema]?.rotaInicial
+            || !modulosAcessiveis.includes(sistema)"
+          @click="escolher(sistema)"
         >
           <img
-            v-if="sistema.ícone"
-            :src="sistema?.ícone"
+            v-if="módulos[sistema as keyof ModulosDoSistema]?.ícone"
+            :src="módulos[sistema as keyof ModulosDoSistema]?.ícone"
             class="opção__ícone"
             aria-hidden="true"
             width="48"
@@ -151,7 +165,7 @@ iniciar();
             alt=""
           >
           <span class="opção__nome">
-            {{ sistema?.nome || sistema }}
+            {{ módulos[sistema as keyof ModulosDoSistema]?.nome || sistema }}
           </span>
         </button>
       </li>

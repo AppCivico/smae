@@ -62,12 +62,12 @@ function formatarNumero(numero) {
         v-if="representatividade.capital.length"
         class="tablemain mb1"
       >
+        <col class="col--number">
         <col>
         <col>
-        <col>
-        <col>
-        <col>
-        <col>
+        <col class="col--number">
+        <col class="col--number">
+        <col class="col--number">
         <col
           v-if="exibirEdição"
           class="col--botão-de-ação"
@@ -78,12 +78,20 @@ function formatarNumero(numero) {
         >
         <thead>
           <tr>
-            <th>Ranking na Capital</th>
+            <th class="cell--number">
+              Ranking na Capital
+            </th>
             <th>Município/Subprefeitura</th>
             <th>Região</th>
-            <th>Votos nominais do candidato </th>
-            <th>Quantidade de Comparecimento</th>
-            <th>Porcentagem do candidato</th>
+            <th class="cell--number">
+              Votos nominais do candidato
+            </th>
+            <th class="cell--number">
+              Quantidade de Comparecimento
+            </th>
+            <th class="cell--number">
+              Porcentagem do candidato
+            </th>
             <th v-if="exibirEdição" />
             <th v-if="exibirEdição" />
           </tr>
@@ -93,12 +101,20 @@ function formatarNumero(numero) {
             v-for="item in representatividade.capital"
             :key="item.id"
           >
-            <td>{{ item.ranking }}</td>
+            <td class="cell--number">
+              {{ item.ranking }}
+            </td>
             <td>{{ item.municipio_tipo }}</td>
             <td>{{ item.regiao.descricao }}</td>
-            <td>{{ formatarNumero(item.numero_votos) }}</td>
-            <td>{{ formatarNumero(item.regiao.comparecimento.valor) }}</td>
-            <td>{{ item.pct_participacao }}%</td>
+            <td class="cell--number">
+              {{ formatarNumero(item.numero_votos) }}
+            </td>
+            <td class="cell--number">
+              {{ formatarNumero(item.regiao.comparecimento.valor) }}
+            </td>
+            <td class="cell--number">
+              {{ item.pct_participacao }}%
+            </td>
             <td v-if="exibirEdição">
               <router-link
                 :to="{
@@ -172,12 +188,12 @@ function formatarNumero(numero) {
         v-if="representatividade.interior.length"
         class="tablemain mb1"
       >
+        <col class="col--number">
         <col>
         <col>
-        <col>
-        <col>
-        <col>
-        <col>
+        <col class="col--number">
+        <col class="col--number">
+        <col class="col--number">
         <col
           v-if="exibirEdição"
           class="col--botão-de-ação"
@@ -188,12 +204,20 @@ function formatarNumero(numero) {
         >
         <thead>
           <tr>
-            <th>Ranking no Interior</th>
+            <th class="cell--number">
+              Ranking no Interior
+            </th>
             <th>Município/Subprefeitura</th>
             <th>Região</th>
-            <th>Votos nominais do candidato</th>
-            <th>Quantidade de Comparecimento</th>
-            <th>Porcentagem do candidato</th>
+            <th class="cell--number">
+              Votos nominais do candidato
+            </th>
+            <th class="cell--number">
+              Quantidade de Comparecimento
+            </th>
+            <th class="cell--number">
+              Porcentagem do candidato
+            </th>
             <th v-if="exibirEdição" />
             <th v-if="exibirEdição" />
           </tr>
@@ -203,12 +227,20 @@ function formatarNumero(numero) {
             v-for="item in representatividade.interior"
             :key="item.id"
           >
-            <td>{{ item.id }}</td>
+            <td class="cell--number">
+              {{ item.ranking }}
+            </td>
             <td>{{ item.municipio_tipo }}</td>
             <td>{{ item.regiao.descricao }}</td>
-            <td>{{ formatarNumero(item.numero_votos) }}</td>
-            <td>{{ formatarNumero(item.regiao.comparecimento.valor) }}</td>
-            <td>{{ item.pct_participacao }}%</td>
+            <td class="cell--number">
+              {{ formatarNumero(item.numero_votos) }}
+            </td>
+            <td class="cell--number">
+              {{ formatarNumero(item.regiao.comparecimento.valor) }}
+            </td>
+            <td class="cell--number">
+              {{ item.pct_participacao }}%
+            </td>
             <td v-if="exibirEdição">
               <router-link
                 :to="{
@@ -279,6 +311,5 @@ h3{
 }
 table{
   max-width: 1000px;
-  margin: 0 auto;
 }
 </style>

@@ -4,7 +4,7 @@
     <hr class="ml2 f1">
     <SmaeLink
       v-if="psEmFoco?.pode_editar"
-      :to="{ name: 'planosSetoriaisNovoMacrotema' }"
+      :to="{ name: '.novoMacrotema' } "
       class="btn big ml1"
     >
       Novo {{ titulo }}
@@ -31,7 +31,10 @@
         <td>
           <SmaeLink
             v-if="psEmFoco?.pode_editar"
-            :to="{ name: 'planosSetoriaisEditarMacrotema', params: { macrotemaId: item.id } }"
+            :to="{
+              name: '.editarMacrotema',
+              params: { macrotemaId: item.id }
+            }"
             class="tprimary"
           >
             <svg
@@ -42,7 +45,10 @@
         </td>
         <td>
           <button
-            v-if="temPermissãoPara('CadastroMacroTemaPS.remover') && psEmFoco?.pode_editar"
+            v-if="temPermissãoPara([
+              'CadastroMacroTemaPS.remover',
+              'CadastroMacroTemaPDM.remover',
+            ]) && psEmFoco?.pode_editar"
             class="like-a__text"
             arial-label="excluir"
             title="excluir"
@@ -74,13 +80,13 @@
   </table>
 </template>
 <script setup>
+import { storeToRefs } from 'pinia';
+import { computed, defineOptions } from 'vue';
+import { useRoute } from 'vue-router';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useMacrotemasPsStore } from '@/stores/macrotemasPs.store';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
-import { storeToRefs } from 'pinia';
-import { computed, defineOptions } from 'vue';
-import { useRoute } from 'vue-router';
 
 defineOptions({
   inheritAttrs: false,
@@ -98,7 +104,7 @@ const { temPermissãoPara } = storeToRefs(authStore);
 const macrotemasStore = useMacrotemasPsStore();
 const { lista, chamadasPendentes, erro } = storeToRefs(macrotemasStore);
 
-const planosSetoriaisStore = usePlanosSetoriaisStore();
+const planosSetoriaisStore = usePlanosSetoriaisStore(route.meta.entidadeMãe);
 const { emFoco: psEmFoco } = storeToRefs(planosSetoriaisStore);
 
 async function excluirMacrotema(id, descricao) {

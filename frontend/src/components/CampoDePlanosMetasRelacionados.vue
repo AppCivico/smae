@@ -1,7 +1,7 @@
 <script setup>
 import tiposDePlanos from '@/consts/tiposDePlanos';
 import simplificarOrigem from '@/helpers/simplificadorDeOrigem';
-import truncate from '@/helpers/truncate';
+import truncate from '@/helpers/texto/truncate';
 import { usePlanosSimplificadosStore } from '@/stores/planosMetasSimplificados.store.ts';
 import { storeToRefs } from 'pinia';
 import { useField } from 'vee-validate';

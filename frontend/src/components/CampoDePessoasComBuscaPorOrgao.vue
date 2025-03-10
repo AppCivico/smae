@@ -7,7 +7,7 @@ import {
 import { useRoute } from 'vue-router';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import requestS from '@/helpers/requestS.ts';
-import truncate from '@/helpers/truncate';
+import truncate from '@/helpers/texto/truncate';
 import { useOrgansStore } from '@/stores/organs.store';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -253,7 +253,7 @@ watch(
               mapaDeÓrgãos[órgão.id] && listaDeÓrgãos[idx].id !== órgão.id
             "
           >
-            {{ órgão.id }} - {{ órgão.sigla }} -
+            {{ órgão.sigla }} -
             {{ truncate(órgão.descricao, 36) }}
           </option>
         </select>

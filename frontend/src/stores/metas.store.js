@@ -5,13 +5,15 @@ import { usePlanosSetoriaisStore } from './planosSetoriais.store.ts';
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 function caminhoParaApi(rotaMeta) {
-  if (rotaMeta.entidadeMãe === 'pdm') {
-    return 'meta';
+  switch (rotaMeta.entidadeMãe) {
+    case 'pdm':
+      return 'meta';
+    case 'planoSetorial':
+    case 'programaDeMetas':
+      return 'plano-setorial-meta';
+    default:
+      throw new Error('Você precisa estar em algum módulo para executar essa ação.');
   }
-  if (rotaMeta.entidadeMãe === 'planoSetorial') {
-    return 'plano-setorial-meta';
-  }
-  throw new Error('Você precisa estar em algum módulo para executar essa ação.');
 }
 
 export const useMetasStore = defineStore({
@@ -29,7 +31,8 @@ export const useMetasStore = defineStore({
         case 'pdm':
           return usePdMStore().activePdm;
         case 'planoSetorial':
-          return usePlanosSetoriaisStore().emFoco || {};
+        case 'programaDeMetas':
+          return usePlanosSetoriaisStore(this.route.meta.entidadeMãe).emFoco || {};
         default:
           throw new Error('Erro ao buscar PdM ativo');
       }
@@ -81,19 +84,6 @@ export const useMetasStore = defineStore({
         return true;
       } catch (error) {
         this.Metas = { error };
-        return false;
-      }
-    },
-    async getRelacionados(params) {
-      try {
-        if (params.meta_id && params.pdm_id) {
-          const response = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta)}/relacionados/`, params);
-          this.relacionadosMeta = response;
-          return true;
-        }
-        throw new Error('ID da meta ou do PdM não fornecido.');
-      } catch (error) {
-        this.relacionadosMeta = { error };
         return false;
       }
     },

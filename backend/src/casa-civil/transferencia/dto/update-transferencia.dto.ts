@@ -1,8 +1,9 @@
 import { OmitType, PartialType } from '@nestjs/swagger';
-import { Transform, Type } from 'class-transformer';
+import { Transform, TransformFnParams, Type } from 'class-transformer';
 import {
     IsArray,
-    IsBoolean, IsInt,
+    IsBoolean,
+    IsInt,
     IsNumber,
     IsNumberString,
     IsOptional,
@@ -59,6 +60,15 @@ export class CompletarTransferenciaDto {
     @ValidateIf((object, value) => value !== null)
     custeio: number;
 
+    @IsOptional()
+    @IsNumber(
+        { maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false },
+        { message: '$property| até duas casas decimais' }
+    )
+    @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
+    @ValidateIf((object, value) => value !== null)
+    pct_custeio?: number;
+
     @IsNumberString(
         {},
         {
@@ -68,6 +78,15 @@ export class CompletarTransferenciaDto {
     )
     @ValidateIf((object, value) => value !== null)
     investimento: number;
+
+    @IsOptional()
+    @IsNumber(
+        { maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false },
+        { message: '$property| até duas casas decimais' }
+    )
+    @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
+    @ValidateIf((object, value) => value !== null)
+    pct_investimento?: number;
 
     @IsOptional()
     @IsString()

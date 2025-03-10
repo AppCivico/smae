@@ -1,43 +1,43 @@
 import { forwardRef, HttpException, Inject, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Cron } from '@nestjs/schedule';
-import { FonteRelatorio, Prisma, TipoRelatorio } from '@prisma/client';
+import { FonteRelatorio, ModuloSistema, Prisma, RelatorioVisibilidade, TipoRelatorio } from '@prisma/client';
 import * as crypto from 'crypto';
 import * as fs from 'fs';
-import { createWriteStream, WriteStream } from 'fs';
 import { DateTime } from 'luxon';
 import * as os from 'os';
 import { tmpdir } from 'os';
 import * as path from 'path';
+import { CrontabIsEnabled } from 'src/common/CrontabIsEnabled';
+import { uuidv7 } from 'uuidv7';
+import * as XLSX from 'xlsx';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { SYSTEM_TIMEZONE } from '../../common/date2ymd';
-import { JOB_PP_REPORT_LOCK } from '../../common/dto/locks';
+import { JOB_PP_REPORT_LOCK, JOB_REPORT_LOCK } from '../../common/dto/locks';
 import { PaginatedDto, PAGINATION_TOKEN_TTL } from '../../common/dto/paginated.dto';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
+import { PessoaService } from '../../pessoa/pessoa.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UploadService } from '../../upload/upload.service';
+import { CasaCivilAtividadesPendentesService } from '../casa-civil-atividades-pendentes/casa-civil-atividades-pendentes.service';
 import { IndicadoresService } from '../indicadores/indicadores.service';
 import { MonitoramentoMensalService } from '../monitoramento-mensal/monitoramento-mensal.service';
 import { OrcamentoService } from '../orcamento/orcamento.service';
 import { ParlamentaresService } from '../parlamentares/parlamentares.service';
 import { PPObrasService } from '../pp-obras/pp-obras.service';
-import { CreateRelProjetoDto } from '../pp-projeto/dto/create-previsao-custo.dto';
 import { PPProjetoService } from '../pp-projeto/pp-projeto.service';
 import { PPProjetosService } from '../pp-projetos/pp-projetos.service';
 import { PPStatusService } from '../pp-status/pp-status.service';
 import { PrevisaoCustoService } from '../previsao-custo/previsao-custo.service';
+import { PSMonitoramentoMensal } from '../ps-monitoramento-mensal/ps-monitoramento-mensal.service';
 import { TransferenciasService } from '../transferencias/transferencias.service';
-import { FileOutput, ParseParametrosDaFonte, ReportableService, ReportContext } from '../utils/utils.service';
+import { TribunalDeContasService } from '../tribunal-de-contas/tribunal-de-contas.service';
+import { FileOutput, ParseParametrosDaFonte, ReportableService } from '../utils/utils.service';
 import { CreateReportDto } from './dto/create-report.dto';
 import { FilterRelatorioDto } from './dto/filter-relatorio.dto';
-import { RelatorioDto, RelatorioParamDto } from './entities/report.entity';
-import { TribunalDeContasService } from '../tribunal-de-contas/tribunal-de-contas.service';
-import { PSMonitoramentoMensal } from '../ps-monitoramento-mensal/ps-monitoramento-mensal.service';
-import { CasaCivilAtividadesPendentesService } from '../casa-civil-atividades-pendentes/casa-civil-atividades-pendentes.service';
-import * as XLSX from 'xlsx';
-import { InputJsonValue } from '@prisma/client/runtime/library';
-
-type RelatorioProcesado = Record<string, string | Array<string>>;
+import { RelatorioDto, RelatorioProcessamentoDto } from './entities/report.entity';
+import { ReportContext } from './helpers/reports.contexto';
+import { BuildParametrosProcessados, ParseBffParamsProcessados } from './helpers/reports.params-processado';
 
 export const GetTempFileName = function (prefix?: string, suffix?: string) {
     prefix = typeof prefix !== 'undefined' ? prefix : 'tmp.';
@@ -56,9 +56,14 @@ class NextPageTokenJwtBody {
 @Injectable()
 export class ReportsService {
     private readonly logger = new Logger(ReportsService.name);
+    private enabled: boolean;
+    baseUrl: string;
+
     constructor(
         private readonly jwtService: JwtService,
         private readonly prisma: PrismaService,
+
+        @Inject(forwardRef(() => PessoaService)) private readonly pessoaService: PessoaService,
 
         @Inject(forwardRef(() => OrcamentoService)) private readonly orcamentoService: OrcamentoService,
         @Inject(forwardRef(() => UploadService)) private readonly uploadService: UploadService,
@@ -77,9 +82,13 @@ export class ReportsService {
         private readonly psMonitoramentoMensal: PSMonitoramentoMensal,
         @Inject(forwardRef(() => CasaCivilAtividadesPendentesService))
         private readonly casaCivilAtividadesPendentesService: CasaCivilAtividadesPendentesService
-    ) {}
+    ) {
+        const parsedUrl = new URL(process.env.URL_LOGIN_SMAE || 'http://smae-frontend/');
+        this.baseUrl = `${parsedUrl.protocol}//${parsedUrl.hostname}:${parsedUrl.port}`;
+        this.enabled = CrontabIsEnabled('reports');
+    }
 
-    async runReport(dto: CreateReportDto): Promise<FileOutput[]> {
+    private async runReport(dto: CreateReportDto, user: PessoaFromJwt | null, ctx: ReportContext): Promise<void> {
         // TODO agora que existem vários sistemas, conferir se o privilégio faz sentido com o serviço
         const service: ReportableService | null = this.servicoDaFonte(dto);
 
@@ -104,25 +113,17 @@ export class ReportsService {
         } else if (dto.fonte === 'Orcamento' || dto.fonte === 'PrevisaoCusto') {
             parametros.tipo_pdm = 'PDM';
         } else if (dto.fonte === 'PSOrcamento' || dto.fonte === 'PSPrevisaoCusto') {
-            parametros.tipo_pdm = 'PS';
+            //parametros.tipo_pdm = 'PS';
         } else if (dto.fonte === 'PSIndicadores' || dto.fonte === 'PSMonitoramentoMensal') {
-            parametros.tipo_pdm = 'PS';
+            //parametros.tipo_pdm = 'PS';
         } else if (dto.fonte === 'Indicadores') {
             parametros.tipo_pdm = 'PDM';
         }
 
-        const mockContext: ReportContext = {
-            cancel: () => {},
-            isCancelled: () => false,
-            progress: async () => {},
-            getTmpFile: (prefix: string): { path: string; stream: WriteStream } => {
-                const path = GetTempFileName(prefix);
-                const stream = createWriteStream(path);
-                return { path, stream };
-            },
-        };
-
-        return await service.toFileOutput(parametros, mockContext);
+        const files = await service.toFileOutput(parametros, ctx, user);
+        for (const file of files) {
+            ctx.addFile(file);
+        }
     }
 
     private async convertCsvToXlsx(csvContent: string | Buffer): Promise<Buffer> {
@@ -193,7 +194,12 @@ export class ReportsService {
         return zip.toBuffer();
     }
 
-    async saveReport(dto: CreateReportDto, arquivoId: number, user: PessoaFromJwt | null): Promise<RecordWithId> {
+    async saveReport(
+        dto: CreateReportDto,
+        arquivoId: number | null,
+        user: PessoaFromJwt | null,
+        sistema: ModuloSistema = 'SMAE'
+    ): Promise<RecordWithId> {
         const parametros = dto.parametros;
         const pdmId = parametros.pdm_id !== undefined ? Number(parametros.pdm_id) : null;
         //if (!pdmId) throw new HttpException('parametros.pdm_id é necessário para salvar um relatório', 400);
@@ -203,15 +209,24 @@ export class ReportsService {
                 pdm_id: pdmId,
                 arquivo_id: arquivoId,
                 fonte: dto.fonte,
+                sistema: sistema,
+                /// here it's easy because the user is saying what he wants
+                visibilidade: dto.eh_publico ? 'Publico' : 'Privado',
                 tipo: TipoRelatorio[parametros.tipo as TipoRelatorio] ? parametros.tipo : null,
                 parametros: parametros,
-                parametros_processados: await this.buildParametrosProcessados(dto),
+                parametros_processados: await BuildParametrosProcessados(this.prisma, dto),
                 criado_por: user ? user.id : null,
                 criado_em: new Date(Date.now()),
             },
             select: { id: true },
         });
-        this.logger.log(`persistido arquivo ${arquivoId} no relatório ${result.id}`);
+
+        await this.prisma.relatorioFila.create({
+            data: {
+                relatorio_id: result.id,
+            },
+        });
+
         return { id: result.id };
     }
 
@@ -272,9 +287,10 @@ export class ReportsService {
         return service;
     }
 
-    async findAll(filters: FilterRelatorioDto): Promise<PaginatedDto<RelatorioDto>> {
+    async findAll(filters: FilterRelatorioDto, user: PessoaFromJwt): Promise<PaginatedDto<RelatorioDto>> {
         let tem_mais = false;
         let token_proxima_pagina: string | null = null;
+        const sistema = user.assertOneModuloSistema('buscar', 'Relatórios');
 
         let ipp = filters.ipp ? filters.ipp : 25;
         let offset = 0;
@@ -290,16 +306,94 @@ export class ReportsService {
                 fonte: filters.fonte,
                 pdm_id: filters.pdm_id,
                 removido_em: null,
+                sistema: { in: [sistema, 'SMAE'] },
+                AND: [
+                    {
+                        OR: [
+                            {
+                                visibilidade: 'Privado',
+                                criado_por: user.id,
+                            },
+                            {
+                                visibilidade: 'Publico',
+                            },
+                            {
+                                visibilidade: 'Restrito',
+                                OR: [
+                                    // If there's no restriction at all
+                                    {
+                                        restrito_para: {
+                                            equals: Prisma.AnyNull,
+                                        },
+                                    },
+                                    // Check for role-based access
+                                    {
+                                        AND: [
+                                            {
+                                                OR: [
+                                                    // Either roles doesn't exist in the JSON
+                                                    {
+                                                        restrito_para: {
+                                                            path: ['$.roles'],
+                                                            equals: Prisma.AnyNull,
+                                                        },
+                                                    },
+                                                    // Or user has one of the required roles
+                                                    {
+                                                        restrito_para: {
+                                                            path: ['$.roles'],
+                                                            array_contains: user.privilegios as string[],
+                                                        },
+                                                    },
+                                                ],
+                                            },
+                                            {
+                                                OR: [
+                                                    // Either portfolio_orgao_ids doesn't exist in the JSON
+                                                    {
+                                                        restrito_para: {
+                                                            path: ['$.portfolio_orgao_ids'],
+                                                            equals: Prisma.AnyNull,
+                                                        },
+                                                    },
+                                                    // Or user belongs to one of the required orgs
+                                                    user.orgao_id
+                                                        ? {
+                                                              restrito_para: {
+                                                                  path: ['$.portfolio_orgao_ids'],
+                                                                  array_contains: [user.orgao_id],
+                                                              },
+                                                          }
+                                                        : {},
+                                                ],
+                                            },
+                                        ],
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                ],
             },
             select: {
                 id: true,
                 criado_em: true,
                 criador: { select: { nome_exibicao: true } },
                 fonte: true,
+                visibilidade: true,
                 arquivo_id: true,
                 parametros: true,
                 parametros_processados: true,
                 pdm_id: true,
+                progresso: true,
+                processamento: {
+                    select: {
+                        id: true,
+                        congelado_em: true,
+                        executado_em: true,
+                        err_msg: true,
+                    },
+                },
             },
             orderBy: {
                 criado_em: 'desc',
@@ -316,46 +410,33 @@ export class ReportsService {
 
         return {
             linhas: rows.map((r) => {
+                const progresso = r.arquivo_id ? 100 : r.progresso == -1 ? null : r.progresso;
+
+                const eh_publico: boolean = r.visibilidade === RelatorioVisibilidade.Publico ? true : false;
+
                 return {
                     ...r,
-                    parametros_processados: this.bffParamsProcessados(r.parametros_processados?.valueOf(), r.fonte),
+                    progresso: progresso,
+                    eh_publico: eh_publico,
+                    parametros_processados: ParseBffParamsProcessados(r.parametros_processados?.valueOf(), r.fonte),
                     criador: { nome_exibicao: r.criador?.nome_exibicao || '(sistema)' },
-                    arquivo: this.uploadService.getDownloadToken(r.arquivo_id, '1d').download_token,
-                };
+                    arquivo: r.arquivo_id
+                        ? this.uploadService.getDownloadToken(r.arquivo_id, '1d').download_token
+                        : null,
+                    processamento: r.processamento
+                        ? ({
+                              id: r.processamento.id,
+                              congelado_em: r.processamento.congelado_em,
+                              executado_em: r.processamento.executado_em,
+                              err_msg: r.processamento.err_msg,
+                          } satisfies RelatorioProcessamentoDto)
+                        : null,
+                } satisfies RelatorioDto;
             }),
             tem_mais: tem_mais,
             token_ttl: PAGINATION_TOKEN_TTL,
             token_proxima_pagina: token_proxima_pagina,
         };
-    }
-
-    bffParamsProcessados(parametros: any, _fonte: FonteRelatorio): RelatorioParamDto[] | null {
-        let ret: RelatorioParamDto[] | null = null;
-
-        if (!parametros || typeof parametros !== 'object') return null;
-
-        const keys = Object.keys(parametros).sort();
-        if (keys.length === 0) return [];
-
-        const chavesExistentes = new Set<string>();
-        ret = [];
-        for (const k of keys) {
-            const v = parametros[k];
-            if (v === '') continue;
-            const str = k.charAt(0).toUpperCase() + k.slice(1);
-            str.replace(/_/g, ' ');
-
-            if (chavesExistentes.has(k)) continue;
-            chavesExistentes.add(k);
-            chavesExistentes.add(k + '_nome'); // hack: pula alguns itens que ficaram salvos com o "_nome" já no input
-
-            ret.push({
-                filtro: str,
-                valor: Array.isArray(v) ? v.map((r) => r.toString()) : v.toString(),
-            });
-        }
-
-        return ret;
     }
 
     async delete(id: number, user: PessoaFromJwt) {
@@ -384,13 +465,13 @@ export class ReportsService {
         return this.jwtService.sign(opt);
     }
 
-    @Cron('0 * * * *')
+    @Cron('* * * * *')
     async handleCron() {
-        if (process.env['DISABLE_REPORT_CRONTAB']) return;
+        //if (process.env['DISABLE_REPORT_CRONTAB']) return;
 
         await this.prisma.$transaction(
             async (prisma: Prisma.TransactionClient) => {
-                this.logger.debug(`Adquirindo lock para verificação de relatórios`);
+                this.logger.debug(`Adquirindo lock para verificação de relatórios de Projeto`);
                 const locked: {
                     locked: boolean;
                 }[] = await prisma.$queryRaw`SELECT
@@ -411,6 +492,34 @@ export class ReportsService {
         );
     }
 
+    @Cron('*/2 * * * *')
+    async handleRelatorioFilaCron() {
+        if (!this.enabled) return;
+        if (process.env['DISABLE_REPORT_CRONTAB']) return;
+
+        await this.prisma.$transaction(
+            async (prisma: Prisma.TransactionClient) => {
+                this.logger.log(`Adquirindo lock para verificação de relatórios`);
+                const locked: {
+                    locked: boolean;
+                }[] = await prisma.$queryRaw`SELECT
+                pg_try_advisory_xact_lock(${JOB_REPORT_LOCK}) as locked
+            `;
+                if (!locked[0].locked) {
+                    this.logger.log(`Já está em processamento...`);
+                    return;
+                }
+
+                await this.verificaRelatorioFila();
+            },
+            {
+                maxWait: 1000000,
+                timeout: 60 * 1000 * 15,
+                isolationLevel: 'Serializable',
+            }
+        );
+    }
+
     async executaRelatorioProjetos(filaId: number) {
         try {
             await this.verificaRelatorioProjetos(filaId);
@@ -426,7 +535,7 @@ export class ReportsService {
 
         for (const row of rows) {
             try {
-                const parametros = await this.buildParametrosProcessados(undefined, row.id);
+                const parametros = await BuildParametrosProcessados(this.prisma, undefined, row.id);
                 if (!parametros) continue;
 
                 await this.prisma.relatorio.update({
@@ -462,153 +571,301 @@ export class ReportsService {
         });
 
         for (const job of pending) {
-            await this.prisma.projetoRelatorioFila.update({
+            try {
+                const now = new Date(Date.now());
+                await this.prisma.projetoRelatorioFila.update({
+                    where: { id: job.id },
+                    data: {
+                        congelado_em: new Date(Date.now()),
+                    },
+                });
+
+                const contentType = 'application/zip';
+                const filename = ['Projeto', DateTime.local({ zone: SYSTEM_TIMEZONE }).toISO() + '.zip']
+                    .filter((r) => r)
+                    .join('-');
+
+                const relatorio = await this.prisma.relatorio.create({
+                    data: {
+                        fonte: 'Projeto',
+                        parametros: {
+                            projeto_id: job.projeto_id,
+                        },
+                        visibilidade: 'Restrito',
+                        progresso: 0,
+                    },
+                });
+
+                const contexto = new ReportContext(this.prisma, relatorio.id);
+
+                await this.runReport(
+                    {
+                        fonte: relatorio.fonte,
+                        parametros: {
+                            projeto_id: job.projeto_id,
+                        },
+                    },
+                    null,
+                    contexto
+                );
+                const zipBuffer = await this.zipFiles(contexto.getFiles());
+
+                const arquivoId = await this.uploadService.uploadReport(
+                    relatorio.fonte,
+                    filename,
+                    zipBuffer,
+                    contentType,
+                    null
+                );
+                const relatorioId = relatorio.id;
+
+                await this.updateRelatorioMetadata(relatorioId, arquivoId, now, contexto);
+
+                await this.prisma.projetoRelatorioFila.update({
+                    where: { id: job.id },
+                    data: {
+                        executado_em: new Date(Date.now()),
+                        relatorio_id: relatorio.id,
+                    },
+                });
+            } catch (error) {
+                console.error(error);
+
+                this.logger.error(`Falha ao processar relatório ID ${job.id}: ${error}`);
+
+                // timeout do lock vai tentar novamente em 1 hr
+                continue;
+            }
+        }
+    }
+
+    private async updateRelatorioMetadata(relatorioId: number, arquivoId: number, now: Date, contexto: ReportContext) {
+        const obj = contexto.getRestricaoAcesso();
+
+        await this.prisma.relatorio.update({
+            where: { id: relatorioId },
+            data: {
+                arquivo_id: arquivoId,
+                processado_em: now,
+                restrito_para: obj === null ? null : (obj as any),
+            },
+        });
+    }
+
+    private async verificaRelatorioFila(filtroId?: number | undefined) {
+        const pending = await this.prisma.relatorioFila.findMany({
+            where: {
+                executado_em: null,
+                AND: [
+                    {
+                        OR: [
+                            { id: filtroId },
+                            { congelado_em: null },
+                            {
+                                congelado_em: {
+                                    lt: DateTime.now().minus({ hour: 1 }).toJSDate(),
+                                },
+                            },
+                        ],
+                    },
+                ],
+            },
+            take: 1,
+            orderBy: { criado_em: 'asc' },
+        });
+
+        this.logger.log(pending.length + ' relatórios pendentes');
+
+        for (const job of pending) {
+            this.logger.log(`iniciando processamento do relatório ID ${job.relatorio_id}`);
+
+            await this.prisma.relatorioFila.update({
                 where: { id: job.id },
                 data: {
                     congelado_em: new Date(Date.now()),
                 },
             });
 
-            const contentType = 'application/zip';
-            const filename = ['Projeto', DateTime.local({ zone: SYSTEM_TIMEZONE }).toISO() + '.zip']
-                .filter((r) => r)
-                .join('-');
+            try {
+                const now = new Date(Date.now());
 
-            const dto: CreateReportDto = {
-                fonte: 'Projeto',
-                parametros: {
-                    projeto_id: job.projeto_id,
-                } satisfies CreateRelProjetoDto,
-            };
-            const files = await this.runReport(dto);
-            const zipBuffer = await this.zipFiles(files);
+                const relatorio = await this.prisma.relatorio.findFirst({
+                    where: { id: job.relatorio_id },
+                    select: {
+                        id: true,
+                        fonte: true,
+                        parametros: true,
+                        parametros_processados: true,
+                        sistema: true,
+                        criado_em: true,
+                        criado_por: true,
+                        criador: {
+                            select: {
+                                email: true,
+                            },
+                        },
+                    },
+                });
+                if (!relatorio) throw new InternalServerErrorException(`Relatório ${job.relatorio_id} não encontrado`);
+                const contexto = new ReportContext(this.prisma, relatorio.id);
 
-            const arquivoId = await this.uploadService.uploadReport(dto.fonte, filename, zipBuffer, contentType, null);
+                await this.prisma.relatorio.update({
+                    where: { id: job.relatorio_id },
+                    data: { progresso: 0 },
+                });
 
-            const report = await this.saveReport(dto, arquivoId, null);
-            await this.prisma.projetoRelatorioFila.update({
-                where: { id: job.id },
-                data: {
-                    executado_em: new Date(Date.now()),
-                    relatorio_id: report.id,
-                },
-            });
-        }
-    }
+                const pessoaJwt = relatorio.criado_por
+                    ? await this.pessoaService.reportPessoaFromJwt(relatorio.criado_por, relatorio.sistema)
+                    : null;
 
-    private async buildParametrosProcessados(
-        dto?: CreateReportDto,
-        reportId?: number
-    ): Promise<InputJsonValue | undefined> {
-        let parametros;
-        const parametros_processados: RelatorioProcesado = {};
+                await this.runReport(
+                    {
+                        fonte: relatorio.fonte,
+                        parametros: relatorio.parametros,
+                    },
+                    pessoaJwt,
+                    contexto
+                );
 
-        // Caso esteja passando ID de report, é porque a chamada é de sync.
-        if (reportId) {
-            const report = await this.prisma.relatorio.findUnique({
-                where: {
-                    id: reportId,
-                    removido_em: null,
-                },
-                select: {
-                    parametros: true,
-                    parametros_processados: true,
-                },
-            });
-            if (!report) return undefined;
+                const contentType = 'application/zip';
+                const filename = [
+                    relatorio.fonte.toString(),
+                    DateTime.local({ zone: SYSTEM_TIMEZONE }).toISO() + '.zip',
+                ]
+                    .filter((r) => r)
+                    .join('-');
 
-            if (!report.parametros) return undefined;
-            if (report.parametros_processados && report.parametros_processados.toString().length > 0)
-                return report.parametros_processados;
+                const zipBuffer = await this.zipFiles(contexto.getFiles());
 
-            parametros = report.parametros;
-        } else {
-            if (!dto) return undefined;
+                const arquivoId = await this.uploadService.uploadReport(
+                    relatorio.fonte,
+                    filename,
+                    zipBuffer,
+                    contentType,
+                    null
+                );
 
-            parametros = dto.parametros;
-        }
+                await this.updateRelatorioMetadata(relatorio.id, arquivoId, now, contexto);
 
-        for (const paramKey of Object.keys(parametros)) {
-            const valor = parametros[paramKey];
-            if (!valor) continue;
+                await this.prisma.relatorioFila.update({
+                    where: { id: job.id },
+                    data: {
+                        executado_em: new Date(Date.now()),
+                    },
+                });
 
-            const nomeChave = paramKey
-                .replace(/(_id|_ids)$/, '') // remove _id ou _ids
-                .replace('plano_setorial_id', 'pdm_id'); // ajuste para pdm_id
+                // Enviando email com o relatório para o usuário.
+                await this.sendEmailNotification(relatorio, job);
+            } catch (error) {
+                this.logger.debug(`Falha ao processar relatório ID ${job.relatorio_id}: ${error}`);
 
-            parametros_processados[nomeChave] = valor.toString();
+                await this.prisma.relatorioFila.update({
+                    where: { id: job.id },
+                    data: {
+                        err_msg: error.toString().replace(/\s/g, ''),
+                        executado_em: new Date(Date.now()),
+                        congelado_em: null,
+                    },
+                });
 
-            const nomeTabelaCol = this.nomeTabelaColParametro(nomeChave);
-            if (!nomeTabelaCol) continue;
-
-            if (typeof valor === 'number') {
-                const query = `SELECT COALESCE(${nomeTabelaCol.coluna}, '') AS nome, removido_em FROM ${nomeTabelaCol.tabela} WHERE id = ${valor}`;
-                const rowNome =
-                    await this.prisma.$queryRawUnsafe<Array<{ nome: string; removido_em: Date | undefined }>>(query);
-                if (rowNome.length > 0) {
-                    parametros_processados[nomeChave] = rowNome[0].removido_em
-                        ? '(Removido) ' + rowNome[0].nome
-                        : rowNome[0].nome;
-                }
-            } else if (Array.isArray(valor)) {
-                if (valor.length === 0) continue;
-
-                const joinedValues = valor.join(',');
-                // str must match \d,? pattern
-                if (/^\d+(,\d+)*$/.test(joinedValues) === false) continue;
-
-                const query = `SELECT id as id, COALESCE(${nomeTabelaCol.coluna}, '') AS nome, removido_em
-                    FROM ${nomeTabelaCol.tabela} WHERE id IN (${joinedValues})`;
-                const rowNome =
-                    await this.prisma.$queryRawUnsafe<
-                        Array<{ id: Number; nome: string; removido_em: Date | undefined }>
-                    >(query);
-
-                if (rowNome.length > 0) {
-                    parametros_processados[nomeChave] = rowNome
-                        .map((r) => {
-                            return r.removido_em ? '(Removido) ' + r.nome : r.nome;
-                        })
-                        .sort();
-                }
+                continue;
             }
         }
-
-        return parametros_processados;
     }
 
-    private nomeTabelaColParametro(nomeChave: string): { tabela: string; coluna: string } | undefined {
-        const tabelaConfig: Record<string, { coluna: string; chaves?: string[] }> = {
-            projeto: { coluna: 'nome' },
-            pdm: { coluna: 'nome', chaves: ['plano_setorial'] },
-            transferencia_tipo: { coluna: 'nome', chaves: ['tipo'] },
-            parlamentar: { coluna: 'nome_popular' },
-            tag: { coluna: 'descricao', chaves: ['tags'] },
-            meta: { coluna: 'titulo', chaves: ['metas'] },
-            atividade: { coluna: 'titulo' },
-            iniciativa: { coluna: 'titulo' },
-            orgao: { coluna: 'sigla', chaves: ['orgaos', 'orgao_gestor'] },
-            portfolio: { coluna: 'titulo' },
-            indicador: { coluna: 'titulo' },
-            partido: { coluna: 'nome' },
-            regiao: { coluna: 'descricao', chaves: ['regioes'] },
-        };
+    private async sendEmailNotification(
+        relatorio: {
+            criador: { email: string } | null;
+            fonte: FonteRelatorio;
+            parametros_processados: any;
+            criado_em: Date;
+        },
+        job: {
+            id: number;
+            criado_em: Date;
+            relatorio_id: number;
+            err_msg: string | null;
+            congelado_em: Date | null;
+            executado_em: Date | null;
+        }
+    ) {
+        if (!relatorio.criador) return;
 
-        const mapeamento = Object.entries(tabelaConfig).reduce(
-            (acc, [tabela, config]) => {
-                // Adiciona o próprio da tabela no mapeamento
-                acc[tabela] = { tabela, coluna: config.coluna };
+        // A fonte precisa ser em slug para construir a URL.
+        const fonteSlug = relatorio.fonte.toLowerCase().replace(/ /g, '-');
+        const url = new URL([this.baseUrl, 'relatorios', fonteSlug].join('/')).toString();
 
-                if (config.chaves) {
-                    config.chaves.forEach((chave) => {
-                        acc[chave] = { tabela, coluna: config.coluna };
-                    });
-                }
-                return acc;
+        await this.prisma.emaildbQueue.create({
+            data: {
+                id: uuidv7(),
+                config_id: 1,
+                subject: `Seu relatório ficou pronto!`,
+                template: 'report.html',
+                to: relatorio.criador.email,
+                variables: {
+                    id: job.relatorio_id,
+                    fonte: await this.getRelatorioFonteString(relatorio.fonte),
+                    parametros: relatorio.parametros_processados
+                        ? (Object.entries(relatorio.parametros_processados).map(([key, value]) => ({
+                              key: key.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase()),
+                              value: value,
+                          })) as Array<{ key: string; value: string }>)
+                        : null,
+                    data_criacao: relatorio.criado_em.toLocaleString('pt-BR', {
+                        timeZone: 'America/Sao_Paulo',
+                    }),
+                    link: url,
+                },
             },
-            {} as Record<string, { tabela: string; coluna: string }>
-        );
+        });
+    }
 
-        return mapeamento[nomeChave];
+    private async getRelatorioFonteString(fonte: FonteRelatorio): Promise<string> {
+        switch (fonte) {
+            case FonteRelatorio.CasaCivilAtvPendentes:
+                return 'Casa Civil - Atividades Pendentes';
+            case FonteRelatorio.Indicadores:
+                return 'Indicadores';
+            case FonteRelatorio.MonitoramentoMensal:
+                return 'Monitoramento Mensal';
+            case FonteRelatorio.Obras:
+                return 'Obras';
+            case FonteRelatorio.ObrasOrcamento:
+                return 'Obras - Orçamento';
+            case FonteRelatorio.ObrasPrevisaoCusto:
+                return 'Obras - Previsão de Custo';
+            case FonteRelatorio.ObraStatus:
+                return 'Status de Obras';
+            case FonteRelatorio.Orcamento:
+                return 'Orçamento';
+            case FonteRelatorio.Parlamentares:
+                return 'Parlamentares';
+            case FonteRelatorio.PrevisaoCusto:
+                return 'Previsão de Custo';
+            case FonteRelatorio.Projeto:
+                return 'Projeto';
+            case FonteRelatorio.ProjetoOrcamento:
+                return 'Projeto - Orçamento';
+            case FonteRelatorio.ProjetoPrevisaoCusto:
+                return 'Projeto - Previsão de Custo';
+            case FonteRelatorio.ProjetoStatus:
+                return 'Status de Projetos';
+            case FonteRelatorio.Projetos:
+                return 'Projetos';
+            case FonteRelatorio.Transferencias:
+                return 'Transferências';
+            case FonteRelatorio.TribunalDeContas:
+                return 'Tribunal de Contas';
+            case FonteRelatorio.PSMonitoramentoMensal:
+                return 'Plano Setorial - Monitoramento Mensal';
+            case FonteRelatorio.PSOrcamento:
+                return 'Plano Setorial - Orçamento';
+            case FonteRelatorio.PSPrevisaoCusto:
+                return 'Plano Setorial - Previsão de Custo';
+            case FonteRelatorio.PSIndicadores:
+                return 'Plano Setorial - Indicadores';
+            default:
+                return 'Desconhecido';
+        }
     }
 }

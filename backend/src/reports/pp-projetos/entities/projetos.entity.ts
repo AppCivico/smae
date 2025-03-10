@@ -193,6 +193,12 @@ export class RelProjetosOrigemDto {
     atividade_titulo: string | null;
 }
 
+export class RelProjetosGeolocDto {
+    projeto_id: number;
+    endereco: string;
+    cep: string;
+}
+
 export class PPProjetosRelatorioDto {
     linhas: RelProjetosDto[];
     cronograma: RelProjetosCronogramaDto[];
@@ -204,4 +210,5 @@ export class PPProjetosRelatorioDto {
     contratos: RelProjetosContratosDto[];
     aditivos: RelProjetosAditivosDto[];
     origens: RelProjetosOrigemDto[];
+    enderecos: RelProjetosGeolocDto[];
 }

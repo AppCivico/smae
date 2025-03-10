@@ -1,8 +1,12 @@
 import { Module } from '@nestjs/common';
 import { RouterModule } from '@nestjs/core';
+import { AssuntoVariavelModule } from './assunto-variavel/assunto-variavel.module';
 import { AtividadeModule } from './atividade/atividade.module';
+import { CronogramaEtapaModule } from './cronograma-etapas/cronograma-etapas.module';
 import { CronogramaModule } from './cronograma/cronograma.module';
+import { EquipeRespModule } from './equipe-resp/equipe-resp.module';
 import { EtapaModule } from './etapa/etapa.module';
+import { FonteVariavelModule } from './fonte-variavel/fonte-variavel.module';
 import { GrupoPaineisModule } from './grupo-paineis/grupo-paineis.module';
 import { IndicadorModule } from './indicador/indicador.module';
 import { IniciativaModule } from './iniciativa/iniciativa.module';
@@ -17,10 +21,6 @@ import { IndicadoresModule } from './reports/indicadores/indicadores.module';
 import { MonitoramentoMensalModule } from './reports/monitoramento-mensal/monitoramento-mensal.module';
 import { VariavelCategoricaModule } from './variavel-categorica/variavel-categorica.module';
 import { VariavelModule } from './variavel/variavel.module';
-import { FonteVariavelModule } from './fonte-variavel/fonte-variavel.module';
-import { AssuntoVariavelModule } from './assunto-variavel/assunto-variavel.module';
-import { EquipeRespModule } from './equipe-resp/equipe-resp.module';
-import { CronogramaEtapaModule } from './cronograma-etapas/cronograma-etapas.module';
 
 @Module({
     imports: [

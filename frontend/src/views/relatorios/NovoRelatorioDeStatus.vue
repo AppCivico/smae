@@ -1,12 +1,13 @@
 <script setup>
+import { Field, Form, useIsFormDirty } from 'vee-validate';
+import { useRoute, useRouter } from 'vue-router';
+import MigalhasDePao from '@/components/MigalhasDePao.vue';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import { relatórioDeStatus as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
-import { Field, Form } from 'vee-validate';
-import { useRoute, useRouter } from 'vue-router';
-import CheckClose from '../../components/CheckClose.vue';
 
 const alertStore = useAlertStore();
 const portfolioStore = usePortfolioStore();
@@ -14,6 +15,8 @@ const projetosStore = useProjetosStore();
 const relatoriosStore = useRelatoriosStore();
 const route = useRoute();
 const router = useRouter();
+
+const formularioSujo = useIsFormDirty();
 
 const initialValues = {
   fonte: 'ProjetoStatus',
@@ -23,25 +26,18 @@ const initialValues = {
     periodo_inicio: null,
     periodo_fim: null,
   },
-  salvar_arquivo: false,
 };
 
 async function onSubmit(values) {
   const carga = values;
 
   try {
-    if (!carga.salvar_arquivo) {
-      carga.salvar_arquivo = false;
-    }
-
-    const msg = 'Dados salvos com sucesso!';
+    const msg = 'Relatório em processamento, acompanhe na tela de listagem';
     const r = await relatoriosStore.insert(carga);
 
     if (r === true) {
       alertStore.success(msg);
-      if (carga.salvar_arquivo && route.meta?.rotaDeEscape) {
-        router.push({ name: route.meta.rotaDeEscape });
-      }
+      router.push({ name: route.meta.rotaDeEscape });
     }
   } catch (error) {
     alertStore.error(error);
@@ -53,11 +49,15 @@ projetosStore.buscarTudo();
 </script>
 
 <template>
-  <div class="flex spacebetween center mb2">
-    <h1>{{ $route.meta.título || $route.name }}</h1>
+  <MigalhasDePao class="mb1" />
+
+  <header class="flex spacebetween center mb2">
+    <TituloDaPagina />
+
     <hr class="ml2 f1">
-    <CheckClose />
-  </div>
+
+    <CheckClose :formulario-sujo="formularioSujo" />
+  </header>
 
   <Form
     v-slot="{ errors, isSubmitting, setFieldValue, values }"
@@ -139,6 +139,41 @@ projetosStore.buscarTudo();
           {{ errors['parametros.projeto_id'] }}
         </div>
       </div>
+
+      <div class="f1">
+        <LabelFromYup
+          name="eh_publico"
+          :schema="schema"
+          required
+        />
+        <Field
+          name="eh_publico"
+          as="select"
+          class="inputtext light
+            mb1"
+          :class="{
+            error: errors['eh_publico'],
+            loading: projetosStore.chamadasPendentes.lista
+          }"
+          :disabled="projetosStore.chamadasPendentes.lista"
+        >
+          <option :value="null">
+            Selecionar
+          </option>
+          <option :value="true">
+            Sim
+          </option>
+          <option :value="false">
+            Não
+          </option>
+        </Field>
+        <div
+          v-if="errors['eh_publico']"
+          class="error-msg"
+        >
+          {{ errors['eh_publico'] }}
+        </div>
+      </div>
     </div>
 
     <div class="flex g2 mb2">
@@ -186,26 +221,6 @@ projetosStore.buscarTudo();
       </div>
     </div>
 
-    <div class="mb2">
-      <div class="pl2">
-        <label class="block">
-          <Field
-            name="salvar_arquivo"
-            type="checkbox"
-            :value="true"
-            class="inputcheckbox"
-          />
-          <span :class="{ 'error': errors.salvar_arquivo }">Salvar relatório no sistema</span>
-        </label>
-      </div>
-      <div
-        v-if="errors['salvar_arquivo']"
-        class="error-msg"
-      >
-        {{ errors['salvar_arquivo'] }}
-      </div>
-    </div>
-
     <FormErrorsList :errors="errors" />
 
     <div class="flex spacebetween center mb2">
@@ -217,7 +232,7 @@ projetosStore.buscarTudo();
           ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
           : null"
       >
-        {{ values.salvar_arquivo ? "baixar e salvar" : "apenas baixar" }}
+        Criar relatório
       </button>
       <hr class="ml2 f1">
     </div>

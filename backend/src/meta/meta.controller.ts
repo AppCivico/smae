@@ -13,12 +13,13 @@ import {
     Query,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiExtraModels, ApiNoContentResponse, ApiNotFoundResponse, ApiTags } from '@nestjs/swagger';
-import { TipoPdm } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { ListaDePrivilegios } from '../common/ListaDePrivilegios';
+import { TipoPDM, TipoPdmType } from '../common/decorators/current-tipo-pdm';
 import { FindOneParams } from '../common/decorators/find-params';
+import { DetalheOrigensDto, ResumoOrigensMetasItemDto } from '../common/dto/origem-pdm.dto';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { CreateMetaDto, ListDadosMetaIniciativaAtividadesDto } from './dto/create-meta.dto';
 import { FilterMetaDto, FilterRelacionadosDTO } from './dto/filter-meta.dto';
@@ -26,7 +27,6 @@ import { ListMetaDto } from './dto/list-meta.dto';
 import { UpdateMetaDto } from './dto/update-meta.dto';
 import { MetaItemDto, RelacionadosDTO } from './entities/meta.entity';
 import { MetaService } from './meta.service';
-import { DetalheOrigensDto, ResumoOrigensMetasItemDto } from '../common/dto/origem-pdm.dto';
 
 @ApiTags('Meta')
 @Controller('meta')
@@ -39,7 +39,7 @@ export class MetaController {
         'PDM.coordenador_responsavel_cp',
         'PDM.ponto_focal',
     ];
-    private tipoPdm: TipoPdm = 'PDM';
+    private tipoPdm: TipoPdmType = '_PDM';
     constructor(private readonly metaService: MetaService) {}
 
     @Post()
@@ -115,33 +115,51 @@ export class MetaSetorialController {
     public static WritePerm: ListaDePrivilegios[] = [
         'CadastroMetaPS.administrador_no_pdm', // sṍ pode editar de acordo com o perfil
         'CadastroPS.administrador', // edita qualquer item
-        'CadastroPS.administrador_no_orgao', // edita qualquer meta onde o órgão é responsavel?
+        'CadastroPS.administrador_no_orgao', // edita qualquer meta onde o órgão é responsavel? SIM
+
+        'CadastroMetaPDM.administrador_no_pdm',
+        'CadastroPDM.administrador',
+        'CadastroPDM.administrador_no_orgao',
+        'SMAE.GrupoVariavel.participante',
     ];
-    public static ReadPerm: ListaDePrivilegios[] = [...MetaSetorialController.WritePerm, 'CadastroMetaPS.listar'];
-    private tipoPdm: TipoPdm = 'PS';
+    public static ReadPerm: ListaDePrivilegios[] = [
+        ...MetaSetorialController.WritePerm,
+        'CadastroMetaPS.listar',
+        'CadastroMetaPDM.listar',
+        'SMAE.GrupoVariavel.participante',
+    ];
     constructor(private readonly metaService: MetaService) {}
 
     @Post()
     @ApiBearerAuth('access-token')
     @Roles(MetaSetorialController.WritePerm)
-    async create(@Body() createMetaDto: CreateMetaDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
-        return await this.metaService.create(this.tipoPdm, createMetaDto, user);
+    async create(
+        @Body() createMetaDto: CreateMetaDto,
+        @CurrentUser() user: PessoaFromJwt,
+        @TipoPDM() tipo: TipoPdmType
+    ): Promise<RecordWithId> {
+        return await this.metaService.create(tipo, createMetaDto, user);
     }
 
     @ApiBearerAuth('access-token')
     @Get()
     @Roles(MetaSetorialController.ReadPerm)
-    async findAll(@Query() filters: FilterMetaDto, @CurrentUser() user: PessoaFromJwt): Promise<ListMetaDto> {
-        return { linhas: await this.metaService.findAll(this.tipoPdm, filters, user) };
+    async findAll(
+        @Query() filters: FilterMetaDto,
+        @CurrentUser() user: PessoaFromJwt,
+        @TipoPDM() tipo: TipoPdmType
+    ): Promise<ListMetaDto> {
+        return { linhas: await this.metaService.findAll(tipo, filters, user) };
     }
 
     @ApiBearerAuth('access-token')
     @Get('iniciativas-atividades')
     @Roles(MetaSetorialController.ReadPerm)
     async buscaMetasIniciativaAtividades(
-        @Query('meta_ids', new ParseArrayPipe({ items: Number, separator: ',' })) ids: number[]
+        @Query('meta_ids', new ParseArrayPipe({ items: Number, separator: ',' })) ids: number[],
+        @TipoPDM() tipo: TipoPdmType
     ): Promise<ListDadosMetaIniciativaAtividadesDto> {
-        return { linhas: await this.metaService.buscaMetasIniciativaAtividades(this.tipoPdm, ids) };
+        return { linhas: await this.metaService.buscaMetasIniciativaAtividades(tipo, ids) };
     }
 
     @ApiBearerAuth('access-token')
@@ -150,17 +168,22 @@ export class MetaSetorialController {
     @Roles(MetaSetorialController.ReadPerm)
     async buscaRelacionados(
         @Query() dto: FilterRelacionadosDTO,
-        @CurrentUser() user: PessoaFromJwt
+        @CurrentUser() user: PessoaFromJwt,
+        @TipoPDM() tipo: TipoPdmType
     ): Promise<RelacionadosDTO> {
-        return await this.metaService.buscaRelacionados(this.tipoPdm, dto, user);
+        return await this.metaService.buscaRelacionados(tipo, dto, user);
     }
 
     @ApiBearerAuth('access-token')
     @ApiNotFoundResponse()
     @Get(':id')
     @Roles(MetaSetorialController.ReadPerm)
-    async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<MetaItemDto> {
-        const r = await this.metaService.findAll(this.tipoPdm, { id: params.id }, user);
+    async findOne(
+        @Param() params: FindOneParams,
+        @CurrentUser() user: PessoaFromJwt,
+        @TipoPDM() tipo: TipoPdmType
+    ): Promise<MetaItemDto> {
+        const r = await this.metaService.findAll(tipo, { id: params.id }, user);
         if (!r.length) throw new HttpException('Meta não encontrada.', 404);
         return r[0];
     }
@@ -171,9 +194,10 @@ export class MetaSetorialController {
     async update(
         @Param() params: FindOneParams,
         @Body() updateMetaDto: UpdateMetaDto,
-        @CurrentUser() user: PessoaFromJwt
+        @CurrentUser() user: PessoaFromJwt,
+        @TipoPDM() tipo: TipoPdmType
     ) {
-        return await this.metaService.update(this.tipoPdm, +params.id, updateMetaDto, user);
+        return await this.metaService.update(tipo, +params.id, updateMetaDto, user);
     }
 
     @Delete(':id')
@@ -181,8 +205,8 @@ export class MetaSetorialController {
     @Roles(MetaSetorialController.WritePerm)
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
-    async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
-        await this.metaService.remove(this.tipoPdm, +params.id, user);
+    async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt, @TipoPDM() tipo: TipoPdmType) {
+        await this.metaService.remove(tipo, +params.id, user);
         return '';
     }
 }

@@ -1,9 +1,11 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
+import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { DotacaoService } from '../../dotacao/dotacao.service';
 import { PrismaService } from '../../prisma/prisma.service';
-import { DefaultCsvOptions, FileOutput, ReportContext, ReportableService, UtilsService } from '../utils/utils.service';
+import { ReportContext } from '../relatorios/helpers/reports.contexto';
+import { DefaultCsvOptions, FileOutput, ReportableService, UtilsService } from '../utils/utils.service';
 import { PeriodoRelatorioPrevisaoCustoDto, SuperCreateRelPrevisaoCustoDto } from './dto/create-previsao-custo.dto';
 import { ListPrevisaoCustoDto } from './entities/previsao-custo.entity';
 
@@ -21,7 +23,7 @@ export class PrevisaoCustoService implements ReportableService {
         private readonly dotacaoService: DotacaoService
     ) {}
 
-    async asJSON(dto: SuperCreateRelPrevisaoCustoDto): Promise<ListPrevisaoCustoDto> {
+    async asJSON(dto: SuperCreateRelPrevisaoCustoDto, user: PessoaFromJwt | null): Promise<ListPrevisaoCustoDto> {
         let ano: number;
         let filtroMetas: number[] | undefined = undefined;
 
@@ -30,7 +32,7 @@ export class PrevisaoCustoService implements ReportableService {
 
         // sem portfolio_id e sem projeto_id = filtra por meta
         if (dto.portfolio_id === undefined && dto.projeto_id === undefined) {
-            const { metas } = await this.utils.applyFilter(dto, { iniciativas: false, atividades: false });
+            const { metas } = await this.utils.applyFilter(dto, { iniciativas: false, atividades: false }, user);
 
             filtroMetas = metas.map((r) => r.id);
         }
@@ -51,7 +53,20 @@ export class PrevisaoCustoService implements ReportableService {
             where: {
                 meta_id: filtroMetas ? { in: filtroMetas } : undefined,
                 projeto_id: dto.projeto_id ? dto.projeto_id : undefined,
-                ...(dto.portfolio_id ? { projeto: { portfolio_id: dto.portfolio_id } } : {}),
+                ...(dto.portfolio_id
+                    ? {
+                          OR: [
+                              { projeto: { portfolio_id: dto.portfolio_id } },
+                              {
+                                  projeto: {
+                                      portfolios_compartilhados: {
+                                          some: { portfolio_id: dto.portfolio_id, removido_em: null },
+                                      },
+                                  },
+                              },
+                          ],
+                      }
+                    : {}),
                 ano_referencia: ano,
                 removido_em: null,
                 ultima_revisao: true,
@@ -96,9 +111,13 @@ export class PrevisaoCustoService implements ReportableService {
         return partes.join('.');
     }
 
-    async toFileOutput(params: SuperCreateRelPrevisaoCustoDto, ctx: ReportContext): Promise<FileOutput[]> {
+    async toFileOutput(
+        params: SuperCreateRelPrevisaoCustoDto,
+        ctx: ReportContext,
+        user: PessoaFromJwt | null
+    ): Promise<FileOutput[]> {
         // em teoria custo previsto pode ficar pesado, mas por enquanto não temos muitos registros
-        const dados = await this.asJSON(params);
+        const dados = await this.asJSON(params, user);
         await ctx.progress(50);
 
         const pdm = params.pdm_id ? await this.prisma.pdm.findUnique({ where: { id: params.pdm_id } }) : undefined;

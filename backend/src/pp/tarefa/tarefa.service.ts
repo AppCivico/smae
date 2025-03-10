@@ -1,12 +1,4 @@
-import {
-    BadRequestException,
-    HttpException,
-    Inject,
-    Injectable,
-    InternalServerErrorException,
-    Logger,
-    forwardRef,
-} from '@nestjs/common';
+import { BadRequestException, HttpException, Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { Prisma, TarefaCronograma, TarefaDependente, TarefaDependenteTipo } from '@prisma/client';
 import { Transform, Type, plainToInstance } from 'class-transformer';
@@ -217,7 +209,9 @@ export class TarefaService {
                         throw new HttpException('Se há Término e Duração planejado, deve existir um Início.', 400);
                 }
 
-                const numero = await this.utils.incrementaNumero(dto, prismaTx, tarefaCronoId);
+                const maiorNumero = await this.utils.maiorNumeroDoNivel(prismaTx, dto.tarefa_pai_id, tarefaCronoId);
+
+                const numero = await this.utils.incrementaNumero(dto, prismaTx, tarefaCronoId, null, maiorNumero);
 
                 const tarefa = await prismaTx.tarefa.create({
                     data: {
@@ -350,6 +344,10 @@ export class TarefaService {
             return {
                 ...r,
                 ...this.calcPodeEditar(r, user),
+                inicio_planejado: Date2YMD.toStringOrNull(r.inicio_planejado),
+                termino_planejado: Date2YMD.toStringOrNull(r.termino_planejado),
+                inicio_real: Date2YMD.toStringOrNull(r.inicio_real),
+                termino_real: Date2YMD.toStringOrNull(r.termino_real),
                 atraso: CalculaAtraso.emDias(hoje, r.termino_planejado, r.termino_real),
             };
         });
@@ -357,6 +355,7 @@ export class TarefaService {
         const antesCalc = Date.now();
         const ret = await this.calculaAtrasoCronograma(rowsWithAtraso, tarefaCronoId);
         this.logger.warn(`calculaAtrasoCronograma took ${Date.now() - antesCalc} ms`);
+
         return ret;
     }
 
@@ -488,7 +487,7 @@ export class TarefaService {
             tarefas_por_id[tarefa.id] = tarefa;
         }
 
-        let max_term_planjeado: Date | undefined = undefined;
+        let max_term_planjeado: string | undefined = undefined;
         let max_term_proj: DateTime | undefined = undefined;
 
         // Recursive function to calculate projections
@@ -506,10 +505,7 @@ export class TarefaService {
             }
 
             if (tarefa.nivel == 1) {
-                if (
-                    !max_term_planjeado ||
-                    (max_term_planjeado && tarefa.termino_planejado.valueOf() > max_term_planjeado.valueOf())
-                )
+                if (!max_term_planjeado || (max_term_planjeado && tarefa.termino_planejado > max_term_planjeado))
                     max_term_planjeado = tarefa.termino_planejado;
             }
 
@@ -520,10 +516,8 @@ export class TarefaService {
                     this.logger.error(
                         `tarefa.inicio_real da tarefa ID ${tarefa.id} está nulo mas deveria existir (pois há data de termino), assumindo data corrente.`
                     );
-                tarefa.projecao_inicio = tarefa.inicio_real
-                    ? DateTime.fromJSDate(tarefa.inicio_real, { zone: 'UTC' })
-                    : hoje;
-                tarefa.projecao_termino = DateTime.fromJSDate(tarefa.termino_real, { zone: 'UTC' });
+                tarefa.projecao_inicio = tarefa.inicio_real ? Date2YMD.FromISOOrNull(tarefa.inicio_real)! : hoje;
+                tarefa.projecao_termino = Date2YMD.FromISOOrNull(tarefa.termino_real)!;
 
                 this.logger.debug(`tarefa ${tarefa.id} já finalizou`);
                 return;
@@ -534,9 +528,7 @@ export class TarefaService {
             //if (tarefa.n_filhos_imediatos == 0 && (tarefa.dependencias.length == 0 || tarefa.inicio_real)) {
             if (tarefa.dependencias.length == 0 || tarefa.inicio_real) {
                 // se não tem inicio real preenchido, considera que começou hj
-                tarefa.projecao_inicio = tarefa.inicio_real
-                    ? DateTime.fromJSDate(tarefa.inicio_real, { zone: 'UTC' })
-                    : hoje;
+                tarefa.projecao_inicio = tarefa.inicio_real ? Date2YMD.FromISOOrNull(tarefa.inicio_real)! : hoje;
 
                 tarefa.projecao_termino = tarefa.projecao_inicio.plus({ days: tarefa.duracao_planejado - 1 });
                 this.logger.debug(
@@ -569,22 +561,22 @@ export class TarefaService {
                 switch (dependencia.tipo) {
                     case TarefaDependenteTipo.termina_pro_inicio:
                         depDateInicio = depTarefa.termino_real
-                            ? DateTime.fromJSDate(depTarefa.termino_real, { zone: 'UTC' })
+                            ? DateTime.fromSQL(depTarefa.termino_real, { zone: 'UTC' })
                             : depTarefa.projecao_termino;
                         break;
                     case TarefaDependenteTipo.inicia_pro_inicio:
                         depDateInicio = depTarefa.inicio_real
-                            ? DateTime.fromJSDate(depTarefa.inicio_real, { zone: 'UTC' })
+                            ? DateTime.fromSQL(depTarefa.inicio_real, { zone: 'UTC' })
                             : depTarefa.projecao_inicio;
                         break;
                     case TarefaDependenteTipo.inicia_pro_termino:
                         depDateTermino = depTarefa.inicio_real
-                            ? DateTime.fromJSDate(depTarefa.inicio_real, { zone: 'UTC' })
+                            ? DateTime.fromSQL(depTarefa.inicio_real, { zone: 'UTC' })
                             : depTarefa.projecao_inicio;
                         break;
                     case TarefaDependenteTipo.termina_pro_termino:
                         depDateTermino = depTarefa.termino_real
-                            ? DateTime.fromJSDate(depTarefa.termino_real, { zone: 'UTC' })
+                            ? DateTime.fromSQL(depTarefa.termino_real, { zone: 'UTC' })
                             : depTarefa.projecao_termino;
                         break;
                 }
@@ -686,16 +678,14 @@ export class TarefaService {
                     tarefa.projecao_termino = filho.projecao_termino;
 
                 const d = filho.projecao_termino
-                    .diff(DateTime.fromJSDate(tarefa.termino_planejado, { zone: 'UTC' }))
+                    .diff(DateTime.fromSQL(tarefa.termino_planejado, { zone: 'UTC' }))
                     .as('days');
 
                 if (d > 0) {
                     console.debug(
                         `tarefa ${tarefa.id}.filho.${filho.id}: projecao_termino: ${Date2YMD.toString(
                             filho.projecao_termino.toJSDate()
-                        )}, tarefa(pai).termino_planejado: ${Date2YMD.toString(
-                            tarefa.termino_planejado
-                        )} => ${d} dias de atraso`
+                        )}, tarefa(pai).termino_planejado: ${tarefa.termino_planejado} => ${d} dias de atraso`
                     );
                     filho.projecao_atraso = d;
 
@@ -704,7 +694,7 @@ export class TarefaService {
                     console.debug(
                         `tarefa ${tarefa.id}.filho.${filho.id}: projecao_termino: ${Date2YMD.toString(
                             filho.projecao_termino.toJSDate()
-                        )}, tarefa(pai).termino_planejado: ${Date2YMD.toString(tarefa.termino_planejado)} => sem atraso`
+                        )}, tarefa(pai).termino_planejado: ${tarefa.termino_planejado} => sem atraso`
                     );
                 }
             }
@@ -954,6 +944,10 @@ export class TarefaService {
             ...row,
             ...this.calcPodeEditar(row, user),
             atraso: CalculaAtraso.emDias(hoje, row.termino_planejado, row.termino_real),
+            inicio_planejado: Date2YMD.toStringOrNull(row.inicio_planejado),
+            termino_planejado: Date2YMD.toStringOrNull(row.termino_planejado),
+            inicio_real: Date2YMD.toStringOrNull(row.inicio_real),
+            termino_real: Date2YMD.toStringOrNull(row.termino_real),
             projeto: projeto,
         };
     }
@@ -1149,6 +1143,7 @@ export class TarefaService {
                 }
             }
 
+            let recalcNivel = false;
             if (
                 'dependencias' in dto &&
                 ((dto.tarefa_pai_id !== undefined && dto.tarefa_pai_id !== tarefa.tarefa_pai_id) ||
@@ -1202,14 +1197,19 @@ export class TarefaService {
                             novoPai
                         );
                     }
+
+                    const maiorNumero = await this.utils.maiorNumeroDoNivel(prismaTx, dto.tarefa_pai_id, tarefaCronoId);
+
                     // abaixa o numero de onde era
                     await this.utils.decrementaNumero(
                         {
+                            id: tarefa.id,
                             numero: tarefa.numero,
                             tarefa_pai_id: tarefa.tarefa_pai_id,
                         },
                         prismaTx,
-                        tarefaCronoId
+                        tarefaCronoId,
+                        maiorNumero
                     );
 
                     // aumenta o numero de onde vai entrar
@@ -1219,20 +1219,29 @@ export class TarefaService {
                             tarefa_pai_id: dto.tarefa_pai_id,
                         },
                         prismaTx,
-                        tarefaCronoId
+                        tarefaCronoId,
+                        tarefa.id,
+                        maiorNumero
                     );
+                    console.log('dto.numero' + dto.numero);
+
+                    recalcNivel = true;
                 } else {
                     // mudou apenas o numero
                     this.logger.debug('Apenas mudança de número foi detectada');
 
+                    const maiorNumero = await this.utils.maiorNumeroDoNivel(prismaTx, dto.tarefa_pai_id, tarefaCronoId);
+
                     // abaixa o numero de onde era
                     await this.utils.decrementaNumero(
                         {
+                            id: tarefa.id,
                             numero: tarefa.numero,
                             tarefa_pai_id: tarefa.tarefa_pai_id,
                         },
                         prismaTx,
-                        tarefaCronoId
+                        tarefaCronoId,
+                        maiorNumero
                     );
 
                     // aumenta o numero de onde vai entrar
@@ -1242,8 +1251,12 @@ export class TarefaService {
                             tarefa_pai_id: tarefa.tarefa_pai_id,
                         },
                         prismaTx,
-                        tarefaCronoId
+                        tarefaCronoId,
+                        tarefa.id,
+                        maiorNumero
                     );
+                    console.log('dto.numero' + dto.numero);
+                    recalcNivel = true;
                 }
             } else if ('dependencias' in dto) {
                 // nao deixar nem o nivel sem passar o pai
@@ -1345,6 +1358,8 @@ export class TarefaService {
                     });
                 }
             }
+
+            if (recalcNivel) await this.utils.recalcNivel(prismaTx, tarefaCronoId);
 
             return { id: tarefa.id };
         };
@@ -1458,7 +1473,7 @@ export class TarefaService {
                 and t.removido_em is null
           )
           SELECT
-            max(nivel) - min(nivel) as numero_de_niveis,
+            max(nivel) - min(nivel) + 1 as numero_de_niveis,
             array_agg(id) as filhas
           FROM tarefa_path;`;
         const numero_de_niveis = buscaFilhos[0].numero_de_niveis ?? 0;
@@ -1515,11 +1530,12 @@ export class TarefaService {
                     );
 
                 const dto = {
+                    id: tarefa.id,
                     numero: tarefa.numero,
                     tarefa_pai_id: tarefa.tarefa_pai_id,
                 };
 
-                await this.utils.decrementaNumero(dto, prismaTx, tarefaCronoId);
+                await this.utils.decrementaNumero(dto, prismaTx, tarefaCronoId, Number.MAX_SAFE_INTEGER);
 
                 await prismaTx.tarefa.update({
                     where: {

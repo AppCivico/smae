@@ -8,11 +8,21 @@
     <mj-section background-color="#fff">
       <mj-column>
         <mj-text>
-          <p>[% IF solicitadoPeloUsuario == true %]Recebemos uma solicitação para uma nova senha[%ELSE%] Sua conta foi bloqueada após [% tentativas %] tentativas inválidas[%END%]. Uma nova senha temporária foi criada:</p>
+          <p>[% IF solicitadoPeloUsuario == true %]Recebemos uma solicitação para uma nova senha[%ELSE%] Sua conta foi bloqueada após [% tentativas %] tentativas inválidas[%END%].</p>
         </mj-text>
 
-        <mj-text>
-          <p>Sua nova senha para o sistema SMAE é <span style="color: black; font-weight: 900; display: block; text-align: center; font-size: 2.1em; line-height: 1.5em; padding: 1.2em">[% nova_senha %]</span></p>
+        <mj-text padding-bottom="0">
+          <p>Uma senha temporária foi criada para recuperar o acesso:</p>
+        </mj-text>
+
+        <mj-text
+          padding-top="0"
+          color="black"
+          font-weight="900"
+          align="center"
+          font-size="32px"
+          line-height="21px"
+        >[% nova_senha %]
         </mj-text>
 
         <mj-button href="[% link %]">Acessar sistema</mj-button>

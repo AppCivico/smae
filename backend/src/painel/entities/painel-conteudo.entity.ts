@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { PainelConteudoTipoDetalhe, Periodicidade, Periodo } from '@prisma/client';
+import { IsDateYMD } from '../../auth/decorators/date.decorator';
 
 export class PainelConteudo {
     id: number;
@@ -13,8 +14,10 @@ export class PainelConteudo {
     periodicidade: Periodicidade;
     @ApiProperty({ enum: Periodo })
     periodo: Periodo | null;
-    periodo_fim: Date | null;
-    periodo_inicio: Date | null;
+    @IsDateYMD({ nullable: true })
+    periodo_fim: string | null;
+    @IsDateYMD({ nullable: true })
+    periodo_inicio: string | null;
     periodo_valor: number | null;
 
     detalhes: PainelConteudoDetalhes[] | null;

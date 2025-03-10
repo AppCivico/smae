@@ -1,15 +1,18 @@
 <script setup>
-import LocalFilter from '@/components/LocalFilter.vue';
-import { planoSetorial as schema } from '@/consts/formSchemas';
-import truncate from '@/helpers/truncate';
-import { useAlertStore } from '@/stores/alert.store';
-import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store.ts';
 import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
+import { useRoute } from 'vue-router';
+import LocalFilter from '@/components/LocalFilter.vue';
+import { planoSetorial as schema } from '@/consts/formSchemas';
+import truncate from '@/helpers/texto/truncate';
+import { useAlertStore } from '@/stores/alert.store';
+import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store.ts';
+
+const route = useRoute();
 
 const alertStore = useAlertStore();
 
-const planosSetoriaisStore = usePlanosSetoriaisStore();
+const planosSetoriaisStore = usePlanosSetoriaisStore(route.meta.entidadeMãe);
 const {
   lista, chamadasPendentes, erros,
 } = storeToRefs(planosSetoriaisStore);
@@ -25,7 +28,9 @@ async function excluirPlano(id, nome) {
   }, 'Remover');
 }
 
-planosSetoriaisStore.buscarTudo();
+if (!lista.length) {
+  planosSetoriaisStore.buscarTudo();
+}
 </script>
 <template>
   <header class="flex spacebetween center mb2 g2">
@@ -34,16 +39,15 @@ planosSetoriaisStore.buscarTudo();
     <hr class="f1">
 
     <router-link
-      :to="{ name: 'planosSetoriaisCriar' }"
+      :to="{ name: `${route.meta.entidadeMãe}.planosSetoriaisCriar` }"
       class="btn big ml1"
     >
-      Novo plano setorial
+      Novo {{ $route.meta.tituloSingular }}
     </router-link>
   </header>
 
   <LocalFilter
     v-model="listaFiltradaPorTermoDeBusca"
-    class="mb2"
     :lista="lista"
   />
 
@@ -52,13 +56,12 @@ planosSetoriaisStore.buscarTudo();
     aria-labelledby="titulo-da-pagina"
     tabindex="0"
   >
-    <table class="tablemain">
+    <table class="tablemain mt2">
       <col>
       <col>
       <col>
       <col class="col--minimum">
-      <col class="col--botão-de-ação">
-      <col class="col--botão-de-ação">
+      <col>
       <thead>
         <tr>
           <th>
@@ -74,7 +77,6 @@ planosSetoriaisStore.buscarTudo();
             {{ schema.fields.ativo.spec.label }}
           </th>
           <th />
-          <th />
         </tr>
       </thead>
       <tbody>
@@ -83,11 +85,13 @@ planosSetoriaisStore.buscarTudo();
           :key="item.id"
         >
           <th>
-            <router-link
-              :to="{ name: 'planosSetoriaisResumo', params: { planoSetorialId: item.id } }"
+            <SmaeLink
+              :to="{
+                name: `${route.meta.entidadeMãe}.planosSetoriaisResumo`,
+                params: { planoSetorialId: item.id } }"
             >
               {{ item.nome }}
-            </router-link>
+            </SmaeLink>
           </th>
           <td>
             {{ truncate(item?.descricao, 36) }}
@@ -96,22 +100,40 @@ planosSetoriaisStore.buscarTudo();
             {{ item.prefeito }}
           </td>
           <td>{{ item.ativo ? 'Sim' : 'Não' }}</td>
-          <td>
-            <router-link
+          <td class="tr">
+            <SmaeLink
               v-if="item.pode_editar"
-              :to="{ name: 'planosSetoriaisEditar', params: { planoSetorialId: item.id } }"
-              class="tprimary"
+              class="tprimary mr1 tipinfo left"
+              :to="{
+                name: `${route.meta.entidadeMãe}.planosSetoriaisEditar`,
+                params: { planoSetorialId: item.id }
+              }"
             >
               <svg
                 width="20"
                 height="20"
               ><use xlink:href="#i_edit" /></svg>
-            </router-link>
-          </td>
-          <td>
+            </SmaeLink>
+
+            <SmaeLink
+              class="tprimary mr1 tipinfo left"
+              :to="{
+                name: `${route.meta.entidadeMãe}.permissoesOrcamento`,
+                params: {
+                  planoSetorialId: item.id
+                }
+              }"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_calendar" /></svg>
+              <div>Permissões para edições no orçamento</div>
+            </SmaeLink>
+
             <button
               v-if="item.pode_editar"
-              class="like-a__text"
+              class="like-a__text mr1"
               arial-label="excluir"
               title="excluir"
               @click="excluirPlano(item.id, item.nome)"
@@ -119,10 +141,11 @@ planosSetoriaisStore.buscarTudo();
               <svg
                 width="20"
                 height="20"
-              ><use xlink:href="#i_remove" /></svg>
+              ><use xlink:href="#i_waste" /></svg>
             </button>
           </td>
         </tr>
+
         <tr v-if="chamadasPendentes.lista">
           <td colspan="6">
             Carregando

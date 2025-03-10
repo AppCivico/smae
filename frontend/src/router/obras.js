@@ -47,7 +47,7 @@ export default {
         limitarÀsPermissões: [
           'ProjetoMDO.administrador_no_orgao',
         ],
-        rotaDeEscape: 'obrasResumo',
+        rotaDeEscape: 'obrasListar',
         rotasParaMigalhasDePão: [
           'obrasListar',
         ],
@@ -110,7 +110,7 @@ export default {
               'MDO.colaborador_de_projeto',
               'MDO.espectador_de_projeto',
             ],
-            rotaDeEscape: 'obrasResumo',
+            rotaDeEscape: 'obrasListar',
             título: 'Editar Obra',
             entidadeMãe: 'mdo',
           },

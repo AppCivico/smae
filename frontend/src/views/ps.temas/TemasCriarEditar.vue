@@ -1,7 +1,9 @@
 <template>
   <div class="flex spacebetween center mb2">
-    <h1> <span v-if="!temaId">Novo</span> {{ titulo || "Tema" }}</h1>
+    <TituloDaPagina />
+
     <hr class="ml2 f1">
+
     <CheckClose />
   </div>
   <Form
@@ -60,31 +62,23 @@
     </div>
   </div>
 </template>
+
 <script setup>
-import { tema as schema } from '@/consts/formSchemas';
-import { useAlertStore } from '@/stores/alert.store';
-import { useTemasPsStore } from '@/stores/temasPs.store';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, Form } from 'vee-validate';
-import { computed, defineOptions } from 'vue';
+import { defineOptions } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useTemasPsStore } from '@/stores/temasPs.store';
+import { useAlertStore } from '@/stores/alert.store';
+import { tema as schema } from '@/consts/formSchemas';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
 
 defineOptions({
   inheritAttrs: false,
 });
 
-const router = useRouter();
 const route = useRoute();
-const props = defineProps({
-  temaId: {
-    type: Number,
-    default: 0,
-  },
-});
-
-const titulo = typeof route?.meta?.título === 'function'
-  ? computed(() => route.meta.título())
-  : route?.meta?.título;
+const router = useRouter();
 
 const alertStore = useAlertStore();
 const temasStore = useTemasPsStore();
@@ -93,7 +87,7 @@ const { chamadasPendentes, erro, itemParaEdicao } = storeToRefs(temasStore);
 async function onSubmit(values) {
   try {
     let response;
-    const msg = props.temaId
+    const msg = route.params?.temaId
       ? 'Dados salvos com sucesso!'
       : 'Item adicionado com sucesso!';
 
@@ -110,7 +104,7 @@ async function onSubmit(values) {
     if (response) {
       alertStore.success(msg);
       temasStore.$reset();
-      router.push({ name: 'planosSetoriaisTemas' });
+      router.push({ name: `${route.meta.entidadeMãe}.planosSetoriaisTemas` });
     }
   } catch (error) {
     alertStore.error(error);

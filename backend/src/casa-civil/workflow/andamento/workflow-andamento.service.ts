@@ -8,6 +8,7 @@ import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { WorkflowIniciarProxEtapaDto } from './dto/iniciar-prox-etapa.dto';
 import { DateTime } from 'luxon';
 import { WorkflowService } from '../configuracao/workflow.service';
+import { Date2YMD } from '../../../common/date2ymd';
 
 @Injectable()
 export class WorkflowAndamentoService {
@@ -253,8 +254,8 @@ export class WorkflowAndamentoService {
         }
 
         return {
-            data_inicio: row.data_inicio,
-            data_termino: row.data_termino,
+            data_inicio: Date2YMD.toStringOrNull(row.data_inicio),
+            data_termino: Date2YMD.toStringOrNull(row.data_termino),
             dias_na_fase: dias_na_fase,
             concluida: row.data_termino ? true : false,
             pode_concluir: row.data_inicio ? true : false,

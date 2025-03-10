@@ -16,7 +16,7 @@ const portfolioObrasStore = usePortfolioObraStore();
 const relatoriosStore = useRelatoriosStore();
 const route = useRoute();
 const router = useRouter();
-const { current, loading } = storeToRefs(relatoriosStore);
+const { loading } = storeToRefs(relatoriosStore);
 
 const currentYear = new Date().getFullYear();
 
@@ -27,35 +27,27 @@ const initialValues = computed(() => ({
     portfolio_id: 0,
     projeto_id: null,
   },
-  salvar_arquivo: false,
 }));
 
 async function onSubmit(values) {
   const carga = values;
   try {
-    if (!carga.salvar_arquivo) {
-      carga.salvar_arquivo = false;
-    }
-
     if (carga.parametros.projeto_id === null) {
-      delete carga.parametros.projeto_id
+      delete carga.parametros.projeto_id;
     }
 
     const r = await relatoriosStore.insert(carga);
-    const msg = 'Dados salvos com sucesso!';
+    const msg = 'Relatório em processamento, acompanhe na tela de listagem';
 
     if (r === true) {
       alertStore.success(msg);
-
-      if (carga.salvar_arquivo && route.meta?.rotaDeEscape) {
-        await router.push({ name: route.meta.rotaDeEscape });
-      }
+      router.push({ name: route.meta.rotaDeEscape });
     }
   } catch (error) {
     alertStore.error(error);
   }
 }
- 
+
 function iniciar() {
   portfolioObrasStore.buscarTudo();
   obrasStore.buscarTudo();
@@ -152,17 +144,16 @@ iniciar();
 
       <div class="f1">
         <LabelFromYup
-            name="ano"
-            :schema="schema.fields.parametros"
-          />
+          name="ano"
+          :schema="schema.fields.parametros"
+        />
         <Field
           name="parametros.ano"
           type="text"
           class="inputtext light mb2"
           maxlength="4"
           :class="{ 'error': errors['parametros.ano'] }"
-        >
-        </Field>
+        />
         <div
           v-if="errors['parametros.ano']"
           class="error-msg"
@@ -170,22 +161,38 @@ iniciar();
           {{ errors['parametros.ano'] }}
         </div>
       </div>
-    </div>
-
-    <div class="mb2">
-      <div class="pl2">
-        <label class="block">
-          <Field
-            name="salvar_arquivo"
-            type="checkbox"
-            :value="true"
-            class="inputcheckbox"
-          />
-          <span :class="{ 'error': errors.salvar_arquivo }">Salvar relatório no sistema</span>
-        </label>
-      </div>
-      <div class="error-msg">
-        {{ errors.salvar_arquivo }}
+      <div class="f1">
+        <LabelFromYup
+          name="eh_publico"
+          :schema="schema"
+          required
+        />
+        <Field
+          name="eh_publico"
+          as="select"
+          class="inputtext light"
+          :class="{
+            error: errors['eh_publico'],
+            loading: loading
+          }"
+          :disabled="loading"
+        >
+          <option :value="null">
+            Selecionar
+          </option>
+          <option :value="true">
+            Sim
+          </option>
+          <option :value="false">
+            Não
+          </option>
+        </Field>
+        <div
+          v-if="errors['eh_publico']"
+          class="error-msg"
+        >
+          {{ errors['eh_publico'] }}
+        </div>
       </div>
     </div>
 
@@ -198,7 +205,7 @@ iniciar();
         class="btn big"
         :disabled="isSubmitting || Object.keys(errors)?.length"
       >
-        {{ values.salvar_arquivo ? "baixar e salvar" : "apenas baixar" }}
+        Criar relatório
       </button>
       <hr class="ml2 f1">
     </div>

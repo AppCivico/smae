@@ -13,7 +13,7 @@ import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import { transferenciasVoluntarias as schema } from '@/consts/formSchemas';
 import interfacesDeTransferências from '@/consts/interfacesDeTransferências';
 import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
-import truncate from '@/helpers/truncate';
+import truncate from '@/helpers/texto/truncate';
 
 import { useAlertStore } from '@/stores/alert.store';
 import { useClassificacaoStore } from '@/stores/classificacao.store';
@@ -83,6 +83,12 @@ async function salvarTransferencia(cargaManipulada) {
     const msg = props.transferenciaId
       ? 'Dados salvos com sucesso!'
       : 'Item adicionado com sucesso!';
+
+    if (cargaManipulada.parlamentares) {
+      cargaManipulada.parlamentares = cargaManipulada.parlamentares.filter(
+        (item) => item.parlamentar_id,
+      );
+    }
 
     if (props.transferenciaId) {
       r = await TransferenciasVoluntarias.salvarItem(cargaManipulada, props.transferenciaId);

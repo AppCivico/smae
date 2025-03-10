@@ -2,7 +2,7 @@
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import SimpleIndicador from '@/components/metas/SimpleIndicador.vue';
 import TagsDeMetas from '@/components/metas/TagsDeMetas.vue';
-import PlanosMetasRelacionados from '@/components/PlanosMetasRelacionados.vue';
+import RelacionamentosComOutrosCompromissos from '@/components/RelacionamentosComOutrosCompromissos.vue';
 import combinadorDeListas from '@/helpers/combinadorDeListas.ts';
 import { useAtividadesStore } from '@/stores/atividades.store';
 import { useAuthStore } from '@/stores/auth.store';
@@ -21,7 +21,7 @@ const { iniciativa_id: iniciativaId } = route.params;
 const { atividade_id: atividadeId } = route.params;
 
 const MetasStore = useMetasStore();
-const { activePdm } = storeToRefs(MetasStore);
+const { activePdm, singleMeta } = storeToRefs(MetasStore);
 MetasStore.getPdM();
 
 const EquipesStore = useEquipesStore();
@@ -38,11 +38,6 @@ const {
 async function iniciar() {
   if (singleAtividade.value.id !== atividadeId) {
     await AtividadesStore.getByIdReal(atividadeId);
-  }
-  if (route.meta.entidadeMãe === 'pdm') {
-    if (singleAtividade.value.id) {
-      AtividadesStore.getRelacionados({ atividade_id: singleAtividade.value.id });
-    }
   }
 }
 
@@ -70,8 +65,11 @@ iniciar();
     <SmaeLink
       v-if="temPermissãoPara([
         'CadastroMeta.administrador_no_pdm',
-        'CadastroMetaPS.administrador_no_pdm'
-      ])"
+        'CadastroMetaPS.administrador_no_pdm',
+        'CadastroMetaPDM.administrador_no_pdm',
+        'SMAE.GrupoVariavel.participante',
+      ])
+        && singleMeta?.pode_editar"
       :to="`/metas/${metaId}/iniciativas/${iniciativaId}/atividades/editar/${atividadeId}`"
       class="btn big ml2"
     >
@@ -80,47 +78,124 @@ iniciar();
   </div>
   <div class="boards">
     <template v-if="singleAtividade.id">
-      <div class="flex g2">
-        <div class="mr2">
-          <div class="t12 uc w700 mb05 tamarelo">
-            Código
+      <!-- Se for PDM antigo -->
+      <div v-if="route.meta.entidadeMãe === 'pdm'">
+        <div class="flex g2 mb2">
+          <div class="mr1 f0">
+            <div class="t12 uc w700 mb05 tamarelo">
+              Órgão responsável
+            </div>
+            <div class="t13">
+              {{ singleAtividade.orgaos_participantes.filter((x) =>
+                x.responsavel).map(x => x.orgao.descricao).join(', ') }}
+            </div>
+          </div>              
+          <div
+            v-if="singleAtividade.orgaos_participantes.filter(x => !x.responsavel).length"
+            class="f1"
+          >
+            <div class="t12 uc w700 mb05 tamarelo">
+              Órgão participante
+            </div>
+            <div class="t13">
+              {{
+                singleAtividade.orgaos_participantes
+                  .filter(x => !x.responsavel).map(x => x.orgao.descricao).join(', ')
+              }}
+            </div>
           </div>
-          <div class="t13">
-            {{ singleAtividade.codigo }}
-          </div>
-        </div>
-        <div
-          v-if="EquipesStore.equipesPorIds(singleAtividade.ps_ponto_focal.equipes).length"
-          class="mr2"
-        >
-          <div class="t12 uc w700 mb05 tamarelo">
-            Equipes responsáveis
-          </div>
-          <div class="t13">
-            {{ combinadorDeListas(
-              EquipesStore.equipesPorIds(singleAtividade.ps_ponto_focal.equipes),
-              false,
-              'titulo',
-            ) }}
-          </div>
-        </div>
-        <div
-          v-if="EquipesStore.equipesPorIds(singleAtividade.ps_tecnico_cp.equipes).length"
-          class="mr2"
-        >
-          <div class="t12 uc w700 mb05 tamarelo">
-            Equipe técnica do administrador do plano
-          </div>
-          <div class="t13">
-            {{ combinadorDeListas(
-              EquipesStore.equipesPorIds(singleAtividade.ps_tecnico_cp.equipes),
-              false,
-              'titulo',
-            ) }}
+          <div
+            v-if="singleAtividade.coordenadores_cp"
+            class="f1"
+          >
+            <div class="t12 uc w700 mb05 tamarelo">
+              Responsável na coordenadoria de planejamento
+            </div>
+            <div class="t13">
+              {{ singleAtividade.coordenadores_cp.map(x => x.nome_exibicao).join(', ') }}
+            </div>
           </div>
         </div>
       </div>
-
+      <!-- Fim do se for PDM antigo -->
+      <!-- Se for PDM novo -->
+      <div v-else>
+        <!-- Órgãos -->
+        <div class="flex g2 mb2">
+          <!-- Responsável -->
+          <div class="mr2 f1">
+            <div class="t12 uc w700 mb05 tamarelo">
+              Órgãos responsáveis
+            </div>
+            <div class="t13">
+              {{
+                combinadorDeListas(
+                  orgaoAtividade = EquipesStore.equipesPorIds(singleAtividade.ps_ponto_focal.equipes).reduce((amount, item) => {
+                    amount.push(item.orgao.sigla + " - " + item.orgao.descricao);
+                    return amount;
+                  }, []))
+              }}     
+            </div>
+          </div>
+          <!-- Fim responsável -->
+          <!-- Monitoramento -->
+          <div class="mr2 f1">
+            <div class="t12 uc w700 mb05 tamarelo">
+              Órgãos monitoramento
+            </div>
+            <div class="t13">
+              {{
+                combinadorDeListas(
+                  orgaoAtividade = EquipesStore.equipesPorIds(singleAtividade.ps_tecnico_cp.equipes).reduce((amount, item) => {
+                    amount.push(item.orgao.sigla + " - " + item.orgao.descricao);
+                    return amount;
+                  }, []))
+              }}     
+            </div>
+          </div> 
+          <!-- Fim monitoramento -->
+        </div>
+        <!-- Fim de órgãos -->
+        <!-- Equipes -->
+        <div class="flex g2 mb2">
+          <!-- Responsável -->
+            <div
+              v-if="EquipesStore.equipesPorIds(singleAtividade.ps_ponto_focal.equipes).length"
+              class="mr2 f1"
+            >
+              <div class="t12 uc w700 mb05 tamarelo">
+                Equipes responsáveis
+              </div>
+              <div class="t13">
+                {{ combinadorDeListas(
+                  EquipesStore.equipesPorIds(singleAtividade.ps_ponto_focal.equipes),
+                  false,
+                  'titulo',
+                ) }}
+              </div>
+            </div>
+            <!-- Fim responsável -->
+            <!-- Técnica -->
+            <div
+              v-if="EquipesStore.equipesPorIds(singleAtividade.ps_tecnico_cp.equipes).length"
+              class="mr2 f1"
+            >
+              <div class="t12 uc w700 mb05 tamarelo">
+                Equipe técnica de monitoramento
+              </div>
+              <div class="t13">
+                {{ combinadorDeListas(
+                  EquipesStore.equipesPorIds(singleAtividade.ps_tecnico_cp.equipes),
+                  false,
+                  'titulo',
+                ) }}
+              </div>
+            </div>
+          <!-- Fim de técnica -->
+        </div>
+        <!-- Fim equipes -->
+      </div>
+      <!-- Fim do se for PDM novo -->
       <div v-if="singleAtividade?.tags.length">
         <hr class="mt2 mb2">
         <TagsDeMetas :lista-de-tags="singleAtividade.tags" />
@@ -152,113 +227,11 @@ iniciar();
         parent_field="atividade_id"
       />
 
-      <div
-        v-if="relacionadosAtividade?.projetos?.length"
-        class="mt2 mb2"
-      >
-        <h2 class="m2">
-          Projetos associados
-        </h2>
-        <table class="tablemain">
-          <col>
-          <col>
-          <col>
-          <col>
-          <thead>
-            <th>Portfólio </th>
-            <th>Código</th>
-            <th> Nome </th>
-            <th>Etapa</th>
-          </thead>
-          <tbody>
-            <tr
-              v-for="(projeto, index) in relacionadosAtividade.projetos"
-              :key="index"
-            >
-              <td>
-                {{ projeto.portfolio?.titulo || '-' }}
-              </td>
-              <td>
-                {{ projeto.codigo || '-' }}
-              </td>
-              <td>
-                {{ projeto.nome || '-' }}
-              </td>
-              <td>
-                {{ projeto.projeto_etapa?.descricao || '-' }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div
-        v-if="relacionadosAtividade?.obras?.length"
-        class="mt2 mb2"
-      >
-        <h2 class="">
-          Obras associadas
-        </h2>
-
-        <table class="tablemain">
-          <col>
-          <col>
-          <col>
-          <col>
-          <col>
-          <col>
-          <col>
-          <thead>
-            <th>
-              Código da obra
-            </th>
-            <th>Nome</th>
-            <th>
-              Tipo obra/intervenção
-            </th>
-            <th>
-              Subprefeitura
-            </th>
-            <th>
-              Equipamento
-            </th>
-            <th>
-              Status
-            </th>
-            <th>
-              Percentual concluído
-            </th>
-          </thead>
-          <tbody>
-            <tr
-              v-for="(obra, index) in relacionadosAtividade.obras"
-              :key="index"
-            >
-              <td>{{ obra.codigo }}</td>
-              <td>
-                {{ obra.nome }}
-              </td>
-              <td>
-                {{ obra.tipo_intervencao?.nome || '-' }}
-              </td>
-              <td>
-                {{ obra.subprefeituras?.map(x => x.descricao).join(', ') || '-' }}
-              </td>
-              <td>
-                {{ obra.equipamento?.nome || '-' }}
-              </td>
-              <td>
-                {{ obra.status || '-' }}
-              </td>
-              <td>
-                {{ obra.percentual_concluido || '-' }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <PlanosMetasRelacionados :relacionamentos="relacionadosAtividade?.metas" />
+      <RelacionamentosComOutrosCompromissos
+        class="mt2"
+        :atividade-id="singleAtividade.id"
+        :pdm-id="activePdm.id"
+      />
     </template>
     <template v-else-if="singleAtividade.loading">
       <div class="p1">

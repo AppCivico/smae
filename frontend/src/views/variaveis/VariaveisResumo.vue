@@ -126,7 +126,9 @@ const sessoes = computed<SessaoDeDetalhe | null>(() => {
     orgao: {
       linhas: [
         [
-          { label: 'Órgão responsável', valor: emFoco.value.orgao.sigla },
+          { label: 'Órgão responsável pela coleta', valor: emFoco.value.medicao_orgao?.sigla },
+          { label: 'Órgão responsável pela conferência', valor: emFoco.value.validacao_orgao?.sigla },
+          { label: 'Órgão responsável pela liberação', valor: emFoco.value.liberacao_orgao?.sigla },
         ],
       ],
     },

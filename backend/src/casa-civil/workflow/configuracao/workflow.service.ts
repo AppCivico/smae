@@ -8,6 +8,7 @@ import { FilterWorkflowDto } from './dto/filter-workflow.dto';
 import { WorkflowDetailDto, WorkflowDto } from './entities/workflow.entity';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { Date2YMD } from '../../../common/date2ymd';
 
 @Injectable()
 export class WorkflowService {
@@ -246,7 +247,13 @@ export class WorkflowService {
             },
         });
 
-        return rows;
+        return rows.map((r) => {
+            return {
+                ...r,
+                inicio: Date2YMD.toString(r.inicio),
+                termino: Date2YMD.toStringOrNull(r.termino),
+            };
+        });
     }
 
     async findOne(id: number, user: PessoaFromJwt | undefined): Promise<WorkflowDetailDto> {
@@ -380,8 +387,8 @@ export class WorkflowService {
             id: row.id,
             nome: row.nome,
             ativo: row.ativo,
-            inicio: row.inicio,
-            termino: row.termino,
+            inicio: Date2YMD.toString(row.inicio),
+            termino: Date2YMD.toStringOrNull(row.termino),
             edicao_restrita: emUso ? true : false,
             transferencia_tipo: {
                 id: row.transferencia_tipo.id,

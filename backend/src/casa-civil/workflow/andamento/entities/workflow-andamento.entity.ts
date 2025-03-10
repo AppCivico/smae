@@ -8,6 +8,7 @@ import {
     DetailWorkflowFluxoFaseTarefaDto,
 } from '../../configuracao/entities/workflow.entity';
 import { WorkflowSituacaoDto } from '../../configuracao/situacao/entities/workflow-situacao.entity';
+import { IsDateYMD } from '../../../../auth/decorators/date.decorator';
 
 export class WorkflowAndamentoDto extends PartialType(OmitType(WorkflowDetailDto, ['transferencia_tipo'])) {
     @ApiProperty({ type: () => [WorkflowAndamentoFluxoDto] })
@@ -36,8 +37,10 @@ export class AndamentoFaseDto {
     situacao: WorkflowSituacaoDto | null;
     orgao_responsavel: IdSiglaDescricao | null;
     pessoa_responsavel: IdNomeExibicao | null;
-    data_inicio: Date | null;
-    data_termino: Date | null;
+    @IsDateYMD({ nullable: true })
+    data_inicio: string | null;
+    @IsDateYMD({ nullable: true })
+    data_termino: string | null;
     pode_concluir: boolean;
     concluida: boolean;
     necessita_preencher_orgao: boolean;

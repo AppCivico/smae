@@ -59,4 +59,20 @@ export class Date2YMD {
         const dt = DateTime.fromJSDate(data, { zone: 'UTC' });
         return dt.day.toString().padStart(2, '0') + '/' + dt.month.toString().padStart(2, '0') + '/' + dt.year;
     }
+
+    static ymdToDMY(data: string | null): string {
+        if (!data) return '-';
+        const parts = data.split('-');
+        if (parts.length != 3) return `Invalid date: ${data}`;
+        return parts[2] + '/' + parts[1] + '/' + parts[0];
+    }
+
+    static FromISOOrNull(data: string | null): DateTime | null {
+        if (!data) return null;
+
+        // WHY??? Tem alguem mentindo no Tarefa.service... sem tempo no momento para debuggar isso, resolvendo na marreta
+        if ((data as any) instanceof Date) return DateTime.fromJSDate(data as any, { zone: 'UTC' });
+
+        return DateTime.fromISO(data, { zone: 'UTC' });
+    }
 }

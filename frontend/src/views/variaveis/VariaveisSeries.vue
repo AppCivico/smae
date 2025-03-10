@@ -11,7 +11,7 @@ import ErrorComponent from '@/components/ErrorComponent.vue';
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import auxiliarDePreenchimento from '@/components/AuxiliarDePreenchimento.vue';
 
-import truncate from '@/helpers/truncate';
+import truncate from '@/helpers/texto/truncate';
 import dateToTitle from '@/helpers/dateToTitle';
 import nulificadorTotal from '@/helpers/nulificadorTotal';
 import geradorDeAtributoStep from '@/helpers/geradorDeAtributoStep';

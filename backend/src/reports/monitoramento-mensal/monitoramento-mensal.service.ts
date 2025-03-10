@@ -1,8 +1,10 @@
 import { Injectable } from '@nestjs/common';
+import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { Date2YMD } from '../../common/date2ymd';
 import { PainelService } from '../../painel/painel.service';
 import { PrismaService } from '../../prisma/prisma.service';
-import { DefaultCsvOptions, FileOutput, ReportContext, ReportableService, UtilsService } from '../utils/utils.service';
+import { ReportContext } from '../relatorios/helpers/reports.contexto';
+import { DefaultCsvOptions, FileOutput, ReportableService, UtilsService } from '../utils/utils.service';
 import { CreateRelMonitoramentoMensalDto } from './dto/create-monitoramento-mensal.dto';
 import {
     RelPainelDetalhe,
@@ -26,10 +28,10 @@ export class MonitoramentoMensalService implements ReportableService {
         private readonly mmMf: MonitoramentoMensalMfService
     ) {}
 
-    async asJSON(dto: CreateRelMonitoramentoMensalDto): Promise<RetMonitoramentoMensal> {
+    async asJSON(dto: CreateRelMonitoramentoMensalDto, user: PessoaFromJwt | null): Promise<RetMonitoramentoMensal> {
         dto.paineis = Array.isArray(dto.paineis) ? dto.paineis : [];
 
-        const { metas } = await this.utils.applyFilter(dto, { iniciativas: false, atividades: false });
+        const { metas } = await this.utils.applyFilter(dto, { iniciativas: false, atividades: false }, user);
         const metasArr = metas.map((r) => r.id);
         // um dia aqui é capaz que fiquem muitas metas e o retorno fique muito grande e cause OOM no asJSON
         if (metasArr.length > 10000)
@@ -96,11 +98,15 @@ export class MonitoramentoMensalService implements ReportableService {
         return linhas;
     }
 
-    async toFileOutput(params: CreateRelMonitoramentoMensalDto, ctx: ReportContext): Promise<FileOutput[]> {
+    async toFileOutput(
+        params: CreateRelMonitoramentoMensalDto,
+        ctx: ReportContext,
+        user: PessoaFromJwt | null
+    ): Promise<FileOutput[]> {
         const pdm = await this.prisma.pdm.findUniqueOrThrow({ where: { id: params.pdm_id } });
         params.paineis = Array.isArray(params.paineis) ? params.paineis : [];
 
-        const { metas } = await this.utils.applyFilter(params, { iniciativas: false, atividades: false });
+        const { metas } = await this.utils.applyFilter(params, { iniciativas: false, atividades: false }, user);
         const metasArr = metas.map((r) => r.id);
         await ctx.progress(1);
 

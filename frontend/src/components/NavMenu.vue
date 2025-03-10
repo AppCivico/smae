@@ -69,6 +69,7 @@ onBeforeRouteUpdate(() => {
 
       <div class="cabeçalho__nome-e-ícone-do-módulo">
         <img
+          v-if="dadosDoSistemaEscolhido?.ícone"
           :src="dadosDoSistemaEscolhido.ícone"
           class="cabeçalho__ícone-do-módulo"
           width="24"
@@ -94,6 +95,7 @@ onBeforeRouteUpdate(() => {
         ><use xlink:href="#i_graf" /></svg>
       </button>
     </hgroup>
+
     <nav
       v-if="user"
       id="menu"
@@ -104,6 +106,8 @@ onBeforeRouteUpdate(() => {
           <SmaeLink
             v-if="rotaInicial"
             :to="rotaInicial"
+            prefixo-dos-caminhos=""
+            sufixo-dos-caminhos=""
             class="menu__link"
           >
             <span class="menu__envelope-svg">
@@ -164,6 +168,8 @@ onBeforeRouteUpdate(() => {
           <SmaeLink
             v-else
             :to="item.path"
+            prefixo-dos-caminhos=""
+            sufixo-dos-caminhos=""
             class="menu__link"
           >
             <span
@@ -202,6 +208,8 @@ onBeforeRouteUpdate(() => {
                 class="menu__item menu__item--sub"
               >
                 <SmaeLink
+                  prefixo-dos-caminhos=""
+                  sufixo-dos-caminhos=""
                   class="menu__link menu__link--sub"
                   :to="subitem.path"
                 >
@@ -233,6 +241,8 @@ onBeforeRouteUpdate(() => {
         >
           <SmaeLink
             :to="{ name: 'home' }"
+            prefixo-dos-caminhos=""
+            sufixo-dos-caminhos=""
             class="menu__link menu__link--módulos"
           >
             <span class="menu__envelope-svg">

@@ -3,7 +3,7 @@ import { useAlertStore } from '@/stores/alert.store';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
 import { usePaineisExternosStore } from '@/stores/paineisExternos.store';
-import truncate from '@/helpers/truncate';
+import truncate from '@/helpers/texto/truncate';
 
 const portfolioStore = usePaineisExternosStore();
 const {

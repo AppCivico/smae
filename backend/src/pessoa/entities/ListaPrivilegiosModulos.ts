@@ -1,8 +1,9 @@
-import { ModuloSistema } from '@prisma/client';
+import { ModuloSistema, PerfilResponsavelEquipe } from '@prisma/client';
 import { ListaDePrivilegios } from '../../common/ListaDePrivilegios';
 
 export class ListaPrivilegiosModulos {
     privilegios: ListaDePrivilegios[];
-    modulos: string[];
     sistemas: ModuloSistema[];
+    perfis_equipe_pdm: PerfilResponsavelEquipe[];
+    perfis_equipe_ps: PerfilResponsavelEquipe[];
 }

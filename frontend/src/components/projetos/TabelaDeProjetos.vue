@@ -1,8 +1,7 @@
 <script setup>
+import statuses from '@/consts/projectStatuses';
 import { useAuthStore } from '@/stores/auth.store';
 import { storeToRefs } from 'pinia';
-
-import statuses from '@/consts/projectStatuses';
 
 const authStore = useAuthStore();
 const { temPermissãoPara } = storeToRefs(authStore);
@@ -91,7 +90,7 @@ const metasPorId = {};
           }}
         </td>
         <td>
-          {{ statuses[item.status] || item.status }}
+          {{ statuses[item.status]?.nome || item.status }}
         </td>
         <td v-if="temPermissãoPara('Projeto.administrador_no_orgao')">
           <router-link

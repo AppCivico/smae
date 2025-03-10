@@ -1,6 +1,12 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import {
+  computed, ref, watch,
+} from 'vue';
+import { useRoute } from 'vue-router';
 import EsperarEntrarNaTela from '@/components/EsperarEntrarNaTela.vue';
 import EvolucaoGraph from '@/components/EvolucaoGraph.vue';
+import OverlayIndisponivel from '@/components/OverlayIndisponivel.vue';
 import GraficoHeatmapVariavelCategorica from '@/components/GraficoHeatmapVariavelCategorica.vue';
 import EvolucaoDeMetaIniciativaAtividade from '@/components/metas/EvolucaoDeMetaIniciativaAtividade.vue';
 import GruposDeSerie from '@/components/metas/GruposDeSerie.vue';
@@ -13,11 +19,6 @@ import { useVariaveisStore } from '@/stores/variaveis.store';
 import AddEditRealizado from '@/views/metas/AddEditRealizado.vue';
 import AddEditValores from '@/views/metas/AddEditValores.vue';
 import AddEditVariavel from '@/views/metas/AddEditVariavel.vue';
-import { storeToRefs } from 'pinia';
-import {
-  computed, ref, watch,
-} from 'vue';
-import { useRoute } from 'vue-router';
 
 const authStore = useAuthStore();
 const { temPermissãoPara } = storeToRefs(authStore);
@@ -74,13 +75,20 @@ const dialogoAtivo = computed(() => {
   }
 });
 
-async function iniciar() {
+const contagemDeRecarregamentos = ref(0);
+const numeroMaximoDeRecarregamentos = ref(2);
+
+async function iniciar(forcarAtualizacao = false) {
+  contagemDeRecarregamentos.value += 1;
   await MetasStore.getPdM();
   if (atividadeId) parentLabel.value = activePdm.value.rotulo_atividade;
   else if (iniciativaId) parentLabel.value = activePdm.value.rotulo_iniciativa;
-  // mantendo comportamento legado
-  // eslint-disable-next-line eqeqeq, max-len
-  if (!tempIndicadores.value?.length || tempIndicadores.value?.[0]?.[parentField.value] != parentId.value) {
+  if (!tempIndicadores.value?.length
+    // mantendo comportamento legado
+    // eslint-disable-next-line eqeqeq, max-len
+    || tempIndicadores.value?.[0]?.[parentField.value] != parentId.value
+    || forcarAtualizacao
+  ) {
     await IndicadoresStore.filterIndicadores(parentId.value, parentField.value);
   }
   if (tempIndicadores.value[0]?.id) {
@@ -171,7 +179,8 @@ watch([parentId, parentField], iniciar, { immediate: true });
               <SmaeLink
                 v-if="temPermissãoPara([
                   'CadastroMeta.administrador_no_pdm',
-                  'CadastroMetaPS.administrador_no_pdm'
+                  'CadastroMetaPS.administrador_no_pdm',
+                  'CadastroMetaPDM.administrador_no_pdm'
                 ])"
                 :to="`${parentLink}/indicadores/${ind.id}`"
                 class="tprimary"
@@ -182,15 +191,26 @@ watch([parentId, parentField], iniciar, { immediate: true });
                 ><use xlink:href="#i_edit" /></svg>
               </SmaeLink>
             </div>
-            <GraficoHeatmapVariavelCategorica
-              v-if="ValoresInd[ind.id]?.variavel?.variavel_categorica_id"
-              :valores="ValoresInd[ind.id]"
-            />
-            <EvolucaoGraph
-              v-else
-              :dataserie="ValoresInd[ind.id]"
-              :casas-decimais="ind.casas_decimais"
-            />
+            <div class="relative">
+              <GraficoHeatmapVariavelCategorica
+                v-if="ValoresInd[ind.id]?.variavel?.variavel_categorica_id"
+                :valores="ValoresInd[ind.id]"
+              />
+              <EvolucaoGraph
+                v-else
+                :dataserie="ValoresInd[ind.id]"
+                :casas-decimais="ind.casas_decimais"
+              />
+              <OverlayIndisponivel
+                v-if="ind.recalculando"
+                :tem-tentar-novamente="true"
+                :texto-descritivo="ind.recalculo_erro"
+                :tentar-novamente-em="contagemDeRecarregamentos >= numeroMaximoDeRecarregamentos
+                  ? null
+                  : ind.recalculo_tempo "
+                @recarregar-dados="iniciar(true)"
+              />
+            </div>
           </header>
           <div>
             <div class="tablepreinfo">
@@ -279,7 +299,8 @@ watch([parentId, parentField], iniciar, { immediate: true });
       <div
         v-if="temPermissãoPara([
           'CadastroMeta.administrador_no_pdm',
-          'CadastroMetaPS.administrador_no_pdm'
+          'CadastroMetaPS.administrador_no_pdm',
+          'CadastroMetaPDM.administrador_no_pdm'
         ])"
         class="bgc50"
       >

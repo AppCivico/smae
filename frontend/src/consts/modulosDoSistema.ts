@@ -12,19 +12,29 @@ export type Modulo = {
   nome: string;
   ícone: string;
   rotaInicial: RotaInicial | RotaInicial[];
+  possiveisEntidadesMae: string | string[];
 };
 
+export enum ModuloSistema {
+  SMAE = 'SMAE',
+  PDM = 'PDM',
+  CasaCivil = 'CasaCivil',
+  Projetos = 'Projetos',
+  PlanoSetorial = 'PlanoSetorial',
+  MDO = 'MDO',
+  ProgramaDeMetas = 'ProgramaDeMetas',
+}
+
 export type ModulosDoSistema = {
-  PDM: Modulo;
-  Projetos: Modulo;
-  CasaCivil: Modulo;
-  MDO: Modulo;
-  PlanoSetorial: Modulo;
+  [key in ModuloSistema]?: Modulo;
 };
 
 const modulos: ModulosDoSistema = {
   PDM: {
     nome: 'Programa de metas',
+    possiveisEntidadesMae: [
+      'pdm',
+    ],
     ícone: programaDeMetas,
     rotaInicial: [
       {
@@ -35,8 +45,24 @@ const modulos: ModulosDoSistema = {
       },
     ],
   },
+  ProgramaDeMetas: {
+    nome: 'Programa de metas 😎',
+    possiveisEntidadesMae: [
+      'programaDeMetas',
+    ],
+    ícone: programaDeMetas,
+    rotaInicial: [
+      {
+        name: 'programaDeMetas.metasDoProgramaCorrente',
+      },
+    ],
+  },
   Projetos: {
     nome: 'Gestão de projetos',
+    possiveisEntidadesMae: [
+      'projeto',
+      'portfolio',
+    ],
     ícone: gestaoDeProjetos,
     rotaInicial: [
       {
@@ -46,6 +72,9 @@ const modulos: ModulosDoSistema = {
   },
   CasaCivil: {
     nome: 'Transferências voluntárias',
+    possiveisEntidadesMae: [
+      'TransferenciasVoluntarias',
+    ],
     ícone: transferenciasVoluntarias,
     rotaInicial: [
       {
@@ -55,6 +84,10 @@ const modulos: ModulosDoSistema = {
   },
   MDO: {
     nome: 'Monitoramento de Obras',
+    possiveisEntidadesMae: [
+      'mdo',
+      'obras',
+    ],
     ícone: monitoramentoDeObras,
     rotaInicial: [
       {
@@ -64,10 +97,13 @@ const modulos: ModulosDoSistema = {
   },
   PlanoSetorial: {
     nome: 'Planos setoriais',
+    possiveisEntidadesMae: [
+      'planoSetorial',
+    ],
     ícone: planosSetoriais,
     rotaInicial: [
       {
-        name: 'planosSetoriaisListar',
+        name: 'planoSetorial.planosSetoriaisListar',
       },
     ],
   },

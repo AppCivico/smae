@@ -34,6 +34,7 @@ import {
 } from './entities/transferencia.dto';
 import { PrismaHelpers } from '../../common/PrismaHelpers';
 import { WorkflowService } from '../workflow/configuracao/workflow.service';
+import { Date2YMD } from '../../common/date2ymd';
 
 class NextPageTokenJwtBody {
     offset: number;
@@ -688,9 +689,6 @@ export class TransferenciaService {
         const agora = new Date(Date.now());
         const updated = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
-                // Valor do repasse não pode ser 0
-                if (dto.valor == 0) throw new HttpException('valor| Valor do repasse não pode ser 0.', 400);
-
                 // “VALOR DO REPASSE”  é a soma de “Custeio” + Investimento”
                 if (Number(dto.valor).toFixed(2) != (+dto.custeio + +dto.investimento).toFixed(2))
                     throw new HttpException(
@@ -705,6 +703,7 @@ export class TransferenciaService {
                         400
                     );
 
+                // TODO: quando o front-end começar a enviar os params de pct_custeio e pct_investimento, implementar a validação dos valores de porcentagem.
                 const transferencia = await prismaTxn.transferencia.update({
                     where: { id },
                     data: {
@@ -712,7 +711,9 @@ export class TransferenciaService {
                         valor_total: dto.valor_total,
                         valor_contrapartida: dto.valor_contrapartida,
                         custeio: dto.custeio,
+                        pct_custeio: dto.pct_custeio,
                         investimento: dto.investimento,
+                        pct_investimento: dto.pct_investimento,
                         dotacao: dto.dotacao,
                         ordenador_despesa: dto.ordenador_despesa,
                         gestor_contrato: dto.gestor_contrato,
@@ -1203,7 +1204,7 @@ export class TransferenciaService {
                 objeto: r.objeto,
                 detalhamento: r.detalhamento,
                 clausula_suspensiva: r.clausula_suspensiva,
-                clausula_suspensiva_vencimento: r.clausula_suspensiva_vencimento,
+                clausula_suspensiva_vencimento: Date2YMD.toStringOrNull(r.clausula_suspensiva_vencimento),
                 normativa: r.normativa,
                 observacoes: r.observacoes,
                 programa: r.programa,
@@ -1257,7 +1258,9 @@ export class TransferenciaService {
                 valor_total: true,
                 valor_contrapartida: true,
                 custeio: true,
+                pct_custeio: true,
                 investimento: true,
+                pct_investimento: true,
                 emenda: true,
                 dotacao: true,
                 demanda: true,
@@ -1368,7 +1371,7 @@ export class TransferenciaService {
             objeto: row.objeto,
             detalhamento: row.detalhamento,
             clausula_suspensiva: row.clausula_suspensiva,
-            clausula_suspensiva_vencimento: row.clausula_suspensiva_vencimento,
+            clausula_suspensiva_vencimento: Date2YMD.toStringOrNull(row.clausula_suspensiva_vencimento),
             normativa: row.normativa,
             observacoes: row.observacoes,
             programa: row.programa,
@@ -1378,7 +1381,9 @@ export class TransferenciaService {
             valor_total: row.valor_total,
             valor_contrapartida: row.valor_contrapartida,
             custeio: row.custeio,
+            pct_custeio: row.pct_custeio,
             investimento: row.investimento,
+            pct_investimento: row.pct_investimento,
             emenda: row.emenda,
             dotacao: row.dotacao,
             demanda: row.demanda,
@@ -1584,15 +1589,15 @@ export class TransferenciaService {
             id: transferenciaCronograma.id,
             previsao_custo: transferenciaCronograma.previsao_custo,
             previsao_duracao: transferenciaCronograma.previsao_duracao,
-            previsao_inicio: transferenciaCronograma.previsao_inicio,
-            previsao_termino: transferenciaCronograma.previsao_termino,
+            previsao_inicio: Date2YMD.toStringOrNull(transferenciaCronograma.previsao_inicio),
+            previsao_termino: Date2YMD.toStringOrNull(transferenciaCronograma.previsao_termino),
             atraso: transferenciaCronograma.atraso,
             em_atraso: transferenciaCronograma.em_atraso,
-            projecao_termino: transferenciaCronograma.projecao_termino,
+            projecao_termino: Date2YMD.toStringOrNull(transferenciaCronograma.projecao_termino),
             realizado_duracao: transferenciaCronograma.realizado_duracao,
             percentual_concluido: transferenciaCronograma.percentual_concluido,
-            realizado_inicio: transferenciaCronograma.realizado_inicio,
-            realizado_termino: transferenciaCronograma.realizado_termino,
+            realizado_inicio: Date2YMD.toStringOrNull(transferenciaCronograma.realizado_inicio),
+            realizado_termino: Date2YMD.toStringOrNull(transferenciaCronograma.realizado_termino),
             realizado_custo: transferenciaCronograma.realizado_custo,
             tolerancia_atraso: transferenciaCronograma.tolerancia_atraso,
             percentual_atraso: transferenciaCronograma.percentual_atraso,

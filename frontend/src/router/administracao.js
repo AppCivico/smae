@@ -6,6 +6,8 @@ import {
   useResourcesStore,
   useDocumentTypesStore,
 } from '@/stores';
+import { useFontesStore } from '@/stores/fontesPs.store';
+import { useAssuntosStore } from '@/stores/assuntosPs.store';
 
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import { Administracao } from '@/views';
@@ -80,8 +82,8 @@ const rotasParaMenuSecundário = [
       'tipoDeAcompanhamentoListar',
       'orgaos.listar',
       'orgaos.tipos',
-      'tipo-documento.listar',
-      'unidade-medida.lista',
+      'tipoDocumento.listar',
+      'unidadeMedida.lista',
       'categorias.lista',
       'classificacao',
       'gerenciarRegiões',
@@ -93,10 +95,10 @@ const rotasParaMenuSecundário = [
       'equipamentosLista',
       'tipoDeAditivosListar',
       'variaveisCategoricasListar',
-      'categoriaAssuntosListar',
-      'assuntosListar',
+      'categoriaAssunto.listar',
+      'assunto.listar',
       'modalidadesListar',
-      'fontesListar',
+      'fonte.listar',
       'partidosListar',
     ],
   },
@@ -622,9 +624,7 @@ export default [
         name: 'orgaos.novo',
         meta: {
           título: 'Novo Órgão',
-          rotasParaMigalhasDePão: [
-            'orgaos.listar',
-          ],
+          rotasParaMigalhasDePão: ['orgaos.listar'],
           rotaDeEscape: 'orgaos.listar',
         },
         component: AddEditOrgans,
@@ -634,9 +634,7 @@ export default [
         name: 'orgaos.editar',
         meta: {
           título: () => useOrgansStore().tempOrgans.descricao,
-          rotasParaMigalhasDePão: [
-            'orgaos.listar',
-          ],
+          rotasParaMigalhasDePão: ['orgaos.listar'],
           rotaDeEscape: 'orgaos.listar',
         },
         component: AddEditOrgans,
@@ -658,9 +656,7 @@ export default [
             name: 'orgaos.tipos.novo',
             meta: {
               título: 'Novo Tipo de Orgão',
-              rotasParaMigalhasDePão: [
-                'orgaos.tipos',
-              ],
+              rotasParaMigalhasDePão: ['orgaos.tipos'],
             },
           },
           {
@@ -669,9 +665,7 @@ export default [
             name: 'orgaos.tipos.editar',
             meta: {
               título: 'Editar tipo de Orgão',
-              rotasParaMigalhasDePão: [
-                'orgaos.tipos',
-              ],
+              rotasParaMigalhasDePão: ['orgaos.tipos'],
             },
           },
         ],
@@ -688,31 +682,27 @@ export default [
     children: [
       {
         path: '',
-        name: 'unidade-medida.lista',
+        name: 'unidadeMedida.lista',
         component: ListResources,
       },
       {
         path: 'novo',
-        name: 'unidade-medida.novo',
+        name: 'unidadeMedida.novo',
         component: AddEditResources,
         meta: {
           título: 'Nova Unidade de Medida',
-          rotaDeEscape: 'unidade-medida.lista',
-          rotasParaMigalhasDePão: [
-            'unidade-medida.lista',
-          ],
+          rotaDeEscape: 'unidadeMedida.lista',
+          rotasParaMigalhasDePão: ['unidadeMedida.lista'],
         },
       },
       {
         path: 'editar/:id',
-        name: 'unidade-medida.editar',
+        name: 'unidadeMedida.editar',
         component: AddEditResources,
         meta: {
           título: () => useResourcesStore().tempResources.descricao,
-          rotaDeEscape: 'unidade-medida.lista',
-          rotasParaMigalhasDePão: [
-            'unidade-medida.lista',
-          ],
+          rotaDeEscape: 'unidadeMedida.lista',
+          rotasParaMigalhasDePão: ['unidadeMedida.lista'],
         },
       },
     ],
@@ -727,31 +717,27 @@ export default [
     children: [
       {
         path: '',
-        name: 'tipo-documento.listar',
+        name: 'tipoDocumento.listar',
         component: ListDocumentTypes,
       },
       {
         path: 'novo',
-        name: 'tipo-documento.novo',
+        name: 'tipoDocumento.novo',
         component: AddEditDocumentTypes,
         meta: {
           título: 'Novo Tipo de Documento',
-          rotasParaMigalhasDePão: [
-            'tipo-documento.listar',
-          ],
-          rotaDeEscape: 'tipo-documento.listar',
+          rotasParaMigalhasDePão: ['tipoDocumento.listar'],
+          rotaDeEscape: 'tipoDocumento.listar',
         },
       },
       {
         path: 'editar/:id',
-        name: 'tipo-documento.editar',
+        name: 'tipoDocumento.editar',
         component: AddEditDocumentTypes,
         meta: {
           título: () => useDocumentTypesStore().tempDocumentTypes.descricao,
-          rotasParaMigalhasDePão: [
-            'tipo-documento.listar',
-          ],
-          rotaDeEscape: 'tipo-documento.listar',
+          rotasParaMigalhasDePão: ['tipoDocumento.listar'],
+          rotaDeEscape: 'tipoDocumento.listar',
         },
       },
     ],
@@ -760,7 +746,7 @@ export default [
     path: '/categorias',
     meta: {
       limitarÀsPermissões: 'CadastroOds.',
-      título: 'Categorias',
+      título: 'Categorias de Tags',
       rotasParaMenuSecundário,
       entidadeMãe: 'pdm',
     },
@@ -775,11 +761,9 @@ export default [
         name: 'categorias.novo',
         component: AddEditODS,
         meta: {
-          título: 'Nova Categoria',
+          título: 'Nova Categoria de Tags',
           rotaDeEscape: 'categorias.lista',
-          rotasParaMigalhasDePão: [
-            'categorias.lista',
-          ],
+          rotasParaMigalhasDePão: ['categorias.lista'],
         },
       },
       {
@@ -789,9 +773,7 @@ export default [
         meta: {
           título: () => useODSStore().tempODS.titulo,
           rotaDeEscape: 'categorias.lista',
-          rotasParaMigalhasDePão: [
-            'categorias.lista',
-          ],
+          rotasParaMigalhasDePão: ['categorias.lista'],
         },
       },
     ],
@@ -995,7 +977,7 @@ export default [
     },
     children: [
       {
-        name: 'categoriaAssuntosListar',
+        name: 'categoriaAssunto.listar',
         path: '',
         component: () => import('@/views/ps.categoriaAssunto/CategoriaAssuntoLista.vue'),
         meta: {
@@ -1003,16 +985,17 @@ export default [
         },
       },
       {
-        name: 'categoriaAssuntosCriar',
+        name: 'categoriaAssunto.novo',
         path: 'novo',
         component: () => import('@/views/ps.categoriaAssunto/CategoriaAssuntoCriarEditar.vue'),
         meta: {
           título: 'Nova categoria de assunto',
-          rotasParaMigalhasDePão: ['categoriaAssuntosListar'],
+          rotasParaMigalhasDePão: ['categoriaAssunto.listar'],
+          rotaDeEscape: 'categoriaAssunto.listar',
         },
       },
       {
-        name: 'categoriaAssuntosEditar',
+        name: 'categoriaAssunto.editar',
         path: ':categoriaAssuntoId',
         component: () => import('@/views/ps.categoriaAssunto/CategoriaAssuntoCriarEditar.vue'),
         props: ({ params }) => ({
@@ -1022,10 +1005,10 @@ export default [
               Number.parseInt(params.categoriaAssuntoId, 10) || undefined,
           },
         }),
-
         meta: {
-          título: 'Editar categoria de assunto',
-          rotasParaMigalhasDePão: ['categoriaAssuntosListar'],
+          título: () => useAssuntosStore().categoriaParaEdicao.nome,
+          rotasParaMigalhasDePão: ['categoriaAssunto.listar'],
+          rotaDeEscape: 'categoriaAssunto.listar',
         },
       },
     ],
@@ -1040,7 +1023,7 @@ export default [
     },
     children: [
       {
-        name: 'assuntosListar',
+        name: 'assunto.listar',
         path: '',
         component: () => import('@/views/ps.assuntos/AssuntosLista.vue'),
         meta: {
@@ -1048,17 +1031,19 @@ export default [
         },
       },
       {
-        name: 'assuntosCriar',
+        name: 'assunto.novo',
         path: 'novo',
         component: () => import('@/views/ps.assuntos/AssuntosCriarEditar.vue'),
         meta: {
           título: 'Novo assunto',
-          rotasParaMigalhasDePão: ['assuntosListar'],
+          rotasParaMigalhasDePão: ['assunto.listar'],
+          rotaDeEscape: 'assunto.listar',
+
         },
       },
       {
         path: ':assuntoId',
-        name: 'assuntosEditar',
+        name: 'assunto.editar',
         component: () => import('@/views/ps.assuntos/AssuntosCriarEditar.vue'),
         props: ({ params }) => ({
           ...params,
@@ -1066,8 +1051,9 @@ export default [
         }),
 
         meta: {
-          título: 'Editar assunto',
-          rotasParaMigalhasDePão: ['assuntosListar'],
+          título: () => useAssuntosStore().itemParaEdicao.nome,
+          rotasParaMigalhasDePão: ['assunto.listar'],
+          rotaDeEscape: 'assunto.listar',
         },
       },
     ],
@@ -1082,7 +1068,7 @@ export default [
     },
     children: [
       {
-        name: 'fontesListar',
+        name: 'fonte.listar',
         path: '',
         component: () => import('@/views/ps.fontes/FontesLista.vue'),
         meta: {
@@ -1090,26 +1076,27 @@ export default [
         },
       },
       {
-        name: 'fontesCriar',
+        name: 'fonte.novo',
         path: 'novo',
         component: () => import('@/views/ps.fontes/FontesCriarEditar.vue'),
         meta: {
           título: 'Nova fonte',
-          rotasParaMigalhasDePão: ['fontesListar'],
+          rotasParaMigalhasDePão: ['fonte.listar'],
+          rotaDeEscape: 'fonte.listar',
         },
       },
       {
         path: ':fonteId',
-        name: 'fontesEditar',
+        name: 'fonte.editar',
         component: () => import('@/views/ps.fontes/FontesCriarEditar.vue'),
         props: ({ params }) => ({
           ...params,
           ...{ fonteId: Number.parseInt(params.fonteId, 10) || undefined },
         }),
-
         meta: {
-          título: 'Editar fonte',
-          rotasParaMigalhasDePão: ['fontesListar'],
+          título: () => useFontesStore().itemParaEdicao.nome,
+          rotasParaMigalhasDePão: ['fonte.listar'],
+          rotaDeEscape: 'fonte.listar',
         },
       },
     ],

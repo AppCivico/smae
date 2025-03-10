@@ -32,7 +32,6 @@ const valoresIniciais = {
     data_termino: null,
     orgao_id: [],
   },
-  salvar_arquivo: false,
 };
 
 const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
@@ -51,13 +50,11 @@ const tiposDisponíveis = computed(() => (values.parametros.esfera
 
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   try {
-    const msg = 'Dados salvos com sucesso!';
+    const msg = 'Relatório em processamento, acompanhe na tela de listagem';
 
     if (await relatoriosStore.insert(valoresControlados)) {
       alertStore.success(msg);
-      if (valoresControlados.salvar_arquivo && route.meta?.rotaDeEscape) {
-        router.push({ name: route.meta.rotaDeEscape });
-      }
+      router.push({ name: route.meta.rotaDeEscape });
     }
   } catch (error) {
     alertStore.error(error);
@@ -133,29 +130,59 @@ const formularioSujo = useIsFormDirty();
       </div>
     </div>
 
+    <div class="flex flexwrap g2 mb2">
+      <div class="f1">
+        <LabelFromYup
+          name="parametros.orgao_id"
+          :schema="schema.fields.parametros"
+        />
 
-    <div class="mb2">
-      <LabelFromYup
-        name="parametros.orgao_id"
-        :schema="schema.fields.parametros"
-      />
+        <AutocompleteField
+          name="parametros.orgao_id"
+          :controlador="{ busca: '', participantes: values.parametros.orgao_id || [] }"
+          label="sigla"
+          :grupo="órgãosComoLista"
+          :class="{
+            error: errors['parametros.orgao_id'],
+            loading: ÓrgãosStore.organs?.loading,
+          }"
+        />
 
-      <AutocompleteField
-        name="parametros.orgao_id"
-        :controlador="{ busca: '', participantes: values.parametros.orgao_id || [] }"
-        label="sigla"
-        :grupo="órgãosComoLista"
-        :class="{
-          error: errors['parametros.orgao_id'],
-          loading: ÓrgãosStore.organs?.loading,
-        }"
-      />
+        <div
+          v-if="errors['parametros.orgao_id']"
+          class="error-msg"
+        >
+          {{ errors['parametros.orgao_id'] }}
+        </div>
+      </div>
 
-      <div
-        v-if="errors['parametros.orgao_id']"
-        class="error-msg"
-      >
-        {{ errors['parametros.orgao_id'] }}
+      <div class="f1">
+        <LabelFromYup
+          name="eh_publico"
+          :schema="schema"
+          required
+        />
+        <Field
+          name="eh_publico"
+          as="select"
+          class="inputtext light"
+        >
+          <option :value="null">
+            Selecionar
+          </option>
+          <option :value="true">
+            Sim
+          </option>
+          <option :value="false">
+            Não
+          </option>
+        </Field>
+        <div
+          v-if="errors['eh_publico']"
+          class="error-msg"
+        >
+          {{ errors['eh_publico'] }}
+        </div>
       </div>
     </div>
 
@@ -214,25 +241,6 @@ const formularioSujo = useIsFormDirty();
       </div>
     </div>
 
-    <div class="mb2">
-      <label class="block">
-        <Field
-          name="salvar_arquivo"
-          type="checkbox"
-          :value="true"
-          :unchecked-value="false"
-          class="inputcheckbox"
-        />
-        <span :class="{ 'error': errors.salvar_arquivo }">Salvar relatório no sistema</span>
-      </label>
-      <div
-        v-if="errors['salvar_arquivo']"
-        class="error-msg"
-      >
-        {{ errors['salvar_arquivo'] }}
-      </div>
-    </div>
-
     <FormErrorsList :errors="errors" />
 
     <div class="flex spacebetween center mb2">
@@ -244,7 +252,7 @@ const formularioSujo = useIsFormDirty();
           ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
           : null"
       >
-        {{ values.salvar_arquivo ? "baixar e salvar" : "apenas baixar" }}
+        Criar relatório
       </button>
       <hr class="ml2 f1">
     </div>

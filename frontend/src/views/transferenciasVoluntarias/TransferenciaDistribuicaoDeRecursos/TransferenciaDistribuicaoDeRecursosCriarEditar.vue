@@ -19,7 +19,7 @@ import {
 } from 'vue';
 
 import { transferenciaDistribuicaoDeRecursos as schema } from '@/consts/formSchemas';
-import truncate from '@/helpers/truncate';
+import truncate from '@/helpers/texto/truncate';
 import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOrgansStore } from '@/stores/organs.store';

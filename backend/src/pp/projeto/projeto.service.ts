@@ -1,4 +1,4 @@
-import { BadRequestException, HttpException, Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
+import { BadRequestException, forwardRef, HttpException, Inject, Injectable, Logger } from '@nestjs/common';
 import { Prisma, ProjetoFase, ProjetoOrigemTipo, ProjetoStatus, TipoProjeto } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { IdCodTituloDto } from 'src/common/dto/IdCodTitulo.dto';
@@ -30,6 +30,7 @@ import {
     ProjetoMdoDto,
     ProjetoMetaDetailDto,
     ProjetoPermissoesDto,
+    ProjetoV2Dto,
 } from './entities/projeto.entity';
 
 import { JwtService } from '@nestjs/jwt';
@@ -115,6 +116,231 @@ type ProjetoResumoPermisao = {
     colaboradores_no_orgao: number[];
     responsavel_id: number | null;
     tipo: TipoProjeto;
+};
+
+export const ProjetoGetPermissionSet = async (
+    tipo: TipoProjeto,
+    user: PessoaFromJwt | undefined,
+    isBi: boolean
+): Promise<Array<Prisma.ProjetoWhereInput>> => {
+    const permissionsBaseSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = [
+        {
+            tipo: tipo,
+            removido_em: null,
+            portfolio: { removido_em: null },
+        },
+    ];
+    if (!user) return permissionsBaseSet;
+
+    if (isBi && user.hasSomeRoles(['SMAE.acesso_bi'])) return permissionsBaseSet;
+
+    if (user.hasSomeRoles([tipo == 'PP' ? 'Projeto.administrador' : 'ProjetoMDO.administrador'])) {
+        Logger.debug('roles Projeto.administrador, ver todos os projetos');
+        // nenhum filtro para o administrador
+        return permissionsBaseSet;
+    }
+
+    const waterfallSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = [];
+
+    if (user.hasSomeRoles([tipo == 'PP' ? 'Projeto.administrador_no_orgao' : 'ProjetoMDO.administrador_no_orgao'])) {
+        Logger.verbose(
+            `Adicionando ver todos os projetos do portfolio com orgao ${user.orgao_id} (Projeto(MDO)?.administrador_no_orgao)`
+        );
+        waterfallSet.push({
+            portfolio: {
+                orgaos: {
+                    some: {
+                        orgao_id: user.orgao_id,
+                    },
+                },
+            },
+        });
+    }
+
+    if (user.hasSomeRoles([tipo == 'PP' ? 'SMAE.gestor_de_projeto' : 'MDO.gestor_de_projeto'])) {
+        Logger.verbose(
+            `Adicionando projetos onde responsaveis_no_orgao_gestor contém ${user.id} (SMAE|MDO.gestor_de_projeto)`
+        );
+        waterfallSet.push({ responsaveis_no_orgao_gestor: { has: user.id } });
+    }
+
+    if (user.hasSomeRoles([tipo == 'PP' ? 'SMAE.colaborador_de_projeto' : 'MDO.colaborador_de_projeto'])) {
+        Logger.verbose(`Adicionar ver projetos onde responsavel_id=${user.id} (SMAE|MDO.colaborador_de_projeto)`);
+        waterfallSet.push({ responsavel_id: user.id });
+
+        Logger.verbose(
+            `Adicionar ver projetos onde equipe contém pessoa_id=${user.id} (SMAE|MDO.colaborador_de_projeto) ou colaboradores_no_orgao contém pessoa_id=${user.id} (SMAE|MDO.colaborador_de_projeto)`
+        );
+        waterfallSet.push({
+            OR: [
+                {
+                    equipe: {
+                        some: {
+                            removido_em: null,
+                            pessoa_id: user.id,
+                        },
+                    },
+                },
+                { colaboradores_no_orgao: { has: user.id } },
+            ],
+        });
+    }
+
+    if (user.hasSomeRoles([tipo == 'PP' ? 'SMAE.espectador_de_projeto' : 'MDO.espectador_de_projeto'])) {
+        Logger.verbose(
+            `Adicionar ver projetos e portfolios que participam dos grupo-portfolios contendo pessoa_id=${user.id} (SMAE|MDO.espectador_de_projeto)`
+        );
+        waterfallSet.push({
+            OR: [
+                // ou o projeto ta num grupo com a pessoa
+                {
+                    ProjetoGrupoPortfolio: {
+                        some: {
+                            removido_em: null,
+                            GrupoPortfolio: {
+                                removido_em: null,
+                                GrupoPortfolioPessoa: {
+                                    some: {
+                                        removido_em: null,
+                                        pessoa_id: user.id,
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+                // ou o port ta num grupo-port que tem essa pessoa
+                {
+                    portfolio: {
+                        removido_em: null,
+                        PortfolioGrupoPortfolio: {
+                            some: {
+                                removido_em: null,
+                                GrupoPortfolio: {
+                                    removido_em: null,
+                                    GrupoPortfolioPessoa: {
+                                        some: {
+                                            pessoa_id: user.id,
+                                            removido_em: null,
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+                // Ou portfolios compartilhados
+                {
+                    portfolios_compartilhados: {
+                        some: {
+                            removido_em: null,
+                            portfolio: {
+                                removido_em: null,
+                                PortfolioGrupoPortfolio: {
+                                    some: {
+                                        removido_em: null,
+                                        GrupoPortfolio: {
+                                            removido_em: null,
+                                            GrupoPortfolioPessoa: {
+                                                some: {
+                                                    pessoa_id: user.id,
+                                                    removido_em: null,
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            ],
+        });
+    }
+
+    // pelo menos uma das condições deveria ser verdadeira
+    if (waterfallSet.length == 0) throw new HttpException('Sem permissões para acesso aos projetos.', 400);
+
+    permissionsBaseSet.push({
+        OR: waterfallSet,
+    });
+
+    return permissionsBaseSet;
+};
+
+const getOrderByConfigView = (
+    ordem_coluna: string,
+    ordem_direcao: 'asc' | 'desc'
+): Prisma.Enumerable<Prisma.ViewProjetoV2OrderByWithRelationInput> => {
+    if (ordem_coluna === 'regioes') {
+        throw new BadRequestException('Ordenação por regiões não é mais suportada');
+    }
+
+    const directionSort: {
+        sort: Prisma.SortOrder;
+        nulls: Prisma.NullsOrder;
+    } = ordem_direcao === 'asc' ? { sort: 'asc', nulls: 'last' } : { sort: 'desc', nulls: 'last' };
+
+    switch (ordem_coluna) {
+        case 'previsao_custo':
+            return [{ previsao_custo: directionSort }, { codigo: 'asc' }];
+
+        case 'previsao_termino':
+            return [{ previsao_termino: directionSort }, { codigo: 'asc' }];
+
+        default:
+            throw new BadRequestException(`ordem_coluna ${ordem_coluna} não é suportada`);
+    }
+};
+
+const isOrderByConfigView = (ordem_coluna: string): boolean => {
+    return ordem_coluna.startsWith('previsao_custo') || ordem_coluna.startsWith('previsao_termino');
+};
+
+const getOrderByConfig = (
+    ordem_coluna: string,
+    ordem_direcao: 'asc' | 'desc'
+): Prisma.Enumerable<Prisma.ProjetoOrderByWithRelationInput> => {
+    if (ordem_coluna === 'regioes') {
+        throw new BadRequestException('Ordenação por regiões não é mais suportada');
+    }
+
+    const directionSort: {
+        sort: Prisma.SortOrder;
+        nulls: Prisma.NullsOrder;
+    } = ordem_direcao === 'asc' ? { sort: 'asc', nulls: 'last' } : { sort: 'desc', nulls: 'last' };
+
+    switch (ordem_coluna) {
+        // colunas 'not null' não podem ficar com o "NULL'... que beleza...
+        case 'id':
+        case 'nome':
+        case 'status':
+        case 'registrado_em':
+            return [{ [ordem_coluna]: ordem_direcao }, { codigo: 'asc' }];
+        case 'codigo':
+            return [{ [ordem_coluna]: directionSort }, { codigo: 'asc' }];
+
+        case 'portfolio_titulo':
+            return [{ portfolio: { titulo: ordem_direcao } }, { codigo: 'asc' }];
+
+        case 'grupo_tematico_nome':
+            return [{ grupo_tematico: { nome: ordem_direcao } }, { codigo: 'asc' }];
+
+        case 'tipo_intervencao_nome':
+            return [{ tipo_intervencao: { nome: ordem_direcao } }, { codigo: 'asc' }];
+
+        case 'equipamento_nome':
+            return [{ equipamento: { nome: ordem_direcao } }, { codigo: 'asc' }];
+
+        case 'orgao_origem_nome':
+            return [{ orgao_origem: { descricao: ordem_direcao } }, { codigo: 'asc' }];
+        case 'projeto_etapa':
+        case 'projeto_etapa_id':
+            return [{ projeto_etapa: { descricao: ordem_direcao } }, { codigo: 'asc' }];
+
+        default:
+            throw new BadRequestException(`ordem_coluna ${ordem_coluna} não é suportada`);
+    }
 };
 
 @Injectable()
@@ -454,7 +680,6 @@ export class ProjetoService {
                         secretario_executivo: dto.secretario_executivo,
                         secretario_responsavel: dto.secretario_responsavel,
                         modalidade_contratacao_id: dto.modalidade_contratacao_id,
-                        tipo_aditivo_id: dto.tipo_aditivo_id,
                         projeto_programa_id: dto.programa_id,
 
                         colaboradores_no_orgao: dto.colaboradores_no_orgao ?? [],
@@ -707,25 +932,47 @@ export class ProjetoService {
     async findAllIds(
         tipo: TipoProjeto,
         user: PessoaFromJwt | undefined,
-        portfolio_id: number | undefined = undefined,
-        aceita_compartilhado: boolean = false
+        portfolio_id: number | number[] | number[] | undefined = undefined,
+        aceita_compartilhado: boolean = false,
+        orgao_responsavel_id: number | number[] | undefined = undefined,
+        projeto_id: number | number[] | undefined = undefined
     ): Promise<{ id: number }[]> {
-        const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoWhereSet(tipo, user, true);
+        const permissionsSet = await ProjetoGetPermissionSet(tipo, user, true);
+
+        const filtroPortfolio =
+            typeof portfolio_id == 'number' ? [portfolio_id] : portfolio_id?.length ? portfolio_id : undefined;
+        const filtroProjeto =
+            typeof projeto_id == 'number' ? [projeto_id] : projeto_id?.length ? projeto_id : undefined;
+        const filtroOrgaoResponsavel =
+            typeof orgao_responsavel_id == 'number'
+                ? [orgao_responsavel_id]
+                : orgao_responsavel_id?.length
+                  ? orgao_responsavel_id
+                  : undefined;
+
         return await this.prisma.projeto.findMany({
             where: {
                 tipo: tipo,
                 AND: [
-                    { portfolio_id: portfolio_id && !aceita_compartilhado ? portfolio_id : undefined },
+                    {
+                        portfolio_id: portfolio_id && !aceita_compartilhado ? { in: filtroPortfolio } : undefined,
+                    },
 
                     {
                         OR:
-                            aceita_compartilhado && portfolio_id
+                            aceita_compartilhado && filtroPortfolio
                                 ? [
-                                      { portfolio_id: portfolio_id },
+                                      {
+                                          portfolio_id: {
+                                              in: filtroPortfolio,
+                                          },
+                                      },
                                       {
                                           portfolios_compartilhados: {
                                               some: {
-                                                  portfolio_id: portfolio_id,
+                                                  portfolio_id: {
+                                                      in: filtroPortfolio,
+                                                  },
                                                   removido_em: null,
                                               },
                                           },
@@ -735,7 +982,23 @@ export class ProjetoService {
                     },
 
                     {
+                        AND: filtroOrgaoResponsavel
+                            ? [{ orgao_responsavel_id: { in: filtroOrgaoResponsavel } }]
+                            : undefined,
+                    },
+
+                    {
                         AND: permissionsSet.length ? permissionsSet : undefined,
+                    },
+
+                    {
+                        AND: filtroProjeto
+                            ? [
+                                  {
+                                      id: { in: filtroProjeto },
+                                  },
+                              ]
+                            : undefined,
                     },
                 ],
             },
@@ -745,7 +1008,7 @@ export class ProjetoService {
 
     async findAll(tipo: TipoProjeto, filters: FilterProjetoDto, user: PessoaFromJwt): Promise<ProjetoDto[]> {
         const ret: ProjetoDto[] = [];
-        const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoWhereSet(tipo, user, false);
+        const permissionsSet = await ProjetoGetPermissionSet(tipo, user, false);
 
         const rows = await this.prisma.projeto.findMany({
             where: {
@@ -772,34 +1035,6 @@ export class ProjetoService {
                 eh_prioritario: true,
                 arquivado: true,
                 codigo: true,
-
-                //                atividade: {
-                //                    select: {
-                //                        iniciativa: {
-                //                            select: {
-                //                                meta: {
-                //                                    select: {
-                //                                        id: true,
-                //                                        codigo: true,
-                //                                        titulo: true,
-                //                                    },
-                //                                },
-                //                            },
-                //                        },
-                //                    },
-                //                },
-                //
-                //                iniciativa: {
-                //                    select: {
-                //                        meta: {
-                //                            select: {
-                //                                id: true,
-                //                                codigo: true,
-                //                                titulo: true,
-                //                            },
-                //                        },
-                //                    },
-                //                },
 
                 meta: {
                     select: {
@@ -906,30 +1141,61 @@ export class ProjetoService {
 
         // AVISO: os dois métodos abaixo alteram o número de rows!
         // getProjetoWhereSet e getProjetoMDOWhereSet
-        const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoWhereSet('MDO', user, false);
-        const filterSet = this.getProjetoMDOWhereSet(filters, palavrasChave, user.id);
-        const linhas = await this.prisma.viewProjetoMDO.findMany({
-            where: {
-                // Filtro por palavras-chave com tsvector
-                projeto: {
+        const permissionsSet = await ProjetoGetPermissionSet('MDO', user, false);
+        const filterSet = this.getProjetoV2WhereSet(filters, palavrasChave, user.id);
+
+        let projetoIds;
+        if (isOrderByConfigView(filters.ordem_coluna)) {
+            projetoIds = await this.prisma.viewProjetoV2.findMany({
+                where: {
+                    projeto: {
+                        registrado_em: { lte: now },
+                        AND: [...permissionsSet, ...filterSet],
+                    },
+                },
+                select: { id: true },
+                orderBy: getOrderByConfigView(filters.ordem_coluna, filters.ordem_direcao),
+                skip: offset,
+                take: ipp,
+            });
+        } else {
+            projetoIds = await this.prisma.projeto.findMany({
+                where: {
                     registrado_em: { lte: now },
                     AND: [...permissionsSet, ...filterSet],
                 },
+                select: { id: true },
+                orderBy: getOrderByConfig(filters.ordem_coluna, filters.ordem_direcao),
+                skip: offset,
+                take: ipp,
+            });
+        }
+
+        const linhas = await this.prisma.viewProjetoMDO.findMany({
+            where: {
+                id: { in: projetoIds.map((p) => p.id) },
             },
             include: {
                 orgao_origem: { select: { id: true, sigla: true, descricao: true } },
                 portfolio: { select: { id: true, titulo: true } },
             },
-            orderBy: [{ [filters.ordem_coluna]: filters.ordem_direcao === 'asc' ? 'asc' : 'desc' }, { codigo: 'asc' }],
-            skip: offset,
-            take: ipp,
+            relationLoadStrategy: 'query',
+        });
+
+        // Alinha de volta a ordem do resultados da view com o resultado original
+        const projetoIdIndexMap = new Map<number, number>();
+        projetoIds.forEach((p, index) => {
+            projetoIdIndexMap.set(p.id, index);
+        });
+        linhas.sort((a, b) => {
+            return projetoIdIndexMap.get(a.id)! - projetoIdIndexMap.get(b.id)!;
         });
 
         if (filterToken) {
             retToken = filterToken;
             tem_mais = offset + linhas.length < total_registros;
         } else {
-            const info = await this.encodeNextPageToken(filters, now, user, palavrasChave);
+            const info = await this.encodeNextPageToken('MDO', filters, now, user, palavrasChave);
             retToken = info.jwt;
             total_registros = info.body.total_rows;
             tem_mais = offset + linhas.length < total_registros;
@@ -987,154 +1253,172 @@ export class ProjetoService {
         };
     }
 
-    getProjetoWhereSet(tipo: TipoProjeto, user: PessoaFromJwt | undefined, isBi: boolean) {
-        const permissionsBaseSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = [
-            {
-                tipo: tipo,
-                removido_em: null,
-                portfolio: { removido_em: null },
-            },
-        ];
-        if (!user) return permissionsBaseSet;
+    async findAllV2(
+        tipo: TipoProjeto,
+        filters: FilterProjetoMDODto,
+        user: PessoaFromJwt
+    ): Promise<PaginatedWithPagesDto<ProjetoV2Dto>> {
+        let retToken = filters.token_paginacao;
 
-        if (isBi && user.hasSomeRoles(['SMAE.acesso_bi'])) return permissionsBaseSet;
+        let ipp = filters.ipp ?? 50;
+        const page = filters.pagina ?? 1;
+        let total_registros = 0;
+        let tem_mais = false;
 
-        if (user.hasSomeRoles([tipo == 'PP' ? 'Projeto.administrador' : 'ProjetoMDO.administrador'])) {
-            this.logger.debug('roles Projeto.administrador, ver todos os projetos');
-            // nenhum filtro para o administrador
-            return permissionsBaseSet;
+        if (page > 1 && !retToken) throw new HttpException('Campo obrigatório para paginação', 400);
+
+        const filterToken = filters.token_paginacao;
+        // para não atrapalhar no hash, remove o campo pagina
+        delete filters.pagina;
+        delete filters.token_paginacao;
+
+        const palavrasChave = await this.buscaIdsPalavraChave(filters.palavra_chave);
+
+        let now = new Date(Date.now());
+        if (filterToken) {
+            const decoded = this.decodeNextPageToken(filterToken, filters);
+            total_registros = decoded.total_rows;
+            ipp = decoded.ipp;
+            now = new Date(decoded.issued_at);
         }
 
-        const waterfallSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = [];
+        const offset = (page - 1) * ipp;
 
-        if (
-            user.hasSomeRoles([tipo == 'PP' ? 'Projeto.administrador_no_orgao' : 'ProjetoMDO.administrador_no_orgao'])
-        ) {
-            this.logger.verbose(
-                `Adicionando ver todos os projetos do portfolio com orgao ${user.orgao_id} (Projeto(MDO)?.administrador_no_orgao)`
-            );
-            waterfallSet.push({
-                portfolio: {
-                    orgaos: {
-                        some: {
-                            orgao_id: user.orgao_id,
-                        },
+        // AVISO: os dois métodos abaixo alteram o número de rows!
+        // getProjetoWhereSet e getProjetoMDOWhereSet
+        const permissionsSet = await ProjetoGetPermissionSet(tipo, user, false);
+        const filterSet = this.getProjetoV2WhereSet(filters, palavrasChave, user.id);
+
+        let projetoIds;
+        if (isOrderByConfigView(filters.ordem_coluna)) {
+            projetoIds = await this.prisma.viewProjetoV2.findMany({
+                where: {
+                    projeto: {
+                        registrado_em: { lte: now },
+                        AND: [...permissionsSet, ...filterSet],
                     },
                 },
+                select: { id: true },
+                orderBy: getOrderByConfigView(filters.ordem_coluna, filters.ordem_direcao),
+                skip: offset,
+                take: ipp,
+            });
+        } else {
+            projetoIds = await this.prisma.projeto.findMany({
+                where: {
+                    registrado_em: { lte: now },
+                    AND: [...permissionsSet, ...filterSet],
+                },
+                select: { id: true },
+                orderBy: getOrderByConfig(filters.ordem_coluna, filters.ordem_direcao),
+                skip: offset,
+                take: ipp,
             });
         }
 
-        if (user.hasSomeRoles([tipo == 'PP' ? 'SMAE.gestor_de_projeto' : 'MDO.gestor_de_projeto'])) {
-            this.logger.verbose(
-                `Adicionando projetos onde responsaveis_no_orgao_gestor contém ${user.id} (SMAE|MDO.gestor_de_projeto)`
-            );
-            waterfallSet.push({ responsaveis_no_orgao_gestor: { has: user.id } });
-        }
-
-        if (user.hasSomeRoles([tipo == 'PP' ? 'SMAE.colaborador_de_projeto' : 'MDO.colaborador_de_projeto'])) {
-            this.logger.verbose(
-                `Adicionar ver projetos onde responsavel_id=${user.id} (SMAE|MDO.colaborador_de_projeto)`
-            );
-            waterfallSet.push({ responsavel_id: user.id });
-
-            this.logger.verbose(
-                `Adicionar ver projetos onde equipe contém pessoa_id=${user.id} (SMAE|MDO.colaborador_de_projeto) ou colaboradores_no_orgao contém pessoa_id=${user.id} (SMAE|MDO.colaborador_de_projeto)`
-            );
-            waterfallSet.push({
-                OR: [
-                    {
-                        equipe: {
-                            some: {
-                                removido_em: null,
-                                pessoa_id: user.id,
-                            },
-                        },
-                    },
-                    { colaboradores_no_orgao: { has: user.id } },
-                ],
-            });
-        }
-
-        if (user.hasSomeRoles([tipo == 'PP' ? 'SMAE.espectador_de_projeto' : 'MDO.colaborador_de_projeto'])) {
-            this.logger.verbose(
-                `Adicionar ver projetos e portfolios que participam dos grupo-portfolios contendo pessoa_id=${user.id} (SMAE|MDO.espectador_de_projeto)`
-            );
-            waterfallSet.push({
-                OR: [
-                    // ou o projeto ta num grupo com a pessoa
-                    {
-                        ProjetoGrupoPortfolio: {
-                            some: {
-                                removido_em: null,
-                                GrupoPortfolio: {
-                                    removido_em: null,
-                                    GrupoPortfolioPessoa: {
-                                        some: {
-                                            removido_em: null,
-                                            pessoa_id: user.id,
-                                        },
-                                    },
-                                },
-                            },
-                        },
-                    },
-                    // ou o port ta num grupo-port que tem essa pessoa
-                    {
-                        portfolio: {
-                            removido_em: null,
-                            PortfolioGrupoPortfolio: {
-                                some: {
-                                    removido_em: null,
-                                    GrupoPortfolio: {
-                                        removido_em: null,
-                                        GrupoPortfolioPessoa: {
-                                            some: {
-                                                pessoa_id: user.id,
-                                                removido_em: null,
-                                            },
-                                        },
-                                    },
-                                },
-                            },
-                        },
-                    },
-                    // Ou portfolios compartilhados
-                    {
-                        portfolios_compartilhados: {
-                            some: {
-                                removido_em: null,
-                                portfolio: {
-                                    removido_em: null,
-                                    PortfolioGrupoPortfolio: {
-                                        some: {
-                                            removido_em: null,
-                                            GrupoPortfolio: {
-                                                removido_em: null,
-                                                GrupoPortfolioPessoa: {
-                                                    some: {
-                                                        pessoa_id: user.id,
-                                                        removido_em: null,
-                                                    },
-                                                },
-                                            },
-                                        },
-                                    },
-                                },
-                            },
-                        },
-                    },
-                ],
-            });
-        }
-
-        // pelo menos uma das condições deveria ser verdadeira
-        if (waterfallSet.length == 0) throw new HttpException('Sem permissões para acesso aos projetos.', 400);
-
-        permissionsBaseSet.push({
-            OR: waterfallSet,
+        const linhas = await this.prisma.viewProjetoV2.findMany({
+            where: {
+                id: { in: projetoIds.map((p) => p.id) },
+            },
+            include: {
+                orgao_origem: { select: { id: true, sigla: true, descricao: true } },
+                portfolio: { select: { id: true, titulo: true } },
+            },
+            relationLoadStrategy: 'query',
         });
 
-        return permissionsBaseSet;
+        // Alinha de volta a ordem do resultados da view com o resultado original
+        const projetoIdIndexMap = new Map<number, number>();
+        projetoIds.forEach((p, index) => {
+            projetoIdIndexMap.set(p.id, index);
+        });
+        linhas.sort((a, b) => {
+            return projetoIdIndexMap.get(a.id)! - projetoIdIndexMap.get(b.id)!;
+        });
+
+        if (filterToken) {
+            retToken = filterToken;
+            tem_mais = offset + linhas.length < total_registros;
+        } else {
+            const info = await this.encodeNextPageToken(tipo, filters, now, user, palavrasChave);
+            retToken = info.jwt;
+            total_registros = info.body.total_rows;
+            tem_mais = offset + linhas.length < total_registros;
+        }
+
+        const linhasRevisao = await this.prisma.projetoPessoaRevisao.findMany({
+            where: { pessoa_id: user.id },
+            select: { projeto_id: true },
+        });
+
+        // COUNT para mensagem de aviso quando o usuário quiser desmarcar a revisão de todas as obras.
+        const total_registros_revisados: number = await this.prisma.projetoPessoaRevisao.count({
+            where: { pessoa_id: user.id },
+        });
+
+        const canRevise =
+            tipo == 'MDO'
+                ? user.hasSomeRoles(['MDO.revisar_obra', 'ProjetoMDO.administrador'])
+                : user.hasSomeRoles(['Projeto.revisar_projeto', 'Projeto.administrador']);
+
+        const paginas = Math.ceil(total_registros / ipp);
+        return {
+            tem_mais,
+            token_ttl: PAGINATION_TOKEN_TTL,
+            total_registros: total_registros,
+            total_registros_revisados: total_registros_revisados,
+            token_paginacao: retToken,
+            paginas,
+            pagina_corrente: page,
+            linhas: linhas.map((r): ProjetoV2Dto => {
+                const linhaRevisao = linhasRevisao.find((lr) => lr.projeto_id == r.id);
+
+                return {
+                    id: r.id,
+                    codigo: r.codigo,
+                    nome: r.nome,
+                    status: r.status,
+                    orgao_origem: r.orgao_origem
+                        ? {
+                              descricao: r.orgao_origem.descricao!,
+                              sigla: r.orgao_origem.sigla!,
+                              id: r.orgao_origem.id,
+                          }
+                        : null,
+                    grupo_tematico: r.grupo_tematico_id
+                        ? {
+                              id: r.grupo_tematico_id!,
+                              nome: r.grupo_tematico_nome!,
+                          }
+                        : null,
+                    equipamento: r.equipamento_id ? { id: r.equipamento_id, nome: r.equipamento_nome! } : null,
+                    empreendimento: r.empreendimento_id
+                        ? {
+                              id: r.empreendimento_id,
+                              nome: r.empreendimento_nome!,
+                              identificador: r.empreendimento_identificador!,
+                          }
+                        : null,
+                    tipo_intervencao: r.tipo_intervencao_id
+                        ? { id: r.tipo_intervencao_id, nome: r.tipo_intervencao_nome! }
+                        : null,
+                    regioes: r.regioes,
+                    portfolio: r.portfolio,
+                    revisado: canRevise ? (linhaRevisao ? true : false) : null,
+                    previsao_custo: r.previsao_custo,
+                    registrado_em: r.registrado_em,
+                    previsao_termino: Date2YMD.toStringOrNull(r.previsao_termino),
+                    orgao_responsavel: r.orgao_responsavel_id
+                        ? {
+                              id: r.orgao_responsavel_id,
+                              sigla: r.orgao_responsavel_sigla!,
+                              descricao: r.orgao_responsavel_descricao!,
+                          }
+                        : null,
+                    projeto_etapa: r.projeto_etapa,
+                } satisfies ProjetoV2Dto;
+            }),
+        };
     }
 
     async getDadosProjetoUe(tipo: TipoProjeto, id: number, user: PessoaFromJwt | undefined): Promise<HtmlProjetoUe> {
@@ -1172,8 +1456,8 @@ export class ProjetoService {
                 ? [projeto.orgao_responsavel.sigla + ' - ' + projeto.orgao_responsavel.descricao]
                 : [],
             responsavelPeloProjeto: projeto.responsavel ? projeto.responsavel.nome_exibicao : '-',
-            dataInicio: Date2YMD.dbDateToDMY(projeto.previsao_inicio),
-            dataTermino: Date2YMD.dbDateToDMY(projeto.previsao_termino),
+            dataInicio: Date2YMD.ymdToDMY(projeto.previsao_inicio),
+            dataTermino: Date2YMD.ymdToDMY(projeto.previsao_termino),
             custoEstimado: projeto.previsao_custo ? fc.toString(projeto.previsao_custo) : '-',
             fonteDeRecursos: fonte_recursos,
             origem: projeto.origem_tipo == 'Outro' ? projeto.origem_outro || '' : 'Programa de Metas',
@@ -1200,7 +1484,7 @@ export class ProjetoService {
             tipo = projeto.tipo;
         }
 
-        const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoWhereSet(tipo, user, false);
+        const permissionsSet = await ProjetoGetPermissionSet(tipo, user, false);
         const projeto = await this.prisma.projeto.findFirst({
             where: {
                 id: id,
@@ -1477,7 +1761,6 @@ export class ProjetoService {
                 mdo_observacoes: true,
                 modalidade_contratacao: { select: { id: true, nome: true } },
                 programa: { select: { id: true, nome: true } },
-                tipo_aditivo: { select: { id: true, nome: true } },
                 ProjetoOrigem: {
                     where: {
                         removido_em: null,
@@ -1600,10 +1883,10 @@ export class ProjetoService {
             objeto: projeto.objeto,
             objetivo: projeto.objetivo,
             publico_alvo: projeto.publico_alvo,
-            previsao_inicio: projeto.previsao_inicio,
+            previsao_inicio: Date2YMD.toStringOrNull(projeto.previsao_inicio),
             previsao_custo: projeto.previsao_custo,
             previsao_duracao: projeto.previsao_duracao,
-            previsao_termino: projeto.previsao_termino,
+            previsao_termino: Date2YMD.toStringOrNull(projeto.previsao_termino),
             nao_escopo: projeto.nao_escopo,
 
             principais_etapas: projeto.principais_etapas,
@@ -1618,8 +1901,8 @@ export class ProjetoService {
             meta_codigo: projeto.meta_codigo,
             selecionado_em: projeto.selecionado_em,
             em_planejamento_em: projeto.em_planejamento_em,
-            data_aprovacao: projeto.data_aprovacao,
-            data_revisao: projeto.data_revisao,
+            data_aprovacao: Date2YMD.toStringOrNull(projeto.data_aprovacao),
+            data_revisao: Date2YMD.toStringOrNull(projeto.data_revisao),
             versao: projeto.versao,
             eh_prioritario: projeto.eh_prioritario,
             arquivado: projeto.arquivado,
@@ -1649,7 +1932,14 @@ export class ProjetoService {
                 },
             },
 
-            tarefa_cronograma: projeto.TarefaCronograma[0] ?? null,
+            tarefa_cronograma: {
+                ...projeto.TarefaCronograma[0],
+                previsao_inicio: Date2YMD.toStringOrNull(projeto.TarefaCronograma[0]?.previsao_inicio ?? null),
+                previsao_termino: Date2YMD.toStringOrNull(projeto.TarefaCronograma[0]?.previsao_termino ?? null),
+                realizado_inicio: Date2YMD.toStringOrNull(projeto.TarefaCronograma[0]?.realizado_inicio ?? null),
+                realizado_termino: Date2YMD.toStringOrNull(projeto.TarefaCronograma[0]?.realizado_termino ?? null),
+                projecao_termino: Date2YMD.toStringOrNull(projeto.TarefaCronograma[0]?.projecao_termino ?? null),
+            },
             grupo_portfolio: projeto.ProjetoGrupoPortfolio.map((r) => {
                 return { id: r.grupo_portfolio_id, titulo: r.GrupoPortfolio.titulo };
             }),
@@ -1660,11 +1950,11 @@ export class ProjetoService {
 
             atraso: tarefaCrono?.atraso ?? null,
             em_atraso: tarefaCrono?.em_atraso ?? false,
-            projecao_termino: tarefaCrono?.projecao_termino ?? null,
+            projecao_termino: Date2YMD.toStringOrNull(tarefaCrono?.projecao_termino ?? null),
             realizado_duracao: tarefaCrono?.realizado_duracao ?? null,
             percentual_concluido: tarefaCrono?.percentual_concluido ?? null,
-            realizado_inicio: tarefaCrono?.realizado_inicio ?? null,
-            realizado_termino: tarefaCrono?.realizado_termino ?? null,
+            realizado_inicio: Date2YMD.toStringOrNull(tarefaCrono?.realizado_inicio ?? null),
+            realizado_termino: Date2YMD.toStringOrNull(tarefaCrono?.realizado_termino ?? null),
             realizado_custo: tarefaCrono?.realizado_custo ?? null,
             tolerancia_atraso: tarefaCrono?.tolerancia_atraso ?? 0,
             percentual_atraso: tarefaCrono?.percentual_atraso ?? null,
@@ -1713,11 +2003,11 @@ export class ProjetoService {
                 mdo_n_unidades_habitacionais: projeto.mdo_n_unidades_habitacionais,
                 mdo_n_familias_beneficiadas: projeto.mdo_n_familias_beneficiadas,
                 mdo_n_unidades_atendidas: projeto.mdo_n_unidades_atendidas,
-                mdo_previsao_inauguracao: projeto.mdo_previsao_inauguracao,
+                mdo_previsao_inauguracao: Date2YMD.toStringOrNull(projeto.mdo_previsao_inauguracao),
                 mdo_observacoes: projeto.mdo_observacoes,
                 modalidade_contratacao: projeto.modalidade_contratacao,
                 programa: projeto.programa,
-                tipo_aditivo: projeto.tipo_aditivo,
+                tipo_aditivo: null,
             };
 
             ret = {
@@ -2341,7 +2631,6 @@ export class ProjetoService {
                     mdo_previsao_inauguracao: dto.mdo_previsao_inauguracao,
                     mdo_observacoes: dto.mdo_observacoes,
                     modalidade_contratacao_id: dto.modalidade_contratacao_id,
-                    tipo_aditivo_id: dto.tipo_aditivo_id,
                     projeto_programa_id: dto.programa_id,
 
                     // EDIT: nao é mais TODO, bug virou feature: orgao_colaborador_id vai ser NULL e o
@@ -2511,13 +2800,6 @@ export class ProjetoService {
                 },
                 select: { id: true, orgao_id: true },
             });
-            if (!user.hasSomeRoles(['Projeto.administrador', 'ProjetoMDO.administrador'])) {
-                if (
-                    !user.hasSomeRoles(['Projeto.administrador_no_orgao', 'ProjetoMDO.administrador_no_orgao']) ||
-                    user.orgao_id != gp.orgao_id
-                )
-                    throw new BadRequestException('Sem permissão para adicionar grupo de portfólio no projeto.');
-            }
 
             await prismaTx.projetoGrupoPortfolio.create({
                 data: {
@@ -2532,13 +2814,6 @@ export class ProjetoService {
         for (const prevPortRow of prevVersions) {
             // pula as que continuam na lista
             if (dto.grupo_portfolio.filter((r) => r == prevPortRow.grupo_portfolio_id)[0]) continue;
-            if (!user.hasSomeRoles(['Projeto.administrador', 'ProjetoMDO.administrador'])) {
-                if (
-                    !user.hasSomeRoles(['Projeto.administrador_no_orgao', 'ProjetoMDO.administrador_no_orgao']) ||
-                    user.orgao_id != prevPortRow.GrupoPortfolio.orgao_id
-                )
-                    throw new BadRequestException('Sem permissão para remover grupo de portfólio no projeto.');
-            }
 
             // remove o relacionamento
             await prismaTx.projetoGrupoPortfolio.update({
@@ -3202,13 +3477,37 @@ export class ProjetoService {
         }
     }
 
-    private getProjetoMDOWhereSet(
+    private getProjetoV2WhereSet(
         filters: FilterProjetoMDODto,
         ids: number[] | undefined,
         userId?: number
     ): Prisma.ProjetoWhereInput[] {
+        if (filters.registrado_em) {
+            filters.registrado_em_de = filters.registrado_em;
+            filters.registrado_em_ate = filters.registrado_em;
+
+            delete filters.registrado_em;
+        }
+
+        if (filters.registrado_em_de)
+            filters.registrado_em_de = DateTime.fromISO(filters.registrado_em_de, {
+                zone: 'America/Sao_Paulo',
+            })
+                .startOf('day')
+                .toString();
+
+        if (filters.registrado_em_ate)
+            filters.registrado_em_ate = DateTime.fromISO(filters.registrado_em_ate, { zone: 'America/Sao_Paulo' })
+                .startOf('day')
+                .plus({ days: 1 })
+                .toString();
+
         const permissionsBaseSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = [
             {
+                registrado_em: {
+                    gte: filters.registrado_em_de,
+                    lt: filters.registrado_em_ate,
+                },
                 id: { in: ids != undefined ? ids : undefined },
                 OR: [
                     { portfolio_id: filters.portfolio_id },
@@ -3226,6 +3525,7 @@ export class ProjetoService {
                           },
                       }
                     : undefined,
+                projeto_etapa_id: filters.projeto_etapa_id ? { in: filters.projeto_etapa_id } : undefined,
                 orgao_origem_id: filters.orgao_origem_id ? { in: filters.orgao_origem_id } : undefined,
                 status: filters.status ? { in: filters.status } : undefined,
                 nome: filters.nome ? { in: filters.nome } : undefined,
@@ -3277,6 +3577,7 @@ export class ProjetoService {
     }
 
     private async encodeNextPageToken(
+        tipo: TipoProjeto,
         filters: FilterProjetoMDODto,
         issued_at: Date,
         user: PessoaFromJwt,
@@ -3285,8 +3586,8 @@ export class ProjetoService {
         jwt: string;
         body: AnyPageTokenJwtBody;
     }> {
-        const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoWhereSet('MDO', user, false);
-        const filterSet = this.getProjetoMDOWhereSet(filters, ids, user.id);
+        const permissionsSet = await ProjetoGetPermissionSet(tipo, user, false);
+        const filterSet = this.getProjetoV2WhereSet(filters, ids, user.id);
         const total_rows = await this.prisma.projeto.count({
             where: {
                 AND: [...permissionsSet, ...filterSet],
@@ -3313,11 +3614,11 @@ export class ProjetoService {
         return PrismaHelpers.buscaIdsPalavraChave(this.prisma, 'projeto', input);
     }
 
-    async revisarObras(dto: RevisarObrasDto, user: PessoaFromJwt): Promise<RecordWithId[]> {
+    async updateProjetoRevisao(tipo: TipoProjeto, dto: RevisarObrasDto, user: PessoaFromJwt): Promise<RecordWithId[]> {
         const updated = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId[]> => {
                 const obrasRevisadas = await prismaTx.projetoPessoaRevisao.findMany({
-                    where: { pessoa_id: user.id },
+                    where: { pessoa_id: user.id, projeto: { tipo: tipo } },
                     select: { projeto_id: true },
                 });
 
@@ -3344,6 +3645,7 @@ export class ProjetoService {
                                         pessoa_id: user.id,
                                         projeto_id: obra.projeto_id,
                                     },
+                                    projeto: { tipo: tipo },
                                 },
                             })
                         );
@@ -3356,9 +3658,9 @@ export class ProjetoService {
         return updated;
     }
 
-    async revisarObrasDesmarcar(user: PessoaFromJwt) {
+    async deleteProjetoRevisao(tipo: TipoProjeto, user: PessoaFromJwt) {
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
-            await prismaTx.projetoPessoaRevisao.deleteMany({ where: { pessoa_id: user.id } });
+            await prismaTx.projetoPessoaRevisao.deleteMany({ where: { pessoa_id: user.id, projeto: { tipo: tipo } } });
             return;
         });
     }

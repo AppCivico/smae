@@ -1,7 +1,9 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { IndicadoresService } from '../indicadores/indicadores.service';
-import { DefaultCsvOptions, FileOutput, ReportableService, ReportContext, UtilsService } from '../utils/utils.service';
+import { ReportContext } from '../relatorios/helpers/reports.contexto';
+import { DefaultCsvOptions, FileOutput, ReportableService, UtilsService } from '../utils/utils.service';
 import { CreatePsMonitoramentoMensalFilterDto } from './dto/create-ps-monitoramento-mensal-filter.dto';
 import { RelPsMonitoramentoMensalVariaveis, RelPsMonitRetorno } from './entities/ps-monitoramento-mensal.entity';
 
@@ -19,23 +21,29 @@ export class PSMonitoramentoMensal implements ReportableService {
         private readonly indicadoresService: IndicadoresService
     ) {}
 
-    async asJSON(params: CreatePsMonitoramentoMensalFilterDto): Promise<RelPsMonitRetorno> {
-        const monitoramento = await this.fetchPsMonitoramentoMensalData(params);
+    async asJSON(params: CreatePsMonitoramentoMensalFilterDto, user: PessoaFromJwt | null): Promise<RelPsMonitRetorno> {
+        const monitoramento = await this.fetchPsMonitoramentoMensalData(params, user);
 
-        const indicadores = await this.indicadoresService.asJSON({
-            ...params,
-            pdm_id: params.plano_setorial_id,
-            tipo_pdm: 'PS',
-            periodo: 'Geral',
-            tipo: 'Mensal',
-        });
+        const indicadores = await this.indicadoresService.asJSON(
+            {
+                ...params,
+                pdm_id: params.plano_setorial_id,
+                tipo_pdm: 'PS',
+                periodo: 'Geral',
+                tipo: 'Mensal',
+            },
+            user
+        );
         return {
             monitoramento: monitoramento,
             ...indicadores,
         };
     }
 
-    private async fetchPsMonitoramentoMensalData(params: CreatePsMonitoramentoMensalFilterDto) {
+    private async fetchPsMonitoramentoMensalData(
+        params: CreatePsMonitoramentoMensalFilterDto,
+        user: PessoaFromJwt | null
+    ) {
         if (!params.plano_setorial_id) params.plano_setorial_id = undefined;
         if (!params.pdm_id) params.pdm_id = undefined;
 
@@ -46,7 +54,8 @@ export class PSMonitoramentoMensal implements ReportableService {
                 ...params,
                 pdm_id: params.pdm_id ?? params.plano_setorial_id,
             },
-            { iniciativas: false, atividades: false }
+            { iniciativas: false, atividades: false },
+            user
         );
         const metasArr = metas.map((r) => r.id);
         if (metasArr.length > 10000)
@@ -186,8 +195,12 @@ export class PSMonitoramentoMensal implements ReportableService {
     }
 
     //TODO implementar paginação para evitar memory overflow
-    async toFileOutput(params: CreatePsMonitoramentoMensalFilterDto, ctx: ReportContext): Promise<FileOutput[]> {
-        const rows = await this.fetchPsMonitoramentoMensalData(params);
+    async toFileOutput(
+        params: CreatePsMonitoramentoMensalFilterDto,
+        ctx: ReportContext,
+        user: PessoaFromJwt | null
+    ): Promise<FileOutput[]> {
+        const rows = await this.fetchPsMonitoramentoMensalData(params, user);
         await ctx.progress(40);
         //Cabeçalho Arquivo
         const fieldsCSV = [
@@ -233,12 +246,13 @@ export class PSMonitoramentoMensal implements ReportableService {
         const indicadores = await this.indicadoresService.toFileOutput(
             {
                 ...params,
-                pdm_id: params.plano_setorial_id,
+                pdm_id: params.pdm_id,
                 tipo_pdm: 'PS',
                 periodo: 'Geral',
                 tipo: 'Mensal',
             },
-            ctx
+            ctx,
+            user
         );
         for (const indicador of indicadores) {
             out.push(indicador);

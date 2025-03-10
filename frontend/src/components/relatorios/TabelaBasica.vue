@@ -1,14 +1,15 @@
 <script setup>
-import { localizarData, localizarDataHorario } from '@/helpers/dateToDate';
+import { computed } from 'vue';
+import { storeToRefs } from 'pinia';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
-import { storeToRefs } from 'pinia';
-import { computed } from 'vue';
+import { localizarData, localizarDataHorario } from '@/helpers/dateToDate';
+import LoadingComponent from '@/components/LoadingComponent.vue';
 
-const { temPermissãoPara } = storeToRefs(useAuthStore());
 const alertStore = useAlertStore();
 const relatoriosStore = useRelatoriosStore();
+const { temPermissãoPara } = storeToRefs(useAuthStore());
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -42,19 +43,6 @@ function excluirRelatório(id) {
 </script>
 <template>
   <table class="tablemain">
-    <col>
-    <col class="col--dataHora">
-    <colgroup
-      v-if="colunas &&
-        Object.keys(colunas).length"
-      :span="Object.keys(colunas).length"
-    />
-    <col
-      v-if="temPermissãoPara(['Reports.remover.'])"
-      class="col--botão-de-ação"
-    >
-    <col class="col--botão-de-ação">
-
     <thead>
       <tr>
         <th>criador</th>
@@ -65,7 +53,6 @@ function excluirRelatório(id) {
         >
           {{ valor }}
         </th>
-        <th v-if="temPermissãoPara(['Reports.remover.'])" />
         <th />
       </tr>
     </thead>
@@ -92,33 +79,50 @@ function excluirRelatório(id) {
             <template v-else>
               {{ Array.isArray(item.parametros[chave])
                 ? item.parametros[chave]
-                  .map((x) => props.etiquetasParaValoresDeParâmetros?.[chave]?.[x])
+                  .map((x) =>
+                    typeof x === 'boolean'
+                      ? (x ? 'Sim' : 'Não')
+                      : props.etiquetasParaValoresDeParâmetros?.[chave]?.[x] || x
+                  )
                   .join(', ')
-                : props.etiquetasParaValoresDeParâmetros?.[chave]?.[item.parametros[chave]]
-                  || item.parametros[chave] }}
+                : typeof item.parametros[chave] === 'boolean'
+                  ? (item.parametros[chave] ? 'Sim' : 'Não')
+                  : props.etiquetasParaValoresDeParâmetros?.[chave]?.[item.parametros[chave]]
+                    || item.parametros[chave] }}
             </template>
           </td>
-          <td v-if="temPermissãoPara(['Reports.remover.'])">
-            <button
-              class="like-a__text addlink"
-              arial-label="excluir"
-              title="excluir"
-              @click="excluirRelatório(item.id)"
-            >
-              <svg
-                width="20"
-                height="20"
-              ><use xlink:href="#i_remove" /></svg>
-            </button>
-          </td>
-          <td>
-            <a
-              :href="`${baseUrl}/download/${item.arquivo}`"
-              download
-              title="baixar"
-            ><img
-              src="../../assets/icons/baixar.svg"
-            ></a>
+
+          <td class="tr">
+            <div class="flex g05">
+              <button
+                v-if="temPermissãoPara(['Reports.remover.'])"
+                class="like-a__text addlink"
+                arial-label="excluir"
+                title="excluir"
+                @click="excluirRelatório(item.id)"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                ><use xlink:href="#i_waste" /></svg>
+              </button>
+              <LoadingComponent
+                v-if="!item.arquivo"
+                title="Relatório em processamento"
+              >
+                <span class="sr-only">
+                  Relatório em processamento
+                </span>
+              </LoadingComponent>
+              <a
+                v-else
+                :href="`${baseUrl}/download/${item.arquivo}`"
+                download
+                title="baixar"
+              ><img
+                src="@/assets/icons/baixar.svg"
+              ></a>
+            </div>
           </td>
         </tr>
       </template>

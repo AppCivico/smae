@@ -1,7 +1,7 @@
 <script setup>
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import { planoDeAção as schema } from '@/consts/formSchemas';
-import truncate from '@/helpers/truncate';
+import truncate from '@/helpers/texto/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePlanosDeAçãoStore } from '@/stores/planosDeAcao.store.ts';

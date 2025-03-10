@@ -6,7 +6,7 @@ import statuses from '@/consts/projectStatuses';
 import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
 import subtractDates from '@/helpers/subtractDates';
-import truncate from '@/helpers/truncate';
+import truncate from '@/helpers/texto/truncate';
 import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { useOrgansStore } from '@/stores/organs.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
@@ -97,7 +97,7 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
           {{ schema.fields.status.spec.label }}
         </dt>
         <dd class="t13">
-          {{ statuses[emFoco?.status] || emFoco?.status }}
+          {{ statuses[emFoco?.status]?.nome || emFoco?.status }}
         </dd>
       </dl>
     </div>
@@ -234,7 +234,6 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
       <MapaExibir
         :geo-json="mapasAgrupados.endereços"
         :camadas="mapasAgrupados.camadas"
-        :opcoes-do-painel-flutuante="{ permanent: true }"
         class="mb1"
         :opções-do-polígono="{
           fill: true,

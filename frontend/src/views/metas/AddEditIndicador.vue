@@ -371,7 +371,7 @@ watch(() => props.group, () => {
     {{ activePdm.rotulo_iniciativa }} {{ singleIniciativa.codigo }} {{ singleIniciativa.titulo }}
   </div>
   <div
-    v-else-if="meta_id"
+    v-else-if="metaId"
     class="t24 mb2"
   >
     Meta {{ singleMeta.codigo }} {{ singleMeta.titulo }}
@@ -831,11 +831,11 @@ watch(() => props.group, () => {
         :indicador-regionalizavel="!!singleIndicadores?.regionalizavel"
         :variáveis="Variaveis[indicadorId]"
         :parentlink="parentlink"
-        :sao-globais="$route.meta.entidadeMãe === 'planoSetorial'"
+        :sao-globais="['planoSetorial', 'programaDeMetas'].includes($route.meta.entidadeMãe)"
       >
         <template #dentro-do-menu>
           <li
-            v-if="$route.meta.entidadeMãe === 'planoSetorial'"
+            v-if="['planoSetorial', 'programaDeMetas'].includes($route.meta.entidadeMãe)"
             class="mr1"
           >
             <button
@@ -883,12 +883,15 @@ watch(() => props.group, () => {
       <TabelaDeVariaveisEmUso
         v-if="!Variaveis[indicadorId]?.loading && estáAberta"
         :parentlink="parentlink"
-        :sao-globais="$route.meta.entidadeMãe === 'planoSetorial'"
+        :sao-globais="['planoSetorial', 'programaDeMetas'].includes($route.meta.entidadeMãe)"
       />
     </template>
   </EnvelopeDeAbas>
 
-  <template v-if="indicadorId && $route.meta.entidadeMãe === 'planoSetorial'">
+  <template
+    v-if="indicadorId
+      && ['planoSetorial', 'programaDeMetas'].includes($route.meta.entidadeMãe)"
+  >
     <SmallModal
       v-if="AssociadorDeVariaveisEstaAberto"
       class="largura-total"

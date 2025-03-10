@@ -1,14 +1,4 @@
 <script setup>
-import { storeToRefs } from 'pinia';
-import {
-  ErrorMessage,
-  Field,
-  FieldArray,
-  useForm,
-  useIsFormDirty,
-} from 'vee-validate';
-import { computed, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
 import CampoDePlanosMetasRelacionados from '@/components/CampoDePlanosMetasRelacionados.vue';
@@ -18,9 +8,9 @@ import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import MapaCampo from '@/components/geo/MapaCampo.vue';
 import { obras as schema } from '@/consts/formSchemas';
 import statusObras from '@/consts/statusObras';
-import tiposDePlanos from '@/consts/tiposDePlanos';
+import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
 import requestS from '@/helpers/requestS.ts';
-import truncate from '@/helpers/truncate';
+import truncate from '@/helpers/texto/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { useEmpreendimentosStore } from '@/stores/empreendimentos.store';
@@ -33,7 +23,21 @@ import { useOrgansStore } from '@/stores/organs.store';
 import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store.ts';
 import { useProgramaHabitacionalStore } from '@/stores/programaHabitacional.store';
 import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
-import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage,
+  Field,
+  FieldArray,
+  useForm,
+  useIsFormDirty,
+} from 'vee-validate';
+import {
+  computed,
+  nextTick,
+  ref,
+  watch,
+} from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -297,19 +301,45 @@ const onSubmit = handleSubmit(async () => {
 });
 
 function iniciar() {
+  if (!props.obraId) {
+    obrasStore.$reset();
+  }
+
   buscarPossíveisGestores();
   buscarPossíveisColaboradores();
   obrasStore.buscarPdms({ apenas_pdm: false });
 
-  empreendimentosStore.buscarTudo();
-  portfolioMdoStore.buscarTudo();
-  equipamentosStore.buscarTudo();
-  etiquetasStore.buscarTudo();
-  gruposTematicosStore.buscarTudo();
-  programaHabitacionalStore.buscarTudo();
-  tiposDeIntervencaoStore.buscarTudo();
+  if (!listaDeEmpreendimentos.length && !chamadasPendentesDeEmpreendimentos.lista) {
+    empreendimentosStore.buscarTudo();
+  }
 
-  observadoresStore.buscarTudo();
+  if (!portfolioMdoStore.lista.length && !portfolioMdoStore.chamadasPendentes.lista) {
+    portfolioMdoStore.buscarTudo();
+  }
+
+  if (!listaDeEquipamentos.length && !chamadasPendentesDeEquipamentos.lista) {
+    equipamentosStore.buscarTudo();
+  }
+
+  if (!listaDeEtiquetas.length && !chamadasPendentesDeEtiquetas.lista) {
+    etiquetasStore.buscarTudo();
+  }
+
+  if (!listaDeGruposTemáticos.length && !chamadasPendentesDeGruposTemáticos.lista) {
+    gruposTematicosStore.buscarTudo();
+  }
+
+  if (!listaDeProgramasHabitacionais.length && !chamadasPendentesDeProgramasHabitacionais.lista) {
+    programaHabitacionalStore.buscarTudo();
+  }
+
+  if (!listaDeTiposDeIntervenção.length && !chamadasPendentesDeTiposDeIntervenção.lista) {
+    tiposDeIntervencaoStore.buscarTudo();
+  }
+
+  if (!gruposDeObservadores.length && !gruposDeObservadoresPendentes.lista) {
+    observadoresStore.buscarTudo();
+  }
 
   // Aqui por causa de alguma falha de reatividade apenas nesse store
   ÓrgãosStore.$reset();
@@ -348,10 +378,25 @@ watch(emFoco, () => {
 
 watch(itemParaEdicao, (novoValor) => {
   montarCampoEstático.value = false;
+
   resetForm({
     initialValues: novoValor,
   });
+
   montarCampoEstático.value = true;
+});
+
+watch(listaDeTiposDeIntervenção, () => {
+  // redefinir o formulário porque um atraso na carga da lista de intervenções
+  // pode sujá-lo. Vamos tomar o cuidado de manter os dados já preenchidos.
+  nextTick(() => {
+    resetForm({
+      values: {
+        ...values,
+        tipo_intervencao_id: itemParaEdicao.value.tipo_intervencao_id,
+      },
+    });
+  });
 });
 </script>
 <template>
@@ -546,6 +591,9 @@ watch(itemParaEdicao, (novoValor) => {
           name="tags"
           class="error-msg"
         />
+        <ErrorComponent
+          :erro="erroDeEtiquetas"
+        />
       </div>
 
       <div class="f1 mb1 fb15em">
@@ -580,6 +628,9 @@ watch(itemParaEdicao, (novoValor) => {
           name="grupo_tematico_id"
           class="error-msg"
         />
+        <ErrorComponent
+          :erro="erroDeGrupoTemático.lista"
+        />
       </div>
       <div class="f1 mb1 fb15em">
         <LabelFromYup
@@ -607,6 +658,9 @@ watch(itemParaEdicao, (novoValor) => {
         <ErrorMessage
           name="equipamento_id"
           class="error-msg"
+        />
+        <ErrorComponent
+          :erro="erroDeEquipamentos.lista"
         />
       </div>
     </div>
@@ -706,6 +760,9 @@ watch(itemParaEdicao, (novoValor) => {
           name="empreendimento_id"
           class="error-msg"
         />
+        <ErrorComponent
+          :erro="erroDeEmpreendimentos"
+        />
       </div>
     </div>
 
@@ -715,7 +772,13 @@ watch(itemParaEdicao, (novoValor) => {
         :schema="schema"
         class="mb1"
       />
-      <ul class="lista-de-perfis t12">
+
+      <LoadingComponent v-if="chamadasPendentesDeTiposDeIntervenção.lista" />
+
+      <ul
+        v-else
+        class="lista-de-perfis t12"
+      >
         <li
           v-for="item in listaDeTiposDeIntervenção"
           :key="item.id"
@@ -742,6 +805,9 @@ watch(itemParaEdicao, (novoValor) => {
       <ErrorMessage
         name="tipo_intervencao_id"
         class="error-msg"
+      />
+      <ErrorComponent
+        :erro="erroDeTiposDeIntervenção.lista"
       />
     </div>
     <div
@@ -830,6 +896,10 @@ watch(itemParaEdicao, (novoValor) => {
         <ErrorMessage
           name="programa_id"
           class="error-msg"
+        />
+
+        <ErrorComponent
+          :erro="erroDeProgramasHabitacional"
         />
       </div>
       <div
@@ -1094,14 +1164,18 @@ watch(itemParaEdicao, (novoValor) => {
             }"
             :disabled="
               !arvoreDeMetas?.[values.meta_id]?.iniciativas?.[values.iniciativa_id]?.atividades
-                || !Object.keys(arvoreDeMetas?.[values.meta_id]?.iniciativas?.[values.iniciativa_id]?.atividades).length
+                || !Object.keys(arvoreDeMetas?.[values.meta_id]
+                  ?.iniciativas?.[values.iniciativa_id]?.atividades).length
             "
           >
             <option :value="null">
               Selecionar
             </option>
             <option
-              v-for="item in arvoreDeMetas?.[values.meta_id]?.iniciativas?.[values.iniciativa_id]?.atividades"
+              v-for="
+                item in arvoreDeMetas
+                  ?.[values.meta_id]?.iniciativas?.[values.iniciativa_id]?.atividades
+              "
               :key="item.id"
               :value="item.id"
               :title="item.titulo"
@@ -1481,7 +1555,7 @@ watch(itemParaEdicao, (novoValor) => {
       <div class="flex flexwrap g2 mb1">
         <CampoDePessoasComBuscaPorOrgao
           v-model="values.colaboradores_no_orgao"
-          name="participantes"
+          name="colaboradores_no_orgao"
           orgao-label="Órgão Colaborador"
           :pessoas="possíveisResponsáveisPorÓrgãoId[values.orgao_colaborador_id] || []"
           :pronto-para-montagem="montarCampoEstático"
@@ -1657,6 +1731,10 @@ watch(itemParaEdicao, (novoValor) => {
       <ErrorMessage
         name="grupo_portfolio"
         class="error-msg"
+      />
+
+      <ErrorComponent
+        :erro="erroNosDadosDeObservadores"
       />
     </div>
 

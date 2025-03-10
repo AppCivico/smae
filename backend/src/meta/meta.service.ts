@@ -1,9 +1,10 @@
 import { BadRequestException, HttpException, Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
-import { Prisma, TipoPdm } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { CronogramaAtrasoGrau } from 'src/common/dto/CronogramaAtrasoGrau.dto';
 import { CronogramaEtapaService } from 'src/cronograma-etapas/cronograma-etapas.service';
 import { UploadService } from 'src/upload/upload.service';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { PdmModoParaTipo, PdmModoParaTipoOrNull, TipoPdmType } from '../common/decorators/current-tipo-pdm';
 import { MIN_DB_SAFE_INT32 } from '../common/dto/consts';
 import { DetalheOrigensDto, ResumoOrigensMetasItemDto } from '../common/dto/origem-pdm.dto';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
@@ -12,7 +13,7 @@ import { UniqueNumbers } from '../common/UniqueNumbers';
 import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../geo-loc/entities/geo-loc.entity';
 import { GeoLocService } from '../geo-loc/geo-loc.service';
 import { CreatePSEquipePontoFocalDto, CreatePSEquipeTecnicoCPDto } from '../pdm/dto/create-pdm.dto';
-import { PdmService } from '../pdm/pdm.service';
+import { AdminCpDbItem, PdmService } from '../pdm/pdm.service';
 import { IdDescRegiaoComParent } from '../pp/projeto/entities/projeto.entity';
 import { PrismaService } from '../prisma/prisma.service';
 import {
@@ -35,6 +36,7 @@ import {
     RelacionadosDTO,
 } from './entities/meta.entity';
 import { upsertPSPerfisMetaIniAtv, validatePSEquipes } from './ps-perfil.util';
+import { plainToInstance } from 'class-transformer';
 
 type DadosMetaIniciativaAtividadesDto = {
     tipo: string;
@@ -56,6 +58,147 @@ interface MetaResponsavelChanges {
     }[];
 }
 
+export const MetasGetPermissionSet = async (tipo: TipoPdmType, user: PessoaFromJwt | undefined, isBi: boolean) => {
+    const permissionsSet: Prisma.Enumerable<Prisma.MetaWhereInput> = [
+        {
+            removido_em: null,
+            pdm: { tipo: PdmModoParaTipo(tipo) },
+        },
+    ];
+    if (!user) return permissionsSet;
+    if (isBi && user.hasSomeRoles(['SMAE.acesso_bi'])) return permissionsSet;
+
+    const orgaoId = user.orgao_id;
+    if (!orgaoId) throw new HttpException('Usuário sem órgão', 400);
+
+    // TODO filtrar painéis que o usuário pode visualizar, caso não tenha nenhuma das permissões
+    // 'CadastroMeta.inserir'
+    // atualmente nesse serviço não tem nada de painel, então acho que precisa rever esse TODO
+    // pra outro lugar (o frontend da um get em /painel sem informar qual meta
+    // lá no front que está fazendo o filtro pra descobrir os painel que tme a meta e
+    // depois o busca a serie do painel-conteúdo correspondente
+
+    if (tipo == '_PDM') {
+        if (user.hasSomeRoles(['CadastroMeta.administrador_no_pdm_admin_cp'])) {
+            //this.logger.verbose(
+            //'Usuário tem CadastroMeta.administrador_no_pdm_admin_cp, liberando todas metas do PDM.'
+            //);
+            return permissionsSet;
+        }
+        const orSet: Prisma.Enumerable<Prisma.MetaWhereInput> = [];
+
+        if (user.hasSomeRoles(['PDM.ponto_focal'])) {
+            //this.logger.verbose('Usuário tem PDM.ponto_focal, liberando metas onde é responsável');
+            orSet.push({
+                ViewMetaPessoaResponsavel: {
+                    some: {
+                        pessoa_id: user.id,
+                    },
+                },
+            });
+        }
+
+        if (user.hasSomeRoles(['PDM.tecnico_cp'])) {
+            //this.logger.verbose('Usuário tem PDM.tecnico_cp, liberando metas onde é responsável na CP');
+            orSet.push({
+                ViewMetaPessoaResponsavelNaCp: {
+                    some: {
+                        pessoa_id: user.id,
+                    },
+                },
+            });
+        }
+
+        if (orSet.length == 0) {
+            //this.logger.verbose('Usuário não tem permissão para nenhuma meta');
+            orSet.push({ id: MIN_DB_SAFE_INT32 });
+        }
+
+        permissionsSet.push({ OR: orSet });
+    } else {
+        if (user.hasSomeRoles(['CadastroPS.administrador', 'CadastroPDM.administrador'])) {
+            //this.logger.verbose('Usuário tem CadastroPS.administrador, liberando toda as metas de todos os PDMs.');
+            return permissionsSet;
+        }
+
+        const orSet: Prisma.Enumerable<Prisma.MetaWhereInput> = [];
+
+        if (user.hasSomeRoles(['CadastroPS.administrador_no_orgao', 'CadastroPDM.administrador_no_orgao'])) {
+            //this.logger.verbose(
+            //`Usuário tem CadastroPS.administrador_no_orgao, liberando todas as metas do órgão ${orgaoId} + responsavel=true e ps.orgao_admin_id=${orgaoId}.`
+            //);
+            orSet.push({
+                pdm: {
+                    orgao_admin_id: orgaoId,
+                },
+            });
+        }
+
+        if (user.hasSomeRoles(['SMAE.GrupoVariavel.participante'])) {
+            //this.logger.verbose(`Usuário tem SMAE.GrupoVariavel.participante, filtrando PS onde é admin_cp`);
+            orSet.push({
+                pdm: {
+                    PdmPerfil: {
+                        some: {
+                            removido_em: null,
+                            tipo: 'ADMIN',
+                        },
+                    },
+                },
+            });
+        }
+
+        if (user.hasSomeRoles(['SMAE.GrupoVariavel.participante'])) {
+            //this.logger.verbose(`Usuário tem SMAE.GrupoVariavel.participante, filtrando PS onde é tecnico_cp`);
+            orSet.push({
+                pdm: {
+                    PdmPerfil: {
+                        some: {
+                            removido_em: null,
+                            tipo: 'CP',
+                        },
+                    },
+                },
+                ViewMetaPessoaResponsavelNaCp: {
+                    // NA CP
+                    some: {
+                        pessoa_id: user.id,
+                    },
+                },
+                // TODO ? filtrar as metas tbm, como se fosse o caso do PDM
+            });
+        }
+
+        if (user.hasSomeRoles(['SMAE.GrupoVariavel.participante'])) {
+            //this.logger.verbose(`Usuário tem SMAE.GrupoVariavel.participante, filtrando PS onde é ponto_focal`);
+            orSet.push({
+                pdm: {
+                    PdmPerfil: {
+                        some: {
+                            removido_em: null,
+                            tipo: 'PONTO_FOCAL',
+                        },
+                    },
+                },
+                ViewMetaPessoaResponsavel: {
+                    some: {
+                        pessoa_id: user.id,
+                    },
+                },
+            });
+        }
+
+        if (orSet.length == 0) {
+            Logger.warn('Usuário não tem permissão para nenhuma meta');
+            orSet.push({ id: MIN_DB_SAFE_INT32 });
+        }
+
+        permissionsSet.push({ OR: orSet });
+    }
+
+    return permissionsSet;
+};
+
 @Injectable()
 export class MetaService {
     private readonly logger = new Logger(MetaService.name);
@@ -71,7 +214,7 @@ export class MetaService {
         private readonly pdmService: PdmService
     ) {}
 
-    async create(tipo: TipoPdm, dto: CreateMetaDto, user: PessoaFromJwt) {
+    async create(tipo: TipoPdmType, dto: CreateMetaDto, user: PessoaFromJwt) {
         const pdm = await this.loadPdmById(dto.pdm_id, tipo);
         await this.pdmService.getDetail(tipo, pdm.id, user, 'ReadWrite');
 
@@ -137,7 +280,7 @@ export class MetaService {
                     await CompromissoOrigemHelper.upsert(meta.id, 'meta', origens_extra, prismaTx, user, now);
                 }
 
-                if (tipo === 'PDM') {
+                if (tipo === '_PDM') {
                     if (!op || op.length == 0)
                         throw new HttpException('orgaos_participantes é obrigatório para PDM', 400);
                     await prismaTx.metaOrgao.createMany({
@@ -148,7 +291,7 @@ export class MetaService {
                     await prismaTx.metaResponsavel.createMany({
                         data: await this.buildMetaResponsaveis(meta.id, op, cp),
                     });
-                } else if (tipo === 'PS') {
+                } else if (tipo === '_PS' || tipo == 'PDM_AS_PS') {
                     if (psTecnicoCP) {
                         validatePSEquipes(psTecnicoCP.equipes, pdm.PdmPerfil, 'CP', pdm.id);
 
@@ -214,11 +357,11 @@ export class MetaService {
         return created;
     }
 
-    private async loadPdmById(pdm_id: number, tipo: TipoPdm) {
+    private async loadPdmById(pdm_id: number, tipo: TipoPdmType) {
         return await this.prisma.pdm.findFirstOrThrow({
             where: {
                 id: pdm_id,
-                tipo,
+                tipo: PdmModoParaTipo(tipo),
                 removido_em: null,
             },
             select: {
@@ -321,159 +464,12 @@ export class MetaService {
         return arr;
     }
 
-    private async getMetasPermissionSet(tipo: TipoPdm, user: PessoaFromJwt | undefined, isBi: boolean) {
-        const permissionsSet: Prisma.Enumerable<Prisma.MetaWhereInput> = [
-            {
-                removido_em: null,
-                pdm: { tipo },
-            },
-        ];
-        if (!user) return permissionsSet;
-        if (isBi && user.hasSomeRoles(['SMAE.acesso_bi'])) return permissionsSet;
-
-        const orgaoId = user.orgao_id;
-        if (!orgaoId) throw new HttpException('Usuário sem órgão', 400);
-
-        // TODO filtrar painéis que o usuário pode visualizar, caso não tenha nenhuma das permissões
-        // 'CadastroMeta.inserir'
-        // atualmente nesse serviço não tem nada de painel, então acho que precisa rever esse TODO
-        // pra outro lugar (o frontend da um get em /painel sem informar qual meta
-        // lá no front que está fazendo o filtro pra descobrir os painel que tme a meta e
-        // depois o busca a serie do painel-conteúdo correspondente
-
-        if (tipo == 'PDM') {
-            if (user.hasSomeRoles(['CadastroMeta.administrador_no_pdm_admin_cp'])) {
-                this.logger.verbose(
-                    'Usuário tem CadastroMeta.administrador_no_pdm_admin_cp, liberando todas metas do PDM.'
-                );
-                return permissionsSet;
-            }
-            const orSet: Prisma.Enumerable<Prisma.MetaWhereInput> = [];
-
-            if (user.hasSomeRoles(['PDM.ponto_focal'])) {
-                this.logger.verbose('Usuário tem PDM.ponto_focal, liberando metas onde é responsável');
-                orSet.push({
-                    ViewMetaPessoaResponsavel: {
-                        some: {
-                            pessoa_id: user.id,
-                        },
-                    },
-                });
-            }
-
-            if (user.hasSomeRoles(['PDM.tecnico_cp'])) {
-                this.logger.verbose('Usuário tem PDM.tecnico_cp, liberando metas onde é responsável na CP');
-                orSet.push({
-                    ViewMetaPessoaResponsavelNaCp: {
-                        some: {
-                            pessoa_id: user.id,
-                        },
-                    },
-                });
-            }
-
-            if (orSet.length == 0) {
-                this.logger.verbose('Usuário não tem permissão para nenhuma meta');
-                orSet.push({ id: MIN_DB_SAFE_INT32 });
-            }
-
-            permissionsSet.push({ OR: orSet });
-        } else {
-            if (user.hasSomeRoles(['CadastroPS.administrador'])) {
-                this.logger.verbose('Usuário tem CadastroPS.administrador, liberando toda as metas de todos os PDMs.');
-                return permissionsSet;
-            }
-
-            const orSet: Prisma.Enumerable<Prisma.MetaWhereInput> = [];
-
-            if (user.hasSomeRoles(['CadastroPS.administrador_no_orgao'])) {
-                this.logger.verbose(
-                    `Usuário tem CadastroPS.administrador_no_orgao, liberando todas as metas do órgão ${orgaoId} + responsavel=true e ps.orgao_admin_id=${orgaoId}.`
-                );
-                orSet.push({
-                    pdm: {
-                        orgao_admin_id: orgaoId,
-                    },
-                });
-            }
-
-            if (user.hasSomeRoles(['PS.admin_cp'])) {
-                this.logger.verbose(`Usuário tem PS.admin_cp, filtrando PS onde é admin_cp`);
-                orSet.push({
-                    pdm: {
-                        PdmPerfil: {
-                            some: {
-                                // TODO: validar como fica com estrutura nova de equipes
-                                //pessoa_id: user.id,
-                                removido_em: null,
-                                tipo: 'ADMIN',
-                            },
-                        },
-                    },
-                });
-            }
-
-            if (user.hasSomeRoles(['PS.tecnico_cp'])) {
-                this.logger.verbose(`Usuário tem PS.tecnico_cp, filtrando PS onde é tecnico_cp`);
-                orSet.push({
-                    pdm: {
-                        PdmPerfil: {
-                            some: {
-                                // TODO: validar como fica com estrutura nova de equipes
-                                //pessoa_id: user.id,
-                                removido_em: null,
-                                tipo: 'CP',
-                            },
-                        },
-                    },
-                    ViewMetaPessoaResponsavelNaCp: {
-                        some: {
-                            pessoa_id: user.id,
-                        },
-                    },
-                    // TODO ? filtrar as metas tbm, como se fosse o caso do PDM
-                });
-            }
-
-            if (user.hasSomeRoles(['PS.ponto_focal'])) {
-                this.logger.verbose(`Usuário tem PS.ponto_focal, filtrando PS onde é ponto_focal`);
-                orSet.push({
-                    pdm: {
-                        PdmPerfil: {
-                            some: {
-                                // TODO: validar como fica com estrutura nova de equipes
-                                //pessoa_id: user.id,
-                                removido_em: null,
-                                tipo: 'PONTO_FOCAL',
-                            },
-                        },
-                    },
-                    ViewMetaPessoaResponsavel: {
-                        some: {
-                            pessoa_id: user.id,
-                        },
-                    },
-                    // TODO ? filtrar as metas tbm, como se fosse o caso do PDM
-                });
-            }
-
-            if (orSet.length == 0) {
-                this.logger.verbose('Usuário não tem permissão para nenhuma meta');
-                orSet.push({ id: MIN_DB_SAFE_INT32 });
-            }
-
-            permissionsSet.push({ OR: orSet });
-        }
-
-        return permissionsSet;
-    }
-
     async findAllIds(
-        tipo: TipoPdm,
+        tipo: TipoPdmType,
         user: PessoaFromJwt | undefined,
         pdm_id: number | undefined = undefined
     ): Promise<{ id: number }[]> {
-        const permissionsSet = await this.getMetasPermissionSet(tipo, user, true);
+        const permissionsSet = await MetasGetPermissionSet(tipo, user, true);
 
         return await this.prisma.meta.findMany({
             where: {
@@ -491,12 +487,12 @@ export class MetaService {
         });
     }
 
-    async getMetaFilterSet(tipo: TipoPdm, user: PessoaFromJwt) {
-        return await this.getMetasPermissionSet(tipo, user, false);
+    async getMetaFilterSet(tipo: TipoPdmType, user: PessoaFromJwt) {
+        return await MetasGetPermissionSet(tipo, user, false);
     }
 
     async assertMetaWriteOrThrow(
-        tipo: TipoPdm,
+        tipo: TipoPdmType,
         meta_id: number,
         user: PessoaFromJwt,
         context?: string,
@@ -511,7 +507,7 @@ export class MetaService {
         }
 
         // precisa de acesso no plano setorial tbm
-        if (tipo == 'PS')
+        if (tipo == '_PS' || tipo == 'PDM_AS_PS')
             await this.pdmService.getDetail(
                 tipo,
                 meta[0].pdm_id,
@@ -529,12 +525,12 @@ export class MetaService {
     }
 
     async findAll(
-        tipo: TipoPdm,
+        tipo: TipoPdmType,
         filters: FilterMetaDto | undefined = undefined,
         user: PessoaFromJwt,
         skipObjects: boolean = false
     ): Promise<MetaItemDto[]> {
-        const permissionsSet = await this.getMetasPermissionSet(tipo, user, false);
+        const permissionsSet = await MetasGetPermissionSet(tipo, user, false);
 
         const listActive = await this.prisma.meta.findMany({
             where: {
@@ -547,7 +543,10 @@ export class MetaService {
                           ]
                         : undefined,
                 pdm_id: filters?.pdm_id,
-                pdm: { tipo, id: filters?.pdm_id },
+                pdm: {
+                    tipo: PdmModoParaTipo(tipo),
+                    id: filters?.pdm_id,
+                },
                 id: filters?.id,
             },
             orderBy: [{ codigo: 'asc' }],
@@ -560,9 +559,12 @@ export class MetaService {
                 macro_tema: { select: { descricao: true, id: true } },
                 tema: { select: { descricao: true, id: true } },
                 sub_tema: { select: { descricao: true, id: true } },
-                pdm_id: true,
+                pdm: {
+                    select: { id: true, orgao_admin_id: true, ps_admin_cps: true },
+                },
                 status: true,
                 ativo: true,
+                criado_por: true,
                 meta_orgao: {
                     select: {
                         orgao: { select: { id: true, descricao: true, sigla: true } },
@@ -699,15 +701,61 @@ export class MetaService {
                 }
             }
 
-            const ehPdm = tipo == 'PDM';
+            const ehPdm = tipo == '_PDM';
             let podeEditar = false;
 
             if (ehPdm && user.hasSomeRoles(['CadastroMeta.administrador_no_pdm_admin_cp'])) {
                 podeEditar = true;
-            } else if (ehPdm && user.hasSomeRoles(['PS.tecnico_cp'])) {
+            } else if (ehPdm && user.hasSomeRoles(['PDM.tecnico_cp'])) {
                 podeEditar = coordenadores_cp.some((r) => r.id == user.id);
             } else if (!ehPdm) {
-                podeEditar = true; // TODO plano setorial
+                if (
+                    user.hasSomeRoles([tipo == 'PDM_AS_PS' ? 'CadastroPDM.administrador' : 'CadastroPS.administrador'])
+                ) {
+                    podeEditar = true;
+                }
+
+                if (
+                    !podeEditar &&
+                    user.hasSomeRoles([
+                        tipo == 'PDM_AS_PS'
+                            ? 'CadastroPDM.administrador_no_orgao'
+                            : 'CadastroPS.administrador_no_orgao',
+                    ])
+                ) {
+                    // se ele mesmo criou, pode editar
+                    podeEditar = dbMeta.criado_por == user.id;
+                    if (!podeEditar) podeEditar = dbMeta.pdm.orgao_admin_id === user.orgao_id;
+                }
+
+                if (!podeEditar) {
+                    const psPerfis = dbMeta.PdmPerfil.filter((r) => r.tipo == 'CP' || r.tipo == 'ADMIN');
+                    const collab = await user.getEquipesColaborador(this.prisma);
+                    for (const psPerfil of psPerfis) {
+                        if (collab.includes(psPerfil.equipe_id)) {
+                            podeEditar = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!podeEditar) {
+                    const dbValue = dbMeta.pdm.ps_admin_cps?.valueOf();
+                    const collab = await user.getEquipesColaborador(this.prisma);
+
+                    if (Array.isArray(dbValue)) {
+                        this.logger.log('Verificando permissão de ADMIN no PDM');
+
+                        const parsed = plainToInstance(AdminCpDbItem, dbValue);
+                        // pode editar se for ADMIN do PDM/PS e estiver na equipe
+                        podeEditar = parsed.some(
+                            (item) =>
+                                item.tipo == 'ADMIN' &&
+                                item.orgao_id == user.orgao_id &&
+                                collab.includes(item.equipe_id)
+                        );
+                    }
+                }
             }
 
             let resumoOrigem: DetalheOrigensDto[] | ResumoOrigensMetasItemDto =
@@ -727,7 +775,7 @@ export class MetaService {
                 macro_tema: dbMeta.macro_tema,
                 tema: dbMeta.tema,
                 sub_tema: dbMeta.sub_tema,
-                pdm_id: dbMeta.pdm_id,
+                pdm_id: dbMeta.pdm.id,
                 status: dbMeta.status,
                 ativo: dbMeta.ativo,
                 coordenadores_cp: coordenadores_cp,
@@ -748,7 +796,7 @@ export class MetaService {
         return ret;
     }
 
-    async update(tipo: TipoPdm, id: number, updateMetaDto: UpdateMetaDto, user: PessoaFromJwt) {
+    async update(tipo: TipoPdmType, id: number, updateMetaDto: UpdateMetaDto, user: PessoaFromJwt) {
         //        if (!user.hasSomeRoles([tipo ? 'CadastroMeta.inserir' : 'CadastroMetaPS.inserir'])) {
         //            // TODO: ver comentário no método remove
         //            await user.assertHasMetaRespAccessNaCp(id, this.prisma);
@@ -773,7 +821,7 @@ export class MetaService {
         delete updateMetaDto.ps_ponto_focal;
         delete updateMetaDto.origens_extra;
         const now = new Date(Date.now());
-        if (tipo === 'PDM' && cp && !op)
+        if (tipo === '_PDM' && cp && !op)
             throw new HttpException('é necessário enviar orgaos_participantes para alterar coordenadores_cp', 400);
 
         await this.prisma.$transaction(
@@ -821,7 +869,7 @@ export class MetaService {
                     select: { id: true },
                 });
 
-                if (tipo === 'PDM') {
+                if (tipo === '_PDM') {
                     if (op) {
                         if (op.length == 0)
                             throw new BadRequestException('orgaos_participantes é obrigatório para PDM');
@@ -836,7 +884,7 @@ export class MetaService {
                             await this.upsertMetaResponsaveis(prismaTx, meta.id, op, cp);
                         }
                     }
-                } else if (tipo === 'PS') {
+                } else if (tipo === '_PS' || tipo == 'PDM_AS_PS') {
                     // Fetch current PdmPerfil for this meta
                     const currentPdmPerfis = await prismaTx.pdmPerfil.findMany({
                         where: {
@@ -1267,7 +1315,7 @@ export class MetaService {
         return orgaosParticipantes;
     }
 
-    private async loadMetaOrThrow(id: number, tipo: TipoPdm, user: PessoaFromJwt) {
+    private async loadMetaOrThrow(id: number, tipo: TipoPdmType, user: PessoaFromJwt) {
         const perms = await this.getMetaFilterSet(tipo, user);
         const r = await this.prisma.meta.findFirstOrThrow({
             where: {
@@ -1281,7 +1329,7 @@ export class MetaService {
         return r;
     }
 
-    async remove(tipo: TipoPdm, id: number, user: PessoaFromJwt) {
+    async remove(tipo: TipoPdmType, id: number, user: PessoaFromJwt) {
         // if (!user.hasSomeRoles([tipo == 'PDM' ? 'CadastroMeta.inserir' : 'CadastroMetaPS.inserir'])) {
         //  // logo, só pode editar se for responsável
         //   // TODO: no Plano Setorial, isso aqui provavelmente ta erradíssimo ou faltando algo
@@ -1412,8 +1460,12 @@ export class MetaService {
         );
     }
 
-    async buscaMetasIniciativaAtividades(tipo: TipoPdm | null, metas: number[]): Promise<DadosCodTituloMetaDto[]> {
+    async buscaMetasIniciativaAtividades(
+        tipoParam: TipoPdmType | null,
+        metas: number[]
+    ): Promise<DadosCodTituloMetaDto[]> {
         const list: DadosCodTituloMetaDto[] = [];
+        const tipo = PdmModoParaTipoOrNull(tipoParam);
 
         for (const meta_id of metas) {
             const rows: DadosMetaIniciativaAtividadesDto[] = await this.prisma.$queryRaw`
@@ -1484,7 +1536,11 @@ export class MetaService {
         return list;
     }
 
-    async buscaRelacionados(tipo: TipoPdm, dto: FilterRelacionadosDTO, user: PessoaFromJwt): Promise<RelacionadosDTO> {
+    async buscaRelacionados(
+        tipo: TipoPdmType,
+        dto: FilterRelacionadosDTO,
+        user: PessoaFromJwt
+    ): Promise<RelacionadosDTO> {
         if (!dto.meta_id && !dto.iniciativa_id && !dto.atividade_id) {
             throw new HttpException('É necessário informar ao menos um dos parâmetros', 400);
         }
@@ -1538,21 +1594,18 @@ export class MetaService {
                                 ? {
                                       rel_meta_id: dto.meta_id,
                                       relacionamento: 'Meta',
-                                      NOT: { meta_id: dto.meta_id },
                                   }
                                 : {},
                             dto.iniciativa_id
                                 ? {
                                       rel_iniciativa_id: dto.iniciativa_id,
                                       relacionamento: 'Iniciativa',
-                                      NOT: { iniciativa_id: dto.iniciativa_id },
                                   }
                                 : {},
                             dto.atividade_id
                                 ? {
                                       rel_atividade_id: dto.atividade_id,
                                       relacionamento: 'Atividade',
-                                      NOT: { atividade_id: dto.atividade_id },
                                   }
                                 : {},
                         ],

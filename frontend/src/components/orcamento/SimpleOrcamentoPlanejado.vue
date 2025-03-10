@@ -10,6 +10,9 @@ import { useProjetosStore } from '@/stores/projetos.store.ts';
 import FiltroPorOrgaoEUnidade from './FiltroPorOrgaoEUnidade.vue';
 import agrupaFilhos from './helpers/agrupaFilhos';
 import somaItems from './helpers/somaItems';
+import { useRoute } from 'vue-router';
+
+const route = useRoute();
 
 const projetosStore = useProjetosStore();
 const obrasStore = useObrasStore();
@@ -42,6 +45,10 @@ const OrcamentosStore = useOrcamentosStore();
 const { OrcamentoPlanejado } = storeToRefs(OrcamentosStore);
 
 const órgãoEUnidadeSelecionados = ref('');
+
+const permissoesDoItemEmFoco = computed(() => (route.params.entidadeMãe === 'obras'
+  ? permissõesDaObraEmFoco.value
+  : permissõesDoProjetoEmFoco.value));
 
 const linhasFiltradas = computed(() => (Array.isArray(OrcamentoPlanejado.value[ano]) && órgãoEUnidadeSelecionados.value !== ''
   ? OrcamentoPlanejado.value[ano]
@@ -159,7 +166,8 @@ const somaDasLinhas = computed(() => ({
             <LinhaPlanejado
               :órgão-e-unidade-selecionados="órgãoEUnidadeSelecionados"
               :group="groups"
-              :permissao="config.planejado_disponivel"
+              :permissao="config.planejado_disponivel
+                && !permissoesDoItemEmFoco?.apenas_leitura"
               :parentlink="parentlink"
             />
           </tbody>
@@ -184,7 +192,8 @@ const somaDasLinhas = computed(() => ({
               <LinhaPlanejado
                 :órgão-e-unidade-selecionados="órgãoEUnidadeSelecionados"
                 :group="g"
-                :permissao="config.planejado_disponivel"
+                :permissao="config.planejado_disponivel
+                  && !permissoesDoItemEmFoco?.apenas_leitura"
                 :parentlink="parentlink"
               />
             </tbody>
@@ -209,7 +218,8 @@ const somaDasLinhas = computed(() => ({
                 <LinhaPlanejado
                   :órgão-e-unidade-selecionados="órgãoEUnidadeSelecionados"
                   :group="gg"
-                  :permissao="config.planejado_disponivel"
+                  :permissao="config.planejado_disponivel
+                    && !permissoesDoItemEmFoco?.apenas_leitura"
                   :parentlink="parentlink"
                 />
               </tbody>
@@ -221,7 +231,7 @@ const somaDasLinhas = computed(() => ({
         <SmaeLink
           v-if="config.planejado_disponivel
             && ($route.meta?.rotaParaAdição || parentlink)
-            && (!permissõesDaObraEmFoco?.apenas_leitura || !permissõesDoProjetoEmFoco?.apenas_leitura)"
+            && !permissoesDoItemEmFoco?.apenas_leitura"
           :to="$route.meta?.rotaParaAdição
             ? { name: $route.meta.rotaParaAdição, params: { ano } }
             : `${parentlink}/orcamento/planejado/${ano}`"

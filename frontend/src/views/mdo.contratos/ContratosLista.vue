@@ -4,10 +4,11 @@ import { contratoDeObras } from '@/consts/formSchemas';
 import { dateToShortDate } from '@/helpers/dateToDate';
 import dinheiro from '@/helpers/dinheiro';
 import formatProcesso from '@/helpers/formatProcesso';
-import truncate from '@/helpers/truncate';
+import truncate from '@/helpers/texto/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useContratosStore } from '@/stores/contratos.store.ts';
 import { useObrasStore } from '@/stores/obras.store';
+import { useProjetosStore } from '@/stores/projetos.store.ts';
 import Big from 'big.js';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
@@ -33,11 +34,17 @@ const {
   chamadasPendentes, erro, lista,
 } = storeToRefs(contratosStore);
 
-const obrasStore = useObrasStore();
-
 const {
   permissõesDaObraEmFoco,
-} = storeToRefs(obrasStore);
+} = storeToRefs(useObrasStore());
+
+const {
+  permissõesDoProjetoEmFoco,
+} = storeToRefs(useProjetosStore());
+
+const permissoesDoItemEmFoco = computed(() => (route.params.entidadeMãe === 'obras'
+  ? permissõesDaObraEmFoco.value
+  : permissõesDoProjetoEmFoco.value));
 
 const listaFiltradaPorTermoDeBusca = ref([]);
 const grauVisível = ref(0);
@@ -76,8 +83,8 @@ const totalDeContratosFiltrados = computed(() => listaFiltrada.value
     { aditivos: 0, valor: 0 },
   ));
 
-const exibirColunasDeAção = computed(() => !permissõesDaObraEmFoco.value.apenas_leitura
-  || permissõesDaObraEmFoco.value.sou_responsavel);
+const exibirColunasDeAção = computed(() => !permissoesDoItemEmFoco.value.apenas_leitura
+  || permissoesDoItemEmFoco.value.sou_responsavel);
 
 function excluirProcesso(id, nome) {
   alertStore.confirmAction(`Deseja mesmo remover "${nome}"?`, async () => {

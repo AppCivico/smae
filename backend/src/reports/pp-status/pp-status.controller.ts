@@ -4,6 +4,8 @@ import { Roles } from '../../auth/decorators/roles.decorator';
 import { PPStatusService } from './pp-status.service';
 import { CreateRelObraStatusDto, CreateRelProjetoStatusDto } from './dto/create-projeto-status.dto';
 import { PPProjetoStatusRelatorioDto } from './entities/projeto-status.dto';
+import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
+import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 
 @ApiTags('Relatórios - API')
 @Controller('relatorio/projeto-status')
@@ -14,9 +16,12 @@ export class PPStatusController {
     @ApiBearerAuth('access-token')
     @Roles(['Reports.executar.Projetos'])
     @ApiExtraModels(CreateRelObraStatusDto)
-    async create(@Body() createProjetoStatusDto: CreateRelProjetoStatusDto): Promise<PPProjetoStatusRelatorioDto> {
+    async create(
+        @Body() createProjetoStatusDto: CreateRelProjetoStatusDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<PPProjetoStatusRelatorioDto> {
         createProjetoStatusDto.tipo_pdm = 'PP';
-        return await this.projetoStatusService.asJSON(createProjetoStatusDto);
+        return await this.projetoStatusService.asJSON(createProjetoStatusDto, user);
     }
 }
 
@@ -28,8 +33,11 @@ export class MDOStatusController {
     @Post()
     @ApiBearerAuth('access-token')
     @Roles(['Reports.executar.MDO'])
-    async create(@Body() createProjetoStatusDto: CreateRelProjetoStatusDto): Promise<PPProjetoStatusRelatorioDto> {
+    async create(
+        @Body() createProjetoStatusDto: CreateRelProjetoStatusDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<PPProjetoStatusRelatorioDto> {
         createProjetoStatusDto.tipo_pdm = 'MDO';
-        return await this.projetoStatusService.asJSON(createProjetoStatusDto);
+        return await this.projetoStatusService.asJSON(createProjetoStatusDto, user);
     }
 }

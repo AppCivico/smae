@@ -1,32 +1,31 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage, Field, FieldArray, Form,
+  useIsFormDirty,
+} from 'vee-validate';
+import { computed, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
 import CampoDePlanosMetasRelacionados from '@/components/CampoDePlanosMetasRelacionados.vue';
 import MapaCampo from '@/components/geo/MapaCampo.vue';
 import LabelFromYup from '@/components/LabelFromYup.vue';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudançaDeStatusDeProjeto.vue';
 import { projeto as schema } from '@/consts/formSchemas';
-import statuses from '@/consts/projectStatuses';
-import arrayToValueAndLabel from '@/helpers/arrayToValueAndLabel';
+import listaDeStatuses from '@/consts/projectStatuses';
 import requestS from '@/helpers/requestS.ts';
-import truncate from '@/helpers/truncate';
+import truncate from '@/helpers/texto/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { useObservadoresStore } from '@/stores/observadores.store.ts';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
-import { storeToRefs } from 'pinia';
-import {
-  ErrorMessage, Field, FieldArray, Form,
-} from 'vee-validate';
-import { computed, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
-
-const listaDeStatuses = arrayToValueAndLabel(statuses);
 
 const ÓrgãosStore = useOrgansStore();
 const DotaçãoStore = useDotaçãoStore();
@@ -62,6 +61,7 @@ const { DotaçãoSegmentos } = storeToRefs(DotaçãoStore);
 
 const router = useRouter();
 const route = useRoute();
+const formularioSujo = useIsFormDirty();
 
 const props = defineProps({
   projetoId: {
@@ -251,21 +251,6 @@ function iniciar() {
   montarCampoEstático.value = true;
 }
 
-function excluirProjeto(id) {
-  useAlertStore().confirmAction('Deseja mesmo remover esse item?', async () => {
-    if (await projetosStore.excluirItem(id)) {
-      projetosStore.$reset();
-      projetosStore.buscarTudo();
-      useAlertStore().success('Projeto removido.');
-
-      // essa é uma exceção. Há duas rotas de escape possíveis:
-      // - após a criação / edição de um projeto
-      // - após a sua exclusão
-      router.push({ name: 'projetosListar' });
-    }
-  }, 'Remover');
-}
-
 watch(emFoco, () => {
   iniciar();
 }, { immediate: true });
@@ -273,16 +258,15 @@ watch(emFoco, () => {
 
 <template>
   <header class="flex flexwrap spacebetween g1 center mb2">
-    <h1 class="mb0">
-      {{ emFoco?.nome || (projetoId ? 'Projeto' : 'Novo projeto') }}
-    </h1>
+    <TituloDaPagina />
 
     <hr class="f1">
 
     <MenuDeMudançaDeStatusDeProjeto
       v-if="projetoId"
     />
-    <CheckClose />
+
+    <CheckClose :formulario-sujo="formularioSujo" />
   </header>
 
   <Form
@@ -407,7 +391,7 @@ watch(emFoco, () => {
             :value="item.valor"
             :disabled="emFoco?.permissoes.status_permitidos?.indexOf(item.valor) === -1"
           >
-            {{ item.etiqueta }}
+            {{ item.nome }}
           </option>
         </Field>
         <ErrorMessage
@@ -1601,14 +1585,6 @@ watch(emFoco, () => {
   >
     Carregando
   </div>
-
-  <button
-    v-if="emFoco?.id && !emFoco?.permissoes?.apenas_leitura"
-    class="btn amarelo big"
-    @click="excluirProjeto(emFoco.id)"
-  >
-    Remover item
-  </button>
 
   <div
     v-if="erro"

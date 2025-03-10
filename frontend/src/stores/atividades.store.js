@@ -3,13 +3,15 @@ import { defineStore } from 'pinia';
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 function caminhoParaApi(rotaMeta) {
-  if (rotaMeta.entidadeMãe === 'pdm') {
-    return 'atividade';
+  switch (rotaMeta.entidadeMãe) {
+    case 'pdm':
+      return 'atividade';
+    case 'planoSetorial':
+    case 'programaDeMetas':
+      return 'plano-setorial-atividade';
+    default:
+      throw new Error('Você precisa estar em algum módulo para executar essa ação.');
   }
-  if (rotaMeta.entidadeMãe === 'planoSetorial') {
-    return 'plano-setorial-atividade';
-  }
-  throw new Error('Você precisa estar em algum módulo para executar essa ação.');
 }
 
 export const useAtividadesStore = defineStore({
@@ -42,19 +44,6 @@ export const useAtividadesStore = defineStore({
         return true;
       } catch (error) {
         this.Atividades[iniciativa_id] = { error };
-        return false;
-      }
-    },
-    async getRelacionados(params) {
-      try {
-        if (params.atividade_id) {
-          const response = await this.requestS.get(`${baseUrl}/meta/relacionados/`, params);
-          this.relacionadosAtividade = response;
-          return true;
-        }
-        throw new Error('ID do PdM ou atividade não fornecido.');
-      } catch (error) {
-        this.relacionadosAtividade = { error };
         return false;
       }
     },
