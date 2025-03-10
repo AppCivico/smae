@@ -653,32 +653,33 @@ watch(itemParaEdicao, (novoValor) => {
         </div>
       </div>
 
-      <hr class="mb2">
+      <template v-if="!ehPdm">
+        <hr class="mb2">
 
-      <div class="flex flexwrap g2 mb1">
-        <div
-          v-if="!ehPdm"
-          class="f1"
-        >
-          <LabelFromYup
-            name="meses"
-            :schema="schema"
-          />
-
-          <Field
-            v-slot="{ value, handleChange }"
-            name="meses"
+        <div class="flex flexwrap g2 mb1">
+          <div
+            class="f1"
           >
-            <AutocompleteField
+            <LabelFromYup
               name="meses"
-              :controlador="{ busca: '', participantes: value || [] }"
-              :v-model="handleChange"
-              :grupo="mapaDeMeses"
-              label="nome"
+              :schema="schema"
             />
-          </Field>
+
+            <Field
+              v-slot="{ value, handleChange }"
+              name="meses"
+            >
+              <AutocompleteField
+                name="meses"
+                :controlador="{ busca: '', participantes: value || [] }"
+                :v-model="handleChange"
+                :grupo="mapaDeMeses"
+                label="nome"
+              />
+            </Field>
+          </div>
         </div>
-      </div>
+      </template>
     </fieldset>
 
     <fieldset>
