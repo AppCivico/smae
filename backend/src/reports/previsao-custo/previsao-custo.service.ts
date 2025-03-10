@@ -20,7 +20,7 @@ export class PrevisaoCustoService implements ReportableService {
     constructor(
         private readonly utils: UtilsService,
         private readonly prisma: PrismaService,
-        private readonly dotacaoService: DotacaoService,
+        private readonly dotacaoService: DotacaoService
     ) {}
 
     async asJSON(dto: SuperCreateRelPrevisaoCustoDto, user: PessoaFromJwt | null): Promise<ListPrevisaoCustoDto> {
@@ -32,11 +32,7 @@ export class PrevisaoCustoService implements ReportableService {
 
         // sem portfolio_id e sem projeto_id = filtra por meta
         if (dto.portfolio_id === undefined && dto.projeto_id === undefined) {
-            const { metas } = await this.utils.applyFilter(
-                dto,
-                { iniciativas: false, atividades: false },
-                user
-            );
+            const { metas } = await this.utils.applyFilter(dto, { iniciativas: false, atividades: false }, user);
 
             filtroMetas = metas.map((r) => r.id);
         }
@@ -57,7 +53,20 @@ export class PrevisaoCustoService implements ReportableService {
             where: {
                 meta_id: filtroMetas ? { in: filtroMetas } : undefined,
                 projeto_id: dto.projeto_id ? dto.projeto_id : undefined,
-                ...(dto.portfolio_id ? { projeto: { portfolio_id: dto.portfolio_id } } : {}),
+                ...(dto.portfolio_id
+                    ? {
+                          OR: [
+                              { projeto: { portfolio_id: dto.portfolio_id } },
+                              {
+                                  projeto: {
+                                      portfolios_compartilhados: {
+                                          some: { portfolio_id: dto.portfolio_id, removido_em: null },
+                                      },
+                                  },
+                              },
+                          ],
+                      }
+                    : {}),
                 ano_referencia: ano,
                 removido_em: null,
                 ultima_revisao: true,
