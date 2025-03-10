@@ -47,6 +47,7 @@
               <div class="flex spacebetween">
                 Informações complementares
                 <router-link
+                  v-if="cicloAtual"
                   :to="{
                     name: `${route.meta.entidadeMãe}.monitoramentoDeMetasAnaliseQualitativa`,
                     params: { cicloId: ciclo.id }
@@ -155,6 +156,7 @@
               <div class="flex spacebetween">
                 Detalhamento
                 <router-link
+                  v-if="cicloAtual"
                   :to="{
                     name: `${route.meta.entidadeMãe}.monitoramentoDeMetasAnaliseDeRisco`,
                     params: { cicloId: ciclo.id }
@@ -218,6 +220,7 @@
               <div class="flex spacebetween">
                 Comentários
                 <router-link
+                  v-if="cicloAtual"
                   :to="{
                     name: `${route.meta.entidadeMãe}.monitoramentoDeMetasRegistroDeFechamento`,
                     params: { cicloId: ciclo.id }
@@ -259,7 +262,6 @@
     </div>
   </details>
 </template>
-
 <script setup>
 import { dateToShortDate } from '@/helpers/dateToDate';
 import dateToTitle from '@/helpers/dateToTitle';
