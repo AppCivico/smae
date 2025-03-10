@@ -28,6 +28,11 @@ const {
   cicloAtivo,
 } = storeToRefs(monitoramentoDeMetasStore);
 
+if (!cicloAtivo.value) {
+  monitoramentoDeMetasStore
+    .buscarListaDeCiclos(route.params.planoSetorialId, { meta_id: route.params.meta_id });
+}
+
 const riscoEmFocoParaEdicao = computed(() => ({
   ciclo_fisico_id: route.params.cicloId,
   detalhamento: riscoEmFoco.value?.corrente.riscos[0]?.detalhamento,
@@ -118,7 +123,7 @@ watchEffect(() => {
     <div class="titulo-monitoramento">
       <h2 class="tc500 t20 titulo-monitoramento__text">
         <span class="w400">
-          Ciclo Atual: {{ dateToTitle(cicloAtivo.data_ciclo) }}
+          Ciclo Atual: {{ dateToTitle(cicloAtivo?.data_ciclo) }}
         </span>
       </h2>
     </div>
