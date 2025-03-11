@@ -143,8 +143,10 @@ function iniciar() {
 function sugerirCargoEPartido(idx, parlamentar) {
   const {
     cargo_mais_recente: cargoMaisRecente,
-    partido: { id: partidoMaisRecente },
+    partido,
   } = parlamentar;
+
+  const { id: partidoMaisRecente } = partido || {};
 
   if (cargoMaisRecente) {
     setFieldValue(`parlamentares[${idx}].cargo`, cargoMaisRecente);
