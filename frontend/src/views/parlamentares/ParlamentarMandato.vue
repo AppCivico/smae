@@ -231,23 +231,6 @@ iniciar();
             name="eleito"
           />
         </div>
-        <div class="f1">
-          <LabelFromYup
-            name="em_atividade"
-            :schema="schema"
-          />
-          <Field
-            name="em_atividade"
-            type="checkbox"
-            :value="true"
-            :unchecked-value="false"
-            class="inputcheckbox"
-          />
-          <ErrorMessage
-            class="error-msg"
-            name="em_atividade"
-          />
-        </div>
       </div>
 
       <div class="flex flexwrap g2 mb1">

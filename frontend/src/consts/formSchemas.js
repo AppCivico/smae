@@ -1074,9 +1074,6 @@ export const mandato = object({
   votos_interior: number()
     .label('Total de votos no interior')
     .nullable(),
-  em_atividade: boolean()
-    .label('Em exercício')
-    .nullable(),
 });
 
 export const meta = (activePdm) => object().shape({
@@ -1940,6 +1937,9 @@ export const nota = object({
 });
 
 export const parlamentar = object({
+  em_atividade: boolean()
+    .label('Em exercício')
+    .nullable(),
   nome_popular: string()
     .label('Nome de urna')
     .min(1)
