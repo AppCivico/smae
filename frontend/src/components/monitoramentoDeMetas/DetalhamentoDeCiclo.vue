@@ -47,7 +47,7 @@
               <div class="flex spacebetween">
                 Informações complementares
                 <SmaeLink
-                  v-if="cicloAtual"
+                  v-if="cicloAtual && saoEditaveis.analise"
                   :to="{
                     name: `.monitoramentoDeMetasAnaliseQualitativa`,
                     params: { cicloId: ciclo.id }
@@ -156,7 +156,7 @@
               <div class="flex spacebetween">
                 Detalhamento
                 <SmaeLink
-                  v-if="cicloAtual"
+                  v-if="cicloAtual && saoEditaveis.risco"
                   :to="{
                     name: `.monitoramentoDeMetasAnaliseDeRisco`,
                     params: { cicloId: ciclo.id }
@@ -220,7 +220,7 @@
               <div class="flex spacebetween">
                 Comentários
                 <SmaeLink
-                  v-if="cicloAtual"
+                  v-if="cicloAtual && saoEditaveis.fechamento"
                   :to="{
                     name: `.monitoramentoDeMetasRegistroDeFechamento`,
                     params: { cicloId: ciclo.id }
@@ -263,13 +263,13 @@
   </details>
 </template>
 <script setup>
+import LoadingComponent from '@/components/LoadingComponent.vue';
 import { dateToShortDate } from '@/helpers/dateToDate';
 import dateToTitle from '@/helpers/dateToTitle';
-import { ref, watch, computed } from 'vue';
-import { useRoute } from 'vue-router';
 import { useMonitoramentoDeMetasStore } from '@/stores/monitoramentoDeMetas.store';
 import { storeToRefs } from 'pinia';
-import LoadingComponent from '@/components/LoadingComponent.vue';
+import { computed, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
 
 const route = useRoute();
 
@@ -301,6 +301,7 @@ const monitoramentoDeMetasStore = useMonitoramentoDeMetasStore(route.meta.entida
 const estaAberto = ref(props.open);
 
 const {
+  saoEditaveis,
   chamadasPendentes,
   ciclosDetalhadosPorId,
   erros,

@@ -44,6 +44,12 @@ type Erros = {
 type Estado = {
   listaDeCiclos: ListPSCicloDto['linhas'];
 
+  saoEditaveis: {
+    analise: boolean;
+    risco: boolean;
+    fechamento: boolean;
+  };
+
   ultimaRevisao: UltimaRevisao | null;
 
   ciclosDetalhadosPorId: Record<ChaveGenerica, CiclosRevisaoDto>;
@@ -59,6 +65,13 @@ type Estado = {
 export const useMonitoramentoDeMetasStore = (prefixo: PrefixosValidos) => defineStore(prefixo ? `${prefixo}.monitoramentoDeMetas` : 'monitoramentoDeMetas', {
   state: (): Estado => ({
     listaDeCiclos: [],
+
+    saoEditaveis: {
+      fechamento: false,
+      analise: false,
+      risco: false,
+    },
+
     ultimaRevisao: null,
 
     ciclosDetalhadosPorId: {},
@@ -93,7 +106,14 @@ export const useMonitoramentoDeMetasStore = (prefixo: PrefixosValidos) => define
         const {
           linhas,
           ultima_revisao: ultimaRevisao,
+          documentos_editaveis: documentosEditaveis,
         } = await this.requestS.get(`${baseUrl}/plano-setorial/${pdmId}/ciclo`, params) as ListPSCicloDto;
+
+        if (Array.isArray(documentosEditaveis)) {
+          this.saoEditaveis.analise = documentosEditaveis.includes('analise');
+          this.saoEditaveis.risco = documentosEditaveis.includes('risco');
+          this.saoEditaveis.fechamento = documentosEditaveis.includes('fechamento');
+        }
 
         this.listaDeCiclos = linhas;
         this.ultimaRevisao = ultimaRevisao;
