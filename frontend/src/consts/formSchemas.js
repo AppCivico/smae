@@ -2386,16 +2386,19 @@ export const transferenciasVoluntarias = object({
       id: number()
         .nullable(),
       parlamentar_id: number()
-        .label('Parlamentar'),
+        .label('Parlamentar')
+        .required(),
       cargo: mixed()
         .label('Cargo')
         // feio, mas... Algo parece bugado no Yup e não posso atualizá-lo agora
         .oneOf([...Object.keys(cargosDeParlamentar), null])
         .nullable()
+        .required()
         .transform((v) => (v === '' ? null : v)),
       partido_id: number()
         .label('Partido')
-        .nullable(),
+        .nullable()
+        .required(),
       objeto: string()
         .label('Objeto/Empreendimento')
         .max(1000)
