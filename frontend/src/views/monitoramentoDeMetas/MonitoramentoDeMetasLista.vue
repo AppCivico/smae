@@ -17,16 +17,13 @@ const monitoramentoDeMetasStore = useMonitoramentoDeMetasStore(route.meta.entida
 const {
   chamadasPendentes,
   ciclosPassadosPorAno,
-  ciclosPorId,
   cicloAtivo,
-  erros,
-  listaDeCiclos,
   listaDeCiclosPassados,
-  ultimaRevisao,
   anoMaisRecenteNosCiclosPassados,
 } = storeToRefs(monitoramentoDeMetasStore);
 
-const anosDisponiveisNosCiclosPassados = computed(() => monitoramentoDeMetasStore.anosDisponiveisNosCiclosPassados
+const anosDisponiveisNosCiclosPassados = computed(() => monitoramentoDeMetasStore
+  .anosDisponiveisNosCiclosPassados
   .map((ano) => ({ ano, id: ano })));
 
 const anosSelecionados = ref([]);
@@ -55,41 +52,6 @@ watch(
   <MigalhasDePao />
 
   <TituloDePagina />
-
-  <!-- eslint-disable -->
-  <div class="debug flex flexwrap g2 mb1 hidden" hidden>
-    <pre class="fb100 mb0">
-      chamadasPendentes.listaDeCiclos: {{ chamadasPendentes.listaDeCiclos }}
-    </pre>
-    <pre class="fb100 mb0">erros.listaDeCiclos: {{ erros.listaDeCiclos }}</pre>
-    <pre class="fb100 mb0">cicloAtivo: {{ cicloAtivo }}</pre>
-
-    <textarea
-      class="f1"
-      readonly
-      cols="30"
-      rows="30"
-    >ciclosPorId: {{ ciclosPorId }}</textarea>
-    <textarea
-      class="f1"
-      readonly
-      cols="30"
-      rows="30"
-    >ciclosPassadosPorAno: {{ ciclosPassadosPorAno }}</textarea>
-    <textarea
-      class="f1"
-      readonly
-      cols="30"
-      rows="30"
-    >ultimaRevisao: {{ ultimaRevisao }}</textarea>
-    <textarea
-      class="f1"
-      readonly
-      cols="30"
-      rows="30"
-    >listaDeCiclos: {{ listaDeCiclos }}</textarea>
-  </div>
-  <!-- eslint-disable -->
 
   <div class="flex column g2">
     <LoadingComponent v-if="chamadasPendentes.listaDeCiclos" />

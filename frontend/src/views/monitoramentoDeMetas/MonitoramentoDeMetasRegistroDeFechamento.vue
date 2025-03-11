@@ -1,7 +1,7 @@
 <script setup>
-import dateToTitle from '@/helpers/dateToTitle';
-import { dateToShortDate } from '@/helpers/dateToDate';
 import { monitoramentoDeMetasFechamento as schema } from '@/consts/formSchemas';
+import { dateToShortDate } from '@/helpers/dateToDate';
+import dateToTitle from '@/helpers/dateToTitle';
 import { useAlertStore } from '@/stores/alert.store';
 import { useMonitoramentoDeMetasStore } from '@/stores/monitoramentoDeMetas.store';
 import { storeToRefs } from 'pinia';
@@ -45,7 +45,7 @@ const fechamentoAnterior = computed(() => ({
 }));
 
 const {
-  errors, handleSubmit, isSubmitting, resetField, resetForm, setFieldValue, values,
+  errors, handleSubmit, isSubmitting, resetForm, setFieldValue,
 } = useForm({
   initialValues: fechamentoEmFocoParaEdicao.value,
   validationSchema: schema,
@@ -97,34 +97,6 @@ watchEffect(() => {
       :formulario-sujo="formularioSujo"
     />
   </div>
-
-  <!-- eslint-disable -->
-  <div class="debug flex flexwrap g2 mb1" hidden>
-    <pre class="fb100 mb0">chamadasPendentes.fechamentoEmFoco: {{ chamadasPendentes.fechamentoEmFoco }}</pre>
-    <pre class="fb100 mb0">erros.fechamentoEmFoco: {{ erros.fechamentoEmFoco }}</pre>
-
-    <textarea
-      class="f1"
-      readonly
-      cols="30"
-      rows="30"
-    >fechamentoEmFoco: {{ fechamentoEmFoco }}</textarea>
-
-    <textarea
-      class="f1"
-      readonly
-      cols="30"
-      rows="30"
-    >fechamentoEmFocoParaEdicao: {{ fechamentoEmFocoParaEdicao }}</textarea>
-
-    <textarea
-      class="f1"
-      readonly
-      cols="30"
-      rows="30"
-    >values: {{ values }}</textarea>
-  </div>
-  <!-- eslint-enable -->
 
   <form
     class="flex column g2"

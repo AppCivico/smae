@@ -1,10 +1,10 @@
 <script setup>
-import dateToTitle from '@/helpers/dateToTitle';
-import { dateToShortDate } from '@/helpers/dateToDate';
 import EnvioDeArquivos from '@/components/monitoramentoDeMetas/EnvioDeArquivos.vue';
 import SmallModal from '@/components/SmallModal.vue';
 import TextEditor from '@/components/TextEditor.vue';
 import { monitoramentoDeMetasAnalise as schema } from '@/consts/formSchemas';
+import { dateToShortDate } from '@/helpers/dateToDate';
+import dateToTitle from '@/helpers/dateToTitle';
 import { useAlertStore } from '@/stores/alert.store';
 import { useMonitoramentoDeMetasStore } from '@/stores/monitoramentoDeMetas.store';
 import { storeToRefs } from 'pinia';
@@ -58,11 +58,8 @@ const {
   errors,
   handleSubmit,
   isSubmitting,
-  resetField,
   resetForm,
   setFieldValue,
-  values,
-  controlledValues,
 } = useForm({
   initialValues: analiseEmFoco.value,
   validationSchema: schema,
@@ -127,34 +124,6 @@ watchEffect(() => {
       :formulario-sujo="formularioSujo"
     />
   </div>
-
-  <!-- eslint-disable -->
-  <div class="debug flex flexwrap g2 mb1" hidden>
-    <pre class="fb100 mb0">chamadasPendentes.analiseEmFoco: {{ chamadasPendentes.analiseEmFoco }}</pre>
-    <pre class="fb100 mb0">erros.analiseEmFoco: {{ erros.analiseEmFoco }}</pre>
-
-    <textarea
-      class="f1"
-      readonly
-      cols="30"
-      rows="30"
-    >analiseEmFoco: {{ analiseEmFoco }}</textarea>
-
-    <textarea
-      class="f1"
-      readonly
-      cols="30"
-      rows="30"
-    >analiseEmFocoParaEdicao: {{ analiseEmFocoParaEdicao }}</textarea>
-
-    <textarea
-      class="f1"
-      readonly
-      cols="30"
-      rows="30"
-    >values: {{ values }}</textarea>
-  </div>
-  <!-- eslint-enable -->
 
   <form
     class="flex column g2"

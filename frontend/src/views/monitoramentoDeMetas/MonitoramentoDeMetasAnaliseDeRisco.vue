@@ -50,7 +50,7 @@ const riscoAnterior = computed(() => ({
 }));
 
 const {
-  errors, handleSubmit, isSubmitting, resetField, resetForm, setFieldValue, values,
+  errors, handleSubmit, isSubmitting, resetForm, setFieldValue,
 } = useForm({
   initialValues: riscoEmFocoParaEdicao.value,
   validationSchema: schema,
