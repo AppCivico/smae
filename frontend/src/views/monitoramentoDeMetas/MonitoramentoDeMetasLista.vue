@@ -1,7 +1,6 @@
 <script setup>
-import DetalhamentoDeCiclo from '@/components/monitoramentoDeMetas/DetalhamentoDeCiclo.vue';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
-import FormularioQueryString from '@/components/FormularioQueryString.vue';
+import DetalhamentoDeCiclo from '@/components/monitoramentoDeMetas/DetalhamentoDeCiclo.vue';
 import { useMonitoramentoDeMetasStore } from '@/stores/monitoramentoDeMetas.store';
 import { storeToRefs } from 'pinia';
 import {
@@ -17,24 +16,25 @@ const monitoramentoDeMetasStore = useMonitoramentoDeMetasStore(route.meta.entida
 
 const {
   chamadasPendentes,
-  ciclosPorAno,
+  ciclosPassadosPorAno,
   ciclosPorId,
   cicloAtivo,
   erros,
   listaDeCiclos,
+  listaDeCiclosPassados,
   ultimaRevisao,
-  anoMaisRecente,
+  anoMaisRecenteNosCiclosPassados,
 } = storeToRefs(monitoramentoDeMetasStore);
 
-const anosDisponiveis = computed(() => monitoramentoDeMetasStore.anosDisponiveis
+const anosDisponiveisNosCiclosPassados = computed(() => monitoramentoDeMetasStore.anosDisponiveisNosCiclosPassados
   .map((ano) => ({ ano, id: ano })));
 
 const anosSelecionados = ref([]);
 
 const listaDeCiclosFiltrados = computed(() => (!anosSelecionados.value.length
-  ? listaDeCiclos.value
+  ? listaDeCiclosPassados.value
   : anosSelecionados.value
-    .flatMap((ano) => ciclosPorAno.value[ano] || [])));
+    .flatMap((ano) => ciclosPassadosPorAno.value[ano] || [])));
 
 watch(
   [() => route.params.planoSetorialId, () => route.params.meta_id],
@@ -43,8 +43,8 @@ watch(
       .buscarListaDeCiclos(planoSetorialId, {
         meta_id: metaId,
       }).then(() => {
-        if (anoMaisRecente.value !== undefined) {
-          anosSelecionados.value = [anoMaisRecente.value];
+        if (anoMaisRecenteNosCiclosPassados.value !== undefined) {
+          anosSelecionados.value = [anoMaisRecenteNosCiclosPassados.value];
         }
       });
   },
@@ -75,7 +75,7 @@ watch(
       readonly
       cols="30"
       rows="30"
-    >ciclosPorAno: {{ ciclosPorAno }}</textarea>
+    >ciclosPassadosPorAno: {{ ciclosPassadosPorAno }}</textarea>
     <textarea
       class="f1"
       readonly
@@ -104,7 +104,7 @@ watch(
     </template>
 
     <div
-      v-if="listaDeCiclos?.length"
+      v-if="listaDeCiclosPassados?.length"
       class="ciclos-anterioes"
     >
       <div class="titulo-monitoramento titulo-monitoramento--passado mb2">
@@ -121,7 +121,7 @@ watch(
           busca: '',
           participantes: anosSelecionados,
         }"
-        :grupo="anosDisponiveis"
+        :grupo="anosDisponiveisNosCiclosPassados"
         :aria-busy="false"
         label="ano"
       />

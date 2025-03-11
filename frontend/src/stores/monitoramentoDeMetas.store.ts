@@ -262,34 +262,38 @@ export const useMonitoramentoDeMetasStore = (prefixo: PrefixosValidos) => define
   getters: {
     cicloAtivo: ({ listaDeCiclos }) => listaDeCiclos.find((ciclo) => ciclo.ativo),
 
+    listaDeCiclosPassados: ({ listaDeCiclos }) => listaDeCiclos.filter((ciclo) => !ciclo.ativo),
+
     ciclosPorId: ({ listaDeCiclos }) => listaDeCiclos.reduce((acc, ciclo) => {
       acc[ciclo.id] = ciclo;
       return acc;
     }, {} as Record<number, CicloFisicoPSDto>),
 
-    ciclosPorAno: ({ listaDeCiclos }) => listaDeCiclos.reduce((acc, ciclo) => {
-      const ano = ciclo.data_ciclo.split('-')[0];
+    ciclosPassadosPorAno() {
+      return this.listaDeCiclosPassados.reduce((acc, ciclo) => {
+        const ano = ciclo.data_ciclo.split('-')[0];
 
-      if (!acc[ano]) {
-        acc[ano] = [];
-      }
+        if (!acc[ano]) {
+          acc[ano] = [];
+        }
 
-      acc[ano].push(ciclo);
-      return acc;
-    }, {} as Record<string, CicloFisicoPSDto[]>),
+        acc[ano].push(ciclo);
+        return acc;
+      }, {} as Record<string, CicloFisicoPSDto[]>);
+    },
 
-    anosDisponiveis() {
-      return Object.keys(this.ciclosPorAno).reduce((acc, ano) => {
-        const anoMaisRecente = Number(ano);
-        if (!Number.isNaN(anoMaisRecente)) {
-          acc.push(anoMaisRecente);
+    anosDisponiveisNosCiclosPassados() {
+      return Object.keys(this.ciclosPassadosPorAno).reduce((acc, ano) => {
+        const anoDoItem = Number(ano);
+        if (!Number.isNaN(anoDoItem)) {
+          acc.push(anoDoItem);
         }
         return acc;
       }, [] as number[]);
     },
 
-    anoMaisRecente() {
-      return this.anosDisponiveis[this.anosDisponiveis.length - 1];
+    anoMaisRecenteNosCiclosPassados() {
+      return this.anosDisponiveisNosCiclosPassados[this.anosDisponiveisNosCiclosPassados.length - 1];
     },
   },
 })();
