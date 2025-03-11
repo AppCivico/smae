@@ -56,13 +56,13 @@ function handleVisibilityChange() {
 }
 
 watchEffect(() => {
+  clearInterval(intervaloDeAtualizacao);
+  intervaloDeAtualizacao = null;
+
   if (abaVisivel && temAlgumRelatorioEmProcessamento.value) {
     if (!intervaloDeAtualizacao) {
       intervaloDeAtualizacao = setInterval(carregarRelatorios, 5000);
     }
-  } else {
-    clearInterval(intervaloDeAtualizacao);
-    intervaloDeAtualizacao = null;
   }
 });
 
