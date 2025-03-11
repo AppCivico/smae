@@ -70,8 +70,6 @@ const preparedOptions = computed((): ECBasicOption => {
     ...props.option,
     tooltip: {
       trigger: 'item',
-      // show: true,
-      // alwaysShowContent: true,
       renderMode: 'html',
       confine: true,
       className: 'grafico-dashboard__tooltip',

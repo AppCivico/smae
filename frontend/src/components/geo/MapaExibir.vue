@@ -490,7 +490,7 @@ function removerMapa() {
 const observer = new IntersectionObserver((entries) => {
   if (!mapa) {
     if (entries[0].isIntersecting === true && elementoMapa.value) {
-      iniciarMapa(elementoMapa.value).then((foo) => {
+      iniciarMapa(elementoMapa.value).then(() => {
         nextTick(() => {
           mapa.fitBounds(grupoDeElementosNoMapa().getBounds(), { animate: true });
         });
