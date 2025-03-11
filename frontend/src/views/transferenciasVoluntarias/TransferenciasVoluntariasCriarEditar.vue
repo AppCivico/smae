@@ -463,8 +463,8 @@ watch(itemParaEdicao, (novosValores) => {
             />
 
             <LabelFromYup
-              name="parlamentar_id"
-              :schema="schema.fields.parlamentares.innerType"
+              name="parlamentares.parlamentar_id"
+              :schema="schema"
             />
 
             <Field
