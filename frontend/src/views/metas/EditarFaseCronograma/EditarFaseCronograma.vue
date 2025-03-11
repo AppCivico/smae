@@ -374,8 +374,6 @@ iniciar();
       <CheckClose />
     </div>
 
-    -{{ valoresIniciais }}-
-
     <template v-if="!(currentFase?.loading || currentFase?.error) && oktogo">
       <Form
         v-slot="{ errors, isSubmitting, setFieldValue, values }"
