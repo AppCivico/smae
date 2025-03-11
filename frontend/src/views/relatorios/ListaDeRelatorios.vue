@@ -1,19 +1,19 @@
 <script setup>
+import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
+import combinadorDeListas from '@/helpers/combinadorDeListas';
+import { localizarDataHorario } from '@/helpers/dateToDate';
+import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
-import { useAlertStore } from '@/stores/alert.store';
 import { storeToRefs } from 'pinia';
-import { useRoute } from 'vue-router';
-import { localizarDataHorario } from '@/helpers/dateToDate';
 import {
+  computed,
   onMounted,
   onUnmounted,
-  computed,
   watch,
   watchEffect,
 } from 'vue';
-import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
-import combinadorDeListas from '@/helpers/combinadorDeListas';
+import { useRoute } from 'vue-router';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 const { temPermissãoPara } = storeToRefs(useAuthStore());
@@ -111,6 +111,14 @@ onUnmounted(() => {
     ]"
     @deletar="excluirRelatório"
   >
+    <template #colunas>
+      <col>
+      <col class="col--dataHora">
+      <col>
+      <col class="col--minimum">
+      <col class="col--botão-de-ação">
+    </template>
+
     <template #celula:parametros_processados="{ linha }">
       <dl>
         <template
