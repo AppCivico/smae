@@ -1172,7 +1172,7 @@ export default [
         'CadastroGrupoPaineis.editar',
         'CadastroGrupoPaineis.remover',
       ],
-      título: 'Grupos de paineis',
+      título: 'Grupos de painéis',
       rotasParaMenuSecundário,
       rotasParaMenuPrincipal,
     },
