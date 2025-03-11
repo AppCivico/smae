@@ -31,6 +31,7 @@ const {
   erros,
   analiseEmFoco,
   cicloAtivo,
+  ciclosDetalhadosPorId,
 } = storeToRefs(monitoramentoDeMetasStore);
 
 if (!cicloAtivo.value) {
@@ -76,6 +77,10 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
     )) {
       alertStore.success('Análise qualitativa atualizada!');
       if (route.meta.rotaDeEscape) {
+        if (ciclosDetalhadosPorId.value[route.params.cicloId]) {
+          delete ciclosDetalhadosPorId.value[route.params.cicloId];
+        }
+
         router.push({
           name: route.meta.rotaDeEscape,
           params: route.params,

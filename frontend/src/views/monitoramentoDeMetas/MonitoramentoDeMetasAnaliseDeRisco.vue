@@ -1,8 +1,8 @@
 <script setup>
 import TextEditor from '@/components/TextEditor.vue';
-import dateToTitle from '@/helpers/dateToTitle';
-import { dateToShortDate } from '@/helpers/dateToDate';
 import { monitoramentoDeMetasRisco as schema } from '@/consts/formSchemas';
+import { dateToShortDate } from '@/helpers/dateToDate';
+import dateToTitle from '@/helpers/dateToTitle';
 import { useAlertStore } from '@/stores/alert.store';
 import { useMonitoramentoDeMetasStore } from '@/stores/monitoramentoDeMetas.store';
 import { storeToRefs } from 'pinia';
@@ -26,6 +26,7 @@ const {
   erros,
   riscoEmFoco,
   cicloAtivo,
+  ciclosDetalhadosPorId,
 } = storeToRefs(monitoramentoDeMetasStore);
 
 if (!cicloAtivo.value) {
@@ -66,7 +67,12 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
       valoresControlados,
     )) {
       alertStore.success('Análise de risco atualizada!');
+
       if (route.meta.rotaDeEscape) {
+        if (ciclosDetalhadosPorId.value[route.params.cicloId]) {
+          delete ciclosDetalhadosPorId.value[route.params.cicloId];
+        }
+
         router.push({
           name: route.meta.rotaDeEscape,
           params: route.params,
