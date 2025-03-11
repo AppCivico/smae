@@ -629,25 +629,8 @@ export class PsCicloService {
     ): Promise<RecordWithId> {
         await this.verificaPermissaoEscritaBase(tipo, pdmId, metaId, cicloId, user, true, 'analise');
 
-        const documento = await this.prisma.metaCicloFisicoAnaliseDocumento.findFirst({
-            where: {
-                id: documentoId,
-                meta_id: metaId,
-                ciclo_fisico_id: cicloId,
-                removido_em: null,
-            },
-        });
+        await this.analiseService.updateMetaAnaliseQualitativaDocumentoInterno(documentoId, dto, user);
 
-        if (!documento) throw new BadRequestException('Documento não encontrado ou já removido');
-
-        const updated = await this.prisma.metaCicloFisicoAnaliseDocumento.update({
-            where: { id: documentoId },
-            data: {
-                descricao: dto.descricao,
-            },
-            select: { id: true },
-        });
-
-        return { id: updated.id };
+        return { id: documentoId };
     }
 }
