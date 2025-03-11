@@ -18,8 +18,9 @@ async function excluirTarefa(id) {
 }
 </script>
 <template>
-  <div class="flex spacebetween center mb2">
-    <h1>{{ $route.meta.título }}</h1>
+  <header class="flex spacebetween center mb2">
+    <TituloDePagina />
+
     <hr class="ml2 f1">
     <SmaeLink
       :to="{
@@ -29,7 +30,8 @@ async function excluirTarefa(id) {
     >
       Nova tarefa
     </SmaeLink>
-  </div>
+  </header>
+
   <table class="tablemain">
     <col>
     <col class="col--botão-de-ação">
@@ -39,6 +41,8 @@ async function excluirTarefa(id) {
         <th>
           Tarefa
         </th>
+        <th />
+        <th />
       </tr>
     </thead>
     <tbody>
