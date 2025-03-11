@@ -18,7 +18,7 @@ import { useAuthStore } from '@/stores/auth.store';
 import { useEquipesStore } from '@/stores/equipes.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store.ts';
-import { mapaDeMeses } from '@/consts/months';
+import { listaDeMeses } from '@/consts/months';
 import { planoSetorial as schema } from '@/consts/formSchemas';
 
 const router = useRouter();
@@ -673,7 +673,7 @@ watch(itemParaEdicao, (novoValor) => {
                 name="meses"
                 :controlador="{ busca: '', participantes: value || [] }"
                 :v-model="handleChange"
-                :grupo="mapaDeMeses"
+                :grupo="listaDeMeses"
                 label="nome"
               />
             </Field>

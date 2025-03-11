@@ -13,6 +13,11 @@ const meses = [
   'Dezembro',
 ];
 
-export const mapaDeMeses = meses.map((x, i) => ({ nome: x, id: i + 1 }));
+export const listaDeMeses = meses.map((item, i) => ({ nome: item, id: i + 1 }));
+export const mapaDeMeses = listaDeMeses.reduce((acumulador, item) => {
+  acumulador[item.id] = item;
+
+  return acumulador;
+}, {});
 
 export default meses;
