@@ -304,29 +304,7 @@ export const useParlamentaresStore = defineStore('parlamentaresStore', {
     },
     idsDasEleiçõesQueParlamentarConcorreu: (({ emFoco }) => emFoco?.mandatos
       ?.map((x) => x.eleicao.id) || []),
-    mandatoParaEdição({ emFoco }) {
-      const { mandatoId } = this.route.params;
 
-      const mandato = mandatoId && Array.isArray(emFoco?.mandatos)
-        ? emFoco.mandatos.find((x) => Number(mandatoId) === x.id)
-        : {};
-
-      return {
-        ...mandato,
-        eleicao_id: mandato?.eleicao?.id,
-        partido_atual_id: mandato?.partido_atual?.id,
-        partido_candidatura_id: mandato?.partido_candidatura?.id,
-        votos_estado: typeof mandato.votos_estado === 'string'
-          ? Number(mandato.votos_estado)
-          : undefined,
-        votos_capital: typeof mandato.votos_capital === 'string'
-          ? Number(mandato.votos_capital)
-          : undefined,
-        votos_interior: typeof mandato.votos_interior === 'string'
-          ? Number(mandato.votos_interior)
-          : undefined,
-      };
-    },
     pessoaParaEdição({ emFoco }) {
       const { pessoaId } = this.route.params;
 
