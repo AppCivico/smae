@@ -1,20 +1,26 @@
+import type { RelatorioDto } from '@back/reports/relatorios/entities/report.entity';
 import { defineStore } from 'pinia';
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { RelatorioDto } from '@/../../backend/src/reports/relatorios/entities/report.entity';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 type Lista = RelatorioDto[];
 
+type RespostaDeLista = {
+  tem_mais: boolean;
+  token_proxima_pagina: string | null;
+  token_ttl: number;
+  linhas: RelatorioDto[];
+};
+
 interface Estado {
   lista: Lista;
-  current: RelatorioDto | {};
-  loading: Boolean;
+  current: RelatorioDto | Record<string, never>;
+  loading: boolean;
   error: null | unknown;
 
   paginação: {
-    temMais: Boolean;
-    tokenDaPróximaPágina: String;
+    temMais: boolean;
+    tokenDaPróximaPágina: string;
   };
 }
 
@@ -32,14 +38,14 @@ export const useRelatoriosStore = defineStore('relatorios', {
 
   }),
   actions: {
-    async getAll(params: { token_proxima_pagina?: String } = {}) {
+    async getAll(params: { token_proxima_pagina?: string } = {}) {
       this.loading = true;
       try {
         const {
           linhas,
           tem_mais: temMais,
           token_proxima_pagina: tokenDaPróximaPágina,
-        } = await this.requestS.get(`${baseUrl}/relatorios`, params);
+        } = await this.requestS.get(`${baseUrl}/relatorios`, params) as RespostaDeLista;
         if (Array.isArray(linhas)) {
           this.lista = params.token_proxima_pagina
             ? this.lista.concat(linhas)
@@ -53,16 +59,13 @@ export const useRelatoriosStore = defineStore('relatorios', {
       }
       this.loading = false;
     },
-    async insert(params: {}) {
-
-console.log(params);
-
+    async insert(params = {}) {
       if (await this.requestS.post(`${baseUrl}/relatorios`, params)) return true;
       return false;
     },
     async delete(id: number) {
       if (await this.requestS.delete(`${baseUrl}/relatorios/${id}`)) {
-        this.lista = this.lista.filter((x) => x.id != id);
+        this.lista = this.lista.filter((x) => x.id !== Number(id));
         return true;
       }
       return false;
