@@ -1533,7 +1533,8 @@ export const órgão = object()
       .nullable(),
     email: string()
       .email()
-      .label('Email'),
+      .label('Email')
+      .nullable(),
     nivel: number()
       .required(),
     parente_id: number()
