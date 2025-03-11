@@ -239,6 +239,21 @@ iniciar();
             />
           </div>
         </div>
+
+        <label class="block mt2 mb2">
+          <Field
+            name="em_atividade"
+            type="checkbox"
+            :value="true"
+            :unchecked-value="false"
+            class="inputcheckbox"
+          />
+          <LabelFromYup
+            name="em_atividade"
+            :schema="schema"
+            as="span"
+          />
+        </label>
       </div>
       <Field
         v-slot="{ value }"
