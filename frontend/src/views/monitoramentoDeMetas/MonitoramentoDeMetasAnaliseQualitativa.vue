@@ -15,7 +15,8 @@ import {
   useIsFormDirty,
 } from 'vee-validate';
 import {
-  computed, nextTick, ref, watch, watchEffect,
+  computed,
+  ref, watch, watchEffect,
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -93,12 +94,14 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
 async function encerrarInclusaoDeArquivos() {
   exibirSeletorDeArquivo.value = false;
 
-  await monitoramentoDeMetasStore
-    .buscarAnaliseDoCiclo(route.params.planoSetorialId, route.params.cicloId, {
-      meta_id: route.params.meta_id,
-    });
+  // TODO: Implementar a atualização da lista de arquivos
+  // de algum jeito que não cubra a edição corrente.
+  // await monitoramentoDeMetasStore
+  //   .buscarAnaliseDoCiclo(route.params.planoSetorialId, route.params.cicloId, {
+  //     meta_id: route.params.meta_id,
+  //   });
 
-  await nextTick();
+  // await nextTick();
 }
 
 watch(analiseEmFocoParaEdicao, (novoValor) => {
