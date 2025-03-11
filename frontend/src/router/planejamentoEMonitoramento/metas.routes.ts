@@ -1130,7 +1130,6 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
           component: SingleCronograma,
           props: { group: 'fase' },
           meta: {
-            teste: 1,
             rotaDeEscape: `${entidadeMãe}.cronogramaDaMeta`,
             rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
           },
