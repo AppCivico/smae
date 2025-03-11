@@ -43,6 +43,7 @@ import type {
   ParametrosPagina,
 } from './prepararRotasParaPlanejamentoEMonitoramento';
 import EditarFaseCronograma from '@/views/metas/EditarFaseCronograma/EditarFaseCronograma.vue';
+import AddEditEtapa from '@/views/metas/AddEditEtapa.vue';
 
 type Props = {
   entidadeMãe: EntidadesPossiveis;
@@ -558,7 +559,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
     },
     {
       path: ':meta_id/cronograma/:cronograma_id/etapas/novo',
-      component: SingleCronograma,
+      component: AddEditEtapa,
       props: { group: 'etapas' },
       meta: {
         rotaDeEscape: `${entidadeMãe}.cronogramaDaMeta`,
@@ -574,7 +575,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
         {
           path: '',
           name: `${entidadeMãe}.etapaCronograma`,
-          component: SingleCronograma,
+          component: AddEditEtapa,
           props: { group: 'etapas' },
           meta: {
             rotaDeEscape: `${entidadeMãe}.cronogramaDaMeta`,
