@@ -1,5 +1,6 @@
-import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { Prisma } from '@prisma/client';
 import AdmZip from 'adm-zip';
 import { ColunasNecessarias, OrcamentoImportacaoHelpers } from 'src/importacao-orcamento/importacao-orcamento.common';
 import { read } from 'xlsx';
@@ -14,7 +15,6 @@ import { UploadBody } from './entities/upload.body';
 import { Upload } from './entities/upload.entity';
 import { StorageService } from './storage-service';
 import { UploadDiretorioService } from './upload.diretorio.service';
-import { Prisma } from '@prisma/client';
 
 const AdmZipLib = require('adm-zip');
 
@@ -22,6 +22,13 @@ interface TokenResponse {
     stream: NodeJS.ReadableStream;
     nome: string;
     mime_type: string;
+}
+
+interface RestoreDescriptionResult {
+    total: number;
+    restored: number;
+    errors: number;
+    skipped: number;
 }
 
 const DOWNLOAD_AUD = 'dl';
@@ -34,7 +41,7 @@ const ZipContentTypes = [
     'application/x-zip-compressed',
     'application/x-zip',
 ];
-
+import * as MinioJS from 'minio';
 @Injectable()
 export class UploadService {
     constructor(
@@ -481,6 +488,83 @@ export class UploadService {
                 caminho: dto.caminho,
                 pdm_id: pdmDoc.pdm_id,
             });
+        }
+    }
+
+    async restauraDescricaoPeloMetadado(batchSize = 500): Promise<RestoreDescriptionResult> {
+        const result: RestoreDescriptionResult = {
+            total: 0,
+            restored: 0,
+            errors: 0,
+            skipped: 0,
+        };
+
+        try {
+            const records = await this.prisma.metaCicloFisicoAnaliseDocumento.findMany({
+                where: {
+                    descricao: null,
+                    removido_em: null,
+                },
+                select: {
+                    id: true,
+                    arquivo_id: true,
+                    arquivo: {
+                        select: {
+                            caminho: true,
+                        },
+                    },
+                },
+                take: batchSize,
+            });
+
+            result.total = records.length;
+            Logger.log(`Found ${result.total} records with NULL description to process`);
+
+            for (const record of records) {
+                try {
+                    if (!record.arquivo || !record.arquivo.caminho) {
+                        Logger.warn(`Skipping record ${record.id}: Missing arquivo or caminho`);
+                        result.skipped++;
+                        continue;
+                    }
+
+                    let description: string | null = null;
+                    let metadata: MinioJS.ItemBucketMetadata | null = null;
+                    try {
+                        metadata = await this.storage.getObjectMetadata(record.arquivo.caminho);
+                    } catch (error) {
+                        if (error?.code == 'NotFound') {
+                            Logger.warn(`Skipping record ${record.id}: File not found in storage`);
+                            description = '404';
+                        } else {
+                            throw error;
+                        }
+                    }
+
+                    if (metadata && 'x-description' in metadata && metadata['x-description'])
+                        description = decodeURIComponent(metadata['x-description']);
+
+                    if (!description) description = '';
+
+                    await this.prisma.metaCicloFisicoAnaliseDocumento.update({
+                        where: { id: record.id },
+                        data: { descricao: description },
+                    });
+
+                    Logger.log(
+                        `description for record ${record.id}: ${description.substring(0, 50)}${description.length > 50 ? '...' : ''}`
+                    );
+                    result.restored++;
+                } catch (error) {
+                    Logger.error(`Error processing record ${record.id}:`, error);
+                    result.errors++;
+                }
+            }
+
+            return result;
+        } catch (error) {
+            Logger.error('Error in restoreDescriptionsFromMetadata:', error);
+            throw error;
         }
     }
 }

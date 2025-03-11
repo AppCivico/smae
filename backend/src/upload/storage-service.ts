@@ -15,7 +15,7 @@ export class StorageService {
         if (!process.env.S3_ACCESS_KEY) throw new Error('Please set an value for S3_ACCESS_KEY');
         if (!process.env.S3_SECRET_KEY) throw new Error('Please set an value for S3_SECRET_KEY');
         if (!process.env.S3_HOST) throw new Error('Please set an value for S3_HOST');
-        if (/^https?\:\:/.test(process.env.S3_HOST)) throw new Error('S3_HOST must start with https:// or http://');
+        if (/^https?::/.test(process.env.S3_HOST)) throw new Error('S3_HOST must start with https:// or http://');
 
         const endpoint = new URL(process.env.S3_HOST);
         this.S3 = new MinioJS.Client({
@@ -75,5 +75,21 @@ export class StorageService {
                 }
             );
         });
+    }
+
+    /**
+     * Gets the metadata headers for an object without downloading the full content
+     * @param key The key of the object in the storage
+     * @returns The metadata headers as an object
+     */
+    async getObjectMetadata(key: string): Promise<MinioJS.ItemBucketMetadata> {
+        try {
+            // Use statObject to get only the metadata without downloading the object content
+            const stat = await this.S3.statObject(this.BUCKET, key);
+            return stat.metaData;
+        } catch (error) {
+            console.error(`Error getting metadata for object ${key}:`, error);
+            throw error;
+        }
     }
 }
