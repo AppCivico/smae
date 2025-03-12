@@ -90,6 +90,7 @@ export class CEEtapaDto {
 
     responsaveis: CronogramaEtapaResponsavel[] | null;
     etapa_filha?: CEEtapaDto[] | null;
+    pode_editar_realizado: boolean;
     CronogramaEtapa: CECronogramaEtapaCronoId[];
     variavel: EtapaVariavelItemDto | null;
     ps_ponto_focal: CreatePSEquipePontoFocalDto;
