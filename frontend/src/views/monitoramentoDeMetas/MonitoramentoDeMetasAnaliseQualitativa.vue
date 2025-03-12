@@ -1,5 +1,6 @@
 <script setup>
 import EnvioDeArquivos from '@/components/monitoramentoDeMetas/EnvioDeArquivos.vue';
+import ListaDeDocumentos from '@/components/monitoramentoDeMetas/ListaDeDocumentos.vue';
 import SmallModal from '@/components/SmallModal.vue';
 import TextEditor from '@/components/TextEditor.vue';
 import { monitoramentoDeMetasAnalise as schema } from '@/consts/formSchemas';
@@ -93,17 +94,13 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   }
 });
 
-async function encerrarInclusaoDeArquivos() {
+function encerrarInclusaoDeArquivos() {
   exibirSeletorDeArquivo.value = false;
 
-  // TODO: Implementar a atualização da lista de arquivos
-  // de algum jeito que não cubra a edição corrente.
-  // await monitoramentoDeMetasStore
-  //   .buscarAnaliseDoCiclo(route.params.planoSetorialId, route.params.cicloId, {
-  //     meta_id: route.params.meta_id,
-  //   });
-
-  // await nextTick();
+  monitoramentoDeMetasStore
+    .atualizarListaDeArquivosDaAnaliseEmFoco(route.params.planoSetorialId, route.params.cicloId, {
+      meta_id: route.params.meta_id,
+    });
 }
 
 watch(analiseEmFocoParaEdicao, (novoValor) => {
@@ -184,6 +181,10 @@ watchEffect(() => {
     <ErrorMessage
       class="error-msg"
       name="informacoes_complementares"
+    />
+
+    <ListaDeDocumentos
+      :arquivos="analiseEmFoco?.arquivos"
     />
 
     <div>

@@ -157,6 +157,30 @@ export const useMonitoramentoDeMetasStore = (prefixo: PrefixosValidos) => define
     },
 
     // eslint-disable-next-line max-len
+    async atualizarListaDeArquivosDaAnaliseEmFoco(pdmId: ChaveGenerica, cicloId: ChaveGenerica, params = {}): Promise<void> {
+      this.chamadasPendentes.analiseEmFoco = true;
+
+      try {
+        if (!this.analiseEmFoco?.arquivos) {
+          throw new Error('Você não pode atualizar arquivos de uma análise que não existe.');
+        }
+
+        const { arquivos } = await this.requestS.get(`${baseUrl}/plano-setorial/${pdmId}/ciclo/${cicloId}/analise`, params) as PsListAnaliseQualitativaDto;
+
+        this.chamadasPendentes.analiseEmFoco = false;
+
+        if (Array.isArray(arquivos)) {
+          this.analiseEmFoco.arquivos = arquivos;
+        }
+
+        this.erros.analiseEmFoco = null;
+      } catch (erro) {
+        this.erros.analiseEmFoco = erro;
+      }
+      this.chamadasPendentes.analiseEmFoco = false;
+    },
+
+    // eslint-disable-next-line max-len
     async salvarAnaliseDeCiclo(pdmId: ChaveGenerica, cicloId: ChaveGenerica, params: ParametrosDeRequisicao): Promise<RespostaDeEnvio> {
       this.chamadasPendentes.analiseEmFoco = true;
 

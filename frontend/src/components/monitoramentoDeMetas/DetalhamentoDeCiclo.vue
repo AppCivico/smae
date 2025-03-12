@@ -90,57 +90,10 @@
           <hr class="f1">
         </footer>
 
-        <table
-          v-if="Array.isArray(analiseDocumentos)
-            && analiseDocumentos?.length"
-          class="tablemain mb1 mt1"
-        >
-          <col>
-          <col>
-          <col>
-          <col>
-          <col>
-          <thead>
-            <tr>
-              <th>Documentos</th>
-              <th />
-              <th />
-              <th />
-              <th />
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="doc in analiseDocumentos"
-              :key="doc.id"
-            >
-              <td class="flex center">
-                <svg
-                  width="20"
-                  height="20"
-                  class="mr1"
-                ><use xlink:href="#i_doc" /></svg>
-                {{ doc?.arquivo?.nome_original }}
-              </td>
-              <td>{{ doc.arquivo?.descricao }}</td>
-              <td>{{ doc.criador?.nome_exibicao }}</td>
-              <td>{{ dateToShortDate(doc.criado_em) }}</td>
-              <td>
-                <SmaeLink
-                  v-if="doc?.arquivo?.download_token"
-                  :to="baseUrl + '/download/' + doc?.arquivo?.download_token"
-                  download
-                >
-                  <svg
-                    width="20"
-                    height="20"
-                    class="mr1"
-                  ><use xlink:href="#i_download" /></svg>
-                </SmaeLink>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <ListaDeDocumentos
+          v-if="analiseDocumentos.length"
+          :arquivos="analiseDocumentos"
+        />
       </div>
 
       <div class="details-content__item">
@@ -263,17 +216,16 @@
   </details>
 </template>
 <script setup>
-import LoadingComponent from '@/components/LoadingComponent.vue';
 import { dateToShortDate } from '@/helpers/dateToDate';
 import dateToTitle from '@/helpers/dateToTitle';
 import { useMonitoramentoDeMetasStore } from '@/stores/monitoramentoDeMetas.store';
 import { storeToRefs } from 'pinia';
 import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
+import ListaDeDocumentos from '@/components/monitoramentoDeMetas/ListaDeDocumentos.vue';
 
 const route = useRoute();
 
-const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 const props = defineProps({
   ciclo: {
@@ -319,8 +271,8 @@ function handleToggle(event) {
   estaAberto.value = event.target.open;
 }
 
-watch(() => estaAberto.value, (newValue) => {
-  if (newValue && !cicloDetalhes.value) {
+watch(() => estaAberto.value, (novoValor) => {
+  if (novoValor && !cicloDetalhes.value) {
     monitoramentoDeMetasStore
       .buscarCiclo(route.params.planoSetorialId, props.ciclo.id, {
         meta_id: route.params.meta_id,
