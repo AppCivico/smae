@@ -742,7 +742,14 @@ watchEffect(() => {
               <SmaeLink
                 v-if="!r.cronograma_origem_etapa
                   || r.cronograma_origem_etapa.id == singleCronograma?.id"
-                :to="`${parentLink}/cronograma/${singleCronograma?.id}/etapas/${r.etapa.id}/${rr.id}`"
+                :to="{
+                  name: '.faseCronograma.editar',
+                  params: {
+                    cronograma_id: singleCronograma.id,
+                    etapa_id: r.etapa.id,
+                    fase_id: rr.id,
+                  }
+                }"
               >
                 <svg
                   width="20"
@@ -940,7 +947,7 @@ watchEffect(() => {
                         || r.cronograma_origem_etapa.id == singleCronograma?.id
                     "
                     :to="{
-                      name: '.subfaseCronograma.edit',
+                      name: '.subfaseCronograma.editar',
                       params: {
                         cronograma_id: singleCronograma.id,
                         etapa_id: r.etapa.id,
@@ -972,7 +979,15 @@ watchEffect(() => {
             <SmaeLink
               v-if="!r.cronograma_origem_etapa
                 || r.cronograma_origem_etapa.id == singleCronograma?.id"
-              :to="`${parentLink}/cronograma/${singleCronograma?.id}/etapas/${r.etapa.id}/${rr.id}/novo`"
+              :to="{
+                name: '.subfaseCronograma.novo',
+                params: {
+                  cronograma_id: singleCronograma.id,
+                  etapa_id: r.etapa.id,
+                  fase_id: rr.id,
+                }
+              }"
+
               class="addlink mt05 mb05"
             >
               <svg
@@ -996,7 +1011,13 @@ watchEffect(() => {
           <SmaeLink
             v-if="!r.cronograma_origem_etapa
               || r.cronograma_origem_etapa.id == singleCronograma?.id"
-            :to="`${parentLink}/cronograma/${singleCronograma?.id}/etapas/${r.etapa.id}/novo`"
+            :to="{
+              name: '.faseCronograma.novo',
+              params: {
+                cronograma_id: singleCronograma.id,
+                etapa_id: r.etapa.id,
+              }
+            }"
             class="addlink"
           >
             <svg
