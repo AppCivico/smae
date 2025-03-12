@@ -341,7 +341,6 @@ async function iniciar() {
       }
     } else {
       pc = p0;
-      currentFase.value = pc;
     }
 
     if (pc?.responsaveis) {
