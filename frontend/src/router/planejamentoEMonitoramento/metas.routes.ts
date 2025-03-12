@@ -590,7 +590,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
           children: [
             {
               path: '',
-              name: `${entidadeMãe}.faseCronograma.edit`,
+              name: `${entidadeMãe}.faseCronograma.editar`,
               component: EditarFaseCronograma,
               props: { group: 'fase' },
               meta: {
@@ -603,7 +603,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
             },
             {
               path: ':subfase_id',
-              name: `${entidadeMãe}.subfaseCronograma.edit`,
+              name: `${entidadeMãe}.subfaseCronograma.editar`,
               component: EditarFaseCronograma,
               props: { group: 'subfase' },
               meta: {
@@ -616,7 +616,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
             },
             {
               path: 'novo',
-              name: `${entidadeMãe}.subfaseCronograma.edit`,
+              name: `${entidadeMãe}.subfaseCronograma.novo`,
               component: EditarFaseCronograma,
               props: { group: 'subfase' },
               meta: {
