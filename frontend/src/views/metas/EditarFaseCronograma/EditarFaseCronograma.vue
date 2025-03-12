@@ -86,18 +86,7 @@ const minLevel = ref(0);
 
 const usersAvailable = ref([]);
 
-const permissaoLiberada = computed(() => {
-  const ehAdmin = authStore.temPermissãoPara([
-    'CadastroMetaPS.administrador_no_pdm', // sṍ pode editar de acordo com o perfil
-    'CadastroPS.administrador', // edita qualquer item
-    'CadastroPS.administrador_no_orgao', // edita qualquer meta onde o órgão é responsavel? SIM
-    'CadastroMetaPDM.administrador_no_pdm',
-    'CadastroPDM.administrador',
-    'CadastroPDM.administrador_no_orgao',
-  ]);
-
-  return ehAdmin;
-});
+const permissaoLiberada = computed(() => currentFase.value.pode_editar_realizado);
 
 async function getRegionByParent(r_id, cur) {
   await RegionsStore.filterRegions({ id: r_id });
