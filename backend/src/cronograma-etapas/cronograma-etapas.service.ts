@@ -21,20 +21,35 @@ export async function podeEditarEtapa(
     user: PessoaFromJwt,
     meta: MetaItemDto | null = null,
     prisma: PrismaService
-): Promise<boolean> {
+): Promise<{
+    pode_editar: boolean;
+    pode_editar_realizado: boolean;
+}> {
     // para o PDM legado, retorna sempre true já que a editação lá o endpoint sempre ta livre do realizado
     if (tipo === '_PDM') {
-        return true;
+        return {
+            pode_editar: true,
+            pode_editar_realizado: true,
+        };
     }
 
     // se pode editar a meta, pode editar a etapa
-    if (meta && meta.pode_editar) return true;
+    if (meta && meta.pode_editar)
+        return {
+            pode_editar: true,
+            pode_editar_realizado: true,
+        };
 
     const collab = await user.getEquipesColaborador(prisma);
 
     const etapaPontoFocalEquipes = etapa.PdmPerfil.filter((p) => p.tipo === 'PONTO_FOCAL').map((p) => p.equipe_id);
 
-    return etapaPontoFocalEquipes.some((equipeId: number) => collab.includes(equipeId));
+    const pode_editar_realizado = etapaPontoFocalEquipes.some((equipeId: number) => collab.includes(equipeId));
+
+    return {
+        pode_editar: false, // não pode editar a etapa em si
+        pode_editar_realizado,
+    };
 }
 
 class NivelOrdemForUpsert {
@@ -345,13 +360,7 @@ export class CronogramaEtapaService {
                 atraso_grau: atrasoCronogramaGrau,
 
                 etapa: {
-                    pode_editar_realizado: await podeEditarEtapa(
-                        tipo,
-                        cronogramaEtapa.etapa,
-                        user,
-                        metaInfo,
-                        this.prisma
-                    ),
+                    ...(await podeEditarEtapa(tipo, cronogramaEtapa.etapa, user, metaInfo, this.prisma)),
                     CronogramaEtapa: [
                         {
                             id: cronogramaEtapa.id,
@@ -411,7 +420,7 @@ export class CronogramaEtapaService {
                             const atrasoFaseGrau = await this.getAtrasoGrau(atrasoFase);
 
                             return {
-                                pode_editar_realizado: await podeEditarEtapa(tipo, f, user, metaInfo, this.prisma),
+                                ...(await podeEditarEtapa(tipo, f, user, metaInfo, this.prisma)),
                                 ps_ponto_focal: {
                                     equipes: f.PdmPerfil.filter((r) => r.tipo == 'PONTO_FOCAL').map((r) => r.equipe_id),
                                 },
@@ -463,13 +472,7 @@ export class CronogramaEtapaService {
                                         );
                                         const atrasoSubFaseGrau = await this.getAtrasoGrau(atrasoSubFase);
                                         return {
-                                            pode_editar_realizado: await podeEditarEtapa(
-                                                tipo,
-                                                ff,
-                                                user,
-                                                metaInfo,
-                                                this.prisma
-                                            ),
+                                            ...(await podeEditarEtapa(tipo, ff, user, metaInfo, this.prisma)),
                                             ps_ponto_focal: {
                                                 equipes: ff.PdmPerfil.filter((r) => r.tipo == 'PONTO_FOCAL').map(
                                                     (r) => r.equipe_id
