@@ -94,13 +94,37 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   }
 });
 
-function encerrarInclusaoDeArquivos() {
-  exibirSeletorDeArquivo.value = false;
-
+function atualizarListaDeArquivos() {
   monitoramentoDeMetasStore
     .atualizarListaDeArquivosDaAnaliseEmFoco(route.params.planoSetorialId, route.params.cicloId, {
       meta_id: route.params.meta_id,
     });
+}
+
+function excluirArquivoDaAnaliseEmFoco(arquivo) {
+  alertStore.confirmAction(`Deseja mesmo remover o arquivo ${arquivo.arquivo.nome_original}?`, async () => {
+    const exclusao = await monitoramentoDeMetasStore.desassociarDocumentoComAnalise(
+      route.params.planoSetorialId,
+      route.params.cicloId,
+      arquivo.id,
+      {
+        meta_id: route.params.meta_id,
+      },
+    );
+
+    if (exclusao) {
+      alertStore.success('Documento excluído com sucesso!');
+      atualizarListaDeArquivos();
+    } else {
+      alertStore.error('Erro ao excluir documento!');
+    }
+  }, 'Remover');
+}
+
+function encerrarInclusaoDeArquivos() {
+  exibirSeletorDeArquivo.value = false;
+
+  atualizarListaDeArquivos();
 }
 
 watch(analiseEmFocoParaEdicao, (novoValor) => {
@@ -185,6 +209,8 @@ watchEffect(() => {
 
     <ListaDeDocumentos
       :arquivos="analiseEmFoco?.arquivos"
+      permitir-exclusao
+      @apagar="excluirArquivoDaAnaliseEmFoco($event)"
     />
 
     <div>

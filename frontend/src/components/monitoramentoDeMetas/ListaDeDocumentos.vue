@@ -9,6 +9,10 @@
     <col>
     <col class="col--data">
     <col class="col--botão-de-ação">
+    <col
+      v-if="$props.permitirExclusao"
+      class="col--botão-de-ação"
+    >
     <thead>
       <tr>
         <th>Documentos</th>
@@ -16,6 +20,10 @@
         <th />
         <th />
         <th />
+        <th
+          v-if="$props.permitirExclusao"
+          class="col--botão-de-ação"
+        />
       </tr>
     </thead>
     <tbody>
@@ -47,6 +55,19 @@
             ><use xlink:href="#i_download" /></svg>
           </SmaeLink>
         </td>
+        <td v-if="$props.permitirExclusao">
+          <button
+            type="button"
+            class="like-a__text arvore-de-arquivos__apagar"
+            :title="`apagar ${doc?.arquivo?.nome_original}`"
+            @click="$emit('apagar', doc)"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_waste" /></svg>
+          </button>
+        </td>
       </tr>
     </tbody>
   </table>
@@ -57,10 +78,16 @@ import type { ArquivoAnaliseQualitativaDocumentoDto } from '@back/mf/metas/dto/m
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
+defineEmits(['apagar']);
+
 defineProps({
   arquivos: {
     type: Array as () => ArquivoAnaliseQualitativaDocumentoDto[],
     required: true,
+  },
+  permitirExclusao: {
+    type: Boolean,
+    default: false,
   },
 });
 </script>

@@ -286,13 +286,12 @@ export const useMonitoramentoDeMetasStore = (prefixo: PrefixosValidos) => define
     },
 
     // eslint-disable-next-line max-len
-    async desassociarDocumentoComAnalise(pdmId: ChaveGenerica, cicloId: ChaveGenerica, documentoId: ChaveGenerica): Promise<boolean> {
+    async desassociarDocumentoComAnalise(pdmId: ChaveGenerica, cicloId: ChaveGenerica, documentoId: ChaveGenerica, params: ParametrosDeRequisicao): Promise<boolean> {
       this.chamadasPendentes.documento = true;
       this.erros.documento = null;
 
       try {
-        await this.requestS.delete(`${baseUrl}/plano-setorial/${pdmId}/ciclo/${cicloId}/analise/documento/${documentoId}`);
-
+        await this.requestS.delete(`${baseUrl}/plano-setorial/${pdmId}/ciclo/${cicloId}/analise/documento/${documentoId}`, params);
         this.chamadasPendentes.documento = false;
 
         return true;
@@ -306,7 +305,8 @@ export const useMonitoramentoDeMetasStore = (prefixo: PrefixosValidos) => define
   getters: {
     cicloAtivo: ({ listaDeCiclos }) => listaDeCiclos.find((ciclo) => ciclo.ativo),
 
-    listaDeCiclosPassados: ({ listaDeCiclos }) => listaDeCiclos.filter((ciclo) => !ciclo.ativo),
+    listaDeCiclosPassados: ({ listaDeCiclos }):CicloFisicoPSDto[] => listaDeCiclos
+      .filter((ciclo) => !ciclo.ativo),
 
     ciclosPorId: ({ listaDeCiclos }) => listaDeCiclos.reduce((acc, ciclo) => {
       acc[ciclo.id] = ciclo;
@@ -337,6 +337,7 @@ export const useMonitoramentoDeMetasStore = (prefixo: PrefixosValidos) => define
     },
 
     anoMaisRecenteNosCiclosPassados() {
+      // eslint-disable-next-line max-len
       return this.anosDisponiveisNosCiclosPassados[this.anosDisponiveisNosCiclosPassados.length - 1];
     },
   },
