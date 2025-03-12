@@ -162,7 +162,7 @@ export class PsCicloController {
     @HttpCode(204)
     async deleteMetaAnaliseQualitativaDocumento(
         @Param() params: FindThreeParams,
-        @Query() dto: FilterMonitCicloDto,
+        @Body() dto: FilterMonitCicloDto,
         @CurrentUser() user: PessoaFromJwt,
         @TipoPDM() tipo: TipoPdmType
     ): Promise<void> {
