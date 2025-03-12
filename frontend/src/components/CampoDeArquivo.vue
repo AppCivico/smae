@@ -226,7 +226,10 @@ watch(() => props.tipo, (novoValor) => {
         @dragover.stop.prevent="($ev) => { $ev.dataTransfer.dropEffect = 'copy' }"
       >
         <template v-if="!zonaAtiva">
-          <template v-if="!model">
+          <template v-if="campoDesabilitado">
+            Escolha um tipo de documento antes de enviar um arquivo.
+          </template>
+          <template v-else-if="!model">
             <svg
               width="20"
               height="20"
@@ -270,9 +273,7 @@ watch(() => props.tipo, (novoValor) => {
             </svg>
           </button>
         </template>
-        <template v-else-if="campoDesabilitado">
-          Escolha um tipo de documento antes de enviar um arquivo.
-        </template>
+
         <template v-else>
           soltar arquivo
         </template>
