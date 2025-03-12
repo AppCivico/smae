@@ -1,6 +1,6 @@
 import { forwardRef, HttpException, Inject, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { Interval } from '@nestjs/schedule';
 import { FonteRelatorio, ModuloSistema, Prisma, RelatorioVisibilidade, TipoRelatorio } from '@prisma/client';
 import * as crypto from 'crypto';
 import * as fs from 'fs';
@@ -58,6 +58,7 @@ export class ReportsService {
     private readonly logger = new Logger(ReportsService.name);
     private enabled: boolean;
     baseUrl: string;
+    private is_running = false;
 
     constructor(
         private readonly jwtService: JwtService,
@@ -465,59 +466,70 @@ export class ReportsService {
         return this.jwtService.sign(opt);
     }
 
-    @Cron('* * * * *')
+    @Interval(5000)
     async handleCron() {
-        //if (process.env['DISABLE_REPORT_CRONTAB']) return;
-
-        await this.prisma.$transaction(
-            async (prisma: Prisma.TransactionClient) => {
-                this.logger.debug(`Adquirindo lock para verificação de relatórios de Projeto`);
-                const locked: {
-                    locked: boolean;
-                }[] = await prisma.$queryRaw`SELECT
-                pg_try_advisory_xact_lock(${JOB_PP_REPORT_LOCK}) as locked
-            `;
-                if (!locked[0].locked) {
-                    this.logger.debug(`Já está em processamento...`);
-                    return;
-                }
-
-                await this.verificaRelatorioProjetos();
-            },
-            {
-                maxWait: 30000,
-                timeout: 60 * 1000 * 5,
-                isolationLevel: 'Serializable',
-            }
-        );
-    }
-
-    @Cron('*/2 * * * *')
-    async handleRelatorioFilaCron() {
-        if (!this.enabled) return;
+        if (!this.enabled || this.is_running) return;
         if (process.env['DISABLE_REPORT_CRONTAB']) return;
 
-        await this.prisma.$transaction(
-            async (prisma: Prisma.TransactionClient) => {
-                this.logger.log(`Adquirindo lock para verificação de relatórios`);
-                const locked: {
-                    locked: boolean;
-                }[] = await prisma.$queryRaw`SELECT
+        this.is_running = true;
+        try {
+            await this.prisma.$transaction(
+                async (prisma: Prisma.TransactionClient) => {
+                    const locked: {
+                        locked: boolean;
+                    }[] = await prisma.$queryRaw`SELECT
+                    pg_try_advisory_xact_lock(${JOB_PP_REPORT_LOCK}) as locked
+                `;
+                    if (!locked[0].locked) {
+                        return;
+                    }
+
+                    await this.verificaRelatorioProjetos();
+                },
+                {
+                    maxWait: 30000,
+                    timeout: 60 * 1000 * 5,
+                    isolationLevel: 'Serializable',
+                }
+            );
+        } catch (error) {
+            this.logger.error(`Erro ao processar fila de relatórios: ${error}`);
+        } finally {
+            this.is_running = false;
+        }
+    }
+
+    @Interval(100)
+    async handleRelatorioFilaCron() {
+        if (!this.enabled || this.is_running) return;
+        if (process.env['DISABLE_REPORT_CRONTAB']) return;
+        this.is_running = true;
+
+        try {
+            await this.prisma.$transaction(
+                async (prisma: Prisma.TransactionClient) => {
+                    const locked: {
+                        locked: boolean;
+                    }[] = await prisma.$queryRaw`SELECT
                 pg_try_advisory_xact_lock(${JOB_REPORT_LOCK}) as locked
             `;
-                if (!locked[0].locked) {
-                    this.logger.log(`Já está em processamento...`);
-                    return;
-                }
+                    if (!locked[0].locked) {
+                        return;
+                    }
 
-                await this.verificaRelatorioFila();
-            },
-            {
-                maxWait: 30000,
-                timeout: 60 * 1000 * 5,
-                isolationLevel: 'Serializable',
-            }
-        );
+                    await this.verificaRelatorioFila();
+                },
+                {
+                    maxWait: 30000,
+                    timeout: 60 * 1000 * 15, // 15 minutos
+                    isolationLevel: 'Serializable',
+                }
+            );
+        } catch (error) {
+            this.logger.error(`Erro ao processar fila de relatórios: ${error}`);
+        } finally {
+            this.is_running = false;
+        }
     }
 
     async executaRelatorioProjetos(filaId: number) {
