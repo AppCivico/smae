@@ -15,10 +15,10 @@
   <td class="cell--nowrap">
     <abbr
       v-if="$props.linha?.orgao_responsal_coleta || $props.linha?.orgao"
-      :title="$props.linha.orgao_responsal_coleta.sigla || $props.linha.orgao.descricao"
+      :title="$props.linha.orgao_responsal_coleta?.sigla || $props.linha.orgao?.descricao"
     >
       {{
-        $props.linha.orgao_responsal_coleta.sigla
+        $props.linha.orgao_responsal_coleta?.sigla
           || $props.linha?.orgao_responsal_coleta
           || $props.linha?.orgao.sigla
           || $props.linha?.orgao
@@ -57,11 +57,11 @@
 </template>
 <script setup lang="ts">
 import type { VariavelGlobalItemDto, VariavelItemDto } from '@/../../backend/src/variavel/entities/variavel.entity';
+import truncate from '@/helpers/texto/truncate';
+import { useAuthStore } from '@/stores/auth.store';
 import { storeToRefs } from 'pinia';
 import { defineProps } from 'vue';
 import { useRoute } from 'vue-router';
-import truncate from '@/helpers/texto/truncate';
-import { useAuthStore } from '@/stores/auth.store';
 
 defineOptions({
   inheritAttrs: false,
