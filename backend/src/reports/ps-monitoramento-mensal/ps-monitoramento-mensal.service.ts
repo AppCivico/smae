@@ -245,10 +245,6 @@ export class PSMonitoramentoMensal implements ReportableService {
         const sql = `select
                 m.id as meta_id,
                 m.codigo as meta_codigo,
-                i.id as iniciativa_id,
-                i.codigo as iniciativa_codigo,
-                a.id as atividade_id,
-                a.codigo as atividade_codigo,
                 coalesce(mcf.informacoes_complementares,'') as analise_qualitativa,
                 mcf.referencia_data as analise_qualitativa_data,
                 coalesce(mcr.detalhamento,'') as risco_detalhamento,
@@ -256,12 +252,10 @@ export class PSMonitoramentoMensal implements ReportableService {
                 coalesce(mcfec.comentario,'') as fechamento_comentario
             from ciclo_fisico cf
             join pdm p on p.id = cf.pdm_id and p.removido_em is null AND p.tipo = 'PS'
-            left join meta m on m.pdm_id = p.id and m.removido_em is null
-            left join iniciativa i on i.meta_id = m.id and i.removido_em is null
-            left join atividade a on a.iniciativa_id = i.id and a.removido_em is null
-            left join meta_ciclo_fisico_analise mcf on mcf.ciclo_fisico_id = cf.id and mcf.removido_em is null and mcf.ultima_revisao = true and mcf.referencia_data = :mesAno ::date
-            left join meta_ciclo_fisico_risco mcr on mcr.ciclo_fisico_id = cf.id and mcr.removido_em is null and mcr.ultima_revisao = true  and mcr.referencia_data = :mesAno ::date
-            left join meta_ciclo_fisico_fechamento mcfec on mcfec.ciclo_fisico_id = cf.id and mcfec.removido_em is null and mcfec.ultima_revisao = true and mcfec.referencia_data = :mesAno ::date
+            join meta m on m.pdm_id = p.id and m.removido_em is null
+            join meta_ciclo_fisico_analise mcf on mcf.ciclo_fisico_id = cf.id and mcf.removido_em is null and mcf.ultima_revisao = true and mcf.referencia_data = :mesAno ::date
+            join meta_ciclo_fisico_risco mcr on mcr.ciclo_fisico_id = cf.id and mcr.removido_em is null and mcr.ultima_revisao = true  and mcr.referencia_data = :mesAno ::date
+            join meta_ciclo_fisico_fechamento mcfec on mcfec.ciclo_fisico_id = cf.id and mcfec.removido_em is null and mcfec.ultima_revisao = true and mcfec.referencia_data = :mesAno ::date
             where m.id in (:metas)
             and cf.pdm_id = :pdm_id
             `;

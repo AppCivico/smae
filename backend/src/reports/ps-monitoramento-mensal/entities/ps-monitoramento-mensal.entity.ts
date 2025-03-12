@@ -36,10 +36,6 @@ export class RelPSMonitoramentoMensalCicloMetasDto {
     ps_id?: number;
     meta_id: number;
     meta_codigo: string;
-    iniciativa_id: number | null;
-    iniciativa_codigo: string | null;
-    atividade_id: number | null;
-    atividade_codigo: string | null;
     analise_qualitativa: string | null;
     analise_qualitativa_data: string | null;
     risco_detalhamento: string | null;
