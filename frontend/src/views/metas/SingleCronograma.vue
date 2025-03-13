@@ -481,7 +481,7 @@ watchEffect(() => {
                 'CadastroMetaPDM.administrador_no_pdm',
                 'SMAE.GrupoVariavel.participante',
               ])
-                && singleMeta?.pode_editar"
+                && singleMeta?.pode_editar || r.pode_editar_realizado"
               class="dropbtn right"
             >
               <span class=""><svg
@@ -708,7 +708,7 @@ watchEffect(() => {
                 'CadastroMetaPDM.administrador_no_pdm',
                 'SMAE.GrupoVariavel.participante',
               ])
-                && singleMeta?.pode_editar"
+                && singleMeta?.pode_editar || rr.pode_editar_realizado"
               class="ml1 f0 flex center mr05"
               style="flex-basis:20px; height: calc(20px + 1rem);"
             >
@@ -735,7 +735,7 @@ watchEffect(() => {
                 'CadastroMetaPDM.administrador_no_pdm',
                 'SMAE.GrupoVariavel.participante',
               ])
-                && singleMeta?.pode_editar"
+                && singleMeta?.pode_editar || rr.pode_editar_realizado"
               class="ml1 f0 flex center mr05"
               style="flex-basis:20px; height: calc(20px + 1rem);"
             >
@@ -911,7 +911,7 @@ watchEffect(() => {
                     'CadastroMetaPDM.administrador_no_pdm',
                     'SMAE.GrupoVariavel.participante',
                   ])
-                    && singleMeta?.pode_editar"
+                    && singleMeta?.pode_editar || rrr.pode_editar_realizado"
                   class="ml1 f0 flex center mr05"
                 >
                   <button
@@ -937,7 +937,7 @@ watchEffect(() => {
                     'CadastroMetaPDM.administrador_no_pdm',
                     'SMAE.GrupoVariavel.participante',
                   ])
-                    && singleMeta?.pode_editar"
+                    && singleMeta?.pode_editar || rrr.pode_editar_realizado"
                   class="ml1 f0 flex center mr05"
                   style="flex-basis:20px; height: calc(20px + 1rem);"
                 >
