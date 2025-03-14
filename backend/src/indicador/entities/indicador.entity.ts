@@ -25,6 +25,7 @@ export class IndicadorDto {
     formula: string | null;
     acumulado_usa_formula: boolean | null;
     acumulado_valor_base: Decimal | null;
+    meta_valor_nominal: Decimal | null;
     formula_variaveis: FormulaVariaveis[];
     casas_decimais: number | null;
     recalculando: boolean;

@@ -463,6 +463,7 @@ export class IndicadorService {
                 formula: true,
                 acumulado_usa_formula: true,
                 acumulado_valor_base: true,
+                meta_valor_nominal: true,
                 casas_decimais: true,
                 recalculando: true,
                 recalculo_erro: true,
