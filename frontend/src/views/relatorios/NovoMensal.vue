@@ -192,7 +192,10 @@ onMounted(async () => {
           as="select"
           class="inputtext light"
         >
-          <option>
+          <option
+            value=""
+            disabled
+          >
             Selecionar
           </option>
           <option :value="true">

@@ -167,7 +167,10 @@ const formularioSujo = useIsFormDirty();
           as="select"
           class="inputtext light"
         >
-          <option :value="null">
+          <option
+            value=""
+            disabled
+          >
             Selecionar
           </option>
           <option :value="true">
