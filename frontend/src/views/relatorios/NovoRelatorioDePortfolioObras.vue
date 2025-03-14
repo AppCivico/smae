@@ -109,39 +109,6 @@ iniciar();
           {{ errors['parametros.portfolio_id'] }}
         </div>
       </div>
-      <div class="f1">
-        <LabelFromYup
-          name="eh_publico"
-          :schema="schema"
-          required
-        />
-        <Field
-          name="eh_publico"
-          as="select"
-          class="inputtext light"
-          :class="{
-            error: errors['eh_publico'],
-            loading: portfolioObrasStore.chamadasPendentes.lista
-          }"
-          :disabled="portfolioObrasStore.chamadasPendentes.lista"
-        >
-          <option :value="null">
-            Selecionar
-          </option>
-          <option :value="true">
-            Sim
-          </option>
-          <option :value="false">
-            Não
-          </option>
-        </Field>
-        <div
-          v-if="errors['eh_publico']"
-          class="error-msg"
-        >
-          {{ errors['eh_publico'] }}
-        </div>
-      </div>
       <div class="f1 mb1">
         <LabelFromYup
           name="orgao_responsavel_id"
