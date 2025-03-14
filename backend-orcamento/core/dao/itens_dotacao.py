@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, Optional
 from functools import partial
 from collections import OrderedDict
 #temporario por conta do hotfix do endpoint de fontes
@@ -49,19 +49,24 @@ class ItensDotacao:
         unique_keys = set()
         for item in data:
             unique_keys.update(tuple(item.keys()))
-
+        
         return unique_keys
-
-    def __is_code_key(self, key:str)->bool:
+    
+    def __is_code_key(self, key:str, check_func:Optional[Callable]=None)->bool:
 
         key_lower = key.lower()
-        return key_lower.startswith('cod')
+        if check_func is None:
+            return key_lower.startswith('cod')
+        
+        return check_func(key)
 
 
-    def __is_desc_key(self, key:str)->bool:
+    def __is_desc_key(self, key:str, check_func:Optional[Callable]=None)->bool:
+
+        if check_func:
+            return check_func(key)
 
         starts = ('txt', 'text')
-
         key_lower = key.lower()
 
         for start in starts:
@@ -70,31 +75,34 @@ class ItensDotacao:
         else:
             return False
 
-    def __solve_data_keys(self, data:list)->dict:
+    def __solve_data_keys(self, data:list, check_func_code_key:Optional[Callable]=None,
+                          check_func_desc_key:Optional[Callable]=None)->dict:
 
-
+        
         unique_keys = self.__get_unique_keys(data)
 
         final_keys = {}
         for key in unique_keys:
-            if self.__is_code_key(key):
+            if self.__is_code_key(key, check_func_code_key):
                 final_keys['cod'] = key
-            elif self.__is_desc_key(key):
+            elif self.__is_desc_key(key, check_func_desc_key):
                 final_keys['desc'] = key
             else:
                 print(f'Unexpected key: {key}')
 
         return final_keys
-
-    def __parse_data(self, resp:list)->dict:
+    
+    def __parse_data(self, resp:list, check_func_code_key:Optional[Callable]=None,
+                          check_func_desc_key:Optional[Callable]=None)->list[dict]:
 
 
         if resp is None:
             return []
 
-        keys = self.__solve_data_keys(resp)
-
-        #print(resp)
+        keys = self.__solve_data_keys(resp, check_func_code_key, 
+                                      check_func_desc_key)
+        
+        print(resp)
         parsed = [
                     {'codigo' : item[keys['cod']],
                     'descricao' : item[keys['desc']]}
@@ -104,24 +112,45 @@ class ItensDotacao:
         return parsed
 
 
-    def __get_data(self, endpoint_name:str, ano:str, *_, **kwargs)->list:
+    def __get_data(self, endpoint_name:str, ano:str, check_func_code_key:Optional[Callable]=None,
+                          check_func_desc_key:Optional[Callable]=None, *_, **kwargs)->list:
 
 
         data_key = self._keys_valores[endpoint_name]
         resp = self.sof(data_key=data_key, attr_keys=None,
                         endpoint_name=endpoint_name, ano=ano,
                         **kwargs)
+        
+        return self.__parse_data(resp, check_func_code_key, check_func_desc_key)
+    
 
-        return self.__parse_data(resp)
+    def __is_code_orgao(self, key:str)->bool:
+
+        return key=='codOrgao'
+    
+    def __is_desc_orgao(self, key:str)->bool:
+
+        return key=='txtDescricaoOrgao'
 
 
-    def __build_methods(self)->None:
+    def __build_methods(self, check_func_code_key:Optional[Callable]=None,
+                        check_func_desc_key:Optional[Callable]=None)->None:
 
         for endpoint in self._keys_valores.keys():
-            method = partial(self.__get_data, endpoint_name=endpoint)
+
+            if endpoint == 'orgaos':
+                method = partial(self.__get_data, endpoint_name=endpoint, 
+                                check_func_code_key=check_func_code_key,
+                                check_func_desc_key=check_func_desc_key)
+            else:
+
+                method = partial(self.__get_data, endpoint_name=endpoint, 
+                                check_func_code_key=check_func_code_key,
+                                check_func_desc_key=check_func_desc_key)
+                
             setattr(self, endpoint, method)
 
-    def __solve_unidades(self, ano:int, data:dict)->list:
+    def __solve_unidades(self, ano:int, data:dict)->None:
 
         orgaos = data['orgaos']
         unidades = []
@@ -133,11 +162,10 @@ class ItensDotacao:
                 continue
             for unid in unid_org:
                 unid['cod_orgao'] = cod_orgao
-
+            
             unidades.extend(unid_org)
-
+            
         data['unidades'] = unidades
-
 
     def __call__(self, ano:int)->dict:
 
@@ -156,6 +184,6 @@ class ItensDotacao:
                 with open('fontes_cache.json') as f:
                     hardcode_data = json.load(f)['fonte_recursos']
                 data['fonte_recursos'] = hardcode_data
-
-
+            
+        
         return data
