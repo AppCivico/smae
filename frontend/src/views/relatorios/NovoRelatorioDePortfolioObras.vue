@@ -2,11 +2,11 @@
 import { relatórioDePortfolioObras as schema } from '@/consts/formSchemas';
 import truncate from '@/helpers/texto/truncate';
 import { useAlertStore } from '@/stores/alert.store';
+import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store.ts';
-import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
-import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';
 import { useRegionsStore } from '@/stores/regions.store';
+import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
@@ -64,11 +64,11 @@ iniciar();
 </script>
 
 <template>
-  <div class="flex spacebetween center mb2">
-    <h1>{{ $route.meta.título || $route.name }}</h1>
+  <header class="flex spacebetween center mb2">
+    <TituloDePagina />
     <hr class="ml2 f1">
     <CheckClose />
-  </div>
+  </header>
   <Form
     v-slot="{ errors, isSubmitting, setFieldValue }"
     :validation-schema="schema"
