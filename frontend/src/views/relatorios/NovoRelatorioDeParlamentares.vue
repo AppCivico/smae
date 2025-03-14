@@ -140,7 +140,10 @@ partidosStore.buscarTudo();
           class="inputtext light mb1"
           :class="{ error: errors['eh_publico'] }"
         >
-          <option :value="null">
+          <option
+            value=""
+            disabled
+          >
             Selecionar
           </option>
           <option :value="true">
