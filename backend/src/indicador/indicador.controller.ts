@@ -39,6 +39,7 @@ export class IndicadorController {
     @Roles(MetaController.WritePerm)
     async create(
         @Body() createIndicadorDto: CreateIndicadorDto,
+
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
         return await this.indicadorService.create(this.tipoPdm, createIndicadorDto, user);
