@@ -1,6 +1,7 @@
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsInt, IsOptional, Max, Min } from 'class-validator';
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsEnum, IsInt, IsOptional, Max, Min } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
+import { TipoPdm } from '@prisma/client';
 
 export class CreatePsMonitoramentoMensalFilterDto {
     @IsOptional()
@@ -11,6 +12,10 @@ export class CreatePsMonitoramentoMensalFilterDto {
     @IsOptional()
     @IsInt()
     pdm_id?: number;
+
+    @IsOptional()
+    @IsEnum(TipoPdm)
+    tipo_pdm?: TipoPdm;
 
     @IsInt()
     @Transform(({ value }: any) => +value)

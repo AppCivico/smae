@@ -32,7 +32,6 @@ export class PSMonitoramentoMensal implements ReportableService {
             {
                 ...params,
                 pdm_id: params.plano_setorial_id,
-                tipo_pdm: 'PS',
                 periodo: 'Geral',
                 tipo: 'Mensal',
             },
@@ -61,7 +60,6 @@ export class PSMonitoramentoMensal implements ReportableService {
         const { metas } = await this.utils.applyFilter(
             {
                 ...params,
-                tipo_pdm: 'PS',
                 pdm_id: params.pdm_id ?? params.plano_setorial_id,
             },
             { iniciativas: false, atividades: false },
@@ -276,81 +274,84 @@ export class PSMonitoramentoMensal implements ReportableService {
         ctx: ReportContext,
         user: PessoaFromJwt | null
     ): Promise<FileOutput[]> {
-        const rows = await this.fetchPsMonitoramentoMensalData(params, user);
-        await ctx.progress(40);
-        //Cabeçalho Arquivo
-        const fieldsCSV = [
-            { value: 'codigo_indicador', label: 'Código do Indicador' },
-            { value: 'titulo_indicador', label: 'Título do Indicador' },
-            { value: 'indicador_id', label: 'ID do Indicador' },
-            { value: 'codigo_variavel', label: 'Código da Variável' },
-            { value: 'titulo_variavel', label: 'Título da Variável' },
-            { value: 'variavel_id', label: 'ID da Variável' },
-            { value: 'municipio', label: 'Município' },
-            { value: 'municipio_id', label: 'Código do Município' },
-            { value: 'regiao', label: 'Região' },
-            { value: 'regiao_id', label: 'ID da Região' },
-            { value: 'subprefeitura', label: 'Subprefeitura' },
-            { value: 'subprefeitura_id', label: 'ID da Subprefeitura' },
-            { value: 'distrito', label: 'Distrito' },
-            { value: 'distrito_id', label: 'ID do Distrito' },
-            { value: 'serie', label: 'Serie' },
-            { value: 'data_referencia', label: 'Data de Referencia' },
-            { value: 'valor_nominal', label: 'Valor Nominal' },
-            { value: 'valor_categorica', label: 'Valor Categórica' },
-            { value: 'data_preenchimento', label: 'Data da Coleta' },
-            { value: 'analise_qualitativa_coleta', label: 'Analise Qualitativa Coleta' },
-            { value: 'analise_qualitativa_aprovador', label: 'Analise Qualitativa Conferidor' },
-            { value: 'analise_qualitativa_liberador', label: 'Analise Qualitativa Liberador' },
-        ];
-
         const out: FileOutput[] = [];
-        if (rows.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-                fields: fieldsCSV,
-            });
+        if (params.tipo_pdm == 'PS') {
+            const rows = await this.fetchPsMonitoramentoMensalData(params, user);
+            await ctx.progress(40);
+            //Cabeçalho Arquivo
+            const fieldsCSV = [
+                { value: 'codigo_indicador', label: 'Código do Indicador' },
+                { value: 'titulo_indicador', label: 'Título do Indicador' },
+                { value: 'indicador_id', label: 'ID do Indicador' },
+                { value: 'codigo_variavel', label: 'Código da Variável' },
+                { value: 'titulo_variavel', label: 'Título da Variável' },
+                { value: 'variavel_id', label: 'ID da Variável' },
+                { value: 'municipio', label: 'Município' },
+                { value: 'municipio_id', label: 'Código do Município' },
+                { value: 'regiao', label: 'Região' },
+                { value: 'regiao_id', label: 'ID da Região' },
+                { value: 'subprefeitura', label: 'Subprefeitura' },
+                { value: 'subprefeitura_id', label: 'ID da Subprefeitura' },
+                { value: 'distrito', label: 'Distrito' },
+                { value: 'distrito_id', label: 'ID do Distrito' },
+                { value: 'serie', label: 'Serie' },
+                { value: 'data_referencia', label: 'Data de Referencia' },
+                { value: 'valor_nominal', label: 'Valor Nominal' },
+                { value: 'valor_categorica', label: 'Valor Categórica' },
+                { value: 'data_preenchimento', label: 'Data da Coleta' },
+                { value: 'analise_qualitativa_coleta', label: 'Analise Qualitativa Coleta' },
+                { value: 'analise_qualitativa_aprovador', label: 'Analise Qualitativa Conferidor' },
+                { value: 'analise_qualitativa_liberador', label: 'Analise Qualitativa Liberador' },
+            ];
 
-            const linhas = json2csvParser.parse(rows);
-            out.push({
-                name: 'monitoramento-mensal-variaveis-ps.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
-            });
-        }
+            if (rows.length) {
+                const json2csvParser = new Parser({
+                    ...DefaultCsvOptions,
+                    transforms: defaultTransform,
+                    fields: fieldsCSV,
+                });
 
-        const cicloMetasRows = await this.buscaMetasCiclo(params, user);
-        if (cicloMetasRows.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-                fields: [
-                    { value: 'meta_id', label: 'ID da Meta' },
-                    { value: 'meta_codigo', label: 'Código da Meta' },
-                    { value: 'iniciativa_id', label: 'ID da Iniciativa' },
-                    { value: 'iniciativa_codigo', label: 'Código da Iniciativa' },
-                    { value: 'atividade_id', label: 'ID da Atividade' },
-                    { value: 'atividade_codigo', label: 'Código da Atividade' },
-                    { value: 'analise_qualitativa', label: 'Analise Qualitativa' },
-                    { value: 'analise_qualitativa_data', label: 'Data da Analise Qualitativa' },
-                    { value: 'risco_detalhamento', label: 'Detalhamento do Risco' },
-                    { value: 'risco_ponto_atencao', label: 'Ponto de Atenção do Risco' },
-                    { value: 'fechamento_comentario', label: 'Comentário de Fechamento' },
-                ],
-            });
+                const linhas = json2csvParser.parse(rows);
+                out.push({
+                    name: 'monitoramento-mensal-variaveis-ps.csv',
+                    buffer: Buffer.from(linhas, 'utf8'),
+                });
+            }
 
-            const linhas = json2csvParser.parse(cicloMetasRows);
-            out.push({
-                name: 'monitoramento-mensal-metas-ciclo-ps.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
-            });
+            const cicloMetasRows = await this.buscaMetasCiclo(params, user);
+            if (cicloMetasRows.length) {
+                const json2csvParser = new Parser({
+                    ...DefaultCsvOptions,
+                    transforms: defaultTransform,
+                    fields: [
+                        { value: 'meta_id', label: 'ID da Meta' },
+                        { value: 'meta_codigo', label: 'Código da Meta' },
+                        { value: 'iniciativa_id', label: 'ID da Iniciativa' },
+                        { value: 'iniciativa_codigo', label: 'Código da Iniciativa' },
+                        { value: 'atividade_id', label: 'ID da Atividade' },
+                        { value: 'atividade_codigo', label: 'Código da Atividade' },
+                        { value: 'analise_qualitativa', label: 'Analise Qualitativa' },
+                        { value: 'analise_qualitativa_data', label: 'Data da Analise Qualitativa' },
+                        { value: 'risco_detalhamento', label: 'Detalhamento do Risco' },
+                        { value: 'risco_ponto_atencao', label: 'Ponto de Atenção do Risco' },
+                        { value: 'fechamento_comentario', label: 'Comentário de Fechamento' },
+                    ],
+                });
+
+                const linhas = json2csvParser.parse(cicloMetasRows);
+                out.push({
+                    name: 'monitoramento-mensal-metas-ciclo-ps.csv',
+                    buffer: Buffer.from(linhas, 'utf8'),
+                });
+            }
+        } else {
+            // TODO: redirect pro resto do relatórios do relatório mensal do PDM antigo
         }
 
         const indicadores = await this.indicadoresService.toFileOutput(
             {
                 ...params,
                 pdm_id: params.pdm_id,
-                tipo_pdm: 'PS',
                 periodo: 'Geral',
                 tipo: 'Mensal',
             },

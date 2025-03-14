@@ -3,6 +3,7 @@ import { ListaDePrivilegios } from '../../../common/ListaDePrivilegios';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { FileOutput } from '../../utils/utils.service';
 import { GetTempFileName } from '../reports.service';
+import { ModuloSistema } from '@prisma/client';
 
 export type RestricaoAcesso = {
     portfolio_orgao_ids?: number[];
@@ -16,9 +17,12 @@ export class ReportContext {
     private prisma: PrismaService;
     private relatorio_id: number | null;
 
-    constructor(prisma: PrismaService, relatorio_id: number | null) {
+    public readonly sistema: ModuloSistema;
+
+    constructor(prisma: PrismaService, relatorio_id: number | null, sistema: ModuloSistema) {
         this.prisma = prisma;
         this.relatorio_id = relatorio_id;
+        this.sistema = sistema;
     }
 
     cancel() {

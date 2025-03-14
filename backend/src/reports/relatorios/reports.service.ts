@@ -1,4 +1,12 @@
-import { forwardRef, HttpException, Inject, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import {
+    BadRequestException,
+    forwardRef,
+    HttpException,
+    Inject,
+    Injectable,
+    InternalServerErrorException,
+    Logger,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Interval } from '@nestjs/schedule';
 import { FonteRelatorio, ModuloSistema, Prisma, RelatorioVisibilidade, TipoRelatorio } from '@prisma/client';
@@ -87,6 +95,7 @@ export class ReportsService {
         const parsedUrl = new URL(process.env.URL_LOGIN_SMAE || 'http://smae-frontend/');
         this.baseUrl = `${parsedUrl.protocol}//${parsedUrl.hostname}:${parsedUrl.port}`;
         this.enabled = CrontabIsEnabled('reports');
+        this.enabled = true;
     }
 
     private async runReport(dto: CreateReportDto, user: PessoaFromJwt | null, ctx: ReportContext): Promise<void> {
@@ -116,7 +125,27 @@ export class ReportsService {
         } else if (dto.fonte === 'PSOrcamento' || dto.fonte === 'PSPrevisaoCusto') {
             parametros.tipo_pdm = 'PS';
         } else if (dto.fonte === 'PSIndicadores' || dto.fonte === 'PSMonitoramentoMensal') {
-            parametros.tipo_pdm = 'PS';
+            // legado sempre assume que é PS
+            if (ctx.sistema == 'SMAE' || ctx.sistema == 'PlanoSetorial') {
+                parametros.tipo_pdm = 'PS';
+            } else {
+                if (ctx.sistema !== 'ProgramaDeMetas')
+                    throw new BadRequestException('Sistema não suportado no relatório');
+                const pdm_id = +parametros.pdm_id;
+
+                if (isNaN(pdm_id)) {
+                    throw new BadRequestException('pdm_id precisa ser um número');
+                }
+
+                const pdmInfo = await this.prisma.pdm.findUnique({
+                    where: { id: pdm_id },
+                    select: { sistema: true },
+                });
+
+                // se foi criado pelo sistema antigo (pdm 11)
+                // Usa o tipo_pdm=PDM assim o relatório irá agir como se fosse PDM
+                parametros.tipo_pdm = pdmInfo?.sistema == 'PDM' ? 'PDM' : 'PS';
+            }
         } else if (dto.fonte === 'Indicadores') {
             parametros.tipo_pdm = 'PDM';
         }
@@ -473,6 +502,7 @@ export class ReportsService {
 
         this.is_running = true;
         try {
+            process.env.INTERNAL_DISABLE_QUERY_LOG = '1';
             await this.prisma.$transaction(
                 async (prisma: Prisma.TransactionClient) => {
                     const locked: {
@@ -489,12 +519,12 @@ export class ReportsService {
                 {
                     maxWait: 30000,
                     timeout: 60 * 1000 * 5,
-                    isolationLevel: 'Serializable',
                 }
             );
         } catch (error) {
             this.logger.error(`Erro ao processar fila de relatórios: ${error}`);
         } finally {
+            process.env.INTERNAL_DISABLE_QUERY_LOG = '';
             this.is_running = false;
         }
     }
@@ -506,28 +536,35 @@ export class ReportsService {
         this.is_running = true;
 
         try {
+            process.env.INTERNAL_DISABLE_QUERY_LOG = '1';
             await this.prisma.$transaction(
                 async (prisma: Prisma.TransactionClient) => {
-                    const locked: {
-                        locked: boolean;
-                    }[] = await prisma.$queryRaw`SELECT
-                pg_try_advisory_xact_lock(${JOB_REPORT_LOCK}) as locked
-            `;
+                    const lockPromise: Promise<{ locked: boolean }[]> =
+                        prisma.$queryRaw`SELECT pg_try_advisory_xact_lock(${JOB_REPORT_LOCK}) as locked`;
+
+                    lockPromise.then(() => {
+                        process.env.INTERNAL_DISABLE_QUERY_LOG = '';
+                    });
+
+                    const locked = await lockPromise;
+                    if (!locked[0].locked) return;
+
                     if (!locked[0].locked) {
                         return;
                     }
 
                     await this.verificaRelatorioFila();
+                    process.env.INTERNAL_DISABLE_QUERY_LOG = '1';
                 },
                 {
                     maxWait: 30000,
                     timeout: 60 * 1000 * 15, // 15 minutos
-                    isolationLevel: 'Serializable',
                 }
             );
         } catch (error) {
             this.logger.error(`Erro ao processar fila de relatórios: ${error}`);
         } finally {
+            process.env.INTERNAL_DISABLE_QUERY_LOG = '';
             this.is_running = false;
         }
     }
@@ -563,6 +600,7 @@ export class ReportsService {
     }
 
     private async verificaRelatorioProjetos(filtroId?: number | undefined) {
+        process.env.INTERNAL_DISABLE_QUERY_LOG = '1';
         const pending = await this.prisma.projetoRelatorioFila.findMany({
             where: {
                 executado_em: null,
@@ -581,6 +619,7 @@ export class ReportsService {
                 ],
             },
         });
+        process.env.INTERNAL_DISABLE_QUERY_LOG = '';
 
         for (const job of pending) {
             try {
@@ -605,10 +644,11 @@ export class ReportsService {
                         },
                         visibilidade: 'Restrito',
                         progresso: 0,
+                        sistema: 'Projetos',
                     },
                 });
 
-                const contexto = new ReportContext(this.prisma, relatorio.id);
+                const contexto = new ReportContext(this.prisma, relatorio.id, relatorio.sistema);
 
                 await this.runReport(
                     {
@@ -665,6 +705,7 @@ export class ReportsService {
     }
 
     private async verificaRelatorioFila(filtroId?: number | undefined) {
+        process.env.INTERNAL_DISABLE_QUERY_LOG = '1';
         const pending = await this.prisma.relatorioFila.findMany({
             where: {
                 executado_em: null,
@@ -685,8 +726,7 @@ export class ReportsService {
             take: 1,
             orderBy: { criado_em: 'asc' },
         });
-
-        this.logger.log(pending.length + ' relatórios pendentes');
+        process.env.INTERNAL_DISABLE_QUERY_LOG = '';
 
         for (const job of pending) {
             this.logger.log(`iniciando processamento do relatório ID ${job.relatorio_id}`);
@@ -719,7 +759,7 @@ export class ReportsService {
                     },
                 });
                 if (!relatorio) throw new InternalServerErrorException(`Relatório ${job.relatorio_id} não encontrado`);
-                const contexto = new ReportContext(this.prisma, relatorio.id);
+                const contexto = new ReportContext(this.prisma, relatorio.id, relatorio.sistema);
 
                 await this.prisma.relatorio.update({
                     where: { id: job.relatorio_id },
