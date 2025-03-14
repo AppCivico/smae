@@ -13,6 +13,7 @@ import {
 import { DateTransform } from 'src/auth/transforms/date.transform';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 import { Transform, Type } from 'class-transformer';
+import { PositiveNumberTransformOrUndef } from 'src/auth/transforms/number.transform';
 
 export class CreateContratoAditivoDto {
     @IsInt()
@@ -52,5 +53,6 @@ export class CreateContratoAditivoDto {
     @ValidateIf((object, value) => value !== null)
     @Min(0, { message: '$property| precisa ser positivo ou zero' })
     @Max(100, { message: '$property| Máximo é 100' })
+    @Transform(PositiveNumberTransformOrUndef)
     percentual_medido?: number;
 }
