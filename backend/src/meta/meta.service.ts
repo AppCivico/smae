@@ -58,7 +58,13 @@ interface MetaResponsavelChanges {
     }[];
 }
 
-export const MetasGetPermissionSet = async (tipo: TipoPdmType, user: PessoaFromJwt | undefined, isBi: boolean) => {
+export const MetasGetPermissionSet = async (
+    tipo: TipoPdmType,
+    user: PessoaFromJwt | undefined,
+    isBi: boolean,
+
+    prisma: PrismaService
+) => {
     const permissionsSet: Prisma.Enumerable<Prisma.MetaWhereInput> = [
         {
             removido_em: null,
@@ -134,55 +140,60 @@ export const MetasGetPermissionSet = async (tipo: TipoPdmType, user: PessoaFromJ
             });
         }
 
+        const collab: number[] = await user.getEquipesColaborador(prisma);
+        console.log(collab);
         if (user.hasSomeRoles(['SMAE.GrupoVariavel.participante'])) {
             //this.logger.verbose(`Usuário tem SMAE.GrupoVariavel.participante, filtrando PS onde é admin_cp`);
             orSet.push({
-                pdm: {
-                    PdmPerfil: {
-                        some: {
-                            removido_em: null,
-                            tipo: 'ADMIN',
+                OR: [
+                    {
+                        pdm: {
+                            // aqui precisa buscar apenas ser da equipe do admin do PDM
+                            // Ou da equipe de admin do PS
+
+                            PdmPerfil: {
+                                some: {
+                                    removido_em: null,
+                                    tipo: 'ADMIN',
+                                    equipe_id: { in: collab },
+                                },
+                            },
                         },
                     },
-                },
+                    {
+                        PdmPerfil: {
+                            some: {
+                                removido_em: null,
+                                tipo: 'ADMIN',
+                                equipe_id: { in: collab },
+                            },
+                        },
+                    },
+                ],
             });
         }
 
         if (user.hasSomeRoles(['SMAE.GrupoVariavel.participante'])) {
             //this.logger.verbose(`Usuário tem SMAE.GrupoVariavel.participante, filtrando PS onde é tecnico_cp`);
             orSet.push({
-                pdm: {
-                    PdmPerfil: {
-                        some: {
-                            removido_em: null,
-                            tipo: 'CP',
-                        },
-                    },
-                },
-                ViewMetaPessoaResponsavelNaCp: {
-                    // NA CP
+                PdmPerfil: {
                     some: {
-                        pessoa_id: user.id,
+                        removido_em: null,
+                        tipo: 'CP',
+                        equipe_id: { in: collab },
                     },
                 },
-                // TODO ? filtrar as metas tbm, como se fosse o caso do PDM
             });
         }
 
         if (user.hasSomeRoles(['SMAE.GrupoVariavel.participante'])) {
             //this.logger.verbose(`Usuário tem SMAE.GrupoVariavel.participante, filtrando PS onde é ponto_focal`);
             orSet.push({
-                pdm: {
-                    PdmPerfil: {
-                        some: {
-                            removido_em: null,
-                            tipo: 'PONTO_FOCAL',
-                        },
-                    },
-                },
-                ViewMetaPessoaResponsavel: {
+                PdmPerfil: {
                     some: {
-                        pessoa_id: user.id,
+                        removido_em: null,
+                        tipo: 'PONTO_FOCAL',
+                        equipe_id: { in: collab },
                     },
                 },
             });
@@ -469,7 +480,7 @@ export class MetaService {
         user: PessoaFromJwt | undefined,
         pdm_id: number | undefined = undefined
     ): Promise<{ id: number }[]> {
-        const permissionsSet = await MetasGetPermissionSet(tipo, user, true);
+        const permissionsSet = await MetasGetPermissionSet(tipo, user, true, this.prisma);
 
         return await this.prisma.meta.findMany({
             where: {
@@ -488,7 +499,7 @@ export class MetaService {
     }
 
     async getMetaFilterSet(tipo: TipoPdmType, user: PessoaFromJwt) {
-        return await MetasGetPermissionSet(tipo, user, false);
+        return await MetasGetPermissionSet(tipo, user, false, this.prisma);
     }
 
     async assertMetaWriteOrThrow(
@@ -530,7 +541,7 @@ export class MetaService {
         user: PessoaFromJwt,
         skipObjects: boolean = false
     ): Promise<MetaItemDto[]> {
-        const permissionsSet = await MetasGetPermissionSet(tipo, user, false);
+        const permissionsSet = await MetasGetPermissionSet(tipo, user, false, this.prisma);
 
         const listActive = await this.prisma.meta.findMany({
             where: {

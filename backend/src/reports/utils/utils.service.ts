@@ -43,7 +43,8 @@ export class UtilsService {
             whereSet = await MetasGetPermissionSet(
                 filters?.tipo_pdm == 'PS' ? '_PS' : sistema == 'PDM' ? '_PDM' : 'PDM_AS_PS',
                 user,
-                false
+                false,
+                this.prisma
             );
         }
 
