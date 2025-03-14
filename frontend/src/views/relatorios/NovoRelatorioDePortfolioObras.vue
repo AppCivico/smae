@@ -24,7 +24,7 @@ const route = useRoute();
 const router = useRouter();
 
 const {
-  regions, regiõesPorNível,
+  regiõesPorNível,
 } = storeToRefs(regionsStore);
 
 const initialValues = {
