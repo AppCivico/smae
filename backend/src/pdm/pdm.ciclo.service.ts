@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { CicloFisicoFase, PdmPerfilTipo, Prisma } from '@prisma/client';
 import { DateTime } from 'luxon';
@@ -529,9 +529,9 @@ export class PdmCicloService {
             where: { id: pdmId },
             select: { sistema: true },
         });
-        if (pdm.sistema === 'PDM') throw new Error('Operação não permitida para PDMs antigos');
+        if (pdm.sistema === 'PDM') throw new BadRequestException('Operação não permitida para PDMs antigos');
         if (dto.meses && dto.meses.length > 0 && !dto.data_inicio)
-            throw new Error('Data de início é obrigatória quando há meses configurados');
+            throw new BadRequestException('Data de início é obrigatória quando há meses configurados');
 
         const countExistentes = await prisma.cicloFisico.count({
             where: {
@@ -540,7 +540,7 @@ export class PdmCicloService {
             },
         });
         if (countExistentes > 0)
-            throw new Error('Já existe um ciclo físico do tipo antigo para este Programa de Metas');
+            throw new BadRequestException('Já existe um ciclo físico do tipo antigo para este Programa de Metas');
 
         const now = new Date();
         const performUpdate = async (prismaTx: Prisma.TransactionClient) => {
