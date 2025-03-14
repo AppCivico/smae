@@ -47,6 +47,7 @@ const initialValues = ref({
     tags: [],
     listar_variaveis_regionalizadas: false,
   },
+  eh_publico: null,
 });
 
 async function onSubmit(values) {

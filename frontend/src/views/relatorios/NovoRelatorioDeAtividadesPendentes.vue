@@ -1,18 +1,18 @@
 <script setup>
+import AutocompleteField from '@/components/AutocompleteField2.vue';
+import LabelFromYup from '@/components/LabelFromYup.vue';
+import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
+import { relatórioAtividadesPendentes as schema } from '@/consts/formSchemas';
+import { useAlertStore } from '@/stores/alert.store';
+import { useOrgansStore } from '@/stores/organs.store';
+import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
+import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage, Field, useForm, useIsFormDirty,
 } from 'vee-validate';
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import LabelFromYup from '@/components/LabelFromYup.vue';
-import AutocompleteField from '@/components/AutocompleteField2.vue';
-import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
-import { relatórioAtividadesPendentes as schema } from '@/consts/formSchemas';
-import { useAlertStore } from '@/stores/alert.store';
-import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
-import { useOrgansStore } from '@/stores/organs.store';
-import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
 
 const TipoDeTransferenciaStore = useTipoDeTransferenciaStore();
 const { lista: tipoTransferenciaComoLista } = storeToRefs(TipoDeTransferenciaStore);
@@ -32,6 +32,7 @@ const valoresIniciais = {
     data_termino: null,
     orgao_id: [],
   },
+  eh_publico: null,
 };
 
 const { órgãosComoLista } = storeToRefs(ÓrgãosStore);

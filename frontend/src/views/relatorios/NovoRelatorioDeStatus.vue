@@ -1,6 +1,4 @@
 <script setup>
-import { Field, Form, useIsFormDirty } from 'vee-validate';
-import { useRoute, useRouter } from 'vue-router';
 import MigalhasDePao from '@/components/MigalhasDePao.vue';
 import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import { relatórioDeStatus as schema } from '@/consts/formSchemas';
@@ -8,6 +6,8 @@ import { useAlertStore } from '@/stores/alert.store';
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
+import { Field, Form, useIsFormDirty } from 'vee-validate';
+import { useRoute, useRouter } from 'vue-router';
 
 const alertStore = useAlertStore();
 const portfolioStore = usePortfolioStore();
@@ -26,6 +26,7 @@ const initialValues = {
     periodo_inicio: null,
     periodo_fim: null,
   },
+  eh_publico: null,
 };
 
 async function onSubmit(values) {

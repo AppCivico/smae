@@ -24,8 +24,8 @@ const initialValues = {
     cargo: null,
     partido_id: null,
     eleicao_id: null,
-    eh_publico: null,
   },
+  eh_publico: null,
 };
 
 const { lista } = storeToRefs(partidosStore);

@@ -30,7 +30,7 @@ const valoresIniciais = {
     tipo_id: null,
     tipo: 'Geral',
   },
-
+  eh_publico: null,
 };
 
 TipoDeTransferenciaStore.buscarTudo();

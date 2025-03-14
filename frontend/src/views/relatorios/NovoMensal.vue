@@ -41,6 +41,7 @@ const initialValues = ref({
     tags: [],
     paineis: [],
   },
+  eh_publico: null,
 });
 
 async function onSubmit(values) {

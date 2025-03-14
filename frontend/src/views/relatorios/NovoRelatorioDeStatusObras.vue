@@ -1,8 +1,8 @@
 <script setup>
 import { relatórioDeStatusObra as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
-import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store.ts';
 import { useObrasStore } from '@/stores/obras.store';
+import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store.ts';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { Field, Form } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
@@ -24,6 +24,7 @@ const initialValues = {
     periodo_inicio: null,
     periodo_fim: null,
   },
+  eh_publico: null,
 };
 
 async function onSubmit(values) {

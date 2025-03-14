@@ -34,6 +34,7 @@ const initialValues = {
     orgao_responsavel_id: null,
     portfolio_id: null,
   },
+  eh_publico: null,
 };
 
 async function onSubmit(values) {

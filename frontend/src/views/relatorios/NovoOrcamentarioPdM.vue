@@ -29,6 +29,7 @@ const initialValues = computed(() => ({
     fim: '',
     orgaos: [],
   },
+  eh_publico: null,
 }));
 
 async function onSubmit(values) {
