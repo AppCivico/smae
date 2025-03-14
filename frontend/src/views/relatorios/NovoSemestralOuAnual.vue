@@ -41,6 +41,7 @@ const currentOptions = ref({
     periodo: '',
     semestre: '',
   },
+  eh_publico: null,
 });
 
 async function onSubmit(values) {

@@ -54,6 +54,7 @@ const initialValues = computed(() => ({
     meta_id: null,
     tags: [],
   },
+  eh_publico: null,
 }));
 
 async function buscarMetaSimplificada(valorOuEvento) {

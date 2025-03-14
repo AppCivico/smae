@@ -34,6 +34,7 @@ const initialValues = computed(() => ({
     fim: dateIgnorarTimezone(`${currentYear}-12-01`, 'MM/yyyy'),
     orgaos: [],
   },
+  eh_publico: null,
 }));
 
 async function onSubmit(values) {

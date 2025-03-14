@@ -6,8 +6,8 @@ import interfacesDeTransferências from '@/consts/interfacesDeTransferências';
 import truncate from '@/helpers/texto/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOrgansStore } from '@/stores/organs.store';
-import { usePartidosStore } from '@/stores/partidos.store';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
+import { usePartidosStore } from '@/stores/partidos.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { storeToRefs } from 'pinia';
 import {
@@ -39,6 +39,7 @@ const valoresIniciais = {
     orgao_gestor_id: null,
     parlamentar_id: null,
   },
+  eh_publico: null,
 };
 
 const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
