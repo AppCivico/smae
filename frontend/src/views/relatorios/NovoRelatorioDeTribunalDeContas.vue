@@ -30,7 +30,7 @@ const valoresIniciais = {
     tipo_id: null,
     tipo: 'Geral',
   },
-
+  eh_publico: null,
 };
 
 TipoDeTransferenciaStore.buscarTudo();
@@ -236,7 +236,10 @@ const formularioSujo = useIsFormDirty();
           as="select"
           class="inputtext light"
         >
-          <option :value="null">
+          <option
+            value=""
+            disabled
+          >
             Selecionar
           </option>
           <option :value="true">

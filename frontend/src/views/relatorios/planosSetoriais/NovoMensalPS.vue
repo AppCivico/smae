@@ -47,6 +47,7 @@ const initialValues = ref({
     tags: [],
     listar_variaveis_regionalizadas: false,
   },
+  eh_publico: null,
 });
 
 async function onSubmit(values) {
@@ -196,7 +197,10 @@ if (!listaDePlanosDisponiveis.value.length) {
             }"
             :disabled="chamadasPendentes.planosSimplificados"
           >
-            <option :value="null">
+            <option
+              value=""
+              disabled
+            >
               Selecionar
             </option>
             <option :value="true">

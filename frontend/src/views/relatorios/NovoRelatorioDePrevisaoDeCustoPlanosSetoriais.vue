@@ -54,6 +54,7 @@ const initialValues = computed(() => ({
     meta_id: null,
     tags: [],
   },
+  eh_publico: null,
 }));
 
 async function buscarMetaSimplificada(valorOuEvento) {
@@ -340,7 +341,10 @@ iniciar();
           }"
           :disabled="loading"
         >
-          <option :value="null">
+          <option
+            value=""
+            disabled
+          >
             Selecionar
           </option>
           <option :value="true">

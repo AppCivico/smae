@@ -2,11 +2,11 @@
 import { relatórioDePortfolioObras as schema } from '@/consts/formSchemas';
 import truncate from '@/helpers/texto/truncate';
 import { useAlertStore } from '@/stores/alert.store';
+import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store.ts';
-import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
-import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';
 import { useRegionsStore } from '@/stores/regions.store';
+import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
@@ -24,7 +24,7 @@ const route = useRoute();
 const router = useRouter();
 
 const {
-  regions, regiõesPorNível,
+  regiõesPorNível,
 } = storeToRefs(regionsStore);
 
 const initialValues = {
@@ -34,6 +34,7 @@ const initialValues = {
     orgao_responsavel_id: null,
     portfolio_id: null,
   },
+  eh_publico: null,
 };
 
 async function onSubmit(values) {
@@ -64,11 +65,11 @@ iniciar();
 </script>
 
 <template>
-  <div class="flex spacebetween center mb2">
-    <h1>{{ $route.meta.título || $route.name }}</h1>
+  <header class="flex spacebetween center mb2">
+    <TituloDePagina />
     <hr class="ml2 f1">
     <CheckClose />
-  </div>
+  </header>
   <Form
     v-slot="{ errors, isSubmitting, setFieldValue }"
     :validation-schema="schema"
@@ -107,39 +108,6 @@ iniciar();
           class="error-msg"
         >
           {{ errors['parametros.portfolio_id'] }}
-        </div>
-      </div>
-      <div class="f1">
-        <LabelFromYup
-          name="eh_publico"
-          :schema="schema"
-          required
-        />
-        <Field
-          name="eh_publico"
-          as="select"
-          class="inputtext light"
-          :class="{
-            error: errors['eh_publico'],
-            loading: portfolioObrasStore.chamadasPendentes.lista
-          }"
-          :disabled="portfolioObrasStore.chamadasPendentes.lista"
-        >
-          <option :value="null">
-            Selecionar
-          </option>
-          <option :value="true">
-            Sim
-          </option>
-          <option :value="false">
-            Não
-          </option>
-        </Field>
-        <div
-          v-if="errors['eh_publico']"
-          class="error-msg"
-        >
-          {{ errors['eh_publico'] }}
         </div>
       </div>
       <div class="f1 mb1">
@@ -287,7 +255,10 @@ iniciar();
           }"
           :disabled="portfolioObrasStore.chamadasPendentes.lista"
         >
-          <option :value="null">
+          <option
+            value=""
+            disabled
+          >
             Selecionar
           </option>
           <option :value="true">

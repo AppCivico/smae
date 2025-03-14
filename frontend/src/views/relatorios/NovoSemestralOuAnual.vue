@@ -41,6 +41,7 @@ const currentOptions = ref({
     periodo: '',
     semestre: '',
   },
+  eh_publico: null,
 });
 
 async function onSubmit(values) {
@@ -238,7 +239,10 @@ onMounted(async () => {
           }"
           :disabled="loading"
         >
-          <option :value="null">
+          <option
+            value=""
+            disabled
+          >
             Selecionar
           </option>
           <option :value="true">

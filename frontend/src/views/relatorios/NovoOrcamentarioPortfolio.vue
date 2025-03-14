@@ -1,15 +1,15 @@
 <script setup>
-import {
-  Field, Form, useIsFormDirty,
-} from 'vee-validate';
-import { computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 import MigalhasDePao from '@/components/MigalhasDePao.vue';
 import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import { relatórioOrçamentárioPortfolio as schema } from '@/consts/formSchemas';
 import maskMonth from '@/helpers/maskMonth';
 import monthAndYearToDate from '@/helpers/monthAndYearToDate';
 import { useAlertStore } from '@/stores/alert.store';
+import {
+  Field, Form, useIsFormDirty,
+} from 'vee-validate';
+import { computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 // Mantendo comportamento legado
 // eslint-disable-next-line import/no-cycle
 import { usePdMStore } from '@/stores/pdm.store';
@@ -32,6 +32,7 @@ const initialValues = computed(() => ({
     portfolio_id: 0,
     projeto_id: 0,
   },
+  eh_publico: null,
 }));
 
 const formularioSujo = useIsFormDirty();
@@ -167,7 +168,10 @@ portfolioStore.buscarTudo();
           }"
           :disabled="portfolioStore.chamadasPendentes.lista"
         >
-          <option :value="null">
+          <option
+            value=""
+            disabled
+          >
             Selecionar
           </option>
           <option :value="true">
