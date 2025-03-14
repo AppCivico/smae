@@ -1,6 +1,6 @@
 import { BadRequestException, HttpException, Injectable, Logger } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { CronogramaEtapaService } from 'src/cronograma-etapas/cronograma-etapas.service';
+import { CronogramaEtapaService, podeEditarEtapa } from 'src/cronograma-etapas/cronograma-etapas.service';
 import { UpdateCronogramaEtapaDto } from 'src/cronograma-etapas/dto/update-cronograma-etapa.dto';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { CONST_CRONO_VAR_CATEGORICA_ID } from '../common/consts';
@@ -211,7 +211,13 @@ export class EtapaService {
             where: { etapa_id: id },
             select: { meta_id: true },
         });
-        const meta = await this.metaService.assertMetaWriteOrThrow(tipo, metaRow.meta_id, user, 'etapa do cronograma');
+        const metaInfo = await this.metaService.assertMetaWriteOrThrow(
+            tipo,
+            metaRow.meta_id,
+            user,
+            'etapa do cronograma',
+            'readonly'
+        );
 
         const basicSelf = await prisma.etapa.findFirstOrThrow({
             where: { id, removido_em: null },
@@ -219,10 +225,25 @@ export class EtapaService {
                 cronograma_id: true,
                 variavel_id: true,
                 termino_real: true,
+                PdmPerfil: true,
             },
         });
         if (config && config.perfil == 'ponto_focal') {
             if (basicSelf.termino_real) throw new BadRequestException('Etapa já finalizada, não é possível alterar.');
+        }
+        const permInfo = await podeEditarEtapa(tipo, basicSelf, user, metaInfo, this.prisma);
+
+        if (!permInfo.pode_editar && !permInfo.pode_editar_realizado)
+            throw new BadRequestException('Usuário não tem permissão para editar a etapa.');
+
+        if (permInfo.pode_editar == false) {
+            // libera apenas os campos do realizado
+            dto = {
+                percentual_execucao: dto.percentual_execucao,
+                termino_real: dto.termino_real,
+                inicio_real: dto.inicio_real,
+                geolocalizacao: dto.geolocalizacao,
+            };
         }
 
         if (basicSelf.variavel_id && dto.variavel === null) {
@@ -433,7 +454,7 @@ export class EtapaService {
                         self.PdmPerfil.map((p) => ({ id: p.id, tipo: p.tipo, equipe_id: p.equipe_id })),
                         user,
                         prismaTx,
-                        meta,
+                        metaInfo,
                         relacionamento,
                         relacionamentoId
                     );
