@@ -56,19 +56,22 @@ export class SeiIntegracaoService {
     }
 
     private createProcessado(dados: RetornoRelatorioProcesso | null | undefined): SeiProcessadoDto | null {
-        if (!dados?.ultimo_andamento?.usuario?.nome || !dados.ultimo_andamento.unidade) return null;
+        if (!dados || !dados.ultimo_andamento) return null;
+        const hasValidDate = dados.ultimo_andamento.data != null;
+
+        if (!hasValidDate) return null;
 
         return {
             ultimo_andamento_em: dados.ultimo_andamento.data,
             ultimo_andamento_por: {
-                nome: dados.ultimo_andamento.usuario.nome,
-                rf: dados.ultimo_andamento.usuario.rf,
+                nome: dados.ultimo_andamento.usuario?.nome ?? '',
+                rf: dados.ultimo_andamento.usuario?.rf ?? '',
             },
             ultimo_andamento_unidade: {
-                descricao: dados.ultimo_andamento.unidade.descricao || '',
-                id_unidade: dados.ultimo_andamento.unidade.id_unidade || '',
-                sigla: dados.ultimo_andamento.unidade.sigla || '',
-                tipo_unidade: dados.ultimo_andamento.unidade.tipo_unidade || '',
+                descricao: dados.ultimo_andamento.unidade?.descricao ?? '',
+                id_unidade: dados.ultimo_andamento.unidade?.id_unidade ?? '',
+                sigla: dados.ultimo_andamento.unidade?.sigla ?? '',
+                tipo_unidade: dados.ultimo_andamento.unidade?.tipo_unidade ?? '',
             },
         };
     }
@@ -622,9 +625,11 @@ export class SeiIntegracaoService {
                             },
                         },
                     },
-                    pessoa_fisica: orgaoId ? {
-                        orgao_id: orgaoId,
-                    } : undefined,
+                    pessoa_fisica: orgaoId
+                        ? {
+                              orgao_id: orgaoId,
+                          }
+                        : undefined,
                 },
                 select: { email: true },
             });

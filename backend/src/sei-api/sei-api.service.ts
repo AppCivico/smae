@@ -1,14 +1,6 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { Transform, Type, plainToClass } from 'class-transformer';
-import {
-    IsArray,
-    IsEnum,
-    IsOptional,
-    IsString,
-    IsUrl,
-    ValidateNested,
-    validate
-} from 'class-validator';
+import { IsArray, IsEnum, IsOptional, IsString, IsUrl, ValidateNested, validate } from 'class-validator';
 import got, { Got } from 'got';
 import { DateTransformDMY } from '../auth/transforms/date.transform';
 import { IsOnlyDate } from '../common/decorators/IsDateOnly';
@@ -23,55 +15,66 @@ export class SeiError extends Error {
 }
 
 class Assunto {
+    @IsOptional()
     @IsString()
-    codigo: string;
+    codigo: string | null;
 
+    @IsOptional()
     @IsString()
-    descricao: string;
+    descricao: string | null;
 }
 
 class Unidade {
+    @IsOptional()
     @IsString()
-    id_unidade: string;
+    id_unidade: string | null;
 
+    @IsOptional()
     @IsString()
-    sigla: string;
+    sigla: string | null;
 
+    @IsOptional()
     @IsString()
-    descricao: string;
+    descricao: string | null;
 
     @IsEnum(['protocolo', 'arquivo', 'ouvidoria', 'regular'])
     tipo_unidade: 'protocolo' | 'arquivo' | 'ouvidoria' | 'regular';
 }
-
 class Usuario {
+    @IsOptional()
     @IsString()
-    id: string;
+    id: string | null;
 
+    @IsOptional()
     @IsString()
-    nome: string;
+    nome: string | null;
 
+    @IsOptional()
     @IsString()
-    rf: string;
+    rf: string | null;
 }
 
 class AndamentoSimples {
+    @IsOptional()
     @ValidateNested()
     @Type(() => Unidade)
-    unidade: Unidade;
+    unidade: Unidade | null;
 
+    @IsOptional()
     @ValidateNested()
     @Type(() => Usuario)
-    usuario: Usuario;
+    usuario: Usuario | null;
 }
 
 class AndamentoCompleto extends AndamentoSimples {
+    @IsOptional()
     @IsOnlyDate()
     @Transform(DateTransformDMY)
-    data: Date;
+    data: Date | null;
 
+    @IsOptional()
     @IsString()
-    descricao: string;
+    descricao: string | null;
 }
 
 class ReportUnidadeAberto {
@@ -82,7 +85,7 @@ class ReportUnidadeAberto {
     @IsOptional()
     @ValidateNested()
     @Type(() => Usuario)
-    usuario_atribuido?: Usuario;
+    usuario_atribuido?: Usuario | null;
 }
 
 export class RetornoResumoProcesso {
@@ -111,16 +114,16 @@ export class RetornoResumoProcesso {
 export class RetornoRelatorioProcesso extends RetornoResumoProcesso {
     @ValidateNested()
     @Type(() => AndamentoSimples)
-    abertura: AndamentoSimples;
+    abertura: AndamentoSimples | null;
 
     @ValidateNested()
     @Type(() => AndamentoCompleto)
-    ultimo_andamento: AndamentoCompleto;
+    ultimo_andamento: AndamentoCompleto | null;
 
     @IsOptional()
     @ValidateNested()
     @Type(() => AndamentoCompleto)
-    conclusao?: AndamentoCompleto;
+    conclusao?: AndamentoCompleto | null;
 
     @IsArray()
     @ValidateNested({ each: true })
