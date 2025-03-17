@@ -124,6 +124,7 @@ iniciar();
           />
           <GraficoLinhasEvolucao
             v-else
+            :indicador="ind"
             :valores="ValoresInd[ind.id]"
           />
           <div class="tc">
