@@ -16,16 +16,28 @@ import { AvisoEmailModule } from './aviso-email/aviso-email.module';
 import { BancadaModule } from './bancada/bancada.module';
 import { BlocoNotasModule } from './bloco-nota/bloco-notas.module';
 import { DashTransferenciaModule } from './casa-civil/dash/transferencia.module';
+import { DistribuicaoRecursoModule } from './casa-civil/distribuicao-recurso/distribuicao-recurso.module';
 import { TransferenciaModule } from './casa-civil/transferencia/transferencia.module';
+import { WorkflowAndamentoFaseModule } from './casa-civil/workflow/andamento/fase/workflow-andamento-fase.module';
+import { WorkflowAndamentoModule } from './casa-civil/workflow/andamento/workflow-andamento.module';
+import { WorkflowEtapaModule } from './casa-civil/workflow/configuracao/etapa/workflow-etapa.module';
+import { WorkflowFaseModule } from './casa-civil/workflow/configuracao/fase/workflow-fase.module';
+import { WorkflowfluxoFaseModule } from './casa-civil/workflow/configuracao/fluxo-fase/workflow-fluxo-fase.module';
+import { WorkflowFluxoTarefaModule } from './casa-civil/workflow/configuracao/fluxo-tarefa/workflow-fluxo-tarefa.module';
+import { WorkflowFluxoModule } from './casa-civil/workflow/configuracao/fluxo/workflow-fluxo.module';
+import { WorkflowSituacaoModule } from './casa-civil/workflow/configuracao/situacao/workflow-situacao.module';
+import { WorkflowTarefaModule } from './casa-civil/workflow/configuracao/tarefa/workflow-tarefa.module';
+import { WorkflowModule } from './casa-civil/workflow/configuracao/workflow.module';
+import { CategoriaAssuntoVariavelModule } from './categoria-assunto-variavel/categoria-assunto-variavel.module';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
 import { TrimPipe } from './common/pipes/trim-pipe';
 import { CommonBaseModule } from './common/services/base.module';
 import { ContentInterceptor } from './content.interceptor';
 import { CTPConfigModule } from './cronograma-termino-planejado-config/ctp-config.module';
 import { DashboardModule } from './dashboard/dashboard.module';
-import { DistribuicaoRecursoModule } from './casa-civil/distribuicao-recurso/distribuicao-recurso.module';
 import { DotacaoModule } from './dotacao/dotacao.module';
 import { EleicaoModule } from './eleicao/eleicao.module';
+import { PainelEstrategicoModule } from './gestao-projetos/painel-estrategico/painel-estrategico.module';
 import { MinhaContaModule } from './minha-conta/minha-conta.module';
 import { OrcamentoPlanejadoModule } from './orcamento-planejado/orcamento-planejado.module';
 import { OrcamentoRealizadoModule } from './orcamento-realizado/orcamento-realizado.module';
@@ -41,21 +53,7 @@ import { UtilsService } from './reports/utils/utils.service';
 import { RequestLogModule } from './request_log/request_log.module';
 import { TaskModule } from './task/task.module';
 import { ClassificacaoModule } from './transferencias-voluntarias/classificacao/classificacao.module';
-import { WorkflowAndamentoFaseModule } from './casa-civil/workflow/andamento/fase/workflow-andamento-fase.module';
-import { WorkflowAndamentoModule } from './casa-civil/workflow/andamento/workflow-andamento.module';
-import { WorkflowEtapaModule } from './casa-civil/workflow/configuracao/etapa/workflow-etapa.module';
-import { WorkflowFaseModule } from './casa-civil/workflow/configuracao/fase/workflow-fase.module';
-import { WorkflowfluxoFaseModule } from './casa-civil/workflow/configuracao/fluxo-fase/workflow-fluxo-fase.module';
-import { WorkflowFluxoTarefaModule } from './casa-civil/workflow/configuracao/fluxo-tarefa/workflow-fluxo-tarefa.module';
-import { WorkflowFluxoModule } from './casa-civil/workflow/configuracao/fluxo/workflow-fluxo.module';
-import { WorkflowSituacaoModule } from './casa-civil/workflow/configuracao/situacao/workflow-situacao.module';
-import { WorkflowTarefaModule } from './casa-civil/workflow/configuracao/tarefa/workflow-tarefa.module';
-import { WorkflowModule } from './casa-civil/workflow/configuracao/workflow.module';
-import {
-    PsMonitoramentoMensalModule
-} from './reports/ps-monitoramento-mensal/ps-monitoramento-mensal.module';
-import { PainelEstrategicoModule } from './gestao-projetos/painel-estrategico/painel-estrategico.module';
-import { CategoriaAssuntoVariavelModule } from './categoria-assunto-variavel/categoria-assunto-variavel.module';
+import { PSMFDashboardModule } from './mf/ps-dash/ps-dash.module';
 
 // Hacks pro JS
 /*
@@ -111,7 +109,8 @@ import { CategoriaAssuntoVariavelModule } from './categoria-assunto-variavel/cat
         TaskModule,
         ClassificacaoModule,
         PainelEstrategicoModule,
-        CategoriaAssuntoVariavelModule
+        CategoriaAssuntoVariavelModule,
+        PSMFDashboardModule
     ],
     controllers: [AppController],
     providers: [
