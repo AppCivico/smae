@@ -1,5 +1,5 @@
-import type { RouteLocation } from 'vue-router';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
+import type { RouteLocation } from 'vue-router';
 import metasRoutes from './metas.routes';
 
 const ListaDeRelatorios = () => import('@/views/relatorios/ListaDeRelatorios.vue');
@@ -77,6 +77,11 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
         name: `${entidadeMãe}.planosSetoriaisListar`,
         path: '',
         component: () => import('@/views/planosSetoriais/PlanosSetoriaisLista.vue'),
+      },
+      {
+        name: `${entidadeMãe}.quadroDeAtividades`,
+        path: 'quadro-de-atividades',
+        component: () => import('@/views/planosSetoriais/PlanosSetoriaisQuadroDeAtividades.vue'),
       },
       {
         name: `${entidadeMãe}.planosSetoriaisCriar`,
