@@ -191,6 +191,12 @@ async function onSubmit(values) {
       ? null
       : String(values.acumulado_valor_base);
 
+    values.meta_valor_nominal = values.meta_valor_nominal === ''
+      || values.meta_valor_nominal === null
+      || Number.isNaN(Number(values.meta_valor_nominal))
+      ? null
+      : String(values.meta_valor_nominal);
+
     values.casas_decimais = values.casas_decimais ? Number(values.casas_decimais) : null;
 
     if (!values.acumulado_usa_formula) {
@@ -776,6 +782,20 @@ watch(() => props.group, () => {
           <div class="error-msg">
             {{ errors.acumulado_valor_base }}
           </div>
+        </div>
+        <LabelFromYup
+          name="meta_valor_nominal"
+          :schema="schema"
+        />
+        <Field
+          name="meta_valor_nominal"
+          type="number"
+          :value="values.meta_valor_nominal"
+          class="inputtext light mb1"
+          :class="{ 'error': errors.meta_valor_nominal }"
+        />
+        <div class="error-msg">
+          {{ errors.meta_valor_nominal }}
         </div>
       </div>
       <div v-else-if="Variaveis[indicadorId]?.loading">

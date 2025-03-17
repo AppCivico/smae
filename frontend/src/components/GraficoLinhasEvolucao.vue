@@ -5,13 +5,16 @@
         v-if="posicaoAtual"
         como-item
         cor="#221F43"
-        legenda="Posição atual / Meta"
+        :legenda="`Posição atual ${temMeta ? ' / Meta' : ''}`"
         cor-de-fundo="#e8e8e866"
         :tamanho-do-numero="34"
         :tamanho-da-legenda="12"
       >
         <template #numero>
-          {{ formatarNumero(posicaoAtual) }}/<small>{{ formatarNumero(meta) }}</small>
+          {{ formatarNumero(posicaoAtual) }}<span v-if="temMeta">/</span>
+          <small v-if="temMeta">
+            {{ formatarNumero($props.indicador.meta_valor_nominal) }}
+          </small>
         </template>
       </NumeroComLegenda>
     </div>
@@ -35,7 +38,13 @@ const props = defineProps({
       ordem_series: [],
     }),
   },
+  indicador: {
+    type: Object,
+    default: () => ({}),
+  },
 });
+
+const temMeta = computed(() => props.indicador.meta_valor_nominal);
 
 const formatarNumero = (numero) => {
   if (numero === null || numero === undefined) return '-';
@@ -74,8 +83,8 @@ const dadosProcessados = computed(() => {
     return valor !== null ? valor.toNumber() : null;
   });
 
-  const meta = data.length > 0
-    ? mapearSerie(idxPrevistoAcumulado).at(-1)
+  const meta = props.indicador?.meta_valor_nominal
+    ? Number(props.indicador.meta_valor_nominal)
     : null;
 
   const categorias = data.map((linha) => dateToMonthYear(linha.periodo));
@@ -104,7 +113,7 @@ const dadosProcessados = computed(() => {
     seriePrevistoAcumulado: mapearSerie(idxPrevistoAcumulado),
     serieRealizado,
     serieRealizadoAcumulado: mapearSerie(idxRealizadoAcumulado),
-    serieMeta: categorias.map(() => meta),
+    serieMeta: meta !== null ? categorias.map(() => meta) : null,
     anos,
     ultimoMesPreenchidoIndex,
   };
@@ -113,11 +122,6 @@ const dadosProcessados = computed(() => {
 const posicaoAtual = computed(() => {
   const { serieRealizadoAcumulado } = dadosProcessados.value;
   return serieRealizadoAcumulado[serieRealizadoAcumulado.length - 1];
-});
-
-const meta = computed(() => {
-  const { serieMeta } = dadosProcessados.value;
-  return serieMeta[0];
 });
 
 const configuracaoGrafico = computed(() => {
@@ -174,7 +178,7 @@ const configuracaoGrafico = computed(() => {
         'Previsto Acumulado',
         'Realizado',
         'Realizado Acumulado',
-        'Meta',
+        ...(serieMeta ? ['Meta'] : []),
       ],
       top: '5%',
     },
@@ -258,20 +262,24 @@ const configuracaoGrafico = computed(() => {
         },
         markPoint: criarMarkPoint(serieRealizadoAcumulado, '#4F8562'),
       },
-      {
-        name: 'Meta',
-        type: 'line',
-        data: serieMeta,
-        showSymbol: false,
-        smooth: true,
-        itemStyle: {
-          color: '#F2890D',
-        },
-        lineStyle: {
-          type: 'dashed',
-          color: '#F2890D',
-        },
-      },
+      ...(serieMeta
+        ? [
+          {
+            name: 'Meta',
+            type: 'line',
+            data: serieMeta,
+            showSymbol: false,
+            smooth: true,
+            itemStyle: {
+              color: '#F2890D',
+            },
+            lineStyle: {
+              type: 'dashed',
+              color: '#F2890D',
+            },
+          },
+        ]
+        : []),
     ],
   };
 });

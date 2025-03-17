@@ -911,6 +911,10 @@ export const indicador = object()
       .label('Valor base do indicador')
       .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
       .nullable(),
+    meta_valor_nominal: number()
+      .label('Valor alvo')
+      .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
+      .nullable(),
     casas_decimais: number()
       .min(0)
       .max(35)
