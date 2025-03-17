@@ -3,7 +3,7 @@ import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}/equipe-responsavel`;
 
-export const useEquipesStore = defineStore('equipesStore', {
+export const useEquipesStore = (prefixo) => defineStore(prefixo ? `${prefixo}.equipesStore` : 'equipesStore', {
   state: () => ({
     lista: [],
     emFoco: null,
@@ -116,4 +116,4 @@ export const useEquipesStore = defineStore('equipesStore', {
       return porOrgao;
     },
   },
-});
+})();
