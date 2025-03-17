@@ -1,6 +1,6 @@
 import { ApiHideProperty, ApiProperty, IntersectionType, OmitType } from '@nestjs/swagger';
 import { TipoProjeto, TipoRelatorio } from '@prisma/client';
-import { Transform } from 'class-transformer';
+import { Transform, Expose } from 'class-transformer';
 import { ArrayMaxSize, ArrayMinSize, IsArray, IsEnum, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
 import { DateTransform } from '../../../auth/transforms/date.transform';
 import { IsOnlyDate } from '../../../common/decorators/IsDateOnly';
@@ -55,6 +55,7 @@ export class SuperCreateOrcamentoExecutadoDto extends IntersectionType(
     @IsInt()
     @Transform(({ value }: any) => +value)
     @IsOptional()
+    @Expose()
     projeto_id?: number;
 
     /**
@@ -63,11 +64,13 @@ export class SuperCreateOrcamentoExecutadoDto extends IntersectionType(
     @IsInt()
     @Transform(({ value }: any) => +value)
     @IsOptional()
+    @Expose()
     portfolio_id?: number;
 
     @IsOptional()
     @IsEnum(TipoProjeto)
     @ApiHideProperty()
+    @Expose()
     tipo_projeto?: TipoProjeto;
 }
 

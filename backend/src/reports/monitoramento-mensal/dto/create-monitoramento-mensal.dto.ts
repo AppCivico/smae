@@ -1,5 +1,5 @@
 import { IntersectionType, OmitType } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
+import { Transform, Expose } from 'class-transformer';
 import { ArrayMaxSize, ArrayMinSize, IsArray, IsInt, IsOptional } from 'class-validator';
 import { FiltroMetasIniAtividadeDto } from '../../relatorios/dto/filtros.dto';
 
@@ -9,6 +9,7 @@ export class RelMonitoramentoMensalParams {
      */
     @IsInt()
     @Transform(({ value }: any) => +value)
+    @Expose()
     ano: number;
 
     /** mes do ciclo
@@ -16,6 +17,7 @@ export class RelMonitoramentoMensalParams {
      */
     @IsInt()
     @Transform(({ value }: any) => +value)
+    @Expose()
     mes: number;
 
     /**
@@ -27,6 +29,7 @@ export class RelMonitoramentoMensalParams {
     @ArrayMinSize(0, { message: '$property| tag(s): precisa ter pelo menos um item' })
     @ArrayMaxSize(100, { message: '$property| tag(s): precisa ter no máximo 100 items' })
     @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
+    @Expose()
     paineis: number[];
 }
 

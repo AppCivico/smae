@@ -1,5 +1,5 @@
 import { OmitType } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
+import { Transform, Expose } from 'class-transformer';
 import { IsInt } from 'class-validator';
 import { SuperCreateOrcamentoExecutadoDto } from 'src/reports/orcamento/dto/create-orcamento-executado.dto';
 
@@ -15,6 +15,7 @@ export class CreateRelProjetoOrcamentoDto extends OmitType(SuperCreateOrcamentoE
      */
     @IsInt()
     @Transform(({ value }: any) => +value)
+    @Expose()
     portfolio_id: number;
 }
 
