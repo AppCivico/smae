@@ -114,23 +114,34 @@ export const BuildParametrosProcessados = async (
         let valor = parametros[paramKey];
         if (!valor) continue;
 
-        const nomeChave = paramKey
+        let nomeChave = paramKey
             .replace(/(_id|_ids)$/, '') // remove _id ou _ids
             .replace('plano_setorial_id', 'pdm_id'); // ajuste para pdm_id
+
+        if (nomeChave === 'eh_publico') continue;
 
         parametros_processados[nomeChave] = valor.toString();
 
         // Verifica se o valor possui um mapeamento para tabela e coluna.
-        // Caso não possua, verifica se é um enum.
-        // Caso não seja nenhum dos dois, pula para o próximo.
         const nomeTabelaCol = nomeTabelaColParametro(nomeChave);
-        if (!nomeTabelaCol) {
-            const enumMapKey = enumMap[nomeChave];
 
+        if (!nomeTabelaCol) {
+            // Trocando _ por espaços, pois se caiu aqui não é ID
+            delete parametros_processados[nomeChave];
+            nomeChave = nomeChave.replace(/_/g, ' ');
+            parametros_processados[nomeChave] = valor;
+
+            // Pode ser um enum e necessita de tradução.
+            const enumMapKey = enumMap[nomeChave];
             if (enumMapKey) {
                 valor = EnumHumano(enumMapKey, valor);
                 parametros_processados[nomeChave] = valor;
                 continue;
+            }
+
+            // Pode ser um boolean e necessita de tradução.
+            if (typeof valor === 'boolean') {
+                parametros_processados[nomeChave] = valor ? 'Sim' : 'Não';
             }
 
             continue;
