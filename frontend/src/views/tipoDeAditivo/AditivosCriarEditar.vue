@@ -92,11 +92,11 @@
   >Carregando</span>
 
   <div
-    v-if="erro"
+    v-if="erros.emFoco"
     class="error p1"
   >
     <div class="error-msg">
-      {{ erro }}
+      {{ erros.emFoco }}
     </div>
   </div>
 </template>
@@ -120,7 +120,7 @@ const props = defineProps({
 
 const alertStore = useAlertStore();
 const aditivosStore = useTipoDeAditivosStore();
-const { chamadasPendentes, erro, itemParaEdicao } = storeToRefs(aditivosStore);
+const { chamadasPendentes, erros, itemParaEdicao } = storeToRefs(aditivosStore);
 
 async function onSubmit(values) {
   try {

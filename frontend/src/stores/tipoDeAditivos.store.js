@@ -11,12 +11,16 @@ export const useTipoDeAditivosStore = defineStore('tipoDeAditivosStore', {
       lista: false,
       emFoco: false,
     },
-    erro: null,
+
+    erros: {
+      lista: null,
+      emFoco: null,
+    },
   }),
   actions: {
     async buscarItem(id = 0, params = {}) {
       this.chamadasPendentes.emFoco = true;
-      this.erro = null;
+      this.erros.emFoco = null;
 
       try {
         const resposta = await this.requestS.get(`${baseUrl}/tipo-aditivo/${id}`, params);
@@ -24,42 +28,42 @@ export const useTipoDeAditivosStore = defineStore('tipoDeAditivosStore', {
           ...resposta,
         };
       } catch (erro) {
-        this.erro = erro;
+        this.erros.emFoco = erro;
       }
       this.chamadasPendentes.emFoco = false;
     },
 
     async buscarTudo(params = {}) {
       this.chamadasPendentes.lista = true;
-      this.erro = null;
+      this.erros.lista = null;
 
       try {
         const { linhas } = await this.requestS.get(`${baseUrl}/tipo-aditivo`, params);
         this.lista = linhas;
       } catch (erro) {
-        this.erro = erro;
+        this.erros.lista = erro;
       }
       this.chamadasPendentes.lista = false;
     },
 
     async excluirItem(id) {
       this.chamadasPendentes.lista = true;
-      this.erro = null;
+      this.erros.emFoco = null;
 
       try {
         await this.requestS.delete(`${baseUrl}/tipo-aditivo/${id}`);
-        this.chamadasPendentes.lista = false;
+        this.chamadasPendentes.emFoco = false;
         return true;
       } catch (erro) {
-        this.erro = erro;
-        this.chamadasPendentes.lista = false;
+        this.erros.emFoco = erro;
+        this.chamadasPendentes.emFoco = false;
         return false;
       }
     },
 
     async salvarItem(params = {}, id = 0) {
       this.chamadasPendentes.emFoco = true;
-      this.erro = null;
+      this.erros.emFoco = null;
 
       try {
         if (id) {
@@ -71,7 +75,7 @@ export const useTipoDeAditivosStore = defineStore('tipoDeAditivosStore', {
         this.chamadasPendentes.emFoco = false;
         return true;
       } catch (erro) {
-        this.erro = erro;
+        this.erros.emFoco = erro;
         this.chamadasPendentes.emFoco = false;
         return false;
       }
