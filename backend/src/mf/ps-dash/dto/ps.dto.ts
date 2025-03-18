@@ -1,15 +1,21 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { CicloFase } from '@prisma/client';
 import { Transform, TransformFnParams } from 'class-transformer';
-import { IsBoolean, IsInt, IsOptional } from 'class-validator';
+import { IsBoolean, IsInt, IsOptional, IsString } from 'class-validator';
 import { IsDateYMD } from '../../../auth/decorators/date.decorator';
 import { NumberArrayTransformOrUndef } from '../../../auth/transforms/number-array.transform';
 import { NumberTransform } from '../../../auth/transforms/number.transform';
+import { PaginatedWithPagesDto } from '../../../common/dto/paginated.dto';
 
 export class PSMFFiltroDashboardQuadroDto {
     @IsInt()
     @Transform(NumberTransform)
     pdm_id: number;
+
+    @IsOptional()
+    @IsInt({ each: true })
+    @Transform(NumberArrayTransformOrUndef)
+    meta_id?: number[];
 
     @IsOptional()
     @IsInt({ each: true })
@@ -40,6 +46,10 @@ export class PSMFFiltroDashboardQuadroDto {
     @IsInt()
     @Transform((a: TransformFnParams) => (a.value === '' ? undefined : +a.value))
     ipp?: number = 20; // Para paginação
+
+    @IsOptional()
+    @IsString()
+    token_paginacao?: string;
 }
 
 export class PSMFSituacaoVariavelDto {
@@ -82,7 +92,7 @@ export class PSMFQuadroVariaveisDto {
     nao_associadas: PSMFSituacaoVariavelDto;
 }
 
-export class PSMFEstatisticasMetasDto {
+export class PSMFQuadroMetasDto {
     @ApiProperty({ description: 'Quantidade de metas com alguma pendência' })
     com_pendencia: number;
 
@@ -147,14 +157,11 @@ export class PSMFStatusVariaveisMetaDto {
 }
 
 export class PSMFCicloDto {
-    @ApiProperty()
+    @ApiProperty({ description: 'ID do ciclo fisico (do PDM)' })
     id: number;
 
-    @ApiProperty({ description: 'Fase atual', enum: CicloFase, example: 'Analise' })
-    fase: CicloFase; // 'Analise', 'Risco', 'Fechamento'
-
     @IsDateYMD()
-    data_ciclo: Date;
+    data_ciclo: string;
 }
 
 export class PSMFCountDto {
@@ -199,29 +206,16 @@ export class PSMFItemMetaDto {
 
     @ApiProperty({ description: 'ID da iniciativa pai (para atividades)', required: false })
     iniciativa_id?: number;
+
+    @ApiProperty({
+        description: 'Fase atual (da meta, não confundir com a fase do PDM que não existe no conceito de ciclos de PS)',
+        enum: CicloFase,
+        example: 'Analise',
+    })
+    fase: CicloFase; // 'Analise', 'Risco', 'Fechamento'
 }
 
-export class PSMFListaMetasDto {
-    @ApiProperty({ description: 'Lista de metas/iniciativas/atividades' })
-    itens: PSMFItemMetaDto[];
-
+export class PSMFListaMetasDto extends PaginatedWithPagesDto<PSMFItemMetaDto> {
     @ApiProperty({ description: 'Informações do ciclo atual' })
-    ciclo_atual?: PSMFCicloDto;
-
-    @ApiProperty({ description: 'Número total de itens' })
-    total: number;
-
-    @ApiProperty({ description: 'Página atual' })
-    pagina: number;
-}
-
-export class PSMFRespostaDashboardDto {
-    @ApiProperty({ description: 'Dados dos quadros de variáveis' })
-    variaveis: PSMFQuadroVariaveisDto;
-
-    @ApiProperty({ description: 'Estatísticas das metas' })
-    estatisticas_metas: PSMFEstatisticasMetasDto;
-
-    @ApiProperty({ description: 'Lista de metas/iniciativas/atividades' })
-    lista_metas: PSMFListaMetasDto;
+    ciclo_atual: PSMFCicloDto | null;
 }
