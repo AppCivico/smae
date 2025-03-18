@@ -112,8 +112,6 @@
     >
       Filtrar
     </button>
-
-    <pre>dados:{{ dados }}</pre>
   </form>
 </template>
 <script setup lang="ts">
