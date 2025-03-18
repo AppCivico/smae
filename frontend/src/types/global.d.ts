@@ -5,6 +5,8 @@
  * @link https://stackoverflow.com/questions/42984889/global-types-in-typescript
  */
 
+import 'vue-router';
+
 declare type ChamadasPendentes = {
   lista: boolean;
   emFoco: boolean;
@@ -22,3 +24,19 @@ declare type Paginacao = {
   temMais: boolean;
   totalRegistros: number;
 };
+
+declare module 'vue-router' {
+  interface RouteMeta {
+    entidadeMãe?: string;
+    título?: string | function;
+    títuloParaMenu?: string | function;
+    rotaDeEscape?: string | string[];
+    rotasParaMigalhasDePão?: string[];
+    limitarÀsPermissões?: string | string[];
+    presenteNoMenu?: boolean;
+    pesoNoMenu? : number;
+    íconeParaMenu?: string;
+    rotasParaMenuSecundário?: string[];
+    rotasParaMenuPrincipal?: string[];
+  }
+}
