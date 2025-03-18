@@ -106,7 +106,7 @@ if (!lista.length) {
                 v-if="item.pode_editar"
                 class="tprimary tipinfo left"
                 :to="{
-                  name: `${route.meta.entidadeMãe}.planosSetoriaisEditar`,
+                  name: '.planosSetoriaisEditar',
                   params: { planoSetorialId: item.id }
                 }"
               >
@@ -119,7 +119,7 @@ if (!lista.length) {
               <SmaeLink
                 class="tprimary tipinfo left"
                 :to="{
-                  name: `${route.meta.entidadeMãe}.permissoesOrcamento`,
+                  name: '.permissoesOrcamento',
                   params: {
                     planoSetorialId: item.id
                   }
