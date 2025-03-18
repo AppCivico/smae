@@ -715,13 +715,76 @@ export class ParlamentarService {
     }
 
     async removeMandato(id: number, user: PessoaFromJwt) {
-        return await this.prisma.parlamentarMandato.update({
-            where: { id },
-            data: {
-                removido_por: user.id,
-                removido_em: new Date(Date.now()),
+        // Caso o mandato seja removido, as colunas em Parlamentar devem ser atualizadas.
+        const mandato = await this.prisma.parlamentarMandato.findFirstOrThrow({
+            where: {
+                id,
+                removido_em: null,
+            },
+            select: {
+                parlamentar_id: true,
             },
         });
+
+        const outrosMandatos = await this.prisma.parlamentarMandato.findMany({
+            where: {
+                id: { not: id },
+                parlamentar_id: mandato.parlamentar_id,
+                removido_em: null,
+            },
+            select: {
+                id: true,
+                eleicao: {
+                    select: {
+                        ano: true,
+                        atual_para_mandatos: true,
+                    },
+                },
+                cargo: true,
+                partido_atual: {
+                    select: {
+                        sigla: true,
+                    },
+                },
+            },
+        });
+
+        await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
+            if (outrosMandatos.length == 0) {
+                await prismaTxn.parlamentar.update({
+                    where: {
+                        id: mandato.parlamentar_id,
+                    },
+                    data: {
+                        cargo_mais_recente: null,
+                        partido_mais_recente: null,
+                        tem_mandato: false,
+                    },
+                });
+            } else {
+                const mandatoMaisRecente = outrosMandatos.sort((a, b) => b.eleicao.ano - a.eleicao.ano)[0];
+
+                await prismaTxn.parlamentar.update({
+                    where: {
+                        id: mandato.parlamentar_id,
+                    },
+                    data: {
+                        cargo_mais_recente: mandatoMaisRecente.cargo,
+                        partido_mais_recente: mandatoMaisRecente.partido_atual.sigla,
+                    },
+                });
+            }
+
+            await this.prisma.parlamentarMandato.update({
+                where: { id },
+                data: {
+                    removido_por: user.id,
+                    removido_em: new Date(Date.now()),
+                },
+            });
+        });
+
+        return { id };
     }
 
     async createMandatoRepresentatividade(
