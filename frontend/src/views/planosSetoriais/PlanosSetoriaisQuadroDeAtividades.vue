@@ -6,15 +6,14 @@ import FiltroDoQuadroDeAtividades from '@/components/planoSetorialProgramaMetas.
 import { usePanoramaPlanoSetorialStore } from '@/stores/planoSetorial.panorama.store';
 import { storeToRefs } from 'pinia';
 import { watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 defineOptions({
   inheritAttrs: false,
 });
 
 const route = useRoute();
-
-const panoramaStore = usePanoramaPlanoSetorialStore(route.meta.entidadeMãe as string);
+const panoramaStore = usePanoramaPlanoSetorialStore(route.meta.entidadeMãe);
 
 const {
   variaveis,
@@ -31,9 +30,7 @@ watch([
   () => route.query.equipe_id,
   () => route.query.visao_pessoal,
   () => route.query.pdm_id,
-], ([orgaoId, equipeId, visaoPessoal, pdmId]) => {
-  console.debug('pdmId', pdmId);
-
+], async ([orgaoId, equipeId, visaoPessoal, pdmId]) => {
   if (!pdmId) {
     return;
   }

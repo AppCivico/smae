@@ -39,7 +39,7 @@ export type Parametros = {
   ipp?: number;
 };
 
-export const usePanoramaPlanoSetorialStore = (prefixo:string) => defineStore(prefixo ? `${prefixo}.panorama` : 'panorama', {
+export const usePanoramaPlanoSetorialStore = (prefixo = '') => defineStore(prefixo ? `${prefixo}.panorama` : 'panorama', {
   state: (): Estado => ({
     variaveis: null,
     estatisticasMetas: null,

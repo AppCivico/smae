@@ -1,7 +1,7 @@
 <template>
   <form
     class="flex flexwrap bottom mb2 g1"
-    @submit.prevent="emit('enviado', dados)"
+    @submit.prevent="dados.pdm_id ? emit('enviado', dados) : null"
     @change="(ev) => emit('campoMudou', ev)"
   >
     <div class="f1 fb15em">
@@ -9,7 +9,9 @@
         class="label"
         for="plano-setorial-id"
       >
-        {{ $route.meta.tituloPlural || 'Plano Setoriais / Programa de Metas' }}
+        {{ $route.meta.tituloPlural || 'Plano Setoriais / Programa de Metas' }}&nbsp;<span
+          class="tvermelho"
+        >*</span>
       </label>
 
       <select
@@ -19,6 +21,7 @@
         name="pdm_id"
         :class="{ error: errosDePlanoSetorial.lista }"
         :aria-busy="chamadasPendentesDePlanoSetoriais.lista"
+        :aria-disabled="listaDePlanoSetoriais.length < 2"
         @change="(valor) => { emit('campoMudou', { pdm_id: valor }); }"
       >
         <option
@@ -46,8 +49,8 @@
         name="orgao_id"
         :controlador="{
           busca: '',
-  participantes: dados?.orgao_id
-}"
+          participantes: dados?.orgao_id
+        }"
         :grupo="órgãosComoLista"
         label="sigla"
         :aria-busy="organs.loading"
@@ -105,6 +108,7 @@
     <button
       class="btn outline bgnone tcprimary align-start mt2"
       type="submit"
+      :aria-disabled="!dados.pdm_id"
     >
       Filtrar
     </button>
@@ -122,7 +126,7 @@ import {
   onMounted,
   ref,
 } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 defineProps({
   ariaBusy: {
@@ -131,12 +135,16 @@ defineProps({
   },
 });
 
+const router = useRouter();
+const route = useRoute();
+
 const emit = defineEmits(['enviado', 'campoMudou']);
 
-const rota = useRoute();
 const orgaosStore = useOrgansStore();
-const planosSetoriaisStore = usePlanosSetoriaisStore(rota.meta.entidadeMãe as string);
+const planosSetoriaisStore = usePlanosSetoriaisStore(route.meta.entidadeMãe);
 const equipesStore = useEquipesStore();
+
+const { planoAtivo } = storeToRefs(planosSetoriaisStore);
 
 const {
   lista: listaDePlanoSetoriais,
@@ -169,13 +177,33 @@ const dados = ref<Dados>({
 });
 
 onMounted(() => {
-  const valoresNaQuery = rota.query as Record<string, unknown>;
+  const valoresNaQuery = route.query as Record<string, unknown>;
 
-  Object.keys(dados.value).forEach((chave) => {
-    const valorNaQuery = valoresNaQuery[chave];
+  Object.keys(dados.value).forEach(async (chave) => {
+    let valorNaQuery = valoresNaQuery[chave];
 
     if (!valorNaQuery) {
-      return;
+      if (chave === 'pdm_id') {
+        if (!planoAtivo.value) {
+          await planosSetoriaisStore.buscarTudo();
+        }
+
+        if (!planoAtivo.value) {
+          return;
+        }
+
+        await router.replace({
+          query: {
+            ...route.query,
+            pdm_id: planoAtivo.value.id,
+          },
+        });
+
+        valorNaQuery = route.query.pdm_id;
+        dados.value.pdm_id = valorNaQuery as number;
+      } else {
+        return;
+      }
     }
 
     if (dados.value[chave as ChaveDeDados] !== valorNaQuery) {
@@ -184,7 +212,7 @@ onMounted(() => {
           ? valorNaQuery as number[]
           : [valorNaQuery] as number[];
       } else if (chave === 'pdm_id') {
-        dados.value.pdm_id = Number(valorNaQuery);
+        dados.value.pdm_id = valorNaQuery as number;
       } else if (chave === 'visao_pessoal') {
         dados.value.visao_pessoal = typeof valorNaQuery === 'boolean'
           ? valorNaQuery
