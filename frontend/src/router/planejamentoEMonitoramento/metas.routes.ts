@@ -38,12 +38,12 @@ import MetaOrçamentoRaiz from '@/views/orcamento/MetaOrçamentoRaiz.vue';
 // - `/meta/:meta_id/iniciativas/:iniciativa_id/atividades/:atividade_id`
 
 import type { TiposDeOrcamentosDisponiveis } from '@/stores/planosSetoriais.store';
+import EditarFaseCronograma from '@/views/metas/EditarFaseCronograma/EditarFaseCronograma.vue';
+import AddEditEtapa from '@/views/metas/AddEditEtapa.vue';
 import type {
   EntidadesPossiveis,
   ParametrosPagina,
 } from './prepararRotasParaPlanejamentoEMonitoramento';
-import EditarFaseCronograma from '@/views/metas/EditarFaseCronograma/EditarFaseCronograma.vue';
-import AddEditEtapa from '@/views/metas/AddEditEtapa.vue';
 
 type Props = {
   entidadeMãe: EntidadesPossiveis;
@@ -683,6 +683,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
 
     {
       path: ':meta_id/orcamento',
+      name: `${entidadeMãe}.orcamentoDeMetas`,
       redirect: (to) => `${to.path}/custo`,
       component: MetaOrçamentoRaiz,
       meta: {
