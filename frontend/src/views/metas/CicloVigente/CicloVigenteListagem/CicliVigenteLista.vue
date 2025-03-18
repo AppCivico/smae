@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import CicloListaItem, { type CicloVigenteItemParams } from './partials/CicloListaItem.vue';
+import CicloVigenteFiltro from './partials/CicloVigenteFiltro.vue';
 import ListaLegendas from './partials/ListaLegendas.vue';
 
 const items: CicloVigenteItemParams[] = [
@@ -64,7 +65,9 @@ const items: CicloVigenteItemParams[] = [
     </TituloDePagina>
   </header>
 
-  <ul class="ciclo-vigente-lista">
+  <CicloVigenteFiltro />
+
+  <ul class="ciclo-vigente-lista mt2">
     <CicloListaItem
       v-for="(item, itemIndex) in items"
       :id="item.id"
