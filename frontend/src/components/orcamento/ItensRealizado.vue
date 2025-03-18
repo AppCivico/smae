@@ -2,7 +2,6 @@
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import months from '@/consts/months';
 import dinheiro from '@/helpers/dinheiro';
-import retornarQuaisOsRecentesDosItens from '@/helpers/retornarQuaisOsMaisRecentesDosItensDeOrcamento';
 import { useMetasStore } from '@/stores/metas.store';
 import { useObrasStore } from '@/stores/obras.store';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
@@ -14,6 +13,7 @@ import {
   computed, defineModel, defineOptions, nextTick,
 } from 'vue';
 import { useRoute } from 'vue-router';
+import retornarQuaisOsRecentesDosItens from './helpers/retornarQuaisOsMaisRecentesDosItensDeOrcamento';
 
 defineOptions({ inheritAttrs: false });
 const props = defineProps({
