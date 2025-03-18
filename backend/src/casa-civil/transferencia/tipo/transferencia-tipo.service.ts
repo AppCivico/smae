@@ -125,12 +125,13 @@ export class TransferenciaTipoService {
                 select: { nome: true },
             });
 
-           if(existsTransferenciaRelacionada > 0) {
-                if (!transferenciaTipo) {
-                    throw new HttpException('Não foi possível excluir. Tipo de transferência não encontrado.', 400);
-                }
+            if (!transferenciaTipo) {
+                throw new HttpException('Não foi possível excluir. Tipo de transferência não encontrado.', 400);
+            }
+
+            if(existsTransferenciaRelacionada > 0) {
                 throw new HttpException(`Não foi possível excluir "${transferenciaTipo.nome}". Esse tipo já está sendo usado em alguma transferência`, 400);
-           }
+            }
 
             await this.prisma.transferenciaTipo.update({
                 where: { id },
@@ -141,5 +142,5 @@ export class TransferenciaTipoService {
             });
         });
     }
-    
+
 }
