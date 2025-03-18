@@ -1,6 +1,7 @@
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
 import type { RouteLocation } from 'vue-router';
 import metasRoutes from './metas.routes';
+import tiparPropsDeRota from '../helpers/tiparPropsDeRota';
 
 const ListaDeRelatorios = () => import('@/views/relatorios/ListaDeRelatorios.vue');
 
@@ -101,11 +102,8 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
       },
       {
         path: ':planoSetorialId',
-        props: ({ params }) => ({
-          ...params,
-          planoSetorialId:
-            Number.parseInt(params.planoSetorialId, 10) || undefined,
-        }),
+        component: () => import('@/views/planosSetoriais/PlanosSetoriaisItem.vue'),
+        props: tiparPropsDeRota,
         meta: {
           rotasParaMenuSecundário: () => {
             const rotasParaMenu = [
@@ -130,7 +128,6 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
           },
           rotasParaMigalhasDePão: [`${entidadeMãe}.planosSetoriaisListar`],
         },
-        component: () => import('@/views/planosSetoriais/PlanosSetoriaisItem.vue'),
         children: [
           {
             path: '',
@@ -171,11 +168,7 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
             path: 'resumo',
             name: `${entidadeMãe}.planosSetoriaisResumo`,
             component: () => import('@/views/planosSetoriais/PlanosSetoriaisResumo.vue'),
-            props: ({ params }) => ({
-              ...params,
-              planoSetorialId:
-                Number.parseInt(params.planoSetorialId, 10) || undefined,
-            }),
+            props: tiparPropsDeRota,
             meta: {
               título: () => usePlanosSetoriaisStore(entidadeMãe)?.emFoco?.nome
                 || `Resumo de ${parametrosPagina.tituloSingular}`,
