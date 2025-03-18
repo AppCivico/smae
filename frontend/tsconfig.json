@@ -21,6 +21,10 @@
       "./src"
     ],
     "target": "es2020",
+    "typeRoots": [
+      "./node_modules/@types",
+      "./src/types"
+    ],
     "types": [
       "vite/client",
     ]
