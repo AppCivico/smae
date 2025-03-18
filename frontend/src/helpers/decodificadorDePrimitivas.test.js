@@ -3,6 +3,10 @@ import decodificadorDePrimitivas from './decodificadorDePrimitivas.ts';
 
 const tests = [
   {
+    test: 'foo',
+    expected: 'foo',
+  },
+  {
     test: 'true',
     expected: true,
   },

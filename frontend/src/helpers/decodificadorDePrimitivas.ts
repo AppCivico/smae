@@ -15,5 +15,5 @@ export default ((str:string) => {
   if (str in keywords) {
     return keywords[str as keyof typeof keywords];
   }
-  return '';
+  return str;
 });
