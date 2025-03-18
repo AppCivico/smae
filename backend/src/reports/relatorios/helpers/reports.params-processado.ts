@@ -12,10 +12,12 @@ const enumMap: Record<string, typeof ParlamentarCargo | typeof TipoRelatorio> = 
     tipo: TipoRelatorio,
 };
 
-function nomeTabelaColParametro(nomeChave: string): { tabela: string; coluna: string } | undefined {
-    const tabelaConfig: Record<string, { coluna: string; chaves?: string[] }> = {
+function nomeTabelaColParametro(
+    nomeChave: string
+): { tabela: string; coluna: string; chave_exibicao?: string } | undefined {
+    const tabelaConfig: Record<string, { coluna: string; chaves?: string[]; chave_exibicao?: string }> = {
         projeto: { coluna: 'nome' },
-        pdm: { coluna: 'nome', chaves: ['plano_setorial'] },
+        pdm: { coluna: 'nome', chaves: ['plano_setorial'], chave_exibicao: 'PdM' },
         transferencia_tipo: { coluna: 'nome', chaves: ['tipo'] },
         parlamentar: { coluna: 'nome_popular' },
         tag: { coluna: 'descricao', chaves: ['tags'] },
@@ -33,7 +35,7 @@ function nomeTabelaColParametro(nomeChave: string): { tabela: string; coluna: st
     const mapeamento = Object.entries(tabelaConfig).reduce(
         (acc, [tabela, config]) => {
             // Adiciona o próprio da tabela no mapeamento
-            acc[tabela] = { tabela, coluna: config.coluna };
+            acc[tabela] = { tabela, coluna: config.coluna, chave_exibicao: config.chave_exibicao };
 
             if (config.chaves) {
                 config.chaves.forEach((chave) => {
@@ -42,7 +44,7 @@ function nomeTabelaColParametro(nomeChave: string): { tabela: string; coluna: st
             }
             return acc;
         },
-        {} as Record<string, { tabela: string; coluna: string }>
+        {} as Record<string, { tabela: string; coluna: string; chave_exibicao?: string }>
     );
 
     return mapeamento[nomeChave];
@@ -111,19 +113,26 @@ export const BuildParametrosProcessados = async (
     }
 
     for (const paramKey of Object.keys(parametros)) {
+        // "eh_publico" é um param deprecated, mas como algumas linhas ainda podem ter ele, vamos ignorar.
+        if (paramKey === 'eh_publico') continue;
+
         let valor = parametros[paramKey];
         if (!valor) continue;
 
         let nomeChave = paramKey
             .replace(/(_id|_ids)$/, '') // remove _id ou _ids
-            .replace('plano_setorial_id', 'pdm_id'); // ajuste para pdm_id
+            .replace('plano_setorial_id', 'pdm_id') // ajuste para pdm_id
 
-        if (nomeChave === 'eh_publico') continue;
+            // Tratamentos específicos
+            .replace('listar_variaveis_regionalizadas', 'Listar variáveis regionalizadas')
+            .replace('ano_inicio', 'Ano início')
+            .replace('ano_fim', 'Ano fim');
 
         parametros_processados[nomeChave] = valor.toString();
 
         // Verifica se o valor possui um mapeamento para tabela e coluna.
         const nomeTabelaCol = nomeTabelaColParametro(nomeChave);
+        console.log(nomeTabelaCol);
 
         if (!nomeTabelaCol) {
             // Trocando _ por espaços, pois se caiu aqui não é ID
@@ -145,6 +154,13 @@ export const BuildParametrosProcessados = async (
             }
 
             continue;
+        }
+
+        // Caso o resultado da func nomeTabelaCol possua chave_exibicao, substitui o nomeChave
+        if (nomeTabelaCol.chave_exibicao) {
+            delete parametros_processados[nomeChave];
+            nomeChave = nomeTabelaCol.chave_exibicao;
+            parametros_processados[nomeChave] = valor;
         }
 
         if (typeof valor === 'number' && nomeTabelaCol) {
