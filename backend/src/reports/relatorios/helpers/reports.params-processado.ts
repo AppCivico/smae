@@ -126,7 +126,8 @@ export const BuildParametrosProcessados = async (
             // Tratamentos específicos
             .replace('listar_variaveis_regionalizadas', 'Listar variáveis regionalizadas')
             .replace('ano_inicio', 'Ano início')
-            .replace('ano_fim', 'Ano fim');
+            .replace('ano_fim', 'Ano fim')
+            .replace('mes', 'Mês');
 
         parametros_processados[nomeChave] = valor.toString();
 
