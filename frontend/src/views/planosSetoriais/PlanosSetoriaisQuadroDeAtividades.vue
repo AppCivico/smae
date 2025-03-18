@@ -7,7 +7,7 @@ import GrandesNumerosDeMetas from '@/components/quadroDeAtividades/GrandesNumero
 import { usePanoramaPlanoSetorialStore } from '@/stores/planoSetorial.panorama.store';
 import { storeToRefs } from 'pinia';
 import { watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 defineOptions({
   inheritAttrs: false,
