@@ -113,6 +113,25 @@ export class TransferenciaTipoService {
             if (existsClassificacaoRelacionada > 0)
                 throw new HttpException('Tipo de Transferencia não pode ser removida pois está relacionada a classificações', 400);
 
+            const existsTransferenciaRelacionada = await this.prisma.transferencia.count({
+                where:{
+                    tipo_id: id,
+                    removido_em: null,
+                }
+            });
+
+            const transferenciaTipo = await this.prisma.transferenciaTipo.findUnique({
+                where: { id },
+                select: { nome: true },
+            });
+
+           if(existsTransferenciaRelacionada > 0) {
+                if (!transferenciaTipo) {
+                    throw new HttpException('Não foi possível excluir. Tipo de transferência não encontrado.', 400);
+                }
+                throw new HttpException(`Não foi possível excluir "${transferenciaTipo.nome}". Esse tipo já está sendo usado em alguma transferência`, 400);
+           }
+
             await this.prisma.transferenciaTipo.update({
                 where: { id },
                 data: {
@@ -122,4 +141,5 @@ export class TransferenciaTipoService {
             });
         });
     }
+    
 }
