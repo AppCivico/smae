@@ -655,8 +655,7 @@ watch(
 }
 
 .formulario-sujo ~ * {
-  filter: grayscale(1) blur(2px) opacity(0.35);
-  pointer-events: none;
+  .dados-defasados();
 }
 
 .cartao--mapa {

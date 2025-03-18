@@ -108,7 +108,7 @@ function aplicarFiltros(eventoOuObjeto: SubmitEvent | Record<string, unknown>): 
   parametros = {
     ...cloneDeep(route.query),
     ...cloneDeep(parametros),
-  };
+  } as UrlParams;
 
   // Remover propriedades com valores de string vazia
   Object.keys(parametros).forEach((key) => {
