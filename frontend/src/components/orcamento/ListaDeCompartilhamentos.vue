@@ -4,10 +4,10 @@ import months from '@/consts/months';
 import patterns from '@/consts/patterns';
 import dinheiro from '@/helpers/dinheiro';
 import requestS from '@/helpers/requestS.ts';
-import retornarQuaisOsRecentesDosItens from '@/helpers/retornarQuaisOsMaisRecentesDosItensDeOrcamento';
 import truncate from '@/helpers/texto/truncate';
 import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
+import retornarQuaisOsRecentesDosItens from './helpers/retornarQuaisOsMaisRecentesDosItensDeOrcamento';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 

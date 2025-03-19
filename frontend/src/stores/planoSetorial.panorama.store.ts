@@ -1,4 +1,4 @@
-import type { PSMFRespostaDashboardDto } from '@back/mf/ps-dash/dto/ps.dto';
+import type { PSMFListaMetasDto, PSMFQuadroMetasDto, PSMFQuadroVariaveisDto } from '@back/mf/ps-dash/dto/ps.dto';
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -16,11 +16,11 @@ type Erros = {
 };
 
 type Estado = {
-  variaveis: PSMFRespostaDashboardDto['variaveis'] | null;
-  estatisticasMetas: PSMFRespostaDashboardDto['estatisticas_metas'] | null;
+  variaveis: PSMFQuadroVariaveisDto | null;
+  estatisticasMetas: PSMFQuadroMetasDto | null;
 
-  listaMetas: PSMFRespostaDashboardDto['lista_metas']['itens'] | null;
-  cicloAtual: PSMFRespostaDashboardDto['lista_metas']['ciclo_atual'] | null;
+  listaMetas: PSMFListaMetasDto['linhas'] | null;
+  cicloAtual: PSMFListaMetasDto['ciclo_atual'] | null;
 
   chamadasPendentes: ChamadasPendentes;
 
@@ -39,7 +39,7 @@ export type Parametros = {
   ipp?: number;
 };
 
-export const usePanoramaPlanoSetorialStore = (prefixo:string) => defineStore(prefixo ? `${prefixo}.panorama` : 'panorama', {
+export const usePanoramaPlanoSetorialStore = (prefixo = '') => defineStore(prefixo ? `${prefixo}.panorama` : 'panorama', {
   state: (): Estado => ({
     variaveis: null,
     estatisticasMetas: null,
@@ -80,9 +80,7 @@ export const usePanoramaPlanoSetorialStore = (prefixo:string) => defineStore(pre
       this.erros.variaveis = null;
 
       try {
-        const { variaveis } = await this.requestS.get(`${baseUrl}/plano-setorial/panorama/tudo-duma-vez-por-enquanto`, params) as PSMFRespostaDashboardDto;
-
-        this.variaveis = variaveis;
+        this.variaveis = await this.requestS.get(`${baseUrl}/plano-setorial/panorama/quadro-variaveis`, params) as PSMFQuadroVariaveisDto;
       } catch (erro: unknown) {
         this.erros.variaveis = erro;
       }
@@ -95,9 +93,7 @@ export const usePanoramaPlanoSetorialStore = (prefixo:string) => defineStore(pre
       this.erros.estatisticasMetas = null;
 
       try {
-        const { estatisticas_metas: estatisticasMetas } = await this.requestS.get(`${baseUrl}/plano-setorial/panorama/tudo-duma-vez-por-enquanto`, params) as PSMFRespostaDashboardDto;
-
-        this.estatisticasMetas = estatisticasMetas;
+        this.estatisticasMetas = await this.requestS.get(`${baseUrl}/plano-setorial/panorama/quadro-metas`, params) as PSMFQuadroMetasDto;
       } catch (erro: unknown) {
         this.erros.estatisticasMetas = erro;
       }
@@ -111,18 +107,25 @@ export const usePanoramaPlanoSetorialStore = (prefixo:string) => defineStore(pre
 
       try {
         const {
-          lista_metas: {
-            itens: listaMetas,
-            ciclo_atual: cicloAtual,
-            total: totalRegistros,
-            pagina: paginaCorrente,
-          },
-        } = await this.requestS.get(`${baseUrl}/plano-setorial/panorama/tudo-duma-vez-por-enquanto`, params) as PSMFRespostaDashboardDto;
+          linhas: listaMetas,
+
+          ciclo_atual: cicloAtual,
+
+          pagina_corrente: paginaCorrente,
+          paginas,
+          tem_mais: temMais,
+          token_paginacao: tokenPaginacao,
+          total_registros: totalRegistros,
+        } = await this.requestS.get(`${baseUrl}/plano-setorial/panorama/metas`, params) as PSMFListaMetasDto;
 
         this.listaMetas = listaMetas;
         this.cicloAtual = cicloAtual;
-        this.paginacaoDeMetas.totalRegistros = totalRegistros;
+
         this.paginacaoDeMetas.paginaCorrente = paginaCorrente;
+        this.paginacaoDeMetas.paginas = paginas;
+        this.paginacaoDeMetas.temMais = temMais;
+        this.paginacaoDeMetas.tokenPaginacao = tokenPaginacao || '';
+        this.paginacaoDeMetas.totalRegistros = totalRegistros;
       } catch (erro: unknown) {
         this.erros.listaMetas = erro;
       }
