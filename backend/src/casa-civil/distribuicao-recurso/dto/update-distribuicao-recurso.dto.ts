@@ -8,7 +8,7 @@ export class UpdateDistribuicaoRecursoDto extends PartialType(
     @IsOptional()
     @IsString()
     @MaxLength(250)
-    justificativa_aditamento?: string;
+    justificativa_aditamento?: string | null;
 
     @IsOptional()
     @IsArray()
