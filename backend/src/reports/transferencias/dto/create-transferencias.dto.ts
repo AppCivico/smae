@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { TransferenciaInterface, TransferenciaTipoEsfera } from '@prisma/client';
-import { Transform, Type } from 'class-transformer';
+import { Expose, Transform, Type } from 'class-transformer';
 import { IsEnum, IsInt, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export enum TipoRelatorioTransferencia {
@@ -15,6 +15,7 @@ export class CreateRelTransferenciasDto {
         message:
             '$property| Precisa ser um dos seguintes valores: ' + Object.values(TransferenciaTipoEsfera).join(', '),
     })
+    @Expose()
     esfera?: TransferenciaTipoEsfera;
 
     @IsOptional()
@@ -22,25 +23,28 @@ export class CreateRelTransferenciasDto {
     @IsEnum(TransferenciaInterface, {
         message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(TransferenciaInterface).join(', '),
     })
+    @Expose()
     interface?: TransferenciaInterface;
 
     @IsOptional()
     @IsNumber()
     @Type(() => Number)
+    @Expose()
     ano?: number;
 
     @IsOptional()
     @IsNumber()
-    @Transform(({ value }: any) => +value)
+    @Expose()
     partido_id?: number;
 
     @IsOptional()
     @IsNumber()
-    @Transform(({ value }: any) => +value)
+    @Expose()
     orgao_concedente_id?: number;
 
     @IsOptional()
     @IsString()
+    @Expose()
     secretaria_concedente?: string;
 
     @IsOptional()
@@ -49,15 +53,18 @@ export class CreateRelTransferenciasDto {
 
     @IsOptional()
     @IsString()
+    @Expose()
     gestor_contrato?: string;
 
     @IsOptional()
     @IsInt()
-    orgao_gestor_id?: number
+    @Expose()
+    orgao_gestor_id?: number;
 
     @IsOptional()
     @IsInt()
-    parlamentar_id?:number
+    @Expose()
+    parlamentar_id?: number;
 
     /**
      * @example "Analitico"
@@ -67,5 +74,6 @@ export class CreateRelTransferenciasDto {
         message:
             '$property| Precisa ser um dos seguintes valores: ' + Object.values(TipoRelatorioTransferencia).join(', '),
     })
+    @Expose()
     tipo: TipoRelatorioTransferencia;
 }
