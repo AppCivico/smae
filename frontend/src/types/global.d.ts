@@ -25,6 +25,9 @@ declare type Paginacao = {
   totalRegistros: number;
 };
 
+/**
+ * @link https://router.vuejs.org/guide/advanced/meta.html#TypeScript
+ */
 declare module 'vue-router' {
   interface RouteMeta {
     entidadeMãe?: string;
