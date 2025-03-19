@@ -6,7 +6,7 @@ import FiltroDoQuadroDeAtividades from '@/components/planoSetorialProgramaMetas.
 import { usePanoramaPlanoSetorialStore } from '@/stores/planoSetorial.panorama.store';
 import { storeToRefs } from 'pinia';
 import { watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 
 defineOptions({
   inheritAttrs: false,
