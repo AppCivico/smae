@@ -91,6 +91,17 @@ export class ProjetoModalidadeContratacaoService {
         });
         if (emUso > 0) throw new HttpException('Registro em uso em Projetos.', 400);
 
+        const existsModalidadeRelacionada = await this.prisma.contrato.count({
+            where: {
+                removido_em: null,
+                modalidade_contratacao_id: id,
+            },
+        });
+
+        if (existsModalidadeRelacionada > 0) {
+            throw new HttpException('Essa modalidade de contratação esta sendo usada em algum contrato. Não é possível excluir', 400);
+        }
+
         const created = await this.prisma.modalidadeContratacao.updateMany({
             where: { id: id },
             data: {
@@ -101,4 +112,5 @@ export class ProjetoModalidadeContratacaoService {
 
         return created;
     }
+    
 }
