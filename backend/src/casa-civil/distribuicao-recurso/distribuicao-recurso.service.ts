@@ -1462,6 +1462,10 @@ export class DistribuicaoRecursoService {
         user: PessoaFromJwt,
         now: Date
     ) {
+        // Verificando se a justificativa foi enviada e não é null.
+        // Ela é required na tabela.
+        if (!dto.justificativa_aditamento) throw new HttpException('justificativa_aditamento| Deve ser enviada.', 400);
+
         const self = await prismaTx.distribuicaoRecurso.findFirstOrThrow({
             where: {
                 id: distribuicaoRecursoId,
