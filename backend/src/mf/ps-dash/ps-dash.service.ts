@@ -128,6 +128,8 @@ export class PSMFDashboardService {
         // Obter ciclo atual
         const cicloAtual = await this.obterCicloAtual(filtros.pdm_id);
 
+        const equipes_pessoa = filtros.visao_pessoal ? await user.getEquipesColaborador(this.prisma) : [];
+
         // Filtro principal a partir do dashboard
         const dashPermissionsSet: Prisma.Enumerable<Prisma.PsDashboardConsolidadoWhereInput> = [
             {
@@ -137,6 +139,17 @@ export class PSMFDashboardService {
                     id: filtros.meta_id ? { in: filtros.meta_id } : undefined,
                 },
                 pendente: filtros.apenas_pendentes !== undefined ? filtros.apenas_pendentes : undefined,
+                equipes: filtros.equipes && Array.isArray(filtros.equipes) ? { hasSome: filtros.equipes } : undefined,
+                equipes_orgaos:
+                    filtros.orgao_id && Array.isArray(filtros.orgao_id) ? { hasSome: filtros.orgao_id } : undefined,
+
+                AND: [
+                    filtros.visao_pessoal
+                        ? {
+                              equipes: { hasSome: equipes_pessoa },
+                          }
+                        : {},
+                ],
             },
         ];
 
