@@ -28,8 +28,8 @@ declare type Paginacao = {
 declare module 'vue-router' {
   interface RouteMeta {
     entidadeMãe?: string;
-    título?: string | function;
-    títuloParaMenu?: string | function;
+    título?: string | (() => string);
+    títuloParaMenu?: string | (() => string);
     rotaDeEscape?: string | string[];
     rotasParaMigalhasDePão?: string[];
     limitarÀsPermissões?: string | string[];
