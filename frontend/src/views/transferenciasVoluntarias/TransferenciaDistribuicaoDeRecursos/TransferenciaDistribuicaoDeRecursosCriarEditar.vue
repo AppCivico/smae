@@ -239,7 +239,9 @@ watch(() => itemParaEdicaoFormatado.value, () => {
 });
 
 onMounted(async () => {
-  ÓrgãosStore.getAll();
+  if (!órgãosComoLista.value.length) {
+    ÓrgãosStore.getAll();
+  }
 });
 
 onUnmounted(() => {
