@@ -7,24 +7,27 @@
 
 import 'vue-router';
 
-declare type ChamadasPendentes = {
-  lista: boolean;
-  emFoco: boolean;
-};
+export { };
 
-declare type Erros = {
-  lista: null | unknown;
-  emFoco: null | unknown;
-};
+declare global {
+  type ChamadasPendentes = {
+    lista: boolean;
+    emFoco: boolean;
+  };
 
-declare type Paginacao = {
-  tokenPaginacao: string;
-  paginas: number;
-  paginaCorrente: number;
-  temMais: boolean;
-  totalRegistros: number;
-};
+  type Erros = {
+    lista: null | unknown;
+    emFoco: null | unknown;
+  };
 
+  type Paginacao = {
+    tokenPaginacao: string;
+    paginas: number;
+    paginaCorrente: number;
+    temMais: boolean;
+    totalRegistros: number;
+  };
+}
 /**
  * @link https://router.vuejs.org/guide/advanced/meta.html#TypeScript
  */
