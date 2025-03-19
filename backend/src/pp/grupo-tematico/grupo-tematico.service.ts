@@ -120,7 +120,14 @@ export class GrupoTematicoService {
                         id,
                         removido_em: null,
                     },
-                    select: { nome: true },
+                    select: {
+                        id: true,
+                        nome: true,
+                        programa_habitacional: true,
+                        unidades_habitacionais: true,
+                        familias_beneficiadas: true,
+                        unidades_atendidas: true,
+                    },
                 });
 
                 if (dto.nome && dto.nome != self.nome) {
@@ -136,6 +143,22 @@ export class GrupoTematicoService {
                             'fonte| Nome igual ou semelhante já existe em outro registro ativo',
                             400
                         );
+                }
+
+                const emUso = await prismaTx.projeto.count({
+                    where: {
+                        grupo_tematico_id: id,
+                        removido_em: null,
+                    },
+                });
+
+                if(emUso > 0) {
+                    if((dto.programa_habitacional !== undefined  && dto.programa_habitacional  !== self.programa_habitacional)  ||
+                       (dto.unidades_habitacionais !== undefined && dto.unidades_habitacionais !== self.unidades_habitacionais) ||
+                       (dto.familias_beneficiadas !== undefined  && dto.familias_beneficiadas  !== self.familias_beneficiadas)  ||
+                       (dto.unidades_atendidas !== undefined     && dto.unidades_atendidas     !== self.unidades_atendidas)) {
+                            throw new HttpException('Grupo temático tem obras vinculadas. Não é possível alterar configurações', 400);
+                    }
                 }
 
                 if (dto.programa_habitacional === null) delete dto.programa_habitacional;
