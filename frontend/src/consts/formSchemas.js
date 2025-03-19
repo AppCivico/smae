@@ -2116,6 +2116,7 @@ export const transferenciaDistribuicaoDeRecursos = object({
   justificativa_aditamento: string()
     .label('Justificativa para aditamento')
     .max(250)
+    .min(1, 'Justificativa para aditamento é obrigatório após editar a data de vigência')
     .nullable(),
   nome: string()
     .label('Nome')
