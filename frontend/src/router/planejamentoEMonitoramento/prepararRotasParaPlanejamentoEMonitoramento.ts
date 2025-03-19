@@ -150,22 +150,6 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
             },
           },
           {
-            path: 'ciclo-vigente',
-            name: `${entidadeMãe}.cicloVigente`,
-            component: () => import('@/views/metas/CicloVigente/CicloVigenteListagem/CicliVigenteLista.vue'),
-            meta: {
-              limitarÀsPermissões: [
-                'CadastroPS.administrador',
-                'CadastroPDM.administrador',
-                'CadastroPS.administrador_no_orgao',
-                'CadastroPDM.administrador_no_orgao',
-              ],
-              rotaDeEscape: `${entidadeMãe}.planosSetoriaisListar`,
-              título: 'Ciclos Vigente',
-              titulo: 'Ciclos Vigente',
-            },
-          },
-          {
             path: 'permissoes-orcamento',
             name: `${entidadeMãe}.permissoesOrcamento`,
             component: () => import('@/views/planosSetoriais/EdicaoOrcamento/EdicaoOrcamento.vue'),
