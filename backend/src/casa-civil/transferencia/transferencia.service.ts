@@ -332,6 +332,7 @@ export class TransferenciaService {
                         identificador: true,
                         workflow_id: true,
                         ano: true,
+                        clausula_suspensiva: true,
                     },
                 });
                 if (!self) throw new HttpException('id| Transferência não encontrada', 404);
@@ -486,6 +487,23 @@ export class TransferenciaService {
                     workflow_id = null;
                     if (workflow) workflow_id = workflow?.id;
                 }
+
+                // Caso a clausula_suspensiva estava true, e foi alterada para false.
+                // É setado null para clausula_suspensiva_vencimento.
+                if (dto.clausula_suspensiva == false && self.clausula_suspensiva == true) {
+                    dto.clausula_suspensiva_vencimento = null;
+                }
+
+                // E caso seja modificada para true, deve ser validado se a data foi informada.
+                if (
+                    dto.clausula_suspensiva == true &&
+                    self.clausula_suspensiva == false &&
+                    dto.clausula_suspensiva_vencimento == null
+                )
+                    throw new HttpException(
+                        'clausula_suspensiva_vencimento| Data de vencimento da cláusula suspensiva deve ser informada.',
+                        400
+                    );
 
                 const transferencia = await prismaTxn.transferencia.update({
                     where: { id },
