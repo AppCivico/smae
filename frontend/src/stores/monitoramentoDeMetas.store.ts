@@ -1,4 +1,3 @@
-import type { ParametrosDeRequisicao } from '@/helpers/requestS';
 import type { RecordWithId } from '@back/common/dto/record-with-id.dto';
 import type {
   CicloFisicoPSDto,
@@ -10,6 +9,7 @@ import type {
   UltimaRevisao,
 } from '@back/pdm-ciclo/entities/pdm-ciclo.entity';
 import { defineStore } from 'pinia';
+import type { ParametrosDeRequisicao } from '@/helpers/requestS';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -138,6 +138,9 @@ export const useMonitoramentoDeMetasStore = (prefixo: PrefixosValidos) => define
         this.erros.ciclosDetalhadosPorId[cicloId] = erro;
       }
       this.chamadasPendentes.ciclosDetalhadosPorId[cicloId] = false;
+    },
+    limparCiclos() {
+      this.ciclosDetalhadosPorId = {};
     },
 
     // eslint-disable-next-line max-len

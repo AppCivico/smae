@@ -1,7 +1,10 @@
 <script setup>
 import { storeToRefs } from 'pinia';
+import {
+  computed, onMounted, ref,
+  watch,
+} from 'vue';
 import { useRoute } from 'vue-router';
-import { computed, ref, watch } from 'vue';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import DetalhamentoDeCiclo from '@/components/monitoramentoDeMetas/DetalhamentoDeCiclo.vue';
@@ -44,6 +47,11 @@ watch(
   },
   { immediate: true },
 );
+
+onMounted(() => {
+  monitoramentoDeMetasStore.limparCiclos();
+});
+
 </script>
 <template>
   <MigalhasDeMetas class="mb1" />
@@ -56,6 +64,7 @@ watch(
     <template v-else>
       <DetalhamentoDeCiclo
         :id="`ciclo--${cicloAtivo?.id}`"
+        :key="`ciclo--${cicloAtivo?.id}`"
         :ciclo-atual="true"
         :ciclo="cicloAtivo"
         :meta-id="$route.params.meta_id"
