@@ -114,7 +114,7 @@ export const usePanoramaPlanoSetorialStore = (prefixo = '') => defineStore(prefi
           pagina_corrente: paginaCorrente,
           paginas,
           tem_mais: temMais,
-          token_ttl: tokenPaginacao,
+          token_paginacao: tokenPaginacao,
           total_registros: totalRegistros,
         } = await this.requestS.get(`${baseUrl}/plano-setorial/panorama/metas`, params) as PSMFListaMetasDto;
 
@@ -124,8 +124,8 @@ export const usePanoramaPlanoSetorialStore = (prefixo = '') => defineStore(prefi
         this.paginacaoDeMetas.paginaCorrente = paginaCorrente;
         this.paginacaoDeMetas.paginas = paginas;
         this.paginacaoDeMetas.temMais = temMais;
+        this.paginacaoDeMetas.tokenPaginacao = tokenPaginacao || '';
         this.paginacaoDeMetas.totalRegistros = totalRegistros;
-        this.paginacaoDeMetas.tokenPaginacao = tokenPaginacao;
       } catch (erro: unknown) {
         this.erros.listaMetas = erro;
       }
