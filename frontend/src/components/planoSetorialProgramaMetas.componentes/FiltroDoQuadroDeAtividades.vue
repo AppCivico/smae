@@ -181,27 +181,26 @@ onMounted(() => {
     let valorNaQuery = valoresNaQuery[chave];
 
     if (!valorNaQuery) {
-      if (chave === 'pdm_id') {
-        if (!planoAtivo.value) {
-          await planosSetoriaisStore.buscarTudo();
-        }
-
-        if (!planoAtivo.value) {
-          return;
-        }
-
-        await router.replace({
-          query: {
-            ...route.query,
-            pdm_id: planoAtivo.value.id,
-          },
-        });
-
-        valorNaQuery = route.query.pdm_id;
-        dados.value.pdm_id = valorNaQuery as number;
-      } else {
+      if (chave !== 'pdm_id') {
         return;
       }
+
+      if (!planoAtivo.value) {
+        await planosSetoriaisStore.buscarTudo();
+      }
+
+      if (!planoAtivo.value) {
+        return;
+      }
+
+      await router.replace({
+        query: {
+          ...route.query,
+          pdm_id: planoAtivo.value.id,
+        },
+      });
+      valorNaQuery = route.query.pdm_id;
+      dados.value.pdm_id = valorNaQuery as number;
     }
 
     if (dados.value[chave as ChaveDeDados] !== valorNaQuery) {
