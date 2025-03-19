@@ -115,7 +115,7 @@ export const useDistribuicaoRecursosStore = defineStore('distribuicaoRecursos', 
       vigencia: dateTimeToDate(emFoco?.vigencia),
       justificativa_aditamento:
         emFoco?.aditamentos?.find(
-          (aditamento) => aditamento?.data_vigencia_corrente === emFoco?.vigencia,
+          (aditamento) => aditamento?.data_vigencia_corrente === dateTimeToDate(emFoco?.vigencia),
         )?.justificativa || null,
     }),
   },

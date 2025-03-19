@@ -1,8 +1,16 @@
 <script setup>
+import FormErrorsList from '@/components/FormErrorsList.vue';
+import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
+import { transferenciaDistribuicaoDeRecursos as schema } from '@/consts/formSchemas';
+import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
+import truncate from '@/helpers/texto/truncate';
+import { useAlertStore } from '@/stores/alert.store';
+import { useOrgansStore } from '@/stores/organs.store';
+import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
+import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import Big from 'big.js';
 import { vMaska } from 'maska';
 import { storeToRefs } from 'pinia';
-import { useRoute, useRouter } from 'vue-router';
 import {
   ErrorMessage,
   Field,
@@ -17,15 +25,7 @@ import {
   ref,
   watch,
 } from 'vue';
-
-import { transferenciaDistribuicaoDeRecursos as schema } from '@/consts/formSchemas';
-import truncate from '@/helpers/texto/truncate';
-import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
-import { useAlertStore } from '@/stores/alert.store';
-import { useOrgansStore } from '@/stores/organs.store';
-import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
-import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
-import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
+import { useRoute, useRouter } from 'vue-router';
 
 const alertStore = useAlertStore();
 const ÓrgãosStore = useOrgansStore();
@@ -74,7 +74,13 @@ const itemParaEdicaoFormatado = computed(() => {
 });
 
 const {
-  errors, handleSubmit, resetForm, setFieldValue, values, isSubmitting,
+  errors,
+  handleSubmit,
+  isSubmitting,
+  resetField,
+  resetForm,
+  setFieldValue,
+  values,
 } = useForm({
   initialValues: itemParaEdicaoFormatado,
   validationSchema: schema,
@@ -216,7 +222,9 @@ watch(() => values.vigencia, (novoValor) => {
     && !itemParaEdicao.value?.justificativa_aditamento
     && novoValor !== itemParaEdicao.value?.vigencia
   ) {
-    setFieldValue('justificativa_aditamento', '');
+    resetField('justificativa_aditamento', { value: '' });
+  } else {
+    resetField('justificativa_aditamento', { value: itemParaEdicao.value?.justificativa_aditamento });
   }
 });
 
@@ -970,7 +978,11 @@ onUnmounted(() => {
           />
         </div>
 
-        <!-- <div class="f1 fb40">
+        <div
+          v-if="values.justificativa_aditamento !== undefined
+            && values.justificativa_aditamento !== null"
+          class="f1 fb40"
+        >
           <LabelFromYup
             name="justificativa_aditamento"
             :schema="schema"
@@ -987,7 +999,7 @@ onUnmounted(() => {
             name="justificativa_aditamento"
             class="error-msg"
           />
-        </div> -->
+        </div>
 
         <div class="f1 fb10em">
           <LabelFromYup
