@@ -1,15 +1,15 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { CicloFase } from '@prisma/client';
+import { CicloFase, Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { Date2YMD } from '../../common/date2ymd';
-import { PdmModoParaTipo, TipoPdmType } from '../../common/decorators/current-tipo-pdm';
+import { TipoPdmType } from '../../common/decorators/current-tipo-pdm';
+import { IdCodTituloDto } from '../../common/dto/IdCodTitulo.dto';
 import { Object2Hash } from '../../common/object2hash';
 import { MetasGetPermissionSet } from '../../meta/meta.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
     PSMFCicloDto,
-    PSMFCountDto,
     PSMFFiltroDashboardQuadroDto,
     PSMFItemMetaDto,
     PSMFListaMetasDto,
@@ -17,7 +17,7 @@ import {
     PSMFQuadroVariaveisDto,
     PSMFSituacaoCicloDto,
     PSMFSituacaoVariavelDto,
-    PSMFStatusVariaveisMetaDto,
+    StrMIA
 } from './dto/ps.dto';
 
 interface PaginationTokenBody {
@@ -25,6 +25,39 @@ interface PaginationTokenBody {
     ipp: number;
     issued_at: number;
     total_rows: number;
+}
+
+interface IdCodTituloTipoDto {
+    atividade_id?: number | null;
+    iniciativa_id?: number | null;
+    atividade?: IdCodTituloDto | null;
+    iniciativa?: IdCodTituloDto | null;
+    meta: IdCodTituloDto;
+}
+
+function geraDetalheMetaIniAtv(item: IdCodTituloTipoDto) {
+    if (item.atividade_id && item.atividade) {
+        return {
+            id: item.atividade.id,
+            codigo: item.atividade.codigo,
+            titulo: item.atividade.titulo,
+            tipo: 'atividade' as StrMIA,
+        };
+    } else if (item.iniciativa_id && item.iniciativa) {
+        return {
+            id: item.iniciativa.id,
+            codigo: item.iniciativa.codigo,
+            titulo: item.iniciativa.titulo,
+            tipo: 'iniciativa' as StrMIA,
+        };
+    } else {
+        return {
+            id: item.meta.id,
+            codigo: item.meta.codigo,
+            titulo: item.meta.titulo,
+            tipo: 'meta' as StrMIA,
+        };
+    }
 }
 
 @Injectable()
@@ -55,7 +88,7 @@ export class PSMFDashboardService {
         return this.gerarQuadroMetas();
     }
 
-    async getListaMetas(
+    async getListaMetasIniAtv(
         tipo: TipoPdmType,
         filtros: PSMFFiltroDashboardQuadroDto,
         user: PessoaFromJwt
@@ -92,64 +125,51 @@ export class PSMFDashboardService {
 
         const offset = (page - 1) * ipp;
 
-        // Obter contagem total de registros
-        const totalCountQuery = this.prisma.meta.count({
-            where: {
-                AND:
-                    permissionsSet.length > 0
-                        ? [
-                              {
-                                  AND: permissionsSet,
-                              },
-                          ]
-                        : undefined,
-                pdm_id: filtros.pdm_id,
-                pdm: {
-                    tipo: PdmModoParaTipo(tipo),
-                    id: filtros.pdm_id,
+        // Obter ciclo atual
+        const cicloAtual = await this.obterCicloAtual(filtros.pdm_id);
+
+        // Filtro principal a partir do dashboard
+        const dashPermissionsSet: Prisma.Enumerable<Prisma.PsDashboardConsolidadoWhereInput> = [
+            {
+                meta: {
+                    AND: permissionsSet.length > 0 ? { AND: permissionsSet } : undefined,
+                    pdm_id: filtros.pdm_id,
+                    id: filtros.meta_id ? { in: filtros.meta_id } : undefined,
                 },
-                id: filtros.meta_id ? { in: filtros.meta_id } : undefined,
-                // Aqui pode-se adicionar filtros adicionais para o "apenas_pendentes"
-                // quando essas colunas existirem no banco
+                pendente: filtros.apenas_pendentes !== undefined ? filtros.apenas_pendentes : undefined,
+            },
+        ];
+
+        // Obter contagem total de registros
+        const totalCountQuery = this.prisma.psDashboardConsolidado.count({
+            where: {
+                AND: dashPermissionsSet,
             },
         });
 
         // Obter os itens paginados
-        const metasQuery = this.prisma.meta.findMany({
+        const dashboardQuery = this.prisma.psDashboardConsolidado.findMany({
             where: {
-                AND:
-                    permissionsSet.length > 0
-                        ? [
-                              {
-                                  AND: permissionsSet,
-                              },
-                          ]
-                        : undefined,
-                pdm_id: filtros.pdm_id,
-                pdm: {
-                    tipo: PdmModoParaTipo(tipo),
-                    id: filtros.pdm_id,
+                AND: dashPermissionsSet,
+            },
+            include: {
+                meta: {
+                    select: { id: true, titulo: true, codigo: true },
                 },
-                id: filtros.meta_id ? { in: filtros.meta_id } : undefined,
-                // Filtros adicionais para "apenas_pendentes" serão adicionados aqui no futuro
+                iniciativa: {
+                    select: { id: true, titulo: true, codigo: true },
+                },
+                atividade: {
+                    select: { id: true, titulo: true, codigo: true },
+                },
             },
-            orderBy: [{ codigo: 'asc' }],
-            select: {
-                id: true,
-                titulo: true,
-                codigo: true,
-                // Quando outros campos estiverem disponíveis no banco, adicionar aqui
-            },
+            orderBy: [{ meta: { codigo: 'asc' } }],
             skip: offset,
             take: ipp,
         });
 
         // Executar as consultas em paralelo para melhorar performance
-        const [metasFromDb, totalFiltrado, cicloAtual] = await Promise.all([
-            metasQuery,
-            totalCountQuery,
-            this.obterCicloAtual(filtros.pdm_id),
-        ]);
+        const [dashboardItems, totalFiltrado] = await Promise.all([dashboardQuery, totalCountQuery]);
 
         // Gerar token para próxima página se estamos na primeira página
         if (!filtros.token_paginacao) {
@@ -157,23 +177,61 @@ export class PSMFDashboardService {
             total_registros = totalFiltrado;
         }
 
-        // Mapear resultados do banco para o DTO
-        const metas: PSMFItemMetaDto[] = metasFromDb.map((meta) => {
+        // Mapear resultados do dashboard para o DTO
+        const metas: PSMFItemMetaDto[] = dashboardItems.map((item) => {
+            const situacaoCiclo: PSMFSituacaoCicloDto[] = [];
+
+            let fase: CicloFase | null = null;
+
+            if (cicloAtual?.data_ciclo) {
+                fase = CicloFase.Analise;
+            }
+
+            if (item.fase_analise_preenchida) {
+                fase = CicloFase.Risco;
+                situacaoCiclo.push({ fase: CicloFase.Analise, preenchido: true });
+            } else if (fase) {
+                situacaoCiclo.push({ fase: CicloFase.Analise, preenchido: false });
+            }
+
+            if (item.fase_risco_preenchida) {
+                fase = CicloFase.Fechamento;
+                situacaoCiclo.push({ fase: CicloFase.Risco, preenchido: true });
+            } else if (fase) {
+                situacaoCiclo.push({ fase: CicloFase.Risco, preenchido: false });
+            }
+
+            if (item.fase_fechamento_preenchida) {
+                fase = null; // volta pra null, ironicamente pois não temos o ciclo após fechamento
+                situacaoCiclo.push({ fase: CicloFase.Fechamento, preenchido: true });
+            } else if (fase) {
+                situacaoCiclo.push({ fase: CicloFase.Fechamento, preenchido: false });
+            }
+
             return {
-                id: meta.id,
-                codigo: meta.codigo,
-                titulo: meta.titulo,
-                // Campos que precisam ser mockados por enquanto
-                tipo: 'meta', // Por enquanto, sempre será 'meta'
-                pendencia_orcamento: this.gerarContador(Math.random() > 0.5), // Mock baseado em probabilidade
-                pendencia_cronograma: this.gerarContador(Math.random() > 0.5), // Mock baseado em probabilidade
-                monitoramento_ciclo: this.gerarSituacaoCiclo(), // Mock com dados gerados
-                variaveis: this.gerarStatusVariaveisMeta(), // Mock com dados gerados
-                // Campos opcionais que não se aplicam a metas (somente para iniciativas/atividades)
-                fase: CicloFase.Coleta, // Mock com dados gerados
-                meta_id: undefined,
-                iniciativa_id: undefined,
-            };
+                fase,
+                pendencia_orcamento: {
+                    preenchido: item.orcamento_preenchido,
+                    total: item.orcamento_total,
+                },
+                pendencia_cronograma: {
+                    total: item.cronograma_total,
+                    preenchido: item.cronograma_atraso_inicio + item.cronograma_atraso_fim == 0 ? 1 : 0, // hehe, gambiarra
+                },
+                monitoramento_ciclo: situacaoCiclo,
+
+                variaveis: {
+                    total: -1, // só ta contando variáveis do ciclo no momento
+                    a_coletar: item.variaveis_a_coletar,
+                    coletadas_nao_conferidas: item.variaveis_coletadas_nao_conferidas,
+                    conferidas_nao_liberadas: item.variaveis_conferidas_nao_liberadas,
+                    liberadas: item.variaveis_liberadas,
+                    a_coletar_total: item.variaveis_total,
+                },
+                atividade_id: item.atividade_id ?? undefined,
+                iniciativa_id: item.iniciativa_id ?? undefined,
+                ...geraDetalheMetaIniAtv(item),
+            } satisfies PSMFItemMetaDto;
         });
 
         // Calcular metadados de paginação
@@ -277,38 +335,6 @@ export class PSMFDashboardService {
             risco_a_preencher: 20,
             fechadas: 20,
             a_fechar: 30,
-        };
-    }
-
-    private gerarContador(preenchido: boolean): PSMFCountDto {
-        return {
-            total: 1,
-            preenchido: preenchido ? 1 : 0,
-        };
-    }
-
-    private gerarSituacaoCiclo(): PSMFSituacaoCicloDto[] {
-        return [
-            { fase: CicloFase.Analise, preenchido: true },
-            { fase: CicloFase.Risco, preenchido: Math.random() > 0.5 },
-            { fase: CicloFase.Fechamento, preenchido: Math.random() > 0.7 },
-        ];
-    }
-
-    private gerarStatusVariaveisMeta(): PSMFStatusVariaveisMetaDto {
-        const total = Math.floor(Math.random() * 20) + 5;
-        const aColetar = Math.floor(total * 0.8);
-        const coletadas = Math.floor(aColetar * 0.7);
-        const conferidas = Math.floor(coletadas * 0.8);
-        const liberadas = Math.floor(conferidas * 0.9);
-
-        return {
-            total,
-            a_coletar_total: aColetar,
-            a_coletar: aColetar - coletadas,
-            coletadas_nao_conferidas: coletadas - conferidas,
-            conferidas_nao_liberadas: conferidas - liberadas,
-            liberadas,
         };
     }
 }

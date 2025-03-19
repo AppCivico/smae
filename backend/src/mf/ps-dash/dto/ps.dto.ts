@@ -174,6 +174,8 @@ export class PSMFSituacaoCicloDto {
     preenchido: boolean;
 }
 
+export type StrMIA = 'meta' | 'iniciativa' | 'atividade';
+
 export class PSMFItemMetaDto {
     @ApiProperty({ description: 'ID da meta/iniciativa/atividade' })
     id: number;
@@ -185,7 +187,7 @@ export class PSMFItemMetaDto {
     titulo: string;
 
     @ApiProperty({ description: 'Tipo do item' })
-    tipo: 'meta' | 'iniciativa' | 'atividade';
+    tipo: StrMIA;
 
     @ApiProperty({ description: 'Contadores de pendência de orçamento (se existir orçamento terá total 1)' })
     pendencia_orcamento: PSMFCountDto;
@@ -207,12 +209,15 @@ export class PSMFItemMetaDto {
     @ApiProperty({ description: 'ID da iniciativa pai (para atividades)', required: false })
     iniciativa_id?: number;
 
+    @ApiProperty({ description: 'ID da atividade', required: false })
+    atividade_id?: number;
+
     @ApiProperty({
         description: 'Fase atual (da meta, não confundir com a fase do PDM que não existe no conceito de ciclos de PS)',
         enum: CicloFase,
         example: 'Analise',
     })
-    fase: CicloFase; // 'Analise', 'Risco', 'Fechamento'
+    fase: CicloFase | null; // 'Analise', 'Risco', 'Fechamento'
 }
 
 export class PSMFListaMetasDto extends PaginatedWithPagesDto<PSMFItemMetaDto> {

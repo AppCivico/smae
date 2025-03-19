@@ -46,11 +46,11 @@ export class PSMFDashboardController {
     @ApiOperation({ summary: 'Retorna a lista paginada de metas do panorama' })
     @ApiBearerAuth('access-token')
     @Roles(MetaSetorialController.ReadPerm)
-    async getListaMetas(
+    async getListaMetasIniAtv(
         @Query() filtros: PSMFFiltroDashboardQuadroDto,
         @CurrentUser() user: PessoaFromJwt,
         @TipoPDM() tipo: TipoPdmType
     ): Promise<PSMFListaMetasDto> {
-        return await this.dashboardService.getListaMetas(tipo, filtros, user);
+        return await this.dashboardService.getListaMetasIniAtv(tipo, filtros, user);
     }
 }
