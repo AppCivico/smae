@@ -181,3 +181,23 @@
   filter: grayscale(1) blur(2px) opacity(0.35);
   pointer-events: none;
 }
+
+.congelado-no-topo() {
+  position: sticky;
+  top: 0;
+  background-color: @branco;
+  z-index: 5000;
+
+  &::after {
+    background-image:
+      linear-gradient(to bottom, fade(black, 3.5) 0px, transparent 20px);
+    content: '';
+    position: absolute;
+    pointer-events: none;
+    border-radius: 6px 6px 0 0;
+    top: 100%;
+    left: -6px;
+    right: -6px;
+    height: 20px;
+  }
+}
