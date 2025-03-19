@@ -192,6 +192,25 @@ export class TransferenciasService implements ReportableService {
             where: {
                 NOT: [{ transferencia_id: null }],
                 removido_em: null,
+                transferencia: {
+                    esfera: dto.esfera ?? undefined,
+                    interface: dto.interface ?? undefined,
+                    ano: dto.ano ?? undefined,
+                    secretaria_concedente_str: dto.secretaria_concedente ?? undefined,
+                    objeto: dto.objeto ?? undefined,
+                    gestor_contrato: dto.gestor_contrato ?? undefined,
+                    orgao_concedente_id: dto.orgao_gestor_id ?? undefined,
+                    parlamentar:
+                        dto.parlamentar_id || dto.partido_id
+                            ? {
+                                  some: {
+                                      parlamentar_id: dto.parlamentar_id ?? undefined,
+                                      partido_id: dto.partido_id ?? undefined,
+                                  },
+                              }
+                            : undefined,
+                    removido_em: null,
+                },
             },
             select: { id: true, transferencia_id: true },
         });
