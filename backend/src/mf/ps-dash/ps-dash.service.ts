@@ -17,7 +17,7 @@ import {
     PSMFQuadroVariaveisDto,
     PSMFSituacaoCicloDto,
     PSMFSituacaoVariavelDto,
-    StrMIA
+    StrMIA,
 } from './dto/ps.dto';
 
 interface PaginationTokenBody {
@@ -181,35 +181,14 @@ export class PSMFDashboardService {
         const metas: PSMFItemMetaDto[] = dashboardItems.map((item) => {
             const situacaoCiclo: PSMFSituacaoCicloDto[] = [];
 
-            let fase: CicloFase | null = null;
-
-            if (cicloAtual?.data_ciclo) {
-                fase = CicloFase.Analise;
-            }
-
-            if (item.fase_analise_preenchida) {
-                fase = CicloFase.Risco;
-                situacaoCiclo.push({ fase: CicloFase.Analise, preenchido: true });
-            } else if (fase) {
-                situacaoCiclo.push({ fase: CicloFase.Analise, preenchido: false });
-            }
-
-            if (item.fase_risco_preenchida) {
-                fase = CicloFase.Fechamento;
-                situacaoCiclo.push({ fase: CicloFase.Risco, preenchido: true });
-            } else if (fase) {
-                situacaoCiclo.push({ fase: CicloFase.Risco, preenchido: false });
-            }
-
-            if (item.fase_fechamento_preenchida) {
-                fase = null; // volta pra null, ironicamente pois não temos o ciclo após fechamento
-                situacaoCiclo.push({ fase: CicloFase.Fechamento, preenchido: true });
-            } else if (fase) {
-                situacaoCiclo.push({ fase: CicloFase.Fechamento, preenchido: false });
+            if (item.tipo == 'meta' && item.ciclo_fisico_id) {
+                situacaoCiclo.push({ fase: CicloFase.Analise, preenchido: item.fase_analise_preenchida });
+                situacaoCiclo.push({ fase: CicloFase.Risco, preenchido: item.fase_risco_preenchida });
+                situacaoCiclo.push({ fase: CicloFase.Fechamento, preenchido: item.fase_fechamento_preenchida });
             }
 
             return {
-                fase,
+                fase: item.fase_atual,
                 pendencia_orcamento: {
                     preenchido: item.orcamento_preenchido,
                     total: item.orcamento_total,

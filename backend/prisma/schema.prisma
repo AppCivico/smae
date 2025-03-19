@@ -7473,29 +7473,31 @@ model PsDashboardConsolidado {
     cronograma_total         Int     @default(0)
     cronograma_atraso_inicio Int     @default(0)
     cronograma_atraso_fim    Int     @default(0)
+    cronograma_preenchido    Int     @default(0)
     pendencia_cronograma     Boolean @default(false)
 
     variaveis_total                    Int @default(0)
+    variaveis_total_no_ciclo           Int @default(0)
     variaveis_a_coletar                Int @default(0)
     variaveis_a_coletar_atrasadas      Int @default(0)
     variaveis_coletadas_nao_conferidas Int @default(0)
     variaveis_conferidas_nao_liberadas Int @default(0)
     variaveis_liberadas                Int @default(0)
 
-    fase_atual                 CicloFase @default(Analise)
+    fase_atual                 CicloFase?
     fase_analise_preenchida    Boolean   @default(false)
     fase_risco_preenchida      Boolean   @default(false)
     fase_fechamento_preenchida Boolean   @default(false)
 
-//    equipes_orgaos                 Int[] @default([])
-    //equipes                 Int[] @default([])
+    equipes_orgaos      Int[]   @default([])
+    equipes             Int[]   @default([])
     pendente            Boolean @default(false)
     pendente_variavel   Boolean @default(false)
     pendente_cronograma Boolean @default(false)
     pendente_orcamento  Boolean @default(false)
 
     atualizado_em   DateTime @default(now())
-    ciclo_fisico_id Int
+    ciclo_fisico_id Int?
 
     @@unique([item_id, tipo])
     @@index([meta_id])
