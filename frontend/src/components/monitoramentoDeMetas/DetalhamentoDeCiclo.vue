@@ -216,15 +216,15 @@
   </details>
 </template>
 <script setup>
+import ListaDeDocumentos from '@/components/monitoramentoDeMetas/ListaDeDocumentos.vue';
+import { dateToShortDate } from '@/helpers/dateToDate';
+import dateToTitle from '@/helpers/dateToTitle';
+import { useMonitoramentoDeMetasStore } from '@/stores/monitoramentoDeMetas.store';
 import { storeToRefs } from 'pinia';
-import { useRoute } from 'vue-router';
 import {
   computed, onMounted, ref, watch,
 } from 'vue';
-import ListaDeDocumentos from '@/components/monitoramentoDeMetas/ListaDeDocumentos.vue';
-import { useMonitoramentoDeMetasStore } from '@/stores/monitoramentoDeMetas.store';
-import dateToTitle from '@/helpers/dateToTitle';
-import { dateToShortDate } from '@/helpers/dateToDate';
+import { useRoute } from 'vue-router';
 
 const route = useRoute();
 
@@ -287,7 +287,6 @@ onMounted(() => {
   estaAberto.value = props.open;
 });
 </script>
-
 <style scoped>
 .ciclo-atual__summary::before {
   display: none;
