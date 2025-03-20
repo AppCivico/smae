@@ -156,53 +156,6 @@ watch([
     />
   </FormularioQueryString>
 
-  <!-- eslint-disable -->
-  <div class="debug flex flexwrap g1">
-    <textarea
-      readonly
-      cols="30"
-      rows="10"
-      class="f1"
-    >variaveis:{{ variaveis }}</textarea>
-    <textarea
-      readonly
-      cols="30"
-      rows="10"
-      class="f1"
-    >estatisticasMetas:{{ estatisticasMetas }}</textarea>
-    <textarea
-      readonly
-      cols="30"
-      rows="10"
-      class="f1"
-    >listaMetas:{{ listaMetas }}</textarea>
-    <textarea
-      readonly
-      cols="30"
-      rows="10"
-      class="f1"
-    >cicloAtual:{{ cicloAtual }}</textarea>
-    <textarea
-      readonly
-      cols="30"
-      rows="10"
-      class="f1"
-    >chamadasPendentes:{{ chamadasPendentes }}</textarea>
-    <textarea
-      readonly
-      cols="30"
-      rows="10"
-      class="f1"
-    >erros:{{ erros }}</textarea>
-    <textarea
-      readonly
-      cols="30"
-      rows="10"
-      class="f1"
-    >paginacaoDeMetas:{{ paginacaoDeMetas }}</textarea>
-  </div>
-  <!-- eslint-enable -->
-
   <ErrorComponent v-if="erros.variaveis">
     {{ erros.variaveis }}
   </ErrorComponent>
