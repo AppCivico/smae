@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import SmaeLink from '@/components/SmaeLink.vue';
 import {
   obterSituacaoIcone, obterStatus, obterRota, ChavesSituacoes, ChavesStatus,
 } from './helpers/obterDadosItems';
@@ -22,17 +23,17 @@ defineProps<Props>();
 </script>
 
 <template>
-  <li class="ciclo-lista-item flex">
+  <li class="ciclo-lista-item flex g1">
     <div class="ciclo-lista-item__navegacao">
       <SmaeLink
         v-for="situacao in $props.situacoes"
         :key="situacao.item"
-        class="navegacao-item"
+        class="flex justifyCenter start"
         :to="{
           name: obterRota(situacao.item),
           params: {
-            id: $props.id,
-            meta_id: $props.metaId
+            meta_id: $props.metaId,
+            planoSetorialId: $props.id,
           }
         }"
       >
@@ -46,22 +47,22 @@ defineProps<Props>();
     </div>
 
     <div class="ciclo-lista-item__conteudo">
-      <h5 class="ciclo-lista-item__titulo">
+      <h5 class="ciclo-lista-item__titulo t16 w700">
         {{ $props.titulo }}
       </h5>
 
       <hr>
 
-      <div class="ciclo-lista-item__vaiaveis">
+      <div class="ciclo-lista-item__vaiaveis mt025">
         <div
           v-for="(situacao, situacaoIndex) in $props.variaveis"
           :key="`variavel--${situacaoIndex}`"
           class="variavel-item"
         >
-          <span class="variavel-item__conteudo">
+          <span class="variavel-item__conteudo t12 w400">
             {{ situacao.label }}
 
-            <span class="variavel-item__conteudo--numero">
+            <span class="variavel-item__conteudo--numero w700 ml05">
               {{ situacao.contagem.toString().padStart(2, '0') }}
             </span>
           </span>
@@ -85,7 +86,6 @@ defineProps<Props>();
   background: #f7f7f7;
   padding: 10px 10px 0 10px;
   border-radius: 10px;
-  gap: 15px;
 }
 
 .ciclo-lista-item__navegacao {
@@ -93,12 +93,6 @@ defineProps<Props>();
   grid-template-columns: repeat(3, 24px);
   grid-template-rows: repeat(2, 24px);
   gap: 10px 6px;
-}
-
-.navegacao-item {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
 }
 
 .navegacao-item__icon {
@@ -111,10 +105,9 @@ defineProps<Props>();
 }
 
 .ciclo-lista-item__titulo {
-  font-size: 15px;
   line-height: 130%;
-  font-weight: 700;
   margin-bottom: 10px;
+  color: #333;
 }
 
 .ciclo-lista-item__variaveis {
@@ -134,14 +127,7 @@ defineProps<Props>();
 
 .variavel-item__conteudo {
   white-space: nowrap;
-  font-weight: 400;
-  font-size: 12.5px;
   line-height: 130%;
-}
-
-.variavel-item__conteudo--numero {
-  font-weight: 600;
-  margin-left: 6px;
 }
 
 .variavel-item__label {
