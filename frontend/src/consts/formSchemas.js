@@ -4339,9 +4339,3 @@ export const cicloAtualizacaoFiltrosSchema = (opcoes) => object().shape({
     ...opcoes.map((item) => item.id),
   ]),
 });
-
-export const cicloVigenteFiltroSchema = object().shape({
-  ps_pdm: string().label('PDM/PS'),
-  orgao: string().label('Orgão'),
-  equipe: string().label('Equipe'),
-});
