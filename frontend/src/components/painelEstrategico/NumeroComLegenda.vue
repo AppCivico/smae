@@ -71,6 +71,7 @@ defineProps({
   letter-spacing: -0.1em;
   font-weight: 600;
   font-style: normal;
+  padding-inline-end: 0.1em;
 }
 
 .label {
