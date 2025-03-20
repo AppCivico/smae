@@ -8,6 +8,7 @@ import GrandesNumerosDeMetas from '@/components/quadroDeAtividades/GrandesNumero
 import GraficoDeSituacoesDasVariaveis from '@/components/quadroDeAtividades/GraficoDeSituacoesDasVariaveis.vue';
 import FiltroDoQuadroDeAtividades from '@/components/planoSetorialProgramaMetas.componentes/FiltroDoQuadroDeAtividades.vue';
 import ListaLegendas from '@/components/planoSetorialProgramaMetas.componentes/QuadroDeAtividades/ListaLegendas.vue';
+import CicloVigenteFiltro from '@/components/planoSetorialProgramaMetas.componentes/QuadroDeAtividades/CicloVigenteFiltro.vue';
 import CicloListaItem, { type CicloVigenteItemParams } from '@/components/planoSetorialProgramaMetas.componentes/QuadroDeAtividades/CicloListaItem.vue';
 import { usePanoramaPlanoSetorialStore } from '@/stores/planoSetorial.panorama.store';
 import dateToTitle from '@/helpers/dateToTitle';
@@ -230,7 +231,7 @@ watch([
     </header>
 
     <article class="flex spacebetween end">
-      <div>filtro</div>
+      <CicloVigenteFiltro />
 
       <ListaLegendas />
     </article>
@@ -258,6 +259,10 @@ watch([
   .lista-de-cartoes {
     grid-template-columns: 1fr 1fr;
   }
+}
+
+.pagina-de-painel-estrategico body {
+  background-color: #ffffffb3;
 }
 </style>
 <style lang="less" scoped>
