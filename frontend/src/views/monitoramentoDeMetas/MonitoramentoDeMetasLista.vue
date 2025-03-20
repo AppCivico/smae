@@ -1,14 +1,14 @@
 <script setup>
+import AutocompleteField from '@/components/AutocompleteField2.vue';
+import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
+import DetalhamentoDeCiclo from '@/components/monitoramentoDeMetas/DetalhamentoDeCiclo.vue';
+import { useMonitoramentoDeMetasStore } from '@/stores/monitoramentoDeMetas.store';
 import { storeToRefs } from 'pinia';
 import {
   computed, onMounted, ref,
   watch,
 } from 'vue';
 import { useRoute } from 'vue-router';
-import AutocompleteField from '@/components/AutocompleteField2.vue';
-import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
-import DetalhamentoDeCiclo from '@/components/monitoramentoDeMetas/DetalhamentoDeCiclo.vue';
-import { useMonitoramentoDeMetasStore } from '@/stores/monitoramentoDeMetas.store';
 
 const route = useRoute();
 
