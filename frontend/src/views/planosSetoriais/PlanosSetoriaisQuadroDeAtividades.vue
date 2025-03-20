@@ -185,7 +185,7 @@ watch([
       </ListaLegendas>
     </article>
 
-    <ul class="mt2 flex column g2">
+    <section class="mt2 flex column g2">
       <CicloListaItem
         v-for="(item, itemIndex) in items"
         :id="item.id"
@@ -195,7 +195,7 @@ watch([
         :variaveis="item.variaveis"
         :situacoes="item.situacoes"
       />
-    </ul>
+    </section>
   </section>
 </template>
 <style lang="less">
