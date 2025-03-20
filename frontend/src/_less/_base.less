@@ -2075,9 +2075,15 @@ input[type='radio'] {
   }
 }
 
+.subtitulo,
 .legend {
   display: flex;
   gap: 2rem;
+
+  // TO-DO: trocar para unidade de medida relativa quando redefinirmos o corpo
+  // raiz para 16px
+  font-size: 22px;
+  font-weight: 500;
 
   &::after {
     content: '';
@@ -2088,6 +2094,7 @@ input[type='radio'] {
     align-self: center;
   }
 }
+
 .halfInput {
   width: 48%;
 }
