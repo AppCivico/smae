@@ -64,8 +64,8 @@ export class RefreshVariavelService implements TaskableService {
         if (variavel.tipo == 'Global') {
             // Sincroniza o dashboard de PS quando uma variável global é recalculada
             try {
-                await this.variavelService.recalc_vars_ps_dashboard();
-                this.logger.log(`Dashboard de PS atualizado após recálculo da variável ${inputParams.variavel_id}`);
+                await this.variavelService.recalc_vars_ps_dashboard([inputParams.variavel_id], this.prisma);
+                this.logger.log(`Dashboard de PS atualizado para variável ${inputParams.variavel_id}`);
             } catch (error) {
                 this.logger.error(`Erro ao atualizar dashboard de PS: ${error.message}`);
                 // Não falha a tarefa principal se o dashboard falhar
