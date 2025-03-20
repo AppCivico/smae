@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import {
   obterSituacaoIcone, listaDeSituacoes, listaDeStatus, obterStatus,
-} from '../helpers/obterDadosItems';
+} from './helpers/obterDadosItems';
 
 </script>
 
