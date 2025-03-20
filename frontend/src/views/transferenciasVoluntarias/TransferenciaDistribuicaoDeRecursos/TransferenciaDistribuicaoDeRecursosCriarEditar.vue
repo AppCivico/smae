@@ -77,7 +77,6 @@ const {
   errors,
   handleSubmit,
   isSubmitting,
-  resetField,
   resetForm,
   setFieldValue,
   values,
@@ -222,9 +221,9 @@ watch(() => values.vigencia, (novoValor) => {
     && !itemParaEdicao.value?.justificativa_aditamento
     && novoValor !== itemParaEdicao.value?.vigencia
   ) {
-    resetField('justificativa_aditamento', { value: '' });
+    setFieldValue('justificativa_aditamento', '');
   } else {
-    resetField('justificativa_aditamento', { value: itemParaEdicao.value?.justificativa_aditamento });
+    setFieldValue('justificativa_aditamento', itemParaEdicao.value?.justificativa_aditamento);
   }
 });
 
