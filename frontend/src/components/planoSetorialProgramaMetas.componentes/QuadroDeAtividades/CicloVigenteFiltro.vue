@@ -1,56 +1,59 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
-import FiltroParaPagina, { type Formulario } from '@/components/FiltroParaPagina.vue';
-import { cicloVigenteFiltroSchema as schema } from '@/consts/formSchemas';
+import { ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
-const formularioSujo = ref<boolean>(false);
+const route = useRoute();
+const router = useRouter();
 
-const campos = computed<Formulario>(() => [
-  {
-    campos: {
-      ps_pdm: {
-        tipo: 'select',
-        opcoes: [
-          { id: 'PlanoSetorial', label: 'Plano Setorial' },
-          { id: 'ProgramaDeMetas', label: 'Programa de Metas' },
-        ],
-      },
-      orgao: { tipo: 'select', opcoes: [] },
-      equipe: { tipo: 'select', opcoes: [] },
-    },
-  },
-]);
+const selecionado = ref(false);
 
-const valoresIniciais = computed(() => ({}));
+function handleFiltrar() {
+  const query = {
+    ...route.query,
+    exibir_metas: selecionado.value.toString(),
+  };
 
+  router.replace({ query });
+}
 </script>
 
 <template>
-  <section class="ciclo-vigente-filtro">
-    <EnvelopeDeAbas>
-      <template #pendente />
+  <div class="ciclo-vigente-filtro">
+    <label class="flex g05 center">
+      <span
+        :class="[
+          'ciclo-vigente-filtro__texto',
+          { 'ciclo-vigente-filtro__texto--selecionado': !selecionado }
+        ]"
+      >
+        Exibir todas
+      </span>
 
-      <template #atualizada />
-    </EnvelopeDeAbas>
+      <input
+        v-model="selecionado"
+        type="checkbox"
+        class="interruptor mr05 ml05"
+        @input="handleFiltrar"
+      >
 
-    <FiltroParaPagina
-      v-model:formulario-sujo="formularioSujo"
-      :formulario="campos"
-      :schema="schema"
-      :valores-iniciais="valoresIniciais"
-    />
-
-    <slot :formulario-sujo="formularioSujo" />
-  </section>
+      <span
+        :class="[
+          'ciclo-vigente-filtro__texto',
+          { 'ciclo-vigente-filtro__texto--selecionado': selecionado }
+        ]"
+      >
+        Exibir pendentes
+      </span>
+    </label>
+  </div>
 </template>
 
 <style lang="less" scoped>
-// .comunicados-gerais-filtro {
-//   :deep {
-//     .maxw {
-//       max-width: 60%;
-//     }
-//   }
-// }
+.ciclo-vigente-filtro__texto {
+  color: #C8C8C8;
+}
+
+.ciclo-vigente-filtro__texto--selecionado {
+  color: @amarelo;
+}
 </style>
