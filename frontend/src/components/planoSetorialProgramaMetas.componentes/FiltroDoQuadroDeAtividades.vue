@@ -234,15 +234,4 @@ onMounted(() => {
   }
 });
 </script>
-<style lang="less" scoped>
-.filtro {
-  @media (min-height: 40em) {
-    .congelado-no-topo();
-
-    margin-right: -21px !important;
-    margin-left: -21px !important;
-    padding-right: 21px !important;
-    padding-left: 21px !important;
-  }
-}
-</style>
+<style lang="less" scoped></style>
