@@ -74,6 +74,8 @@ watch([
 
   <FormularioQueryString v-slot="{ aplicarQueryStrings, detectarMudancas, formularioSujo }">
     <FiltroDoQuadroDeAtividades
+      v-detectar-posicao-congelada="'filtro--congelado'"
+      class="filtro pt1 pb1"
       :class="{
         'formulario-sujo': formularioSujo
       }"
@@ -168,4 +170,22 @@ watch([
   background-color: rgba(255, 255, 255, 0.7);
 }
 </style>
-<style lang="less" scoped></style>
+<style lang="less" scoped>
+.filtro {
+  @media (min-height: 40em) {
+    background-color: @branco;
+
+    position: sticky;
+    top: 0;
+
+    margin-right: -21px !important;
+    margin-left: -21px !important;
+    padding-right: 21px !important;
+    padding-left: 21px !important;
+
+    &--congelado {
+      .congelado-no-topo();
+    }
+  }
+}
+</style>
