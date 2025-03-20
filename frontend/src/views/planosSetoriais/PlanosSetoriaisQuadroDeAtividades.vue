@@ -4,6 +4,7 @@ import FormularioQueryString from '@/components/FormularioQueryString.vue';
 import GrandesNumeros from '@/components/painelEstrategico/GrandesNumeros.vue';
 import FiltroDoQuadroDeAtividades from '@/components/planoSetorialProgramaMetas.componentes/FiltroDoQuadroDeAtividades.vue';
 import GrandesNumerosDeMetas from '@/components/quadroDeAtividades/GrandesNumerosDeMetas.vue';
+import dateToTitle from '@/helpers/dateToTitle';
 import { usePanoramaPlanoSetorialStore } from '@/stores/planoSetorial.panorama.store';
 import { storeToRefs } from 'pinia';
 import { watch } from 'vue';
@@ -52,6 +53,23 @@ watch([
 <template>
   <header class="mb2 cabecalho">
     <TítuloDePágina />
+
+    <h2
+      class="subtitulo"
+      :aria-busy="chamadasPendentes.listaMetas"
+      aria-live="assertive"
+    >
+      <LoadingComponent
+        v-if="chamadasPendentes.listaMetas"
+        class="horizontal"
+      />
+      <template v-else-if="cicloAtual?.data_ciclo">
+        {{ dateToTitle(cicloAtual.data_ciclo) }}
+      </template>
+      <template v-else>
+        Ciclo atual indisponível
+      </template>
+    </h2>
   </header>
 
   <FormularioQueryString v-slot="{ aplicarQueryStrings, detectarMudancas, formularioSujo }">
