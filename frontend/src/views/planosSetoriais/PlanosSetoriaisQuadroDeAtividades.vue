@@ -3,6 +3,7 @@ import * as CardEnvelope from '@/components/cardEnvelope';
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
 import GrandesNumeros from '@/components/painelEstrategico/GrandesNumeros.vue';
 import FiltroDoQuadroDeAtividades from '@/components/planoSetorialProgramaMetas.componentes/FiltroDoQuadroDeAtividades.vue';
+import GrandesNumerosDeMetas from '@/components/quadroDeAtividades/GrandesNumerosDeMetas.vue';
 import { usePanoramaPlanoSetorialStore } from '@/stores/planoSetorial.panorama.store';
 import { storeToRefs } from 'pinia';
 import { watch } from 'vue';
@@ -63,6 +64,7 @@ watch([
     />
   </FormularioQueryString>
 
+  <!-- eslint-disable -->
   <div class="debug flex flexwrap g1">
     <textarea
       readonly
@@ -107,6 +109,7 @@ watch([
       class="f1"
     >paginacaoDeMetas:{{ paginacaoDeMetas }}</textarea>
   </div>
+  <!-- eslint-enable -->
 
   <ErrorComponent v-if="erros.variaveis">
     {{ erros.variaveis }}
@@ -128,14 +131,11 @@ watch([
       <GrandesNumeros :grandes-numeros="{}" />
     </CardEnvelope.conteudo>
 
-    <CardEnvelope.Conteudo>
-      <CardEnvelope.Titulo
-        titulo="Título"
-        subtitulo="Subtitulo"
-        icone="box"
-        cor="#F2C94C"
+    <CardEnvelope.Conteudo class="container-inline">
+      <CardEnvelope.Titulo titulo="Metas" />
+      <GrandesNumerosDeMetas
+        :metas="estatisticasMetas"
       />
-      FOO
     </CardEnvelope.Conteudo>
   </div>
 </template>
