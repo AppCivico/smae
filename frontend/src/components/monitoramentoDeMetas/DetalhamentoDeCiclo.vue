@@ -271,17 +271,20 @@ function handleToggle(event) {
   estaAberto.value = event.target.open;
 }
 
-watch(() => estaAberto.value, (novoValor) => {
-  if (novoValor && !cicloDetalhes.value) {
-    monitoramentoDeMetasStore.buscarCiclo(
-      route.params.planoSetorialId,
-      props.ciclo.id,
-      {
-        meta_id: route.params.meta_id,
-      },
-    );
-  }
-});
+// Nem todas as variáveis tem ciclo de monitoramento
+if (props.ciclo?.id) {
+  watch(() => estaAberto.value, (novoValor) => {
+    if (novoValor && !cicloDetalhes.value) {
+      monitoramentoDeMetasStore.buscarCiclo(
+        route.params.planoSetorialId,
+        props.ciclo.id,
+        {
+          meta_id: route.params.meta_id,
+        },
+      );
+    }
+  });
+}
 
 onMounted(() => {
   estaAberto.value = props.open;
