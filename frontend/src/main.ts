@@ -1,4 +1,5 @@
 import CheckClose from '@/components/CheckClose.vue';
+import detectarPosicaoCongelada from '@/diretivas/detectarPosicaoCongelada';
 import ErrorComponent from '@/components/ErrorComponent.vue';
 import FormErrorsList from '@/components/FormErrorsList.vue';
 import LabelFromYup from '@/components/LabelFromYup.vue';
@@ -116,6 +117,8 @@ app.directive('ScrollLockDebug', {
 app.directive('selecionar-multiplas-opcoes', {
   mounted: (el) => selecionarMultiplasOpcoes(el),
 });
+
+app.directive('detectar-posicao-congelada', detectarPosicaoCongelada);
 
 app.directive('focus', {
   mounted: async (el, binding) => {
