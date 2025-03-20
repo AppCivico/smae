@@ -23,7 +23,7 @@ defineProps<Props>();
 </script>
 
 <template>
-  <li class="ciclo-lista-item flex g1">
+  <article class="ciclo-lista-item flex g1">
     <div class="ciclo-lista-item__navegacao">
       <SmaeLink
         v-for="situacao in $props.situacoes"
@@ -47,9 +47,9 @@ defineProps<Props>();
     </div>
 
     <div class="ciclo-lista-item__conteudo">
-      <h5 class="ciclo-lista-item__titulo t16 w700">
+      <h3 class="ciclo-lista-item__titulo t16 w700">
         {{ $props.titulo }}
-      </h5>
+      </h3>
 
       <hr>
 
@@ -78,7 +78,7 @@ defineProps<Props>();
         </div>
       </div>
     </div>
-  </li>
+  </article>
 </template>
 
 <style lang="less" scoped>
