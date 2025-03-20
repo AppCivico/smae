@@ -16,4 +16,4 @@ COPY . /code/
 ENV SOF_API_TOKEN=""
 
 #
-CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "80"]
+CMD ["sh", "-c", "export SOF_API_VERSION=v4 && uvicorn api:app --host 0.0.0.0 --port 80"]
