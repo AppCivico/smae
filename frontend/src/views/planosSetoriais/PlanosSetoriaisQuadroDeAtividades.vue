@@ -1,15 +1,17 @@
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
-import { watch } from 'vue';
+import { computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import * as CardEnvelope from '@/components/cardEnvelope';
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
 import GrandesNumerosDeMetas from '@/components/quadroDeAtividades/GrandesNumerosDeMetas.vue';
 import GraficoDeSituacoesDasVariaveis from '@/components/quadroDeAtividades/GraficoDeSituacoesDasVariaveis.vue';
 import FiltroDoQuadroDeAtividades from '@/components/planoSetorialProgramaMetas.componentes/FiltroDoQuadroDeAtividades.vue';
-import ListaLegendas from '@/components/planoSetorialProgramaMetas.componentes/QuadroDeAtividades/ListaLegendas.vue';
+import ListaLegendas from '@/components/ListaLegendas.vue';
 import CicloVigenteFiltro from '@/components/planoSetorialProgramaMetas.componentes/QuadroDeAtividades/CicloVigenteFiltro.vue';
-import { listaDeSituacoes, listaDeStatus } from '@/components/planoSetorialProgramaMetas.componentes/QuadroDeAtividades/helpers/obterDadosItems';
+import {
+  obterSituacaoIcone, listaDeSituacoes, listaDeStatus, obterStatus,
+} from '@/components/planoSetorialProgramaMetas.componentes/QuadroDeAtividades/helpers/obterDadosItems';
 import CicloListaItem, { type CicloVigenteItemParams } from '@/components/planoSetorialProgramaMetas.componentes/QuadroDeAtividades/CicloListaItem.vue';
 import { usePanoramaPlanoSetorialStore } from '@/stores/planoSetorial.panorama.store';
 import dateToTitle from '@/helpers/dateToTitle';
@@ -85,6 +87,17 @@ const {
   paginacaoDeMetas,
 } = storeToRefs(panoramaStore);
 
+const legendas = computed(() => ({
+  situacao: listaDeSituacoes.map((item) => ({
+    item,
+    icon: obterSituacaoIcone(item),
+  })),
+  status: listaDeStatus.map((item) => ({
+    item,
+    icon: obterStatus(item),
+  })),
+}));
+
 watch([
   () => route.query.orgao_id,
   () => route.query.equipe_id,
@@ -108,6 +121,7 @@ watch([
   });
 }, { immediate: true });
 </script>
+
 <template>
   <header class="mb2 cabecalho">
     <TítuloDePágina />
@@ -234,18 +248,11 @@ watch([
     <article class="flex spacebetween end">
       <CicloVigenteFiltro />
 
-      <ListaLegendas
-        :legendas="{
-          situacao: listaDeSituacoes,
-          status: listaDeStatus,
-        }"
-      >
-        <template #situacao>
-          <h1>#situacao</h1>
-        </template>
+      <ListaLegendas :legendas="legendas">
+        <template #padrao--status="{ item: { item, icon} }">
+          <dt :style="{ backgroundColor: icon }" />
 
-        <template #status>
-          <h1>#status</h1>
+          <dd>{{ item }}</dd>
         </template>
       </ListaLegendas>
     </article>
