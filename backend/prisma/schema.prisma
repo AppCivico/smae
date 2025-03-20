@@ -1332,6 +1332,7 @@ model Meta {
     PdmPerfil                              PdmPerfil[]
     ViewPainelEstrategicoProjetos          ViewPainelEstrategicoProjetos[]
     PsDashboardConsolidado                 PsDashboardConsolidado[]
+    PsDashboardMetaStats                   PsDashboardMetaStats[]
 
     @@index([pdm_id])
     @@map("meta")
@@ -7485,9 +7486,9 @@ model PsDashboardConsolidado {
     variaveis_liberadas                Int @default(0)
 
     fase_atual                 CicloFase?
-    fase_analise_preenchida    Boolean   @default(false)
-    fase_risco_preenchida      Boolean   @default(false)
-    fase_fechamento_preenchida Boolean   @default(false)
+    fase_analise_preenchida    Boolean    @default(false)
+    fase_risco_preenchida      Boolean    @default(false)
+    fase_fechamento_preenchida Boolean    @default(false)
 
     equipes_orgaos      Int[]   @default([])
     equipes             Int[]   @default([])
@@ -7502,4 +7503,47 @@ model PsDashboardConsolidado {
     @@unique([item_id, tipo])
     @@index([meta_id])
     @@map("ps_dashboard_consolidado")
+}
+
+view PsDashboardMetaStats {
+    pdm_id         Int
+    item_id        Int
+    tipo           String
+    meta_id        Int
+    equipes        Int[]
+    equipes_orgaos Int[]
+
+    // Status flags (0 or 1)
+    pendente Int
+
+    // Variables status
+    var_liberadas Int
+    var_a_liberar Int
+
+    // Schedule status
+    crono_preenchido  Int
+    crono_a_preencher Int
+
+    // Budget status
+    orc_preenchido  Int
+    orc_a_preencher Int
+
+    // Qualification status
+    qualif_preenchida  Int
+    qualif_a_preencher Int
+
+    // Risk status
+    risco_preenchido  Int
+    risco_a_preencher Int
+
+    // Closing status
+    fechadas Int
+    a_fechar Int
+
+    ciclo_fisico_id Int?
+
+    meta Meta @relation(fields: [meta_id], references: [id])
+
+    @@unique([item_id, tipo])
+    @@map("ps_dashboard_meta_stats")
 }

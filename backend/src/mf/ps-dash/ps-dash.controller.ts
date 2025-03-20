@@ -39,7 +39,7 @@ export class PSMFDashboardController {
         @CurrentUser() user: PessoaFromJwt,
         @TipoPDM() tipo: TipoPdmType
     ): Promise<PSMFQuadroMetasDto> {
-        return await this.dashboardService.getQuadroMetas(tipo, filtros, user);
+        return await this.dashboardService.getQuadroMetasIniAtv(tipo, filtros, user);
     }
 
     @Get('metas')

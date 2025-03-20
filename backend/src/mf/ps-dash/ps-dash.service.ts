@@ -79,15 +79,6 @@ export class PSMFDashboardService {
         return this.gerarQuadrosVariaveis(ehVisaoPessoal);
     }
 
-    async getQuadroMetas(
-        _tipo: TipoPdmType,
-        _filtros: PSMFFiltroDashboardQuadroDto,
-        user: PessoaFromJwt
-    ): Promise<PSMFQuadroMetasDto> {
-        // Verificar permissões
-        return this.gerarQuadroMetas();
-    }
-
     async getListaMetasIniAtv(
         tipo: TipoPdmType,
         filtros: PSMFFiltroDashboardQuadroDto,
@@ -311,22 +302,75 @@ export class PSMFDashboardService {
         };
     }
 
-    private gerarQuadroMetas(): PSMFQuadroMetasDto {
+    async getQuadroMetasIniAtv(
+        tipo: TipoPdmType,
+        filtros: PSMFFiltroDashboardQuadroDto,
+        user: PessoaFromJwt
+    ): Promise<PSMFQuadroMetasDto> {
+        // Verificar permissões
+        const permissionsSet = await MetasGetPermissionSet(tipo, user, false, this.prisma);
+
+        // Obter as equipes do usuário se estiver em visão pessoal
+        const equipes_pessoa = filtros.visao_pessoal ? await user.getEquipesColaborador(this.prisma) : [];
+
+        // Construir o filtro base para consulta na view
+        const baseFilter: Prisma.PsDashboardMetaStatsWhereInput = {
+            // Adicionando filtros para as permissões
+            ...(permissionsSet.length > 0 ? { meta: { AND: permissionsSet } } : {}),
+            pdm_id: filtros.pdm_id,
+            meta_id: filtros.meta_id ? { in: filtros.meta_id } : undefined,
+            equipes: filtros.equipes && Array.isArray(filtros.equipes) ? { hasSome: filtros.equipes } : undefined,
+            equipes_orgaos:
+                filtros.orgao_id && Array.isArray(filtros.orgao_id) ? { hasSome: filtros.orgao_id } : undefined,
+            ...(filtros.visao_pessoal && equipes_pessoa.length > 0 ? { equipes: { hasSome: equipes_pessoa } } : {}),
+        };
+
+        // Usando um único aggregate query para obter todas as contagens necessárias
+        const stats = await this.prisma.psDashboardMetaStats.aggregate({
+            _sum: {
+                pendente: true,
+                var_liberadas: true,
+                var_a_liberar: true,
+                crono_preenchido: true,
+                crono_a_preencher: true,
+                orc_preenchido: true,
+                orc_a_preencher: true,
+                qualif_preenchida: true,
+                qualif_a_preencher: true,
+                risco_preenchido: true,
+                risco_a_preencher: true,
+                fechadas: true,
+                a_fechar: true,
+            },
+            _count: {
+                item_id: true,
+            },
+            where: baseFilter,
+        });
+
+        // Extrair os resultados da soma
+        const sum = stats._sum;
+        const totalCount = stats._count.item_id || 0;
+
+        // Calcular metas sem pendência (total - com pendência)
+        const metasSemPendencia = totalCount - (sum.pendente || 0);
+
+        // Montar e retornar o objeto PSMFQuadroMetasDto com os valores calculados
         return {
-            com_pendencia: 15,
-            sem_pendencia: 35,
-            variaveis_liberadas: 30,
-            variaveis_a_liberar: 20,
-            cronograma_preenchido: 40,
-            cronograma_a_preencher: 10,
-            orcamento_preenchido: 35,
-            orcamento_a_preencher: 15,
-            qualificacao_preenchida: 38,
-            qualificacao_a_preencher: 12,
-            risco_preenchido: 30,
-            risco_a_preencher: 20,
-            fechadas: 20,
-            a_fechar: 30,
+            com_pendencia: sum.pendente || 0,
+            sem_pendencia: metasSemPendencia,
+            variaveis_liberadas: sum.var_liberadas || 0,
+            variaveis_a_liberar: sum.var_a_liberar || 0,
+            cronograma_preenchido: sum.crono_preenchido || 0,
+            cronograma_a_preencher: sum.crono_a_preencher || 0,
+            orcamento_preenchido: sum.orc_preenchido || 0,
+            orcamento_a_preencher: sum.orc_a_preencher || 0,
+            qualificacao_preenchida: sum.qualif_preenchida || 0,
+            qualificacao_a_preencher: sum.qualif_a_preencher || 0,
+            risco_preenchido: sum.risco_preenchido || 0,
+            risco_a_preencher: sum.risco_a_preencher || 0,
+            fechadas: sum.fechadas || 0,
+            a_fechar: sum.a_fechar || 0,
         };
     }
 }
