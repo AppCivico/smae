@@ -5,6 +5,7 @@ import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { MetaSetorialController } from '../../meta/meta.controller';
 import {
+    PSMFFiltroDashboardMetasDto,
     PSMFFiltroDashboardQuadroDto,
     PSMFListaMetasDto,
     PSMFQuadroMetasDto,
@@ -47,7 +48,7 @@ export class PSMFDashboardController {
     @ApiBearerAuth('access-token')
     @Roles(MetaSetorialController.ReadPerm)
     async getListaMetasIniAtv(
-        @Query() filtros: PSMFFiltroDashboardQuadroDto,
+        @Query() filtros: PSMFFiltroDashboardMetasDto,
         @CurrentUser() user: PessoaFromJwt,
         @TipoPDM() tipo: TipoPdmType
     ): Promise<PSMFListaMetasDto> {

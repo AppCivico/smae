@@ -36,7 +36,9 @@ export class PSMFFiltroDashboardQuadroDto {
     @IsBoolean()
     @Transform(({ value }: any) => value === 'true')
     apenas_pendentes?: boolean; // Mostrar apenas itens com pendências
+}
 
+export class PSMFFiltroDashboardMetasDto extends PSMFFiltroDashboardQuadroDto {
     @IsOptional()
     @IsInt()
     @Transform((a: TransformFnParams) => (a.value === '' ? undefined : +a.value))

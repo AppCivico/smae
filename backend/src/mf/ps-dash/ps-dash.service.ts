@@ -10,6 +10,7 @@ import { MetasGetPermissionSet } from '../../meta/meta.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
     PSMFCicloDto,
+    PSMFFiltroDashboardMetasDto,
     PSMFFiltroDashboardQuadroDto,
     PSMFItemMetaDto,
     PSMFListaMetasDto,
@@ -81,7 +82,7 @@ export class PSMFDashboardService {
 
     async getListaMetasIniAtv(
         tipo: TipoPdmType,
-        filtros: PSMFFiltroDashboardQuadroDto,
+        filtros: PSMFFiltroDashboardMetasDto,
         user: PessoaFromJwt
     ): Promise<PSMFListaMetasDto> {
         const permissionsSet = await MetasGetPermissionSet(tipo, user, false, this.prisma);
