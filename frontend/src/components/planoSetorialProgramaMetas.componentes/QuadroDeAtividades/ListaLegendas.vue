@@ -7,12 +7,12 @@ import {
 
 <template>
   <div class="lista-legenda flex g2">
-    <h4 class="lista-legenda__titulo">
+    <h4 class="lista-legenda__titulo t14 w500">
       Legenda
     </h4>
 
     <div class="lista-legenda__conteudo">
-      <dl class="lista-legenda__items">
+      <dl class="flex g1">
         <div
           v-for="item in listaDeSituacoes"
           :key="item"
@@ -28,7 +28,7 @@ import {
         </div>
       </dl>
 
-      <dl class="lista-legenda__items mt1">
+      <dl class="flex g1 mt1">
         <div
           v-for="item in listaDeStatus"
           :key="item"
@@ -53,14 +53,7 @@ import {
   border-radius: 10px;
 }
 .lista-legenda__titulo {
-  font-size: 12.5px;
-  font-weight: 500;
   color: #333333;
-}
-
-.lista-legenda__items {
-  display: flex;
-  gap: 17.5px;
 }
 
 .legenda-item {
