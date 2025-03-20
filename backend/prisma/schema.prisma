@@ -1769,6 +1769,7 @@ model Variavel {
     VariavelGlobalCicloAnalise         VariavelGlobalCicloAnalise[]
     VariavelGlobalCicloDocumento       VariavelGlobalCicloDocumento[]
     VariavelGlobalPedidoComplementacao VariavelGlobalPedidoComplementacao[]
+    PSDashboardVariavel                PSDashboardVariavel[]
 
     @@index([tipo, removido_em, variavel_mae_id])
     @@index([regiao_id])
@@ -7503,6 +7504,20 @@ model PsDashboardConsolidado {
     @@unique([item_id, tipo])
     @@index([meta_id])
     @@map("ps_dashboard_consolidado")
+}
+
+model PSDashboardVariavel {
+    variavel_id Int      @id
+    variavel    Variavel @relation(fields: [variavel_id], references: [id])
+
+    pdm_id Int[]
+
+    orgaos         Int[] // Mexeu, não dispara recalc
+    equipes        Int[] // Mexeu, não dispara recalc
+    equipes_orgaos Int[] // Mexeu, não dispara recalc
+
+    @@index([pdm_id])
+    @@map("ps_dashboard_variavel")
 }
 
 view PsDashboardMetaStats {
