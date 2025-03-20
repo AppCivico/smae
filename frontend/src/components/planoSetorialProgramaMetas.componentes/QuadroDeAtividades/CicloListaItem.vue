@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import {
   obterSituacaoIcone, obterStatus, obterRota, ChavesSituacoes, ChavesStatus,
-} from '../helpers/obterDadosItems';
+} from './helpers/obterDadosItems';
 
 export type CicloVigenteItemParams = {
   id: number,

@@ -1,14 +1,70 @@
 <script lang="ts" setup>
-import * as CardEnvelope from '@/components/cardEnvelope';
-import FormularioQueryString from '@/components/FormularioQueryString.vue';
-import FiltroDoQuadroDeAtividades from '@/components/planoSetorialProgramaMetas.componentes/FiltroDoQuadroDeAtividades.vue';
-import GrandesNumerosDeMetas from '@/components/quadroDeAtividades/GrandesNumerosDeMetas.vue';
-import dateToTitle from '@/helpers/dateToTitle';
-import GraficoDeSituacoesDasVariaveis from '@/components/quadroDeAtividades/GraficoDeSituacoesDasVariaveis.vue';
-import { usePanoramaPlanoSetorialStore } from '@/stores/planoSetorial.panorama.store';
 import { storeToRefs } from 'pinia';
 import { watch } from 'vue';
 import { useRoute } from 'vue-router';
+import * as CardEnvelope from '@/components/cardEnvelope';
+import FormularioQueryString from '@/components/FormularioQueryString.vue';
+import GrandesNumerosDeMetas from '@/components/quadroDeAtividades/GrandesNumerosDeMetas.vue';
+import GraficoDeSituacoesDasVariaveis from '@/components/quadroDeAtividades/GraficoDeSituacoesDasVariaveis.vue';
+import FiltroDoQuadroDeAtividades from '@/components/planoSetorialProgramaMetas.componentes/FiltroDoQuadroDeAtividades.vue';
+import ListaLegendas from '@/components/planoSetorialProgramaMetas.componentes/QuadroDeAtividades/ListaLegendas.vue';
+import CicloListaItem, { type CicloVigenteItemParams } from '@/components/planoSetorialProgramaMetas.componentes/QuadroDeAtividades/CicloListaItem.vue';
+import { usePanoramaPlanoSetorialStore } from '@/stores/planoSetorial.panorama.store';
+import dateToTitle from '@/helpers/dateToTitle';
+
+const items: CicloVigenteItemParams[] = [
+  {
+    id: 11,
+    metaId: 117,
+    titulo: '001 - Atender 1.900.000 pessoas em programas de transferência de renda e/ou apoio nutricional',
+    variaveis: [
+      { label: 'A coletar atrasadas', contagem: 6 },
+      { label: 'A coletar', contagem: 5 },
+      { label: 'conferir', contagem: 3 },
+      { label: 'A coletar atrasadas', contagem: 6 },
+      { label: 'A coletar', contagem: 5 },
+      { label: 'conferir', contagem: 3 },
+      { label: 'A coletar atrasadas', contagem: 6 },
+      { label: 'A coletar', contagem: 5 },
+      { label: 'conferir', contagem: 3 },
+      { label: 'A coletar atrasadas', contagem: 6 },
+      { label: 'A coletar', contagem: 5 },
+      { label: 'conferir', contagem: 3 },
+    ],
+    situacoes: [
+      { item: 'analise_risco', status: 'atualizado' },
+      { item: 'cronograma', status: 'atualizado' },
+      { item: 'fechamento', status: 'pendente' },
+      { item: 'qualificacao', status: 'atualizado' },
+    ],
+  },
+  {
+    id: 11,
+    metaId: 117,
+    titulo: '002 - Implantar o prontuário eletrônico em 100% das UBS do município',
+    variaveis: [
+      { label: 'A coletar atrasadas', contagem: 6 },
+      { label: 'A coletar', contagem: 5 },
+      { label: 'conferir', contagem: 3 },
+      { label: 'A coletar atrasadas', contagem: 6 },
+      { label: 'A coletar', contagem: 5 },
+      { label: 'conferir', contagem: 3 },
+      { label: 'A coletar atrasadas', contagem: 6 },
+      { label: 'A coletar', contagem: 5 },
+      { label: 'conferir', contagem: 3 },
+      { label: 'A coletar atrasadas', contagem: 6 },
+      { label: 'A coletar', contagem: 5 },
+      { label: 'conferir', contagem: 3 },
+    ],
+    situacoes: [
+      { item: 'analise_risco', status: 'pendente' },
+      { item: 'cronograma', status: 'pendente' },
+      { item: 'fechamento', status: 'pendente' },
+      { item: 'qualificacao', status: 'pendente' },
+      { item: 'orcamento', status: 'pendente' },
+    ],
+  },
+];
 
 defineOptions({
   inheritAttrs: false,
@@ -163,6 +219,34 @@ watch([
       />
     </CardEnvelope.Conteudo>
   </div>
+
+  <section class="mt4">
+    <header class="flex g05">
+      <h1 class="t24 w400 mb0">
+        Metas
+      </h1>
+
+      <hr class="f1">
+    </header>
+
+    <article class="flex spacebetween end">
+      <div>filtro</div>
+
+      <ListaLegendas />
+    </article>
+
+    <ul class="mt2 flex column g2">
+      <CicloListaItem
+        v-for="(item, itemIndex) in items"
+        :id="item.id"
+        :key="itemIndex"
+        :meta-id="item.metaId"
+        :titulo="item.titulo"
+        :variaveis="item.variaveis"
+        :situacoes="item.situacoes"
+      />
+    </ul>
+  </section>
 </template>
 <style>
 .lista-de-cartoes {
