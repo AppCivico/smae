@@ -9,6 +9,7 @@ import GraficoDeSituacoesDasVariaveis from '@/components/quadroDeAtividades/Graf
 import FiltroDoQuadroDeAtividades from '@/components/planoSetorialProgramaMetas.componentes/FiltroDoQuadroDeAtividades.vue';
 import ListaLegendas from '@/components/planoSetorialProgramaMetas.componentes/QuadroDeAtividades/ListaLegendas.vue';
 import CicloVigenteFiltro from '@/components/planoSetorialProgramaMetas.componentes/QuadroDeAtividades/CicloVigenteFiltro.vue';
+import { listaDeSituacoes, listaDeStatus } from '@/components/planoSetorialProgramaMetas.componentes/QuadroDeAtividades/helpers/obterDadosItems';
 import CicloListaItem, { type CicloVigenteItemParams } from '@/components/planoSetorialProgramaMetas.componentes/QuadroDeAtividades/CicloListaItem.vue';
 import { usePanoramaPlanoSetorialStore } from '@/stores/planoSetorial.panorama.store';
 import dateToTitle from '@/helpers/dateToTitle';
@@ -233,7 +234,20 @@ watch([
     <article class="flex spacebetween end">
       <CicloVigenteFiltro />
 
-      <ListaLegendas />
+      <ListaLegendas
+        :legendas="{
+          situacao: listaDeSituacoes,
+          status: listaDeStatus,
+        }"
+      >
+        <template #situacao>
+          <h1>#situacao</h1>
+        </template>
+
+        <template #status>
+          <h1>#status</h1>
+        </template>
+      </ListaLegendas>
     </article>
 
     <ul class="mt2 flex column g2">
