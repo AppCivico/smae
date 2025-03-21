@@ -3757,13 +3757,13 @@ export class VariavelService {
                 },
                 select: {
                     variavel_id: true,
+                    fase: true,
                     variavel: {
                         select: {
                             tipo: true,
                             ViewVariavelGlobal: {
                                 select: {
                                     planos: true,
-                                    orgao_id: true,
                                 },
                             },
                             VariavelGrupoResponsavelEquipe: {
@@ -3782,122 +3782,111 @@ export class VariavelService {
                 },
             });
 
+            // Identifica variáveis globais válidas e não-globais para remoção
+            const variaveisGlobaisValidas = ciclosCorrente
+                .filter((c) => c.variavel.tipo === 'Global' && c.variavel.ViewVariavelGlobal.length > 0)
+                .map((c) => ({
+                    id: c.variavel_id,
+                    fase: c.fase,
+                    planos: c.variavel.ViewVariavelGlobal[0].planos,
+                    equipes: c.variavel.VariavelGrupoResponsavelEquipe.map((e) => e.grupo_responsavel_equipe.id),
+                    equipes_orgaos: c.variavel.VariavelGrupoResponsavelEquipe.map(
+                        (e) => e.grupo_responsavel_equipe.orgao_id
+                    ).filter((id) => id !== null) as number[],
+                }));
+
             // Busca os registros existentes no dashboard para estas variáveis
-            const dashboardExistente = await prisma.pSDashboardVariavel.findMany({
+            const dashboardExistente = await prisma.psDashboardVariavel.findMany({
                 where: { variavel_id: { in: variaveis } },
                 select: { variavel_id: true },
             });
             const existenteIds = new Set(dashboardExistente.map((d) => d.variavel_id));
 
-            // Identifica variáveis globais válidas e não-globais para remoção
-            const variaveisGlobaisValidas = new Set(
-                ciclosCorrente
-                    .filter((c) => c.variavel.tipo === 'Global' && c.variavel.ViewVariavelGlobal.length > 0)
-                    .map((c) => c.variavel_id)
+            // Variáveis para remover (existem no dashboard mas não são globais válidas)
+            const idsParaRemover = variaveis.filter(
+                (id) => existenteIds.has(id) && !variaveisGlobaisValidas.find((v) => v.id === id)
             );
 
-            // Variáveis para remover do dashboard (existem no dashboard mas não são globais válidas)
-            const idsParaRemover = variaveis.filter((id) => existenteIds.has(id) && !variaveisGlobaisValidas.has(id));
+            // Processa todas as atualizações e inserções usando consultas SQL diretas
+            let totalProcessado = 0;
 
-            // Registros para inserir ou atualizar
-            const registrosParaInserir: Prisma.PSDashboardVariavelCreateManyInput[] = [];
-            const registrosParaAtualizar: Array<{
-                variavel_id: number;
-                data: Prisma.PSDashboardVariavelUpdateInput;
-            }> = [];
-
-            // Processa cada ciclo corrente válido
-            for (const ciclo of ciclosCorrente) {
-                // Pula variáveis que não são do tipo Global ou não têm ViewVariavelGlobal
-                if (ciclo.variavel.tipo !== 'Global' || ciclo.variavel.ViewVariavelGlobal.length === 0) continue;
-
-                // Extrai dados do PDM e órgãos
-                const viewGlobal = ciclo.variavel.ViewVariavelGlobal[0];
-                const pdmIds = viewGlobal.planos;
-
-                // Extrai dados de equipes e seus órgãos
-                const equipes: number[] = [];
-                const orgaos: number[] = [];
-                const equipes_orgaos: number[] = [];
-
-                if (viewGlobal.orgao_id) {
-                    orgaos.push(viewGlobal.orgao_id);
-                }
-
-                // Processa equipes e seus respectivos órgãos
-                for (const equipeRel of ciclo.variavel.VariavelGrupoResponsavelEquipe) {
-                    const equipe = equipeRel.grupo_responsavel_equipe;
-                    equipes.push(equipe.id);
-
-                    if (equipe.orgao_id && !orgaos.includes(equipe.orgao_id)) {
-                        orgaos.push(equipe.orgao_id);
-                    }
-
-                    if (equipe.orgao_id) {
-                        equipes_orgaos.push(equipe.orgao_id);
-                    }
-                }
-
-                // Prepara os dados para inserção ou atualização
-                const dashboardData = {
-                    pdm_id: pdmIds,
-                    orgaos,
-                    equipes,
-                    equipes_orgaos,
-                };
-
-                // Decide se insere ou atualiza
-                if (existenteIds.has(ciclo.variavel_id)) {
-                    registrosParaAtualizar.push({
-                        variavel_id: ciclo.variavel_id,
-                        data: dashboardData,
-                    });
-                } else {
-                    registrosParaInserir.push({
-                        variavel_id: ciclo.variavel_id,
-                        ...dashboardData,
-                    });
-                }
-            }
-
-            // Executa operações no banco
-            const operacoes = [];
-
+            // Remove registros que não são mais válidos
             if (idsParaRemover.length > 0) {
-                operacoes.push(
-                    prisma.pSDashboardVariavel.deleteMany({
-                        where: {
-                            variavel_id: { in: idsParaRemover },
-                        },
-                    })
-                );
+                await prisma.$executeRaw`
+                    DELETE FROM ps_dashboard_variavel
+                    WHERE variavel_id IN (${Prisma.join(idsParaRemover)})
+                `;
                 this.logger.log(`Removidos ${idsParaRemover.length} registros do dashboard`);
+                totalProcessado += idsParaRemover.length;
             }
 
-            if (registrosParaInserir.length > 0) {
-                operacoes.push(
-                    prisma.pSDashboardVariavel.createMany({
-                        data: registrosParaInserir,
-                    })
-                );
-                this.logger.log(`Inseridos ${registrosParaInserir.length} novos registros no dashboard`);
+            // Processa cada variável válida
+            for (const variavel of variaveisGlobaisValidas) {
+                // Prepara os arrays para JSON
+                const pdmIdJson = JSON.stringify(variavel.planos);
+                const equipesJson = JSON.stringify(variavel.equipes);
+                const equipesOrgaosJson = JSON.stringify(variavel.equipes_orgaos);
+
+                // Determina os valores para os campos de fase preenchida
+                const fase_preenchimento_preenchida = variavel.fase === 'Validacao' || variavel.fase === 'Liberacao';
+                const fase_validacao_preenchida = variavel.fase === 'Liberacao';
+                const fase_liberacao_preenchida = false; // TODO: verificar quando muda para true
+
+                if (existenteIds.has(variavel.id)) {
+                    // Atualiza registro existente
+                    await prisma.$executeRaw`
+                        UPDATE ps_dashboard_variavel
+                        SET 
+                            pdm_id = ${pdmIdJson}::int[],
+                            fase = ${variavel.fase}::variavel_fase,
+                            fase_preenchimento_preenchida = ${fase_preenchimento_preenchida},
+                            fase_validacao_preenchida = ${fase_validacao_preenchida},
+                            fase_liberacao_preenchida = ${fase_liberacao_preenchida},
+                            equipes = ${equipesJson}::int[],
+                            equipes_orgaos = ${equipesOrgaosJson}::int[]
+                        WHERE variavel_id = ${variavel.id}
+                    `;
+                    totalProcessado++;
+                } else {
+                    // Insere novo registro
+                    await prisma.$executeRaw`
+                        INSERT INTO ps_dashboard_variavel (
+                            variavel_id, 
+                            pdm_id, 
+                            fase, 
+                            fase_preenchimento_preenchida,
+                            fase_validacao_preenchida,
+                            fase_liberacao_preenchida,
+                            equipes, 
+                            equipes_orgaos
+                        ) VALUES (
+                            ${variavel.id},
+                            ${pdmIdJson}::int[],
+                            ${variavel.fase}::variavel_fase,
+                            ${fase_preenchimento_preenchida},
+                            ${fase_validacao_preenchida},
+                            ${fase_liberacao_preenchida},
+                            ${equipesJson}::int[],
+                            ${equipesOrgaosJson}::int[]
+                        )
+                    `;
+                    totalProcessado++;
+                }
             }
 
-            for (const registro of registrosParaAtualizar) {
-                operacoes.push(
-                    prisma.pSDashboardVariavel.update({
-                        where: { variavel_id: registro.variavel_id },
-                        data: registro.data,
-                    })
-                );
-            }
-            if (registrosParaAtualizar.length > 0) {
-                this.logger.log(`Atualizados ${registrosParaAtualizar.length} registros existentes no dashboard`);
+            if (variaveisGlobaisValidas.length > 0) {
+                const atualizados = variaveisGlobaisValidas.filter((v) => existenteIds.has(v.id)).length;
+                const inseridos = variaveisGlobaisValidas.length - atualizados;
+
+                if (atualizados > 0) {
+                    this.logger.log(`Atualizados ${atualizados} registros existentes no dashboard`);
+                }
+                if (inseridos > 0) {
+                    this.logger.log(`Inseridos ${inseridos} novos registros no dashboard`);
+                }
             }
 
-            await Promise.all(operacoes);
-
-            return operacoes.length;
+            return totalProcessado;
         };
 
         // Se temos uma transação fornecida, use-a; caso contrário, crie uma nova
