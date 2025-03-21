@@ -12,63 +12,9 @@ import CicloVigenteFiltro from '@/components/planoSetorialProgramaMetas.componen
 import {
   obterSituacaoIcone, listaDeSituacoes, listaDeStatus, obterStatus,
 } from '@/components/planoSetorialProgramaMetas.componentes/QuadroDeAtividades/helpers/obterDadosItems';
-import CicloListaItem, { type CicloVigenteItemParams } from '@/components/planoSetorialProgramaMetas.componentes/QuadroDeAtividades/CicloListaItem.vue';
+import CicloListaItem, { type CicloVigenteItemParams, type ListaVariaveis } from '@/components/planoSetorialProgramaMetas.componentes/QuadroDeAtividades/CicloListaItem.vue';
 import { usePanoramaPlanoSetorialStore } from '@/stores/planoSetorial.panorama.store';
 import dateToTitle from '@/helpers/dateToTitle';
-
-const items: CicloVigenteItemParams[] = [
-  {
-    id: 11,
-    metaId: 117,
-    titulo: '001 - Atender 1.900.000 pessoas em programas de transferência de renda e/ou apoio nutricional',
-    variaveis: [
-      { label: 'A coletar atrasadas', contagem: 6 },
-      { label: 'A coletar', contagem: 5 },
-      { label: 'conferir', contagem: 3 },
-      { label: 'A coletar atrasadas', contagem: 6 },
-      { label: 'A coletar', contagem: 5 },
-      { label: 'conferir', contagem: 3 },
-      { label: 'A coletar atrasadas', contagem: 6 },
-      { label: 'A coletar', contagem: 5 },
-      { label: 'conferir', contagem: 3 },
-      { label: 'A coletar atrasadas', contagem: 6 },
-      { label: 'A coletar', contagem: 5 },
-      { label: 'conferir', contagem: 3 },
-    ],
-    situacoes: [
-      { item: 'analise_risco', status: 'atualizado' },
-      { item: 'cronograma', status: 'atualizado' },
-      { item: 'fechamento', status: 'pendente' },
-      { item: 'qualificacao', status: 'atualizado' },
-    ],
-  },
-  {
-    id: 11,
-    metaId: 117,
-    titulo: '002 - Implantar o prontuário eletrônico em 100% das UBS do município',
-    variaveis: [
-      { label: 'A coletar atrasadas', contagem: 6 },
-      { label: 'A coletar', contagem: 5 },
-      { label: 'conferir', contagem: 3 },
-      { label: 'A coletar atrasadas', contagem: 6 },
-      { label: 'A coletar', contagem: 5 },
-      { label: 'conferir', contagem: 3 },
-      { label: 'A coletar atrasadas', contagem: 6 },
-      { label: 'A coletar', contagem: 5 },
-      { label: 'conferir', contagem: 3 },
-      { label: 'A coletar atrasadas', contagem: 6 },
-      { label: 'A coletar', contagem: 5 },
-      { label: 'conferir', contagem: 3 },
-    ],
-    situacoes: [
-      { item: 'analise_risco', status: 'pendente' },
-      { item: 'cronograma', status: 'pendente' },
-      { item: 'fechamento', status: 'pendente' },
-      { item: 'qualificacao', status: 'pendente' },
-      { item: 'orcamento', status: 'pendente' },
-    ],
-  },
-];
 
 defineOptions({
   inheritAttrs: false,
@@ -97,6 +43,26 @@ const legendas = computed(() => ({
     icon: obterStatus(item),
   })),
 }));
+
+const listaDeMetasPreparado = computed(() => listaMetas.value.map<CicloVigenteItemParams>(
+  (item) => {
+    console.log(item);
+
+    return {
+      titulo: item.titulo,
+      id: item.id,
+      metaId: item.meta_id,
+      variaveis: item.variaveis as ListaVariaveis,
+      situacoes: [
+        { item: 'analise_risco', status: 'pendente' },
+        { item: 'cronograma', status: 'pendente' },
+        { item: 'fechamento', status: 'pendente' },
+        { item: 'qualificacao', status: 'pendente' },
+        { item: 'orcamento', status: 'pendente' },
+      ],
+    };
+  },
+));
 
 watch([
   () => route.query.orgao_id,
@@ -212,7 +178,7 @@ watch([
 
     <section class="mt2 flex column g2">
       <CicloListaItem
-        v-for="(item, itemIndex) in items"
+        v-for="(item, itemIndex) in listaDeMetasPreparado"
         :id="item.id"
         :key="itemIndex"
         :meta-id="item.metaId"
