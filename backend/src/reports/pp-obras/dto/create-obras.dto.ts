@@ -14,7 +14,6 @@ export class CreateRelObrasDto extends OmitType(PartialType(FilterProjetoDto), [
     'portfolio_id',
 ]) {
     @IsNumber()
-    @Transform(NumberTransform)
     @Expose()
     portfolio_id: number;
 
@@ -30,8 +29,6 @@ export class CreateRelObrasDto extends OmitType(PartialType(FilterProjetoDto), [
 
     @IsOptional()
     @IsNumber()
-    @ValidateIf((object, value) => value !== null)
-    @Transform(NumberTransform)
     @Expose()
     projeto_regiao_id?: number;
 
