@@ -19,7 +19,7 @@ type Estado = {
   variaveis: PSMFQuadroVariaveisDto | null;
   estatisticasMetas: PSMFQuadroMetasDto | null;
 
-  listaMetas: PSMFListaMetasDto['linhas'] | null;
+  listaMetas: PSMFListaMetasDto['linhas'];
   cicloAtual: PSMFListaMetasDto['ciclo_atual'] | null;
 
   chamadasPendentes: ChamadasPendentes;
@@ -44,7 +44,7 @@ export const usePanoramaPlanoSetorialStore = (prefixo = '') => defineStore(prefi
     variaveis: null,
     estatisticasMetas: null,
 
-    listaMetas: null,
+    listaMetas: [],
     cicloAtual: null,
 
     chamadasPendentes: {
