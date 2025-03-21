@@ -10,7 +10,7 @@ import FiltroDoQuadroDeAtividades from '@/components/planoSetorialProgramaMetas.
 import ListaLegendas from '@/components/ListaLegendas.vue';
 import CicloVigenteFiltro from '@/components/planoSetorialProgramaMetas.componentes/QuadroDeAtividades/CicloVigenteFiltro.vue';
 import {
-  obterSituacaoIcone, listaDeSituacoes, listaDeStatus, obterStatus,
+  obterFaseIcone, listaDeFases, listaDeStatus, obterFaseStatus, obterFaseLegenda,
 } from '@/components/planoSetorialProgramaMetas.componentes/QuadroDeAtividades/helpers/obterDadosItems';
 import CicloListaItem, { type CicloVigenteItemParams, type ListaVariaveis } from '@/components/planoSetorialProgramaMetas.componentes/QuadroDeAtividades/CicloListaItem.vue';
 import { usePanoramaPlanoSetorialStore } from '@/stores/planoSetorial.panorama.store';
@@ -33,16 +33,16 @@ const {
   paginacaoDeMetas,
 } = storeToRefs(panoramaStore);
 
-const legendas = computed(() => ({
-  situacao: listaDeSituacoes.map((item) => ({
-    item,
-    icon: obterSituacaoIcone(item),
+const legendas = {
+  situacao: listaDeFases.map((item) => ({
+    item: obterFaseLegenda(item),
+    icon: obterFaseIcone(item),
   })),
   status: listaDeStatus.map((item) => ({
     item,
-    icon: obterStatus(item),
+    icon: obterFaseStatus(item === 'atualizado'),
   })),
-}));
+};
 
 const listaDeMetasPreparado = computed(() => listaMetas.value.map<CicloVigenteItemParams>(
   (item) => {
@@ -51,15 +51,9 @@ const listaDeMetasPreparado = computed(() => listaMetas.value.map<CicloVigenteIt
     return {
       titulo: item.titulo,
       id: item.id,
-      metaId: item.meta_id,
+      metaId: item.meta_id || 11,
       variaveis: item.variaveis as ListaVariaveis,
-      situacoes: [
-        { item: 'analise_risco', status: 'pendente' },
-        { item: 'cronograma', status: 'pendente' },
-        { item: 'fechamento', status: 'pendente' },
-        { item: 'qualificacao', status: 'pendente' },
-        { item: 'orcamento', status: 'pendente' },
-      ],
+      situacoes: item.monitoramento_ciclo,
     };
   },
 ));
@@ -156,18 +150,17 @@ watch([
   </div>
 
   <section class="mt4">
-    <header class="flex g05">
-      <h1 class="t24 w400 mb0">
-        Metas
-      </h1>
-
-      <hr class="f1">
-    </header>
+    <h2 class="subtitulo t24 w400 mb0">
+      Metas
+    </h2>
 
     <article class="flex spacebetween end">
       <CicloVigenteFiltro />
 
-      <ListaLegendas :legendas="legendas">
+      <ListaLegendas
+        :legendas="legendas"
+        orientacao="horizontal"
+      >
         <template #padrao--status="{ item: { item, icon} }">
           <dt :style="{ backgroundColor: icon }" />
 

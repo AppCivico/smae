@@ -1,57 +1,79 @@
-const mapaDeSituacoes = {
-  cronograma: 'i_calendar',
-  orcamento: 'i_$',
-  qualificacao: 'i_iniciativa',
-  analise_risco: 'i_binoculars',
-  fechamento: 'i_check',
+enum CicloFase {
+  Orcamento, // nao sei
+  Analise,
+  Risco,
+  Fechamento,
+  Cronograma, // nao sei
+  Coleta, // nao sei
+}
+export type ChavesFase = keyof typeof CicloFase;
+
+const mapaDeFases: Record<ChavesFase, { icone: string; label: string }> = {
+  Coleta: {
+    icone: 'i_calendar', // nao sei
+    label: 'Cronograma', // nao sei
+  },
+  Cronograma: {
+    icone: 'i_calendar', // nao sei
+    label: 'Cronograma', // nao sei
+  },
+  Orcamento: {
+    icone: 'i_$', // nao sei
+    label: 'Orçamento', // nao sei
+  },
+  Analise: {
+    icone: 'i_iniciativa',
+    label: 'Analise Qualitativa',
+  },
+  Risco: {
+    icone: 'i_binoculars',
+    label: 'Risco',
+  },
+  Fechamento: {
+    icone: 'i_check',
+    label: 'Fechamento',
+  },
 } as const;
 
 const mapaDeStatus = {
   pendente: '#FF0000',
   atualizado: '#8EC122',
 } as const;
+type ChavesStatus = keyof typeof mapaDeStatus;
 
-export type ChavesSituacoes = keyof typeof mapaDeSituacoes;
-export type ChavesStatus = keyof typeof mapaDeStatus;
+export type ChavesSituacoes = keyof typeof mapaDeFases;
 
-export const listaDeSituacoes = Object.keys(mapaDeSituacoes) as ChavesSituacoes[];
+export const listaDeFases = Object.keys(mapaDeFases) as ChavesFase[];
 export const listaDeStatus = Object.keys(mapaDeStatus) as ChavesStatus[];
 
-export function obterSituacaoIcone(chave: ChavesSituacoes) {
-  if (!mapaDeSituacoes[chave]) {
+export function obterFaseLegenda(chave: ChavesSituacoes) {
+  if (!mapaDeFases[chave]) {
     throw new Error(
       `Chave "${chave}" não encontado na lista "${Object.keys(
-        mapaDeSituacoes,
+        mapaDeFases,
       )}"`,
     );
   }
 
-  return mapaDeSituacoes[chave];
+  return mapaDeFases[chave].label;
 }
 
-export function obterStatus(chave: ChavesStatus) {
-  if (!mapaDeStatus[chave]) {
+export function obterFaseIcone(chave: ChavesSituacoes) {
+  if (!mapaDeFases[chave]) {
     throw new Error(
       `Chave "${chave}" não encontado na lista "${Object.keys(
-        mapaDeStatus,
+        mapaDeFases,
       )}"`,
     );
   }
 
-  return mapaDeStatus[chave];
+  return mapaDeFases[chave].icone;
 }
 
-export function obterRota(chave: ChavesSituacoes) {
-  switch (chave) {
-    case 'cronograma':
-      return '.cronogramaDaMeta';
-    case 'orcamento':
-      return '.orcamentoDeMetas';
-    case 'qualificacao':
-    case 'analise_risco':
-    case 'fechamento':
-      return '.monitoramentoDeMetas';
-    default:
-      throw new Error(`Chave "${chave}" não encontada parra rotas`);
+export function obterFaseStatus(preenchido: boolean) {
+  if (preenchido) {
+    return mapaDeStatus.atualizado;
   }
+
+  return mapaDeStatus.pendente;
 }
