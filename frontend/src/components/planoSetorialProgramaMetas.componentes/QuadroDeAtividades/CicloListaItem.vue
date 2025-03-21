@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import SmaeLink from '@/components/SmaeLink.vue';
+import { RouteLocationRaw } from 'vue-router';
 import {
-  obterSituacaoIcone, obterStatus, obterRota, ChavesSituacoes, ChavesStatus,
+  obterFaseIcone, obterFaseStatus, ChavesFase,
 } from './helpers/obterDadosItems';
 
 const variaveisLegenda = {
@@ -19,16 +19,74 @@ export type ListaVariaveis = Record<VariaveisLengedas, number>;
 export type CicloVigenteItemParams = {
   id: number,
   metaId: number,
+  iniciativaId?: number,
+  atividadeId?: number,
   titulo: string;
   variaveis: ListaVariaveis,
   situacoes: {
-    item: ChavesSituacoes,
-    status: ChavesStatus
+    fase: ChavesFase,
+    preenchido: boolean
   }[]
 };
 type Props = CicloVigenteItemParams;
 
-defineProps<Props>();
+const props = defineProps<Props>();
+
+function obterFaseRota(fase: ChavesFase): RouteLocationRaw {
+  const parametros = {
+    meta_id: props.metaId,
+    planoSetorialId: props.id,
+  };
+
+  switch (fase) {
+    case 'Orcamento':
+      return {
+        name: '.orcamentoDeMetas',
+        params: parametros,
+      };
+
+    case 'Analise':
+    case 'Fechamento':
+    case 'Risco':
+      return {
+        name: '.monitoramentoDeMetas',
+        params: parametros,
+      };
+
+    case 'Coleta':
+    case 'Cronograma':
+      if (props.atividadeId && props.iniciativaId) {
+        return {
+          name: '.cronogramaDaAtividade',
+          params: {
+            ...parametros,
+            iniciativa_id: props.iniciativaId,
+            atividade_id: props.atividadeId,
+          },
+        };
+      }
+
+      if (props.iniciativaId) {
+        return {
+          name: '.cronogramaDaIniciativa',
+          params: {
+            ...parametros,
+            iniciativa_id: props.iniciativaId,
+          },
+
+        };
+      }
+
+      return {
+        name: '.cronogramaDaMeta',
+        params: parametros,
+      };
+
+    default:
+      throw new Error('Erro com a rota');
+  }
+}
+
 </script>
 
 <template>
@@ -36,21 +94,15 @@ defineProps<Props>();
     <div class="ciclo-lista-item__navegacao">
       <SmaeLink
         v-for="situacao in $props.situacoes"
-        :key="situacao.item"
+        :key="situacao.fase"
         class="flex justifyCenter start"
-        :to="{
-          name: obterRota(situacao.item),
-          params: {
-            meta_id: $props.metaId,
-            planoSetorialId: $props.id,
-          }
-        }"
+        :to="obterFaseRota(situacao.fase)"
       >
         <svg
           class="navegacao-item__icon"
-          :style="{ color: obterStatus(situacao.status) }"
+          :style="{ color: obterFaseStatus(situacao.preenchido) }"
         >
-          <use :xlink:href="`#${obterSituacaoIcone(situacao.item)}`" />
+          <use :xlink:href="`#${obterFaseIcone(situacao.fase)}`" />
         </svg>
       </SmaeLink>
     </div>

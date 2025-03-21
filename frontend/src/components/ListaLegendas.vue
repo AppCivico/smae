@@ -1,19 +1,28 @@
 <script lang="ts" setup>
+import { computed } from 'vue';
+
 type ItemLegenda = { item: string, icon?: string };
 type Props = {
   titulo?: string,
   legendas: {
     [key in string]: ItemLegenda[]
-  }
+  },
+  orientacao?: 'vertical' | 'horizontal'
 };
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   titulo: 'Legenda',
+  orientacao: 'vertical',
 });
+
+const mostrarEmColunas = computed(() => props.orientacao === 'vertical');
 </script>
 
 <template>
-  <div class="lista-legenda flex g2">
+  <div
+    class="lista-legenda flex g2"
+    :class="{'column': mostrarEmColunas}"
+  >
     <h4 class="lista-legenda__titulo t14 w500">
       {{ $props.titulo }}
     </h4>
@@ -23,6 +32,7 @@ withDefaults(defineProps<Props>(), {
         v-for="(legenda, legendaIndex) in $props.legendas"
         :key="`legenda-item--${legendaIndex}`"
         class="flex g1"
+        :class="{ 'column': mostrarEmColunas }"
       >
         <div
           v-for="legendaItem in legenda"
@@ -75,4 +85,5 @@ withDefaults(defineProps<Props>(), {
   width: 100%;
   height: 100%;
 }
+
 </style>
