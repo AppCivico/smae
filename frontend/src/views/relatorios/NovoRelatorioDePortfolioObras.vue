@@ -1,5 +1,6 @@
 <script setup>
 import { relatórioDePortfolioObras as schema } from '@/consts/formSchemas';
+import nulificadorTotal from '@/helpers/nulificadorTotal';
 import truncate from '@/helpers/texto/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';
@@ -30,15 +31,17 @@ const {
 const initialValues = {
   fonte: 'Obras',
   parametros: {
-    status: null,
+    grupo_tematico_id: null,
     orgao_responsavel_id: null,
+    periodo: null,
     portfolio_id: null,
+    regiao_id: null,
   },
   eh_publico: null,
 };
 
 async function onSubmit(values) {
-  const carga = values;
+  const carga = nulificadorTotal(values);
 
   try {
     const msg = 'Dados salvos com sucesso!';
@@ -92,7 +95,11 @@ iniciar();
           }"
           :disabled="portfolioObrasStore.chamadasPendentes.lista"
         >
-          <option :value="null">
+          <option
+            value=""
+            disabled
+            selected
+          >
             Selecionar
           </option>
           <option
@@ -125,7 +132,10 @@ iniciar();
           }"
           :disabled="!órgãosComoLista?.length"
         >
-          <option :value="null">
+          <option
+            value=""
+            selected
+          >
             Selecionar
           </option>
           <option
@@ -160,7 +170,10 @@ iniciar();
           }"
           :disabled="gruposTematicosStore.chamadasPendentes.lista"
         >
-          <option :value="null">
+          <option
+            value=""
+            selected
+          >
             Selecionar
           </option>
           <option
@@ -198,7 +211,10 @@ iniciar();
           }"
           :disabled="regionsStore.chamadasPendentes.lista"
         >
-          <option :value="null">
+          <option
+            value=""
+            selected
+          >
             Selecionar
           </option>
           <option
