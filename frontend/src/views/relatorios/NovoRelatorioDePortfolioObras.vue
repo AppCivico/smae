@@ -79,8 +79,8 @@ iniciar();
     <div class="flex g2 mb2">
       <div class="f1">
         <LabelFromYup
-          name="portfolio_id"
-          :schema="schema.fields.parametros"
+          name="parametros.portfolio_id"
+          :schema="schema"
         />
         <Field
           name="parametros.portfolio_id"
@@ -112,8 +112,8 @@ iniciar();
       </div>
       <div class="f1 mb1">
         <LabelFromYup
-          name="orgao_responsavel_id"
-          :schema="schema.fields.parametros"
+          name="parametros.orgao_responsavel_id"
+          :schema="schema"
         />
         <Field
           name="parametros.orgao_responsavel_id"
@@ -147,8 +147,8 @@ iniciar();
       </div>
       <div class="f1 mb1">
         <LabelFromYup
-          name="grupo_tematico_id"
-          :schema="schema.fields.parametros"
+          name="parametros.grupo_tematico_id"
+          :schema="schema"
         />
         <Field
           name="parametros.grupo_tematico_id"
@@ -185,8 +185,8 @@ iniciar();
     <div class="flex g2 mb2">
       <div class="f1 mb1">
         <LabelFromYup
-          name="regiao_id"
-          :schema="schema.fields.parametros"
+          name="parametros.regiao_id"
+          :schema="schema"
         />
         <Field
           name="parametros.regiao_id"
@@ -220,8 +220,8 @@ iniciar();
       </div>
       <div class="f1">
         <LabelFromYup
-          name="periodo"
-          :schema="schema.fields.parametros"
+          name="parametros.periodo"
+          :schema="schema"
         />
         <Field
           id="periodo"
