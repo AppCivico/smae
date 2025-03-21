@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute();
@@ -10,11 +10,17 @@ const selecionado = ref(false);
 function handleFiltrar() {
   const query = {
     ...route.query,
-    exibir_metas: selecionado.value.toString(),
+    apenas_pendentes: selecionado.value.toString(),
   };
 
   router.replace({ query });
 }
+
+watch(selecionado, () => handleFiltrar());
+
+onMounted(() => {
+  selecionado.value = !!route.query.apenas_pendentes;
+});
 </script>
 
 <template>
@@ -33,7 +39,6 @@ function handleFiltrar() {
         v-model="selecionado"
         type="checkbox"
         class="interruptor mr05 ml05"
-        @input="handleFiltrar"
       >
 
       <span

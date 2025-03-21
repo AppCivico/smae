@@ -4,14 +4,23 @@ import {
   obterSituacaoIcone, obterStatus, obterRota, ChavesSituacoes, ChavesStatus,
 } from './helpers/obterDadosItems';
 
+const variaveisLegenda = {
+  a_coletar: 'A coletar',
+  a_coletar_total: 'A coletar total',
+  coletadas_nao_conferidas: 'Coletadas não conferidas',
+  conferidas_nao_liberadas: 'Conferidas não liberadas',
+  liberadas: 'Liberadas',
+  total: 'Total',
+};
+
+type VariaveisLengedas = keyof typeof variaveisLegenda;
+export type ListaVariaveis = Record<VariaveisLengedas, number>;
+
 export type CicloVigenteItemParams = {
   id: number,
   metaId: number,
   titulo: string;
-  variaveis: {
-    label: string;
-    contagem: number
-  }[],
+  variaveis: ListaVariaveis,
   situacoes: {
     item: ChavesSituacoes,
     status: ChavesStatus
@@ -60,15 +69,14 @@ defineProps<Props>();
           class="variavel-item"
         >
           <span class="variavel-item__conteudo t12 w400">
-            {{ situacao.label }}
+            {{ variaveisLegenda[situacaoIndex] || situacaoIndex }}
 
             <span class="variavel-item__conteudo--numero w700 ml05">
-              {{ situacao.contagem.toString().padStart(2, '0') }}
+              {{ situacao.toString().padStart(2, '0') }}
             </span>
           </span>
 
           <svg
-            v-if="situacaoIndex !== $props.variaveis.length - 1"
             class="ciclo-lista-item__vaiaveis-separador ml05 mr05"
             width="5"
             height="9.5"
@@ -123,6 +131,10 @@ defineProps<Props>();
   white-space: wrap;
   padding: 6px 0;
   align-items: center;
+}
+
+.variavel-item:last-of-type .ciclo-lista-item__vaiaveis-separador {
+  display: none;
 }
 
 .variavel-item__conteudo {
