@@ -172,6 +172,7 @@ export class PSMFCountDto {
 }
 
 export class PSMFSituacaoCicloDto {
+    @ApiProperty({ enum: CicloFase, enumName: 'CicloFase' })
     fase: CicloFase;
     preenchido: boolean;
 }
