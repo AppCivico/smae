@@ -30,6 +30,7 @@ export class CreateRelObrasDto extends OmitType(PartialType(FilterProjetoDto), [
 
     @IsOptional()
     @IsNumber()
+    @ValidateIf((object, value) => value !== null)
     @Transform(NumberTransform)
     @Expose()
     projeto_regiao_id?: number;
