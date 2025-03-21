@@ -24,13 +24,6 @@ export class CreateRelObrasDto extends OmitType(PartialType(FilterProjetoDto), [
     grupo_tematico_id?: number;
 
     @IsOptional()
-    @IsOnlyDate()
-    @ValidateIf((object, value) => value !== null)
-    @Transform(DateTransform)
-    @Expose()
-    data_termino?: Date;
-
-    @IsOptional()
     @IsNumber()
     @Expose()
     orgao_responsavel_id?: number;
@@ -43,6 +36,7 @@ export class CreateRelObrasDto extends OmitType(PartialType(FilterProjetoDto), [
 
     @IsOptional()
     @IsOnlyDate()
+    @ValidateIf((object, value) => value !== null)
     @Transform(DateTransform)
     @Expose()
     periodo?: Date;
