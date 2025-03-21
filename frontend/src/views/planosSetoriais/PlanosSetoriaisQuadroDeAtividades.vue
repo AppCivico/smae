@@ -1,10 +1,10 @@
 <script lang="ts" setup>
 import * as CardEnvelope from '@/components/cardEnvelope';
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
-import GrandesNumeros from '@/components/painelEstrategico/GrandesNumeros.vue';
 import FiltroDoQuadroDeAtividades from '@/components/planoSetorialProgramaMetas.componentes/FiltroDoQuadroDeAtividades.vue';
 import GrandesNumerosDeMetas from '@/components/quadroDeAtividades/GrandesNumerosDeMetas.vue';
 import dateToTitle from '@/helpers/dateToTitle';
+import GraficoDeSituacoesDasVariaveis from '@/components/quadroDeAtividades/GraficoDeSituacoesDasVariaveis.vue';
 import { usePanoramaPlanoSetorialStore } from '@/stores/planoSetorial.panorama.store';
 import { storeToRefs } from 'pinia';
 import { watch } from 'vue';
@@ -141,17 +141,22 @@ watch([
     v-else
     class="lista-de-cartoes"
   >
-    <CardEnvelope.Conteudo>
-      <CardEnvelope.Titulo
-        titulo="Título"
-        icone="gear"
-        subtitulo="subtitulo"
+    <CardEnvelope.Conteudo class="container-inline">
+      <CardEnvelope.Titulo titulo="Situações das variáveis" />
+      <GraficoDeSituacoesDasVariaveis
+        :variaveis="variaveis.total_por_situacao"
       />
+    </CardEnvelope.Conteudo>
 
-      <GrandesNumeros :grandes-numeros="{}" />
+    <CardEnvelope.Conteudo>
+      <CardEnvelope.Titulo titulo="Outras variáveis do órgão não associadas ao PS/PdM" />
+      <GraficoDeSituacoesDasVariaveis
+        :variaveis="variaveis.nao_associadas_plano_atual"
+        :cores="['#292279', '#4539ca', '#5345f3', '#8c83f7', '#c6c1fb']"
+      />
     </CardEnvelope.conteudo>
 
-    <CardEnvelope.Conteudo class="container-inline">
+    <CardEnvelope.Conteudo class="container-inline grid-full-column">
       <CardEnvelope.Titulo titulo="Metas" />
       <GrandesNumerosDeMetas
         :metas="estatisticasMetas"
@@ -159,16 +164,18 @@ watch([
     </CardEnvelope.Conteudo>
   </div>
 </template>
-<style lang="less">
-.pagina-de-painel-estrategico {
-  background-image: url("@{u}painel-estrategico/mapa-cinza.png");
-  background-size: cover;
-  background-attachment: fixed;
+<style>
+.lista-de-cartoes {
+  display: grid;
+  gap: 2rem;
 }
 
-.pagina-de-painel-estrategico body {
-  background-color: rgba(255, 255, 255, 0.7);
+@media (width >= 1000px) {
+  .lista-de-cartoes {
+    grid-template-columns: 1fr 1fr;
+  }
 }
+
 </style>
 <style lang="less" scoped>
 .filtro {
