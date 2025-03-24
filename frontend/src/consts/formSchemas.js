@@ -4330,12 +4330,9 @@ export const classificacaoCriarEditarSchema = object().shape({
   transferencia_tipo_id: string().label('Tipo').required(),
 });
 
-export const cicloAtualizacaoFiltrosSchema = (opcoes) => object().shape({
+export const cicloAtualizacaoFiltrosSchema = object().shape({
   codigo: string().label('Código'),
+  equipe_id: number().label('Equipe').nullable().min(1),
   palavra_chave: string().label('Palavra chave'),
   referencia: string().label('Referencia').matches(regEx['month/year'], 'Formato inválido'),
-  equipe_id: mixed().label('Equipe').nullable().oneOf([
-    '',
-    ...opcoes.map((item) => item.id),
-  ]),
 });
