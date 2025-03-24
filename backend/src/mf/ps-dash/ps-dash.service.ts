@@ -327,7 +327,7 @@ export class PSMFDashboardService {
         };
 
         // Usando um único aggregate query para obter todas as contagens necessárias
-        const stats = await this.prisma.psDashboardMetaStats.aggregate({
+        const stats = await this.prisma.view_ps_dashboard_meta_stats.aggregate({
             _sum: {
                 pendente: true,
                 var_liberadas: true,
