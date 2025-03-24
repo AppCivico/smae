@@ -207,7 +207,7 @@ export class PSMFItemMetaDto {
     variaveis: PSMFStatusVariaveisMetaDto;
 
     @ApiProperty({ description: 'ID da meta pai (para iniciativas e atividades)', required: false })
-    meta_id?: number;
+    meta_id: number;
 
     @ApiProperty({ description: 'ID da iniciativa pai (para atividades)', required: false })
     iniciativa_id?: number;

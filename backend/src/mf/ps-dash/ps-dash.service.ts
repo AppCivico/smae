@@ -37,12 +37,15 @@ interface IdCodTituloTipoDto {
 }
 
 function geraDetalheMetaIniAtv(item: IdCodTituloTipoDto) {
-    if (item.atividade_id && item.atividade) {
+    if (item.atividade_id && item.atividade && item.iniciativa) {
         return {
             id: item.atividade.id,
             codigo: item.atividade.codigo,
             titulo: item.atividade.titulo,
             tipo: 'atividade' as StrMIA,
+            meta_id: item.meta.id,
+            iniciativa_id: item.iniciativa.id,
+            atividade_id: item.atividade.id,
         };
     } else if (item.iniciativa_id && item.iniciativa) {
         return {
@@ -50,6 +53,8 @@ function geraDetalheMetaIniAtv(item: IdCodTituloTipoDto) {
             codigo: item.iniciativa.codigo,
             titulo: item.iniciativa.titulo,
             tipo: 'iniciativa' as StrMIA,
+            meta_id: item.meta.id,
+            iniciativa_id: item.iniciativa.id,
         };
     } else {
         return {
@@ -57,6 +62,7 @@ function geraDetalheMetaIniAtv(item: IdCodTituloTipoDto) {
             codigo: item.meta.codigo,
             titulo: item.meta.titulo,
             tipo: 'meta' as StrMIA,
+            meta_id: item.meta.id,
         };
     }
 }
@@ -212,8 +218,6 @@ export class PSMFDashboardService {
                     liberadas: item.variaveis_liberadas,
                     a_coletar_total: item.variaveis_total,
                 },
-                atividade_id: item.atividade_id ?? undefined,
-                iniciativa_id: item.iniciativa_id ?? undefined,
                 ...geraDetalheMetaIniAtv(item),
             } satisfies PSMFItemMetaDto;
         });
