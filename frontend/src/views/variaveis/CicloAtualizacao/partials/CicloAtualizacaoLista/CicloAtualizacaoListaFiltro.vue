@@ -21,8 +21,8 @@ type FieldsProps = {
   mask?: (el: any) => void
 };
 
-const $route = useRoute();
-const $router = useRouter();
+const route = useRoute();
+const router = useRouter();
 
 const equipesStore = useEquipesStore();
 
@@ -55,21 +55,22 @@ const campos = computed<FieldsProps[]>(() => [
 ]);
 const { handleSubmit, isSubmitting, setValues } = useForm({
   validationSchema: schema,
-  initialValues: $route.query,
+  initialValues: route.query,
 });
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   const parametros = Object.keys(valoresControlados).reduce((amount, item) => {
     amount[item] = valoresControlados[item] || undefined;
     return amount;
   }, {});
-  $router.replace({
+  router.replace({
     query: {
-      ...$route.query,
+      ...route.query,
       ...parametros,
     },
   });
 });
-watch(() => $route.query, (val) => {
+
+watch(() => route.query, (val) => {
   setValues(val);
 }, { deep: true });
 const valoresIniciais = computed(() => ({

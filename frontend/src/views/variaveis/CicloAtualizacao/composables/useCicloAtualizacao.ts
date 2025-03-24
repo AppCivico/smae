@@ -13,10 +13,9 @@ export default function useCicloAtualizacao() {
   };
 
   const cicloAtualizacaoStore = useCicloAtualizacaoStore();
+  const route = useRoute();
 
   const { emFoco } = storeToRefs(cicloAtualizacaoStore);
-
-  const $route = useRoute();
 
   const fase = computed<FaseOpcoes>(
     () => {
@@ -128,6 +127,6 @@ export default function useCicloAtualizacao() {
     fase,
     fasePosicao,
     forumlariosAExibir,
-    dataReferencia: $route.params.dataReferencia as string,
+    dataReferencia: route.params.dataReferencia as string,
   };
 }
