@@ -21,8 +21,8 @@ DECLARE
     v_cronograma_preenchido int := 0;
     v_pendencia_cronograma BOOLEAN := FALSE;
     -- Budget counters
-    v_orcamento_total int := 0;
-    v_orcamento_preenchido int := 0;
+    v_orcamento_total int[] := ARRAY[]::int[];
+    v_orcamento_preenchido int[] := ARRAY[]::int[];
     v_pendencia_orcamento BOOLEAN := FALSE;
     -- Variable counters
     v_variaveis_total int := 0;
@@ -214,8 +214,8 @@ BEGIN
 
         ELSE
             -- For non-meta items, set budget values to 0
-            v_orcamento_total := 0;
-            v_orcamento_preenchido := 0;
+            v_orcamento_total := ARRAY[]::int[];
+            v_orcamento_preenchido := ARRAY[]::int[];
             v_pendencia_orcamento := FALSE;
         END IF;
         -- Count cronograma (Schedule)
