@@ -187,11 +187,12 @@ type VariavelCicloComIcone = VariavelCiclo & {
 };
 
 const equipesStore = useEquipesStore();
-const cicloAtualizacaoStore = useCicloAtualizacaoStore();
 
 const temEquipes = computed<boolean>(() => equipesStore.lista.length > 0);
 
 const route = useRoute();
+
+const cicloAtualizacaoStore = useCicloAtualizacaoStore(route.meta.entidadeMãe);
 
 // TO-DO: passar para v-slots
 const tabs = {

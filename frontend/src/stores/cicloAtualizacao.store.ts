@@ -58,7 +58,7 @@ type DadosASeremEnviados = {
 
 const fileStore = useFileStore();
 
-export const useCicloAtualizacaoStore = defineStore('cicloAtualizacao', {
+export const useCicloAtualizacaoStore = (prefixo = '') => defineStore(prefixo ? `${prefixo}.cicloAtualizacao` : 'cicloAtualizacao', {
   state: (): Estado => ({
     erro: null,
     temMais: false,
@@ -145,4 +145,4 @@ export const useCicloAtualizacaoStore = defineStore('cicloAtualizacao', {
       return state.carregando || fileStore.carregando;
     },
   },
-});
+})();

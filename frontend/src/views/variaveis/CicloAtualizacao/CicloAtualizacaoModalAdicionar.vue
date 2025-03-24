@@ -253,17 +253,12 @@
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, useForm } from 'vee-validate';
 import { computed, ref } from 'vue';
-
 import UploadArquivos, { ArquivoAdicionado } from '@/components/UploadArquivos.vue';
 import { useCicloAtualizacaoStore } from '@/stores/cicloAtualizacao.store';
-
 import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
-
 import { cicloAtualizacaoModalAdicionarSchema } from '@/consts/formSchemas';
-
-import LabelFromYup from '@/components/LabelFromYup.vue';
 import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store';
-
+import { useRoute } from 'vue-router';
 import useCicloAtualizacao from './composables/useCicloAtualizacao';
 
 type VariavelConfiguracaoItem = {
@@ -277,7 +272,7 @@ type Emits = {
 
 const $emit = defineEmits<Emits>();
 
-const cicloAtualizacaoStore = useCicloAtualizacaoStore();
+const cicloAtualizacaoStore = useCicloAtualizacaoStore(useRoute().meta.entidadeMãe);
 const variaveisCategoricasStore = useVariaveisCategoricasStore();
 
 const { emFoco, bloqueado, temCategorica } = storeToRefs(cicloAtualizacaoStore);
