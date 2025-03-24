@@ -3,11 +3,11 @@ import { computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { Field, useForm, ErrorMessage } from 'vee-validate';
 
+import { cicloAtualizacaoFiltrosSchema as schema } from '@/consts/formSchemas';
 import maskMonth from '@/helpers/maskMonth';
 
 import { useEquipesStore } from '@/stores/equipes.store';
 
-import { cicloAtualizacaoFiltrosSchema } from '@/consts/formSchemas';
 
 import LabelFromYup from '@/components/LabelFromYup.vue';
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
@@ -23,6 +23,10 @@ type FieldsProps = {
 
 const route = useRoute();
 const router = useRouter();
+
+const valoresIniciais = {
+  aba: 'Preenchimento',
+};
 
 const equipesStore = useEquipesStore();
 
@@ -41,7 +45,6 @@ const equipes = computed(() => equipesStore.lista.filter((item) => {
       return true;
   }
 }));
-const schema = computed(() => cicloAtualizacaoFiltrosSchema(equipes.value));
 
 const campos = computed<FieldsProps[]>(() => [
   { class: 'fg999', nome: 'codigo', tipo: 'text' },
@@ -73,9 +76,6 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
 watch(() => route.query, (val) => {
   setValues(val);
 }, { deep: true });
-const valoresIniciais = computed(() => ({
-  aba: 'Preenchimento',
-}));
 </script>
 
 <template>
