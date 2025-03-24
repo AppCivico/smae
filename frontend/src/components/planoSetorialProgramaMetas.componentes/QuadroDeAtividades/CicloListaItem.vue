@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import { RouteLocationRaw } from 'vue-router';
 // eslint-disable-next-line import/no-unresolved, import/extensions
-import { PSMFCountDto } from '@back/mf/ps-dash/dto/ps.dto';
+import { PSMFCountDto, PSMFOrcamentoCountDto } from '@back/mf/ps-dash/dto/ps.dto';
 import {
   obterFaseIcone, obterFaseStatus, ChavesFase,
 } from './helpers/obterDadosItems';
@@ -18,8 +18,6 @@ const variaveisLegenda = {
 
 type VariaveisLengedas = keyof typeof variaveisLegenda;
 
-type ItemPendencia = PSMFCountDto;
-
 export type ListaVariaveis = Record<VariaveisLengedas, number>;
 
 export type CicloVigenteItemParams = {
@@ -34,8 +32,8 @@ export type CicloVigenteItemParams = {
     preenchido: boolean
   }[],
   pendencias: {
-    cronograma: ItemPendencia,
-    orcamento: ItemPendencia,
+    cronograma: PSMFCountDto,
+    orcamento: PSMFOrcamentoCountDto,
   },
 };
 type Props = CicloVigenteItemParams;
@@ -63,7 +61,6 @@ function obterFaseRota(fase: ChavesFase): RouteLocationRaw {
         params: parametros,
       };
 
-    case 'Coleta':
     case 'Cronograma':
       if (props.atividadeId && props.iniciativaId) {
         return {
@@ -108,10 +105,10 @@ const situacoesMapeadas = computed(() => {
     });
   }
 
-  if (orcamento.total >= 0) {
+  if (orcamento.total.length >= 0) {
     situacoes.push({
       fase: 'Orcamento',
-      preenchido: orcamento.total !== orcamento.preenchido,
+      preenchido: orcamento.total.length !== orcamento.preenchido.length,
     });
   }
 
