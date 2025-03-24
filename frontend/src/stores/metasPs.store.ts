@@ -45,7 +45,7 @@ function caminhoParaApi(rotaMeta: RouteMeta) {
   }
 }
 
-export const usePsMetasStore = defineStore('psMetas', {
+export const usePsMetasStore = (prefixo = '') => defineStore(prefixo ? `${prefixo}.psMetas` : 'psMetas', {
   state: (): Estado => ({
     lista: [],
     emFoco: null,
@@ -161,4 +161,4 @@ export const usePsMetasStore = defineStore('psMetas', {
         return acc;
       }, {} as Record<number, Meta[]>),
   },
-});
+})();

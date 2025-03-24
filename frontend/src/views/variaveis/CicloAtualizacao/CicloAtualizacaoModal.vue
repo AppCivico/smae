@@ -74,7 +74,7 @@ const route = useRoute();
 const router = useRouter();
 
 const alertStore = useAlertStore();
-const cicloAtualizacaoStore = useCicloAtualizacaoStore();
+const cicloAtualizacaoStore = useCicloAtualizacaoStore(route.meta.entidadeMãe);
 const variaveisCategoricasStore = useVariaveisCategoricasStore();
 const { fase } = useCicloAtualizacao();
 
