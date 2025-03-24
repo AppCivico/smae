@@ -1,5 +1,6 @@
-import type { ListMetaDto } from '@/../../backend/src/meta/dto/list-meta.dto';
-import type { Meta } from '@/../../backend/src/meta/entities/meta.entity';
+import type { RecordWithId } from '@back/common/dto/record-with-id.dto';
+import type { ListMetaDto } from '@back/meta/dto/list-meta.dto';
+import type { MetaItemDto } from '@back/meta/entities/meta.entity';
 import { defineStore } from 'pinia';
 import type { RouteMeta } from 'vue-router';
 
@@ -19,7 +20,7 @@ interface Erros {
 
 interface Estado {
   lista: Lista;
-  emFoco: Meta | null;
+  emFoco: MetaItemDto | null;
 
   chamadasPendentes: ChamadasPendentes;
   erros: Erros;
@@ -70,7 +71,7 @@ export const usePsMetasStore = (prefixo = '') => defineStore(prefixo ? `${prefix
     async buscarItem(metaId: number, params = {}): Promise<void> {
       this.chamadasPendentes.emFoco = true;
       try {
-        const resposta = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${metaId || this.route.params.metaId}`, params);
+        const resposta = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${metaId || this.route.params.metaId}`, params) as MetaItemDto;
         this.emFoco = resposta;
       } catch (erro: unknown) {
         this.erros.emFoco = erro;
@@ -90,7 +91,7 @@ export const usePsMetasStore = (prefixo = '') => defineStore(prefixo ? `${prefix
           pagina_corrente: paginaCorrente,
           tem_mais: temMais,
           total_registros: totalRegistros,
-        } = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta)}`, params);
+        } = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta)}`, params) as ListMetaDto;
 
         this.lista = linhas;
 
@@ -121,16 +122,16 @@ export const usePsMetasStore = (prefixo = '') => defineStore(prefixo ? `${prefix
       }
     },
 
-    async salvarItem(params = {}, metaId = 0): Promise<boolean> {
+    async salvarItem(params = {}, metaId = 0): Promise<boolean | RecordWithId> {
       this.chamadasPendentes.emFoco = true;
 
       try {
         let resposta;
 
         if (metaId) {
-          resposta = await this.requestS.patch(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${metaId || this.route.params.metaId}`, params);
+          resposta = await this.requestS.patch(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${metaId || this.route.params.metaId}`, params) as RecordWithId;
         } else {
-          resposta = await this.requestS.post(`${baseUrl}/${caminhoParaApi(this.route.meta)}`, params);
+          resposta = await this.requestS.post(`${baseUrl}/${caminhoParaApi(this.route.meta)}`, params) as RecordWithId;
         }
 
         this.chamadasPendentes.emFoco = false;
@@ -159,6 +160,6 @@ export const usePsMetasStore = (prefixo = '') => defineStore(prefixo ? `${prefix
         acc[cur.pdm_id].push(cur);
 
         return acc;
-      }, {} as Record<number, Meta[]>),
+      }, {} as Record<number, MetaItemDto[]>),
   },
 })();

@@ -1,18 +1,21 @@
 import type {
   DadosCodTituloMetaDto,
   ListDadosMetaIniciativaAtividadesDto,
-} from '@/../../backend/src/meta/dto/create-meta.dto';
+} from '@back/meta/dto/create-meta.dto';
 import type {
   ListProjetoProxyPdmMetaDto,
   ProjetoProxyPdmMetaDto,
-} from '@/../../backend/src/pp/projeto/entities/projeto.proxy-pdm-meta.entity';
+} from '@back/pp/projeto/entities/projeto.proxy-pdm-meta.entity';
 import { defineStore } from 'pinia';
+import type { ArvoreDeIniciativas } from './helpers/mapIniciativas';
 import mapIniciativas from './helpers/mapIniciativas';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 type PlanosSimplificados = ListProjetoProxyPdmMetaDto['linhas'];
-type MetaSimplificada = ListDadosMetaIniciativaAtividadesDto['linhas'];
+type MetaSimplificada = Omit<DadosCodTituloMetaDto, 'iniciativas'> & {
+  iniciativas: ArvoreDeIniciativas;
+};
 
 interface ChamadasPendentes {
   planosSimplificados: boolean;
@@ -81,7 +84,7 @@ export const usePlanosSimplificadosStore = defineStore('pdmMetas', {
       this.erros.planosSimplificados = null;
 
       try {
-        const { linhas } = await this.requestS.get(`${baseUrl}/auxiliar/proxy/pdm-e-metas`, params);
+        const { linhas } = await this.requestS.get(`${baseUrl}/auxiliar/proxy/pdm-e-metas`, params) as ListProjetoProxyPdmMetaDto;
         this.planosSimplificados = linhas;
       } catch (erro: unknown) {
         this.erros.planosSimplificados = erro;
@@ -94,10 +97,10 @@ export const usePlanosSimplificadosStore = defineStore('pdmMetas', {
       this.erros.arvoreDeMetas = null;
 
       try {
-        const { linhas } = await this.requestS.get(`${baseUrl}/auxiliar/proxy/iniciativas-atividades`, params);
+        const { linhas } = await this.requestS.get(`${baseUrl}/auxiliar/proxy/iniciativas-atividades`, params) as ListDadosMetaIniciativaAtividadesDto;
 
         if (Array.isArray(linhas)) {
-          linhas.forEach((cur:DadosCodTituloMetaDto) => {
+          linhas.forEach((cur) => {
             this.arvoreDeMetas[cur.id] = {
               ...cur,
               iniciativas: mapIniciativas(cur.iniciativas),
