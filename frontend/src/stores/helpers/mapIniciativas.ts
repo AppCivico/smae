@@ -12,7 +12,7 @@ const mapAtividades = (atividades: DadosCodTituloAtividadeDto[]): AtividadesPorI
   return resultado;
 };
 
-type ArvoreDeIniciativas = {
+export type ArvoreDeIniciativas = {
   [k: number]: Omit<DadosCodTituloAtividadeDto, 'atividades'> & {
     atividades: AtividadesPorId;
   };

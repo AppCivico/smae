@@ -1,24 +1,21 @@
 <script setup lang="ts">
-import { computed, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { Field, useForm, ErrorMessage } from 'vee-validate';
-
+import FormularioQueryString from '@/components/FormularioQueryString.vue';
+import LabelFromYup from '@/components/LabelFromYup.vue';
 import { cicloAtualizacaoFiltrosSchema as schema } from '@/consts/formSchemas';
 import maskMonth from '@/helpers/maskMonth';
-
 import { useEquipesStore } from '@/stores/equipes.store';
-
-
-import LabelFromYup from '@/components/LabelFromYup.vue';
-import FormularioQueryString from '@/components/FormularioQueryString.vue';
+import type { EquipeRespItemDto } from '@back/equipe-resp/entities/equipe-resp.entity.ts';
+import { ErrorMessage, Field, useForm } from 'vee-validate';
+import { computed, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 type FieldsProps = {
   class?: string
   nome: string
   tipo: string
-  opcoes?: any
+  opcoes?: EquipeRespItemDto[]
   placeholder?: string
-  mask?: (el: any) => void
+  mask?: (el: HTMLInputElement) => void
 };
 
 const route = useRoute();
@@ -30,21 +27,22 @@ const valoresIniciais = {
 
 const equipesStore = useEquipesStore();
 
-const equipes = computed(() => equipesStore.lista.filter((item) => {
-  switch ($route.query.aba) {
-    case 'Preenchimento':
-      return item.perfil === 'Medicao';
+const equipes = computed(() => (equipesStore.lista as EquipeRespItemDto[])
+  .filter((item) => {
+    switch (route.query.aba) {
+      case 'Preenchimento':
+        return item.perfil === 'Medicao';
 
-    case 'Validacao':
-      return item.perfil === 'Validacao';
+      case 'Validacao':
+        return item.perfil === 'Validacao';
 
-    case 'Liberacao':
-      return item.perfil === 'Liberacao';
+      case 'Liberacao':
+        return item.perfil === 'Liberacao';
 
-    default:
-      return true;
-  }
-}));
+      default:
+        return true;
+    }
+  }));
 
 const campos = computed<FieldsProps[]>(() => [
   { class: 'fg999', nome: 'codigo', tipo: 'text' },
@@ -56,15 +54,18 @@ const campos = computed<FieldsProps[]>(() => [
     class: 'fb25', nome: 'referencia', tipo: 'text', mask: maskMonth, placeholder: '01/2024',
   },
 ]);
+
 const { handleSubmit, isSubmitting, setValues } = useForm({
   validationSchema: schema,
   initialValues: route.query,
 });
+
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   const parametros = Object.keys(valoresControlados).reduce((amount, item) => {
-    amount[item] = valoresControlados[item] || undefined;
+    amount[item] = valoresControlados[item] ? String(valoresControlados[item]) : undefined;
     return amount;
-  }, {});
+  }, {} as Record<string, string | undefined>);
+
   router.replace({
     query: {
       ...route.query,
