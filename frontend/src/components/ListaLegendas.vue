@@ -31,7 +31,7 @@ const mostrarEmColunas = computed(() => props.orientacao === 'vertical');
       <dl
         v-for="(legenda, legendaIndex) in $props.legendas"
         :key="`legenda-item--${legendaIndex}`"
-        class="flex g1"
+        class="flex g1 flexwrap"
         :class="{ 'column': mostrarEmColunas }"
       >
         <div
@@ -62,6 +62,10 @@ const mostrarEmColunas = computed(() => props.orientacao === 'vertical');
   border: 1px solid #b8c0cc;
   padding: 10px;
   border-radius: 10px;
+
+  @media screen and (max-width: 55em) {
+    flex-direction: column;
+  }
 }
 .lista-legenda__titulo {
   color: #333333;

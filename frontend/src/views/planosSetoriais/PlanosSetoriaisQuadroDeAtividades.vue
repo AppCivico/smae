@@ -149,15 +149,16 @@ watch([
     </CardEnvelope.Conteudo>
   </div>
 
-  <section class="mt4">
+  <section class="sessao-metas mt4">
     <h2 class="subtitulo t24 w400 mb0">
       Metas
     </h2>
 
-    <article class="flex spacebetween end">
+    <article class="sessao-metas__cabecalho flex spacebetween end g3">
       <CicloVigenteFiltro />
 
       <ListaLegendas
+        class="sessao-metas__cabecalho-legenda"
         :legendas="legendas"
         orientacao="horizontal"
       >
@@ -198,6 +199,7 @@ watch([
   background-color: #ffffffb3;
 }
 </style>
+
 <style lang="less" scoped>
 .filtro {
   @media (min-height: 40em) {
@@ -213,6 +215,16 @@ watch([
 
     &--congelado {
       .congelado-no-topo();
+    }
+  }
+}
+
+.sessao-metas__cabecalho {
+  @media screen and (max-width: 55em) {
+    flex-direction: column;
+
+    .sessao-metas__cabecalho-legenda {
+      width: 100%;
     }
   }
 }
