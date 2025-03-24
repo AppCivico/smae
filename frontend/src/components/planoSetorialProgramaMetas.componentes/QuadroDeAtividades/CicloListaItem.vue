@@ -1,5 +1,8 @@
 <script lang="ts" setup>
+import { computed } from 'vue';
 import { RouteLocationRaw } from 'vue-router';
+// eslint-disable-next-line import/no-unresolved, import/extensions
+import { PSMFCountDto } from '@back/mf/ps-dash/dto/ps.dto';
 import {
   obterFaseIcone, obterFaseStatus, ChavesFase,
 } from './helpers/obterDadosItems';
@@ -14,6 +17,9 @@ const variaveisLegenda = {
 };
 
 type VariaveisLengedas = keyof typeof variaveisLegenda;
+
+type ItemPendencia = PSMFCountDto;
+
 export type ListaVariaveis = Record<VariaveisLengedas, number>;
 
 export type CicloVigenteItemParams = {
@@ -26,7 +32,11 @@ export type CicloVigenteItemParams = {
   situacoes: {
     fase: ChavesFase,
     preenchido: boolean
-  }[]
+  }[],
+  pendencias: {
+    cronograma: ItemPendencia,
+    orcamento: ItemPendencia,
+  },
 };
 type Props = CicloVigenteItemParams;
 
@@ -87,55 +97,79 @@ function obterFaseRota(fase: ChavesFase): RouteLocationRaw {
   }
 }
 
+const situacoesMapeadas = computed(() => {
+  const { cronograma, orcamento } = props.pendencias;
+  const situacoes = [...props.situacoes];
+
+  if (cronograma.total >= 0) {
+    situacoes.push({
+      fase: 'Cronograma',
+      preenchido: cronograma.total !== cronograma.preenchido,
+    });
+  }
+
+  if (orcamento.total >= 0) {
+    situacoes.push({
+      fase: 'Orcamento',
+      preenchido: orcamento.total !== orcamento.preenchido,
+    });
+  }
+
+  return situacoes;
+});
 </script>
 
 <template>
-  <article class="ciclo-lista-item flex g1">
+  <article class="ciclo-lista-item g1">
     <div class="ciclo-lista-item__navegacao">
-      <SmaeLink
-        v-for="situacao in $props.situacoes"
-        :key="situacao.fase"
-        class="flex justifyCenter start"
-        :to="obterFaseRota(situacao.fase)"
-      >
-        <svg
-          class="navegacao-item__icon"
-          :style="{ color: obterFaseStatus(situacao.preenchido) }"
+      <div class="ciclo-lista-item__navegacao-conteudo">
+        <SmaeLink
+          v-for="situacao in situacoesMapeadas"
+          :key="situacao.fase"
+          class="flex justifyCenter start"
+          :to="obterFaseRota(situacao.fase)"
         >
-          <use :xlink:href="`#${obterFaseIcone(situacao.fase)}`" />
-        </svg>
-      </SmaeLink>
+          <svg
+            class="navegacao-item__icon"
+            :style="{ color: obterFaseStatus(situacao.preenchido) }"
+          >
+            <use :xlink:href="`#${obterFaseIcone(situacao.fase)}`" />
+          </svg>
+        </SmaeLink>
+      </div>
     </div>
 
-    <div class="ciclo-lista-item__conteudo">
+    <div
+      class="ciclo-lista-item__conteudo"
+    >
       <h3 class="ciclo-lista-item__titulo t16 w700">
         {{ $props.titulo }}
       </h3>
 
       <hr>
+    </div>
 
-      <div class="ciclo-lista-item__vaiaveis mt025">
-        <div
-          v-for="(situacao, situacaoIndex) in $props.variaveis"
-          :key="`variavel--${situacaoIndex}`"
-          class="variavel-item"
-        >
-          <span class="variavel-item__conteudo t12 w400">
-            {{ variaveisLegenda[situacaoIndex] || situacaoIndex }}
+    <div class="ciclo-lista-item__variaveis  mt025">
+      <div
+        v-for="(situacao, situacaoIndex) in $props.variaveis"
+        :key="`variavel--${situacaoIndex}`"
+        class="variavel-item"
+      >
+        <span class="variavel-item__conteudo t12 w400">
+          {{ variaveisLegenda[situacaoIndex] || situacaoIndex }}
 
-            <span class="variavel-item__conteudo--numero w700 ml05">
-              {{ situacao.toString().padStart(2, '0') }}
-            </span>
+          <span class="variavel-item__conteudo--numero w700 ml05">
+            {{ situacao.toString().padStart(2, '0') }}
           </span>
+        </span>
 
-          <svg
-            class="ciclo-lista-item__vaiaveis-separador ml05 mr05"
-            width="5"
-            height="9.5"
-          >
-            <use xlink:href="#i_right" />
-          </svg>
-        </div>
+        <svg
+          class="ciclo-lista-item__vaiaveis-separador ml05 mr05"
+          width="5"
+          height="9.5"
+        >
+          <use xlink:href="#i_right" />
+        </svg>
       </div>
     </div>
   </article>
@@ -143,12 +177,31 @@ function obterFaseRota(fase: ChavesFase): RouteLocationRaw {
 
 <style lang="less" scoped>
 .ciclo-lista-item {
+  display: grid;
   background: #f7f7f7;
   padding: 10px 10px 0 10px;
   border-radius: 10px;
+
+  grid-template-columns: min-content;
+  grid-template-rows: min-content;
+  gap: 0 15px;
+
+  grid-template-areas:
+    'navegacao conteudo'
+    'variaveis variaveis';
+
+  @media screen and (min-width: 55em) {
+    grid-template-areas:
+      'navegacao conteudo'
+      'navegacao variaveis';
+  }
 }
 
 .ciclo-lista-item__navegacao {
+  grid-area: navegacao;
+}
+
+.ciclo-lista-item__navegacao-conteudo {
   display: grid;
   grid-template-columns: repeat(3, 24px);
   grid-template-rows: repeat(2, 24px);
@@ -162,7 +215,15 @@ function obterFaseRota(fase: ChavesFase): RouteLocationRaw {
 
 .ciclo-lista-item__conteudo {
   width: 100%;
+  height: fit-content;
   padding-bottom: 4px;
+  grid-area: conteudo;
+
+  @media screen and (max-width: 55em) {
+    hr {
+      display: none;
+    }
+  }
 }
 
 .ciclo-lista-item__titulo {
@@ -173,6 +234,7 @@ function obterFaseRota(fase: ChavesFase): RouteLocationRaw {
 
 .ciclo-lista-item__variaveis {
   padding-top: 4px;
+  grid-area: variaveis;
 }
 
 .ciclo-lista-item__variaveis-separador {
@@ -197,5 +259,4 @@ function obterFaseRota(fase: ChavesFase): RouteLocationRaw {
 
 .variavel-item__label {
   width: 100%;
-}
-</style>
+}</style>
