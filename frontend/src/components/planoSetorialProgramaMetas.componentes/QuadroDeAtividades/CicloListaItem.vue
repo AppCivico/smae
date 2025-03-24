@@ -161,6 +161,7 @@ function obterFaseRota(fase: ChavesFase): RouteLocationRaw {
 }
 
 .ciclo-lista-item__conteudo {
+  width: 100%;
   padding-bottom: 4px;
 }
 
