@@ -44,7 +44,7 @@ export default function criaOpcoesDosGraficosDeVariaveis(categorias, valores, co
           label: {
             align: 'left',
             width: 150,
-            fontSize: 14,
+            fontSize: 13,
             color: '#2f3542',
             fontWeight: '600',
             fontFamily: 'Roboto',
@@ -73,14 +73,6 @@ export default function criaOpcoesDosGraficosDeVariaveis(categorias, valores, co
               align: 'left',
               padding: [0, 0, 0, 10],
               fontFamily: 'Roboto Slab',
-            },
-            text: {
-              fontSize: 13,
-              color: '#7e858d',
-              align: 'left',
-              padding: [0, 0, 0, 40],
-              fontFamily: 'Roboto',
-              fontWeight: '600',
             },
           },
         },
