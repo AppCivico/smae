@@ -23,8 +23,19 @@ CASE WHEN cronograma_total > 0 AND (cronograma_atraso_inicio > 0 OR cronograma_a
     THEN 1 ELSE 0 END AS crono_a_preencher,
 
 -- Orçamento status
-CASE WHEN orcamento_total > 0 AND orcamento_preenchido = orcamento_total THEN 1 ELSE 0 END AS orc_preenchido,
-CASE WHEN orcamento_total > 0 AND orcamento_preenchido = orcamento_total THEN 1 ELSE 0 END AS orc_a_preencher,
+CASE WHEN COALESCE((SELECT SUM(x) FROM unnest(orcamento_total) AS x), 0) > 0
+          AND COALESCE((SELECT SUM(x) FROM unnest(orcamento_preenchido) AS x), 0)
+              = COALESCE((SELECT SUM(x) FROM unnest(orcamento_total) AS x), 0)
+     THEN 1
+     ELSE 0
+END AS orc_preenchido,
+
+CASE WHEN COALESCE((SELECT SUM(x) FROM unnest(orcamento_total) AS x), 0) > 0
+          AND COALESCE((SELECT SUM(x) FROM unnest(orcamento_preenchido) AS x), 0)
+              < COALESCE((SELECT SUM(x) FROM unnest(orcamento_total) AS x), 0)
+     THEN 1
+     ELSE 0
+END AS orc_a_preencher,
 
 -- Qualificação (fase_analise) status
 CASE WHEN ciclo_fisico_id IS NOT NULL AND fase_analise_preenchida = true THEN 1 ELSE 0 END AS qualif_preenchida,

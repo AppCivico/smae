@@ -7471,8 +7471,8 @@ model PsDashboardConsolidado {
     iniciativa Iniciativa? @relation(fields: [iniciativa_id], references: [id])
     atividade  Atividade?  @relation(fields: [atividade_id], references: [id])
 
-    orcamento_total      Int     @default(0)
-    orcamento_preenchido Int     @default(0)
+    orcamento_total      Int[]     @default([])
+    orcamento_preenchido Int[]     @default([])
     pendencia_orcamento  Boolean @default(false)
 
     cronograma_total         Int     @default(0)

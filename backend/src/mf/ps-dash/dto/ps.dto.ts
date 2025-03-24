@@ -166,6 +166,11 @@ export class PSMFCicloDto {
     data_ciclo: string;
 }
 
+export class PSMFOrcamentoCountDto {
+    total: number[];
+    preenchido: number[];
+}
+
 export class PSMFCountDto {
     total: number;
     preenchido: number;
@@ -193,7 +198,7 @@ export class PSMFItemMetaDto {
     tipo: StrMIA;
 
     @ApiProperty({ description: 'Contadores de pendência de orçamento (se existir orçamento terá total 1)' })
-    pendencia_orcamento: PSMFCountDto;
+    pendencia_orcamento: PSMFOrcamentoCountDto;
 
     @ApiProperty({
         description: 'Contadores de pendência de cronograma (ou cronogramas, se existirem no futuro vários)',

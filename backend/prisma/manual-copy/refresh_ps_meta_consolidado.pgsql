@@ -148,28 +148,70 @@ BEGIN
 
         -- Count orçamento (Budget) - only for meta level
         IF r_item.tipo = 'meta' THEN
+            -- Busca todos os anos até o corrente
+            WITH budget_years AS (
+                SELECT
+                    EXTRACT(YEAR FROM gs) AS year
+                FROM generate_series(
+                    (SELECT data_inicio FROM pdm WHERE id = v_pdm_id),
+                    LEAST(CURRENT_DATE, (
+                        SELECT (max(ano_referencia)::text || '-' || '-01-01')::date
+                        FROM meta_orcamento_config
+                        WHERE pdm_id = v_pdm_id
+                    )),
+                    '1 year'::interval
+                ) AS gs
+            ),
+            current_config AS (
+                SELECT
+                    pdoc.ano_referencia,
+                    pdoc.execucao_disponivel_meses,
+                    -- Find most recent relevant month
+                    (SELECT MAX(month)
+                     FROM unnest(pdoc.execucao_disponivel_meses) AS month
+                     WHERE month <= EXTRACT(MONTH FROM CURRENT_DATE)) AS current_cycle_month
+                FROM meta_orcamento_config pdoc
+                WHERE pdoc.pdm_id = v_pdm_id
+                AND pdoc.ano_referencia = EXTRACT(YEAR FROM CURRENT_DATE)
+                AND pdoc.execucao_disponivel = true
+            ),
+            completion_status AS (
+                SELECT
+                    porc.ano_referencia,
+                    COUNT(DISTINCT mo.orgao_id) AS total_responsible_orgs,
+                    COUNT(DISTINCT CASE WHEN porc.execucao_concluida = true THEN porc.orgao_id END) AS completed_orgs
+                FROM meta_orgao mo
+                LEFT JOIN pdm_orcamento_realizado_config porc ON
+                    porc.meta_id = mo.meta_id
+                    AND porc.orgao_id = mo.orgao_id
+                    AND porc.ultima_revisao = true
+                WHERE mo.meta_id = pMetaId
+                AND mo.responsavel = true
+                GROUP BY porc.ano_referencia
+            )
             SELECT
-                CASE WHEN EXISTS (
-                    SELECT 1 FROM meta_orcamento o
-                    WHERE o.meta_id = r_item.id
-                    AND o.removido_em IS NULL
-                ) THEN 1 ELSE 0 END,
-                CASE WHEN EXISTS (
-                    SELECT 1 FROM meta_orcamento o
-                    WHERE o.meta_id = r_item.id
-                    AND o.custo_previsto IS NOT NULL
-                    AND o.removido_em IS NULL
-                ) THEN 1 ELSE 0 END,
-                CASE WHEN EXISTS (
-                    SELECT 1 FROM meta_orcamento o
-                    WHERE o.meta_id = r_item.id
-                    AND o.custo_previsto IS NULL
-                    AND o.removido_em IS NULL
-                ) THEN TRUE ELSE FALSE END
+                COALESCE(ARRAY_AGG(by.year), '{}'::int[]) AS total_years,
+                COALESCE(
+                    ARRAY_AGG("by".year) FILTER (
+                        WHERE cs.total_responsible_orgs IS NOT NULL
+                        AND cs.completed_orgs = cs.total_responsible_orgs
+                    ),
+                    '{}'::int[]
+                ) AS completed_years,
+                -- Mark as pending if current year's relevant cycle isn't complete
+                (EXISTS (
+                    SELECT 1
+                    FROM completion_status cs2
+                    WHERE cs2.ano_referencia = EXTRACT(YEAR FROM CURRENT_DATE)
+                    AND (cs2.completed_orgs < cs2.total_responsible_orgs OR cs2.completed_orgs IS NULL)
+                )) AS pending_orcamento
             INTO
-                v_orcamento_total,
-                v_orcamento_preenchido,
-                v_pendencia_orcamento;
+                 v_orcamento_total,
+                 v_orcamento_preenchido,
+                 v_pendencia_orcamento
+            FROM budget_years "by"
+            LEFT JOIN completion_status cs ON cs.ano_referencia = "by".year;
+
         ELSE
             -- For non-meta items, set budget values to 0
             v_orcamento_total := 0;
