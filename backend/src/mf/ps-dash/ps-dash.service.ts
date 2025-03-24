@@ -315,7 +315,7 @@ export class PSMFDashboardService {
         const equipes_pessoa = filtros.visao_pessoal ? await user.getEquipesColaborador(this.prisma) : [];
 
         // Construir o filtro base para consulta na view
-        const baseFilter: Prisma.PsDashboardMetaStatsWhereInput = {
+        const baseFilter: Prisma.view_ps_dashboard_meta_statsWhereInput = {
             // Adicionando filtros para as permissões
             ...(permissionsSet.length > 0 ? { meta: { AND: permissionsSet } } : {}),
             pdm_id: filtros.pdm_id,

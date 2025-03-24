@@ -1332,7 +1332,7 @@ model Meta {
     PdmPerfil                              PdmPerfil[]
     ViewPainelEstrategicoProjetos          ViewPainelEstrategicoProjetos[]
     PsDashboardConsolidado                 PsDashboardConsolidado[]
-    PsDashboardMetaStats                   PsDashboardMetaStats[]
+    view_ps_dashboard_meta_stats           view_ps_dashboard_meta_stats[]
 
     @@index([pdm_id])
     @@map("meta")
@@ -7253,8 +7253,9 @@ model VariavelCicloCorrente {
     liberacao_enviada        Boolean      @default(false)
     atualizado_em            DateTime     @default(now()) @db.Timestamptz(6)
 
-    variavel           Variavel             @relation(fields: [variavel_id], references: [id])
-    ViewVariavelGlobal ViewVariavelGlobal[]
+    variavel                         Variavel                           @relation(fields: [variavel_id], references: [id])
+    ViewVariavelGlobal               ViewVariavelGlobal[]
+    view_dashboard_variavel_corrente view_dashboard_variavel_corrente[]
 
     @@unique([variavel_id])
     @@map("variavel_ciclo_corrente")
@@ -7464,6 +7465,8 @@ model PsDashboardConsolidado {
     iniciativa_id Int?
     atividade_id  Int?
 
+    variaveis Int[]
+
     meta       Meta        @relation(fields: [meta_id], references: [id])
     iniciativa Iniciativa? @relation(fields: [iniciativa_id], references: [id])
     atividade  Atividade?  @relation(fields: [atividade_id], references: [id])
@@ -7503,6 +7506,7 @@ model PsDashboardConsolidado {
 
     @@unique([item_id, tipo])
     @@index([meta_id])
+    @@index([variaveis], name: "idx_ps_dashboard_consolidado_variaveis", type: Gin)
     @@map("ps_dashboard_consolidado")
 }
 
@@ -7524,7 +7528,7 @@ model PsDashboardVariavel {
     @@map("ps_dashboard_variavel")
 }
 
-view PsDashboardMetaStats {
+view view_ps_dashboard_meta_stats {
     pdm_id         Int
     item_id        Int
     tipo           String
@@ -7565,4 +7569,14 @@ view PsDashboardMetaStats {
 
     @@unique([item_id, tipo])
     @@map("ps_dashboard_meta_stats")
+}
+
+view view_dashboard_variavel_corrente {
+    item_id                    Int
+    tipo                       String
+    variavel_ciclo_corrente_id Int
+    variavel_ciclo_corrente    VariavelCicloCorrente @relation(fields: [variavel_ciclo_corrente_id], references: [id])
+
+    @@unique([item_id, tipo])
+    @@map("view_dashboard_variavel_corrente")
 }

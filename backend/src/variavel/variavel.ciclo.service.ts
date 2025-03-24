@@ -189,6 +189,41 @@ export class VariavelCicloService {
         return { AND: whereConditions };
     }
 
+    async buildMetaIniAtvFilter(filters: FilterVariavelGlobalCicloDto) {
+        return {
+            ...(filters.meta_id
+                ? {
+                      view_dashboard_variavel_corrente: {
+                          some: {
+                              item_id: filters.meta_id,
+                              tipo: 'meta',
+                          },
+                      },
+                  }
+                : {}),
+            ...(filters.iniciativa_id
+                ? {
+                      view_dashboard_variavel_corrente: {
+                          some: {
+                              item_id: filters.iniciativa_id,
+                              tipo: 'iniciativa',
+                          },
+                      },
+                  }
+                : {}),
+            ...(filters.atividade_id
+                ? {
+                      view_dashboard_variavel_corrente: {
+                          some: {
+                              item_id: filters.atividade_id,
+                              tipo: 'atividade',
+                          },
+                      },
+                  }
+                : {}),
+        };
+    }
+
     async getVariavelCiclo(
         filters: FilterVariavelGlobalCicloDto,
         user: PessoaFromJwt
@@ -210,6 +245,7 @@ export class VariavelCicloService {
                 },
                 fase: filters.fase,
                 eh_corrente: true,
+                ...this.buildMetaIniAtvFilter(filters),
             },
             orderBy: [{ 'variavel': { codigo: 'asc' } }],
             include: {

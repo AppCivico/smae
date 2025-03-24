@@ -26,6 +26,7 @@ DECLARE
     v_pendencia_orcamento BOOLEAN := FALSE;
     -- Variable counters
     v_variaveis_total int := 0;
+    v_variaveis int[] := ARRAY[]::int[];
     v_variaveis_total_no_ciclo int := 0;
     v_variaveis_a_coletar int := 0;
     v_variaveis_a_coletar_atrasadas int := 0;
@@ -241,6 +242,7 @@ BEGIN
         )
         SELECT
             COUNT(DISTINCT id),
+            COALESCE( ARRAY_AGG(DISTINCT id), ARRAY[]::int[] ),
             COUNT(DISTINCT id) FILTER (WHERE eh_corrente = true),
             COUNT(DISTINCT id) FILTER (WHERE eh_corrente = true AND fase = 'Preenchimento' AND (atrasos IS NULL OR atrasos = '{}')),
             COUNT(DISTINCT id) FILTER (WHERE eh_corrente = true AND fase = 'Preenchimento' AND atrasos IS NOT NULL AND atrasos <> '{}'),
@@ -249,6 +251,7 @@ BEGIN
             COUNT(DISTINCT id) FILTER (WHERE eh_corrente = true AND fase = 'Liberacao' AND liberacao_enviada = true)
         INTO
             v_variaveis_total,
+            v_variaveis,
             v_variaveis_total_no_ciclo,
             v_variaveis_a_coletar,
             v_variaveis_a_coletar_atrasadas,
@@ -286,7 +289,8 @@ BEGIN
             fase_atual, fase_analise_preenchida, fase_risco_preenchida, fase_fechamento_preenchida,
             equipes, equipes_orgaos,
             pendente, pendente_variavel, pendente_cronograma, pendente_orcamento,
-            ciclo_fisico_id
+            ciclo_fisico_id,
+            variaveis
         ) VALUES (
             r_item.id, r_item.tipo, r_item.pdm_id, r_item.meta_id, r_item.iniciativa_id, r_item.atividade_id,
             v_orcamento_total, v_orcamento_preenchido, v_pendencia_orcamento,
@@ -306,7 +310,8 @@ BEGIN
             v_fase_analise_preenchida, v_fase_risco_preenchida, v_fase_fechamento_preenchida,
             v_equipes, v_equipes_orgaos,
             v_pendente, v_pendente_variavel, v_pendente_cronograma, v_pendente_orcamento,
-            v_CicloFisicoId
+            v_CicloFisicoId,
+            v_variaveis
         );
     END LOOP;
     v_debug := 'PDM and cycle ' || v_pdm_id || ' ' || v_data_ciclo || ' ' || v_CicloFisicoId;

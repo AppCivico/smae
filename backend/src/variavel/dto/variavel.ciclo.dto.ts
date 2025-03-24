@@ -50,6 +50,21 @@ export class FilterVariavelGlobalCicloDto extends FilterVariavelDto {
     equipe_id?: number;
 
     @IsOptional()
+    @IsInt()
+    @Transform(NumberTransform)
+    meta_id?: number;
+
+    @IsOptional()
+    @IsInt()
+    @Transform(NumberTransform)
+    iniciativa_id?: number;
+
+    @IsOptional()
+    @IsInt()
+    @Transform(NumberTransform)
+    atividade_id?: number;
+
+    @IsOptional()
     @IsDateYMD()
     referencia?: Date;
 
