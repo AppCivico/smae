@@ -191,7 +191,7 @@ const cicloAtualizacaoStore = useCicloAtualizacaoStore();
 
 const temEquipes = computed<boolean>(() => equipesStore.lista.length > 0);
 
-const $route = useRoute();
+const route = useRoute();
 
 // TO-DO: passar para v-slots
 const tabs = {
@@ -265,7 +265,7 @@ function obterPrimeiroEUlticoAtraso(atrasos: string[] | null): string {
   return `${dateIgnorarTimezone(primeiro, 'dd/MM/yyyy')} ⋯ ${dateIgnorarTimezone(ultimo, 'dd/MM/yyyy')}`;
 }
 
-watch(() => $route.query, (query) => {
+watch(() => route.query, (query) => {
   const { aba, ...params } = query;
 
   if (Object.keys(query).length === 0) {
