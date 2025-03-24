@@ -1,25 +1,20 @@
 enum CicloFase {
-  Orcamento, // nao sei
+  Orcamento,
   Analise,
   Risco,
   Fechamento,
-  Cronograma, // nao sei
-  Coleta, // nao sei
+  Cronograma,
 }
 export type ChavesFase = keyof typeof CicloFase;
 
 const mapaDeFases: Record<ChavesFase, { icone: string; label: string }> = {
-  Coleta: {
-    icone: 'i_calendar', // nao sei
-    label: 'Cronograma', // nao sei
-  },
   Cronograma: {
-    icone: 'i_calendar', // nao sei
-    label: 'Cronograma', // nao sei
+    icone: 'i_calendar',
+    label: 'Cronograma',
   },
   Orcamento: {
-    icone: 'i_$', // nao sei
-    label: 'Orçamento', // nao sei
+    icone: 'i_$',
+    label: 'Orçamento',
   },
   Analise: {
     icone: 'i_iniciativa',

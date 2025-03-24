@@ -45,17 +45,19 @@ const legendas = {
 };
 
 const listaDeMetasPreparado = computed(() => listaMetas.value.map<CicloVigenteItemParams>(
-  (item) => {
-    console.log(item);
-
-    return {
-      titulo: item.titulo,
-      id: item.id,
-      metaId: item.meta_id || 11,
-      variaveis: item.variaveis as ListaVariaveis,
-      situacoes: item.monitoramento_ciclo,
-    };
-  },
+  (item) => ({
+    titulo: item.titulo,
+    id: item.id,
+    metaId: item.meta_id || 11,
+    iniciativaId: item.meta_id,
+    atividadeId: item.atividade_id,
+    variaveis: item.variaveis as ListaVariaveis,
+    situacoes: item.monitoramento_ciclo,
+    pendencias: {
+      cronograma: item.pendencia_cronograma,
+      orcamento: item.pendencia_orcamento,
+    },
+  }),
 ));
 
 watch([
@@ -173,12 +175,8 @@ watch([
     <section class="mt2 flex column g2">
       <CicloListaItem
         v-for="(item, itemIndex) in listaDeMetasPreparado"
-        :id="item.id"
         :key="itemIndex"
-        :meta-id="item.metaId"
-        :titulo="item.titulo"
-        :variaveis="item.variaveis"
-        :situacoes="item.situacoes"
+        v-bind="item"
       />
     </section>
   </section>
