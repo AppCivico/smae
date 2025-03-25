@@ -13,7 +13,6 @@ import {
   SingleEvolucao,
   SingleIniciativa,
   SingleMeta,
-  SinglePainelMeta,
 } from '@/views/metas';
 import {
   AddEditCusteio,
@@ -81,7 +80,6 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
       default:
         rotasDoPdm = [
           `${entidadeMãe}.meta`,
-          `${entidadeMãe}.painelDaMeta`,
           `${entidadeMãe}.evoluçãoDaMeta`,
           `${entidadeMãe}.monitoramentoDeMetas`,
           `${entidadeMãe}.cronogramaDaMeta`,
@@ -437,15 +435,6 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
 
     // /////////////////////////////////////////////////////////////////////////
 
-    {
-      path: ':meta_id/painel',
-      name: `${entidadeMãe}.painelDaMeta`,
-      component: SinglePainelMeta,
-      meta: {
-        títuloParaMenu: 'Painel da meta',
-        rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
-      },
-    },
     {
       path: ':meta_id/evolucao',
       name: `${entidadeMãe}.evoluçãoDaMeta`,
