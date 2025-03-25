@@ -1,7 +1,6 @@
 import dateTimeToDate from '@/helpers/dateTimeToDate';
 import type { RecordWithId } from '@back/common/dto/record-with-id.dto';
 import type {
-  DadosCodTituloMetaDto,
   ListDadosMetaIniciativaAtividadesDto,
 } from '@back/meta/dto/create-meta.dto';
 import type { DetalhePSDto } from '@back/pdm/dto/detalhe-pdm.dto';
@@ -47,7 +46,7 @@ interface Estado {
   erros: Erros;
 }
 
-export const usePlanosSetoriaisStore = (prefixo='') => defineStore(prefixo ? `${prefixo}.planosSetoriais` : 'planosSetoriais', {
+export const usePlanosSetoriaisStore = (prefixo = '') => defineStore(prefixo ? `${prefixo}.planosSetoriais` : 'planosSetoriais', {
   state: (): Estado => ({
     lista: [],
     emFoco: null,
@@ -201,10 +200,10 @@ export const usePlanosSetoriaisStore = (prefixo='') => defineStore(prefixo ? `${
       this.erros.arvoreDeMetas = null;
 
       try {
-        const { linhas } = await this.requestS.get(`${baseUrl}/projeto/proxy/iniciativas-atividades`, params) as ListDadosMetaIniciativaAtividadesDto;
+        const { linhas } = await this.requestS.get(`${baseUrl}/plano-setorial-meta/iniciativas-atividades`, params) as ListDadosMetaIniciativaAtividadesDto;
 
         if (Array.isArray(linhas)) {
-          linhas.forEach((cur:DadosCodTituloMetaDto) => {
+          linhas.forEach((cur) => {
             this.arvoreDeMetas[cur.id] = {
               ...cur,
               iniciativas: mapIniciativas(cur.iniciativas),
