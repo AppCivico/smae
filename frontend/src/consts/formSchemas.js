@@ -3120,7 +3120,7 @@ export const relatórioDeTransferênciasVoluntárias = relatorioValidacaoBase.co
       .max(50000)
       .nullable(),
     orgao_gestor_id: number()
-      .label('Gestor Municipal')
+      .label('Órgão gestor')
       .nullable(),
     parlamentar_id: number()
       .label('Parlamentar')
