@@ -6,6 +6,7 @@ import { usePlanosSimplificadosStore } from '@/stores/planosMetasSimplificados.s
 import { storeToRefs } from 'pinia';
 import { useField } from 'vee-validate';
 import { ref, watch, watchEffect } from 'vue';
+import { useRoute } from 'vue-router';
 
 const emit = defineEmits(['update:modelValue']);
 
@@ -38,7 +39,7 @@ const props = defineProps({
   },
 });
 
-const planosSimplificadosStore = usePlanosSimplificadosStore();
+const planosSimplificadosStore = usePlanosSimplificadosStore(useRoute().meta.entidadeMãe);
 const {
   arvoreDeMetas,
   planosPorId,

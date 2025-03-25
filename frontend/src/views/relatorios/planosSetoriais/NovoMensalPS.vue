@@ -30,7 +30,7 @@ const alertStore = useAlertStore();
 const planosSetoriaisStore = usePlanosSetoriaisStore(route.meta.entidadeMãe);
 const { lista: listaDePlanosDisponiveis } = storeToRefs(planosSetoriaisStore);
 
-const planosMetasSimplificadosStore = usePlanosSimplificadosStore();
+const planosMetasSimplificadosStore = usePlanosSimplificadosStore(route.meta.entidadeMãe);
 const { chamadasPendentes, planosPorId } = storeToRefs(planosMetasSimplificadosStore);
 
 const formularioSujo = useIsFormDirty();
