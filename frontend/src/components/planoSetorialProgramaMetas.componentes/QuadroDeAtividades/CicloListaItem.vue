@@ -6,6 +6,7 @@ import { PSMFCountDto, PSMFOrcamentoCountDto } from '@back/mf/ps-dash/dto/ps.dto
 import {
   obterFaseIcone, obterFaseStatus, ChavesFase,
 } from './helpers/obterDadosItems';
+import { type AbasDisponiveis } from '@/views/variaveis/CicloAtualizacao/CicloAtualizacaoLista.vue';
 
 const variaveisLegenda = {
   a_coletar: 'A coletar',
@@ -39,6 +40,27 @@ export type CicloVigenteItemParams = {
 type Props = CicloVigenteItemParams;
 
 const props = defineProps<Props>();
+
+const situacoesMapeadas = computed(() => {
+  const { cronograma, orcamento } = props.pendencias;
+  const situacoes = [...props.situacoes];
+
+  if (cronograma.total >= 0) {
+    situacoes.push({
+      fase: 'Cronograma',
+      preenchido: cronograma.total !== cronograma.preenchido,
+    });
+  }
+
+  if (orcamento.total.length >= 0) {
+    situacoes.push({
+      fase: 'Orcamento',
+      preenchido: orcamento.total.length !== orcamento.preenchido.length,
+    });
+  }
+
+  return situacoes;
+});
 
 function obterFaseRota(fase: ChavesFase): RouteLocationRaw {
   const parametros = {
@@ -94,26 +116,18 @@ function obterFaseRota(fase: ChavesFase): RouteLocationRaw {
   }
 }
 
-const situacoesMapeadas = computed(() => {
-  const { cronograma, orcamento } = props.pendencias;
-  const situacoes = [...props.situacoes];
+function obterAbaPorVariavel(variavelIndex: keyof ListaVariaveis): AbasDisponiveis | undefined {
+  const mapaDeAbas: Record<keyof ListaVariaveis, AbasDisponiveis | undefined> = {
+    a_coletar: 'Preenchimento',
+    coletadas_nao_conferidas: 'Validacao',
+    liberadas: 'Liberacao',
+    a_coletar_total: undefined,
+    conferidas_nao_liberadas: undefined,
+    total: undefined,
+  };
 
-  if (cronograma.total >= 0) {
-    situacoes.push({
-      fase: 'Cronograma',
-      preenchido: cronograma.total !== cronograma.preenchido,
-    });
-  }
-
-  if (orcamento.total.length >= 0) {
-    situacoes.push({
-      fase: 'Orcamento',
-      preenchido: orcamento.total.length !== orcamento.preenchido.length,
-    });
-  }
-
-  return situacoes;
-});
+  return mapaDeAbas[variavelIndex] || undefined;
+}
 </script>
 
 <template>
@@ -147,10 +161,19 @@ const situacoesMapeadas = computed(() => {
     </div>
 
     <div class="ciclo-lista-item__variaveis  mt025">
-      <div
+      <SmaeLink
         v-for="(situacao, situacaoIndex) in $props.variaveis"
         :key="`variavel--${situacaoIndex}`"
-        class="variavel-item"
+        :to="{
+          name: 'cicloAtualizacao',
+          query: {
+            meta_id: metaId,
+            atividade_id: atividadeId,
+            iniciativa_id: iniciativaId,
+            aba: obterAbaPorVariavel(situacaoIndex)
+          }
+        }"
+        class="variavel-item link-texto"
       >
         <span class="variavel-item__conteudo t12 w400">
           {{ variaveisLegenda[situacaoIndex] || situacaoIndex }}
@@ -167,7 +190,7 @@ const situacoesMapeadas = computed(() => {
         >
           <use xlink:href="#i_right" />
         </svg>
-      </div>
+      </SmaeLink>
     </div>
   </article>
 </template>
