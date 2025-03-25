@@ -672,6 +672,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
 
     {
       path: ':meta_id/orcamento',
+      name: `${entidadeMãe}.orcamentoDeMetas`,
       redirect: (to) => `${to.path}/custo`,
       component: MetaOrçamentoRaiz,
       meta: {

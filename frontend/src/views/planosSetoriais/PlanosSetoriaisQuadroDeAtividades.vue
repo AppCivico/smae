@@ -1,14 +1,20 @@
 <script lang="ts" setup>
+import { storeToRefs } from 'pinia';
+import { computed, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import * as CardEnvelope from '@/components/cardEnvelope';
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
-import FiltroDoQuadroDeAtividades from '@/components/planoSetorialProgramaMetas.componentes/FiltroDoQuadroDeAtividades.vue';
 import GrandesNumerosDeMetas from '@/components/quadroDeAtividades/GrandesNumerosDeMetas.vue';
-import dateToTitle from '@/helpers/dateToTitle';
 import GraficoDeSituacoesDasVariaveis from '@/components/quadroDeAtividades/GraficoDeSituacoesDasVariaveis.vue';
+import FiltroDoQuadroDeAtividades from '@/components/planoSetorialProgramaMetas.componentes/FiltroDoQuadroDeAtividades.vue';
+import ListaLegendas from '@/components/ListaLegendas.vue';
+import CicloVigenteFiltro from '@/components/planoSetorialProgramaMetas.componentes/QuadroDeAtividades/CicloVigenteFiltro.vue';
+import {
+  obterFaseIcone, listaDeFases, listaDeStatus, obterFaseStatus, obterFaseLegenda,
+} from '@/components/planoSetorialProgramaMetas.componentes/QuadroDeAtividades/helpers/obterDadosItems';
+import CicloListaItem, { type CicloVigenteItemParams, type ListaVariaveis } from '@/components/planoSetorialProgramaMetas.componentes/QuadroDeAtividades/CicloListaItem.vue';
 import { usePanoramaPlanoSetorialStore } from '@/stores/planoSetorial.panorama.store';
-import { storeToRefs } from 'pinia';
-import { watch } from 'vue';
-import { useRoute } from 'vue-router';
+import dateToTitle from '@/helpers/dateToTitle';
 
 defineOptions({
   inheritAttrs: false,
@@ -26,6 +32,33 @@ const {
   erros,
   paginacaoDeMetas,
 } = storeToRefs(panoramaStore);
+
+const legendas = {
+  situacao: listaDeFases.map((item) => ({
+    item: obterFaseLegenda(item),
+    icon: obterFaseIcone(item),
+  })),
+  status: listaDeStatus.map((item) => ({
+    item,
+    icon: obterFaseStatus(item === 'atualizado'),
+  })),
+};
+
+const listaDeMetasPreparado = computed(() => listaMetas.value.map<CicloVigenteItemParams>(
+  (item) => ({
+    titulo: item.titulo,
+    id: item.id,
+    metaId: item.meta_id || 11,
+    iniciativaId: item.meta_id,
+    atividadeId: item.atividade_id,
+    variaveis: item.variaveis as ListaVariaveis,
+    situacoes: item.monitoramento_ciclo,
+    pendencias: {
+      cronograma: item.pendencia_cronograma,
+      orcamento: item.pendencia_orcamento,
+    },
+  }),
+));
 
 watch([
   () => route.query.orgao_id,
@@ -50,6 +83,7 @@ watch([
   });
 }, { immediate: true });
 </script>
+
 <template>
   <header class="mb2 cabecalho">
     <TítuloDePágina />
@@ -84,53 +118,6 @@ watch([
     />
   </FormularioQueryString>
 
-  <!-- eslint-disable -->
-  <div class="debug flex flexwrap g1">
-    <textarea
-      readonly
-      cols="30"
-      rows="10"
-      class="f1"
-    >variaveis:{{ variaveis }}</textarea>
-    <textarea
-      readonly
-      cols="30"
-      rows="10"
-      class="f1"
-    >estatisticasMetas:{{ estatisticasMetas }}</textarea>
-    <textarea
-      readonly
-      cols="30"
-      rows="10"
-      class="f1"
-    >listaMetas:{{ listaMetas }}</textarea>
-    <textarea
-      readonly
-      cols="30"
-      rows="10"
-      class="f1"
-    >cicloAtual:{{ cicloAtual }}</textarea>
-    <textarea
-      readonly
-      cols="30"
-      rows="10"
-      class="f1"
-    >chamadasPendentes:{{ chamadasPendentes }}</textarea>
-    <textarea
-      readonly
-      cols="30"
-      rows="10"
-      class="f1"
-    >erros:{{ erros }}</textarea>
-    <textarea
-      readonly
-      cols="30"
-      rows="10"
-      class="f1"
-    >paginacaoDeMetas:{{ paginacaoDeMetas }}</textarea>
-  </div>
-  <!-- eslint-enable -->
-
   <ErrorComponent v-if="erros.variaveis">
     {{ erros.variaveis }}
   </ErrorComponent>
@@ -163,6 +150,36 @@ watch([
       />
     </CardEnvelope.Conteudo>
   </div>
+
+  <section class="sessao-metas mt4">
+    <h2 class="subtitulo t24 w400 mb0">
+      Metas
+    </h2>
+
+    <article class="sessao-metas__cabecalho flex spacebetween end g3">
+      <CicloVigenteFiltro />
+
+      <ListaLegendas
+        class="sessao-metas__cabecalho-legenda"
+        :legendas="legendas"
+        orientacao="horizontal"
+      >
+        <template #padrao--status="{ item: { item, icon} }">
+          <dt :style="{ backgroundColor: icon }" />
+
+          <dd>{{ item }}</dd>
+        </template>
+      </ListaLegendas>
+    </article>
+
+    <section class="mt2 flex column g2">
+      <CicloListaItem
+        v-for="(item, itemIndex) in listaDeMetasPreparado"
+        :key="itemIndex"
+        v-bind="item"
+      />
+    </section>
+  </section>
 </template>
 <style>
 .lista-de-cartoes {
@@ -175,7 +192,12 @@ watch([
     grid-template-columns: 1fr 1fr;
   }
 }
+
+.pagina-de-painel-estrategico body {
+  background-color: #ffffffb3;
+}
 </style>
+
 <style lang="less" scoped>
 .filtro {
   @media (min-height: 40em) {
@@ -191,6 +213,16 @@ watch([
 
     &--congelado {
       .congelado-no-topo();
+    }
+  }
+}
+
+.sessao-metas__cabecalho {
+  @media screen and (max-width: 55em) {
+    flex-direction: column;
+
+    .sessao-metas__cabecalho-legenda {
+      width: 100%;
     }
   }
 }
