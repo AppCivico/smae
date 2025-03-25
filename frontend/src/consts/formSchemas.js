@@ -4331,8 +4331,31 @@ export const classificacaoCriarEditarSchema = object().shape({
 });
 
 export const cicloAtualizacaoFiltrosSchema = object().shape({
-  codigo: string().label('Código'),
-  equipe_id: number().label('Equipe').nullable().min(1),
-  palavra_chave: string().label('Palavra chave'),
-  referencia: string().label('Referencia').matches(regEx['month/year'], 'Formato inválido'),
+  atividade_id: number()
+    .label('atividade')
+    .nullableOuVazio()
+    .min(1),
+  codigo: string()
+    .label('Código'),
+  equipe_id: number()
+    .label('Equipe')
+    .nullableOuVazio()
+    .min(1),
+  iniciativa_id: number()
+    .label('iniciativa')
+    .nullableOuVazio()
+    .min(1),
+  meta_id: number()
+    .label('Meta')
+    .nullableOuVazio()
+    .min(1),
+  palavra_chave: string()
+    .label('Palavra chave'),
+  pdm_id: number()
+    .label('PdM/Plano Setorial')
+    .nullableOuVazio()
+    .min(1),
+  referencia: string()
+    .label('Referencia')
+    .matches(regEx['month/year'], 'Formato inválido'),
 });
