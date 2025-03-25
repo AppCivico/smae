@@ -205,6 +205,7 @@ watch([
 
     position: sticky;
     top: 0;
+    z-index: 1;
 
     margin-right: -21px !important;
     margin-left: -21px !important;
