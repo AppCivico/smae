@@ -158,14 +158,16 @@
 </template>
 
 <script lang="ts" setup>
+import { computed, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
 import SmaeLink from '@/components/SmaeLink.vue';
 import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
 import truncate from '@/helpers/texto/truncate';
 import { useCicloAtualizacaoStore, VariavelCiclo } from '@/stores/cicloAtualizacao.store';
-import { computed, watch } from 'vue';
-import { useRoute } from 'vue-router';
 import CicloAtualizacaoListaFiltro from './partials/CicloAtualizacaoLista/CicloAtualizacaoListaFiltro.vue';
+
+export type AbasDisponiveis = 'Preenchimento' | 'Validacao' | 'Liberacao';
 
 type IconOpcoes = 'complementacao' | 'coleta';
 
@@ -189,7 +191,10 @@ const route = useRoute();
 const cicloAtualizacaoStore = useCicloAtualizacaoStore(route.meta.entidadeMãe);
 
 // TO-DO: passar para v-slots
-const tabs = {
+const tabs: Record<string, {
+  id: AbasDisponiveis,
+  [key: string]: unknown;
+}> = {
   coleta: {
     aberta: true,
     etiqueta: 'Coleta',
