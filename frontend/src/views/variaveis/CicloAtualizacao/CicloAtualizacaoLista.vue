@@ -7,7 +7,6 @@
     </header>
 
     <CicloAtualizacaoListaFiltro
-      v-if="temEquipes"
       class="mb3"
     />
 
@@ -164,8 +163,7 @@ import SmaeLink from '@/components/SmaeLink.vue';
 import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
 import truncate from '@/helpers/texto/truncate';
 import { useCicloAtualizacaoStore, VariavelCiclo } from '@/stores/cicloAtualizacao.store';
-import { useEquipesStore } from '@/stores/equipes.store';
-import { computed, onMounted, watch } from 'vue';
+import { computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import CicloAtualizacaoListaFiltro from './partials/CicloAtualizacaoLista/CicloAtualizacaoListaFiltro.vue';
 
@@ -185,10 +183,6 @@ type VariavelCicloComIcone = VariavelCiclo & {
   icone: IconForma
   temAtraso: boolean
 };
-
-const equipesStore = useEquipesStore();
-
-const temEquipes = computed<boolean>(() => equipesStore.lista.length > 0);
 
 const route = useRoute();
 
@@ -279,14 +273,7 @@ watch(() => route.query, (query) => {
     fase: aba,
   });
 }, { immediate: true });
-
-onMounted(() => {
-  if (!temEquipes.value) {
-    equipesStore.buscarTudo({ remover_participantes: true });
-  }
-});
 </script>
-
 <style lang="less" scoped>
 .ciclo-atualizacao-lista__abas {
   :deep(.abas__navegacao) {
