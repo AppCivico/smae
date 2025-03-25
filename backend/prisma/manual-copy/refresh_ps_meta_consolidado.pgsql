@@ -12,18 +12,17 @@ DECLARE
     -- Counters for meta and its children
     v_pendente BOOLEAN;
     v_pendente_variavel BOOLEAN;
-    v_pendente_cronograma BOOLEAN;
-    v_pendente_orcamento BOOLEAN;
+
     -- Schedule counters
     v_cronograma_total int := 0;
     v_cronograma_atraso_inicio int := 0;
     v_cronograma_atraso_fim int := 0;
     v_cronograma_preenchido int := 0;
-    v_pendencia_cronograma BOOLEAN := FALSE;
+    v_pendente_cronograma BOOLEAN := FALSE;
     -- Budget counters
     v_orcamento_total int[] := ARRAY[]::int[];
     v_orcamento_preenchido int[] := ARRAY[]::int[];
-    v_pendencia_orcamento BOOLEAN := FALSE;
+    v_pendente_orcamento BOOLEAN := FALSE;
     -- Variable counters
     v_variaveis_total int := 0;
     v_variaveis int[] := ARRAY[]::int[];
@@ -197,26 +196,22 @@ BEGIN
                         AND cs.completed_orgs = cs.total_responsible_orgs
                     ),
                     '{}'::int[]
-                ) AS completed_years,
-                -- Mark as pending if current year's relevant cycle isn't complete
-                (EXISTS (
-                    SELECT 1
-                    FROM completion_status cs2
-                    WHERE cs2.ano_referencia = EXTRACT(YEAR FROM CURRENT_DATE)
-                    AND (cs2.completed_orgs < cs2.total_responsible_orgs OR cs2.completed_orgs IS NULL)
-                )) AS pending_orcamento
+                ) AS completed_years
             INTO
                  v_orcamento_total,
-                 v_orcamento_preenchido,
-                 v_pendencia_orcamento
+                 v_orcamento_preenchido
             FROM budget_years "by"
             LEFT JOIN completion_status cs ON cs.ano_referencia = "by".year;
+
+            v_pendente_orcamento := (
+                SELECT COALESCE(array_length(v_orcamento_total, 1), 0) != COALESCE(array_length(v_orcamento_preenchido, 1), 0)
+            );
 
         ELSE
             -- For non-meta items, set budget values to 0
             v_orcamento_total := ARRAY[]::int[];
             v_orcamento_preenchido := ARRAY[]::int[];
-            v_pendencia_orcamento := FALSE;
+            v_pendente_orcamento := FALSE;
         END IF;
         -- Count cronograma (Schedule)
         WITH cronograma_ids AS (
@@ -259,7 +254,7 @@ BEGIN
             v_cronograma_atraso_inicio,
             v_cronograma_atraso_fim,
             v_cronograma_preenchido,
-            v_pendencia_cronograma
+            v_pendente_cronograma
         FROM etapa_status;
 
         -- Count variables using the variavel_ciclo_corrente table
@@ -306,25 +301,22 @@ BEGIN
             v_variaveis_liberadas
         FROM vars;
 
+        -- any variable in the current cycle is pending
+        v_pendente_variavel := v_variaveis_a_coletar > 0;
+
         -- Calculate phase and pending flags
         IF r_item.tipo = 'meta' THEN
-            -- For meta items, check if analysis is missing
-            IF NOT v_fase_analise_preenchida THEN
+            -- For meta items, check if fechamento is filled
+            IF NOT v_fase_fechamento_preenchida THEN
                 v_pendente := TRUE;
-                v_pendente_variavel := TRUE;
-            END IF;
-        ELSE
-            -- For other items, inherit analysis status from parent meta
-            IF NOT v_fase_analise_preenchida THEN
-                v_pendente := TRUE;
-                v_pendente_variavel := TRUE;
             END IF;
         END IF;
-        -- Check schedule delays for all item types
-        IF v_pendencia_cronograma THEN
+
+
+        IF v_pendente_orcamento OR v_pendente_cronograma OR v_pendente_variavel THEN
             v_pendente := TRUE;
-            v_pendente_cronograma := TRUE;
         END IF;
+
         -- Insert into consolidated table
         INSERT INTO ps_dashboard_consolidado (
             item_id, tipo, pdm_id, meta_id, iniciativa_id, atividade_id,
@@ -339,8 +331,8 @@ BEGIN
             variaveis
         ) VALUES (
             r_item.id, r_item.tipo, r_item.pdm_id, r_item.meta_id, r_item.iniciativa_id, r_item.atividade_id,
-            v_orcamento_total, v_orcamento_preenchido, v_pendencia_orcamento,
-            v_cronograma_total, v_cronograma_atraso_inicio, v_cronograma_atraso_fim, v_cronograma_preenchido, v_pendencia_cronograma,
+            v_orcamento_total, v_orcamento_preenchido, v_pendente_orcamento,
+            v_cronograma_total, v_cronograma_atraso_inicio, v_cronograma_atraso_fim, v_cronograma_preenchido, v_pendente_cronograma,
             v_variaveis_total, v_variaveis_total_no_ciclo, v_variaveis_a_coletar, v_variaveis_a_coletar_atrasadas,
             v_variaveis_coletadas_nao_conferidas, v_variaveis_conferidas_nao_liberadas, v_variaveis_liberadas,
             CASE
