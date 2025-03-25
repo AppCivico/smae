@@ -4,6 +4,7 @@ import { CreateReportDto } from '../dto/create-report.dto';
 import { RelatorioParamDto } from '../entities/report.entity';
 import { FonteRelatorio, ParlamentarCargo, TipoRelatorio } from '@prisma/client';
 import { EnumHumano } from 'src/reports/utils/utils.service';
+import { InternalServerErrorException } from '@nestjs/common';
 type RelatorioProcesado = Record<string, string | Array<string>>;
 
 // Mapeamento de enums por valor
@@ -15,16 +16,20 @@ const enumMap: Record<string, typeof ParlamentarCargo | typeof TipoRelatorio> = 
 function nomeTabelaColParametro(
     nomeChave: string
 ): { tabela: string; coluna: string; chave_exibicao?: string } | undefined {
-    const tabelaConfig: Record<string, { coluna: string; chaves?: string[]; chave_exibicao?: string }> = {
+    const tabelaConfig: Record<string, { coluna: string; chaves?: string[]; chave_exibicao?: string[] }> = {
         projeto: { coluna: 'nome' },
-        pdm: { coluna: 'nome', chaves: ['plano_setorial'], chave_exibicao: 'PdM' },
+        pdm: { coluna: 'nome', chaves: ['plano_setorial'], chave_exibicao: ['PdM'] },
         transferencia_tipo: { coluna: 'nome', chaves: ['tipo'] },
         parlamentar: { coluna: 'nome_popular' },
         tag: { coluna: 'descricao', chaves: ['tags'] },
         meta: { coluna: 'titulo', chaves: ['metas'] },
         atividade: { coluna: 'titulo' },
         iniciativa: { coluna: 'titulo' },
-        orgao: { coluna: 'sigla', chaves: ['orgaos', 'orgao_gestor', 'orgao_responsavel', 'orgao_concedente'] },
+        orgao: {
+            coluna: 'sigla',
+            chaves: ['orgaos', 'orgao_gestor', 'orgao_responsavel', 'orgao_concedente'],
+            chave_exibicao: ['Órgãos', 'Órgão gestor', 'Órgão responsável', 'Órgão concedente'],
+        },
         portfolio: { coluna: 'titulo' },
         indicador: { coluna: 'titulo' },
         partido: { coluna: 'nome' },
@@ -35,13 +40,28 @@ function nomeTabelaColParametro(
     const mapeamento = Object.entries(tabelaConfig).reduce(
         (acc, [tabela, config]) => {
             // Adiciona o próprio da tabela no mapeamento
-            acc[tabela] = { tabela, coluna: config.coluna, chave_exibicao: config.chave_exibicao };
+            acc[tabela] = {
+                tabela,
+                coluna: config.coluna,
+            };
 
             if (config.chaves) {
-                config.chaves.forEach((chave) => {
-                    acc[chave] = { tabela, coluna: config.coluna };
+                config.chaves.forEach((chave, idx) => {
+                    acc[chave] = {
+                        tabela,
+                        coluna: config.coluna,
+                        chave_exibicao: config.chave_exibicao ? config.chave_exibicao[idx] : undefined,
+                    };
                 });
             }
+
+            // Caso a config possua chave_exibicao, o tamanho do array deve ser igual ao de chaves
+            if (config.chave_exibicao && config.chave_exibicao.length !== config.chaves!.length) {
+                throw new InternalServerErrorException(
+                    `O array chave_exibicao de ${tabela} deve ter o mesmo tamanho de chaves.`
+                );
+            }
+
             return acc;
         },
         {} as Record<string, { tabela: string; coluna: string; chave_exibicao?: string }>
@@ -133,7 +153,6 @@ export const BuildParametrosProcessados = async (
 
         // Verifica se o valor possui um mapeamento para tabela e coluna.
         const nomeTabelaCol = nomeTabelaColParametro(nomeChave);
-        console.log(nomeTabelaCol);
 
         if (!nomeTabelaCol) {
             // Trocando _ por espaços, pois se caiu aqui não é ID
