@@ -34,7 +34,7 @@ interface Estado {
   };
 }
 
-export const usePlanosSimplificadosStore = defineStore('pdmMetas', {
+export const usePlanosSimplificadosStore = (prefixo = '') => defineStore(prefixo ? `${prefixo}.planosMetasSimplificados` : 'planosMetasSimplificados', {
   state: (): Estado => ({
     planosSimplificados: [],
     arvoreDeMetas: {},
@@ -113,4 +113,4 @@ export const usePlanosSimplificadosStore = defineStore('pdmMetas', {
       this.chamadasPendentes.arvoreDeMetas = false;
     },
   },
-});
+})();
