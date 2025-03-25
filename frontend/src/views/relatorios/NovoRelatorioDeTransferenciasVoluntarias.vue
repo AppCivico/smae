@@ -31,7 +31,6 @@ const valoresIniciais = {
     esfera: null,
     gestor_contrato: null,
     interface: null,
-    objeto: null,
     orgao_concedente_id: null,
     partido_id: null,
     secretaria_concedente: null,
@@ -405,32 +404,6 @@ ParlamentaresStore.buscarTudo({ ipp: 500, possui_mandatos: true });
         </div>
       </div>
     </div> <!-- Terceira linha da tela - Fim -->
-
-    <div class="flex flexwrap g2 mb2">
-      <!-- Quarta linha da tela - Início -->
-
-      <!-- OBJETO -->
-      <div class="f1">
-        <LabelFromYup
-          name="objeto"
-          :schema="schema.fields.parametros"
-        />
-        <Field
-          name="parametros.objeto"
-          as="textarea"
-          class="inputtext light mb1"
-          rows="5"
-          :class="{
-            error: errors['parametros.objeto'],
-          }"
-          @change="!$event.target.value ? setFieldValue('parametros.objeto',null) : null"
-        />
-        <ErrorMessage
-          class="error-msg mb1"
-          name="parametros.objeto"
-        />
-      </div>
-    </div> <!-- Quarta linha da tela - Fim -->
 
     <Field
       name="parametros.tipo"
