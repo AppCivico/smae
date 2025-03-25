@@ -51,7 +51,10 @@ export const usePlanosSimplificadosStore = (prefixo = '') => defineStore(prefixo
 
   getters: {
     planosPorId: ({ planosSimplificados }) => planosSimplificados
-      .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
+      .reduce(
+        (acc, cur) => ({ ...acc, [cur.id]: cur }),
+        {} as { [key: number ]: ProjetoProxyPdmMetaDto },
+      ),
 
     planosAgrupadosPorTipo: ({ planosSimplificados }) => {
       const grupos = planosSimplificados.reduce((acc, cur) => {
