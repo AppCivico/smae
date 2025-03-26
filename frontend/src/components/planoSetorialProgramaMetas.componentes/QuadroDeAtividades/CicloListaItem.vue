@@ -14,32 +14,32 @@ const variaveisMetadado: Record<string, {
   aba: AbasDisponiveis | undefined
 }> = {
   total: {
-    legenda: 'Total',
+    legenda: 'Total de variáveis',
     posicao: 1,
     aba: undefined,
   },
-  liberadas: {
-    legenda: 'Liberadas',
-    posicao: 2,
-    aba: 'Liberacao',
-  },
   a_coletar_total: {
-    legenda: 'A coletar total',
-    posicao: 3,
+    legenda: 'Total no ciclo',
+    posicao: 2,
     aba: undefined,
   },
   a_coletar: {
     legenda: 'A coletar',
-    posicao: 4,
+    posicao: 3,
     aba: 'Preenchimento',
   },
   coletadas_nao_conferidas: {
     legenda: 'Coletadas não conferidas',
-    posicao: 5,
+    posicao: 4,
     aba: 'Validacao',
   },
   conferidas_nao_liberadas: {
     legenda: 'Conferidas não liberadas',
+    posicao: 5,
+    aba: 'Liberacao',
+  },
+  liberadas: {
+    legenda: 'Liberadas',
     posicao: 6,
     aba: undefined,
   },
@@ -55,6 +55,7 @@ export type CicloVigenteItemParams = {
   iniciativaId?: number,
   atividadeId?: number,
   titulo: string;
+  codigo: string;
   variaveis: ListaVariaveis,
   situacoes: {
     fase: ChavesFase,
@@ -184,7 +185,7 @@ const variaveisMapeadas = computed(() => {
       class="ciclo-lista-item__conteudo"
     >
       <h3 class="ciclo-lista-item__titulo t16 w700">
-        {{ $props.titulo }}
+        {{ $props.codigo }} - {{ $props.titulo }}
       </h3>
 
       <hr>
@@ -204,9 +205,9 @@ const variaveisMapeadas = computed(() => {
             aba: situacao.aba
           }
         }"
-        class="variavel-item link-texto"
+        class="variavel-item"
       >
-        <span class="variavel-item__conteudo t12 w400">
+        <span class="variavel-item__conteudo t12 w400 link-texto">
           {{ situacao.legenda }}
 
           <span class="variavel-item__conteudo--numero w700 ml05">
