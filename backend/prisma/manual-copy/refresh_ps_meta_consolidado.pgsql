@@ -213,6 +213,7 @@ BEGIN
             v_orcamento_preenchido := ARRAY[]::int[];
             v_pendente_orcamento := FALSE;
         END IF;
+
         -- Count cronograma (Schedule)
         WITH cronograma_ids AS (
             SELECT c.id
@@ -224,12 +225,27 @@ BEGIN
             )
             AND c.removido_em IS NULL
         ),
+        -- Busca apenas tarefas sem filhos
+        leaf_etapas AS (
+            SELECT e.id
+            FROM etapa e
+            JOIN cronograma_etapa ce ON e.id = ce.etapa_id
+            WHERE ce.cronograma_id IN (SELECT id FROM cronograma_ids)
+            AND ce.inativo = FALSE
+            AND e.removido_em IS NULL
+            AND NOT EXISTS (
+                SELECT 1
+                FROM etapa child
+                WHERE child.etapa_pai_id = e.id
+                AND child.removido_em IS NULL
+            )
+        ),
         etapa_status AS (
             SELECT
                 e.id,
                 CASE
-                    WHEN e.inicio_previsto < CURRENT_DATE AND e.inicio_real IS NULL THEN 1
-                    WHEN e.termino_previsto < CURRENT_DATE AND e.termino_real IS NULL THEN 2
+                    WHEN e.inicio_previsto < (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::date AND e.inicio_real IS NULL THEN 1
+                    WHEN e.termino_previsto < (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::date AND e.termino_real IS NULL THEN 2
                     ELSE 0
                 END AS status,
                 CASE
@@ -237,10 +253,7 @@ BEGIN
                     ELSE 0
                 END AS preenchido
             FROM etapa e
-            JOIN cronograma_etapa ce ON e.id = ce.etapa_id
-            WHERE ce.cronograma_id IN (SELECT id FROM cronograma_ids)
-            AND ce.inativo = FALSE
-            AND e.removido_em IS NULL
+            JOIN leaf_etapas le ON e.id = le.id
         )
         SELECT
             COALESCE(COUNT(*), 0),
