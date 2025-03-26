@@ -395,7 +395,7 @@ BEGIN
         v_corrente,
         v_prazo,
         v_atrasos,
-        v_liberacao_enviada
+        COALESCE(v_liberacao_enviada, FALSE)
     )
     ON CONFLICT (variavel_id)
         DO UPDATE SET
