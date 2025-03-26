@@ -76,7 +76,6 @@ export const useMetasStore = (() => {
         }
       },
       async getAll() {
-        console.debug('getAll');
         try {
           if (this.Metas.loading) {
             await new Promise(this.waitFor);
