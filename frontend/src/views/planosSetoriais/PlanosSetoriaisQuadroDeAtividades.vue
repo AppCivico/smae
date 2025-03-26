@@ -220,6 +220,10 @@ watch([
   }
 }
 
+.formulario-sujo ~ * {
+  .dados-defasados();
+}
+
 .sessao-metas__cabecalho {
   @media screen and (max-width: 55em) {
     flex-direction: column;
