@@ -7471,8 +7471,8 @@ model PsDashboardConsolidado {
     iniciativa Iniciativa? @relation(fields: [iniciativa_id], references: [id])
     atividade  Atividade?  @relation(fields: [atividade_id], references: [id])
 
-    orcamento_total      Int[]     @default([])
-    orcamento_preenchido Int[]     @default([])
+    orcamento_total      Int[]   @default([])
+    orcamento_preenchido Int[]   @default([])
     pendencia_orcamento  Boolean @default(false)
 
     cronograma_total         Int     @default(0)
@@ -7530,8 +7530,9 @@ model PsDashboardVariavel {
 
 view view_ps_dashboard_meta_stats {
     pdm_id         Int
-    item_id        Int
-    tipo           String
+    // removidos no v2
+    //item_id        Int
+    //tipo           String
     meta_id        Int
     equipes        Int[]
     equipes_orgaos Int[]
@@ -7567,8 +7568,8 @@ view view_ps_dashboard_meta_stats {
 
     meta Meta @relation(fields: [meta_id], references: [id])
 
-    @@unique([item_id, tipo])
-    @@map("ps_dashboard_meta_stats")
+    @@unique([meta_id])
+    @@map("ps_dashboard_meta_stats_v2")
 }
 
 view view_dashboard_variavel_corrente {

@@ -348,14 +348,14 @@ export class PSMFDashboardService {
                 a_fechar: true,
             },
             _count: {
-                item_id: true,
+                meta_id: true,
             },
             where: baseFilter,
         });
 
         // Extrair os resultados da soma
         const sum = stats._sum;
-        const totalCount = stats._count.item_id || 0;
+        const totalCount = stats._count.meta_id || 0;
 
         // Calcular metas sem pendência (total - com pendência)
         const metasSemPendencia = totalCount - (sum.pendente || 0);
