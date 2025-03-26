@@ -28,6 +28,7 @@
           v-for="item in listaDePlanoSetoriais"
           :key="item.id"
           :value="item.id"
+          :hidden="item.sistema === 'PDM'"
         >
           {{ item.nome }}
         </option>
