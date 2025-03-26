@@ -7456,10 +7456,16 @@ view ViewPainelEstrategicoProjetos {
     @@map("view_painel_estrategico_projetos")
 }
 
+enum PsDashboardConsolidadoTipo {
+    meta
+    iniciativa
+    atividade
+}
+
 model PsDashboardConsolidado {
-    id            Int    @id @default(autoincrement())
+    id            Int                        @id @default(autoincrement())
     item_id       Int
-    tipo          String // 'meta', 'iniciativa', 'atividade'
+    tipo          PsDashboardConsolidadoTipo // 'meta', 'iniciativa', 'atividade', usado pro order-by funcionar
     pdm_id        Int
     meta_id       Int
     iniciativa_id Int?

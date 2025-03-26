@@ -44,22 +44,24 @@ BEGIN
         RETURN 'meta_id é obrigatório';
     END IF;
     -- Busca info do ciclo atual, apenas se a meta for do sistemas novos
+
     SELECT
-        cf.pdm_id, cf.data_ciclo, cf.id
+        p.id AS v_pdm_id,
+        cf.data_ciclo AS v_data_ciclo,
+        CASE WHEN cf.ativo THEN cf.id ELSE NULL END AS v_CicloFisicoId
             INTO
         v_pdm_id, v_data_ciclo, v_CicloFisicoId
-    FROM
-        ciclo_fisico cf
-    JOIN pdm p ON p.id = cf.pdm_id
+
+    FROM pdm p
+    LEFT JOIN ciclo_fisico cf ON p.id = cf.pdm_id
     JOIN meta m ON m.pdm_id = p.id
     WHERE m.id = pMetaId
-    AND cf.ativo
-    AND p.sistema IN ('PlanoSetorial', 'ProgramaDeMetas')
-    ORDER BY cf.data_ciclo DESC
+      AND p.sistema IN ('PlanoSetorial', 'ProgramaDeMetas')
+    ORDER BY cf.data_ciclo DESC NULLS LAST
     LIMIT 1;
 
     if (v_pdm_id IS NULL) THEN
-        RETURN 'meta não encontrada';
+        RETURN 'v_pdm_id é null';
     END IF;
 
     -- mesmo se v_CicloFisicoId is NULL, continua
@@ -343,7 +345,7 @@ BEGIN
             ciclo_fisico_id,
             variaveis
         ) VALUES (
-            r_item.id, r_item.tipo, r_item.pdm_id, r_item.meta_id, r_item.iniciativa_id, r_item.atividade_id,
+            r_item.id, r_item.tipo::"PsDashboardConsolidadoTipo", r_item.pdm_id, r_item.meta_id, r_item.iniciativa_id, r_item.atividade_id,
             v_orcamento_total, v_orcamento_preenchido, v_pendente_orcamento,
             v_cronograma_total, v_cronograma_atraso_inicio, v_cronograma_atraso_fim, v_cronograma_preenchido, v_pendente_cronograma,
             v_variaveis_total, v_variaveis_total_no_ciclo, v_variaveis_a_coletar, v_variaveis_a_coletar_atrasadas,
@@ -365,7 +367,10 @@ BEGIN
             v_variaveis
         );
     END LOOP;
-    v_debug := 'PDM and cycle ' || v_pdm_id || ' ' || v_data_ciclo || ' ' || v_CicloFisicoId;
+
+    v_debug := 'PDM and cycle ' || v_pdm_id || ' ' || coalesce(v_data_ciclo::text,'n/a') || ' ' || coalesce(v_CicloFisicoId::text, 'no ciclo');
     RETURN v_debug;
 END;
 $$ LANGUAGE plpgsql;
+
+select refresh_ps_meta_consolidado(id) from meta where removido_em is null and pdm_id in (select id from pdm where removido_em is null and sistema != 'PDM');

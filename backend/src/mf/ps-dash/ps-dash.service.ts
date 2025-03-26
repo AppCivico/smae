@@ -174,7 +174,20 @@ export class PSMFDashboardService {
                     select: { id: true, titulo: true, codigo: true },
                 },
             },
-            orderBy: [{ meta: { codigo: 'asc' } }],
+            orderBy: [
+                { pdm_id: 'asc' },
+                { meta: { codigo: 'asc' } },
+                {
+                    iniciativa: {
+                        codigo: 'asc',
+                    },
+                },
+                {
+                    atividade: {
+                        codigo: 'asc',
+                    },
+                },
+            ],
             skip: offset,
             take: ipp,
         });
