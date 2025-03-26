@@ -29,6 +29,7 @@ const camposSujos = ref<string[]>([]);
 function comparadorSimples(campo: unknown, parametro: unknown) {
   // eslint-disable-next-line eqeqeq
   return campo == parametro
+    || decodificadorDePrimitivas(String(campo)) === decodificadorDePrimitivas(String(parametro))
     || (
       campo === '' && parametro === undefined
     )

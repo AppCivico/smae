@@ -196,7 +196,7 @@ onMounted(() => {
 
       await router.replace({
         query: {
-          ...route.query,
+          ...structuredClone(route.query), // para não dar bug com propriedades com arrays
           pdm_id: planoAtivo.value.id,
         },
       });
