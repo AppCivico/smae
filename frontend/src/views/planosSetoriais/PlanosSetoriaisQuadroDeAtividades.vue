@@ -131,7 +131,7 @@ watch([
     <CardEnvelope.Conteudo class="container-inline">
       <CardEnvelope.Titulo titulo="Situações das variáveis" />
       <GraficoDeSituacoesDasVariaveis
-        :variaveis="variaveis.total_por_situacao"
+        :variaveis="variaveis.associadas_plano_atual"
       />
     </CardEnvelope.Conteudo>
 
