@@ -131,14 +131,14 @@ const situacoesMapeadas = computed(() => {
   if (cronograma.total >= 1) {
     situacoes.push({
       fase: 'Cronograma',
-      preenchido: cronograma.total !== cronograma.preenchido,
+      preenchido: cronograma.total === cronograma.preenchido,
     });
   }
 
   if (orcamento.total.length >= 1) {
     situacoes.push({
       fase: 'Orcamento',
-      preenchido: orcamento.total.length !== orcamento.preenchido.length,
+      preenchido: orcamento.total.length === orcamento.preenchido.length,
     });
   }
 
