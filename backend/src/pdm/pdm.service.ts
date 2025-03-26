@@ -775,6 +775,7 @@ export class PdmService {
         const now = new Date(Date.now());
         let verificarCiclos = false;
         let ativarPdm: boolean | undefined = undefined;
+        let verificarVariaveisGlobais = false;
 
         const performUpdate = async (prismaTx: Prisma.TransactionClient): Promise<void> => {
             if (pdm.tipo == 'PDM') {
@@ -791,6 +792,7 @@ export class PdmService {
                 delete dto.ativo;
             } else if (typeof dto.ativo == 'boolean' && dto.ativo !== pdm.ativo) {
                 ativarPdm = dto.ativo;
+                verificarVariaveisGlobais = true;
                 if (ativarPdm == false)
                     await prismaTx.pdm.update({
                         where: { id: id },
@@ -915,6 +917,10 @@ export class PdmService {
             if (verificarCiclos) {
                 this.logger.log(`chamando monta_ciclos_pdm...`);
                 this.logger.log(JSON.stringify(await prismaTx.$queryRaw`select monta_ciclos_pdm(${id}::int, false)`));
+            }
+
+            if (verificarVariaveisGlobais) {
+                await this.recalcVariaveisPdm(id, prismaTx);
             }
         };
 
@@ -1407,6 +1413,46 @@ export class PdmService {
         const uniqueRotulosC = new Set(rotulosC);
         if (rotulosC.length !== uniqueRotulosC.size) {
             throw new BadRequestException('Os rótulos para iniciativa e atividade devem ser únicos');
+        }
+    }
+
+    private async recalcVariaveisPdm(pdmId: number, prismaTx: Prisma.TransactionClient): Promise<void> {
+        this.logger.log(`Recalculating variables for PDM ID: ${pdmId}`);
+
+        // busca todas as variaveis conectadas com esse PDM
+        // (meta -> iniciativa -> atividade -> indicador -> variavel)
+        const variaveis = await prismaTx.$queryRaw<{ id: number }[]>`
+            WITH pdm_items AS (
+                SELECT id, tipo, meta_id, iniciativa_id, atividade_id
+                FROM view_metas_arvore_pdm
+                WHERE pdm_id = ${pdmId}
+            )
+            SELECT DISTINCT v.id
+            FROM variavel v
+            JOIN indicador_variavel iv ON v.id = iv.variavel_id
+            JOIN indicador i ON iv.indicador_id = i.id
+            JOIN pdm_items pi ON
+                (pi.tipo = 'meta' AND i.meta_id = pi.id) OR
+                (pi.tipo = 'iniciativa' AND i.iniciativa_id = pi.id) OR
+                (pi.tipo = 'atividade' AND i.atividade_id = pi.id)
+            WHERE v.removido_em IS NULL
+            AND v.tipo = 'Global'
+        `;
+
+        const variavelIds = variaveis.map((v) => v.id);
+
+        if (variavelIds.length > 0) {
+            this.logger.log(
+                `Encontrou ${variavelIds.length} variaveis para recalcular o dashboard do PDM ID: ${pdmId}`
+            );
+
+            // Execute refresh_variavel for all variables in a single query
+            await prismaTx.$queryRaw`
+                SELECT refresh_variavel(v, null)
+                FROM unnest(${variavelIds}::int[]) AS v
+            `;
+        } else {
+            this.logger.log(`Nenhuma variavel global no PDM ID: ${pdmId}`);
         }
     }
 }
