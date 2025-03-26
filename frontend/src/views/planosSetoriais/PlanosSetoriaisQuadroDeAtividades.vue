@@ -128,20 +128,22 @@ watch([
     v-else
     class="lista-de-cartoes"
   >
-    <CardEnvelope.Conteudo class="container-inline">
-      <CardEnvelope.Titulo titulo="Situações das variáveis" />
-      <GraficoDeSituacoesDasVariaveis
-        :variaveis="variaveis.associadas_plano_atual"
-      />
-    </CardEnvelope.Conteudo>
+    <template v-if="route.query.visao_pessoal">
+      <CardEnvelope.Conteudo class="container-inline">
+        <CardEnvelope.Titulo titulo="Situações das variáveis" />
+        <GraficoDeSituacoesDasVariaveis
+          :variaveis="variaveis.associadas_plano_atual"
+        />
+      </CardEnvelope.Conteudo>
 
-    <CardEnvelope.Conteudo>
-      <CardEnvelope.Titulo titulo="Outras variáveis do órgão não associadas ao PS/PdM" />
-      <GraficoDeSituacoesDasVariaveis
-        :variaveis="variaveis.nao_associadas_plano_atual"
-        :cores="['#292279', '#4539ca', '#5345f3', '#8c83f7', '#c6c1fb']"
-      />
-    </CardEnvelope.conteudo>
+      <CardEnvelope.Conteudo>
+        <CardEnvelope.Titulo titulo="Outras variáveis do órgão não associadas ao PS/PdM" />
+        <GraficoDeSituacoesDasVariaveis
+          :variaveis="variaveis.nao_associadas_plano_atual"
+          :cores="['#292279', '#4539ca', '#5345f3', '#8c83f7', '#c6c1fb']"
+        />
+      </CardEnvelope.conteudo>
+    </template>
 
     <CardEnvelope.Conteudo class="container-inline grid-full-column">
       <CardEnvelope.Titulo titulo="Metas" />
