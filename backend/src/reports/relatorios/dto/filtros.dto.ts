@@ -1,4 +1,4 @@
-import { Transform, Type } from 'class-transformer';
+import { Expose, Transform, Type } from 'class-transformer';
 import { ArrayMaxSize, ArrayMinSize, IsArray, IsEnum, IsInt, IsNumber, IsOptional } from 'class-validator';
 import { NumberArrayTransformOrUndef } from '../../../auth/transforms/number-array.transform';
 import { TipoPdm } from '@prisma/client';
@@ -8,17 +8,20 @@ export class FiltroMetasIniAtividadeDto {
     @IsOptional()
     @IsNumber()
     @Type(() => Number)
+    @Expose()
     pdm_id?: number;
 
     @IsOptional()
     @IsNumber()
     @Type(() => Number)
+    @Expose()
     meta_id?: number;
 
     @IsOptional()
     @IsArray()
     @ArrayMaxSize(1000)
     @Transform(NumberArrayTransformOrUndef)
+    @Expose()
     metas_ids?: number[];
 
     @IsOptional()
@@ -26,11 +29,13 @@ export class FiltroMetasIniAtividadeDto {
     @ArrayMaxSize(1000)
     @Transform(NumberArrayTransformOrUndef)
     @ApiProperty({ deprecated: true, description: 'Use metas_ids instead' })
+    @Expose()
     metas?: number[];
 
     @IsOptional()
     @IsNumber()
     @Type(() => Number)
+    @Expose()
     iniciativa_id?: number;
 
     /**
@@ -39,6 +44,7 @@ export class FiltroMetasIniAtividadeDto {
     @IsOptional()
     @IsNumber()
     @Type(() => Number)
+    @Expose()
     atividade_id?: number;
 
     /**
@@ -50,10 +56,12 @@ export class FiltroMetasIniAtividadeDto {
     @ArrayMinSize(0, { message: '$property| tag(s): precisa ter pelo menos um item' })
     @ArrayMaxSize(100, { message: '$property| tag(s): precisa ter no máximo 100 items' })
     @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
+    @Expose()
     tags?: number[];
 
     @IsOptional()
     @IsEnum(TipoPdm)
     @ApiHideProperty()
+    @Expose()
     tipo_pdm?: TipoPdm;
 }

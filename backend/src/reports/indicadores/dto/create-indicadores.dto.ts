@@ -1,7 +1,7 @@
 import { ApiProperty, IntersectionType } from '@nestjs/swagger';
 import { TipoRelatorio } from '@prisma/client';
-import { Transform, Expose } from 'class-transformer';
-import { IsBoolean, IsEnum, IsInt, IsOptional, ValidateIf } from 'class-validator';
+import { Transform, Expose, Type } from 'class-transformer';
+import { IsBoolean, IsEnum, IsInt, IsNumber, IsOptional, ValidateIf } from 'class-validator';
 import { FiltroMetasIniAtividadeDto } from '../../relatorios/dto/filtros.dto';
 import { NumberArrayTransformOrUndef } from '../../../auth/transforms/number-array.transform';
 
@@ -79,6 +79,10 @@ export class CreateRelIndicadorDto extends IntersectionType(FiltroMetasIniAtivid
     @IsBoolean()
     @Expose()
     listar_variaveis_regionalizadas: boolean;
+
+    @IsNumber()
+    @Type(() => Number)
+    pdm_id?: number;
 }
 
 export class CreateRelIndicadorRegioesDto extends CreateRelIndicadorDto {
