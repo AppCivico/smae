@@ -54,6 +54,7 @@ import { RequestLogModule } from './request_log/request_log.module';
 import { TaskModule } from './task/task.module';
 import { ClassificacaoModule } from './transferencias-voluntarias/classificacao/classificacao.module';
 import { PSMFDashboardModule } from './mf/ps-dash/ps-dash.module';
+import { SyncCadastroBasicoModule } from './sync-cadastro-basico/sync-cadastro-basico.module';
 
 // Hacks pro JS
 /*
@@ -110,7 +111,8 @@ import { PSMFDashboardModule } from './mf/ps-dash/ps-dash.module';
         ClassificacaoModule,
         PainelEstrategicoModule,
         CategoriaAssuntoVariavelModule,
-        PSMFDashboardModule
+        PSMFDashboardModule,
+        SyncCadastroBasicoModule,
     ],
     controllers: [AppController],
     providers: [
