@@ -44,21 +44,27 @@ const legendas = {
   })),
 };
 
-const listaDeMetasPreparado = computed(() => listaMetas.value.map<CicloVigenteItemParams>(
-  (item) => ({
-    titulo: item.titulo,
-    id: item.id,
-    metaId: item.meta_id || 11,
-    iniciativaId: item.meta_id,
-    atividadeId: item.atividade_id,
-    variaveis: item.variaveis as ListaVariaveis,
-    situacoes: item.monitoramento_ciclo,
-    pendencias: {
-      cronograma: item.pendencia_cronograma,
-      orcamento: item.pendencia_orcamento,
-    },
-  }),
-));
+const listaDeMetasPreparado = computed(() => {
+  if (!route.query.pdm_id) {
+    return [];
+  }
+
+  return listaMetas.value.map<CicloVigenteItemParams>(
+    (item) => ({
+      titulo: item.titulo,
+      pdmId: route.query.pdm_id,
+      metaId: item.meta_id,
+      iniciativaId: item.iniciativa_id,
+      atividadeId: item.atividade_id,
+      variaveis: item.variaveis as ListaVariaveis,
+      situacoes: item.monitoramento_ciclo,
+      pendencias: {
+        cronograma: item.pendencia_cronograma,
+        orcamento: item.pendencia_orcamento,
+      },
+    }),
+  );
+});
 
 watch([
   () => route.query.orgao_id,
