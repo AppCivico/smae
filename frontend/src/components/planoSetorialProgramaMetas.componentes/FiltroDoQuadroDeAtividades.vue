@@ -21,14 +21,13 @@
         name="pdm_id"
         :class="{ error: errosDePlanoSetorial.lista }"
         :aria-busy="chamadasPendentesDePlanoSetoriais.lista"
-        :aria-disabled="listaDePlanoSetoriais.length < 2"
+        :aria-disabled="planosSetoriaisOuPdMNovos.length < 2"
         @change="(valor) => { emit('campoMudou', { pdm_id: valor }); }"
       >
         <option
-          v-for="item in listaDePlanoSetoriais"
+          v-for="item in planosSetoriaisOuPdMNovos"
           :key="item.id"
           :value="item.id"
-          :hidden="item.sistema === 'PDM'"
         >
           {{ item.nome }}
         </option>
@@ -122,9 +121,12 @@ import { useEquipesStore } from '@/stores/equipes.store';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
 import { storeToRefs } from 'pinia';
 import {
+  computed,
   onMounted,
   ref,
+  toRaw,
 } from 'vue';
+import type { LocationQueryRaw } from 'vue-router';
 import { useRoute, useRouter } from 'vue-router';
 
 defineProps({
@@ -175,53 +177,30 @@ const dados = ref<Dados>({
   visao_pessoal: true,
 });
 
-onMounted(() => {
-  const valoresNaQuery = route.query as Record<string, unknown>;
+const planosSetoriaisOuPdMNovos = computed(() => listaDePlanoSetoriais.value
+  .filter((item) => item.sistema !== 'PDM'));
+
+onMounted(async () => {
+  const valoresNaQuery = {
+    ...structuredClone(route.query),
+  } as Record<string, unknown>;
 
   Object.keys(dados.value).forEach(async (chave) => {
-    let valorNaQuery = valoresNaQuery[chave];
+    const valorNaQuery = valoresNaQuery[chave];
+    const valorInicial = dados.value[chave as ChaveDeDados];
 
-    if (!valorNaQuery) {
-      if (chave !== 'pdm_id') {
-        return;
-      }
-
-      if (!planoAtivo.value) {
-        await planosSetoriaisStore.buscarTudo();
-      }
-
-      if (!planoAtivo.value) {
-        return;
-      }
-
-      await router.replace({
-        query: {
-          ...structuredClone(route.query), // para não dar bug com propriedades com arrays
-          pdm_id: planoAtivo.value.id,
-        },
-      });
-      valorNaQuery = route.query.pdm_id;
-      dados.value.pdm_id = valorNaQuery as number;
-    }
-
-    if (dados.value[chave as ChaveDeDados] !== valorNaQuery) {
-      if (['orgao_id', 'equipes'].includes(chave)) {
-        (dados.value[chave as ChaveDeDados] as Dados['orgao_id'] | Dados['orgao_id']) = Array.isArray(valorNaQuery)
-          ? valorNaQuery as number[]
-          : [valorNaQuery] as number[];
-      } else if (chave === 'pdm_id') {
-        dados.value.pdm_id = valorNaQuery as number;
-      } else if (chave === 'visao_pessoal') {
-        dados.value.visao_pessoal = typeof valorNaQuery === 'boolean'
-          ? valorNaQuery
-          : valorNaQuery === 'true';
+    if (valorNaQuery) {
+      if (Array.isArray(valorInicial)) {
+        if (Array.isArray(valorNaQuery)) {
+          dados.value[chave as keyof Dados] = structuredClone(valorNaQuery) as number[];
+        } else {
+          dados.value[chave as keyof Dados] = [valorNaQuery];
+        }
+      } else {
+        dados.value[chave as keyof Dados] = structuredClone(valorNaQuery);
       }
     }
   });
-
-  if (!listaDePlanoSetoriais.value.length && !chamadasPendentesDePlanoSetoriais.value.lista) {
-    planosSetoriaisStore.buscarTudo();
-  }
 
   if (!listaDeEquipes.value.length && !chamadasPendentesDeEquipes.value.lista) {
     equipesStore.buscarTudo();
@@ -233,6 +212,25 @@ onMounted(() => {
   ) {
     orgaosStore.getAll();
   }
+
+  if (!listaDePlanoSetoriais.value.length && !chamadasPendentesDePlanoSetoriais.value.lista) {
+    await planosSetoriaisStore.buscarTudo();
+  }
+
+  if (!dados.value.pdm_id) {
+    if (planoAtivo.value?.id && planoAtivo.value?.sistema !== 'PDM') {
+      dados.value.pdm_id = planoAtivo.value.id;
+    } else if (planosSetoriaisOuPdMNovos.value.length === 1) {
+      dados.value.pdm_id = planosSetoriaisOuPdMNovos.value[0].id;
+    }
+  }
+
+  router.replace({
+    query: {
+      ...structuredClone(route.query),
+      ...structuredClone(toRaw(dados.value)),
+    } as unknown as LocationQueryRaw,
+  });
 });
 </script>
 <style lang="less" scoped></style>
