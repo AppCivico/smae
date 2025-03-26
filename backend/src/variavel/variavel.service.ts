@@ -3836,9 +3836,9 @@ export class VariavelService {
                     // Atualiza registro existente
                     await prisma.$executeRaw`
                         UPDATE ps_dashboard_variavel
-                        SET 
+                        SET
                             pdm_id = ${pdmIdJson}::int[],
-                            fase = ${variavel.fase}::variavel_fase,
+                            fase = ${variavel.fase}::"VariavelFase",
                             fase_preenchimento_preenchida = ${fase_preenchimento_preenchida},
                             fase_validacao_preenchida = ${fase_validacao_preenchida},
                             fase_liberacao_preenchida = ${fase_liberacao_preenchida},
@@ -3851,18 +3851,18 @@ export class VariavelService {
                     // Insere novo registro
                     await prisma.$executeRaw`
                         INSERT INTO ps_dashboard_variavel (
-                            variavel_id, 
-                            pdm_id, 
-                            fase, 
+                            variavel_id,
+                            pdm_id,
+                            fase,
                             fase_preenchimento_preenchida,
                             fase_validacao_preenchida,
                             fase_liberacao_preenchida,
-                            equipes, 
+                            equipes,
                             equipes_orgaos
                         ) VALUES (
                             ${variavel.id},
                             ${pdmIdJson}::int[],
-                            ${variavel.fase}::variavel_fase,
+                            ${variavel.fase}::"VariavelFase",
                             ${fase_preenchimento_preenchida},
                             ${fase_validacao_preenchida},
                             ${fase_liberacao_preenchida},
