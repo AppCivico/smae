@@ -106,7 +106,7 @@
       </select>
     </div>
     <button
-      class="btn outline bgnone tcprimary align-start mt2"
+      class="btn align-start mt2"
       type="submit"
       :aria-disabled="!dados.pdm_id"
     >
