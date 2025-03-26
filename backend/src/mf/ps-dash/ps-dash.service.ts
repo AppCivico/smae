@@ -206,17 +206,17 @@ export class PSMFDashboardService {
                 },
                 pendencia_cronograma: {
                     total: item.cronograma_total,
-                    preenchido: item.cronograma_atraso_inicio + item.cronograma_atraso_fim == 0 ? 1 : 0, // hehe, gambiarra
+                    preenchido: item.cronograma_preenchido,
                 },
                 monitoramento_ciclo: situacaoCiclo,
 
                 variaveis: {
-                    total: -1, // só ta contando variáveis do ciclo no momento
+                    total: item.variaveis_total,
+                    a_coletar_total: item.variaveis_total_no_ciclo,
                     a_coletar: item.variaveis_a_coletar,
                     coletadas_nao_conferidas: item.variaveis_coletadas_nao_conferidas,
                     conferidas_nao_liberadas: item.variaveis_conferidas_nao_liberadas,
                     liberadas: item.variaveis_liberadas,
-                    a_coletar_total: item.variaveis_total,
                 },
                 ...geraDetalheMetaIniAtv(item),
             } satisfies PSMFItemMetaDto;
