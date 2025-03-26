@@ -52,6 +52,7 @@ const listaDeMetasPreparado = computed(() => {
   return listaMetas.value.map<CicloVigenteItemParams>(
     (item) => ({
       titulo: item.titulo,
+      codigo: item.codigo,
       pdmId: route.query.pdm_id,
       metaId: item.meta_id,
       iniciativaId: item.iniciativa_id,
