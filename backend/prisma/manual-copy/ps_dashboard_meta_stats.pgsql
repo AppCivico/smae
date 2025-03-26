@@ -1,3 +1,4 @@
+drop view if exists ps_dashboard_meta_stats;
 CREATE OR REPLACE VIEW ps_dashboard_meta_stats_v2 AS
 WITH meta_consolidated AS (
     SELECT
