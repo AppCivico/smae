@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { Prisma, ProjetoStatus } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 
@@ -43,51 +43,63 @@ export class TarefaUtilsService {
     async incrementaNumero(
         dto: {
             tarefa_pai_id: number | null;
-            numero: number;
+            numero: number; // Assume-se validado >= 1 pela validação do DTO
         },
         prismaTx: Prisma.TransactionClient,
         tarefa_cronograma_id: number,
         tarefa_update_id: number | null = null,
         maiorNumero: number | null
     ): Promise<number> {
-        // se não tem nenhuma tarefa, o numero é 1
-        if (maiorNumero == null) {
-            return 1;
-        }
+        // Determina a posição máxima permitida (máximo atual + 1, ou 1 se estiver vazio)
+        const maxPossibleTarget = maiorNumero === null ? 1 : maiorNumero + 1;
 
-        // não deixa passar do máximo, nunca!
-        const novoNumero = Math.min(dto.numero, maiorNumero);
-        console.log(`Incrementing: requested ${dto.numero}, assigned ${novoNumero}`);
+        // Garante que o número solicitado não ultrapasse o máximo permitido + 1
+        // Se o usuário solicitar 10 e o máximo for 5, o alvo se torna 6.
+        // Se o usuário solicitar 3 e o máximo for 5, o alvo permanece 3.
+        // Se o usuário solicitar 1 e o máximo for null, o alvo se torna 1.
+        const numeroAlvo = Math.min(dto.numero, maxPossibleTarget);
 
+        Logger.debug(`Incrementando: solicitado ${dto.numero}, alvo ${numeroAlvo}, máximo atual ${maiorNumero}`);
+
+        // Verifica se a posição alvo calculada já está ocupada por outra tarefa
         const emUso = await prismaTx.tarefa.findFirst({
             where: {
                 removido_em: null,
                 tarefa_pai_id: dto.tarefa_pai_id,
                 tarefa_cronograma_id: tarefa_cronograma_id,
-                numero: novoNumero,
+                numero: numeroAlvo,
+                // Exclui a própria tarefa sendo atualizada da verificação de colisão
                 id: tarefa_update_id ? { not: tarefa_update_id } : undefined,
             },
+            select: { id: true }, // Só precisa saber se existe
         });
 
-        // Só numera se houver conflito
+        // Apenas desloca os números para cima se a posição alvo estiver ocupada
         if (emUso) {
+            Logger.debug(
+                `Posição ${numeroAlvo} está em uso pela tarefa ${emUso.id}. Deslocando tarefas >= ${numeroAlvo} para cima.`
+            );
             await prismaTx.$executeRaw`
-              UPDATE tarefa
-              SET numero = numero + 1
-              WHERE removido_em IS NULL
-                AND tarefa_cronograma_id = ${tarefa_cronograma_id}::int
-                AND id != ${tarefa_update_id}
-                AND (
-                  CASE WHEN (${dto.tarefa_pai_id !== null ? 1 : 0}::int = 1::int)
-                    THEN tarefa_pai_id = ${dto.tarefa_pai_id}::int
-                    ELSE tarefa_pai_id IS NULL
-                  END
-                )
-                AND numero >= ${novoNumero}::int
+                UPDATE tarefa
+                SET numero = numero + 1
+                WHERE removido_em IS NULL
+                  AND tarefa_cronograma_id = ${tarefa_cronograma_id}::int
+                  -- IMPORTANTE: Exclui a tarefa sendo atualizada da verificação de colisão
+                  AND (${tarefa_update_id === null}::boolean OR id != ${tarefa_update_id})
+                  AND (
+                    CASE WHEN (${dto.tarefa_pai_id !== null ? 1 : 0}::int = 1::int)
+                      THEN tarefa_pai_id = ${dto.tarefa_pai_id}::int
+                      ELSE tarefa_pai_id IS NULL
+                    END
+                  )
+                  AND numero >= ${numeroAlvo}::int -- Desloca itens a partir da posição alvo
             `;
+        } else {
+            Logger.debug(`Posição ${numeroAlvo} está livre.`);
         }
 
-        return novoNumero;
+        // Retorna o número alvo calculado, que a função de chamada irá atribuir
+        return numeroAlvo;
     }
 
     async maiorNumeroDoNivel(
