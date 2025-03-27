@@ -67,8 +67,9 @@ export class RefreshVariavelService implements TaskableService {
                 await this.variavelService.recalc_vars_ps_dashboard([inputParams.variavel_id], this.prisma);
                 this.logger.log(`Dashboard de PS atualizado para variável ${inputParams.variavel_id}`);
             } catch (error) {
-                this.logger.error(`Erro ao atualizar dashboard de PS: ${error.message}`);
-                // Não falha a tarefa principal se o dashboard falhar
+                // Falha a tarefa principal se o dashboard falhar, já que as outras funções tem TX próprias
+                // isso faz com que a gente saiba que aconteceu de alguma forma
+                throw new Error(`Erro ao atualizar dashboard de PS: ${error.message}`);
             }
         }
 
