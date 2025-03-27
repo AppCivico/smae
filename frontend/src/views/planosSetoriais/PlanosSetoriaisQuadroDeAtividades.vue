@@ -1,10 +1,12 @@
 <script lang="ts" setup>
+import { storeToRefs } from 'pinia';
+import { computed, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import * as CardEnvelope from '@/components/cardEnvelope';
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
 import ListaLegendas from '@/components/ListaLegendas.vue';
 import FiltroDoQuadroDeAtividades from '@/components/planoSetorialProgramaMetas.componentes/FiltroDoQuadroDeAtividades.vue';
 import CicloListaItem, { type CicloVigenteItemParams, type ListaVariaveis } from '@/components/planoSetorialProgramaMetas.componentes/QuadroDeAtividades/CicloListaItem.vue';
-import CicloVigenteFiltro from '@/components/planoSetorialProgramaMetas.componentes/QuadroDeAtividades/CicloVigenteFiltro.vue';
 import {
   listaDeFases,
   listaDeStatus,
@@ -14,12 +16,12 @@ import {
 } from '@/components/planoSetorialProgramaMetas.componentes/QuadroDeAtividades/helpers/obterDadosItems';
 import GraficoDeSituacoesDasVariaveis from '@/components/quadroDeAtividades/GraficoDeSituacoesDasVariaveis.vue';
 import GrandesNumerosDeMetas from '@/components/quadroDeAtividades/GrandesNumerosDeMetas.vue';
-import dateToTitle from '@/helpers/dateToTitle';
+import CicloVigenteFiltro from '@/components/planoSetorialProgramaMetas.componentes/QuadroDeAtividades/CicloVigenteFiltro.vue';
+import GraficoOutrasVariaveis from '@/components/planoSetorialProgramaMetas.componentes/QuadroDeAtividades/Graficos/GraficoOutrasVariaveis.vue';
+import GraficoVariavelAssociado from '@/components/planoSetorialProgramaMetas.componentes/QuadroDeAtividades/Graficos/GraficoVariavelAssociado.vue';
 import { usePanoramaPlanoSetorialStore } from '@/stores/planoSetorial.panorama.store';
 import type { Parametros, ParametrosComPdmIdObrigatorio } from '@/stores/planoSetorial.panorama.store.ts';
-import { storeToRefs } from 'pinia';
-import { computed, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import dateToTitle from '@/helpers/dateToTitle';
 
 defineOptions({
   inheritAttrs: false,
@@ -144,6 +146,10 @@ watch([
     v-else
     class="lista-de-cartoes"
   >
+    <GraficoVariavelAssociado />
+
+    <GraficoOutrasVariaveis />
+
     <template v-if="route.query.visao_pessoal">
       <CardEnvelope.Conteudo class="container-inline">
         <CardEnvelope.Titulo titulo="Situações das variáveis" />

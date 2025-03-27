@@ -16,7 +16,7 @@ defineProps({
   },
   corDeFundo: {
     type: String,
-    default: null,
+    default: '#e8e8e866',
   },
   legenda: {
     type: String,
