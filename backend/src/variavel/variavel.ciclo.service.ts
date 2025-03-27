@@ -25,7 +25,12 @@ import {
     VariavelGlobalCicloDto,
     VariavelValorDto,
 } from './dto/variavel.ciclo.dto';
-import { VariavelComCategorica, VariavelService } from './variavel.service';
+import {
+    GetVariavelPalavraChave,
+    GetVariavelWhereSet,
+    VariavelComCategorica,
+    VariavelService,
+} from './variavel.service';
 import { VariavelUtilService } from './variavel.util.service';
 import { IdTituloDto } from '../common/dto/IdTitulo.dto';
 import { DateTime } from 'luxon';
@@ -67,6 +72,139 @@ interface IUltimaAnaliseValor {
     analise_qualitativa: string | null;
 }
 
+/**
+ * Generates permission-based where conditions for Variavel queries
+ */
+export async function getVariavelPermissionsWhere(
+    filters: FilterVariavelGlobalCicloDto,
+    user: PessoaFromJwt,
+    prisma: PrismaService,
+    consulta_historica: boolean = false
+): Promise<Prisma.Enumerable<Prisma.VariavelWhereInput>> {
+    const isRoot = user.hasSomeRoles(['SMAE.superadmin', 'CadastroVariavelGlobal.administrador']);
+
+    let pessoaId = user.id;
+
+    if (filters.simular_ponto_focal && isRoot) {
+        pessoaId = filters.simular_usuario ?? pessoaId;
+    }
+
+    const whereConditions: Prisma.Enumerable<Prisma.VariavelWhereInput> = [
+        {
+            id: filters.variavel_id ? { in: filters.variavel_id } : undefined,
+            equipes_configuradas: consulta_historica ? undefined : true,
+            removido_em: null,
+            ...buildMetaIniAtvFilter(filters),
+        },
+    ];
+
+    if (filters.equipe_id) {
+        whereConditions.push({
+            VariavelGrupoResponsavelEquipe: {
+                some: {
+                    removido_em: null,
+                    grupo_responsavel_equipe: {
+                        id: filters.equipe_id,
+                        removido_em: null,
+                    },
+                },
+            },
+        });
+    }
+
+    if (filters.palavra_chave) {
+        whereConditions.push({
+            id: { in: await GetVariavelPalavraChave(filters.palavra_chave, prisma) },
+        });
+    }
+
+    whereConditions.push({
+        AND: [...GetVariavelWhereSet(filters), { tipo: 'Global' }],
+    });
+
+    if (!isRoot && user.hasSomeRoles(['CadastroVariavelGlobal.administrador_no_orgao'])) {
+        const orgao_id = user.orgao_id;
+        if (!orgao_id) throw new BadRequestException('Usuário sem órgão associado');
+
+        whereConditions.push({
+            OR: [{ medicao_orgao_id: orgao_id }, { validacao_orgao_id: orgao_id }, { liberacao_orgao_id: orgao_id }],
+        });
+    } else if (!isRoot && consulta_historica === false) {
+        const equipes = await prisma.grupoResponsavelEquipe.findMany({
+            where: {
+                removido_em: null,
+                // se quiser q suma as variaveis sem edição, precisa tirar daqui pra sincronizar
+                // com o where do filter de "Preenchimento"/etc
+                perfil: { in: ['Medicao', 'Validacao', 'Liberacao'] },
+                GrupoResponsavelEquipePessoa: {
+                    some: {
+                        removido_em: null,
+                        pessoa_id: pessoaId,
+                    },
+                },
+            },
+        });
+        const equipeIds = equipes.map((e) => e.id);
+
+        whereConditions.push({
+            VariavelGrupoResponsavelEquipe: {
+                some: {
+                    grupo_responsavel_equipe: {
+                        removido_em: null,
+                        id: {
+                            in: equipeIds,
+                        },
+                    },
+                },
+            },
+        });
+    }
+
+    return { AND: whereConditions };
+}
+
+function buildMetaIniAtvFilter(filters: FilterVariavelGlobalCicloDto) {
+    if (filters.atividade_id)
+        return {
+            view_dashboard_variavel_corrente: {
+                some: {
+                    item_id: filters.atividade_id,
+                    tipo: 'atividade',
+                },
+            },
+        };
+
+    if (filters.iniciativa_id)
+        return {
+            view_dashboard_variavel_corrente: {
+                some: {
+                    item_id: filters.iniciativa_id,
+                    tipo: 'iniciativa',
+                },
+            },
+        };
+    if (filters.meta_id)
+        return {
+            view_dashboard_variavel_corrente: {
+                some: {
+                    item_id: filters.meta_id,
+                    tipo: 'meta',
+                },
+            },
+        };
+    // TODO:
+    //        if (filters.pdm_id)
+    //            return {
+    //                view_dashboard_variavel_corrente: {
+    //                    some: {
+    //                        item_id: filters.pdm_id,
+    //                        tipo: 'pdm',
+    //                    },
+    //                },
+    //            };
+    return {};
+}
+
 @Injectable()
 export class VariavelCicloService {
     private enabled: boolean;
@@ -104,124 +242,7 @@ export class VariavelCicloService {
         user: PessoaFromJwt,
         consulta_historica: boolean = false
     ): Promise<Prisma.Enumerable<Prisma.VariavelWhereInput>> {
-        const isRoot = user.hasSomeRoles(['SMAE.superadmin', 'CadastroVariavelGlobal.administrador']);
-
-        let pessoaId = user.id;
-
-        if (filters.simular_ponto_focal && isRoot) {
-            pessoaId = filters.simular_usuario ?? pessoaId;
-        }
-
-        const whereConditions: Prisma.Enumerable<Prisma.VariavelWhereInput> = [
-            {
-                id: filters.variavel_id ? { in: filters.variavel_id } : undefined,
-                equipes_configuradas: consulta_historica ? undefined : true,
-                removido_em: null,
-            },
-        ];
-
-        if (filters.equipe_id) {
-            whereConditions.push({
-                VariavelGrupoResponsavelEquipe: {
-                    some: {
-                        removido_em: null,
-                        grupo_responsavel_equipe: {
-                            id: filters.equipe_id,
-                            removido_em: null,
-                        },
-                    },
-                },
-            });
-        }
-
-        if (filters.palavra_chave) {
-            whereConditions.push({
-                id: { in: await this.variavelService.buscaIdsPalavraChave(filters.palavra_chave) },
-            });
-        }
-
-        whereConditions.push({
-            AND: [...this.variavelService.getVariavelWhereSet(filters), { tipo: 'Global' }],
-        });
-
-        if (!isRoot && user.hasSomeRoles(['CadastroVariavelGlobal.administrador_no_orgao'])) {
-            const orgao_id = user.orgao_id;
-            if (!orgao_id) throw new BadRequestException('Usuário sem órgão associado');
-
-            whereConditions.push({
-                OR: [
-                    { medicao_orgao_id: orgao_id },
-                    { validacao_orgao_id: orgao_id },
-                    { liberacao_orgao_id: orgao_id },
-                ],
-            });
-        } else if (!isRoot && consulta_historica === false) {
-            const equipes = await this.prisma.grupoResponsavelEquipe.findMany({
-                where: {
-                    removido_em: null,
-                    // se quiser q suma as variaveis sem edição, precisa tirar daqui pra sincronizar
-                    // com o where do filter de "Preenchimento"/etc
-                    perfil: { in: ['Medicao', 'Validacao', 'Liberacao'] },
-                    GrupoResponsavelEquipePessoa: {
-                        some: {
-                            removido_em: null,
-                            pessoa_id: pessoaId,
-                        },
-                    },
-                },
-            });
-            const equipeIds = equipes.map((e) => e.id);
-
-            whereConditions.push({
-                VariavelGrupoResponsavelEquipe: {
-                    some: {
-                        grupo_responsavel_equipe: {
-                            removido_em: null,
-                            id: {
-                                in: equipeIds,
-                            },
-                        },
-                    },
-                },
-            });
-        }
-
-        return { AND: whereConditions };
-    }
-
-    async buildMetaIniAtvFilter(filters: FilterVariavelGlobalCicloDto) {
-        return {
-            ...(filters.meta_id
-                ? {
-                      view_dashboard_variavel_corrente: {
-                          some: {
-                              item_id: filters.meta_id,
-                              tipo: 'meta',
-                          },
-                      },
-                  }
-                : {}),
-            ...(filters.iniciativa_id
-                ? {
-                      view_dashboard_variavel_corrente: {
-                          some: {
-                              item_id: filters.iniciativa_id,
-                              tipo: 'iniciativa',
-                          },
-                      },
-                  }
-                : {}),
-            ...(filters.atividade_id
-                ? {
-                      view_dashboard_variavel_corrente: {
-                          some: {
-                              item_id: filters.atividade_id,
-                              tipo: 'atividade',
-                          },
-                      },
-                  }
-                : {}),
-        };
+        return getVariavelPermissionsWhere(filters, user, this.prisma, consulta_historica);
     }
 
     async getVariavelCiclo(
@@ -245,7 +266,6 @@ export class VariavelCicloService {
                 },
                 fase: filters.fase,
                 eh_corrente: true,
-                ...this.buildMetaIniAtvFilter(filters),
             },
             orderBy: [{ 'variavel': { codigo: 'asc' } }],
             include: {

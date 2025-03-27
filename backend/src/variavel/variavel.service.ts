@@ -17,6 +17,7 @@ import {
     TipoVariavelCategorica,
     VariavelCategoricaValor,
 } from '@prisma/client';
+import { PrismaClient } from '@prisma/client/extension';
 import { Regiao } from 'src/regiao/entities/regiao.entity';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { LoggerWithLog } from '../common/LoggerWithLog';
@@ -142,6 +143,104 @@ function getMaxDiasPeriodicidade(periodicidade: Periodicidade): number {
             periodicidade satisfies never;
     }
     throw new Error(`getMaxDiasPeriodicidade: Periodicidade=${periodicidade} não reconhecida`);
+}
+
+export function GetVariavelPalavraChave(input: string | undefined, prisma: PrismaClient) {
+    return PrismaHelpers.buscaIdsPalavraChave(prisma, 'variavel', input);
+}
+
+export function GetVariavelWhereSet(filters: FilterVariavelDto) {
+    const firstSet: Prisma.Enumerable<Prisma.VariavelWhereInput> = [];
+    if (filters.remover_desativados || filters.remover_desativados === undefined) {
+        // não acredito que sirva de nada, mas vou manter pois já estava assim
+        // da na mesma colocar o else-if ou não, pois o banco vai gerar 0 resultados no caso de combinações
+        // impossíveis
+        if (filters.indicador_id)
+            firstSet.push({
+                indicador_variavel: {
+                    some: {
+                        desativado: false,
+                        indicador_id: filters.indicador_id,
+                    },
+                },
+            });
+
+        if (filters.meta_id)
+            firstSet.push({
+                indicador_variavel: {
+                    some: {
+                        desativado: false,
+                        indicador: {
+                            meta_id: filters.meta_id,
+                        },
+                    },
+                },
+            });
+        if (filters.iniciativa_id)
+            firstSet.push({
+                indicador_variavel: {
+                    some: {
+                        desativado: false,
+                        indicador: {
+                            iniciativa_id: filters.iniciativa_id,
+                        },
+                    },
+                },
+            });
+        if (filters.atividade_id)
+            firstSet.push({
+                indicador_variavel: {
+                    some: {
+                        desativado: false,
+                        indicador: {
+                            atividade_id: filters.atividade_id,
+                        },
+                    },
+                },
+            });
+        if (filters.formula_composta_id) {
+            firstSet.push({
+                FormulaCompostaRelVariavel: {
+                    some: {
+                        formula_composta_id: filters.formula_composta_id,
+                    },
+                },
+            });
+        }
+    }
+
+    let variavel_categorica_id: number | undefined | null = filters.variavel_categorica_id ?? undefined;
+    if (variavel_categorica_id === VAR_CATEGORICA_AS_NULL) variavel_categorica_id = null;
+
+    const permissionsBaseSet: Prisma.Enumerable<Prisma.VariavelWhereInput> = [
+        {
+            AND: firstSet,
+            removido_em: null,
+            medicao_orgao_id: filters.medicao_orgao_id,
+            validacao_orgao_id: filters.validacao_orgao_id,
+            liberacao_orgao_id: filters.liberacao_orgao_id,
+            variavel_categorica_id: variavel_categorica_id,
+            VariavelAssuntoVariavel: Array.isArray(filters.assuntos)
+                ? { some: { assunto_variavel: { id: { in: filters.assuntos } } } }
+                : undefined,
+            id: filters.id,
+            orgao_id: filters.orgao_id,
+            orgao_proprietario_id: filters.orgao_proprietario_id,
+            periodicidade: filters.periodicidade,
+            regiao_id: filters.regiao_id,
+            titulo: filters.titulo ? { contains: filters.titulo, mode: 'insensitive' } : undefined,
+            codigo: filters.codigo ? { contains: filters.codigo, mode: 'insensitive' } : undefined,
+            descricao: filters.descricao ? { contains: filters.descricao, mode: 'insensitive' } : undefined,
+        },
+    ];
+
+    if (filters.nivel_regionalizacao && !filters.regiao_id) {
+        firstSet.push({
+            regiao: { nivel: filters.nivel_regionalizacao },
+        });
+    }
+
+    return permissionsBaseSet;
 }
 
 @Injectable()
@@ -1416,96 +1515,7 @@ export class VariavelService {
     }
 
     getVariavelWhereSet(filters: FilterVariavelDto) {
-        const firstSet: Prisma.Enumerable<Prisma.VariavelWhereInput> = [];
-        if (filters.remover_desativados || filters.remover_desativados === undefined) {
-            // não acredito que sirva de nada, mas vou manter pois já estava assim
-            // da na mesma colocar o else-if ou não, pois o banco vai gerar 0 resultados no caso de combinações
-            // impossíveis
-            if (filters.indicador_id)
-                firstSet.push({
-                    indicador_variavel: {
-                        some: {
-                            desativado: false,
-                            indicador_id: filters.indicador_id,
-                        },
-                    },
-                });
-            if (filters.meta_id)
-                firstSet.push({
-                    indicador_variavel: {
-                        some: {
-                            desativado: false,
-                            indicador: {
-                                meta_id: filters.meta_id,
-                            },
-                        },
-                    },
-                });
-            if (filters.iniciativa_id)
-                firstSet.push({
-                    indicador_variavel: {
-                        some: {
-                            desativado: false,
-                            indicador: {
-                                iniciativa_id: filters.iniciativa_id,
-                            },
-                        },
-                    },
-                });
-            if (filters.atividade_id)
-                firstSet.push({
-                    indicador_variavel: {
-                        some: {
-                            desativado: false,
-                            indicador: {
-                                atividade_id: filters.atividade_id,
-                            },
-                        },
-                    },
-                });
-            if (filters.formula_composta_id) {
-                firstSet.push({
-                    FormulaCompostaRelVariavel: {
-                        some: {
-                            formula_composta_id: filters.formula_composta_id,
-                        },
-                    },
-                });
-            }
-        }
-
-        let variavel_categorica_id: number | undefined | null = filters.variavel_categorica_id ?? undefined;
-        if (variavel_categorica_id === VAR_CATEGORICA_AS_NULL) variavel_categorica_id = null;
-
-        const permissionsBaseSet: Prisma.Enumerable<Prisma.VariavelWhereInput> = [
-            {
-                AND: firstSet,
-                removido_em: null,
-                medicao_orgao_id: filters.medicao_orgao_id,
-                validacao_orgao_id: filters.validacao_orgao_id,
-                liberacao_orgao_id: filters.liberacao_orgao_id,
-                variavel_categorica_id: variavel_categorica_id,
-                VariavelAssuntoVariavel: Array.isArray(filters.assuntos)
-                    ? { some: { assunto_variavel: { id: { in: filters.assuntos } } } }
-                    : undefined,
-                id: filters.id,
-                orgao_id: filters.orgao_id,
-                orgao_proprietario_id: filters.orgao_proprietario_id,
-                periodicidade: filters.periodicidade,
-                regiao_id: filters.regiao_id,
-                titulo: filters.titulo ? { contains: filters.titulo, mode: 'insensitive' } : undefined,
-                codigo: filters.codigo ? { contains: filters.codigo, mode: 'insensitive' } : undefined,
-                descricao: filters.descricao ? { contains: filters.descricao, mode: 'insensitive' } : undefined,
-            },
-        ];
-
-        if (filters.nivel_regionalizacao && !filters.regiao_id) {
-            firstSet.push({
-                regiao: { nivel: filters.nivel_regionalizacao },
-            });
-        }
-
-        return permissionsBaseSet;
+        return GetVariavelWhereSet(filters);
     }
 
     private getVariavelGlobalWhereSet(filters: FilterVariavelGlobalDto, ids: number[] | undefined) {
@@ -1569,7 +1579,7 @@ export class VariavelService {
     }
 
     async buscaIdsPalavraChave(input: string | undefined): Promise<number[] | undefined> {
-        return PrismaHelpers.buscaIdsPalavraChave(this.prisma, 'variavel', input);
+        return GetVariavelPalavraChave(input, this.prisma);
     }
 
     async update(tipo: TipoVariavel, variavelId: number, dto: UpdateVariavelDto, user: PessoaFromJwt) {
