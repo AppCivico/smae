@@ -20,11 +20,14 @@ export class RefreshVariavelService implements TaskableService {
 
         const task = await this.prisma.task_queue.findFirstOrThrow({ where: { id: +taskId } });
 
-        await this.prisma.$queryRaw`UPDATE task_queue
-        SET status='completed', output = '{"duplicated": true}'
-        WHERE type = 'refresh_variavel'
-        AND status='pending' AND id != ${task.id}
-        AND (params::text, criado_em) = (select params::text, criado_em from task_queue where id = ${task.id})
+        // Mantém a detecção de duplicatas exatas antes da transação
+        await this.prisma.$queryRaw`
+            UPDATE task_queue
+            SET status='completed', output = '{"duplicated": true}'
+            WHERE type = 'refresh_variavel'
+            AND status='pending' AND id != ${task.id}
+            AND (params->>'variavel_id')::int = ${inputParams.variavel_id}::int
+            AND criado_em = (select criado_em from task_queue where id = ${task.id})
         `;
 
         const variavel = await this.prisma.variavel.findFirst({
@@ -36,9 +39,46 @@ export class RefreshVariavelService implements TaskableService {
         });
         if (!variavel) return { success: false, error: 'Variável não encontrada' };
 
+        let intermediateError: Error | undefined = undefined;
         await RetryOperation(
             5,
-            () => this.prisma.$queryRaw`select monta_serie_variavel_calculada(${inputParams.variavel_id}::int);`,
+            async () => {
+                // Inicia uma transação para garantir atomicidade
+                await this.prisma.$transaction(async (prismaTx) => {
+                    // Executa a função de recálculo de série variável dentro da transação
+                    await prismaTx.$queryRaw`select monta_serie_variavel_calculada(${inputParams.variavel_id}::int);`;
+
+                    // Inclui as operações de pós-recálculo na mesma transação
+                    if (variavel.tipo == 'Calculada') {
+                        // recalcular indicadores que usam essa variável
+                        await this.variavelService.recalc_indicador_usando_variaveis(
+                            [inputParams.variavel_id],
+                            prismaTx
+                        );
+                    }
+
+                    // Se o recálculo for bem-sucedido, remove jobs antigos pendentes com o mesmo variavel_id
+                    await prismaTx.$queryRaw`
+                        DELETE FROM task_queue
+                        WHERE type = 'refresh_variavel'
+                        AND status='pending'
+                        AND id != ${task.id}
+                        AND (params->>'variavel_id')::int = ${inputParams.variavel_id}::int
+                        AND criado_em < (SELECT criado_em FROM task_queue WHERE id = ${task.id})
+                    `;
+
+                    if (variavel.tipo == 'Global') {
+                        // Sincroniza o dashboard de PS quando uma variável global é recalculada
+                        try {
+                            await this.variavelService.recalc_vars_ps_dashboard([inputParams.variavel_id], prismaTx);
+                            this.logger.log(`Dashboard de PS atualizado para variável ${inputParams.variavel_id}`);
+                        } catch (error) {
+                            this.logger.error(`Erro ao atualizar dashboard de PS: ${error.message}`);
+                            intermediateError = new Error(`Erro ao atualizar dashboard de PS: ${error.message}`);
+                        }
+                    }
+                });
+            },
             async (error) => {
                 this.logger.error(`Erro ao recalcular variavel: ${error}`);
 
@@ -56,21 +96,9 @@ export class RefreshVariavelService implements TaskableService {
             }
         );
 
-        if (variavel.tipo == 'Calculada') {
-            // recalcular indicadores que usam essa variável
-            await this.variavelService.recalc_indicador_usando_variaveis([inputParams.variavel_id], this.prisma);
-        }
-
-        if (variavel.tipo == 'Global') {
-            // Sincroniza o dashboard de PS quando uma variável global é recalculada
-            try {
-                await this.variavelService.recalc_vars_ps_dashboard([inputParams.variavel_id], this.prisma);
-                this.logger.log(`Dashboard de PS atualizado para variável ${inputParams.variavel_id}`);
-            } catch (error) {
-                // Falha a tarefa principal se o dashboard falhar, já que as outras funções tem TX próprias
-                // isso faz com que a gente saiba que aconteceu de alguma forma
-                throw new Error(`Erro ao atualizar dashboard de PS: ${error.message}`);
-            }
+        // da rollback apenas na task, mas deixa a variável OK, já que essa parte do dash é menos crítica
+        if (intermediateError) {
+            throw intermediateError;
         }
 
         const took = Date.now() - before;
