@@ -13,7 +13,7 @@ import {
     SerieIndicadorValorPorPeriodo,
     ValorSerieExistente,
 } from '../variavel/entities/variavel.entity';
-import { VariavelService } from '../variavel/variavel.service';
+import { AddTaskRecalcVariaveis, VariavelService } from '../variavel/variavel.service';
 import { CreateIndicadorDto, LinkIndicadorVariavelDto, UnlinkIndicadorVariavelDto } from './dto/create-indicador.dto';
 import { FilterIndicadorDto, FilterIndicadorSerieDto } from './dto/filter-indicador.dto';
 import { FormulaVariaveis, UpdateIndicadorDto } from './dto/update-indicador.dto';
@@ -1166,6 +1166,8 @@ export class IndicadorService {
                         }) satisfies Prisma.IndicadorVariavelCreateManyInput
                 ),
             });
+
+            await AddTaskRecalcVariaveis(prisma, { variavelIds: variableIdsToLink });
         });
 
         return;
@@ -1231,6 +1233,7 @@ export class IndicadorService {
                     indicador_origem_id: null,
                 },
             });
+            await AddTaskRecalcVariaveis(prismaTx, { variavelIds: [dto.variavel_id] });
         });
 
         return;

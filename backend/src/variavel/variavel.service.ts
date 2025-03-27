@@ -4098,3 +4098,76 @@ export class VariavelService {
         return detailDto;
     }
 }
+
+/**
+ * Obtém os IDs das variáveis relacionadas a um PDM
+ * @param pdmId O ID do PDM
+ * @param prismaTx Cliente de transação do Prisma
+ * @returns Array de IDs de variáveis
+ */
+async function getPdmVariavelIds(pdmId: number, prismaTx: Prisma.TransactionClient): Promise<number[]> {
+    const variaveis = await prismaTx.$queryRaw<{ id: number }[]>`
+        WITH pdm_items AS (
+            SELECT id, tipo, meta_id, iniciativa_id, atividade_id
+            FROM view_metas_arvore_pdm
+            WHERE pdm_id = ${pdmId}
+        )
+        SELECT DISTINCT v.id
+        FROM variavel v
+        JOIN indicador_variavel iv ON v.id = iv.variavel_id
+        JOIN indicador i ON iv.indicador_id = i.id
+        JOIN pdm_items pi ON
+            (pi.tipo = 'meta' AND i.meta_id = pi.id) OR
+            (pi.tipo = 'iniciativa' AND i.iniciativa_id = pi.id) OR
+            (pi.tipo = 'atividade' AND i.atividade_id = pi.id)
+        WHERE v.removido_em IS NULL
+        AND v.tipo = 'Global'
+    `;
+
+    return variaveis.map((v) => v.id);
+}
+
+/**
+ * Recalcula variáveis para PDM ou IDs de variáveis específicas
+ * @param prismaTx Cliente de transação do Prisma
+ * @param options Opções contendo pdmId ou variavelIds
+ * @returns Promise que é resolvida quando o recálculo é concluído
+ */
+export async function AddTaskRecalcVariaveis(
+    prismaTx: Prisma.TransactionClient,
+    options: { pdmId?: number; variavelIds?: number[] }
+): Promise<void> {
+    const logger = new Logger('VariaveisRecalc'); // Ajuste conforme necessário para seu logger
+
+    let variavelIds: number[] = [];
+
+    // Se os variavelIds forem fornecidos diretamente, use-os
+    if (options.variavelIds && options.variavelIds.length > 0) {
+        variavelIds = options.variavelIds;
+        logger.log(`Recalculando ${variavelIds.length} variáveis específicas`);
+    }
+    // Caso contrário, obtenha variáveis do PDM
+    else if (options.pdmId) {
+        logger.log(`Recalculando variáveis para o PDM ID: ${options.pdmId}`);
+        variavelIds = await getPdmVariavelIds(options.pdmId, prismaTx);
+
+        if (variavelIds.length > 0) {
+            logger.log(
+                `Encontrou ${variavelIds.length} variáveis para recalcular o dashboard do PDM ID: ${options.pdmId}`
+            );
+        } else {
+            logger.log(`Nenhuma variável global no PDM ID: ${options.pdmId}`);
+            return;
+        }
+    } else {
+        throw new Error('É necessário fornecer pdmId ou variavelIds');
+    }
+
+    // Executa refresh_variavel para todas as variáveis em uma única consulta
+    if (variavelIds.length > 0) {
+        await prismaTx.$queryRaw`
+            SELECT refresh_variavel(v, null)
+            FROM unnest(${variavelIds}::int[]) AS v
+        `;
+    }
+}
