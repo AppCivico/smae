@@ -23,24 +23,29 @@ const variaveisMetadado: Record<string, {
     posicao: 2,
     aba: undefined,
   },
+  a_coletar_atrasadas: {
+    legenda: 'A coletar atrasadas',
+    posicao: 3,
+    aba: 'Preenchimento',
+  },
   a_coletar: {
     legenda: 'A coletar',
-    posicao: 3,
+    posicao: 4,
     aba: 'Preenchimento',
   },
   coletadas_nao_conferidas: {
     legenda: 'Coletadas não conferidas',
-    posicao: 4,
+    posicao: 5,
     aba: 'Validacao',
   },
   conferidas_nao_liberadas: {
     legenda: 'Conferidas não liberadas',
-    posicao: 5,
+    posicao: 6,
     aba: 'Liberacao',
   },
   liberadas: {
     legenda: 'Liberadas',
-    posicao: 6,
+    posicao: 7,
     aba: undefined,
   },
 };
@@ -79,7 +84,7 @@ function obterFaseRota(fase: ChavesFase): RouteLocationRaw {
   switch (fase) {
     case 'Orcamento':
       return {
-        name: '.orcamentoDeMetas',
+        name: '.MetaOrcamentoRealizado',
         params: parametros,
       };
 
@@ -151,11 +156,13 @@ const variaveisMapeadas = computed(() => {
   return chavesVariaveis.map((key) => {
     const variavel = props.variaveis[key];
 
+    const variavelMetadata = variaveisMetadado[key] || {};
+
     return {
       valor: variavel.toString().padStart(2, '0'),
-      aba: variaveisMetadado[key].aba,
-      posicao: variaveisMetadado[key].posicao,
-      legenda: variaveisMetadado[key].legenda,
+      aba: variavelMetadata.aba || '',
+      posicao: variavelMetadata.posicao || 0,
+      legenda: variavelMetadata.legenda || key,
     };
   }).sort((a, b) => a.posicao - b.posicao);
 });
@@ -192,10 +199,11 @@ const variaveisMapeadas = computed(() => {
     </div>
 
     <div class="ciclo-lista-item__variaveis  mt025">
-      <SmaeLink
+      <Component
+        :is="situacao.aba ? 'SmaeLink' : 'div'"
         v-for="(situacao, situacaoIndex) in variaveisMapeadas"
         :key="`variavel--${situacaoIndex}`"
-        :to="{
+        :to="situacao.aba && {
           name: 'cicloAtualizacao',
           query: {
             pdm_id: $props.pdmId,
@@ -207,10 +215,13 @@ const variaveisMapeadas = computed(() => {
         }"
         class="variavel-item"
       >
-        <span class="variavel-item__conteudo t12 w400 link-texto">
+        <span
+          class="variavel-item__conteudo t12 w400"
+          :class="{'link-texto': situacao.aba}"
+        >
           {{ situacao.legenda }}
 
-          <span class="variavel-item__conteudo--numero w700 ml05">
+          <span class="variavel-item__conteudo--numero w700">
             {{ situacao.valor }}
           </span>
         </span>
@@ -222,7 +233,7 @@ const variaveisMapeadas = computed(() => {
         >
           <use xlink:href="#i_right" />
         </svg>
-      </SmaeLink>
+      </Component>
     </div>
   </article>
 </template>
@@ -300,7 +311,7 @@ const variaveisMapeadas = computed(() => {
   align-items: center;
 }
 
-.variavel-item:last-of-type .ciclo-lista-item__vaiaveis-separador {
+.variavel-item:last-child .ciclo-lista-item__vaiaveis-separador {
   display: none;
 }
 
@@ -311,4 +322,5 @@ const variaveisMapeadas = computed(() => {
 
 .variavel-item__label {
   width: 100%;
-}</style>
+}
+</style>
