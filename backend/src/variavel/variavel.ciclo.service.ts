@@ -81,7 +81,8 @@ export async function getVariavelPermissionsWhere(
     filters: ReducedFiltro,
     user: PessoaFromJwt,
     prisma: PrismaService,
-    consulta_historica: boolean = false
+    consulta_historica: boolean = false,
+    incluir_vars_sem_equipes: boolean = false
 ): Promise<Prisma.Enumerable<Prisma.VariavelWhereInput>> {
     const isRoot = user.hasSomeRoles(['SMAE.superadmin', 'CadastroVariavelGlobal.administrador']);
 
@@ -130,7 +131,7 @@ export async function getVariavelPermissionsWhere(
         whereConditions.push({
             OR: [{ medicao_orgao_id: orgao_id }, { validacao_orgao_id: orgao_id }, { liberacao_orgao_id: orgao_id }],
         });
-    } else if (!isRoot && consulta_historica === false) {
+    } else if (!isRoot && consulta_historica === false && incluir_vars_sem_equipes === false) {
         const equipes = await prisma.grupoResponsavelEquipe.findMany({
             where: {
                 removido_em: null,
