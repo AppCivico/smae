@@ -1,20 +1,25 @@
 <script lang="ts" setup>
+import * as CardEnvelope from '@/components/cardEnvelope';
+import FormularioQueryString from '@/components/FormularioQueryString.vue';
+import ListaLegendas from '@/components/ListaLegendas.vue';
+import FiltroDoQuadroDeAtividades from '@/components/planoSetorialProgramaMetas.componentes/FiltroDoQuadroDeAtividades.vue';
+import CicloListaItem, { type CicloVigenteItemParams, type ListaVariaveis } from '@/components/planoSetorialProgramaMetas.componentes/QuadroDeAtividades/CicloListaItem.vue';
+import CicloVigenteFiltro from '@/components/planoSetorialProgramaMetas.componentes/QuadroDeAtividades/CicloVigenteFiltro.vue';
+import {
+  listaDeFases,
+  listaDeStatus,
+  obterFaseIcone,
+  obterFaseLegenda,
+  obterFaseStatus,
+} from '@/components/planoSetorialProgramaMetas.componentes/QuadroDeAtividades/helpers/obterDadosItems';
+import GraficoDeSituacoesDasVariaveis from '@/components/quadroDeAtividades/GraficoDeSituacoesDasVariaveis.vue';
+import GrandesNumerosDeMetas from '@/components/quadroDeAtividades/GrandesNumerosDeMetas.vue';
+import dateToTitle from '@/helpers/dateToTitle';
+import { usePanoramaPlanoSetorialStore } from '@/stores/planoSetorial.panorama.store';
+import type { Parametros, ParametrosComPdmIdObrigatorio } from '@/stores/planoSetorial.panorama.store.ts';
 import { storeToRefs } from 'pinia';
 import { computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import * as CardEnvelope from '@/components/cardEnvelope';
-import FormularioQueryString from '@/components/FormularioQueryString.vue';
-import GrandesNumerosDeMetas from '@/components/quadroDeAtividades/GrandesNumerosDeMetas.vue';
-import GraficoDeSituacoesDasVariaveis from '@/components/quadroDeAtividades/GraficoDeSituacoesDasVariaveis.vue';
-import FiltroDoQuadroDeAtividades from '@/components/planoSetorialProgramaMetas.componentes/FiltroDoQuadroDeAtividades.vue';
-import ListaLegendas from '@/components/ListaLegendas.vue';
-import CicloVigenteFiltro from '@/components/planoSetorialProgramaMetas.componentes/QuadroDeAtividades/CicloVigenteFiltro.vue';
-import {
-  obterFaseIcone, listaDeFases, listaDeStatus, obterFaseStatus, obterFaseLegenda,
-} from '@/components/planoSetorialProgramaMetas.componentes/QuadroDeAtividades/helpers/obterDadosItems';
-import CicloListaItem, { type CicloVigenteItemParams, type ListaVariaveis } from '@/components/planoSetorialProgramaMetas.componentes/QuadroDeAtividades/CicloListaItem.vue';
-import { usePanoramaPlanoSetorialStore } from '@/stores/planoSetorial.panorama.store';
-import dateToTitle from '@/helpers/dateToTitle';
 
 defineOptions({
   inheritAttrs: false,
@@ -73,11 +78,8 @@ watch([
   () => route.query.visao_pessoal,
   () => route.query.pdm_id,
 ], async ([orgaoId, equipeId, visaoPessoal, pdmId]) => {
-  if (!pdmId) {
-    return;
-  }
-  panoramaStore.buscarTudo({
-    pdm_id: pdmId as unknown as number,
+  const params: Parametros = {
+    pdm_id: pdmId as unknown as number || undefined,
     orgao_id: orgaoId && !Array.isArray(orgaoId)
       ? [orgaoId as unknown as number]
       : orgaoId as unknown as number[]
@@ -87,7 +89,14 @@ watch([
       : equipeId as unknown as number[]
       || undefined,
     visao_pessoal: visaoPessoal as unknown as boolean,
-  });
+  };
+
+  panoramaStore.buscarVariaveis(params);
+
+  if (params.pdm_id) {
+    panoramaStore.buscarEstatisticasMetas(params as ParametrosComPdmIdObrigatorio);
+    panoramaStore.buscarListaMetas(params as ParametrosComPdmIdObrigatorio);
+  }
 }, { immediate: true });
 </script>
 

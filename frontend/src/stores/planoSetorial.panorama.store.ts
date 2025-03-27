@@ -30,13 +30,17 @@ type Estado = {
 };
 
 export type Parametros = {
-  pdm_id: number;
+  pdm_id?: number;
   orgao_id?: number[];
   equipes?: number[];
   visao_pessoal?: boolean;
   apenas_pendentes?: boolean;
   pagina?: number;
   ipp?: number;
+};
+
+export type ParametrosComPdmIdObrigatorio = Parametros & {
+  pdm_id: number;
 };
 
 export const usePanoramaPlanoSetorialStore = (prefixo = '') => defineStore(prefixo ? `${prefixo}.panorama` : 'panorama', {
@@ -69,12 +73,6 @@ export const usePanoramaPlanoSetorialStore = (prefixo = '') => defineStore(prefi
   }),
 
   actions: {
-    buscarTudo(params:Parametros) {
-      this.buscarVariaveis(params);
-      this.buscarEstatisticasMetas(params);
-      this.buscarListaMetas(params);
-    },
-
     async buscarVariaveis(params:Parametros) {
       this.chamadasPendentes.variaveis = true;
       this.erros.variaveis = null;
@@ -88,7 +86,7 @@ export const usePanoramaPlanoSetorialStore = (prefixo = '') => defineStore(prefi
       this.chamadasPendentes.variaveis = false;
     },
 
-    async buscarEstatisticasMetas(params:Parametros) {
+    async buscarEstatisticasMetas(params:ParametrosComPdmIdObrigatorio) {
       this.chamadasPendentes.estatisticasMetas = true;
       this.erros.estatisticasMetas = null;
 
@@ -101,7 +99,7 @@ export const usePanoramaPlanoSetorialStore = (prefixo = '') => defineStore(prefi
       this.chamadasPendentes.estatisticasMetas = false;
     },
 
-    async buscarListaMetas(params:Parametros) {
+    async buscarListaMetas(params:ParametrosComPdmIdObrigatorio) {
       this.chamadasPendentes.listaMetas = true;
       this.erros.listaMetas = null;
 
