@@ -1,14 +1,5 @@
 CREATE OR REPLACE VIEW view_variavel_global AS
-WITH PlanoSetorial AS (
-    SELECT
-        variavel_id,
-        array_agg(DISTINCT pdm_id) AS pdm_ids
-    FROM
-        mv_variavel_pdm
-    GROUP BY
-        1
-),
-AssuntoVariavel AS (
+WITH AssuntoVariavel AS (
     SELECT
         variavel_id,
         array_agg(DISTINCT av.assunto_variavel_id) AS assunto_ids
@@ -23,7 +14,7 @@ SELECT
     v.codigo,
     v.orgao_id,
     v.orgao_proprietario_id,
-    coalesce(ps.pdm_ids, '{}'::int[]) AS planos,
+    coalesce(ps.pdm_id, '{}'::int[]) AS planos,
     v.periodicidade,
     v.inicio_medicao,
     v.fim_medicao,
@@ -37,7 +28,7 @@ SELECT
     v.regiao_id
 FROM
     variavel AS v
-    LEFT JOIN PlanoSetorial ps ON v.id = ps.variavel_id
+    LEFT JOIN ps_dashboard_variavel ps ON v.id = ps.variavel_id
     LEFT JOIN AssuntoVariavel av ON v.id = av.variavel_id
     LEFT JOIN fonte_variavel fonte ON v.fonte_id = fonte.id
 WHERE
