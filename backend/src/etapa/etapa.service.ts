@@ -9,7 +9,7 @@ import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { CreateGeoEnderecoReferenciaDto } from '../geo-loc/entities/geo-loc.entity';
 import { GeoLocService, UpsertEnderecoDto } from '../geo-loc/geo-loc.service';
 import { MetaItemDto } from '../meta/entities/meta.entity';
-import { MetaService } from '../meta/meta.service';
+import { AddTaskRefreshMeta, MetaService } from '../meta/meta.service';
 import { MfPessoaAcessoPdm } from '../mf/mf.service';
 import { CreatePSEquipePontoFocalDto } from '../pdm/dto/create-pdm.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -1220,6 +1220,8 @@ export class EtapaService {
                     removido_em: new Date(Date.now()),
                 },
             });
+
+            await AddTaskRefreshMeta(prismaTx, { meta_id: metaRow.meta_id });
 
             const cronogramas = await prismaTx.cronogramaEtapa.findMany({
                 where: { etapa_id: etapa_id },
