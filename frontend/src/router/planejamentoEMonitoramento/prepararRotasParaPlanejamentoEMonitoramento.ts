@@ -1,7 +1,7 @@
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
 import type { RouteLocation } from 'vue-router';
-import metasRoutes from './metas.routes';
 import tiparPropsDeRota from '../helpers/tiparPropsDeRota';
+import metasRoutes from './metas.routes';
 
 const ListaDeRelatorios = () => import('@/views/relatorios/ListaDeRelatorios.vue');
 
@@ -83,6 +83,9 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
         name: `${entidadeMãe}.quadroDeAtividades`,
         path: 'quadro-de-atividades',
         component: () => import('@/views/planosSetoriais/PlanosSetoriaisQuadroDeAtividades.vue'),
+        meta: {
+          tituloParaNavegador: `Quadro de atividades de ${parametrosPagina.tituloPlural}`,
+        },
       },
       {
         name: `${entidadeMãe}.planosSetoriaisCriar`,
