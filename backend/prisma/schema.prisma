@@ -1333,6 +1333,7 @@ model Meta {
     ViewPainelEstrategicoProjetos          ViewPainelEstrategicoProjetos[]
     PsDashboardConsolidado                 PsDashboardConsolidado[]
     view_ps_dashboard_meta_stats           view_ps_dashboard_meta_stats[]
+    ViewPsDashboardConsolidado             view_ps_dashboard_consolidado[]
 
     @@index([pdm_id])
     @@map("meta")
@@ -2149,6 +2150,7 @@ model Iniciativa {
     PdmPerfil                          PdmPerfil[]
     CompromissoOrigem                  CompromissoOrigem[]
     PsDashboardConsolidado             PsDashboardConsolidado[]
+    ViewPsDashboardConsolidado         view_ps_dashboard_consolidado[]
 
     @@index([meta_id])
     @@map("iniciativa")
@@ -2240,6 +2242,7 @@ model Atividade {
     ProjetoOrigemRel                   CompromissoOrigem[]                  @relation("rel")
     PdmPerfil                          PdmPerfil[]
     PsDashboardConsolidado             PsDashboardConsolidado[]
+    ViewPsDashboardConsolidado         view_ps_dashboard_consolidado[]
 
     @@index([iniciativa_id])
     @@map("atividade")
@@ -7514,6 +7517,59 @@ model PsDashboardConsolidado {
     @@index([meta_id])
     @@index([variaveis], name: "idx_ps_dashboard_consolidado_variaveis", type: Gin)
     @@map("ps_dashboard_consolidado")
+}
+
+model view_ps_dashboard_consolidado {
+    id                                 Int                        @id
+    item_id                            Int
+    tipo                               PsDashboardConsolidadoTipo
+    pdm_id                             Int
+    meta_id                            Int
+    iniciativa_id                      Int?
+    atividade_id                       Int?
+    variaveis                          Int[]
+    orcamento_total                    Int[]
+    orcamento_preenchido               Int[]
+    pendencia_orcamento                Boolean
+    cronograma_total                   Int
+    cronograma_atraso_inicio           Int
+    cronograma_atraso_fim              Int
+    cronograma_preenchido              Int
+    pendencia_cronograma               Boolean
+    variaveis_total                    Int
+    variaveis_total_no_ciclo           Int
+    variaveis_a_coletar                Int
+    variaveis_a_coletar_atrasadas      Int
+    variaveis_coletadas_nao_conferidas Int
+    variaveis_conferidas_nao_liberadas Int
+    variaveis_liberadas                Int
+    fase_atual                         CicloFase?
+    fase_analise_preenchida            Boolean
+    fase_risco_preenchida              Boolean
+    fase_fechamento_preenchida         Boolean
+    equipes_orgaos                     Int[]
+    equipes                            Int[]
+    pendente                           Boolean
+    pendente_variavel                  Boolean
+    pendente_cronograma                Boolean
+    pendente_orcamento                 Boolean
+    atualizado_em                      DateTime
+    ciclo_fisico_id                    Int?
+
+    meta       Meta        @relation(fields: [meta_id], references: [id])
+    iniciativa Iniciativa? @relation(fields: [iniciativa_id], references: [id])
+    atividade  Atividade?  @relation(fields: [atividade_id], references: [id])
+
+    // Added fields from joins
+    meta_codigo       String
+    meta_titulo       String
+    iniciativa_codigo String?
+    iniciativa_titulo String?
+    atividade_codigo  String?
+    atividade_titulo  String?
+
+    @@unique([item_id, tipo])
+    @@map("view_ps_dashboard_consolidado")
 }
 
 model PsDashboardVariavel {

@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { CicloFase, Prisma } from '@prisma/client';
+import { getVariavelPermissionsWhere } from 'src/variavel/variavel.ciclo.service';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { Date2YMD } from '../../common/date2ymd';
 import { TipoPdmType } from '../../common/decorators/current-tipo-pdm';
@@ -21,7 +22,6 @@ import {
     PSMFSituacaoVariavelDto,
     StrMIA,
 } from './dto/ps.dto';
-import { getVariavelPermissionsWhere } from 'src/variavel/variavel.ciclo.service';
 
 interface PaginationTokenBody {
     search_hash: string;
@@ -267,7 +267,7 @@ export class PSMFDashboardService {
         const equipes_pessoa = filtros.visao_pessoal ? await user.getEquipesColaborador(this.prisma) : [];
 
         // Filtro principal a partir do dashboard
-        const dashPermissionsSet: Prisma.Enumerable<Prisma.PsDashboardConsolidadoWhereInput> = [
+        const dashPermissionsSet: Prisma.Enumerable<Prisma.view_ps_dashboard_consolidadoWhereInput> = [
             {
                 meta: {
                     AND: permissionsSet.length > 0 ? { AND: permissionsSet } : undefined,
@@ -290,42 +290,17 @@ export class PSMFDashboardService {
         ];
 
         // Obter contagem total de registros
-        const totalCountQuery = this.prisma.psDashboardConsolidado.count({
+        const totalCountQuery = this.prisma.view_ps_dashboard_consolidado.count({
             where: {
                 AND: dashPermissionsSet,
             },
         });
 
         // Obter os itens paginados
-        const dashboardQuery = this.prisma.psDashboardConsolidado.findMany({
+        const dashboardQuery = this.prisma.view_ps_dashboard_consolidado.findMany({
             where: {
                 AND: dashPermissionsSet,
             },
-            include: {
-                meta: {
-                    select: { id: true, titulo: true, codigo: true },
-                },
-                iniciativa: {
-                    select: { id: true, titulo: true, codigo: true },
-                },
-                atividade: {
-                    select: { id: true, titulo: true, codigo: true },
-                },
-            },
-            orderBy: [
-                { pdm_id: 'asc' },
-                { meta: { codigo: 'asc' } },
-                {
-                    iniciativa: {
-                        codigo: 'asc',
-                    },
-                },
-                {
-                    atividade: {
-                        codigo: 'asc',
-                    },
-                },
-            ],
             skip: offset,
             take: ipp,
         });
@@ -370,7 +345,29 @@ export class PSMFDashboardService {
                     conferidas_nao_liberadas: item.variaveis_conferidas_nao_liberadas,
                     liberadas: item.variaveis_liberadas,
                 },
-                ...geraDetalheMetaIniAtv(item),
+                ...geraDetalheMetaIniAtv({
+                    meta: {
+                        id: item.meta_id,
+                        titulo: item.meta_titulo,
+                        codigo: item.meta_codigo,
+                    },
+                    iniciativa_id: item.iniciativa_id,
+                    iniciativa: item.iniciativa_id
+                        ? {
+                              id: item.iniciativa_id,
+                              titulo: item.iniciativa_titulo!,
+                              codigo: item.iniciativa_codigo!,
+                          }
+                        : null,
+                    atividade_id: item.atividade_id,
+                    atividade: item.atividade_id
+                        ? {
+                              id: item.atividade_id,
+                              titulo: item.atividade_titulo!,
+                              codigo: item.atividade_codigo!,
+                          }
+                        : null,
+                }),
             } satisfies PSMFItemMetaDto;
         });
 
