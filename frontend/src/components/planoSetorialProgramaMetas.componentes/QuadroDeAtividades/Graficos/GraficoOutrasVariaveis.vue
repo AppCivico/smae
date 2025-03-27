@@ -4,27 +4,27 @@ import useGraficoEmBarra from './composable/useGraficoEmBarra';
 
 const variaveisMetadado: Omit<ListaVariaveis, 'valor'> = {
   a_coletar_atrasadas: {
-    legenda: 'A COLETAR ATRASADAS',
+    legenda: 'a coletar atrasadas',
     posicao: 1,
     cor: '#292279',
   },
   a_coletar_prazo: {
-    legenda: 'A COLETAR NO PRAZO',
+    legenda: 'a coletar no prazo',
     posicao: 2,
     cor: '#4539CA',
   },
   coletadas_a_conferir: {
-    legenda: 'A CONFERIR',
+    legenda: 'a conferir',
     posicao: 3,
     cor: '#5345F3',
   },
   conferidas_a_liberar: {
-    legenda: 'A LIBERAR',
+    legenda: 'a liberar',
     posicao: 3,
     cor: '#8C83F7',
   },
   liberadas: {
-    legenda: 'LIBERADAS',
+    legenda: 'liberadas',
     posicao: 4,
     cor: '#C6C1FB',
   },

@@ -24,7 +24,7 @@ const variaveisMetadado: Record<string, {
     aba: undefined,
   },
   a_coletar_atrasadas: {
-    legenda: 'A coletar atrasadas',
+    legenda: 'a coletar atrasadas',
     posicao: 3,
     aba: 'Preenchimento',
   },
@@ -227,7 +227,7 @@ const variaveisMapeadas = computed(() => {
         </span>
 
         <svg
-          class="ciclo-lista-item__vaiaveis-separador ml05 mr05"
+          class="ciclo-lista-item__variaveis-separador ml05 mr05"
           width="5"
           height="9.5"
         >
@@ -311,7 +311,7 @@ const variaveisMapeadas = computed(() => {
   align-items: center;
 }
 
-.variavel-item:last-child .ciclo-lista-item__vaiaveis-separador {
+.variavel-item:last-child .ciclo-lista-item__variaveis-separador {
   display: none;
 }
 

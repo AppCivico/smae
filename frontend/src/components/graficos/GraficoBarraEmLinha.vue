@@ -34,7 +34,7 @@ type Slots = {
 const props = withDefaults(defineProps<Props>(), {
   titulo: undefined,
   tamanhoNumero: 42,
-  tamanhoLegenda: 5,
+  tamanhoLegenda: 7,
 });
 
 defineSlots<Slots>();
@@ -93,7 +93,7 @@ const todoValorEhZero = computed<boolean>(() => {
           name="numeros"
           :variaveis-ordenadas="variaveisOrdenadas"
         >
-          <dl class="grafico-barra-em-linha__numeros flex spacebetween g05">
+          <dl class="grafico-barra-em-linha__numeros">
             <dd
               v-for="(variavel, variavelIndex) in variaveisOrdenadas"
               :key="`grafico-barra--${variavelIndex}`"
@@ -105,8 +105,8 @@ const todoValorEhZero = computed<boolean>(() => {
                 :legenda="variavel.legenda"
                 :numero="variavel.valor"
                 cor-de-fundo="#e8e8e866"
-                :tamanho-do-numero="42"
-                :tamanho-da-legenda="5"
+                :tamanho-do-numero="$props.tamanhoNumero"
+                :tamanho-da-legenda="$props.tamanhoLegenda"
               />
             </dd>
           </dl>
@@ -117,12 +117,26 @@ const todoValorEhZero = computed<boolean>(() => {
 </template>
 
 <style lang="less" scoped>
+.grafico-barra-em-linha {
+  :deep(.card-envelope-conteudo) {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+}
+
 .grafico-barra-em-linha__linha-item {
   border: 1.5px solid #FFFFFF;
   height: 28px;
 }
 
 .grafico-barra-em-linha__linha-texto {
-  text-transform: uppercase !important;
+  text-transform: uppercase;
+}
+
+.grafico-barra-em-linha__numeros {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(97px, 1fr));
+  gap: 0.5rem;
 }
 </style>
