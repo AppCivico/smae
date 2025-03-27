@@ -285,7 +285,7 @@ BEGIN
             FROM variavel v
             JOIN indicador_variavel iv ON v.id = iv.variavel_id
             JOIN indicador i ON iv.indicador_id = i.id
-            LEFT JOIN variavel_ciclo_corrente vcc ON vcc.variavel_id = v.id
+            LEFT JOIN variavel_ciclo_corrente vcc ON vcc.variavel_id = COALESCE(v.variavel_mae_id, v.id)
             LEFT JOIN variavel_categorica vc ON v.variavel_categorica_id = vc.id
             WHERE (
                 (r_item.tipo = 'meta' AND i.meta_id = r_item.id) OR
@@ -298,7 +298,7 @@ BEGIN
         )
         SELECT
             COUNT(DISTINCT family_id),
-            COALESCE( ARRAY_AGG(DISTINCT id), ARRAY[]::int[] ),
+            COALESCE(ARRAY_AGG(DISTINCT family_id), ARRAY[]::int[]),
             COUNT(DISTINCT family_id) FILTER (WHERE eh_corrente = true),
             COUNT(DISTINCT family_id) FILTER (WHERE eh_corrente = true AND fase = 'Preenchimento' AND (atrasos IS NULL OR atrasos = '{}')),
             COUNT(DISTINCT family_id) FILTER (WHERE eh_corrente = true AND fase = 'Preenchimento' AND atrasos IS NOT NULL AND atrasos <> '{}'),
