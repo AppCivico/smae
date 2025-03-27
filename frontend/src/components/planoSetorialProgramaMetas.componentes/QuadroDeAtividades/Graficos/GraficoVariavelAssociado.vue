@@ -1,48 +1,45 @@
 <script setup lang="ts">
 import GraficoBarraEmLinha, { type ListaVariaveis } from '@/components/graficos/GraficoBarraEmLinha.vue';
+import useGraficoEmBarra from './composable/useGraficoEmBarra';
 
-const variaveis: ListaVariaveis = {
-  coletar_atrasadas: {
+const variaveisMetadado: Omit<ListaVariaveis, 'valor'> = {
+  a_coletar_atrasadas: {
     legenda: 'A COLETAR ATRASADAS',
     valor: 20,
-    posicao: 1,
     cor: '#04233D',
   },
-  coletar_no_prazo: {
+  a_coletar_prazo: {
     legenda: 'A COLETAR NO PRAZO',
     valor: 53,
-    posicao: 2,
     cor: '#094376',
   },
-  conferir: {
+  coletadas_a_conferir: {
     legenda: 'A CONFERIR',
     valor: 62,
-    posicao: 3,
     cor: '#0E60A7',
   },
-  liberar: {
+  conferidas_a_liberar: {
     legenda: 'A LIBERAR',
     valor: 70,
-    posicao: 4,
     cor: '#7694BF',
   },
   liberadas: {
     legenda: 'LIBERADAS',
     valor: 90,
-    posicao: 5,
     cor: '#A5C1E7',
   },
 };
 
+const { variaveisPreparadas } = useGraficoEmBarra('associadas_plano_atual', variaveisMetadado);
+
 </script>
 
 <template>
-  <aside class="grafico-outras-variaveis">
+  <aside class="grafico-outras-variaveis__grafico">
     <GraficoBarraEmLinha
       class="grafico-outras-variaveis"
       titulo="Outras variáveis do órgão (não associadas a PS/PdM ativos)"
-      :variaveis="variaveis"
-      style="height: 100%"
+      :variaveis="variaveisPreparadas"
     />
   </aside>
 </template>
