@@ -7527,6 +7527,8 @@ model PsDashboardVariavel {
     fase_validacao_preenchida     Boolean      @default(false)
     fase_liberacao_preenchida     Boolean      @default(false)
 
+    possui_atrasos Boolean @default(false)
+
     equipes        Int[] // Mexeu, não dispara recalc
     equipes_orgaos Int[] // Mexeu, não dispara recalc
 

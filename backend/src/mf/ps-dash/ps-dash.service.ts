@@ -138,7 +138,13 @@ export class PSMFDashboardService {
             whereFilter: any
         ): Promise<PSMFSituacaoVariavelDto> {
             const stats = await prisma.psDashboardVariavel.groupBy({
-                by: ['fase', 'fase_preenchimento_preenchida', 'fase_validacao_preenchida', 'fase_liberacao_preenchida'],
+                by: [
+                    'fase',
+                    'fase_preenchimento_preenchida',
+                    'fase_validacao_preenchida',
+                    'fase_liberacao_preenchida',
+                    'possui_atrasos',
+                ],
                 _count: { variavel_id: true },
                 where: whereFilter,
             });
@@ -148,19 +154,22 @@ export class PSMFDashboardService {
             let coletadas_a_conferir = 0;
             let conferidas_a_liberar = 0;
             let a_coletar_atrasadas = 0;
+            let a_coletar_prazo = 0;
 
             for (const item of stats) {
                 const count = item._count.variavel_id;
                 total += count;
-
+                console.log(item);
                 if (item.fase === 'Liberacao' && item.fase_liberacao_preenchida) {
                     liberadas += count;
                 } else if (item.fase === 'Liberacao' && !item.fase_liberacao_preenchida) {
                     conferidas_a_liberar += count;
                 } else if (item.fase === 'Validacao') {
                     coletadas_a_conferir += count;
-                } else if (item.fase === 'Preenchimento') {
+                } else if (item.fase === 'Preenchimento' && item.possui_atrasos === true) {
                     a_coletar_atrasadas += count;
+                } else if (item.fase === 'Preenchimento' && item.possui_atrasos === false) {
+                    a_coletar_prazo += count;
                 }
             }
 
@@ -170,7 +179,7 @@ export class PSMFDashboardService {
                 coletadas_a_conferir,
                 conferidas_a_liberar,
                 a_coletar_atrasadas,
-                a_coletar_prazo: 0,
+                a_coletar_prazo,
             };
         }
 
