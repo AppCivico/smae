@@ -7642,6 +7642,8 @@ view view_dashboard_variavel_corrente {
     variavel_ciclo_corrente_id Int
     variavel_ciclo_corrente    VariavelCicloCorrente @relation(fields: [variavel_ciclo_corrente_id], references: [id])
 
+    pdm_id Int
+
     @@unique([item_id, tipo])
     @@map("view_dashboard_variavel_corrente")
 }

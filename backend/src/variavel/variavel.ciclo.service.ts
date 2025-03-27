@@ -1,14 +1,15 @@
-import { BadRequestException, Inject, Injectable, forwardRef } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PerfilResponsavelEquipe, Prisma, VariavelCicloCorrente, VariavelFase } from '@prisma/client';
+import { DateTime } from 'luxon';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { CrontabIsEnabled } from '../common/CrontabIsEnabled';
 import { LoggerWithLog } from '../common/LoggerWithLog';
 import { CONST_BOT_USER_ID } from '../common/consts';
 import { Date2YMD, SYSTEM_TIMEZONE } from '../common/date2ymd';
+import { IdTituloDto } from '../common/dto/IdTitulo.dto';
 import { JOB_CICLO_VARIAVEL } from '../common/dto/locks';
 import { TEMPO_EXPIRACAO_ARQUIVO } from '../mf/metas/metas.service';
-import { PdmService } from '../pdm/pdm.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { UploadService } from '../upload/upload.service';
 import { VariavelResumo, VariavelResumoInput } from './dto/list-variavel.dto';
@@ -32,8 +33,6 @@ import {
     VariavelService,
 } from './variavel.service';
 import { VariavelUtilService } from './variavel.util.service';
-import { IdTituloDto } from '../common/dto/IdTitulo.dto';
-import { DateTime } from 'luxon';
 
 interface ICicloCorrente {
     variavel: {
@@ -194,16 +193,15 @@ function buildMetaIniAtvFilter(filters: FilterVariavelGlobalCicloDto) {
                 },
             },
         };
-    // TODO:
-    //        if (filters.pdm_id)
-    //            return {
-    //                view_dashboard_variavel_corrente: {
-    //                    some: {
-    //                        item_id: filters.pdm_id,
-    //                        tipo: 'pdm',
-    //                    },
-    //                },
-    //            };
+
+    if (filters.pdm_id)
+        return {
+            view_dashboard_variavel_corrente: {
+                some: {
+                    pdm_id: filters.pdm_id,
+                },
+            },
+        };
     return {};
 }
 
@@ -215,9 +213,7 @@ export class VariavelCicloService {
         private readonly uploadService: UploadService,
         private readonly variavelService: VariavelService,
         private readonly util: VariavelUtilService,
-        //
-        @Inject(forwardRef(() => PdmService))
-        private readonly pdmService: PdmService
+
     ) {
         this.enabled = false;
     }
