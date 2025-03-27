@@ -85,7 +85,7 @@ export class PSMFDashboardService {
         const ehVisaoPessoal = filtros.visao_pessoal === true;
 
         const equipes_pessoa = filtros.visao_pessoal ? await user.getEquipesColaborador(this.prisma) : [];
-        const varGlobalPermissionsSet = await getVariavelPermissionsWhere({}, user, this.prisma, false);
+        const varGlobalPermissionsSet = await getVariavelPermissionsWhere({}, user, this.prisma, true);
 
         // Construir filtros baseados nas permissões
         const dashPermissionsSet: Prisma.Enumerable<Prisma.PsDashboardVariavelWhereInput> = [
