@@ -355,6 +355,7 @@ export class PSMFDashboardService {
                     total: item.variaveis_total,
                     a_coletar_total: item.variaveis_total_no_ciclo,
                     a_coletar: item.variaveis_a_coletar,
+                    a_coletar_atrasadas: item.variaveis_a_coletar_atrasadas,
                     coletadas_nao_conferidas: item.variaveis_coletadas_nao_conferidas,
                     conferidas_nao_liberadas: item.variaveis_conferidas_nao_liberadas,
                     liberadas: item.variaveis_liberadas,

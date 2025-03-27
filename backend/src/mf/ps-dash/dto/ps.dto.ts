@@ -148,6 +148,9 @@ export class PSMFStatusVariaveisMetaDto {
     @ApiProperty({ description: 'Variáveis a coletar' })
     a_coletar: number;
 
+    @ApiProperty({ description: 'Variáveis a coletar' })
+    a_coletar_atrasadas: number;
+
     @ApiProperty({ description: 'Variáveis coletadas não conferidas' })
     coletadas_nao_conferidas: number;
 
