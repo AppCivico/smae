@@ -1,39 +1,13 @@
 CREATE OR REPLACE FUNCTION recalc_vars_ps_dashboard(variaveis integer[])
 RETURNS integer AS $$
 DECLARE
-    total_processado integer := 0;
     num_rows integer;
 BEGIN
-    CREATE TEMP TABLE temp_valid_vars AS
-    SELECT 
-        vcc.variavel_id,
-        vcc.fase,
-        vvg.planos,
-        CASE WHEN cardinality(vcc.atrasos) > 1 THEN true ELSE false END AS possui_atrasos,
-        array_agg(gre.id) AS equipes,
-        array_remove(array_agg(gre.orgao_id), NULL) AS equipes_orgaos
-    FROM 
-        variavel_ciclo_corrente vcc
-        JOIN variavel v ON vcc.variavel_id = v.id
-        JOIN view_variavel_global vvg ON v.id = vvg.id
-        LEFT JOIN variavel_grupo_responsavel_equipe vgre 
-            ON v.id = vgre.variavel_id 
-            AND vgre.removido_em IS NULL
-        LEFT JOIN grupo_responsavel_equipe gre 
-            ON vgre.grupo_responsavel_equipe_id = gre.id
-    WHERE 
-        vcc.variavel_id = ANY(variaveis)
-        AND vcc.eh_corrente = TRUE
-    GROUP BY 
-        vcc.variavel_id, vcc.fase, vvg.planos, vcc.atrasos;
-
+    -- Apaga sempre já que vai dar update no conflict, que é tão caro quanto insert
     DELETE FROM ps_dashboard_variavel
-    WHERE variavel_id = ANY(variaveis)
-    AND variavel_id NOT IN (SELECT variavel_id FROM temp_valid_vars);
+    WHERE variavel_id = ANY(variaveis);
 
-    GET DIAGNOSTICS num_rows = ROW_COUNT;
-    total_processado := total_processado + num_rows;
-
+    -- Insere todos os registros
     INSERT INTO ps_dashboard_variavel (
         variavel_id,
         pdm_id,
@@ -42,39 +16,82 @@ BEGIN
         fase_validacao_preenchida,
         fase_liberacao_preenchida,
         equipes,
-        equipes_orgaos,
-        possui_atrasos
+        equipes_orgaos
+    )
+    WITH pdm_mapping AS (
+        SELECT DISTINCT
+            v.id AS variavel_id,
+            pi.pdm_id
+        FROM
+            variavel v
+            JOIN indicador_variavel iv ON v.id = iv.variavel_id
+            JOIN indicador i ON iv.indicador_id = i.id
+            JOIN view_metas_arvore_pdm pi ON
+                (pi.tipo = 'meta' AND i.meta_id = pi.id) OR
+                (pi.tipo = 'iniciativa' AND i.iniciativa_id = pi.id) OR
+                (pi.tipo = 'atividade' AND i.atividade_id = pi.id)
+        WHERE
+            v.removido_em IS NULL
+            AND v.id = ANY(variaveis)
+    ),
+    planos_data AS (
+        SELECT
+            variavel_id,
+            array_agg(DISTINCT pdm_id) AS pdm_ids
+        FROM
+            pdm_mapping
+        GROUP BY
+            variavel_id
+    ),
+    equipes_data AS (
+        SELECT
+            v.id AS variavel_id,
+            COALESCE(array_agg(DISTINCT gre.id) FILTER (WHERE gre.id IS NOT NULL), '{}'::integer[]) AS equipes,
+            COALESCE(array_agg(DISTINCT gre.orgao_id) FILTER (WHERE gre.orgao_id IS NOT NULL), '{}'::integer[]) AS equipes_orgaos
+        FROM
+            variavel v
+            LEFT JOIN variavel_grupo_responsavel_equipe vgre ON
+                v.id = vgre.variavel_id AND vgre.removido_em IS NULL
+            LEFT JOIN grupo_responsavel_equipe gre ON
+                vgre.grupo_responsavel_equipe_id = gre.id
+        WHERE
+            v.id = ANY(variaveis)
+        GROUP BY
+            v.id
     )
     SELECT
-        vv.variavel_id,
-        vv.planos::integer[],
-        vv.fase::"VariavelFase",
-        (vv.fase = 'Validacao' OR vv.fase = 'Liberacao'),
-        (vv.fase = 'Liberacao'),
-        false,
-        vv.equipes::integer[],
-        vv.equipes_orgaos::integer[],
-        vv.possui_atrasos
-    FROM temp_valid_vars vv
-    ON CONFLICT (variavel_id)
-    DO UPDATE SET
-        pdm_id = EXCLUDED.pdm_id,
-        fase = EXCLUDED.fase,
-        fase_preenchimento_preenchida = EXCLUDED.fase_preenchimento_preenchida,
-        fase_validacao_preenchida = EXCLUDED.fase_validacao_preenchida,
-        fase_liberacao_preenchida = EXCLUDED.fase_liberacao_preenchida,
-        equipes = EXCLUDED.equipes,
-        equipes_orgaos = EXCLUDED.equipes_orgaos;
+        vcc.variavel_id,
+        COALESCE(pd.pdm_ids, '{}'::integer[]),
+        vcc.fase::"VariavelFase",
+
+        -- ROBO acha que deveria ser:
+        -- (vcc.fase IN ( 'Validacao', 'Liberacao' ) OR (vcc.fase = 'Preenchimento' AND vcc.atrasos IS NULL OR vcc.atrasos = '{}')),
+        -- mas acho que deveria ser:
+        (vcc.fase IN ( 'Preenchimento', 'Validacao' , 'Liberacao' ) AND vcc.liberacao_enviada = TRUE), -- fase_validacao_preenchida
+
+        (vcc.fase IN ( 'Preenchimento', 'Validacao' ) AND vcc.liberacao_enviada = TRUE), -- fase_validacao_preenchida
+        vcc.fase = 'Liberacao' AND vcc.liberacao_enviada = TRUE, -- fase_liberacao_preenchida
+        ed.equipes,
+        ed.equipes_orgaos
+    FROM variavel_ciclo_corrente vcc
+    JOIN variavel v ON vcc.variavel_id = v.id
+    LEFT JOIN planos_data pd ON vcc.variavel_id = pd.variavel_id
+    LEFT JOIN equipes_data ed ON vcc.variavel_id = ed.variavel_id
+    LEFT JOIN variavel_categorica vc ON v.variavel_categorica_id = vc.id
+    WHERE
+        vcc.variavel_id = ANY(variaveis)
+        AND vcc.eh_corrente = TRUE
+    -- tiras as variáveis de cronograma, que o próprio cronograma já contabiliza
+    AND (v.variavel_categorica_id IS NULL OR vc.tipo <> 'Cronograma'::"TipoVariavelCategorica")
+    AND v.tipo = 'Global';
 
     GET DIAGNOSTICS num_rows = ROW_COUNT;
-    total_processado := total_processado + num_rows;
 
-    DROP TABLE temp_valid_vars;
-    RETURN total_processado;
-
+    RETURN num_rows;
 EXCEPTION
     WHEN others THEN
-        DROP TABLE IF EXISTS temp_valid_vars;
         RAISE;
 END;
 $$ LANGUAGE plpgsql;
+
+select recalc_vars_ps_dashboard(array_agg(id)) from variavel where tipo = 'Global';
