@@ -1,87 +1,52 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-
-type EntidadeSyncConfig = {
-    prismaModel: string;
-    versao: string;
-};
-type EntidadesSyncMap = Record<string, EntidadeSyncConfig>;
+import { createEntidadesSync } from './entities/sync-entities.config';
+import { EntidadesSyncMap, PrismaModelDelegate, EntidadeSyncConfig, BaseSelect } from './entities/sync-entities.type';
 
 @Injectable()
 export class SyncCadastroBasicoService {
-    private readonly entidadesSync: EntidadesSyncMap = {
-        orgao: {
-            prismaModel: 'orgao',
-            versao: '2024.0.1',
-        },
-        unidadeMedida: {
-            prismaModel: 'unidadeMedida',
-            versao: '2024.0.1',
-        },
-        assuntoVariavel: {
-            prismaModel: 'assuntoVariavel',
-            versao: '2024.0.1',
-        },
-        regiao: {
-            prismaModel: 'regiao',
-            versao: '2024.0.1',
-        },
-        fonteVariavel: {
-            prismaModel: 'fonteVariavel',
-            versao: '2024.0.1',
-        },
-        variavelCategorica: {
-            prismaModel: 'variavelCategorica',
-            versao: '2024.0.1',
-        },
-        tema: {
-            prismaModel: 'tema',
-            versao: '2024.0.1',
-        },
-        ods: {
-            prismaModel: 'ods',
-            versao: '2024.0.1',
-        },
-        tag: {
-            prismaModel: 'tag',
-            versao: '2024.0.1',
-        },
-        tipoAditivo: {
-            prismaModel: 'tipoAditivo',
-            versao: '2024.0.1',
-        },
-        projetoTag: {
-            prismaModel: 'projetoTag',
-            versao: '2024.0.1',
-        },
-        tipoIntervencao: {
-            prismaModel: 'tipoIntervencao',
-            versao: '2024.0.1',
-        },
-    };
+    private entidadesSync: EntidadesSyncMap;
+    private readonly logger = new Logger(SyncCadastroBasicoService.name);
 
+    onModuleInit() {
+        this.entidadesSync = createEntidadesSync(this.prisma);
+    }
     constructor(private readonly prisma: PrismaService) {}
 
     async sync(query: { atualizado_em?: number; versao?: string; tipos?: string }) {
         const atualizadoEm = query.atualizado_em ? new Date(query.atualizado_em * 1000) : null;
-        const tipos = query.tipos ? query.tipos.split(',') : Object.keys(this.entidadesSync);
+        const requestedTipos = query.tipos
+            ? (query.tipos.split(',').filter((tipo) => tipo in this.entidadesSync) as Array<keyof EntidadesSyncMap>)
+            : (Object.keys(this.entidadesSync) as Array<keyof EntidadesSyncMap>);
 
         const dados = [];
 
-        for (const tipo of tipos) {
+        this.logger.log(
+            `Starting sync for types: ${requestedTipos.join(', ')} ${atualizadoEm ? `since ${atualizadoEm.toISOString()}` : '(full sync)'}`
+        );
+
+        for (const tipo of requestedTipos) {
             const config = this.entidadesSync[tipo];
-            if (!config) continue;
 
-            const entidade = await this.syncEntidadeGenerica(
-                tipo,
-                config.prismaModel,
-                config.versao,
-                query.versao,
-                atualizadoEm
-            );
+            if (!config) {
+                this.logger.warn(`Sync configuration not found for type: ${tipo}`);
+                continue;
+            }
 
-            dados.push(entidade);
+            try {
+                const entidade = await this.syncEntidadeGenerica<typeof config.prismaDelegate, typeof config.select>(
+                    tipo,
+                    config as EntidadeSyncConfig<typeof config.prismaDelegate, typeof config.select>,
+                    query.versao,
+                    atualizadoEm
+                );
+                dados.push(entidade);
+            } catch (error) {
+                this.logger.error(`Error syncing entity ${tipo}: ${error.message}`, error.stack);
+            }
         }
+
+        this.logger.log(`Sync completed for types: ${requestedTipos.join(', ')}`);
 
         return {
             dados,
@@ -89,38 +54,51 @@ export class SyncCadastroBasicoService {
         };
     }
 
-    private async syncEntidadeGenerica(
-        nome: string,
-        modelo: string,
-        versaoAtual: string,
+    // Função generica para sincronizar entidades dos cadastros basicos
+    private async syncEntidadeGenerica<TDelegate extends PrismaModelDelegate, TSelect extends BaseSelect>(
+        nomeTipo: string,
+        config: EntidadeSyncConfig<TDelegate, TSelect>,
         queryVersao: string | undefined,
         atualizadoEm: Date | null
     ) {
-        console.log('==========nome=============');
-        console.log(nome);
+        const { prismaDelegate, select, versao: versaoAtual } = config;
+
+        this.logger.debug(`Syncing ${nomeTipo}...`);
+
         const schemaDesatualizado = queryVersao !== versaoAtual;
         const isFullSync = schemaDesatualizado || !atualizadoEm;
 
-        const linhas = await (this.prisma as any)[modelo].findMany({
-            where: isFullSync
-                ? { removido_em: null }
-                : {
-                      removido_em: null,
-                      OR: [{ criado_em: { gt: atualizadoEm } }, { atualizado_em: { gt: atualizadoEm } }],
-                  },
+        const whereClause: NonNullable<Parameters<TDelegate['findMany']>[0]>['where'] = isFullSync
+            ? { removido_em: null }
+            : {
+                  removido_em: null,
+                  OR: [
+                      { criado_em: { gt: atualizadoEm } },
+                      { atualizado_em: { gt: atualizadoEm } },
+                  ],
+              };
+
+        const linhas = await prismaDelegate.findMany({
+            where: whereClause,
+            select: select,
         });
 
-        const removidos = isFullSync
-            ? []
-            : (
-                  await (this.prisma as any)[modelo].findMany({
-                      where: { removido_em: { gt: atualizadoEm } },
-                      select: { id: true },
-                  })
-              ).map((r: { id: number }) => r.id);
+        let removidos: number[] = [];
+        if (!isFullSync && atualizadoEm) {
+            const removidosResult = await prismaDelegate.findMany({
+                where: {
+                    removido_em: { gt: atualizadoEm },
+                },
+                select: { id: true },
+            });
+
+            removidos = (removidosResult as Array<{ id: number }>).map((r) => r.id);
+        }
+
+        this.logger.debug(`Synced ${nomeTipo}: ${linhas.length} rows found, ${removidos.length} rows removed.`);
 
         return {
-            tipo: nome,
+            tipo: nomeTipo,
             versao: versaoAtual,
             schema_desatualizado: schemaDesatualizado,
             linhas,
