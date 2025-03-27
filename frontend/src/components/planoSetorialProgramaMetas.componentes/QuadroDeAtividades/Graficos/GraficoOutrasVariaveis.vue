@@ -30,14 +30,14 @@ const variaveisMetadado: Omit<ListaVariaveis, 'valor'> = {
   },
 };
 
-const { variaveisPreparadas } = useGraficoEmBarra('nao_associadas_plano_atual', variaveisMetadado);
+const { variaveisPreparadas } = useGraficoEmBarra('nao_associadas', variaveisMetadado);
 </script>
 
 <template>
   <aside class="grafico-outras-variaveis">
     <GraficoBarraEmLinha
       class="grafico-outras-variaveis__grafico"
-      titulo="Variáveis associadas ao PdM/ Plano setorial"
+      titulo="Outras variáveis do órgão (não associadas a PS/PdM ativos)"
       :variaveis="variaveisPreparadas"
     />
   </aside>

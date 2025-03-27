@@ -146,9 +146,9 @@ watch([
     v-else
     class="lista-de-cartoes"
   >
-    <GraficoOutrasVariaveis v-if="variaveis?.associadas_plano_atual" />
+    <GraficoVariavelAssociado v-if="variaveis?.total_por_situacao" />
 
-    <GraficoVariavelAssociado v-if="variaveis?.nao_associadas_plano_atual" />
+    <GraficoOutrasVariaveis v-if="variaveis?.nao_associadas" />
 
     <template v-if="route.query.visao_pessoal">
       <CardEnvelope.Conteudo class="container-inline">

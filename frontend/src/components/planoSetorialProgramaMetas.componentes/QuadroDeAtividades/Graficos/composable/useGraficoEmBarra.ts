@@ -5,7 +5,7 @@ import { PSMFSituacaoVariavelDto } from '@back/mf/ps-dash/dto/ps.dto';
 import { ListaVariaveis } from '@/components/graficos/GraficoBarraEmLinha.vue';
 import { usePanoramaPlanoSetorialStore } from '@/stores/planoSetorial.panorama.store';
 
-type OpcoesChave = 'associadas_plano_atual' | 'nao_associadas_plano_atual';
+type OpcoesChave = 'nao_associadas' | 'total_por_situacao';
 type ListaVariaveisPreparacao = Omit<ListaVariaveis, 'valor'>;
 
 function useGraficoEmBarra(chave: OpcoesChave, metadados: ListaVariaveisPreparacao) {

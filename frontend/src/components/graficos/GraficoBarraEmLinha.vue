@@ -78,7 +78,8 @@ const todoValorEhZero = computed<boolean>(() => {
               class="grafico-barra-em-linha__linha-item tipinfo"
               :style="{
                 backgroundColor: variavel.cor,
-                flexGrow: todoValorEhZero ? 1 : variavel.valor
+                flexGrow: todoValorEhZero ? 1 : variavel.valor,
+                display: !todoValorEhZero && variavel.valor === 0 && 'none'
               }"
               :title="`${variavel.legenda}: ${variavel.valor}`"
             >
