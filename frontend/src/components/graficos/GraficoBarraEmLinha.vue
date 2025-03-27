@@ -44,7 +44,7 @@ const variaveisOrdenadas = computed<ListaVariaveisOrdenada>(
     const variavel = props.variaveis[itemKey];
 
     return {
-      ...variavel,
+      ...structuredClone(variavel),
       posicao: variavel.posicao || 0,
       chave: itemKey,
     };
