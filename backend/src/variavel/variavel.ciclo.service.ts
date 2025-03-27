@@ -72,11 +72,13 @@ interface IUltimaAnaliseValor {
     analise_qualitativa: string | null;
 }
 
+type ReducedFiltro = Omit<FilterVariavelGlobalCicloDto, 'atividade_id' | 'iniciativa_id' | 'meta_id' | 'pdm_id'>;
+
 /**
  * Generates permission-based where conditions for Variavel queries
  */
 export async function getVariavelPermissionsWhere(
-    filters: FilterVariavelGlobalCicloDto,
+    filters: ReducedFiltro,
     user: PessoaFromJwt,
     prisma: PrismaService,
     consulta_historica: boolean = false
@@ -94,7 +96,6 @@ export async function getVariavelPermissionsWhere(
             id: filters.variavel_id ? { in: filters.variavel_id } : undefined,
             equipes_configuradas: consulta_historica ? undefined : true,
             removido_em: null,
-            ...buildMetaIniAtvFilter(filters),
         },
     ];
 
@@ -231,14 +232,8 @@ export class VariavelCicloService {
         }
     }
 
-    @Cron(CronExpression.EVERY_HOUR)
-    async variavelCicloCrontab() {
-        if (!this.enabled) return;
-        // TODO
-    }
-
     async getPermissionSet(
-        filters: FilterVariavelGlobalCicloDto,
+        filters: ReducedFiltro,
         user: PessoaFromJwt,
         consulta_historica: boolean = false
     ): Promise<Prisma.Enumerable<Prisma.VariavelWhereInput>> {
@@ -266,6 +261,7 @@ export class VariavelCicloService {
                 },
                 fase: filters.fase,
                 eh_corrente: true,
+                ...buildMetaIniAtvFilter(filters),
             },
             orderBy: [{ 'variavel': { codigo: 'asc' } }],
             include: {
