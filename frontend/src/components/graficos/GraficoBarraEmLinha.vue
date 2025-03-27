@@ -51,6 +51,12 @@ const variaveisOrdenadas = computed<ListaVariaveisOrdenada>(
   }).sort((a, b) => a.posicao - b.posicao),
 );
 
+const todoValorEhZero = computed<boolean>(() => {
+  const temValorMaiorZero = variaveisOrdenadas.value.find((item) => item.valor !== 0);
+
+  return !temValorMaiorZero;
+});
+
 </script>
 
 <template>
@@ -70,7 +76,10 @@ const variaveisOrdenadas = computed<ListaVariaveisOrdenada>(
               v-for="(variavel, variavelIndex) in variaveisOrdenadas"
               :key="`grafico-barra--${variavelIndex}`"
               class="grafico-barra-em-linha__linha-item tipinfo"
-              :style="{ backgroundColor: variavel.cor, flexGrow: variavel.valor }"
+              :style="{
+                backgroundColor: variavel.cor,
+                flexGrow: todoValorEhZero ? 1 : variavel.valor
+              }"
               :title="`${variavel.legenda}: ${variavel.valor}`"
             >
               <div class="grafico-barra-em-linha__linha-texto">
@@ -84,7 +93,7 @@ const variaveisOrdenadas = computed<ListaVariaveisOrdenada>(
           name="numeros"
           :variaveis-ordenadas="variaveisOrdenadas"
         >
-          <dl class="grafico-barra-em-linha__numeros flex spacebetween">
+          <dl class="grafico-barra-em-linha__numeros flex spacebetween g05">
             <dd
               v-for="(variavel, variavelIndex) in variaveisOrdenadas"
               :key="`grafico-barra--${variavelIndex}`"
