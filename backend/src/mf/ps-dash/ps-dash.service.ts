@@ -21,6 +21,7 @@ import {
     PSMFSituacaoVariavelDto,
     StrMIA,
 } from './dto/ps.dto';
+import { getVariavelPermissionsWhere } from 'src/variavel/variavel.ciclo.service';
 
 interface PaginationTokenBody {
     search_hash: string;
@@ -83,24 +84,14 @@ export class PSMFDashboardService {
         // Verificar permissões
         const ehVisaoPessoal = filtros.visao_pessoal === true;
 
-        const permissionsSet = await MetasGetPermissionSet(tipo, user, false, this.prisma);
         const equipes_pessoa = filtros.visao_pessoal ? await user.getEquipesColaborador(this.prisma) : [];
+        const varGlobalPermissionsSet = await getVariavelPermissionsWhere({}, user, this.prisma, false);
 
         // Construir filtros baseados nas permissões
         const dashPermissionsSet: Prisma.Enumerable<Prisma.PsDashboardVariavelWhereInput> = [
             {
                 variavel: {
-                    indicador_variavel: {
-                        some: {
-                            indicador: {
-                                meta: {
-                                    AND: permissionsSet.length > 0 ? { AND: permissionsSet } : undefined,
-                                    pdm_id: filtros.pdm_id,
-                                    id: filtros.meta_id ? { in: filtros.meta_id } : undefined,
-                                },
-                            },
-                        },
-                    },
+                    AND: varGlobalPermissionsSet,
                 },
                 equipes: filtros.equipes && Array.isArray(filtros.equipes) ? { hasSome: filtros.equipes } : undefined,
                 equipes_orgaos:
@@ -187,23 +178,36 @@ export class PSMFDashboardService {
         // Obter estatísticas detalhadas para cada quadro
         const [associadasPdmAtualStats, naoAssociadasPdmAtualStats, totalPorSituacaoStats, semPdmStats] =
             await Promise.all([
-                getStatsByFaseAndState(this.prisma, {
-                    AND: dashPermissionsSet,
-                    pdm_id: { hasSome: [filtros.pdm_id] },
-                }),
-                getStatsByFaseAndState(this.prisma, {
-                    AND: [baseFilterNaoAssociadas],
-                    pdm_id: { hasEvery: [] },
-                    NOT: { pdm_id: { hasSome: [filtros.pdm_id] } },
-                }),
-                getStatsByFaseAndState(this.prisma, {
-                    AND: totalFilterSet,
-                    pdm_id: { hasSome: [filtros.pdm_id] },
-                }),
-                getStatsByFaseAndState(this.prisma, {
-                    AND: [semPdmFilterSet],
-                    pdm_id: { isEmpty: true },
-                }),
+                // Quadros visão pessoal
+                filtros.visao_pessoal
+                    ? getStatsByFaseAndState(this.prisma, {
+                          AND: dashPermissionsSet,
+                          pdm_id: { hasSome: [filtros.pdm_id] },
+                      })
+                    : Promise.resolve(null),
+
+                filtros.visao_pessoal
+                    ? getStatsByFaseAndState(this.prisma, {
+                          AND: [baseFilterNaoAssociadas],
+                          pdm_id: { hasEvery: [] },
+                          NOT: { pdm_id: { hasSome: [filtros.pdm_id] } },
+                      })
+                    : Promise.resolve(null),
+
+                // Quadros visão adm
+                !filtros.visao_pessoal
+                    ? getStatsByFaseAndState(this.prisma, {
+                          AND: totalFilterSet,
+                          pdm_id: { hasSome: [filtros.pdm_id] },
+                      })
+                    : Promise.resolve(null),
+
+                !filtros.visao_pessoal
+                    ? getStatsByFaseAndState(this.prisma, {
+                          AND: [semPdmFilterSet],
+                          pdm_id: { isEmpty: true },
+                      })
+                    : Promise.resolve(null),
             ]);
 
         // Montar e retornar o objeto PSMFQuadroVariaveisDto com os valores calculados
@@ -251,6 +255,11 @@ export class PSMFDashboardService {
         }
 
         const offset = (page - 1) * ipp;
+
+        if (!filtros.pdm_id)
+            throw new BadRequestException(
+                'Filtro pdm_id é obrigatório para a listagem de metas, iniciativas e atividades'
+            );
 
         // Obter ciclo atual
         const cicloAtual = await this.obterCicloAtual(filtros.pdm_id);

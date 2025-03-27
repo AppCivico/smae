@@ -10,8 +10,9 @@ import { OmitType } from '@nestjs/mapped-types';
 
 export class PSMFFiltroDashboardQuadroDto {
     @IsInt()
+    @IsOptional()
     @Transform(NumberTransform)
-    pdm_id: number;
+    pdm_id?: number;
 
     @IsOptional()
     @IsInt({ each: true })
