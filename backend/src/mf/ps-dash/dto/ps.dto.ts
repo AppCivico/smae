@@ -76,22 +76,22 @@ export class PSMFSituacaoVariavelDto {
 
 export class PSMFQuadroVariaveisDto {
     @ApiProperty({ description: 'Quadro 1: Variáveis associadas ao PDM/PS selecionado (visao pessoal)' })
-    associadas_plano_atual: PSMFSituacaoVariavelDto;
+    associadas_plano_atual: PSMFSituacaoVariavelDto | null;
 
     @ApiProperty({
         description:
             'Quadro 2: Variáveis da equipe que ele faz parte não associadas ao PDM/PS que passou e nem a nenhum outro ativo (visão pessoal)',
     })
-    nao_associadas_plano_atual: PSMFSituacaoVariavelDto;
+    nao_associadas_plano_atual: PSMFSituacaoVariavelDto | null;
 
     @ApiProperty({ description: 'Quadro 3: Total de variáveis por situação usadas no PDM/PS (visão geral)' })
-    total_por_situacao: PSMFSituacaoVariavelDto;
+    total_por_situacao: PSMFSituacaoVariavelDto | null;
 
     @ApiProperty({
         description:
             'Quadro 4: todas variaveis ativas que estão sem pdm, [considerar permissão do órgão] (visão geral)',
     })
-    nao_associadas: PSMFSituacaoVariavelDto;
+    nao_associadas: PSMFSituacaoVariavelDto | null;
 }
 
 export class PSMFQuadroMetasDto {

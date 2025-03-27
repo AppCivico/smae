@@ -3782,18 +3782,15 @@ export class VariavelService {
                 },
             });
 
-            // Identifica variáveis globais válidas e não-globais para remoção
-            const variaveisGlobaisValidas = ciclosCorrente
-                .filter((c) => c.variavel.tipo === 'Global' && c.variavel.ViewVariavelGlobal.length > 0)
-                .map((c) => ({
-                    id: c.variavel_id,
-                    fase: c.fase,
-                    planos: c.variavel.ViewVariavelGlobal[0].planos,
-                    equipes: c.variavel.VariavelGrupoResponsavelEquipe.map((e) => e.grupo_responsavel_equipe.id),
-                    equipes_orgaos: c.variavel.VariavelGrupoResponsavelEquipe.map(
-                        (e) => e.grupo_responsavel_equipe.orgao_id
-                    ).filter((id) => id !== null) as number[],
-                }));
+            const variaveisGlobaisValidas = ciclosCorrente.map((c) => ({
+                id: c.variavel_id,
+                fase: c.fase,
+                planos: c.variavel.ViewVariavelGlobal[0].planos,
+                equipes: c.variavel.VariavelGrupoResponsavelEquipe.map((e) => e.grupo_responsavel_equipe.id),
+                equipes_orgaos: c.variavel.VariavelGrupoResponsavelEquipe.map(
+                    (e) => e.grupo_responsavel_equipe.orgao_id
+                ).filter((id) => id !== null) as number[],
+            }));
 
             // Busca os registros existentes no dashboard para estas variáveis
             const dashboardExistente = await prisma.psDashboardVariavel.findMany({
@@ -3802,7 +3799,7 @@ export class VariavelService {
             });
             const existenteIds = new Set(dashboardExistente.map((d) => d.variavel_id));
 
-            // Variáveis para remover (existem no dashboard mas não são globais válidas)
+            // Variáveis para remover
             const idsParaRemover = variaveis.filter(
                 (id) => existenteIds.has(id) && !variaveisGlobaisValidas.find((v) => v.id === id)
             );
@@ -3822,11 +3819,6 @@ export class VariavelService {
 
             // Processa cada variável válida
             for (const variavel of variaveisGlobaisValidas) {
-                // Prepara os arrays para JSON
-                const pdmIdJson = JSON.stringify(variavel.planos);
-                const equipesJson = JSON.stringify(variavel.equipes);
-                const equipesOrgaosJson = JSON.stringify(variavel.equipes_orgaos);
-
                 // Determina os valores para os campos de fase preenchida
                 const fase_preenchimento_preenchida = variavel.fase === 'Validacao' || variavel.fase === 'Liberacao';
                 const fase_validacao_preenchida = variavel.fase === 'Liberacao';
@@ -3836,14 +3828,14 @@ export class VariavelService {
                     // Atualiza registro existente
                     await prisma.$executeRaw`
                         UPDATE ps_dashboard_variavel
-                        SET
-                            pdm_id = ${pdmIdJson}::int[],
+                        SET 
+                            pdm_id = ${variavel.planos}::int[],
                             fase = ${variavel.fase}::"VariavelFase",
                             fase_preenchimento_preenchida = ${fase_preenchimento_preenchida},
                             fase_validacao_preenchida = ${fase_validacao_preenchida},
                             fase_liberacao_preenchida = ${fase_liberacao_preenchida},
-                            equipes = ${equipesJson}::int[],
-                            equipes_orgaos = ${equipesOrgaosJson}::int[]
+                            equipes = ${variavel.equipes}::int[],
+                            equipes_orgaos = ${variavel.equipes_orgaos}::int[]
                         WHERE variavel_id = ${variavel.id}
                     `;
                     totalProcessado++;
@@ -3861,13 +3853,13 @@ export class VariavelService {
                             equipes_orgaos
                         ) VALUES (
                             ${variavel.id},
-                            ${pdmIdJson}::int[],
+                            ${variavel.planos}::int[],
                             ${variavel.fase}::"VariavelFase",
                             ${fase_preenchimento_preenchida},
                             ${fase_validacao_preenchida},
                             ${fase_liberacao_preenchida},
-                            ${equipesJson}::int[],
-                            ${equipesOrgaosJson}::int[]
+                            ${variavel.equipes}::int[],
+                            ${variavel.equipes_orgaos}::int[]
                         )
                     `;
                     totalProcessado++;

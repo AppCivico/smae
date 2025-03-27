@@ -80,10 +80,129 @@ export class PSMFDashboardService {
         user: PessoaFromJwt
     ): Promise<PSMFQuadroVariaveisDto> {
         // Verificar permissões
-        // Se for visão pessoal, apenas usuários com acesso a suas variáveis
         const ehVisaoPessoal = filtros.visao_pessoal === true;
 
-        return this.gerarQuadrosVariaveis(ehVisaoPessoal);
+        const permissionsSet = await MetasGetPermissionSet(tipo, user, false, this.prisma);
+        const equipes_pessoa = filtros.visao_pessoal ? await user.getEquipesColaborador(this.prisma) : [];
+
+        // Construir filtros baseados nas permissões
+        const dashPermissionsSet: Prisma.Enumerable<Prisma.PsDashboardVariavelWhereInput> = [
+            {
+                variavel: {
+                    indicador_variavel: {
+                        some: {
+                            indicador: {
+                                meta: {
+                                    AND: permissionsSet.length > 0 ? { AND: permissionsSet } : undefined,
+                                    pdm_id: filtros.pdm_id,
+                                    id: filtros.meta_id ? { in: filtros.meta_id } : undefined,
+                                },
+                            },
+                        },
+                    },
+                },
+                equipes: filtros.equipes && Array.isArray(filtros.equipes) ? { hasSome: filtros.equipes } : undefined,
+                equipes_orgaos:
+                    filtros.orgao_id && Array.isArray(filtros.orgao_id) ? { hasSome: filtros.orgao_id } : undefined,
+
+                AND: [
+                    filtros.visao_pessoal
+                        ? {
+                              equipes: { hasSome: equipes_pessoa },
+                          }
+                        : {},
+                ],
+            },
+        ];
+
+        // Base filter without PDM association
+        const baseFilterNaoAssociadas = { ...dashPermissionsSet[0] };
+        delete baseFilterNaoAssociadas.variavel;
+
+        // Total filter without personal view constraint
+        const totalFilterSet = [...dashPermissionsSet];
+        if (ehVisaoPessoal) {
+            totalFilterSet[0] = { ...totalFilterSet[0] };
+            totalFilterSet[0].AND = [];
+        }
+
+        // Filter for variables without PDM
+        const semPdmFilterSet = { ...baseFilterNaoAssociadas };
+        if (filtros.orgao_id && Array.isArray(filtros.orgao_id)) {
+            semPdmFilterSet.equipes_orgaos = { hasSome: filtros.orgao_id };
+        }
+
+        // Helper function to get detailed statistics
+        async function getStatsByFaseAndState(
+            prisma: PrismaService,
+            whereFilter: any
+        ): Promise<PSMFSituacaoVariavelDto> {
+            const stats = await prisma.psDashboardVariavel.groupBy({
+                by: ['fase', 'fase_preenchimento_preenchida', 'fase_validacao_preenchida', 'fase_liberacao_preenchida'],
+                _count: { variavel_id: true },
+                where: whereFilter,
+            });
+
+            let total = 0;
+            let liberadas = 0;
+            let coletadas_a_conferir = 0;
+            let conferidas_a_liberar = 0;
+            let a_coletar_atrasadas = 0;
+
+            for (const item of stats) {
+                const count = item._count.variavel_id;
+                total += count;
+
+                if (item.fase === 'Liberacao' && item.fase_liberacao_preenchida) {
+                    liberadas += count;
+                } else if (item.fase === 'Liberacao' && !item.fase_liberacao_preenchida) {
+                    conferidas_a_liberar += count;
+                } else if (item.fase === 'Validacao') {
+                    coletadas_a_conferir += count;
+                } else if (item.fase === 'Preenchimento') {
+                    a_coletar_atrasadas += count;
+                }
+            }
+
+            return {
+                total,
+                liberadas,
+                coletadas_a_conferir,
+                conferidas_a_liberar,
+                a_coletar_atrasadas,
+                a_coletar_prazo: 0,
+            };
+        }
+
+        // Obter estatísticas detalhadas para cada quadro
+        const [associadasPdmAtualStats, naoAssociadasPdmAtualStats, totalPorSituacaoStats, semPdmStats] =
+            await Promise.all([
+                getStatsByFaseAndState(this.prisma, {
+                    AND: dashPermissionsSet,
+                    pdm_id: { hasSome: [filtros.pdm_id] },
+                }),
+                getStatsByFaseAndState(this.prisma, {
+                    AND: [baseFilterNaoAssociadas],
+                    pdm_id: { hasEvery: [] },
+                    NOT: { pdm_id: { hasSome: [filtros.pdm_id] } },
+                }),
+                getStatsByFaseAndState(this.prisma, {
+                    AND: totalFilterSet,
+                    pdm_id: { hasSome: [filtros.pdm_id] },
+                }),
+                getStatsByFaseAndState(this.prisma, {
+                    AND: [semPdmFilterSet],
+                    pdm_id: { isEmpty: true },
+                }),
+            ]);
+
+        // Montar e retornar o objeto PSMFQuadroVariaveisDto com os valores calculados
+        return {
+            associadas_plano_atual: associadasPdmAtualStats,
+            nao_associadas_plano_atual: naoAssociadasPdmAtualStats,
+            total_por_situacao: totalPorSituacaoStats,
+            nao_associadas: semPdmStats,
+        };
     }
 
     async getListaMetasIniAtv(
