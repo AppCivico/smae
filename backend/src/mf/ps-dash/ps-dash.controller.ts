@@ -7,6 +7,7 @@ import { MetaSetorialController } from '../../meta/meta.controller';
 import {
     PSMFFiltroDashboardMetasDto,
     PSMFFiltroDashboardQuadroDto,
+    PSMFFiltroDashboardQuadroVariaveisDto,
     PSMFListaMetasDto,
     PSMFQuadroMetasDto,
     PSMFQuadroVariaveisDto,
@@ -24,7 +25,7 @@ export class PSMFDashboardController {
     @ApiBearerAuth('access-token')
     @Roles(MetaSetorialController.ReadPerm)
     async getQuadroVariaveis(
-        @Query() filtros: PSMFFiltroDashboardQuadroDto,
+        @Query() filtros: PSMFFiltroDashboardQuadroVariaveisDto,
         @CurrentUser() user: PessoaFromJwt,
         @TipoPDM() tipo: TipoPdmType
     ): Promise<PSMFQuadroVariaveisDto> {

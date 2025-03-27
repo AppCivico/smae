@@ -12,6 +12,7 @@ import {
     PSMFCicloDto,
     PSMFFiltroDashboardMetasDto,
     PSMFFiltroDashboardQuadroDto,
+    PSMFFiltroDashboardQuadroVariaveisDto,
     PSMFItemMetaDto,
     PSMFListaMetasDto,
     PSMFQuadroMetasDto,
@@ -76,7 +77,7 @@ export class PSMFDashboardService {
 
     async getQuadroVariaveis(
         tipo: TipoPdmType,
-        filtros: PSMFFiltroDashboardQuadroDto,
+        filtros: PSMFFiltroDashboardQuadroVariaveisDto,
         user: PessoaFromJwt
     ): Promise<PSMFQuadroVariaveisDto> {
         // Verificar permissões

@@ -6,6 +6,7 @@ import { IsDateYMD } from '../../../auth/decorators/date.decorator';
 import { NumberArrayTransformOrUndef } from '../../../auth/transforms/number-array.transform';
 import { NumberTransform } from '../../../auth/transforms/number.transform';
 import { PaginatedWithPagesDto } from '../../../common/dto/paginated.dto';
+import { OmitType } from '@nestjs/mapped-types';
 
 export class PSMFFiltroDashboardQuadroDto {
     @IsInt()
@@ -36,6 +37,13 @@ export class PSMFFiltroDashboardQuadroDto {
     @IsBoolean()
     @Transform(({ value }: any) => value === 'true')
     apenas_pendentes?: boolean; // Mostrar apenas itens com pendências
+}
+
+export class PSMFFiltroDashboardQuadroVariaveisDto extends OmitType(PSMFFiltroDashboardQuadroDto, ['pdm_id']) {
+    @IsOptional()
+    @IsInt()
+    @Transform(NumberTransform)
+    pdm_id?: number;
 }
 
 export class PSMFFiltroDashboardMetasDto extends PSMFFiltroDashboardQuadroDto {
