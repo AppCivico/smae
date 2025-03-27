@@ -125,6 +125,7 @@ import {
   onMounted,
   ref,
   toRaw,
+  watch,
 } from 'vue';
 import type { LocationQueryRaw } from 'vue-router';
 import { useRoute, useRouter } from 'vue-router';
@@ -170,6 +171,8 @@ type Dados = {
 
 type ChaveDeDados = keyof Dados;
 
+const camposObrigatorios = ['pdm_id'];
+
 const dados = ref<Dados>({
   orgao_id: [],
   pdm_id: 0,
@@ -180,7 +183,7 @@ const dados = ref<Dados>({
 const planosSetoriaisOuPdMNovos = computed(() => listaDePlanoSetoriais.value
   .filter((item) => item.sistema !== 'PDM'));
 
-onMounted(async () => {
+async function iniciar() {
   const valoresNaQuery = {
     ...structuredClone(route.query),
   } as Record<string, unknown>;
@@ -230,6 +233,18 @@ onMounted(async () => {
       ...structuredClone(route.query),
       ...structuredClone(toRaw(dados.value)),
     } as unknown as LocationQueryRaw,
+  });
+}
+
+onMounted(() => {
+  iniciar();
+});
+
+camposObrigatorios.forEach((chave) => {
+  watch(() => dados.value[chave as ChaveDeDados], (val) => {
+    if (!val) {
+      iniciar();
+    }
   });
 });
 </script>
