@@ -74,7 +74,10 @@ BEGIN
         vcc.fase = 'Liberacao' AND vcc.liberacao_enviada = TRUE, -- fase_liberacao_preenchida
         ed.equipes,
         ed.equipes_orgaos,
-        CASE WHEN vcc.atrasos IS NOT NULL AND vcc.atrasos <> '{}' THEN true ELSE false END
+        -- pegar prazo para indicar se possui atrasos
+        -- arr de prazos pode estar vazia
+        -- caso o prazo seja < hoje
+        CASE WHEN ((vcc.atrasos IS NOT NULL AND vcc.atrasos <> '{}') OR (vcc.prazo < now()::Date)) THEN true ELSE false END
     FROM variavel_ciclo_corrente vcc
     JOIN variavel v ON vcc.variavel_id = v.id
     LEFT JOIN planos_data pd ON vcc.variavel_id = pd.variavel_id
