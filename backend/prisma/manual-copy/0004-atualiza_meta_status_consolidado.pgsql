@@ -25,7 +25,7 @@ v_pendente_cp_cronograma BOOLEAN;
 --v_default_aguarda_cp BOOLEAN;
 
 v_debug varchar;
-v_tipo "TipoPdm";
+v_sistema "ModuloSistema";
 
 vCronograma int[];
 v_cronograma_total int[];
@@ -50,9 +50,9 @@ BEGIN
 
     -- todo pegar a fase da meta
     SELECT
-        cf.pdm_id, cfs.ciclo_fase, cf.data_ciclo, p.tipo
+        cf.pdm_id, cfs.ciclo_fase, cf.data_ciclo, p.sistema
             INTO
-        v_pdm_id, v_fase, v_data_ciclo, v_tipo
+        v_pdm_id, v_fase, v_data_ciclo, v_sistema
     FROM
          ciclo_fisico cf
      LEFT JOIN ciclo_fisico_fase cfs on cfs.id = cf.ciclo_fase_atual_id
@@ -63,8 +63,8 @@ BEGIN
      AND cf.ativo
      LIMIT 1;
 
-    -- Se o tipo do PDM for diferente de PDM, atualiza o consolidado do PS
-    IF (v_tipo != 'PDM') THEN
+    -- Se o sistema for diferente de PDM, atualiza o consolidado do PS
+    IF (v_sistema != 'PDM' OR v_sistema IS NULL ) THEN
         RETURN refresh_ps_meta_consolidado(pMetaId);
     END IF;
 
@@ -547,8 +547,8 @@ DELETE FROM meta_status_atraso_consolidado_mes;
 DELETE FROM meta_status_atraso_variavel;
 SELECT atualiza_meta_status_consolidado(
     id,
-        (select id from ciclo_fisico where ativo AND pdm_id = (select id from pdm where ativo and tipo='PDM'))
+        (select id from ciclo_fisico where ativo AND pdm_id = (select id from pdm where ativo and sistema='PDM'))
     )
     FROM meta
-    WHERE pdm_id = (select id from pdm where ativo and tipo='PDM')
+    WHERE pdm_id IN (select id from pdm where ativo and sistema='PDM' )
 AND removido_em IS NULL;
