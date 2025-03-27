@@ -16,7 +16,8 @@ BEGIN
         fase_validacao_preenchida,
         fase_liberacao_preenchida,
         equipes,
-        equipes_orgaos
+        equipes_orgaos,
+        possui_atrasos
     )
     WITH pdm_mapping AS (
         SELECT DISTINCT
@@ -72,7 +73,8 @@ BEGIN
         (vcc.fase IN ( 'Preenchimento', 'Validacao' ) AND vcc.liberacao_enviada = TRUE), -- fase_validacao_preenchida
         vcc.fase = 'Liberacao' AND vcc.liberacao_enviada = TRUE, -- fase_liberacao_preenchida
         ed.equipes,
-        ed.equipes_orgaos
+        ed.equipes_orgaos,
+        CASE WHEN vcc.atrasos IS NOT NULL AND vcc.atrasos <> '{}' THEN true ELSE false END
     FROM variavel_ciclo_corrente vcc
     JOIN variavel v ON vcc.variavel_id = v.id
     LEFT JOIN planos_data pd ON vcc.variavel_id = pd.variavel_id
