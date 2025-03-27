@@ -2034,16 +2034,68 @@ export class MetaService {
 }
 
 /**
- * Obtém os IDs das metas relacionadas baseado no meta_id, iniciativa_id, atividade_id ou indicador_id
- * @param options Opções contendo meta_id, iniciativa_id, atividade_id ou indicador_id
+ * Obtém os IDs das metas relacionadas baseado no meta_id, iniciativa_id, atividade_id, indicador_id ou variavel_id
+ * @param options Opções contendo meta_id, iniciativa_id, atividade_id, indicador_id ou variavel_id
  * @param prismaTx Cliente de transação do Prisma
  * @returns Array de IDs de metas
  */
-async function buscaMetaIdPorMetaIniAtvIndId(
-    options: { meta_id?: number; iniciativa_id?: number; atividade_id?: number; indicador_id?: number },
+async function buscaMetaIdPorMetaIniAtvIndVarId(
+    options: {
+        meta_id?: number;
+        iniciativa_id?: number;
+        atividade_id?: number;
+        indicador_id?: number;
+        variavel_id?: number;
+    },
     prismaTx: Prisma.TransactionClient
 ): Promise<number[]> {
-    // Se temos um indicador_id, usamos uma consulta SQL direta para evitar N+1
+    // Se temos um variavel_id, usamos uma consulta SQL para encontrar metas relacionadas
+    if (options.variavel_id) {
+        const query = `
+            WITH variavel_indicadores AS (
+                -- Encontra todos os indicadores relacionados à variável
+                SELECT iv.indicador_id
+                FROM indicador_variavel iv
+                WHERE iv.variavel_id = $1
+            ),
+            indicador_info AS (
+                -- Obtém informações dos indicadores encontrados
+                SELECT
+                    i.id,
+                    i.meta_id,
+                    i.iniciativa_id,
+                    i.atividade_id
+                FROM indicador i
+                JOIN variavel_indicadores vi ON i.id = vi.indicador_id
+            ),
+            meta_relacionada AS (
+                -- Se o indicador está diretamente ligado a uma meta
+                SELECT meta_id FROM indicador_info WHERE meta_id IS NOT NULL
+
+                UNION
+
+                -- Se o indicador está ligado a uma iniciativa
+                SELECT m.meta_id
+                FROM indicador_info ii
+                JOIN view_metas_arvore_pdm m ON m.iniciativa_id = ii.iniciativa_id
+                WHERE ii.iniciativa_id IS NOT NULL
+
+                UNION
+
+                -- Se o indicador está ligado a uma atividade
+                SELECT m.meta_id
+                FROM indicador_info ii
+                JOIN view_metas_arvore_pdm m ON m.atividade_id = ii.atividade_id
+                WHERE ii.atividade_id IS NOT NULL
+            )
+            SELECT DISTINCT meta_id FROM meta_relacionada WHERE meta_id IS NOT NULL
+        `;
+
+        const metas = await prismaTx.$queryRawUnsafe<{ meta_id: number }[]>(query, options.variavel_id);
+        return metas.map((m) => m.meta_id);
+    }
+
+    // Se temos um indicador_id, usamos a consulta já existente
     if (options.indicador_id) {
         const query = `
             WITH indicador_info AS (
@@ -2113,24 +2165,36 @@ async function buscaMetaIdPorMetaIniAtvIndId(
 }
 
 /**
- * Adiciona tarefas de atualização para metas com base em meta_id, iniciativa_id, atividade_id ou indicador_id
+ * Adiciona tarefas de atualização para metas com base em meta_id, iniciativa_id, atividade_id, indicador_id ou variavel_id
  * @param prismaTx Cliente de transação do Prisma
- * @param options Opções contendo meta_id, iniciativa_id, atividade_id ou indicador_id
+ * @param options Opções contendo meta_id, iniciativa_id, atividade_id, indicador_id ou variavel_id
  * @returns Promise que é resolvida quando a adição da tarefa é concluída
  */
 export async function AddTaskRefreshMeta(
     prismaTx: Prisma.TransactionClient,
-    options: { meta_id?: number; iniciativa_id?: number; atividade_id?: number; indicador_id?: number }
+    options: {
+        meta_id?: number;
+        iniciativa_id?: number;
+        atividade_id?: number;
+        indicador_id?: number;
+        variavel_id?: number;
+    }
 ): Promise<void> {
     const logger = new Logger('MetaRefreshTask');
 
     // Verifica se pelo menos uma opção foi fornecida
-    if (!options.meta_id && !options.iniciativa_id && !options.atividade_id && !options.indicador_id) {
-        throw new Error('É necessário fornecer meta_id, iniciativa_id, atividade_id ou indicador_id');
+    if (
+        !options.meta_id &&
+        !options.iniciativa_id &&
+        !options.atividade_id &&
+        !options.indicador_id &&
+        !options.variavel_id
+    ) {
+        throw new Error('É necessário fornecer meta_id, iniciativa_id, atividade_id, indicador_id ou variavel_id');
     }
 
     // Obtém os IDs de metas relacionados ao parâmetro fornecido
-    const metaIds = await buscaMetaIdPorMetaIniAtvIndId(options, prismaTx);
+    const metaIds = await buscaMetaIdPorMetaIniAtvIndVarId(options, prismaTx);
 
     if (metaIds.length === 0) {
         logger.log(`Nenhuma meta encontrada com os parâmetros fornecidos`);

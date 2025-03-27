@@ -33,6 +33,7 @@ import {
     VariavelService,
 } from './variavel.service';
 import { VariavelUtilService } from './variavel.util.service';
+import { AddTaskRefreshMeta } from '../meta/meta.service';
 
 interface ICicloCorrente {
     variavel: {
@@ -211,8 +212,7 @@ export class VariavelCicloService {
         private readonly prisma: PrismaService,
         private readonly uploadService: UploadService,
         private readonly variavelService: VariavelService,
-        private readonly util: VariavelUtilService,
-
+        private readonly util: VariavelUtilService
     ) {
         this.enabled = false;
     }
@@ -1063,6 +1063,8 @@ export class VariavelCicloService {
         });
 
         await prismaTxn.$executeRaw`SELECT f_atualiza_variavel_ciclo_corrente(${variavelId}::int)::text`;
+
+        await AddTaskRefreshMeta(prismaTxn, { variavel_id: variavelId });
     }
 
     private async marcaLiberacaoEnviada(variavelId: number, prismaTxn: Prisma.TransactionClient): Promise<void> {
@@ -1081,6 +1083,7 @@ export class VariavelCicloService {
         });
 
         await prismaTxn.$executeRaw`SELECT f_atualiza_variavel_ciclo_corrente(${variavelId}::int)::text`;
+        await AddTaskRefreshMeta(prismaTxn, { variavel_id: variavelId });
     }
 
     private async criaPedidoComplementacao(
@@ -1221,6 +1224,7 @@ export class VariavelCicloService {
                 const currentState = await this.getVariavelCicloCorrente(variavelId, prismaTx);
 
                 await prismaTx.$executeRaw`SELECT f_atualiza_variavel_ciclo_corrente(${variavelId}::int)::text`;
+                await AddTaskRefreshMeta(prismaTx, { variavel_id: variavelId });
 
                 const newState = await this.getVariavelCicloCorrente(variavelId, prismaTx);
                 if (!newState) {
