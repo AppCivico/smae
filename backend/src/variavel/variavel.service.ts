@@ -4166,7 +4166,7 @@ export async function AddTaskRecalcVariaveis(
     // Executa refresh_variavel para todas as variáveis em uma única consulta
     if (variavelIds.length > 0) {
         await prismaTx.$queryRaw`
-            SELECT refresh_variavel(v, null)
+            SELECT refresh_variavel(v, null)::text
             FROM unnest(${variavelIds}::int[]) AS v
         `;
     }

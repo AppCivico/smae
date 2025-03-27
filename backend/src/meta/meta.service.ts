@@ -2141,7 +2141,7 @@ export async function AddTaskRefreshMeta(
 
     // Executa f_add_refresh_meta_task para cada meta em uma única consulta
     await prismaTx.$queryRaw`
-        SELECT f_add_refresh_meta_task(m)
+        SELECT f_add_refresh_meta_task(m)::text
         FROM unnest(${metaIds}::int[]) AS m
     `;
 
