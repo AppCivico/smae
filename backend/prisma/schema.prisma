@@ -7568,6 +7568,10 @@ model view_ps_dashboard_consolidado {
     atividade_codigo  String?
     atividade_titulo  String?
 
+    order_meta       String
+    order_iniciativa String
+    order_atividade  String
+
     @@unique([item_id, tipo])
     @@map("view_ps_dashboard_consolidado")
 }

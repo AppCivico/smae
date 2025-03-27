@@ -301,6 +301,7 @@ export class PSMFDashboardService {
             where: {
                 AND: dashPermissionsSet,
             },
+            orderBy: [{ order_meta: 'asc' }, { order_iniciativa: 'asc' }, { order_atividade: 'asc' }],
             skip: offset,
             take: ipp,
         });
