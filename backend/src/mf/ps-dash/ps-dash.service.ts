@@ -182,7 +182,7 @@ export class PSMFDashboardService {
                 filtros.visao_pessoal
                     ? getStatsByFaseAndState(this.prisma, {
                           AND: dashPermissionsSet,
-                          pdm_id: { hasSome: [filtros.pdm_id] },
+                          pdm_id: filtros.pdm_id ? { hasSome: [filtros.pdm_id] } : undefined,
                       })
                     : Promise.resolve(null),
 
@@ -190,7 +190,7 @@ export class PSMFDashboardService {
                     ? getStatsByFaseAndState(this.prisma, {
                           AND: [baseFilterNaoAssociadas],
                           pdm_id: { hasEvery: [] },
-                          NOT: { pdm_id: { hasSome: [filtros.pdm_id] } },
+                          NOT: { pdm_id: filtros.pdm_id ? { hasSome: [filtros.pdm_id] } : undefined },
                       })
                     : Promise.resolve(null),
 
@@ -198,7 +198,7 @@ export class PSMFDashboardService {
                 !filtros.visao_pessoal
                     ? getStatsByFaseAndState(this.prisma, {
                           AND: totalFilterSet,
-                          pdm_id: { hasSome: [filtros.pdm_id] },
+                          pdm_id: filtros.pdm_id ? { hasSome: [filtros.pdm_id] } : undefined,
                       })
                     : Promise.resolve(null),
 
