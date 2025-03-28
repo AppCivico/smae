@@ -107,9 +107,6 @@ export class PSMFDashboardService {
             },
         ];
 
-        // Base filter without PDM association
-        const baseFilterNaoAssociadas = { ...dashPermissionsSet[0] };
-
         // Total filter without personal view constraint
         const totalFilterSet = [...dashPermissionsSet];
         if (ehVisaoPessoal) {
@@ -118,7 +115,7 @@ export class PSMFDashboardService {
         }
 
         // Filter for variables without PDM
-        const semPdmFilterSet = { ...baseFilterNaoAssociadas };
+        const semPdmFilterSet = { ...dashPermissionsSet[0] };
         if (filtros.orgao_id && Array.isArray(filtros.orgao_id)) {
             semPdmFilterSet.equipes_orgaos = { hasSome: filtros.orgao_id };
         }
@@ -187,7 +184,7 @@ export class PSMFDashboardService {
 
                 filtros.visao_pessoal
                     ? getStatsByFaseAndState(this.prisma, {
-                          AND: [baseFilterNaoAssociadas],
+                          AND: dashPermissionsSet,
                           pdm_id: { hasEvery: [] },
                           NOT: { pdm_id: filtros.pdm_id ? { hasSome: [filtros.pdm_id] } : undefined },
                       })
