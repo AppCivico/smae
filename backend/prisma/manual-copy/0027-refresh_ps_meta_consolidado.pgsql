@@ -281,7 +281,8 @@ BEGIN
                 vcc.fase,
                 vcc.eh_corrente,
                 vcc.atrasos,
-                vcc.liberacao_enviada
+                vcc.liberacao_enviada,
+                vcc.prazo
             FROM variavel v
             JOIN indicador_variavel iv ON v.id = iv.variavel_id
             JOIN indicador i ON iv.indicador_id = i.id
