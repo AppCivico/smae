@@ -1,4 +1,7 @@
 <script lang="ts" setup>
+import { storeToRefs } from 'pinia';
+import { computed, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import * as CardEnvelope from '@/components/cardEnvelope';
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
 import ListaLegendas from '@/components/ListaLegendas.vue';
@@ -17,17 +20,16 @@ import {
 import GraficoDeSituacoesDasVariaveis from '@/components/quadroDeAtividades/GraficoDeSituacoesDasVariaveis.vue';
 import GrandesNumerosDeMetas from '@/components/quadroDeAtividades/GrandesNumerosDeMetas.vue';
 import dateToTitle from '@/helpers/dateToTitle';
+import { useAuthStore } from '@/stores';
 import { usePanoramaPlanoSetorialStore } from '@/stores/planoSetorial.panorama.store';
 import type { Parametros, ParametrosComPdmIdObrigatorio } from '@/stores/planoSetorial.panorama.store.ts';
-import { storeToRefs } from 'pinia';
-import { computed, watch } from 'vue';
-import { useRoute } from 'vue-router';
 
 defineOptions({
   inheritAttrs: false,
 });
 
 const route = useRoute();
+const authStore = useAuthStore();
 const panoramaStore = usePanoramaPlanoSetorialStore(route.meta.entidadeMãe);
 
 const {
@@ -73,6 +75,11 @@ const listaDeMetasPreparado = computed(() => {
     }),
   );
 });
+
+const temPermissaoMetas = computed(() => authStore.temPermissãoPara([
+  'ReferencialEm.Equipe.ProgramaDeMetas',
+  'ReferencialEm.Equipe.PS',
+]));
 
 watch([
   () => route.query.orgao_id,
@@ -181,7 +188,10 @@ watch([
     </CardEnvelope.Conteudo>
   </div>
 
-  <section class="sessao-metas mt4">
+  <section
+    v-if="temPermissaoMetas"
+    class="sessao-metas mt4"
+  >
     <h2 class="subtitulo t24 w400 mb0">
       Metas
     </h2>
