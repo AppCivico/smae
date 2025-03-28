@@ -85,6 +85,13 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
         component: () => import('@/views/planosSetoriais/PlanosSetoriaisQuadroDeAtividades.vue'),
         meta: {
           titulo: 'Quadro de atividades',
+          limitarÀsPermissões: [
+            'ReferencialEm.Equipe.ProgramaDeMetas',
+            'ReferencialEm.Equipe.PS',
+            'ReferencialEm.EquipeBanco.ProgramaDeMetas',
+            'ReferencialEm.EquipeBanco.PS',
+            'SMAE.GrupoVariavel.participante',
+          ],
         },
       },
       {
