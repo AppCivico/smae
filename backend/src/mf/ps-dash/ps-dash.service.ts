@@ -85,7 +85,12 @@ export class PSMFDashboardService {
         const ehVisaoPessoal = filtros.visao_pessoal === true;
 
         const equipes_pessoa = filtros.visao_pessoal ? await user.getEquipesColaborador(this.prisma) : [];
-        const varGlobalPermissionsSet = await getVariavelPermissionsWhere({}, user, this.prisma, true);
+        const varGlobalPermissionsSet = await getVariavelPermissionsWhere(
+            {},
+            user,
+            this.prisma,
+            'equipe-incluir-sem-config'
+        );
 
         // Construir filtros baseados nas permissões
         const dashPermissionsSet: Prisma.Enumerable<Prisma.PsDashboardVariavelWhereInput> = [
@@ -125,6 +130,7 @@ export class PSMFDashboardService {
             prisma: PrismaService,
             whereFilter: any
         ): Promise<PSMFSituacaoVariavelDto> {
+            //console.dir({ 'whereFilter': whereFilter }, { depth: 10 });
             const stats = await prisma.psDashboardVariavel.groupBy({
                 by: [
                     'fase',
@@ -147,7 +153,7 @@ export class PSMFDashboardService {
             for (const item of stats) {
                 const count = item._count.variavel_id;
                 total += count;
-                console.log(item);
+                //console.log(item);
                 if (item.fase === 'Liberacao' && item.fase_liberacao_preenchida) {
                     liberadas += count;
                 } else if (item.fase === 'Liberacao' && !item.fase_liberacao_preenchida) {
@@ -205,7 +211,7 @@ export class PSMFDashboardService {
                     : Promise.resolve(null),
             ]);
 
-        console.dir(semPdmFilterSet, { depth: 10 });
+        //console.dir(semPdmFilterSet, { depth: 10 });
 
         // Montar e retornar o objeto PSMFQuadroVariaveisDto com os valores calculados
         return {

@@ -81,7 +81,7 @@ export async function getVariavelPermissionsWhere(
     filters: ReducedFiltro,
     user: PessoaFromJwt,
     prisma: PrismaService,
-    consulta_historica: boolean = false
+    filtro_consulta: 'equipe' | 'equipe-incluir-sem-config'
 ): Promise<Prisma.Enumerable<Prisma.VariavelWhereInput>> {
     const isRoot = user.hasSomeRoles(['SMAE.superadmin', 'CadastroVariavelGlobal.administrador']);
 
@@ -94,7 +94,7 @@ export async function getVariavelPermissionsWhere(
     const whereConditions: Prisma.Enumerable<Prisma.VariavelWhereInput> = [
         {
             id: filters.variavel_id ? { in: filters.variavel_id } : undefined,
-            equipes_configuradas: consulta_historica ? undefined : true,
+            equipes_configuradas: filtro_consulta == 'equipe-incluir-sem-config' ? undefined : true,
             removido_em: null,
         },
     ];
@@ -130,7 +130,7 @@ export async function getVariavelPermissionsWhere(
         whereConditions.push({
             OR: [{ medicao_orgao_id: orgao_id }, { validacao_orgao_id: orgao_id }, { liberacao_orgao_id: orgao_id }],
         });
-    } else if (!isRoot && consulta_historica === false) {
+    } else if (!isRoot) {
         const equipes = await prisma.grupoResponsavelEquipe.findMany({
             where: {
                 removido_em: null,
@@ -230,10 +230,9 @@ export class VariavelCicloService {
 
     async getPermissionSet(
         filters: ReducedFiltro,
-        user: PessoaFromJwt,
-        consulta_historica: boolean = false
+        user: PessoaFromJwt
     ): Promise<Prisma.Enumerable<Prisma.VariavelWhereInput>> {
-        return getVariavelPermissionsWhere(filters, user, this.prisma, consulta_historica);
+        return getVariavelPermissionsWhere(filters, user, this.prisma, 'equipe');
     }
 
     async getVariavelCiclo(
@@ -736,7 +735,7 @@ export class VariavelCicloService {
                 `Data de referência não é a última válida (${Date2YMD.dbDateToDMY(cicloCorrente.ultimo_periodo_valido)}), os ciclos devem ser preenchidos em ordem.`
             );
 
-        const whereFilter = await this.getPermissionSet({}, user, true);
+        const whereFilter = await getVariavelPermissionsWhere({}, user, this.prisma, 'equipe');
 
         const variavel = await this.prisma.variavel.findFirst({
             where: {
