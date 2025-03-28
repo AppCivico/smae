@@ -84,7 +84,7 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
         path: 'quadro-de-atividades',
         component: () => import('@/views/planosSetoriais/PlanosSetoriaisQuadroDeAtividades.vue'),
         meta: {
-          tituloParaNavegador: `Quadro de atividades de ${parametrosPagina.tituloPlural}`,
+          titulo: 'Quadro de atividades',
         },
       },
       {
