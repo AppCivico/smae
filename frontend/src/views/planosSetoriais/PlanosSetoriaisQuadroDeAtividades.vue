@@ -95,7 +95,11 @@ watch([
     apenas_pendentes: apenasPendentes as unknown as boolean,
   };
 
-  panoramaStore.buscarVariaveis(params);
+  // Quando visao pessoal for true, PdM_id é facultativo para buscar as
+  // variáveis
+  if (params.visao_pessoal || params.pdm_id) {
+    panoramaStore.buscarVariaveis(params);
+  }
 
   if (params.pdm_id) {
     panoramaStore.buscarEstatisticasMetas(params as ParametrosComPdmIdObrigatorio);
