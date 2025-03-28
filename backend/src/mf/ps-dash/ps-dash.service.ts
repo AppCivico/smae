@@ -81,6 +81,7 @@ export class PSMFDashboardService {
         filtros: PSMFFiltroDashboardQuadroVariaveisDto,
         user: PessoaFromJwt
     ): Promise<PSMFQuadroVariaveisDto> {
+        if (filtros.visao_pessoal === undefined) filtros.visao_pessoal = false;
         // Verificar permissões
         const ehVisaoPessoal = filtros.visao_pessoal === true;
 
