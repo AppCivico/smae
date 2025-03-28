@@ -17,6 +17,9 @@ BEGIN
         fase_liberacao_preenchida,
         equipes,
         equipes_orgaos,
+        equipes_preenchimento,
+        equipes_conferencia,
+        equipes_liberacao,
         possui_atrasos
     )
     WITH pdm_mapping AS (
@@ -47,8 +50,14 @@ BEGIN
     equipes_data AS (
         SELECT
             v.id AS variavel_id,
+            -- Lista completa de equipes e órgãos
             COALESCE(array_agg(DISTINCT gre.id) FILTER (WHERE gre.id IS NOT NULL), '{}'::integer[]) AS equipes,
-            COALESCE(array_agg(DISTINCT gre.orgao_id) FILTER (WHERE gre.orgao_id IS NOT NULL), '{}'::integer[]) AS equipes_orgaos
+            COALESCE(array_agg(DISTINCT gre.orgao_id) FILTER (WHERE gre.orgao_id IS NOT NULL), '{}'::integer[]) AS equipes_orgaos,
+            
+            -- Novas colunas baseadas no perfil
+            COALESCE(array_agg(DISTINCT gre.id) FILTER (WHERE gre.perfil = 'Medicao'::"PerfilResponsavelEquipe"), '{}'::integer[]) AS equipes_preenchimento,
+            COALESCE(array_agg(DISTINCT gre.id) FILTER (WHERE gre.perfil = 'Validacao'::"PerfilResponsavelEquipe"), '{}'::integer[]) AS equipes_conferencia,
+            COALESCE(array_agg(DISTINCT gre.id) FILTER (WHERE gre.perfil = 'Liberacao'::"PerfilResponsavelEquipe"), '{}'::integer[]) AS equipes_liberacao
         FROM
             variavel v
             LEFT JOIN variavel_grupo_responsavel_equipe vgre ON
@@ -65,7 +74,6 @@ BEGIN
         COALESCE(pd.pdm_ids, '{}'::integer[]),
         vcc.fase::"VariavelFase",
 
-        -- ROBO acha que deveria ser:
         -- (vcc.fase IN ( 'Validacao', 'Liberacao' ) OR (vcc.fase = 'Preenchimento' AND vcc.atrasos IS NULL OR vcc.atrasos = '{}')),
         -- mas acho que deveria ser:
         (vcc.fase IN ( 'Preenchimento', 'Validacao' , 'Liberacao' ) AND vcc.liberacao_enviada = TRUE), -- fase_validacao_preenchida
@@ -74,6 +82,10 @@ BEGIN
         vcc.fase = 'Liberacao' AND vcc.liberacao_enviada = TRUE, -- fase_liberacao_preenchida
         ed.equipes,
         ed.equipes_orgaos,
+        ed.equipes_preenchimento,
+        ed.equipes_conferencia,
+        ed.equipes_liberacao,
+        
         -- pegar prazo para indicar se possui atrasos
         -- arr de prazos pode estar vazia
         -- caso o prazo seja < hoje

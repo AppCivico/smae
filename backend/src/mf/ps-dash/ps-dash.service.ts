@@ -112,9 +112,22 @@ export class PSMFDashboardService {
                     filtros.orgao_id && Array.isArray(filtros.orgao_id) ? { hasSome: filtros.orgao_id } : undefined,
 
                 AND: [
-                    filtros.visao_pessoal
+                    ehVisaoPessoal
                         ? {
-                              equipes: { hasSome: equipes_pessoa },
+                              OR: [
+                                  {
+                                      fase: 'Preenchimento',
+                                      equipes_preenchimento: { hasSome: equipes_pessoa },
+                                  },
+                                  {
+                                      fase: 'Validacao',
+                                      equipes_conferencia: { hasSome: equipes_pessoa },
+                                  },
+                                  {
+                                      fase: 'Liberacao',
+                                      equipes_liberacao: { hasSome: equipes_pessoa },
+                                  },
+                              ],
                           }
                         : {},
                 ],
@@ -162,7 +175,7 @@ export class PSMFDashboardService {
             for (const item of stats) {
                 const count = item._count.variavel_id;
                 total += count;
-                //console.log(item);
+
                 if (item.fase === 'Liberacao' && item.fase_liberacao_preenchida) {
                     liberadas += count;
                 } else if (item.fase === 'Liberacao' && !item.fase_liberacao_preenchida) {

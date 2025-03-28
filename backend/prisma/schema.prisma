@@ -7592,6 +7592,11 @@ model PsDashboardVariavel {
     equipes        Int[] // Mexeu, não dispara recalc
     equipes_orgaos Int[] // Mexeu, não dispara recalc
 
+    // Campos de equipe por "fase"
+    equipes_preenchimento Int[] @default([])
+    equipes_conferencia   Int[] @default([])
+    equipes_liberacao     Int[] @default([])
+
     @@index([pdm_id])
     @@map("ps_dashboard_variavel")
 }
