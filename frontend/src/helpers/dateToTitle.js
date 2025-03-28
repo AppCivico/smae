@@ -1,5 +1,12 @@
 export default function dateToTitle(d, short = false) {
-  const dd = d ? new Date(d) : false;
+  let dd = false;
+
+  if (d) {
+    dd = d === 'hoje'
+      ? new Date()
+      : new Date(d);
+  }
+
   if (!dd) return d;
   const month = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'][dd.getUTCMonth()];
   const year = dd.getUTCFullYear();
