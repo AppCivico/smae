@@ -19,6 +19,7 @@
   </div>
   <table class="tablemain">
     <col>
+    <col>
     <col class="col--botão-de-ação">
     <col class="col--botão-de-ação">
     <thead>
@@ -34,10 +35,10 @@
         v-for="item in listaFiltradaPorTermoDeBusca"
         :key="item.id"
       >
-        <td style="width: 100%">
+        <td>
           {{ item.nome }}
         </td>
-        <td style="width: 100%">
+        <td>
           {{ item.categoria_assunto_variavel ? item.categoria_assunto_variavel.nome : '-' }}
         </td>
         <td>
