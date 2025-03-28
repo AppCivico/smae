@@ -2512,7 +2512,12 @@ export class VariavelService {
         await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient) => {
                 const refEmUso = await prismaTx.indicadorFormulaVariavel.findMany({
-                    where: { variavel_id: variavelId },
+                    where: {
+                        variavel_id: variavelId,
+                        indicador: {
+                            removido_em: null,
+                        },
+                    },
                     select: {
                         indicador: { select: { codigo: true, titulo: true } },
                     },
