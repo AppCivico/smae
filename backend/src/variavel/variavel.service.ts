@@ -2564,6 +2564,8 @@ export class VariavelService {
                     where: { variavel_id: variavelId },
                 });
 
+                await AddTaskRecalcVariaveis(prismaTx, { variavelIds: [variavelId] });
+
                 await logger.saveLogs(prismaTx, user.getLogData());
             },
             {

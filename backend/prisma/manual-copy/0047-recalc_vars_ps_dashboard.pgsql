@@ -11,6 +11,7 @@ BEGIN
     INSERT INTO ps_dashboard_variavel (
         variavel_id,
         pdm_id,
+        pdm_id_inativo,
         fase,
         fase_preenchimento_preenchida,
         fase_validacao_preenchida,
@@ -98,6 +99,7 @@ BEGIN
     WHERE
         vcc.variavel_id = ANY(variaveis)
         AND vcc.eh_corrente = TRUE
+        AND v.removido_em IS NULL
     -- tiras as variáveis de cronograma, que o próprio cronograma já contabiliza
     AND (v.variavel_categorica_id IS NULL OR vc.tipo <> 'Cronograma'::"TipoVariavelCategorica")
     AND v.tipo = 'Global';
