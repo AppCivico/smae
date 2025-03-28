@@ -192,7 +192,7 @@ async function iniciar() {
     const valorNaQuery = valoresNaQuery[chave];
     const valorInicial = dados.value[chave as ChaveDeDados];
 
-    if (valorNaQuery) {
+    if (valorNaQuery !== undefined) {
       if (Array.isArray(valorInicial)) {
         if (Array.isArray(valorNaQuery)) {
           dados.value[chave as keyof Dados] = structuredClone(valorNaQuery) as number[];
