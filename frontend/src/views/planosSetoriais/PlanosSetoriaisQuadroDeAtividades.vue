@@ -76,7 +76,7 @@ const listaDeMetasPreparado = computed(() => {
   );
 });
 
-const temPermissaoMetas = computed(() => authStore.temPermissãoPara([
+const temPermissaoMetas = computed(() => !authStore.temPermissãoPara([
   'ReferencialEm.Equipe.ProgramaDeMetas',
   'ReferencialEm.Equipe.PS',
 ]));
@@ -180,7 +180,10 @@ watch([
       </CardEnvelope.conteudo>
     </template>
 
-    <CardEnvelope.Conteudo class="container-inline grid-full-column">
+    <CardEnvelope.Conteudo
+      v-if="temPermissaoMetas"
+      class="container-inline grid-full-column"
+    >
       <CardEnvelope.Titulo titulo="Metas" />
       <GrandesNumerosDeMetas
         :metas="estatisticasMetas"
