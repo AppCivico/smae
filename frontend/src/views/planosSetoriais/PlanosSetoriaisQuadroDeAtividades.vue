@@ -76,7 +76,7 @@ const listaDeMetasPreparado = computed(() => {
   );
 });
 
-const temPermissaoMetas = computed(() => !authStore.temPermissãoPara([
+const temPermissaoMetas = computed(() => authStore.temPermissãoPara([
   'ReferencialEm.Equipe.ProgramaDeMetas',
   'ReferencialEm.Equipe.PS',
 ]));
