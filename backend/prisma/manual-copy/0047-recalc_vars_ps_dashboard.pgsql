@@ -11,7 +11,6 @@ BEGIN
     INSERT INTO ps_dashboard_variavel (
         variavel_id,
         pdm_id,
-        pdm_id_inativo,
         fase,
         fase_preenchimento_preenchida,
         fase_validacao_preenchida,
