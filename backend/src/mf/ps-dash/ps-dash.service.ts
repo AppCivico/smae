@@ -84,7 +84,7 @@ export class PSMFDashboardService {
         // Verificar permissões
         const ehVisaoPessoal = filtros.visao_pessoal === true;
 
-        const equipes_pessoa = await user.getEquipesColaborador(this.prisma);
+        const equipes_pessoa = filtros.visao_pessoal ? await user.getEquipesColaborador(this.prisma) : [];
         const varGlobalPermissionsSet = await getVariavelPermissionsWhere({}, user, this.prisma, true);
 
         // Construir filtros baseados nas permissões
@@ -98,16 +98,18 @@ export class PSMFDashboardService {
                     filtros.orgao_id && Array.isArray(filtros.orgao_id) ? { hasSome: filtros.orgao_id } : undefined,
 
                 AND: [
-                    {
-                        equipes: { hasSome: equipes_pessoa },
-                    },
+                    filtros.visao_pessoal
+                        ? {
+                              equipes: { hasSome: equipes_pessoa },
+                          }
+                        : {},
                 ],
             },
         ];
 
         // Base filter without PDM association
         const baseFilterNaoAssociadas = { ...dashPermissionsSet[0] };
-        //delete baseFilterNaoAssociadas.variavel;
+        delete baseFilterNaoAssociadas.variavel;
 
         // Total filter without personal view constraint
         const totalFilterSet = [...dashPermissionsSet];
@@ -202,15 +204,8 @@ export class PSMFDashboardService {
 
                 !filtros.visao_pessoal
                     ? getStatsByFaseAndState(this.prisma, {
-                          AND: [
-                              semPdmFilterSet,
-                              {
-                                  OR: [
-                                      { pdm_id: { isEmpty: true } }, // pdm_id vazio
-                                      { NOT: { pdm_id: filtros.pdm_id ? { hasSome: [filtros.pdm_id] } : undefined } }, // pdm_id associado ao PDM do filtro
-                                  ],
-                              },
-                          ],
+                          AND: [semPdmFilterSet],
+                          pdm_id: { isEmpty: true },
                       })
                     : Promise.resolve(null),
             ]);
