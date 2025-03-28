@@ -128,11 +128,8 @@ watch([
         v-if="chamadasPendentes.listaMetas"
         class="horizontal"
       />
-      <template v-else-if="cicloAtual?.data_ciclo">
-        {{ dateToTitle(cicloAtual.data_ciclo) }}
-      </template>
       <template v-else>
-        Ciclo atual indisponível
+        {{ dateToTitle('hoje') }}
       </template>
     </h2>
   </header>
