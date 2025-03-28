@@ -84,6 +84,14 @@ export class PSMFDashboardService {
         // Verificar permissões
         const ehVisaoPessoal = filtros.visao_pessoal === true;
 
+        if (!ehVisaoPessoal && !filtros.pdm_id) {
+            throw new BadRequestException(
+                `Informar o ${
+                    tipo == '_PS' ? 'Plano Setorial' : 'Programa de Metas'
+                } é obrigatório para visão administrativa`
+            );
+        }
+
         const equipes_pessoa = filtros.visao_pessoal ? await user.getEquipesColaborador(this.prisma) : [];
         const varGlobalPermissionsSet = await getVariavelPermissionsWhere(
             {},
