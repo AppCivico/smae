@@ -10,10 +10,24 @@ const props = defineProps<{
   cores?: string[];
 }>();
 
+const ordemDasVariaveis = [
+  'a_coletar_atrasadas',
+  'a_coletar_prazo',
+  'coletadas_a_conferir',
+  'conferidas_a_liberar',
+  'liberadas',
+];
+
 const variaveisTratada = computed(() => {
   const clone = cloneDeep(props.variaveis);
   delete clone.total;
-  return clone;
+
+  return ordemDasVariaveis.reduce((acc, chave) => {
+    if (chave in clone) {
+      acc[chave] = clone[chave];
+    }
+    return acc;
+  }, {} as Record<string, number>);
 });
 
 const labels = computed(() => Object.keys(variaveisTratada.value));
