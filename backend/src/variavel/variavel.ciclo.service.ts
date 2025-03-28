@@ -27,6 +27,7 @@ import {
     VariavelValorDto,
 } from './dto/variavel.ciclo.dto';
 import {
+    AddTaskRecalcVariaveis,
     GetVariavelPalavraChave,
     GetVariavelWhereSet,
     VariavelComCategorica,
@@ -1064,6 +1065,7 @@ export class VariavelCicloService {
         await prismaTxn.$executeRaw`SELECT f_atualiza_variavel_ciclo_corrente(${variavelId}::int)::text`;
 
         await AddTaskRefreshMeta(prismaTxn, { variavel_id: variavelId });
+        await AddTaskRecalcVariaveis(prismaTxn, { variavelIds: [variavelId] });
     }
 
     private async marcaLiberacaoEnviada(variavelId: number, prismaTxn: Prisma.TransactionClient): Promise<void> {
@@ -1083,6 +1085,7 @@ export class VariavelCicloService {
 
         await prismaTxn.$executeRaw`SELECT f_atualiza_variavel_ciclo_corrente(${variavelId}::int)::text`;
         await AddTaskRefreshMeta(prismaTxn, { variavel_id: variavelId });
+        await AddTaskRecalcVariaveis(prismaTxn, { variavelIds: [variavelId] });
     }
 
     private async criaPedidoComplementacao(
@@ -1224,6 +1227,7 @@ export class VariavelCicloService {
 
                 await prismaTx.$executeRaw`SELECT f_atualiza_variavel_ciclo_corrente(${variavelId}::int)::text`;
                 await AddTaskRefreshMeta(prismaTx, { variavel_id: variavelId });
+                await AddTaskRecalcVariaveis(prismaTx, { variavelIds: [variavelId] });
 
                 const newState = await this.getVariavelCicloCorrente(variavelId, prismaTx);
                 if (!newState) {

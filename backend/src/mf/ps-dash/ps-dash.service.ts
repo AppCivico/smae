@@ -445,30 +445,6 @@ export class PSMFDashboardService {
         return this.jwtService.sign(payload);
     }
 
-    // Métodos auxiliares de geração de dados (mantidos do original)
-    private gerarQuadrosVariaveis(_ehVisaoPessoal: boolean): PSMFQuadroVariaveisDto {
-        const gerarSituacaoVariavel = (total: number, liberadas: number): PSMFSituacaoVariavelDto => {
-            const restante = total - liberadas;
-            const metade = Math.floor(restante / 2);
-
-            return {
-                a_coletar_atrasadas: Math.floor(metade * 0.3),
-                a_coletar_prazo: Math.floor(metade * 0.7),
-                coletadas_a_conferir: Math.floor(restante * 0.3),
-                conferidas_a_liberar: Math.floor(restante * 0.2),
-                liberadas: liberadas,
-                total: total,
-            };
-        };
-
-        return {
-            associadas_plano_atual: gerarSituacaoVariavel(120, 80),
-            nao_associadas_plano_atual: gerarSituacaoVariavel(50, 20),
-            total_por_situacao: gerarSituacaoVariavel(500, 320),
-            nao_associadas: gerarSituacaoVariavel(150, 40),
-        };
-    }
-
     async getQuadroMetasIniAtv(
         tipo: TipoPdmType,
         filtros: PSMFFiltroDashboardQuadroDto,
