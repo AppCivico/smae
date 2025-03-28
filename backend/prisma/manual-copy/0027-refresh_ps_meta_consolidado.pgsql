@@ -300,8 +300,12 @@ BEGIN
             COUNT(DISTINCT family_id),
             COALESCE(ARRAY_AGG(DISTINCT family_id), ARRAY[]::int[]),
             COUNT(DISTINCT family_id) FILTER (WHERE eh_corrente = true),
-            COUNT(DISTINCT family_id) FILTER (WHERE eh_corrente = true AND fase = 'Preenchimento' AND (atrasos IS NULL OR atrasos = '{}')),
-            COUNT(DISTINCT family_id) FILTER (WHERE eh_corrente = true AND fase = 'Preenchimento' AND atrasos IS NOT NULL AND atrasos <> '{}'),
+            COUNT(DISTINCT family_id) FILTER (WHERE eh_corrente = true AND fase = 'Preenchimento' AND
+                (atrasos IS NULL OR atrasos = '{}') AND (prazo IS NULL OR prazo >= (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::date)
+            ),
+            COUNT(DISTINCT family_id) FILTER (WHERE eh_corrente = true AND fase = 'Preenchimento' AND
+                ((atrasos IS NOT NULL AND atrasos <> '{}') OR (prazo IS NOT NULL AND prazo < (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::date))
+            ),
             COUNT(DISTINCT family_id) FILTER (WHERE eh_corrente = true AND fase = 'Validacao'),
             COUNT(DISTINCT family_id) FILTER (WHERE eh_corrente = true AND fase = 'Liberacao' AND liberacao_enviada = false),
             COUNT(DISTINCT family_id) FILTER (WHERE eh_corrente = true AND fase = 'Liberacao' AND liberacao_enviada = true)
