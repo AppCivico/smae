@@ -853,6 +853,12 @@ export class VariavelService {
 
         await this.recalc_series_dependentes([variavel.id], prismaTxn);
 
+        // Caso a variável seja Global, ela deve entrar na tabela de vars consolidadas, de dashboard do PS
+        // OBS: apenas vars mães
+        if (tipo == 'Global' && variavelMaeId == null) {
+            await AddTaskRecalcVariaveis(prismaTxn, { variavelIds: [variavel.id] });
+        }
+
         return variavel;
     }
 
