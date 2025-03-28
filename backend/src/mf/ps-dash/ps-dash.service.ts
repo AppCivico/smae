@@ -185,8 +185,7 @@ export class PSMFDashboardService {
                 filtros.visao_pessoal
                     ? getStatsByFaseAndState(this.prisma, {
                           AND: dashPermissionsSet,
-                          pdm_id: { hasEvery: [] },
-                          NOT: { pdm_id: filtros.pdm_id ? { hasSome: [filtros.pdm_id] } : undefined },
+                          pdm_id: { isEmpty: true },
                       })
                     : Promise.resolve(null),
 
