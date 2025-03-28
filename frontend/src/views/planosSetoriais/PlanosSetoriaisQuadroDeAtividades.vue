@@ -1,12 +1,12 @@
 <script lang="ts" setup>
-import { storeToRefs } from 'pinia';
-import { computed, watch } from 'vue';
-import { useRoute } from 'vue-router';
 import * as CardEnvelope from '@/components/cardEnvelope';
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
 import ListaLegendas from '@/components/ListaLegendas.vue';
 import FiltroDoQuadroDeAtividades from '@/components/planoSetorialProgramaMetas.componentes/FiltroDoQuadroDeAtividades.vue';
 import CicloListaItem, { type CicloVigenteItemParams, type ListaVariaveis } from '@/components/planoSetorialProgramaMetas.componentes/QuadroDeAtividades/CicloListaItem.vue';
+import CicloVigenteFiltro from '@/components/planoSetorialProgramaMetas.componentes/QuadroDeAtividades/CicloVigenteFiltro.vue';
+import GraficoOutrasVariaveis from '@/components/planoSetorialProgramaMetas.componentes/QuadroDeAtividades/Graficos/GraficoOutrasVariaveis.vue';
+import GraficoVariavelAssociado from '@/components/planoSetorialProgramaMetas.componentes/QuadroDeAtividades/Graficos/GraficoVariavelAssociado.vue';
 import {
   listaDeFases,
   listaDeStatus,
@@ -16,12 +16,12 @@ import {
 } from '@/components/planoSetorialProgramaMetas.componentes/QuadroDeAtividades/helpers/obterDadosItems';
 import GraficoDeSituacoesDasVariaveis from '@/components/quadroDeAtividades/GraficoDeSituacoesDasVariaveis.vue';
 import GrandesNumerosDeMetas from '@/components/quadroDeAtividades/GrandesNumerosDeMetas.vue';
-import CicloVigenteFiltro from '@/components/planoSetorialProgramaMetas.componentes/QuadroDeAtividades/CicloVigenteFiltro.vue';
-import GraficoOutrasVariaveis from '@/components/planoSetorialProgramaMetas.componentes/QuadroDeAtividades/Graficos/GraficoOutrasVariaveis.vue';
-import GraficoVariavelAssociado from '@/components/planoSetorialProgramaMetas.componentes/QuadroDeAtividades/Graficos/GraficoVariavelAssociado.vue';
+import dateToTitle from '@/helpers/dateToTitle';
 import { usePanoramaPlanoSetorialStore } from '@/stores/planoSetorial.panorama.store';
 import type { Parametros, ParametrosComPdmIdObrigatorio } from '@/stores/planoSetorial.panorama.store.ts';
-import dateToTitle from '@/helpers/dateToTitle';
+import { storeToRefs } from 'pinia';
+import { computed, watch } from 'vue';
+import { useRoute } from 'vue-router';
 
 defineOptions({
   inheritAttrs: false,
@@ -76,21 +76,23 @@ const listaDeMetasPreparado = computed(() => {
 
 watch([
   () => route.query.orgao_id,
-  () => route.query.equipe_id,
+  () => route.query.equipes,
   () => route.query.visao_pessoal,
   () => route.query.pdm_id,
-], async ([orgaoId, equipeId, visaoPessoal, pdmId]) => {
+  () => route.query.apenas_pendentes,
+], async ([orgaoId, equipes, visaoPessoal, pdmId, apenasPendentes]) => {
   const params: Parametros = {
     pdm_id: pdmId as unknown as number || undefined,
     orgao_id: orgaoId && !Array.isArray(orgaoId)
       ? [orgaoId as unknown as number]
       : orgaoId as unknown as number[]
       || undefined,
-    equipes: equipeId && !Array.isArray(equipeId)
-      ? [equipeId as unknown as number]
-      : equipeId as unknown as number[]
+    equipes: equipes && !Array.isArray(equipes)
+      ? [equipes as unknown as number]
+      : equipes as unknown as number[]
       || undefined,
     visao_pessoal: visaoPessoal as unknown as boolean,
+    apenas_pendentes: apenasPendentes as unknown as boolean,
   };
 
   panoramaStore.buscarVariaveis(params);
