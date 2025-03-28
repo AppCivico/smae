@@ -109,7 +109,6 @@ export class PSMFDashboardService {
 
         // Base filter without PDM association
         const baseFilterNaoAssociadas = { ...dashPermissionsSet[0] };
-        delete baseFilterNaoAssociadas.variavel;
 
         // Total filter without personal view constraint
         const totalFilterSet = [...dashPermissionsSet];
@@ -209,6 +208,8 @@ export class PSMFDashboardService {
                       })
                     : Promise.resolve(null),
             ]);
+
+        console.dir(semPdmFilterSet, { depth: 10 });
 
         // Montar e retornar o objeto PSMFQuadroVariaveisDto com os valores calculados
         return {
