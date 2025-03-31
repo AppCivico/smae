@@ -30,6 +30,9 @@ export class RelatorioDto {
 }
 
 export class RelatorioProcessamentoDto {
+    @ApiProperty({
+        deprecated: true,
+    })
     id: number;
     congelado_em: Date | null;
     executado_em: Date | null;

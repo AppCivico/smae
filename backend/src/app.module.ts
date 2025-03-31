@@ -51,6 +51,7 @@ import { OrcamentoModule } from './reports/orcamento/orcamento.module';
 import { ReportsModule } from './reports/relatorios/reports.module';
 import { UtilsService } from './reports/utils/utils.service';
 import { RequestLogModule } from './request_log/request_log.module';
+import { RunReportModule } from './task/run_report/run-report.module';
 import { TaskModule } from './task/task.module';
 import { ClassificacaoModule } from './transferencias-voluntarias/classificacao/classificacao.module';
 import { PSMFDashboardModule } from './mf/ps-dash/ps-dash.module';
@@ -110,7 +111,8 @@ import { PSMFDashboardModule } from './mf/ps-dash/ps-dash.module';
         ClassificacaoModule,
         PainelEstrategicoModule,
         CategoriaAssuntoVariavelModule,
-        PSMFDashboardModule
+        PSMFDashboardModule,
+        RunReportModule,
     ],
     controllers: [AppController],
     providers: [

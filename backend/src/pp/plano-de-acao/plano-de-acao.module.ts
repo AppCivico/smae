@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { UploadModule } from '../../upload/upload.module';
 import { PortfolioModule } from '../portfolio/portfolio.module';
@@ -7,7 +7,7 @@ import { PlanoAcaoController } from './plano-de-acao.controller';
 import { PlanoAcaoService } from './plano-de-acao.service';
 
 @Module({
-    imports: [PrismaModule, ProjetoModule, PortfolioModule, UploadModule],
+    imports: [PrismaModule, forwardRef(() => ProjetoModule), PortfolioModule, UploadModule],
     controllers: [PlanoAcaoController],
     providers: [PlanoAcaoService],
     exports: [PlanoAcaoService],
