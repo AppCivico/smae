@@ -1,4 +1,5 @@
 <template>
+
   <div class="flex spacebetween center mb2">
     <TituloDaPagina />
     <hr class="ml2 f1">
@@ -139,6 +140,7 @@
 </template>
 
 <script setup>
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import { gruposTematicos as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';
