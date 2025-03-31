@@ -63,6 +63,7 @@ import ClassificacaoCriarEditar from '@/views/classificacao/ClassificacaoCriarEd
 import ClassificacaoLista from '@/views/classificacao/ClassificacaoLista.vue';
 import ClassificacaoRaiz from '@/views/classificacao/ClassificacaoRaiz.vue';
 import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';
+import { useModalidadeDeContratacaoStore } from '@/stores/modalidadeDeContratacao.store';
 
 const TiposDeAcompanhamentoLista = defineAsyncComponent({
   loader: () => import('@/views/tiposDeAcompanhamento/TiposLista.vue'),
@@ -198,7 +199,6 @@ export default [
             component: GruposTematicosLista,
             meta: {
               título: 'Grupos temáticos',
-              rotasParaMigalhasDePão: ['cadastrosBasicos'],
             },
           },
           {
@@ -208,7 +208,6 @@ export default [
             meta: {
               título: 'Novo grupo temático',
               rotasParaMigalhasDePão: [
-                'cadastrosBasicos',
                 'gruposTematicosObras',
               ],
             },
@@ -227,7 +226,6 @@ export default [
             meta: {
               título: () => useGruposTematicosStore()?.emFoco?.nome || 'Editar Grupo Temático',
               rotasParaMigalhasDePão: [
-                'cadastrosBasicos',
                 'gruposTematicosObras',
               ],
             },
@@ -1140,7 +1138,7 @@ export default [
         }),
 
         meta: {
-          título: 'Editar modalidade',
+          título: () => useModalidadeDeContratacaoStore()?.emFoco?.nome || 'Editar modalidade',
           rotasParaMigalhasDePão: ['modalidadesListar'],
         },
       },
