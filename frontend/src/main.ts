@@ -48,7 +48,7 @@ declare module 'pinia' {
     requestS: RequestS;
     router: Router;
     route: RouteLocationNormalizedLoaded;
-    resetAllStores: () => void;
+    resetAllStores: (storeIds: string | string[]) => void;
   }
   export interface PiniaCustomStateProperties {
     route: RouteLocationNormalizedLoaded;
@@ -68,12 +68,21 @@ pinia.use(({ store }) => {
   stores.push(store);
 
   return {
-    resetAllStores: () => {
+    resetAllStores: (storeIds = 'all') => {
       stores.forEach((eachStore) => {
-        eachStore.$reset();
-      });
+        switch (true) {
+          case storeIds === 'all':
+          case Array.isArray(storeIds) && storeIds.includes(eachStore.$id):
+          case storeIds === eachStore.$id:
+            if (eachStore.$reset) {
+              eachStore.$reset();
+            }
+            break;
 
-      stores.splice(0);
+          default:
+            break;
+        }
+      });
     },
   };
 });
