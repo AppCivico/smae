@@ -1,15 +1,16 @@
 import { task_type } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
-import { CreateEchoDto } from './echo/dto/create-echo.dto';
-import { CreateRefreshMvDto } from './refresh_mv/dto/create-refresh-mv.dto';
-import { CreateRefreshMetaDto } from './refresh_meta/dto/create-refresh-mv.dto';
 import { CreateAvisoEmailJobDto } from './aviso_email/dto/create-aviso_email.dto';
 import { CreateAeCronogramaTpJobDto } from './aviso_email_cronograma_tp/dto/ae_cronograma_tp.dto';
 import { CreateNotaJobDto } from './aviso_email_nota/dto/ae_nota.dto';
-import { CreateRefreshTransferenciaDto } from './refresh_transferencia/dto/create-refresh-transferencia.dto';
-import { CreateRefreshIndicadorDto } from './refresh_indicador/dto/create-refresh-indicador.dto';
+import { CreateEchoDto } from './echo/dto/create-echo.dto';
 import { CreateImportacaoParlamentarDto } from './importacao_parlamentar/dto/create-parlamentar.dto';
+import { CreateRefreshIndicadorDto } from './refresh_indicador/dto/create-refresh-indicador.dto';
+import { CreateRefreshMetaDto } from './refresh_meta/dto/create-refresh-mv.dto';
+import { CreateRefreshMvDto } from './refresh_mv/dto/create-refresh-mv.dto';
+import { CreateRefreshTransferenciaDto } from './refresh_transferencia/dto/create-refresh-transferencia.dto';
 import { CreateRefreshVariavelDto } from './refresh_variavel/dto/create-refresh-variavel.dto';
+import { CreateRunReportDto } from './run_report/dto/create-run-report.dto';
 
 export function ParseParams(taskType: task_type, value: any): any {
     let theClass: any = undefined;
@@ -44,7 +45,10 @@ export function ParseParams(taskType: task_type, value: any): any {
         case 'importacao_parlamentar':
             theClass = CreateImportacaoParlamentarDto;
             break;
-
+        case 'run_report': {
+            theClass = CreateRunReportDto;
+            break;
+        }
         default:
             taskType satisfies never;
     }

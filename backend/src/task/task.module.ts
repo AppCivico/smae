@@ -12,6 +12,7 @@ import { TaskController } from './task.controller';
 import { TaskService } from './task.service';
 import { ImportacaoParlamentarModule } from './importacao_parlamentar/parlamentar.module';
 import { RefreshVariavelModule } from './refresh_variavel/refresh-variavel.module';
+import { RunReportModule } from './run_report/run-report.module';
 
 @Module({
     imports: [
@@ -25,6 +26,7 @@ import { RefreshVariavelModule } from './refresh_variavel/refresh-variavel.modul
         forwardRef(() => AeNotaModule),
         forwardRef(() => RefreshTransferenciaModule),
         forwardRef(() => ImportacaoParlamentarModule),
+        forwardRef(() => RunReportModule),
         forwardRef(() => RefreshVariavelModule),
     ],
     controllers: [TaskController],

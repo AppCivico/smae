@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, forwardRef, Get, HttpCode, HttpStatus, Inject, Param, Patch, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { ListaDePrivilegios } from 'src/common/ListaDePrivilegios';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
@@ -29,6 +29,7 @@ const rolesMDO: ListaDePrivilegios[] = [
 export class AcompanhamentoController {
     constructor(
         private readonly acompanhamentoService: AcompanhamentoService,
+        @Inject(forwardRef(() => ProjetoService))
         private readonly projetoService: ProjetoService
     ) {}
 

@@ -3492,15 +3492,19 @@ model Relatorio {
     // Coluna espelhada da RelatorioFilha, para facilitar a busca.
     processado_em DateTime? @db.Timestamptz(6)
 
+    err_msg     String? @db.Text
+    iniciado_em DateTime? @db.Timestamptz(6)
+
     tipo  TipoRelatorio? // não deu certo remover, o prisma não cria o Enum pq não ta sendo usado!
     fonte FonteRelatorio
 
-    criador              Pessoa?                @relation("criador", fields: [criado_por], references: [id])
-    removedor            Pessoa?                @relation("removedor", fields: [removido_por], references: [id])
-    arquivo              Arquivo?               @relation(fields: [arquivo_id], references: [id])
-    pdm                  Pdm?                   @relation(fields: [pdm_id], references: [id])
-    ProjetoRelatorioFila ProjetoRelatorioFila[]
-    processamento        RelatorioFila?
+    criador       Pessoa?        @relation("criador", fields: [criado_por], references: [id])
+    removedor     Pessoa?        @relation("removedor", fields: [removido_por], references: [id])
+    arquivo       Arquivo?       @relation(fields: [arquivo_id], references: [id])
+    pdm           Pdm?           @relation(fields: [pdm_id], references: [id])
+    //ProjetoRelatorioFila ProjetoRelatorioFila[]
+    //processamento        RelatorioFila?
+    RelatorioFila RelatorioFila? @ignore
 
     @@index([pdm_id, criado_em, removido_em])
     @@index([fonte, criado_em])
@@ -3522,6 +3526,7 @@ model RelatorioFila {
     @@unique([relatorio_id])
     @@index([executado_em, congelado_em])
     @@map("relatorio_fila")
+    @@ignore
 }
 
 enum ProjetoFase {
@@ -3837,7 +3842,7 @@ model Projeto {
     removido_em               DateTime?
     removido_por              Int?
     ProjetoRegistroSei        ProjetoRegistroSei[]
-    ProjetoRelatorioFila      ProjetoRelatorioFila[]
+    //ProjetoRelatorioFila      ProjetoRelatorioFila[]
     ProjetoNumerosSequenciais ProjetoNumeroSequencial[]
 
     MetaOrcamento            OrcamentoPrevisto[]
@@ -3863,6 +3868,7 @@ model Projeto {
     origem_cache                  Json                            @default("{}") @db.Json
     ViewPainelEstrategicoProjetos ViewPainelEstrategicoProjetos[]
     ViewProjetoV2                 ViewProjetoV2[]
+    ProjetoRelatorioFila          ProjetoRelatorioFila[]          @ignore
 
     @@index([removido_em])
     @@map("projeto")
@@ -4137,12 +4143,13 @@ model ProjetoRelatorioFila {
     executado_em DateTime?
 
     relatorio_id Int?
-    relatorio    Relatorio? @relation(fields: [relatorio_id], references: [id])
+    ///relatorio    Relatorio? @relation(fields: [relatorio_id], references: [id])
 
     motivado_relatorio ProjetoMotivoRelatorio @default(MudancaDeStatus)
 
     @@index([projeto_id])
     @@map("projeto_relatorio_fila")
+    @@ignore
 }
 
 enum ProjetoOrigemTipo {
@@ -4954,6 +4961,7 @@ enum task_type {
     refresh_indicador
     refresh_variavel
     importacao_parlamentar
+    run_report
 }
 
 enum task_status {
