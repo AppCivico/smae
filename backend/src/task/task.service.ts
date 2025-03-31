@@ -253,6 +253,33 @@ export class TaskService {
         this.is_running = false;
     }
 
+    // each 1 hour
+    @Interval(1000 * 60 * 60)
+    async handleCronRemoveOld() {
+        if (!this.enabled) return;
+        // refresh que são mais volumosos, não compensa manter por mais de 1 dia
+        await this.prisma.$queryRaw`
+            DELETE FROM task_queue
+            WHERE type::text LIKE 'refresh_%' AND status = 'completed'
+            AND criado_em < NOW() - INTERVAL '1 day';
+        `;
+        // avisos também são relativamente constantes, mas não são tão volumosos
+        await this.prisma.$queryRaw`
+            DELETE FROM task_queue
+            WHERE type::text LIKE 'aviso_%'
+            AND status = 'completed'
+            AND criado_em < NOW() - INTERVAL '6 months';
+        `;
+        // demais jobs, como importação parlamentar, relatórios, etc
+        // são mais raros, então podem ficar por mais tempo
+        // mas não compensa manter por mais de 1 ano
+        await this.prisma.$queryRaw`
+            DELETE FROM task_queue
+            WHERE status = 'completed'
+            AND criado_em < NOW() - INTERVAL '1 year';
+        `;
+    }
+
     async startPendingJobs() {
         process.env.INTERNAL_DISABLE_QUERY_LOG = '1';
         const pendingTasks = await this.prisma.task_queue.findMany({
