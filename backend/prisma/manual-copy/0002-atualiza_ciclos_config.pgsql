@@ -17,6 +17,11 @@ DECLARE
     vMonth INT;
     vCycleDate DATE;
     vLastCycleDate DATE := NULL;
+
+    -- Variáveis tmp para testar se devemos criar o ciclo atual
+    vCurrentMonthStart DATE;
+    vConfigStartMonth DATE;
+    vConfigEndMonth DATE;
 BEGIN
     -- Pega a data atual no fuso horário de São Paulo
     vToday := (now() AT TIME ZONE 'America/Sao_Paulo')::DATE;
@@ -53,8 +58,12 @@ BEGIN
     -- Trata o cenário inicial, pra quando não há ciclos criados
     IF NOT EXISTS (SELECT 1 FROM ciclo_fisico WHERE pdm_id = pPdmId) THEN
         -- ciclos desde data_inicio até data_fim ou hoje (o que for menor)
-        vStartDate := vConfig.data_inicio;
+        vStartDate := date_trunc('month', vConfig.data_inicio);
         vEndDate := COALESCE(vConfig.data_fim, vToday);
+
+        IF vConfig.data_fim IS NOT NULL THEN
+            vEndDate := date_trunc('month', vEndDate);
+        END IF;
 
         -- Para cada ano entre a data de início e a data de fim
         FOR vYear IN EXTRACT(YEAR FROM vStartDate)::INT..EXTRACT(YEAR FROM vEndDate)::INT LOOP
@@ -146,13 +155,19 @@ BEGIN
         vNextCycleDate := make_date(vCurrentYear + 1, vConfig.meses[1], 1);
     END IF;
 
-    -- Caso especial: Se hoje é o primeiro dia do mês E este mês está na configuração,
-    -- E ainda não temos um ciclo para este mês, criar um
-    IF vFirstDayOfMonth AND vConfig.meses @> ARRAY[vCurrentMonth] AND
+    -- Define variáveis para as datas de comparação
+    vCurrentMonthStart := date_trunc('month', vToday);
+    vConfigStartMonth := date_trunc('month', vConfig.data_inicio);
+    vConfigEndMonth := CASE WHEN vConfig.data_fim IS NOT NULL THEN date_trunc('month', vConfig.data_fim) ELSE NULL END;
+
+    -- Verifica se o mês atual deve ter um ciclo com base na configuração
+    IF vConfig.meses @> ARRAY[vCurrentMonth] AND -- O mês atual está configurado?
+       vCurrentMonthStart >= vConfigStartMonth AND -- O mês atual é igual ou posterior ao mês de início?
+       (vConfigEndMonth IS NULL OR vCurrentMonthStart <= vConfigEndMonth) AND -- O mês atual é igual ou anterior ao mês de fim (se definido)?
        NOT EXISTS (
            SELECT 1 FROM ciclo_fisico
            WHERE pdm_id = pPdmId
-           AND data_ciclo = date_trunc('month', vToday)
+           AND data_ciclo = vCurrentMonthStart
        ) THEN
         -- Cria um ciclo para o mês atual (primeiro dia)
         WITH new_cycle AS (
@@ -190,5 +205,6 @@ BEGIN
             AND (acordar_ciclo_em IS NULL OR acordar_ciclo_em <> vNextCycleDate);
         END IF;
     END IF;
+
 END;
 $$ LANGUAGE plpgsql;
