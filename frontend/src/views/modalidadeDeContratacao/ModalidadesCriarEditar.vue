@@ -1,7 +1,8 @@
 <template>
   <MigalhasDePão class="mb1" />
   <div class="flex spacebetween center mb2">
-    <h1> <span v-if="!modalidadeId">Nova</span> Modalidade</h1>
+    <TituloDaPagina />
+    <!--<h1> <span v-if="!modalidadeId">Nova</span> Modalidade</h1>-->
     <hr class="ml2 f1">
     <CheckClose />
   </div>
@@ -65,6 +66,7 @@
 </template>
 
 <script setup>
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import { modalidadeContratacao as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useModalidadeDeContratacaoStore } from '@/stores/modalidadeDeContratacao.store';

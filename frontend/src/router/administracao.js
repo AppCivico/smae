@@ -1,5 +1,5 @@
 import { defineAsyncComponent } from 'vue';
-
+// eslint-disable-next-line import/no-cycle
 import {
   useODSStore,
   useOrgansStore,
@@ -62,6 +62,7 @@ import EtapasRaiz from '@/views/etapasProjeto/EtapasRaiz.vue';
 import ClassificacaoCriarEditar from '@/views/classificacao/ClassificacaoCriarEditar.vue';
 import ClassificacaoLista from '@/views/classificacao/ClassificacaoLista.vue';
 import ClassificacaoRaiz from '@/views/classificacao/ClassificacaoRaiz.vue';
+import { useModalidadeDeContratacaoStore } from '@/stores/modalidadeDeContratacao.store';
 
 const TiposDeAcompanhamentoLista = defineAsyncComponent({
   loader: () => import('@/views/tiposDeAcompanhamento/TiposLista.vue'),
@@ -1139,8 +1140,10 @@ export default [
         }),
 
         meta: {
-          título: 'Editar modalidade',
-          rotasParaMigalhasDePão: ['modalidadesListar'],
+          título: () => useModalidadeDeContratacaoStore()?.emFoco?.nome || 'Editar modalidade',
+          rotasParaMigalhasDePão: [
+            'modalidadesListar',
+          ],
         },
       },
     ],
