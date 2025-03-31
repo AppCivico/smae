@@ -1,5 +1,5 @@
 import { defineAsyncComponent } from 'vue';
-
+// eslint-disable-next-line import/no-cycle
 import {
   useODSStore,
   useOrgansStore,
@@ -62,6 +62,7 @@ import EtapasRaiz from '@/views/etapasProjeto/EtapasRaiz.vue';
 import ClassificacaoCriarEditar from '@/views/classificacao/ClassificacaoCriarEditar.vue';
 import ClassificacaoLista from '@/views/classificacao/ClassificacaoLista.vue';
 import ClassificacaoRaiz from '@/views/classificacao/ClassificacaoRaiz.vue';
+import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';
 
 const TiposDeAcompanhamentoLista = defineAsyncComponent({
   loader: () => import('@/views/tiposDeAcompanhamento/TiposLista.vue'),
@@ -224,7 +225,7 @@ export default [
               },
             }),
             meta: {
-              título: 'Editar',
+              título: () => useGruposTematicosStore()?.emFoco?.nome || 'Editar Grupo Temático',
               rotasParaMigalhasDePão: [
                 'cadastrosBasicos',
                 'gruposTematicosObras',

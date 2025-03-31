@@ -47,7 +47,7 @@
             <svg
               width="20"
               height="20"
-            ><use xlink:href="#i_remove" /></svg>
+            ><use xlink:href="#i_waste" /></svg>
           </button>
         </td>
       </tr>
