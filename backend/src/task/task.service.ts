@@ -22,6 +22,7 @@ import { RefreshTransferenciaService } from './refresh_transferencia/refresh-tra
 import { RefreshIndicadorService } from './refresh_indicador/refresh-indicador.service';
 import { ImportacaoParlamentarService } from './importacao_parlamentar/parlamentar.service';
 import { RefreshVariavelService } from './refresh_variavel/refresh-variavel.service';
+import { RunReportTaskService } from './run_report/run-report.service';
 function areJsonObjectsEquivalent(obj1: object, obj2: object): boolean {
     return JSON.stringify(sortObjectKeys(obj1)) === JSON.stringify(sortObjectKeys(obj2));
 }
@@ -67,6 +68,9 @@ export class TaskService {
         //
         @Inject(forwardRef(() => RefreshVariavelService))
         private readonly refreshVariavel: RefreshVariavelService,
+        //
+        @Inject(forwardRef(() => RunReportTaskService))
+        private readonly runReportService: RunReportTaskService,
         //
         @Inject(forwardRef(() => RefreshTransferenciaService))
         private readonly refreshTransferenciaService: RefreshTransferenciaService,
@@ -421,6 +425,7 @@ export class TaskService {
     // jobs muito leves não compensa abrir um fork, roda no próprio worker
     private shouldRunInForeground(type: task_type): boolean {
         const map: Partial<Record<task_type, boolean>> = {
+            run_report: false, // relatórios podem ser pesados, sempre rodar em um fork
             echo: true,
             refresh_mv: true, // só chama uma função no banco, n tem risco de leak
             refresh_meta: true, // tbm só chama função no banco
@@ -484,6 +489,9 @@ export class TaskService {
                 break;
             case 'refresh_variavel':
                 service = this.refreshVariavel;
+                break;
+            case 'run_report':
+                service = this.runReportService;
                 break;
             default:
                 task_type satisfies never;

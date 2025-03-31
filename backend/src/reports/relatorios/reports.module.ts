@@ -21,6 +21,7 @@ import {
     CasaCivilAtividadesPendentesModule
 } from '../casa-civil-atividades-pendentes/casa-civil-atividades-pendentes.module';
 import { PessoaModule } from '../../pessoa/pessoa.module';
+import { TaskModule } from '../../task/task.module';
 
 @Module({
     imports: [
@@ -40,6 +41,7 @@ import { PessoaModule } from '../../pessoa/pessoa.module';
         forwardRef(() => TribunalDeContasModule),
         forwardRef(() => PsMonitoramentoMensalModule),
         forwardRef(() => CasaCivilAtividadesPendentesModule),
+        forwardRef(() => TaskModule),
         JwtModule.register({
             secret: process.env.SESSION_JWT_SECRET + ':pagination',
             signOptions: { expiresIn: '30d' },

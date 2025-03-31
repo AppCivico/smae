@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { Date2YMD } from '../../common/date2ymd';
 import { PrismaService } from '../../prisma/prisma.service';
 import { DefaultCsvOptions, FileOutput, ReportableService } from '../utils/utils.service';
@@ -98,6 +98,7 @@ class RetornoDbTransferencias {
 export class TransferenciasService implements ReportableService {
     constructor(
         private readonly prisma: PrismaService,
+        @Inject(forwardRef(() => TarefaService))
         private readonly tarefaService: TarefaService
     ) {}
 
