@@ -541,10 +541,16 @@ export class ReportsService {
         }
     }
 
-    private async updateRelatorioMetadata(relatorioId: number, arquivoId: number, now: Date, contexto: ReportContext) {
+    private async updateRelatorioMetadata(
+        relatorioId: number,
+        arquivoId: number,
+        now: Date,
+        contexto: ReportContext,
+        prismaTx: Prisma.TransactionClient
+    ) {
         const obj = contexto.getRestricaoAcesso();
 
-        await this.prisma.relatorio.update({
+        await prismaTx.relatorio.update({
             where: { id: relatorioId },
             data: {
                 arquivo_id: arquivoId,
@@ -625,20 +631,21 @@ export class ReportsService {
                 null
             );
 
-            await this.updateRelatorioMetadata(relatorio.id, arquivoId, now, contexto);
+            await this.prisma.$transaction(async (prismaTx) => {
+                await this.updateRelatorioMetadata(relatorio.id, arquivoId, now, contexto, prismaTx);
 
-            await this.prisma.relatorio.update({
-                where: { id: relatorio_id },
-                data: {
-                    progresso: 100,
-                    err_msg: null,
-                    iniciado_em: null,
-                    processado_em: new Date(Date.now()),
-                },
+                await prismaTx.relatorio.update({
+                    where: { id: relatorio_id },
+                    data: {
+                        progresso: 100,
+                        err_msg: null,
+                        processado_em: new Date(Date.now()),
+                    },
+                });
+
+                // Enviando email com o relatório para o usuário.
+                await this.sendEmailNotification(relatorio, prismaTx);
             });
-
-            // Enviando email com o relatório para o usuário.
-            await this.sendEmailNotification(relatorio);
         } catch (error) {
             this.logger.error(`Falha ao processar relatório ID ${relatorio_id}: ${error}`);
 
@@ -655,20 +662,23 @@ export class ReportsService {
         }
     }
 
-    async sendEmailNotification(relatorio: {
-        id: number;
-        criador: { email: string } | null;
-        fonte: FonteRelatorio;
-        parametros_processados: any;
-        criado_em: Date;
-    }) {
+    private async sendEmailNotification(
+        relatorio: {
+            id: number;
+            criador: { email: string } | null;
+            fonte: FonteRelatorio;
+            parametros_processados: any;
+            criado_em: Date;
+        },
+        prismaTx: Prisma.TransactionClient
+    ) {
         if (!relatorio.criador) return;
 
         // A fonte precisa ser em slug para construir a URL.
         const fonteSlug = relatorio.fonte.toLowerCase().replace(/ /g, '-');
         const url = new URL([this.baseUrl, 'relatorios', fonteSlug].join('/')).toString();
 
-        await this.prisma.emaildbQueue.create({
+        await prismaTx.emaildbQueue.create({
             data: {
                 id: uuidv7(),
                 config_id: 1,
