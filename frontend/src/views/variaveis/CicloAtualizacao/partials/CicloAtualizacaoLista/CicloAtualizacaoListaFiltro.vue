@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
-import LabelFromYup from '@/components/LabelFromYup.vue';
 import { cicloAtualizacaoFiltrosSchema as schema } from '@/consts/formSchemas';
 import maskMonth from '@/helpers/maskMonth';
 import truncate from '@/helpers/texto/truncate';

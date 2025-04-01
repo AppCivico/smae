@@ -13,7 +13,6 @@ import { useEquipesStore } from '@/stores/equipes.store';
 import temDescendenteEmOutraRegião from '../auxiliares/temDescendenteEmOutraRegiao.ts';
 import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import CheckClose from '@/components/CheckClose.vue';
-import LabelFromYup from '@/components/LabelFromYup.vue';
 
 const authStore = useAuthStore();
 const alertStore = useAlertStore();
