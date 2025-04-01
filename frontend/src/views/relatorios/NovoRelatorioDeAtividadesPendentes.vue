@@ -1,6 +1,5 @@
 <script setup>
 import AutocompleteField from '@/components/AutocompleteField2.vue';
-import LabelFromYup from '@/components/LabelFromYup.vue';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import { relatórioAtividadesPendentes as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';

@@ -1,5 +1,4 @@
 <script setup>
-import LabelFromYup from '@/components/LabelFromYup.vue';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import { relatórioDeTribunalDeContas as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';

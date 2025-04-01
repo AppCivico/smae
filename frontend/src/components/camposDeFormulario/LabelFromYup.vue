@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue';
+import buscarDadosDoYup from './helpers/buscarDadosDoYup';
 
 const props = defineProps({
   as: {
@@ -27,25 +28,7 @@ const props = defineProps({
   },
 });
 
-const caminhoNoSchema = computed(() => {
-  if (!props.schema) {
-    return null;
-  }
-
-  if (props.schema.fields[props.name]) {
-    return props.schema.fields[props.name];
-  }
-
-  return props.name.split('.').reduce((acc, key, i, array) => (!array[i + 1]
-    ? acc[key]
-    : (
-      acc?.[key]?.fields
-      || acc?.[key]?.innerType?.fields
-      || acc?.[key]
-      || acc
-    )
-  ), (props.schema?.fields || {})) || null;
-});
+const caminhoNoSchema = computed(() => buscarDadosDoYup(props.schema, props.name));
 </script>
 <template>
   <component

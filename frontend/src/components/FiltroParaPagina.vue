@@ -4,8 +4,6 @@ import { useRoute, useRouter } from 'vue-router';
 import {
   Field, useForm, ErrorMessage, useIsFormDirty,
 } from 'vee-validate';
-
-import LabelFromYup from '@/components/LabelFromYup.vue';
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
 
 defineOptions({ inheritAttrs: false });
