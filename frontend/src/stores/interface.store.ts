@@ -9,5 +9,11 @@ import { defineStore } from 'pinia';
 export const useContratosStore = (prefixo: string) => defineStore(prefixo ? `${prefixo}.interface` : 'interface', {
   state: () => ({
     ultimoIdExibido: 0,
+    idsSelecionados: [] as number[],
   }),
+  actions: {
+    limparSelecionados() {
+      this.idsSelecionados.splice(0);
+    },
+  },
 });
