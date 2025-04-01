@@ -690,7 +690,11 @@ export class ReportsService {
                     fonte: await this.getRelatorioFonteString(relatorio.fonte),
                     parametros: relatorio.parametros_processados
                         ? (Object.entries(relatorio.parametros_processados).map(([key, value]) => ({
-                              key: key.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase()),
+                              key: key
+                                  .replace(/_/g, ' ')
+                                  .split(' ')
+                                  .map((word) => word.charAt(0).toLocaleUpperCase('pt-BR') + word.slice(1))
+                                  .join(' '),
                               value: value,
                           })) as Array<{ key: string; value: string }>)
                         : null,
