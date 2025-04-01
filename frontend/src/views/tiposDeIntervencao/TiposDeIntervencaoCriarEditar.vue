@@ -1,6 +1,6 @@
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>{{ route?.meta?.título || "Tipos de intervenção" }}</h1>
+    <TituloDaPagina />
     <hr class="ml2 f1">
     <CheckClose />
   </div>
@@ -77,6 +77,7 @@
 </template>
 
 <script setup>
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import { tipoDeIntervencao as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
