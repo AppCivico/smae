@@ -5,6 +5,10 @@ import type { AnyObjectSchema } from 'yup';
 import type { Test } from 'yup/lib/util/createValidation.d.ts';
 import buscarDadosDoYup from './helpers/buscarDadosDoYup';
 
+defineOptions({
+  inheritAttrs: false,
+});
+
 const props = defineProps({
   as: {
     type: String,
@@ -14,6 +18,11 @@ const props = defineProps({
   anularVazio: {
     type: Boolean,
     default: false,
+  },
+  // Porque os atributos padrão vão para o campo
+  atributosDaRaiz: {
+    type: Object,
+    default: null,
   },
   // Aceitar caixas diferentes
   maxlength: {
@@ -90,6 +99,7 @@ const classeDeCondicao = computed(() => {
   <div
     class="smae-text"
     :class="classeDeCondicao"
+    v-bind="atributosDaRaiz"
   >
     <textarea
       v-if="$props.as === 'textarea'"
@@ -135,8 +145,6 @@ const classeDeCondicao = computed(() => {
 .smae-text {}
 
 .smae-text--com-contador {
-  display: flex;
-  gap: 1rem;
   position: relative;
 }
 
