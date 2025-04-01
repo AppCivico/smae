@@ -11,6 +11,10 @@ const props = defineProps({
     default: 'input',
     validator: (value: string) => ['input', 'textarea'].includes(value.toLocaleLowerCase()),
   },
+  anularVazio: {
+    type: Boolean,
+    default: false,
+  },
   // Aceitar caixas diferentes
   maxlength: {
     type: [
@@ -33,13 +37,13 @@ const props = defineProps({
   },
   schema: {
     type: Object as PropType<AnyObjectSchema>,
-    default: () => ({}),
+    default: () => null,
   },
 });
 
 const [model, modifiers] = defineModel<string>({
   set(value) {
-    if (modifiers.anular) {
+    if (modifiers.anular || props.anularVazio) {
       return value === '' ? null : value;
     }
     return value;
@@ -91,7 +95,7 @@ const classeDeCondicao = computed(() => {
       v-if="$props.as === 'textarea'"
       v-bind="$attrs"
       :id="$attrs.id as string || $props.name"
-      v-model="model"
+      v-model.trim="model"
       class="smae-text__campo smae-text__campo--textarea inputtext light"
       :name="$props.name"
       data-test="campo"
@@ -102,7 +106,7 @@ const classeDeCondicao = computed(() => {
       v-else
       v-bind="$attrs"
       :id="$attrs.id as string || $props.name"
-      v-model="model"
+      v-model.trim="model"
       class="smae-text__campo smae-text__campo--text inputtext light"
       :class="classeDeCondicao"
       :name="$props.name"
@@ -118,7 +122,7 @@ const classeDeCondicao = computed(() => {
         class="smae-text__total-de-caracteres"
         data-test="total-de-caracteres"
         :for="$attrs.id as string || $props.name"
-      >{{ String(model).length }}</output>
+      >{{ model ? String(model).length : 0 }}</output>
       /
       <span
         class="smae-text__maximo-de-caracteres"
