@@ -64,6 +64,7 @@ import ClassificacaoLista from '@/views/classificacao/ClassificacaoLista.vue';
 import ClassificacaoRaiz from '@/views/classificacao/ClassificacaoRaiz.vue';
 import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';
 import { useModalidadeDeContratacaoStore } from '@/stores/modalidadeDeContratacao.store';
+import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
 
 const TiposDeAcompanhamentoLista = defineAsyncComponent({
   loader: () => import('@/views/tiposDeAcompanhamento/TiposLista.vue'),
@@ -248,7 +249,6 @@ export default [
             component: TiposDeIntervencaoLista,
             meta: {
               título: 'Tipos de intervenção',
-              rotasParaMigalhasDePão: ['cadastrosBasicos'],
             },
           },
           {
@@ -256,9 +256,8 @@ export default [
             path: 'novo',
             component: TiposDeIntervencaoCriarEditar,
             meta: {
-              título: 'Novo',
+              título: 'Novo tipo de intervenção',
               rotasParaMigalhasDePão: [
-                'cadastrosBasicos',
                 'tiposDeIntervencao',
               ],
             },
@@ -275,9 +274,8 @@ export default [
               },
             }),
             meta: {
-              título: 'Editar',
+              título: () => useTiposDeIntervencaoStore()?.emFoco?.nome || 'Editar Tipo de Intervenção',
               rotasParaMigalhasDePão: [
-                'cadastrosBasicos',
                 'tiposDeIntervencao',
               ],
             },
