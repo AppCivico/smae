@@ -142,7 +142,7 @@ app.component('MigalhasDePão', MigalhasDePão);
 app.component('MigalhasDePao', MigalhasDePão);
 app.component('SmaeLink', SmaeLink);
 app.component('TítuloDePágina', TítuloDePágina);
-app.component('TítuloDePagina', TítuloDePágina);
+app.component('TituloDePagina', TítuloDePágina);
 
 app.use(pinia);
 app.use(router);

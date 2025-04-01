@@ -42,6 +42,8 @@ import type {
   EntidadesPossiveis,
   ParametrosPagina,
 } from './prepararRotasParaPlanejamentoEMonitoramento';
+import EditarFaseCronograma from '@/views/metas/EditarFaseCronograma/EditarFaseCronograma.vue';
+import AddEditEtapa from '@/views/metas/AddEditEtapa.vue';
 
 type Props = {
   entidadeMãe: EntidadesPossiveis;
@@ -81,6 +83,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
           `${entidadeMãe}.meta`,
           `${entidadeMãe}.painelDaMeta`,
           `${entidadeMãe}.evoluçãoDaMeta`,
+          `${entidadeMãe}.monitoramentoDeMetas`,
           `${entidadeMãe}.cronogramaDaMeta`,
         ];
 
@@ -195,8 +198,6 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
     },
     {
       path: ':meta_id',
-      name: `${entidadeMãe}.meta`,
-      component: SingleMeta,
       meta: {
         títuloParaMenu: 'Resumo',
         rotasParaMenuSecundário: () => rotasParaMenuSecundário(
@@ -204,6 +205,57 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
           usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
         ),
       },
+      children: [
+        {
+          name: `${entidadeMãe}.meta`,
+          path: '',
+          component: SingleMeta,
+        },
+        {
+          path: 'monitoramento',
+          meta: {
+            título: 'Histórico de Monitoramento',
+            títuloParaMenu: undefined,
+          },
+          children: [
+            {
+              name: `${entidadeMãe}.monitoramentoDeMetas`,
+              path: '',
+              component: () => import('@/views/monitoramentoDeMetas/MonitoramentoDeMetasLista.vue'),
+            },
+            {
+              name: `${entidadeMãe}.monitoramentoDeMetasAnaliseDeRisco`,
+              path: 'analise-de-risco/:cicloId',
+              meta: {
+                título: 'Análise de Risco',
+                títuloParaMenu: undefined,
+                rotaDeEscape: `${entidadeMãe}.monitoramentoDeMetas`,
+              },
+              component: () => import('@/views/monitoramentoDeMetas/MonitoramentoDeMetasAnaliseDeRisco.vue'),
+            },
+            {
+              name: `${entidadeMãe}.monitoramentoDeMetasRegistroDeFechamento`,
+              path: 'registro-de-fechamento/:cicloId',
+              meta: {
+                título: 'Registro de Fechamento',
+                títuloParaMenu: undefined,
+                rotaDeEscape: `${entidadeMãe}.monitoramentoDeMetas`,
+              },
+              component: () => import('@/views/monitoramentoDeMetas/MonitoramentoDeMetasRegistroDeFechamento.vue'),
+            },
+            {
+              name: `${entidadeMãe}.monitoramentoDeMetasAnaliseQualitativa`,
+              path: 'analise-qualitativa/:cicloId',
+              meta: {
+                título: 'Análise Qualitativa',
+                títuloParaMenu: undefined,
+                rotaDeEscape: `${entidadeMãe}.monitoramentoDeMetas`,
+              },
+              component: () => import('@/views/monitoramentoDeMetas/MonitoramentoDeMetasAnaliseQualitativa.vue'),
+            },
+          ],
+        },
+      ],
     },
     {
       path: ':meta_id/indicadores/novo',
@@ -507,7 +559,7 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
     },
     {
       path: ':meta_id/cronograma/:cronograma_id/etapas/novo',
-      component: SingleCronograma,
+      component: AddEditEtapa,
       props: { group: 'etapas' },
       meta: {
         rotaDeEscape: `${entidadeMãe}.cronogramaDaMeta`,
@@ -519,63 +571,78 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
     },
     {
       path: ':meta_id/cronograma/:cronograma_id/etapas/:etapa_id',
-      component: SingleCronograma,
-      props: { group: 'etapas' },
-      meta: {
-        rotaDeEscape: `${entidadeMãe}.cronogramaDaMeta`,
-        rotasParaMenuSecundário: () => rotasParaMenuSecundário(
-          'meta',
-          usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
-        ),
-      },
-    },
-    {
-      path: ':meta_id/cronograma/:cronograma_id/etapas/:etapa_id/novo',
-      component: SingleCronograma,
-      props: { group: 'fase' },
-      meta: {
-        rotaDeEscape: `${entidadeMãe}.cronogramaDaMeta`,
-        rotasParaMenuSecundário: () => rotasParaMenuSecundário(
-          'meta',
-          usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
-        ),
-      },
-    },
-    {
-      path: ':meta_id/cronograma/:cronograma_id/etapas/:etapa_id/:fase_id',
-      component: SingleCronograma,
-      props: { group: 'fase' },
-      meta: {
-        rotaDeEscape: `${entidadeMãe}.cronogramaDaMeta`,
-        rotasParaMenuSecundário: () => rotasParaMenuSecundário(
-          'meta',
-          usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
-        ),
-      },
-    },
-    {
-      path: ':meta_id/cronograma/:cronograma_id/etapas/:etapa_id/:fase_id/novo',
-      component: SingleCronograma,
-      props: { group: 'subfase' },
-      meta: {
-        rotaDeEscape: `${entidadeMãe}.cronogramaDaMeta`,
-        rotasParaMenuSecundário: () => rotasParaMenuSecundário(
-          'meta',
-          usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
-        ),
-      },
-    },
-    {
-      path: ':meta_id/cronograma/:cronograma_id/etapas/:etapa_id/:fase_id/:subfase_id',
-      component: SingleCronograma,
-      props: { group: 'subfase' },
-      meta: {
-        rotaDeEscape: `${entidadeMãe}.cronogramaDaMeta`,
-        rotasParaMenuSecundário: () => rotasParaMenuSecundário(
-          'meta',
-          usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
-        ),
-      },
+      children: [
+        {
+          path: '',
+          name: `${entidadeMãe}.etapaCronograma`,
+          component: AddEditEtapa,
+          props: { group: 'etapas' },
+          meta: {
+            rotaDeEscape: `${entidadeMãe}.cronogramaDaMeta`,
+            rotasParaMenuSecundário: () => rotasParaMenuSecundário(
+              'meta',
+              usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
+            ),
+          },
+        },
+        {
+          path: ':fase_id',
+          children: [
+            {
+              path: '',
+              name: `${entidadeMãe}.faseCronograma.editar`,
+              component: EditarFaseCronograma,
+              props: { group: 'fase' },
+              meta: {
+                rotaDeEscape: `${entidadeMãe}.cronogramaDaMeta`,
+                rotasParaMenuSecundário: () => rotasParaMenuSecundário(
+                  'meta',
+                  usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
+                ),
+              },
+            },
+            {
+              path: ':subfase_id',
+              name: `${entidadeMãe}.subfaseCronograma.editar`,
+              component: EditarFaseCronograma,
+              props: { group: 'subfase' },
+              meta: {
+                rotaDeEscape: `${entidadeMãe}.cronogramaDaMeta`,
+                rotasParaMenuSecundário: () => rotasParaMenuSecundário(
+                  'meta',
+                  usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
+                ),
+              },
+            },
+            {
+              path: 'novo',
+              name: `${entidadeMãe}.subfaseCronograma.novo`,
+              component: EditarFaseCronograma,
+              props: { group: 'subfase' },
+              meta: {
+                rotaDeEscape: `${entidadeMãe}.cronogramaDaMeta`,
+                rotasParaMenuSecundário: () => rotasParaMenuSecundário(
+                  'meta',
+                  usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
+                ),
+              },
+            },
+          ],
+        },
+        {
+          path: 'novo',
+          name: `${entidadeMãe}.faseCronograma.novo`,
+          component: EditarFaseCronograma,
+          props: { group: 'fase' },
+          meta: {
+            rotaDeEscape: `${entidadeMãe}.cronogramaDaMeta`,
+            rotasParaMenuSecundário: () => rotasParaMenuSecundário(
+              'meta',
+              usePlanosSetoriaisStore(entidadeMãe).orcamentosDisponiveisNoPlanoEmFoco,
+            ),
+          },
+        },
+      ],
     },
     {
       path: ':meta_id/cronograma/:cronograma_id/monitorar/iniciativa',

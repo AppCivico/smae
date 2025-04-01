@@ -30,6 +30,11 @@ export class CreateRegiaoDto {
     @MaxLength(250, { message: '$property| Descrição: Máximo 250 caracteres' })
     descricao: string;
 
+    @IsOptional()
+    @IsString({ message: 'Usado na geração de novas variaveis' })
+    @MaxLength(25, { message: 'Código sufixo: Máximo 25 caracteres' })
+    pdm_codigo_sufixo?: string;
+
     /**
      * ID da região acima
      */

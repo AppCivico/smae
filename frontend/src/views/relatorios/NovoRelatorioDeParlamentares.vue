@@ -2,12 +2,12 @@
 import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import { relatórioDeParlamentares as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
+import { useParlamentaresStore } from '@/stores/parlamentares.store';
 import { usePartidosStore } from '@/stores/partidos.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
-import { useParlamentaresStore } from '@/stores/parlamentares.store';
 import { storeToRefs } from 'pinia';
-import { computed, ref } from 'vue';
 import { ErrorMessage, Field, Form } from 'vee-validate';
+import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import CheckClose from '../../components/CheckClose.vue';
 
@@ -31,7 +31,7 @@ const initialValues = {
 const { lista } = storeToRefs(partidosStore);
 
 const {
-  chamadasPendentes, erro, mandatoParaEdição, eleições, idsDasEleiçõesQueParlamentarConcorreu,
+  chamadasPendentes, erro, eleições, idsDasEleiçõesQueParlamentarConcorreu,
 } = storeToRefs(parlamentaresStore);
 
 const eleiçõesDisponíveisParaEdição = computed(() => eleições

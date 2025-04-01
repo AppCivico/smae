@@ -10,6 +10,7 @@ import {
     IsObject,
     IsOptional,
     IsString,
+    Max,
     MaxLength,
     Min,
     MinLength,
@@ -17,7 +18,6 @@ import {
     ValidateNested,
 } from 'class-validator';
 import { DateTransform } from '../../auth/transforms/date.transform';
-import { NumberArrayTransformOrUndef } from '../../auth/transforms/number-array.transform';
 import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
 import { IdTituloDto } from '../../common/dto/IdTitulo.dto';
 
@@ -84,7 +84,37 @@ export class RetornoPSEquipePontoFocalDto {
     equipes: number[] | IdTituloDto[];
 }
 
-export class CreatePdmDto {
+export class UpdatePdmCicloConfigDto {
+    /**
+     * Meses em que os ciclos devem ser abertos (1-12)
+     * @example [1, 3, 6, 9]
+     */
+    @IsOptional()
+    @IsArray()
+    @IsInt({ each: true })
+    @Min(1, { each: true })
+    @Max(12, { each: true })
+    meses?: number[];
+
+    /**
+     * Data de inicio
+     * @example YYYY-MM-DD
+     */
+    @IsOptional()
+    @IsOnlyDate()
+    @Transform(DateTransform)
+    data_inicio?: Date | null;
+    /**
+     * Data de fim
+     * @example YYYY-MM-DD
+     */
+    @IsOptional()
+    @IsOnlyDate()
+    @Transform(DateTransform)
+    data_fim?: Date | null;
+}
+
+export class CreatePdmDto extends UpdatePdmCicloConfigDto {
     /**
      * Nome
      */
@@ -115,24 +145,6 @@ export class CreatePdmDto {
     @IsString({ message: 'equipe técnica: Precisa ser alfanumérico' })
     @MaxLength(2500, { message: 'equipe técnica: Máximo 2500 caracteres' })
     equipe_tecnica: string | null;
-
-    /**
-     * Data de inicio
-     * @example YYYY-MM-DD
-     */
-    @IsOptional()
-    @IsOnlyDate()
-    @Transform(DateTransform)
-    data_inicio: Date | null;
-
-    /**
-     * Data de fim
-     * @example YYYY-MM-DD
-     */
-    @IsOptional()
-    @IsOnlyDate()
-    @Transform(DateTransform)
-    data_fim: Date | null;
 
     /**
      * Data de publicação

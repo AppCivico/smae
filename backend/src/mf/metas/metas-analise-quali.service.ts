@@ -7,9 +7,10 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { UploadService } from '../../upload/upload.service';
 import {
     AnaliseQualitativaDocumentoDto,
-    AnaliseQualitativaDto,
+    CreateAnaliseQualitativaDto,
     FilterAnaliseQualitativaDto,
     MfListAnaliseQualitativaDto,
+    UpdateAnaliseQualitativaDocumentoDto,
 } from './../metas/dto/mf-meta-analise-quali.dto';
 import { ArquivoBaseDto } from '../../upload/dto/create-upload.dto';
 
@@ -39,6 +40,10 @@ export class MetasAnaliseQualiService {
         config: PessoaAcessoPdm | null,
         user: PessoaFromJwt | null
     ): Promise<MfListAnaliseQualitativaDto> {
+        return this.getMetaAnaliseQualitativaInterno(dto);
+    }
+
+    async getMetaAnaliseQualitativaInterno(dto: FilterAnaliseQualitativaDto): Promise<MfListAnaliseQualitativaDto> {
         const analisesResult = await this.prisma.metaCicloFisicoAnalise.findMany({
             where: {
                 ciclo_fisico_id: dto.ciclo_fisico_id,
@@ -76,6 +81,7 @@ export class MetasAnaliseQualiService {
                     select: { nome_exibicao: true },
                 },
                 id: true,
+                descricao: true,
                 arquivo: {
                     select: {
                         id: true,
@@ -93,6 +99,7 @@ export class MetasAnaliseQualiService {
                     id: r.id,
                     criador: { nome_exibicao: r.pessoaCriador.nome_exibicao },
                     criado_em: r.criado_em,
+                    descricao: r.descricao,
                     arquivo: {
                         ...r.arquivo,
                         descricao: null,
@@ -117,18 +124,28 @@ export class MetasAnaliseQualiService {
     async addMetaAnaliseQualitativaDocumento(
         dto: AnaliseQualitativaDocumentoDto,
         config: PessoaAcessoPdm,
-        user: PessoaFromJwt
+        user: PessoaFromJwt,
+        prismaCtx?: Prisma.TransactionClient | undefined
     ): Promise<RecordWithId> {
-        const now = new Date(Date.now());
         if (config.perfil == 'ponto_focal') {
             throw new HttpException('Você não pode enviar analise qualitativa.', 400);
         }
+
+        return this.addMetaAnaliseQualitativaDocumentoInterno(dto, user, prismaCtx);
+    }
+
+    async addMetaAnaliseQualitativaDocumentoInterno(
+        dto: AnaliseQualitativaDocumentoDto,
+        user: PessoaFromJwt,
+        prismaCtx?: Prisma.TransactionClient | undefined
+    ): Promise<RecordWithId> {
+        const now = new Date(Date.now());
         const ciclo = await this.carregaCicloPorId(dto.ciclo_fisico_id);
 
-        const id = await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient): Promise<number> => {
+        const performWrite = async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
             const uploadId = this.uploadService.checkUploadOrDownloadToken(dto.upload_token);
 
-            const cfq = await prismaTxn.metaCicloFisicoAnaliseDocumento.create({
+            const cfq = await prismaTx.metaCicloFisicoAnaliseDocumento.create({
                 data: {
                     ciclo_fisico_id: dto.ciclo_fisico_id,
                     meta_id: dto.meta_id,
@@ -136,49 +153,163 @@ export class MetasAnaliseQualiService {
                     criado_em: now,
                     referencia_data: ciclo.data_ciclo,
                     arquivo_id: uploadId,
+                    descricao: dto.descricao,
                 },
                 select: { id: true },
             });
 
-            return cfq.id;
-        });
+            return { id: cfq.id };
+        };
 
-        return { id: id };
+        let ret;
+        if (prismaCtx) {
+            ret = await performWrite(prismaCtx);
+        } else {
+            ret = await this.prisma.$transaction(
+                async (prismaTx: Prisma.TransactionClient) => {
+                    return await performWrite(prismaTx);
+                },
+                {
+                    isolationLevel: 'Serializable',
+                    maxWait: 5000,
+                    timeout: 5000,
+                }
+            );
+        }
+        return ret;
     }
 
-    async deleteMetaAnaliseQualitativaDocumento(id: number, config: PessoaAcessoPdm, user: PessoaFromJwt) {
+    async updateMetaAnaliseQualitativaDocumento(
+        id: number,
+        dto: UpdateAnaliseQualitativaDocumentoDto,
+        config: PessoaAcessoPdm,
+        user: PessoaFromJwt,
+        prismaCtx?: Prisma.TransactionClient | undefined
+    ): Promise<RecordWithId> {
+        if (config.perfil == 'ponto_focal') {
+            throw new HttpException('Você não pode atualizar análise qualitativa.', 400);
+        }
+
+        return this.updateMetaAnaliseQualitativaDocumentoInterno(id, dto, user, prismaCtx);
+    }
+
+    async updateMetaAnaliseQualitativaDocumentoInterno(
+        id: number,
+        dto: UpdateAnaliseQualitativaDocumentoDto,
+        user: PessoaFromJwt,
+        prismaCtx?: Prisma.TransactionClient | undefined
+    ): Promise<RecordWithId> {
+        const documento = await this.prisma.metaCicloFisicoAnaliseDocumento.findFirst({
+            where: {
+                id: id,
+                removido_em: null,
+            },
+        });
+        if (!documento) throw new HttpException('Documento não encontrado ou já removido', 404);
+
+        const performWrite = async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+            const updated = await prismaTx.metaCicloFisicoAnaliseDocumento.update({
+                where: { id: id },
+                data: {
+                    descricao: dto.descricao,
+                },
+                select: { id: true },
+            });
+
+            return { id: updated.id };
+        };
+
+        let ret;
+        if (prismaCtx) {
+            ret = await performWrite(prismaCtx);
+        } else {
+            ret = await this.prisma.$transaction(
+                async (prismaTx: Prisma.TransactionClient) => {
+                    return await performWrite(prismaTx);
+                },
+                {
+                    isolationLevel: 'Serializable',
+                    maxWait: 5000,
+                    timeout: 5000,
+                }
+            );
+        }
+        return ret;
+    }
+
+    async deleteMetaAnaliseQualitativaDocumento(
+        id: number,
+        config: PessoaAcessoPdm,
+        user: PessoaFromJwt,
+        prismaCtx?: Prisma.TransactionClient | undefined
+    ) {
+        if (config.perfil == 'ponto_focal') {
+            throw new HttpException('Você não pode remover analise qualitativa.', 400);
+        }
+
+        return this.deleteMetaAnaliseQualitativaDocumentoInterno(id, user, prismaCtx);
+    }
+
+    async deleteMetaAnaliseQualitativaDocumentoInterno(
+        id: number,
+        user: PessoaFromJwt,
+        prismaCtx?: Prisma.TransactionClient | undefined
+    ) {
         const arquivo = await this.prisma.metaCicloFisicoAnaliseDocumento.findFirst({
             where: {
                 id: id,
                 removido_em: null,
             },
         });
-        if (!arquivo) throw new HttpException('404', 404);
+        if (!arquivo) throw new HttpException('Documento não encontrado ou já removido', 404);
         const now = new Date(Date.now());
 
-        if (config.perfil == 'ponto_focal') {
-            throw new HttpException('Você não pode remover analise qualitativa.', 400);
-        }
+        const performWrite = async (prismaTx: Prisma.TransactionClient): Promise<void> => {
+            await prismaTx.metaCicloFisicoAnaliseDocumento.update({
+                where: { id: id },
+                data: { removido_em: now, removido_por: user.id },
+            });
+        };
 
-        await this.prisma.metaCicloFisicoAnaliseDocumento.update({
-            where: { id: id },
-            data: { removido_em: now, removido_por: user.id },
-        });
+        if (prismaCtx) {
+            await performWrite(prismaCtx);
+        } else {
+            await this.prisma.$transaction(
+                async (prismaTx: Prisma.TransactionClient) => {
+                    await performWrite(prismaTx);
+                },
+                {
+                    isolationLevel: 'Serializable',
+                    maxWait: 5000,
+                    timeout: 5000,
+                }
+            );
+        }
     }
 
     async addMetaAnaliseQualitativa(
-        dto: AnaliseQualitativaDto,
+        dto: CreateAnaliseQualitativaDto,
         config: PessoaAcessoPdm,
-        user: PessoaFromJwt
+        user: PessoaFromJwt,
+        prismaCtx?: Prisma.TransactionClient | undefined
     ): Promise<RecordWithId> {
-        const now = new Date(Date.now());
         if (config.perfil == 'ponto_focal') {
             throw new HttpException('Você não pode enviar analise qualitativa.', 400);
         }
+
+        return this.addMetaAnaliseQualitativaInterno(dto, user, prismaCtx);
+    }
+
+    async addMetaAnaliseQualitativaInterno(
+        dto: CreateAnaliseQualitativaDto,
+        user: PessoaFromJwt,
+        prismaCtx?: Prisma.TransactionClient | undefined
+    ): Promise<RecordWithId> {
+        const now = new Date(Date.now());
         const ciclo = await this.carregaCicloPorId(dto.ciclo_fisico_id);
 
-        const id = await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient): Promise<number> => {
-            await prismaTxn.metaCicloFisicoAnalise.updateMany({
+        const performWrite = async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+            await prismaTx.metaCicloFisicoAnalise.updateMany({
                 where: {
                     ciclo_fisico_id: dto.ciclo_fisico_id,
                     meta_id: dto.meta_id,
@@ -189,10 +320,9 @@ export class MetasAnaliseQualiService {
                 },
             });
 
-            const cfq = await prismaTxn.metaCicloFisicoAnalise.create({
+            const cfq = await prismaTx.metaCicloFisicoAnalise.create({
                 data: {
                     ciclo_fisico_id: dto.ciclo_fisico_id,
-
                     ultima_revisao: true,
                     criado_por: user.id,
                     criado_em: now,
@@ -203,9 +333,24 @@ export class MetasAnaliseQualiService {
                 select: { id: true },
             });
 
-            return cfq.id;
-        });
+            return { id: cfq.id };
+        };
 
-        return { id: id };
+        let ret;
+        if (prismaCtx) {
+            ret = await performWrite(prismaCtx);
+        } else {
+            ret = await this.prisma.$transaction(
+                async (prismaTx: Prisma.TransactionClient) => {
+                    return await performWrite(prismaTx);
+                },
+                {
+                    isolationLevel: 'Serializable',
+                    maxWait: 5000,
+                    timeout: 5000,
+                }
+            );
+        }
+        return ret;
     }
 }

@@ -29,6 +29,10 @@ export class MetasFechamentoService {
         config: PessoaAcessoPdm | null,
         user: PessoaFromJwt | null
     ): Promise<MfListFechamentoDto> {
+        return this.getMetaFechamentoInterno(dto);
+    }
+
+    async getMetaFechamentoInterno(dto: FilterFechamentoDto): Promise<MfListFechamentoDto> {
         const analisesResult = await this.prisma.metaCicloFisicoFechamento.findMany({
             where: {
                 ciclo_fisico_id: dto.ciclo_fisico_id,
@@ -66,15 +70,29 @@ export class MetasFechamentoService {
         };
     }
 
-    async addMetaFechamento(dto: FechamentoDto, config: PessoaAcessoPdm, user: PessoaFromJwt): Promise<RecordWithId> {
-        const now = new Date(Date.now());
+    async addMetaFechamento(
+        dto: FechamentoDto,
+        config: PessoaAcessoPdm,
+        user: PessoaFromJwt,
+        prismaCtx?: Prisma.TransactionClient | undefined
+    ): Promise<RecordWithId> {
         if (config.perfil == 'ponto_focal') {
             throw new HttpException('Você não pode criar Fechamentos.', 400);
         }
+
+        return this.addMetaFechamentoInterno(dto, user, prismaCtx);
+    }
+
+    async addMetaFechamentoInterno(
+        dto: FechamentoDto,
+        user: PessoaFromJwt,
+        prismaCtx?: Prisma.TransactionClient | undefined
+    ): Promise<RecordWithId> {
+        const now = new Date(Date.now());
         const ciclo = await this.carregaCicloPorId(dto.ciclo_fisico_id);
 
-        const id = await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient): Promise<number> => {
-            await prismaTxn.metaCicloFisicoFechamento.updateMany({
+        const performWrite = async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+            await prismaTx.metaCicloFisicoFechamento.updateMany({
                 where: {
                     ciclo_fisico_id: dto.ciclo_fisico_id,
                     meta_id: dto.meta_id,
@@ -85,10 +103,9 @@ export class MetasFechamentoService {
                 },
             });
 
-            const cfq = await prismaTxn.metaCicloFisicoFechamento.create({
+            const cfq = await prismaTx.metaCicloFisicoFechamento.create({
                 data: {
                     ciclo_fisico_id: dto.ciclo_fisico_id,
-
                     ultima_revisao: true,
                     criado_por: user.id,
                     criado_em: now,
@@ -99,9 +116,24 @@ export class MetasFechamentoService {
                 select: { id: true },
             });
 
-            return cfq.id;
-        });
+            return { id: cfq.id };
+        };
 
-        return { id: id };
+        let ret;
+        if (prismaCtx) {
+            ret = await performWrite(prismaCtx);
+        } else {
+            ret = await this.prisma.$transaction(
+                async (prismaTx: Prisma.TransactionClient) => {
+                    return await performWrite(prismaTx);
+                },
+                {
+                    isolationLevel: 'Serializable',
+                    maxWait: 5000,
+                    timeout: 5000,
+                }
+            );
+        }
+        return ret;
     }
 }

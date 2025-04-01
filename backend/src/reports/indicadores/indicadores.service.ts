@@ -2,6 +2,11 @@ import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { Prisma, Regiao } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { Readable } from 'stream';
+import { createWriteStream } from 'fs';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as os from 'os';
+
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { Date2YMD } from '../../common/date2ymd';
 import { EmitErrorAndDestroyStream, Stream2PromiseIntoArray } from '../../common/helpers/Streaming';
@@ -11,8 +16,10 @@ import { ReportContext } from '../relatorios/helpers/reports.contexto';
 import { DefaultCsvOptions, FileOutput, ReportableService, UtilsService } from '../utils/utils.service';
 import { CreateRelIndicadorDto, CreateRelIndicadorRegioesDto } from './dto/create-indicadores.dto';
 import { ListIndicadoresDto, RelIndicadoresDto, RelIndicadoresVariaveisDto } from './entities/indicadores.entity';
+
 const BATCH_SIZE = 500;
 const CREATE_TEMP_TABLE = 'CREATE TEMP TABLE _report_data ON COMMIT DROP AS';
+
 class RetornoDb {
     pdm_nome: string;
     data: string;
@@ -59,12 +66,6 @@ class RetornoDbRegiao extends RetornoDb {
     valor_json: JsonRetornoDb;
     regiao_id: number;
 }
-
-const {
-    Parser,
-    transforms: { flatten },
-} = require('json2csv');
-const defaultTransform = [flatten({ paths: [] })];
 
 @Injectable()
 export class IndicadoresService implements ReportableService {
@@ -172,6 +173,7 @@ export class IndicadoresService implements ReportableService {
             },
             select: { id: true },
         });
+
         return indicadores;
     }
 
@@ -517,43 +519,7 @@ export class IndicadoresService implements ReportableService {
         );
     }
 
-    async toFileOutput(
-        params: CreateRelIndicadorDto,
-        ctx: ReportContext,
-        user: PessoaFromJwt | null
-    ): Promise<FileOutput[]> {
-        if (params.tipo == 'Mensal' && !params.mes)
-            throw new HttpException('Necessário enviar mês para o periodo Mensal', 400);
-        if (params.periodo == 'Mensal' && params.tipo !== 'Geral')
-            throw new HttpException('Necessário enviar tipo Geral para o periodo Mensal', 400);
-
-        // no atual momento, tudo aqui é uma reimplementação completa do método asJSON
-        // porém, desta nova forma é possível gerar arquivos CSV a partir dos dados do streaming
-        // sem a necessidade de armazenar todos os dados em memória duma vez
-        this.logger.verbose(`Gerando arquivos CSV para ${JSON.stringify(params)}`);
-        const indicadores = await this.filtraIndicadores(params, user);
-        this.logger.verbose(`Indicadores encontrados: ${indicadores.length}`);
-
-        await ctx.progress(1);
-
-        let linhas: RelIndicadoresDto[] = [];
-
-        this.logger.debug(`Iniciando query de dados`);
-        const linhasDataStream = new Readable({ objectMode: true, read() {} });
-        await Promise.all([
-            this.queryData(
-                indicadores.map((r) => r.id),
-                params,
-                linhasDataStream
-            ),
-            Stream2PromiseIntoArray(linhasDataStream, linhas),
-        ]);
-        this.logger.debug(`Query de dados finalizada`);
-
-        const pdm = await this.prisma.pdm.findUniqueOrThrow({ where: { id: params.pdm_id } });
-        const out: FileOutput[] = [];
-
-        this.logger.debug(`Iniciando geração de arquivos CSV`);
+    private buildFieldDefinitions(pdm: any, params: any): any[] {
         const camposMetaIniAtv = [
             { value: 'meta.codigo', label: 'Código da Meta' },
             { value: 'meta.titulo', label: 'Título da Meta' },
@@ -588,118 +554,966 @@ export class IndicadoresService implements ReportableService {
 
         if (params.tipo_pdm == 'PS') camposMetaIniAtv.unshift({ value: 'pdm_nome', label: 'Plano Setorial' });
 
-        this.logger.debug(`Gerando CSV de indicadores`);
-        if (linhas.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-                fields: [
-                    ...camposMetaIniAtv,
-                    { value: 'data_referencia', label: 'Data de Referência' },
-                    'serie',
-                    'data',
-                    'valor',
-                ],
-            });
-            const linhasBuff = json2csvParser.parse(linhas);
-            this.logger.debug(`CSV de indicadores gerado`);
-            out.push({
-                name: 'indicadores.csv',
-                buffer: Buffer.from(linhasBuff, 'utf8'),
-            });
-
-            linhas = [];
-        }
-        await ctx.progress(50);
-
-        this.logger.debug(`Iniciando geração de CSV de regiões`);
-        let regioes: RelIndicadoresVariaveisDto[] = [];
-        const regioesDataStream = new Readable({ objectMode: true, read() {} });
-        this.logger.debug(`Iniciando query de dados de regiões`);
-
-        await Promise.all([
-            this.queryDataRegiao(
-                indicadores.map((r) => r.id),
-                params,
-                regioesDataStream
-            ),
-            Stream2PromiseIntoArray(regioesDataStream, regioes),
-        ]);
-        this.logger.debug(`Query de dados de regiões finalizada`);
-
-        this.logger.debug(`Gerando CSV de regiões`);
-        if (regioes.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-                fields: [
-                    ...camposMetaIniAtv,
-                    { value: 'variavel.orgao.id', label: 'ID do órgão' },
-                    { value: 'variavel.orgao.sigla', label: 'Sigla do órgão' },
-
-                    { value: 'variavel.codigo', label: 'Código da Variável' },
-                    { value: 'variavel.titulo', label: 'Título da Variável' },
-                    { value: 'variavel.id', label: 'ID da Variável' },
-
-                    { value: 'regiao_id', label: 'ID da região' },
-
-                    { value: 'regiao_nivel_4.id', label: 'ID do Distrito' },
-                    { value: 'regiao_nivel_4.codigo', label: 'Código do Distrito' },
-                    { value: 'regiao_nivel_4.descricao', label: 'Descrição do Distrito' },
-
-                    { value: 'regiao_nivel_3.id', label: 'ID do Subprefeitura' },
-                    { value: 'regiao_nivel_3.codigo', label: 'Código da Subprefeitura' },
-                    { value: 'regiao_nivel_3.descricao', label: 'Descrição da Subprefeitura' },
-
-                    { value: 'regiao_nivel_2.id', label: 'ID da Região' },
-                    { value: 'regiao_nivel_2.codigo', label: 'Código da Região' },
-                    { value: 'regiao_nivel_2.descricao', label: 'Descrição da Região' },
-                    { value: 'data_referencia', label: 'Data de Referência' },
-
-                    'serie',
-                    'data',
-                    'valor',
-                    { value: 'valor_categorica', label: 'Valor Categórica' },
-                ],
-            });
-            const linhasBuff = json2csvParser.parse(regioes);
-            this.logger.debug(`CSV de regiões gerado`);
-            out.push({
-                name: 'regioes.csv',
-                buffer: Buffer.from(linhasBuff, 'utf8'),
-            });
-            regioes = [];
-        }
-        this.logger.debug(`CSVs gerados`);
-
-        await ctx.progress(99);
-        return [
-            {
-                name: 'info.json',
-                buffer: Buffer.from(
-                    JSON.stringify({
-                        params: params,
-                        horario: Date2YMD.tzSp2UTC(new Date()),
-                    }),
-                    'utf8'
-                ),
-            },
-            ...out,
-        ];
+        return camposMetaIniAtv;
     }
 
-    private async streamRowsInto(regioesDb: Regiao[] | null, stream: Readable, prismaTxn: Prisma.TransactionClient) {
+    async toFileOutput(
+        params: CreateRelIndicadorDto,
+        ctx: ReportContext,
+        user: PessoaFromJwt | null
+    ): Promise<FileOutput[]> {
+        if (params.tipo == 'Mensal' && !params.mes)
+            throw new HttpException('Necessário enviar mês para o periodo Mensal', 400);
+        if (params.periodo == 'Mensal' && params.tipo !== 'Geral')
+            throw new HttpException('Necessário enviar tipo Geral para o periodo Mensal', 400);
+
+        this.logger.verbose(`Gerando arquivos CSV para ${JSON.stringify(params)}`);
+        const indicadores = await this.filtraIndicadores(params, user);
+        this.logger.verbose(`Indicadores encontrados: ${indicadores.length}`);
+
+        await ctx.progress(1);
+
+        const pdm = await this.prisma.pdm.findUniqueOrThrow({ where: { id: params.pdm_id } });
+        const out: FileOutput[] = [];
+
+        // Create a temporary directory for file processing
+        const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'indicadores-report-'));
+        const indicadoresCsvPath = path.join(tmpDir, 'indicadores.csv');
+        const regioesCsvPath = path.join(tmpDir, 'regioes.csv');
+
+        try {
+            // Build field definitions
+            const camposMetaIniAtv = this.buildFieldDefinitions(pdm, params);
+
+            // Process indicadores - execute SQL query directly
+            await this.processDadosIndicadores(indicadores, params, camposMetaIniAtv, indicadoresCsvPath);
+
+            if (fs.existsSync(indicadoresCsvPath) && fs.statSync(indicadoresCsvPath).size > 0) {
+                this.logger.debug(`CSV de indicadores gerado: ${indicadoresCsvPath}`);
+                out.push({
+                    name: 'indicadores.csv',
+                    buffer: fs.readFileSync(indicadoresCsvPath),
+                });
+            }
+
+            await ctx.progress(50);
+
+            // Process regioes - execute SQL query directly
+            await this.processDadosRegioes(
+                indicadores,
+                params as CreateRelIndicadorRegioesDto,
+                camposMetaIniAtv,
+                regioesCsvPath
+            );
+
+            if (fs.existsSync(regioesCsvPath) && fs.statSync(regioesCsvPath).size > 0) {
+                this.logger.debug(`CSV de regiões gerado: ${regioesCsvPath}`);
+                out.push({
+                    name: 'regioes.csv',
+                    buffer: fs.readFileSync(regioesCsvPath),
+                });
+            }
+        } catch (error) {
+            this.logger.error(`Erro ao processar: ${error}`);
+            throw error;
+        } finally {
+            // Clean up temporary files
+            try {
+                if (fs.existsSync(indicadoresCsvPath)) fs.unlinkSync(indicadoresCsvPath);
+                if (fs.existsSync(regioesCsvPath)) fs.unlinkSync(regioesCsvPath);
+                fs.rmdirSync(tmpDir);
+            } catch (cleanupError) {
+                this.logger.warn(`Erro ao limpar arquivos temporários: ${cleanupError}`);
+            }
+        }
+
+        this.logger.debug(`CSVs gerados`);
+        await ctx.progress(99);
+
+        // Add info file
+        out.push({
+            name: 'info.json',
+            buffer: Buffer.from(
+                JSON.stringify({
+                    params: params,
+                    horario: Date2YMD.tzSp2UTC(new Date()),
+                }),
+                'utf8'
+            ),
+        });
+
+        return out;
+    }
+
+    private async processDadosIndicadores(
+        indicadores: { id: number }[],
+        params: CreateRelIndicadorDto,
+        camposMetaIniAtv: any[],
+        filePath: string
+    ): Promise<void> {
+        // Create file stream
+        const fileStream = createWriteStream(filePath);
+
+        // Write header
+        const header = [
+            ...camposMetaIniAtv.map((field) => (typeof field === 'object' ? field.label : field)),
+            'Data de Referência',
+            'Serie',
+            'Data',
+            'Valor',
+        ]
+            .map((h) => this.escapeCsvField(h))
+            .join(',');
+
+        fileStream.write(header + '\n');
+
+        // Base query structure
+        const queryBase = `
+        SELECT
+            pdm.nome as pdm_nome,
+            i.id as indicador_id,
+            i.codigo as indicador_codigo,
+            i.titulo as indicador_titulo,
+            COALESCE(i.meta_id, m2.id) as meta_id,
+            COALESCE(meta.titulo, m2.titulo) as meta_titulo,
+            COALESCE(meta.codigo, m2.codigo) as meta_codigo,
+            meta_tags_as_array(COALESCE(meta.id, m2.id)) as meta_tags,
+            COALESCE(i.iniciativa_id, i2.id) as iniciativa_id,
+            COALESCE(iniciativa.titulo, i2.titulo) as iniciativa_titulo,
+            COALESCE(iniciativa.codigo, i2.codigo) as iniciativa_codigo,
+            i.atividade_id,
+            atividade.titulo as atividade_titulo,
+            atividade.codigo as atividade_codigo,
+            i.complemento as indicador_complemento,
+            i.contexto as indicador_contexto,
+            ${this.getDataExpression(params)} as "data",
+            dt.dt::date::text as "data_referencia",
+            series.serie,
+            round(
+                valor_indicador_em(
+                    i.id,
+                    series.serie,
+                    dt.dt::date,
+                    ${this.getJanelaExpression(params)}
+                ),
+                i.casas_decimais
+            )::text as valor
+        FROM 
+            generate_series($1::date, $2::date, $3::interval) dt
+        CROSS JOIN 
+            (select 'Realizado'::"Serie" as serie UNION ALL select 'RealizadoAcumulado'::"Serie" as serie ) series
+        JOIN 
+            indicador i ON i.id IN (${indicadores.length ? indicadores.map((r) => r.id).join(',') : 0})
+        LEFT JOIN 
+            meta ON meta.id = i.meta_id
+        LEFT JOIN 
+            iniciativa ON iniciativa.id = i.iniciativa_id
+        LEFT JOIN 
+            atividade ON atividade.id = i.atividade_id
+        LEFT JOIN 
+            iniciativa i2 ON i2.id = atividade.iniciativa_id
+        LEFT JOIN 
+            meta m2 ON m2.id = iniciativa.meta_id OR m2.id = i2.meta_id
+        LEFT JOIN 
+            pdm ON pdm.id = meta.pdm_id OR pdm.id = m2.pdm_id
+        WHERE 
+            dt.dt >= i.inicio_medicao AND dt.dt < i.fim_medicao + (select periodicidade_intervalo(i.periodicidade))
+        `;
+
+        try {
+            // Handle different query types
+            if (params.tipo == 'Mensal' && params.mes) {
+                // For Mensal, query a single month
+                await this.executeSqlAndWriteToFile(queryBase, fileStream, null, camposMetaIniAtv, [
+                    `${params.ano}-${params.mes}-01`,
+                    `${params.ano}-${params.mes}-01`,
+                    '1 month',
+                ]);
+            } else if (params.periodo == 'Anual' && params.tipo == 'Analitico') {
+                // For Anual Analitico, query all months in the year
+                const anoInicial = await this.capturaAnoSerieIndicadorInicial(
+                    params,
+                    `indicador i ON i.id IN (${indicadores.length ? indicadores.map((r) => r.id).join(',') : 0})`
+                );
+
+                for (let ano = anoInicial; ano <= params.ano; ano++) {
+                    await this.executeSqlAndWriteToFile(queryBase, fileStream, null, camposMetaIniAtv, [
+                        `${ano}-01-01`,
+                        `${ano}-12-01`,
+                        '1 month',
+                    ]);
+                }
+            } else if (params.periodo == 'Anual' && params.tipo == 'Consolidado') {
+                // For Anual Consolidado, query the whole year
+                await this.executeSqlAndWriteToFile(queryBase, fileStream, null, camposMetaIniAtv, [
+                    `${params.ano}-12-01`,
+                    `${params.ano}-12-01`,
+                    '1 year',
+                ]);
+            }
+            // Add other query types as needed
+        } finally {
+            // Close file stream
+            fileStream.end();
+        }
+    }
+
+    /**
+     * Get data expression based on params
+     */
+    private getDataExpression(params: CreateRelIndicadorDto): string {
+        if (params.periodo == 'Anual' && params.tipo == 'Consolidado') {
+            return "(dt.dt::date - '11 months'::interval)::date::text || '/' || (dt.dt::date)";
+        } else if (params.periodo == 'Semestral' && (params.tipo == 'Consolidado' || params.tipo == 'Analitico')) {
+            return "(dt.dt::date - '5 months'::interval)::date::text || '/' || (dt.dt::date)";
+        } else {
+            return 'dt.dt::date::text';
+        }
+    }
+
+    /**
+     * Get janela expression based on params
+     */
+    private getJanelaExpression(params: CreateRelIndicadorDto): string {
+        if (params.periodo == 'Anual' && params.tipo == 'Consolidado') {
+            return '12';
+        } else if (params.periodo == 'Semestral' && (params.tipo == 'Consolidado' || params.tipo == 'Analitico')) {
+            return '6';
+        } else {
+            return "extract('month' from periodicidade_intervalo(i.periodicidade))::int";
+        }
+    }
+
+    private async processDadosRegioes(
+        indicadores: { id: number }[],
+        params: CreateRelIndicadorRegioesDto,
+        camposMetaIniAtv: any[],
+        filePath: string
+    ): Promise<void> {
+        // Create file stream
+        const fileStream = createWriteStream(filePath);
+
+        // Fields for regioes
+        const regioesFields = [
+            { value: 'variavel.orgao.id', label: 'ID do órgão' },
+            { value: 'variavel.orgao.sigla', label: 'Sigla do órgão' },
+            { value: 'variavel.codigo', label: 'Código da Variável' },
+            { value: 'variavel.titulo', label: 'Título da Variável' },
+            { value: 'variavel.id', label: 'ID da Variável' },
+            { value: 'regiao_id', label: 'ID da região' },
+            { value: 'regiao_nivel_4.id', label: 'ID do Distrito' },
+            { value: 'regiao_nivel_4.codigo', label: 'Código do Distrito' },
+            { value: 'regiao_nivel_4.descricao', label: 'Descrição do Distrito' },
+            { value: 'regiao_nivel_3.id', label: 'ID do Subprefeitura' },
+            { value: 'regiao_nivel_3.codigo', label: 'Código da Subprefeitura' },
+            { value: 'regiao_nivel_3.descricao', label: 'Descrição da Subprefeitura' },
+            { value: 'regiao_nivel_2.id', label: 'ID da Região' },
+            { value: 'regiao_nivel_2.codigo', label: 'Código da Região' },
+            { value: 'regiao_nivel_2.descricao', label: 'Descrição da Região' },
+        ];
+
+        // Write header
+        const header = [
+            ...camposMetaIniAtv.map((field) => (typeof field === 'object' ? field.label : field)),
+            ...regioesFields.map((field) => field.label),
+            'Data de Referência',
+            'Serie',
+            'Data',
+            'Valor',
+            'Valor Categórica',
+        ]
+            .map((h) => this.escapeCsvField(h))
+            .join(',');
+
+        fileStream.write(header + '\n');
+
+        try {
+            // Get regioes first - needed for processing results
+            const regioes = await this.prisma.regiao.findMany({
+                where: { removido_em: null },
+            });
+
+            this.logger.debug(`Found ${regioes.length} regions for processing`);
+
+            // Build WHERE clause for regions
+            let regionWhere = '';
+            if (Array.isArray(params.regioes) && params.regioes.length > 0) {
+                const numbers = params.regioes.map((n) => +n).join(',');
+                regionWhere = ` AND v.regiao_id IN (${numbers})`;
+                this.logger.debug(`Filtering regions to: ${numbers}`);
+            }
+
+            // Build the anoInicial query first
+            let queryFromWhere = `indicador i ON i.id IN (${indicadores.length ? indicadores.map((r) => r.id).join(',') : 0})
+        join indicador_variavel iv ON iv.indicador_id = i.id
+        join variavel v ON v.id = iv.variavel_id
+        join orgao ON v.orgao_id = orgao.id
+        left join meta on meta.id = i.meta_id
+        left join iniciativa on iniciativa.id = i.iniciativa_id
+        left join atividade on atividade.id = i.atividade_id
+        left join iniciativa i2 on i2.id = atividade.iniciativa_id
+        left join meta m2 on m2.id = iniciativa.meta_id OR m2.id = i2.meta_id
+        left join pdm on pdm.id = meta.pdm_id or pdm.id = m2.pdm_id
+        where v.regiao_id is not null${regionWhere}`;
+
+            // Get the initial year if needed
+            let anoInicial = params.ano;
+            if (
+                params.periodo === 'Anual' &&
+                params.tipo === 'Analitico' &&
+                params.analitico_desde_o_inicio !== false
+            ) {
+                try {
+                    anoInicial = await this.capturaAnoSerieVariavelInicial(params, queryFromWhere);
+                    this.logger.debug(`Starting year for regioes: ${anoInicial}`);
+                } catch (error) {
+                    this.logger.error(`Error getting initial year for regioes: ${error}`);
+                    // Fall back to params.ano
+                    anoInicial = params.ano;
+                }
+            }
+
+            // Base query structure
+            const queryBase = `
+        SELECT
+            pdm.nome as pdm_nome,
+            i.id as indicador_id,
+            i.codigo as indicador_codigo,
+            i.titulo as indicador_titulo,
+            COALESCE(i.meta_id, m2.id) as meta_id,
+            COALESCE(meta.titulo, m2.titulo) as meta_titulo,
+            COALESCE(meta.codigo, m2.codigo) as meta_codigo,
+            meta_tags_as_array(COALESCE(meta.id, m2.id)) as meta_tags,
+            COALESCE(i.iniciativa_id, i2.id) as iniciativa_id,
+            COALESCE(iniciativa.titulo, i2.titulo) as iniciativa_titulo,
+            COALESCE(iniciativa.codigo, i2.codigo) as iniciativa_codigo,
+            i.atividade_id,
+            atividade.titulo as atividade_titulo,
+            atividade.codigo as atividade_codigo,
+            ${this.getDataExpression(params)} as "data",
+            dt.dt::date::text as "data_referencia",
+            series.serie,
+            v.id as variavel_id,
+            v.codigo as variavel_codigo,
+            v.titulo as variavel_titulo,
+            v.regiao_id as regiao_id,
+            orgao.id as orgao_id,
+            orgao.sigla as orgao_sigla,
+            valor_variavel_em_json(
+                v.id,
+                series.serie,
+                dt.dt::date,
+                ${this.getJanelaExpression(params)}
+            ) AS valor_json
+        FROM 
+            generate_series($1::date, $2::date, $3::interval) dt
+        CROSS JOIN 
+            (select 'Realizado'::"Serie" as serie UNION ALL select 'RealizadoAcumulado'::"Serie" as serie) series
+        JOIN 
+            indicador i ON i.id IN (${indicadores.length ? indicadores.map((r) => r.id).join(',') : 0})
+        JOIN 
+            indicador_variavel iv ON iv.indicador_id = i.id
+        JOIN 
+            variavel v ON v.id = iv.variavel_id
+        JOIN 
+            orgao ON v.orgao_id = orgao.id
+        LEFT JOIN 
+            meta ON meta.id = i.meta_id
+        LEFT JOIN 
+            iniciativa ON iniciativa.id = i.iniciativa_id
+        LEFT JOIN 
+            atividade ON atividade.id = i.atividade_id
+        LEFT JOIN 
+            iniciativa i2 ON i2.id = atividade.iniciativa_id
+        LEFT JOIN 
+            meta m2 ON m2.id = iniciativa.meta_id OR m2.id = i2.meta_id
+        LEFT JOIN 
+            pdm ON pdm.id = meta.pdm_id OR pdm.id = m2.pdm_id
+        WHERE 
+            v.regiao_id is not null
+            ${regionWhere}
+            AND dt.dt >= i.inicio_medicao AND dt.dt < i.fim_medicao + (select periodicidade_intervalo(i.periodicidade))
+        `;
+
+            // Log the query parameters for debugging
+            this.logger.debug(
+                `Processing regioes with params: ${JSON.stringify({
+                    tipo: params.tipo,
+                    periodo: params.periodo,
+                    ano: params.ano,
+                    mes: params.mes,
+                    semestre: params.semestre,
+                    anoInicial,
+                })}`
+            );
+
+            // Handle different query types based on params
+            if (params.tipo == 'Mensal' && params.mes) {
+                this.logger.debug(`Executing Mensal query for regioes`);
+                await this.executeSqlAndWriteToFile(
+                    queryBase,
+                    fileStream,
+                    regioes,
+                    [...camposMetaIniAtv, ...regioesFields],
+                    [`${params.ano}-${params.mes}-01`, `${params.ano}-${params.mes}-01`, '1 month'],
+                    true // isRegioes flag
+                );
+            } else if (params.periodo == 'Anual' && params.tipo == 'Analitico') {
+                this.logger.debug(`Executing Anual Analitico query for regioes from ${anoInicial} to ${params.ano}`);
+
+                for (let ano = anoInicial; ano <= params.ano; ano++) {
+                    this.logger.debug(`Processing year ${ano} for regioes`);
+                    await this.executeSqlAndWriteToFile(
+                        queryBase,
+                        fileStream,
+                        regioes,
+                        [...camposMetaIniAtv, ...regioesFields],
+                        [`${ano}-01-01`, `${ano}-12-01`, '1 month'],
+                        true // isRegioes flag
+                    );
+                }
+            } else if (params.periodo == 'Anual' && params.tipo == 'Consolidado') {
+                this.logger.debug(`Executing Anual Consolidado query for regioes`);
+                await this.executeSqlAndWriteToFile(
+                    queryBase,
+                    fileStream,
+                    regioes,
+                    [...camposMetaIniAtv, ...regioesFields],
+                    [`${params.ano}-12-01`, `${params.ano}-12-01`, '1 year'],
+                    true // isRegioes flag
+                );
+            } else if (params.periodo == 'Semestral' && params.tipo == 'Consolidado') {
+                const tipo = params.semestre == 'Primeiro' ? 'Primeiro' : 'Segundo';
+                const dataAno = tipo == 'Primeiro' ? params.ano + '-06-01' : params.ano + '-12-01';
+
+                this.logger.debug(`Executing Semestral Consolidado query for regioes: ${tipo} ${params.ano}`);
+                await this.executeSqlAndWriteToFile(
+                    queryBase,
+                    fileStream,
+                    regioes,
+                    [...camposMetaIniAtv, ...regioesFields],
+                    [dataAno, dataAno, '1 second'],
+                    true // isRegioes flag
+                );
+            } else if (params.periodo == 'Semestral' && params.tipo == 'Analitico') {
+                const tipo = params.semestre == 'Primeiro' ? 'Primeiro' : 'Segundo';
+
+                for (let ano = anoInicial; ano <= params.ano; ano++) {
+                    const semestreInicio = tipo === 'Segundo' ? ano + '-12-01' : ano + '-06-01';
+
+                    this.logger.debug(`Executing Semestral Analitico query for regioes: ${tipo} ${ano}`);
+                    await this.executeSqlAndWriteToFile(
+                        queryBase,
+                        fileStream,
+                        regioes,
+                        [...camposMetaIniAtv, ...regioesFields],
+                        [
+                            DateTime.fromISO(semestreInicio)
+                                .minus({ months: tipo === 'Segundo' ? 11 : 5 })
+                                .toISODate(),
+                            semestreInicio,
+                            '1 month',
+                        ],
+                        true // isRegioes flag
+                    );
+                }
+            } else {
+                this.logger.warn(`No matching query type for regioes: ${params.periodo} ${params.tipo}`);
+            }
+        } catch (error) {
+            this.logger.error(`Error processing regioes: ${error}`);
+            throw error;
+        } finally {
+            // Close file stream
+            fileStream.end();
+        }
+    }
+
+    /**
+     * Execute SQL and write results to file
+     */
+    /**
+     * Execute SQL and write results to file with improved error handling and debugging
+     */
+    private async executeSqlAndWriteToFile(
+        query: string,
+        fileStream: any,
+        regioesDb: Regiao[] | null,
+        fields: any[],
+        params: any[],
+        isRegioes: boolean = false
+    ): Promise<void> {
+        let rowCount = 0;
+        let batchCount = 0;
+
+        try {
+            this.logger.debug(`Executing SQL with params: ${params.join(', ')}`);
+
+            // Execute in batches
+            let offset = 0;
+            let hasMore = true;
+
+            while (hasMore) {
+                // Execute the query with pagination
+                const paginatedQuery = `${query} LIMIT ${BATCH_SIZE} OFFSET ${offset}`;
+
+                try {
+                    // Log the first query execution for debugging
+                    if (offset === 0) {
+                        this.logger.debug(`First batch SQL query params: ${JSON.stringify(params)}`);
+                    }
+
+                    const results: any[] = await this.prisma.$queryRawUnsafe(paginatedQuery, ...params);
+
+                    if (!results || results.length === 0) {
+                        if (offset === 0) {
+                            this.logger.warn(`Query returned no results: ${paginatedQuery.substring(0, 300)}...`);
+                        } else {
+                            this.logger.debug(`No more results at offset ${offset}`);
+                        }
+                        hasMore = false;
+                        continue;
+                    }
+
+                    batchCount++;
+                    offset += results.length;
+
+                    // Log the first result for debugging on first batch
+                    if (batchCount === 1) {
+                        this.logger.debug(`First result sample: ${JSON.stringify(results[0]).substring(0, 300)}...`);
+                        this.logger.debug(`Result contains ${results.length} rows`);
+                    }
+
+                    // Process each row
+                    for (const row of results) {
+                        try {
+                            // Process JSON values if present
+                            if ('valor_json' in row && row.valor_json) {
+                                if (typeof row.valor_json === 'string') {
+                                    try {
+                                        const parsed = JSON.parse(row.valor_json);
+                                        row.valor = parsed.valor_nominal;
+                                        row.valor_categorica = parsed.valor_categorica;
+                                    } catch (parseErr) {
+                                        this.logger.warn(`Error parsing valor_json: ${parseErr}`);
+                                        row.valor = null;
+                                        row.valor_categorica = null;
+                                    }
+                                } else {
+                                    row.valor = row.valor_json.valor_nominal;
+                                    row.valor_categorica = row.valor_json.valor_categorica;
+                                }
+                            }
+
+                            // Convert to structured object
+                            const processedRow = this.processRowForCsv(row, regioesDb);
+
+                            // Create CSV line and write to file
+                            const csvLine = this.createCsvLine(processedRow, fields, isRegioes);
+                            fileStream.write(csvLine + '\n');
+                            rowCount++;
+                        } catch (rowErr) {
+                            this.logger.error(`Error processing row: ${rowErr}`);
+                            // Continue with next row
+                        }
+                    }
+
+                    if (batchCount % 10 === 0) {
+                        this.logger.debug(`Processed ${rowCount} rows in ${batchCount} batches`);
+                    }
+                } catch (batchErr) {
+                    this.logger.error(`Error processing batch at offset ${offset}: ${batchErr}`);
+                    if (offset === 0) {
+                        // If the first batch fails, stop processing
+                        throw batchErr;
+                    } else {
+                        // If a subsequent batch fails, try to continue with the next batch
+                        offset += BATCH_SIZE;
+                    }
+                }
+            }
+
+            this.logger.debug(`Completed processing with ${rowCount} total rows in ${batchCount} batches`);
+        } catch (error) {
+            this.logger.error(`Error executing SQL: ${error}`);
+            throw error;
+        }
+    }
+
+    /**
+     * Build direct query without using temp tables
+     */
+    private buildDirectQuery(queryFromWhere: string): string {
+        return `SELECT
+    pdm.nome as pdm_nome,
+    i.id as indicador_id,
+    i.codigo as indicador_codigo,
+    i.titulo as indicador_titulo,
+    COALESCE(i.meta_id, m2.id) as meta_id,
+    COALESCE(meta.titulo, m2.titulo) as meta_titulo,
+    COALESCE(meta.codigo, m2.codigo) as meta_codigo,
+    meta_tags_as_array(COALESCE(meta.id, m2.id)) as meta_tags,
+    COALESCE(i.iniciativa_id, i2.id) as iniciativa_id,
+    COALESCE(iniciativa.titulo, i2.titulo) as iniciativa_titulo,
+    COALESCE(iniciativa.codigo, i2.codigo) as iniciativa_codigo,
+    i.atividade_id,
+    atividade.titulo as atividade_titulo,
+    atividade.codigo as atividade_codigo,
+    i.complemento as indicador_complemento,
+    i.contexto as indicador_contexto,
+    :DATA: as "data",
+    dt.dt::date::text as "data_referencia",
+    series.serie,
+    round(
+        valor_indicador_em(
+            i.id,
+            series.serie,
+            dt.dt::date,
+            :JANELA:
+        ),
+        i.casas_decimais
+    )::text as valor
+    from generate_series($1::date, $2::date, $3::interval) dt
+    cross join (select 'Realizado'::"Serie" as serie UNION ALL select 'RealizadoAcumulado'::"Serie" as serie ) series
+    join ${queryFromWhere}
+    where dt.dt >= i.inicio_medicao AND dt.dt < i.fim_medicao + (select periodicidade_intervalo(i.periodicidade))`;
+    }
+
+    /**
+     * Process query results directly to file for Mensal Analitico
+     */
+    private async processQueryDirectlyToFile(
+        prismaTxn: Prisma.TransactionClient,
+        sql: string,
+        fileStream: any,
+        regioesDb: Regiao[] | null,
+        fields: any[],
+        ano: number,
+        mes: number
+    ): Promise<void> {
+        const query = sql
+            .replace(':JANELA:', "extract('month' from periodicidade_intervalo(i.periodicidade))::int")
+            .replace(':DATA:', 'dt.dt::date::text');
+
+        // Execute query and process results in batches
+        let offset = 0;
+        let hasMore = true;
+
+        while (hasMore) {
+            // We have to handle pagination ourselves since we're not using LIMIT/OFFSET in the SQL
+            const data: any = await prismaTxn.$queryRawUnsafe(
+                query + ` OFFSET ${offset} LIMIT ${BATCH_SIZE}`,
+                ano + '-' + mes + '-01',
+                ano + '-' + mes + '-01',
+                '1 month'
+            );
+
+            if (!data || data.length === 0) {
+                hasMore = false;
+                continue;
+            }
+
+            offset += data.length;
+
+            // Process and write each row
+            for (const row of data) {
+                if ('valor_json' in row && row.valor_json) {
+                    row.valor = row.valor_json.valor_nominal;
+                    row.valor_categorica = row.valor_json.valor_categorica;
+                }
+
+                // Process row and write to file
+                const processedRow = this.processRowForCsv(row, regioesDb);
+                const csvLine = this.createCsvLine(processedRow, fields);
+                fileStream.write(csvLine + '\n');
+            }
+        }
+    }
+
+    /**
+     * Process query results directly to file for Anual Analitico
+     */
+    private async processAnualAnaliticoDirectlyToFile(
+        prismaTxn: Prisma.TransactionClient,
+        sql: string,
+        fileStream: any,
+        regioesDb: Regiao[] | null,
+        fields: any[],
+        ano: number
+    ): Promise<void> {
+        const query = sql
+            .replace(':JANELA:', "extract('month' from periodicidade_intervalo(i.periodicidade))::int")
+            .replace(':DATA:', 'dt.dt::date::text');
+
+        // Execute query and process results in batches
+        let offset = 0;
+        let hasMore = true;
+
+        while (hasMore) {
+            const data: any = await prismaTxn.$queryRawUnsafe(
+                query + ` OFFSET ${offset} LIMIT ${BATCH_SIZE}`,
+                ano + '-01-01',
+                ano + '-12-01',
+                '1 month'
+            );
+
+            if (!data || data.length === 0) {
+                hasMore = false;
+                continue;
+            }
+
+            offset += data.length;
+
+            // Process and write each row
+            for (const row of data) {
+                if ('valor_json' in row && row.valor_json) {
+                    row.valor = row.valor_json.valor_nominal;
+                    row.valor_categorica = row.valor_json.valor_categorica;
+                }
+
+                // Process row and write to file
+                const processedRow = this.processRowForCsv(row, regioesDb);
+                const csvLine = this.createCsvLine(processedRow, fields);
+                fileStream.write(csvLine + '\n');
+            }
+        }
+    }
+
+    /**
+     * Process query results directly to file for Anual Consolidado
+     */
+    private async processAnualConsolidadoDirectlyToFile(
+        prismaTxn: Prisma.TransactionClient,
+        sql: string,
+        fileStream: any,
+        regioesDb: Regiao[] | null,
+        fields: any[],
+        ano: number
+    ): Promise<void> {
+        const query = sql
+            .replace(':JANELA:', '12')
+            .replace(':DATA:', "(dt.dt::date - '11 months'::interval)::date::text || '/' || (dt.dt::date)");
+
+        // Execute query and process results in batches
+        let offset = 0;
+        let hasMore = true;
+
+        while (hasMore) {
+            const data: any = await prismaTxn.$queryRawUnsafe(
+                query + ` OFFSET ${offset} LIMIT ${BATCH_SIZE}`,
+                ano + '-12-01',
+                ano + '-12-01',
+                '1 year'
+            );
+
+            if (!data || data.length === 0) {
+                hasMore = false;
+                continue;
+            }
+
+            offset += data.length;
+
+            // Process and write each row
+            for (const row of data) {
+                if ('valor_json' in row && row.valor_json) {
+                    row.valor = row.valor_json.valor_nominal;
+                    row.valor_categorica = row.valor_json.valor_categorica;
+                }
+
+                // Process row and write to file
+                const processedRow = this.processRowForCsv(row, regioesDb);
+                const csvLine = this.createCsvLine(processedRow, fields);
+                fileStream.write(csvLine + '\n');
+            }
+        }
+    }
+
+    /**
+     * Generate CSV file for regioes by writing directly from database
+     */
+    private async generateRegioesCsv(
+        indicadoresIds: number[],
+        params: CreateRelIndicadorRegioesDto,
+        camposMetaIniAtv: any[],
+        filePath: string
+    ): Promise<void> {
+        // Create file stream
+        const fileStream = createWriteStream(filePath);
+
+        // Write header with additional fields for regioes
+        const regioesFields = [
+            { value: 'variavel.orgao.id', label: 'ID do órgão' },
+            { value: 'variavel.orgao.sigla', label: 'Sigla do órgão' },
+            { value: 'variavel.codigo', label: 'Código da Variável' },
+            { value: 'variavel.titulo', label: 'Título da Variável' },
+            { value: 'variavel.id', label: 'ID da Variável' },
+            { value: 'regiao_id', label: 'ID da região' },
+            { value: 'regiao_nivel_4.id', label: 'ID do Distrito' },
+            { value: 'regiao_nivel_4.codigo', label: 'Código do Distrito' },
+            { value: 'regiao_nivel_4.descricao', label: 'Descrição do Distrito' },
+            { value: 'regiao_nivel_3.id', label: 'ID do Subprefeitura' },
+            { value: 'regiao_nivel_3.codigo', label: 'Código da Subprefeitura' },
+            { value: 'regiao_nivel_3.descricao', label: 'Descrição da Subprefeitura' },
+            { value: 'regiao_nivel_2.id', label: 'ID da Região' },
+            { value: 'regiao_nivel_2.codigo', label: 'Código da Região' },
+            { value: 'regiao_nivel_2.descricao', label: 'Descrição da Região' },
+        ];
+
+        const header = [
+            ...camposMetaIniAtv.map((field) => (typeof field === 'object' ? field.label : field)),
+            ...regioesFields.map((field) => field.label),
+            'Data de Referência',
+            'Serie',
+            'Data',
+            'Valor',
+            'Valor Categórica',
+        ]
+            .map((h) => this.escapeCsvField(h))
+            .join(',');
+
+        fileStream.write(header + '\n');
+
+        // Process in transaction
+        await this.prisma.$transaction(
+            async (prismaTxn: Prisma.TransactionClient) => {
+                let queryFromWhere = `indicador i ON i.id IN (${indicadoresIds.join(',')})
+                join indicador_variavel iv ON iv.indicador_id = i.id
+                join variavel v ON v.id = iv.variavel_id
+                join orgao ON v.orgao_id = orgao.id
+                left join meta on meta.id = i.meta_id
+                left join iniciativa on iniciativa.id = i.iniciativa_id
+                left join atividade on atividade.id = i.atividade_id
+                left join iniciativa i2 on i2.id = atividade.iniciativa_id
+                left join meta m2 on m2.id = iniciativa.meta_id OR m2.id = i2.meta_id
+                left join pdm on pdm.id = meta.pdm_id or pdm.id = m2.pdm_id
+                where v.regiao_id is not null`;
+
+                if (Array.isArray(params.regioes)) {
+                    const numbers = params.regioes.map((n) => +n).join(',');
+                    queryFromWhere = `${queryFromWhere} AND v.regiao_id IN (${numbers})`;
+                }
+
+                const anoInicial = await this.capturaAnoSerieVariavelInicial(params, queryFromWhere);
+
+                const sql = `${CREATE_TEMP_TABLE} SELECT
+                pdm.nome as pdm_nome,
+                i.id as indicador_id,
+                i.codigo as indicador_codigo,
+                i.titulo as indicador_titulo,
+                COALESCE(i.meta_id, m2.id) as meta_id,
+                COALESCE(meta.titulo, m2.titulo) as meta_titulo,
+                COALESCE(meta.codigo, m2.codigo) as meta_codigo,
+                meta_tags_as_array(COALESCE(meta.id, m2.id)) as meta_tags,
+                COALESCE(i.iniciativa_id, i2.id) as iniciativa_id,
+                COALESCE(iniciativa.titulo, i2.titulo) as iniciativa_titulo,
+                COALESCE(iniciativa.codigo, i2.codigo) as iniciativa_codigo,
+                i.atividade_id,
+                atividade.titulo as atividade_titulo,
+                atividade.codigo as atividade_codigo,
+                :DATA: as "data",
+                dt.dt::date::text as "data_referencia",
+                series.serie,
+                v.id as variavel_id,
+                v.codigo as variavel_codigo,
+                v.titulo as variavel_titulo,
+                v.regiao_id as regiao_id,
+                orgao.id as orgao_id,
+                orgao.sigla as orgao_sigla,
+                valor_variavel_em_json(
+                    v.id,
+                    series.serie,
+                    dt.dt::date,
+                    :JANELA:
+                ) AS valor_json
+                from generate_series($1::date, $2::date, $3::interval) dt
+                cross join (select 'Realizado'::"Serie" as serie UNION ALL select 'RealizadoAcumulado'::"Serie" as serie ) series
+                join ${queryFromWhere}
+                AND dt.dt >= i.inicio_medicao AND dt.dt < i.fim_medicao + (select periodicidade_intervalo(i.periodicidade))
+                `;
+
+                const regioes = await this.prisma.regiao.findMany({
+                    where: { removido_em: null },
+                });
+
+                // Execute query based on params type
+                if (params.tipo == 'Mensal' && params.mes) {
+                    await this.rodaQueryMensalAnalitico(prismaTxn, sql, params.ano, params.mes);
+                    await this.writeRowsToFile(regioes, fileStream, prismaTxn, [...camposMetaIniAtv, ...regioesFields]);
+                } else if (params.periodo == 'Anual' && params.tipo == 'Analitico') {
+                    await this.rodaQueryAnualAnalitico(prismaTxn, sql, anoInicial);
+
+                    for (let ano = anoInicial + 1; ano <= params.ano; ano++) {
+                        await this.rodaQueryAnualAnalitico(prismaTxn, this.replaceCreateToInsert(sql), ano);
+                    }
+
+                    await this.writeRowsToFile(regioes, fileStream, prismaTxn, [...camposMetaIniAtv, ...regioesFields]);
+                } else if (params.periodo == 'Anual' && params.tipo == 'Consolidado') {
+                    await this.rodaQueryAnualConsolidado(prismaTxn, sql, params.ano);
+
+                    await this.writeRowsToFile(regioes, fileStream, prismaTxn, [...camposMetaIniAtv, ...regioesFields]);
+                } else if (params.periodo == 'Semestral' && params.tipo == 'Consolidado') {
+                    const tipo = params.semestre == 'Primeiro' ? 'Primeiro' : 'Segundo';
+                    const ano = params.ano;
+
+                    await this.rodaQuerySemestralConsolidado(tipo, ano, prismaTxn, sql);
+
+                    await this.writeRowsToFile(regioes, fileStream, prismaTxn, [...camposMetaIniAtv, ...regioesFields]);
+                } else if (params.periodo == 'Semestral' && params.tipo == 'Analitico') {
+                    const tipo = params.semestre == 'Primeiro' ? 'Primeiro' : 'Segundo';
+                    const ano = anoInicial;
+
+                    const semestreInicio = tipo === 'Segundo' ? ano + '-12-01' : ano + '-06-01';
+
+                    await this.rodaQuerySemestralAnalitico(prismaTxn, sql, semestreInicio, tipo);
+
+                    for (let ano = anoInicial + 1; ano <= params.ano; ano++) {
+                        const semestreInicio = tipo === 'Segundo' ? ano + '-12-01' : ano + '-06-01';
+
+                        await this.rodaQuerySemestralAnalitico(
+                            prismaTxn,
+                            this.replaceCreateToInsert(sql),
+                            semestreInicio,
+                            tipo
+                        );
+                    }
+
+                    await this.writeRowsToFile(regioes, fileStream, prismaTxn, [...camposMetaIniAtv, ...regioesFields]);
+                }
+            },
+            {
+                maxWait: 1000000,
+                timeout: 60 * 1000 * 15,
+                isolationLevel: 'Serializable',
+            }
+        );
+
+        // Close file stream
+        fileStream.end();
+    }
+
+    /**
+     * Write rows directly from database to file without storing in memory
+     */
+    private async writeRowsToFile(
+        regioesDb: Regiao[] | null,
+        fileStream: any,
+        prismaTxn: Prisma.TransactionClient,
+        fields: any[]
+    ): Promise<void> {
         let offset: number = 0;
         let has_more: boolean = true;
+
         while (has_more) {
             const data: RetornoDb[] | RetornoDbRegiao[] = await prismaTxn.$queryRawUnsafe(`
                 SELECT *
                 FROM _report_data
                 LIMIT ${BATCH_SIZE} OFFSET ${offset} -- ${this.invalidatePreparedStatement}`);
+
             if (data.length === 0) {
                 has_more = false;
                 continue;
             }
+
             offset += data.length;
 
             for (const row of data) {
@@ -708,46 +1522,303 @@ export class IndicadoresService implements ReportableService {
                     row.valor_categorica = row.valor_json.valor_categorica;
                 }
 
-                stream.push({
-                    pdm_nome: row.pdm_nome,
-                    indicador: {
-                        codigo: row.indicador_codigo,
-                        titulo: row.indicador_titulo,
-                        contexto: row.indicador_contexto,
-                        complemento: row.indicador_complemento,
-                        id: +row.indicador_id,
-                    },
-                    meta: row.meta_id ? { codigo: row.meta_codigo, titulo: row.meta_titulo, id: +row.meta_id } : null,
-                    meta_tags: row.meta_tags ? row.meta_tags : null,
-                    iniciativa: row.iniciativa_id
-                        ? { codigo: row.iniciativa_codigo, titulo: row.iniciativa_titulo, id: +row.iniciativa_id }
-                        : null,
-                    atividade: row.atividade_id
-                        ? { codigo: row.atividade_codigo, titulo: row.atividade_titulo, id: +row.atividade_id }
-                        : null,
+                // Process the row directly
+                const processedRow = this.processRowForCsv(row, regioesDb);
 
-                    data: row.data,
-                    data_referencia: row.data_referencia,
-                    serie: row.serie,
-                    valor: row.valor,
+                // Create CSV line
+                const csvLine = this.createCsvLine(processedRow, fields);
 
-                    variavel: row.variavel_id
-                        ? {
-                              codigo: row.variavel_codigo,
-                              titulo: row.variavel_titulo,
-                              id: +row.variavel_id,
-                              orgao: {
-                                  id: +row.orgao_id,
-                                  sigla: row.orgao_sigla,
-                              },
-                          }
-                        : undefined,
-                    ...('regiao_id' in row && regioesDb ? this.convertRowsRegiao(regioesDb, row) : {}),
-                });
+                // Write directly to file
+                fileStream.write(csvLine + '\n');
             }
         }
+    }
 
-        stream.push(null);
+    /**
+     * Process a database row into a flattened object for CSV output
+     */
+    private processRowForCsv(row: RetornoDb | RetornoDbRegiao, regioesDb: Regiao[] | null): Record<string, any> {
+        // Convert row to structured object
+        const item = {
+            pdm_nome: row.pdm_nome,
+            indicador: {
+                codigo: row.indicador_codigo,
+                titulo: row.indicador_titulo,
+                contexto: row.indicador_contexto,
+                complemento: row.indicador_complemento,
+                id: +row.indicador_id,
+            },
+            meta: row.meta_id ? { codigo: row.meta_codigo, titulo: row.meta_titulo, id: +row.meta_id } : null,
+            meta_tags: row.meta_tags ? row.meta_tags : null,
+            iniciativa: row.iniciativa_id
+                ? { codigo: row.iniciativa_codigo, titulo: row.iniciativa_titulo, id: +row.iniciativa_id }
+                : null,
+            atividade: row.atividade_id
+                ? { codigo: row.atividade_codigo, titulo: row.atividade_titulo, id: +row.atividade_id }
+                : null,
+
+            data: row.data,
+            data_referencia: row.data_referencia,
+            serie: row.serie,
+            valor: row.valor,
+            valor_categorica: row.valor_categorica,
+
+            variavel: row.variavel_id
+                ? {
+                      codigo: row.variavel_codigo,
+                      titulo: row.variavel_titulo,
+                      id: +row.variavel_id,
+                      orgao: {
+                          id: +row.orgao_id,
+                          sigla: row.orgao_sigla,
+                      },
+                  }
+                : undefined,
+            ...('regiao_id' in row && regioesDb ? this.convertRowsRegiao(regioesDb, row as RetornoDbRegiao) : {}),
+        };
+
+        // Flatten the object to match field paths
+        return this.flattenObject(item);
+    }
+
+    /**
+     * Create a CSV line from a flattened object using field definitions
+     */
+    /**
+     * Create a CSV line from a flattened object using field definitions
+     * Improved to handle region-specific data
+     */
+    private createCsvLine(flatItem: Record<string, any>, fields: any[], isRegioes: boolean = false): string {
+        // Extract values for each field in the fields array
+        const fieldValues = fields.map((field) => {
+            let value;
+
+            // Extract value based on field definition
+            if (typeof field === 'object' && field.value) {
+                if (typeof field.value === 'function') {
+                    // For function fields, we can't easily apply them
+                    // Just use a placeholder value for now
+                    value = '';
+                } else {
+                    value = flatItem[field.value];
+                }
+            } else {
+                value = flatItem[field];
+            }
+
+            // Handle undefined/null
+            if (value === undefined || value === null) {
+                return '';
+            }
+
+            // Format the value
+            return this.escapeCsvField(value);
+        });
+
+        // Add standard fields
+        const standardFields = [
+            this.escapeCsvField(flatItem['data_referencia'] || ''),
+            this.escapeCsvField(flatItem['serie'] || ''),
+            this.escapeCsvField(flatItem['data'] || ''),
+            this.escapeCsvField(flatItem['valor'] || ''),
+        ];
+
+        // For regions, add the valor_categorica field
+        if (isRegioes) {
+            standardFields.push(this.escapeCsvField(flatItem['valor_categorica'] || ''));
+        }
+
+        // Combine field values and standard fields
+        return [...fieldValues, ...standardFields].join(',');
+    }
+
+    /**
+     * Escape a field for CSV output
+     */
+    private escapeCsvField(value: any): string {
+        if (value === undefined || value === null) {
+            return '';
+        }
+
+        // Handle arrays (like meta_tags)
+        if (Array.isArray(value)) {
+            return this.escapeCsvField(value.join(';'));
+        }
+
+        const stringValue = String(value);
+
+        // Check if we need to quote this field
+        if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
+            // Escape quotes by doubling them and wrap in quotes
+            return `"${stringValue.replace(/"/g, '""')}"`;
+        }
+
+        return stringValue;
+    }
+
+    /**
+     * Flatten a nested object to match field paths
+     */
+    private flattenObject(item: any): Record<string, any> {
+        const result: Record<string, any> = {};
+
+        // Handle top-level properties
+        ['pdm_nome', 'data', 'data_referencia', 'serie', 'valor', 'valor_categorica', 'regiao_id'].forEach((key) => {
+            if (item[key] !== undefined) {
+                result[key] = item[key];
+            }
+        });
+
+        // Process nested 'indicador' properties
+        if (item.indicador) {
+            Object.keys(item.indicador).forEach((key) => {
+                result[`indicador.${key}`] = item.indicador[key];
+            });
+        }
+
+        // Handle nested 'meta' properties
+        if (item.meta) {
+            Object.keys(item.meta).forEach((key) => {
+                result[`meta.${key}`] = item.meta[key];
+            });
+        }
+
+        // Special handling for meta_tags
+        if (item.meta_tags) {
+            result['meta_tags'] = item.meta_tags;
+        }
+
+        // Handle nested 'iniciativa' properties
+        if (item.iniciativa) {
+            Object.keys(item.iniciativa).forEach((key) => {
+                result[`iniciativa.${key}`] = item.iniciativa[key];
+            });
+        }
+
+        // Handle nested 'atividade' properties
+        if (item.atividade) {
+            Object.keys(item.atividade).forEach((key) => {
+                result[`atividade.${key}`] = item.atividade[key];
+            });
+        }
+
+        // Handle nested 'variavel' properties
+        if (item.variavel) {
+            Object.keys(item.variavel).forEach((key) => {
+                if (key === 'orgao' && item.variavel.orgao) {
+                    Object.keys(item.variavel.orgao).forEach((orgaoKey) => {
+                        result[`variavel.orgao.${orgaoKey}`] = item.variavel.orgao[orgaoKey];
+                    });
+                } else {
+                    result[`variavel.${key}`] = item.variavel[key];
+                }
+            });
+        }
+
+        // Handle nested region properties
+        ['regiao_nivel_1', 'regiao_nivel_2', 'regiao_nivel_3', 'regiao_nivel_4'].forEach((regionLevel) => {
+            if (item[regionLevel]) {
+                Object.keys(item[regionLevel]).forEach((key) => {
+                    result[`${regionLevel}.${key}`] = item[regionLevel][key];
+                });
+            }
+        });
+
+        return result;
+    }
+
+    private async streamRowsInto(regioesDb: Regiao[] | null, stream: Readable, prismaTxn: Prisma.TransactionClient) {
+        // Check if stream is already ended
+        if (stream.destroyed || (stream as any).readableEnded) {
+            this.logger.warn('Stream is already closed or ended, cannot write more data');
+            return;
+        }
+
+        let offset: number = 0;
+        let has_more: boolean = true;
+        try {
+            while (has_more) {
+                const data: RetornoDb[] | RetornoDbRegiao[] = await prismaTxn.$queryRawUnsafe(`
+                    SELECT *
+                    FROM _report_data
+                    LIMIT ${BATCH_SIZE} OFFSET ${offset} -- ${this.invalidatePreparedStatement}`);
+
+                if (data.length === 0) {
+                    has_more = false;
+                    continue;
+                }
+
+                offset += data.length;
+
+                for (const row of data) {
+                    // Check again in the loop to ensure stream is still open
+                    if (stream.destroyed || (stream as any).readableEnded) {
+                        this.logger.warn('Stream closed during processing');
+                        return;
+                    }
+
+                    if ('valor_json' in row && row.valor_json) {
+                        row.valor = row.valor_json.valor_nominal;
+                        row.valor_categorica = row.valor_json.valor_categorica;
+                    }
+
+                    const item = {
+                        pdm_nome: row.pdm_nome,
+                        indicador: {
+                            codigo: row.indicador_codigo,
+                            titulo: row.indicador_titulo,
+                            contexto: row.indicador_contexto,
+                            complemento: row.indicador_complemento,
+                            id: +row.indicador_id,
+                        },
+                        meta: row.meta_id
+                            ? { codigo: row.meta_codigo, titulo: row.meta_titulo, id: +row.meta_id }
+                            : null,
+                        meta_tags: row.meta_tags ? row.meta_tags : null,
+                        iniciativa: row.iniciativa_id
+                            ? { codigo: row.iniciativa_codigo, titulo: row.iniciativa_titulo, id: +row.iniciativa_id }
+                            : null,
+                        atividade: row.atividade_id
+                            ? { codigo: row.atividade_codigo, titulo: row.atividade_titulo, id: +row.atividade_id }
+                            : null,
+
+                        data: row.data,
+                        data_referencia: row.data_referencia,
+                        serie: row.serie,
+                        valor: row.valor,
+
+                        variavel: row.variavel_id
+                            ? {
+                                  codigo: row.variavel_codigo,
+                                  titulo: row.variavel_titulo,
+                                  id: +row.variavel_id,
+                                  orgao: {
+                                      id: +row.orgao_id,
+                                      sigla: row.orgao_sigla,
+                                  },
+                              }
+                            : undefined,
+                        ...('regiao_id' in row && regioesDb
+                            ? this.convertRowsRegiao(regioesDb, row as RetornoDbRegiao)
+                            : {}),
+                    };
+
+                    // Push the item as an object
+                    stream.push(item);
+                }
+            }
+
+            // Mark the end of the stream
+            stream.push(null);
+        } catch (error) {
+            this.logger.error(`Error in streamRowsInto: ${error}`);
+
+            // Make sure we end the stream on error
+            if (!stream.destroyed && !(stream as any).readableEnded) {
+                stream.push(null);
+            }
+            throw error;
+        }
     }
 
     convertRowsRegiao(

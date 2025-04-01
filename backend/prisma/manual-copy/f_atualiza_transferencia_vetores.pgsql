@@ -12,6 +12,7 @@ BEGIN
                 COALESCE(NEW.emenda, ' ') || ' ' ||
                 COALESCE(NEW.nome_programa, ' ') || ' ' ||
                 COALESCE(NEW.objeto, ' ') || ' ' ||
+                COALESCE(NEW.demanda, ' ') || ' ' ||
                 COALESCE(tt.nome, ' ') || ' ' ||
                 COALESCE(o1.sigla, ' ') || ' ' ||
                 COALESCE(o1.descricao, ' ') || ' ' ||
@@ -87,6 +88,8 @@ WHEN (
     OLD.secretaria_concedente_id IS DISTINCT FROM NEW.secretaria_concedente_id
         OR
     OLD.emenda IS DISTINCT FROM NEW.emenda
+    OR
+    OLD.demanda IS DISTINCT FROM NEW.demanda
         OR
     OLD.nome_programa IS DISTINCT FROM NEW.nome_programa
         OR

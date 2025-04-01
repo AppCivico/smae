@@ -39,6 +39,7 @@ import { OrcamentoModule } from './reports/orcamento/orcamento.module';
 import { ReportsModule } from './reports/relatorios/reports.module';
 import { UtilsService } from './reports/utils/utils.service';
 import { RequestLogModule } from './request_log/request_log.module';
+import { RunReportModule } from './task/run_report/run-report.module';
 import { TaskModule } from './task/task.module';
 import { ClassificacaoModule } from './transferencias-voluntarias/classificacao/classificacao.module';
 import { WorkflowAndamentoFaseModule } from './casa-civil/workflow/andamento/fase/workflow-andamento-fase.module';
@@ -111,7 +112,8 @@ import { CategoriaAssuntoVariavelModule } from './categoria-assunto-variavel/cat
         TaskModule,
         ClassificacaoModule,
         PainelEstrategicoModule,
-        CategoriaAssuntoVariavelModule
+        CategoriaAssuntoVariavelModule,
+        RunReportModule,
     ],
     controllers: [AppController],
     providers: [

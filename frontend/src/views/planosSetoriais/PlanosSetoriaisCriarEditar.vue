@@ -6,12 +6,11 @@ import {
   useForm,
   useIsFormDirty,
 } from 'vee-validate';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CampoDeArquivo from '@/components/CampoDeArquivo.vue';
 import CampoDeEquipesComBuscaPorOrgao from '@/components/CampoDeEquipesComBuscaPorOrgao.vue';
-import { planoSetorial as schema } from '@/consts/formSchemas';
 import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
 import truncate from '@/helpers/texto/truncate';
 import { useAlertStore } from '@/stores/alert.store';
@@ -19,6 +18,8 @@ import { useAuthStore } from '@/stores/auth.store';
 import { useEquipesStore } from '@/stores/equipes.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store.ts';
+import { listaDeMeses } from '@/consts/months';
+import { planoSetorial as schema } from '@/consts/formSchemas';
 
 const router = useRouter();
 const route = useRoute();
@@ -45,6 +46,8 @@ const {
   itemParaEdicao,
   lista,
 } = storeToRefs(planosSetoriaisStore);
+
+const ehPdm = computed(() => ['pdm', 'PDM'].includes(emFoco.value?.sistema));
 
 const props = defineProps({
   planoSetorialId: {
@@ -318,6 +321,7 @@ watch(itemParaEdicao, (novoValor) => {
           <ErrorMessage name="prefeito" />
         </div>
       </div>
+
       <div class="flex flexwrap g2 mb1">
         <div class="f1">
           <LabelFromYup
@@ -648,6 +652,34 @@ watch(itemParaEdicao, (novoValor) => {
           <ErrorMessage name="nivel_orcamento" />
         </div>
       </div>
+
+      <template v-if="!ehPdm">
+        <hr class="mb2">
+
+        <div class="flex flexwrap g2 mb1">
+          <div
+            class="f1"
+          >
+            <LabelFromYup
+              name="meses"
+              :schema="schema"
+            />
+
+            <Field
+              v-slot="{ value, handleChange }"
+              name="meses"
+            >
+              <AutocompleteField
+                name="meses"
+                :controlador="{ busca: '', participantes: value || [] }"
+                :v-model="handleChange"
+                :grupo="listaDeMeses"
+                label="nome"
+              />
+            </Field>
+          </div>
+        </div>
+      </template>
     </fieldset>
 
     <fieldset>

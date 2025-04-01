@@ -1,4 +1,4 @@
-import { TipoPdm } from '@prisma/client';
+import { ModuloSistema, TipoPdm } from '@prisma/client';
 import { IdSiglaDescricao } from '../../common/dto/IdSigla.dto';
 import { RetornoPSEquipeAdminCPDto, RetornoPSEquipePontoFocalDto, RetornoPSEquipeTecnicoCPDto } from './create-pdm.dto';
 import { IsDateYMD } from '../../auth/decorators/date.decorator';
@@ -40,6 +40,8 @@ export class PdmDto {
     id: number;
     pode_editar: boolean;
     tipo: TipoPdm;
+    sistema: ModuloSistema;
+    meses: number[]
 }
 
 export class PlanoSetorialAnteriorDto {

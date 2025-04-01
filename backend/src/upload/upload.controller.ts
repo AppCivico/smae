@@ -1,16 +1,37 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Get,
+    Logger,
+    Param,
+    Patch,
+    Post,
+    Query,
+    Res,
+    UploadedFile,
+    UseInterceptors,
+} from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiBearerAuth, ApiConsumes, ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiConsumes, ApiNoContentResponse, ApiOkResponse, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { IsPublic } from '../auth/decorators/is-public.decorator';
+import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { IpAddress } from '../common/decorators/current-ip';
 import { CreateUploadDto } from './dto/create-upload.dto';
+import { PatchDiretorioDto } from './dto/diretorio.dto';
 import { DownloadOptions } from './dto/download-options';
 import { Upload } from './entities/upload.entity';
 import { UploadService } from './upload.service';
-import { PatchDiretorioDto } from './dto/diretorio.dto';
+
+interface RestoreDescriptionResponse {
+    total: number;
+    restored: number;
+    errors: number;
+    skipped: number;
+    message: string;
+}
 
 @Controller('')
 @ApiTags('Upload, Download e Diretórios')
@@ -74,5 +95,30 @@ export class UploadController {
     @ApiNoContentResponse({ description: 'Configura diretório virtual do arquivo' })
     async patch_dir(@Query() dto: PatchDiretorioDto, @Param('token') uploadOrDlToken: string): Promise<void> {
         await this.uploadService.updateDir(dto, uploadOrDlToken);
+    }
+
+    @Post('admin/restore-descriptions')
+    @ApiBearerAuth('access-token')
+    @Roles(['SMAE.superadmin'])
+    @ApiQuery({
+        name: 'batchSize',
+        required: false,
+        type: Number,
+        description: 'Número de registros a processar por lote',
+    })
+    async restoreDescriptions(
+        @Query('batchSize') batchSize = 50,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RestoreDescriptionResponse> {
+        Logger.log(
+            `User ${user.id} (${user.nome_exibicao}) initiated description restoration process with batchSize=${batchSize} `
+        );
+
+        const result = await this.uploadService.restauraDescricaoPeloMetadado(parseInt(String(batchSize), 10));
+
+        return {
+            ...result,
+            message: `Successfully restored ${result.restored} descriptions of ${result.total} records. Skipped: ${result.skipped}, Errors: ${result.errors}.`,
+        };
     }
 }

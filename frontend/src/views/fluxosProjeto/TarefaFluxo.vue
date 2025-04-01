@@ -5,17 +5,17 @@ import responsabilidadeEtapaFluxo from '@/consts/responsabilidadeEtapaFluxo';
 import { useAlertStore } from '@/stores/alert.store';
 import { useFluxosProjetosStore } from '@/stores/fluxosProjeto.store';
 import { useFluxosTarefasProjetosStore } from '@/stores/fluxosTarefaProjeto.store';
-import { useTarefasProjetosStore } from '@/stores/tarefasProjeto.store';
+import { useWorkflowTarefasStore } from '@/stores/workflowTarefas.store';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, useForm } from 'vee-validate';
 import { computed, ref, watch } from 'vue';
 
 const fluxosProjetoStore = useFluxosProjetosStore();
 const fluxoTarefasProjetosStore = useFluxosTarefasProjetosStore();
-const tarefasProjetosStore = useTarefasProjetosStore();
+const workflowTarefasStore = useWorkflowTarefasStore();
 
 const { emFoco } = storeToRefs(fluxosProjetoStore);
-const { lista } = storeToRefs(tarefasProjetosStore);
+const { listaOrdenada: lista } = storeToRefs(workflowTarefasStore);
 const { lista: listaDeTarefasNoFluxo } = storeToRefs(fluxoTarefasProjetosStore);
 const alertStore = useAlertStore();
 const erro = ref(null);
@@ -113,7 +113,7 @@ const listaOrdenada = computed(() => lista.value
   .toSorted((a, b) => a.descricao.localeCompare(b.descricao)));
 
 function iniciar() {
-  tarefasProjetosStore.buscarTudo();
+  workflowTarefasStore.buscarTudo();
   if (props.relacionamentoId) {
     fluxoTarefasProjetosStore.buscarTudo();
   }

@@ -1,40 +1,37 @@
 <script setup>
 import { useAlertStore } from '@/stores/alert.store';
-import { useTarefasProjetosStore } from '@/stores/tarefasProjeto.store';
+import { useWorkflowTarefasStore } from '@/stores/workflowTarefas.store';
 import { storeToRefs } from 'pinia';
 
-const tarefasProjetos = useTarefasProjetosStore();
-const { lista, chamadasPendentes, erro } = storeToRefs(tarefasProjetos);
+const workflowTarefas = useWorkflowTarefasStore();
+const { listaOrdenada: lista, chamadasPendentes, erro } = storeToRefs(workflowTarefas);
 
 const alertStore = useAlertStore();
 
 async function excluirTarefa(id) {
   alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
-    if (await tarefasProjetos.excluirItem(id)) {
-      tarefasProjetos.buscarTudo();
+    if (await workflowTarefas.excluirItem(id)) {
+      workflowTarefas.buscarTudo();
       alertStore.success('Tarefa removida.');
     }
   }, 'Remover');
 }
-
-function ordenarListaAlfabeticamente() {
-  lista.value.sort((a, b) => a.descricao.localeCompare(b.descricao));
-}
-tarefasProjetos.buscarTudo().then(ordenarListaAlfabeticamente);
 </script>
 <template>
-  <div class="flex spacebetween center mb2">
-    <h1>{{ $route.meta.título }}</h1>
+  <header class="flex spacebetween center mb2">
+    <TituloDePagina />
+
     <hr class="ml2 f1">
     <SmaeLink
       :to="{
-        name: '.TarefasCriar',
+        name: 'workflow.TarefasCriar'
       }"
       class="btn big ml2"
     >
       Nova tarefa
     </SmaeLink>
-  </div>
+  </header>
+
   <table class="tablemain">
     <col>
     <col class="col--botão-de-ação">
@@ -44,6 +41,8 @@ tarefasProjetos.buscarTudo().then(ordenarListaAlfabeticamente);
         <th>
           Tarefa
         </th>
+        <th />
+        <th />
       </tr>
     </thead>
     <tbody>
@@ -55,7 +54,7 @@ tarefasProjetos.buscarTudo().then(ordenarListaAlfabeticamente);
         <td>
           <SmaeLink
             :to="{
-              name: '.TarefasEditar',
+              name: 'workflow.TarefasEditar',
               params: { tarefasId: item.id }
             }"
             class="tprimary"

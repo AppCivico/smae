@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
-export const useTarefasProjetosStore = defineStore('tarefasProjetos', {
+export const useWorkflowTarefasStore = defineStore('workflowTarefas', {
   state: () => ({
     lista: [],
     chamadasPendentes: {
@@ -58,5 +58,8 @@ export const useTarefasProjetosStore = defineStore('tarefasProjetos', {
         return false;
       }
     },
+  },
+  getters: {
+    listaOrdenada: ({ lista }) => lista.toSorted((a, b) => a.descricao.localeCompare(b.descricao)),
   },
 });

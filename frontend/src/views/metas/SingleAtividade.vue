@@ -78,7 +78,6 @@ iniciar();
   </div>
   <div class="boards">
     <template v-if="singleAtividade.id">
-      <!-- Se for PDM antigo -->
       <div v-if="route.meta.entidadeMãe === 'pdm'">
         <div class="flex g2 mb2">
           <div class="mr1 f0">
@@ -117,12 +116,8 @@ iniciar();
           </div>
         </div>
       </div>
-      <!-- Fim do se for PDM antigo -->
-      <!-- Se for PDM novo -->
       <div v-else>
-        <!-- Órgãos -->
         <div class="flex g2 mb2">
-          <!-- Responsável -->
           <div class="mr2 f1">
             <div class="t12 uc w700 mb05 tamarelo">
               Órgãos responsáveis
@@ -137,8 +132,6 @@ iniciar();
               }}     
             </div>
           </div>
-          <!-- Fim responsável -->
-          <!-- Monitoramento -->
           <div class="mr2 f1">
             <div class="t12 uc w700 mb05 tamarelo">
               Órgãos monitoramento
@@ -152,13 +145,9 @@ iniciar();
                   }, []))
               }}     
             </div>
-          </div> 
-          <!-- Fim monitoramento -->
+          </div>
         </div>
-        <!-- Fim de órgãos -->
-        <!-- Equipes -->
         <div class="flex g2 mb2">
-          <!-- Responsável -->
             <div
               v-if="EquipesStore.equipesPorIds(singleAtividade.ps_ponto_focal.equipes).length"
               class="mr2 f1"
@@ -174,8 +163,6 @@ iniciar();
                 ) }}
               </div>
             </div>
-            <!-- Fim responsável -->
-            <!-- Técnica -->
             <div
               v-if="EquipesStore.equipesPorIds(singleAtividade.ps_tecnico_cp.equipes).length"
               class="mr2 f1"
@@ -191,11 +178,8 @@ iniciar();
                 ) }}
               </div>
             </div>
-          <!-- Fim de técnica -->
         </div>
-        <!-- Fim equipes -->
       </div>
-      <!-- Fim do se for PDM novo -->
       <div v-if="singleAtividade?.tags.length">
         <hr class="mt2 mb2">
         <TagsDeMetas :lista-de-tags="singleAtividade.tags" />

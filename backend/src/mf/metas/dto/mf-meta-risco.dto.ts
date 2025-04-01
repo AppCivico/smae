@@ -53,5 +53,6 @@ export class RiscoDto {
     detalhamento: string;
 
     @IsString()
+    @MaxLength(1024 * 10, { message: 'O texto não pode ter mais de 10KB' })
     ponto_de_atencao: string;
 }

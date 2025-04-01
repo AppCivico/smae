@@ -123,7 +123,6 @@ iniciar();
 
   <div class="boards">
     <template v-if="singleIniciativa.id">
-      <!-- Se for PDM antigo -->
       <div v-if="route.meta.entidadeMãe === 'pdm'">    
         <div class="flex g2">
           <div class="mr2">
@@ -169,10 +168,7 @@ iniciar();
           </div>
         </div>
       </div>
-      <!-- Fim do se for PDM antigo -->
-      <!-- Se for PDM novo -->
       <div v-else>
-        <!-- Órgãos -->
         <div class="flex g2 mb2">
           <div class="mr2 f1">
             <div class="t12 uc w700 mb05 tamarelo">
@@ -203,8 +199,6 @@ iniciar();
             </div>
           </div>
         </div>
-        <!-- Fim de órgãos -->
-        <!-- Equipes -->
         <div class="flex g2 mb2">
           <div
             v-if="EquipesStore.equipesPorIds(singleIniciativa.ps_ponto_focal.equipes).length"
@@ -237,9 +231,7 @@ iniciar();
             </div>
           </div>
         </div>
-        <!-- Fim de equipes -->
       </div>
-      <!-- Fim do se for PDM novo -->
       <div
         v-if="singleIniciativa?.tags.length"
         class="mb2"
@@ -349,8 +341,6 @@ iniciar();
                   ><use xlink:href="#i_waste" /></svg>
                 </button>
               </div>
-              <!-- Fim do cabeçalho -->
-              <!-- Se for PDM antigo -->
               <div v-if="route.meta.entidadeMãe === 'pdm'">
                 <div class="f1 ml2">
                   <div class="flex g2 ml2">
@@ -373,12 +363,8 @@ iniciar();
                   </div>
                 </div>
               </div>
-              <!-- Fim do se for PDM antigo -->
-              <!-- Se for PDM novo -->
               <div v-else>
-                <!-- Órgãos -->
                 <div class="flex g2 mb2">
-                  <!-- Responsável -->
                   <div class="mr2 f1">
                     <div class="t12 uc w700 mb05 tc300">
                       Órgãos Responsáveis
@@ -392,8 +378,7 @@ iniciar();
                           }, []))
                       }}     
                     </div>
-                  </div>           
-                  <!-- Monitoramento -->     
+                  </div>   
                   <div class="mr2 f1">
                     <div class="t12 uc w700 mb05 tc300">
                       Órgão monitoramento
@@ -408,12 +393,8 @@ iniciar();
                       }}     
                     </div>
                   </div>
-                  <!-- Fim órgão técnico responsável -->
                 </div>
-                <!-- Fim dos órgãos -->
-                <!-- Equipes -->
                 <div class="flex g2 mb2">
-                  <!-- Responsável -->
                   <div class="mr2 f1">
                     <div class="t12 uc w700 mb05 tc300">
                       Equipe do órgão responsável
@@ -429,7 +410,6 @@ iniciar();
                             ) }}
                     </div>
                   </div>
-                  <!-- Técnica -->
                   <div class="mr2 f1">
                     <div class="t12 uc w700 mb05 tc300">
                       Equipe técnica monitoramento
@@ -446,9 +426,7 @@ iniciar();
                     </div>
                   </div>
                 </div>
-                <!-- Fim de equipes -->
               </div>
-              <!-- Fim do se for PDM novo -->
           </header>
         </div>
       </template>

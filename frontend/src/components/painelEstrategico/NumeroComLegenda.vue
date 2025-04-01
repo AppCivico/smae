@@ -4,7 +4,7 @@ import { defineProps } from 'vue';
 defineProps({
   numero: {
     type: [String, Number],
-    required: true,
+    default: 0,
   },
   comoItem: {
     type: Boolean,
@@ -43,7 +43,9 @@ defineProps({
       :style="{ color: cor, fontSize: tamanhoDoNumero + 'px' }"
       class="number"
     >
-      {{ String(numero).padStart(2, '0') }}
+      <slot name="numero">
+        {{ String(numero).padStart(2, '0') }}
+      </slot>
     </dt>
     <dd
       :style="{ fontSize: tamanhoDaLegenda + 'px' }"

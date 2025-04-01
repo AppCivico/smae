@@ -12,7 +12,7 @@ import { IndicadorModule } from './indicador/indicador.module';
 import { IniciativaModule } from './iniciativa/iniciativa.module';
 import { MetaOrcamentoModule } from './meta-orcamento/meta-orcamento.module';
 import { MetaModule } from './meta/meta.module';
-import { MetasModule as MfMetasModule } from './mf/metas/metas.module';
+import { MonitMetasModule as MfMetasModule } from './mf/metas/metas.module';
 import { MfModule } from './mf/mf.module';
 import { PainelModule } from './painel/painel.module';
 import { PdmCicloModule } from './pdm-ciclo/pdm-ciclo.module';

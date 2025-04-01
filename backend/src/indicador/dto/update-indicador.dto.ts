@@ -138,6 +138,18 @@ export class UpdateIndicadorDto extends OmitType(PartialType(CreateIndicadorDto)
     @Type(() => String)
     acumulado_valor_base?: number | null;
 
+    @IsNumberString(
+        {},
+        {
+            message:
+                '$property| Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String',
+        }
+    )
+    @ValidateIf((object, value) => value !== null)
+    @IsOptional()
+    @Type(() => String)
+    meta_valor_nominal?: number | null;
+
     @IsOptional()
     @IsInt({ message: 'variavel_categoria_id precisa ser um número ou null' })
     @ValidateIf((object, value) => value !== null)

@@ -38,7 +38,7 @@ export class ReportsController {
     async create(@Body() dto: CreateReportDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         const sistema = user.assertOneModuloSistema('criar', 'Relatórios');
 
-        return await this.reportsService.saveReport(dto, null, user, sistema);
+        return await this.reportsService.saveReport(dto, user, sistema);
     }
 
     @ApiBearerAuth('access-token')

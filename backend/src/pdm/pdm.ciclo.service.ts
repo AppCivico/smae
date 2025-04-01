@@ -1,12 +1,17 @@
-import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { CicloFisicoFase, PdmPerfilTipo, Prisma } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { VariavelService } from 'src/variavel/variavel.service';
+import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { CONST_BOT_USER_ID } from '../common/consts';
 import { Date2YMD, DateYMD, SYSTEM_TIMEZONE } from '../common/date2ymd';
+import { TipoPdmType } from '../common/decorators/current-tipo-pdm';
 import { JOB_PDM_CICLO_LOCK } from '../common/dto/locks';
+import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { LoggerWithLog } from '../common/LoggerWithLog';
 import { PrismaService } from '../prisma/prisma.service';
-import { UploadService } from '../upload/upload.service';
+import { UpdatePdmCicloConfigDto } from './dto/create-pdm.dto';
 import { CicloFisicoDto } from './dto/list-pdm.dto';
 
 type CicloFisicoResumo = {
@@ -28,7 +33,7 @@ export class PdmCicloService {
     private readonly logger = new Logger(PdmCicloService.name);
     constructor(
         private readonly prisma: PrismaService,
-        @Inject(forwardRef(() => UploadService))
+        @Inject(forwardRef(() => VariavelService))
         private readonly variavelService: VariavelService
     ) {}
 
@@ -68,6 +73,10 @@ export class PdmCicloService {
     async handleCron() {
         if (process.env['DISABLE_PDM_CRONTAB']) return;
 
+        await this.processTransactionForCycles();
+    }
+
+    async processTransactionForCycles(): Promise<string> {
         await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient) => {
                 this.logger.debug(`Adquirindo lock para verificação dos ciclos`);
@@ -80,9 +89,13 @@ export class PdmCicloService {
             `;
                 if (!locked[0].locked) {
                     this.logger.debug(`Já está em processamento...`);
-                    return;
+                    return 'Já está em processamento...';
                 }
 
+                // Process active PDMs with configuration-based cycles
+                await this.processConfigBasedCycles(locked[0].now_ymd);
+
+                // Processa os pdm de ciclos legados (PDM antigo)
                 // não passa a TX, ou seja, ele que seja responsável por sua própria $transaction
                 // eslint-disable-next-line no-constant-condition
                 while (1) {
@@ -105,14 +118,156 @@ export class PdmCicloService {
                 isolationLevel: 'Serializable',
             }
         );
+        return 'ok';
+    }
+
+    async processConfigBasedCycles(hoje: DateYMD) {
+        this.logger.debug(`Processando ciclos configurados via PdmCicloConfig ${hoje}...`);
+
+        // Verifica se há alguma configuração de ciclo ativa
+        const configs = await this.prisma.pdmCicloConfig.findMany({
+            where: {
+                ultima_revisao: true,
+                removido_em: null,
+                pdm: {
+                    ativo: true,
+                    tipo: { in: ['PS', 'PDM'] },
+                    removido_em: null,
+                },
+                AND: [
+                    {
+                        OR: [
+                            { data_fim: null },
+                            {
+                                data_fim: {
+                                    gte: DateTime.fromISO(hoje, {
+                                        zone: SYSTEM_TIMEZONE,
+                                    })
+                                        .startOf('day')
+                                        .toJSDate(),
+                                },
+                            },
+                        ],
+                    },
+                    {
+                        pdm: {
+                            CicloFisico: {
+                                some: {
+                                    acordar_ciclo_em: {
+                                        lte: new Date(Date.now()),
+                                    },
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+            select: {
+                pdm_id: true,
+            },
+        });
+
+        if (configs.length === 0) {
+            this.logger.debug('Nenhuma configuração de ciclo ativa encontrada.');
+            return;
+        }
+
+        const pdmIds = configs.map((config) => config.pdm_id);
+
+        // Try processing all PDMs at once, then chunk if needed
+        await this.processPdmIdsInChunks(pdmIds, 'Todos os PDMs/PS', Math.min(pdmIds.length, 1000));
+    }
+
+    private async processPdmIdsInChunks(
+        pdmIds: number[],
+        chunkDescription: string,
+        originalSize: number,
+        chunkSize: number = 0
+    ) {
+        if (chunkSize <= 0) chunkSize = pdmIds.length;
+
+        if (pdmIds.length === 0) return;
+
+        // Dividir em lotes (inicialmente apenas um lote com todos os itens)
+        const chunks: number[][] = [];
+        for (let i = 0; i < pdmIds.length; i += chunkSize) {
+            chunks.push(pdmIds.slice(i, i + chunkSize));
+        }
+
+        for (const chunk of chunks) {
+            try {
+                this.logger.log(
+                    `Tentando processar lote de ${chunk.length}/${originalSize} PDMs/PS (${chunkDescription})`
+                );
+
+                await this.prisma.$transaction(
+                    async (prismaTx: Prisma.TransactionClient) => {
+                        // Usa UNNEST para processar todos os IDs de uma vez
+                        await prismaTx.$queryRaw`
+                            WITH pdm_ids AS (SELECT unnest(${chunk}::int[]) AS id)
+                            SELECT atualiza_ciclos_config(id)::text FROM pdm_ids
+                        `;
+                    },
+                    {
+                        isolationLevel: 'Serializable',
+                        maxWait: 30000,
+                        timeout: 60 * 1000 * 5,
+                    }
+                );
+
+                this.logger.log(`Processamento bem-sucedido para lote de ${chunk.length} PDMs/PS`);
+            } catch (error) {
+                if (chunk.length === 1) {
+                    const logger = LoggerWithLog('PdmCicloService.processPdmIdsInChunks');
+                    logger.error(`Falha ao processar PDM/PS ${chunk[0]}: ${error.message}`, error.stack);
+                    // Se somente um item falhar, logar e seguir em frente
+                    this.logger.error(`Falha ao processar PDM/PS ${chunk[0]}: ${error.message}`, error.stack);
+
+                    await logger.saveLogs(this.prisma, { pessoa_id: CONST_BOT_USER_ID });
+                } else {
+                    // Dividir o lote em dois e tentar novamente
+                    const halfSize = Math.max(1, Math.ceil(chunk.length / 2));
+                    this.logger.warn(`Falha ao processar lote de ${chunk.length} PDMs/PS. Dividindo em lotes menores.`);
+
+                    await this.processPdmIdsInChunks(
+                        chunk.slice(0, halfSize),
+                        `Primeira metade (${halfSize} itens)`,
+                        originalSize,
+                        halfSize
+                    );
+
+                    await this.processPdmIdsInChunks(
+                        chunk.slice(halfSize),
+                        `Segunda metade (${chunk.length - halfSize} itens)`,
+                        originalSize,
+                        halfSize
+                    );
+                }
+            }
+        }
     }
 
     private async verificaCiclosPendentes(hoje: DateYMD) {
-        console.log(hoje);
-        this.logger.debug(`Verificando ciclos físicos com tick faltando...`);
+        this.logger.debug(`Verificando ciclos físicos legado com tick faltando... ${hoje}`);
+
+        // busca apenas "os" pdm's antigo, que nunca tiveram a configuração de ciclo nova
+        const pdms = await this.prisma.pdm.findMany({
+            where: {
+                ativo: true,
+                tipo: { in: ['PDM'] },
+                removido_em: null,
+                AND: {
+                    PdmCicloConfig: {
+                        none: {},
+                    },
+                },
+            },
+            select: { id: true },
+        });
 
         const cf = await this.prisma.cicloFisico.findFirst({
             where: {
+                pdm_id: { in: pdms.map((pdm) => pdm.id) },
                 acordar_ciclo_em: {
                     lt: new Date(Date.now()),
                 },
@@ -360,5 +515,91 @@ export class PdmCicloService {
         }
 
         return ciclo;
+    }
+
+    async updateCicloConfig(
+        _tipo: TipoPdmType,
+        pdmId: number,
+        dto: UpdatePdmCicloConfigDto,
+        user: PessoaFromJwt,
+        prismaCtx?: Prisma.TransactionClient | undefined
+    ): Promise<RecordWithId> {
+        const prisma = prismaCtx ?? this.prisma;
+        const pdm = await prisma.pdm.findUniqueOrThrow({
+            where: { id: pdmId },
+            select: { sistema: true },
+        });
+        if (pdm.sistema === 'PDM') throw new BadRequestException('Operação não permitida para PDMs antigos');
+        if (dto.meses && dto.meses.length > 0 && !dto.data_inicio)
+            throw new BadRequestException('Data de início é obrigatória quando há meses configurados');
+
+        const countExistentes = await prisma.cicloFisico.count({
+            where: {
+                pdm_id: pdmId,
+                tipo: 'PDM',
+            },
+        });
+        if (countExistentes > 0)
+            throw new BadRequestException('Já existe um ciclo físico do tipo antigo para este Programa de Metas');
+
+        const now = new Date();
+        const performUpdate = async (prismaTx: Prisma.TransactionClient) => {
+            await prismaTx.pdmCicloConfig.updateMany({
+                where: {
+                    pdm_id: pdmId,
+                    ultima_revisao: true,
+                },
+                data: {
+                    ultima_revisao: null,
+                    removido_em: now,
+                    removido_por: user.id,
+                },
+            });
+
+            const previousData = await prismaTx.pdmCicloConfig.findFirst({
+                where: {
+                    pdm_id: pdmId,
+                    ultima_revisao: true,
+                    removido_em: null,
+                },
+            });
+
+            // Create new configuration
+            const config = await prismaTx.pdmCicloConfig.create({
+                data: {
+                    pdm_id: pdmId,
+                    meses: dto.meses ?? previousData?.meses ?? [],
+                    data_inicio: dto.data_inicio ?? previousData?.data_inicio ?? null,
+                    data_fim: dto.data_fim ?? previousData?.data_fim ?? null,
+                    ultima_revisao: true,
+                    criado_por: user.id,
+                },
+                select: { id: true },
+            });
+
+            this.logger.log(`Ciclo config created with id: ${config.id}`);
+
+            // Call function to update future cycles
+            await prismaTx.$queryRaw`SELECT atualiza_ciclos_config(${pdmId}::int)::text`;
+
+            return config;
+        };
+
+        let ret;
+        if (prismaCtx) {
+            ret = await performUpdate(prismaCtx);
+        } else {
+            ret = await this.prisma.$transaction(
+                async (prismaTx: Prisma.TransactionClient) => {
+                    return await performUpdate(prismaTx);
+                },
+                {
+                    isolationLevel: 'Serializable',
+                    maxWait: 5000,
+                    timeout: 5000,
+                }
+            );
+        }
+        return ret;
     }
 }

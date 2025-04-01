@@ -1,6 +1,10 @@
 <!-- eslint-disable @typescript-eslint/naming-convention -->
 <!-- mantendo a nomenclatura legada-->
 <script setup>
+import { storeToRefs } from 'pinia';
+import { ErrorMessage, Field, useForm } from 'vee-validate';
+import { computed, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import MapaCampo from '@/components/geo/MapaCampo.vue';
 import { etapa as schema } from '@/consts/formSchemas';
@@ -14,11 +18,9 @@ import { useEtapasStore } from '@/stores/etapas.store';
 import { useIniciativasStore } from '@/stores/iniciativas.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { useRegionsStore } from '@/stores/regions.store';
-import { storeToRefs } from 'pinia';
-import { ErrorMessage, Field, useForm } from 'vee-validate';
-import { computed, ref, watch } from 'vue';
-import { useRoute } from 'vue-router';
 import temDescendenteEmOutraRegião from './auxiliares/temDescendenteEmOutraRegiao.ts';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
+import { useAuthStore } from '@/stores';
 
 defineOptions({ inheritAttrs: false });
 
@@ -40,6 +42,7 @@ const parentVar = atividade_id ?? iniciativa_id ?? meta_id ?? false;
 const parentField = atividade_id ? 'atividade_id' : iniciativa_id ? 'iniciativa_id' : meta_id ? 'meta_id' : false;
 const currentEdit = route.path.slice(0, route.path.indexOf('/cronograma') + 11);
 
+const authStore = useAuthStore();
 const MetasStore = useMetasStore();
 const { activePdm, singleMeta } = storeToRefs(MetasStore);
 MetasStore.getPdM();
@@ -88,6 +91,8 @@ const acumulativa_meta_o = ref(0);
 const lastParent = ref({});
 const usersAvailable = ref([]);
 const responsaveis = ref({ participantes: [], busca: '' });
+
+const permissaoLiberada = computed(() => singleEtapa.value.etapa.pode_editar_realizado);
 
 const geolocalizaçãoPorToken = computed(() => (
   singleEtapa.value?.loading
@@ -375,9 +380,11 @@ watch(valoresIniciais, (novoValor) => {
 }, { immediate: true });
 </script>
 <template>
-  <div class="flex spacebetween center mb2">
-    <h2>{{ title }}</h2>
+  <div class="flex spacebetween center">
+    <TituloDaPagina>{{ title }}</TituloDaPagina>
+
     <hr class="ml2 f1">
+
     <button
       class="btn round ml2"
       @click="checkClose"
@@ -393,495 +400,510 @@ watch(valoresIniciais, (novoValor) => {
     <form
       @submit="onSubmit"
     >
-      <div>
-        <label class="label">Nome <span class="tvermelho">*</span></label>
-        <Field
-          name="titulo"
-          type="text"
-          class="inputtext light mb1"
-          :class="{ 'error': errors.titulo }"
-        />
-        <div class="error-msg">
-          {{ errors.titulo }}
-        </div>
-      </div>
-      <div class="flex g2">
-        <div class="f1">
-          <label class="label">Ordem</label>
+      <fieldset>
+        <div>
+          <label class="label">Nome <span class="tvermelho">*</span></label>
           <Field
-            name="ordem"
-            type="number"
+            name="titulo"
+            type="text"
             class="inputtext light mb1"
-            :value="etapa_id ? singleEtapa?.ordem : undefined"
-            :class="{ 'error': errors.ordem }"
+            :class="{ 'error': errors.titulo }"
+            :disabled="!permissaoLiberada"
           />
           <div class="error-msg">
-            {{ errors.ordem }}
+            {{ errors.titulo }}
+          </div>
+        </div>
+        <div
+          v-if="permissaoLiberada"
+          class="flex g2"
+        >
+          <div class="f1">
+            <label class="label">Ordem</label>
+            <Field
+              name="ordem"
+              type="number"
+              class="inputtext light mb1"
+              :value="etapa_id ? singleEtapa?.ordem : undefined"
+              :class="{ 'error': errors.ordem }"
+            />
+            <div class="error-msg">
+              {{ errors.ordem }}
+            </div>
+          </div>
+
+          <div class="f1">
+            <label class="label">Ponderador</label>
+            <Field
+              name="peso"
+              type="number"
+              step="1"
+              min="0"
+              class="inputtext light mb1"
+              :value="etapa_id ? singleEtapa?.peso : undefined"
+              :class="{ 'error': errors.peso }"
+            />
+            <div class="error-msg">
+              {{ errors.peso }}
+            </div>
           </div>
         </div>
 
-        <div class="f1">
-          <label class="label">Ponderador</label>
+        <div v-if="permissaoLiberada">
+          <label class="label">Descrição</label>
           <Field
-            name="peso"
-            type="number"
-            step="1"
-            min="0"
+            name="descricao"
+            as="textarea"
+            rows="3"
             class="inputtext light mb1"
-            :value="etapa_id ? singleEtapa?.peso : undefined"
-            :class="{ 'error': errors.peso }"
+            :class="{ 'error': errors.descricao }"
           />
           <div class="error-msg">
-            {{ errors.peso }}
+            {{ errors.descricao }}
           </div>
         </div>
-        <div class="f1">
-          <label class="label">Execução %</label>
-          <Field
-            :disabled="values.n_filhos_imediatos"
-            name="percentual_execucao"
-            type="number"
-            step="1"
-            min="0"
-            max="100"
-            class="inputtext light mb1"
-            :value="etapa_id ? singleEtapa?.percentual_execucao : undefined"
-            :class="{ 'error': errors.percentual_execucao }"
-          />
-          <div class="error-msg">
-            {{ errors.percentual_execucao }}
-          </div>
-        </div>
-      </div>
+      </fieldset>
 
-      <div class="">
-        <label class="label">Descrição</label>
-        <Field
-          name="descricao"
-          as="textarea"
-          rows="3"
-          class="inputtext light mb1"
-          :class="{ 'error': errors.descricao }"
-        />
-        <div class="error-msg">
-          {{ errors.descricao }}
-        </div>
-      </div>
-
-      <hr class="mt2 mb2">
-
-      <template v-if="$route.meta.entidadeMãe === 'pdm'">
-        <label class="label">
-          Responsável
-        </label>
-        <div class="f1 mb1">
-          <AutocompleteField
-            :controlador="responsaveis"
-            :grupo="usersAvailable"
-            label="nome_exibicao"
-          />
-        </div>
-      </template>
-
-      <template v-if="['planoSetorial', 'programaDeMetas'].includes($route.meta.entidadeMãe)">
-        <label class="label">Equipe Responsável<span class="tvermelho">*</span></label>
-        <div class="flex">
+      <fieldset v-if="permissaoLiberada">
+        <template v-if="$route.meta.entidadeMãe === 'pdm'">
+          <label class="label">
+            Responsável
+          </label>
           <div class="f1 mb1">
             <AutocompleteField
-              name="ps_ponto_focal.equipes"
-              :controlador="{
-                busca: '',
-                participantes: values?.ps_ponto_focal?.equipes || [],
-              }"
-              :grupo="EquipesStore.equipesPorIds(singleMeta.ps_ponto_focal.equipes)"
-              label="titulo"
+              :controlador="responsaveis"
+              :grupo="usersAvailable"
+              label="nome_exibicao"
             />
           </div>
-        </div>
-      </template>
+        </template>
 
-      <hr
-        v-if="singleCronograma.regionalizavel && regions"
-        class="mt2 mb2"
-      >
-      <div v-if="singleCronograma.regionalizavel && regions">
-        <label class="label">Região</label>
+        <template v-if="['planoSetorial', 'programaDeMetas'].includes($route.meta.entidadeMãe)">
+          <label class="label">Equipe Responsável<span class="tvermelho">*</span></label>
+          <div class="flex">
+            <div class="f1 mb1">
+              <AutocompleteField
+                name="ps_ponto_focal.equipes"
+                :controlador="{
+                  busca: '',
+                  participantes: values?.ps_ponto_focal?.equipes || [],
+                }"
+                :grupo="EquipesStore.equipesPorIds(singleMeta.ps_ponto_focal.equipes)"
+                label="titulo"
+              />
+            </div>
+          </div>
+        </template>
+      </fieldset>
 
-        <template v-if="singleCronograma.nivel_regionalizacao >= 2">
-          <select
-            v-model="level1"
-            class="inputtext light mb1"
-            :disabled="minLevel >= 1
-              || temDescendenteEmOutraRegião(values.regiao_id, values.etapa_filha) "
-            @change="lastlevel"
-          >
-            <option value="">
-              Selecione
-            </option>
-            <option
-              v-for="(r, i) in regions[0]?.children"
-              :key="i"
-              :value="i"
-            >
-              {{ r.descricao }}
-            </option>
-          </select>
-          <template
-            v-if="singleCronograma.nivel_regionalizacao >= 3 && level1 !== null"
-          >
+      <fieldset>
+        <div v-if="singleCronograma.regionalizavel && regions">
+          <label class="label">Região</label>
+
+          <template v-if="singleCronograma.nivel_regionalizacao >= 2">
             <select
-              v-model="level2"
+              v-model="level1"
               class="inputtext light mb1"
-              :disabled="minLevel >= 2
-                || temDescendenteEmOutraRegião(values.regiao_id, values.etapa_filha)"
+              :disabled="minLevel >= 1
+                || temDescendenteEmOutraRegião(values.regiao_id, values.etapa_filha) "
               @change="lastlevel"
             >
               <option value="">
                 Selecione
               </option>
               <option
-                v-for="(rr, ii) in regions[0]?.children[level1]?.children"
-                :key="ii"
-                :value="ii"
+                v-for="(r, i) in regions[0]?.children"
+                :key="i"
+                :value="i"
               >
-                {{ rr.descricao }}
+                {{ r.descricao }}
               </option>
             </select>
             <template
-              v-if="singleCronograma.nivel_regionalizacao == 4 && level2 !== null"
+              v-if="singleCronograma.nivel_regionalizacao >= 3 && level1 !== null"
             >
               <select
-                v-model="level3"
+                v-model="level2"
                 class="inputtext light mb1"
-                :disabled="minLevel >= 3
-                  || temDescendenteEmOutraRegião(values.regiao_id, values.etapa_filha) "
+                :disabled="minLevel >= 2
+                  || temDescendenteEmOutraRegião(values.regiao_id, values.etapa_filha)"
                 @change="lastlevel"
               >
                 <option value="">
                   Selecione
                 </option>
                 <option
-                  v-for="(rrr, iii) in regions[0]?.children[level1]?.children[level2]?.children"
-                  :key="iii"
-                  :value="iii"
+                  v-for="(rr, ii) in regions[0]?.children[level1]?.children"
+                  :key="ii"
+                  :value="ii"
                 >
-                  {{ rrr.descricao }}
+                  {{ rr.descricao }}
                 </option>
               </select>
+              <template
+                v-if="singleCronograma.nivel_regionalizacao == 4 && level2 !== null"
+              >
+                <select
+                  v-model="level3"
+                  class="inputtext light mb1"
+                  :disabled="minLevel >= 3
+                    || temDescendenteEmOutraRegião(values.regiao_id, values.etapa_filha) "
+                  @change="lastlevel"
+                >
+                  <option value="">
+                    Selecione
+                  </option>
+                  <option
+                    v-for="(rrr, iii) in regions[0]?.children[level1]?.children[level2]?.children"
+                    :key="iii"
+                    :value="iii"
+                  >
+                    {{ rrr.descricao }}
+                  </option>
+                </select>
+              </template>
+              <template
+                v-else-if="singleCronograma.nivel_regionalizacao == 4 && level2 === null"
+              >
+                <input
+                  class="inputtext light mb1"
+                  type="text"
+                  disabled
+                  value="Selecione uma subprefeitura"
+                >
+              </template>
             </template>
             <template
-              v-else-if="singleCronograma.nivel_regionalizacao == 4 && level2 === null"
+              v-else-if="singleCronograma.nivel_regionalizacao >= 3 && level1 === null"
             >
               <input
                 class="inputtext light mb1"
                 type="text"
                 disabled
-                value="Selecione uma subprefeitura"
+                value="Selecione uma região"
               >
             </template>
           </template>
-          <template
-            v-else-if="singleCronograma.nivel_regionalizacao >= 3 && level1 === null"
+          <Field
+            v-model="regiao_id_mount"
+            name="regiao_id"
+            type="hidden"
+            :class="{ 'error': errors.regiao_id }"
+          />
+          <div class="error-msg">
+            {{ errors.regiao_id }}
+          </div>
+        </div>
+
+        <div
+          class="mb1"
+        >
+          <Field
+            id="endereco_obrigatorio"
+            name="endereco_obrigatorio"
+            type="checkbox"
+            :value="true"
+            :unchecked-value="false"
+            class="inputcheckbox"
+          />
+          <label
+            for="endereco_obrigatorio"
+            :class="{ 'error': errors.endereco_obrigatorio }"
           >
+            Endereço obrigatório
+          </label>
+          <div class="error-msg">
+            {{ errors.endereco_obrigatorio }}
+          </div>
+        </div>
+
+        <div
+          class="mb1"
+        >
+          <legend class="label mt2 mb1legend">
+            Localização&nbsp;<span
+              v-if="values.endereco_obrigatorio && values.termino_real"
+              class="tvermelho"
+            >*</span>
+          </legend>
+
+          <MapaCampo
+            v-model="values.geolocalizacao"
+            name="geolocalizacao"
+            :geolocalização-por-token="geolocalizaçãoPorToken"
+          />
+
+          <ErrorMessage
+            name="geolocalizacao"
+            class="error-msg"
+          />
+        </div>
+      </fieldset>
+
+      <fieldset v-if="permissaoLiberada">
+        <div class="flex flexwrap g2">
+          <div class="fb100">
             <input
-              class="inputtext light mb1"
-              type="text"
-              disabled
-              value="Selecione uma região"
+              id="associar-variavel"
+              name="associar-variavel"
+              type="checkbox"
+              :checked="!!values.variavel"
+              :true-value="{}"
+              :false-value="null"
+              class="inputcheckbox"
+              @change="($e) => redefinirVariavel($e.target.checked)"
             >
+            <label
+              for="associar-variavel"
+            >
+              Associar variável
+            </label>
+          </div>
+          <div
+            v-if="!!values.variavel"
+            class="fb100 flex g2"
+          >
+            <div
+              class="f1"
+              :hidden="['planoSetorial', 'programaDeMetas'].includes($route.meta.entidadeMãe)
+                && !singleEtapa.value?.variavel"
+            >
+              <LabelFromYup
+                :schema="schema.fields.variavel"
+                :required="true"
+                name="codigo"
+              />
+              <input
+                v-if="!!singleEtapa.value?.variavel"
+                :value="singleEtapa.value?.variavel.codigo"
+                type="text"
+                class="inputtext light mb1"
+                aria-readonly="true"
+                readonly
+              >
+
+              <Field
+                v-else
+                name="variavel.codigo"
+                type="text"
+                class="inputtext light mb1"
+                :class="{ 'error': errors['variavel.codigo'] }"
+                maxlength="60"
+              />
+
+              <div class="error-msg">
+                {{ errors['variavel.codigo'] }}
+              </div>
+            </div>
+            <div class="f1">
+              <LabelFromYup
+                :schema="schema.fields.variavel"
+                :required="true"
+                name="titulo"
+              />
+              <Field
+                name="variavel.titulo"
+                type="text"
+                class="inputtext light mb1"
+                :class="{ 'error': errors['variavel.titulo'] }"
+                maxlength="256"
+              />
+              <div class="error-msg">
+                {{ errors['variavel.titulo'] }}
+              </div>
+            </div>
+          </div>
+          <div
+            v-if="valoresIniciais.variavel?.id && !values.variavel"
+            class="error-msg"
+          >
+            {{ alertaDeExclusãoDeVariável }}
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <div
+          v-if="permissaoLiberada"
+          class="flex g2"
+        >
+          <div class="f1">
+            <label class="label">Início previsto <span class="tvermelho">*</span></label>
+            <Field
+              name="inicio_previsto"
+              type="text"
+              class="inputtext light mb1"
+              :class="{ 'error': errors.inicio_previsto }"
+              maxlength="10"
+              placeholder="dd/mm/aaaa"
+              @input="maskDate"
+            />
+            <div class="error-msg">
+              {{ errors.inicio_previsto }}
+            </div>
+          </div>
+          <div class="f1">
+            <label class="label">Término previsto <span class="tvermelho">*</span></label>
+            <Field
+              name="termino_previsto"
+              type="text"
+              class="inputtext light mb1"
+              :class="{ 'error': errors.termino_previsto }"
+              maxlength="10"
+              placeholder="dd/mm/aaaa"
+              @input="maskDate"
+            />
+            <div class="error-msg">
+              {{ errors.termino_previsto }}
+            </div>
+          </div>
+        </div>
+
+        <div class="flex g2">
+          <div class="f1">
+            <label class="label">Início real</label>
+            <Field
+              name="inicio_real"
+              type="text"
+              class="inputtext light mb1"
+              :class="{ 'error': errors.inicio_real }"
+              maxlength="10"
+              placeholder="dd/mm/aaaa"
+              @keyup="maskDate"
+            />
+            <div class="error-msg">
+              {{ errors.inicio_real }}
+            </div>
+          </div>
+          <div class="f1">
+            <label class="label">Término real</label>
+            <Field
+              name="termino_real"
+              type="text"
+              class="inputtext light mb1"
+              :class="{ 'error': errors.termino_real }"
+              maxlength="10"
+              placeholder="dd/mm/aaaa"
+              @keyup="maskDate"
+              @change="($e) => {
+                if (!singleEtapa.n_filhos_imediatos) {
+                  setFieldValue('percentual_execucao', $e.target.value
+                    ? 100
+                    : singleEtapa.percentual_execucao
+                  );
+                }
+              }"
+            />
+            <div class="error-msg">
+              {{ errors.termino_real }}
+            </div>
+          </div>
+        </div>
+
+        <div class="flex g2">
+          <div class="f1">
+            <label class="label">Execução %</label>
+            <Field
+              :disabled="values.n_filhos_imediatos"
+              name="percentual_execucao"
+              type="number"
+              step="1"
+              min="0"
+              max="100"
+              class="inputtext light mb1"
+              :value="etapa_id ? singleEtapa?.percentual_execucao : undefined"
+              :class="{ 'error': errors.percentual_execucao }"
+            />
+            <div class="error-msg">
+              {{ errors.percentual_execucao }}
+            </div>
+          </div>
+
+          <div class="f1" />
+        </div>
+      </fieldset>
+
+      <fieldset v-if="permissaoLiberada && activePdm.possui_atividade || activePdm.possui_iniciativa">
+        <template v-if="activePdm.possui_atividade">
+          <div
+            v-if="atividade_id && !acumulativa_iniciativa?.loading"
+            class="flex center g2 mb2 mt1"
+          >
+            <div class="f2">
+              <label class="block">
+                <input
+                  v-model="acumulativa_iniciativa"
+                  name="acumulativa_iniciativa"
+                  type="checkbox"
+                  disabled
+                  class="inputcheckbox"
+                >
+                <span :class="{ 'error': errors.acumulativa_iniciativa }">
+                  Etapa monitorada no cronograma de {{ activePdm.rotulo_iniciativa }}
+                </span>
+              </label>
+              <div class="error-msg">
+                {{ errors.acumulativa_iniciativa }}
+              </div>
+            </div>
+            <div class="f1">
+              <label class="label">Ordem</label>
+              <input
+                v-model="acumulativa_iniciativa_o"
+                name="acumulativa_iniciativa_o"
+                type="number"
+                disabled
+                class="inputtext light mb1"
+              >
+            </div>
+          </div>
+          <template v-else-if="acumulativa_iniciativa?.loading">
+            <div class="spinner">
+              Carregando
+            </div>
           </template>
         </template>
-        <Field
-          v-model="regiao_id_mount"
-          name="regiao_id"
-          type="hidden"
-          :class="{ 'error': errors.regiao_id }"
-        />
-        <div class="error-msg">
-          {{ errors.regiao_id }}
-        </div>
-      </div>
 
-      <div
-        class="mb1"
-      >
-        <Field
-          id="endereco_obrigatorio"
-          name="endereco_obrigatorio"
-          type="checkbox"
-          :value="true"
-          :unchecked-value="false"
-          class="inputcheckbox"
-        />
-        <label
-          for="endereco_obrigatorio"
-          :class="{ 'error': errors.endereco_obrigatorio }"
-        >
-          Endereço obrigatório
-        </label>
-        <div class="error-msg">
-          {{ errors.endereco_obrigatorio }}
-        </div>
-      </div>
-
-      <div
-        class="mb1"
-      >
-        <legend class="label mt2 mb1legend">
-          Localização&nbsp;<span
-            v-if="values.endereco_obrigatorio && values.termino_real"
-            class="tvermelho"
-          >*</span>
-        </legend>
-
-        <MapaCampo
-          v-model="values.geolocalizacao"
-          name="geolocalizacao"
-          :geolocalização-por-token="geolocalizaçãoPorToken"
-        />
-
-        <ErrorMessage
-          name="geolocalizacao"
-          class="error-msg"
-        />
-      </div>
-
-      <hr class="mt2 mb2">
-
-      <div class="flex flexwrap g2">
-        <div class="fb100">
-          <input
-            id="associar-variavel"
-            name="associar-variavel"
-            type="checkbox"
-            :checked="!!values.variavel"
-            :true-value="{}"
-            :false-value="null"
-            class="inputcheckbox"
-            @change="($e) => redefinirVariavel($e.target.checked)"
-          >
-          <label
-            for="associar-variavel"
-          >
-            Associar variável
-          </label>
-        </div>
-        <div
-          v-if="!!values.variavel"
-          class="fb100 flex g2"
-        >
+        <template v-if="activePdm.possui_iniciativa">
           <div
-            class="f1"
-            :hidden="['planoSetorial', 'programaDeMetas'].includes($route.meta.entidadeMãe)
-              && !singleEtapa.value?.variavel"
+            v-if="iniciativa_id && !acumulativa_meta?.loading"
+            class="flex center g2 mb2 mt1"
           >
-            <LabelFromYup
-              :schema="schema.fields.variavel"
-              :required="true"
-              name="codigo"
-            />
-            <input
-              v-if="!!singleEtapa.value?.variavel"
-              :value="singleEtapa.value?.variavel.codigo"
-              type="text"
-              class="inputtext light mb1"
-              aria-readonly="true"
-              readonly
-            >
-
-            <Field
-              v-else
-              name="variavel.codigo"
-              type="text"
-              class="inputtext light mb1"
-              :class="{ 'error': errors['variavel.codigo'] }"
-              maxlength="60"
-            />
-
-            <div class="error-msg">
-              {{ errors['variavel.codigo'] }}
+            <div class="f2">
+              <label class="block">
+                <input
+                  v-model="acumulativa_meta"
+                  name="acumulativa_meta"
+                  type="checkbox"
+                  disabled
+                  class="inputcheckbox"
+                >
+                <span :class="{ 'error': errors.acumulativa_meta }">
+                  Etapa monitorada no cronograma da meta
+                </span>
+              </label>
+              <div class="error-msg">
+                {{ errors.acumulativa_meta }}
+              </div>
             </div>
-          </div>
-          <div class="f1">
-            <LabelFromYup
-              :schema="schema.fields.variavel"
-              :required="true"
-              name="titulo"
-            />
-            <Field
-              name="variavel.titulo"
-              type="text"
-              class="inputtext light mb1"
-              :class="{ 'error': errors['variavel.titulo'] }"
-              maxlength="256"
-            />
-            <div class="error-msg">
-              {{ errors['variavel.titulo'] }}
-            </div>
-          </div>
-        </div>
-        <div
-          v-if="valoresIniciais.variavel?.id && !values.variavel"
-          class="error-msg"
-        >
-          {{ alertaDeExclusãoDeVariável }}
-        </div>
-      </div>
-
-      <hr class="mt2 mb2">
-
-      <div class="flex g2">
-        <div class="f1">
-          <label class="label">Início previsto <span class="tvermelho">*</span></label>
-          <Field
-            name="inicio_previsto"
-            type="text"
-            class="inputtext light mb1"
-            :class="{ 'error': errors.inicio_previsto }"
-            maxlength="10"
-            placeholder="dd/mm/aaaa"
-            @input="maskDate"
-          />
-          <div class="error-msg">
-            {{ errors.inicio_previsto }}
-          </div>
-        </div>
-        <div class="f1">
-          <label class="label">Término previsto <span class="tvermelho">*</span></label>
-          <Field
-            name="termino_previsto"
-            type="text"
-            class="inputtext light mb1"
-            :class="{ 'error': errors.termino_previsto }"
-            maxlength="10"
-            placeholder="dd/mm/aaaa"
-            @input="maskDate"
-          />
-          <div class="error-msg">
-            {{ errors.termino_previsto }}
-          </div>
-        </div>
-      </div>
-      <div class="flex g2">
-        <div class="f1">
-          <label class="label">Início real</label>
-          <Field
-            name="inicio_real"
-            type="text"
-            class="inputtext light mb1"
-            :class="{ 'error': errors.inicio_real }"
-            maxlength="10"
-            placeholder="dd/mm/aaaa"
-            @keyup="maskDate"
-          />
-          <div class="error-msg">
-            {{ errors.inicio_real }}
-          </div>
-        </div>
-        <div class="f1">
-          <label class="label">Término real</label>
-          <Field
-            name="termino_real"
-            type="text"
-            class="inputtext light mb1"
-            :class="{ 'error': errors.termino_real }"
-            maxlength="10"
-            placeholder="dd/mm/aaaa"
-            @keyup="maskDate"
-            @change="($e) => {
-              if (!singleEtapa.n_filhos_imediatos) {
-                setFieldValue('percentual_execucao', $e.target.value
-                  ? 100
-                  : singleEtapa.percentual_execucao
-                );
-              }
-            }"
-          />
-          <div class="error-msg">
-            {{ errors.termino_real }}
-          </div>
-        </div>
-      </div>
-
-      <template v-if="activePdm.possui_atividade">
-        <div
-          v-if="atividade_id && !acumulativa_iniciativa?.loading"
-          class="flex center g2 mb2 mt1"
-        >
-          <div class="f2">
-            <label class="block">
+            <div class="f1">
+              <label class="label">Ordem no cronograma da meta</label>
               <input
-                v-model="acumulativa_iniciativa"
-                name="acumulativa_iniciativa"
-                type="checkbox"
+                v-model="acumulativa_meta_o"
+                name="acumulativa_meta_o"
+                type="number"
                 disabled
-                class="inputcheckbox"
+                class="inputtext light mb1"
               >
-              <span :class="{ 'error': errors.acumulativa_iniciativa }">
-                Etapa monitorada no cronograma de {{ activePdm.rotulo_iniciativa }}
-              </span>
-            </label>
-            <div class="error-msg">
-              {{ errors.acumulativa_iniciativa }}
             </div>
           </div>
-          <div class="f1">
-            <label class="label">Ordem</label>
-            <input
-              v-model="acumulativa_iniciativa_o"
-              name="acumulativa_iniciativa_o"
-              type="number"
-              disabled
-              class="inputtext light mb1"
-            >
-          </div>
-        </div>
-        <template v-else-if="acumulativa_iniciativa?.loading">
-          <div class="spinner">
-            Carregando
-          </div>
-        </template>
-      </template>
-
-      <template v-if="activePdm.possui_iniciativa">
-        <div
-          v-if="iniciativa_id && !acumulativa_meta?.loading"
-          class="flex center g2 mb2 mt1"
-        >
-          <div class="f2">
-            <label class="block">
-              <input
-                v-model="acumulativa_meta"
-                name="acumulativa_meta"
-                type="checkbox"
-                disabled
-                class="inputcheckbox"
-              >
-              <span :class="{ 'error': errors.acumulativa_meta }">
-                Etapa monitorada no cronograma da meta
-              </span>
-            </label>
-            <div class="error-msg">
-              {{ errors.acumulativa_meta }}
+          <template v-else-if="acumulativa_meta?.loading">
+            <div class="spinner">
+              Carregando
             </div>
-          </div>
-          <div class="f1">
-            <label class="label">Ordem no cronograma da meta</label>
-            <input
-              v-model="acumulativa_meta_o"
-              name="acumulativa_meta_o"
-              type="number"
-              disabled
-              class="inputtext light mb1"
-            >
-          </div>
-        </div>
-        <template v-else-if="acumulativa_meta?.loading">
-          <div class="spinner">
-            Carregando
-          </div>
+          </template>
         </template>
-      </template>
+      </fieldset>
 
       <FormErrorsList :errors="errors" />
 

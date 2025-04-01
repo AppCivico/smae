@@ -1,4 +1,10 @@
 <script setup>
+import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
+import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
+import { transferenciasVoluntarias as schema } from '@/consts/formSchemas';
+import interfacesDeTransferências from '@/consts/interfacesDeTransferências';
+import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
+import truncate from '@/helpers/texto/truncate';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage, Field,
@@ -8,13 +14,8 @@ import {
 } from 'vee-validate';
 import { computed, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
-import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
-import { transferenciasVoluntarias as schema } from '@/consts/formSchemas';
-import interfacesDeTransferências from '@/consts/interfacesDeTransferências';
-import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
-import truncate from '@/helpers/texto/truncate';
 
+import CampoComBuscaRemota from '@/components/campoComBuscaRemota/CampoComBuscaRemota.vue';
 import { useAlertStore } from '@/stores/alert.store';
 import { useClassificacaoStore } from '@/stores/classificacao.store';
 import { useOrgansStore } from '@/stores/organs.store';
@@ -22,7 +23,6 @@ import { useParlamentaresStore } from '@/stores/parlamentares.store';
 import { usePartidosStore } from '@/stores/partidos.store';
 import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
-import CampoComBuscaRemota from '@/components/campoComBuscaRemota/CampoComBuscaRemota.vue';
 
 const TransferenciasVoluntarias = useTransferenciasVoluntariasStore();
 const TipoDeTransferenciaStore = useTipoDeTransferenciaStore();
@@ -143,8 +143,10 @@ function iniciar() {
 function sugerirCargoEPartido(idx, parlamentar) {
   const {
     cargo_mais_recente: cargoMaisRecente,
-    partido: { id: partidoMaisRecente },
+    partido,
   } = parlamentar;
+
+  const { id: partidoMaisRecente } = partido || {};
 
   if (cargoMaisRecente) {
     setFieldValue(`parlamentares[${idx}].cargo`, cargoMaisRecente);
@@ -461,8 +463,8 @@ watch(itemParaEdicao, (novosValores) => {
             />
 
             <LabelFromYup
-              name="parlamentar_id"
-              :schema="schema.fields.parlamentares.innerType"
+              name="parlamentares.parlamentar_id"
+              :schema="schema"
             />
 
             <Field
@@ -492,7 +494,22 @@ watch(itemParaEdicao, (novosValores) => {
                 <template #TableData="{item}">
                   <td>{{ item.nome_popular }}</td>
                   <td>{{ item.nome }}</td>
-                  <td>{{ item.partido.sigla }}</td>
+                  <td>
+                    <abbr
+                      v-if="item.partido?.sigla"
+                      :title="item.partido?.nome"
+                    >
+                      {{ item.partido?.sigla }}
+                    </abbr>
+                    <template
+                      v-else-if="item.partido"
+                    >
+                      {{ item.partido }}
+                    </template>
+                    <template v-else>
+                      -
+                    </template>
+                  </td>
                 </template>
 
                 <template #ValorExibido="{item}">

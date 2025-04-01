@@ -715,11 +715,16 @@ export const execuçãoOrçamentária = object()
 export const fase = object()
   .shape({
     descricao: string()
-      .nullable(),
+      .nullable()
+      .label('Descrição'),
+    equipes: array()
+      .nullable()
+      .label('Equipe Responsável'),
     endereco_obrigatorio: boolean()
-      .nullable(),
+      .nullable()
+      .label('Endereço obrigatório'),
     geolocalizacao: array()
-      .label('Endereços')
+      .label('Endereços ou Localização?')
       .of(
         string()
           .min(10, 'Endereço inválido'),
@@ -731,12 +736,15 @@ export const fase = object()
       }),
     inicio_previsto: string()
       .required('Preencha a data')
-      .matches(regEx['day/month/year'], 'Formato inválido'),
+      .matches(regEx['day/month/year'], 'Formato inválido')
+      .label('Início previsto'),
     inicio_real: string()
       .nullable()
-      .matches(regEx['day/month/year'], 'Formato inválido'),
+      .matches(regEx['day/month/year'], 'Formato inválido')
+      .label('Início real'),
     ordem: string()
-      .nullable(),
+      .nullable()
+      .label('Ordem'),
     percentual_execucao: number()
       .integer()
       .label('Execução')
@@ -751,16 +759,19 @@ export const fase = object()
       .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
     regiao_id: string()
       .nullable(),
+    responsaveis: array().label('Responsável'),
     termino_previsto: string()
       .required('Preencha a data')
-      .matches(regEx['day/month/year'], 'Formato inválido'),
+      .matches(regEx['day/month/year'], 'Formato inválido')
+      .label('Término previsto'),
     termino_real: string()
-      .label('Término real')
       .nullable()
       .fieldUntilToday()
-      .matches(regEx['day/month/year'], 'Formato inválido'),
+      .matches(regEx['day/month/year'], 'Formato inválido')
+      .label('Término real'),
     titulo: string()
-      .required('Preencha o título'),
+      .required('Preencha o título')
+      .label('Nome'),
     variavel: object()
       .label('Variável Associada')
       .shape({
@@ -1074,9 +1085,6 @@ export const mandato = object({
   votos_interior: number()
     .label('Total de votos no interior')
     .nullable(),
-  em_atividade: boolean()
-    .label('Em exercício')
-    .nullable(),
 });
 
 export const meta = (activePdm) => object().shape({
@@ -1149,6 +1157,47 @@ export const modalidadeContratacao = object({
     .max(250)
     .required(),
 });
+
+const monitoramentoDeMetasBase = object()
+  .shape({
+    ciclo_fisico_id: number()
+      .label('Ciclo físico')
+      .required(),
+    meta_id: number()
+      .label('Meta')
+      .required(),
+  });
+
+export const monitoramentoDeMetasAnalise = monitoramentoDeMetasBase.concat(
+  object({
+    informacoes_complementares: string()
+      .label('Informações complementares')
+      .max(10240)
+      .required(),
+  }),
+);
+
+export const monitoramentoDeMetasFechamento = monitoramentoDeMetasBase.concat(
+  object({
+    comentario: string()
+      .label('Comentário')
+      .max(10240)
+      .required(),
+  }),
+);
+
+export const monitoramentoDeMetasRisco = monitoramentoDeMetasBase.concat(
+  object({
+    detalhamento: string()
+      .label('Detalhamento')
+      .max(10240)
+      .required(),
+    ponto_de_atencao: string()
+      .label('Ponto de atenção')
+      .max(10240)
+      .nullable(),
+  }),
+);
 
 export const monitoramentoDePlanoDeAção = object()
   .shape({
@@ -1492,7 +1541,8 @@ export const órgão = object()
       .nullable(),
     email: string()
       .email()
-      .label('Email'),
+      .label('Email')
+      .nullable(),
     nivel: number()
       .required(),
     parente_id: number()
@@ -1611,6 +1661,8 @@ export const planoSetorial = object({
     .label('Legislação de instituição')
     .nullable()
     .max(50000),
+  meses: array()
+    .label('Meses monitorados - ciclo físico'),
   monitoramento_orcamento: boolean()
     .label('Monitoramento de orçamento')
     .nullable(),
@@ -1896,6 +1948,9 @@ export const nota = object({
 });
 
 export const parlamentar = object({
+  em_atividade: boolean()
+    .label('Em exercício')
+    .nullable(),
   nome_popular: string()
     .label('Nome de urna')
     .min(1)
@@ -2343,16 +2398,19 @@ export const transferenciasVoluntarias = object({
       id: number()
         .nullable(),
       parlamentar_id: number()
-        .label('Parlamentar'),
+        .label('Parlamentar')
+        .required(),
       cargo: mixed()
         .label('Cargo')
         // feio, mas... Algo parece bugado no Yup e não posso atualizá-lo agora
         .oneOf([...Object.keys(cargosDeParlamentar), null])
         .nullable()
+        .required()
         .transform((v) => (v === '' ? null : v)),
       partido_id: number()
         .label('Partido')
-        .nullable(),
+        .nullable()
+        .required(),
       objeto: string()
         .label('Objeto/Empreendimento')
         .max(1000)

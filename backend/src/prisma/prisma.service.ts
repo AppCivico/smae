@@ -40,7 +40,7 @@ class PrismaServiceBase extends PrismaClient implements OnModuleInit {
             if (process.env.DISABLE_QUERY_LOG) return;
             // se ta diferente de 1, entao ta ligado sempre
             // já faz o log
-            if (process.env.INTERNAL_DISABLE_QUERY_LOG !== '1' && e.query != 'SELECT 1') {
+            if (process.env.INTERNAL_DISABLE_QUERY_LOG !== '1' && e.query != 'SELECT 1' && e.query != 'COMMIT') {
                 console.log(`${e.query} ${e.params} took ${e.duration}ms`);
             } else {
                 // aqui apenas algumas queries que não queremos o log
@@ -55,7 +55,7 @@ class PrismaServiceBase extends PrismaClient implements OnModuleInit {
                     query !== 'COMMIT' &&
                     query !== 'SELECT 1' &&
                     query !== 'SET TRANSACTION ISOLATION LEVEL READ COMMITTED' &&
-                    /(?:pg_try_advisory_xact_lock|task_queue|org_device_activation_data_pending_sync_queue|formula_composta)/.test(
+                    /(?:pg_try_advisory_xact_lock|task_queue|org_device_activation_data_pending_sync_queue|formula_composta|relatorio_fila)/.test(
                         query
                     ) !== true
                 )

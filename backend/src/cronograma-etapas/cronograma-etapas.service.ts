@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger, NotFoundException, forwardRef } from '@nestjs/common';
-import { CronogramaEtapaNivel, Prisma } from '@prisma/client';
+import { CronogramaEtapaNivel, PdmPerfilTipo, Prisma } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { SYSTEM_TIMEZONE } from '../common/date2ymd';
@@ -11,6 +11,46 @@ import { PrismaService } from '../prisma/prisma.service';
 import { FilterCronogramaEtapaDto } from './dto/filter-cronograma-etapa.dto';
 import { UpdateCronogramaEtapaDto } from './dto/update-cronograma-etapa.dto';
 import { CECronogramaEtapaDto, CronogramaEtapaAtrasoGrau } from './entities/cronograma-etapa.entity';
+import { MetaItemDto } from '../meta/entities/meta.entity';
+
+export async function podeEditarEtapa(
+    tipo: TipoPdmType,
+    etapa: {
+        PdmPerfil: { equipe_id: number; tipo: PdmPerfilTipo }[];
+    },
+    user: PessoaFromJwt,
+    meta: MetaItemDto | null = null,
+    prisma: PrismaService
+): Promise<{
+    pode_editar: boolean;
+    pode_editar_realizado: boolean;
+}> {
+    // para o PDM legado, retorna sempre true já que a editação lá o endpoint sempre ta livre do realizado
+    if (tipo === '_PDM') {
+        return {
+            pode_editar: true,
+            pode_editar_realizado: true,
+        };
+    }
+
+    // se pode editar a meta, pode editar a etapa
+    if (meta && meta.pode_editar)
+        return {
+            pode_editar: true,
+            pode_editar_realizado: true,
+        };
+
+    const collab = await user.getEquipesColaborador(prisma);
+
+    const etapaPontoFocalEquipes = etapa.PdmPerfil.filter((p) => p.tipo === 'PONTO_FOCAL').map((p) => p.equipe_id);
+
+    const pode_editar_realizado = etapaPontoFocalEquipes.some((equipeId: number) => collab.includes(equipeId));
+
+    return {
+        pode_editar: false, // não pode editar a etapa em si
+        pode_editar_realizado,
+    };
+}
 
 class NivelOrdemForUpsert {
     nivel: CronogramaEtapaNivel;
@@ -36,9 +76,10 @@ export class CronogramaEtapaService {
         // ainda bem que só da pra filtrar uma cronograma/meta por vez, assim reduz a complexidade da validação
 
         const cronogramaId = filters.cronograma_id;
+        let metaInfo: MetaItemDto | null = null;
         if (!desligaAssertMeta) {
             this.logger.debug('assertMetaForCronograma');
-            await this.assertMetaForCronograma(tipo, cronogramaId, user, 'readonly');
+            metaInfo = await this.assertMetaForCronograma(tipo, cronogramaId, user, 'readonly');
         }
 
         const etapaId = filters.etapa_id;
@@ -319,6 +360,7 @@ export class CronogramaEtapaService {
                 atraso_grau: atrasoCronogramaGrau,
 
                 etapa: {
+                    ...(await podeEditarEtapa(tipo, cronogramaEtapa.etapa, user, metaInfo, this.prisma)),
                     CronogramaEtapa: [
                         {
                             id: cronogramaEtapa.id,
@@ -378,6 +420,7 @@ export class CronogramaEtapaService {
                             const atrasoFaseGrau = await this.getAtrasoGrau(atrasoFase);
 
                             return {
+                                ...(await podeEditarEtapa(tipo, f, user, metaInfo, this.prisma)),
                                 ps_ponto_focal: {
                                     equipes: f.PdmPerfil.filter((r) => r.tipo == 'PONTO_FOCAL').map((r) => r.equipe_id),
                                 },
@@ -429,6 +472,7 @@ export class CronogramaEtapaService {
                                         );
                                         const atrasoSubFaseGrau = await this.getAtrasoGrau(atrasoSubFase);
                                         return {
+                                            ...(await podeEditarEtapa(tipo, ff, user, metaInfo, this.prisma)),
                                             ps_ponto_focal: {
                                                 equipes: ff.PdmPerfil.filter((r) => r.tipo == 'PONTO_FOCAL').map(
                                                     (r) => r.equipe_id
@@ -660,7 +704,7 @@ export class CronogramaEtapaService {
             where: { cronograma_id },
             select: { meta_id: true },
         });
-        await this.metaService.assertMetaWriteOrThrow(tipo, r.meta_id, user, 'cronograma', readwrite);
+        return await this.metaService.assertMetaWriteOrThrow(tipo, r.meta_id, user, 'cronograma', readwrite);
     }
 
     async getNivelOrdemForUpsert(

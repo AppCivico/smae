@@ -19,6 +19,7 @@ import {
   GridComponent,
   LegendComponent,
   MarkLineComponent,
+  MarkPointComponent,
   TitleComponent,
   TooltipComponent,
   VisualMapComponent,
@@ -44,6 +45,7 @@ use([
   LineChart,
   HeatmapChart,
   MarkLineComponent,
+  MarkPointComponent,
 ]);
 
 provide(THEME_KEY, 'light');
@@ -68,8 +70,6 @@ const preparedOptions = computed((): ECBasicOption => {
     ...props.option,
     tooltip: {
       trigger: 'item',
-      // show: true,
-      // alwaysShowContent: true,
       renderMode: 'html',
       confine: true,
       className: 'grafico-dashboard__tooltip',

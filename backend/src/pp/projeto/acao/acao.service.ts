@@ -1,5 +1,5 @@
 import { forwardRef, HttpException, Inject, Injectable } from '@nestjs/common';
-import { Prisma, ProjetoMotivoRelatorio, ProjetoStatus, TipoProjeto } from '@prisma/client';
+import { Prisma, ProjetoStatus, TipoProjeto } from '@prisma/client';
 import { PessoaFromJwt } from '../../../auth/models/PessoaFromJwt';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { ReportsService } from '../../../reports/relatorios/reports.service';
@@ -64,7 +64,6 @@ export class AcaoService {
         if (!dbAction) throw new HttpException(`Ação ${dto.acao} não foi encontrada.`, 500);
 
         const now = new Date(Date.now());
-        let reportFilaId: number | undefined;
         await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient) => {
                 let arquivado: boolean | undefined = undefined;
@@ -91,7 +90,7 @@ export class AcaoService {
                     },
                 });
 
-                let motivo: ProjetoMotivoRelatorio = 'MudancaDeStatus';
+                let motivo: string = 'MudancaDeStatus';
                 switch (dbAction.status) {
                     case 'Selecionado':
                         motivo = 'ProjetoSelecionado';
@@ -106,18 +105,7 @@ export class AcaoService {
 
                 // aguardar os reports de MDO
                 if (tipo == 'PP') {
-                    // basta isso para gerar um relatório
-                    const fila = await prismaTx.projetoRelatorioFila.create({
-                        data: {
-                            projeto_id: projeto.id,
-                            motivado_relatorio: motivo,
-                            congelado_em: now,
-                            // coloca na fila, mas já coloca com o processamento congelado,
-                            // pois vamos forçar um processamento imediato nesta própria thread
-                        },
-                        select: { id: true },
-                    });
-                    reportFilaId = fila.id;
+                    await this.reportsService.criaRelatorioProjeto(projeto.id, motivo, user, prismaTx);
                 }
             },
             {
@@ -126,9 +114,5 @@ export class AcaoService {
                 timeout: 15 * 1000,
             }
         );
-
-        // não precisa do await (não é necessário travar o response do usuário até a finalização do relatório
-        // mas o executaRelatorioProjetos faz o log em caso de erro
-        if (reportFilaId) this.reportsService.executaRelatorioProjetos(reportFilaId);
     }
 }

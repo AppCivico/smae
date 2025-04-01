@@ -172,6 +172,16 @@ export class ParlamentarService {
                 partido_mais_recente: true,
                 tem_mandato: true,
                 cpf: true,
+                mandatos: {
+                    where: { removido_em: null },
+                    select: {
+                        eleicao: {
+                            select: {
+                                ano: true,
+                            },
+                        },
+                    },
+                },
             },
             orderBy: [{ nome_popular: 'asc' }, { id: 'asc' }],
             skip: offset,
@@ -186,15 +196,16 @@ export class ParlamentarService {
 
         const linhas = listActive.map((p) => {
             const partido = partidos.find((e) => e.sigla == p.partido_mais_recente);
+            const mandatos = p.mandatos.map((m) => m.eleicao.ano);
+
             return {
                 ...p,
 
                 cargo: p.cargo_mais_recente ?? null,
                 partido: partido ?? null,
-                eleicoes: [2022],
-                //TODO: combinar com o front para usar o boolean e não essa arr hardcoded.
+                eleicoes: mandatos,
                 tem_mandato: p.tem_mandato,
-                mandatos: p.tem_mandato ? ['2022'] : null,
+                mandatos: p.tem_mandato ? mandatos : null,
                 cpf: p.cpf ?? '000.000.000-00',
             };
         });
@@ -575,6 +586,18 @@ export class ParlamentarService {
                                 ano: true,
                             },
                         },
+                    },
+                });
+
+                // Na criação do mandato, deve ser atualizada as cols de controle.
+                await prismaTxn.parlamentar.update({
+                    where: {
+                        id: parlamentarId,
+                    },
+                    data: {
+                        cargo_mais_recente: dto.cargo,
+                        partido_mais_recente: mandato.partido_atual.sigla,
+                        tem_mandato: true,
                     },
                 });
 

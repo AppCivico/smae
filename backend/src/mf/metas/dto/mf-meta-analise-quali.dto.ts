@@ -1,6 +1,7 @@
 import { Transform } from 'class-transformer';
 import { IsBoolean, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
 import { ArquivoBaseDto } from '../../../upload/dto/create-upload.dto';
+import { PickType } from '@nestjs/swagger';
 
 export class AnaliseQualitativaDocumentoDto {
     @IsInt()
@@ -11,12 +12,18 @@ export class AnaliseQualitativaDocumentoDto {
     @Transform(({ value }: any) => +value)
     meta_id: number;
 
+    @IsOptional()
+    @IsString()
+    @MaxLength(1024 * 10, { message: 'O texto não pode ter mais de 10KB' })
+    descricao?: string | null;
+
     /**
      * Upload do Documento
      */
     @IsString({ message: '$property| upload_token de um arquivo' })
     upload_token: string;
 }
+export class UpdateAnaliseQualitativaDocumentoDto extends PickType(AnaliseQualitativaDocumentoDto, ['descricao']) {}
 
 export class FilterAnaliseQualitativaDto {
     @IsInt()
@@ -57,6 +64,7 @@ export class ArquivoAnaliseQualitativaDocumentoDto {
     criador: {
         nome_exibicao: string;
     };
+    descricao: string | null;
 }
 
 export class MfListAnaliseQualitativaDto {
@@ -64,7 +72,7 @@ export class MfListAnaliseQualitativaDto {
     arquivos: ArquivoAnaliseQualitativaDocumentoDto[];
 }
 
-export class AnaliseQualitativaDto {
+export class CreateAnaliseQualitativaDto {
     @IsInt()
     @Transform(({ value }: any) => +value)
     ciclo_fisico_id: number;

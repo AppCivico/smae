@@ -19,9 +19,6 @@ import {
 import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-const biografia = ref('');
-const atuacao = ref('');
-
 const route = useRoute();
 const router = useRouter();
 const alertStore = useAlertStore();
@@ -50,7 +47,11 @@ const props = defineProps({
 });
 
 const {
-  chamadasPendentes, erro, mandatoParaEdição, eleições, idsDasEleiçõesQueParlamentarConcorreu,
+  chamadasPendentes,
+  erro,
+  emFoco: parlamentarEmFoco,
+  eleições,
+  idsDasEleiçõesQueParlamentarConcorreu,
 } = storeToRefs(parlamentaresStore);
 
 const {
@@ -58,6 +59,30 @@ const {
   chamadasPendentes: { lista: esperandoListaDePartidos },
   erro: erroNaListaDePartidos,
 } = storeToRefs(partidosStore);
+
+const mandatoParaEdição = computed(() => {
+  const { mandatoId } = route.params;
+
+  const mandato = mandatoId && Array.isArray(parlamentarEmFoco.value?.mandatos)
+    ? parlamentarEmFoco.value.mandatos.find((x) => Number(mandatoId) === x.id)
+    : {};
+
+  return {
+    ...mandato,
+    eleicao_id: mandato?.eleicao?.id,
+    partido_atual_id: mandato?.partido_atual?.id,
+    partido_candidatura_id: mandato?.partido_candidatura?.id,
+    votos_estado: typeof mandato.votos_estado === 'string'
+      ? Number(mandato.votos_estado)
+      : undefined,
+    votos_capital: typeof mandato.votos_capital === 'string'
+      ? Number(mandato.votos_capital)
+      : undefined,
+    votos_interior: typeof mandato.votos_interior === 'string'
+      ? Number(mandato.votos_interior)
+      : undefined,
+  };
+});
 
 const {
   errors, handleSubmit, isSubmitting, resetField, resetForm, setFieldValue, values: carga,
@@ -77,13 +102,9 @@ const cargosDisponíveisParaEdição = computed(() => Object.values(cargosDeParl
   .filter((x) => x.tipo === dadosDaEleiçãoEscolhida.value?.tipo) || []);
 
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
-  const novosValoresControlados = { ...valoresControlados };
-  novosValoresControlados.biografia = biografia.value;
-  novosValoresControlados.atuacao = atuacao.value;
-
   try {
     if (await parlamentaresStore.salvarMandato(
-      novosValoresControlados,
+      valoresControlados,
       props.mandatoId,
       props.parlamentarId,
     )) {
@@ -127,10 +148,6 @@ watch(mandatoParaEdição, (novoValor) => {
   resetForm({ values: novoValor });
 
   eleiçãoEscolhida.value = novoValor.eleicao_id;
-  if (novoValor) {
-    biografia.value = novoValor.biografia;
-    atuacao.value = novoValor.atuacao;
-  }
 });
 
 iniciar();
@@ -151,6 +168,10 @@ iniciar();
         @close="emit('close')"
       />
     </div>
+
+    <pre v-ScrollLockDebug>
+      carga:{{ carga }}
+    </pre>
 
     <form
       :disabled="isSubmitting"
@@ -208,22 +229,6 @@ iniciar();
           <ErrorMessage
             class="error-msg"
             name="eleito"
-          />
-        </div>
-        <div class="f1">
-          <LabelFromYup
-            name="em_atividade"
-            :schema="schema"
-          />
-          <Field
-            name="em_atividade"
-            type="checkbox"
-            :value="true"
-            class="inputcheckbox"
-          />
-          <ErrorMessage
-            class="error-msg"
-            name="em_atividade"
           />
         </div>
       </div>
@@ -527,9 +532,14 @@ iniciar();
             name="atuacao"
             :schema="schema"
           />
-          <TextEditor
-            v-model="atuacao"
-          />
+          <Field
+            v-slot="{ field }"
+            name="atuacao"
+          >
+            <TextEditor
+              v-bind="field"
+            />
+          </Field>
           <ErrorMessage
             class="error-msg"
             name="atuacao"
@@ -543,9 +553,14 @@ iniciar();
             name="biografia"
             :schema="schema"
           />
-          <TextEditor
-            v-model="biografia"
-          />
+          <Field
+            v-slot="{ field }"
+            name="biografia"
+          >
+            <TextEditor
+              v-bind="field"
+            />
+          </Field>
           <ErrorMessage
             class="error-msg"
             name="biografia"

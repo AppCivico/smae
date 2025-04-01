@@ -1,4 +1,4 @@
-import { TipoPdm } from '@prisma/client';
+import { ModuloSistema, TipoPdm } from '@prisma/client';
 import { IsBoolean, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 import { IsDateYMD } from '../../auth/decorators/date.decorator';
 
@@ -70,4 +70,5 @@ export class ListPdm {
     pode_editar: boolean;
 
     tipo: TipoPdm;
+    sistema: ModuloSistema;
 }

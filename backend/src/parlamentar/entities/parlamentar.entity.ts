@@ -41,7 +41,7 @@ export class ParlamentarDto {
     cargo: ParlamentarCargo | null;
     eleicoes: number[] | null;
     tem_mandato: boolean | null;
-    mandatos: string[] | null;
+    mandatos: number[] | null;
 }
 
 export class ListParlamentarDto {

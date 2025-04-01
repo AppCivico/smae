@@ -8,9 +8,10 @@ import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { MfService } from '../mf.service';
 import {
     AnaliseQualitativaDocumentoDto,
-    AnaliseQualitativaDto,
+    CreateAnaliseQualitativaDto,
     FilterAnaliseQualitativaDto,
     MfListAnaliseQualitativaDto,
+    UpdateAnaliseQualitativaDocumentoDto,
 } from './../metas/dto/mf-meta-analise-quali.dto';
 import { MetasAnaliseQualiService } from './../metas/metas-analise-quali.service';
 import { MfListVariavelAnaliseQualitativaDto, RequestInfoDto } from './dto/mf-meta.dto';
@@ -63,6 +64,31 @@ export class MetasAnaliseQualiController {
     }
 
     @ApiBearerAuth('access-token')
+    @Patch('analise-qualitativa/documento/:id')
+    @Roles(['PDM.admin_cp', 'PDM.tecnico_cp'])
+    @ApiExtraModels(RecordWithId, RequestInfoDto)
+    @ApiOkResponse({
+        schema: { allOf: refs(RecordWithId, RequestInfoDto) },
+    })
+    async UpdateMetaAnaliseQualitativaDocumento(
+        @Param() params: FindOneParams,
+        @Body() dto: UpdateAnaliseQualitativaDocumentoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId & RequestInfoDto> {
+        const start = Date.now();
+        const config = await this.mfService.pessoaAcessoPdm(user);
+        return {
+            ...(await this.metasAnaliseQualiService.updateMetaAnaliseQualitativaDocumento(
+                params.id,
+                dto,
+                config,
+                user
+            )),
+            requestInfo: { queryTook: Date.now() - start },
+        };
+    }
+
+    @ApiBearerAuth('access-token')
     @Delete('analise-qualitativa/documento/:id')
     @Roles(['PDM.admin_cp', 'PDM.tecnico_cp'])
     @ApiNoContentResponse()
@@ -82,7 +108,7 @@ export class MetasAnaliseQualiController {
         schema: { allOf: refs(RecordWithId, RequestInfoDto) },
     })
     async AddMetaAnaliseQualitativa(
-        @Body() dto: AnaliseQualitativaDto,
+        @Body() dto: CreateAnaliseQualitativaDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId & RequestInfoDto> {
         const start = Date.now();

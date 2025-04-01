@@ -264,6 +264,7 @@ export const usePlanosSetoriaisStore = (prefixo: string) => defineStore(prefixo 
         periodo_do_ciclo_participativo_inicio: emFoco?.periodo_do_ciclo_participativo_inicio
           ? dateTimeToDate(emFoco.periodo_do_ciclo_participativo_inicio)
           : null,
+        meses: emFoco?.meses || [],
         possui_atividade: !!emFoco?.possui_atividade,
         possui_complementacao_meta: !!emFoco?.possui_complementacao_meta,
         possui_contexto_meta: !!emFoco?.possui_contexto_meta,

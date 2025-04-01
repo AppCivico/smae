@@ -17,6 +17,10 @@ import {
 import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+defineOptions({
+  inheritAttrs: false,
+});
+
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 const router = useRouter();
 const route = useRoute();
@@ -66,7 +70,7 @@ function iniciar() {
 }
 
 function excluirItem(tipo, id, nome) {
-useAlertStore().confirmAction(`Deseja mesmo remover ${nome || 'esse item' }?`, async () => {
+  useAlertStore().confirmAction(`Deseja mesmo remover ${nome || 'esse item'}?`, async () => {
     let tentativa;
     let mensagem;
 
@@ -235,6 +239,21 @@ iniciar();
             />
           </div>
         </div>
+
+        <label class="block mt2 mb2">
+          <Field
+            name="em_atividade"
+            type="checkbox"
+            :value="true"
+            :unchecked-value="false"
+            class="inputcheckbox"
+          />
+          <LabelFromYup
+            name="em_atividade"
+            :schema="schema"
+            as="span"
+          />
+        </label>
       </div>
       <Field
         v-slot="{ value }"
