@@ -537,6 +537,7 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['PerfilAcesso.administrador', 'Gerenciar Perfil de Acesso'],
         ['SMAE.gestor_distribuicao_recurso', 'Visão limitada, para gestor de distribuição de recurso'],
         ['SMAE.GrupoVariavel.colaborador', 'Pode ser colaborador de grupos de variáveis'],
+        ['SMAE.AtualizacaoEmLote', 'Acesso a ferramenta de atualização em lote'],
     ],
     SMAE_BETA_FEATURES: [
         // também precisade um modulo só para ele, pois não podemos deixar no SMAE... too complexo to explain..
