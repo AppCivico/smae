@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Prisma, TipoAtualizacaoEmLote } from '@prisma/client';
 import { DateTime } from 'luxon';
@@ -7,6 +7,9 @@ import { SYSTEM_TIMEZONE } from 'src/common/date2ymd';
 import { PaginatedWithPagesDto, PAGINATION_TOKEN_TTL } from 'src/common/dto/paginated.dto';
 import { ListaDePrivilegios } from 'src/common/ListaDePrivilegios';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { CreateRunUpdateDto, RunUpdateType } from '../task/run_update/dto/create-run-update.dto';
+import { TaskService } from '../task/task.service';
 import {
     AtualizacaoEmLoteDetalheDto,
     AtualizacaoEmLoteResumoDto,
@@ -34,8 +37,117 @@ export class AtualizacaoEmLoteService {
 
     constructor(
         private readonly prisma: PrismaService,
-        private readonly jwtService: JwtService
+        private readonly jwtService: JwtService,
+        @Inject(forwardRef(() => TaskService))
+        private readonly taskService: TaskService
     ) {}
+
+    /**
+     * Cria uma tarefa de atualização em lote e submete para processamento assíncrono
+     */
+    async create(dto: CreateRunUpdateDto, user: PessoaFromJwt): Promise<RecordWithId> {
+        // Validar módulo do sistema
+        const modulo = user.assertOneModuloSistema('criar', 'atualização em lote');
+
+        // Mapear o tipo da operação para TipoAtualizacaoEmLote
+        const tipoAtualizacao = this.mapRunUpdateTypeToTipoAtualizacao(dto.type);
+
+        // Validar permissões gerais para o tipo de atualização
+        await this.verificaPermissaoGeralTipoAtualizacao(user, tipoAtualizacao);
+
+        // Validar permissões específicas para criar atualizações deste tipo
+        const validationResult = this.validatePermissionAccess(user, tipoAtualizacao);
+        if (!validationResult.isAuthorized) {
+            throw new BadRequestException(
+                validationResult.err_msg || 'Usuário sem permissão para criar este tipo de atualização em lote.'
+            );
+        }
+
+        // Validar se os IDs existem e se o usuário tem permissão para atualizá-los
+        if (dto.ids.length === 0) {
+            throw new BadRequestException('Nenhum registro selecionado para atualização em lote.');
+        }
+
+        // Usar transação para garantir atomicidade das operações
+        return await this.prisma.$transaction(async (tx) => {
+            const now = new Date();
+
+            // Criar o registro da atualização em lote em status pendente
+            const atualizacao = await tx.atualizacaoEmLote.create({
+                data: {
+                    tipo: tipoAtualizacao,
+                    status: 'Pendente',
+                    modulo_sistema: modulo,
+                    target_ids: dto.ids,
+                    operacao: dto.ops as any,
+                    n_total: dto.ids.length,
+                    n_sucesso: 0,
+                    n_erro: 0,
+                    n_ignorado: 0,
+                    criado_em: now,
+                    criado_por_id: user.id,
+                    orgao_id: user.orgao_id,
+                },
+            });
+
+            try {
+                // Criar uma tarefa para processar esta atualização em lote
+                const task = await this.taskService.create(
+                    {
+                        type: 'run_update',
+                        params: {
+                            atualizacao_em_lote_id: atualizacao.id,
+                            type: dto.type,
+                            ids: dto.ids,
+                            ops: dto.ops,
+                        },
+                    },
+                    user,
+                    tx // Passar a transação para o serviço de tarefas
+                );
+
+                this.logger.log(
+                    `Criada atualização em lote id=${atualizacao.id} do tipo ${tipoAtualizacao} com task id=${task.id}`
+                );
+
+                // Atualizar o ID da tarefa no registro de atualização em lote
+                await tx.atualizacaoEmLote.update({
+                    where: { id: atualizacao.id },
+                    data: {
+                        task_id: task.id,
+                    },
+                });
+
+                return { id: atualizacao.id };
+            } catch (error) {
+                // Log do erro para depuração
+                this.logger.error(
+                    `Erro ao criar task para atualização em lote id=${atualizacao.id}: ${error.message}`,
+                    error.stack
+                );
+
+                // Propaga o erro original, a transação será automaticamente abortada
+                throw error;
+            }
+        });
+    }
+
+    /**
+     * Lucas vai sincronizar depois isso pra ficar 1 versão só
+     */
+    private mapRunUpdateTypeToTipoAtualizacao(type: RunUpdateType): TipoAtualizacaoEmLote {
+        const mapping: Record<string, TipoAtualizacaoEmLote> = {
+            'ProjetosMdo': 'ProjetoMDO',
+            'ProjetosPp': 'ProjetoPP',
+        };
+
+        const tipoAtualizacao = mapping[type];
+        if (!tipoAtualizacao) {
+            throw new BadRequestException(`Tipo de atualização em lote não suportado: ${type}`);
+        }
+
+        return tipoAtualizacao;
+    }
 
     private async verificaPermissaoGeralTipoAtualizacao(
         user: PessoaFromJwt,

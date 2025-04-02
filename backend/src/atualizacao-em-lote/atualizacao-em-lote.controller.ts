@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { ApiPaginatedWithPagesResponse } from 'src/auth/decorators/paginated.decorator';
@@ -9,6 +9,8 @@ import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { FindOneParams } from 'src/common/decorators/find-params';
 import { ListaDePrivilegios } from 'src/common/ListaDePrivilegios';
 
+import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { CreateRunUpdateDto } from '../task/run_update/dto/create-run-update.dto';
 import { AtualizacaoEmLoteService } from './atualizacao-em-lote.service';
 import {
     AtualizacaoEmLoteDetalheDto,
@@ -30,6 +32,16 @@ const BASE_ROLE: ListaDePrivilegios[] = [
 @ApiBearerAuth('access-token')
 export class AtualizacaoEmLoteController {
     constructor(private readonly atualizacaoEmLoteService: AtualizacaoEmLoteService) {}
+
+    @Post('')
+    @Roles(BASE_ROLE)
+    @ApiOperation({ summary: 'Cria uma tarefa de atualização em lote e submete para processamento assíncrono.' })
+    async createRunUpdateTask(
+        @Body() dto: CreateRunUpdateDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        return this.atualizacaoEmLoteService.create(dto, user);
+    }
 
     @Get()
     @Roles(BASE_ROLE)

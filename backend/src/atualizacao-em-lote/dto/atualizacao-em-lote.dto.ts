@@ -53,7 +53,6 @@ export class AtualizacaoEmLoteDetalheDto extends AtualizacaoEmLoteResumoDto {
     results_log?: any;
 }
 
-// --- Filter DTO ---
 export class FilterAtualizacaoEmLoteDto {
     @IsEnum(TipoAtualizacaoEmLote)
     tipo: TipoAtualizacaoEmLote;
