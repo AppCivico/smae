@@ -11,6 +11,7 @@ import { CreateRefreshMvDto } from './refresh_mv/dto/create-refresh-mv.dto';
 import { CreateRefreshTransferenciaDto } from './refresh_transferencia/dto/create-refresh-transferencia.dto';
 import { CreateRefreshVariavelDto } from './refresh_variavel/dto/create-refresh-variavel.dto';
 import { CreateRunReportDto } from './run_report/dto/create-run-report.dto';
+import { CreateRunUpdateDto } from './run_update/dto/create-run-update.dto';
 
 export function ParseParams(taskType: task_type, value: any): any {
     let theClass: any = undefined;
@@ -44,6 +45,9 @@ export function ParseParams(taskType: task_type, value: any): any {
             break;
         case 'importacao_parlamentar':
             theClass = CreateImportacaoParlamentarDto;
+            break;
+        case 'run_update':
+            theClass = CreateRunUpdateDto;
             break;
         case 'run_report': {
             theClass = CreateRunReportDto;

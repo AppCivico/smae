@@ -23,6 +23,7 @@ import { RefreshIndicadorService } from './refresh_indicador/refresh-indicador.s
 import { ImportacaoParlamentarService } from './importacao_parlamentar/parlamentar.service';
 import { RefreshVariavelService } from './refresh_variavel/refresh-variavel.service';
 import { RunReportTaskService } from './run_report/run-report.service';
+import { RunUpdateTaskService } from './run_update/run-update.service';
 function areJsonObjectsEquivalent(obj1: object, obj2: object): boolean {
     return JSON.stringify(sortObjectKeys(obj1)) === JSON.stringify(sortObjectKeys(obj2));
 }
@@ -88,7 +89,10 @@ export class TaskService {
         private readonly refreshIndicadorService: RefreshIndicadorService,
         //
         @Inject(forwardRef(() => ImportacaoParlamentarService))
-        private readonly importacaoParlamentarService: ImportacaoParlamentarService
+        private readonly importacaoParlamentarService: ImportacaoParlamentarService,
+        //
+        @Inject(forwardRef(() => RunUpdateTaskService))
+        private readonly runUpdateTaskService: RunUpdateTaskService
     ) {
         this.enabled = CrontabIsEnabled('task');
         this.logger.debug(`task crontab enabled? ${this.enabled}`);
@@ -453,6 +457,7 @@ export class TaskService {
     private shouldRunInForeground(type: task_type): boolean {
         const map: Partial<Record<task_type, boolean>> = {
             run_report: false, // relatórios podem ser pesados, sempre rodar em um fork
+            run_update: false, // atualizações podem ser pesadas, sempre rodar em um fork
             echo: true,
             refresh_mv: true, // só chama uma função no banco, n tem risco de leak
             refresh_meta: true, // tbm só chama função no banco
@@ -519,6 +524,9 @@ export class TaskService {
                 break;
             case 'run_report':
                 service = this.runReportService;
+                break;
+            case 'run_update':
+                service = this.runUpdateTaskService;
                 break;
             default:
                 task_type satisfies never;

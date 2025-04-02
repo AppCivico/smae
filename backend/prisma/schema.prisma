@@ -4973,6 +4973,7 @@ enum task_type {
     refresh_variavel
     importacao_parlamentar
     run_report
+    run_update
 }
 
 enum task_status {

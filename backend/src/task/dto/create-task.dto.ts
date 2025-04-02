@@ -5,6 +5,7 @@ import { CreateEchoDto } from '../echo/dto/create-echo.dto';
 import { TaskValidatorOf } from '../task.validator';
 import { CreateRefreshMetaDto } from '../refresh_meta/dto/create-refresh-mv.dto';
 import { CreateRefreshMvDto } from '../refresh_mv/dto/create-refresh-mv.dto';
+import { CreateRunUpdateDto } from '../run_update/dto/create-run-update.dto';
 
 export class CreateTaskDto {
     @ApiProperty({ enum: task_type, enumName: 'task_type' })
@@ -18,7 +19,7 @@ export class CreateTaskDto {
      */
     @TaskValidatorOf('type')
     @ApiProperty({
-        oneOf: refs(CreateEchoDto, CreateRefreshMvDto, CreateRefreshMetaDto),
+        oneOf: refs(CreateEchoDto, CreateRefreshMvDto, CreateRefreshMetaDto, CreateRunUpdateDto),
     })
     params: any;
 }
