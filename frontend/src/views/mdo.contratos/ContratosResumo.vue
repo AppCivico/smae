@@ -6,6 +6,7 @@ import { dateToShortDate } from '@/helpers/dateToDate';
 import dinheiro from '@/helpers/dinheiro';
 import formatProcesso from '@/helpers/formatProcesso';
 import { useContratosStore } from '@/stores/contratos.store.ts';
+import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useObrasStore } from '@/stores/obras.store';
 import { storeToRefs } from 'pinia';
 import { defineOptions, computed } from 'vue';
@@ -22,10 +23,12 @@ const {
   erro,
 } = storeToRefs(contratosStore);
 
-const obrasStore = useObrasStore();
-const {
-  permissõesDaObraEmFoco,
-} = storeToRefs(obrasStore);
+const { permissõesDaObraEmFoco } = storeToRefs(useObrasStore());
+const { permissõesDoProjetoEmFoco } = storeToRefs(useProjetosStore());
+
+const permissoesDoItemEmFoco = computed(() => (route.meta.entidadeMãe === 'obras'
+  ? permissõesDaObraEmFoco.value
+  : permissõesDoProjetoEmFoco.value));
 
 const schema = computed(() => contratoDeObras(route.meta.entidadeMãe));
 </script>
@@ -37,10 +40,10 @@ const schema = computed(() => contratoDeObras(route.meta.entidadeMãe));
 
     <hr class="ml2 f1">
 
-    <router-link
+    <SmaeLink
       v-if="emFoco?.id
-        && (!permissõesDaObraEmFoco.apenas_leitura
-          || permissõesDaObraEmFoco.sou_responsavel)"
+        && (!permissoesDoItemEmFoco.apenas_leitura
+          || permissoesDoItemEmFoco.sou_responsavel)"
       :to="{
         name: $route.params.obraId ? 'contratosDaObraEditar' : 'contratosDoProjetoEditar',
         params: $route.params
@@ -49,7 +52,7 @@ const schema = computed(() => contratoDeObras(route.meta.entidadeMãe));
       class="btn big ml2"
     >
       Editar
-    </router-link>
+    </SmaeLink>
   </div>
 
   <div
