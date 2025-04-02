@@ -20,6 +20,13 @@ declare global {
     emFoco: null | unknown;
   };
 
+  type Estado = {
+    lista: unknown[];
+    emFoco: unknown | null;
+    chamadasPendentes: ChamadasPendentes;
+    erros: Erros;
+  };
+
   type Paginacao = {
     tokenPaginacao: string;
     paginas: number;
