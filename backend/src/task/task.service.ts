@@ -23,6 +23,38 @@ import { RefreshIndicadorService } from './refresh_indicador/refresh-indicador.s
 import { ImportacaoParlamentarService } from './importacao_parlamentar/parlamentar.service';
 import { RefreshVariavelService } from './refresh_variavel/refresh-variavel.service';
 import { RunReportTaskService } from './run_report/run-report.service';
+
+type InfoWorker = {
+    pid: number;
+    hostname: string;
+    startTime: string;
+    isForeground: boolean;
+    nodeVersion?: string;
+    platform?: string;
+    arch?: string;
+    updatedAt?: string;
+    memoriaUtilizada?: {
+        heapTotal: number;
+        heapUsed: number;
+        rss: number;
+    };
+};
+
+export function coletarInfoWorker(isForeground: boolean): InfoWorker {
+    const hostname = process.env.HOSTNAME || 'desconhecido';
+    return {
+        pid: process.pid,
+        hostname,
+        startTime: new Date().toISOString(),
+        isForeground,
+        nodeVersion: process.version,
+        platform: process.platform,
+        arch: process.arch,
+        memoriaUtilizada: process.memoryUsage(),
+        updatedAt: new Date().toISOString(),
+    };
+}
+
 function areJsonObjectsEquivalent(obj1: object, obj2: object): boolean {
     return JSON.stringify(sortObjectKeys(obj1)) === JSON.stringify(sortObjectKeys(obj2));
 }
@@ -53,6 +85,9 @@ export class TaskService {
     private running_jobs = new Set<number>();
     private running_job_counter = 0;
     private is_running = false;
+
+    private max_concurrent_jobs = process.env.MAX_CONCURRENT_JOBS ? parseInt(process.env.MAX_CONCURRENT_JOBS) : 3;
+    private current_concurrent_jobs = 0;
 
     constructor(
         private readonly prisma: PrismaService,
@@ -94,6 +129,18 @@ export class TaskService {
         this.logger.debug(`task crontab enabled? ${this.enabled}`);
     }
 
+    // Método para lidar com o desligamento da aplicação
+    async onApplicationShutdown(signal?: string) {
+        this.logger.warn(`Sinal de desligamento recebido: ${signal}. Desabilitando crontab de tarefas.`);
+        this.enabled = false;
+        // Aguarda a finalização dos jobs
+        while (this.current_concurrent_jobs > 0) {
+            this.logger.warn(`Aguardando ${this.current_concurrent_jobs} jobs para finalizar`);
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+        }
+        this.logger.warn(`Todos os jobs foram finalizados. Saindo.`);
+    }
+
     async create(
         dto: CreateTaskDto,
         user: PessoaFromJwt | null,
@@ -108,6 +155,7 @@ export class TaskService {
                     pessoa_id: user.id,
                     type: dto.type,
                 },
+                orderBy: [{ erro_mensagem: { nulls: 'first', sort: 'desc' } }],
             });
 
             if (
@@ -212,7 +260,18 @@ export class TaskService {
     }
 
     private async startTaskInFg(id: number, type: task_type, jsonParams: Prisma.JsonValue) {
+        // Novo: Adicione informações do worker
+        const infoWorker = coletarInfoWorker(true);
         const params = jsonParams!.valueOf() as any;
+
+        // Novo: Atualize a task com informações do worker
+        await this.prisma.task_queue.update({
+            where: { id },
+            data: {
+                worker_info: infoWorker,
+            },
+        });
+
         const output = await this.startJob(type, params, id.toString());
         return output;
     }
@@ -240,7 +299,6 @@ export class TaskService {
                 await this.startPendingJobs();
 
                 await this.handleActiveJobs();
-                await this.handleOldJobs();
                 process.env.INTERNAL_DISABLE_QUERY_LOG = '1';
             },
             {
@@ -253,34 +311,12 @@ export class TaskService {
         this.is_running = false;
     }
 
-    // each 1 hour
-    @Interval(1000 * 60 * 60)
-    async handleCronRemoveOld() {
-        if (!this.enabled) return;
-        // refresh que são mais volumosos, não compensa manter por mais de 1 dia
-        await this.prisma.$queryRaw`
-            DELETE FROM task_queue
-            WHERE type::text LIKE 'refresh_%' AND status = 'completed'
-            AND criado_em < NOW() - INTERVAL '1 day';
-        `;
-        // avisos também são relativamente constantes, mas não são tão volumosos
-        await this.prisma.$queryRaw`
-            DELETE FROM task_queue
-            WHERE type::text LIKE 'aviso_%'
-            AND status = 'completed'
-            AND criado_em < NOW() - INTERVAL '6 months';
-        `;
-        // demais jobs, como importação parlamentar, relatórios, etc
-        // são mais raros, então podem ficar por mais tempo
-        // mas não compensa manter por mais de 1 ano
-        await this.prisma.$queryRaw`
-            DELETE FROM task_queue
-            WHERE status = 'completed'
-            AND criado_em < NOW() - INTERVAL '1 year';
-        `;
-    }
-
     async startPendingJobs() {
+        // Verifica se já atingiu o limite de jobs concorrentes
+        if (this.current_concurrent_jobs >= this.max_concurrent_jobs) {
+            return;
+        }
+
         process.env.INTERNAL_DISABLE_QUERY_LOG = '1';
         const pendingTasks = await this.prisma.task_queue.findMany({
             where: {
@@ -293,7 +329,10 @@ export class TaskService {
                     notIn: Array.from(this.current_jobs_pessoa_ids.values()),
                 },
             },
-            take: 10,
+            // Limita pela quantidade de jobs disponíveis
+            take: this.max_concurrent_jobs - this.current_concurrent_jobs,
+            // Ordenação para priorizar tarefas sem erro
+            orderBy: [{ erro_mensagem: { nulls: 'first', sort: 'desc' } }, { criado_em: 'asc' }],
             select: {
                 id: true,
                 type: true,
@@ -311,11 +350,22 @@ export class TaskService {
             if (task.type.toString().startsWith('refresh_') && this.current_jobs_types.has(task.type)) continue;
             if (task.type.toString().startsWith('refresh_')) this.current_jobs_types.add(task.type);
 
+            // Verifica o limite de concorrência
+            if (this.current_concurrent_jobs >= this.max_concurrent_jobs) {
+                break;
+            }
+
             this.running_jobs.add(task.id);
+            // Incrementa o contador de jobs concorrentes
+            this.current_concurrent_jobs++;
 
             await this.prisma.task_queue.update({
                 where: { id: task.id },
-                data: { iniciou_em: new Date(), status: 'running', trabalhou_em: new Date() },
+                data: {
+                    iniciou_em: new Date(),
+                    status: 'running',
+                    trabalhou_em: new Date(),
+                },
             });
 
             this.runJob(task.id, task.type, task.params)
@@ -334,6 +384,7 @@ export class TaskService {
                     if (task.pessoa_id) this.current_jobs_pessoa_ids.delete(task.pessoa_id);
                     if (task.type) this.current_jobs_types.delete(task.type);
                     this.running_jobs.delete(task.id);
+                    this.current_concurrent_jobs--;
                 })
                 .catch(async (e: any) => {
                     this.logger.error(`task ${task.id} failed`);
@@ -351,6 +402,7 @@ export class TaskService {
                     if (task.pessoa_id) this.current_jobs_pessoa_ids.delete(task.pessoa_id);
                     if (task.type) this.current_jobs_types.delete(task.type);
                     this.running_jobs.delete(task.id);
+                    this.current_concurrent_jobs--;
                 });
         }
     }
@@ -385,27 +437,11 @@ export class TaskService {
                 },
                 data: {
                     status: 'errored',
-                    erro_mensagem: 'worked timed-out',
+                    erro_mensagem: 'Processo expirou (timeout)',
                 },
             }),
         ]);
         process.env.INTERNAL_DISABLE_QUERY_LOG = '';
-    }
-
-    async handleOldJobs() {
-        // 2400 * 250 = 10min
-        if (++this.running_job_counter % 2400 !== 0) return;
-        this.running_job_counter = 0;
-
-        this.logger.debug(`Deleting completed jobs older than 1 day`);
-        this.prisma.task_queue.deleteMany({
-            where: {
-                status: 'completed',
-                criado_em: {
-                    lte: DateTime.now().minus({ day: 1 }).toJSDate(),
-                },
-            },
-        });
     }
 
     async runJob(taskId: number, type: task_type, params: Prisma.JsonValue): Promise<JSON> {
@@ -423,7 +459,17 @@ export class TaskService {
                 });
 
                 child.on('message', (msg: any) => {
-                    if (msg.event == 'success') {
+                    if (msg.event === 'worker_info') {
+                        // Atualiza as informações do worker com mais detalhes do processo filho
+                        this.prisma.task_queue
+                            .update({
+                                where: { id: taskId },
+                                data: {
+                                    worker_info: msg.workerInfo,
+                                },
+                            })
+                            .catch((err) => this.logger.error(`Falha ao atualizar worker_info: ${err}`));
+                    } else if (msg.event == 'success') {
                         result = msg.result;
                     } else if (msg.event == 'error') {
                         error = msg.error;
@@ -447,6 +493,33 @@ export class TaskService {
 
             throw new Error(`executeJob failed: ${error}`);
         }
+    }
+
+    // each 1 hour
+    @Interval(1000 * 60 * 60)
+    async handleCronRemoveOld() {
+        if (!this.enabled) return;
+        // refresh que são mais volumosos, não compensa manter por mais de 1 dia
+        await this.prisma.$queryRaw`
+            DELETE FROM task_queue
+            WHERE type::text LIKE 'refresh_%' AND status = 'completed'
+            AND criado_em < NOW() - INTERVAL '1 day';
+        `;
+        // avisos também são relativamente constantes, mas não são tão volumosos
+        await this.prisma.$queryRaw`
+            DELETE FROM task_queue
+            WHERE type::text LIKE 'aviso_%'
+            AND status = 'completed'
+            AND criado_em < NOW() - INTERVAL '6 months';
+        `;
+        // demais jobs, como importação parlamentar, relatórios, etc
+        // são mais raros, então podem ficar por mais tempo
+        // mas não compensa manter por mais de 1 ano
+        await this.prisma.$queryRaw`
+            DELETE FROM task_queue
+            WHERE status = 'completed'
+            AND criado_em < NOW() - INTERVAL '1 year';
+        `;
     }
 
     // jobs muito leves não compensa abrir um fork, roda no próprio worker
