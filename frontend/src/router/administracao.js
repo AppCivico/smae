@@ -377,9 +377,11 @@ export default [
           título: 'Tipos de acompanhamento',
           presenteNoMenu: true,
           rotaPrescindeDeChave: true,
-          limitarÀsPermissões: 'Projeto.administrar_portfolios',
+          limitarÀsPermissões: [
+            'Projeto.administrar_portfolios',
+            'ProjetoMDO.administrador',
+          ],
           rotasParaMenuSecundário,
-          entidadeMãe: 'projeto',
         },
 
         children: [
