@@ -1,6 +1,7 @@
 <script lang="ts" setup>
+import { useField } from 'vee-validate';
 import type { PropType } from 'vue';
-import { computed } from 'vue';
+import { computed, toRef } from 'vue';
 import type { AnyObjectSchema } from 'yup';
 import type { Test } from 'yup/lib/util/createValidation.d.ts';
 import buscarDadosDoYup from './helpers/buscarDadosDoYup';
@@ -8,6 +9,8 @@ import buscarDadosDoYup from './helpers/buscarDadosDoYup';
 defineOptions({
   inheritAttrs: false,
 });
+
+const emit = defineEmits(['update:modelValue']);
 
 const props = defineProps({
   as: {
@@ -40,6 +43,14 @@ const props = defineProps({
     ],
     default: 0,
   },
+  modelValue: {
+    type: String,
+    default: '',
+  },
+  modelModifiers: {
+    type: Object as PropType<Record<string, boolean>>,
+    default: () => ({}),
+  },
   name: {
     type: String,
     required: true,
@@ -50,15 +61,26 @@ const props = defineProps({
   },
 });
 
-const [model, modifiers] = defineModel<string>({
-  set(value) {
-    if (modifiers.anular || props.anularVazio) {
-      return value === '' ? null : value;
-    }
-    return value;
-  },
-  get: (value) => value,
+const { handleChange } = useField(toRef(props, 'name'), undefined, {
+  initialValue: props.modelValue,
 });
+
+function emitValue(e: Event, trim = false) {
+  const target = e.target as HTMLInputElement | HTMLTextAreaElement;
+  let valorFinal: string | null = trim
+    ? target?.value?.trim()
+    : target?.value;
+
+  if (props.modelModifiers.anular || props.anularVazio) {
+    if (valorFinal === '') {
+      valorFinal = null;
+    }
+  }
+
+  handleChange(valorFinal);
+
+  emit('update:modelValue', valorFinal);
+}
 
 const max = computed(() => {
   if (props.maxlength) {
@@ -86,9 +108,9 @@ const max = computed(() => {
 
 const classeDeCondicao = computed(() => {
   switch (true) {
-    case max.value && ((model.value?.length || 0) / max.value) > 0.9:
+    case max.value && ((props.modelValue?.length || 0) / max.value) > 0.9:
       return 'smae-text--com-contador smae-text--falta-pouco';
-    case max.value && (model.value?.length ?? 0) / max.value > 0.75:
+    case max.value && (props.modelValue?.length ?? 0) / max.value > 0.75:
       return 'smae-text--com-contador smae-text--falta-muito';
     default:
       return 'smae-text--com-contador';
@@ -105,24 +127,28 @@ const classeDeCondicao = computed(() => {
       v-if="$props.as === 'textarea'"
       v-bind="$attrs"
       :id="$attrs.id as string || $props.name"
-      v-model.trim="model"
+      :value="props.modelValue"
       class="smae-text__campo smae-text__campo--textarea inputtext light"
       :name="$props.name"
       data-test="campo"
       :maxlength="max"
+      @input="emitValue"
+      @change="emitValue($event, true)"
     />
 
     <input
       v-else
       v-bind="$attrs"
       :id="$attrs.id as string || $props.name"
-      v-model.trim="model"
+      :value="props.modelValue"
       class="smae-text__campo smae-text__campo--text inputtext light"
       :class="classeDeCondicao"
       :name="$props.name"
       type="text"
       data-test="campo"
       :maxlength="max"
+      @input="emitValue"
+      @change="emitValue($event, true)"
     >
     <span
       v-if="max"
@@ -132,7 +158,7 @@ const classeDeCondicao = computed(() => {
         class="smae-text__total-de-caracteres"
         data-test="total-de-caracteres"
         :for="$attrs.id as string || $props.name"
-      >{{ model ? String(model).length : 0 }}</output>
+      >{{ props.modelValue ? String(props.modelValue).length : 0 }}</output>
       /
       <span
         class="smae-text__maximo-de-caracteres"
@@ -141,7 +167,7 @@ const classeDeCondicao = computed(() => {
     </span>
   </div>
 </template>
-<style lang="less">
+<style lang="less" scoped>
 .smae-text {}
 
 .smae-text--com-contador {
