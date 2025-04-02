@@ -5003,8 +5003,10 @@ model task_queue {
 
     trabalhou_em DateTime? @db.Timestamp(6)
 
-    erro_em           DateTime?           @db.Timestamp(6)
-    erro_mensagem     String?
+    erro_em       DateTime? @db.Timestamp(6)
+    erro_mensagem String?
+    worker_info   Json      @default("{}")
+
     AtualizacaoEmLote AtualizacaoEmLote[]
 
     @@index([status])
