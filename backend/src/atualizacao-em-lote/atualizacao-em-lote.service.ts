@@ -23,8 +23,8 @@ export class AtualizacaoEmLoteService {
     private readonly logger = new Logger(AtualizacaoEmLoteService.name);
 
     private readonly MODULE_ADMIN_PRIVILEGES: Partial<Record<TipoAtualizacaoEmLote, ListaDePrivilegios[]>> = {
-        'ProjetoPP': ['ProjetoMDO.administrador'],
-        'ProjetoMDO': ['Projeto.administrador'],
+        'ProjetoPP': ['Projeto.administrador'],
+        'ProjetoMDO': ['ProjetoMDO.administrador',],
     };
 
     constructor(
