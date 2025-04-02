@@ -3518,6 +3518,7 @@ export const risco = object()
   .shape({
     causa: string()
       .label('Causa raiz')
+      .max(2000)
       .nullable(),
     codigo: number()
       .label('Código')
@@ -3528,9 +3529,11 @@ export const risco = object()
       .required(),
     consequencia: string()
       .label('Consequências')
+      .max(2000)
       .nullable(),
     descricao: string()
       .label('Descrição')
+      .max(2000)
       .nullable(),
     impacto: number()
       .label('Impacto')
