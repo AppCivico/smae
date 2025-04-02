@@ -1,14 +1,18 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '../app.module';
-import { TaskService } from '../task/task.service';
+import { coletarInfoWorker, TaskService } from '../task/task.service';
 
-// Error handlers
+// Adicione broadcast de status do worker
+setTimeout(enviarStatusWorker, 100);
+setInterval(enviarStatusWorker, 30 * 1000);
+
+// Tratamento de erros
 process.on('uncaughtException', async (error: Error) => {
-    console.error('Uncaught exception:', error);
+    console.error('Exceção não capturada:', error);
 });
 
 process.on('unhandledRejection', async (reason: unknown) => {
-    console.error('Unhandled rejection:', reason);
+    console.error('Rejeição não tratada:', reason);
 });
 
 async function bootstrap() {
@@ -24,7 +28,7 @@ async function bootstrap() {
 
     const taskId = +process.argv[2];
 
-    if (isNaN(taskId)) throw Error(`process.argv[2] is not a number: ${process.argv[2]}`);
+    if (isNaN(taskId)) throw Error(`process.argv[2] não é um número: ${process.argv[2]}`);
     try {
         app.useLogger(['log', 'error', 'warn', 'debug', 'verbose']);
 
@@ -48,7 +52,18 @@ async function bootstrap() {
         process.exit(0);
     }
 }
+
+// Função para enviar status do worker para o processo pai
+function enviarStatusWorker(): void {
+    if (process.send) {
+        process.send({
+            event: 'worker_info',
+            workerInfo: coletarInfoWorker(false),
+        });
+    }
+}
+
 bootstrap().catch((error) => {
-    console.error('Bootstrap error:', error);
+    console.error('Erro no bootstrap:', error);
     process.exit(1);
 });

@@ -4992,6 +4992,7 @@ model task_queue {
 
     erro_em       DateTime? @db.Timestamp(6)
     erro_mensagem String?
+    worker_info   Json      @default("{}")
 
     @@index([status])
     @@index([criado_em])
