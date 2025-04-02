@@ -7531,7 +7531,7 @@ model PsDashboardConsolidado {
     @@map("ps_dashboard_consolidado")
 }
 
-model view_ps_dashboard_consolidado {
+view view_ps_dashboard_consolidado {
     id                                 Int                        @id
     item_id                            Int
     tipo                               PsDashboardConsolidadoTipo
