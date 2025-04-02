@@ -26,6 +26,7 @@ const obrasStore = useObrasStore();
 const {
   chamadasPendentes,
   arquivos,
+  permissõesDaObraEmFoco,
   erros,
 } = storeToRefs(obrasStore);
 
@@ -47,6 +48,7 @@ iniciar();
 
     <hr class="ml2 f1">
     <router-link
+      v-if="!permissõesDaObraEmFoco.apenas_leitura || permissõesDaObraEmFoco.sou_responsavel"
       :to="{
         name: 'obrasNovoDocumento',
         params: {
@@ -62,8 +64,8 @@ iniciar();
   <LoadingComponent
     v-if="chamadasPendentes?.arquivos"
   />
-
   <GerenciadorDeArquivos
+    :apenas-leitura="permissõesDaObraEmFoco.apenas_leitura"
     :parâmetros-de-diretórios="{ projeto_id: $route.params.obraId }"
     :arquivos="arquivos"
     class="mb1"
