@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Prisma, TipoAtualizacaoEmLote } from '@prisma/client';
 import { DateTime } from 'luxon';
@@ -22,20 +22,15 @@ interface NextPageTokenJwtBody {
 export class AtualizacaoEmLoteService {
     private readonly logger = new Logger(AtualizacaoEmLoteService.name);
 
-    private readonly MODULE_ADMIN_PRIVILEGES: Partial<Record<TipoAtualizacaoEmLote, ListaDePrivilegios[]>> = {
-        ProjetoPP: ['Projeto.administrador', 'Projeto.administrador_no_orgao'],
-        ProjetoMDO: ['ProjetoMDO.administrador', 'ProjetoMDO.administrador_no_orgao'],
-    };
-
-    private readonly FULL_ADMIN_ROLE: Partial<Record<TipoAtualizacaoEmLote, ListaDePrivilegios>> = {
+    static readonly FULL_ADMIN_ROLE: Partial<Record<TipoAtualizacaoEmLote, ListaDePrivilegios>> = {
         ProjetoPP: 'Projeto.administrador',
         ProjetoMDO: 'ProjetoMDO.administrador',
-    };
+    } as const;
 
-    private readonly ORG_ADMIN_ROLE: Partial<Record<TipoAtualizacaoEmLote, ListaDePrivilegios>> = {
+    static readonly ORG_ADMIN_ROLE: Partial<Record<TipoAtualizacaoEmLote, ListaDePrivilegios>> = {
         ProjetoPP: 'Projeto.administrador_no_orgao',
-        ProjetoMDO: 'ProjetoMDO.administrador_no_orgao', // Corrected role
-    };
+        ProjetoMDO: 'ProjetoMDO.administrador_no_orgao',
+    } as const;
 
     constructor(
         private readonly prisma: PrismaService,
@@ -46,7 +41,10 @@ export class AtualizacaoEmLoteService {
         user: PessoaFromJwt,
         tipoAtualizacao: TipoAtualizacaoEmLote
     ): Promise<void> {
-        const rolesPermitidas = this.MODULE_ADMIN_PRIVILEGES[tipoAtualizacao];
+        const rolesPermitidas = [
+            AtualizacaoEmLoteService.FULL_ADMIN_ROLE[tipoAtualizacao],
+            AtualizacaoEmLoteService.ORG_ADMIN_ROLE[tipoAtualizacao],
+        ].filter(Boolean) as ListaDePrivilegios[];
 
         if (!rolesPermitidas) {
             this.logger.warn(
@@ -60,6 +58,91 @@ export class AtualizacaoEmLoteService {
                 `Usuário sem permissão para acessar atualizações em lote do tipo ${tipoAtualizacao}.`
             );
         }
+    }
+
+    /**
+     * Centraliza a lógica de validação de permissões para reutilização
+     * @param user Usuário autenticado
+     * @param tipo Tipo de atualização em lote
+     * @param specificRecord Dados do registro específico quando aplicável
+     * @returns Resultado da validação com informações de autorização e filtros
+     */
+    private validatePermissionAccess(
+        user: PessoaFromJwt,
+        tipo: TipoAtualizacaoEmLote,
+        specificRecord?: { orgao_id?: number; criado_por_id: number }
+    ): {
+        isAuthorized: boolean;
+        filters?: {
+            orgao_id?: number;
+            criado_por_id?: number;
+        };
+        err_msg?: string;
+    } {
+        const fullAdminRole = AtualizacaoEmLoteService.FULL_ADMIN_ROLE[tipo];
+        const orgAdminRole = AtualizacaoEmLoteService.ORG_ADMIN_ROLE[tipo];
+
+        // Full admin case - pode acessar qualquer registro
+        if (fullAdminRole && user.hasSomeRoles([fullAdminRole])) {
+            this.logger.verbose(`Usuário ${user.id} é ${fullAdminRole}, sem filtro extra de órgão.`);
+            return { isAuthorized: true };
+        }
+
+        // Org admin case - pode acessar apenas registros do seu órgão
+        if (orgAdminRole && user.hasSomeRoles([orgAdminRole])) {
+            if (!user.orgao_id) {
+                this.logger.error(`Usuário ${user.id} tem role ${orgAdminRole} mas não possui orgao_id no token JWT.`);
+                return {
+                    isAuthorized: false,
+                    err_msg: `Usuário ${orgAdminRole} sem órgão definido.`,
+                };
+            }
+
+            // Verificação para registro específico se não for do órgão do usuário
+            if (specificRecord && specificRecord.orgao_id !== undefined && specificRecord.orgao_id !== user.orgao_id) {
+                this.logger.warn(
+                    `Usuário ${user.id} (${orgAdminRole} no órgão ${user.orgao_id}) tentou acessar registro do órgão ${specificRecord.orgao_id}. Acesso negado.`
+                );
+                return {
+                    isAuthorized: false,
+                    err_msg: `Usuário não tem permissão para acessar este registro de atualização em lote (órgão diferente).`,
+                };
+            }
+
+            this.logger.verbose(
+                `Usuário ${user.id} é ${orgAdminRole} no órgão ${user.orgao_id}, filtrando por orgao_id=${user.orgao_id}`
+            );
+            return {
+                isAuthorized: true,
+                filters: { orgao_id: user.orgao_id },
+            };
+        }
+
+        // Usuário pode ver seus próprios registros
+        if (specificRecord && specificRecord.criado_por_id === user.id) {
+            this.logger.verbose(`Usuário ${user.id} autorizado a ver seu próprio registro.`);
+            return { isAuthorized: true };
+        }
+
+        // Para listagem - restringe apenas aos registros criados pelo usuário
+        if (!specificRecord) {
+            this.logger.warn(
+                `Usuário ${user.id} passou na verificação geral para ${tipo} mas não se encaixou nas roles específicas ${fullAdminRole}/${orgAdminRole}. Aplicando filtro de criador.`
+            );
+            return {
+                isAuthorized: true,
+                filters: { criado_por_id: user.id },
+            };
+        }
+
+        // Caso padrão - acesso não autorizado para registro específico
+        this.logger.error(
+            `Usuário ${user.id} passou na verificação geral para tipo ${tipo} mas falhou nas roles específicas ${fullAdminRole}/${orgAdminRole}.`
+        );
+        return {
+            isAuthorized: false,
+            err_msg: 'Falha inesperada na verificação de permissão.',
+        };
     }
 
     async findAllPaginated(
@@ -87,17 +170,19 @@ export class AtualizacaoEmLoteService {
             criado_em_ate = DateTime.fromISO(filters.criado_em_ate, { zone: SYSTEM_TIMEZONE }).endOf('day').toJSDate();
         }
 
-        // Filtro de Permissão Específico por Orgão
-        const fullAdminRole = this.FULL_ADMIN_ROLE[filters.tipo];
-        const orgAdminRole = this.ORG_ADMIN_ROLE[filters.tipo];
-        let filtroOrgao: number | undefined = undefined;
-        const filtroCriadorEspecifico: number | undefined = filters.criado_por;
+        // Valida permissões e obtém filtros
+        const validationResult = this.validatePermissionAccess(user, filters.tipo);
+        if (!validationResult.isAuthorized) {
+            throw new BadRequestException(
+                validationResult.err_msg || 'Usuário sem permissão para acessar estes registros.'
+            );
+        }
 
         const where: Prisma.AtualizacaoEmLoteWhereInput = {
             tipo: filters.tipo,
             status: filters.status ? { in: filters.status } : undefined,
-            orgao_id: filtroOrgao,
-            criado_por_id: filtroCriadorEspecifico,
+            orgao_id: validationResult.filters?.orgao_id || filters.orgao_id,
+            criado_por_id: validationResult.filters?.criado_por_id || filters.criado_por,
             criado_em: {
                 gte: criado_em_de,
                 lte: criado_em_ate,
@@ -105,27 +190,6 @@ export class AtualizacaoEmLoteService {
             modulo_sistema: modulo,
             removido_em: null,
         };
-
-        // Se o usuário NÃO tem a role de admin GERAL, MAS TEM a role de admin NO ORGAO
-        if (fullAdminRole && !user.hasSomeRoles([fullAdminRole]) && orgAdminRole && user.hasSomeRoles([orgAdminRole])) {
-            if (!user.orgao_id) {
-                this.logger.error(`Usuário ${user.id} tem role ${orgAdminRole} mas não possui orgao_id no token JWT.`);
-                throw new ForbiddenException(`Usuário ${orgAdminRole} sem órgão definido.`);
-            }
-            this.logger.verbose(
-                `Usuário ${user.id} é ${orgAdminRole} no órgão ${user.orgao_id}, filtrando por orgao_id=${user.orgao_id}`
-            );
-            // Filtra para mostrar apenas os do seu órgão
-            filtroOrgao = user.orgao_id;
-        } else if (fullAdminRole && user.hasSomeRoles([fullAdminRole])) {
-            this.logger.verbose(`Usuário ${user.id} é ${fullAdminRole}, sem filtro extra de órgão.`);
-            // Admin geral vê tudo, não aplica filtro de órgão.
-        } else {
-            this.logger.warn(
-                `Usuário ${user.id} passou na verificação geral para ${filters.tipo} mas não se encaixou nas roles específicas ${fullAdminRole}/${orgAdminRole}. Verifique as permissões.`
-            );
-            where.criado_por_id = user.id;
-        }
 
         const [total_registros, linhas_com_extra] = await this.prisma.$transaction([
             this.prisma.atualizacaoEmLote.count({ where }),
@@ -216,39 +280,16 @@ export class AtualizacaoEmLoteService {
 
         await this.verificaPermissaoGeralTipoAtualizacao(user, logBase.tipo);
 
-        const fullAdminRole = this.FULL_ADMIN_ROLE[logBase.tipo];
-        const orgAdminRole = this.ORG_ADMIN_ROLE[logBase.tipo];
+        // Valida permissões para este registro específico
+        const validationResult = this.validatePermissionAccess(user, logBase.tipo, {
+            orgao_id: logBase.orgao_id || undefined,
+            criado_por_id: logBase.criado_por_id,
+        });
 
-        // If user is ORG_ADMIN but NOT FULL_ADMIN, check if the log's orgao_id matches user's orgao_id
-        if (fullAdminRole && !user.hasSomeRoles([fullAdminRole]) && orgAdminRole && user.hasSomeRoles([orgAdminRole])) {
-            if (!user.orgao_id) {
-                this.logger.error(
-                    `Usuário ${user.id} tem role ${orgAdminRole} mas não possui orgao_id no token JWT. Tentando acessar log ${id}.`
-                );
-                throw new ForbiddenException(`Usuário ${orgAdminRole} sem órgão definido.`);
-            }
-            if (logBase.orgao_id !== user.orgao_id) {
-                this.logger.warn(
-                    `Usuário ${user.id} (${orgAdminRole} no órgão ${user.orgao_id}) tentou acessar log ${id} do órgão ${logBase.orgao_id}. Acesso negado.`
-                );
-                throw new ForbiddenException(
-                    `Usuário não tem permissão para acessar este registro de atualização em lote (órgão diferente).`
-                );
-            }
-            this.logger.verbose(
-                `Usuário ${user.id} (${orgAdminRole}) autorizado a ver log ${id} do órgão ${logBase.orgao_id}.`
+        if (!validationResult.isAuthorized) {
+            throw new BadRequestException(
+                validationResult.err_msg || 'Usuário sem permissão para acessar este registro.'
             );
-        } else if (fullAdminRole && user.hasSomeRoles([fullAdminRole])) {
-            // Full admin can see any log
-            this.logger.verbose(`Usuário ${user.id} (${fullAdminRole}) autorizado a ver log ${id}.`);
-        } else if (logBase.criado_por_id === user.id) {
-            // User can see their own logs
-            this.logger.verbose(`Usuário ${user.id} autorizado a ver seu próprio log ${id}.`);
-        } else {
-            this.logger.error(
-                `Usuário ${user.id} passou na verificação geral para tipo ${logBase.tipo} mas falhou nas roles específicas ${fullAdminRole}/${orgAdminRole} ao tentar acessar log ${id}.`
-            );
-            throw new ForbiddenException('Falha inesperada na verificação de permissão.');
         }
 
         const logCompleto = await this.prisma.atualizacaoEmLote.findUnique({
@@ -264,7 +305,6 @@ export class AtualizacaoEmLoteService {
             },
         });
 
-        // Não deveria acontecer, mas vai que..
         if (!logCompleto) {
             throw new NotFoundException('Registro de atualização em lote não encontrado (fetch completo).');
         }

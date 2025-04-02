@@ -68,6 +68,11 @@ export class FilterAtualizacaoEmLoteDto {
     @Transform(NumberTransformOrUndef)
     criado_por?: number;
 
+    @IsOptional()
+    @IsInt()
+    @Transform(NumberTransformOrUndef)
+    orgao_id?: number;
+
     @ApiPropertyOptional({ description: 'Data de início da criação (YYYY-MM-DD)', example: '2024-01-01' })
     @IsOptional()
     @IsOnlyDate()

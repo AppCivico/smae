@@ -18,7 +18,11 @@ import {
 } from './dto/atualizacao-em-lote.dto';
 
 // Lista dos privilegios necessários para acessar os logs de atualizações em lote
-const BASE_ROLE: ListaDePrivilegios[] = ['SMAE.AtualizacaoEmLote'];
+const BASE_ROLE: ListaDePrivilegios[] = [
+    'SMAE.AtualizacaoEmLote',
+    ...Object.values(AtualizacaoEmLoteService.FULL_ADMIN_ROLE),
+    ...Object.values(AtualizacaoEmLoteService.ORG_ADMIN_ROLE),
+];
 
 @ApiTags('Atualização em Lote')
 @Controller('atualizacao-em-lote')
@@ -33,7 +37,7 @@ export class AtualizacaoEmLoteController {
     @ApiPaginatedWithPagesResponse(AtualizacaoEmLoteResumoDto)
     async list(
         @Query() filters: FilterAtualizacaoEmLoteDto,
-        @CurrentUser() user: PessoaFromJwt,
+        @CurrentUser() user: PessoaFromJwt
     ): Promise<ListAtualizacaoEmLoteDto> {
         return this.atualizacaoEmLoteService.findAllPaginated(filters, user);
     }
