@@ -4,11 +4,11 @@ import { Transform } from 'class-transformer';
 import { IsDateString, IsEnum, IsInt, IsOptional, Max, Min } from 'class-validator';
 import { NumberTransformOrUndef } from '../../auth/transforms/number.transform';
 import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
+import { IdSiglaDescricao } from '../../common/dto/IdSigla.dto';
 import { PaginatedWithPagesDto } from '../../common/dto/paginated.dto';
 import { IdNomeExibicao } from '../../meta/entities/meta.entity';
 
 export class AtualizacaoEmLoteResumoDto {
-    @ApiProperty()
     id: number;
 
     @ApiProperty({ enum: TipoAtualizacaoEmLote })
@@ -20,16 +20,9 @@ export class AtualizacaoEmLoteResumoDto {
     @ApiProperty({ enum: ModuloSistema })
     modulo_sistema: ModuloSistema;
 
-    @ApiProperty()
     n_total: number;
-
-    @ApiProperty()
     n_sucesso: number;
-
-    @ApiProperty()
     n_erro: number;
-
-    @ApiProperty()
     n_ignorado: number;
 
     @IsDateString()
@@ -42,6 +35,9 @@ export class AtualizacaoEmLoteResumoDto {
 
     @IsDateString()
     terminou_em: Date | null;
+
+    @IsOptional()
+    orgao: IdSiglaDescricao | null;
 }
 
 export class ListAtualizacaoEmLoteDto extends PaginatedWithPagesDto<AtualizacaoEmLoteResumoDto> {}
@@ -55,7 +51,6 @@ export class AtualizacaoEmLoteDetalheDto extends AtualizacaoEmLoteResumoDto {
 
     @ApiPropertyOptional({ description: 'JSON contendo o log detalhado dos resultados, especialmente falhas.' })
     results_log?: any;
-
 }
 
 // --- Filter DTO ---

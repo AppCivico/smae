@@ -608,6 +608,7 @@ model Orgao {
     ViewPainelEstrategicoProjetos     ViewPainelEstrategicoProjetos[]
     ViewProjetoV2Resp                 ViewProjetoV2[]                      @relation("orgao_responsavel")
     ViewProjetoV2Origem               ViewProjetoV2[]                      @relation("orgao_origem")
+    AtualizacaoEmLote                 AtualizacaoEmLote[]
 
     @@map("orgao")
 }
@@ -7722,6 +7723,9 @@ model AtualizacaoEmLote {
     removido_por_id Int?
     removido_em     DateTime? @db.Timestamptz(6)
     removedor       Pessoa?   @relation("AtualizacaoEmLoteRemovedor", fields: [removido_por_id], references: [id])
+
+    orgao_id Int?
+    orgao    Orgao? @relation(fields: [orgao_id], references: [id])
 
     @@index([criado_em, tipo])
     @@map("atualizacao_em_lote")
