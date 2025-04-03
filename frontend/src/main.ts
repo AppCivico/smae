@@ -1,5 +1,4 @@
 import CheckClose from '@/components/CheckClose.vue';
-import detectarPosicaoCongelada from '@/diretivas/detectarPosicaoCongelada';
 import ErrorComponent from '@/components/ErrorComponent.vue';
 import FormErrorsList from '@/components/FormErrorsList.vue';
 import LabelFromYup from '@/components/camposDeFormulario/LabelFromYup.vue';
@@ -8,6 +7,7 @@ import MigalhasDePão from '@/components/MigalhasDePao.vue';
 import SmaeLink from '@/components/SmaeLink.vue';
 import SmaeText from '@/components/camposDeFormulario/SmaeText.vue';
 import TítuloDePágina from '@/components/TituloDaPagina.vue';
+import detectarPosicaoCongelada from '@/diretivas/detectarPosicaoCongelada';
 import selecionarMultiplasOpcoes from '@/diretivas/selecionarMultiplasOpcoes';
 import type { RequestS } from '@/helpers/requestS';
 import requestS from '@/helpers/requestS';
@@ -19,6 +19,7 @@ import {
 } from 'vue';
 import type { RouteLocationNormalizedLoaded, Router } from 'vue-router';
 import App from './App.vue';
+import CabecalhoDePagina from './components/CabecalhoDePagina.vue';
 import { router } from './router';
 
 const app = createApp(App);
@@ -158,6 +159,7 @@ app.component('SmaeText', SmaeText);
 app.component('TítuloDePágina', TítuloDePágina);
 app.component('TituloDePagina', TítuloDePágina);
 app.component('TituloDaPagina', TítuloDePágina);
+app.component('CabecalhoDePagina', CabecalhoDePagina);
 
 app.use(pinia);
 app.use(router);
