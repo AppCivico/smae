@@ -1,9 +1,4 @@
 <script setup>
-import { monitoramentoDeMetasFechamento as schema } from '@/consts/formSchemas';
-import { dateToShortDate } from '@/helpers/dateToDate';
-import dateToTitle from '@/helpers/dateToTitle';
-import { useAlertStore } from '@/stores/alert.store';
-import { useMonitoramentoDeMetasStore } from '@/stores/monitoramentoDeMetas.store';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
@@ -13,6 +8,11 @@ import {
 } from 'vee-validate';
 import { computed, watch, watchEffect } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { monitoramentoDeMetasFechamento as schema } from '@/consts/formSchemas';
+import { dateToShortDate } from '@/helpers/dateToDate';
+import dateToTitle from '@/helpers/dateToTitle';
+import { useAlertStore } from '@/stores/alert.store';
+import { useMonitoramentoDeMetasStore } from '@/stores/monitoramentoDeMetas.store';
 
 const route = useRoute();
 const router = useRouter();
@@ -129,10 +129,10 @@ watchEffect(() => {
       <button
         class="label-com-botao__botao btn bgnone tcprimary outline"
         type="button"
-        :disabled="!fechamentoAnterior?.detalhamento"
-        :aria-disabled="!fechamentoAnterior?.detalhamento"
-        :title="!fechamentoAnterior?.detalhamento ? 'Nenhum detalhamento anterior' : ''"
-        @click="setFieldValue('detalhamento', fechamentoAnterior.detalhamento)"
+        :disabled="!fechamentoAnterior?.comentario"
+        :aria-disabled="!fechamentoAnterior?.comentario"
+        :title="!fechamentoAnterior?.comentario && 'Nenhum comentario anterior'"
+        @click="setFieldValue('comentario', fechamentoAnterior.comentario)"
       >
         Repetir anterior
       </button>
@@ -150,6 +150,17 @@ watchEffect(() => {
           class="inputtext light mb1"
           :class="{ 'error': errors.comentario }"
         />
+
+        <fieldset class="fieldset card p05 mt1 pt05">
+          <h2 class="t14 tc500 w400 ml05">
+            Comentário anterior
+          </h2>
+
+          <p
+            class="t12 tc300 w700 ml05"
+            v-html="fechamentoAnterior.comentario || '-'"
+          />
+        </fieldset>
       </div>
     </div>
     <ErrorMessage
