@@ -125,7 +125,7 @@ app.directive('ScrollLockDebug', {
 });
 
 app.directive('selecionar-multiplas-opcoes', {
-  mounted: (el) => selecionarMultiplasOpcoes(el),
+  mounted: (el, binding) => selecionarMultiplasOpcoes(el, binding.value),
 });
 
 app.directive('detectar-posicao-congelada', detectarPosicaoCongelada);
