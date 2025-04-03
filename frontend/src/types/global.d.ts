@@ -43,7 +43,9 @@ declare module 'vue-router' {
     entidadeMãe?: string;
     título?: string | (() => string);
     títuloParaMenu?: string | (() => string);
+    rotaDeAdição?: string | string[];
     rotaDeEscape?: string | string[];
+    rotaDeEdição?: string | string[];
     rotasParaMigalhasDePão?: string[];
     limitarÀsPermissões?: string | string[];
     íconeParaMenu?: string;
