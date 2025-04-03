@@ -57,18 +57,14 @@ class RetornoDbTransferencias {
     interface: string;
     esfera: string;
     cargo: string | null;
-
     partido_id: number | null;
     partido_sigla: string | null;
-
     parlamentar_id: number | null;
     parlamentar_nome: string | null;
     parlamentar_nome_popular: string | null;
-
     orgao_concedente_id: number;
     orgao_concedente_sigla: string;
     orgao_concedente_descricao: string;
-
     distribuicao_recurso_id: number;
     distribuicao_recurso_transferencia_id: number;
     distribuicao_recurso_orgao_gestor_id: number;
@@ -411,10 +407,10 @@ export class TransferenciasService implements ReportableService {
         }
     }
 
-    private formatarBR(valor: number): string {
-        const partes = valor.toFixed(2).split('.');
-        const inteiro = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-        return `${inteiro},${partes[1]}`;
+    private formatCurrency(value: number | null): string {
+        return value != null
+            ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
+            : '';
     }
 
     async toFileOutput(params: CreateRelTransferenciasDto, _ctx: ReportContext): Promise<FileOutput[]> {
@@ -439,14 +435,17 @@ export class TransferenciasService implements ReportableService {
                 { value: 'nome_programa', label: 'Nome do Programa' },
                 { value: 'empenho', label: 'Empenho' },
                 {
-                    value: (row) => (row.valor != null ? this.formatarBR(row.valor) : ''),
+                    value: (row) => this.formatCurrency(row.valor),
                     label: 'Valor do Repasse',
                 },
                 {
-                    value: (row) => (row.valor_total != null ? this.formatarBR(row.valor_total) : ''),
+                    value: (row) => this.formatCurrency(row.valor_total),
                     label: 'Valor Total',
                 },
-                { value: 'valor_contrapartida', label: 'Valor Contrapartida' },
+                {
+                    value: (row) => this.formatCurrency(row.valor_contrapartida),
+                    label: 'Valor Contrapartida',
+                },
                 { value: 'emenda', label: 'Emenda' },
                 { value: 'emenda_unitaria', label: 'Emenda Unitária' },
                 { value: 'dotacao', label: 'Dotação orçamentária da Distribuição' },
@@ -468,10 +467,16 @@ export class TransferenciasService implements ReportableService {
                 { value: 'distribuicao_recurso.id', label: 'ID Distribuição de Recurso' },
                 { value: 'distribuicao_recurso.orgao_gestor_descricao', label: 'Gestor Municipal ' },
                 { value: 'distribuicao_recurso.objeto', label: 'Objeto' },
-                { value: 'distribuicao_recurso.valor', label: 'Valor do Repasse da Distribuição' },
-                { value: 'distribuicao_recurso.valor_total', label: 'Valor Total da Distribuição ' },
                 {
-                    value: 'distribuicao_recurso.valor_contrapartida',
+                    value: (row) => this.formatCurrency(row.distribuicao_recurso.valor),
+                    label: 'Valor do Repasse da Distribuição',
+                },
+                {
+                    value: (row) => this.formatCurrency(row.distribuicao_recurso.valor_total),
+                    label: 'Valor Total da Distribuição',
+                },
+                {
+                    value: (row) => this.formatCurrency(row.distribuicao_recurso.valor_contrapartida),
                     label: 'Valor Contrapartida da Distribuição',
                 },
                 { value: 'distribuicao_recurso.empenho', label: 'distribuicao_recurso_empenho' },
@@ -521,14 +526,17 @@ export class TransferenciasService implements ReportableService {
                 { value: 'clausula_suspensiva_vencimento', label: 'clausula_suspensiva_vencimento' },
                 { value: 'observacoes', label: 'observacoes' },
                 {
-                    value: (row) => (row.valor != null ? this.formatarBR(row.valor) : ''),
+                    value: (row) => this.formatCurrency(row.valor),
                     label: 'Valor do Repasse',
                 },
                 {
-                    value: (row) => (row.valor_total != null ? this.formatarBR(row.valor_total) : ''),
+                    value: (row) => this.formatCurrency(row.valor_total),
                     label: 'Valor Total',
                 },
-                { value: 'valor_contrapartida', label: 'valor_contrapartida' },
+                {
+                    value: (row) => this.formatCurrency(row.valor_contrapartida),
+                    label: 'Valor Contrapartida',
+                },
                 { value: 'gestor_contrato', label: 'orgao_gestor_contrato' },
                 { value: 'distribuicao_recurso.orgao_gestor_descricao', label: 'orgao_gestor.descricao' },
                 { value: 'distribuicao_recurso.registro_sei', label: 'sei' },
@@ -556,7 +564,7 @@ export class TransferenciasService implements ReportableService {
         if (dados.linhas?.length) {
             const json2csvParser = new Parser({
                 ...DefaultCsvOptions,
-                transforms: defaultTransform,
+                transforms: [],
                 fields: fields,
             });
             const linhas = json2csvParser.parse(
