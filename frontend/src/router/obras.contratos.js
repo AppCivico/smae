@@ -80,7 +80,6 @@ export default {
               return daApi ? `Resumo do contrato ${formatProcesso(daApi)}` : 'Resumo de contrato';
             },
             títuloParaMenu: 'Resumo',
-
             rotasParaMigalhasDePão: [
               'obrasListar',
               'obrasResumo',
