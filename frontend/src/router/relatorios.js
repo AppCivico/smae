@@ -62,7 +62,6 @@ const NovoRelatórioOrçamentárioPortfolioObras = defineAsyncComponent({
 export default {
   path: '/relatorios',
   component: RelatoriosRaiz,
-  name: 'relatoriosRaiz',
 
   meta: {
     títuloParaMenu: 'Relatórios',
@@ -113,6 +112,7 @@ export default {
   children: [
     {
       path: '',
+      name: 'relatoriosRaiz',
     },
     {
       path: 'mensal',
