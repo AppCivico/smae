@@ -346,7 +346,7 @@ export default {
           component: DialogWrapper,
           meta: {
             rotaDeEscape: 'TransferenciasVoluntariasDocumentos',
-            título: 'Novo documento da transferência voluntária',
+            título: 'Novo documento transferência',
             títuloParaMenu: 'Novo documento',
             limitarÀsPermissões: 'CadastroTransferencia.editar',
           },
@@ -369,7 +369,7 @@ export default {
           }),
           meta: {
             rotaDeEscape: 'TransferenciasVoluntariasDocumentos',
-            título: 'Editar documento da transferência',
+            título: 'Editar documento transferência',
             títuloParaMenu: 'Editar documento',
             limitarÀsPermissões: 'CadastroTransferencia.editar',
           },

@@ -1,12 +1,10 @@
 <script setup>
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import { arquivo as schemaDoFormulário } from '@/consts/formSchemas';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
 import requestS from '@/helpers/requestS.ts';
-// eslint-disable-next-line import/no-cycle
-import {
-  useAlertStore,
-  useDocumentTypesStore,
-} from '@/stores';
+import { useAlertStore } from '@/stores/alert.store';
+import { useDocumentTypesStore } from '@/stores/documentTypes.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import { storeToRefs } from 'pinia';
 import {
@@ -114,19 +112,14 @@ watch(arquivoParaEdição, (novosValores) => {
 
 <template>
   <div class="flex spacebetween center mb2">
-    <h2>
-      {{ $route.params.arquivoId
-        ? 'Editar documento da transferência'
-        : 'Novo documento da transferência'
-      }}
-    </h2>
+    <TituloDaPagina />
     <hr class="ml2 f1">
     <CheckClose :formulario-sujo="formularioSujo" />
   </div>
 
   <form
     v-if="!(chamadasPendentes?.arquivos?.loading || erro) && !curfile?.loading"
-    @submit="onSubmit"
+    @submit.prevent="onSubmit"
   >
     <div class="flex g2">
       <div class="f1">
@@ -146,7 +139,6 @@ watch(arquivoParaEdição, (novosValores) => {
         />
       </div>
     </div>
-    {{ arquivoParaEdição }}
 
     <div class="flex g2">
       <div class="f1">
