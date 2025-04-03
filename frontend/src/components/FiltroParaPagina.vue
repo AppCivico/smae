@@ -34,6 +34,8 @@ type Props = {
   formulario: Linha[]
   schema: Record<string, any>
   valoresIniciais?: Record<string, any>
+  autoSubmit?: boolean
+  class?: string
 };
 type Emits = {
   'update:formularioSujo': [boolean]
@@ -46,7 +48,7 @@ const route = useRoute();
 const router = useRouter();
 
 const {
-  handleSubmit, isSubmitting, resetForm, setValues,
+  handleSubmit, isSubmitting, resetForm, setValues, meta,
 } = useForm({
   validationSchema: props.schema,
   initialValues: route.query,
@@ -104,10 +106,21 @@ watch(() => route.query, () => {
     resetForm({ values: route.query });
   });
 }, { deep: true, immediate: true });
+
+if (props.autoSubmit) {
+  watch(() => meta.value.dirty, () => {
+    if (meta.value.dirty) {
+      onSubmit();
+    }
+  });
+}
 </script>
 
 <template>
-  <div class="comunicados-gerais-filtro">
+  <div
+    class="comunicados-gerais-filtro"
+    :class="$props.class"
+  >
     <FormularioQueryString :valores-iniciais="valoresIniciais">
       <form @submit="onSubmit">
         <div
@@ -116,8 +129,8 @@ watch(() => route.query, () => {
           class="flex center g2"
         >
           <div
-            class="flex g2 fg999"
-            :class="linha.class"
+            class="flex g2"
+            :class="linha.class || 'fg999'"
           >
             <div
               v-for="(campo, campoNome) in linha.campos"
@@ -182,7 +195,10 @@ watch(() => route.query, () => {
           </div>
         </div>
 
-        <div class="flex justifyright">
+        <div
+          v-if="!autoSubmit"
+          class="flex justifyright"
+        >
           <button
             type="submit"
             class="btn"
