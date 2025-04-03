@@ -46,8 +46,6 @@ declare module 'vue-router' {
     rotaDeEscape?: string | string[];
     rotasParaMigalhasDePão?: string[];
     limitarÀsPermissões?: string | string[];
-    presenteNoMenu?: boolean;
-    pesoNoMenu? : number;
     íconeParaMenu?: string;
     rotasParaMenuSecundário?: string[];
     rotasParaMenuPrincipal?: string[];

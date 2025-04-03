@@ -1,4 +1,5 @@
 <script setup>
+import rotasDoMenu from '@/consts/rotasDoMenu.ts';
 import { useAuthStore } from '@/stores/auth.store';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
@@ -10,31 +11,25 @@ const {
   sistemaCorrente, dadosDoSistemaEscolhido, temPermissãoPara, user,
 } = storeToRefs(authStore);
 const router = useRouter();
-const route = useRoute();
+const rotaCorrente = useRoute();
 
 const índiceDoItemAberto = ref(-1);
 
 const filtrarRota = (
   rota,
-  considerarPresençaNoMenu = true,
-) => (rota.meta?.presenteNoMenu || !considerarPresençaNoMenu)
-  && (
-    import.meta.env.VITE_TROCA_AUTOMATICA_MODULO !== 'true'
+) => (
+  import.meta.env.VITE_TROCA_AUTOMATICA_MODULO !== 'true'
     || !rota.meta?.entidadeMãe
-    || rota.meta.entidadeMãe === route.meta?.entidadeMãe
-  )
+    || rota.meta.entidadeMãe === rotaCorrente.meta?.entidadeMãe
+)
   && (!rota.meta?.limitarÀsPermissões
     || temPermissãoPara.value(rota.meta?.limitarÀsPermissões));
 
-const ordenarRota = (a, b) => (a.meta?.pesoNoMenu !== undefined && b.meta?.pesoNoMenu !== undefined
-  ? a.meta.pesoNoMenu - b.meta.pesoNoMenu
-  : 0);
+const resolverRota = (nome) => router.resolve({ name: nome, params: rotaCorrente.params });
 
-const resolverRota = (nome) => router.resolve({ name: nome, params: route.params });
-
-const menuFiltrado = router.options.routes
+const menuFiltrado = rotasDoMenu
+  .map((x) => resolverRota(x.name))
   .filter((x) => filtrarRota(x))
-  .sort(ordenarRota)
   .map((x) => ({
     ...x,
     rotasFilhas: Array.isArray(x.meta.rotasParaMenuPrincipal)
