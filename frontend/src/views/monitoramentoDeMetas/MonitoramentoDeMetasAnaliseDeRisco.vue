@@ -1,10 +1,4 @@
 <script setup>
-import TextEditor from '@/components/TextEditor.vue';
-import { monitoramentoDeMetasRisco as schema } from '@/consts/formSchemas';
-import { dateToShortDate } from '@/helpers/dateToDate';
-import dateToTitle from '@/helpers/dateToTitle';
-import { useAlertStore } from '@/stores/alert.store';
-import { useMonitoramentoDeMetasStore } from '@/stores/monitoramentoDeMetas.store';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
@@ -14,6 +8,12 @@ import {
 } from 'vee-validate';
 import { computed, watch, watchEffect } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import TextEditor from '@/components/TextEditor.vue';
+import { monitoramentoDeMetasRisco as schema } from '@/consts/formSchemas';
+import { dateToShortDate } from '@/helpers/dateToDate';
+import dateToTitle from '@/helpers/dateToTitle';
+import { useAlertStore } from '@/stores/alert.store';
+import { useMonitoramentoDeMetasStore } from '@/stores/monitoramentoDeMetas.store';
 
 const route = useRoute();
 const router = useRouter();
@@ -140,7 +140,7 @@ watchEffect(() => {
         type="button"
         :disabled="!riscoAnterior?.detalhamento"
         :aria-disabled="!riscoAnterior?.detalhamento"
-        :title="!riscoAnterior?.detalhamento ? 'Nenhum detalhamento anterior' : ''"
+        :title="!riscoAnterior?.detalhamento && 'Nenhum detalhamento anterior'"
         @click="setFieldValue('detalhamento', riscoAnterior.detalhamento)"
       >
         Repetir anterior
@@ -160,6 +160,17 @@ watchEffect(() => {
             v-bind="field"
           />
         </Field>
+
+        <fieldset class="fieldset card p05 mt1 pt05">
+          <h2 class="t14 tc500 w400 ml05">
+            Detalhamento anterior
+          </h2>
+
+          <p
+            class="t12 tc300 w700 ml05"
+            v-html="riscoAnterior.detalhamento || '-'"
+          />
+        </fieldset>
       </div>
     </div>
 
@@ -174,7 +185,7 @@ watchEffect(() => {
         type="button"
         :disabled="!riscoAnterior?.ponto_de_atencao"
         :aria-disabled="!riscoAnterior?.ponto_de_atencao"
-        :title="!riscoAnterior?.ponto_de_atencao ? 'Nenhum ponto de atenção anterior' : ''"
+        :title="!riscoAnterior?.ponto_de_atencao && 'Nenhum ponto de atenção anterior'"
         @click="setFieldValue('ponto_de_atencao', riscoAnterior.ponto_de_atencao)"
       >
         Repetir anterior
@@ -192,6 +203,17 @@ watchEffect(() => {
             v-bind="field"
           />
         </Field>
+
+        <fieldset class="fieldset card p05 mt1 pt05">
+          <h2 class="t14 tc500 w400 ml05">
+            Pontos de atenção anteriores
+          </h2>
+
+          <p
+            class="t12 tc300 w700 ml05"
+            v-html="riscoAnterior.ponto_de_atencao || '-'"
+          />
+        </fieldset>
       </div>
     </div>
     <ErrorMessage
