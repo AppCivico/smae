@@ -72,42 +72,65 @@ import { alteracaoEmLoteNovoFiltro, alteracaoEmLoteNovoOrdenacao } from '@/const
 //   ],
 // }));
 
-const campos = computed<Formulario>(() => [
+const camposFiltro = computed<Formulario>(() => [
   {
     campos: {
       portfolio_id: { tipo: 'select', opcoes: [] },
-      orgao_responsavel_id: { tipo: 'select', opcoes: [] },
-      status: { tipo: 'select', opcoes: [] },
-      projeto_etapa_id: { tipo: 'select', opcoes: [] },
-      registrado_em: { tipo: 'date' },
-      revisado: { tipo: 'select', opcoes: [] },
+      orgao_origem_id: { tipo: 'select', opcoes: [] },
+      subprefeitura_id: { tipo: 'select', opcoes: [] },
+      status_obra: { tipo: 'select', opcoes: [] },
     },
   },
   {
+    campos: {
+      grupo_tematico_id: { tipo: 'select', opcoes: [] },
+      tipo_obra_id: { tipo: 'select', opcoes: [] },
+      equipamento_id: { tipo: 'select', opcoes: [] },
+      processo_sei: { tipo: 'text' },
+    },
+  },
+  {
+    class: 'fb50',
     campos: {
       palavra_chave: { tipo: 'search' },
     },
   },
+]);
+
+const camposOrdenacao = computed<Formulario>(() => [
   {
-    class: 'maxw',
     campos: {
-      ordem_coluna: { class: 'fb0', tipo: 'select', opcoes: [] },
-      ordem_direcao: { class: 'fb0', tipo: 'select', opcoes: [{ id: 'asc', label: 'Crescente' }, { id: 'desc', label: 'Decrescente' }] },
-      ipp: { class: 'fb0', tipo: 'select', opcoes: [] },
+      ordenar_por: { tipo: 'select', opcoes: [] },
+      direcao: { tipo: 'select', opcoes: ['asc', 'desc'] },
+      ipp: { tipo: 'select', opcoes: [10, 30, 50, 100] },
     },
   },
 ]);
 
 const valoresIniciais = computed(() => ({
-  ipp: 100,
+  ipp: 30,
 }));
 
 </script>
 
 <template>
-  <FiltroParaPagina
-    :formulario="campos"
-    :schema="alteracaoEmLoteNovoFiltro"
-    :valores-iniciais="valoresIniciais"
-  />
+  <section>
+    <FiltroParaPagina
+      :formulario="camposFiltro"
+      :schema="alteracaoEmLoteNovoFiltro"
+      :valores-iniciais="valoresIniciais"
+    />
+
+    <aside class="flex g3 center mt3">
+      <hr class="fb50">
+
+      <FiltroParaPagina
+        class="fg999"
+        :formulario="camposOrdenacao"
+        :schema="alteracaoEmLoteNovoOrdenacao"
+        :valores-iniciais="valoresIniciais"
+        auto-submit
+      />
+    </aside>
+  </section>
 </template>
