@@ -8,7 +8,7 @@ import { PaginatedWithPagesDto, PAGINATION_TOKEN_TTL } from 'src/common/dto/pagi
 import { ListaDePrivilegios } from 'src/common/ListaDePrivilegios';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
-import { CreateRunUpdateDto, RunUpdateType } from '../task/run_update/dto/create-run-update.dto';
+import { CreateRunUpdateDto } from '../task/run_update/dto/create-run-update.dto';
 import { TaskService } from '../task/task.service';
 import {
     AtualizacaoEmLoteDetalheDto,
@@ -49,8 +49,7 @@ export class AtualizacaoEmLoteService {
         // Validar módulo do sistema
         const modulo = user.assertOneModuloSistema('criar', 'atualização em lote');
 
-        // Mapear o tipo da operação para TipoAtualizacaoEmLote
-        const tipoAtualizacao = this.mapRunUpdateTypeToTipoAtualizacao(dto.type);
+        const tipoAtualizacao = dto.tipo;
 
         // Validar permissões gerais para o tipo de atualização
         await this.verificaPermissaoGeralTipoAtualizacao(user, tipoAtualizacao);
@@ -97,7 +96,7 @@ export class AtualizacaoEmLoteService {
                         type: 'run_update',
                         params: {
                             atualizacao_em_lote_id: atualizacao.id,
-                            type: dto.type,
+                            type: tipoAtualizacao,
                             ids: dto.ids,
                             ops: dto.ops,
                         },
@@ -130,23 +129,6 @@ export class AtualizacaoEmLoteService {
                 throw error;
             }
         });
-    }
-
-    /**
-     * Lucas vai sincronizar depois isso pra ficar 1 versão só
-     */
-    private mapRunUpdateTypeToTipoAtualizacao(type: RunUpdateType): TipoAtualizacaoEmLote {
-        const mapping: Record<string, TipoAtualizacaoEmLote> = {
-            'ProjetosMdo': 'ProjetoMDO',
-            'ProjetosPp': 'ProjetoPP',
-        };
-
-        const tipoAtualizacao = mapping[type];
-        if (!tipoAtualizacao) {
-            throw new BadRequestException(`Tipo de atualização em lote não suportado: ${type}`);
-        }
-
-        return tipoAtualizacao;
     }
 
     private async verificaPermissaoGeralTipoAtualizacao(

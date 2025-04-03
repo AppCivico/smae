@@ -21,16 +21,16 @@ import { TipoAtualizacaoEmLote } from '@prisma/client';
 export class VerificaOpsParaTipoConstraint implements ValidatorConstraintInterface {
     async validate(ops: UpdateOperacaoDto[], args: ValidationArguments) {
         const dto = args.object as CreateRunUpdateDto;
-        const type = dto.type;
-        const allowedColumns = this.buscaColsPermitidas(type);
+        const tipo = dto.tipo;
+        const colunasPermitidas = this.buscaColsPermitidas(tipo);
 
         // Verifica colunas válidas
-        if (!ops.every((op) => allowedColumns.includes(op.col))) {
+        if (!ops.every((op) => colunasPermitidas.includes(op.col))) {
             return false;
         }
 
         // Valida valores do 'set' conforme o DTO alvo
-        const targetDtoClass = typeToDtoMap[type];
+        const targetDtoClass = tipoToDtoMap[tipo];
         if (!targetDtoClass) return false;
 
         for (const op of ops) {
@@ -60,8 +60,8 @@ export class VerificaOpsParaTipoConstraint implements ValidatorConstraintInterfa
         return args.constraints[0] || 'Uma ou mais operações possuem valores inválidos';
     }
 
-    private buscaColsPermitidas(type: TipoAtualizacaoEmLote): string[] {
-        const dtoClass = typeToDtoMap[type];
+    private buscaColsPermitidas(tipo: TipoAtualizacaoEmLote): string[] {
+        const dtoClass = tipoToDtoMap[tipo];
         if (!dtoClass) return [];
 
         const metadataStorage = getMetadataStorage();
@@ -90,11 +90,7 @@ export function VerificaOpsParaTipo() {
     };
 }
 
-export enum RunUpdateType {
-    ProjetosMdo = 'ProjetosMdo',
-}
-
-const typeToDtoMap: Record<TipoAtualizacaoEmLote, any> = {
+const tipoToDtoMap: Record<TipoAtualizacaoEmLote, any> = {
     [TipoAtualizacaoEmLote.ProjetoMDO]: UpdateProjetoDto,
     [TipoAtualizacaoEmLote.ProjetoPP]: UpdateProjetoDto,
 };
@@ -110,12 +106,12 @@ export class UpdateOperacaoDto {
 export class CreateRunUpdateDto {
     @ApiProperty({
         description: 'Tipo da atualização em lote.',
-        enum: RunUpdateType,
-        enumName: 'RunUpdateType',
-        example: RunUpdateType.ProjetosMdo,
+        enum: TipoAtualizacaoEmLote,
+        enumName: 'TipoAtualizacaoEmLote',
+        example: TipoAtualizacaoEmLote.ProjetoMDO,
     })
-    @IsEnum(RunUpdateType)
-    type: TipoAtualizacaoEmLote;
+    @IsEnum(TipoAtualizacaoEmLote)
+    tipo: TipoAtualizacaoEmLote;
 
     @IsArray()
     @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
