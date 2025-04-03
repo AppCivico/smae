@@ -15,6 +15,7 @@ import { NumberArrayTransformOrUndef } from 'src/auth/transforms/number-array.tr
 import { Transform, Type, plainToInstance } from 'class-transformer';
 import { UpdateProjetoDto } from 'src/pp/projeto/dto/update-projeto.dto';
 import { validate } from 'class-validator';
+import { TipoAtualizacaoEmLote } from '@prisma/client';
 
 @ValidatorConstraint({ name: 'VerificaOpsParaTipo', async: true })
 export class VerificaOpsParaTipoConstraint implements ValidatorConstraintInterface {
@@ -59,7 +60,7 @@ export class VerificaOpsParaTipoConstraint implements ValidatorConstraintInterfa
         return args.constraints[0] || 'Uma ou mais operações possuem valores inválidos';
     }
 
-    private buscaColsPermitidas(type: RunUpdateType): string[] {
+    private buscaColsPermitidas(type: TipoAtualizacaoEmLote): string[] {
         const dtoClass = typeToDtoMap[type];
         if (!dtoClass) return [];
 
@@ -93,8 +94,9 @@ export enum RunUpdateType {
     ProjetosMdo = 'ProjetosMdo',
 }
 
-const typeToDtoMap: Record<RunUpdateType, any> = {
-    [RunUpdateType.ProjetosMdo]: UpdateProjetoDto,
+const typeToDtoMap: Record<TipoAtualizacaoEmLote, any> = {
+    [TipoAtualizacaoEmLote.ProjetoMDO]: UpdateProjetoDto,
+    [TipoAtualizacaoEmLote.ProjetoPP]: UpdateProjetoDto,
 };
 
 export class UpdateOperacaoDto {
@@ -113,7 +115,7 @@ export class CreateRunUpdateDto {
         example: RunUpdateType.ProjetosMdo,
     })
     @IsEnum(RunUpdateType)
-    type: RunUpdateType;
+    type: TipoAtualizacaoEmLote;
 
     @IsArray()
     @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
