@@ -951,7 +951,12 @@ const PerfilAcessoConfig: PerfilConfigArray = [
     {
         nome: 'Administrador do Módulo de Obras',
         descricao: 'Gerenciar cadastros básicos e acesso irrestrito às obras',
-        privilegios: ['ProjetoMDO.administrador', 'CadastroPessoa.administrador', ...MDOCadastroBasico],
+        privilegios: [
+            'ProjetoMDO.administrador',
+            'CadastroPessoa.administrador',
+            ...MDOCadastroBasico,
+            'SMAE.AtualizacaoEmLote',
+        ],
     },
     {
         nome: 'Gestor de Obras no Órgão',
@@ -969,6 +974,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'ProjetoMDO.orcamento',
 
             ...MDOCadastroBasico,
+            'SMAE.AtualizacaoEmLote',
         ],
     },
     {
