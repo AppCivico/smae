@@ -2,6 +2,7 @@
 import { arquivo as schemaDoFormulário } from '@/consts/formSchemas';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
 import requestS from '@/helpers/requestS.ts';
+// eslint-disable-next-line import/no-cycle
 import {
   useAlertStore,
   useDocumentTypesStore,
@@ -119,7 +120,6 @@ watch(arquivoParaEdição, (novosValores) => {
             :schema="schema"
           />
           <Field
-            v-focus
             name="descricao"
             as="textarea"
             class="inputtext light mb1"
