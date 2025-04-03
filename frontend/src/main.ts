@@ -157,6 +157,7 @@ app.component('SmaeLink', SmaeLink);
 app.component('SmaeText', SmaeText);
 app.component('TítuloDePágina', TítuloDePágina);
 app.component('TituloDePagina', TítuloDePágina);
+app.component('TituloDaPagina', TítuloDePágina);
 
 app.use(pinia);
 app.use(router);
