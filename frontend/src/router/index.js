@@ -12,7 +12,9 @@ import administracao from './administracao';
 import análise from './analise';
 import comunicadosGerais from './comunicadosGerais';
 import configuracoes from './configuracoes';
+import edicoesEmLote from './edicoesEmLote';
 import envios from './envios';
+import ferramentas from './ferramentas';
 import graficos from './graficos';
 import metas from './metas';
 import monitoramento from './monitoramento';
@@ -63,6 +65,9 @@ export const router = createRouter({
 
     ...administracao,
     ...configuracoes,
+
+    ferramentas,
+    edicoesEmLote,
 
     monitoramento,
     metas,

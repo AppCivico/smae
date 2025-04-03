@@ -47,6 +47,9 @@ export default [
 
   // sempre no final
   {
+    name: 'ferramentasRaiz',
+  },
+  {
     name: 'administracaoRaiz',
   },
 ];
