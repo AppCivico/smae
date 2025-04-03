@@ -3,6 +3,8 @@ import type {
   AtualizacaoEmLoteResumoDto,
 } from '@back/atualizacao-em-lote/dto/atualizacao-em-lote.dto';
 import type { PaginatedWithPagesDto } from '@back/common/dto/paginated.dto';
+import type { RecordWithId } from '@back/common/dto/record-with-id.dto';
+import type { CreateRunUpdateDto } from '@back/task/run_update/dto/create-run-update.dto';
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -81,6 +83,22 @@ export const useEdicoesEmLoteStore = (prefixo = '') => defineStore(prefixo ? `${
         this.erros.emFoco = erro;
       }
       this.chamadasPendentes.emFoco = false;
+    },
+
+    async salvarItem(params:CreateRunUpdateDto): Promise<RecordWithId | boolean> {
+      this.chamadasPendentes.emFoco = true;
+      this.erros.emFoco = null;
+
+      try {
+        const resposta = await this.requestS.post(`${baseUrl}/atualizacao-em-lote`, params as unknown as Record<string, unknown>) as RecordWithId;
+
+        this.chamadasPendentes.emFoco = false;
+        return resposta;
+      } catch (erro) {
+        this.erros.emFoco = erro;
+        this.chamadasPendentes.emFoco = false;
+        return false;
+      }
     },
   },
 })();
