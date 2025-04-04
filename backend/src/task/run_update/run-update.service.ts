@@ -8,7 +8,7 @@ export class RunUpdateTaskService implements TaskableService {
 
     constructor() {}
 
-    async executeJob(params: CreateRunUpdateDto, taskId: string): Promise<any> {
+    async executeJob(_params: CreateRunUpdateDto, taskId: string): Promise<any> {
         this.logger.log(`Executando tarefa de  update`);
 
         try {

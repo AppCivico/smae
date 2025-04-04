@@ -9,21 +9,81 @@ import { CrontabIsEnabled } from '../common/CrontabIsEnabled';
 import { TASK_JOB_LOCK_NUMBER } from '../common/dto/locks';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateTaskDto } from './dto/create-task.dto';
-import { EchoService } from './echo/echo.service';
-import { TaskSingleDto, TaskableService } from './entities/task.entity';
-import { RefreshMetaService } from './refresh_meta/refresh-meta.service';
-import { RefreshMvService } from './refresh_mv/refresh-mv.service';
-import { ParseParams } from './task.parseParams';
 import { AvisoEmailTaskService } from './aviso_email/aviso_email.service';
 import { AeCronogramaTpTaskService } from './aviso_email_cronograma_tp/ae_cronograma_tp.service';
 import { AeNotaTaskService } from './aviso_email_nota/ae_nota.service';
-import { RefreshTransferenciaService } from './refresh_transferencia/refresh-transferencia.service';
-import { RefreshIndicadorService } from './refresh_indicador/refresh-indicador.service';
+import { CreateTaskDto, RetryConfigDto, RetryStrategy } from './dto/create-task.dto';
+import { EchoService } from './echo/echo.service';
+import { TaskSingleDto, TaskableService } from './entities/task.entity';
 import { ImportacaoParlamentarService } from './importacao_parlamentar/parlamentar.service';
+import { RefreshIndicadorService } from './refresh_indicador/refresh-indicador.service';
+import { RefreshMetaService } from './refresh_meta/refresh-meta.service';
+import { RefreshMvService } from './refresh_mv/refresh-mv.service';
+import { RefreshTransferenciaService } from './refresh_transferencia/refresh-transferencia.service';
 import { RefreshVariavelService } from './refresh_variavel/refresh-variavel.service';
 import { RunReportTaskService } from './run_report/run-report.service';
 import { RunUpdateTaskService } from './run_update/run-update.service';
+import { ParseParams } from './task.parseParams';
+
+export class TaskRetryService {
+    static calculateNextRetryTime(retryCount: number, retryConfig: RetryConfigDto): Date {
+        let delayMs: number;
+
+        switch (retryConfig.strategy) {
+            case RetryStrategy.FIXED:
+                delayMs = retryConfig.baseDelayMs;
+                break;
+            case RetryStrategy.LINEAR:
+                delayMs = retryConfig.baseDelayMs * (retryCount + 1);
+                break;
+            case RetryStrategy.EXPONENTIAL:
+            default:
+                delayMs = retryConfig.baseDelayMs * Math.pow(2, retryCount);
+                break;
+        }
+
+        // Apply maximum delay constraint
+        delayMs = Math.min(delayMs, retryConfig.maxDelayMs);
+
+        // Calculate next retry time
+        const nextRetryTime = new Date();
+        nextRetryTime.setTime(nextRetryTime.getTime() + delayMs);
+
+        return nextRetryTime;
+    }
+
+    // Check if error is retryable based on error message and configuration
+    static isRetryableError(error: Error, retryConfig: RetryConfigDto): boolean {
+        const errorMessage = error.message.toLowerCase();
+
+        // Check against list of non-retryable errors
+        for (const nonRetryableError of retryConfig.nonRetryableErrors) {
+            if (errorMessage.includes(nonRetryableError.toLowerCase())) {
+                return false;
+            }
+        }
+
+        // Consider certain types of errors as non-retryable
+        if (
+            errorMessage.includes('permission denied') ||
+            errorMessage.includes('invalid input') ||
+            errorMessage.includes('bad request') ||
+            errorMessage.includes('validation failed')
+        ) {
+            return false;
+        }
+
+        // Consider network and transient errors as retryable
+        return (
+            errorMessage.includes('timeout') ||
+            errorMessage.includes('connection') ||
+            errorMessage.includes('network') ||
+            errorMessage.includes('temporarily unavailable') ||
+            errorMessage.includes('deadlock') ||
+            errorMessage.includes('too many connections')
+        );
+    }
+}
 
 type InfoWorker = {
     pid: number;
@@ -76,7 +136,6 @@ function sortObjectKeys(obj: object): object {
             return result;
         }, {});
 }
-
 @Injectable()
 export class TaskService {
     private enabled = false;
@@ -332,6 +391,11 @@ export class TaskService {
                     // pula quem ainda o job não terminou na org
                     notIn: Array.from(this.current_jobs_pessoa_ids.values()),
                 },
+                // Pega apenas o que não tem quando pra rodar, ou o que já passou do tempo
+                OR: [
+                    { esperar_ate: null }, //
+                    { esperar_ate: { lte: new Date() } },
+                ],
             },
             // Limita pela quantidade de jobs disponíveis
             take: this.max_concurrent_jobs - this.current_concurrent_jobs,
@@ -342,6 +406,7 @@ export class TaskService {
                 type: true,
                 params: true,
                 pessoa_id: true,
+                n_retry: true,
             },
         });
         process.env.INTERNAL_DISABLE_QUERY_LOG = '';
@@ -372,7 +437,7 @@ export class TaskService {
                 },
             });
 
-            this.runJob(task.id, task.type, task.params)
+            this.runJob(task.id, task.type, task.params, task.n_retry)
                 .then(async (output: JSON) => {
                     this.logger.log(`task ${task.id} completed`);
 
@@ -448,8 +513,15 @@ export class TaskService {
         process.env.INTERNAL_DISABLE_QUERY_LOG = '';
     }
 
-    async runJob(taskId: number, type: task_type, params: Prisma.JsonValue): Promise<JSON> {
+    async runJob(taskId: number, type: task_type, params: Prisma.JsonValue, currentRetryCount: number): Promise<JSON> {
+        let lastError: Error | null = null;
+        let retryCount = 0;
+        const parsedParams = ParseParams(type, params);
+        const retryConfig = parsedParams.retryConfig || new RetryConfigDto();
         try {
+            if (currentRetryCount >= retryConfig.maxRetries)
+                throw new Error(`Limite de tentativas excedido (${retryConfig.maxRetries})`);
+
             const runInFg = this.shouldRunInForeground(type);
             if (runInFg) return await this.startTaskInFg(taskId, type, params);
 
@@ -491,11 +563,44 @@ export class TaskService {
 
             if (!result) throw `process did not finished successfully, check logs`;
 
+            if (retryCount > 0) {
+                await this.prisma.task_queue.update({
+                    where: { id: taskId },
+                    data: { n_retry: 0 },
+                });
+            }
+
             return result;
         } catch (error) {
             this.logger.error(error);
 
-            throw new Error(`executeJob failed: ${error}`);
+            lastError = error instanceof Error ? error : new Error(String(error));
+            if (!TaskRetryService.isRetryableError(lastError, retryConfig)) {
+                this.logger.error(`erro não recuperável: ${lastError.message}`);
+                throw lastError;
+            }
+
+            // Increment retry count
+            retryCount++;
+            const nextRetryTime = TaskRetryService.calculateNextRetryTime(retryCount, retryConfig);
+
+            this.logger.log(
+                `Task ${taskId} falhou, nova tentativa ${retryCount}/${retryConfig.maxRetries} em ${nextRetryTime.toISOString()}`
+            );
+
+            // Update database with retry information
+            await this.prisma.task_queue.update({
+                where: { id: taskId },
+                data: {
+                    status: 'pending',
+                    n_retry: retryCount,
+                    esperar_ate: nextRetryTime,
+                    erro_mensagem: `Retry ${retryCount}/${retryConfig.maxRetries}: ${lastError.message}`,
+                    erro_em: new Date(),
+                },
+            });
+
+            throw new Error(`Task terá nova tentativa em ${nextRetryTime.toISOString()}`);
         }
     }
 

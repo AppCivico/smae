@@ -23,3 +23,25 @@ export class CreateTaskDto {
     })
     params: any;
 }
+
+export const RetryStrategy = {
+    'FIXED': 'FIXED',
+    'LINEAR': 'LINEAR',
+    'EXPONENTIAL': 'EXPONENTIAL',
+};
+export type RetryStrategy = (typeof RetryStrategy)[keyof typeof RetryStrategy];
+
+export class RetryConfigDto {
+    maxRetries: number = 3;
+
+    baseDelayMs: number = 1000;
+
+    // Strategy for calculating delay between retries
+    strategy: RetryStrategy = 'EXPONENTIAL';
+
+    // Maximum delay in milliseconds
+    maxDelayMs: number = 60000;
+
+    // List of error types that should not be retried
+    nonRetryableErrors: string[] = [];
+}

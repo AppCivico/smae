@@ -5007,6 +5007,9 @@ model task_queue {
     erro_mensagem String?
     worker_info   Json      @default("{}")
 
+    n_retry     Int       @default(0)
+    esperar_ate DateTime?
+
     AtualizacaoEmLote AtualizacaoEmLote[]
 
     @@index([status])
