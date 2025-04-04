@@ -1,6 +1,6 @@
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>{{ route?.meta?.título || "Equipamentos" }}</h1>
+    <TituloDaPagina />
     <hr class="ml2 f1">
     <CheckClose />
   </div>
@@ -68,6 +68,7 @@ import { useEquipamentosStore } from '@/stores/equipamentos.store';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, Form } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
 
 const router = useRouter();
 const route = useRoute();

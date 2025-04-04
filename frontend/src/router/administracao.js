@@ -65,6 +65,7 @@ import ClassificacaoRaiz from '@/views/classificacao/ClassificacaoRaiz.vue';
 import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';
 import { useModalidadeDeContratacaoStore } from '@/stores/modalidadeDeContratacao.store';
 import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
+import { useEquipamentosStore } from '@/stores/equipamentos.store';
 
 const TiposDeAcompanhamentoLista = defineAsyncComponent({
   loader: () => import('@/views/tiposDeAcompanhamento/TiposLista.vue'),
@@ -297,7 +298,6 @@ export default [
             component: EquipamentosLista,
             meta: {
               título: 'Equipamentos',
-              rotasParaMigalhasDePão: ['cadastrosBasicos'],
             },
           },
           {
@@ -306,7 +306,7 @@ export default [
             component: EquipamentosCriarEditar,
             meta: {
               título: 'Novo equipamento',
-              rotasParaMigalhasDePão: ['cadastrosBasicos', 'equipamentosLista'],
+              rotasParaMigalhasDePão: ['equipamentosLista'],
             },
           },
           {
@@ -321,8 +321,8 @@ export default [
               },
             }),
             meta: {
-              título: 'Editar equipamento',
-              rotasParaMigalhasDePão: ['cadastrosBasicos', 'equipamentosLista'],
+              título: () => useEquipamentosStore()?.emFoco?.nome || 'Editar equipamento',
+              rotasParaMigalhasDePão: ['equipamentosLista'],
             },
           },
         ],
