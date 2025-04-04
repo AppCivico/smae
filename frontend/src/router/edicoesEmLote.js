@@ -1,5 +1,8 @@
 import tiparPropsDeRota from './helpers/tiparPropsDeRota';
 
+const EdicoesEmLoteLista = () => import('@/views/edicoesEmLote/EdicoesEmLoteLista.vue');
+const EdicoesEmLoteResumo = () => import('@/views/edicoesEmLote/EdicoesEmLoteResumo.vue');
+
 export default {
   path: '/edicoes-em-lote',
   name: 'edicoesEmLoteRaiz',
@@ -40,12 +43,12 @@ export default {
         {
           name: 'edicoesEmLoteObras',
           path: '',
-          component: () => import('@/views/edicoesEmLote/EdicoesEmLoteLista.vue'),
+          component: EdicoesEmLoteLista,
         },
         {
           path: ':edicaoEmLoteId',
           name: 'edicoesEmLoteObrasResumo',
-          component: () => import('@/views/edicoesEmLote/EdicoesEmLoteResumo.vue'),
+          component: EdicoesEmLoteResumo,
           props: tiparPropsDeRota,
           meta: {
             rotaDeEscape: 'edicoesEmLoteObras',
