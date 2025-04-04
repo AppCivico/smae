@@ -39,4 +39,4 @@ node --enable-source-maps dist/prisma/seed.js 2>&1 | $LOGGING_CMD
 PGSQL_DIR=./prisma/manual-copy/ node --enable-source-maps dist/bin/pgsql-migrate.js 2>&1 | $LOGGING_CMD
 
 # Run the main application, logging output
-LOG_FILE=$LOG_FILE node --enable-source-maps dist/src/main 2>&1 | $LOGGING_CMD
+LOG_FILE=$LOG_FILE TZ=UTC node --enable-source-maps dist/src/main 2>&1 | $LOGGING_CMD

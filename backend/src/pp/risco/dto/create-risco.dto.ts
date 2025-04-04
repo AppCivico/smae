@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsArray, IsInt, IsNumber, IsOptional, IsString, ValidateIf } from 'class-validator';
+import { IsArray, IsInt, IsNumber, IsOptional, IsString, MaxLength, maxLength, ValidateIf } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 import { DateTransform } from '../../../auth/transforms/date.transform';
 
@@ -22,14 +22,17 @@ export class CreateRiscoDto {
 
     @IsOptional()
     @IsString()
+    @MaxLength(2000)
     descricao: string;
 
     @IsOptional()
     @IsString()
+    @MaxLength(2000)
     causa: string;
 
     @IsOptional()
     @IsString()
+    @MaxLength(2000)
     consequencia: string;
 
     @IsArray()

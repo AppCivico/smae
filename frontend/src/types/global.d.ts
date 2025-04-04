@@ -20,6 +20,13 @@ declare global {
     emFoco: null | unknown;
   };
 
+  type Estado = {
+    lista: unknown[];
+    emFoco: unknown | null;
+    chamadasPendentes: ChamadasPendentes;
+    erros: Erros;
+  };
+
   type Paginacao = {
     tokenPaginacao: string;
     paginas: number;
@@ -36,11 +43,11 @@ declare module 'vue-router' {
     entidadeMãe?: string;
     título?: string | (() => string);
     títuloParaMenu?: string | (() => string);
-    rotaDeEscape?: string | string[];
+    rotaDeAdição?: RouteLocationRaw;
+    rotaDeEscape?: RouteLocationRaw;
+    rotaDeEdição?: string | string[];
     rotasParaMigalhasDePão?: string[];
     limitarÀsPermissões?: string | string[];
-    presenteNoMenu?: boolean;
-    pesoNoMenu? : number;
     íconeParaMenu?: string;
     rotasParaMenuSecundário?: string[];
     rotasParaMenuPrincipal?: string[];

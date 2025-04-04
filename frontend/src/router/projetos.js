@@ -51,14 +51,13 @@ const ProjetosResumo = defineAsyncComponent({
 export default {
   path: '/projetos',
   component: ProjetosRaiz,
+  name: 'projetosRaiz',
   redirect: '/projetos/todos',
   props: {
     submenu: MenuSecundário,
   },
 
   meta: {
-    presenteNoMenu: true,
-    pesoNoMenu: 2,
     entidadeMãe: 'projeto',
     título: 'Painel de Projetos',
     íconeParaMenu: `<svg width="18" height="20" viewBox="0 0 18 20" fill="currentColor">

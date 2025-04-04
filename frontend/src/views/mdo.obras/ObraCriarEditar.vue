@@ -3,7 +3,6 @@ import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
 import CampoDePlanosMetasRelacionados from '@/components/CampoDePlanosMetasRelacionados.vue';
 import CampoDeRegioesAgrupadas from '@/components/CampoDeRegioesAgrupadas.vue';
-import LabelFromYup from '@/components/LabelFromYup.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import MapaCampo from '@/components/geo/MapaCampo.vue';
 import { obras as schema } from '@/consts/formSchemas';
@@ -845,13 +844,21 @@ watch(listaDeTiposDeIntervenção, () => {
           :schema="schema"
         />
         <Field
+          v-slot="{ field, handleChange, value }"
           name="mdo_detalhamento"
-          as="textarea"
-          rows="5"
-          class="inputtext light mb1"
-          maxlength="500"
-          :class="{ 'error': errors.mdo_detalhamento }"
-        />
+        >
+          <SmaeText
+            as="textarea"
+            rows="5"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.mdo_detalhamento }"
+            :schema="schema"
+            :name="field.name"
+            :model-value="value"
+            anular-vazio
+            @update:model-value="handleChange"
+          />
+        </Field>
         <ErrorMessage
           name="mdo_detalhamento"
           class="error-msg"
@@ -1362,13 +1369,21 @@ watch(listaDeTiposDeIntervenção, () => {
           :schema="schema"
         />
         <Field
+          v-slot="{ field, handleChange, value }"
           name="mdo_observacoes"
-          as="textarea"
-          rows="5"
-          class="inputtext light mb1"
-          maxlength="500"
-          :class="{ 'error': errors.mdo_observacoes }"
-        />
+        >
+          <SmaeText
+            :name="field.name"
+            as="textarea"
+            rows="5"
+            class="inputtext light mb1"
+            :schema="schema"
+            :model-value="value"
+            anular-vazio
+            :class="{ 'error': errors.mdo_observacoes }"
+            @update:model-value="handleChange"
+          />
+        </Field>
         <ErrorMessage
           name="mdo_observacoes"
           class="error-msg"

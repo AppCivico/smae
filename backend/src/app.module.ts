@@ -9,6 +9,7 @@ import { AppModuleCommon } from './app.module.common';
 import { AppModulePdm } from './app.module.pdm';
 import { AppModuleProjeto } from './app.module.projeto';
 import { AppService } from './app.service';
+import { AtualizacaoEmLoteModule } from './atualizacao-em-lote/atualizacao-em-lote.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RolesGuard } from './auth/guards/roles.guard';
 import { PessoaPrivilegioModule } from './auth/pessoaPrivilegio.module';
@@ -38,6 +39,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { DotacaoModule } from './dotacao/dotacao.module';
 import { EleicaoModule } from './eleicao/eleicao.module';
 import { PainelEstrategicoModule } from './gestao-projetos/painel-estrategico/painel-estrategico.module';
+import { PSMFDashboardModule } from './mf/ps-dash/ps-dash.module';
 import { MinhaContaModule } from './minha-conta/minha-conta.module';
 import { OrcamentoPlanejadoModule } from './orcamento-planejado/orcamento-planejado.module';
 import { OrcamentoRealizadoModule } from './orcamento-realizado/orcamento-realizado.module';
@@ -54,7 +56,6 @@ import { RequestLogModule } from './request_log/request_log.module';
 import { RunReportModule } from './task/run_report/run-report.module';
 import { TaskModule } from './task/task.module';
 import { ClassificacaoModule } from './transferencias-voluntarias/classificacao/classificacao.module';
-import { PSMFDashboardModule } from './mf/ps-dash/ps-dash.module';
 
 // Hacks pro JS
 /*
@@ -113,6 +114,7 @@ import { PSMFDashboardModule } from './mf/ps-dash/ps-dash.module';
         CategoriaAssuntoVariavelModule,
         PSMFDashboardModule,
         RunReportModule,
+        AtualizacaoEmLoteModule,
     ],
     controllers: [AppController],
     providers: [

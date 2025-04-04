@@ -498,6 +498,9 @@ model Pessoa {
     CategoriaAssuntoVariavelQAtualizei CategoriaAssuntoVariavel[] @relation("atualizador")
     CategoriaAssuntoVariavelQRemovi    CategoriaAssuntoVariavel[] @relation("removedor")
 
+    AtualizacoesEmLoteCriadas   AtualizacaoEmLote[] @relation("AtualizacaoEmLoteCriador")
+    AtualizacoesEmLoteRemovidas AtualizacaoEmLote[] @relation("AtualizacaoEmLoteRemovedor")
+
     @@index([email])
     @@map("pessoa")
 }
@@ -605,6 +608,7 @@ model Orgao {
     ViewPainelEstrategicoProjetos     ViewPainelEstrategicoProjetos[]
     ViewProjetoV2Resp                 ViewProjetoV2[]                      @relation("orgao_responsavel")
     ViewProjetoV2Origem               ViewProjetoV2[]                      @relation("orgao_origem")
+    AtualizacaoEmLote                 AtualizacaoEmLote[]
 
     @@map("orgao")
 }
@@ -3500,7 +3504,7 @@ model Relatorio {
     // Coluna espelhada da RelatorioFilha, para facilitar a busca.
     processado_em DateTime? @db.Timestamptz(6)
 
-    err_msg     String? @db.Text
+    err_msg     String?   @db.Text
     iniciado_em DateTime? @db.Timestamptz(6)
 
     tipo  TipoRelatorio? // não deu certo remover, o prisma não cria o Enum pq não ta sendo usado!
@@ -4970,6 +4974,7 @@ enum task_type {
     refresh_variavel
     importacao_parlamentar
     run_report
+    run_update
 }
 
 enum task_status {
@@ -5000,6 +5005,12 @@ model task_queue {
 
     erro_em       DateTime? @db.Timestamp(6)
     erro_mensagem String?
+    worker_info   Json      @default("{}")
+
+    n_retry     Int       @default(0)
+    esperar_ate DateTime?
+
+    AtualizacaoEmLote AtualizacaoEmLote[]
 
     @@index([status])
     @@index([criado_em])
@@ -7527,7 +7538,7 @@ model PsDashboardConsolidado {
     @@map("ps_dashboard_consolidado")
 }
 
-model view_ps_dashboard_consolidado {
+view view_ps_dashboard_consolidado {
     id                                 Int                        @id
     item_id                            Int
     tipo                               PsDashboardConsolidadoTipo
@@ -7663,4 +7674,64 @@ view view_dashboard_variavel_corrente {
 
     @@unique([item_id, tipo])
     @@map("view_dashboard_variavel_corrente")
+}
+
+enum TipoAtualizacaoEmLote {
+    ProjetoPP
+    ProjetoMDO
+}
+
+enum StatusAtualizacaoEmLote {
+    Pendente
+    Executando
+    Concluido // Todos os itens processados com sucesso
+    ConcluidoParcialmente // Finalizado, mas alguns itens falharam
+    Falhou // Abortado devido a erros (ex: max_exceptions) ou todos falharam
+    Abortado // Parado na metade, se matar o job precisa detectar isso
+}
+
+model AtualizacaoEmLote {
+    id   Int                   @id @default(autoincrement())
+    tipo TipoAtualizacaoEmLote // Que tipo de entidade está sendo atualizada
+
+    status StatusAtualizacaoEmLote @default(Pendente) // Status geral do job
+
+    // --- O que está sendo atualizado ---
+    target_ids Int[] // Lista de chaves primárias dos registros a atualizar
+    operacao   Json // A definição da operação: ex: [{"op": "set", "col": "nome", "value": "New Name"}]
+
+    // --- Rastreamento & Resultados ---
+    n_total    Int
+    n_sucesso  Int @default(0)
+    n_erro     Int @default(0)
+    n_ignorado Int @default(0) // Quantos foram pulados (ex: após exceder max_exceptions)
+
+    // Log detalhado, especialmente para falhas. Estrutura pode ser: {falhas: [{"id": 123, "erros": "Validação falhou: ..."}]
+    results_log Json?
+
+    sucesso_ids Int[] // IDs dos registros que foram atualizados com sucesso
+
+    // --- Associação com Task ---
+    task_id Int? // Link para o job task_queue que executa isso
+    task    task_queue? @relation(fields: [task_id], references: [id])
+
+    // --- Auditoria & Contexto ---
+    modulo_sistema ModuloSistema // Qual parte da app iniciou isso
+    criado_por_id  Int
+    criado_em      DateTime      @default(now()) @db.Timestamptz(6)
+    criador        Pessoa        @relation("AtualizacaoEmLoteCriador", fields: [criado_por_id], references: [id])
+
+    iniciou_em  DateTime? @db.Timestamptz(6)
+    terminou_em DateTime? @db.Timestamp(6)
+
+    // Campos de remoção opcionais - geralmente logs não são removidos, mas mantidos para histórico
+    removido_por_id Int?
+    removido_em     DateTime? @db.Timestamptz(6)
+    removedor       Pessoa?   @relation("AtualizacaoEmLoteRemovedor", fields: [removido_por_id], references: [id])
+
+    orgao_id Int?
+    orgao    Orgao? @relation(fields: [orgao_id], references: [id])
+
+    @@index([criado_em, tipo])
+    @@map("atualizacao_em_lote")
 }

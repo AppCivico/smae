@@ -1,7 +1,6 @@
 <script setup>
 import AgrupadorDeAutocomplete from '@/components/AgrupadorDeAutocomplete.vue';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
-import LabelFromYup from '@/components/LabelFromYup.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import escaparDaRota from '@/helpers/escaparDaRota';
 import {

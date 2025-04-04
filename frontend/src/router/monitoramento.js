@@ -72,9 +72,6 @@ export default {
       'PDM.tecnico_cp',
       'PDM.ponto_focal',
     ],
-
-    presenteNoMenu: true,
-    pesoNoMenu: 3,
     título: 'Monitoramento',
     entidadeMãe: 'pdm',
     íconeParaMenu: `<svg width="20" height="22" viewBox="0 0 20 22" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
