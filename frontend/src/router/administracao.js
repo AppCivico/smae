@@ -659,7 +659,7 @@ export default [
             component: AddEditOrganTypes,
             name: 'orgaos.tipos.editar',
             meta: {
-              título: 'Editar tipo de Orgão',
+              título: () => useOrgansStore().tempOrganTypes.descricao || 'Editar Tipo de Orgão',
               rotasParaMigalhasDePão: ['orgaos.tipos'],
             },
           },
