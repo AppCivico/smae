@@ -1,11 +1,11 @@
-<script setup>
+<script lang="ts" setup>
+import FiltroParaRegistros from '@/components/alteracaoEmLotes.componentes/Novo/FiltroParaRegistros.vue';
+
 // Aqui, escolhemos os itens que queremos editar
 </script>
 
 <template>
   <CabecalhoDePagina />
 
-  <p class="debug">
-    Aqui, escolhemos os itens que queremos editar
-  </p>
+  <FiltroParaRegistros />
 </template>
