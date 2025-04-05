@@ -11,6 +11,7 @@ BEGIN
     INSERT INTO ps_dashboard_variavel (
         variavel_id,
         pdm_id,
+        pdm_id_completo,
         fase,
         fase_preenchimento_preenchida,
         fase_validacao_preenchida,
@@ -25,7 +26,8 @@ BEGIN
     WITH pdm_mapping AS (
         SELECT DISTINCT
             v.id AS variavel_id,
-            pi.pdm_id
+            pi.pdm_id,
+            p.ativo
         FROM
             variavel v
             JOIN indicador_variavel iv ON v.id = iv.variavel_id
@@ -34,6 +36,7 @@ BEGIN
                 (pi.tipo = 'meta' AND i.meta_id = pi.id) OR
                 (pi.tipo = 'iniciativa' AND i.iniciativa_id = pi.id) OR
                 (pi.tipo = 'atividade' AND i.atividade_id = pi.id)
+            JOIN pdm p ON pi.pdm_id = p.id
         WHERE
             v.removido_em IS NULL
             AND v.id = ANY(variaveis)
@@ -41,7 +44,8 @@ BEGIN
     planos_data AS (
         SELECT
             variavel_id,
-            array_agg(DISTINCT pdm_id) AS pdm_ids
+            array_agg(DISTINCT pdm_id) AS pdm_ids,
+            array_agg(DISTINCT pdm_id) FILTER (WHERE ativo = TRUE) AS pdm_ids_ativos
         FROM
             pdm_mapping
         GROUP BY
@@ -53,7 +57,7 @@ BEGIN
             -- Lista completa de equipes e órgãos
             COALESCE(array_agg(DISTINCT gre.id) FILTER (WHERE gre.id IS NOT NULL), '{}'::integer[]) AS equipes,
             COALESCE(array_agg(DISTINCT gre.orgao_id) FILTER (WHERE gre.orgao_id IS NOT NULL), '{}'::integer[]) AS equipes_orgaos,
-            
+
             -- Novas colunas baseadas no perfil
             COALESCE(array_agg(DISTINCT gre.id) FILTER (WHERE gre.perfil = 'Medicao'::"PerfilResponsavelEquipe"), '{}'::integer[]) AS equipes_preenchimento,
             COALESCE(array_agg(DISTINCT gre.id) FILTER (WHERE gre.perfil = 'Validacao'::"PerfilResponsavelEquipe"), '{}'::integer[]) AS equipes_conferencia,
@@ -71,13 +75,10 @@ BEGIN
     )
     SELECT
         vcc.variavel_id,
+        COALESCE(pd.pdm_ids_ativos, '{}'::integer[]),
         COALESCE(pd.pdm_ids, '{}'::integer[]),
         vcc.fase::"VariavelFase",
-
-        -- (vcc.fase IN ( 'Validacao', 'Liberacao' ) OR (vcc.fase = 'Preenchimento' AND vcc.atrasos IS NULL OR vcc.atrasos = '{}')),
-        -- mas acho que deveria ser:
         (vcc.fase IN ( 'Preenchimento', 'Validacao' , 'Liberacao' ) AND vcc.liberacao_enviada = TRUE), -- fase_validacao_preenchida
-
         (vcc.fase IN ( 'Preenchimento', 'Validacao' ) AND vcc.liberacao_enviada = TRUE), -- fase_validacao_preenchida
         vcc.fase = 'Liberacao' AND vcc.liberacao_enviada = TRUE, -- fase_liberacao_preenchida
         ed.equipes,
@@ -85,7 +86,7 @@ BEGIN
         ed.equipes_preenchimento,
         ed.equipes_conferencia,
         ed.equipes_liberacao,
-        
+
         -- pegar prazo para indicar se possui atrasos
         -- arr de prazos pode estar vazia
         -- caso o prazo seja < hoje

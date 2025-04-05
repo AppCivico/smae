@@ -14,7 +14,7 @@ SELECT
     v.codigo,
     v.orgao_id,
     v.orgao_proprietario_id,
-    coalesce(ps.pdm_id, '{}'::int[]) AS planos,
+    coalesce(ps.pdm_id_completo, '{}'::int[]) AS planos,
     v.periodicidade,
     v.inicio_medicao,
     v.fim_medicao,
