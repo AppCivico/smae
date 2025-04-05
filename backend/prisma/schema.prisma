@@ -7600,6 +7600,7 @@ model PsDashboardVariavel {
     variavel    Variavel @relation(fields: [variavel_id], references: [id])
 
     pdm_id Int[]
+    pdm_id_completo Int[]
 
     fase                          VariavelFase
     fase_preenchimento_preenchida Boolean      @default(false)
