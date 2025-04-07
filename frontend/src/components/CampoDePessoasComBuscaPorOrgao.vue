@@ -2,7 +2,7 @@
 import { storeToRefs } from 'pinia';
 import { useField } from 'vee-validate';
 import {
-  computed, onMounted, ref, watch, watchEffect,
+  computed, onMounted, ref, toRef, watch, watchEffect,
 } from 'vue';
 import { useRoute } from 'vue-router';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
@@ -21,9 +21,13 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
-  prontoParaMontagem: {
-    type: Boolean,
+  // Uma propriedade extra para evitar conferir a lista de órgãos a baixar em
+  // cada atualização do valor do campo
+  valoresIniciais: {
+    type: Array,
+    default: () => [],
     required: true,
+    validator: (value) => Array.isArray(value),
   },
   orgaoLabel: {
     type: String,
@@ -98,8 +102,8 @@ const pessoasPorÓrgão = computed(() => pessoasSimplificadas.value.reduce((acc,
   return acc;
 }, {}));
 
-const { handleChange } = useField(props.name, undefined, {
-  initialValue: props.modelValue,
+const { handleChange, resetField } = useField(toRef(props, 'name'), undefined, {
+  initialValue: props.valoresIniciais,
 });
 
 const órgãosDisponíveis = computed(() => {
@@ -122,20 +126,21 @@ const mapaDeÓrgãos = computed(
   ), {}),
 );
 
-const órgãosEPessoas = computed(() => props.modelValue.reduce((acc, cur) => {
-  const chave = pessoasPorId.value[cur]?.orgao_id;
+const órgãosEPessoas = computed(() => (Array.isArray(props.modelValue)
+  ? props.modelValue.reduce((acc, cur) => {
+    const chave = pessoasPorId.value[cur]?.orgao_id;
 
-  if (!acc[chave]) {
-    acc[chave] = {
-      órgão: pessoasPorId.value[cur]?.orgao_id,
-      pessoas: [],
-    };
-  }
+    if (!acc[chave]) {
+      acc[chave] = {
+        órgão: pessoasPorId.value[cur]?.orgao_id,
+        pessoas: [],
+      };
+    }
 
-  acc[chave].pessoas.push(cur);
+    acc[chave].pessoas.push(cur);
 
-  return acc;
-}, {}));
+    return acc;
+  }, {}) : {}));
 
 function removerLinha(índice) {
   const novoValor = Object.keys(órgãosEPessoas.value).reduce(
@@ -168,13 +173,13 @@ function adicionarPessoas(pessoas, índice) {
 }
 
 async function montar() {
-  if (props.prontoParaMontagem) {
+  if (props.valoresIniciais.length) {
     if (!Array.isArray(organs.value) || !organs.value.length) {
       await ÓrgãosStore.getAll();
     }
 
     listaDeÓrgãos.value = Object.values(
-      props.modelValue.reduce((acc, cur) => {
+      props.valoresIniciais.reduce((acc, cur) => {
         // usando reduce e um mapa para evitar o trabalho de remover duplicatas
         const chaveDoÓrgão = `_${pessoasPorId.value[cur]?.orgao_id}`;
         if (!acc[chaveDoÓrgão]) {
@@ -184,6 +189,10 @@ async function montar() {
       }, {}),
     );
   }
+
+  resetField({
+    value: props.valoresIniciais,
+  });
 }
 
 // assistindo mounted apenas para facilitar o desenvolvimento
@@ -216,7 +225,7 @@ watchEffect(async () => {
 });
 
 watch(
-  () => props.prontoParaMontagem,
+  () => props.valoresIniciais,
   () => {
     montar();
   },
@@ -310,7 +319,7 @@ watch(
     </button>
 
     <div
-      v-if="prontoParaMontagem && !órgãosDisponíveis.length"
+      v-if="!listaDeÓrgãos.length && !órgãosDisponíveis.length"
       class="error p1 error-msg"
     >
       Não há pessoas com o perfil necessário nos órgãos disponíveis.

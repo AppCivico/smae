@@ -33,9 +33,6 @@ const {
 } = storeToRefs(useGruposPaineisExternosStore);
 const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
 
-// necessário por causa de 🤬
-const montarCampoEstático = ref(false);
-
 const {
   errors, handleSubmit, isSubmitting, resetForm, values,
 } = useForm({
@@ -161,9 +158,9 @@ watch(itemParaEdicao, (novosValores) => {
         />
 
         <CampoDePessoasComBuscaPorOrgao
-          v-model="values.participantes"
+          :model-value="values.participantes"
+          :valores-iniciais="itemParaEdicao.participantes"
           name="participantes"
-          :pronto-para-montagem="montarCampoEstático"
         />
         <ErrorMessage
           name="participantes"

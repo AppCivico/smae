@@ -3,7 +3,7 @@ import { storeToRefs } from 'pinia';
 import {
   ErrorMessage, Field, useForm, useIsFormDirty,
 } from 'vee-validate';
-import { ref, watch } from 'vue';
+import { watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
 import { grupoDeObservadores as schema } from '@/consts/formSchemas';
@@ -29,8 +29,6 @@ const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
 const {
   chamadasPendentes, emFoco, erro, itemParaEdicao,
 } = storeToRefs(observadoresStore);
-
-// necessário por causa de 🤬
 
 const {
   errors, handleSubmit, isSubmitting, resetForm, values,
@@ -162,7 +160,8 @@ watch(itemParaEdicao, (novosValores) => {
         />
 
         <CampoDePessoasComBuscaPorOrgao
-          v-model="values.participantes"
+          :model-value="values.participantes"
+          :valores-iniciais="itemParaEdicao.participantes"
           name="participantes"
           espectador-de-projeto
         />

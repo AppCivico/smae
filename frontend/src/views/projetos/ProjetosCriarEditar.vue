@@ -72,8 +72,6 @@ const props = defineProps({
   },
 });
 
-// necessário por causa de 🤬
-const montarCampoEstático = ref(false);
 const {
   errors,
   controlledValues,
@@ -262,8 +260,6 @@ function iniciar() {
   if (emFoco.value?.meta_id) {
     buscarArvoreDeMetas(emFoco.value?.meta_id);
   }
-
-  montarCampoEstático.value = true;
 }
 
 watch(emFoco, () => {
@@ -1422,10 +1418,10 @@ watch(itemParaEdicao, (novoValor) => {
         />
 
         <CampoDePessoasComBuscaPorOrgao
-          v-model="values.equipe"
+          :model-value="values.equipe"
+          :valores-iniciais="itemParaEdicao.equipe"
           name="equipe"
           :pessoas="possíveisColaboradores"
-          :pronto-para-montagem="montarCampoEstático"
         />
         <ErrorMessage
           name="equipe"
