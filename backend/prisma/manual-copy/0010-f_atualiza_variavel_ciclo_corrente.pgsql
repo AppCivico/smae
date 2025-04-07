@@ -23,6 +23,7 @@ DECLARE
     v_preenchimento_data DATE;
     v_aprovacao_data DATE;
     v_recursion_depth INT;
+    v_base_date DATE;
 BEGIN
 
     IF p_recursion_depth > 10 THEN
@@ -209,22 +210,26 @@ BEGIN
 
         --raise notice 'v_ultimo_periodo_valido após coalesce %', v_ultimo_periodo_valido;
 
+        v_base_date := (v_ultimo_periodo_valido + v_registro.intervalo_atraso)::date;
+        --raise notice 'v_base_date após %', v_base_date;
+
         IF (v_fase_corrente = 'Preenchimento') THEN
-            v_prazo := v_ultimo_periodo_valido + v_registro.intervalo_atraso + v_registro.dur_preench_interval;
+            v_prazo := date_trunc('month', v_base_date) + ((v_registro.periodo_preenchimento[2]) || ' days')::interval;
         ELSIF (v_fase_corrente = 'Validacao') THEN
-            v_prazo := v_ultimo_periodo_valido + v_registro.intervalo_atraso + v_registro.dur_validacao_interval;
-        ELSE
+            v_prazo := date_trunc('month', v_base_date) + ((v_registro.periodo_validacao[2]) || ' days')::interval;
+        ELSE -- Liberacao
 
             -- acabou todos os ciclos, não tem mais prazo
             IF v_liberacao_enviada AND v_atrasos[1] IS NULL THEN
                 v_prazo := NULL;
             ELSE
-                v_prazo := v_ultimo_periodo_valido + v_registro.intervalo_atraso + v_registro.dur_liberacao_interval;
+                v_prazo := date_trunc('month', v_base_date) + ((v_registro.periodo_liberacao[2]) || ' days')::interval;
             END IF;
 
         END IF;
 
     END IF;
+    --raise notice 'v_prazo -> %', v_prazo;
 
     v_proximo_periodo := v_ultimo_periodo_valido + periodicidade_intervalo(v_registro.periodicidade);
 
@@ -242,7 +247,7 @@ BEGIN
         AND a.removido_em IS NULL
     ORDER BY a.criado_em DESC
     LIMIT 1;
---    raise notice 'v_ultima_analise -> %', v_ultima_analise;
+    --raise notice 'v_ultima_analise -> %', v_ultima_analise;
 
     -- Se esta na fase de Preenchimento
     IF v_ultima_analise.fase = 'Preenchimento' THEN
@@ -412,7 +417,7 @@ BEGIN
 END;
 $$
 LANGUAGE plpgsql;
---select f_atualiza_variavel_ciclo_corrente (7125 ) ;
+--select f_atualiza_variavel_ciclo_corrente (5123 ) ;
 
 --select f_atualiza_variavel_ciclo_corrente(4648);
 
@@ -444,7 +449,7 @@ BEGIN
             EXCEPTION
                 WHEN OTHERS THEN
                     -- só faz o log do erro e continua o loop
-                    RAISE NOTICE 'Erro ID %: %', v_record.id, SQLERRM;
+                    --RAISE NOTICE 'Erro ID %: %', v_record.id, SQLERRM;
 
             END;
 
