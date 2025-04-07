@@ -27,7 +27,7 @@ const props = defineProps({
   },
   orgaoLabel: {
     type: String,
-    default: '',
+    default: 'Órgão',
   },
   // necessária para que o vee-validate não se perca
   name: {
@@ -235,7 +235,7 @@ watch(
           :for="`${$props.name}__orgao--${idx}`"
           class="label"
         >
-          {{ props.orgaoLabel ? props.orgaoLabel : "Órgão" }}
+          {{ props.orgaoLabel }}
         </label>
         <select
           :id="`${$props.name}__orgao--${idx}`"
