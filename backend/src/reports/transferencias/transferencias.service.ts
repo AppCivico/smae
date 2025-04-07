@@ -479,7 +479,7 @@ export class TransferenciasService implements ReportableService {
                     value: (row) => this.formatCurrency(row.distribuicao_recurso.valor_contrapartida),
                     label: 'Valor Contrapartida da Distribuição',
                 },
-                { value: 'distribuicao_recurso.empenho', label: 'distribuicao_recurso_empenho' },
+                { value: 'distribuicao_recurso.empenho', label: 'Empenho - Distribuição' },
                 {
                     value: 'distribuicao_recurso.programa_orcamentario_estadual',
                     label: 'Programa Orçamentário Estadual ou Federal',
