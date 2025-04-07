@@ -1,18 +1,11 @@
 <script setup>
-import { storeToRefs } from 'pinia';
-import {
-  ErrorMessage, Field, FieldArray, Form,
-  useIsFormDirty,
-} from 'vee-validate';
-import { computed, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
 import CampoDePlanosMetasRelacionados from '@/components/CampoDePlanosMetasRelacionados.vue';
 import MapaCampo from '@/components/geo/MapaCampo.vue';
-import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudançaDeStatusDeProjeto.vue';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import { projeto as schema } from '@/consts/formSchemas';
 import listaDeStatuses from '@/consts/projectStatuses';
 import requestS from '@/helpers/requestS.ts';
@@ -23,6 +16,16 @@ import { useObservadoresStore } from '@/stores/observadores.store.ts';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage,
+  Field,
+  FieldArray,
+  useForm,
+  useIsFormDirty,
+} from 'vee-validate';
+import { computed, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -71,6 +74,19 @@ const props = defineProps({
 
 // necessário por causa de 🤬
 const montarCampoEstático = ref(false);
+const {
+  errors,
+  controlledValues,
+  handleSubmit,
+  isSubmitting,
+  resetForm,
+  resetField,
+  setFieldValue,
+  values,
+} = useForm({
+  initialValues: itemParaEdicao,
+  validationSchema: schema,
+});
 
 const portfolioId = Number.parseInt(route.query.portfolio_id, 10) || undefined;
 const possíveisGestores = ref([]);
@@ -173,8 +189,8 @@ async function buscarPossíveisColaboradores() {
 
 // PRA-FAZER: não usando o `controlledValues` devido à algum erro no campo de
 // mapa. Trazer de volta.
-async function onSubmit(valores) {
-  const carga = valores;
+const onSubmit = handleSubmit(async () => {
+  const carga = values;
 
   switch (true) {
     case !!carga.atividade_id:
@@ -228,7 +244,7 @@ async function onSubmit(valores) {
   } catch (error) {
     alertStore.error(error);
   }
-}
+});
 
 function iniciar() {
   buscarPossíveisGestores();
@@ -253,6 +269,12 @@ function iniciar() {
 watch(emFoco, () => {
   iniciar();
 }, { immediate: true });
+
+watch(itemParaEdicao, (novoValor) => {
+  resetForm({
+    initialValues: novoValor,
+  });
+});
 </script>
 
 <template>
@@ -268,13 +290,9 @@ watch(emFoco, () => {
     <CheckClose :formulario-sujo="formularioSujo" />
   </header>
 
-  <Form
+  <form
     v-if="!projetoId || emFoco"
-    v-slot="{ errors, isSubmitting, setFieldValue, values }"
-    :disabled="chamadasPendentes.emFoco"
-    :initial-values="itemParaEdicao"
-    :validation-schema="schema"
-    @submit="onSubmit"
+    @submit.prevent="!isSubmitting ? onSubmit() : null"
   >
     <div class="flex g2 mb1">
       <div class="f1 mb1">
@@ -1567,7 +1585,8 @@ watch(emFoco, () => {
       <hr class="mr2 f1">
       <button
         class="btn big"
-        :disabled="isSubmitting || Object.keys(errors)?.length"
+        :aria-busy="isSubmitting"
+        :aria-disabled="Object.keys(errors)?.length"
         :title="Object.keys(errors)?.length
           ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
           : null"
@@ -1576,7 +1595,7 @@ watch(emFoco, () => {
       </button>
       <hr class="ml2 f1">
     </div>
-  </Form>
+  </form>
 
   <div
     v-if="chamadasPendentes?.emFoco"

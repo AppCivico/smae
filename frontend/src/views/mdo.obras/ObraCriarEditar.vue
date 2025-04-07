@@ -442,7 +442,7 @@ watch(listaDeTiposDeIntervenção, () => {
 
   <form
     v-if="!obraId || emFoco"
-    @submit.prevent="onSubmit"
+    @submit.prevent="!isSubmitting ? onSubmit() : null"
   >
     <div class="flex flexwrap g2 mb1">
       <div class="f1 mb1 fb20em">
@@ -1759,7 +1759,8 @@ watch(listaDeTiposDeIntervenção, () => {
       <hr class="mr2 f1">
       <button
         class="btn big"
-        :disabled="isSubmitting || Object.keys(errors)?.length"
+        :aria-busy="isSubmitting"
+        :aria-disabled="Object.keys(errors)?.length"
         :title="Object.keys(errors)?.length
           ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
           : null"
