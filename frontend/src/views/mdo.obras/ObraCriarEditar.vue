@@ -186,7 +186,6 @@ const possíveisOrigens = [
 
 const {
   errors,
-  controlledValues,
   handleSubmit,
   isSubmitting,
   resetForm,
@@ -412,33 +411,6 @@ watch(listaDeTiposDeIntervenção, () => {
 -->
     <CheckClose :formulario-sujo="formularioSujo" />
   </header>
-
-  <div
-    v-scrollLockDebug
-    class="flex flexwrap g2 mb1"
-    style="position: sticky; top: 1rem;"
-  >
-    <textarea
-      class="f1"
-      readonly
-      rows="10"
-      :value="`emFoco: ${emFoco}`"
-    />
-
-    <textarea
-      class="f1"
-      readonly
-      rows="10"
-      :value="`values: ${values}`"
-    />
-
-    <textarea
-      class="f1"
-      readonly
-      rows="10"
-      :value="`controlledValues: ${controlledValues}`"
-    />
-  </div>
 
   <form
     v-if="!obraId || emFoco"
