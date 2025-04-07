@@ -45,6 +45,7 @@ import {
 import { FilterVariavelDto, FilterVariavelGlobalDto } from './dto/filter-variavel.dto';
 import {
     ListSeriesAgrupadas,
+    PdmSimplesDto,
     VariavelDetailComAuxiliaresDto,
     VariavelDetailDto,
     VariavelGlobalDetailDto,
@@ -4119,6 +4120,23 @@ export class VariavelService {
         }
 
         return detailDto;
+    }
+
+    async findAllPdms(): Promise<PdmSimplesDto[]> {
+        const rows = await this.prisma.pdm.findMany({
+            where: {
+                removido_em: null,
+            },
+            select: {
+                id: true,
+                nome: true,
+                tipo: true,
+            },
+            orderBy: {
+                nome: 'asc',
+            },
+        });
+        return rows;
     }
 }
 
