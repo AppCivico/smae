@@ -5,6 +5,7 @@ import {
   Field, useForm, ErrorMessage, useIsFormDirty,
 } from 'vee-validate';
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
+import AutocompleteField2 from './AutocompleteField2.vue';
 
 defineOptions({ inheritAttrs: false });
 
@@ -17,14 +18,19 @@ type Opcoes = OpcaoPadronizada[] | string[] | number[];
 
 type CampoFiltro = {
   class?: string
-  tipo: 'select' | 'text' | 'search' | 'date' | 'checkbox'
+  tipo: 'select' | 'text' | 'search' | 'date' | 'checkbox' | 'autocomplete'
   opcoes?: Opcoes
+  autocomplete?: {
+    label?: string
+    apenasUm?: boolean
+  }
 };
 type Campos = Record<string, CampoFiltro>;
 
 type Linha = {
   class?: string,
-  campos: Campos
+  campos: Campos,
+  decorador?: 'esquerda' | 'direita'
 };
 export type Formulario = Linha[];
 
@@ -124,8 +130,14 @@ if (props.autoSubmit) {
         <div
           v-for="(linha, linhaIndex) in formulario"
           :key="`linha--${linhaIndex}`"
-          class="flex center g2"
+          class="flex center g2 flexwrap"
+          :class="linha.decorador === 'direita' && 'row-reverse'"
         >
+          <hr
+            v-if="linha.decorador"
+            class="f1"
+          >
+
           <div
             class="flex g2"
             :class="linha.class || 'fg999'"
@@ -176,6 +188,22 @@ if (props.autoSubmit) {
                     {{ opcao.label }}
                   </option>
                 </template>
+              </Field>
+
+              <Field
+                v-else-if="campo.tipo === 'autocomplete'"
+                v-slot="{ value, handleChange }"
+                class="inputtext light mb1"
+                :name="campoNome"
+              >
+                <AutocompleteField2
+                  class="f1 mb1"
+                  :controlador="{ participantes: value, busca: '' }"
+                  :grupo="campo.opcoes"
+                  :label="campo.autocomplete?.label || 'label'"
+                  :apenas-um="campo.autocomplete?.apenasUm"
+                  @change="ev => handleChange(ev)"
+                />
               </Field>
 
               <Field

@@ -4373,9 +4373,6 @@ export const alteracaoEmLoteNovoFiltro = object().shape({
   equipamento_id: number().label('Equipamento').nullableOuVazio(),
   processo_sei: string().label('Processos SEI').nullableOuVazio(),
   palavra_chave: string().label('Busca livre').nullableOuVazio(),
-});
-
-export const alteracaoEmLoteNovoOrdenacao = object().shape({
   ordenar_por: string().label('Pordenar por').nullableOuVazio(),
   direcao: string().label('Direção').oneOf(direcaoOpcoes).nullableOuVazio(),
   ipp: number().label('Número de itens').nullableOuVazio(),
