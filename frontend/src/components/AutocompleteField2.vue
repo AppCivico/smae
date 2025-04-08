@@ -76,7 +76,7 @@ function start() {
   control.value = obterControlador();
 
   if (props.retornarArrayVazio && props.grupo.length === 0) {
-    emitirChage([]);
+    emitirChange([]);
   }
 }
 
@@ -89,7 +89,7 @@ watch(
   { immediate: true },
 );
 
-function emitirChage(value) {
+function emitirChange(value) {
   if (props.apenasUm) {
     const ultimo = value.at(-1);
     emit('change', ultimo);
@@ -103,12 +103,12 @@ function emitirChage(value) {
 function removeParticipante(item, p) {
   item.participantes.splice(item.participantes.indexOf(p), 1);
 
-  emitirChage(item.participantes);
+  emitirChange(item.participantes);
 }
 
 function pushId(e, id) {
   e.push(id);
-  emitirChage([...new Set(e)]);
+  emitirChange([...new Set(e)]);
 }
 
 function buscar(e, item, g, label) {
