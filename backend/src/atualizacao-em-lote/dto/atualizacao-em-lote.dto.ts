@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, OmitType } from '@nestjs/swagger';
 import { ModuloSistema, StatusAtualizacaoEmLote, TipoAtualizacaoEmLote } from '@prisma/client';
 import { Transform } from 'class-transformer';
 import { IsDateString, IsEnum, IsInt, IsOptional, Max, Min } from 'class-validator';
@@ -7,6 +7,7 @@ import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
 import { IdSiglaDescricao } from '../../common/dto/IdSigla.dto';
 import { PaginatedWithPagesDto } from '../../common/dto/paginated.dto';
 import { IdNomeExibicao } from '../../meta/entities/meta.entity';
+import { CreateRunUpdateDto } from 'src/task/run_update/dto/create-run-update.dto';
 
 export class AtualizacaoEmLoteResumoDto {
     id: number;
@@ -99,3 +100,5 @@ export class FilterAtualizacaoEmLoteDto {
     @Transform(NumberTransformOrUndef)
     ipp?: number;
 }
+
+export class CreateAtualizacaoEmLoteDto extends OmitType(CreateRunUpdateDto, ['atualizacao_em_lote_id', 'user']) {}

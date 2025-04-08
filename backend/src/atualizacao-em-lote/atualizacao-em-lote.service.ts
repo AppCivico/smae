@@ -13,6 +13,7 @@ import { TaskService } from '../task/task.service';
 import {
     AtualizacaoEmLoteDetalheDto,
     AtualizacaoEmLoteResumoDto,
+    CreateAtualizacaoEmLoteDto,
     FilterAtualizacaoEmLoteDto,
 } from './dto/atualizacao-em-lote.dto';
 
@@ -45,7 +46,7 @@ export class AtualizacaoEmLoteService {
     /**
      * Cria uma tarefa de atualização em lote e submete para processamento assíncrono
      */
-    async create(dto: CreateRunUpdateDto, user: PessoaFromJwt): Promise<RecordWithId> {
+    async create(dto: CreateAtualizacaoEmLoteDto, user: PessoaFromJwt): Promise<RecordWithId> {
         // Validar módulo do sistema
         const modulo = user.assertOneModuloSistema('criar', 'atualização em lote');
 
@@ -96,9 +97,10 @@ export class AtualizacaoEmLoteService {
                         type: 'run_update',
                         params: {
                             atualizacao_em_lote_id: atualizacao.id,
-                            type: tipoAtualizacao,
+                            tipo: tipoAtualizacao,
                             ids: dto.ids,
                             ops: dto.ops,
+                            user: user,
                         },
                     },
                     user,

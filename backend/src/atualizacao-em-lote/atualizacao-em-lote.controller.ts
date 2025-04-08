@@ -10,11 +10,11 @@ import { FindOneParams } from 'src/common/decorators/find-params';
 import { ListaDePrivilegios } from 'src/common/ListaDePrivilegios';
 
 import { RecordWithId } from '../common/dto/record-with-id.dto';
-import { CreateRunUpdateDto } from '../task/run_update/dto/create-run-update.dto';
 import { AtualizacaoEmLoteService } from './atualizacao-em-lote.service';
 import {
     AtualizacaoEmLoteDetalheDto,
     AtualizacaoEmLoteResumoDto,
+    CreateAtualizacaoEmLoteDto,
     FilterAtualizacaoEmLoteDto,
     ListAtualizacaoEmLoteDto,
 } from './dto/atualizacao-em-lote.dto';
@@ -37,7 +37,7 @@ export class AtualizacaoEmLoteController {
     @Roles(BASE_ROLE)
     @ApiOperation({ summary: 'Cria uma tarefa de atualização em lote e submete para processamento assíncrono.' })
     async createRunUpdateTask(
-        @Body() dto: CreateRunUpdateDto,
+        @Body() dto: CreateAtualizacaoEmLoteDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
         return this.atualizacaoEmLoteService.create(dto, user);
