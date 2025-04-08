@@ -120,26 +120,34 @@
           class="label"
           for="plano-setorial-id"
         >
-          Plano setorial
+          Plano setorial / <abbr title="Programa de Metas">PdM</abbr>
         </label>
         <select
           id="plano-setorial-id"
           v-model.number="planoSetorialId"
           name="plano_setorial_id"
           class="inputtext light"
-          :aria-busy="chamadasPendentesDePlanosSetoriais.lista"
+          :aria-busy="chamadasPendentesDePlanosSimplificados.planosSimplificados"
           :class="{
-            error: errosDePlanosSetoriais.lista
+            error: errosDePlanosSimplificados.planosSimplificados
           }"
         >
           <option value="" />
-          <option
-            v-for="plano in listaDePlanosSetoriais"
-            :key="plano.id"
-            :value="plano.id"
+
+          <optgroup
+            v-for="tipo in Object.keys(planosSimplificadosPorTipo)"
+            :key="tipo"
+            :label="tipo"
           >
-            {{ plano.nome }}
-          </option>
+            <option
+              v-for="plano in planosSimplificadosPorTipo[tipo]"
+              :key="plano.id"
+              :value="plano.id"
+              :selected="Number(valoresIniciaisConsolidados.plano_setorial_id) === plano.id"
+            >
+              {{ plano.nome }}
+            </option>
+          </optgroup>
         </select>
       </div>
 
@@ -392,9 +400,9 @@ import truncate from '@/helpers/texto/truncate';
 import { useAssuntosStore } from '@/stores/assuntosPs.store';
 import { usePsMetasStore } from '@/stores/metasPs.store';
 import { useOrgansStore } from '@/stores/organs.store';
-import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
 import { useRegionsStore } from '@/stores/regions.store';
 import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store';
+import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store.ts';
 import { storeToRefs } from 'pinia';
 import type { Ref } from 'vue';
 import {
@@ -454,15 +462,16 @@ const chavesDeValoresValidos = [
 const assuntosStore = useAssuntosStore();
 const MetasStore = usePsMetasStore(route.meta.entidadeMãe);
 const ÓrgãosStore = useOrgansStore();
-const planosSetoriaisStore = usePlanosSetoriaisStore(route.meta.entidadeMãe as string);
 const regionsStore = useRegionsStore();
 const variaveisCategoricasStore = useVariaveisCategoricasStore();
+const variaveisGlobaisStore = useVariaveisGlobaisStore();
 
 const {
-  lista: listaDePlanosSetoriais,
-  chamadasPendentes: chamadasPendentesDePlanosSetoriais,
-  erros: errosDePlanosSetoriais,
-} = storeToRefs(planosSetoriaisStore);
+  planosSimplificadosPorTipo,
+  planosSimplificados: listaDePlanosSimplificados,
+  chamadasPendentes: chamadasPendentesDePlanosSimplificados,
+  erros: errosDePlanosSimplificados,
+} = storeToRefs(variaveisGlobaisStore);
 
 const {
   lista: listaDeMetas,
@@ -528,8 +537,9 @@ async function iniciar() {
     promessas.push(MetasStore.buscarTudo());
   }
 
-  if (!listaDePlanosSetoriais.value.length && !chamadasPendentesDePlanosSetoriais.value.lista) {
-    promessas.push(planosSetoriaisStore.buscarTudo());
+  if (!listaDePlanosSimplificados.value.length
+    && !chamadasPendentesDePlanosSimplificados.value.planosSimplificados) {
+    promessas.push(variaveisGlobaisStore.buscarPlanosSimplificados());
   }
 
   if (
