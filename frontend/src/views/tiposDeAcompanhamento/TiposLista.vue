@@ -1,15 +1,11 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { computed, ref } from 'vue';
 import LocalFilter from '@/components/LocalFilter.vue';
 import TabelaGenérica from '@/components/TabelaGenerica.vue';
 import { useAlertStore } from '@/stores/alert.store';
-import { useAuthStore } from '@/stores/auth.store';
 import { useTiposDeAcompanhamentoStore } from '@/stores/tiposDeAcompanhamento.store.ts';
-import { storeToRefs } from 'pinia';
-import { computed, ref } from 'vue';
-
-const authStore = useAuthStore();
-const { permissions } = storeToRefs(authStore);
-const perm = permissions.value;
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
 
 const tiposDeAcompanhamentoStore = useTiposDeAcompanhamentoStore();
 const {
@@ -40,7 +36,7 @@ const colunas = [
   {
     nomeDaPropriedade: 'excluir',
     texto: 'excluir',
-    svgId: 'remove',
+    svgId: 'waste',
     classe: 'col--botão-de-ação',
   },
 ];
@@ -61,17 +57,19 @@ const listaPreparada = computed(() => lista.value.map((x) => ({
   },
 })) || []);
 </script>
+
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>{{ $route.meta.título }}</h1>
+    <TituloDaPagina />
+
     <hr class="ml2 f1">
-    <router-link
-      v-if="perm?.Projeto?.administrar_portfolios"
+
+    <SmaeLink
       :to="{ name: 'tipoDeAcompanhamentoCriar' }"
       class="btn big ml2"
     >
       Novo tipo
-    </router-link>
+    </SmaeLink>
   </div>
 
   <div class="flex center mb2 spacebetween">
