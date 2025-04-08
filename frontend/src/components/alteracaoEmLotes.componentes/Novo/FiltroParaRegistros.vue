@@ -1,91 +1,126 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onMounted } from 'vue';
+import { storeToRefs } from 'pinia';
 import FiltroParaPagina, { Formulario } from '@/components/FiltroParaPagina.vue';
+import { alteracaoEmLoteNovoFiltro as schema } from '@/consts/formSchemas';
+import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store';
+import { useOrgansStore } from '@/stores/organs.store';
+import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';
+import { useEquipamentosStore } from '@/stores/equipamentos.store';
+import { useRegionsStore } from '@/stores/regions.store';
+import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
+import prepararParaSelect from '@/helpers/prepararParaSelect';
+import statusObras from '@/consts/statusObras';
 
-import { alteracaoEmLoteNovoFiltro, alteracaoEmLoteNovoOrdenacao } from '@/consts/formSchemas';
+const organsStore = useOrgansStore();
+const regionsStore = useRegionsStore();
+const equipamentosStore = useEquipamentosStore();
+const portfolioObraStore = usePortfolioObraStore();
+const gruposTematicosStore = useGruposTematicosStore();
+const tiposDeIntervencaoStore = useTiposDeIntervencaoStore();
+const portfolioMdoStore = usePortfolioObraStore();
 
-// const organsStore = useOrgansStore();
-// const portfolioStore = usePortfolioStore();
-// const etapasProjetosStore = useEtapasProjetosStore();
+const { lista: portfolioObrasLista } = storeToRefs(portfolioObraStore);
+const { órgãosComoLista: orgaosLista, organs } = storeToRefs(organsStore);
 
-// const organResponsibles = computed(() => {
-//   if (!Array.isArray(organsStore.organResponsibles)) {
-//     return [];
-//   }
+const { lista: listaDePortfolios } = storeToRefs(portfolioObraStore);
+const { lista: listaDeEquipamentos } = storeToRefs(equipamentosStore);
+const { lista: listaDeGruposTematicos } = storeToRefs(gruposTematicosStore);
+const { regions, regiõesPorNível: regioesPorNivel } = storeToRefs(regionsStore);
+const { lista: listaDeTiposDeIntervencao } = storeToRefs(tiposDeIntervencaoStore);
 
-//   return organsStore.organResponsibles;
-// });
-// const portfolioLista = computed(() => portfolioStore.lista || []);
-// const etapasLista = computed(() => etapasProjetosStore.lista || []);
-// const ordenador = computed(() => {
-//   const ordemIdMap = {
-//     portfolio_id: 'portfolio_titulo',
-//     orgao_responsavel_id: 'orgao_origem_nome',
-//     projeto_etapa_id: 'projeto_etapa',
-//   } as const;
-
-//   const itemsParaFiltro = [
-//     'nome',
-//     'portfolio_id',
-//     'orgao_responsavel_id',
-//     'status',
-//     'projeto_etapa_id',
-//     'previsao_custo',
-//     'previsao_termino',
-//   ] as const;
-
-//   return itemsParaFiltro.map((item) => {
-//     const id = ordemIdMap[item] || item;
-
-//     if (!schema.fields[item]) {
-//       console.error(`Item de ordenação ${item} não encontrado`);
-
-//       return {
-//         id,
-//         label: item,
-//       };
-//     }
-
-//     return {
-//       id,
-//       label: schema.fields[item].spec.label,
-//     };
-//   });
-// });
-
-// const opcoesFormulario = computed(() => ({
-//   orgaos: organResponsibles.value.map((item) => ({
-//     id: item.id,
-//     label: `${item.sigla} - ${item.descricao}`,
-//   })),
-//   portfolio: portfolioLista.value.map((item) => ({
-//     id: item.id,
-//     label: item.titulo,
-//   })),
-//   etapas: etapasLista.value.map((item) => ({
-//     id: item.id,
-//     label: item.descricao,
-//   })),
-//   revisado: [
-//     { id: true, label: 'Revisado' },
-//     { id: false, label: 'Não revisado' },
-//   ],
-// }));
+const colunasParaOrdenacao = {
+  id: {
+    id: 'id',
+    label: '',
+  },
+  nome: {
+    id: 'nome',
+    label: schema.fields.nome?.spec.label,
+  },
+  codigo: {
+    id: 'codigo',
+    label: 'Código',
+  },
+  portfolio_titulo: {
+    id: 'portfolio_titulo',
+    label: schema.fields.portfolio_id?.spec.label,
+  },
+  grupo_tematico_nome: {
+    id: 'grupo_tematico_nome',
+    label: schema.fields.grupo_tematico_id?.spec.label,
+  },
+  tipo_intervencao_nome: {
+    id: 'tipo_intervencao_nome',
+    label: schema.fields.tipo_intervencao_id?.spec.label,
+  },
+  equipamento_nome: {
+    id: 'equipamento_nome',
+    label: schema.fields.equipamento_id?.spec.label,
+  },
+  orgao_origem_nome: {
+    id: 'orgao_origem_nome',
+    label: schema.fields.orgao_origem_id?.spec.label,
+  },
+  regioes: {
+    id: 'regioes',
+    label: schema.fields.regiao_ids?.spec.label,
+  },
+  status: {
+    id: 'status',
+    label: schema.fields.status?.spec.label,
+  },
+  registrado_em: {
+    id: 'registrado_em',
+    label: 'Data de registro',
+  },
+};
 
 const camposFiltro = computed<Formulario>(() => [
   {
     campos: {
-      portfolio_id: { tipo: 'select', opcoes: [] },
-      orgao_origem_id: { tipo: 'select', opcoes: [] },
-      subprefeitura_id: { tipo: 'select', opcoes: [] },
-      status_obra: { tipo: 'select', opcoes: [] },
+      portfolio_id: {
+        tipo: 'autocomplete',
+        opcoes: portfolioObrasLista.value,
+        autocomplete: { label: 'titulo', apenasUm: true },
+      },
+      orgao_origem_id: {
+        tipo: 'autocomplete',
+        opcoes: orgaosLista.value,
+        autocomplete: {
+          label: 'sigla',
+        },
+      },
+      subprefeitura_id: {
+        tipo: 'autocomplete',
+        opcoes: regioesPorNivel.value[3],
+        autocomplete: { label: 'descricao', apenasUm: true },
+      },
+      status_obra: {
+        tipo: 'select',
+        opcoes: prepararParaSelect(statusObras, { id: 'valor', label: 'nome' }),
+      },
     },
   },
   {
     campos: {
-      grupo_tematico_id: { tipo: 'select', opcoes: [] },
-      tipo_obra_id: { tipo: 'select', opcoes: [] },
-      equipamento_id: { tipo: 'select', opcoes: [] },
+      grupo_tematico_id: {
+        tipo: 'autocomplete',
+        opcoes: listaDeGruposTematicos.value,
+        autocomplete: {
+          apenasUm: true,
+          label: 'nome',
+        },
+      },
+      tipo_obra_id: {
+        tipo: 'select',
+        opcoes: prepararParaSelect(listaDeTiposDeIntervencao.value, { id: 'id', label: 'nome' }),
+      },
+      equipamento_id: {
+        tipo: 'autocomplete',
+        opcoes: listaDeEquipamentos.value,
+        autocomplete: { apenasUm: true, label: 'nome' },
+      },
       processo_sei: { tipo: 'text' },
     },
   },
@@ -95,21 +130,52 @@ const camposFiltro = computed<Formulario>(() => [
       palavra_chave: { tipo: 'search' },
     },
   },
-]);
-
-const camposOrdenacao = computed<Formulario>(() => [
   {
+    class: 'fb50 mt2',
     campos: {
-      ordenar_por: { tipo: 'select', opcoes: [] },
-      direcao: { tipo: 'select', opcoes: ['asc', 'desc'] },
+      ordenar_por: { tipo: 'select', opcoes: Object.values(colunasParaOrdenacao) },
+      direcao: {
+        tipo: 'select',
+        opcoes: [
+          { id: 'asc', label: 'Crescente' },
+          { id: 'desc', label: 'Decrescente' },
+        ],
+      },
       ipp: { tipo: 'select', opcoes: [10, 30, 50, 100] },
     },
+    decorador: 'esquerda',
   },
 ]);
 
-const valoresIniciais = computed(() => ({
+const valoresIniciais = ({
   ipp: 30,
-}));
+});
+
+onMounted(() => {
+  if (!listaDePortfolios.value.length) {
+    portfolioMdoStore.buscarTudo();
+  }
+
+  if (!listaDeEquipamentos.value.length) {
+    equipamentosStore.buscarTudo();
+  }
+
+  if (!listaDeGruposTematicos.value.length) {
+    gruposTematicosStore.buscarTudo();
+  }
+
+  if (!listaDeTiposDeIntervencao.value.length) {
+    tiposDeIntervencaoStore.buscarTudo();
+  }
+
+  if (!Array.isArray(organs.value)) {
+    organsStore.getAll();
+  }
+
+  if (!Array.isArray(regions.value)) {
+    regionsStore.getAll();
+  }
+});
 
 </script>
 
@@ -117,20 +183,8 @@ const valoresIniciais = computed(() => ({
   <section>
     <FiltroParaPagina
       :formulario="camposFiltro"
-      :schema="alteracaoEmLoteNovoFiltro"
+      :schema="schema"
       :valores-iniciais="valoresIniciais"
     />
-
-    <aside class="flex g3 center mt3">
-      <hr class="fb50">
-
-      <FiltroParaPagina
-        class="fg999"
-        :formulario="camposOrdenacao"
-        :schema="alteracaoEmLoteNovoOrdenacao"
-        :valores-iniciais="valoresIniciais"
-        auto-submit
-      />
-    </aside>
   </section>
 </template>
