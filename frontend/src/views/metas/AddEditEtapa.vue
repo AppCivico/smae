@@ -494,7 +494,7 @@ watch(valoresIniciais, (novoValor) => {
                   busca: '',
                   participantes: values?.ps_ponto_focal?.equipes || [],
                 }"
-                :grupo="EquipesStore.equipesPorIds(singleMeta.ps_ponto_focal.equipes)"
+                :grupo="EquipesStore.equipesPorIds(singleMeta?.ps_ponto_focal?.equipes)"
                 label="titulo"
               />
             </div>
