@@ -3981,6 +3981,7 @@ export const variavelGlobal = object({
     preenchimento_inicio: number()
       .label('Dia inicio da coleta')
       .min(1)
+      .max(30)
       .positive()
       .required()
       .transform((v) => (v === '' || Number.isNaN(v) ? null : Number(v))),

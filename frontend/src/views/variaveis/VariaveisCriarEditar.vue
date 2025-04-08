@@ -997,6 +997,7 @@ onUnmounted(() => {
               name="periodos.preenchimento_inicio"
               type="number"
               min="1"
+              max="30"
               class="inputtext light mb1"
               :class="{ error: errors['periodos.preenchimento_inicio'] }"
             />
