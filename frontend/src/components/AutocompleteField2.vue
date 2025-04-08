@@ -8,8 +8,12 @@ const props = defineProps({
   controlador: {
     type: Object,
     required: true,
-    validator(value) {
-      return typeof value.busca === 'string' && Array.isArray(value.participantes);
+    validator(value, props) {
+      return typeof value.busca === 'string' && (
+        !value.participantes
+        || (props.apenasUm && !Array.isArray(value.participantes))
+        || (!props.apenasUm && Array.isArray(value.participantes))
+      );
     },
   },
   // lista de opções
@@ -37,9 +41,25 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  apenasUm: {
+    type: Boolean,
+    default: false,
+  },
 });
 
-const control = ref(props.controlador);
+function obterControlador() {
+  let controladorParticipante = props.controlador.participantes || [];
+
+  if (props.apenasUm && !Array.isArray(controladorParticipante)) {
+    controladorParticipante = [controladorParticipante];
+  }
+
+  return {
+    busca: props.controlador.busca,
+    participantes: controladorParticipante,
+  };
+}
+const control = ref(obterControlador());
 const emit = defineEmits(['change']);
 
 // se tivermos o nome do campo, podemos habilitar o vee-validate.
@@ -47,7 +67,7 @@ const emit = defineEmits(['change']);
 if (props.name) {
   const name = toRef(props, 'name');
   const { handleChange } = useField(name, undefined, {
-    initialValue: props.controlador.participantes,
+    initialValue: obterControlador(),
   });
 
   watch(control.value.participantes, (newValue) => {
@@ -56,25 +76,44 @@ if (props.name) {
 }
 
 function start() {
-  control.value = props.controlador;
+  control.value = obterControlador();
 
   if (props.retornarArrayVazio && props.grupo.length === 0) {
-    emit('change', []);
+    emitirChage([]);
   }
 }
 
-start();
-onMounted(() => { start(); });
-onUpdated(() => { start(); });
+watch(
+  () => [
+    props.apenasUm,
+    props.controlador.participantes,
+  ],
+  () => { start(); },
+  { immediate: true },
+);
+
+function emitirChage(value) {
+  if (props.apenasUm) {
+    const ultimo = value.at(-1);
+    emit('change', ultimo);
+
+    return;
+  }
+
+  emit('change', value);
+}
 
 function removeParticipante(item, p) {
   item.participantes.splice(item.participantes.indexOf(p), 1);
-  emit('change', item.participantes);
+
+  emitirChage(item.participantes);
 }
+
 function pushId(e, id) {
   e.push(id);
-  emit('change', [...new Set(e)]);
+  emitirChage([...new Set(e)]);
 }
+
 function buscar(e, item, g, label) {
   e.preventDefault();
   e.stopPropagation();
