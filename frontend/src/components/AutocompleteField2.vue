@@ -1,16 +1,15 @@
 <script setup>
 import { useField } from 'vee-validate';
-import { ref, toRef, watch } from 'vue';
+import {
+  onMounted, onUpdated, ref, toRef, watch,
+} from 'vue';
 
 const props = defineProps({
   controlador: {
     type: Object,
     required: true,
-    validator(value, props) {
-      return typeof value.busca === 'string' && (
-        !value.participantes
-        || !!props.apenasUm !== Array.isArray(value.participantes)
-      );
+    validator(value) {
+      return typeof value.busca === 'string' && Array.isArray(value.participantes);
     },
   },
   // lista de opções
@@ -38,25 +37,11 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-  apenasUm: {
-    type: Boolean,
-    default: false,
-  },
+
 });
 
-function obterControlador() {
-  let controladorParticipante = props.controlador.participantes || [];
+const control = ref(props.controlador);
 
-  if (props.apenasUm && !Array.isArray(controladorParticipante)) {
-    controladorParticipante = [controladorParticipante];
-  }
-
-  return {
-    busca: props.controlador.busca,
-    participantes: controladorParticipante,
-  };
-}
-const control = ref(obterControlador());
 const emit = defineEmits(['change']);
 
 // se tivermos o nome do campo, podemos habilitar o vee-validate.
@@ -64,7 +49,7 @@ const emit = defineEmits(['change']);
 if (props.name) {
   const name = toRef(props, 'name');
   const { handleChange } = useField(name, undefined, {
-    initialValue: obterControlador(),
+    initialValue: props.controlador.participantes,
   });
 
   watch(control.value.participantes, (newValue) => {
@@ -73,42 +58,25 @@ if (props.name) {
 }
 
 function start() {
-  control.value = obterControlador();
+  control.value = props.controlador;
 
   if (props.retornarArrayVazio && props.grupo.length === 0) {
-    emitirChange([]);
+    emit('change', []);
   }
 }
 
-watch(
-  () => [
-    props.apenasUm,
-    props.controlador.participantes,
-  ],
-  () => { start(); },
-  { immediate: true },
-);
-
-function emitirChange(value) {
-  if (props.apenasUm) {
-    const ultimo = value.at(-1);
-    emit('change', ultimo);
-
-    return;
-  }
-
-  emit('change', value);
-}
+start();
+onMounted(() => { start(); });
+onUpdated(() => { start(); });
 
 function removeParticipante(item, p) {
   item.participantes.splice(item.participantes.indexOf(p), 1);
-
-  emitirChange(item.participantes);
+  emit('change', item.participantes);
 }
 
 function pushId(e, id) {
   e.push(id);
-  emitirChange([...new Set(e)]);
+  emit('change', [...new Set(e)]);
 }
 
 function buscar(e, item, g, label) {
@@ -142,7 +110,7 @@ export default {
       >
       <ul>
         <li
-          v-for="r in grupo.filter((x) => !control.participantes.includes(x.id)
+          v-for="r in grupo.filter((x) => !control.participantes?.includes(x.id)
             && String(x[label])?.toLowerCase().includes(control.busca.toLowerCase()))"
           :key="r.id"
         >
@@ -166,7 +134,7 @@ export default {
       </ul>
     </div>
     <span
-      v-for="p in grupo.filter((x) => control.participantes.includes(x.id))"
+      v-for="p in grupo.filter((x) => control.participantes?.includes(x.id))"
       :key="p.id"
       class="tagsmall"
       :title="p.nome || p.titulo || p.descricao || p.nome_completo || null"
