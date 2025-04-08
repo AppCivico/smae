@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import FiltroParaRegistros from '@/components/alteracaoEmLotes.componentes/Novo/FiltroParaRegistros.vue';
+import FiltroParaRegistros from '@/components/alteracaoEmLotes.componentes/Selecionar/FiltroParaRegistros.vue';
 
 </script>
 
