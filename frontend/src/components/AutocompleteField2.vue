@@ -37,9 +37,11 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+
 });
 
 const control = ref(props.controlador);
+
 const emit = defineEmits(['change']);
 
 // se tivermos o nome do campo, podemos habilitar o vee-validate.
@@ -106,7 +108,7 @@ export default {
       >
       <ul>
         <li
-          v-for="r in grupo.filter((x) => !control.participantes.includes(x.id)
+          v-for="r in grupo.filter((x) => !control.participantes?.includes(x.id)
             && String(x[label])?.toLowerCase().includes(control.busca.toLowerCase()))"
           :key="r.id"
         >
@@ -130,7 +132,7 @@ export default {
       </ul>
     </div>
     <span
-      v-for="p in grupo.filter((x) => control.participantes.includes(x.id))"
+      v-for="p in grupo.filter((x) => control.participantes?.includes(x.id))"
       :key="p.id"
       class="tagsmall"
       :title="p.nome || p.titulo || p.descricao || p.nome_completo || null"
