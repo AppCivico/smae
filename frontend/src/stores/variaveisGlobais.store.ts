@@ -1,4 +1,6 @@
 import { defineStore } from 'pinia';
+import type { PaginatedWithPagesDto } from '@back/common/dto/paginated.dto';
+import type { RecordWithId } from '@back/common/dto/record-with-id.dto';
 import type {
   ListSeriesAgrupadas, VariavelDetailComAuxiliaresDto, VariavelDetailDto, VariavelGlobalDetailDto,
 } from '@back/variavel/dto/list-variavel.dto';
@@ -7,40 +9,23 @@ import type { ValoresSelecionados } from '@/components/AgrupadorDeAutocomplete.v
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
-interface ChamadasPendentes {
-  lista: boolean;
-  variaveisFilhasPorMae: { [key: string | number]: boolean };
-  emFoco: boolean;
-}
-
-interface Erros {
-  lista: unknown;
-  variaveisFilhasPorMae: { [key: string | number]: unknown };
-  emFoco: unknown;
-}
+type Variavel = VariavelDetailDto & VariavelGlobalDetailDto & VariavelDetailComAuxiliaresDto ;
 
 interface Estado {
   lista: VariavelGlobalItemDto[];
-  emFoco:
-  | (
-    VariavelDetailDto &
-    VariavelGlobalDetailDto &
-    VariavelDetailComAuxiliaresDto
-  )
-  | null;
+  emFoco: Variavel | null;
   seriesAgrupadas: ListSeriesAgrupadas | null;
   variaveisFilhasPorMae: { [key: string | number]: VariavelGlobalItemDto[] };
 
-  chamadasPendentes: ChamadasPendentes;
-  erros: Erros;
 
-  paginacao: {
-    tokenPaginacao: string;
-    paginas: number;
-    paginaCorrente: number;
-    temMais: boolean;
-    totalRegistros: number;
+  chamadasPendentes: ChamadasPendentes & {
+    variaveisFilhasPorMae: { [key: string | number]: boolean };
   };
+  erros: Erros & {
+    variaveisFilhasPorMae: { [key: string | number]: unknown };
+  };
+
+  paginacao: Paginacao;
 }
 
 const caminhoDeBuscaDeVariaveis = `${baseUrl}/variavel`;
@@ -79,7 +64,8 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
         const resposta = await this.requestS.get(
           `${baseUrl}/variavel/${variavelId || this.route.params.variavelId}`,
           params,
-        );
+        ) as Variavel;
+
         this.emFoco = resposta;
       } catch (erro: unknown) {
         this.erros.emFoco = erro;
@@ -97,7 +83,7 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
           ipp: 1000,
           ...params,
           variavel_mae_id: variavelId,
-        });
+        }) as PaginatedWithPagesDto<VariavelGlobalItemDto>;
 
         this.variaveisFilhasPorMae[variavelId] = resposta.linhas.slice();
       } catch (erro: unknown) {
@@ -118,7 +104,10 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
           pagina_corrente: paginaCorrente,
           tem_mais: temMais,
           total_registros: totalRegistros,
-        } = await this.requestS.get(caminhoDeBuscaDeVariaveis, params);
+        } = await this.requestS.get(
+          caminhoDeBuscaDeVariaveis,
+          params,
+        ) as PaginatedWithPagesDto<VariavelGlobalItemDto>;
 
         this.lista = linhas;
 
@@ -150,7 +139,7 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
       }
     },
 
-    async salvarItem(params = {}, variavelId = 0): Promise<boolean> {
+    async salvarItem(params = {}, variavelId = 0): Promise<RecordWithId | boolean> {
       this.chamadasPendentes.emFoco = true;
 
       try {
@@ -160,9 +149,9 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
           resposta = await this.requestS.patch(
             `${baseUrl}/variavel/${variavelId || this.route.params.variavelId}`,
             params,
-          );
+          ) as RecordWithId;
         } else {
-          resposta = await this.requestS.post(`${baseUrl}/variavel`, params);
+          resposta = await this.requestS.post(`${baseUrl}/variavel`, params) as RecordWithId;
         }
 
         this.chamadasPendentes.emFoco = false;
@@ -184,7 +173,7 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
             variavelId || this.route.params.variavelId
           }/serie`,
           params,
-        );
+        ) as ListSeriesAgrupadas;
 
         this.seriesAgrupadas = resposta;
       } catch (erro: unknown) {
@@ -193,14 +182,14 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
       this.chamadasPendentes.emFoco = false;
     },
 
-    async salvarSeries(params = {}): Promise<boolean> {
+    async salvarSeries(params = {}): Promise<RecordWithId | boolean> {
       this.chamadasPendentes.emFoco = true;
 
       try {
         const resposta = await this.requestS.patch(
           `${baseUrl}/variavel-serie/`,
           params,
-        );
+        ) as RecordWithId;
 
         this.chamadasPendentes.emFoco = false;
         this.erros.emFoco = null;
@@ -212,14 +201,14 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
       }
     },
 
-    async gerarItens(params = {}): Promise<boolean> {
+    async gerarItens(params = {}): Promise<RecordWithId | boolean> {
       this.chamadasPendentes.emFoco = true;
 
       try {
         const resposta = await this.requestS.post(
           `${baseUrl}/variavel/gerador-regionalizado`,
           params,
-        );
+        ) as RecordWithId;
 
         this.chamadasPendentes.emFoco = false;
         this.erros.emFoco = null;
@@ -297,44 +286,46 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
       variavel_categorica_id: emFoco?.variavel_categorica_id || null,
     }),
 
-    variaveisPorId: ({ lista }: Estado) => lista.reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
+    variaveisPorId: ({ lista }: Estado) => lista
+      .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
 
-    filhasPorMaePorNivelDeRegiao: ({ variaveisFilhasPorMae }) => Object.keys(variaveisFilhasPorMae).reduce((acc, maeId) => {
-      let nivelMaisFino = 0;
+    filhasPorMaePorNivelDeRegiao: ({ variaveisFilhasPorMae }) => Object.keys(variaveisFilhasPorMae)
+      .reduce((acc, maeId) => {
+        let nivelMaisFino = 0;
 
-      const filhasAgrupadas = variaveisFilhasPorMae[maeId].reduce(
-        (acc2, cur) => {
-          const agrupador = cur.supraregional && !cur.regiao?.nivel
-            ? 'supraregional'
-            : Number(cur.regiao?.nivel) || 0;
+        const filhasAgrupadas = variaveisFilhasPorMae[maeId].reduce(
+          (acc2, cur) => {
+            const agrupador = cur.supraregional && !cur.regiao?.nivel
+              ? 'supraregional'
+              : Number(cur.regiao?.nivel) || 0;
 
-          if (!acc2[agrupador]) {
+            if (!acc2[agrupador]) {
             // eslint-disable-next-line no-param-reassign
-            acc2[agrupador] = [];
-          }
+              acc2[agrupador] = [];
+            }
 
-          if (agrupador !== 'supraregional' && agrupador > nivelMaisFino) {
-            nivelMaisFino = agrupador;
-          }
+            if (agrupador !== 'supraregional' && agrupador > nivelMaisFino) {
+              nivelMaisFino = agrupador;
+            }
 
-          acc2[agrupador].push(cur);
+            acc2[agrupador].push(cur);
 
-          return acc2;
-        },
-        {} as { [key: string]: VariavelGlobalItemDto[] },
-      );
+            return acc2;
+          },
+          {} as { [key: string]: VariavelGlobalItemDto[] },
+        );
 
-      if (nivelMaisFino && filhasAgrupadas.supraregional) {
-        filhasAgrupadas[nivelMaisFino] = filhasAgrupadas[
-          nivelMaisFino
-        ].concat(filhasAgrupadas.supraregional);
+        if (nivelMaisFino && filhasAgrupadas.supraregional) {
+          filhasAgrupadas[nivelMaisFino] = filhasAgrupadas[
+            nivelMaisFino
+          ].concat(filhasAgrupadas.supraregional);
 
-        delete filhasAgrupadas.supraregional;
-      }
+          delete filhasAgrupadas.supraregional;
+        }
 
-      acc[maeId] = filhasAgrupadas;
+        acc[maeId] = filhasAgrupadas;
 
-      return acc;
-    }, {} as { [key: string]: { [key: string]: VariavelGlobalItemDto[] } }),
+        return acc;
+      }, {} as { [key: string]: { [key: string]: VariavelGlobalItemDto[] } }),
   },
 });
