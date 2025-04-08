@@ -92,7 +92,6 @@ const lastParent = ref({});
 const usersAvailable = ref([]);
 const responsaveis = ref({ participantes: [], busca: '' });
 
-const permissaoLiberada = computed(() => singleEtapa.value.etapa.pode_editar_realizado);
 const permissaoLiberada = computed(() => {
   if (!singleEtapa.value?.etapa) {
     return true;
