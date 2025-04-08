@@ -1,8 +1,6 @@
 <script setup>
 import { useField } from 'vee-validate';
-import {
-  onMounted, onUpdated, ref, toRef, watch,
-} from 'vue';
+import { ref, toRef, watch } from 'vue';
 
 const props = defineProps({
   controlador: {
@@ -11,8 +9,7 @@ const props = defineProps({
     validator(value, props) {
       return typeof value.busca === 'string' && (
         !value.participantes
-        || (props.apenasUm && !Array.isArray(value.participantes))
-        || (!props.apenasUm && Array.isArray(value.participantes))
+        || !!props.apenasUm !== Array.isArray(value.participantes)
       );
     },
   },
