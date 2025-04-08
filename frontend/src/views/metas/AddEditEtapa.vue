@@ -396,6 +396,20 @@ watch(valoresIniciais, (novoValor) => {
     </button>
   </div>
 
+  <pre v-scrollLockDebug>
+permissaoLiberada: {{ permissaoLiberada }}
+singleEtapa?.etapa?.pode_editar_realizado: {{ singleEtapa?.etapa?.pode_editar_realizado }}
+</pre>
+  <textarea
+    v-scrollLockDebug
+    readonly
+    class="block"
+    cols="30"
+    rows="20"
+  >
+singleEtapa?.etapa: {{ singleEtapa?.etapa }}
+</textarea>
+
   <template v-if="!(singleEtapa?.loading || singleEtapa?.error) && singleCronograma?.id">
     <form
       @submit="onSubmit"
