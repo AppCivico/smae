@@ -1,13 +1,11 @@
 <script setup lang="ts">
-import { nextTick, onMounted, watch } from 'vue';
+import { nextTick, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import {
   Field, useForm, ErrorMessage, useIsFormDirty,
 } from 'vee-validate';
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
 import AutocompleteField2 from './AutocompleteField2.vue';
-
-defineOptions({ inheritAttrs: false });
 
 type OpcaoPadronizada = {
   id: number | string
@@ -39,7 +37,6 @@ type Props = {
   schema: Record<string, any>
   valoresIniciais?: Record<string, any>
   autoSubmit?: boolean
-  class?: string
 };
 type Emits = {
   'update:formularioSujo': [boolean]
@@ -121,10 +118,7 @@ if (props.autoSubmit) {
 </script>
 
 <template>
-  <div
-    class="comunicados-gerais-filtro"
-    :class="$props.class"
-  >
+  <div class="filtro-para-pagina">
     <FormularioQueryString :valores-iniciais="valoresIniciais">
       <form @submit="onSubmit">
         <div
