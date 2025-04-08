@@ -125,14 +125,8 @@ const camposFiltro = computed<Formulario>(() => [
     },
   },
   {
-    class: 'fb50',
     campos: {
-      palavra_chave: { tipo: 'search' },
-    },
-  },
-  {
-    class: 'fb50 mt2',
-    campos: {
+      palavra_chave: { tipo: 'search', class: 'fb33' },
       ordenar_por: { tipo: 'select', opcoes: Object.values(colunasParaOrdenacao) },
       direcao: {
         tipo: 'select',
@@ -143,7 +137,6 @@ const camposFiltro = computed<Formulario>(() => [
       },
       ipp: { tipo: 'select', opcoes: [10, 30, 50, 100] },
     },
-    decorador: 'esquerda',
   },
 ]);
 

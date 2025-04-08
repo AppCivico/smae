@@ -139,13 +139,13 @@ if (props.autoSubmit) {
           >
 
           <div
-            class="flex g2"
+            class="flex g2 flexwrap"
             :class="linha.class || 'fg999'"
           >
             <div
               v-for="(campo, campoNome) in linha.campos"
               :key="campoNome"
-              :class="['f1', campo.class]"
+              :class="['f1 align-end', campo.class]"
             >
               <LabelFromYup
                 :name="campoNome"
