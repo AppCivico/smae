@@ -4364,16 +4364,16 @@ export const cicloAtualizacaoFiltrosSchema = object().shape({
 });
 
 export const alteracaoEmLoteNovoFiltro = object().shape({
-  portfolio_id: number().label('Portfólio').nullableOuVazio(),
-  orgao_origem_id: number().label('Órgão Origem').nullableOuVazio(),
-  subprefeitura_id: number().label('Subprefeitura').nullableOuVazio(),
-  status_obra: number().label('Status da obra').nullableOuVazio(),
-  grupo_tematico_id: number().label('Grupo temático').nullableOuVazio(),
-  tipo_obra_id: number().label('Tipo de obra').nullableOuVazio(),
-  equipamento_id: number().label('Equipamento').nullableOuVazio(),
-  processo_sei: string().label('Processos SEI').nullableOuVazio(),
-  palavra_chave: string().label('Busca livre').nullableOuVazio(),
-  ordenar_por: string().label('Pordenar por').nullableOuVazio(),
   direcao: string().label('Direção').oneOf(direcaoOpcoes).nullableOuVazio(),
+  equipamento_id: number().label('Equipamento/Estrutura pública').nullableOuVazio(),
+  grupo_tematico_id: number().label('Grupo temático').nullableOuVazio(),
   ipp: number().label('Número de itens').nullableOuVazio(),
+  ordenar_por: string().label('Pordenar por').nullableOuVazio(),
+  orgao_origem_id: number().label('Secretaria/órgão de origem').nullableOuVazio(),
+  palavra_chave: string().label('Busca livre').nullableOuVazio(),
+  portfolio_id: number().label('Portfólio').nullableOuVazio(),
+  processo_sei: string().label('Processos SEI').nullableOuVazio(),
+  status_obra: number().label('Status da obra').nullableOuVazio(),
+  subprefeitura_id: number().label('Subprefeitura').nullableOuVazio(),
+  tipo_obra_id: number().label('Tipo de obra').nullableOuVazio(),
 });
