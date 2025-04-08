@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import type { PaginatedWithPagesDto } from '@back/common/dto/paginated.dto';
 import type { RecordWithId } from '@back/common/dto/record-with-id.dto';
 import type {
+  ListPdmSimplesDto,
   ListSeriesAgrupadas, VariavelDetailComAuxiliaresDto, VariavelDetailDto, VariavelGlobalDetailDto,
 } from '@back/variavel/dto/list-variavel.dto';
 import type { VariavelGlobalItemDto } from '@back/variavel/entities/variavel.entity';
@@ -17,11 +18,14 @@ interface Estado {
   seriesAgrupadas: ListSeriesAgrupadas | null;
   variaveisFilhasPorMae: { [key: string | number]: VariavelGlobalItemDto[] };
 
+  planosSimplificados: ListPdmSimplesDto['linhas'];
 
   chamadasPendentes: ChamadasPendentes & {
+    planosSimplificados: boolean;
     variaveisFilhasPorMae: { [key: string | number]: boolean };
   };
   erros: Erros & {
+    planosSimplificados: unknown;
     variaveisFilhasPorMae: { [key: string | number]: unknown };
   };
 
@@ -36,15 +40,18 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
     emFoco: null,
     seriesAgrupadas: null,
     variaveisFilhasPorMae: {},
+    planosSimplificados: [],
 
     chamadasPendentes: {
       lista: false,
       variaveisFilhasPorMae: {},
+      planosSimplificados: false,
       emFoco: false,
     },
     erros: {
       lista: null,
       variaveisFilhasPorMae: {},
+      planosSimplificados: null,
       emFoco: null,
     },
     paginacao: {
@@ -120,6 +127,23 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
         this.erros.lista = erro;
       }
       this.chamadasPendentes.lista = false;
+    },
+
+    async buscarPlanosSimplificados(params = {}): Promise<void> {
+      this.chamadasPendentes.planosSimplificados = true;
+      this.erros.planosSimplificados = null;
+      this.planosSimplificados = [];
+      try {
+        const resposta = await this.requestS.get(
+          `${baseUrl}/proxy/pdm-e-planos-setoriais`,
+          params,
+        ) as ListPdmSimplesDto;
+        this.planosSimplificados = resposta.linhas;
+      } catch (erro: unknown) {
+        this.erros.planosSimplificados = erro;
+      }
+
+      this.chamadasPendentes.planosSimplificados = false;
     },
 
     async excluirItem(variavelId: number): Promise<boolean> {
@@ -327,5 +351,18 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
 
         return acc;
       }, {} as { [key: string]: { [key: string]: VariavelGlobalItemDto[] } }),
+
+    planosSimplificadosPorTipo: ({ planosSimplificados }) => planosSimplificados
+      .reduce((acc, cur) => {
+        const tipo = cur.tipo || 'outros';
+
+        if (!acc[tipo]) {
+          acc[tipo] = [];
+        }
+
+        acc[tipo].push(cur);
+
+        return acc;
+      }, {} as { [key: string]: ListPdmSimplesDto['linhas'] }),
   },
 });
