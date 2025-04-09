@@ -170,12 +170,11 @@ type Props =
   & DeleteButtonProps
   & {
     titulo?: string
+    tituloRolagemHorizontal?: string
     colunas: Colunas,
     dados: Linhas
     replicarCabecalho?: boolean
     rolagemHorizontal?: boolean
-    // eslint-disable-next-line @typescript-eslint/ban-types
-    formatador?: Function
     personalizarLinhas?: {
       parametro: string,
       alvo: unknown,
@@ -224,6 +223,10 @@ const tabelaEnvelope = computed<Component | string>(() => (props.rolagemHorizont
 const tituloParaRolagemHorizontal = computed<string | undefined>(() => {
   if (!props.rolagemHorizontal) {
     return undefined;
+  }
+
+  if (props.tituloRolagemHorizontal) {
+    return props.tituloRolagemHorizontal;
   }
 
   if (props.titulo) {
