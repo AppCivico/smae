@@ -12,7 +12,7 @@ import { UploadService } from '../../upload/upload.service';
 import { PortfolioDto } from '../portfolio/entities/portfolio.entity';
 import { PortfolioService } from '../portfolio/portfolio.service';
 import { CreateProjetoDocumentDto, CreateProjetoDto, PPfonteRecursoDto } from './dto/create-projeto.dto';
-import { FilterProjetoDto, FilterProjetoMDODto } from './dto/filter-projeto.dto';
+import { CoreFilterProjetoMDODto, FilterProjetoDto, FilterProjetoMDODto } from './dto/filter-projeto.dto';
 import {
     CloneProjetoTarefasDto,
     RevisarObrasDto,
@@ -1253,7 +1253,11 @@ export class ProjetoService {
         };
     }
 
-    async findAllIdsFrontend(tipo: TipoProjeto, filters: FilterProjetoMDODto, user: PessoaFromJwt): Promise<number[]> {
+    async findAllIdsFrontend(
+        tipo: TipoProjeto,
+        filters: CoreFilterProjetoMDODto,
+        user: PessoaFromJwt
+    ): Promise<number[]> {
         const palavrasChave = await this.buscaIdsPalavraChave(filters.palavra_chave);
         const permissionsSet = await ProjetoGetPermissionSet(tipo, user, false);
         const filterSet = this.getProjetoV2WhereSet(filters, palavrasChave, user.id);
@@ -3492,7 +3496,7 @@ export class ProjetoService {
     }
 
     private getProjetoV2WhereSet(
-        filters: FilterProjetoMDODto,
+        filters: CoreFilterProjetoMDODto,
         ids: number[] | undefined,
         userId?: number
     ): Prisma.ProjetoWhereInput[] {

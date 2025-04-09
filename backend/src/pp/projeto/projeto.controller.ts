@@ -25,7 +25,7 @@ import { DetalheOrigensDto, ResumoOrigensMetasItemDto } from '../../common/dto/o
 import { PaginatedWithPagesDto } from '../../common/dto/paginated.dto';
 import { BatchSimpleIds, RecordWithId } from '../../common/dto/record-with-id.dto';
 import { CreateProjetoDocumentDto, CreateProjetoDto, CreateProjetoSeiDto } from './dto/create-projeto.dto';
-import { FilterProjetoDto, FilterProjetoMDODto } from './dto/filter-projeto.dto';
+import { CoreFilterProjetoMDODto, FilterProjetoDto, FilterProjetoMDODto } from './dto/filter-projeto.dto';
 import {
     CloneProjetoTarefasDto,
     RevisarObrasDto,
@@ -97,7 +97,7 @@ export class ProjetoController {
     @ApiBearerAuth('access-token')
     @Roles([...roles])
     async findAllIds(
-        @Query() filters: FilterProjetoMDODto,
+        @Query() filters: CoreFilterProjetoMDODto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<BatchSimpleIds> {
         return { ids: await this.projetoService.findAllIdsFrontend(this.tipo, filters, user) };
@@ -346,7 +346,7 @@ export class ProjetoMDOController {
     @ApiBearerAuth('access-token')
     @Roles([...roles])
     async findAllIds(
-        @Query() filters: FilterProjetoMDODto,
+        @Query() filters: CoreFilterProjetoMDODto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<BatchSimpleIds> {
         return { ids: await this.projetoService.findAllIdsFrontend(this.tipo, filters, user) };

@@ -109,7 +109,7 @@ export class ProjetoMDOOrderByDto {
     ordem_coluna: string = 'codigo';
 }
 
-export class FilterProjetoMDODto extends IntersectionType(FilterProjetoDto, ProjetoMDOOrderByDto) {
+export class CoreFilterProjetoMDODto extends IntersectionType(FilterProjetoDto) {
     @IsOptional()
     @IsInt({ each: true })
     @Transform(NumberArrayTransformOrEmpty)
@@ -151,20 +151,6 @@ export class FilterProjetoMDODto extends IntersectionType(FilterProjetoDto, Proj
     projeto_etapa_id?: number[];
 
     @IsOptional()
-    @IsInt()
-    @Transform(NumberTransform)
-    ipp?: number = 25;
-
-    @IsOptional()
-    @IsInt()
-    @Transform(NumberTransform)
-    pagina?: number = 1;
-
-    @IsOptional()
-    @IsString()
-    token_paginacao?: string;
-
-    @IsOptional()
     @IsString()
     @MaxLength(250)
     palavra_chave?: string;
@@ -193,4 +179,20 @@ export class FilterProjetoMDODto extends IntersectionType(FilterProjetoDto, Proj
     @IsOnlyDate()
     @IsString()
     registrado_em_ate?: string;
+}
+
+export class FilterProjetoMDODto extends IntersectionType(CoreFilterProjetoMDODto, ProjetoMDOOrderByDto) {
+    @IsOptional()
+    @IsString()
+    token_paginacao?: string;
+
+    @IsOptional()
+    @IsInt()
+    @Transform(NumberTransform)
+    ipp?: number = 25;
+
+    @IsOptional()
+    @IsInt()
+    @Transform(NumberTransform)
+    pagina?: number = 1;
 }
