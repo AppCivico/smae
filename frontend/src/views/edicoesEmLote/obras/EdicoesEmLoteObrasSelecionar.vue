@@ -40,7 +40,20 @@ function handleFinalizarSelecao() {
 }
 
 watch(
-  () => route.query,
+  () => [
+    route.query.portfolio_id,
+    route.query.orgao_origem_id,
+    route.query.subprefeitura_id,
+    route.query.status_obra,
+    route.query.grupo_tematico_id,
+    route.query.tipo_obra_id,
+    route.query.equipamento_id,
+    route.query.processo_sei,
+    route.query.palavra_chave,
+    route.query.ordenar_por,
+    route.query.direcao,
+    route.query.ipp,
+  ],
   () => {
     obrasStore.buscarTudo(route.query);
   },
@@ -57,9 +70,10 @@ watch(
   <section>
     <ContadorItems />
 
-    <article class="mt1">
-      <MenuPaginacao v-bind="paginacao" />
-    </article>
+    <MenuPaginacao
+      v-bind="paginacao"
+      class="mt1"
+    />
 
     <SmaeTable
       v-selecionar-multiplas-opcoes
@@ -109,9 +123,10 @@ watch(
       </template>
     </SmaeTable>
 
-    <article class="mt2">
-      <MenuPaginacao v-bind="paginacao" />
-    </article>
+    <MenuPaginacao
+      v-bind="paginacao"
+      class="mt2"
+    />
 
     <ContadorItems class="mt2" />
 
