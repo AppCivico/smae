@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { watch } from 'vue';
 import { storeToRefs } from 'pinia';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import FiltroParaRegistros from '@/components/alteracaoEmLotes.componentes/Selecionar/FiltroParaRegistros.vue';
 import { useObrasStore } from '@/stores/obras.store';
@@ -13,6 +13,7 @@ import SmaeFieldsetSubmit from '@/components/SmaeFieldsetSubmit.vue';
 import ContadorItems from '@/components/alteracaoEmLotes.componentes/Selecionar/ContadorItems.vue';
 
 const route = useRoute();
+const router = useRouter();
 
 const obrasStore = useObrasStore();
 const edicoesEmLoteStore = useEdicoesEmLoteStore(route.meta.tipoDeAcoesEmLote as string);
@@ -26,6 +27,12 @@ function limparSelecionados() {
 
 function handleSelecionarTodasObras() {
   alert('Aguardando BE');
+
+  return;
+
+  router.push({
+    name: 'edicoesEmLoteObrasNovoConstruir',
+  });
 }
 
 function handleFinalizarSelecao() {
