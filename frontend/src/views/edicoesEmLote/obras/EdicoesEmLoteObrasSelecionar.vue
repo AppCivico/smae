@@ -78,6 +78,7 @@ watch(
     >
       <template #cabecalho:selecionado>
         <button
+          class="btn outline bgnone tcprimary nowrap"
           type="button"
           @click="limparSelecionados"
         >
