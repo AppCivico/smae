@@ -89,10 +89,12 @@ async function iniciar() {
     router.replace({
       name: props.nomeDaRotaRaiz || route.name,
       params: route.params,
-      query: {
-        ...route.query,
-        [props.nomeDaChaveDeAbas]: hashDaAbaPadrao,
-      },
+      query: Object.assign(
+        structuredClone(route.query),
+        {
+          [props.nomeDaChaveDeAbas]: hashDaAbaPadrao,
+        },
+      ),
     });
   }
   await nextTick();
