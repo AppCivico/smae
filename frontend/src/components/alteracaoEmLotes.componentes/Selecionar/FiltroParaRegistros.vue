@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, getCurrentInstance, onMounted } from 'vue';
+import { computed, onMounted } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
 import FiltroParaPagina, { Formulario } from '@/components/FiltroParaPagina.vue';
@@ -35,10 +35,8 @@ const { lista: listaDeGruposTematicos } = storeToRefs(gruposTematicosStore);
 const { regions, regiõesPorNível: regioesPorNivel } = storeToRefs(regionsStore);
 const { lista: listaDeTiposDeIntervencao } = storeToRefs(tiposDeIntervencaoStore);
 
-const app = getCurrentInstance();
-
 const valoresIniciais = ({
-  ipp: app?.appContext.config.globalProperties.gblIpp,
+  ipp: 30,
 });
 
 const colunasParaOrdenacao = {
