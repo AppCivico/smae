@@ -12,6 +12,10 @@ const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 type Variavel = VariavelDetailDto & VariavelGlobalDetailDto & VariavelDetailComAuxiliaresDto ;
 
+export type PlanosSimplificadosPorTipo = {
+  [key: string]: ListPdmSimplesDto['linhas']
+};
+
 interface Estado {
   lista: VariavelGlobalItemDto[];
   emFoco: Variavel | null;
@@ -363,6 +367,6 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
         acc[tipo].push(cur);
 
         return acc;
-      }, {} as { [key: string]: ListPdmSimplesDto['linhas'] }),
+      }, {} as PlanosSimplificadosPorTipo),
   },
 });
