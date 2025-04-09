@@ -37,6 +37,7 @@ DECLARE
     v_equipes_orgaos int[] := ARRAY[]::int[];
     -- Temporary records
     r_item RECORD;
+    v_pdm_ativo BOOLEAN;
 BEGIN
     PERFORM pg_advisory_xact_lock(pMetaId);
     v_debug := '';
@@ -47,10 +48,11 @@ BEGIN
 
     SELECT
         p.id AS v_pdm_id,
+        p.ativo AS v_pdm_ativo,
         cf.data_ciclo AS v_data_ciclo,
         CASE WHEN cf.ativo THEN cf.id ELSE NULL END AS v_CicloFisicoId
             INTO
-        v_pdm_id, v_data_ciclo, v_CicloFisicoId
+        v_pdm_id, v_pdm_ativo, v_data_ciclo, v_CicloFisicoId
 
     FROM pdm p
     LEFT JOIN ciclo_fisico cf ON p.id = cf.pdm_id
@@ -300,16 +302,16 @@ BEGIN
         SELECT
             COUNT(DISTINCT family_id),
             COALESCE(ARRAY_AGG(DISTINCT family_id), ARRAY[]::int[]),
-            COUNT(DISTINCT family_id) FILTER (WHERE eh_corrente = true),
-            COUNT(DISTINCT family_id) FILTER (WHERE eh_corrente = true AND fase = 'Preenchimento' AND
+            COUNT(DISTINCT family_id) FILTER (WHERE v_pdm_ativo AND eh_corrente = true),
+            COUNT(DISTINCT family_id) FILTER (WHERE v_pdm_ativo AND eh_corrente = true AND fase = 'Preenchimento' AND
                 (atrasos IS NULL OR atrasos = '{}') AND (prazo IS NULL OR prazo >= (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::date)
             ),
-            COUNT(DISTINCT family_id) FILTER (WHERE eh_corrente = true AND fase = 'Preenchimento' AND
+            COUNT(DISTINCT family_id) FILTER (WHERE v_pdm_ativo AND eh_corrente = true AND fase = 'Preenchimento' AND
                 ((atrasos IS NOT NULL AND atrasos <> '{}') OR (prazo IS NOT NULL AND prazo < (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::date))
             ),
-            COUNT(DISTINCT family_id) FILTER (WHERE eh_corrente = true AND fase = 'Validacao'),
-            COUNT(DISTINCT family_id) FILTER (WHERE eh_corrente = true AND fase = 'Liberacao' AND liberacao_enviada = false),
-            COUNT(DISTINCT family_id) FILTER (WHERE eh_corrente = true AND fase = 'Liberacao' AND liberacao_enviada = true)
+            COUNT(DISTINCT family_id) FILTER (WHERE v_pdm_ativo AND eh_corrente = true AND fase = 'Validacao'),
+            COUNT(DISTINCT family_id) FILTER (WHERE v_pdm_ativo AND eh_corrente = true AND fase = 'Liberacao' AND liberacao_enviada = false),
+            COUNT(DISTINCT family_id) FILTER (WHERE v_pdm_ativo AND eh_corrente = true AND fase = 'Liberacao' AND liberacao_enviada = true)
         INTO
             v_variaveis_total,
             v_variaveis,
