@@ -14,3 +14,7 @@ export class BatchRecordWithId {
     @ValidateNested({ each: true })
     ids: RecordWithId[];
 }
+
+export class BatchSimpleIds {
+    ids: number[];
+}

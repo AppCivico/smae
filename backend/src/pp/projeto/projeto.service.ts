@@ -1253,6 +1253,20 @@ export class ProjetoService {
         };
     }
 
+    async findAllIdsFrontend(tipo: TipoProjeto, filters: FilterProjetoMDODto, user: PessoaFromJwt): Promise<number[]> {
+        const palavrasChave = await this.buscaIdsPalavraChave(filters.palavra_chave);
+        const permissionsSet = await ProjetoGetPermissionSet(tipo, user, false);
+        const filterSet = this.getProjetoV2WhereSet(filters, palavrasChave, user.id);
+
+        const projetoIds = await this.prisma.projeto.findMany({
+            where: {
+                AND: [...permissionsSet, ...filterSet],
+            },
+            select: { id: true },
+        });
+        return projetoIds.map((p) => p.id);
+    }
+
     async findAllV2(
         tipo: TipoProjeto,
         filters: FilterProjetoMDODto,
