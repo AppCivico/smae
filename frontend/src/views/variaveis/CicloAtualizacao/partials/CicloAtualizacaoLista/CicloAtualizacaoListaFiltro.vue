@@ -7,6 +7,8 @@ import { useEquipesStore } from '@/stores/equipes.store';
 import type { ArvoreDeIniciativas, AtividadesPorId } from '@/stores/helpers/mapIniciativas';
 import { usePsMetasStore } from '@/stores/metasPs.store';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
+import type { PlanosSimplificadosPorTipo } from '@/stores/variaveisGlobais.store';
+import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store';
 import type { EquipeRespItemDto } from '@back/equipe-resp/entities/equipe-resp.entity.ts';
 import type { MetaItemDto } from '@back/meta/entities/meta.entity';
 import { storeToRefs } from 'pinia';
@@ -24,6 +26,8 @@ type FieldsProps = {
   | MetaItemDto[]
   | ArvoreDeIniciativas
   | AtividadesPorId
+  | PlanosSimplificadosPorTipo;
+  ariaBusy?: boolean
   ariaDisabled?: boolean
   placeholder?: string
   mask?: (el: HTMLInputElement) => void
@@ -40,12 +44,17 @@ const valoresIniciais = {
 const equipesStore = useEquipesStore();
 const metasStore = usePsMetasStore(route.meta.entidadeMãe);
 const planosSetoriaisStore = usePlanosSetoriaisStore(route.meta.entidadeMãe);
+const variaveisGlobaisStore = useVariaveisGlobaisStore();
 
 const { lista: listaDeMetas, metasPorPlano } = storeToRefs(metasStore);
 const {
-  lista: listaDePlanos,
   arvoreDeMetas,
 } = storeToRefs(planosSetoriaisStore);
+const {
+  planosSimplificadosPorTipo,
+  planosSimplificados: listaDePlanosSimplificados,
+  chamadasPendentes: chamadasPendentesDePlanosSimplificados,
+} = storeToRefs(variaveisGlobaisStore);
 
 const {
   handleSubmit, isSubmitting, setValues, setFieldValue, values,
@@ -84,7 +93,8 @@ const campos = computed<FieldsProps[]>(() => [
     class: 'fb20em',
     nome: 'pdm_id',
     tipo: 'select',
-    opcoes: listaDePlanos.value,
+    opcoes: planosSimplificadosPorTipo.value,
+    ariaBusy: chamadasPendentesDePlanosSimplificados.value.planosSimplificados,
     onChange: () => {
       setFieldValue('meta_id', null);
       setFieldValue('iniciativa_id', null);
@@ -159,8 +169,9 @@ onMounted(() => {
     metasStore.buscarTudo();
   }
 
-  if (!listaDePlanos.value.length) {
-    planosSetoriaisStore.buscarTudo();
+  if (!listaDePlanosSimplificados.value.length
+    && !chamadasPendentesDePlanosSimplificados.value.planosSimplificados) {
+    variaveisGlobaisStore.buscarPlanosSimplificados();
   }
 
   equipesStore.buscarTudo({ remover_participantes: true });
@@ -205,23 +216,45 @@ onUnmounted(() => {
           :name="campo.nome"
           as="select"
           :aria-disabled="campo.ariaDisabled"
+          :aria-busy="campo.ariaBusy"
           @change="campo.onChange"
         >
           <option value="">
             -
           </option>
 
-          <option
-            v-for="opcao in campo.opcoes"
-            :key="`ciclo-atualizacao-equipe--${opcao.id}`"
-            :value="opcao.id"
-            :title="opcao.titulo?.length > 36 ? opcao.titulo : undefined"
-          >
-            <template v-if="'orgao' in opcao && opcao.orgao?.sigla">
-              {{ opcao.orgao?.sigla }} -
-            </template>
-            {{ 'nome' in opcao ? opcao.nome : truncate(opcao.titulo, 36) }}
-          </option>
+          <template v-if="Array.isArray(campo.opcoes)">
+            <option
+              v-for="opcao in campo.opcoes"
+              :key="`ciclo-atualizacao-equipe--${opcao.id}`"
+              :value="opcao.id"
+              :title="opcao.titulo?.length > 36 ? opcao.titulo : undefined"
+            >
+              <template v-if="'orgao' in opcao && opcao.orgao?.sigla">
+                {{ opcao.orgao?.sigla }} -
+              </template>
+              {{ 'nome' in opcao ? opcao.nome : truncate(opcao.titulo, 36) }}
+            </option>
+          </template>
+          <template v-else-if="typeof campo.opcoes === 'object'">
+            <optgroup
+              v-for="tipo in Object.keys(campo.opcoes)"
+              :key="tipo"
+              :label="tipo"
+            >
+              <option
+                v-for="opcao in (campo.opcoes as Record<string, any>)[tipo]"
+                :key="opcao.id"
+                :value="opcao.id"
+                :title="opcao.nome?.length > 36 ? opcao.nome : undefined"
+              >
+                <template v-if="'orgao' in opcao && opcao.orgao?.sigla">
+                  {{ opcao.orgao?.sigla }} -
+                </template>
+                {{ 'nome' in opcao ? opcao.nome : truncate(opcao.titulo, 36) }}
+              </option>
+            </optgroup>
+          </template>
         </Field>
 
         <ErrorMessage
