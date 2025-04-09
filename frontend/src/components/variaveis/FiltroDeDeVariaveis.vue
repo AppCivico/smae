@@ -385,7 +385,7 @@
     </div>
     <button
       type="submit"
-      class="btn outline bgnone tcprimary mtauto align-end mlauto mr0"
+      class="btn mtauto align-end mlauto mr0"
     >
       Filtrar
     </button>
