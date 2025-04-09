@@ -342,6 +342,16 @@ export class ProjetoMDOController {
         return await this.projetoService.create(this.tipo, createProjetoDto, user);
     }
 
+    @Get('ids')
+    @ApiBearerAuth('access-token')
+    @Roles([...roles])
+    async findAllIds(
+        @Query() filters: FilterProjetoMDODto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<BatchSimpleIds> {
+        return { ids: await this.projetoService.findAllIdsFrontend(this.tipo, filters, user) };
+    }
+
     @Get('v2')
     @ApiBearerAuth('access-token')
     @Roles([...rolesMDO])
