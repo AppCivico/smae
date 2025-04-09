@@ -28,9 +28,9 @@ defineOptions({ inheritAttrs: false });
 
 export type ParametrosDaColuna = {
   linha: Linha
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  formatador?: Function
   caminho: string
+  ehDadoComputado?: boolean
+  formatador?: () => any
 };
 
 type Props = ParametrosDaColuna & {
@@ -39,6 +39,10 @@ type Props = ParametrosDaColuna & {
 const props = defineProps<Props>();
 
 const conteudoColuna = computed(() => {
+  if (props.ehDadoComputado) {
+    return undefined;
+  }
+
   const conteudo = obterParametroNoObjeto(props.caminho, props.linha);
 
   return conteudo;
