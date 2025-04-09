@@ -100,5 +100,8 @@ export const useEdicoesEmLoteStore = (prefixo = '') => defineStore(prefixo ? `${
         return false;
       }
     },
+    limparIdsSelecionados(): void {
+      this.idsSelecionados.splice(0);
+    },
   },
 })();
