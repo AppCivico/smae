@@ -63,21 +63,21 @@ const dadosConsolidadosPorId = computed(() => Object.keys(props.metaDadosPorId)
 async function rolarParaAbaCorrente() {
   if (listaDeAbas.value) {
     await nextTick();
-    const índiceDaAbaCorrente = Array.from(listaDeAbas.value.querySelectorAll('a'))
+    const indiceDaAbaCorrente = Array.from(listaDeAbas.value.querySelectorAll('a'))
       .findIndex((x) => x.hasAttribute('aria-current'));
     const { children: filhas } = listaDeAbas.value;
 
-    if (filhas[índiceDaAbaCorrente]) {
-      listaDeAbas.value.scrollLeft = filhas[índiceDaAbaCorrente].offsetLeft;
+    if (filhas[indiceDaAbaCorrente]) {
+      listaDeAbas.value.scrollLeft = filhas[indiceDaAbaCorrente].offsetLeft;
     }
   }
 }
 
 async function iniciar() {
-  const idDaAbaPadrão = Object.keys(slots).find((x) => dadosConsolidadosPorId.value[x]?.aberta);
-  const dadosDaAbaPadrão = dadosConsolidadosPorId.value[idDaAbaPadrão];
+  const idDaAbaPadrao = Object.keys(slots).find((x) => dadosConsolidadosPorId.value[x]?.aberta);
+  const dadosDaAbaPadrão = dadosConsolidadosPorId.value[idDaAbaPadrao];
 
-  const hashDaAbaPadrão = dadosDaAbaPadrão?.hash
+  const hashDaAbaPadrao = dadosDaAbaPadrão?.hash
     || dadosDaAbaPadrão?.id
     || abas.value?.[0];
 
@@ -85,13 +85,13 @@ async function iniciar() {
     console.warn('O uso de `metaDadosPorId` é obsoleto. Utilize slots com o sufixo `__cabecalho` em seus nomes.');
   }
 
-  if (hashDaAbaPadrão && !abaAberta.value) {
+  if (hashDaAbaPadrao && !abaAberta.value) {
     router.replace({
       name: props.nomeDaRotaRaiz || route.name,
       params: route.params,
       query: {
         ...route.query,
-        [props.nomeDaChaveDeAbas]: hashDaAbaPadrão,
+        [props.nomeDaChaveDeAbas]: hashDaAbaPadrao,
       },
     });
   }

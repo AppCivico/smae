@@ -64,34 +64,34 @@ const formularioSujo = useIsFormDirty();
 
 const perfilParaDetalhar = ref(0);
 
-const perfisPorMódulo = computed(() => (Array.isArray(accessProfiles.value)
+const perfisPorModulo = computed(() => (Array.isArray(accessProfiles.value)
   ? accessProfiles.value.reduce((acc, cur) => {
     const modulosSistemasDessePerfil = Array.isArray(cur.modulos_sistemas)
       ? cur.modulos_sistemas
       : [cur.modulos_sistemas];
 
-    modulosSistemasDessePerfil.forEach((módulo) => {
-      if (!acc[módulo]) {
-        const idDoMódulo = kebabCase(módulo);
+    modulosSistemasDessePerfil.forEach((modulo) => {
+      if (!acc[modulo]) {
+        const idDoModulo = kebabCase(modulo);
 
-        acc[módulo] = {
-          id: idDoMódulo,
-          etiqueta: módulosDoSistema[módulo]?.nome || módulo,
-          nome: módulo,
+        acc[modulo] = {
+          id: idDoModulo,
+          etiqueta: módulosDoSistema[modulo]?.nome || modulo,
+          nome: modulo,
           perfis: [],
           totalSelecionado: 0,
         };
       }
 
-      acc[módulo].totalSelecionado += values.perfil_acesso_ids?.includes(cur.id) ? 1 : 0;
-      acc[módulo].perfis.push(cur);
+      acc[modulo].totalSelecionado += values.perfil_acesso_ids?.includes(cur.id) ? 1 : 0;
+      acc[modulo].perfis.push(cur);
     });
 
     return acc;
   }, {})
   : {}));
 
-const módulosOrdenados = computed(() => Object.values(perfisPorMódulo.value)
+const modulosOrdenados = computed(() => Object.values(perfisPorModulo.value)
   .toSorted((a, b) => {
     switch ('SMAE') {
       case a.etiqueta:
@@ -111,28 +111,28 @@ const handleModulosPermitidosChange = (novoValor) => {
   setFieldValue('modulos_permitidos', novoValor);
 };
 
-const módulosFiltrados = computed(() => {
+const modulosFiltrados = computed(() => {
   if (!values.sobreescrever_modulos) {
-    return módulosOrdenados.value;
+    return modulosOrdenados.value;
   }
 
   if (!values.modulos_permitidos || values.modulos_permitidos.length === 0) {
     return [];
   }
 
-  return módulosOrdenados.value
-    .filter((módulo) => values.modulos_permitidos.includes(módulo.nome));
+  return modulosOrdenados.value
+    .filter((modulo) => values.modulos_permitidos.includes(modulo.nome));
 });
 
 const modulosPermitidosValue = computed(() => {
   const permitidos = values.sobreescrever_modulos
     ? values.modulos_permitidos
-    : módulosOrdenados.value.map((m) => m.nome);
+    : modulosOrdenados.value.map((m) => m.nome);
 
   return [...new Set([...permitidos, 'SMAE'])];
 });
 
-const modulosIds = computed(() => módulosFiltrados.value.map((módulo) => módulo.id).join('.'));
+const modulosIds = computed(() => modulosFiltrados.value.map((modulo) => modulo.id).join('.'));
 
 // ficou meio complexo, mas precisamos validar a lista de permissões do backend
 // com o objeto de permissões que recebemos da store, dessa forma se a lista
@@ -185,14 +185,14 @@ const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
 });
 
 watch(values.modulos_permitidos, (novoValor) => {
-  if (novoValor.length < módulosOrdenados.value.length) {
+  if (novoValor.length < modulosOrdenados.value.length) {
     values.sobreescrever_modulos = true;
   }
 });
 
 watch(() => values.sobreescrever_modulos, (novoValor) => {
   if (!novoValor) {
-    setFieldValue('modulos_permitidos', módulosOrdenados.value.map((módulo) => módulo.nome));
+    setFieldValue('modulos_permitidos', modulosOrdenados.value.map((modulo) => modulo.nome));
   }
 });
 
@@ -416,22 +416,22 @@ watch(accessProfiles, () => {
             class="flex flexwrap g2 t12"
           >
             <li
-              v-for="módulo in módulosOrdenados"
-              :key="módulo.id"
+              v-for="modulo in modulosOrdenados"
+              :key="modulo.id"
               class="mb1"
             >
               <label class="block mb1 perfil">
                 <Field
                   name="modulos_permitidos"
                   type="checkbox"
-                  :value="módulo.nome"
+                  :value="modulo.nome"
                   :class="{ 'error': errors.modulos_permitidos }"
                   :model-value="modulosPermitidosValue"
-                  :disabled="módulo.nome === 'SMAE'"
-                  :checked="módulo.nome === 'SMAE' || modulosPermitidosValue.includes(módulo.nome)"
+                  :disabled="modulo.nome === 'SMAE'"
+                  :checked="modulo.nome === 'SMAE' || modulosPermitidosValue.includes(modulo.nome)"
                   @update:model-value="handleModulosPermitidosChange($event)"
                 />
-                {{ módulo.etiqueta }}
+                {{ modulo.etiqueta }}
               </label>
             </li>
           </ul>
@@ -444,41 +444,41 @@ watch(accessProfiles, () => {
           slots que não são reativos
         -->
         <EnvelopeDeAbas
-          v-if="módulosFiltrados.length"
+          v-if="modulosFiltrados.length"
           :key="modulosIds"
           nome-da-chave-de-abas="modulo"
           class="mb2"
         >
           <template
-            v-for="(módulo) in módulosFiltrados"
-            #[`${módulo.id}__cabecalho`]
-            :key="módulo.id"
+            v-for="(modulo) in modulosFiltrados"
+            #[`${modulo.id}__cabecalho`]
+            :key="modulo.id"
           >
-            {{ módulo.etiqueta }}
+            {{ modulo.etiqueta }}
             <sup
               class="contador-de-perfis"
             >
-              {{ perfisPorMódulo[módulo.nome]?.totalSelecionado }}
+              {{ perfisPorModulo[modulo.nome]?.totalSelecionado }}
             </sup>
           </template>
 
           <template
-            v-for="módulo in módulosFiltrados"
-            #[módulo.id]="{ abaEstaAberta }"
-            :key="módulo.id"
+            v-for="modulo in modulosFiltrados"
+            #[modulo.id]="{ abaEstaAberta }"
+            :key="modulo.id"
           >
             <ul class="lista-de-perfis t12">
               <li
-                v-for="perfil in módulo.perfis"
+                v-for="perfil in modulo.perfis"
                 :key="perfil.id"
                 class="lista-de-perfis__item mb2"
               >
                 <label
                   class="block mb1 perfil"
-                  :for="`${módulo.id}__${perfil.id}`"
+                  :for="`${modulo.id}__${perfil.id}`"
                 >
                   <Field
-                    :id="`${módulo.id}__${perfil.id}`"
+                    :id="`${modulo.id}__${perfil.id}`"
                     name="perfil_acesso_ids"
                     type="checkbox"
                     class="perfil__campo"
@@ -508,8 +508,7 @@ watch(accessProfiles, () => {
                     class="lista-de-perfis"
                   >
                     <li
-                      v-for="(perfilDeEquipe, chave) in
-                        equipesPorOrgaoIdPorPerfil[values.orgao_id] "
+                      v-for="(perfilDeEquipe, chave) in equipesPorOrgaoIdPorPerfil[values.orgao_id]"
                       :key="chave"
                       class="lista-de-perfis__item"
                     >
@@ -524,10 +523,10 @@ watch(accessProfiles, () => {
                         >
                           <label
                             class="block mb1 perfil"
-                            :for="`${módulo.id}__${perfil.id}__${chave}__${equipe.id}`"
+                            :for="`${modulo.id}__${perfil.id}__${chave}__${equipe.id}`"
                           >
                             <Field
-                              :id="`${módulo.id}__${perfil.id}__${chave}__${equipe.id}`"
+                              :id="`${modulo.id}__${perfil.id}__${chave}__${equipe.id}`"
                               name="equipes"
                               type="checkbox"
                               :class="{ 'error': errors.equipes }"
