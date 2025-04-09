@@ -80,6 +80,7 @@
               :formatador="coluna.formatador"
               :linha="linha"
               :caminho="coluna.chave"
+              :eh-dado-computado="coluna.ehDadoComputado"
             >
               <template
                 v-for="nomeSlot in slotsDaCelula"

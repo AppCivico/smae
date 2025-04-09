@@ -1,8 +1,10 @@
 export type Coluna = {
   chave: string;
-  label: string;
+  label?: string;
   cabecalho?: boolean;
+  ehDadoComputado?: boolean;
   classe?: any;
+  formatador?: () => any;
 };
 export type Colunas = Coluna[];
 
