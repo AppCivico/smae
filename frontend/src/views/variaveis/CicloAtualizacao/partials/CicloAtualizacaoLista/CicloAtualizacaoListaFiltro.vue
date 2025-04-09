@@ -172,75 +172,71 @@ onUnmounted(() => {
 });
 </script>
 <template>
-  <section class="comunicados-gerais-filtro">
-    <FormularioQueryString
-      :valores-iniciais="valoresIniciais"
+  <FormularioQueryString
+    :valores-iniciais="valoresIniciais"
+  >
+    <form
+      class="comunicados-gerais-filtro mb2 flex g2 fg999 flexwrap"
+      @submit.prevent="!isSubmitting && onSubmit()"
     >
-      <form
-        class="flex center g2"
-        @submit="onSubmit"
+      <div
+        v-for="campo in campos"
+        :key="campo.nome"
+        :class="['f1', campo.class]"
       >
-        <div class="flex g1 fg999 flexwrap">
-          <div
-            v-for="campo in campos"
-            :key="campo.nome"
-            :class="['f1', campo.class]"
-          >
-            <LabelFromYup
-              :name="campo.nome"
-              :schema="schema"
-            />
+        <LabelFromYup
+          :name="campo.nome"
+          :schema="schema"
+        />
 
-            <Field
-              v-if="campo.tipo !== 'select'"
-              class="inputtext light mb1"
-              :name="campo.nome"
-              :type="campo.tipo"
-              :placeholder="campo.placeholder"
-              :maxlength="campo.mask && 7"
-              @keyup="campo.mask"
-              @change="campo.onChange"
-            />
-            <Field
-              v-else
-              class="inputtext light mb1"
-              :name="campo.nome"
-              as="select"
-              :aria-disabled="campo.ariaDisabled"
-              @change="campo.onChange"
-            >
-              <option value="">
-                -
-              </option>
-
-              <option
-                v-for="opcao in campo.opcoes"
-                :key="`ciclo-atualizacao-equipe--${opcao.id}`"
-                :value="opcao.id"
-                :title="opcao.titulo?.length > 36 ? opcao.titulo : undefined"
-              >
-                <template v-if="'orgao' in opcao && opcao.orgao?.sigla">
-                  {{ opcao.orgao?.sigla }} -
-                </template>
-                {{ 'nome' in opcao ? opcao.nome : truncate(opcao.titulo, 36) }}
-              </option>
-            </Field>
-
-            <ErrorMessage
-              class="error-msg mb1"
-              :name="campo.nome"
-            />
-          </div>
-        </div>
-
-        <button
-          type="submit"
-          class="btn"
-          :disabled="isSubmitting"
+        <Field
+          v-if="campo.tipo !== 'select'"
+          class="inputtext light"
+          :name="campo.nome"
+          :type="campo.tipo"
+          :placeholder="campo.placeholder"
+          :maxlength="campo.mask && 7"
+          @keyup="campo.mask"
+          @change="campo.onChange"
+        />
+        <Field
+          v-else
+          class="inputtext light"
+          :name="campo.nome"
+          as="select"
+          :aria-disabled="campo.ariaDisabled"
+          @change="campo.onChange"
         >
-          Filtrar
-        </button>
-      </form>
-    </FormularioQueryString>
-  </section>
+          <option value="">
+            -
+          </option>
+
+          <option
+            v-for="opcao in campo.opcoes"
+            :key="`ciclo-atualizacao-equipe--${opcao.id}`"
+            :value="opcao.id"
+            :title="opcao.titulo?.length > 36 ? opcao.titulo : undefined"
+          >
+            <template v-if="'orgao' in opcao && opcao.orgao?.sigla">
+              {{ opcao.orgao?.sigla }} -
+            </template>
+            {{ 'nome' in opcao ? opcao.nome : truncate(opcao.titulo, 36) }}
+          </option>
+        </Field>
+
+        <ErrorMessage
+          class="error-msg mb1"
+          :name="campo.nome"
+        />
+      </div>
+
+      <button
+        type="submit"
+        class="btn mtauto align-end mlauto mr0"
+        :aria-busy="isSubmitting"
+      >
+        Filtrar
+      </button>
+    </form>
+  </FormularioQueryString>
 </template>
