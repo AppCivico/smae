@@ -1,16 +1,20 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue';
 import { storeToRefs } from 'pinia';
+import { useRoute } from 'vue-router';
 import FiltroParaPagina, { Formulario } from '@/components/FiltroParaPagina.vue';
-import { alteracaoEmLoteNovoFiltro as schema } from '@/consts/formSchemas';
-import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store';
 import { useOrgansStore } from '@/stores/organs.store';
-import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';
-import { useEquipamentosStore } from '@/stores/equipamentos.store';
 import { useRegionsStore } from '@/stores/regions.store';
+import { useEquipamentosStore } from '@/stores/equipamentos.store';
+import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store';
+import { useEdicoesEmLoteStore } from '@/stores/edicoesEmLote.store';
+import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';
 import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
 import prepararParaSelect from '@/helpers/prepararParaSelect';
 import statusObras from '@/consts/statusObras';
+import { alteracaoEmLoteNovoFiltro as schema } from '@/consts/formSchemas';
+
+const route = useRoute();
 
 const organsStore = useOrgansStore();
 const regionsStore = useRegionsStore();
@@ -20,6 +24,8 @@ const gruposTematicosStore = useGruposTematicosStore();
 const tiposDeIntervencaoStore = useTiposDeIntervencaoStore();
 const portfolioMdoStore = usePortfolioObraStore();
 
+const edicoesEmLoteStore = useEdicoesEmLoteStore(route.meta.tipoDeAcoesEmLote as string);
+
 const { lista: portfolioObrasLista } = storeToRefs(portfolioObraStore);
 const { órgãosComoLista: orgaosLista, organs } = storeToRefs(organsStore);
 
@@ -28,6 +34,10 @@ const { lista: listaDeEquipamentos } = storeToRefs(equipamentosStore);
 const { lista: listaDeGruposTematicos } = storeToRefs(gruposTematicosStore);
 const { regions, regiõesPorNível: regioesPorNivel } = storeToRefs(regionsStore);
 const { lista: listaDeTiposDeIntervencao } = storeToRefs(tiposDeIntervencaoStore);
+
+const valoresIniciais = ({
+  ipp: 30,
+});
 
 const colunasParaOrdenacao = {
   id: {
@@ -140,9 +150,9 @@ const camposFiltro = computed<Formulario>(() => [
   },
 ]);
 
-const valoresIniciais = ({
-  ipp: 30,
-});
+function limparSelecao() {
+  edicoesEmLoteStore.limparIdsSelecionados();
+}
 
 onMounted(() => {
   if (!listaDePortfolios.value.length) {
@@ -178,6 +188,7 @@ onMounted(() => {
       :formulario="camposFiltro"
       :schema="schema"
       :valores-iniciais="valoresIniciais"
+      @filtro="limparSelecao"
     />
   </section>
 </template>

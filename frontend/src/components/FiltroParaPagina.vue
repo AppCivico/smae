@@ -39,7 +39,8 @@ type Props = {
   autoSubmit?: boolean
 };
 type Emits = {
-  'update:formularioSujo': [boolean]
+  (e: 'update:formularioSujo', value: boolean): void
+  (e: 'filtro'): void
 };
 
 const props = defineProps<Props>();
@@ -84,6 +85,8 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   router.replace({
     query: queryFiltrada,
   });
+
+  emit('filtro');
 });
 
 function padronizarOpcoes(opcoes: Opcoes): OpcaoPadronizada[] {
