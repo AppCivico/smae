@@ -70,7 +70,7 @@ onUnmounted(() => {
 <template>
   <div
     v-bind="$attrs"
-    class="t12 uc w700 tamarelo"
+    class="t12 uc w700 tamarelo mb2"
   >
     <small class="lc">Portfólio</small>
     {{ portfolioStore.portfoliosPorId[projetosStore?.emFoco?.portfolio_id]?.titulo }}
