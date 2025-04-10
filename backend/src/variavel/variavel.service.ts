@@ -632,7 +632,7 @@ export class VariavelService {
                         codigo,
                         regioes_ids,
                         nivel_regionalizacao,
-                        dto.acumulativa, // usar_serie_acumulada
+                        false, // não usar acumuladas nas calculadas pelo sistema
                         variavelMae?.id,
                         supraId,
                         prismaTxn
