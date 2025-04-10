@@ -1,8 +1,10 @@
 <template>
-  <header class="flex spacebetween center mb2">
-    <TituloDaPagina />
+  <header class="flex spacebetween center g2 mb2">
+    <TítuloDePágina id="titulo-da-pagina">
+      <slot name="titulo" />
+    </TítuloDePágina>
 
-    <hr class="ml2 f1">
+    <hr class="f1">
 
     <slot name="acoes" />
 
