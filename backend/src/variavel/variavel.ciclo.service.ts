@@ -121,7 +121,15 @@ export async function getVariavelPermissionsWhere(
     }
 
     whereConditions.push({
-        AND: [...GetVariavelWhereSet(filters), { tipo: 'Global' }],
+        AND: [
+            ...GetVariavelWhereSet({
+                ...filters,
+                meta_id: undefined,
+                iniciativa_id: undefined,
+                atividade_id: undefined,
+            }),
+            { tipo: 'Global' },
+        ],
     });
 
     if (!isRoot && user.hasSomeRoles(['CadastroVariavelGlobal.administrador_no_orgao'])) {
