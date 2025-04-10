@@ -121,57 +121,59 @@ watch(podeMudarDeEtapaProjeto, (novoValor) => {
 }, { immediate: true });
 </script>
 <template>
-  <div class="flex spacebetween center mb2 mt2 g2">
-    <TítuloDePágina id="titulo-da-pagina">
+  <CabecalhoDePagina class="mb2">
+    <template #titulo>
       Cronograma
-    </TítuloDePágina>
-    <hr class="f1">
-    <nav class="flex g1">
-      <div
-        v-if="podeMudarDeEtapaProjeto && listaDeEtapas.length"
-        class="dropbtn"
-      >
-        <span class="btn">Mudar etapa</span>
-        <ul>
-          <li
-            v-for="etapa, index in listaDeEtapas"
-            :key="index"
-          >
-            <button
-              type="button"
-              class="like-a__link"
-              @click="mudarEtapa(etapa.id)"
+    </template>
+
+    <template #acoes>
+      <nav class="flex g1">
+        <div
+          v-if="podeMudarDeEtapaProjeto && listaDeEtapas.length"
+          class="dropbtn"
+        >
+          <span class="btn">Mudar etapa</span>
+          <ul>
+            <li
+              v-for="etapa, index in listaDeEtapas"
+              :key="index"
             >
-              {{ etapa.descricao }}
-            </button>
-          </li>
-        </ul>
-      </div>
+              <button
+                type="button"
+                class="like-a__link"
+                @click="mudarEtapa(etapa.id)"
+              >
+                {{ etapa.descricao }}
+              </button>
+            </li>
+          </ul>
+        </div>
 
-      <SmaeLink
-        v-if="(!apenasLeitura)
-          || route.meta.entidadeMãe === 'TransferenciasVoluntarias'"
-        :to="{
-          name: '.TarefasCriar',
-          params: $route.params,
-        }"
-        class="dropbtn"
-      >
-        <span class="btn">Nova tarefa</span>
-      </SmaeLink>
+        <SmaeLink
+          v-if="(!apenasLeitura)
+            || route.meta.entidadeMãe === 'TransferenciasVoluntarias'"
+          :to="{
+            name: '.TarefasCriar',
+            params: $route.params,
+          }"
+          class="dropbtn"
+        >
+          <span class="btn">Nova tarefa</span>
+        </SmaeLink>
 
-      <SmaeLink
-        v-if="permitirClonagem"
-        :to="{
-          name: '.TarefasClonar',
-          params: $route.params,
-        }"
-        class="dropbtn"
-      >
-        <span class="btn"> Clonar tarefas </span>
-      </SmaeLink>
-    </nav>
-  </div>
+        <SmaeLink
+          v-if="permitirClonagem"
+          :to="{
+            name: '.TarefasClonar',
+            params: $route.params,
+          }"
+          class="dropbtn"
+        >
+          <span class="btn"> Clonar tarefas </span>
+        </SmaeLink>
+      </nav>
+    </template>
+  </CabecalhoDePagina>
 
   <ErrorComponent
     v-if="erroNaListaDeEtapas"
