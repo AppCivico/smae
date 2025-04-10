@@ -111,18 +111,15 @@ const handleModulosPermitidosChange = (novoValor) => {
   setFieldValue('modulos_permitidos', novoValor);
 };
 
-const modulosFiltrados = computed(() => {
-  if (!values.sobreescrever_modulos) {
-    return modulosOrdenados.value;
+const abasOcultas = computed(() => modulosOrdenados.value.reduce((acc, cur) => {
+  if (!values.modulos_permitidos?.includes(cur.nome)) {
+    acc[cur.id] = {
+      hidden: true,
+    };
   }
 
-  if (!values.modulos_permitidos || values.modulos_permitidos.length === 0) {
-    return [];
-  }
-
-  return modulosOrdenados.value
-    .filter((modulo) => values.modulos_permitidos.includes(modulo.nome));
-});
+  return acc;
+}, {}));
 
 const modulosPermitidosValue = computed(() => {
   const permitidos = values.sobreescrever_modulos
@@ -131,8 +128,6 @@ const modulosPermitidosValue = computed(() => {
 
   return [...new Set([...permitidos, 'SMAE'])];
 });
-
-const modulosIds = computed(() => modulosFiltrados.value.map((modulo) => modulo.id).join('.'));
 
 // ficou meio complexo, mas precisamos validar a lista de permissões do backend
 // com o objeto de permissões que recebemos da store, dessa forma se a lista
@@ -437,20 +432,20 @@ watch(accessProfiles, () => {
           </ul>
         </div>
 
+        <h2>Perfis por módulo</h2>
+
         <!--
           `v-if` em uso para contornar que não é possível ver a chegada
           atrasada de slots para aplicar a rota da aba inicial
-          `:key` usado para forçar a reavaliação dos
-          slots que não são reativos
         -->
         <EnvelopeDeAbas
-          v-if="modulosFiltrados.length"
-          :key="modulosIds"
+          v-if="modulosOrdenados.length"
           nome-da-chave-de-abas="modulo"
           class="mb2"
+          :atributos-de-cada-aba="abasOcultas"
         >
           <template
-            v-for="(modulo) in modulosFiltrados"
+            v-for="(modulo) in modulosOrdenados"
             #[`${modulo.id}__cabecalho`]
             :key="modulo.id"
           >
@@ -463,7 +458,7 @@ watch(accessProfiles, () => {
           </template>
 
           <template
-            v-for="modulo in modulosFiltrados"
+            v-for="modulo in modulosOrdenados"
             #[modulo.id]="{ abaEstaAberta }"
             :key="modulo.id"
           >
