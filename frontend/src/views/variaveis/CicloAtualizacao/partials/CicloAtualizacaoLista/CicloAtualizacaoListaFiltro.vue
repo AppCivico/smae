@@ -258,7 +258,6 @@ onUnmounted(() => {
                     {{ opcao.orgao?.sigla }} -
                   </template>
                   {{ 'nome' in opcao ? opcao.nome : truncate(opcao.titulo, 36) }}
-                  '"
                 </template>
                 <template v-else>
                   {{ opcao }}
