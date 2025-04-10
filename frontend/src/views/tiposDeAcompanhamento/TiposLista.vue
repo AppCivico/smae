@@ -15,7 +15,7 @@ const {
 const alertStore = useAlertStore();
 
 async function excluirTipo(id) {
-  alertStore.confirmAction('Todos os acompanhamentos associados perderão seu tipo. Deseja mesmo remover esse item?', async () => {
+  alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
     if (await tiposDeAcompanhamentoStore.excluirItem(id)) {
       tiposDeAcompanhamentoStore.buscarTudo();
       alertStore.success('Tipo removido.');

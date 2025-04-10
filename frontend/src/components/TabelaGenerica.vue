@@ -136,11 +136,6 @@ const temCabeçalho = computed(() => props.colunas.some((x) => x.etiqueta));
             Carregando
           </td>
         </tr>
-        <tr v-else-if="erro">
-          <td :colspan="colunas.length">
-            {{ erro }}
-          </td>
-        </tr>
       </tbody>
     </table>
   </div>
