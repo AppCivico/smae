@@ -1,4 +1,5 @@
 <script setup>
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import { etapasProjeto as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
@@ -84,7 +85,7 @@ function excluirEtapaDoProjeto(id) {
 </script>
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>
+    <!--<h1>
       <div
         v-if="etapaId"
         class="t12 uc w700 tamarelo"
@@ -96,7 +97,8 @@ function excluirEtapaDoProjeto(id) {
         : etapaId
           ? "Etapa"
           : "Nova etapa" }}
-    </h1>
+    </h1>-->
+    <TituloDaPagina />
     <hr class="ml2 f1">
     <CheckClose />
   </div>

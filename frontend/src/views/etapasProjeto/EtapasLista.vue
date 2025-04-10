@@ -1,6 +1,7 @@
 <script setup>
 import LocalFilter from '@/components/LocalFilter.vue';
 import TabelaGenérica from '@/components/TabelaGenerica.vue';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
@@ -40,7 +41,7 @@ const colunas = [
   {
     nomeDaPropriedade: 'excluir',
     texto: 'excluir',
-    svgId: 'remove',
+    svgId: 'waste',
     classe: 'col--botão-de-ação',
   },
 ];
@@ -111,7 +112,8 @@ const listaPreparada = computed(() => {
 </script>
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>{{ $route.meta.título }}</h1>
+    <!--<h1>{{ $route.meta.título }}</h1>-->
+    <TituloDaPagina />
     <hr class="ml2 f1">
     <SmaeLink
       v-if="temPermissãoPara(['CadastroProjetoEtapa.inserir'])

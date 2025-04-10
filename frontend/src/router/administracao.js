@@ -66,6 +66,8 @@ import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';
 import { useModalidadeDeContratacaoStore } from '@/stores/modalidadeDeContratacao.store';
 import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
 import { useEquipamentosStore } from '@/stores/equipamentos.store';
+import { useTipoDeAditivosStore } from '@/stores/tipoDeAditivos.store';
+import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
 
 const TiposDeAcompanhamentoLista = defineAsyncComponent({
   loader: () => import('@/views/tiposDeAcompanhamento/TiposLista.vue'),
@@ -487,6 +489,7 @@ export default [
             meta: {
               título: 'Nova etapa da obra',
               rotaDeEscape: 'mdo.etapasListar',
+              rotasParaMigalhasDePão: ['mdo.etapasListar'],
             },
           },
           {
@@ -500,8 +503,9 @@ export default [
               },
             }),
             meta: {
-              título: 'Editar etapa da obra',
+              título: () => useEtapasProjetosStore().etapasPorId || 'Editar etapa da obra',
               rotaDeEscape: 'mdo.etapasListar',
+              rotasParaMigalhasDePão: ['mdo.etapasListar'],
             },
           },
         ],
@@ -908,7 +912,7 @@ export default [
         component: () => import('@/views/tipoDeAditivo/AditivosCriarEditar.vue'),
         name: 'tipoDeAditivosEditar',
         meta: {
-          título: 'Editar tipo de aditivo',
+          título: () => useTipoDeAditivosStore()?.emFoco?.nome || 'Editar tipo de aditivo',
           rotasParaMigalhasDePão: ['tipoDeAditivosListar'],
         },
       },

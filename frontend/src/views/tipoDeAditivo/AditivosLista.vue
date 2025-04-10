@@ -1,6 +1,6 @@
 <template>
   <div class="flex spacebetween center mb2">
-    <TítuloDePágina />
+    <TituloDaPagina />
     <hr class="ml2 f1">
     <router-link
       :to="{ name: 'tipoDeAditivosCriar' }"
@@ -48,7 +48,7 @@
             <svg
               width="20"
               height="20"
-            ><use xlink:href="#i_remove" /></svg>
+            ><use xlink:href="#i_waste" /></svg>
           </button>
         </td>
       </tr>
@@ -75,6 +75,7 @@ import { useAlertStore } from '@/stores/alert.store';
 import { useTipoDeAditivosStore } from '@/stores/tipoDeAditivos.store';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
 
 const route = useRoute();
 
