@@ -209,6 +209,7 @@ onUnmounted(() => {
           :type="campo.tipo"
           :placeholder="campo.placeholder"
           :maxlength="campo.mask && 7"
+          :value="$route.query[campo.nome]"
           @keyup="campo.mask"
           @change="campo.onChange"
         />
@@ -219,6 +220,7 @@ onUnmounted(() => {
           as="select"
           :aria-disabled="campo.ariaDisabled"
           :aria-busy="campo.ariaBusy"
+          :value="$route.query[campo.nome]"
           @change="campo.onChange"
         >
           <option value="">
