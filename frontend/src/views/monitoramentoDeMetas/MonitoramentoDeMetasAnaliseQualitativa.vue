@@ -201,17 +201,6 @@ watchEffect(() => {
         >
           <TextEditor v-bind="field" />
         </Field>
-
-        <fieldset class="fieldset card p05 mt1 pt05">
-          <h2 class="t14 tc500 w400 ml05">
-            Informações complementares anteriores
-          </h2>
-
-          <p
-            class="t12 tc300 w700 ml05"
-            v-html="analiseAnterior.informacoes_complementares || '-'"
-          />
-        </fieldset>
       </div>
     </div>
     <ErrorMessage

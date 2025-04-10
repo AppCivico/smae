@@ -160,17 +160,6 @@ watchEffect(() => {
             v-bind="field"
           />
         </Field>
-
-        <fieldset class="fieldset card p05 mt1 pt05">
-          <h2 class="t14 tc500 w400 ml05">
-            Detalhamento anterior
-          </h2>
-
-          <p
-            class="t12 tc300 w700 ml05"
-            v-html="riscoAnterior.detalhamento || '-'"
-          />
-        </fieldset>
       </div>
     </div>
 
@@ -203,17 +192,6 @@ watchEffect(() => {
             v-bind="field"
           />
         </Field>
-
-        <fieldset class="fieldset card p05 mt1 pt05">
-          <h2 class="t14 tc500 w400 ml05">
-            Pontos de atenção anteriores
-          </h2>
-
-          <p
-            class="t12 tc300 w700 ml05"
-            v-html="riscoAnterior.ponto_de_atencao || '-'"
-          />
-        </fieldset>
       </div>
     </div>
     <ErrorMessage

@@ -150,17 +150,6 @@ watchEffect(() => {
           class="inputtext light mb1"
           :class="{ 'error': errors.comentario }"
         />
-
-        <fieldset class="fieldset card p05 mt1 pt05">
-          <h2 class="t14 tc500 w400 ml05">
-            Comentário anterior
-          </h2>
-
-          <p
-            class="t12 tc300 w700 ml05"
-            v-html="fechamentoAnterior.comentario || '-'"
-          />
-        </fieldset>
       </div>
     </div>
     <ErrorMessage
