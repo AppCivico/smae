@@ -85,7 +85,13 @@ const minLevel = ref(0);
 
 const usersAvailable = ref([]);
 
-const permissaoLiberada = computed(() => currentFase.value.pode_editar_realizado);
+const permissaoLiberada = computed(() => {
+  if (!currentFase.value?.id) {
+    return true;
+  }
+
+  return currentFase.value.pode_editar_realizado;
+});
 
 async function getRegionByParent(r_id, cur) {
   await RegionsStore.filterRegions({ id: r_id });
