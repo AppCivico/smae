@@ -8,12 +8,15 @@ const router = useRouter();
 const selecionado = ref(false);
 
 function handleFiltrar() {
-  const query = {
-    ...route.query,
-    apenas_pendentes: selecionado.value.toString(),
-  };
+  const novaQuery = structuredClone(route.query);
 
-  router.replace({ query });
+  if (selecionado.value) {
+    novaQuery.apenas_pendentes = 'true';
+  } else if (novaQuery.apenas_pendentes !== undefined) {
+    delete novaQuery.apenas_pendentes;
+  }
+
+  router.replace({ query: novaQuery });
 }
 
 watch(selecionado, () => handleFiltrar());
