@@ -230,10 +230,15 @@ onUnmounted(() => {
               :value="opcao.id"
               :title="opcao.titulo?.length > 36 ? opcao.titulo : undefined"
             >
-              <template v-if="'orgao' in opcao && opcao.orgao?.sigla">
-                {{ opcao.orgao?.sigla }} -
+              <template v-if="typeof opcao === 'object'">
+                <template v-if="'orgao' in opcao && opcao.orgao?.sigla">
+                  {{ opcao.orgao?.sigla }} -
+                </template>
+                {{ 'nome' in opcao ? opcao.nome : truncate(opcao.titulo, 36) }}
               </template>
-              {{ 'nome' in opcao ? opcao.nome : truncate(opcao.titulo, 36) }}
+              <template v-else>
+                {{ opcao }}
+              </template>
             </option>
           </template>
           <template v-else-if="typeof campo.opcoes === 'object'">
@@ -248,10 +253,16 @@ onUnmounted(() => {
                 :value="opcao.id"
                 :title="opcao.nome?.length > 36 ? opcao.nome : undefined"
               >
-                <template v-if="'orgao' in opcao && opcao.orgao?.sigla">
-                  {{ opcao.orgao?.sigla }} -
+                <template v-if="typeof opcao === 'object'">
+                  <template v-if="'orgao' in opcao && opcao.orgao?.sigla">
+                    {{ opcao.orgao?.sigla }} -
+                  </template>
+                  {{ 'nome' in opcao ? opcao.nome : truncate(opcao.titulo, 36) }}
+                  '"
                 </template>
-                {{ 'nome' in opcao ? opcao.nome : truncate(opcao.titulo, 36) }}
+                <template v-else>
+                  {{ opcao }}
+                </template>
               </option>
             </optgroup>
           </template>
