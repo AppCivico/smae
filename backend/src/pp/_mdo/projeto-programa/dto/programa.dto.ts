@@ -4,7 +4,7 @@ import { IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class CreateProjetoProgramaDto {
     @IsString({ message: '$property| Nome: Precisa ser alfanumérico' })
-    @MaxLength(250, { message: '$property| Nome: Máximo 250 caracteres' })
+    @MaxLength(255, { message: 'O campo "Nome" deve ter no máximo 255 caracteres' })
     nome: string;
 }
 

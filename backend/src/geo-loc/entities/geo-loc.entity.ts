@@ -10,7 +10,7 @@ import { NumberTransform, PositiveNumberTransform } from '../../auth/transforms/
 
 export class GeoLocDto {
     @IsString()
-    @MaxLength(100)
+    @MaxLength(255, {message: 'O campo "Busca endereço" deve ter no máximo 255 caracteres'})
     busca_endereco: string;
 
     @ApiProperty({ enum: GeoReferenciaTipo, enumName: 'GeoReferenciaTipo' })
@@ -185,6 +185,6 @@ export class FilterGeoJsonDto {
     nivel?: number[];
 
     @IsString()
-    @MaxLength(100)
+    @MaxLength(255, {message: 'O campo "Tipo camada" deve ter no máximo 255 caracteres'})
     tipo_camada: string;
 }

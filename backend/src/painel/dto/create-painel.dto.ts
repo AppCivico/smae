@@ -14,7 +14,7 @@ import {
 
 export class CreatePainelDto {
     @IsString()
-    @MaxLength(255)
+    @MaxLength(255, { message: 'O campo "Título" deve ter no máximo 255 caracteres' })
     nome: string;
 
     @ApiProperty({ enum: Periodicidade, enumName: 'Periodicidade' })

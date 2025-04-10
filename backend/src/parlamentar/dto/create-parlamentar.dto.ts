@@ -15,12 +15,12 @@ import { IsValidCPF } from '../../common/decorators/IsValidCPF';
 
 export class CreateParlamentarDto {
     @IsString({ message: '$property| nome: Precisa ser alfanumérico' })
-    @MaxLength(250, { message: '$property| nome: Máximo 250 caracteres' })
+    @MaxLength(255, { message: 'O campo "Nome" deve ter no máximo 255 caracteres' })
     @MinLength(1, { message: '$property| nome: Mínimo 1 caractere' })
     nome: string;
 
     @IsString({ message: '$property| Nome popular: Precisa ser alfanumérico' })
-    @MaxLength(250, { message: '$property| Nome popular: Máximo 250 caracteres' })
+    @MaxLength(255, { message: 'O campo "Nome popular" deve ter no máximo 255 caracteres' })
     @MinLength(1, { message: '$property| nome: Mínimo 1 caractere' })
     nome_popular: string;
 
@@ -35,12 +35,12 @@ export class CreateParlamentarDto {
 
     @IsOptional()
     @IsString()
-    @MaxLength(250, { message: '$property| telefone: Máximo 250 caracteres' })
+    @MaxLength(255, { message: 'O campo "Telefone" deve ter no máximo 255 caracteres' })
     telefone?: string;
 
     @IsOptional()
     @IsString()
-    @MaxLength(250, { message: '$property| email: Máximo 250 caracteres' })
+    @MaxLength(255, { message: 'O campo "E-mail" deve ter no máximo 255 caracteres' })
     email?: string;
 
     @IsOptional()
@@ -61,15 +61,15 @@ export class CreateParlamentarDto {
 
 export class CreateEquipeDto {
     @IsString()
-    @MaxLength(250, { message: '$property| nome: Máximo 250 caracteres' })
+    @MaxLength(255, { message: 'O campo "Nome" deve ter no máximo 255 caracteres' })
     nome: string;
 
     @IsString()
-    @MaxLength(250, { message: '$property| telefone: Máximo 250 caracteres' })
+    @MaxLength(255, { message: 'O campo "Telefone" deve ter no máximo 255 caracteres' })
     telefone: string;
 
     @IsString()
-    @MaxLength(250, { message: '$property| email: Máximo 250 caracteres' })
+    @MaxLength(255, { message: 'O campo "E-mail" deve ter no máximo 255 caracteres' })
     email: string;
 
     @ApiProperty({ enum: ParlamentarEquipeTipo, enumName: 'Cargo' })
@@ -139,7 +139,7 @@ export class CreateMandatoDto {
 
     @IsOptional()
     @IsString({ message: '$property| ocupação: Precisa ser alfanumérico' })
-    @MaxLength(1000000, { message: '$property| ocupação: Máximo 1000000 caracteres' })
+    @MaxLength(255, { message: 'O campo "Atuação" deve ter no máximo 255 caracteres' })
     atuacao?: string;
 
     @IsOptional()
@@ -148,12 +148,12 @@ export class CreateMandatoDto {
 
     @IsOptional()
     @IsString()
-    @MaxLength(250, { message: '$property| telefone: Máximo 250 caracteres' })
+    @MaxLength(255, { message: 'O campo "Telefone" deve ter no máximo 255 caracteres' })
     telefone: string;
 
     @IsOptional()
     @IsString()
-    @MaxLength(250, { message: '$property| email: Máximo 250 caracteres' })
+    @MaxLength(255, { message: 'O campo "E-mail" deve ter no máximo 255 caracteres' })
     email: string;
 }
 

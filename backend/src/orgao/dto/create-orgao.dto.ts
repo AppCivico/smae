@@ -7,14 +7,14 @@ export class CreateOrgaoDto {
      * Sigla do Órgão
      */
     @IsString({ message: '$property| sigla: Precisa ser alfanumérico' })
-    @MaxLength(20, { message: '$property| sigla: Máximo 20 caracteres' })
+    @MaxLength(255, { message: 'O campo "Sigla" deve ter no máximo 255 caracteres' })
     sigla: string;
 
     /**
      * Órgão
      */
     @IsString({ message: '$property| descrição: Precisa ser alfanumérico' })
-    @MaxLength(250, { message: '$property| descrição: Máximo 250 caracteres' })
+    @MaxLength(2048, { message: 'O campo "Descrição" deve ter no máximo 2048 caracteres' })
     descricao: string;
 
     /**
@@ -26,18 +26,18 @@ export class CreateOrgaoDto {
 
     @IsOptional()
     @IsString({ message: '$property| cnpj: Precisa ser alfanumérico' })
-    @MaxLength(20, { message: '$property| cnpj: Máximo 20 caracteres' })
+    @MaxLength(255, { message: 'O campo "Cnpj" deve ter no máximo 255 caracteres' })
     @IsCNPJ()
     cnpj: string;
 
     @IsOptional()
     @IsString({ message: '$property| email: Precisa ser alfanumérico' })
-    @MaxLength(100, { message: '$property| email: Máximo 100 caracteres' })
+    @MaxLength(255, { message: 'O campo "E-mail" deve ter no máximo 255 caracteres' })
     email: string;
 
     @IsOptional()
     @IsString({ message: '$property| secretário responsável: Precisa ser alfanumérico' })
-    @MaxLength(100, { message: '$property| secretário responsável: Máximo 100 caracteres' })
+    @MaxLength(255, { message: 'O campo "Secretário Responsável" deve ter no máximo 255 caracteres' })
     secretario_responsavel: string;
 
     @IsOptional()

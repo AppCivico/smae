@@ -2,12 +2,12 @@ import { ArrayMaxSize, IsArray, IsInt, IsOptional, IsString, IsUrl, MaxLength } 
 
 export class CreatePainelExternoDto {
     @IsString()
-    @MaxLength(100)
+    @MaxLength(255, {message: 'O campo "Título" deve ter no máximo 255 caracteres'})
     titulo: string;
 
     @IsOptional()
     @IsString()
-    @MaxLength(255)
+    @MaxLength(2048, { message: 'O campo "Descrição" precisa ter no máximo 2048 caracteres' })
     descricao: string | null;
 
     @IsString()
@@ -25,7 +25,7 @@ export class CreatePainelExternoDto {
         allow_query_components: true,
         validate_length: true,
     })
-    @MaxLength(1024)
+    @MaxLength(255, {message: 'O campo "Link" deve ter no máximo 255 caracteres'})
     link: string;
 
     @IsArray()

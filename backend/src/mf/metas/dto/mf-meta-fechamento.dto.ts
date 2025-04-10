@@ -49,6 +49,6 @@ export class FechamentoDto {
     meta_id: number;
 
     @IsString()
-    @MaxLength(1024 * 10, { message: 'O texto não pode ter mais de 10KB' })
+    @MaxLength(255, {message: 'O campo "Comentário" deve ter no máximo 255 caracteres'})
     comentario: string;
 }

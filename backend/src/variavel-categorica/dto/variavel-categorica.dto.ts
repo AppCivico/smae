@@ -31,12 +31,12 @@ export class CreateVariavelCategoricaValorDto {
     valor_variavel: number;
 
     @IsString()
-    @MaxLength(256, { message: '$property| título pode ter até 256 caracteres' })
+    @MaxLength(255, { message: 'O campo "Título" deve ter no máximo 255 caracteres' })
     titulo: string;
 
     @IsString()
     @IsOptional()
-    @MaxLength(2048, { message: '$property| título pode ter até 2048 caracteres' })
+    @MaxLength(2048, { message: 'O campo "Descrição" deve ter no máximo 2048 caracteres' })
     descricao: string | null;
 }
 
@@ -60,12 +60,12 @@ export class CreateVariavelCategoricaDto {
     valores: CreateVariavelCategoricaValorDto[]; // manter undefined pq precisamos apagar antes do insert
 
     @IsString()
-    @MaxLength(256, { message: '$property| título pode ter até 256 caracteres' })
+    @MaxLength(255, { message: 'O campo "Título" deve ter no máximo 255 caracteres' })
     titulo: string;
 
     @IsString()
     @IsOptional()
-    @MaxLength(2048, { message: '$property| título pode ter até 2048 caracteres' })
+    @MaxLength(2048, { message: 'O campo "Descrição" deve ter no máximo 2048 caracteres' })
     descricao: string | null;
 }
 
@@ -76,6 +76,7 @@ export class UpdateVariavelCategoricaDto extends OmitType(PartialType(CreateVari
 export class VariavelCategoricaValorItem {
     id: number;
     titulo: string;
+    @MaxLength(2048, { message: 'O campo "Descrição" deve ter no máximo 2048 caracteres' })
     descricao: string | null;
     valor_variavel: number;
     ordem: number;
@@ -89,6 +90,7 @@ export class VariavelCategoricaValorItem {
 export class VariavelCategoricaItem {
     id: number;
     titulo: string;
+    @MaxLength(2048, { message: 'O campo "Descrição" deve ter no máximo 2048 caracteres' })
     descricao: string | null;
     tipo: TipoVariavelCategorica;
     valores: VariavelCategoricaValorItem[];

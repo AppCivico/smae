@@ -14,7 +14,7 @@ export class CreatePlanoAcaoMonitoramentoDto {
     data_afericao: Date;
 
     @IsString()
-    @MaxLength(2048)
+    @MaxLength(2048, { message: 'O campo "Descrição" deve ter no máximo 2048 caracteres' })
     descricao: string;
 }
 

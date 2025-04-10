@@ -1,7 +1,7 @@
 import { OmitType, PartialType } from '@nestjs/swagger';
 import { Periodicidade } from '@prisma/client';
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsEnum, IsInt, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsEnum, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
 import { DateTransform } from '../../auth/transforms/date.transform';
 import { NumberTransform } from '../../auth/transforms/number.transform';
 import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
@@ -26,6 +26,7 @@ export class ListaPeriodoFormulaCompostaDto {
 export class FilterPeriodoFormulaCompostaDto {
     @IsOnlyDate()
     @Transform(DateTransform)
+    @MaxLength(255, { message: 'O campo "Período" deve ter no máximo 255 caracteres.' })
     periodo: Date;
 }
 
@@ -33,12 +34,16 @@ export class PSFormulaCompostaDto extends OmitType(IndicadorFormulaCompostaDto, 
     casas_decimais: number;
     periodicidade: Periodicidade | null;
     regionalizavel: boolean;
-    @IsDateYMD({nullable: true})
+    @IsDateYMD({ nullable: true })
     inicio_medicao: string | null;
-    @IsDateYMD({nullable: true})
+    @IsDateYMD({ nullable: true })
     fim_medicao: string | null;
     orgao: IdSiglaDescricao | null;
+
+    @MaxLength(255, { message: 'O campo "Código" deve ter no máximo 255 caracteres.' })
     codigo: string | null;
+
+    @MaxLength(255, { message: 'O campo "Variável cálculo erro" deve ter no máximo 255 caracteres.' })
     variavel_calc_erro: string | null;
     variavel_calc: IdCodTituloDto | null;
 }

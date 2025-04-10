@@ -56,7 +56,7 @@ export class CreateAtividadeDto {
      */
     @IsString({ message: '$property| código: Precisa ser alfanumérico, campo obrigatório' })
     @MinLength(1, { message: '$property| código: pelo menos um caractere' })
-    @MaxLength(30, { message: '$property| código: até 30 caracteres' })
+    @MaxLength(255, {message: 'O campo "Código" deve ter no máximo 255 caracteres'})
     codigo: string;
 
     /**
@@ -64,7 +64,7 @@ export class CreateAtividadeDto {
      */
     @IsString({ message: '$property| título: Precisa ser alfanumérico, campo obrigatório' })
     @MinLength(1, { message: '$property| título: pelo menos um caractere' })
-    @MaxLength(250, { message: '$property| título: 250 caracteres' })
+    @MaxLength(255, {message: 'O campo "Título" deve ter no máximo 255 caracteres'})
     titulo: string;
 
     /**

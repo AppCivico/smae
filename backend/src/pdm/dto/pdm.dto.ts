@@ -2,9 +2,11 @@ import { ModuloSistema, TipoPdm } from '@prisma/client';
 import { IdSiglaDescricao } from '../../common/dto/IdSigla.dto';
 import { RetornoPSEquipeAdminCPDto, RetornoPSEquipePontoFocalDto, RetornoPSEquipeTecnicoCPDto } from './create-pdm.dto';
 import { IsDateYMD } from '../../auth/decorators/date.decorator';
+import { MaxLength } from 'class-validator';
 
 export class PdmDto {
     nome: string;
+    @MaxLength(2048, { message: 'O campo "Descrição" deve ter no máximo 2048 caracteres' })
     descricao: string | null;
     prefeito: string;
     equipe_tecnica: string | null;

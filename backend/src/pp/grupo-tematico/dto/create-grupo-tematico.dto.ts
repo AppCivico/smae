@@ -2,7 +2,7 @@ import { IsBoolean, IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class CreateGrupoTematicoDto {
     @IsString({ message: '$property| descricao: Precisa ser alfanumérico' })
-    @MaxLength(250, { message: '$property| descricao: Máximo 250 caracteres' })
+    @MaxLength(255, { message: 'O campo "Nome" deve ter no máximo 255 caracteres' })
     nome: string;
 
     @IsBoolean()

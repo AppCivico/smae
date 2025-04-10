@@ -71,7 +71,7 @@ export class CreateVariavelBaseDto {
     regiao_id?: number;
 
     @IsString()
-    @MaxLength(256, { message: '$property| título pode ter até 1000 caracteres' })
+    @MaxLength(255, { message: 'O campo "Título" deve ter no máximo 255 caracteres' })
     titulo: string;
 
     /**
@@ -193,10 +193,12 @@ export class CreateVariavelBaseDto {
 
     @IsString()
     @IsOptional()
+    @MaxLength(255, { message: 'O campo "Metodologia" precisa ter no máximo 255 caracteres' })
     metodologia?: string | null;
 
     @IsString()
     @IsOptional()
+    @MaxLength(2048, { message: 'O campo "Descrição" precisa ter no máximo 2048 caracteres' })
     descricao?: string | null;
 
     @IsOptional()
@@ -243,7 +245,7 @@ export class CreateVariavelBaseDto {
 
 export class CreateVariavelPDMDto extends CreateVariavelBaseDto {
     @IsString()
-    @MaxLength(60)
+    @MaxLength(255, { message: 'O campo "Código" deve ter no máximo 255 caracteres' })
     @MinLength(1)
     codigo: string;
 
@@ -286,6 +288,6 @@ export class CreateGeradorVariavelPDMDto extends IntersectionType(CreateGeradorV
      * prefixo que será adicionado em vários
      */
     @IsString()
-    @MaxLength(60)
+    @MaxLength(255, { message: 'O campo "Código" deve ter no máximo 255 caracteres' })
     codigo: string;
 }

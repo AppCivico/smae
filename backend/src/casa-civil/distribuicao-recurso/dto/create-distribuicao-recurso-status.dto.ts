@@ -17,12 +17,12 @@ export class CreateDistribuicaoRecursoStatusDto {
 
     @IsString()
     @MinLength(1)
-    @MaxLength(250)
+    @MaxLength(255, {message: 'O campo "Nome responsável" deve ter no máximo 255 caracteres'})
     nome_responsavel: string;
 
     @IsString()
     @MinLength(1)
-    @MaxLength(250)
+    @MaxLength(255, {message: 'O campo "Motivo" deve ter no máximo 255 caracteres'})
     motivo: string;
 
     @IsOnlyDate()

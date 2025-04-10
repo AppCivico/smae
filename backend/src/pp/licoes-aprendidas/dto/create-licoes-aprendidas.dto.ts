@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsNumber, IsOptional, IsString, ValidateIf } from 'class-validator';
+import { IsNumber, IsOptional, IsString, MaxLength, ValidateIf } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 import { DateTransform } from '../../../auth/transforms/date.transform';
 
@@ -13,10 +13,12 @@ export class CreateLicoesApreendidasDto {
     responsavel: string;
 
     @IsString()
+    @MaxLength(2048, { message: 'O campo "Descrição" deve ter no máximo 2048 caracteres' })
     descricao: string;
 
     @IsString()
     @IsOptional()
+    @MaxLength(255, { message: 'O campo "Observação" deve ter no máximo 255 caracteres' })
     observacao: string;
 
     @IsNumber()
@@ -25,9 +27,11 @@ export class CreateLicoesApreendidasDto {
 
     @IsString()
     @IsOptional()
+    @MaxLength(255, { message: 'O campo "Contexto" deve ter no máximo 255 caracteres' })
     contexto?: string;
 
     @IsString()
     @IsOptional()
+    @MaxLength(255, { message: 'O campo "Resultado" deve ter no máximo 255 caracteres' })
     resultado?: string;
 }

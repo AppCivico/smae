@@ -97,7 +97,7 @@ export class FilterVariavelDto {
 
     @IsOptional()
     @IsString()
-    @MaxLength(250)
+    @MaxLength(255, { message: 'O campo "Palavra Chave" deve ter no máximo 255 caracteres' })
     palavra_chave?: string;
 
     @IsOptional()
@@ -124,17 +124,17 @@ export class FilterVariavelDto {
 
     @IsOptional()
     @IsString()
-    @MaxLength(60)
+    @MaxLength(255, { message: 'O campo "Código" deve ter no máximo 255 caracteres' })
     codigo?: string;
 
     @IsOptional()
     @IsString()
-    @MaxLength(60)
+    @MaxLength(2048, { message: 'O campo "Descrição" precisa ter no máximo 2048 caracteres' })
     descricao?: string;
 
     @IsOptional()
     @IsString()
-    @MaxLength(60)
+    @MaxLength(255, { message: 'O campo "Título" deve ter no máximo 255 caracteres' })
     titulo?: string;
 
     @IsOptional()
@@ -161,6 +161,7 @@ export class VariavelOrderByDto {
 
     @IsEnum(VariavelOrderEnum)
     @ApiProperty({ enum: VariavelOrderEnum, enumName: 'VariavelOrderEnum', default: 'codigo' })
+    @MaxLength(255, { message: 'O campo "Ordem Coluna" deve ter no máximo 255 caracteres' })
     ordem_coluna: string = 'codigo';
 }
 

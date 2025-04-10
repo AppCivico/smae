@@ -3,7 +3,7 @@ import { ArrayMaxSize, ArrayMinSize, IsArray, IsInt, IsString, MaxLength } from 
 
 export class CreatePerfilAcessoDto {
     @IsString({ message: '$property| sigla: Precisa ser alfanumérico' })
-    @MaxLength(512, { message: '$property| sigla: Máximo 512 caracteres' })
+    @MaxLength(255, {message: 'O campo "Nome" deve ter no máximo 255 caracteres'})
     nome: string;
 
     @IsArray()
