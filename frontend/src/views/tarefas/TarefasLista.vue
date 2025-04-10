@@ -33,6 +33,11 @@ const apenasLeitura = computed(
   () => !!projetoEmFoco.value?.permissoes?.apenas_leitura,
 );
 
+const permitirClonagem = computed(() => ['Registrado', 'Selecionado', 'EmPlanejamento']
+  .includes(projetoEmFoco.value?.status)
+  && ['projeto', 'obras'].includes(route.meta.entidadeMãe)
+  && !apenasLeitura.value);
+
 const nívelMáximoPermitido = computed(() => {
   const extra = tarefasStore?.extra;
 
@@ -156,8 +161,7 @@ watch(podeMudarDeEtapaProjeto, (novoValor) => {
       </SmaeLink>
 
       <SmaeLink
-        v-if="['projeto', 'obras'].includes($route.meta.entidadeMãe)
-          && !apenasLeitura"
+        v-if="permitirClonagem"
         :to="{
           name: '.TarefasClonar',
           params: $route.params,
