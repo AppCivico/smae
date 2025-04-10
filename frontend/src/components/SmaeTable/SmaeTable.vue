@@ -114,12 +114,18 @@
               </div>
             </td>
           </tr>
+
+          <tr v-if="dados.length === 0">
+            <td :colspan="colunas.length">
+              Sem dados para exibir
+            </td>
+          </tr>
         </tbody>
       </slot>
 
-      <tfoot v-if="$slots.rodape || replicarCabecalho">
+      <tfoot v-if="$slots.rodape || replicarCabecalhoComDados">
         <slot
-          v-if="!replicarCabecalho"
+          v-if="!replicarCabecalhoComDados"
           name="rodape"
           :colunas="colunas"
         />
@@ -234,6 +240,14 @@ const tituloParaRolagemHorizontal = computed<string | undefined>(() => {
   }
 
   throw new Error('"titulo" é obrigatório para utilizar rolagem horizontal');
+});
+
+const replicarCabecalhoComDados = computed<boolean>(() => {
+  if (!props.replicarCabecalho) {
+    return false;
+  }
+
+  return props.dados.length !== 0;
 });
 
 function obterDestaqueDaLinha(linha: Linha): string | null {
