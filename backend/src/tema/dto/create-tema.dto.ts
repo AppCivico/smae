@@ -6,7 +6,7 @@ export class CreateObjetivoEstrategicoDto {
      * Descrição
      */
     @IsString({ message: '$property| descrição: Precisa ser alfanumérico' })
-    @MaxLength(500, { message: '$property| descrição: Máximo 500 caracteres' })
+    @MaxLength(2048, { message: 'O campo "Descricao" deve ter no máximo 2048 caracteres' })
     descricao: string;
 
     /**

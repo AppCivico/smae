@@ -3,7 +3,7 @@ import { ArrayMaxSize, IsArray, IsInt, IsString, MaxLength } from 'class-validat
 
 export class CreateGrupoPainelExternoDto {
     @IsString()
-    @MaxLength(120)
+    @MaxLength(255, {message: 'O campo "Título" deve ter no máximo 255 caracteres'})
     titulo: string;
 
     @ApiProperty({

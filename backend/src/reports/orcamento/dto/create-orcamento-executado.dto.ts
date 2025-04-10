@@ -39,7 +39,7 @@ export class OrcamentoExecutadoParams {
     @ArrayMinSize(0, { message: '$property| tag(s): precisa ter pelo menos um item' })
     @ArrayMaxSize(100, { message: '$property| tag(s): precisa ter no máximo 100 items' })
     @IsString({ each: true, message: '$property| Cada item precisa ser um texto' })
-    @MaxLength(40, { each: true })
+    @MaxLength(255, { message: 'O campo "Orgãos" deve ter no máximo 255 caracteres' })
     orgaos?: string[];
 }
 

@@ -7,6 +7,7 @@ import { IdTituloDto } from '../../common/dto/IdTitulo.dto';
 import { OrgaoResumo } from '../../orgao/entities/orgao.entity';
 import { SeriesAgrupadas, VariavelItemDto } from '../../variavel/entities/variavel.entity';
 import { VariaveisPeriodosDto } from './create-variavel.dto';
+import { MaxLength } from 'class-validator';
 
 export class ListVariavelDto {
     linhas: VariavelItemDto[];
@@ -24,7 +25,9 @@ export class VariavelDetailDto extends VariavelItemDto {
     assuntos: VariavelAssuntoDto[];
     periodos: VariaveisPeriodosDto;
     dado_aberto: boolean;
+    @MaxLength(255, { message: 'O campo "Metodologia" deve ter no máximo 255 caracteres' })
     metodologia: string | null;
+    @MaxLength(2048, { message: 'O campo "Descrição" precisa ter no máximo 2048 caracteres' })
     descricao: string | null;
     fonte: IdNomeDto | null;
 }
@@ -57,11 +60,14 @@ export class VariavelResumoInput {
     casas_decimais: number;
     periodicidade: Periodicidade;
     acumulativa: boolean;
+    @MaxLength(255, { message: 'O campo "Código" deve ter no máximo 255 caracteres' })
     codigo: string;
+    @MaxLength(255, { message: 'O campo "Título" deve ter no máximo 255 caracteres' })
     titulo: string;
     valor_base: Decimal;
     unidade_medida: IdSiglaDescricao;
     recalculando: boolean;
+    @MaxLength(255, { message: 'O campo "Recálculo erro" deve ter no máximo 255 caracteres' })
     recalculo_erro: string | null;
     recalculo_tempo: Decimal | null;
     variavel_mae_id: number | null;
@@ -69,6 +75,7 @@ export class VariavelResumoInput {
 
 export class VariavelAssuntoDto {
     id: number;
+    @MaxLength(255, { message: 'O campo "Nome" deve ter no máximo 255 caracteres' })
     nome: string;
     categoria_assunto_variavel_id?: number | null;
 }
@@ -96,11 +103,14 @@ export class VariavelResumo {
 
     acumulativa: boolean;
 
+    @MaxLength(255, { message: 'O campo "Código" deve ter no máximo 255 caracteres' })
     codigo: string;
+    @MaxLength(255, { message: 'O campo "Título" deve ter no máximo 255 caracteres' })
     titulo: string;
+    @MaxLength(255, { message: 'O campo "Valor base" deve ter no máximo 255 caracteres' })
     valor_base: string;
-
     recalculando: boolean;
+    @MaxLength(255, { message: 'O campo "Recálculo erro" deve ter no máximo 255 caracteres' })
     recalculo_erro: string | null;
     recalculo_tempo: Decimal | null;
     variavel_mae_id: number | null;

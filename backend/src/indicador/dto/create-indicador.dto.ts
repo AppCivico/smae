@@ -22,14 +22,14 @@ export class CreateIndicadorDto {
      * Código
      */
     @IsString({ message: '$property| Precisa ser alfanumérico' })
-    @MaxLength(30, { message: '$property| código 30 caracteres' })
+    @MaxLength(255, {message: 'O campo "Código" deve ter no máximo 255 caracteres'})
     codigo: string;
 
     /**
      * título
      */
     @IsString({ message: '$property| Título: Precisa ser alfanumérico' })
-    @MaxLength(250, { message: '$property| Título: 250 caracteres' })
+    @MaxLength(255, {message: 'O campo "Título" deve ter no máximo 255 caracteres'})
     titulo: string;
 
     /**

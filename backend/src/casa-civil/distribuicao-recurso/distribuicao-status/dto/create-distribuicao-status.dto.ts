@@ -4,7 +4,7 @@ import { IsBoolean, IsEnum, IsOptional, IsString, MaxLength, MinLength } from 'c
 
 export class CreateDistribuicaoStatusDto {
     @IsString()
-    @MaxLength(250, { message: '$property| nome: Máximo 250 caracteres' })
+    @MaxLength(255, {message: 'O campo "Nome" deve ter no máximo 255 caracteres'})
     @MinLength(1, { message: '$property| nome: Mínimo 1 caractere' })
     nome: string;
 

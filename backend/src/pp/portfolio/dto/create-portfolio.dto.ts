@@ -21,7 +21,7 @@ export class CreatePortfolioDto {
      * Sigla
      */
     @IsString({ message: '$property| sigla: Precisa ser alfanumérico' })
-    @MaxLength(200, { message: '$property| sigla: Máximo 200 caracteres' })
+    @MaxLength(255, { message: 'O campo "Título" deve ter no máximo 255 caracteres' })
     titulo: string;
 
     /**
@@ -44,7 +44,7 @@ export class CreatePortfolioDto {
     @IsOptional()
     @IsString({ message: '$property| Descrição precisa ser alfanumérico' })
     @MinLength(0)
-    @MaxLength(2040)
+    @MaxLength(2048, { message: 'O campo "Descrição" precisa ter no máximo 2048 caracteres' })
     descricao?: string;
 
     @IsOptional()

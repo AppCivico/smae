@@ -7,7 +7,7 @@ export class UpdateDistribuicaoRecursoDto extends PartialType(
 ) {
     @IsOptional()
     @IsString()
-    @MaxLength(250)
+    @MaxLength(255, { message: 'O campo "Justificativa Aditamento" deve ter no máximo 255 caracteres' })
     justificativa_aditamento?: string | null;
 
     @IsOptional()

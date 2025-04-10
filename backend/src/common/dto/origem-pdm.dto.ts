@@ -32,7 +32,7 @@ export class UpsertOrigemDto {
      */
     @IsOptional()
     @IsString()
-    @MaxLength(2048)
+    @MaxLength(255, {message: 'O campo "Origem outro" deve ter no máximo 255 caracteres'})
     @ValidateIf((object, value) => value !== null)
     origem_outro?: string | null;
 
@@ -66,12 +66,15 @@ export class UpsertOrigemDto {
     @IsOptional()
     @IsString()
     @ValidateIf((object, value) => value !== null)
+    @MaxLength(255, { message: 'O campo "Meta Código" precisa ter no máximo 255 caracteres' })
     meta_codigo?: string | null;
 }
 
 export class ResumoOrigensMetasItem {
     id: number | null;
     pdm_id: number | null;
+
+    @MaxLength(255, { message: 'O campo "Código" precisa ter no máximo 255 caracteres' })
     codigo: string;
 }
 

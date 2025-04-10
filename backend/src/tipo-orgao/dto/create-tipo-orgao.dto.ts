@@ -7,6 +7,6 @@ export class CreateTipoOrgaoDto {
      */
     @IsString({ message: '$property| descrição: Precisa ser alfanumérico' })
     @MinLength(1, { message: '$property| descrição: Mínimo de 1 caractere' })
-    @MaxLength(250, { message: '$property| descrição: Máximo 250 caracteres' })
+    @MaxLength(2048, { message: 'O campo "Descrição" precisa ter no máximo 2048 caracteres' })
     descricao: string;
 }

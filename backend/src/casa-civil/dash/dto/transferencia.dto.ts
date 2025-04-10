@@ -60,7 +60,7 @@ export class FilterDashTransferenciasDto {
 
     @IsOptional()
     @IsArray()
-    @MaxLength(1000, { each: true })
+    @MaxLength(255, {message: 'O campo "Atividade" deve ter no máximo 255 caracteres'})
     @IsString({ each: true })
     @ApiProperty({ description: 'Atividade do cronograma' })
     @Transform(StringArrayTransform)

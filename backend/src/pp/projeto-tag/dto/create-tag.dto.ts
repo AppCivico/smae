@@ -5,6 +5,6 @@ export class CreateProjetoTagDto {
      * nome
      */
     @IsString({ message: '$property| Descrição: Precisa ser alfanumérico' })
-    @MaxLength(250, { message: '$property| Descrição: Máximo 250 caracteres' })
+    @MaxLength(2048, { message: 'O campo "Descricao" deve ter no máximo 2048 caracteres' })
     descricao: string;
 }

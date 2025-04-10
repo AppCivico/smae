@@ -4,7 +4,7 @@ import { ArrayMaxSize, IsArray, IsEnum, IsInt, IsOptional, IsString, MaxLength }
 
 export class CreateEquipeRespDto {
     @IsString()
-    @MaxLength(120)
+    @MaxLength(255, {message: 'O campo "Título" deve ter no máximo 255 caracteres'})
     titulo: string;
 
     @IsEnum(PerfilResponsavelEquipe)

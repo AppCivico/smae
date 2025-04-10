@@ -10,7 +10,7 @@ export class NovaSenhaDto {
     @ApiProperty({ description: 'Senha nova', example: 'Foo*bar1' })
     @IsString({ message: '$property| Senha: Precisa ser alfanumérico' })
     @MinLength(8, { message: '$property| Senha: Mínimo de 8 caracteres' })
-    @MaxLength(1000, { message: '$property| Senha: Máximo de 1000 caracteres' })
+    @MaxLength(255, {message: 'O campo "Código" deve ter no máximo 255 caracteres'})
     @Matches(REGEXP, {
         message: MESSAGE,
     })

@@ -318,7 +318,7 @@ export class VariavelAnaliseQualitativaDto {
 
     @IsOptional()
     @IsString()
-    @MaxLength(1024 * 10, { message: 'O texto não pode ter mais de 10KB' })
+    @MaxLength(255, { message: 'O campo "Análise qualitativa " deve ter no máximo 255 caracteres' })
     analise_qualitativa?: string;
 
     @IsOptional()

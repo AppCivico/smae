@@ -78,7 +78,7 @@ export class CreateTarefaDto {
      */
     @IsString({ message: '$property| precisa ser um texto' })
     @MinLength(1, { message: '$property| Tamanho Mínimo 1' })
-    @MaxLength(60)
+    @MaxLength(255, { message: 'O campo "Tarefa" deve ter no máximo 255 caracteres' })
     tarefa: string;
 
     /**
@@ -86,7 +86,7 @@ export class CreateTarefaDto {
      */
     @IsString({ message: '$property| precisa ser um texto, mesmo que vazio' })
     @MinLength(0)
-    @MaxLength(2048)
+    @MaxLength(2048, { message: 'O campo "Descricao" deve ter no máximo 2048 caracteres' })
     descricao: string;
 
     /**
@@ -94,7 +94,7 @@ export class CreateTarefaDto {
      */
     @IsString({ message: '$property| precisa ser um texto, mesmo que vazio' })
     @MinLength(0)
-    @MaxLength(2048)
+    @MaxLength(255, { message: 'O campo "Recursos" deve ter no máximo 255 caracteres' })
     recursos: string;
 
     /**

@@ -29,12 +29,12 @@ export class CreateTransferenciaDto {
     @IsString()
     @IsOptional()
     @MinLength(1)
-    @MaxLength(250)
+    @MaxLength(255, { message: 'O campo "Secretária concedente" deve ter no máximo 255 caracteres' })
     secretaria_concedente?: string;
 
     @IsString()
     @MinLength(1)
-    @MaxLength(1024)
+    @MaxLength(255, { message: 'O campo "Objeto" deve ter no máximo 255 caracteres' })
     objeto: string;
 
     @IsOptional()
@@ -78,61 +78,61 @@ export class CreateTransferenciaDto {
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(250)
+    @MaxLength(255, { message: 'O campo "Emenda" deve ter no máximo 255 caracteres' })
     emenda?: string;
 
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(250)
+    @MaxLength(255, { message: 'O campo "Demanda" deve ter no máximo 255 caracteres' })
     demanda?: string;
 
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(250)
+    @MaxLength(255, { message: 'O campo "Programa" deve ter no máximo 255 caracteres' })
     programa?: string;
 
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(250)
+    @MaxLength(255, { message: 'O campo "Normativa" deve ter no máximo 255 caracteres' })
     normativa?: string;
 
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(1024)
+    @MaxLength(255, { message: 'O campo "Observações" deve ter no máximo 255 caracteres' })
     observacoes?: string;
 
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(250)
+    @MaxLength(255, {message: 'O campo "Detalhamento" deve ter no máximo 255 caracteres'})
     detalhamento?: string;
 
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(250)
+    @MaxLength(255, {message: 'O campo "Nome Programa" deve ter no máximo 255 caracteres'})
     nome_programa?: string;
 
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(250)
+    @MaxLength(255, {message: 'O campo "Agência aceite" deve ter no máximo 255 caracteres'})
     agencia_aceite?: string;
 
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(250)
+    @MaxLength(255, {message: 'O campo "Emenda unitária" deve ter no máximo 255 caracteres'})
     emenda_unitaria?: string;
 
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(250)
+    @MaxLength(255, {message: 'O campo "Número identificação" deve ter no máximo 255 caracteres'})
     numero_identificacao?: string;
 
     @IsOptional()
@@ -171,7 +171,7 @@ export class CreateTransferenciaParlamentarDto {
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(1024)
+    @MaxLength(255, {message: 'O campo "Objeto" deve ter no máximo 255 caracteres'})
     objeto: string;
 }
 
@@ -198,6 +198,6 @@ export class CreateTransferenciaAnexoDto {
 
     @IsOptional()
     @IsString()
-    @MaxLength(2048)
+    @MaxLength(2048, { message: 'O campo "Descrição" deve ter no máximo 2048 caracteres' })
     descricao?: string;
 }

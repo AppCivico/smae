@@ -12,11 +12,11 @@ export class CreatePlanoAcaoDto {
 
     @IsString()
     @IsOptional()
-    @MaxLength(2000)
+    @MaxLength(255, { message: 'O campo "Responsável" deve ter no máximo 255 caracteres' })
     responsavel?: string;
 
     @IsString()
-    @MaxLength(20000)
+    @MaxLength(255, { message: 'O campo "Contra-medida" deve ter no máximo 255 caracteres' })
     contramedida: string;
 
     @IsOnlyDate()
@@ -45,12 +45,12 @@ export class CreatePlanoAcaoDto {
 
     @IsOptional()
     @IsString()
-    @MaxLength(50000)
+    @MaxLength(255, { message: 'O campo "Medidas de Contingência" deve ter no máximo 255 caracteres' })
     medidas_de_contingencia: string | undefined;
 
     @IsOptional()
     @IsString()
-    @MaxLength(50000)
+    @MaxLength(255, { message: 'O campo "Contato do Responsável" deve ter no máximo 255 caracteres' })
     contato_do_responsavel: string;
 
     @IsOptional()

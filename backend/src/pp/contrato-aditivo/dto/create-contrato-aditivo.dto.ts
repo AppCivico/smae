@@ -22,7 +22,7 @@ export class CreateContratoAditivoDto {
 
     @IsString()
     @MinLength(1)
-    @MaxLength(500)
+    @MaxLength(255, { message: 'O campo "Número" deve ter no máximo 255 caracteres' })
     numero: string;
 
     @Transform(DateTransform)
