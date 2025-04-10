@@ -22,6 +22,7 @@ type FieldsProps = {
   class?: string
   nome: string
   tipo: string
+  agruparOpcoes?: boolean
   opcoes?: EquipeRespItemDto[]
   | MetaItemDto[]
   | ArvoreDeIniciativas
@@ -93,6 +94,7 @@ const campos = computed<FieldsProps[]>(() => [
     class: 'fb20em',
     nome: 'pdm_id',
     tipo: 'select',
+    agruparOpcoes: true,
     opcoes: planosSimplificadosPorTipo.value,
     ariaBusy: chamadasPendentesDePlanosSimplificados.value.planosSimplificados,
     onChange: () => {
@@ -223,37 +225,15 @@ onUnmounted(() => {
             -
           </option>
 
-          <template v-if="Array.isArray(campo.opcoes)">
-            <option
-              v-for="opcao in campo.opcoes"
-              :key="`ciclo-atualizacao-equipe--${opcao.id}`"
-              :value="opcao.id"
-              :title="opcao.titulo?.length > 36 ? opcao.titulo : undefined"
-            >
-              <template v-if="typeof opcao === 'object'">
-                <template v-if="'orgao' in opcao && opcao.orgao?.sigla">
-                  {{ opcao.orgao?.sigla }} -
-                </template>
-                {{ 'nome' in opcao ? opcao.nome : truncate(opcao.titulo, 36) }}
-              </template>
-              <template v-else>
-                {{ opcao }}
-              </template>
-            </option>
-          </template>
-          <template v-else-if="typeof campo.opcoes === 'object'">
-            <optgroup
-              v-for="tipo in Object.keys(campo.opcoes)"
-              :key="tipo"
-              :label="tipo"
-            >
+          <template v-if="typeof campo.opcoes === 'object'">
+            <template v-if="!campo.agruparOpcoes">
               <option
-                v-for="opcao in (campo.opcoes as Record<string, any>)[tipo]"
-                :key="opcao.id"
+                v-for="opcao in campo.opcoes as Record<string, any>"
+                :key="`ciclo-atualizacao-equipe--${opcao.id}`"
                 :value="opcao.id"
-                :title="opcao.nome?.length > 36 ? opcao.nome : undefined"
+                :title="opcao.titulo?.length > 36 ? opcao.titulo : undefined"
               >
-                <template v-if="typeof opcao === 'object'">
+                <template v-if="opcao && typeof opcao === 'object'">
                   <template v-if="'orgao' in opcao && opcao.orgao?.sigla">
                     {{ opcao.orgao?.sigla }} -
                   </template>
@@ -263,7 +243,31 @@ onUnmounted(() => {
                   {{ opcao }}
                 </template>
               </option>
-            </optgroup>
+            </template>
+            <template v-else>
+              <optgroup
+                v-for="tipo in Object.keys(campo.opcoes)"
+                :key="tipo"
+                :label="tipo"
+              >
+                <option
+                  v-for="opcao in (campo.opcoes as Record<string, any>)[tipo]"
+                  :key="opcao.id"
+                  :value="opcao.id"
+                  :title="opcao.nome?.length > 36 ? opcao.nome : undefined"
+                >
+                  <template v-if="typeof opcao === 'object'">
+                    <template v-if="'orgao' in opcao && opcao.orgao?.sigla">
+                      {{ opcao.orgao?.sigla }} -
+                    </template>
+                    {{ 'nome' in opcao ? opcao.nome : truncate(opcao.titulo, 36) }}
+                  </template>
+                  <template v-else>
+                    {{ opcao }}
+                  </template>
+                </option>
+              </optgroup>
+            </template>
           </template>
         </Field>
 
