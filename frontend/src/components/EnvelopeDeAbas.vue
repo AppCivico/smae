@@ -35,6 +35,11 @@ const props = defineProps({
     required: false,
     default: () => ({}),
   },
+  atributosDeCadaAba: {
+    type: Object,
+    required: false,
+    default: () => ({}),
+  },
 });
 
 const listaDeAbas = ref(null);
@@ -122,6 +127,7 @@ iniciar();
           v-for="nomeDaAba in abas"
           :key="nomeDaAba"
           class="pt1 pb1"
+          v-bind="atributosDeCadaAba?.[nomeDaAba]"
         >
           <router-link
             class="abas__link like-a__link t16 w700"
