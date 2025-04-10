@@ -90,21 +90,16 @@ const camposFiltro = computed<Formulario>(() => [
   {
     campos: {
       portfolio_id: {
-        tipo: 'autocomplete',
-        opcoes: portfolioObrasLista.value,
-        autocomplete: { label: 'titulo', apenasUm: true },
+        tipo: 'select',
+        opcoes: prepararParaSelect(portfolioObrasLista.value, { id: 'id', label: 'titulo' }),
       },
       orgao_origem_id: {
-        tipo: 'autocomplete',
-        opcoes: orgaosLista.value,
-        autocomplete: {
-          label: 'sigla',
-        },
+        tipo: 'select',
+        opcoes: prepararParaSelect(orgaosLista.value, { id: 'id', label: 'sigla' }),
       },
       subprefeitura_id: {
-        tipo: 'autocomplete',
-        opcoes: regioesPorNivel.value[3],
-        autocomplete: { label: 'descricao', apenasUm: true },
+        tipo: 'select',
+        opcoes: prepararParaSelect(regioesPorNivel.value[3], { id: 'id', label: 'descricao' }),
       },
       status_obra: {
         tipo: 'select',
@@ -115,21 +110,16 @@ const camposFiltro = computed<Formulario>(() => [
   {
     campos: {
       grupo_tematico_id: {
-        tipo: 'autocomplete',
-        opcoes: listaDeGruposTematicos.value,
-        autocomplete: {
-          apenasUm: true,
-          label: 'nome',
-        },
+        tipo: 'select',
+        opcoes: prepararParaSelect(listaDeGruposTematicos.value, { id: 'id', label: 'nome' }),
       },
       tipo_obra_id: {
         tipo: 'select',
         opcoes: prepararParaSelect(listaDeTiposDeIntervencao.value, { id: 'id', label: 'nome' }),
       },
       equipamento_id: {
-        tipo: 'autocomplete',
-        opcoes: listaDeEquipamentos.value,
-        autocomplete: { apenasUm: true, label: 'nome' },
+        tipo: 'select',
+        opcoes: prepararParaSelect(listaDeEquipamentos.value, { id: 'id', label: 'nome' }),
       },
       processo_sei: { tipo: 'text' },
     },
