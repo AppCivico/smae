@@ -1,5 +1,11 @@
 <script setup>
-import * as yup from 'yup';
+import {
+  object,
+  array,
+  string,
+  mixed,
+  lazy,
+} from 'yup';
 import { useEdicoesEmLoteStore } from '@/stores/edicoesEmLote.store';
 import {
   Field, FieldArray, ErrorMessage, useForm,
@@ -41,19 +47,19 @@ const fontesEstaticas = {
 
 const loadingOptions = ref({});
 
-const schema = yup.object({
-  edicoes: yup.array().of(
-    yup.object({
-      propriedade: yup.string().required('Selecione o campo'),
-      valor: yup.lazy((value, { parent }) => {
+const schema = object({
+  edicoes: array().of(
+    object({
+      propriedade: string().required('Selecione o campo'),
+      valor: lazy((value, { parent }) => {
         const { propriedade } = parent;
         if (!propriedade) {
-          return yup.mixed().nullable();
+          return mixed().nullable();
         }
         const campoSchemaOriginal = schemaObras.fields[propriedade];
 
         if (!campoSchemaOriginal) {
-          return yup.mixed().required('Configuração inválida.');
+          return mixed().required('Configuração inválida.');
         }
         return campoSchemaOriginal.required('Informe o novo valor');
       }),
@@ -139,7 +145,7 @@ const onSubmit = handleSubmit(async (valores) => {
     ids: edicoesEmLoteStore.idsSelecionados,
     ops: valores.edicoes.map((edicao) => ({
       col: edicao.propriedade,
-      set: String(edicao.valor),
+      set: edicao.valor,
     })),
   };
 
@@ -148,6 +154,7 @@ const onSubmit = handleSubmit(async (valores) => {
       alertStore.success('Edição realizada com sucesso.');
 
       const rotaDeEscape = route.meta?.rotaDeEscape;
+      await edicoesEmLoteStore.limparIdsSelecionados();
 
       if (rotaDeEscape) {
         router.push(typeof rotaDeEscape === 'string' ? { name: rotaDeEscape } : rotaDeEscape);
