@@ -1476,7 +1476,12 @@ export const obras = object({
   previsao_termino: date()
     .label('Previsão de término')
     .max(dataMax)
-    .min(ref('previsao_inicio'), 'Precisa ser posterior à data de início')
+    .when('previsao_inicio', (inicio, schema) => {
+      if (inicio) {
+        return schema.min(inicio, 'Precisa ser posterior à data de início');
+      }
+      return schema;
+    })
     .nullable()
     .meta({ permite_edicao_em_massa: true }),
   programa_id: number()
