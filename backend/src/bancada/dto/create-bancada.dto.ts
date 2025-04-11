@@ -2,16 +2,16 @@ import { ArrayMaxSize, IsArray, IsInt, IsOptional, IsString, MaxLength } from 'c
 
 export class CreateBancadaDto {
     @IsString({ message: '$property| sigla: Precisa ser alfanumérico' })
-    @MaxLength(255, {message: 'O campo "Sigla" deve ter no máximo 255 caracteres'})
+    @MaxLength(20, { message: '$property| sigla: Máximo 20 caracteres' })
     sigla: string;
 
     @IsString({ message: '$property| nome: Precisa ser alfanumérico' })
-    @MaxLength(255, {message: 'O campo "Nome" deve ter no máximo 255 caracteres'})
+    @MaxLength(250, { message: '$property| nome: Máximo 250 caracteres' })
     nome: string;
 
     @IsOptional()
-    @IsString({ message: 'Precisa ser alfanumérico' })
-    @MaxLength(2048, { message: 'O campo "Descrição" pode ser no máximo 2048 caracteres' })
+    @IsString({ message: '$property| descricao: Precisa ser alfanumérico' })
+    @MaxLength(250, { message: '$property| descricao: Máximo 250 caracteres' })
     descricao?: string;
 
     @IsOptional()

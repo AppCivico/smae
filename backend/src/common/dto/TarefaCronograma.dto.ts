@@ -1,4 +1,3 @@
-import { MaxLength } from 'class-validator';
 import { IsDateYMD } from '../../auth/decorators/date.decorator';
 
 export class TarefaCronogramaDto {
@@ -22,8 +21,6 @@ export class TarefaCronogramaDto {
     realizado_custo: number | null;
     tolerancia_atraso: number | null;
     percentual_atraso: number | null;
-
-    @MaxLength(255, { message: 'O campo "Status Cronograma" deve ter no máximo 255 caracteres' })
     status_cronograma: string | null;
 
     nivel_maximo_tarefa?: number;

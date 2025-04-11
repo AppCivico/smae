@@ -49,10 +49,10 @@ export class RiscoDto {
     meta_id: number;
 
     @IsString()
-    @MaxLength(255, {message: 'O campo "Detalhamento" deve ter no máximo 255 caracteres'})
+    @MaxLength(1024 * 10, { message: 'O texto não pode ter mais de 10KB' })
     detalhamento: string;
 
     @IsString()
-    @MaxLength(255, {message: 'O campo "Ponto de atenção" deve ter no máximo 255 caracteres'})
+    @MaxLength(1024 * 10, { message: 'O texto não pode ter mais de 10KB' })
     ponto_de_atencao: string;
 }

@@ -10,7 +10,7 @@ export class CreateIndicadorFormulaCompostaDto extends PickType(CreateIndicadorD
      * Titulo
      */
     @IsString({ message: '$property| Precisa ser alfanumérico' })
-    @MaxLength(255, {message: 'O campo "Título" deve ter no máximo 255 caracteres'})
+    @MaxLength(256, { message: '$property| título pode ter até 1000 caracteres' })
     titulo: string;
 
     /**
@@ -77,7 +77,7 @@ export class FilterFormulaCompostaFormDto {
      * prefixo que será pesquisado nas variaveis
      */
     @IsString()
-    @MaxLength(255, {message: 'O campo "Código" deve ter no máximo 255 caracteres'})
+    @MaxLength(60)
     codigo: string;
 }
 

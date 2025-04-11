@@ -9,7 +9,7 @@ export class CreateWorkflowDto {
 
     @IsString()
     @MinLength(1)
-    @MaxLength(255, {message: 'O campo "Nome" deve ter no máximo 255 caracteres'})
+    @MaxLength(250)
     nome: string;
 
     /**

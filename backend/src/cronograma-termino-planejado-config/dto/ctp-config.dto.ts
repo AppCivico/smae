@@ -8,25 +8,25 @@ export class UpdateCTPConfigDto {
     modulo_sistema: ModuloSistema;
 
     @IsEmail()
-    @MaxLength(255, {message: 'O campo "Para" deve ter no máximo 255 caracteres'})
+    @MaxLength(100)
     para: string;
 
     @IsString()
-    @MaxLength(255, {message: 'O campo "Texto inicial" deve ter no máximo 255 caracteres'})
+    @MaxLength(5000)
     texto_inicial: string;
 
     @IsString()
-    @MaxLength(255, {message: 'O campo "Texto final" deve ter no máximo 255 caracteres'})
+    @MaxLength(5000)
     texto_final: string;
 
     @IsString()
     @MinLength(1)
-    @MaxLength(255, {message: 'O campo "Assunto global" deve ter no máximo 255 caracteres'})
+    @MaxLength(240)
     assunto_global: string;
 
     @IsString()
     @MinLength(1)
-    @MaxLength(255, {message: 'O campo "Assunto orgão" deve ter no máximo 255 caracteres'})
+    @MaxLength(240)
     assunto_orgao: string;
 }
 

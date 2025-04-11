@@ -5,7 +5,7 @@ export class CreateGrupoPaineisDto {
      * nome
      */
     @IsString({ message: '$property| Precisa ser alfanumérico' })
-    @MaxLength(255, {message: 'O campo "Nome" deve ter no máximo 255 caracteres'})
+    @MaxLength(30, { message: '$property| código 30 caracteres' })
     nome: string;
 
     /**

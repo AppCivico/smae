@@ -57,7 +57,7 @@ export class CreateIniciativaDto {
      */
     @IsString({ message: '$property| código: Precisa ser alfanumérico, campo obrigatório' })
     @MinLength(1, { message: '$property| código: pelo menos um caractere' })
-    @MaxLength(255, {message: 'O campo "Código" deve ter no máximo 255 caracteres'})
+    @MaxLength(30, { message: '$property| código: até 30 caracteres' })
     codigo: string;
 
     /**
@@ -65,7 +65,7 @@ export class CreateIniciativaDto {
      */
     @IsString({ message: '$property| título: Precisa ser alfanumérico, campo obrigatório' })
     @MinLength(1, { message: '$property| título: pelo menos um caractere' })
-    @MaxLength(255, {message: 'O campo "Título" deve ter no máximo 255 caracteres'})
+    @MaxLength(250, { message: '$property| título: 250 caracteres' })
     titulo: string;
 
     /**
@@ -94,7 +94,7 @@ export class CreateIniciativaDto {
     @IsString({ message: '$property| status: Precisa ser alfanumérico, campo obrigatório' })
     @MinLength(1, { message: '$property| status: pelo menos um caractere' })
     @IsOptional()
-    @MaxLength(255, {message: 'O campo "Status" deve ter no máximo 255 caracteres'})
+    @MaxLength(250, { message: '$property| status: 250 caracteres' })
     status?: string;
 
     /**

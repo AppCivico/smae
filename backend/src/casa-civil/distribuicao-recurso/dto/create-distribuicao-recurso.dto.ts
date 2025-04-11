@@ -22,11 +22,11 @@ export class CreateDistribuicaoRegistroSEIDto {
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(255, {message: 'O campo "Nome" deve ter no máximo 255 caracteres'})
+    @MaxLength(1024)
     nome?: string;
 
     @IsString()
-    @MaxLength(255, {message: 'O campo "Processo SEI" deve ter no máximo 255 caracteres'})
+    @MaxLength(40)
     processo_sei: string;
 }
 
@@ -39,13 +39,13 @@ export class CreateDistribuicaoRecursoDto {
 
     @IsString()
     @MinLength(1)
-    @MaxLength(255, { message: 'O campo "Objeto" deve ter no máximo 255 caracteres' })
+    @MaxLength(1024)
     objeto: string;
 
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(255, { message: 'O campo "Nome" deve ter no máximo 255 caracteres' })
+    @MaxLength(1024)
     nome?: string;
 
     @IsNumberString(
@@ -134,37 +134,37 @@ export class CreateDistribuicaoRecursoDto {
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(255, { message: 'O campo "Programa Orçamentário Estadual" deve ter no máximo 255 caracteres' })
+    @MaxLength(250)
     programa_orcamentario_estadual?: string;
 
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(255, { message: 'O campo "Programa Orçamentário Municipal" deve ter no máximo 255 caracteres' })
+    @MaxLength(250)
     programa_orcamentario_municipal?: string;
 
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(255, { message: 'O campo "Dotação" deve ter no máximo 255 caracteres' })
+    @MaxLength(250)
     dotacao?: string;
 
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(255, { message: 'O campo "Proposta" deve ter no máximo 255 caracteres' })
+    @MaxLength(250)
     proposta?: string;
 
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(255, { message: 'O campo "Contrato" deve ter no máximo 255 caracteres' })
+    @MaxLength(250)
     contrato?: string;
 
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(255, { message: 'O campo "Convênio" deve ter no máximo 255 caracteres' })
+    @MaxLength(250)
     convenio?: string;
 
     @IsOptional()
@@ -244,7 +244,7 @@ export class CreateDistribuicaoParlamentarDto {
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(255, {message: 'O campo "Objeto" deve ter no máximo 255 caracteres'})
+    @MaxLength(1024)
     objeto?: string;
 
     @IsOptional()

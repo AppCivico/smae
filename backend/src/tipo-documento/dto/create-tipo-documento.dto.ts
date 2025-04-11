@@ -37,7 +37,7 @@ export class CreateTipoDocumentoDto {
      * Descrição
      */
     @IsString({ message: '$property| Descrição: Precisa ser alfanumérico' })
-    @MaxLength(2048, { message: 'O campo "Descrição" deve ter no máximo 2048 caracteres' })
+    @MaxLength(250, { message: '$property| Descrição: Máximo 250 caracteres' })
     descricao: string;
 
     /**

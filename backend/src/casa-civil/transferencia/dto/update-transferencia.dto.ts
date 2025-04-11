@@ -91,55 +91,55 @@ export class CompletarTransferenciaDto {
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(255, { message: 'O campo "Dotaçãodeve ter no máximo 255 caracteres' })
+    @MaxLength(250)
     dotacao?: string;
 
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(255, { message: 'O campo "Ordenador de Despesa" deve ter no máximo 255 caracteres' })
+    @MaxLength(250)
     ordenador_despesa?: string;
 
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(255, { message: 'O campo "Gestor de Contrato" deve ter no máximo 255 caracteres' })
+    @MaxLength(250)
     gestor_contrato?: string;
 
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(255, { message: 'O campo "Banco Aceite" deve ter no máximo 255 caracteres' })
+    @MaxLength(250)
     banco_aceite?: string;
 
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(255, { message: 'O campo "Agência Aceite" deve ter no máximo 255 caracteres' })
+    @MaxLength(250)
     agencia_aceite?: string;
 
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(255, { message: 'O campo "Conta aceite" deve ter no máximo 255 caracteres' })
+    @MaxLength(250)
     conta_aceite?: string;
 
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(255, { message: 'O campo "Conta fim" deve ter no máximo 255 caracteres' })
+    @MaxLength(250)
     conta_fim?: string;
 
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(255, { message: 'O campo "Agência fim" deve ter no máximo 255 caracteres' })
+    @MaxLength(250)
     agencia_fim?: string;
 
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(255, {message: 'O campo "Banco fim" deve ter no máximo 255 caracteres'})
+    @MaxLength(250)
     banco_fim?: string;
 
     @IsOptional()
@@ -190,7 +190,6 @@ export class UpdateTransferenciaAnexoDto {
     @IsOptional()
     @IsString()
     @ValidateIf((object, value) => value !== null)
-    @MaxLength(2048, { message: 'O campo "Descrição" precisa ter no máximo 2048 caracteres' })
     descricao?: string | null;
 
     @IsOptional()

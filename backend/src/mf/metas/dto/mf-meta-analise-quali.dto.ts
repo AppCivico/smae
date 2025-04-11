@@ -14,7 +14,7 @@ export class AnaliseQualitativaDocumentoDto {
 
     @IsOptional()
     @IsString()
-    @MaxLength(2048, { message: 'O campo Descrição precisa ter no máximo 2048 caracteres' })
+    @MaxLength(1024 * 10, { message: 'O texto não pode ter mais de 10KB' })
     descricao?: string | null;
 
     /**
@@ -64,7 +64,6 @@ export class ArquivoAnaliseQualitativaDocumentoDto {
     criador: {
         nome_exibicao: string;
     };
-    @MaxLength(2048, { message: 'O campo "Descrição" deve ter no máximo 2048 caracteres' })
     descricao: string | null;
 }
 
@@ -83,6 +82,6 @@ export class CreateAnaliseQualitativaDto {
     meta_id: number;
 
     @IsString()
-    @MaxLength(255, {message: 'O campo "Informações complementares" deve ter no máximo 255 caracteres'})
+    @MaxLength(1024 * 10, { message: 'O texto não pode ter mais de 10KB' })
     informacoes_complementares: string;
 }

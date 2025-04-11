@@ -120,7 +120,7 @@ export class CreatePdmDto extends UpdatePdmCicloConfigDto {
      */
     @IsString({ message: 'Nome: Precisa ser alfanumérico' })
     @MinLength(1, { message: 'Nome: Mínimo de 1 caractere' })
-    @MaxLength(255, { message: 'O campo "Nome" deve ter no máximo 255 caracteres' })
+    @MaxLength(250, { message: 'Nome: Máximo 250 caracteres' })
     nome: string;
 
     /**
@@ -128,14 +128,14 @@ export class CreatePdmDto extends UpdatePdmCicloConfigDto {
      */
     @IsOptional()
     @IsString({ message: 'Descrição: Precisa ser alfanumérico' })
-    @MaxLength(2048, { message: 'O campo "Descrição" Máximo 2048 caracteres' })
+    @MaxLength(2500, { message: 'Descrição: Máximo 2500 caracteres' })
     descricao?: string | null;
 
     /**
      * Prefeito
      */
     @IsString({ message: 'prefeito: Precisa ser alfanumérico' })
-    @MaxLength(255, { message: 'O campo "Perfeito" deve ter no máximo 255 caracteres' })
+    @MaxLength(250, { message: 'prefeito: Máximo 250 caracteres' })
     prefeito: string;
 
     /**
@@ -143,7 +143,7 @@ export class CreatePdmDto extends UpdatePdmCicloConfigDto {
      */
     @IsOptional()
     @IsString({ message: 'equipe técnica: Precisa ser alfanumérico' })
-    @MaxLength(255, { message: 'O campo "Equipe técnica" deve ter no máximo 255 caracteres' })
+    @MaxLength(2500, { message: 'equipe técnica: Máximo 2500 caracteres' })
     equipe_tecnica: string | null;
 
     /**
@@ -174,21 +174,21 @@ export class CreatePdmDto extends UpdatePdmCicloConfigDto {
      * Rótulo Macro Tema
      */
     @IsOptional()
-    @MaxLength(255, { message: 'O campo "Rótulo Macro Tema" deve ter no máximo 255 caracteres' })
+    @MaxLength(30, { message: 'Rótulo Macro Tema: Máximo 30 caracteres' })
     rotulo_macro_tema?: string | undefined;
 
     /**
      * Rótulo Tema
      */
     @IsOptional()
-    @MaxLength(255, { message: 'O campo "Rótulo Tema" deve ter no máximo 255 caracteres' })
+    @MaxLength(30, { message: 'Rótulo Tema: Máximo 30 caracteres' })
     rotulo_tema?: string | undefined;
 
     /**
      * Rótulo Sub Tema
      */
     @IsOptional()
-    @MaxLength(255, { message: 'O campo "Rótulo Sub Tema" deve ter no máximo 255 caracteres' })
+    @MaxLength(30, { message: 'Rótulo Sub Tema: Máximo 30 caracteres' })
     rotulo_sub_tema?: string | undefined;
 
     /**
@@ -196,7 +196,7 @@ export class CreatePdmDto extends UpdatePdmCicloConfigDto {
      */
     @IsOptional()
     @IsString({ message: 'Rótulo Contexto Meta: Precisa ser alfanumérico' })
-    @MaxLength(255, { message: 'O campo "Rótulo Contexto Meta" deve ter no máximo 255 caracteres' })
+    @MaxLength(30, { message: 'Rótulo Contexto Meta: Máximo 30 caracteres' })
     rotulo_contexto_meta?: string | undefined;
 
     /**
@@ -204,7 +204,7 @@ export class CreatePdmDto extends UpdatePdmCicloConfigDto {
      */
     @IsOptional()
     @IsString({ message: 'Rótulo Complemento Meta: Precisa ser alfanumérico' })
-    @MaxLength(255, { message: 'O campo "Rótulo Complementação Meta" deve ter no máximo 255 caracteres' })
+    @MaxLength(30, { message: 'Rótulo Complemento Meta: Máximo 30 caracteres' })
     rotulo_complementacao_meta?: string | undefined;
 
     /**
@@ -212,7 +212,7 @@ export class CreatePdmDto extends UpdatePdmCicloConfigDto {
      */
     @IsOptional()
     @IsString({ message: 'Rótulo Iniciativa: Precisa ser alfanumérico' })
-    @MaxLength(255, { message: 'O campo "Rótulo Iniciativa" deve ter no máximo 255 caracteres' })
+    @MaxLength(30, { message: 'Rótulo Iniciativa: Máximo 30 caracteres' })
     rotulo_iniciativa?: string | undefined;
 
     /**
@@ -220,7 +220,7 @@ export class CreatePdmDto extends UpdatePdmCicloConfigDto {
      */
     @IsOptional()
     @IsString({ message: 'Rótulo Iniciativa: Precisa ser alfanumérico' })
-    @MaxLength(255, { message: 'O campo "Rótulo Atividade" deve ter no máximo 255 caracteres' })
+    @MaxLength(30, { message: 'Rótulo Iniciativa: Máximo 30 caracteres' })
     rotulo_atividade?: string | undefined;
 
     /**
@@ -325,7 +325,7 @@ export class CreatePdmDto extends UpdatePdmCicloConfigDto {
      * Legislação de instituição.
      */
     @IsOptional()
-    @MaxLength(255, { message: 'O campo "Legislação de Instituição" deve ter no máximo 255 caracteres' })
+    @MaxLength(50000)
     @IsString({ message: 'Legislação de instituição: Precisa ser alfanumérico' })
     legislacao_de_instituicao?: string | null;
 

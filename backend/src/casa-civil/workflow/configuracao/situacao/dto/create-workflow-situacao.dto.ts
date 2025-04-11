@@ -4,7 +4,7 @@ import { IsEnum, IsString, MaxLength, MinLength } from 'class-validator';
 
 export class CreateWorkflowSituacaoDto {
     @IsString()
-    @MaxLength(255, { message: 'O campo "Situação" deve ter no máximo 255 caracteres' })
+    @MaxLength(250)
     @MinLength(1)
     situacao: string;
 

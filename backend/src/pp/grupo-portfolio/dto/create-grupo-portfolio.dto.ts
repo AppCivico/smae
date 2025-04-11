@@ -3,7 +3,7 @@ import { ArrayMaxSize, IsArray, IsInt, IsOptional, IsString, MaxLength } from 'c
 
 export class CreateGrupoPortfolioDto {
     @IsString()
-    @MaxLength(255, { message: 'O campo "Título" deve ter no máximo 255 caracteres' })
+    @MaxLength(120)
     titulo: string;
 
     @IsOptional()

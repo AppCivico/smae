@@ -1,6 +1,6 @@
 import { Type } from 'class-transformer';
 import { IsBoolean, IsInt, IsOptional, IsString, ValidateIf } from 'class-validator';
-import { MaxLength } from 'class-validator';
+
 export class CreateCronogramaDto {
     /**
      * meta_id
@@ -34,7 +34,6 @@ export class CreateCronogramaDto {
      */
     @IsString({ message: '$property| descricao: Precisa ser alfanumérico' })
     @IsOptional()
-    @MaxLength(2048, { message: 'O campo "Descrição" precisa ter no máximo 2048 caracteres' })
     descricao?: string;
 
     /**

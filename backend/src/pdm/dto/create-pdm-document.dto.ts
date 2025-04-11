@@ -1,4 +1,4 @@
-import { IsOptional, IsString, MaxLength, ValidateIf } from 'class-validator';
+import { IsOptional, IsString, ValidateIf } from 'class-validator';
 
 export class CreatePdmDocumentDto {
     /**
@@ -10,7 +10,6 @@ export class CreatePdmDocumentDto {
     @IsOptional()
     @IsString()
     @ValidateIf((object, value) => value !== null)
-    @MaxLength(2048, { message: 'O campo "Descrição" precisa ter no máximo 2048 caracteres' })
     descricao?: string | null;
 
     @IsOptional()

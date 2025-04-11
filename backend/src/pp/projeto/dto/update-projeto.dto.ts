@@ -25,7 +25,7 @@ export class PPpremissaDto {
     id?: number;
 
     @IsString({ message: '$property| precisa ser um alfanumérico' })
-    @MaxLength(255, { message: 'O campo "Premissa" deve ter no máximo 255 caracteres' })
+    @MaxLength(2048)
     premissa: string;
 }
 
@@ -38,7 +38,7 @@ export class PPrestricaoDto {
     id?: number;
 
     @IsString({ message: '$property| precisa ser um alfanumérico' })
-    @MaxLength(255, { message: 'O campo "Restrição" deve ter no máximo 255 caracteres' })
+    @MaxLength(2048)
     restricao: string;
 }
 
@@ -90,27 +90,27 @@ export class UpdateProjetoDto extends OmitType(PartialType(CreateProjetoDto), [
 
     @IsOptional()
     @IsString()
-    @MaxLength(255, { message: 'O campo "Objeto" deve ter no máximo 255 caracteres' })
+    @MaxLength(50000)
     objeto?: string;
 
     @IsOptional()
     @IsString()
-    @MaxLength(255, { message: 'O campo "Objetivo" deve ter no máximo 255 caracteres' })
+    @MaxLength(50000)
     objetivo?: string;
 
     @IsOptional()
     @IsString()
-    @MaxLength(255, { message: 'O campo "Público Alvo" deve ter no máximo 255 caracteres' })
+    @MaxLength(50000)
     publico_alvo?: string;
 
     @IsOptional()
     @IsString()
-    @MaxLength(255, { message: 'O campo "Não Escopo" deve ter no máximo 255 caracteres' })
+    @MaxLength(50000)
     nao_escopo?: string;
 
     @IsOptional()
     @IsString()
-    @MaxLength(255, { message: 'O campo "Coordenador" deve ter no máximo 255 caracteres' })
+    @MaxLength(250)
     @ValidateIf((object, value) => value !== null)
     coordenador_ue?: string | null;
 
@@ -120,7 +120,7 @@ export class UpdateProjetoDto extends OmitType(PartialType(CreateProjetoDto), [
      */
     @IsOptional()
     @IsString()
-    @MaxLength(255, { message: 'O campo "Versão" deve ter no máximo 255 caracteres' })
+    @MaxLength(20)
     @ValidateIf((object, value) => value !== null)
     versao?: string | null;
 
@@ -176,7 +176,6 @@ export class UpdateProjetoDocumentDto {
     @IsOptional()
     @IsString()
     @ValidateIf((object, value) => value !== null)
-    @MaxLength(2048, { message: 'Descrição precisa ter no máximo 2048 caracteres' })
     descricao?: string | null;
 
     @IsOptional()

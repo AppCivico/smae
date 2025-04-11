@@ -49,7 +49,7 @@ export class CreateMetaDto {
      */
     @IsString({ message: '$property| código: Precisa ser alfanumérico, campo obrigatório' })
     @MinLength(1, { message: '$property| código: pelo menos um caractere' })
-    @MaxLength(255, { message: 'O campo "Código" deve ter no máximo 255 caracteres' })
+    @MaxLength(30, { message: '$property| código: até 30 caracteres' })
     codigo: string;
 
     /**
@@ -57,7 +57,7 @@ export class CreateMetaDto {
      */
     @IsString({ message: '$property| título: Precisa ser alfanumérico, campo obrigatório' })
     @MinLength(1, { message: '$property| título: pelo menos um caractere' })
-    @MaxLength(255, { message: 'O campo "Título" deve ter no máximo 255 caracteres' })
+    @MaxLength(250, { message: '$property| título: 250 caracteres' })
     titulo: string;
 
     /**
@@ -65,7 +65,7 @@ export class CreateMetaDto {
      */
     @IsOptional()
     @IsString({ message: '$property| contexto: Precisa ser alfanumérico' })
-    @MaxLength(255, { message: 'O campo "Contexto" deve ter no máximo 255 caracteres' })
+    @MaxLength(10000, { message: '$property| contexto: até código 10000 caracteres' })
     contexto?: string;
 
     /**
@@ -73,7 +73,7 @@ export class CreateMetaDto {
      */
     @IsOptional()
     @IsString({ message: '$property| complemento: Precisa ser alfanumérico' })
-    @MaxLength(255, { message: 'O campo "Complemento" deve ter no máximo 255 caracteres' })
+    @MaxLength(10000, { message: '$property| complemento: código 10000 caracteres' })
     complemento?: string;
 
     /**

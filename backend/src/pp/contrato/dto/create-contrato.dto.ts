@@ -21,7 +21,7 @@ import { Transform, Type } from 'class-transformer';
 export class CreateContratoDto {
     @IsString()
     @MinLength(1)
-    @MaxLength(255, { message: 'O campo "Número" deve ter no máximo 255 caracteres' })
+    @MaxLength(500)
     numero: string;
 
     @IsBoolean({ message: '$property| precisa ser um boolean' })
@@ -64,22 +64,22 @@ export class CreateContratoDto {
 
     @IsOptional()
     @MinLength(1)
-    @MaxLength(255, { message: 'O campo "Objeto Resumo" deve ter no máximo 255 caracteres' })
+    @MaxLength(500)
     objeto_resumo?: string;
 
     @IsOptional()
     @MinLength(1)
-    @MaxLength(255, { message: 'O campo "Objeto Detalhado" deve ter no máximo 255 caracteres' })
+    @MaxLength(50000)
     objeto_detalhado?: string;
 
     @IsOptional()
     @MinLength(1)
-    @MaxLength(255, { message: 'O campo "Contratante" deve ter no máximo 255 caracteres' })
+    @MaxLength(500)
     contratante?: string;
 
     @IsOptional()
     @MinLength(1)
-    @MaxLength(255, { message: 'O campo "Empresa Contratada" deve ter no máximo 255 caracteres' })
+    @MaxLength(500)
     empresa_contratada?: string;
 
     @IsOptional()
@@ -96,7 +96,7 @@ export class CreateContratoDto {
 
     @IsOptional()
     @MinLength(1)
-    @MaxLength(255, { message: 'O campo "Observações" deve ter no máximo 255 caracteres' })
+    @MaxLength(5000)
     observacoes?: string;
 
     @IsOptional()

@@ -152,7 +152,7 @@ export class CoreFilterProjetoMDODto extends IntersectionType(FilterProjetoDto) 
 
     @IsOptional()
     @IsString()
-    @MaxLength(255, { message: 'O campo "Palavra Chave" deve ter no máximo 255 caracteres' })
+    @MaxLength(250)
     palavra_chave?: string;
 
     @IsOptional()

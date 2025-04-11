@@ -14,7 +14,6 @@ import { ClassificacaoDto } from '../../../transferencias-voluntarias/classifica
 import { IdNomeExibicaoDto } from 'src/common/dto/IdNomeExibicao.dto';
 import { TransferenciaTipoCurtoDto } from '../tipo/entities/transferencia-tipo.dto';
 import { IsDateYMD } from '../../../auth/decorators/date.decorator';
-import { MaxLength } from 'class-validator';
 
 export class TransferenciaDto {
     id: number;
@@ -24,7 +23,6 @@ export class TransferenciaDto {
     partido: IdSigla[] | null;
     parlamentar: ParlamnetarIdNomes[] | null;
     tipo: IdNomeDto | null;
-    @MaxLength(255, { message: 'O campo "Obejto" deve ter no máximo 255 caracteres' })
     objeto: string;
     detalhamento: string | null;
     clausula_suspensiva: boolean | null;
@@ -53,7 +51,6 @@ export class TransferenciaDetailDto {
     id: number;
     identificador: string;
     ano: number | null;
-    @MaxLength(255, { message: 'O campo "Obejto" deve ter no máximo 255 caracteres' })
     objeto: string;
     detalhamento: string | null;
     clausula_suspensiva: boolean | null;
@@ -114,7 +111,6 @@ export class ParlamentarTransferenciaDto {
     partido: IdSigla | null;
     @ApiProperty({ enum: ParlamentarCargo, enumName: 'ParlamentarCargo' })
     cargo: ParlamentarCargo | null;
-    @MaxLength(255, { message: 'O campo "Obejto" deve ter no máximo 255 caracteres' })
     objeto: string | null;
     valor: Decimal | null;
 }
@@ -122,7 +118,6 @@ export class ParlamentarTransferenciaDto {
 export class TransferenciaAnexoDto {
     arquivo: ArquivoBaseDto;
     id: number;
-    @MaxLength(2048, { message: 'O campo "Descrição" deve ter no máximo 2048 caracteres' })
     descricao: string | null;
     data: Date | null;
     pode_editar: boolean;

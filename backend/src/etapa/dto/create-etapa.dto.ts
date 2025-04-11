@@ -23,7 +23,7 @@ import { CreatePSEquipePontoFocalDto } from '../../pdm/dto/create-pdm.dto';
 
 export class UpsertEtapaVariavelDto extends PartialType(PickType(CreateVariavelBaseDto, ['titulo'])) {
     @IsString()
-    @MaxLength(255, {message: 'O campo "Código" deve ter no máximo 255 caracteres'})
+    @MaxLength(60)
     codigo: string;
 }
 
@@ -70,7 +70,6 @@ export class CreateEtapaDto {
      */
     @IsString({ message: 'contexto: Precisa ser alfanumérico' })
     @IsOptional()
-    @MaxLength(2048, { message: 'O campo "Descrição" precisa ter no máximo 2048 caracteres' })
     descricao?: string;
 
     /**
@@ -79,7 +78,7 @@ export class CreateEtapaDto {
     @IsString({ message: 'status: Precisa ser alfanumérico' })
     @MinLength(1, { message: 'status: pelo menos um caractere' })
     @IsOptional()
-    @MaxLength(255, {message: 'O campo "Status" deve ter no máximo 255 caracteres'})
+    @MaxLength(250, { message: 'status: 250 caracteres' })
     status?: string;
 
     @IsNumber()
@@ -92,7 +91,7 @@ export class CreateEtapaDto {
      */
     @IsString({ message: 'titulo: Precisa ser alfanumérico' })
     @MinLength(1, { message: 'titulo: pelo menos um caractere' })
-    @MaxLength(255, {message: 'O campo "Título" deve ter no máximo 255 caracteres'})
+    @MaxLength(250, { message: 'titulo: 250 caracteres' })
     titulo: string;
 
     /**

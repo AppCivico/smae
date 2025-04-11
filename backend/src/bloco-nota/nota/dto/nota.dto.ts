@@ -40,7 +40,7 @@ const TransformStatusNota = (a: TransformFnParams): StatusNota[] | undefined => 
 export class CreateNotaDto {
     @IsString({ message: '$property| nota: Precisa ser alfanumérico' })
     @MinLength(1, { message: '$property| nota: Mínimo 1 caracteres' })
-    @MaxLength(255, {message: 'O campo "Nota" deve ter no máximo 255 caracteres'})
+    @MaxLength(5000, { message: '$property| nota: Máximo 5000 caracteres' })
     nota: string;
 
     @Transform(DateTransform)
@@ -77,7 +77,7 @@ export class CreateNotaDto {
 
     @IsOptional()
     @IsString()
-    @MaxLength(255, {message: 'O campo "Título" deve ter no máximo 255 caracteres'})
+    @MaxLength(5000)
     titulo?: string;
 
     @IsOptional()
@@ -131,7 +131,7 @@ export class UpdateNotaDto extends PartialType(
 export class NovaRespostaDto {
     @IsString({ message: '$property| resposta: Precisa ser alfanumérico' })
     @MinLength(1, { message: '$property| resposta: Mínimo 1 caracteres' })
-    @MaxLength(255, {message: 'O campo "Resposta" deve ter no máximo 255 caracteres'})
+    @MaxLength(5000, { message: '$property| resposta: Máximo 5000 caracteres' })
     resposta: string;
 
     @IsInt()

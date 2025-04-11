@@ -28,7 +28,7 @@ export class DiretorioItemDto {
 
 export class PatchDiretorioDto {
     @IsString()
-    @MaxLength(255, { message: 'O campo "Caminho" deve ter no máximo 255 caracteres' })
+    @MaxLength(2000)
     caminho: string;
 }
 

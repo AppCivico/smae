@@ -19,7 +19,7 @@ export class CreateRegiaoDto {
      */
     @IsOptional()
     @IsString({ message: '$property| Precisa ser um texto' })
-    @MaxLength(255, { message: 'O campo "Código" deve ter no máximo 255 caracteres' })
+    @MaxLength(100)
     codigo?: string;
 
     /**
@@ -27,12 +27,12 @@ export class CreateRegiaoDto {
      * @example "Subprefeitura da Sé"
      */
     @IsString({ message: '$property| Descrição: Precisa ser alfanumérico' })
-    @MaxLength(255, { message: 'O campo "Descrição" deve ter no máximo 255 caracteres' })
+    @MaxLength(250, { message: '$property| Descrição: Máximo 250 caracteres' })
     descricao: string;
 
     @IsOptional()
     @IsString({ message: 'Usado na geração de novas variaveis' })
-    @MaxLength(255, { message: 'O campo "PDM Código Sufixo" deve ter no máximo 255 caracteres' })
+    @MaxLength(25, { message: 'Código sufixo: Máximo 25 caracteres' })
     pdm_codigo_sufixo?: string;
 
     /**

@@ -7,7 +7,7 @@ export class CreateUnidadeMedidaDto {
      */
     @IsString({ message: '$property| sigla: Precisa ser alfanumérico' })
     @MinLength(1, { message: '$property| sigla: Mínimo de 1 caractere' })
-    @MaxLength(255, { message: 'O campo "Sigla" deve ter no máximo 255 caracteres' })
+    @MaxLength(250, { message: '$property| sigla: Máximo 250 caracteres' })
     sigla: string;
     /**
      * unidade
@@ -15,6 +15,6 @@ export class CreateUnidadeMedidaDto {
      */
     @IsString({ message: '$property| descrição: Precisa ser alfanumérico' })
     @MinLength(1, { message: '$property| descrição: Mínimo de 1 caractere' })
-    @MaxLength(2048, { message: 'O campo "Descrição" deve ter no máximo 2048 caracteres' })
+    @MaxLength(250, { message: '$property| descrição: Máximo 250 caracteres' })
     descricao: string;
 }

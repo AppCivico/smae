@@ -2,11 +2,11 @@ import { IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class CreateTipoIntervencaoDto {
     @IsString({ message: '$property| nome: Precisa ser alfanumérico' })
-    @MaxLength(255, { message: 'O campo "Nome" deve ter no máximo 255 caracteres' })
+    @MaxLength(250, { message: '$property| nome: Máximo 250 caracteres' })
     nome: string;
 
     @IsOptional()
     @IsString({ message: '$property| conceito: Precisa ser alfanumérico' })
-    @MaxLength(255, { message: 'O campo "Conceito" deve ter no máximo 255 caracteres' })
+    @MaxLength(250, { message: '$property| conceito: Máximo 250 caracteres' })
     conceito?: string;
 }

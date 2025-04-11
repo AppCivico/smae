@@ -45,7 +45,7 @@ export class PPfonteRecursoDto {
      * código da fonte de recurso no SOF, no ano escolhido
      */
     @IsString({ message: '$property| precisa ser um alfanumérico' })
-    @MaxLength(255, { message: 'O campo "Código da Fonte de Recurso SOF" deve ter no máximo 255 caracteres' })
+    @MaxLength(2)
     fonte_recurso_cod_sof: string;
 
     @IsInt()
@@ -117,7 +117,7 @@ export class CreateProjetoDto {
      * @example "Nome"
      */
     @IsString()
-    @MaxLength(255, { message: 'O campo "Nome" deve ter no máximo 255 caracteres' })
+    @MaxLength(500)
     @MinLength(1)
     nome: string;
 
@@ -155,13 +155,13 @@ export class CreateProjetoDto {
 
     @IsOptional()
     @IsString()
-    @MaxLength(255, { message: 'O campo "Detalhamento" deve ter no máximo 255 caracteres' })
+    @MaxLength(50000)
     @ValidateIf((object, value) => value !== null)
     mdo_detalhamento?: string | null;
 
     @IsOptional()
     @IsString()
-    @MaxLength(255, { message: 'O campo "Programa Habitacional" deve ter no máximo 255 caracteres' })
+    @MaxLength(1024)
     @ValidateIf((object, value) => value !== null)
     @ApiProperty({ deprecated: true })
     mdo_programa_habitacional?: string | null;
@@ -205,7 +205,7 @@ export class CreateProjetoDto {
      */
     @IsOptional()
     @IsString()
-    @MaxLength(255, { message: 'O campo "Origem Outro" deve ter no máximo 255 caracteres' })
+    @MaxLength(2048)
     @ValidateIf((object, value) => value !== null)
     origem_outro?: string | null;
 
@@ -327,7 +327,7 @@ export class CreateProjetoDto {
      */
     @IsOptional()
     @IsString()
-    @MaxLength(255, { message: 'O campo "Resumo" deve ter no máximo 255 caracteres' })
+    @MaxLength(50000)
     resumo?: string;
 
     /**
@@ -371,7 +371,7 @@ export class CreateProjetoDto {
     @IsOptional()
     @IsString()
     @ValidateIf((object, value) => value !== null)
-    @MaxLength(255, { message: 'O campo "Observações" deve ter no máximo 255 caracteres' })
+    @MaxLength(1024)
     mdo_observacoes?: string;
 
     @IsOptional()
@@ -385,7 +385,7 @@ export class CreateProjetoDto {
      */
     @IsOptional()
     @IsString()
-    @MaxLength(255, { message: 'O campo "Principais Etapas " deve ter no máximo 255 caracteres' })
+    @MaxLength(50000)
     principais_etapas?: string;
 
     @IsOptional()
@@ -396,25 +396,25 @@ export class CreateProjetoDto {
     @IsOptional()
     @IsString()
     @ValidateIf((object, value) => value !== null)
-    @MaxLength(255, { message: 'O campo "Logradouro Tipo" deve ter no máximo 255 caracteres' })
+    @MaxLength(1024)
     logradouro_tipo?: string;
 
     @IsOptional()
     @IsString()
     @ValidateIf((object, value) => value !== null)
-    @MaxLength(255, { message: 'O campo "Logradouro Nome" deve ter no máximo 255 caracteres' })
+    @MaxLength(1024)
     logradouro_nome?: string;
 
     @IsOptional()
     @IsString()
     @ValidateIf((object, value) => value !== null)
-    @MaxLength(255, { message: 'O campo "Logradouro Número" deve ter no máximo 255 caracteres' })
+    @MaxLength(1024)
     logradouro_numero?: string;
 
     @IsOptional()
     @IsString()
     @ValidateIf((object, value) => value !== null)
-    @MaxLength(255, { message: 'O campo "Logradouro CEP" deve ter no máximo 255 caracteres' })
+    @MaxLength(1024)
     logradouro_cep?: string;
 
     @IsOptional()
@@ -429,7 +429,7 @@ export class CreateProjetoDto {
      */
     @IsOptional()
     @IsString()
-    @MaxLength(255, { message: 'O campo "Secretário Executivo" deve ter no máximo 255 caracteres' })
+    @MaxLength(250)
     @ValidateIf((object, value) => value !== null)
     secretario_executivo?: string | null;
 
@@ -440,7 +440,7 @@ export class CreateProjetoDto {
      */
     @IsOptional()
     @IsString()
-    @MaxLength(255, { message: 'O campo "Secretário Responsável" deve ter no máximo 255 caracteres' })
+    @MaxLength(250)
     @ValidateIf((object, value) => value !== null)
     secretario_responsavel?: string | null;
 
@@ -460,7 +460,7 @@ export class CreateProjetoDto {
 
     @IsOptional()
     @IsString()
-    @MaxLength(255, { message: 'O campo "Secretário Colaborador" deve ter no máximo 255 caracteres' })
+    @MaxLength(250)
     @ValidateIf((object, value) => value !== null)
     secretario_colaborador?: string | null;
 
@@ -488,7 +488,7 @@ export class CreateProjetoDto {
      */
     @IsOptional()
     @IsInt({ message: '$property| tipo_aditivo_id precisa ser inteiro' })
-    @ApiProperty({ deprecated: true })
+    @ApiProperty({deprecated: true})
     tipo_aditivo_id?: number | null;
 
     /**
@@ -535,7 +535,7 @@ export class CreateProjetoDocumentDto {
     // TODO: este campo aqui será obrigatório, porém mantendo como opcional por motivos de sincronia com o desenvolvimento de front.
     @IsOptional()
     @IsString()
-    @MaxLength(2048, { message: 'O campo "Descrição" deve ter no máximo 2048 caracteres' })
+    @MaxLength(2048)
     descricao?: string;
 }
 
@@ -547,18 +547,18 @@ export class CreateProjetoSeiDto {
      **/
     @ApiProperty({ description: CONST_PROC_SEI_SINPROC_DESCR, example: '6016201700379910' })
     @IsString()
-    @MaxLength(255, { message: 'O campo "Processo SEI" deve ter no máximo 255 caracteres' })
+    @MaxLength(20)
     @Matches(CONST_PROC_SEI_SINPROC_REGEXP, { message: CONST_PROC_SEI_SINPROC_MESSAGE })
     processo_sei: string;
 
     @IsOptional()
     @IsString()
-    @MaxLength(2048, { message: 'O campo "Descrição" deve ter no máximo 2048 caracteres' })
+    @MaxLength(50000)
     descricao: string;
 
     @IsOptional()
     @IsString()
-    @MaxLength(255, { message: 'O campo "Link" deve ter no máximo 255 caracteres' })
+    @MaxLength(2000)
     @IsUrl(
         {
             protocols: ['http', 'https'],
@@ -581,13 +581,13 @@ export class CreateProjetoSeiDto {
     @IsOptional()
     @IsString()
     @ValidateIf((object, value) => value !== null)
-    @MaxLength(255, { message: 'O campo "Comentários" deve ter no máximo 255 caracteres' })
+    @MaxLength(1024)
     comentarios?: string;
 
     @IsOptional()
     @IsString()
     @ValidateIf((object, value) => value !== null)
-    @MaxLength(255, { message: 'O campo "Observações" deve ter no máximo 255 caracteres' })
+    @MaxLength(1024)
     observacoes?: string;
 }
 

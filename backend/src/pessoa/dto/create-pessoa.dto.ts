@@ -22,7 +22,7 @@ export class CreatePessoaDto {
      * @example "admin@email.com"
      */
     @MinLength(1, { message: '$property| E-mail: Mínimo de 1 caractere' })
-    @MaxLength(255, { message: 'O campo "E-mail" deve ter no máximo 255 caracteres' })
+    @MaxLength(250, { message: '$property| E-mail: Máximo 250 caracteres' })
     @IsEmail(undefined, { message: '$property| E-mail: Precisa ser um endereço válido' })
     email: string;
 
@@ -32,7 +32,7 @@ export class CreatePessoaDto {
      */
     @IsString({ message: '$property| Nome Social: Precisa ser alfanumérico' })
     @MinLength(1, { message: '$property| Nome Social: Mínimo de 1 caracteres' })
-    @MaxLength(255, { message: 'O campo "Nome exibição" deve ter no máximo 255 caracteres' })
+    @MaxLength(250, { message: '$property| Nome Social: Máximo 250 caracteres' })
     nome_exibicao: string;
 
     /**
@@ -41,7 +41,7 @@ export class CreatePessoaDto {
      */
     @IsString({ message: '$property| Nome Completo: Precisa ser alfanumérico' })
     @MinLength(4, { message: '$property| Nome Completo: Mínimo de 4 caracteres' })
-    @MaxLength(255, { message: 'O campo "Nome completo" deve ter no máximo 255 caracteres' })
+    @MaxLength(250, { message: '$property| Nome Completo: Máximo 250 caracteres' })
     nome_completo: string;
 
     /**
@@ -50,7 +50,7 @@ export class CreatePessoaDto {
      */
     @IsOptional()
     @IsString({ message: '$property| Lotação: Precisa ser alfanumérico' })
-    @MaxLength(255, { message: 'O campo "Lotação" deve ter no máximo 255 caracteres' })
+    @MaxLength(250, { message: '$property| Lotação: Máximo 250 caracteres' })
     lotacao?: string;
 
     /**
@@ -59,7 +59,7 @@ export class CreatePessoaDto {
      */
     @IsOptional()
     @IsString({ message: '$property| Cargo: Precisa ser alfanumérico' })
-    @MaxLength(255, { message: 'O campo "Cargo" deve ter no máximo 255 caracteres' })
+    @MaxLength(250, { message: '$property| Cargo: Máximo 250 caracteres' })
     cargo?: string;
 
     /**
@@ -84,7 +84,7 @@ export class CreatePessoaDto {
      */
     @IsOptional()
     @IsString({ message: '$property| Registro_funcionario: Precisa ser alfanumérico' })
-    @MaxLength(255, { message: 'O campo "Registro Funcionário" deve ter no máximo 255 caracteres' })
+    @MaxLength(9, { message: '$property| registro_funcionario: Máximo 9 caracteres' })
     registro_funcionario?: string;
 
     /**
