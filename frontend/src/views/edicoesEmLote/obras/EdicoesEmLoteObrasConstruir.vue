@@ -167,6 +167,7 @@ const onSubmit = handleSubmit(async (valores) => {
 
 async function fetchOptionsIfNeeded(rowIndex, fieldConfig) {
   const { meta } = fieldConfig;
+
   if (!meta?.storeKey || !meta.fetchAction || (!meta.listState && !meta.getterKey)) {
     console.warn('Configuração de metadados incompleta:', fieldConfig);
     return;
@@ -179,29 +180,33 @@ async function fetchOptionsIfNeeded(rowIndex, fieldConfig) {
   }
 
   const dataSourceKey = meta.getterKey || meta.listState;
+  const jaTemDados = store[dataSourceKey]
+    && Array.isArray(store[dataSourceKey])
+    && store[dataSourceKey].length > 0;
 
-  if (
-    store[dataSourceKey]
-      && Array.isArray(store[dataSourceKey]) && store[dataSourceKey].length > 0) {
+  if (jaTemDados) {
     return;
   }
 
   const loadingKey = `${rowIndex}-${meta.storeKey}`;
+
   if (loadingOptions.value[loadingKey]) {
     return;
   }
 
-  loadingOptions.value = { ...loadingOptions.value, [loadingKey]: true };
+  loadingOptions.value[loadingKey] = true;
 
   try {
-    if (typeof store[meta.fetchAction] !== 'function') {
+    const fetchFunction = store[meta.fetchAction];
+    if (typeof fetchFunction !== 'function') {
       throw new Error(`Ação '${meta.fetchAction}' não encontrada na store ${meta.storeKey}`);
     }
-    await store[meta.fetchAction]();
+
+    await fetchFunction();
   } catch (error) {
     console.error(`Erro ao buscar dados para ${meta.storeKey}:`, error);
   } finally {
-    loadingOptions.value = { ...loadingOptions.value, [loadingKey]: false };
+    loadingOptions.value[loadingKey] = false;
   }
 }
 
