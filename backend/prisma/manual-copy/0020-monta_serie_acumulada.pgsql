@@ -8,23 +8,33 @@ DECLARE
     vVariavelBase numeric;
     vVariavelNumeroCasas integer;
     vInicio date;
-    vFim date;
+    vFim date; -- Data fim original, baseada nos períodos da variável
+    vFimCalculo date; -- Data fim a ser usada no cálculo, potencialmente ajustada pelos flags
     vAcumulativa boolean;
-    vFeatureFlagAtivo boolean;
+    vFeatureFlagRealizadoApenasPassado boolean; -- Flag para ACUMULADO_REALIZADO_APENAS_PASSADO
+    vFeatureFlagPrevistoApenasPassado boolean;  -- Flag para PREVISTO_REALIZADO_APENAS_PASSADO
     vUltimoRealizado date;
 BEGIN
     EXECUTE pg_advisory_xact_lock(pVariavelId::bigint);
 
-   -- Verifica se o feature flag está ativo
     SELECT value::boolean
-    INTO vFeatureFlagAtivo
+    INTO vFeatureFlagRealizadoApenasPassado
     FROM smae_config
     WHERE key = 'ACUMULADO_REALIZADO_APENAS_PASSADO'
     LIMIT 1;
 
-    -- se não existir o registro, assume como false
-    vFeatureFlagAtivo := COALESCE(vFeatureFlagAtivo, false);
+    vFeatureFlagRealizadoApenasPassado := COALESCE(vFeatureFlagRealizadoApenasPassado, false);
 
+    SELECT value::boolean
+    INTO vFeatureFlagPrevistoApenasPassado
+    FROM smae_config
+    WHERE key = 'PREVISTO_REALIZADO_APENAS_PASSADO'
+    LIMIT 1;
+    -- se não existir o registro, assume como false
+    vFeatureFlagPrevistoApenasPassado := COALESCE(vFeatureFlagPrevistoApenasPassado, false);
+
+
+    -- Coleta informações da variável e seus períodos
     WITH indicador_info AS (
         SELECT iv.variavel_id, iv.indicador_id
         FROM indicador_variavel iv
@@ -86,12 +96,15 @@ BEGIN
     JOIN periodo_data pd ON v.id = pd.variavel_id
     WHERE v.id = pVariavelId;
 
-    -- Validation check
+    -- Validação básica
     IF vInicio IS NULL THEN
         RETURN 'Variavel não encontrada';
     END IF;
+    IF vFim IS NULL THEN
+        RETURN 'vFim não encontrado';
+    END IF;
 
-    -- Process each series type (Realizado/Previsto)
+    -- Processa cada tipo de série (Realizado/Previsto)
     FOR serieRecord IN WITH series AS (
         SELECT
             'Realizado'::"Serie" AS serie
@@ -104,17 +117,36 @@ BEGIN
     -- Filtra apenas as series do tipo escolhido [parâmetro] para recalcular, ou todas se for null
     WHERE ((vTipoSerie IS NULL) OR (s.serie::text LIKE vTipoSerie::text || '%'))
     LOOP
-        -- Se for RealizadoAcumulado e o feature flag estiver ativo, ajusta a data fim
-        IF vFeatureFlagAtivo AND serieRecord.serie = 'Realizado'::"Serie" THEN
-            -- Procura a última data com valor realizado
-            SELECT COALESCE(max(data_valor), now()::date)
-            INTO vUltimoRealizado
-            FROM serie_variavel
-            WHERE variavel_id = pVariavelId
-                AND serie = 'Realizado'::"Serie";
+        -- Define a data fim para o cálculo desta iteração, começando com a data fim original
+        vFimCalculo := vFim;
 
-            -- Ajusta vFim para ser o maior entre hoje e o último valor realizado
-            vFim := GREATEST(vUltimoRealizado, (date_trunc('day', NOW() AT TIME ZONE 'America/Sao_Paulo'))::date);
+        -- Busca a última data com valor realizado (necessário para ambos os flags)
+        -- Fazemos isso uma vez por loop se algum dos flags que dependem disso estiver ativo
+        IF vFeatureFlagRealizadoApenasPassado OR vFeatureFlagPrevistoApenasPassado THEN
+             SELECT COALESCE(max(data_valor), vInicio) -- Usa vInicio como fallback se não houver realizado
+             INTO vUltimoRealizado
+             FROM serie_variavel
+             WHERE variavel_id = pVariavelId
+                 AND serie = 'Realizado'::"Serie";
+        END IF;
+
+        -- AJUSTE 1: Se for RealizadoAcumulado e o flag ACUMULADO_REALIZADO_APENAS_PASSADO estiver ativo
+        IF vFeatureFlagRealizadoApenasPassado AND serieRecord.serie = 'Realizado'::"Serie" THEN
+            -- Ajusta vFimCalculo para ser o maior entre a última data com realizado e hoje
+            -- Garante que não calculamos acumulado realizado futuro se o flag estiver ativo
+             vFimCalculo := LEAST(vFim, GREATEST(vUltimoRealizado, (date_trunc('day', NOW() AT TIME ZONE 'America/Sao_Paulo'))::date));
+        END IF;
+
+        -- AJUSTE 2: Se for PrevistoAcumulado e o flag PREVISTO_REALIZADO_APENAS_PASSADO estiver ativo (NOVO)
+        IF vFeatureFlagPrevistoApenasPassado AND serieRecord.serie = 'Previsto'::"Serie" THEN
+             -- Ajusta vFimCalculo para ser o maior entre a última data com realizado e hoje
+             -- Garante que não calculamos acumulado previsto muito além do último realizado ou do presente, se o flag estiver ativo
+             vFimCalculo := LEAST(vFim, GREATEST(vUltimoRealizado, (date_trunc('day', NOW() AT TIME ZONE 'America/Sao_Paulo'))::date));
+        END IF;
+
+        -- Garante que a data fim de cálculo não seja menor que a data de início
+        IF vFimCalculo < vInicio THEN
+            vFimCalculo := vInicio;
         END IF;
 
         -- Apenas recalcular a serie acumulada se a variavel for acumulativa
@@ -123,34 +155,53 @@ BEGIN
             DELETE FROM serie_variavel
             WHERE variavel_id = pVariavelId
                 AND serie = (serieRecord.serie::text || 'Acumulado')::"Serie";
---            RAISE NOTICE '==> acumulado serie_variavel (variavel=%, serie=%, feature_flag=%, data_fim=%)',
---                pVariavelId::text,
---                serieRecord.serie::text,
---                vFeatureFlagAtivo,
---                vFim::text;
 
+--            RAISE NOTICE '==> Calculando acumulado para Variavel=%, Serie=%, FlagRealizado=%, FlagPrevisto=%, DataInicio=%, DataFimOriginal=%, DataFimCalculo=%)',
+--                pVariavelId::text,
+--                (serieRecord.serie::text || 'Acumulado')::"Serie",
+--                vFeatureFlagRealizadoApenasPassado,
+--                vFeatureFlagPrevistoApenasPassado,
+--                vInicio::text,
+--                vFim::text,
+--                vFimCalculo::text;
+
+            -- Insere os valores acumulados
             INSERT INTO serie_variavel (variavel_id, serie, data_valor, valor_nominal)
             WITH theData AS (
                 SELECT
                     pVariavelId,
-                    (serieRecord.serie::text || 'Acumulado')::"Serie",
+                    (serieRecord.serie::text || 'Acumulado')::"Serie" as serie_acumulada,
                     gs.gs AS data_serie,
                     round(
+                        -- Soma o valor base com a soma acumulada dos valores nominais da série base (Realizado ou Previsto)
                         vVariavelBase + coalesce(sum(sv.valor_nominal::numeric) OVER (ORDER BY gs.gs), 0),
                         vVariavelNumeroCasas
                     ) AS valor_acc
                 FROM
-                    generate_series(vInicio, vFim, vPeriodicidade) gs
+                    -- Gera a série de datas DENTRO DO PERÍODO DE CÁLCULO AJUSTADO (vInicio a vFimCalculo)
+                    generate_series(vInicio, vFimCalculo, vPeriodicidade) gs
                 LEFT JOIN serie_variavel sv ON sv.variavel_id = pVariavelId
-                    AND data_valor = gs.gs::date
-                    AND sv.serie = serieRecord.serie
+                    AND sv.data_valor = gs.gs::date
+                    AND sv.serie = serieRecord.serie -- Junta com a série base correspondente (Realizado ou Previsto)
             )
             SELECT *
             FROM theData
+            -- Não insere pontos onde o valor acumulado seria nulo (embora o coalesce(sum(...), 0) evite isso)
             WHERE theData.valor_acc IS NOT NULL;
-        ELSE
-            -- Para casos não acumulativos, usamos INSERT ON CONFLICT para atualizar os valores
-            -- só se forem diferentes
+
+        ELSE -- Se a variável NÃO for acumulativa
+            -- Para casos não acumulativos, a série "Acumulada" é apenas uma cópia da série base.
+            -- Usamos INSERT ON CONFLICT para inserir/atualizar os valores.
+            -- A lógica de vFimCalculo não se aplica diretamente aqui, pois copiamos pontos existentes,
+            -- mas conceitualmente define o limite de interesse. A limpeza prévia garante que
+            -- pontos fora do novo vFimCalculo (se aplicável por outras razões) seriam removidos.
+
+            -- Limpa a série 'Acumulada' correspondente antes de copiar, para remover pontos obsoletos
+            DELETE FROM serie_variavel
+            WHERE variavel_id = pVariavelId
+                AND serie = (serieRecord.serie::text || 'Acumulado')::"Serie";
+
+            -- Copia os dados da série base para a série 'Acumulada' correspondente
             INSERT INTO serie_variavel (variavel_id, serie, data_valor, valor_nominal)
             SELECT
                 pVariavelId,
@@ -160,6 +211,7 @@ BEGIN
             FROM serie_variavel sv
             WHERE sv.variavel_id = pVariavelId
                 AND sv.serie = serieRecord.serie
+                AND sv.data_valor BETWEEN vInicio AND vFimCalculo
             ON CONFLICT (variavel_id, serie, data_valor)
             DO UPDATE SET
                 valor_nominal = EXCLUDED.valor_nominal
