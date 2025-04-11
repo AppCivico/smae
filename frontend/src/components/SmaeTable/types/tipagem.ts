@@ -4,7 +4,7 @@ export type Coluna = {
   cabecalho?: boolean;
   ehDadoComputado?: boolean;
   classe?: any;
-  formatador?: () => any;
+  formatador?: (v: any) => any;
 };
 export type Colunas = Coluna[];
 
