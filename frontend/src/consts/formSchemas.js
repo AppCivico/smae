@@ -1,4 +1,27 @@
 /* eslint-disable no-template-curly-in-string */
+import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
+import categoriaDeTransferencia from '@/consts/categoriaDeTransferencia';
+import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
+import estadosDoBrasil from '@/consts/estadosDoBrasil';
+import interfacesDeTransferências from '@/consts/interfacesDeTransferências';
+import niveisDeOrcamento from '@/consts/niveisDeOrcamento';
+import níveisDeRepresentatividade from '@/consts/niveisDeRepresentatividade';
+import níveisDeSuplência from '@/consts/niveisDeSuplencia';
+import regEx from '@/consts/patterns';
+import periodicidades from '@/consts/periodicidades';
+import polaridadeDeVariaveis from '@/consts/polaridadeDeVariaveis';
+import statusDeProjetos from '@/consts/projectStatuses';
+import responsabilidadeEtapaFluxo from '@/consts/responsabilidadeEtapaFluxo';
+import statusObras from '@/consts/statusObras';
+import tipoDePerfil from '@/consts/tipoDePerfil';
+import tipoDeVariaveisCategoricas from '@/consts/tipoDeVariaveisCategoricas';
+import tiposDeLogradouro from '@/consts/tiposDeLogradouro';
+import tiposDeMunicípio from '@/consts/tiposDeMunicipio';
+import tiposDeOrigens from '@/consts/tiposDeOrigens';
+import tiposNaEquipeDeParlamentar from '@/consts/tiposNaEquipeDeParlamentar';
+import tiposSituacaoSchema from '@/consts/tiposSituacaoSchema';
+import fieldToDate from '@/helpers/fieldToDate';
+import haDuplicatasNaLista from '@/helpers/haDuplicatasNaLista';
 import { isAfter, isBefore } from 'date-fns';
 import {
   addMethod,
@@ -13,28 +36,6 @@ import {
   setLocale,
   string,
 } from 'yup';
-import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
-import categoriaDeTransferencia from '@/consts/categoriaDeTransferencia';
-import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
-import estadosDoBrasil from '@/consts/estadosDoBrasil';
-import interfacesDeTransferências from '@/consts/interfacesDeTransferências';
-import niveisDeOrcamento from '@/consts/niveisDeOrcamento';
-import níveisDeRepresentatividade from '@/consts/niveisDeRepresentatividade';
-import níveisDeSuplência from '@/consts/niveisDeSuplencia';
-import regEx from '@/consts/patterns';
-import periodicidades from '@/consts/periodicidades';
-import polaridadeDeVariaveis from '@/consts/polaridadeDeVariaveis';
-import responsabilidadeEtapaFluxo from '@/consts/responsabilidadeEtapaFluxo';
-import statusObras from '@/consts/statusObras';
-import tipoDePerfil from '@/consts/tipoDePerfil';
-import tipoDeVariaveisCategoricas from '@/consts/tipoDeVariaveisCategoricas';
-import tiposDeLogradouro from '@/consts/tiposDeLogradouro';
-import tiposDeMunicípio from '@/consts/tiposDeMunicipio';
-import tiposDeOrigens from '@/consts/tiposDeOrigens';
-import tiposNaEquipeDeParlamentar from '@/consts/tiposNaEquipeDeParlamentar';
-import tiposSituacaoSchema from '@/consts/tiposSituacaoSchema';
-import fieldToDate from '@/helpers/fieldToDate';
-import haDuplicatasNaLista from '@/helpers/haDuplicatasNaLista';
 import tiposStatusDistribuicao from './tiposStatusDistribuicao';
 
 const dataMin = import.meta.env.VITE_DATA_MIN ? new Date(`${import.meta.env.VITE_DATA_MIN}`) : new Date('1900-01-01T00:00:00Z');
@@ -186,7 +187,7 @@ export const acompanhamento = object()
           .shape({
             encaminhamento: string()
               .label('Encaminhamento')
-              .max(50000)
+              .max(255)
               .min(1)
               .required(),
             responsavel: string()
@@ -217,7 +218,7 @@ export const acompanhamento = object()
       .required(),
     detalhamento: string()
       .label('Detalhamento')
-      .max(50000)
+      .max(255)
       .nullable(),
     participantes: string()
       .label('Participantes')
@@ -225,11 +226,11 @@ export const acompanhamento = object()
       .required(),
     pauta: string()
       .label('Pauta')
-      .max(50000)
+      .max(255)
       .nullable(),
     pontos_atencao: string()
       .label('Pontos de atenção')
-      .max(50000)
+      .max(255)
       .nullable(),
     // campo não utilizado em Obras
     risco: array()
@@ -506,9 +507,13 @@ export const contratoDeObras = (tela = 'projeto') => object()
       .nullable()
       .label('Área gestora'),
     objeto_resumo: string()
+      .max(255)
+      .min(1)
       .nullable()
       .label('Objeto do contrato - resumido'),
     objeto_detalhado: string()
+      .max(255)
+      .min(1)
       .nullable()
       .label('Objeto do contrato - detalhado'),
     contratante: string()
@@ -549,6 +554,8 @@ export const contratoDeObras = (tela = 'projeto') => object()
       .nullable()
       .label('Valor do contrato'),
     observacoes: string()
+      .max(255)
+      .min(1)
       .nullable()
       .label('Observações'),
   });
@@ -1005,6 +1012,7 @@ export const liçãoAprendida = object()
   .shape({
     contexto: string()
       .label('Contexto')
+      .max(255)
       .required(),
     data_registro: date()
       .label('Data do registro')
@@ -1014,12 +1022,15 @@ export const liçãoAprendida = object()
     descricao: string()
       .label('O que foi feito')
       .required()
+      .max(2048)
       .nullable(),
     observacao: string()
       .label('Observação')
+      .max(255)
       .nullable(),
     resultado: string()
       .label('Resultado')
+      .max(255)
       .nullable(),
     responsavel: string()
       .label('Responsável')
@@ -1319,7 +1330,7 @@ export const obras = object({
     }),
   mdo_detalhamento: string()
     .label('Detalhamento/Escopo da obra')
-    .max(50000)
+    .max(255)
     .nullable()
     .meta({ permite_edicao_em_massa: true }),
   mdo_n_familias_beneficiadas: number()
@@ -1340,7 +1351,7 @@ export const obras = object({
     .meta({ permite_edicao_em_massa: true }),
   mdo_observacoes: string()
     .label('Observações')
-    .max(1024)
+    .max(255)
     .nullable()
     .meta({ permite_edicao_em_massa: true }),
   mdo_previsao_inauguracao: date()
@@ -2529,11 +2540,11 @@ export const processoDeObras = object()
   .shape({
     comentarios: string()
       .label('Comentários')
-      .max(1024)
+      .max(255)
       .nullable(),
     descricao: string()
       .label('Descrição')
-      .max(2000)
+      .max(2048)
       .nullable(),
     link: string()
       .label('Link')
@@ -2542,7 +2553,7 @@ export const processoDeObras = object()
       .url(),
     observacoes: string()
       .label('Observações')
-      .max(1024)
+      .max(255)
       .nullable(),
     processo_sei: string()
       .label('Processo SEI')
@@ -2657,7 +2668,7 @@ export const projeto = object()
     nao_escopo: string()
       .label('Não escopo')
       .nullable()
-      .max(50000),
+      .max(255),
     nome: string()
       .label('Nome do projeto')
       .required('Um projeto requer um nome')
@@ -2665,9 +2676,11 @@ export const projeto = object()
       .max(500, 'Esse nome é muito longo'),
     objetivo: string()
       .label('Objetivo')
+      .max(255)
       .nullable(),
     objeto: string()
       .label('Objeto')
+      .max(255)
       .nullable(),
     orgao_gestor_id: number()
       .label('Órgão gestor')
@@ -2680,7 +2693,7 @@ export const projeto = object()
       .label('Órgãos participantes'),
     origem_outro: string()
       .label('Descrição de origem fora do PdM')
-      .max(500)
+      .max(255)
       .nullable()
       .when('origem_tipo', (origemTipo, field) => (origemTipo && origemTipo !== 'PdmSistema'
         ? field.required('Descrição de origem é obrigatório caso não se escolha um Programa de Metas corrente')
@@ -2720,6 +2733,7 @@ export const projeto = object()
       .nullable(),
     publico_alvo: string()
       .label('Público alvo')
+      .max(255)
       .nullable(),
     portfolio_id: number('O projeto precisa pertencer a um portfólio')
       .label('Portfólio')
@@ -2734,7 +2748,7 @@ export const projeto = object()
               .nullable(),
             premissa: string()
               .required('A premissa não pode estar em branco')
-              .max(2048, 'Premissa muito longa. use menos de 2048 caracteres'),
+              .max(255, 'Premissa muito longa. Use 255 caracteres ou menos.'),
           }),
       )
       .strict(),
@@ -2754,7 +2768,7 @@ export const projeto = object()
       .nullable(),
     principais_etapas: string()
       .label('Principais etapas')
-      .max(50000),
+      .max(255),
     regiao_id: number()
       .label('Região')
       .nullable(),
@@ -2773,13 +2787,13 @@ export const projeto = object()
               .nullable(),
             restricao: string()
               .required('A restrição não pode estar em branco')
-              .max(2048, 'Restrição muito longa. use menos de 2048 caracteres'),
+              .max(255, 'Restrição muito longa. Use 255 caracteres ou menos.'),
           }),
       )
       .strict(),
     resumo: string()
       .label('Resumo')
-      .max(500),
+      .max(255),
     secretario_executivo: string()
       .label('Secretário gestor')
       .nullable(),
@@ -2788,16 +2802,7 @@ export const projeto = object()
       .nullable(),
     status: mixed()
       .label('Status')
-      .oneOf([
-        'Registrado',
-        'Selecionado',
-        'EmPlanejamento',
-        'Planejado',
-        'Validado',
-        'EmAcompanhamento',
-        'Suspenso',
-        'Fechado',
-      ])
+      .oneOf(Object.keys(statusDeProjetos))
       .nullable(),
     tolerancia_atraso: number()
       .label('Percentual de tolerância com atraso')
@@ -3588,7 +3593,7 @@ export const risco = object()
   .shape({
     causa: string()
       .label('Causa raiz')
-      .max(2000)
+      .max(255)
       .nullable(),
     codigo: number()
       .label('Código')
@@ -3599,11 +3604,11 @@ export const risco = object()
       .required(),
     consequencia: string()
       .label('Consequências')
-      .max(2000)
+      .max(255)
       .nullable(),
     descricao: string()
       .label('Descrição')
-      .max(2000)
+      .max(2048)
       .nullable(),
     impacto: number()
       .label('Impacto')
