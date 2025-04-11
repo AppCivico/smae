@@ -70,31 +70,25 @@ export class RunUpdateTaskService implements TaskableService {
 
                 const sucesso_ids = [];
 
-                for (const operacao of _params.ops) {
-                    for (const id of _params.ids) {
-                        try {
-                            const params = this.preparaParamsParaOp(_params.tipo, operacao);
+                for (const id of _params.ids) {
+                    const operacoesParaId = [];
+                    for (const operacao of _params.ops) {
+                        const params = this.preparaParamsParaOp(_params.tipo, operacao);
 
-                            await service.update(params.tipo, id, params.dto, user);
+                        operacoesParaId.push(service.update(params.tipo, id, params.dto, user));
+                    }
 
-                            this.logger.log(`Operação ${operacao.col} executada com sucesso para ID ${id}.`);
+                    try {
+                        await Promise.all(operacoesParaId);
+                        n_sucesso++;
+                        sucesso_ids.push(id);
+                    } catch (error) {
+                        n_erro++;
+                        results_log.falhas.push({ id, erro: error.message });
 
-                            n_sucesso++;
-                            sucesso_ids.push(id);
-                        } catch (error) {
-                            this.logger.error(
-                                `Erro ao executar SET para coluna "${operacao.col}" para ID ${id}: ${error}`
-                            );
-                            n_erro++;
-
-                            results_log.falhas.push({ id, erro: error.message });
-
-                            // Caso chegue em 50 erros. Interrompe a execução e marca como falha no processamento.
-                            if (n_erro == 50) {
-                                throw new Error(
-                                    `Limite de erros atingido! Erro ao executar SET para coluna "${operacao.col}" para ID ${id}: ${error}`
-                                );
-                            }
+                        // Caso chegue em 50 erros. Interrompe a execução e marca como falha no processamento.
+                        if (n_erro == 50) {
+                            throw new Error(`Limite de erros atingido! Erro ao executar SET para ID ${id}: ${error}`);
                         }
                     }
                 }
@@ -131,6 +125,10 @@ export class RunUpdateTaskService implements TaskableService {
 
             throw error;
         }
+
+        return {
+            success: true,
+        };
     }
 
     outputToJson(executeOutput: any, _inputParams: any, _taskId: string): JSON {

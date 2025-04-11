@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
     getMetadataStorage,
     IsArray,
+    IsDefined,
     IsEnum,
     IsInt,
     IsNumber,
@@ -101,8 +102,8 @@ export class UpdateOperacaoDto {
     @IsString()
     col: string;
 
-    @IsString()
-    set: string;
+    @IsDefined()
+    set: any;
 }
 
 export class CreateRunUpdateDto {
