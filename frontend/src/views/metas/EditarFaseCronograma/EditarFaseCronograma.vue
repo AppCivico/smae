@@ -90,7 +90,11 @@ const permissaoLiberada = computed(() => {
     return true;
   }
 
-  return currentFase.value.pode_editar_realizado;
+  if (currentFase.value.pode_editar) {
+    return true;
+  }
+
+  return !currentFase.value.pode_editar_realizado;
 });
 
 async function getRegionByParent(r_id, cur) {

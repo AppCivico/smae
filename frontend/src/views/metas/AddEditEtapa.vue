@@ -97,7 +97,11 @@ const permissaoLiberada = computed(() => {
     return true;
   }
 
-  return singleEtapa.value?.etapa?.pode_editar_realizado;
+  if (singleEtapa.value.etapa.pode_editar) {
+    return true;
+  }
+
+  return !singleEtapa.value?.etapa?.pode_editar_realizado;
 });
 
 const geolocalizaçãoPorToken = computed(() => (
