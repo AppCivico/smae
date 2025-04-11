@@ -1243,7 +1243,15 @@ export const obras = object({
   equipamento_id: number()
     .label('Equipamento/Estrutura pública')
     .min(1, 'Equipamento/Estrutura pública inválida')
-    .nullable(),
+    .nullable()
+    .meta({
+      permite_edicao_em_massa: true,
+      storeKey: 'equipamentos',
+      fetchAction: 'buscarTudo',
+      listState: 'lista',
+      optionValue: 'id',
+      optionLabel: 'nome',
+    }),
   fonte_recursos: array()
     .label('Fontes de recursos')
     .nullable()
@@ -1294,7 +1302,15 @@ export const obras = object({
   grupo_tematico_id: number()
     .label('Grupo temático')
     .min(1, 'Grupo temático inválido')
-    .required(),
+    .required()
+    .meta({
+      permite_edicao_em_massa: true,
+      storeKey: 'grupos_tematicos',
+      fetchAction: 'buscarTudo',
+      listState: 'lista',
+      optionValue: 'id',
+      optionLabel: 'nome',
+    }),
   iniciativa_id: number()
     .when(['origem_tipo', 'atividade_id'], {
       is: (origemTipo, atividadeId) => origemTipo === 'PdmSistema' && atividadeId,
@@ -1304,29 +1320,37 @@ export const obras = object({
   mdo_detalhamento: string()
     .label('Detalhamento/Escopo da obra')
     .max(50000)
-    .nullable(),
+    .nullable()
+    .meta({ permite_edicao_em_massa: true }),
   mdo_n_familias_beneficiadas: number()
     .label('Número de famílias beneficiadas')
+    .nullable()
     .min(0)
-    .nullable(),
+    .meta({ permite_edicao_em_massa: true }),
   mdo_n_unidades_habitacionais: number()
     .label('Número de unidades')
     .min(0)
-    .nullable(),
+    .nullable()
+    .meta({ permite_edicao_em_massa: true }),
   mdo_n_unidades_atendidas: number()
     .label('Número de unidades atendidas até o momento')
     .min(0)
     .nullable()
-    .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
+    .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
+    .meta({ permite_edicao_em_massa: true }),
   mdo_observacoes: string()
     .label('Observações')
     .max(1024)
-    .nullable(),
+    .nullable()
+    .meta({ permite_edicao_em_massa: true }),
   mdo_previsao_inauguracao: date()
     .label('Data de inauguração planejada')
     .max(dataMax)
     .min(dataMin)
-    .nullable(),
+    .nullable()
+    .transform((curr, orig) => (orig === '' ? null : curr))
+    .typeError('Informe uma data válida (AAAA-MM-DD)')
+    .meta({ permite_edicao_em_massa: true }),
   meta_codigo: string()
     .label('Código da Meta')
     .when(['origem_tipo'], {
@@ -1352,11 +1376,27 @@ export const obras = object({
   orgao_executor_id: number()
     .label('Secretaria/órgão executor')
     .min(1, 'Secretaria/órgão executor inválidos')
-    .nullable(),
+    .nullable()
+    .meta({
+      permite_edicao_em_massa: true,
+      storeKey: 'órgãos',
+      fetchAction: 'getAll',
+      listState: 'organs',
+      optionValue: 'id',
+      optionLabel: (item) => `${item.sigla} - ${item.descricao}`,
+    }),
   orgao_gestor_id: number()
     .label('Órgão gestor do portfólio')
     .min(1, 'Órgão inválido')
-    .required(),
+    .required()
+    .meta({
+      permite_edicao_em_massa: true,
+      storeKey: 'órgãos',
+      fetchAction: 'getAll',
+      listState: 'organs',
+      optionValue: 'id',
+      optionLabel: (item) => `${item.sigla} - ${item.descricao}`,
+    }),
   orgao_origem_id: number()
     .label('Secretaria/órgão de origem')
     .min(1, 'Secretaria/órgão de origem inválidos')
@@ -1364,7 +1404,15 @@ export const obras = object({
   orgao_responsavel_id: number()
     .label('Órgão responsável pela obra')
     .min(1, 'Órgão responsável pela obra inválidos')
-    .nullable(),
+    .nullable()
+    .meta({
+      permite_edicao_em_massa: true,
+      storeKey: 'órgãos',
+      fetchAction: 'getAll',
+      listState: 'organs',
+      optionValue: 'id',
+      optionLabel: (item) => `${item.sigla} - ${item.descricao}`,
+    }),
   orgaos_colaboradores: string()
     .label('Órgãos colaboradores da obra')
     .nullable(),
@@ -1423,12 +1471,19 @@ export const obras = object({
     .label('Previsão de início')
     .max(dataMax)
     .min(dataMin)
-    .nullable(),
+    .nullable()
+    .meta({ permite_edicao_em_massa: true }),
   previsao_termino: date()
     .label('Previsão de término')
     .max(dataMax)
-    .min(ref('previsao_inicio'), 'Precisa ser posterior à data de início')
-    .nullable(),
+    .when('previsao_inicio', (inicio, schema) => {
+      if (inicio) {
+        return schema.min(inicio, 'Precisa ser posterior à data de início');
+      }
+      return schema;
+    })
+    .nullable()
+    .meta({ permite_edicao_em_massa: true }),
   programa_id: number()
     .label('Programa Habitacional')
     .positive()
@@ -1466,11 +1521,18 @@ export const obras = object({
     .nullable(),
   secretario: string()
     .label('Secretário gestor do portfólio')
-    .nullable(),
+    .nullable()
+    .meta({ permite_edicao_em_massa: true }),
   status: mixed()
     .label('Status')
     .oneOf(Object.keys(statusObras))
-    .required(),
+    .required()
+    .meta({
+      permite_edicao_em_massa: true,
+      optionSource: 'statusObras',
+      optionValue: 'value',
+      optionLabel: 'label',
+    }),
   tags: array()
     .label('Etiquetas')
     .of(
@@ -1481,7 +1543,15 @@ export const obras = object({
   tipo_intervencao_id: number()
     .label('Tipo de obra/intervenção')
     .min(1, 'Tipo de obra/intervenção inválido')
-    .required(),
+    .required()
+    .meta({
+      permite_edicao_em_massa: true,
+      storeKey: 'tipos_de_intervencao',
+      fetchAction: 'buscarTudo',
+      listState: 'lista',
+      optionValue: 'id',
+      optionLabel: 'nome',
+    }),
   tolerancia_atraso: number()
     .label('Percentual de tolerância com atraso')
     .min(0)

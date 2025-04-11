@@ -71,7 +71,7 @@ export default {
               name: 'edicoesEmLoteObrasNovoConstruir',
               component: () => import('@/views/edicoesEmLote/obras/EdicoesEmLoteObrasConstruir.vue'),
               meta: {
-                rotaDeEscape: 'edicoesEmLoteObrasNovo',
+                rotaDeEscape: 'edicoesEmLoteObras',
               },
             },
             {
