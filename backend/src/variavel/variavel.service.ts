@@ -2744,27 +2744,6 @@ export class VariavelService {
             result.variavel.variavel_categorica_id = null;
         }
 
-        if (filters.serie === 'Realizado' && cicloCorrente) {
-            const currentDate = DateTime.local({ zone: SYSTEM_TIMEZONE }).startOf('day');
-            // se o ciclo corrente não tem prazo, assume que o prazo não passou
-            const prazoPassou = cicloCorrente.prazo
-                ? currentDate > DateTime.fromJSDate(cicloCorrente.prazo).startOf('day')
-                : false;
-
-            if (!prazoPassou) {
-                const ultimoPeriodoValidoStr = Date2YMD.toString(cicloCorrente.ultimo_periodo_valido);
-                if (porPeriodo[ultimoPeriodoValidoStr]) {
-                    this.logger.debug(
-                        `Prazo (${cicloCorrente.prazo}) para ${ultimoPeriodoValidoStr} não passou. Escondendo da lista dos valores retroativos.`
-                    );
-
-                    if (porPeriodo[ultimoPeriodoValidoStr]['Realizado'] && filters.suporta_ciclo_info)
-                        porPeriodo[ultimoPeriodoValidoStr]['Realizado'].referencia = ':no_ciclo:';
-                    else delete porPeriodo[ultimoPeriodoValidoStr];
-                }
-            }
-        }
-
         const [analisesCiclo, documentoCiclo] = await this.procuraCicloAnaliseDocumento(
             tipo,
             variavelId,
@@ -2791,7 +2770,31 @@ export class VariavelService {
         }
 
         const todosPeriodos = await this.util.gerarPeriodoVariavelEntreDatas(variavel.id, indicadorId, filters);
+
+        let prazoPassou = true; // Default para true (mostra tudo)
+        let ultimoPeriodoValidoStr: string | null = null;
+        if (filters.serie === 'Realizado' && cicloCorrente) {
+            const currentDate = Date2YMD.toString(DateTime.local({ zone: SYSTEM_TIMEZONE }).startOf('day').toJSDate());
+            // se o ciclo corrente não tem prazo, assume que o prazo não passou
+            prazoPassou = cicloCorrente.prazo ? currentDate > Date2YMD.toString(cicloCorrente.prazo) : false;
+
+            console.log(
+                `Prazo: ${Date2YMD.toStringOrNull(cicloCorrente.prazo)}, Data atual: ${currentDate}, Prazo passou: ${prazoPassou}`
+            );
+            ultimoPeriodoValidoStr = Date2YMD.toString(cicloCorrente.ultimo_periodo_valido);
+        }
+
         for (const periodoYMD of todosPeriodos) {
+            const isCurrentCycle = ultimoPeriodoValidoStr === periodoYMD;
+
+            if (isCurrentCycle && !prazoPassou) {
+                if (!filters.suporta_ciclo_info) {
+                    this.logger.debug(`Prazo não passou para ${periodoYMD} e frontend não suporta info. Pulando.`);
+                    continue;
+                }
+                this.logger.debug(`Prazo não passou para ${periodoYMD}, mas frontend suporta info. Processando.`);
+            }
+
             const seriesExistentes = this.populaSeriesExistentes(
                 porPeriodo,
                 periodoYMD,
@@ -2800,7 +2803,6 @@ export class VariavelService {
                 filters.uso,
                 user
             );
-
             let ciclo_fisico: SACicloFisicoDto | undefined = undefined;
 
             const analiseCiclo = mapAnalisesCiclo[periodoYMD];
@@ -2820,6 +2822,17 @@ export class VariavelService {
                 series: seriesExistentes,
                 ciclo_fisico: ciclo_fisico,
             });
+
+            if (isCurrentCycle && !prazoPassou && filters.suporta_ciclo_info) {
+                // Busca o 'Realizado'
+                const realizadoIndex = ORDEM_SERIES_RETORNO.indexOf('Realizado');
+                if (realizadoIndex !== -1 && seriesExistentes[realizadoIndex]) {
+                    const realizadoSerie = seriesExistentes[realizadoIndex] as SerieValorNomimal;
+                    if (realizadoSerie) {
+                        realizadoSerie.referencia = ':no_ciclo:';
+                    }
+                }
+            }
         }
 
         if (filters.incluir_auxiliares) {
