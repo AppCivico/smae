@@ -23,7 +23,7 @@ import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { LoggerWithLog } from '../common/LoggerWithLog';
 import { PrismaHelpers } from '../common/PrismaHelpers';
 import { CONST_CRONO_VAR_CATEGORICA_ID, CONST_VAR_SEM_UN_MEDIDA } from '../common/consts';
-import { Date2YMD, DateYMD } from '../common/date2ymd';
+import { Date2YMD, DateYMD, SYSTEM_TIMEZONE } from '../common/date2ymd';
 import { MIN_DTO_SAFE_NUM, VAR_CATEGORICA_AS_NULL } from '../common/dto/consts';
 import { AnyPageTokenJwtBody, PaginatedWithPagesDto, PAGINATION_TOKEN_TTL } from '../common/dto/paginated.dto';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
@@ -68,6 +68,7 @@ import {
 } from './entities/variavel.entity';
 import { SerieCompactToken } from './serie.token.encoder';
 import { VariavelUtilService } from './variavel.util.service';
+import { DateTime } from 'luxon';
 
 const SUPRA_SUFIXO = ' - Supra';
 /**
@@ -2709,6 +2710,13 @@ export class VariavelService {
             if (filters.serie == 'Realizado') filters.ate_ciclo_corrente = true;
         }
 
+        const cicloCorrente = filters.ate_ciclo_corrente
+            ? await this.prisma.variavelCicloCorrente.findUnique({
+                  where: { variavel_id: variavelId },
+                  select: { ultimo_periodo_valido: true, prazo: true },
+              })
+            : null;
+
         // TODO adicionar limpeza da serie para quem for ponto focal
         const valoresExistentes = await this.getValorSerieExistente(variavelId, series, filters);
         const porPeriodo = this.getValorSerieExistentePorPeriodo(valoresExistentes, variavelId, filters.uso, user);
@@ -2735,6 +2743,27 @@ export class VariavelService {
         };
         if (result.variavel?.variavel_categorica_id === CONST_CRONO_VAR_CATEGORICA_ID) {
             result.variavel.variavel_categorica_id = null;
+        }
+
+        if (filters.serie === 'Realizado' && cicloCorrente) {
+            const currentDate = DateTime.local({ zone: SYSTEM_TIMEZONE }).startOf('day');
+            // se o ciclo corrente não tem prazo, assume que o prazo não passou
+            const prazoPassou = cicloCorrente.prazo
+                ? currentDate > DateTime.fromJSDate(cicloCorrente.prazo).startOf('day')
+                : false;
+
+            if (!prazoPassou) {
+                const ultimoPeriodoValidoStr = Date2YMD.toString(cicloCorrente.ultimo_periodo_valido);
+                if (porPeriodo[ultimoPeriodoValidoStr]) {
+                    this.logger.debug(
+                        `Prazo (${cicloCorrente.prazo}) para ${ultimoPeriodoValidoStr} não passou. Escondendo da lista dos valores retroativos.`
+                    );
+
+                    if (porPeriodo[ultimoPeriodoValidoStr]['Realizado'] && filters.suporta_ciclo_info)
+                        porPeriodo[ultimoPeriodoValidoStr]['Realizado'].referencia = ':no_ciclo:';
+                    else delete porPeriodo[ultimoPeriodoValidoStr];
+                }
+            }
         }
 
         const [analisesCiclo, documentoCiclo] = await this.procuraCicloAnaliseDocumento(

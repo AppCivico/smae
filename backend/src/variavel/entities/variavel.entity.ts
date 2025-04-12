@@ -111,6 +111,15 @@ export class FilterPeriodoDto {
     @IsBoolean()
     @Transform((v) => v.value === 'true')
     ate_ciclo_corrente?: Boolean;
+
+    @ApiProperty({
+        description:
+            'Recebe a serie do ciclo ativo com a referencia ":no_ciclo:" para indicar que a data encontra-se no ciclo ativo',
+    })
+    @IsOptional()
+    @IsBoolean()
+    @Transform((v) => v.value === 'true')
+    suporta_ciclo_info?: Boolean;
 }
 
 export const TipoUso = { 'leitura': 'leitura', 'escrita': 'escrita' } as const;
