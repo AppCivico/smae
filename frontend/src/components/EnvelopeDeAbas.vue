@@ -86,7 +86,7 @@ async function iniciar() {
     || dadosDaAbaPadrão?.id
     || abas.value?.[0];
 
-  if (props.metaDadosPorId) {
+  if (Object.keys(props.metaDadosPorId).length) {
     console.warn('O uso de `metaDadosPorId` é obsoleto. Utilize slots com o sufixo `__cabecalho` em seus nomes.');
   }
 
