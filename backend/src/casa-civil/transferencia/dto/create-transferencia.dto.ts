@@ -18,7 +18,7 @@ import {
 } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 import { DateTransform } from '../../../auth/transforms/date.transform';
-import { MAX_LENGTH_DEFAULT, MAX_LENGTH_MEDIO } from 'src/common/consts';
+import { MAX_LENGTH_DEFAULT, MAX_LENGTH_HTML, MAX_LENGTH_MEDIO } from 'src/common/consts';
 
 export class CreateTransferenciaDto {
     @IsNumber()
@@ -115,7 +115,7 @@ export class CreateTransferenciaDto {
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Detalhamento" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
+    @MaxLength(MAX_LENGTH_HTML, { message: `O campo "Detalhamento" pode ser no máximo ${MAX_LENGTH_HTML} caracteres` })
     detalhamento?: string;
 
     @IsOptional()

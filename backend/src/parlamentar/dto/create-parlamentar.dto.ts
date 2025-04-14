@@ -12,7 +12,7 @@ import { IsBoolean, IsEnum, IsNumber, IsOptional, IsString, MaxLength, MinLength
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 import { DateTransform } from '../../auth/transforms/date.transform';
 import { IsValidCPF } from '../../common/decorators/IsValidCPF';
-import { MAX_LENGTH_DEFAULT } from 'src/common/consts';
+import { MAX_LENGTH_DEFAULT, MAX_LENGTH_HTML } from 'src/common/consts';
 
 export class CreateParlamentarDto {
     @IsString({ message: '$property| nome: Precisa ser alfanumérico' })
@@ -145,6 +145,7 @@ export class CreateMandatoDto {
 
     @IsOptional()
     @IsString({ message: '$property| biografia: Precisa ser alfanumérico' })
+    @MaxLength(MAX_LENGTH_HTML, { message: `O campo "Biografia" pode ser no máximo ${MAX_LENGTH_HTML} caracteres` })
     biografia?: string;
 
     @IsOptional()
