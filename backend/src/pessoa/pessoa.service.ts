@@ -1710,7 +1710,7 @@ export class PessoaService {
             {
                 privilegioBase: 'SMAE.AtualizacaoEmLote',
                 modulo: 'MDO',
-                privilegiosRequeridos: ['Projeto.administrador', 'Projeto.administrador_no_orgao'],
+                privilegiosRequeridos: ['ProjetoMDO.administrador', 'ProjetoMDO.administrador_no_orgao'],
                 privilegioMenu: 'Menu.AtualizacaoEmLote.MDO',
             },
         ];
