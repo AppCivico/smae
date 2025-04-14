@@ -106,16 +106,15 @@ function detectarTipoCampo(campoSchema, meta) {
     return 'select-dinamico';
   }
 
-  const tipoPorClasse = {
-    NumberSchema: 'number',
-    StringSchema: 'text',
-    ArraySchema: 'array',
-    DateSchema: 'date',
-    ObjectSchema: 'object',
+  const tipoPorYupType = {
+    number: 'number',
+    string: 'text',
+    array: 'array',
+    date: 'date',
+    object: 'object',
   };
 
-  const nomeDaClasse = campoSchema.constructor.name;
-  return tipoPorClasse[nomeDaClasse] || 'text';
+  return tipoPorYupType[campoSchema.type] || 'text';
 }
 
 function obterConfiguracaoCampo(nomeCampo) {
