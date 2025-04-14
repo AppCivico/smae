@@ -21,6 +21,7 @@
 
     <form
       class="mt1 flex column"
+      @submit.prevent="enviando && !Object.keys(errors).length && validarEEnviar({ aprovar: false })"
     >
       <hr>
 
@@ -315,11 +316,13 @@
         </table>
       </article>
 
-      <div class="flex justifycenter mt3 g1">
+      <SmaeFieldsetSubmit :erros="errors">
         <button
+          type="button"
           class="btn outline bgnone tcprimary"
           :disabled="bloqueado"
-          @click.prevent="submit({ aprovar: false })"
+          :aria-busy="enviando"
+          @click.prevent="enviar({ aprovar: false })"
         >
           {{
             values.solicitar_complementacao ?
@@ -329,13 +332,16 @@
 
         <button
           v-if="!values.solicitar_complementacao"
+          type="submit"
           class="btn"
           :disabled="bloqueado"
-          @click.prevent="submit({ aprovar: true })"
+          :aria-disabled="!!Object.keys(errors).length"
+          :aria-busy="enviando"
+          @click.prevent="!Object.keys(errors).length && validarEEnviar({ aprovar: true })"
         >
           {{ botoesLabel.salvarESubmeter }}
         </button>
-      </div>
+      </SmaeFieldsetSubmit>
     </form>
   </div>
 </template>
@@ -403,6 +409,7 @@ function obterVariavelInicial() {
     ...analises,
   };
 }
+const enviando = ref(false);
 
 const dataCicloAtualizacao = computed<string | null>(() => (
   dateIgnorarTimezone(dataReferencia)
@@ -467,31 +474,43 @@ const valoresCalculados = computed<ValoresAcumulados>(() => {
   }, { valor_realizado: 0, valor_realizado_acumulado: 0 });
 });
 
-const submit = ({ aprovar = false }) => {
-  handleSubmit.withControlled(async (valores: any) => {
-    if (!emFoco.value) {
-      throw new Error('Erro ao tentar submeter dados');
-    }
+const enviar = async ({ aprovar = false }) => {
+  if (!emFoco.value) {
+    throw new Error('Erro ao tentar submeter dados');
+  }
 
-    let analiseFase = 'analise_qualitativa';
-    if (fase.value === 'aprovacao') {
-      analiseFase = 'analise_qualitativa_aprovador';
-    } else if (fase.value === 'liberacao') {
-      analiseFase = 'analise_qualitativa_liberador';
-    }
+  enviando.value = true;
 
-    await cicloAtualizacaoStore.enviarDados({
-      variavel_id: emFoco.value.variavel.id,
-      analise_qualitativa: !valores.solicitar_complementacao ? valores[analiseFase] : undefined,
-      aprovar,
-      data_referencia: dataReferencia,
-      uploads: arquivosLocais.value,
-      valores: valores.variaveis_dados || [],
-      pedido_complementacao: valores.solicitar_complementacao
-        ? valores.pedido_complementacao : undefined,
-    });
+  let analiseFase = 'analise_qualitativa';
+  if (fase.value === 'aprovacao') {
+    analiseFase = 'analise_qualitativa_aprovador';
+  } else if (fase.value === 'liberacao') {
+    analiseFase = 'analise_qualitativa_liberador';
+  }
 
-    $emit('enviado');
+  const dados = {
+    variavel_id: emFoco.value.variavel.id,
+    analise_qualitativa: !values.solicitar_complementacao
+      ? values[analiseFase]
+      : undefined,
+    aprovar,
+    data_referencia: dataReferencia,
+    uploads: arquivosLocais.value,
+    valores: values.variaveis_dados || [],
+    pedido_complementacao: values.solicitar_complementacao
+      ? values.pedido_complementacao : undefined,
+  };
+
+  await cicloAtualizacaoStore.enviarDados(dados);
+
+  enviando.value = false;
+
+  $emit('enviado');
+};
+
+const validarEEnviar = ({ aprovar = false }) => {
+  handleSubmit(() => {
+    enviar({ aprovar });
   })();
 };
 
