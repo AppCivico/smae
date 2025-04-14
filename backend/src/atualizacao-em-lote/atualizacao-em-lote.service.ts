@@ -8,7 +8,6 @@ import { PaginatedWithPagesDto, PAGINATION_TOKEN_TTL } from 'src/common/dto/pagi
 import { ListaDePrivilegios } from 'src/common/ListaDePrivilegios';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
-import { CreateRunUpdateDto } from '../task/run_update/dto/create-run-update.dto';
 import { TaskService } from '../task/task.service';
 import {
     AtualizacaoEmLoteDetalheDto,

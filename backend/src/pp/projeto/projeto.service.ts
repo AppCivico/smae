@@ -2578,6 +2578,8 @@ export class ProjetoService {
 
             // Caso o portfolio_id seja modificado, mandar para func de transfer de portfolio
             if (dto.portfolio_id && dto.portfolio_id != projeto.portfolio_id) {
+                // Esse bypasss aqui (chamada de transferPortfolio) é feita para viabilizar a edição de portfolio_id em lote.
+                // Pois a tela chama um outro endpoint, logo chamo o delete do portfolio_id após utilizar.
                 await this.transferPortfolio(tipo, projetoId, { portfolio_id: dto.portfolio_id }, user, prismaTx);
                 delete dto.portfolio_id;
             }

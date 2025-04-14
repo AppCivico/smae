@@ -167,7 +167,12 @@ export class RunUpdateTaskService implements TaskableService {
     private preparaParamsParaOp(tipoAtualizacao: TipoAtualizacaoEmLote, op: UpdateOperacaoDto) {
         const params: any = {};
 
-        const value = op.set;
+        let value = op.set;
+
+        // Caso o valor se pareça com uma data (YYYY-MM-DD), convertemos para Date.
+        if (typeof value === 'string' && value.match(/^\d{4}-\d{2}-\d{2}$/)) {
+            value = new Date(value);
+        }
 
         switch (tipoAtualizacao) {
             case TipoAtualizacaoEmLote.ProjetoPP:
