@@ -21,11 +21,10 @@ const detalhesEdicao = computed(() => {
     { descricao: 'terminado em', valor: dateToDate(emFoco.value.terminou_em) },
     { descricao: 'Executado por', valor: emFoco.value.criador.nome_exibicao },
     { descricao: 'Órgão', valor: emFoco.value.orgao?.sigla },
-    { descricao: 'Itens concluídos', valor: emFoco.value.n_sucesso },
+    { descricao: 'Itens concluidos com sucesso', valor: emFoco.value.n_sucesso },
     { descricao: 'Itens ignorados', valor: emFoco.value.n_ignorado },
     { descricao: 'Itens com erro', valor: emFoco.value.n_erro },
     { descricao: 'Total itens', valor: emFoco.value.n_total },
-    { descricao: 'Tipo', valor: emFoco.value.tipo },
   ];
 });
 

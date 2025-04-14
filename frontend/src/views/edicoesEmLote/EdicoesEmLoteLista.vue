@@ -78,7 +78,6 @@ onMounted(() => {
               width="24"
               height="24"
             ><use xlink:href="#i_eye" /></svg>
-            Ler mais
           </span>
         </SmaeLink>
       </template>
