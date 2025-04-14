@@ -15,7 +15,7 @@ import {
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 import { DateTransform } from '../../../auth/transforms/date.transform';
 import { CreateProjetoDto, CreateProjetoSeiDto } from './create-projeto.dto';
-import { MAX_LENGTH_DEFAULT, MAX_LENGTH_MEDIO } from 'src/common/consts';
+import { MAX_LENGTH_DEFAULT, MAX_LENGTH_HTML, MAX_LENGTH_MEDIO } from 'src/common/consts';
 
 export class PPpremissaDto {
     /**
@@ -26,6 +26,7 @@ export class PPpremissaDto {
     id?: number;
 
     @IsString({ message: '$property| precisa ser um alfanumérico' })
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Premissas" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     premissa: string;
 }
 
@@ -38,6 +39,7 @@ export class PPrestricaoDto {
     id?: number;
 
     @IsString({ message: '$property| precisa ser um alfanumérico' })
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Restricões" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     restricao: string;
 }
 
@@ -68,14 +70,12 @@ export class UpdateProjetoDto extends OmitType(PartialType(CreateProjetoDto), ['
     @IsArray({ message: 'precisa ser uma array, pode ter 0 items para limpar' })
     @ValidateNested({ each: true })
     @Type(() => PPpremissaDto)
-    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Premissas" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     premissas?: PPpremissaDto[];
 
     @IsOptional()
     @IsArray({ message: 'precisa ser uma array, pode ter 0 items para limpar' })
     @ValidateNested({ each: true })
     @Type(() => PPrestricaoDto)
-    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Restricões" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     restricoes?: PPrestricaoDto[];
 
     @IsOptional()
@@ -92,19 +92,19 @@ export class UpdateProjetoDto extends OmitType(PartialType(CreateProjetoDto), ['
 
     @IsOptional()
     @IsString()
-    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Objetivo" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
+    @MaxLength(MAX_LENGTH_HTML, { message: `O campo "Objetivo" pode ser no máximo ${MAX_LENGTH_HTML} caracteres` })
     objetivo?: string;
 
     @IsOptional()
     @IsString()
-    @MaxLength(MAX_LENGTH_MEDIO, {
-        message: `O campo "Público alvo" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres`,
+    @MaxLength(MAX_LENGTH_HTML, {
+        message: `O campo "Público alvo" pode ser no máximo ${MAX_LENGTH_HTML} caracteres`,
     })
     publico_alvo?: string;
 
     @IsOptional()
     @IsString()
-    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Não escopo" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
+    @MaxLength(MAX_LENGTH_HTML, { message: `O campo "Não escopo" pode ser no máximo ${MAX_LENGTH_HTML} caracteres` })
     nao_escopo?: string;
 
     @IsOptional()

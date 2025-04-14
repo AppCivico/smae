@@ -31,7 +31,7 @@ import {
 import { IsOptionalNonNullable } from '../../../common/helpers/IsOptionalNonNullable';
 import { NumberTransform } from '../../../auth/transforms/number.transform';
 import { UpsertOrigemDto } from '../../../common/dto/origem-pdm.dto';
-import { MAX_LENGTH_DEFAULT, MAX_LENGTH_MEDIO } from 'src/common/consts';
+import { MAX_LENGTH_DEFAULT, MAX_LENGTH_HTML, MAX_LENGTH_MEDIO } from 'src/common/consts';
 
 export class PPfonteRecursoDto {
     /**
@@ -158,8 +158,8 @@ export class CreateProjetoDto {
 
     @IsOptional()
     @IsString()
-    @MaxLength(MAX_LENGTH_MEDIO, {
-        message: `O campo "MDO Detalhamento" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres`,
+    @MaxLength(MAX_LENGTH_HTML, {
+        message: `O campo "MDO Detalhamento" pode ser no máximo ${MAX_LENGTH_HTML} caracteres`,
     })
     @ValidateIf((object, value) => value !== null)
     mdo_detalhamento?: string | null;

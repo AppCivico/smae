@@ -1,6 +1,6 @@
 import { Transform } from 'class-transformer';
 import { IsBoolean, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
-import { MAX_LENGTH_DEFAULT } from 'src/common/consts';
+import { MAX_LENGTH_DEFAULT, MAX_LENGTH_HTML } from 'src/common/consts';
 
 export class FilterRiscoDto {
     @IsInt()
@@ -54,6 +54,6 @@ export class RiscoDto {
     detalhamento: string;
 
     @IsString()
-    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Ponto de atenção' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
+    @MaxLength(MAX_LENGTH_HTML, { message: `O campo 'Ponto de atenção' deve ter no máximo ${MAX_LENGTH_HTML} caracteres` })
     ponto_de_atencao: string;
 }

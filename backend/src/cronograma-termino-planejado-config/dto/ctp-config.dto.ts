@@ -1,7 +1,7 @@
 import { ApiProperty, PickType } from '@nestjs/swagger';
 import { ModuloSistema } from '@prisma/client';
 import { IsEmail, IsEnum, IsString, MaxLength, MinLength } from 'class-validator';
-import { MAX_LENGTH_DEFAULT } from 'src/common/consts';
+import { MAX_LENGTH_DEFAULT, MAX_LENGTH_HTML } from 'src/common/consts';
 
 export class UpdateCTPConfigDto {
     @IsEnum(ModuloSistema)
@@ -13,11 +13,11 @@ export class UpdateCTPConfigDto {
     para: string;
 
     @IsString()
-    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Texto inicial' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
+    @MaxLength(MAX_LENGTH_HTML, { message: `O campo 'Texto inicial' deve ter no máximo ${MAX_LENGTH_HTML} caracteres` })
     texto_inicial: string;
 
     @IsString()
-    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Texto final' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
+    @MaxLength(MAX_LENGTH_HTML, { message: `O campo 'Texto final' deve ter no máximo ${MAX_LENGTH_HTML} caracteres` })
     texto_final: string;
 
     @IsString()
