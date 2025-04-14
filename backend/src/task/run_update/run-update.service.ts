@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
+import { forwardRef, HttpException, Inject, Injectable, Logger } from '@nestjs/common';
 import { TaskableService } from '../entities/task.entity';
 import { CreateRunUpdateDto, UpdateOperacaoDto } from './dto/create-run-update.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -10,7 +10,13 @@ import { UpdateProjetoDto } from 'src/pp/projeto/dto/update-projeto.dto';
 import { plainToInstance } from 'class-transformer';
 
 export interface UpdateService {
-    update(tipo: any, id: number, dto: any, user: PessoaFromJwt): Promise<RecordWithId>;
+    update(
+        tipo: any,
+        id: number,
+        dto: any,
+        user: PessoaFromJwt,
+        prismaTx?: Prisma.TransactionClient
+    ): Promise<RecordWithId>;
 }
 
 @Injectable()
@@ -23,117 +29,107 @@ export class RunUpdateTaskService implements TaskableService {
     ) {}
 
     async executeJob(_params: CreateRunUpdateDto, taskId: string): Promise<any> {
-        this.logger.log(
-            `Executando tarefa de atualização em lote. Task ID: ${taskId}, Atualização ID: ${_params.atualizacao_em_lote_id}`
-        );
+        this.logger.log(`Executing bulk update task. Task ID: ${taskId}`);
 
-        const atualizacaoEmLote = await this.prisma.atualizacaoEmLote.findUnique({
-            where: {
-                id: _params.atualizacao_em_lote_id,
-                status: 'Pendente',
-            },
-            select: {
-                id: true,
-            },
+        // Verify batch update exists and is pending
+        const batchUpdate = await this.prisma.atualizacaoEmLote.findUnique({
+            where: { id: _params.atualizacao_em_lote_id, status: 'Pendente' },
         });
-        if (!atualizacaoEmLote) {
-            throw new Error(`Atualização em lote não encontrada ou já processada.`);
-        }
+        if (!batchUpdate) throw new Error('Batch update not found or already processed');
 
-        const user = plainToInstance(PessoaFromJwt, _params.user);
-
-        // Atualizando status da atualização em lote para 'Executando'
+        // Update status to 'Executing'
         await this.prisma.atualizacaoEmLote.update({
             where: { id: _params.atualizacao_em_lote_id },
-            data: {
-                status: 'Executando',
-                iniciou_em: new Date(Date.now()),
-            },
+            data: { status: 'Executando', iniciou_em: new Date() },
         });
 
-        const results_log: {
-            falhas: { id?: number; erro: any }[];
-        } = {
-            falhas: [],
-        };
+        const results_log = { falhas: [] };
+        let n_sucesso = 0;
+        let n_erro = 0;
+        const sucesso_ids = [];
+        const user = plainToInstance(PessoaFromJwt, _params.user);
+        const service = this.servicoDoTipo(_params.tipo);
 
-        try {
-            // Abrindo transaction
-            await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
-                // Definindo service apropriado.
-                const service = this.servicoDoTipo(_params.tipo);
+        for (const id of _params.ids) {
+            try {
+                // Process each ID in its own transaction
+                await this.prisma.$transaction(async (prismaTxn) => {
+                    let operationFailed = false;
 
-                // Colunas que serão utilizadas para controle e estatísticas.
-                let n_sucesso = 0;
-                let n_erro = 0;
-                let n_ignorado = 0;
-
-                const sucesso_ids = [];
-
-                for (const id of _params.ids) {
-                    const operacoesParaId = [];
                     for (const operacao of _params.ops) {
-                        const params = this.preparaParamsParaOp(_params.tipo, operacao);
-
-                        operacoesParaId.push(service.update(params.tipo, id, params.dto, user));
-                    }
-
-                    for (const opParaId of operacoesParaId) {
                         try {
-                            await opParaId;
-                            n_sucesso++;
-                            sucesso_ids.push(id);
+                            const params = this.preparaParamsParaOp(_params.tipo, operacao);
+                            // Pass transactional client to service
+                            await service.update(params.tipo, id, params.dto, user, prismaTxn);
                         } catch (error) {
-                            n_erro++;
-                            results_log.falhas.push({ id, erro: error.message });
-
-                            // Caso chegue em 50 erros. Interrompe a execução e marca como falha no processamento.
-                            if (n_erro == 50) {
-                                n_ignorado = _params.ids.length - n_sucesso - n_erro;
-                                throw new Error(
-                                    `Limite de erros atingido! Erro ao executar SET para ID ${id}: ${error}`
-                                );
-                            }
+                            operationFailed = true;
+                            this.handleOperationError(error, id, operacao, results_log);
+                            break; // Stop processing other operations for this ID
                         }
                     }
-                }
 
-                if (sucesso_ids.length == 0) throw new Error('Nenhum registro atualizado com sucesso.');
-
-                // Atualizando status da atualização em lote.
-                await prismaTxn.atualizacaoEmLote.update({
-                    where: { id: _params.atualizacao_em_lote_id },
-                    data: {
-                        status: n_erro > 0 ? 'ConcluidoParcialmente' : 'Concluido',
-                        results_log: results_log,
-                        n_sucesso,
-                        n_erro,
-                        n_ignorado,
-                        sucesso_ids,
-                        terminou_em: new Date(Date.now()),
-                    },
+                    if (operationFailed) {
+                        throw new Error(`Rollback transaction for ID ${id}`);
+                    }
                 });
 
-                return { success: true };
-            });
-        } catch (error) {
-            this.logger.error(`Erro ao executar tarefa de atualização em lote: ${error}`);
-
-            await this.prisma.atualizacaoEmLote.update({
-                where: { id: _params.atualizacao_em_lote_id },
-                data: {
-                    status: 'Falhou',
-                    results_log: results_log,
-                    terminou_em: new Date(Date.now()),
-                },
-            });
-
-            throw error;
+                // Only count as success if transaction committed
+                n_sucesso++;
+                sucesso_ids.push(id);
+            } catch (error) {
+                n_erro++;
+                if (n_erro >= 50) {
+                    await this.finalizeBatchUpdate(_params, results_log, n_sucesso, n_erro, sucesso_ids);
+                    throw new Error('Error limit reached (50 errors)');
+                }
+            }
         }
 
-        return {
-            success: true,
-        };
+        // Finalize batch update status
+        await this.finalizeBatchUpdate(_params, results_log, n_sucesso, n_erro, sucesso_ids);
+
+        return { success: true };
+    }
+
+    private handleOperationError(error: any, id: number, operacao: UpdateOperacaoDto, results_log: any) {
+        if (error instanceof HttpException) {
+            results_log.falhas.push({
+                id,
+                tipo: 'Exception',
+                col: operacao.col,
+                erro: error.getResponse(),
+            });
+        } else {
+            results_log.falhas.push({
+                id,
+                tipo: 'Internal',
+                col: operacao.col,
+                erro: 'Erro interno',
+            });
+        }
+    }
+
+    private async finalizeBatchUpdate(
+        params: CreateRunUpdateDto,
+        results_log: any,
+        n_sucesso: number,
+        n_erro: number,
+        sucesso_ids: number[]
+    ) {
+        const status = n_erro > 0 ? (n_sucesso > 0 ? 'ConcluidoParcialmente' : 'Falhou') : 'Concluido';
+
+        await this.prisma.atualizacaoEmLote.update({
+            where: { id: params.atualizacao_em_lote_id },
+            data: {
+                status,
+                results_log,
+                n_sucesso,
+                n_erro,
+                n_ignorado: params.ids.length - n_sucesso - n_erro,
+                sucesso_ids,
+                terminou_em: new Date(),
+            },
+        });
     }
 
     outputToJson(executeOutput: any, _inputParams: any, _taskId: string): JSON {

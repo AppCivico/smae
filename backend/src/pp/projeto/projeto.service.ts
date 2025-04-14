@@ -2387,7 +2387,8 @@ export class ProjetoService {
         tipo: TipoProjeto,
         projetoId: number,
         dto: UpdateProjetoDto,
-        user: PessoaFromJwt
+        user: PessoaFromJwt,
+        prismaTx?: Prisma.TransactionClient
     ): Promise<RecordWithId> {
         // aqui é feito a verificação se esse usuário pode realmente acessar esse recurso
         const projeto = await this.findOne(tipo, projetoId, user, 'ReadWrite');
@@ -2459,7 +2460,7 @@ export class ProjetoService {
             origem_cache = await CompromissoOrigemHelper.processaOrigens(dto.origens_extra, this.prisma);
         }
 
-        await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+        const executarAtualizacao = async (prismaTx: Prisma.TransactionClient) => {
             await this.upsertPremissas(dto, prismaTx, projetoId);
             await this.upsertRestricoes(dto, prismaTx, projetoId);
             await this.upsertFonteRecurso(dto, prismaTx, projetoId);
@@ -2717,7 +2718,13 @@ export class ProjetoService {
 
             await this.upsertGrupoPort(prismaTx, projeto, dto, now, user);
             await this.upsertEquipe(tipo, prismaTx, projeto, dto, now, user);
-        });
+        };
+
+        if (prismaTx) {
+            await executarAtualizacao(prismaTx);
+        } else {
+            await this.prisma.$transaction(executarAtualizacao);
+        }
 
         return { id: projetoId };
     }
