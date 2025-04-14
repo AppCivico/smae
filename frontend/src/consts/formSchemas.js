@@ -4445,16 +4445,16 @@ export const cicloAtualizacaoFiltrosSchema = object().shape({
 });
 
 export const alteracaoEmLoteNovoFiltro = object().shape({
-  direcao: string().label('Direção').oneOf(direcaoOpcoes).nullableOuVazio(),
+  ordem_direcao: string().label('Direção').oneOf(direcaoOpcoes).nullableOuVazio(),
   equipamento_id: number().label('Equipamento/Estrutura pública').nullableOuVazio(),
   grupo_tematico_id: number().label('Grupo temático').nullableOuVazio(),
   ipp: number().label('Número de itens').nullableOuVazio(),
-  ordenar_por: string().label('Ordenar por').nullableOuVazio(),
+  ordem_coluna: string().label('Ordenar por').nullableOuVazio(),
   orgao_origem_id: number().label('Secretaria/órgão de origem').nullableOuVazio(),
   palavra_chave: string().label('Busca livre').nullableOuVazio(),
   portfolio_id: number().label('Portfólio').nullableOuVazio(),
-  processo_sei: string().label('Processos SEI').nullableOuVazio(),
+  registros_sei: string().label('Processos SEI').nullableOuVazio(),
   status_obra: number().label('Status da obra').nullableOuVazio(),
-  subprefeitura_id: number().label('Subprefeitura').nullableOuVazio(),
-  tipo_obra_id: number().label('Tipo de obra').nullableOuVazio(),
+  regioes: number().label('Subprefeitura').nullableOuVazio(),
+  tipo_intervencao_id: number().label('Tipo de obra').nullableOuVazio(),
 });

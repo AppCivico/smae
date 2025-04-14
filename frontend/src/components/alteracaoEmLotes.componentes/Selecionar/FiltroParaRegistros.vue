@@ -97,7 +97,7 @@ const camposFiltro = computed<Formulario>(() => [
         tipo: 'select',
         opcoes: prepararParaSelect(orgaosLista.value, { id: 'id', label: 'sigla' }),
       },
-      subprefeitura_id: {
+      regioes: {
         tipo: 'select',
         opcoes: prepararParaSelect(regioesPorNivel.value[3], { id: 'id', label: 'descricao' }),
       },
@@ -113,7 +113,7 @@ const camposFiltro = computed<Formulario>(() => [
         tipo: 'select',
         opcoes: prepararParaSelect(listaDeGruposTematicos.value, { id: 'id', label: 'nome' }),
       },
-      tipo_obra_id: {
+      tipo_intervencao_id: {
         tipo: 'select',
         opcoes: prepararParaSelect(listaDeTiposDeIntervencao.value, { id: 'id', label: 'nome' }),
       },
@@ -121,14 +121,14 @@ const camposFiltro = computed<Formulario>(() => [
         tipo: 'select',
         opcoes: prepararParaSelect(listaDeEquipamentos.value, { id: 'id', label: 'nome' }),
       },
-      processo_sei: { tipo: 'text' },
+      registros_sei: { tipo: 'text' },
     },
   },
   {
     campos: {
       palavra_chave: { tipo: 'search', class: 'fb33' },
-      ordenar_por: { tipo: 'select', opcoes: Object.values(colunasParaOrdenacao) },
-      direcao: {
+      ordem_coluna: { tipo: 'select', opcoes: Object.values(colunasParaOrdenacao) },
+      ordem_direcao: {
         tipo: 'select',
         opcoes: [
           { id: 'asc', label: 'Crescente' },

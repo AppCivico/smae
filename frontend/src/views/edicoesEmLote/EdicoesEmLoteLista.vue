@@ -11,7 +11,7 @@ const route = useRoute();
 const edicoesEmLoteStore = useEdicoesEmLoteStore(route.meta.tipoDeAcoesEmLote as string);
 const { lista } = storeToRefs(edicoesEmLoteStore);
 
-function obterTraducaoStatus(status: any) {
+function obterTraducaoStatus(status: string) {
   const mapaStatus = {
     Pendente: 'Pendente',
     Executando: 'Executando',
