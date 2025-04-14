@@ -8,6 +8,7 @@ import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { UpdateProjetoDto } from 'src/pp/projeto/dto/update-projeto.dto';
 import { plainToInstance } from 'class-transformer';
+import { ReadOnlyBooleanType } from 'src/common/TypeReadOnly';
 
 export interface UpdateService {
     update(
@@ -17,6 +18,7 @@ export interface UpdateService {
         user: PessoaFromJwt,
         prismaTx?: Prisma.TransactionClient
     ): Promise<RecordWithId>;
+    findOne(tipo: any, id: number, user: PessoaFromJwt, readonly: ReadOnlyBooleanType): Promise<any>;
 }
 
 @Injectable()
@@ -57,13 +59,20 @@ export class RunUpdateTaskService implements TaskableService {
                     let operationFailed = false;
 
                     for (const operacao of _params.ops) {
+                        const params = this.preparaParamsParaOp(_params.tipo, operacao);
+
                         try {
-                            const params = this.preparaParamsParaOp(_params.tipo, operacao);
                             // Pass transactional client to service
                             await service.update(params.tipo, id, params.dto, user, prismaTxn);
                         } catch (error) {
+                            // Buscando título/nome da linha para logs.
+                            const registro = await service.findOne(params.tipo, id, user, 'ReadWrite');
+                            // TODO: implementar ordem de prioridade para cada tipo de row.
+                            const nome =
+                                registro.nome || registro.titulo || registro.descricao || 'Nome não identificado';
+
                             operationFailed = true;
-                            this.handleOperationError(error, id, operacao, results_log);
+                            this.handleOperationError(error, id, nome, operacao, results_log);
                             break; // Stop processing other operations for this ID
                         }
                     }
@@ -91,17 +100,21 @@ export class RunUpdateTaskService implements TaskableService {
         return { success: true };
     }
 
-    private handleOperationError(error: any, id: number, operacao: UpdateOperacaoDto, results_log: any) {
+    private handleOperationError(error: any, id: number, nome: string, operacao: UpdateOperacaoDto, results_log: any) {
         if (error instanceof HttpException) {
             results_log.falhas.push({
                 id,
+                nome,
                 tipo: 'Exception',
                 col: operacao.col,
-                erro: error.getResponse(),
+                // Geralmente erros de exception possuem o formato `$field| erro`.
+                // Para facilitar leitura vamos remover tudo que vem antes do pipe. e também o pipe.
+                erro: error.getResponse().toString().split('|')[1],
             });
         } else {
             results_log.falhas.push({
                 id,
+                nome,
                 tipo: 'Internal',
                 col: operacao.col,
                 erro: 'Erro interno',
