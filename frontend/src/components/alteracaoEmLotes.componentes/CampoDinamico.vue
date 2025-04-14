@@ -1,8 +1,8 @@
 <script setup>
-import { onMounted, watch } from 'vue';
-import { Field, ErrorMessage } from 'vee-validate';
-import SmaeNumberInput from '@/components/camposDeFormulario/SmaeNumberInput.vue';
 import SmaeDateInput from '@/components/camposDeFormulario/SmaeDateInput.vue';
+import SmaeNumberInput from '@/components/camposDeFormulario/SmaeNumberInput.vue';
+import { ErrorMessage, Field } from 'vee-validate';
+import { onMounted, watch } from 'vue';
 
 const props = defineProps({
   idx: Number,
@@ -77,6 +77,8 @@ function getOptionsForField(config) {
 </script>
 
 <template>
+  <pre v-ScrollLockDebug>config:{{ config }}</pre>
+
   <SmaeNumberInput
     v-if="config?.tipo === 'number'"
     :name="`edicoes[${idx}].valor`"
