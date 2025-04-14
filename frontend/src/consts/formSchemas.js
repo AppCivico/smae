@@ -4448,7 +4448,7 @@ export const alteracaoEmLoteNovoFiltro = object().shape({
   equipamento_id: number().label('Equipamento/Estrutura pública').nullableOuVazio(),
   grupo_tematico_id: number().label('Grupo temático').nullableOuVazio(),
   ipp: number().label('Número de itens').nullableOuVazio(),
-  ordenar_por: string().label('Pordenar por').nullableOuVazio(),
+  ordenar_por: string().label('Ordenar por').nullableOuVazio(),
   orgao_origem_id: number().label('Secretaria/órgão de origem').nullableOuVazio(),
   palavra_chave: string().label('Busca livre').nullableOuVazio(),
   portfolio_id: number().label('Portfólio').nullableOuVazio(),
