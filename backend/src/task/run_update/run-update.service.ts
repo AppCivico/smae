@@ -78,17 +78,22 @@ export class RunUpdateTaskService implements TaskableService {
                         operacoesParaId.push(service.update(params.tipo, id, params.dto, user));
                     }
 
-                    try {
-                        await Promise.all(operacoesParaId);
-                        n_sucesso++;
-                        sucesso_ids.push(id);
-                    } catch (error) {
-                        n_erro++;
-                        results_log.falhas.push({ id, erro: error.message });
+                    for (const opParaId of operacoesParaId) {
+                        try {
+                            await opParaId;
+                            n_sucesso++;
+                            sucesso_ids.push(id);
+                        } catch (error) {
+                            n_erro++;
+                            results_log.falhas.push({ id, erro: error.message });
 
-                        // Caso chegue em 50 erros. Interrompe a execução e marca como falha no processamento.
-                        if (n_erro == 50) {
-                            throw new Error(`Limite de erros atingido! Erro ao executar SET para ID ${id}: ${error}`);
+                            // Caso chegue em 50 erros. Interrompe a execução e marca como falha no processamento.
+                            if (n_erro == 50) {
+                                n_ignorado = _params.ids.length - n_sucesso - n_erro;
+                                throw new Error(
+                                    `Limite de erros atingido! Erro ao executar SET para ID ${id}: ${error}`
+                                );
+                            }
                         }
                     }
                 }
