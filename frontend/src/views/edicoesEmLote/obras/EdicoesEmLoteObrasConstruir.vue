@@ -6,6 +6,7 @@ import {
   mixed,
   lazy,
 } from 'yup';
+import { format } from 'date-fns';
 import { useEdicoesEmLoteStore } from '@/stores/edicoesEmLote.store';
 import {
   Field, FieldArray, ErrorMessage, useForm,
@@ -137,6 +138,14 @@ function campoConfig(idx) {
   return prop ? obterConfiguracaoCampo(prop) : null;
 }
 
+function campoConfigPorNome(nomeCampo) {
+  const campoSchema = schemaObras.fields[nomeCampo];
+  if (!campoSchema) return null;
+  const meta = campoSchema.meta?.() || {};
+  const tipo = detectarTipoCampo(campoSchema, meta);
+  return { tipo };
+}
+
 const onSubmit = handleSubmit(async (valores) => {
   if (!modoRevisao.value) {
     modoRevisao.value = true;
@@ -146,10 +155,18 @@ const onSubmit = handleSubmit(async (valores) => {
   const payload = {
     tipo: route.meta.tipoDeAcoesEmLote,
     ids: edicoesEmLoteStore.idsSelecionados,
-    ops: valores.edicoes.map((edicao) => ({
-      col: edicao.propriedade,
-      set: edicao.valor,
-    })),
+    ops: valores.edicoes.map((edicao) => {
+      let { valor } = edicao;
+
+      if (campoConfigPorNome(edicao.propriedade)?.tipo === 'date') {
+        valor = format(new Date(valor), 'yyyy-MM-dd');
+      }
+
+      return {
+        col: edicao.propriedade,
+        set: String(valor),
+      };
+    }),
   };
 
   try {
