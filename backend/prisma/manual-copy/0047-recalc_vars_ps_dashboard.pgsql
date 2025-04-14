@@ -1,3 +1,5 @@
+DROP FUNCTION IF EXISTS recalc_vars_ps_dashboard(integer[]) ;
+
 CREATE OR REPLACE FUNCTION recalc_vars_ps_dashboard(p_variaveis integer[])
 RETURNS integer AS $$
 DECLARE
@@ -114,7 +116,7 @@ BEGIN
         vcc.variavel_id = ANY(family_ids_to_process)
         AND vcc.eh_corrente = TRUE
         -- Exclui tipos de variáveis não relevantes para esta visão do painel (perspectiva de preenchimento do usuário)
-        AND v.tipo <> 'Calculada'::"TipoVariavel"  -- Exclui variáveis calculadas (com base no tipo do pai)
+        AND v.tipo <> 'Composta'::"TipoVariavel"  -- Exclui variáveis calculadas (com base no tipo do pai)
         AND (v.variavel_categorica_id IS NULL OR vc.tipo <> 'Cronograma'::"TipoVariavelCategorica"); -- Exclui variáveis de cronograma (com base na categoria do pai)
 
     GET DIAGNOSTICS num_rows = ROW_COUNT;
