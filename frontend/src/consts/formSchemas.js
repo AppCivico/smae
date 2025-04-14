@@ -187,7 +187,7 @@ export const acompanhamento = object()
           .shape({
             encaminhamento: string()
               .label('Encaminhamento')
-              .max(255)
+              .max(2048)
               .min(1)
               .required(),
             responsavel: string()
@@ -218,19 +218,22 @@ export const acompanhamento = object()
       .required(),
     detalhamento: string()
       .label('Detalhamento')
-      .max(255)
+      .max(2048)
       .nullable(),
+    observacao: string()
+      .label('Observação')
+      .max(2048),
     participantes: string()
       .label('Participantes')
       .max(2048)
       .required(),
     pauta: string()
       .label('Pauta')
-      .max(255)
+      .max(2048)
       .nullable(),
     pontos_atencao: string()
       .label('Pontos de atenção')
-      .max(255)
+      .max(2048)
       .nullable(),
     // campo não utilizado em Obras
     risco: array()
@@ -507,12 +510,12 @@ export const contratoDeObras = (tela = 'projeto') => object()
       .nullable()
       .label('Área gestora'),
     objeto_resumo: string()
-      .max(255)
+      .max(2048)
       .min(1)
       .nullable()
       .label('Objeto do contrato - resumido'),
     objeto_detalhado: string()
-      .max(255)
+      .max(2048)
       .min(1)
       .nullable()
       .label('Objeto do contrato - detalhado'),
@@ -554,7 +557,7 @@ export const contratoDeObras = (tela = 'projeto') => object()
       .nullable()
       .label('Valor do contrato'),
     observacoes: string()
-      .max(255)
+      .max(2048)
       .min(1)
       .nullable()
       .label('Observações'),
@@ -1012,7 +1015,7 @@ export const liçãoAprendida = object()
   .shape({
     contexto: string()
       .label('Contexto')
-      .max(255)
+      .max(2048)
       .required(),
     data_registro: date()
       .label('Data do registro')
@@ -1026,11 +1029,11 @@ export const liçãoAprendida = object()
       .nullable(),
     observacao: string()
       .label('Observação')
-      .max(255)
+      .max(2048)
       .nullable(),
     resultado: string()
       .label('Resultado')
-      .max(255)
+      .max(2048)
       .nullable(),
     responsavel: string()
       .label('Responsável')
@@ -1330,7 +1333,7 @@ export const obras = object({
     }),
   mdo_detalhamento: string()
     .label('Detalhamento/Escopo da obra')
-    .max(255)
+    .max(2048)
     .nullable()
     .meta({ permite_edicao_em_massa: true }),
   mdo_n_familias_beneficiadas: number()
@@ -1351,7 +1354,7 @@ export const obras = object({
     .meta({ permite_edicao_em_massa: true }),
   mdo_observacoes: string()
     .label('Observações')
-    .max(255)
+    .max(2048)
     .nullable()
     .meta({ permite_edicao_em_massa: true }),
   mdo_previsao_inauguracao: date()
@@ -2540,7 +2543,7 @@ export const processoDeObras = object()
   .shape({
     comentarios: string()
       .label('Comentários')
-      .max(255)
+      .max(2048)
       .nullable(),
     descricao: string()
       .label('Descrição')
@@ -2553,7 +2556,7 @@ export const processoDeObras = object()
       .url(),
     observacoes: string()
       .label('Observações')
-      .max(255)
+      .max(2048)
       .nullable(),
     processo_sei: string()
       .label('Processo SEI')
@@ -2668,7 +2671,7 @@ export const projeto = object()
     nao_escopo: string()
       .label('Não escopo')
       .nullable()
-      .max(255),
+      .max(2048),
     nome: string()
       .label('Nome do projeto')
       .required('Um projeto requer um nome')
@@ -2676,11 +2679,11 @@ export const projeto = object()
       .max(500, 'Esse nome é muito longo'),
     objetivo: string()
       .label('Objetivo')
-      .max(255)
+      .max(2048)
       .nullable(),
     objeto: string()
       .label('Objeto')
-      .max(255)
+      .max(2048)
       .nullable(),
     orgao_gestor_id: number()
       .label('Órgão gestor')
@@ -2693,7 +2696,7 @@ export const projeto = object()
       .label('Órgãos participantes'),
     origem_outro: string()
       .label('Descrição de origem fora do PdM')
-      .max(255)
+      .max(2048)
       .nullable()
       .when('origem_tipo', (origemTipo, field) => (origemTipo && origemTipo !== 'PdmSistema'
         ? field.required('Descrição de origem é obrigatório caso não se escolha um Programa de Metas corrente')
@@ -2733,7 +2736,7 @@ export const projeto = object()
       .nullable(),
     publico_alvo: string()
       .label('Público alvo')
-      .max(255)
+      .max(2048)
       .nullable(),
     portfolio_id: number('O projeto precisa pertencer a um portfólio')
       .label('Portfólio')
@@ -2768,7 +2771,7 @@ export const projeto = object()
       .nullable(),
     principais_etapas: string()
       .label('Principais etapas')
-      .max(255),
+      .max(2048),
     regiao_id: number()
       .label('Região')
       .nullable(),
@@ -2793,7 +2796,7 @@ export const projeto = object()
       .strict(),
     resumo: string()
       .label('Resumo')
-      .max(255),
+      .max(2048),
     secretario_executivo: string()
       .label('Secretário gestor')
       .nullable(),
@@ -3593,7 +3596,7 @@ export const risco = object()
   .shape({
     causa: string()
       .label('Causa raiz')
-      .max(255)
+      .max(2048)
       .nullable(),
     codigo: number()
       .label('Código')
@@ -3604,7 +3607,7 @@ export const risco = object()
       .required(),
     consequencia: string()
       .label('Consequências')
-      .max(255)
+      .max(2048)
       .nullable(),
     descricao: string()
       .label('Descrição')
