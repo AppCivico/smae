@@ -1528,7 +1528,8 @@ export const obras = object({
   secretario_executivo: string()
     .label('Secretário gestor do portfólio')
     .max(250)
-    .nullable(),
+    .nullable()
+    .meta({ permite_edicao_em_massa: true }),
   secretario_responsavel: string()
     .label('Secretário responsável pela obra')
     .max(250)
@@ -1536,8 +1537,7 @@ export const obras = object({
     .meta({ permite_edicao_em_massa: true }),
   secretario: string()
     .label('Secretário gestor do portfólio')
-    .nullable()
-    .meta({ permite_edicao_em_massa: true }),
+    .nullable(),
   status: mixed()
     .label('Status')
     .oneOf(Object.keys(statusObras))
