@@ -222,7 +222,8 @@ export const acompanhamento = object()
       .nullable(),
     observacao: string()
       .label('Observação')
-      .max(2048),
+      .max(2048)
+      .nullable(),
     participantes: string()
       .label('Participantes')
       .max(2048)
