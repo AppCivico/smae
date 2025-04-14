@@ -3,7 +3,6 @@ import { onMounted } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
-import BarraDeProgresso from '@/components/BarraDeProgresso.vue';
 import { useEdicoesEmLoteStore } from '@/stores/edicoesEmLote.store';
 import dateToDate from '@/helpers/dateToDate';
 
@@ -11,6 +10,19 @@ const route = useRoute();
 
 const edicoesEmLoteStore = useEdicoesEmLoteStore(route.meta.tipoDeAcoesEmLote as string);
 const { lista } = storeToRefs(edicoesEmLoteStore);
+
+function obterTraducaoStatus(status: any) {
+  const mapaStatus = {
+    Pendente: 'Pendente',
+    Executando: 'Executando',
+    Concluido: 'Todos os itens processados com sucesso',
+    ConcluidoParcialmente: 'Finalizado, mas alguns itens falharam',
+    Falhou: 'Abortado devido a erros',
+    Abortado: 'Abortado',
+  };
+
+  return mapaStatus[status] || status;
+}
 
 onMounted(() => {
   edicoesEmLoteStore.buscarTudo({ tipo: route.meta.tipoDeAcoesEmLote as string });
@@ -38,22 +50,19 @@ onMounted(() => {
       :dados="lista"
       :colunas="[
         { chave: 'iniciou_em', label: 'Data do processamento', formatador: (v) => dateToDate(v) },
-        { chave: 'id', label: 'Item(s) modificado(s)' },
+        { chave: 'n_sucesso', label: 'Item(s) modificado(s)' },
         { chave: 'criador.nome_exibicao', label: 'Responsável pela solicitação' },
         { chave: 'regitros_processados', label: 'registros processados', ehDadoComputado: true },
-        { chave: 'progresso', label: 'Progresso', ehDadoComputado: true },
+        { chave: 'status', label: 'Status', ehDadoComputado: true },
         { chave: 'acao', label: 'detalhamento', ehDadoComputado: true },
       ]"
     >
       <template #celula:regitros_processados="{ linha }">
-        {{ linha.n_sucesso + linha.n_erro }} / {{ linha.n_total }}
+        {{ linha.n_sucesso + linha.n_ignorado + linha.n_erro }} / {{ linha.n_total }}
       </template>
 
-      <template #celula:progresso="{ linha }">
-        <BarraDeProgresso
-          :atual="linha.n_sucesso + linha.n_erro"
-          :total="linha.n_total"
-        />
+      <template #celula:status="{ linha }">
+        {{ obterTraducaoStatus(linha.status) }}
       </template>
 
       <template #celula:acao="{ linha }">

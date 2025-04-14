@@ -1,15 +1,15 @@
 <template>
   <div
-    class="barra-de-progresso flex g05"
+    class="smae-progress flex g05"
     :style="{
       '--progresso': progressoCalculado+'%'
     }"
   >
-    <span class="barra-de-progresso__barra" />
+    <span class="smae-progress__barra" />
 
     <span
       v-if="exibirNumero"
-      class="barra-de-progresso__valor"
+      class="smae-progress__valor"
     >
       {{ progressoCalculado }}%
     </span>
@@ -38,12 +38,12 @@ const progressoCalculado = computed<string>(() => {
 </script>
 
 <style lang="less" scoped>
-.barra-de-progresso {
+.smae-progress {
   height: 1rem;
   width: 100%;
 }
 
-.barra-de-progresso__barra {
+.smae-progress__barra {
   width: 100%;
   height: 100%;
   position: relative;
@@ -60,7 +60,7 @@ const progressoCalculado = computed<string>(() => {
   }
 }
 
-.barra-de-progresso__valor {
+.smae-progress__valor {
   min-width: 34px;
 }
 </style>
