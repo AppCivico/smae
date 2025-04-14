@@ -46,7 +46,9 @@ export class PPfonteRecursoDto {
      * código da fonte de recurso no SOF, no ano escolhido
      */
     @IsString({ message: '$property| precisa ser um alfanumérico' })
-    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Código da fonte de recurso no SOF' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Código da fonte de recurso no SOF' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     fonte_recurso_cod_sof: string;
 
     @IsInt()
@@ -345,7 +347,7 @@ export class CreateProjetoDto {
     @IsOnlyDate()
     @Transform(DateTransform)
     @ValidateIf((object, value) => value !== null)
-    previsao_inicio: Date;
+    previsao_inicio?: Date;
 
     /**
      * previsao_inicio ou null
@@ -355,7 +357,7 @@ export class CreateProjetoDto {
     @IsOnlyDate()
     @Transform(DateTransform)
     @ValidateIf((object, value) => value !== null)
-    previsao_termino: Date | null;
+    previsao_termino?: Date | null;
 
     @IsOptional()
     @IsOnlyDate()
@@ -439,7 +441,7 @@ export class CreateProjetoDto {
     @IsOptional()
     @IsString({ each: true })
     @IsArray()
-    geolocalizacao: string[];
+    geolocalizacao?: string[];
 
     /*
      * secretario gestor do projeto

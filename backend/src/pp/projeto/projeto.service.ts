@@ -2576,6 +2576,12 @@ export class ProjetoService {
                     );
             }
 
+            // Caso o portfolio_id seja modificado, mandar para func de transfer de portfolio
+            if (dto.portfolio_id && dto.portfolio_id != projeto.portfolio_id) {
+                await this.transferPortfolio(tipo, projetoId, { portfolio_id: dto.portfolio_id }, user, prismaTx);
+                delete dto.portfolio_id;
+            }
+
             const self = await prismaTx.projeto.update({
                 where: { id: projetoId },
                 data: {
@@ -3407,96 +3413,96 @@ export class ProjetoService {
         tipo: TipoProjeto,
         projetoId: number,
         dto: TransferProjetoPortfolioDto,
-        user: PessoaFromJwt
+        user: PessoaFromJwt,
+        prismaTx?: Prisma.TransactionClient
     ): Promise<RecordWithId> {
         const projeto = await this.findOne(tipo, projetoId, user, 'ReadWrite');
 
-        const updated = await this.prisma.$transaction(
-            async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
-                const portfolioAntigo = projeto.portfolio;
+        const updated = async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+            const portfolioAntigo = projeto.portfolio;
 
-                const portfolioNovo = await prismaTx.portfolio
-                    .findFirstOrThrow({
-                        where: { id: dto.portfolio_id, removido_em: null },
-                        select: {
-                            id: true,
-                            nivel_maximo_tarefa: true,
-                            nivel_regionalizacao: true,
-                            orcamento_execucao_disponivel_meses: true,
-                            orgaos: {
-                                select: { orgao_id: true },
-                            },
+            const portfolioNovo = await prismaTx.portfolio
+                .findFirstOrThrow({
+                    where: { id: dto.portfolio_id, removido_em: null },
+                    select: {
+                        id: true,
+                        nivel_maximo_tarefa: true,
+                        nivel_regionalizacao: true,
+                        orcamento_execucao_disponivel_meses: true,
+                        orgaos: {
+                            select: { orgao_id: true },
                         },
-                    })
-                    .catch(() => {
-                        throw new HttpException('portfolio_id| Não foi encontrado', 400);
-                    });
-                const estaCompartilhado = projeto.portfolios_compartilhados?.some((p) => p.id == dto.portfolio_id);
-                if (estaCompartilhado)
-                    throw new HttpException(
-                        'portfolio_id| Projeto está compartilhado com o Portfolio destino.' +
-                            ' Remova primeiro o compartilhamento, e poderá transferir o projeto.',
-                        400
-                    );
+                    },
+                })
+                .catch(() => {
+                    throw new HttpException('portfolio_id| Não foi encontrado', 400);
+                });
+            const estaCompartilhado = projeto.portfolios_compartilhados?.some((p) => p.id == dto.portfolio_id);
+            if (estaCompartilhado)
+                throw new HttpException(
+                    'portfolio_id| Projeto está compartilhado com o Portfolio destino.' +
+                        ' Remova primeiro o compartilhamento, e poderá transferir o projeto.',
+                    400
+                );
 
-                // Nível de tarefas, do port novo, não pode ser menor.
-                if (portfolioNovo.nivel_maximo_tarefa < portfolioAntigo.nivel_maximo_tarefa)
-                    throw new HttpException(
-                        'portfolio_id| Portfolio novo deve ter nível máximo de tarefa maior ou igual ao portfolio original.',
-                        400
-                    );
+            // Nível de tarefas, do port novo, não pode ser menor.
+            if (portfolioNovo.nivel_maximo_tarefa < portfolioAntigo.nivel_maximo_tarefa)
+                throw new HttpException(
+                    'portfolio_id| Portfolio novo deve ter nível máximo de tarefa maior ou igual ao portfolio original.',
+                    400
+                );
 
-                // Nível de regionalização deve ser igual.
-                if (portfolioNovo.nivel_regionalizacao != portfolioAntigo.nivel_regionalizacao)
-                    throw new HttpException(
-                        'portfolio_id| Portfolio novo deve ter mesmo nível de regionalização.',
-                        400
-                    );
+            // Nível de regionalização deve ser igual.
+            if (portfolioNovo.nivel_regionalizacao != portfolioAntigo.nivel_regionalizacao)
+                throw new HttpException('portfolio_id| Portfolio novo deve ter mesmo nível de regionalização.', 400);
 
-                // Meses disponíveis para orçamento devem ser iguais.
-                if (
-                    !assertOrcamentoDisponivelEqual(
-                        portfolioNovo.orcamento_execucao_disponivel_meses,
-                        portfolioAntigo.orcamento_execucao_disponivel_meses
-                    )
+            // Meses disponíveis para orçamento devem ser iguais.
+            if (
+                !assertOrcamentoDisponivelEqual(
+                    portfolioNovo.orcamento_execucao_disponivel_meses,
+                    portfolioAntigo.orcamento_execucao_disponivel_meses
                 )
-                    throw new HttpException(
-                        'portfolio_id| Portfolio novo deve ter mesmos meses disponíveis para orçamento.',
-                        400
-                    );
+            )
+                throw new HttpException(
+                    'portfolio_id| Portfolio novo deve ter mesmos meses disponíveis para orçamento.',
+                    400
+                );
 
-                // Por agora o órgão gestor não será modificado.
-                // Portanto deve ser verificado se ele está presente nos órgãos do novo port.
-                if (!portfolioNovo.orgaos.map((o) => o.orgao_id).some((o) => o == projeto.orgao_gestor.id))
-                    throw new HttpException('portfolio_id| Órgão gestor do Projeto deve estar no Portfolio novo.', 400);
+            // Por agora o órgão gestor não será modificado.
+            // Portanto deve ser verificado se ele está presente nos órgãos do novo port.
+            if (!portfolioNovo.orgaos.map((o) => o.orgao_id).some((o) => o == projeto.orgao_gestor.id))
+                throw new HttpException('portfolio_id| Órgão gestor do Projeto deve estar no Portfolio novo.', 400);
 
-                await Promise.all([
-                    prismaTx.projeto.update({ where: { id: projetoId }, data: { portfolio_id: dto.portfolio_id } }),
+            await Promise.all([
+                prismaTx.projeto.update({ where: { id: projetoId }, data: { portfolio_id: dto.portfolio_id } }),
 
-                    // Números sequenciais utilizados pelo Projeto
-                    prismaTx.projetoNumeroSequencial.updateMany({
-                        where: {
-                            portfolio_id: portfolioAntigo.id,
-                            projeto_id: projetoId,
-                        },
-                        data: { portfolio_id: portfolioNovo.id },
-                    }),
+                // Números sequenciais utilizados pelo Projeto
+                prismaTx.projetoNumeroSequencial.updateMany({
+                    where: {
+                        portfolio_id: portfolioAntigo.id,
+                        projeto_id: projetoId,
+                    },
+                    data: { portfolio_id: portfolioNovo.id },
+                }),
 
-                    // Removendo projeto de grupos de Portfolio.
-                    prismaTx.projetoGrupoPortfolio.updateMany({
-                        where: { projeto_id: projetoId },
-                        data: {
-                            removido_em: new Date(Date.now()),
-                            removido_por: user.id,
-                        },
-                    }),
-                ]);
+                // Removendo projeto de grupos de Portfolio.
+                prismaTx.projetoGrupoPortfolio.updateMany({
+                    where: { projeto_id: projetoId },
+                    data: {
+                        removido_em: new Date(Date.now()),
+                        removido_por: user.id,
+                    },
+                }),
+            ]);
 
-                return { id: projeto.id };
-            }
-        );
+            return { id: projeto.id };
+        };
 
-        return updated;
+        if (prismaTx) {
+            return await updated(prismaTx);
+        } else {
+            return await this.prisma.$transaction(updated);
+        }
 
         function assertOrcamentoDisponivelEqual(novo: number[], velho: number[]): boolean {
             if (novo.length !== velho.length) {

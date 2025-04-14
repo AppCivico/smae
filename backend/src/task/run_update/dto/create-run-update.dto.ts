@@ -49,7 +49,10 @@ export class VerificaOpsParaTipoConstraint implements ValidatorConstraintInterfa
             });
 
             if (errors.length > 0) {
+                console.log('====================');
                 console.log(errors);
+                console.log('====================');
+
                 args.constraints[0] = this.formataErro(op, errors);
                 return false;
             }
