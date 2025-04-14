@@ -15,13 +15,14 @@ import {
 } from 'class-validator';
 import { DateTransform } from '../../../auth/transforms/date.transform';
 import { IsOnlyDate } from '../../../common/decorators/IsDateOnly';
+import { MAX_LENGTH_DEFAULT, MAX_LENGTH_MEDIO } from 'src/common/consts';
 
 export class CreatePortfolioDto {
     /**
      * Sigla
      */
     @IsString({ message: '$property| sigla: Precisa ser alfanumérico' })
-    @MaxLength(255, { message: 'O campo "Título" deve ter no máximo 255 caracteres' })
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Título' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     titulo: string;
 
     /**
@@ -44,7 +45,7 @@ export class CreatePortfolioDto {
     @IsOptional()
     @IsString({ message: '$property| Descrição precisa ser alfanumérico' })
     @MinLength(0)
-    @MaxLength(2048, { message: 'O campo "Descrição" precisa ter no máximo 2048 caracteres' })
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Descrição" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     descricao?: string;
 
     @IsOptional()

@@ -1,6 +1,7 @@
 import { PartialType, PickType } from '@nestjs/swagger';
 import { Transform, TransformFnParams, Type } from 'class-transformer';
 import { IsInt, IsOptional, IsString, Max, MaxLength, Min, ValidateIf } from 'class-validator';
+import { MAX_LENGTH_DEFAULT, MAX_LENGTH_MEDIO } from 'src/common/consts';
 
 export class CreateRegiaoDto {
     /**
@@ -19,7 +20,7 @@ export class CreateRegiaoDto {
      */
     @IsOptional()
     @IsString({ message: '$property| Precisa ser um texto' })
-    @MaxLength(255, { message: 'O campo "Código" deve ter no máximo 255 caracteres' })
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Código' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     codigo?: string;
 
     /**
@@ -27,12 +28,14 @@ export class CreateRegiaoDto {
      * @example "Subprefeitura da Sé"
      */
     @IsString({ message: '$property| Descrição: Precisa ser alfanumérico' })
-    @MaxLength(255, { message: 'O campo "Descrição" deve ter no máximo 255 caracteres' })
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Descrição" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     descricao: string;
 
     @IsOptional()
     @IsString({ message: 'Usado na geração de novas variaveis' })
-    @MaxLength(255, { message: 'O campo "PDM Código Sufixo" deve ter no máximo 255 caracteres' })
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'PDM Código Sufixo' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     pdm_codigo_sufixo?: string;
 
     /**

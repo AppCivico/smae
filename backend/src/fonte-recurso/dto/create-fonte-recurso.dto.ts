@@ -1,4 +1,5 @@
 import { IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import { MAX_LENGTH_DEFAULT } from 'src/common/consts';
 
 export class CreateFonteRecursoDto {
     /**
@@ -6,7 +7,7 @@ export class CreateFonteRecursoDto {
      */
     @IsOptional()
     @IsString({ message: '$property| sigla: Precisa ser alfanumérico' })
-    @MaxLength(255, {message: 'O campo "Sigla" deve ter no máximo 255 caracteres'})
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Sigla' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     sigla?: string | null;
 
     /**
@@ -14,6 +15,6 @@ export class CreateFonteRecursoDto {
      */
     @IsString({ message: '$property| Fonte: Precisa ser alfanumérico' })
     @MinLength(1, { message: '$property| Fonte: Mínimo de 1 caractere' })
-    @MaxLength(255, {message: 'O campo "Fonte" deve ter no máximo 255 caracteres'})
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Fonte' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     fonte: string;
 }

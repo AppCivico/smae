@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
-import { IsInt, IsOptional, IsString, Matches, Max, MaxLength, Min, Validate, ValidateIf } from 'class-validator';
+import { IsInt, IsOptional, IsString, Matches, Max, Min, Validate, ValidateIf } from 'class-validator';
 import { EitherPdmOrPortfolio } from 'src/common/dto/EitherPdmOrPortfolio';
 
 export const CONST_PROC_SEI_SINPROC_REGEXP = /^(?:\d{4}\.?\d{4}\/?\d{7}\-?\d|\d{4}\-?\d\.?\d{3}\.?\d{3}\-?\d)$/;
@@ -41,7 +41,6 @@ export class AnoDotacaoDto extends AnoDto {
      * @example "00.00.00.000.0000.0.000.00000000.00"
      */
     @IsString()
-    @MaxLength(255, {message: 'O campo "Dotação" deve ter no máximo 255 caracteres'})
     @Matches(/^\d{2}\.\d{2}\.\d{2}\.\d{3}\.\d{4}\.\d\.\d{3}\.\d{8}\.\d{2}$/, {
         message: 'Dotação não está no formato esperado: 00.00.00.000.0000.0.000.00000000.00',
     })
@@ -51,7 +50,6 @@ export class AnoDotacaoDto extends AnoDto {
 export class AnoDotacaoProcessoDto extends AnoDto {
     @ApiProperty({ description: CONST_PROC_SEI_SINPROC_DESCR, example: '6016201700379910' })
     @IsString()
-    @MaxLength(255, {message: 'O campo "Processo" deve ter no máximo 255 caracteres'})
     @Matches(CONST_PROC_SEI_SINPROC_REGEXP, { message: CONST_PROC_SEI_SINPROC_MESSAGE })
     processo: string;
 }
@@ -62,7 +60,6 @@ export class AnoDotacaoNotaEmpenhoDto extends AnoDto {
      * @example "000000/2022"
      */
     @IsString()
-    @MaxLength(255, {message: 'O campo "Nota empenho" deve ter no máximo 255 caracteres'})
     @Matches(/^\d{1,6}\/2\d{3}$/, { message: 'Nota não está no formato esperado: 000000/AAAA' })
     nota_empenho: string;
 
@@ -92,7 +89,6 @@ export class ParteDotacaoDto {
      * @example "11.10.00.000.0000.2.100.00000000.00"
      */
     @IsString()
-    @MaxLength(255, {message: 'O campo "Parte dotação" deve ter no máximo 255 caracteres'})
     // faz o match parcial, mas alguns campos precisam ser completos
     @Matches(/^\d{2}\.(\d{2}|\*)\.\d{2}\.\d{3}\.(\d{4}|\*)\.\d\.\d{3}\.(\d{8}|\*)\.\d{2}$/, {
         message:

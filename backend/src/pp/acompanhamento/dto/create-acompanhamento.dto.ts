@@ -14,6 +14,7 @@ import {
 } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 import { DateTransform } from '../../../auth/transforms/date.transform';
+import { MAX_LENGTH_DEFAULT, MAX_LENGTH_MEDIO } from 'src/common/consts';
 
 export class ProjetoAcompanhamentoDto {
     @IsOptional()
@@ -24,12 +25,11 @@ export class ProjetoAcompanhamentoDto {
 
     @IsString()
     @MinLength(1)
-    @MaxLength(255, { message: 'O campo "Encaminhamento" precisa ter no máximo 255 caracteres' })
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Encaminhamento" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     encaminhamento: string;
 
     @IsOptional()
     @IsString()
-    @MaxLength(255, { message: 'O campo "Responsável" deve ter no máximo 255 caracteres' })
     responsavel?: string;
 
     @IsOptional()
@@ -48,7 +48,7 @@ export class ProjetoAcompanhamentoDto {
 export class CreateProjetoAcompanhamentoDto {
     @IsOptional()
     @IsString()
-    @MaxLength(255, { message: 'O campo "Pauta" precisa ter no máximo 255 caracteres' })
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Pauta" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     pauta?: string;
 
     @IsOnlyDate()
@@ -57,12 +57,16 @@ export class CreateProjetoAcompanhamentoDto {
     data_registro: Date;
 
     @IsString()
-    @MaxLength(255, { message: 'O campo "Paticipantes" deve ter no máximo 255 caracteres' })
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Participantes' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     participantes: string;
 
     @IsOptional()
     @IsString()
-    @MaxLength(255, { message: 'O campo "Detalhamento" precisa ter no máximo 255 caracteres' })
+    @MaxLength(MAX_LENGTH_MEDIO, {
+        message: `O campo "Detalhamento" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres`,
+    })
     detalhamento?: string;
 
     @IsOptional()
@@ -74,17 +78,21 @@ export class CreateProjetoAcompanhamentoDto {
 
     @IsOptional()
     @IsString()
-    @MaxLength(255, { message: 'O campo "Observação" deve ter no máximo 255 caracteres' })
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Observação" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     observacao?: string;
 
     @IsOptional()
     @IsString()
-    @MaxLength(255, { message: 'O campo "Detalhamento Status" deve ter no máximo 255 caracteres' })
+    @MaxLength(MAX_LENGTH_MEDIO, {
+        message: `O campo "Detalhamento status" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres`,
+    })
     detalhamento_status?: string;
 
     @IsOptional()
     @IsString()
-    @MaxLength(255, { message: 'O campo "Pontos de atenção" precisa ter no máximo 255 caracteres' })
+    @MaxLength(MAX_LENGTH_MEDIO, {
+        message: `O campo "Pontas de atenção" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres`,
+    })
     pontos_atencao?: string;
 
     @IsOptional()

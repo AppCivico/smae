@@ -19,6 +19,7 @@ import {
 import { NumberTransform } from '../../../auth/transforms/number.transform';
 import { StringArrayTransform } from '../../../auth/transforms/string-array.transform';
 import { IsOnlyDate } from '../../../common/decorators/IsDateOnly';
+import { MAX_LENGTH_DEFAULT } from 'src/common/consts';
 
 export class FilterProjetoDto {
     @IsOptional()
@@ -166,7 +167,7 @@ export class FilterProjetoMDODto extends IntersectionType(FilterProjetoDto, Proj
 
     @IsOptional()
     @IsString()
-    @MaxLength(255, { message: 'O campo "Palavra Chave" deve ter no máximo 255 caracteres' })
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Palavra chave' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     palavra_chave?: string;
 
     @IsOptional()

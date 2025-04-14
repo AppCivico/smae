@@ -1,6 +1,5 @@
 import { GeolocalizacaoDto } from '../../geo-loc/entities/geo-loc.entity';
 import { CreatePSEquipePontoFocalDto } from '../../pdm/dto/create-pdm.dto';
-import { MaxLength } from 'class-validator';
 
 export enum CronogramaEtapaAtrasoGrau {
     Concluido,
@@ -33,8 +32,6 @@ export class CronogramaWithParents {
     meta_id: number | null;
     iniciativa_id: number | null;
     atividade_id: number | null;
-
-    @MaxLength(2048, { message: 'O campo "Descrição" deve ter no máximo 2048 caracteres' })
     descricao: string | null;
 
     meta?: Meta | null;
@@ -73,8 +70,6 @@ export class CEEtapaDto {
     etapa_pai_id: number | null;
     regiao_id: number | null;
     nivel: string | null;
-    
-    @MaxLength(2048, { message: 'O campo "Descrição" deve ter no máximo 2048 caracteres' })
     descricao: string | null;
     inicio_previsto: Date | null;
     termino_previsto: Date | null;

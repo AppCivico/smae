@@ -23,6 +23,7 @@ import {
 import { DateTransform } from '../../auth/transforms/date.transform';
 import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
 import { NumberTransform } from '../../auth/transforms/number.transform';
+import { MAX_LENGTH_DEFAULT, MAX_LENGTH_MEDIO } from 'src/common/consts';
 
 // o js ta bugando depois de 13, ta criado com decimal até 30, pg nativamente vai até 1000 sem recompilar.
 // precisa mudar o js pra usar Decimail.js ou Math.js pra usar mais casas se precisar
@@ -71,7 +72,7 @@ export class CreateVariavelBaseDto {
     regiao_id?: number;
 
     @IsString()
-    @MaxLength(255, { message: 'O campo "Título" deve ter no máximo 255 caracteres' })
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Título' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     titulo: string;
 
     /**
@@ -193,12 +194,12 @@ export class CreateVariavelBaseDto {
 
     @IsString()
     @IsOptional()
-    @MaxLength(255, { message: 'O campo "Metodologia" precisa ter no máximo 255 caracteres' })
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Metodologia' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     metodologia?: string | null;
 
     @IsString()
     @IsOptional()
-    @MaxLength(2048, { message: 'O campo "Descrição" precisa ter no máximo 2048 caracteres' })
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Descrição" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     descricao?: string | null;
 
     @IsOptional()
@@ -245,7 +246,7 @@ export class CreateVariavelBaseDto {
 
 export class CreateVariavelPDMDto extends CreateVariavelBaseDto {
     @IsString()
-    @MaxLength(255, { message: 'O campo "Código" deve ter no máximo 255 caracteres' })
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Código' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     @MinLength(1)
     codigo: string;
 
@@ -288,6 +289,6 @@ export class CreateGeradorVariavelPDMDto extends IntersectionType(CreateGeradorV
      * prefixo que será adicionado em vários
      */
     @IsString()
-    @MaxLength(255, { message: 'O campo "Código" deve ter no máximo 255 caracteres' })
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Código' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     codigo: string;
 }

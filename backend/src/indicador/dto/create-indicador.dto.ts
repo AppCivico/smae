@@ -16,20 +16,21 @@ import {
 import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
 import { MAX_CASAS_DECIMAIS } from '../../variavel/dto/create-variavel.dto';
 import { DateTransform } from '../../auth/transforms/date.transform';
+import { MAX_LENGTH_DEFAULT, MAX_LENGTH_MEDIO } from 'src/common/consts';
 
 export class CreateIndicadorDto {
     /**
      * Código
      */
     @IsString({ message: '$property| Precisa ser alfanumérico' })
-    @MaxLength(255, {message: 'O campo "Código" deve ter no máximo 255 caracteres'})
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Código' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     codigo: string;
 
     /**
      * título
      */
     @IsString({ message: '$property| Título: Precisa ser alfanumérico' })
-    @MaxLength(255, {message: 'O campo "Título" deve ter no máximo 255 caracteres'})
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Título' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     titulo: string;
 
     /**
@@ -111,6 +112,7 @@ export class CreateIndicadorDto {
 
     @IsOptional()
     @IsString({ message: '$property| Precisa ser uma string' })
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Contexto" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     contexto?: string | null;
 
     @IsOptional()
