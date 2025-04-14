@@ -1701,6 +1701,30 @@ export class PessoaService {
             }
         }
 
+        const configuracoesModuloAtualizacao: {
+            privilegioBase: ListaDePrivilegios;
+            modulo: ModuloSistema;
+            privilegiosRequeridos: ListaDePrivilegios[];
+            privilegioMenu: ListaDePrivilegios;
+        }[] = [
+            {
+                privilegioBase: 'SMAE.AtualizacaoEmLote',
+                modulo: 'MDO',
+                privilegiosRequeridos: ['Projeto.administrador', 'Projeto.administrador_no_orgao'],
+                privilegioMenu: 'Menu.AtualizacaoEmLote.MDO',
+            },
+        ];
+
+        for (const config of configuracoesModuloAtualizacao) {
+            if (
+                ret.privilegios.includes(config.privilegioBase) &&
+                filterModulos.includes(config.modulo) &&
+                Arr.hasIntersection(ret.privilegios, config.privilegiosRequeridos)
+            ) {
+                ret.privilegios.push(config.privilegioMenu);
+            }
+        }
+
         return ret;
     }
 
