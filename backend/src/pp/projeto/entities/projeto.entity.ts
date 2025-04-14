@@ -89,6 +89,8 @@ export class ProjetoPermissoesDto {
     acao_concluir_obra: boolean;
     acao_paralisar_obra: boolean;
 
+    acao_clonar_cronograma: boolean;
+
     campo_nao_escopo: boolean;
     campo_objeto: boolean;
     campo_objetivo: boolean;

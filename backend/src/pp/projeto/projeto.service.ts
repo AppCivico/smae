@@ -828,18 +828,6 @@ export class ProjetoService {
             throw new BadRequestException(`Todas as subprefeituras devem estar no mesmo município (região de nível 1)`);
     }
 
-    private async verificaGrupoTematico(dto: CreateProjetoDto | UpdateProjetoDto) {
-        const grupo_tematico = await this.prisma.grupoTematico.findFirstOrThrow({
-            where: { id: dto.grupo_tematico_id },
-        });
-        if (grupo_tematico.familias_beneficiadas && !dto.mdo_n_familias_beneficiadas)
-            throw new HttpException('número de famílias beneficiadas: Campo obrigatório para obras', 400);
-        if (grupo_tematico.unidades_habitacionais && !dto.mdo_n_unidades_habitacionais)
-            throw new HttpException('número de unidades habitacionais: Campo obrigatório para obras', 400);
-        if (grupo_tematico.programa_habitacional && !dto.programa_id)
-            throw new HttpException('programa habitacional: Campo obrigatório para obras', 400);
-    }
-
     private removeCampos(tipo: string, dto: CreateProjetoDto | UpdateProjetoDto, op: 'create' | 'update') {
         if (tipo == 'MDO') {
             delete dto.resumo;
@@ -2056,6 +2044,7 @@ export class ProjetoService {
             acao_reiniciar: false,
             acao_cancelar: false,
             acao_terminar: false,
+            acao_clonar_cronograma: false,
             campo_premissas: false,
             campo_restricoes: false,
             campo_data_aprovacao: false,
@@ -2123,21 +2112,25 @@ export class ProjetoService {
                 switch (projeto.status) {
                     case 'Registrado':
                         permissoes.acao_selecionar = true;
+                        permissoes.acao_clonar_cronograma = true;
                         break;
                     case 'Selecionado':
                         permissoes.status_permitidos.push('Registrado');
                         permissoes.acao_iniciar_planejamento = true;
+                        permissoes.acao_clonar_cronograma = true;
                         break;
                     case 'EmPlanejamento':
                         permissoes.status_permitidos.push('Selecionado');
                         permissoes.status_permitidos.push('Registrado');
                         permissoes.acao_finalizar_planejamento = true;
+                        permissoes.acao_clonar_cronograma = true;
                         break;
                     case 'Planejado':
                         permissoes.status_permitidos.push('EmPlanejamento');
                         permissoes.status_permitidos.push('Selecionado');
                         permissoes.status_permitidos.push('Registrado');
                         permissoes.acao_validar = true;
+                        permissoes.acao_clonar_cronograma = true;
                         break;
                     case 'Validado':
                         permissoes.status_permitidos.push('Planejado');
@@ -3337,6 +3330,24 @@ export class ProjetoService {
 
     async cloneTarefas(tipo: TipoProjeto, projetoId: number, dto: CloneProjetoTarefasDto, user: PessoaFromJwt) {
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+            // Buscando projeto para verificar status.
+            const projeto = await prismaTx.projeto.findFirstOrThrow({
+                where: { id: dto.projeto_fonte_id, removido_em: null },
+                select: {
+                    id: true,
+                    status: true,
+                },
+            });
+
+            // TODO: validar statuses do MDO.
+            if (
+                projeto.status == ProjetoStatus.Validado ||
+                projeto.status == ProjetoStatus.EmAcompanhamento ||
+                projeto.status == ProjetoStatus.Suspenso ||
+                projeto.status == ProjetoStatus.Fechado
+            )
+                throw new HttpException('Cronograma não pode ser clonado, pois está com status inválido.', 400);
+
             // O true é para indicar que é clone de projeto e não de transferência.
             await prismaTx.$queryRaw`CALL clone_tarefas('true'::boolean, ${dto.projeto_fonte_id}::int, ${projetoId}::int);`;
         });
