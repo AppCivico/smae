@@ -551,6 +551,7 @@ export class VariavelCicloService {
         const valorGlobalOuMae = dto.valores.filter((valor) => !valor.variavel_id);
         const valorFilhas = dto.valores.filter((valor) => valor.variavel_id);
 
+        // Verifica se há variáveis duplicadas nos valores
         const variableIds = dto.valores.map((v) => v.variavel_id).filter((id) => id !== undefined);
         const uniqueIds = new Set(variableIds);
         if (variableIds.length !== uniqueIds.size) {
@@ -558,18 +559,42 @@ export class VariavelCicloService {
         }
 
         if (cicloCorrente.variavel.variaveis_filhas.length > 0) {
-            if (valorFilhas.length === 0) {
-                throw new BadRequestException('É necessário fornecer valores para as variáveis filhas');
-            }
+            // Validações para variáveis COM filhas
             if (valorGlobalOuMae.length > 0) {
                 throw new BadRequestException('Variáveis com filhas não podem ter valores próprios');
             }
-
+            // Garante que a estrutura esteja sempre completa, mesmo se os valores estiverem vazios antes da aprovação
             if (valorFilhas.length != cicloCorrente.variavel.variaveis_filhas.length) {
-                throw new BadRequestException('Quantidade de valores fornecidos para as variáveis filhas não confere');
+                throw new BadRequestException(
+                    `Quantidade de valores (${valorFilhas.length}) fornecidos para as variáveis filhas não confere com o esperado (${
+                        cicloCorrente.variavel.variaveis_filhas.length
+                    }). Todos devem ser enviados.`
+                );
+            }
+
+            // Verificação detalhada para garantir que todas as variáveis filhas tenham valores correspondentes
+            const filhasSet = new Set(cicloCorrente.variavel.variaveis_filhas.map((v) => v.id));
+            for (const valor of valorFilhas) {
+                if (!valor.variavel_id) continue; // Não deveria acontecer devido ao filtro, mas just in case
+                if (!filhasSet.has(valor.variavel_id)) {
+                    throw new BadRequestException(
+                        `Variável filha com ID ${valor.variavel_id} inesperada ou não encontrada.`
+                    );
+                }
+                filhasSet.delete(valor.variavel_id); // Rastreia quais foram fornecidas
+            }
+            // Esta verificação teoricamente já está coberta pela verificação do tamanho, mas é uma boa salvaguarda caso alguém
+            // tente enviar valores de filhas que não estão na lista
+            if (filhasSet.size > 0) {
+                throw new BadRequestException(
+                    `Valores não fornecidos para as variáveis filhas: ${Array.from(filhasSet).join(', ')}`
+                );
             }
         } else {
+            // Validações para variáveis SEM filhas
             if (valorGlobalOuMae.length === 0) {
+                // Permitir envio vazio se não estiver aprovando? Se sim, esta verificação precisa de dto.aprovar
+                // Vamos assumir que uma entrada de valor é sempre necessária, mesmo se vazia antes da aprovação
                 throw new BadRequestException('É necessário fornecer um valor para a variável');
             }
             if (valorGlobalOuMae.length > 1) {
@@ -580,19 +605,25 @@ export class VariavelCicloService {
             }
         }
 
-        const filhasSet = new Set(cicloCorrente.variavel.variaveis_filhas.map((v) => v.id));
-        for (const valor of valorFilhas) {
-            if (!valor.variavel_id) continue;
-            if (!filhasSet.has(valor.variavel_id)) {
-                throw new BadRequestException(`Variável filha ${valor.variavel_id} não encontrada`);
-            }
-            filhasSet.delete(valor.variavel_id);
-        }
+        // Valida conteúdo *apenas* na aprovação
+        if (dto.aprovar === true) {
+            for (const valor of dto.valores) {
+                // Verifica se valor_realizado é null, undefined ou uma string vazia
+                // Usando == null verifica tanto null quanto undefined
+                if (valor.valor_realizado == null || valor.valor_realizado === '') {
+                    const variableIdForError = valor.variavel_id ?? dto.variavel_id; // Usa ID da filha se presente, senão ID da mãe
+                    const childIdentifier = valor.variavel_id ? ` (filha ${valor.variavel_id})` : '';
+                    // Encontra o título para uma mensagem de erro melhor (opcional mas útil)
+                    const variableTitle = valor.variavel_id
+                        ? (cicloCorrente.variavel.variaveis_filhas.find((f) => f.id === valor.variavel_id)?.titulo ??
+                          variableIdForError)
+                        : cicloCorrente.variavel.titulo;
 
-        if (filhasSet.size > 0) {
-            throw new BadRequestException(
-                `Valores não fornecidos para as variáveis filhas: ${Array.from(filhasSet).join(', ')}`
-            );
+                    throw new BadRequestException(
+                        `Ao aprovar, o valor realizado para a variável "${variableTitle}"${childIdentifier} não pode estar vazio.`
+                    );
+                }
+            }
         }
     }
 
