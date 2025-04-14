@@ -207,7 +207,7 @@ iniciar();
     max-width: max-content;
   }
 
-  > li + li {
+  > li:not([hidden]) ~ li {
     border-left: 1px solid @c400;
     padding-left: 2rem;
   }
