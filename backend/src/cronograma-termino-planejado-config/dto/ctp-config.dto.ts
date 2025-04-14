@@ -1,6 +1,7 @@
 import { ApiProperty, PickType } from '@nestjs/swagger';
 import { ModuloSistema } from '@prisma/client';
 import { IsEmail, IsEnum, IsString, MaxLength, MinLength } from 'class-validator';
+import { MAX_LENGTH_DEFAULT } from 'src/common/consts';
 
 export class UpdateCTPConfigDto {
     @IsEnum(ModuloSistema)
@@ -8,25 +9,25 @@ export class UpdateCTPConfigDto {
     modulo_sistema: ModuloSistema;
 
     @IsEmail()
-    @MaxLength(255, {message: 'O campo "Para" deve ter no máximo 255 caracteres'})
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Para' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     para: string;
 
     @IsString()
-    @MaxLength(255, {message: 'O campo "Texto inicial" deve ter no máximo 255 caracteres'})
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Texto inicial' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     texto_inicial: string;
 
     @IsString()
-    @MaxLength(255, {message: 'O campo "Texto final" deve ter no máximo 255 caracteres'})
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Texto final' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     texto_final: string;
 
     @IsString()
     @MinLength(1)
-    @MaxLength(255, {message: 'O campo "Assunto global" deve ter no máximo 255 caracteres'})
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Assunto global' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     assunto_global: string;
 
     @IsString()
     @MinLength(1)
-    @MaxLength(255, {message: 'O campo "Assunto orgão" deve ter no máximo 255 caracteres'})
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Assunto orgão' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     assunto_orgao: string;
 }
 

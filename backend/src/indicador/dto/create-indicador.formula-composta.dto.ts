@@ -4,13 +4,14 @@ import { ArrayMaxSize, IsArray, IsBoolean, IsEnum, IsString, MaxLength, Validate
 import { CreateGeradorVariavelPDMDto } from '../../variavel/dto/create-variavel.dto';
 import { CreateIndicadorDto } from './create-indicador.dto';
 import { FormulaVariaveis } from './update-indicador.dto';
+import { MAX_LENGTH_DEFAULT } from 'src/common/consts';
 
 export class CreateIndicadorFormulaCompostaDto extends PickType(CreateIndicadorDto, ['nivel_regionalizacao']) {
     /**
      * Titulo
      */
     @IsString({ message: '$property| Precisa ser alfanumérico' })
-    @MaxLength(255, {message: 'O campo "Título" deve ter no máximo 255 caracteres'})
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Título' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     titulo: string;
 
     /**
@@ -77,7 +78,7 @@ export class FilterFormulaCompostaFormDto {
      * prefixo que será pesquisado nas variaveis
      */
     @IsString()
-    @MaxLength(255, {message: 'O campo "Código" deve ter no máximo 255 caracteres'})
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Código' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     codigo: string;
 }
 

@@ -10,6 +10,7 @@ import {
     MaxLength,
     ValidateNested,
 } from 'class-validator';
+import { MAX_LENGTH_DEFAULT } from 'src/common/consts';
 
 export class TransporterConfigDto {
     @IsString()
@@ -74,7 +75,7 @@ export class TemplateResolverConfigDto {
 export class CreateEmailConfigDto {
     @IsString()
     @IsEmail({ require_display_name: true })
-    @MaxLength(255)
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'From' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     from: string;
 
     @ValidateNested()

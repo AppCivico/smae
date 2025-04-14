@@ -15,6 +15,7 @@ import {
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 import { DateTransform } from '../../../auth/transforms/date.transform';
 import { CreateProjetoDto, CreateProjetoSeiDto } from './create-projeto.dto';
+import { MAX_LENGTH_DEFAULT, MAX_LENGTH_MEDIO } from 'src/common/consts';
 
 export class PPpremissaDto {
     /**
@@ -25,7 +26,6 @@ export class PPpremissaDto {
     id?: number;
 
     @IsString({ message: '$property| precisa ser um alfanumérico' })
-    @MaxLength(255, { message: 'O campo "Premissa" deve ter no máximo 255 caracteres' })
     premissa: string;
 }
 
@@ -38,7 +38,6 @@ export class PPrestricaoDto {
     id?: number;
 
     @IsString({ message: '$property| precisa ser um alfanumérico' })
-    @MaxLength(255, { message: 'O campo "Restrição" deve ter no máximo 255 caracteres' })
     restricao: string;
 }
 
@@ -73,12 +72,14 @@ export class UpdateProjetoDto extends OmitType(PartialType(CreateProjetoDto), [
     @IsArray({ message: 'precisa ser uma array, pode ter 0 items para limpar' })
     @ValidateNested({ each: true })
     @Type(() => PPpremissaDto)
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Premissas" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     premissas?: PPpremissaDto[];
 
     @IsOptional()
     @IsArray({ message: 'precisa ser uma array, pode ter 0 items para limpar' })
     @ValidateNested({ each: true })
     @Type(() => PPrestricaoDto)
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Restricões" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     restricoes?: PPrestricaoDto[];
 
     @IsOptional()
@@ -90,27 +91,31 @@ export class UpdateProjetoDto extends OmitType(PartialType(CreateProjetoDto), [
 
     @IsOptional()
     @IsString()
-    @MaxLength(255, { message: 'O campo "Objeto" deve ter no máximo 255 caracteres' })
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Objeto" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     objeto?: string;
 
     @IsOptional()
     @IsString()
-    @MaxLength(255, { message: 'O campo "Objetivo" deve ter no máximo 255 caracteres' })
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Objetivo" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     objetivo?: string;
 
     @IsOptional()
     @IsString()
-    @MaxLength(255, { message: 'O campo "Público Alvo" deve ter no máximo 255 caracteres' })
+    @MaxLength(MAX_LENGTH_MEDIO, {
+        message: `O campo "Público alvo" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres`,
+    })
     publico_alvo?: string;
 
     @IsOptional()
     @IsString()
-    @MaxLength(255, { message: 'O campo "Não Escopo" deve ter no máximo 255 caracteres' })
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Não escopo" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     nao_escopo?: string;
 
     @IsOptional()
     @IsString()
-    @MaxLength(255, { message: 'O campo "Coordenador" deve ter no máximo 255 caracteres' })
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Coordenador' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     @ValidateIf((object, value) => value !== null)
     coordenador_ue?: string | null;
 
@@ -120,7 +125,7 @@ export class UpdateProjetoDto extends OmitType(PartialType(CreateProjetoDto), [
      */
     @IsOptional()
     @IsString()
-    @MaxLength(255, { message: 'O campo "Versão" deve ter no máximo 255 caracteres' })
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Versão' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     @ValidateIf((object, value) => value !== null)
     versao?: string | null;
 
@@ -176,7 +181,7 @@ export class UpdateProjetoDocumentDto {
     @IsOptional()
     @IsString()
     @ValidateIf((object, value) => value !== null)
-    @MaxLength(2048, { message: 'Descrição precisa ter no máximo 2048 caracteres' })
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Descrição" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     descricao?: string | null;
 
     @IsOptional()

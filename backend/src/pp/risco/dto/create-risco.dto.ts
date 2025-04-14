@@ -2,6 +2,7 @@ import { Transform } from 'class-transformer';
 import { IsArray, IsInt, IsNumber, IsOptional, IsString, MaxLength, ValidateIf } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 import { DateTransform } from '../../../auth/transforms/date.transform';
+import { MAX_LENGTH_DEFAULT, MAX_LENGTH_MEDIO } from 'src/common/consts';
 
 export class CreateRiscoDto {
     @IsOnlyDate()
@@ -18,22 +19,24 @@ export class CreateRiscoDto {
     impacto: number;
 
     @IsString()
-    @MaxLength(255, { message: 'O campo "Título" deve ter no máximo 255 caracteres' })
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Título' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     titulo: string;
 
     @IsOptional()
     @IsString()
-    @MaxLength(2048, { message: 'O campo "Descrição" deve ter no máximo 2048 caracteres' })
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Descrição" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     descricao: string;
 
     @IsOptional()
     @IsString()
-    @MaxLength(255, { message: 'O campo "Causa" deve ter no máximo 255 caracteres' })
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Causa" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     causa: string;
 
     @IsOptional()
     @IsString()
-    @MaxLength(255, { message: 'O campo "Consequência" deve ter no máximo 255 caracteres' })
+    @MaxLength(MAX_LENGTH_MEDIO, {
+        message: `O campo "Consequência" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres`,
+    })
     consequencia: string;
 
     @IsArray()
@@ -43,7 +46,9 @@ export class CreateRiscoDto {
 
     @IsOptional()
     @IsString()
-    @MaxLength(255, { message: 'O campo "Risco Tarefa" deve ter no máximo 255 caracteres' })
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Risco tarefa' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     risco_tarefa_outros?: string;
 }
 

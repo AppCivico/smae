@@ -2,6 +2,7 @@ import { Transform } from 'class-transformer';
 import { IsInt, IsNumber, IsOptional, IsString, Max, MaxLength, Min, ValidateIf } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 import { DateTransform } from '../../../auth/transforms/date.transform';
+import { MAX_LENGTH_DEFAULT } from 'src/common/consts';
 
 export class CreatePlanoAcaoDto {
     @IsInt()
@@ -12,11 +13,15 @@ export class CreatePlanoAcaoDto {
 
     @IsString()
     @IsOptional()
-    @MaxLength(255, { message: 'O campo "Responsável" deve ter no máximo 255 caracteres' })
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Responsável' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     responsavel?: string;
 
     @IsString()
-    @MaxLength(255, { message: 'O campo "Contra-medida" deve ter no máximo 255 caracteres' })
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Contramedida' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     contramedida: string;
 
     @IsOnlyDate()
@@ -45,12 +50,16 @@ export class CreatePlanoAcaoDto {
 
     @IsOptional()
     @IsString()
-    @MaxLength(255, { message: 'O campo "Medidas de Contingência" deve ter no máximo 255 caracteres' })
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Medidas de Contingência' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     medidas_de_contingencia: string | undefined;
 
     @IsOptional()
     @IsString()
-    @MaxLength(255, { message: 'O campo "Contato do Responsável" deve ter no máximo 255 caracteres' })
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Contato do Responsavel' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     contato_do_responsavel: string;
 
     @IsOptional()

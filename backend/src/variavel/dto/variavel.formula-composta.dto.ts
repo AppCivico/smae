@@ -10,6 +10,7 @@ import { CreateIndicadorFormulaCompostaDto } from '../../indicador/dto/create-in
 import { IndicadorFormulaCompostaDto } from '../../indicador/entities/indicador.formula-composta.entity';
 import { IdCodTituloDto } from '../../common/dto/IdCodTitulo.dto';
 import { IsDateYMD } from '../../auth/decorators/date.decorator';
+import { MAX_LENGTH_DEFAULT } from 'src/common/consts';
 
 export class PeriodoFormulaCompostaDto {
     periodo: string;
@@ -26,7 +27,7 @@ export class ListaPeriodoFormulaCompostaDto {
 export class FilterPeriodoFormulaCompostaDto {
     @IsOnlyDate()
     @Transform(DateTransform)
-    @MaxLength(255, { message: 'O campo "Período" deve ter no máximo 255 caracteres.' })
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Período' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     periodo: Date;
 }
 
@@ -40,10 +41,10 @@ export class PSFormulaCompostaDto extends OmitType(IndicadorFormulaCompostaDto, 
     fim_medicao: string | null;
     orgao: IdSiglaDescricao | null;
 
-    @MaxLength(255, { message: 'O campo "Código" deve ter no máximo 255 caracteres.' })
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Código' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     codigo: string | null;
 
-    @MaxLength(255, { message: 'O campo "Variável cálculo erro" deve ter no máximo 255 caracteres.' })
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Variável cálculo erro' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     variavel_calc_erro: string | null;
     variavel_calc: IdCodTituloDto | null;
 }

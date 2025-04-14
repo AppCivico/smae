@@ -1,7 +1,7 @@
 import { ApiHideProperty, ApiProperty, IntersectionType, OmitType } from '@nestjs/swagger';
 import { TipoProjeto, TipoRelatorio } from '@prisma/client';
 import { Transform, Expose } from 'class-transformer';
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsEnum, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsEnum, IsInt, IsOptional, IsString } from 'class-validator';
 import { DateTransform } from '../../../auth/transforms/date.transform';
 import { IsOnlyDate } from '../../../common/decorators/IsDateOnly';
 import { FiltroMetasIniAtividadeDto } from '../../relatorios/dto/filtros.dto';
@@ -39,7 +39,6 @@ export class OrcamentoExecutadoParams {
     @ArrayMinSize(0, { message: '$property| tag(s): precisa ter pelo menos um item' })
     @ArrayMaxSize(100, { message: '$property| tag(s): precisa ter no máximo 100 items' })
     @IsString({ each: true, message: '$property| Cada item precisa ser um texto' })
-    @MaxLength(255, { message: 'O campo "Orgãos" deve ter no máximo 255 caracteres' })
     orgaos?: string[];
 }
 
