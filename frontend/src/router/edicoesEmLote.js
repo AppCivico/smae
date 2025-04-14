@@ -12,10 +12,6 @@ export default {
     título: 'Edições em lote',
     limitarÀsPermissões: [
       'SMAE.AtualizacaoEmLote',
-      'Projeto.administrador',
-      'ProjetoMDO.administrador',
-      'Projeto.administrador_no_orgao',
-      'ProjetoMDO.administrador_no_orgao',
     ],
     rotasParaMenuSecundário: [
       'edicoesEmLoteObras',
