@@ -147,7 +147,8 @@ export const BuildParametrosProcessados = async (
             .replace('listar_variaveis_regionalizadas', 'Listar variáveis regionalizadas')
             .replace('ano_inicio', 'Ano início')
             .replace('ano_fim', 'Ano fim')
-            .replace('mes', 'Mês');
+            .replace(/\bmes\b/gi, 'Mês')
+            .replace('periodo', 'Período');
 
         parametros_processados[nomeChave] = valor.toString();
 
@@ -192,6 +193,9 @@ export const BuildParametrosProcessados = async (
                     : rowNome[0].nome;
             }
         } else if (Array.isArray(valor) && nomeTabelaCol) {
+            // Removendo valores null
+            valor = valor.filter((v: any) => v !== null);
+
             if (valor.length === 0) continue;
 
             const joinedValues = valor.join(',');
