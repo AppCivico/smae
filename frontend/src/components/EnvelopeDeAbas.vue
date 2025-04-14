@@ -2,7 +2,11 @@
 import { useResizeObserver } from '@vueuse/core';
 import { debounce, kebabCase } from 'lodash';
 import {
-  computed, nextTick, ref, useSlots,
+  computed,
+  nextTick,
+  ref,
+  useSlots,
+  watch,
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -46,6 +50,10 @@ const listaDeAbas = ref(null);
 
 const abas = computed(() => Object.keys(slots).filter((x) => !x.includes('__cabecalho')));
 
+const abasVisiveis = computed(() => (Object.keys(props.atributosDeCadaAba).length
+  ? abas.value.filter((x) => !props.atributosDeCadaAba[x]?.hidden)
+  : abas.value));
+
 // PRA-FAZER: um registro secundário da aba aberta em paralelo à query na rota
 // para cobrir todas as bases. Infelizmente, não adiantará muito enquanto houver
 // chaves de rota no componente raiz. Ver `App.vue`.
@@ -84,13 +92,13 @@ async function iniciar() {
 
   const hashDaAbaPadrao = dadosDaAbaPadrão?.hash
     || dadosDaAbaPadrão?.id
-    || abas.value?.[0];
+    || abasVisiveis.value?.[0];
 
   if (Object.keys(props.metaDadosPorId).length) {
     console.warn('O uso de `metaDadosPorId` é obsoleto. Utilize slots com o sufixo `__cabecalho` em seus nomes.');
   }
 
-  if (hashDaAbaPadrao && !abaAberta.value) {
+  if (hashDaAbaPadrao && abaAberta.value !== hashDaAbaPadrao) {
     router.replace({
       name: props.nomeDaRotaRaiz || route.name,
       params: route.params,
@@ -111,7 +119,17 @@ useResizeObserver(listaDeAbas, debounce(async () => {
   rolarParaAbaCorrente();
 }, 400));
 
-iniciar();
+watch(
+  () => abasVisiveis.value,
+  (novoValor) => {
+    console.debug('abasVisiveis', novoValor);
+
+    if (!novoValor.includes(abaAberta.value)) {
+      iniciar();
+    }
+  },
+  { immediate: true },
+);
 </script>
 <template>
   <div class="abas">
