@@ -26,6 +26,7 @@ function obterTraducaoStatus(status: string) {
 
 onMounted(() => {
   edicoesEmLoteStore.buscarTudo({ tipo: route.meta.tipoDeAcoesEmLote as string });
+  edicoesEmLoteStore.limparIdsSelecionados();
 });
 </script>
 
