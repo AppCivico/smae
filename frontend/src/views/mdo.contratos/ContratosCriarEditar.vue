@@ -17,10 +17,10 @@ import {
 } from 'vee-validate';
 import {
   computed,
-  onMounted, ref,
+  onMounted,
+  ref,
   watch,
 } from 'vue';
-
 import { useRoute, useRouter } from 'vue-router';
 
 const router = useRouter();
