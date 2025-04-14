@@ -11,7 +11,7 @@ export default {
     rotaPrescindeDeChave: true,
     título: 'Edições em lote',
     limitarÀsPermissões: [
-      'SMAE.AtualizacaoEmLote',
+      'Menu.AtualizacaoEmLote.MDO',
     ],
     rotasParaMenuSecundário: [
       'edicoesEmLoteObras',
@@ -28,11 +28,7 @@ export default {
         },
         entidadeMãe: 'obras',
         limitarÀsPermissões: [
-          'SMAE.AtualizacaoEmLote',
-          'Projeto.administrador',
-          'ProjetoMDO.administrador',
-          'Projeto.administrador_no_orgao',
-          'ProjetoMDO.administrador_no_orgao',
+          'Menu.AtualizacaoEmLote.MDO',
         ],
         tipoDeAcoesEmLote: 'ProjetoMDO',
       },

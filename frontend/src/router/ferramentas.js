@@ -8,11 +8,7 @@ export default {
 </svg>
 `,
     limitarÀsPermissões: [
-      'SMAE.AtualizacaoEmLote',
-      'Projeto.administrador',
-      'ProjetoMDO.administrador',
-      'Projeto.administrador_no_orgao',
-      'ProjetoMDO.administrador_no_orgao',
+      'Menu.AtualizacaoEmLote.MDO',
     ],
     rotasParaMenuPrincipal: [
       'edicoesEmLoteRaiz',
