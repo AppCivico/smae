@@ -26,6 +26,7 @@ export default {
         rotaDeAdição: {
           name: 'edicoesEmLoteObrasNovo',
         },
+        entidadeMãe: 'obras',
         limitarÀsPermissões: [
           'SMAE.AtualizacaoEmLote',
           'Projeto.administrador',

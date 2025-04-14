@@ -1339,19 +1339,16 @@ export const obras = object({
   mdo_n_familias_beneficiadas: number()
     .label('Número de famílias beneficiadas')
     .nullable()
-    .min(0)
-    .meta({ permite_edicao_em_massa: true }),
+    .min(0),
   mdo_n_unidades_habitacionais: number()
     .label('Número de unidades')
     .min(0)
-    .nullable()
-    .meta({ permite_edicao_em_massa: true }),
+    .nullable(),
   mdo_n_unidades_atendidas: number()
     .label('Número de unidades atendidas até o momento')
     .min(0)
     .nullable()
-    .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
-    .meta({ permite_edicao_em_massa: true }),
+    .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
   mdo_observacoes: string()
     .label('Observações')
     .max(2048)
@@ -1402,15 +1399,7 @@ export const obras = object({
   orgao_gestor_id: number()
     .label('Órgão gestor do portfólio')
     .min(1, 'Órgão inválido')
-    .required()
-    .meta({
-      permite_edicao_em_massa: true,
-      storeKey: 'órgãos',
-      fetchAction: 'getAll',
-      listState: 'organs',
-      optionValue: 'id',
-      optionLabel: (item) => `${item.sigla} - ${item.descricao}`,
-    }),
+    .required(),
   orgao_origem_id: number()
     .label('Secretaria/órgão de origem')
     .min(1, 'Secretaria/órgão de origem inválidos')
@@ -1418,15 +1407,7 @@ export const obras = object({
   orgao_responsavel_id: number()
     .label('Órgão responsável pela obra')
     .min(1, 'Órgão responsável pela obra inválidos')
-    .nullable()
-    .meta({
-      permite_edicao_em_massa: true,
-      storeKey: 'órgãos',
-      fetchAction: 'getAll',
-      listState: 'organs',
-      optionValue: 'id',
-      optionLabel: (item) => `${item.sigla} - ${item.descricao}`,
-    }),
+    .nullable(),
   orgaos_colaboradores: string()
     .label('Órgãos colaboradores da obra')
     .nullable(),
@@ -1476,7 +1457,15 @@ export const obras = object({
   portfolio_id: number()
     .label('Nome do portfólio')
     .min(1, 'Portfólio inválido')
-    .required(),
+    .required()
+    .meta({
+      permite_edicao_em_massa: true,
+      storeKey: 'portfolios_obra',
+      fetchAction: 'buscarTudo',
+      listState: 'lista',
+      optionValue: 'id',
+      optionLabel: 'titulo',
+    }),
   previsao_custo: number()
     .label('Custo previsto inicial')
     .min(0)
@@ -1503,6 +1492,17 @@ export const obras = object({
     .positive()
     .integer()
     .nullable(),
+  projeto_etapa_id: number()
+    .label('Etapa')
+    .nullable()
+    .meta({
+      permite_edicao_em_massa: true,
+      storeKey: 'etapas_projetos',
+      fetchAction: 'buscarTudo',
+      listState: 'lista',
+      optionValue: 'id',
+      optionLabel: 'descricao',
+    }),
   regiao_ids: array()
     .label('Subprefeitura')
     .of(
@@ -1532,7 +1532,8 @@ export const obras = object({
   secretario_responsavel: string()
     .label('Secretário responsável pela obra')
     .max(250)
-    .nullable(),
+    .nullable()
+    .meta({ permite_edicao_em_massa: true }),
   secretario: string()
     .label('Secretário gestor do portfólio')
     .nullable()

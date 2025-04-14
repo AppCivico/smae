@@ -16,6 +16,8 @@ import { useEquipamentosStore } from '@/stores/equipamentos.store';
 import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
+import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store';
+import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
 import rawStatusObras from '@/consts/statusObras';
 import { obras as schemaObras } from '@/consts/formSchemas';
 import LabelFromYup from '@/components/camposDeFormulario/LabelFromYup.vue';
@@ -36,6 +38,8 @@ const storeInstances = {
   grupos_tematicos: useGruposTematicosStore(),
   órgãos: useOrgansStore(),
   tipos_de_intervencao: useTiposDeIntervencaoStore(),
+  portfolios_obra: usePortfolioObraStore(),
+  etapas_projetos: useEtapasProjetosStore(),
 };
 
 const fontesEstaticas = {
