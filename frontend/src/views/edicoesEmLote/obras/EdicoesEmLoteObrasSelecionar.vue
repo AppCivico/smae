@@ -142,6 +142,7 @@ watch(
         class="btn big"
         :aria-disabled="idsSelecionados.length === 0"
         :desabilitar="idsSelecionados.length === 0"
+        exibir-desabilitado
         :to="{
           name: 'edicoesEmLoteObrasNovoConstruir'
         }"
