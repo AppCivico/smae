@@ -48,6 +48,11 @@ if (!Array.isArray(organs) || !organs.length) {
     </template>
   </CabecalhoDePagina>
 
+  <ErrorComponent
+    v-if="erro"
+    :erro="erro"
+  />
+
   <table class="tablemain">
     <col>
     <col>
@@ -153,11 +158,6 @@ if (!Array.isArray(organs) || !organs.length) {
       <tr v-if="chamadasPendentes.lista">
         <td colspan="7">
           Carregando
-        </td>
-      </tr>
-      <tr v-else-if="erro">
-        <td colspan="7">
-          Erro: {{ erro }}
         </td>
       </tr>
       <tr v-else-if="!lista.length">
