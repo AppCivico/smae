@@ -171,7 +171,7 @@ const onSubmit = handleSubmit(async (valores) => {
 
   try {
     if (await edicoesEmLoteStore.salvarItem(payload)) {
-      alertStore.success('Edição realizada com sucesso.');
+      alertStore.success('Solicitação realizada com sucesso.');
 
       const rotaDeEscape = route.meta?.rotaDeEscape;
       await edicoesEmLoteStore.limparIdsSelecionados();
