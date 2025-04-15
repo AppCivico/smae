@@ -1,7 +1,8 @@
 <script lang="ts" setup>
-import { watch } from 'vue';
+import { watch, nextTick } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
+import { cloneDeep } from 'lodash';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import FiltroParaRegistros from '@/components/alteracaoEmLotes.componentes/Selecionar/FiltroParaRegistros.vue';
 import { useObrasStore } from '@/stores/obras.store';
@@ -25,18 +26,16 @@ function limparSelecionados() {
   edicoesEmLoteStore.limparIdsSelecionados();
 }
 
-function handleSelecionarTodasObras() {
-  alert('Aguardando BE');
+async function handleSelecionarTodasObras() {
+  const idsObras = await obrasStore.buscarTodosIds(route.query);
 
-  return;
+  idsSelecionados.value = cloneDeep(idsObras);
 
-  router.push({
-    name: 'edicoesEmLoteObrasNovoConstruir',
+  nextTick(() => {
+    router.push({
+      name: 'edicoesEmLoteObrasNovoConstruir',
+    });
   });
-}
-
-function handleFinalizarSelecao() {
-
 }
 
 watch(
@@ -146,7 +145,6 @@ watch(
         :to="{
           name: 'edicoesEmLoteObrasNovoConstruir'
         }"
-        @click="handleFinalizarSelecao"
       >
         finalizar seleção
       </SmaeLink>

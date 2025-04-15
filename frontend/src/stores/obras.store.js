@@ -1,7 +1,7 @@
+import { defineStore } from 'pinia';
 import consolidarDiretorios from '@/helpers/consolidarDiretorios';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
 import simplificadorDeOrigem from '@/helpers/simplificadorDeOrigem';
-import { defineStore } from 'pinia';
 import mapIniciativas from './helpers/mapIniciativas';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -141,6 +141,16 @@ export const useObrasStore = defineStore('obrasStore', {
         this.erro = erro;
       }
       this.chamadasPendentes.lista = false;
+    },
+    async buscarTodosIds(params = {}) {
+      try {
+        const { ids } = await this.requestS.get(`${baseUrl}/projeto-mdo/ids`, params);
+
+        return ids;
+      } catch (erro) {
+        this.erro = erro;
+        throw erro;
+      }
     },
 
     async excluirItem(id) {
