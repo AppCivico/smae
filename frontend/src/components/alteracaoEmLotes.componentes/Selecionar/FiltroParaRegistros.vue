@@ -92,7 +92,7 @@ const camposFiltro = computed<Formulario>(() => [
         tipo: 'select',
         opcoes: prepararParaSelect(regioesPorNivel.value[3], { id: 'id', label: 'descricao' }),
       },
-      status_obra: {
+      status: {
         tipo: 'select',
         opcoes: prepararParaSelect(statusObras, { id: 'valor', label: 'nome' }),
       },

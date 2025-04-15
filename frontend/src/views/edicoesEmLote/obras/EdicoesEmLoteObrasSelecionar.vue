@@ -43,7 +43,7 @@ watch(
     route.query.portfolio_id,
     route.query.orgao_origem_id,
     route.query.regioes,
-    route.query.status_obra,
+    route.query.status,
     route.query.grupo_tematico_id,
     route.query.tipo_intervencao_id,
     route.query.equipamento_id,

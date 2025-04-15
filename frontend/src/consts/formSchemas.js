@@ -4454,7 +4454,7 @@ export const alteracaoEmLoteNovoFiltro = object().shape({
   palavra_chave: string().label('Busca livre').nullableOuVazio(),
   portfolio_id: number().label('Portfólio').nullableOuVazio(),
   registros_sei: string().label('Processos SEI').nullableOuVazio(),
-  status_obra: number().label('Status da obra').nullableOuVazio(),
+  status: number().label('Status da obra').nullableOuVazio(),
   regioes: number().label('Subprefeitura').nullableOuVazio(),
   tipo_intervencao_id: number().label('Tipo de obra').nullableOuVazio(),
 });
