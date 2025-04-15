@@ -159,12 +159,12 @@ const onSubmit = handleSubmit(async (valores) => {
       let { valor } = edicao;
 
       if (campoConfigPorNome(edicao.propriedade)?.tipo === 'date') {
-        valor = format(new Date(valor), 'yyyy-MM-dd');
+        valor = String(format(new Date(valor), 'yyyy-MM-dd'));
       }
 
       return {
         col: edicao.propriedade,
-        set: String(valor),
+        set: valor,
       };
     }),
   };
