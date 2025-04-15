@@ -12,7 +12,10 @@ import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';
 import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
 import prepararParaSelect from '@/helpers/prepararParaSelect';
 import statusObras from '@/consts/statusObras';
-import { alteracaoEmLoteNovoFiltro as schema } from '@/consts/formSchemas';
+import {
+  alteracaoEmLoteNovoFiltro as schema,
+  obras as obrasSchema,
+} from '@/consts/formSchemas';
 
 const route = useRoute();
 
@@ -40,49 +43,37 @@ const valoresIniciais = ({
 });
 
 const colunasParaOrdenacao = {
-  id: {
-    id: 'id',
-    label: '',
+  orgao_origem_id: {
+    id: 'orgao_origem_nome',
+    label: obrasSchema.fields.orgao_origem_id.spec.label,
+  },
+  portfolio_id: {
+    id: 'portfolio_titulo',
+    label: obrasSchema.fields.portfolio_id.spec.label,
   },
   nome: {
     id: 'nome',
-    label: schema.fields.nome?.spec.label,
+    label: obrasSchema.fields.nome.spec.label,
   },
-  codigo: {
-    id: 'codigo',
-    label: 'Código',
-  },
-  portfolio_titulo: {
-    id: 'portfolio_titulo',
-    label: schema.fields.portfolio_id?.spec.label,
-  },
-  grupo_tematico_nome: {
+  grupo_tematico_id: {
     id: 'grupo_tematico_nome',
-    label: schema.fields.grupo_tematico_id?.spec.label,
+    label: obrasSchema.fields.grupo_tematico_id.spec.label,
   },
-  tipo_intervencao_nome: {
+  tipo_intervencao_id: {
     id: 'tipo_intervencao_nome',
-    label: schema.fields.tipo_intervencao_id?.spec.label,
+    label: obrasSchema.fields.tipo_intervencao_id.spec.label,
   },
-  equipamento_nome: {
+  equipamento_id: {
     id: 'equipamento_nome',
-    label: schema.fields.equipamento_id?.spec.label,
+    label: obrasSchema.fields.equipamento_id.spec.label,
   },
-  orgao_origem_nome: {
-    id: 'orgao_origem_nome',
-    label: schema.fields.orgao_origem_id?.spec.label,
-  },
-  regioes: {
+  regiao_ids: {
     id: 'regioes',
-    label: schema.fields.regiao_ids?.spec.label,
+    label: obrasSchema.fields.regiao_ids.spec.label,
   },
   status: {
     id: 'status',
-    label: schema.fields.status?.spec.label,
-  },
-  registrado_em: {
-    id: 'registrado_em',
-    label: 'Data de registro',
+    label: obrasSchema.fields.status.spec.label,
   },
 };
 
