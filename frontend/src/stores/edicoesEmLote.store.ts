@@ -74,6 +74,7 @@ export const useEdicoesEmLoteStore = (prefixo = '') => defineStore(prefixo ? `${
     async buscarItem(id = 0, params = {}) {
       this.chamadasPendentes.emFoco = true;
       this.erros.emFoco = null;
+      this.emFoco = null;
 
       try {
         const resposta = await this.requestS.get(`${baseUrl}/atualizacao-em-lote/${id}`, params) as AtualizacaoEmLoteDetalheDto;
@@ -100,6 +101,7 @@ export const useEdicoesEmLoteStore = (prefixo = '') => defineStore(prefixo ? `${
         return false;
       }
     },
+
     limparIdsSelecionados(): void {
       this.idsSelecionados.splice(0);
     },
