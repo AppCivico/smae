@@ -29,14 +29,9 @@ const obrasStore = useObrasStore();
 const projetoEmFoco = computed(
   () => tarefasStore?.extra?.projeto || tarefasStore?.extra?.cabecalho || {},
 );
-const apenasLeitura = computed(
-  () => !!projetoEmFoco.value?.permissoes?.apenas_leitura,
-);
+const apenasLeitura = computed(() => !!projetoEmFoco.value?.permissoes?.apenas_leitura);
 
-const permitirClonagem = computed(() => ['Registrado', 'Selecionado', 'EmPlanejamento']
-  .includes(projetoEmFoco.value?.status)
-  && ['projeto', 'obras'].includes(route.meta.entidadeMãe)
-  && !apenasLeitura.value);
+const permitirClonagem = computed(() => !!projetoEmFoco.value?.permissoes?.acao_clonar_cronograma);
 
 const nívelMáximoPermitido = computed(() => {
   const extra = tarefasStore?.extra;
