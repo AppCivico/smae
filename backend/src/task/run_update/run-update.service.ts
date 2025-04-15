@@ -102,14 +102,13 @@ export class RunUpdateTaskService implements TaskableService {
 
     private handleOperationError(error: any, id: number, nome: string, operacao: UpdateOperacaoDto, results_log: any) {
         if (error instanceof HttpException) {
+            const errorResponse = error.getResponse().toString();
             results_log.falhas.push({
                 id,
                 nome,
                 tipo: 'Exception',
                 col: operacao.col,
-                // Geralmente erros de exception possuem o formato `$field| erro`.
-                // Para facilitar leitura vamos remover tudo que vem antes do pipe. e também o pipe.
-                erro: error.getResponse().toString().split('|')[1],
+                erro: errorResponse.includes('|') ? errorResponse.split('|')[1] : errorResponse,
             });
         } else {
             results_log.falhas.push({

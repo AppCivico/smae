@@ -2598,7 +2598,10 @@ export class ProjetoService {
                 previsaoTermino = new Date(previsaoTermino);
 
                 if (previsaoTermino < previsaoInicio)
-                    throw new HttpException('A previsão de término não pode ser menor que a previsão de início.', 400);
+                    throw new HttpException(
+                        'previsao_inicio| A previsão de término não pode ser menor que a previsão de início.',
+                        400
+                    );
             }
 
             const self = await prismaTx.projeto.update({
