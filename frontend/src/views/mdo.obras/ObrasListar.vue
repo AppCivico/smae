@@ -1,15 +1,17 @@
 <template>
   <div>
-    <header class="flex spacebetween center mb2 g2">
-      <TítuloDePágina id="titulo-da-pagina" />
-      <hr class="f1">
-      <router-link
-        :to="{name: 'obrasCriar'}"
-        class="btn big ml1"
-      >
-        Nova obra
-      </router-link>
-    </header>
+    <CabecalhoDePagina>
+      <template #acoes>
+        <SmaeLink
+          :to="{
+            name: 'obrasCriar'
+          }"
+          class="btn big ml1"
+        >
+          Nova obra
+        </SmaeLink>
+      </template>
+    </CabecalhoDePagina>
 
     <FormularioQueryString
       v-slot="{ aplicarQueryStrings, detectarMudancas, formularioSujo }"

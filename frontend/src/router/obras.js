@@ -44,6 +44,7 @@ export default {
       meta: {
         limitarÀsPermissões: [
           'ProjetoMDO.administrador_no_orgao',
+          'ProjetoMDO.administrador',
         ],
         rotaDeEscape: 'obrasListar',
         rotasParaMigalhasDePão: [
