@@ -1,5 +1,6 @@
 <script setup>
 // eslint-disable-next-line import/no-extraneous-dependencies
+import SmaeText from '@/components/camposDeFormulario/SmaeText.vue';
 import { processoDeObras as schema } from '@/consts/formSchemas';
 import formatProcesso from '@/helpers/formatProcesso';
 import { useAlertStore } from '@/stores/alert.store';
@@ -172,19 +173,20 @@ resetForm();
         />
       </div>
     </div>
-
     <div class="flex g2">
       <div class="f1 mb1">
         <LabelFromYup
           name="descricao"
           :schema="schema"
         />
-        <Field
+        <SmaeText
           name="descricao"
           as="textarea"
           rows="5"
           class="inputtext light mb1"
-          maxlength="500"
+          maxlength="2048"
+          v-model="carga.descricao"
+          anular-vazio
           :class="{ 'error': errors.descricao }"
         />
         <ErrorMessage
@@ -199,12 +201,14 @@ resetForm();
           name="comentarios"
           :schema="schema"
         />
-        <Field
+        <SmaeText
           name="comentarios"
           as="textarea"
           rows="5"
           class="inputtext light mb1"
-          maxlength="1024"
+          maxlength="2048"
+          v-model="carga.comentarios"
+          anular-vazio
           :class="{ 'error': errors.comentarios }"
         />
         <ErrorMessage
@@ -219,12 +223,14 @@ resetForm();
           name="observacoes"
           :schema="schema"
         />
-        <Field
+        <SmaeText
           name="observacoes"
           as="textarea"
           rows="5"
           class="inputtext light mb1"
-          maxlength="1024"
+          maxlength="2048"
+          v-model="carga.observacoes"
+          anular-vazio
           :class="{ 'error': errors.observacoes }"
         />
         <ErrorMessage
@@ -233,9 +239,7 @@ resetForm();
         />
       </div>
     </div>
-
     <FormErrorsList :errors="errors" />
-
     <div class="flex spacebetween center mb2">
       <hr class="mr2 f1">
       <button

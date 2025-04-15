@@ -1,5 +1,6 @@
 <script setup>
 import AutocompleteField from '@/components/AutocompleteField2.vue';
+import SmaeText from '@/components/camposDeFormulario/SmaeText.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import { contratoDeObras } from '@/consts/formSchemas';
 import truncate from '@/helpers/texto/truncate';
@@ -434,11 +435,14 @@ onMounted(async () => {
           name="objeto_resumo"
           :schema="schema"
         />
-        <Field
+        <SmaeText
           name="objeto_resumo"
           as="textarea"
           rows="10"
           class="inputtext light mb1"
+          maxlength="2048"
+          v-model="carga.objeto_resumo"
+          anular-vazio
           :class="{
             error: errors.objeto_resumo,
             loading: chamadasPendentes.validaçãoDeDependências
@@ -457,13 +461,16 @@ onMounted(async () => {
           name="objeto_detalhado"
           :schema="schema"
         />
-        <Field
+        <SmaeText
           name="objeto_detalhado"
           as="textarea"
           rows="20"
           class="inputtext light mb1"
+          maxlength="2048"
+          v-model="carga.objeto_detalhado"
+          anular-vazio
           :class="{
-            error: errors.objeto_detalhado,
+            error: errors.v,
             loading: chamadasPendentes.validaçãoDeDependências
           }"
         />
@@ -712,14 +719,17 @@ onMounted(async () => {
           name="observacoes"
           :schema="schema"
         />
-        <Field
+        <SmaeText
           name="observacoes"
           as="textarea"
           rows="15"
           class="inputtext light mb1"
+          maxlength="2048"
+          v-model="carga.observacoes"
+          anular-vazio
           :class="{
             error: errors.observacoes,
-            loading: chamadasPendentes.validaçãoDeDependências
+            loading: chamadasPendentes.observacoes
           }"
         />
         <ErrorMessage
