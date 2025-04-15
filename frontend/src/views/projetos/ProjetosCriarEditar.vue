@@ -2,6 +2,7 @@
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
 import CampoDePlanosMetasRelacionados from '@/components/CampoDePlanosMetasRelacionados.vue';
+import SmaeText from '@/components/camposDeFormulario/SmaeText.vue';
 import MapaCampo from '@/components/geo/MapaCampo.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudançaDeStatusDeProjeto.vue';
@@ -291,6 +292,7 @@ watch(itemParaEdicao, (novoValor) => {
     @submit.prevent="!isSubmitting ? onSubmit() : null"
   >
     <div class="flex g2 mb1">
+
       <div class="f1 mb1">
         <LabelFromYup
           name="portfolio_id"
@@ -450,12 +452,14 @@ watch(itemParaEdicao, (novoValor) => {
           name="resumo"
           :schema="schema"
         />
-        <Field
+        <SmaeText
           name="resumo"
           as="textarea"
           rows="5"
           class="inputtext light mb1"
-          maxlength="500"
+          maxlength="2048"
+          v-model="values.resumo"
+          anular-vazio
           :class="{ 'error': errors.resumo }"
         />
         <ErrorMessage
@@ -472,11 +476,14 @@ watch(itemParaEdicao, (novoValor) => {
             name="objeto"
             :schema="schema"
           />
-          <Field
+          <SmaeText
             name="objeto"
             as="textarea"
             rows="5"
             class="inputtext light mb1"
+            maxlength="2048"
+            v-model="values.objeto"
+            anular-vazio
             :class="{ 'error': errors.objeto }"
             :disabled="!emFoco?.permissoes?.campo_objeto"
           />
@@ -493,11 +500,14 @@ watch(itemParaEdicao, (novoValor) => {
             name="objetivo"
             :schema="schema"
           />
-          <Field
+          <SmaeText
             name="objetivo"
             as="textarea"
             rows="5"
             class="inputtext light mb1"
+            maxlength="2048"
+            v-model="values.objetivo"
+            anular-vazio
             :class="{ 'error': errors.objetivo }"
             :disabled="!emFoco?.permissoes?.campo_objetivo"
           />
@@ -514,11 +524,14 @@ watch(itemParaEdicao, (novoValor) => {
             name="publico_alvo"
             :schema="schema"
           />
-          <Field
+          <SmaeText
             name="publico_alvo"
             as="textarea"
             rows="5"
             class="inputtext light mb1"
+            maxlength="2048"
+            v-model="values.publico_alvo"
+            anular-vazio
             :class="{ 'error': errors.publico_alvo }"
             :disabled="!emFoco?.permissoes?.campo_publico_alvo"
           />
@@ -542,7 +555,7 @@ watch(itemParaEdicao, (novoValor) => {
         />
 
         <FieldArray
-          v-slot="{ fields, push, remove }"
+          v-slot="{ fields, push, remove, handleChange }"
           name="premissas"
         >
           <div
@@ -554,13 +567,18 @@ watch(itemParaEdicao, (novoValor) => {
               :name="`premissas[${idx}].id`"
               type="hidden"
             />
-
             <div class="f1 mb1">
-              <Field
-                arial-label="Texto da premissa"
+              <SmaeText
                 :name="`premissas[${idx}].premissa`"
-                type="text"
+                as="textarea"
+                rows="5"
                 class="inputtext light mb1"
+                :max-length="2048"
+                :schema="schema"
+                :model-value="fields[idx]?.value?.premissa"
+                anular-vazio
+                :class="{ 'error': errors[`fields[${idx}].premissa`] }"
+                @update:model-value="handleChange"
               />
               <ErrorMessage
                 class="error-msg mb1"
@@ -621,14 +639,20 @@ watch(itemParaEdicao, (novoValor) => {
               :name="`restricoes[${idx}].id`"
               type="hidden"
             />
-
             <div class="f1 mb1">
-              <Field
-                arial-label="Texto da restrição"
+              <SmaeText
                 :name="`restricoes[${idx}].restricao`"
-                type="text"
+                as="textarea"
+                rows="5"
                 class="inputtext light mb1"
+                :max-length="2048"
+                :schema="schema"
+                :model-value="fields[idx]?.value?.restricao"
+                anular-vazio
+                :class="{ 'error': errors[`fields[${idx}].restricao`] }"
+                @update:model-value="handleChange"
               />
+
               <ErrorMessage
                 class="error-msg mb1"
                 :name="`restricoes[${idx}].restricao`"
@@ -672,11 +696,14 @@ watch(itemParaEdicao, (novoValor) => {
           name="principais_etapas"
           :schema="schema"
         />
-        <Field
+        <SmaeText
           name="principais_etapas"
           as="textarea"
           rows="5"
           class="inputtext light mb1"
+          maxlength="2048"
+          v-model="values.principais_etapas"
+          anular-vazio
           :class="{ 'error': errors.principais_etapas }"
         />
         <ErrorMessage
@@ -698,15 +725,17 @@ watch(itemParaEdicao, (novoValor) => {
           Não escopo
           <small class="t13 tc500">(o que <strong>não</strong> será entregue no projeto)</small>
         </LabelFromYup>
-
-        <Field
-          name="nao_escopo"
-          as="textarea"
-          rows="5"
-          class="inputtext light mb1"
-          :class="{ 'error': errors.nao_escopo }"
-          :disabled="!emFoco?.permissoes?.campo_nao_escopo"
-        />
+          <SmaeText
+            name="nao_escopo"
+            as="textarea"
+            rows="5"
+            class="inputtext light mb1"
+            maxlength="2048"
+            v-model="values.nao_escopo"
+            anular-vazio
+            :class="{ 'error': errors.nao_escopo }"
+            :disabled="!emFoco?.permissoes?.campo_nao_escopo"
+          />
         <ErrorMessage
           name="nao_escopo"
           class="error-msg"
@@ -1100,14 +1129,16 @@ watch(itemParaEdicao, (novoValor) => {
           >
             Descrição&nbsp;<span class="tvermelho">*</span>
           </LabelFromYup>
-
-          <Field
+          <SmaeText
             name="origem_outro"
             as="textarea"
             rows="5"
             class="inputtext light mb1"
+            :schema="schema"
+            maxlength="2048"
+            :model-value="values.origem_outro"
+            anular-vazio
             :class="{ 'error': errors.origem_outro }"
-            maxlength="500"
           />
           <ErrorMessage
             name="origem_outro"
