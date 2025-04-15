@@ -105,7 +105,10 @@ if (!Array.isArray(organs) || !organs.length) {
           </ul>
         </td>
         <td>
-          <ul>
+          <ul
+            v-if="$route.meta.rotaParaItensAssociados.nome
+              && $route.meta.rotaParaItensAssociados.nomeDoParametro"
+          >
             <li v-if="!item.projetos?.length">
               Nenhum projeto associado
             </li>
@@ -113,17 +116,17 @@ if (!Array.isArray(organs) || !organs.length) {
               v-for="projeto in item.projetos"
               :key="projeto.id"
             >
-              <router-link
+              <SmaeLink
                 :to="{
-                  name: 'projetosResumo',
+                  name: $route.meta.rotaParaItensAssociados.nome,
                   params: {
-                    projetoId: projeto.id,
+                    [$route.meta.rotaParaItensAssociados.nomeDoParametro]: projeto.id,
                   },
                 }"
               >
                 <strong v-if="projeto.codigo"> {{ projeto.codigo }} - </strong>
                 {{ projeto.nome }}
-              </router-link>
+              </SmaeLink>
             </li>
           </ul>
         </td>
