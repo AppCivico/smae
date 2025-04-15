@@ -357,7 +357,7 @@ export class CreateProjetoDto {
     @IsOnlyDate()
     @Transform(DateTransform)
     @ValidateIf((object, value) => value !== null)
-    previsao_termino?: Date | null;
+    previsao_termino?: Date;
 
     @IsOptional()
     @IsOnlyDate()

@@ -2584,6 +2584,23 @@ export class ProjetoService {
                 delete dto.portfolio_id;
             }
 
+            // Caso a previsão de término seja enviada/modificada (e for diferente do que está salvo). Garantir que não seja menor que a previsão de início.
+            if (
+                (dto.previsao_termino && dto.previsao_termino.toISOString() != projeto.previsao_termino) ||
+                (dto.previsao_inicio && dto.previsao_inicio.toISOString() != projeto.previsao_inicio)
+            ) {
+                let previsaoInicio = dto.previsao_inicio ? dto.previsao_inicio : projeto.previsao_inicio;
+                if (!previsaoInicio) throw new Error('Erro interno ao verificar data de previsão de início');
+                previsaoInicio = new Date(previsaoInicio);
+
+                let previsaoTermino = dto.previsao_termino ? dto.previsao_termino : projeto.previsao_termino;
+                if (!previsaoTermino) throw new Error('Erro interno ao verificar data de previsão de término');
+                previsaoTermino = new Date(previsaoTermino);
+
+                if (previsaoTermino < previsaoInicio)
+                    throw new HttpException('A previsão de término não pode ser menor que a previsão de início.', 400);
+            }
+
             const self = await prismaTx.projeto.update({
                 where: { id: projetoId },
                 data: {
