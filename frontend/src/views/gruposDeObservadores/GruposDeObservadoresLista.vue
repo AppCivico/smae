@@ -37,18 +37,16 @@ if (!Array.isArray(organs) || !organs.length) {
 </script>
 
 <template>
-  <div class="flex spacebetween center mb2">
-    <TítuloDePágina> Grupos de observadores </TítuloDePágina>
-
-    <hr class="ml2 f1">
-
-    <SmaeLink
-      :to="{ name: '.gruposObservadores.criar' }"
-      class="btn big ml1"
-    >
-      Novo grupo de observadores
-    </SmaeLink>
-  </div>
+  <CabecalhoDePagina>
+    <template #acoes>
+      <SmaeLink
+        :to="{ name: '.gruposObservadores.criar' }"
+        class="btn big ml1"
+      >
+        Novo grupo de observadores
+      </SmaeLink>
+    </template>
+  </CabecalhoDePagina>
 
   <table class="tablemain">
     <col>

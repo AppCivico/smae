@@ -277,9 +277,6 @@ export default [
                 name: 'mdo.gruposObservadores.listar',
                 path: '',
                 component: GruposDeObservadoresLista,
-                meta: {
-                  título: 'Grupos de observadores',
-                },
               },
               {
                 name: 'mdo.gruposObservadores.criar',
@@ -928,9 +925,6 @@ export default [
             name: 'projeto.gruposObservadores.listar',
             path: '',
             component: GruposDeObservadoresLista,
-            meta: {
-              título: 'Grupos de observadores',
-            },
           },
           {
             name: 'projeto.gruposObservadores.criar',
