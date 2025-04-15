@@ -836,7 +836,11 @@ const PerfilAcessoConfig: PerfilConfigArray = [
         // o TipoAditivo vai ficar fora do "todos os privilégios"
         nome: atualizarNomePerfil('Administrador Geral do SMAE', ['Administrador Geral']),
         descricao: 'Administrador Geral - Todas as permissões do sistema, exceto regras de negócio específicas.',
-        privilegios: ['SMAE.superadmin', ...todosPrivilegios.filter((e) => /^(PDM|SMAE|PS|MDO)\./.test(e) === false)],
+        privilegios: [
+            'SMAE.superadmin',
+            ...todosPrivilegios.filter((e) => /^(PDM|SMAE|PS|MDO)\./.test(e) === false),
+            'SMAE.AtualizacaoEmLote', // tmp
+        ],
     },
     {
         nome: 'SYSADMIN',
