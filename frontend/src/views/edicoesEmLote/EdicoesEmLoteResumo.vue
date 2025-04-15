@@ -64,7 +64,7 @@ onMounted(() => {
       rolagem-horizontal
       :dados="emFoco?.results_log?.falhas || []"
       :colunas="[
-        { chave: 'id', label: 'nome da obra' },
+        { chave: 'nome', label: 'nome da obra' },
         { chave: 'erro', label: 'erros' },
       ]"
     />
