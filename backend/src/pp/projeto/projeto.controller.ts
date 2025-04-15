@@ -344,7 +344,7 @@ export class ProjetoMDOController {
 
     @Get('ids')
     @ApiBearerAuth('access-token')
-    @Roles([...roles])
+    @Roles([...rolesMDO])
     async findAllIds(
         @Query() filters: CoreFilterProjetoMDODto,
         @CurrentUser() user: PessoaFromJwt
