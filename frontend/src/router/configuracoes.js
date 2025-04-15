@@ -271,6 +271,10 @@ export default [
                 'mdo.portfolio.listar',
                 'mdo.gruposObservadores.listar',
               ],
+              rotaParaItensAssociados: {
+                nome: 'obrasResumo',
+                nomeDoParametro: 'obraId',
+              },
             },
             children: [
               {
@@ -918,6 +922,11 @@ export default [
             'projeto.portfolio.listar',
             'projeto.gruposObservadores.listar',
           ],
+
+          rotaParaItensAssociados: {
+            nome: 'projetosResumo',
+            nomeDoParametro: 'projetoId',
+          },
         },
 
         children: [
