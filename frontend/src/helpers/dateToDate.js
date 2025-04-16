@@ -31,8 +31,19 @@ function dateToDate(d, options = {}) {
 
   const timeZone = hasTimeInDate(d) ? 'America/Sao_Paulo' : 'UTC';
   const dd = d ? new Date(d) : false;
-  if (!dd) return d;
-  const dx = (dd) ? dd.toLocaleString('pt-BR', { dateStyle: 'short', timeZone, ...options }) : '';
+
+  if (!dd) {
+    return d;
+  }
+
+  const temHoras = dd.getHours !== 0 && dd.getMinutes() !== 0;
+  const dx = (dd) ? dd.toLocaleString('pt-BR', {
+    dateStyle: 'short',
+    timeStyle: temHoras ? 'short' : undefined,
+    timeZone,
+    ...options,
+  }) : '';
+
   return dx || '';
 }
 
