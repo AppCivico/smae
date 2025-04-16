@@ -16,8 +16,11 @@ export class VariavelUtilService {
 
         let unsafeCicloCorrente = '';
         if (filtros?.ate_ciclo_corrente) {
-            const data = await this.ultimoMesComAtraso(variavelId);
-            unsafeCicloCorrente = `and p.p < ( '${data.toISOString()}'::date )`;
+            const data = await this.ultimoPeriodoValido(variavelId);
+
+            const op = filtros?.ate_ciclo_corrente_inclusive === false ? '<' : '<=';
+
+            unsafeCicloCorrente = `and p.p ${op} date_trunc('month', ('${data.toISOString()}'::date ))`;
         }
 
         const dados: Record<string, string>[] = await this.prisma.$queryRawUnsafe(`
@@ -34,17 +37,6 @@ export class VariavelUtilService {
         return dados.map((e) => e.dt);
     }
 
-    async ultimoMesComAtraso(variavel_id: number) {
-        const r: { data: Date }[] = await this.prisma.$queryRaw`
-            select
-                date_trunc('month', now() at time zone  'America/Sao_Paulo')::date
-                    +
-                ((v.atraso_meses * -1)) as data
-            from variavel v
-            where v.id = ${variavel_id}`;
-        return r[0].data;
-    }
-
     async ultimoPeriodoValido(variavel_id: number) {
         const r: { ultimo_periodo_valido: Date }[] = await this.prisma.$queryRaw`
             select ultimo_periodo_valido(v.periodicidade, v.atraso_meses, v.inicio_medicao) as ultimo_periodo_valido
@@ -55,6 +47,7 @@ export class VariavelUtilService {
             throw new BadRequestException(
                 'Opção de ate_ciclo_corrente apenas para variáveis com data de início de medição'
             );
+        console.log(r[0].ultimo_periodo_valido);
         return r[0].ultimo_periodo_valido;
     }
 }

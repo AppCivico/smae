@@ -2700,6 +2700,14 @@ export class VariavelService {
 
         const series: Serie[] = [...ORDEM_SERIES_RETORNO];
         SeriesArrayShuffle(series); // garante que o consumidor não está usando os valores das series cegamente
+        const cicloCorrente =
+            filters.serie == 'Realizado' || filters.ate_ciclo_corrente
+                ? await this.prisma.variavelCicloCorrente.findUnique({
+                      where: { variavel_id: variavelId },
+                      select: { ultimo_periodo_valido: true, prazo: true, atrasos: true },
+                  })
+                : null;
+
         if (filters.serie) {
             series.length = 0;
             for (const serie of ORDEM_SERIES_RETORNO) {
@@ -2708,14 +2716,13 @@ export class VariavelService {
                 }
             }
             if (filters.serie == 'Realizado') filters.ate_ciclo_corrente = true;
-        }
 
-        const cicloCorrente = filters.ate_ciclo_corrente
-            ? await this.prisma.variavelCicloCorrente.findUnique({
-                  where: { variavel_id: variavelId },
-                  select: { ultimo_periodo_valido: true, prazo: true },
-              })
-            : null;
+            if (cicloCorrente && cicloCorrente.atrasos.length > 0) {
+                // caso tenha mais de um atraso, então o ciclo atual não é o ciclo corrente, então vamos pular já direto
+                // na query o ultimo ciclo corrente
+                filters.ate_ciclo_corrente_inclusive = false;
+            }
+        }
 
         // TODO adicionar limpeza da serie para quem for ponto focal
         const valoresExistentes = await this.getValorSerieExistente(variavelId, series, filters);
