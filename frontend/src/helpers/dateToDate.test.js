@@ -25,6 +25,8 @@ describe('dateToDate Utilities', () => {
 
     it('deve retornar uma data formatada corretamente', () => {
       expect(dateToDate('2023-11-29')).toBe('29/11/2023');
+
+      expect(dateToDate('2023-11-29T23:23:43.674Z')).toBe('29/11/2023, 20:23');
     });
   });
 

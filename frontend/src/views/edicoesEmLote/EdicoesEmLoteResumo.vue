@@ -17,14 +17,18 @@ const detalhesEdicao = computed(() => {
   }
 
   return [
-    { descricao: 'Iniciado em', valor: dateToDate(emFoco.value.iniciou_em) },
-    { descricao: 'terminado em', valor: dateToDate(emFoco.value.terminou_em) },
-    { descricao: 'Executado por', valor: emFoco.value.criador.nome_exibicao },
-    { descricao: 'Órgão', valor: emFoco.value.orgao?.sigla },
-    { descricao: 'Itens concluidos com sucesso', valor: emFoco.value.n_sucesso },
-    { descricao: 'Itens ignorados', valor: emFoco.value.n_ignorado },
-    { descricao: 'Itens com erro', valor: emFoco.value.n_erro },
-    { descricao: 'Total itens', valor: emFoco.value.n_total },
+    [
+      { descricao: 'Iniciado em', valor: emFoco.value ? dateToDate(emFoco.value.iniciou_em) : '-' },
+      { descricao: 'terminado em', valor: emFoco.value ? dateToDate(emFoco.value.terminou_em) : '-' },
+      { descricao: 'Executado por', valor: emFoco.value?.criador.nome_exibicao || '-' },
+      { descricao: 'Órgão', valor: emFoco.value?.orgao?.sigla || '-' },
+    ],
+    [
+      { descricao: 'Itens concluidos com sucesso', valor: emFoco.value?.n_sucesso || '-' },
+      { descricao: 'Itens ignorados', valor: emFoco.value?.n_ignorado || '-' },
+      { descricao: 'Itens com erro', valor: emFoco.value?.n_erro || '-' },
+      { descricao: 'Total itens', valor: emFoco.value?.n_total || '-' },
+    ],
   ];
 });
 
@@ -40,84 +44,39 @@ onMounted(() => {
 <template>
   <CabecalhoDePagina />
 
-  <section class="edicoes-em-lote-resumo">
-    <h3 class="edicoes-em-lote-resumo__titulo">
-      Edição
-    </h3>
-
-    <dl
-      v-if="emFoco"
-      class="edicoes-em-lote-resumo__detalhes"
+  <article>
+    <template
+      v-for="(linha, linhaIndex) in detalhesEdicao"
+      :key="`detalhe-linha--${linhaIndex}`"
     >
-      <div
-        v-for="(itemDetalhe, detalheIndex) in detalhesEdicao"
-        :key="`detalhe-item--${detalheIndex}`"
-      >
-        <dt>{{ itemDetalhe.descricao }}</dt>
-        <dd>{{ itemDetalhe.valor }}</dd>
+      <div class="flex column">
+        <dl class="flex g2 flexwrap f1 mb1">
+          <div
+            v-for="(itemDetalhe, detalheIndex) in linha"
+            :key="`detalhe-item--${linhaIndex}-${detalheIndex}`"
+            class="f1 mb1"
+          >
+            <dt class="t12 uc w700 mb05 tamarelo">
+              {{ itemDetalhe.descricao }}
+            </dt>
+
+            <dd class="t13">
+              {{ itemDetalhe.valor }}
+            </dd>
+          </div>
+        </dl>
       </div>
-    </dl>
+    </template>
+  </article>
 
-    <SmaeTable
-      titulo-rolagem-horizontal="Tabela: Edição em Lote - Resumo"
-      class="mt2"
-      rolagem-horizontal
-      :dados="emFoco?.results_log?.falhas || []"
-      :colunas="[
-        { chave: 'nome', label: 'nome da obra' },
-        { chave: 'erro', label: 'erros' },
-      ]"
-    />
-  </section>
+  <SmaeTable
+    titulo-rolagem-horizontal="Tabela: Edição em Lote - Resumo"
+    class="mt2"
+    rolagem-horizontal
+    :dados="emFoco?.results_log?.falhas || []"
+    :colunas="[
+      { chave: 'nome', label: 'nome da obra' },
+      { chave: 'erro', label: 'erros' },
+    ]"
+  />
 </template>
-
-<style lang="less" scoped>
-@duas-colunas: 55rem;
-
-.edicoes-em-lote-resumo__titulo {
-  font-weight: 400;
-  font-size: 22px;
-  color: #005C8A;
-}
-
-.edicoes-em-lote-resumo__criador {
-  font-weight: 300;
-  font-size: 20px;
-  color: #152741;
-}
-
-.edicoes-em-lote-resumo__detalhes {
-  @media screen and (min-width: @duas-colunas) {
-    max-width: 50%;
-  }
-}
-
-.edicoes-em-lote-resumo__detalhes div {
-  width: 100%;
-  display: grid;
-  position: relative;
-  grid-template-columns: repeat(2, 1fr);
-  padding: .5rem;
-
-  &:before {
-    content: '';
-    position: absolute;
-    height: 1px;
-    width: 100%;
-    background-color: @c100;
-  }
-
-  &:first-of-type:before {
-    content: initial;
-  }
-
-  dt {
-    font-weight: 700;
-  }
-
-  dt:after {
-    content: ':'
-  }
-
-}
-</style>
