@@ -21,7 +21,6 @@ export default {
     {
       path: 'obras',
       meta: {
-        título: 'Edições de obras em lote',
         títuloParaMenu: 'Obras',
         rotaDeAdição: {
           name: 'edicoesEmLoteObrasNovo',
@@ -37,6 +36,9 @@ export default {
           name: 'edicoesEmLoteObras',
           path: '',
           component: EdicoesEmLoteLista,
+          meta: {
+            título: 'Lista de edições de obras em lote',
+          },
         },
         {
           path: ':edicaoEmLoteId',
@@ -45,11 +47,17 @@ export default {
           props: tiparPropsDeRota,
           meta: {
             rotaDeEscape: 'edicoesEmLoteObras',
+            títuloParaMenu: 'Resumo',
+            título: 'Resumo de edição de obras em lote',
+            rotasParaMigalhasDePão: ['edicoesEmLoteObras'],
           },
         },
         {
           path: 'novo',
           component: () => import('@/views/edicoesEmLote/obras/EdicoesEmLoteObrasRaiz.vue'),
+          meta: {
+            títuloParaMenu: undefined,
+          },
           children: [
             {
               path: '',
@@ -57,6 +65,8 @@ export default {
               component: () => import('@/views/edicoesEmLote/obras/EdicoesEmLoteObrasSelecionar.vue'),
               meta: {
                 rotaDeEscape: 'edicoesEmLoteObras',
+                título: 'Selecionar nova edição de obras em lote',
+                rotasParaMigalhasDePão: ['edicoesEmLoteObras'],
               },
             },
             {
@@ -65,14 +75,8 @@ export default {
               component: () => import('@/views/edicoesEmLote/obras/EdicoesEmLoteObrasConstruir.vue'),
               meta: {
                 rotaDeEscape: 'edicoesEmLoteObras',
-              },
-            },
-            {
-              path: 'revisar',
-              name: 'edicoesEmLoteObrasNovoRevisar',
-              component: () => import('@/views/edicoesEmLote/obras/EdicoesEmLoteObrasRevisar.vue'),
-              meta: {
-                rotaDeEscape: 'edicoesEmLoteObrasNovo',
+                título: 'Construir nova edição de obras em lote',
+                rotasParaMigalhasDePão: ['edicoesEmLoteObras', 'edicoesEmLoteObrasNovo'],
               },
             },
           ],
