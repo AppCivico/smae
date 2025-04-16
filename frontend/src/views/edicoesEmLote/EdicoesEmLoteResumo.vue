@@ -4,7 +4,7 @@ import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import { useEdicoesEmLoteStore } from '@/stores/edicoesEmLote.store';
-import { localizarDataHorario } from '@/helpers/dateToDate';
+import dateToDate from '@/helpers/dateToDate';
 
 const route = useRoute();
 
@@ -18,8 +18,8 @@ const detalhesEdicao = computed(() => {
 
   return [
     [
-      { descricao: 'Iniciado em', valor: emFoco.value ? localizarDataHorario(emFoco.value.iniciou_em) : '-' },
-      { descricao: 'terminado em', valor: emFoco.value ? localizarDataHorario(emFoco.value.terminou_em) : '-' },
+      { descricao: 'Iniciado em', valor: emFoco.value ? dateToDate(emFoco.value.iniciou_em) : '-' },
+      { descricao: 'terminado em', valor: emFoco.value ? dateToDate(emFoco.value.terminou_em) : '-' },
       { descricao: 'Executado por', valor: emFoco.value?.criador.nome_exibicao || '-' },
       { descricao: 'Órgão', valor: emFoco.value?.orgao?.sigla || '-' },
     ],
@@ -44,41 +44,39 @@ onMounted(() => {
 <template>
   <CabecalhoDePagina />
 
-  <section class="edicoes-em-lote-resumo">
-    <article>
-      <template
-        v-for="(linha, linhaIndex) in detalhesEdicao"
-        :key="`detalhe-linha--${linhaIndex}`"
-      >
-        <div class="flex column">
-          <dl class="flex g2 flexwrap f1 mb1">
-            <div
-              v-for="(itemDetalhe, detalheIndex) in linha"
-              :key="`detalhe-item--${linhaIndex}-${detalheIndex}`"
-              class="f1 mb1"
-            >
-              <dt class="t12 uc w700 mb05 tamarelo">
-                {{ itemDetalhe.descricao }}
-              </dt>
+  <article>
+    <template
+      v-for="(linha, linhaIndex) in detalhesEdicao"
+      :key="`detalhe-linha--${linhaIndex}`"
+    >
+      <div class="flex column">
+        <dl class="flex g2 flexwrap f1 mb1">
+          <div
+            v-for="(itemDetalhe, detalheIndex) in linha"
+            :key="`detalhe-item--${linhaIndex}-${detalheIndex}`"
+            class="f1 mb1"
+          >
+            <dt class="t12 uc w700 mb05 tamarelo">
+              {{ itemDetalhe.descricao }}
+            </dt>
 
-              <dd class="t13">
-                {{ itemDetalhe.valor }}
-              </dd>
-            </div>
-          </dl>
-        </div>
-      </template>
-    </article>
+            <dd class="t13">
+              {{ itemDetalhe.valor }}
+            </dd>
+          </div>
+        </dl>
+      </div>
+    </template>
+  </article>
 
-    <SmaeTable
-      titulo-rolagem-horizontal="Tabela: Edição em Lote - Resumo"
-      class="mt2"
-      rolagem-horizontal
-      :dados="emFoco?.results_log?.falhas || []"
-      :colunas="[
-        { chave: 'nome', label: 'nome da obra' },
-        { chave: 'erro', label: 'erros' },
-      ]"
-    />
-  </section>
+  <SmaeTable
+    titulo-rolagem-horizontal="Tabela: Edição em Lote - Resumo"
+    class="mt2"
+    rolagem-horizontal
+    :dados="emFoco?.results_log?.falhas || []"
+    :colunas="[
+      { chave: 'nome', label: 'nome da obra' },
+      { chave: 'erro', label: 'erros' },
+    ]"
+  />
 </template>
