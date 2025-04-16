@@ -112,6 +112,9 @@ export class FilterPeriodoDto {
     @Transform((v) => v.value === 'true')
     ate_ciclo_corrente?: Boolean;
 
+    @ApiHideProperty()
+    ate_ciclo_corrente_inclusive?: boolean;
+
     @ApiProperty({
         description:
             'Recebe a serie do ciclo ativo com a referencia ":no_ciclo:" para indicar que a data encontra-se no ciclo ativo',

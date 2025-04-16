@@ -2716,20 +2716,7 @@ export class VariavelService {
                 }
             }
             if (filters.serie == 'Realizado') filters.ate_ciclo_corrente = true;
-
-            if (cicloCorrente && cicloCorrente.atrasos.length > 0) {
-                // caso tenha mais de um atraso, então o ciclo atual não é o ciclo corrente, então vamos pular já direto
-                // na query o ultimo ciclo corrente
-                filters.ate_ciclo_corrente_inclusive = false;
-            }
         }
-
-        const cicloCorrente = filters.ate_ciclo_corrente
-            ? await this.prisma.variavelCicloCorrente.findUnique({
-                  where: { variavel_id: variavelId },
-                  select: { ultimo_periodo_valido: true, prazo: true },
-              })
-            : null;
 
         // TODO adicionar limpeza da serie para quem for ponto focal
         const valoresExistentes = await this.getValorSerieExistente(variavelId, series, filters);
