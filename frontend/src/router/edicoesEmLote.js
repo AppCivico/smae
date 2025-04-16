@@ -21,6 +21,7 @@ export default {
     {
       path: 'obras',
       meta: {
+        título: 'Edições de obras em lote',
         títuloParaMenu: 'Obras',
         rotaDeAdição: {
           name: 'edicoesEmLoteObrasNovo',
@@ -47,7 +48,7 @@ export default {
           props: tiparPropsDeRota,
           meta: {
             rotaDeEscape: 'edicoesEmLoteObras',
-            títuloParaMenu: 'Resumo',
+            títuloParaMenu: undefined,
             título: 'Resumo de edição de obras em lote',
             rotasParaMigalhasDePão: ['edicoesEmLoteObras'],
           },
