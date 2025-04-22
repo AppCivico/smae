@@ -371,7 +371,10 @@ export class VariavelCicloService {
         if (Date2YMD.toString(cicloCorrente.ultimo_periodo_valido) != Date2YMD.toString(dto.data_referencia))
             throw new BadRequestException(`Data de ref não é a última válida (${cicloCorrente.ultimo_periodo_valido})`);
 
-        if ((!dto.pedido_complementacao && !dto.analise_qualitativa) || dto.analise_qualitativa?.length === 0)
+        if (
+            ((!dto.pedido_complementacao && !dto.analise_qualitativa) || dto.analise_qualitativa?.length === 0) &&
+            dto.aprovar
+        )
             throw new BadRequestException('É necessário fornecer uma análise qualitativa ou pedir complementação');
 
         // sempre verifica se o periodo é válido, just in case...

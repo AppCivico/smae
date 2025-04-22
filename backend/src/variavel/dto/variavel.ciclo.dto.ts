@@ -177,7 +177,6 @@ export class BatchAnaliseQualitativaDto {
     @MaxLength(MAX_LENGTH_DEFAULT, {
         message: `O campo 'Análise qualitativa' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
     })
-    @MinLength(1, { message: 'Análise qualitativa não pode ser vazia' })
     analise_qualitativa?: string;
 
     @IsDateYMD()
