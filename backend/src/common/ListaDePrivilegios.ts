@@ -173,6 +173,7 @@ export type ListaDePrivilegios =
     | 'Projeto.orcamento'
     | 'SMAE.gestor_de_projeto'
     | 'SMAE.colaborador_de_projeto'
+    | 'SMAE.gerente_de_projeto'
     | 'PDM.coordenador_responsavel_cp'
     | 'PDM.tecnico_cp'
     | 'PDM.admin_cp'
