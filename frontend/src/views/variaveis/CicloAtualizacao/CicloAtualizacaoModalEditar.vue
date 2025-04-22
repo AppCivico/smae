@@ -21,7 +21,7 @@
 
     <form
       class="mt1 flex column"
-      @submit.prevent="enviando && !Object.keys(errors).length && validarEEnviar({ aprovar: false })"
+      @submit.prevent="carregando && !Object.keys(errors).length && validarEEnviar({ aprovar: false })"
     >
       <hr>
 
@@ -321,7 +321,7 @@
           type="button"
           class="btn outline bgnone tcprimary"
           :disabled="bloqueado"
-          :aria-busy="enviando"
+          :aria-busy="carregando"
           @click.prevent="enviar({ aprovar: false })"
         >
           {{
@@ -336,7 +336,7 @@
           class="btn"
           :disabled="bloqueado"
           :aria-disabled="!!Object.keys(errors).length"
-          :aria-busy="enviando"
+          :aria-busy="carregando"
           @click.prevent="!Object.keys(errors).length && validarEEnviar({ aprovar: true })"
         >
           {{ botoesLabel.salvarESubmeter }}
@@ -384,7 +384,9 @@ const $emit = defineEmits<Emits>();
 const cicloAtualizacaoStore = useCicloAtualizacaoStore(useRoute().meta.entidadeMãe);
 const variaveisCategoricasStore = useVariaveisCategoricasStore();
 
-const { emFoco, bloqueado, temCategorica } = storeToRefs(cicloAtualizacaoStore);
+const {
+  emFoco, bloqueado, temCategorica, carregando,
+} = storeToRefs(cicloAtualizacaoStore);
 
 const {
   fase, forumlariosAExibir, botoesLabel, fasePosicao, dataReferencia, obterValorAnalise,
@@ -409,7 +411,6 @@ function obterVariavelInicial() {
     ...analises,
   };
 }
-const enviando = ref(false);
 
 const dataCicloAtualizacao = computed<string | null>(() => (
   dateIgnorarTimezone(dataReferencia)
@@ -479,8 +480,6 @@ const enviar = async ({ aprovar = false }) => {
     throw new Error('Erro ao tentar submeter dados');
   }
 
-  enviando.value = true;
-
   let analiseFase = 'analise_qualitativa';
   if (fase.value === 'aprovacao') {
     analiseFase = 'analise_qualitativa_aprovador';
@@ -502,8 +501,6 @@ const enviar = async ({ aprovar = false }) => {
   };
 
   await cicloAtualizacaoStore.enviarDados(dados);
-
-  enviando.value = false;
 
   $emit('enviado');
 };
