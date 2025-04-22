@@ -18,6 +18,10 @@ import {
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+defineOptions({
+  inheritAttrs: false,
+});
+
 type FieldsProps = {
   class?: string
   nome: string
@@ -190,6 +194,7 @@ onUnmounted(() => {
   >
     <form
       class="comunicados-gerais-filtro mb2 flex g2 fg999 flexwrap"
+      v-bind="$attrs"
       @submit.prevent="!isSubmitting && onSubmit()"
     >
       <div
