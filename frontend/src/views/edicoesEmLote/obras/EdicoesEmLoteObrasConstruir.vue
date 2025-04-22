@@ -57,16 +57,29 @@ const schema = object({
       propriedade: string().required('Selecione o campo'),
       valor: lazy((value, { parent }) => {
         const { propriedade } = parent;
-        if (!propriedade) {
-          return mixed().nullable();
-        }
-        const campoSchemaOriginal = schemaObras.fields[propriedade];
+        if (!propriedade) return mixed().nullable();
 
-        if (!campoSchemaOriginal) {
-          return mixed().required('Configuração inválida.');
-        }
-        return campoSchemaOriginal.required('Informe o novo valor');
+        const schemaOriginal = schemaObras.fields[propriedade];
+        if (!schemaOriginal) return mixed().required('Configuração inválida.');
+
+        const tipo = schemaOriginal.type;
+
+        if (tipo === 'array') return schemaOriginal;
+
+        return schemaOriginal.required('Informe o novo valor');
       }),
+      operacao: string()
+        .nullable()
+        .transform((curr, orig) => (orig === undefined ? 'replace' : curr))
+        .when('propriedade', (propriedade, schema) => {
+          const tipo = campoConfigPorNome(propriedade)?.tipo;
+          if (tipo === 'array') {
+            return schema.required('Selecione a operação')
+              .oneOf(['replace', 'append', 'remove']);
+          }
+          return schema.notRequired().strip();
+        }),
+      dependente: object().default({}),
     }),
   ).min(1, 'Adicione pelo menos uma edição'),
 });
@@ -98,18 +111,21 @@ function getOpcoesDisponiveis(rowIndex) {
 }
 
 function detectarTipoCampo(campoSchema, meta) {
-  if (meta.optionSource && fontesEstaticas[meta.optionSource]) {
+  if (meta?.tipo) return meta.tipo;
+
+  if (campoSchema.type === 'array') return 'autocomplete';
+
+  if (meta?.optionSource && fontesEstaticas[meta.optionSource]) {
     return 'select-estatico';
   }
 
-  if (meta.storeKey) {
+  if (meta?.storeKey) {
     return 'select-dinamico';
   }
 
   const tipoPorYupType = {
     number: 'number',
     string: 'text',
-    array: 'array',
     date: 'date',
     object: 'object',
   };
@@ -155,15 +171,25 @@ const onSubmit = handleSubmit(async (valores) => {
     tipo: route.meta.tipoDeAcoesEmLote,
     ids: edicoesEmLoteStore.idsSelecionados,
     ops: valores.edicoes.map((edicao) => {
+      const tipoCampo = campoConfigPorNome(edicao.propriedade)?.tipo;
       let { valor } = edicao;
 
-      if (campoConfigPorNome(edicao.propriedade)?.tipo === 'date') {
+      if (tipoCampo === 'date' && valor) {
         valor = String(format(new Date(valor), 'yyyy-MM-dd'));
+      } else if (tipoCampo === 'number' && valor !== null) {
+        valor = Number(valor);
+      } else if (['text', 'string'].includes(tipoCampo) && valor !== null) {
+        valor = String(valor);
       }
+
+      const operacao = tipoCampo === 'array'
+        ? edicao.operacao || 'replace'
+        : 'replace';
 
       return {
         col: edicao.propriedade,
-        set: valor,
+        tipo_operacao: operacao,
+        valor,
       };
     }),
   };
@@ -187,45 +213,25 @@ const onSubmit = handleSubmit(async (valores) => {
 async function fetchOptionsIfNeeded(rowIndex, fieldConfig) {
   const { meta } = fieldConfig;
 
-  if (!meta?.storeKey || !meta.fetchAction || (!meta.listState && !meta.getterKey)) {
-    console.warn('Configuração de metadados incompleta:', fieldConfig);
-    return;
-  }
+  if (!meta?.storeKey || !meta.fetchAction || (!meta.listState && !meta.getterKey)) return;
 
   const store = storeInstances[meta.storeKey];
-  if (!store) {
-    console.error(`Store não encontrada para a chave: ${meta.storeKey}`);
-    return;
-  }
+  if (!store) return;
 
   const dataSourceKey = meta.getterKey || meta.listState;
-  const jaTemDados = store[dataSourceKey]
-    && Array.isArray(store[dataSourceKey])
-    && store[dataSourceKey].length > 0;
+  const jaTemDados = store[dataSourceKey] && Array.isArray(store[dataSourceKey]) && store[dataSourceKey].length > 0;
 
-  if (jaTemDados) {
-    return;
-  }
+  if (jaTemDados || loadingOptions.value[`${rowIndex}-${meta.storeKey}`]) return;
 
-  const loadingKey = `${rowIndex}-${meta.storeKey}`;
-
-  if (loadingOptions.value[loadingKey]) {
-    return;
-  }
-
-  loadingOptions.value[loadingKey] = true;
+  loadingOptions.value[`${rowIndex}-${meta.storeKey}`] = true;
 
   try {
-    const fetchFunction = store[meta.fetchAction];
-    if (typeof fetchFunction !== 'function') {
-      throw new Error(`Ação '${meta.fetchAction}' não encontrada na store ${meta.storeKey}`);
+    const fetchFn = store[meta.fetchAction];
+    if (typeof fetchFn === 'function') {
+      await fetchFn();
     }
-
-    await fetchFunction();
-  } catch (error) {
-    console.error(`Erro ao buscar dados para ${meta.storeKey}:`, error);
   } finally {
-    loadingOptions.value[loadingKey] = false;
+    loadingOptions.value[`${rowIndex}-${meta.storeKey}`] = false;
   }
 }
 
@@ -235,7 +241,7 @@ function handlePropertyChange(event, idx) {
 
   if (propriedadeSelecionada) {
     const fieldConfig = obterConfiguracaoCampo(propriedadeSelecionada);
-    if (fieldConfig?.tipo === 'select-dinamico' && fieldConfig.meta?.storeKey) {
+    if (fieldConfig?.meta?.storeKey) {
       fetchOptionsIfNeeded(idx, fieldConfig);
     }
   }
@@ -302,6 +308,36 @@ function handlePropertyChange(event, idx) {
             />
           </div>
 
+          <div
+            v-if="campoConfig(idx)?.tipo === 'autocomplete'"
+            class="f1"
+          >
+            <LabelFromYup
+              :name="`edicoes[${idx}].operacao`"
+              class="tc300"
+            >
+              Operação
+            </LabelFromYup>
+            <Field
+              :name="`edicoes[${idx}].operacao`"
+              as="select"
+              class="inputtext light mb1"
+              :aria-readonly="modoRevisao"
+              @mousedown="modoRevisao && $event.preventDefault()"
+              @keydown="modoRevisao && $event.preventDefault()"
+              @focus="modoRevisao && $event.target.blur()"
+              :class="{ error: errors?.[`edicoes[${idx}].operacao`] }"
+            >
+              <option value="replace">Substituir</option>
+              <option value="append">Adicionar</option>
+              <option value="remove">Remover</option>
+            </Field>
+            <ErrorMessage
+              :name="`edicoes[${idx}].operacao`"
+              class="error-msg"
+            />
+          </div>
+
           <div class="f1">
             <template v-if="values.edicoes?.[idx]?.propriedade">
               <LabelFromYup
@@ -354,7 +390,13 @@ function handlePropertyChange(event, idx) {
           v-if="!modoRevisao"
           class="like-a__text addlink"
           type="button"
-          @click="push({ propriedade: '', valor: null })"
+          @click="push(
+            {
+              propriedade: '',
+              valor: null,
+              operacao: 'replace',
+              dependente: {}
+            })"
         >
           <svg
             width="20"

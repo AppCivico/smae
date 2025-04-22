@@ -54,6 +54,7 @@ if (props.name) {
 
   watch(control.value.participantes, (newValue) => {
     handleChange(newValue);
+    emit('update:modelValue', newValue);
   });
 }
 

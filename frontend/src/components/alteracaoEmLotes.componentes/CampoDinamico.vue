@@ -1,8 +1,9 @@
 <script setup>
-import SmaeDateInput from '@/components/camposDeFormulario/SmaeDateInput.vue';
+import { computed, onMounted, watch } from 'vue';
+import { Field, ErrorMessage } from 'vee-validate';
 import SmaeNumberInput from '@/components/camposDeFormulario/SmaeNumberInput.vue';
-import { ErrorMessage, Field } from 'vee-validate';
-import { onMounted, watch } from 'vue';
+import SmaeDateInput from '@/components/camposDeFormulario/SmaeDateInput.vue';
+import AutocompleteField from '@/components/AutocompleteField2.vue';
 
 const props = defineProps({
   idx: Number,
@@ -20,34 +21,6 @@ const emit = defineEmits(['update:modelValue']);
 function updateValue(value) {
   emit('update:modelValue', value);
 }
-
-async function fetchOptionsIfNeeded() {
-  const meta = props.config?.meta;
-  if (
-    props.config?.tipo !== 'select-dinamico'
-    || !meta?.storeKey
-    || !meta?.fetchAction
-    || (!meta.listState && !meta.getterKey)
-  ) return;
-
-  const store = props.storeInstances[meta.storeKey];
-  if (!store || typeof store[meta.fetchAction] !== 'function') return;
-
-  const dataKey = meta.getterKey || meta.listState;
-  if (Array.isArray(store[dataKey]) && store[dataKey].length > 0) return;
-
-  await store[meta.fetchAction]();
-}
-
-watch(() => props.config?.tipo, async (tipo) => {
-  if (tipo === 'select-dinamico') await fetchOptionsIfNeeded();
-});
-
-onMounted(() => {
-  if (props.config?.tipo === 'select-dinamico') {
-    fetchOptionsIfNeeded();
-  }
-});
 
 function getOptionsForField(config) {
   const meta = config?.meta;
@@ -74,11 +47,27 @@ function getOptionsForField(config) {
 
   return [];
 }
+
+const getGrupoParaAutocomplete = (config) => {
+  const meta = config?.meta;
+  if (!meta) return [];
+
+  if (meta.dependeDe) {
+    const valorPai = props.modelValue?.__dependeDe || null;
+    return Array.isArray(valorPai) ? valorPai : [];
+  }
+
+  if (meta.storeKey) {
+    const store = props.storeInstances[meta.storeKey];
+    const lista = meta.getterKey ? store[meta.getterKey] : store[meta.listState];
+    return Array.isArray(lista) ? lista : [];
+  }
+
+  return [];
+};
 </script>
 
 <template>
-  <pre v-ScrollLockDebug>config:{{ config }}</pre>
-
   <SmaeNumberInput
     v-if="config?.tipo === 'number'"
     :name="`edicoes[${idx}].valor`"
@@ -110,6 +99,19 @@ function getOptionsForField(config) {
     @update:modelValue="updateValue"
   />
 
+  <AutocompleteField
+    v-if="config?.tipo === 'autocomplete'"
+    :name="`edicoes[${idx}].valor`"
+    :model-value="modelValue"
+    :grupo="getGrupoParaAutocomplete(config)"
+    :controlador="{ busca: '', participantes: modelValue || [] }"
+    :aria-busy="loadingOptions?.[`${idx}-${config?.meta?.storeKey}`]"
+    :aria-readonly="readonly"
+    :readonly="readonly"
+    :label="config.meta.optionLabel || 'value'"
+    @update:modelValue="updateValue"
+  />
+
   <Field
     v-if="config?.tipo === 'select-estatico'"
     :name="`edicoes[${idx}].valor`"
@@ -122,12 +124,7 @@ function getOptionsForField(config) {
     @focus="readonly && $event.target.blur()"
     @update:modelValue="updateValue"
   >
-    <option
-      value=""
-      disabled
-    >
-      Selecione...
-    </option>
+    <option value="" disabled>Selecione...</option>
     <option
       v-for="opcao in getOptionsForField(config)"
       :key="opcao.value"
@@ -156,12 +153,7 @@ function getOptionsForField(config) {
       @focus="readonly && $event.target.blur()"
       @update:modelValue="updateValue"
     >
-      <option
-        value=""
-        disabled
-      >
-        Selecione...
-      </option>
+      <option value="" disabled>Selecione...</option>
       <option
         v-for="opcao in getOptionsForField(config)"
         :key="opcao.value"

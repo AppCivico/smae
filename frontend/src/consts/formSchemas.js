@@ -1454,7 +1454,16 @@ export const obras = object({
     .nullable(),
   portfolios_compartilhados: array()
     .label('Compartilhar com portfólios')
-    .nullable(),
+    .nullable()
+    .meta({
+      permite_edicao_em_massa: true,
+      tipoComponente: 'autocomplete',
+      storeKey: 'portfolios_obra',
+      fetchAction: 'buscarTudo',
+      listState: 'lista',
+      optionValue: 'id',
+      optionLabel: 'titulo',
+    }),
   portfolio_id: number()
     .label('Nome do portfólio')
     .min(1, 'Portfólio inválido')
@@ -1521,7 +1530,16 @@ export const obras = object({
       number()
         .min(1),
     )
-    .nullable(),
+    .nullable()
+    .meta({
+      permite_edicao_em_massa: true,
+      dependeDe: {
+        campo: 'orgao_gestor_id',
+        storeKey: 'órgãos',
+        listState: 'organs',
+        optionFilterKey: 'id',
+      },
+    }),
   secretario_colaborador: string()
     .label('Secretário colaborador da obra')
     .max(250)
