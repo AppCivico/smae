@@ -2066,32 +2066,23 @@ export class ProjetoService {
             status_permitidos: [],
         };
 
+        //  Trata Usuário Não Autenticado, como relatórios, tudo readonly
+        if (!user) return permissoes;
+
+        // Calcula Permissões Principais
+        // Esta função determina se o usuário tem acesso de escrita GERAL para a fase ATUAL
+        // Também define permissoes.sou_responsavel internamente
+        const pessoaPodeEscreverGeral = this.calcPessoaPodeEscrever(user, false, projeto, permissoes);
+
         // --- Trata Estado Arquivado Primeiro ---
         // Independentemente do usuário ou tipo, o estado arquivado dita ações básicas
         if (projeto.arquivado == true) {
-            // Verifica se o usuário tem permissão para restaurar (assumindo Admin/Escritório)
-            if (
-                user?.hasSomeRoles([
-                    'Projeto.administrador',
-                    'Projeto.administrador_no_orgao',
-                    'ProjetoMDO.administrador',
-                    'ProjetoMDO.administrador_no_orgao',
-                ])
-            ) {
-                // Ajuste a verificação de função se necessário
-                permissoes.acao_restaurar = true;
-            }
-            // Nenhuma outra ação ou edição permitida quando arquivado
+            permissoes.acao_restaurar = pessoaPodeEscreverGeral;
+
             return permissoes; // Retorna cedo, tudo o mais é somente leitura
         } else {
             // Verifica se o usuário tem permissão para arquivar (assumindo Admin/Escritório)
             if (
-                user?.hasSomeRoles([
-                    'Projeto.administrador',
-                    'Projeto.administrador_no_orgao',
-                    'ProjetoMDO.administrador',
-                    'ProjetoMDO.administrador_no_orgao',
-                ]) &&
                 (
                     [
                         'Fechado',
@@ -2103,20 +2094,9 @@ export class ProjetoService {
                 ).includes(projeto.status)
             ) {
                 // Ajuste a verificação de função se necessário
-                permissoes.acao_arquivar = true;
+                permissoes.acao_arquivar = pessoaPodeEscreverGeral;
             }
         }
-
-        // --- Trata Usuário Não Autenticado ---
-        if (!user) {
-            // Usuários não autenticados vêem estado somente leitura (já é o padrão)
-            return permissoes;
-        }
-
-        // --- Calcula Permissões Principais ---
-        // Esta função determina se o usuário tem acesso de escrita GERAL para a fase ATUAL
-        // Também define permissoes.sou_responsavel internamente
-        const pessoaPodeEscreverGeral = this.calcPessoaPodeEscrever(user, false, projeto, permissoes);
 
         // --- Aplica Lógica Específica por Tipo (PP vs MDO) ---
         if (projeto.tipo == 'PP') {
