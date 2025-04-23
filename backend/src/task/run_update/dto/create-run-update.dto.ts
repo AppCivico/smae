@@ -97,9 +97,9 @@ const tipoToDtoMap: Record<TipoAtualizacaoEmLote, any> = {
 };
 
 export enum TipoOperacao {
-    Set,
-    Add,
-    Remove,
+    Set = 'Set',
+    Add = 'Add',
+    Remove = 'Remove',
 }
 
 export class UpdateOperacaoDto {
