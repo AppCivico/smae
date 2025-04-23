@@ -7,8 +7,8 @@ import { ProjetoService } from 'src/pp/projeto/projeto.service';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { UpdateProjetoDto } from 'src/pp/projeto/dto/update-projeto.dto';
-import { plainToInstance } from 'class-transformer';
 import { ReadOnlyBooleanType } from 'src/common/TypeReadOnly';
+import { PessoaService } from 'src/pessoa/pessoa.service';
 
 export interface UpdateService {
     update(
@@ -37,28 +37,36 @@ export class RunUpdateTaskService implements TaskableService {
 
     constructor(
         private readonly prisma: PrismaService,
-        @Inject(forwardRef(() => ProjetoService)) private readonly projetoService: ProjetoService
+        @Inject(forwardRef(() => ProjetoService)) private readonly projetoService: ProjetoService,
+        @Inject(forwardRef(() => PessoaService)) private readonly pessoaService: PessoaService
     ) {}
 
     async executeJob(_params: CreateRunUpdateDto, taskId: string): Promise<any> {
         this.logger.log(`Executing bulk update task. Task ID: ${taskId}`);
 
         // Apenas atualizações em lote pendentes.
-        const batchUpdate = await this.prisma.atualizacaoEmLote.findUnique({
+        const atualizacaoEmLote = await this.prisma.atualizacaoEmLote.findUnique({
             where: { id: _params.atualizacao_em_lote_id, status: 'Pendente' },
         });
-        if (!batchUpdate) throw new Error('Batch update not found or already processed');
+        if (!atualizacaoEmLote) throw new Error('Batch update not found or already processed');
 
         await this.prisma.atualizacaoEmLote.update({
             where: { id: _params.atualizacao_em_lote_id },
             data: { status: 'Executando', iniciou_em: new Date() },
         });
 
-        const results_log: LogResultados = { falhas: [] };
+        // Iniciando sessão com contexto do usuário que criou.
+        const pessoaJwt = await this.pessoaService.reportPessoaFromJwt(
+            atualizacaoEmLote.criado_por_id,
+            atualizacaoEmLote.modulo_sistema
+        );
+
         let n_sucesso = 0;
         let n_erro = 0;
         const sucesso_ids = [];
-        const user = plainToInstance(PessoaFromJwt, _params.user);
+        const results_log: LogResultados = { falhas: [] };
+
+        // O serviço é definido de maneira dinâmica, dependendo do tipo de atualização.
         const service = this.servicoDoTipo(_params.tipo);
 
         for (const id of _params.ids) {
@@ -69,14 +77,14 @@ export class RunUpdateTaskService implements TaskableService {
 
                     // Buscando título/nome da linha para logs.
                     const paramsBusca = this.preparaParamsParaFindOne(_params.tipo);
-                    const registro = await service.findOne(paramsBusca.tipo, id, user, 'ReadWrite');
+                    const registro = await service.findOne(paramsBusca.tipo, id, pessoaJwt, 'ReadWrite');
 
                     for (const operacao of _params.ops) {
                         const params = this.preparaParamsParaOp(_params.tipo, operacao);
 
                         try {
                             // AVISO: SEMPRE GARANTIR QUE O MÉTODO UPDATE RECEBE TX DO PRISMA.
-                            await service.update(params.tipo, id, params.dto, user, prismaTxn);
+                            await service.update(params.tipo, id, params.dto, pessoaJwt, prismaTxn);
                         } catch (error) {
                             // TODO: implementar ordem de prioridade para cada tipo de row.
                             const nome: string =

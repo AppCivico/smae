@@ -99,7 +99,6 @@ export class AtualizacaoEmLoteService {
                             tipo: tipoAtualizacao,
                             ids: dto.ids,
                             ops: dto.ops,
-                            user: user,
                         },
                     },
                     user,

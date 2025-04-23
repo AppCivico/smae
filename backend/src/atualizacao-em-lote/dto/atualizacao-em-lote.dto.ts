@@ -101,4 +101,4 @@ export class FilterAtualizacaoEmLoteDto {
     ipp?: number;
 }
 
-export class CreateAtualizacaoEmLoteDto extends OmitType(CreateRunUpdateDto, ['atualizacao_em_lote_id', 'user']) {}
+export class CreateAtualizacaoEmLoteDto extends OmitType(CreateRunUpdateDto, ['atualizacao_em_lote_id']) {}

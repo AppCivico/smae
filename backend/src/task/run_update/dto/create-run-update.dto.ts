@@ -18,7 +18,6 @@ import { Transform, Type, plainToInstance } from 'class-transformer';
 import { UpdateProjetoDto } from 'src/pp/projeto/dto/update-projeto.dto';
 import { validate } from 'class-validator';
 import { TipoAtualizacaoEmLote } from '@prisma/client';
-import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 
 @ValidatorConstraint({ name: 'VerificaOpsParaTipo', async: true })
 export class VerificaOpsParaTipoConstraint implements ValidatorConstraintInterface {
@@ -142,6 +141,4 @@ export class CreateRunUpdateDto {
 
     @IsNumber()
     atualizacao_em_lote_id: number;
-
-    user: PessoaFromJwt;
 }
