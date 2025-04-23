@@ -598,11 +598,6 @@ export class ReportsService {
 
             const contexto = new ReportContext(this.prisma, relatorio.id, relatorio.sistema);
 
-            await this.prisma.relatorio.update({
-                where: { id: relatorio_id },
-                data: { progresso: 0 },
-            });
-
             const pessoaJwt = relatorio.criado_por
                 ? await this.pessoaService.reportPessoaFromJwt(relatorio.criado_por, relatorio.sistema)
                 : null;

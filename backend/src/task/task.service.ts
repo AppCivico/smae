@@ -56,6 +56,14 @@ export class TaskRetryService {
     static isRetryableError(error: Error, retryConfig: RetryConfigDto): boolean {
         const errorMessage = error.message.toLowerCase();
 
+        if (
+            errorMessage.includes('timeout') ||
+            errorMessage.includes('expirou') ||
+            errorMessage.includes('processo expirou')
+        ) {
+            return true;
+        }
+
         // Check against list of non-retryable errors
         for (const nonRetryableError of retryConfig.nonRetryableErrors) {
             if (errorMessage.includes(nonRetryableError.toLowerCase())) {
@@ -73,15 +81,8 @@ export class TaskRetryService {
             return false;
         }
 
-        // Consider network and transient errors as retryable
-        return (
-            errorMessage.includes('timeout') ||
-            errorMessage.includes('connection') ||
-            errorMessage.includes('network') ||
-            errorMessage.includes('temporarily unavailable') ||
-            errorMessage.includes('deadlock') ||
-            errorMessage.includes('too many connections')
-        );
+        // todos os outros tenta de novo
+        return true;
     }
 }
 
@@ -484,32 +485,51 @@ export class TaskService {
         this.logger.debug(`Running HandleActiveJobs`);
         const now = new Date();
         process.env.INTERNAL_DISABLE_QUERY_LOG = '1';
-        await this.prisma.$transaction([
-            this.prisma.task_queue.updateMany({
-                where: {
-                    status: 'running',
-                    id: { in: Array.from(this.running_jobs.values()) },
-                    trabalhou_em: {
-                        lte: DateTime.now().minus({ minute: 1 }).toJSDate(),
-                    },
+
+        // Atualiza trabalhou_em pra quem está rodando
+        // da pra mover isso pra dentro do run-task.ts já que lá tem o app com o prisma todo,
+        // dai a proxima linha faria mais sentindo, mas ao mesmo tempo o gerenciador do daemon aqui deveria ser
+        // capaz de saber todos os estados do processo filho
+        await this.prisma.task_queue.updateMany({
+            where: {
+                status: 'running',
+                id: { in: Array.from(this.running_jobs.values()) },
+                trabalhou_em: {
+                    lte: DateTime.now().minus({ minute: 1 }).toJSDate(),
                 },
-                data: {
-                    trabalhou_em: now,
+            },
+            data: { trabalhou_em: now },
+        });
+
+        const timedOutTasks = await this.prisma.task_queue.findMany({
+            where: {
+                status: 'running',
+                trabalhou_em: {
+                    lte: DateTime.now().minus({ minute: 5 }).toJSDate(),
                 },
-            }),
-            this.prisma.task_queue.updateMany({
-                where: {
-                    status: 'running',
-                    trabalhou_em: {
-                        lte: DateTime.now().minus({ minute: 5 }).toJSDate(),
-                    },
-                },
-                data: {
-                    status: 'errored',
-                    erro_mensagem: 'Processo expirou (timeout)',
-                },
-            }),
-        ]);
+            },
+            select: {
+                id: true,
+            },
+        });
+
+        for (const task of timedOutTasks) {
+            await this.retryTimedOutTask(task.id, 'Processo expirou (timeout)');
+
+            // Remove não faz sentindo, mas vai que a task tava rodando e não atualizou o status
+            const taskInfo = await this.prisma.task_queue.findUnique({
+                where: { id: task.id },
+                select: { pessoa_id: true, type: true },
+            });
+
+            if (taskInfo) {
+                if (taskInfo.pessoa_id) this.current_jobs_pessoa_ids.delete(taskInfo.pessoa_id);
+                if (taskInfo.type) this.current_jobs_types.delete(taskInfo.type);
+                this.running_jobs.delete(task.id);
+                this.current_concurrent_jobs--;
+            }
+        }
+
         process.env.INTERNAL_DISABLE_QUERY_LOG = '';
     }
 
@@ -712,5 +732,48 @@ export class TaskService {
 
         if (!service) throw 'missing service @ serviceFromTaskType';
         return service;
+    }
+
+    async retryTimedOutTask(taskId: number, retryMessage: string) {
+        const task = await this.prisma.task_queue.findUnique({
+            where: { id: taskId },
+        });
+
+        if (!task) return;
+
+        const parsedParams = ParseParams(task.type, task.params);
+        const retryConfig = parsedParams.retryConfig || new RetryConfigDto();
+        const retryCount = (task.n_retry || 0) + 1;
+
+        // Check if we've reached max retries
+        if (retryCount >= retryConfig.maxRetries) {
+            await this.prisma.task_queue.update({
+                where: { id: taskId },
+                data: {
+                    status: 'errored',
+                    erro_mensagem: `Limite de tentativas excedido (${retryConfig.maxRetries}): ${retryMessage}`,
+                },
+            });
+            return;
+        }
+
+        // Calculate next retry time
+        const nextRetryTime = TaskRetryService.calculateNextRetryTime(retryCount, retryConfig);
+
+        // Update task for retry
+        await this.prisma.task_queue.update({
+            where: { id: taskId },
+            data: {
+                status: 'pending',
+                n_retry: retryCount,
+                esperar_ate: nextRetryTime,
+                erro_mensagem: `Retry ${retryCount}/${retryConfig.maxRetries}: ${retryMessage}`,
+                erro_em: new Date(),
+            },
+        });
+
+        this.logger.log(
+            `Task ${taskId} timed out, scheduled retry ${retryCount}/${retryConfig.maxRetries} for ${nextRetryTime.toISOString()}`
+        );
     }
 }
