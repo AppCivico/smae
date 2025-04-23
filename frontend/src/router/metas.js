@@ -107,10 +107,20 @@ export default {
   children: [
     { path: '', component: ListMetas, name: 'pdm.metas' },
     {
-      path: 'novo', component: AddEditMetas, props: { type: 'novo', parentPage: 'metas' }, meta: { rotaDeEscape: 'pdm.metas' },
+      path: 'novo',
+      component: AddEditMetas,
+      props: { type: 'novo', parentPage: 'metas' },
+      meta: { rotaDeEscape: 'pdm.metas' },
     },
     {
-      path: 'editar/:meta_id', component: AddEditMetas, props: { type: 'editar', parentPage: 'meta' }, meta: { rotaDeEscape: 'meta' },
+      path: 'editar/:meta_id',
+      name: 'pdm.editarMeta',
+      component: AddEditMetas,
+      props: {
+        type: 'editar',
+        parentPage: 'meta',
+      },
+      meta: { rotaDeEscape: 'meta' },
     },
     { path: 'macrotemas/novo', component: ListMetas, props: { type: 'novo', group: 'macrotemas', parentPage: 'metas' } },
     { path: 'subtemas/novo', component: ListMetas, props: { type: 'novo', group: 'subtemas', parentPage: 'metas' } },
@@ -125,7 +135,7 @@ export default {
     { path: 'tags/:id', component: ListMetasGroup, props: { type: 'list', group: 'tags', parentPage: 'metas' } },
     {
       path: ':meta_id',
-      name: 'meta',
+      name: 'pdm.meta',
       component: SingleMeta,
       meta: {
         títuloParaMenu: 'Resumo',
@@ -345,6 +355,7 @@ export default {
     {
       path: ':meta_id/cronograma/novo',
       component: AddEditCronograma,
+      name: 'pdm.faseCronograma.novo',
       meta: {
         rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
       },
