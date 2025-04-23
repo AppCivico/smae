@@ -311,124 +311,124 @@ export class PPObrasService implements ReportableService {
         out.push(
             await this.streamQueryToCSV(
                 `SELECT
-                     projeto.id,
-                     projeto.portfolio_id,
-                     portfolio.titulo as portfolio_titulo,
-                     projeto.meta_id,
-                     meta.titulo as meta_nome,
-                     pdm.id as pdm_id,
-                     pdm.nome as pdm_nome,
-                     projeto.nome,
-                     projeto.codigo,
-                     projeto.objeto,
-                     projeto.objetivo,
-                     tc.previsao_inicio AS inicio_planejado,
-                     tc.previsao_termino AS termino_planejado,
-                     projeto.previsao_inicio AS previsao_inicio,
-                     projeto.previsao_termino AS previsao_termino,
-                     coalesce(tc.previsao_duracao, projeto.previsao_duracao) AS previsao_duracao,
-                     projeto.previsao_custo AS previsao_custo,
-                     tc.previsao_custo AS custo_planejado,
-                     projeto.escopo,
-                     projeto.nao_escopo,
-                     projeto.secretario_responsavel,
-                     projeto.secretario_executivo,
-                     projeto.coordenador_ue,
-                     projeto.data_aprovacao,
-                     projeto.data_revisao,
-                     projeto.versao,
-                     projeto.status,
-                     orgao_responsavel.id AS orgao_responsavel_id,
-                     orgao_responsavel.sigla AS orgao_responsavel_sigla,
-                     orgao_responsavel.descricao AS orgao_responsavel_descricao,
-                     resp.id AS responsavel_id,
-                     resp.nome_exibicao AS responsavel_nome_exibicao,
-                     orgao_gestor.id as orgao_gestor_id,
-                     orgao_gestor.sigla as orgao_gestor_sigla,
-                     orgao_gestor.descricao as orgao_gestor_descricao,
-                     (
-                         SELECT
-                             string_agg(nome_exibicao, '|')
-                         FROM pessoa
-                         WHERE id = ANY(projeto.responsaveis_no_orgao_gestor)
-                     ) as assessores,
-                     (
-                         SELECT
-                             string_agg(nome_exibicao, '|')
-                         FROM pessoa
-                         WHERE id = ANY(projeto.colaboradores_no_orgao)
-                     ) as pontos_focais_colaboradores,
-                     r.valor_percentual AS fonte_recurso_valor_pct,
-                     r.valor_nominal AS fonte_recurso_valor_nominal,
-                     o.id AS orgao_id,
-                     o.sigla AS orgao_sigla,
-                     o.descricao AS orgao_descricao,
-                     orgao_executor.id AS orgao_executor_id,
-                     orgao_executor.sigla AS orgao_executor_sigla,
-                     orgao_executor.descricao AS orgao_executor_descricao,
-                     orgao_origem.id AS orgao_origem_id,
-                     orgao_origem.sigla AS orgao_origem_sigla,
-                     orgao_origem.descricao AS orgao_origem_descricao,
-                     orgao_colaborador.id AS orgao_colaborador_id,
-                     orgao_colaborador.sigla AS orgao_colaborador_sigla,
-                     orgao_colaborador.descricao AS orgao_colaborador_descricao,
-                     pe.descricao AS projeto_etapa,
-                     grupo_tematico.id AS grupo_tematico_id,
-                     grupo_tematico.nome AS grupo_tematico_nome,
-                     tipo_intervencao.id AS tipo_intervencao_id,
-                     tipo_intervencao.nome AS tipo_intervencao_nome,
-                     tipo_intervencao.conceito AS tipo_intervencao_conceito,
-                     equipamento.id AS equipamento_id,
-                     equipamento.nome AS equipamento_nome,
-                     mdo_detalhamento AS detalhamento,
-                     origem_tipo,
-                     origem_outro as descricao,
-                     secretario_colaborador,
-                     mdo_previsao_inauguracao as data_inauguracao_planejada,
-                     (
-                         SELECT
-                             string_agg(regiao.descricao, '|')
-                         FROM projeto_regiao
-                         JOIN regiao ON regiao.id = projeto_regiao.regiao_id
-                         WHERE projeto_regiao.projeto_id = projeto.id
-                         AND projeto_regiao.removido_em IS NULL
-                         AND regiao.removido_em IS NULL
-                     ) AS subprefeituras,
-                     projeto.mdo_programa_habitacional as programa_habitacional,
-                     projeto.mdo_n_unidades_habitacionais AS n_unidades_habitacionais,
-                     projeto.mdo_n_familias_beneficiadas AS n_familias_beneficiadas,
-                     projeto.mdo_n_unidades_atendidas AS n_unidades_atendidas,
-                     empreendimento.id AS empreendimento_id,
-                     empreendimento.identificador AS empreendimento_identificador,
-                     projeto.mdo_observacoes
-                 FROM projeto
-                 LEFT JOIN meta ON meta.id = projeto.meta_id AND meta.removido_em IS NULL
-                 LEFT JOIN pdm ON pdm.id = meta.pdm_id
-                 LEFT JOIN grupo_tematico ON grupo_tematico.id = projeto.grupo_tematico_id AND grupo_tematico.removido_em IS NULL
-                 LEFT JOIN tipo_intervencao ON tipo_intervencao.id = projeto.tipo_intervencao_id AND tipo_intervencao.removido_em IS NULL
-                 LEFT JOIN equipamento ON equipamento.id = projeto.equipamento_id AND equipamento.removido_em IS NULL
-                 LEFT JOIN tarefa_cronograma tc ON tc.projeto_id = projeto.id AND tc.removido_em IS NULL
-                 LEFT JOIN LATERAL (
-                         SELECT projeto.portfolio_id AS portfolio_id
-                         UNION ALL
-                         SELECT ppc.portfolio_id
-                         FROM portfolio_projeto_compartilhado ppc
-                         WHERE ppc.projeto_id = projeto.id AND ppc.removido_em IS NULL
-                     ) AS port_array ON true
-                 LEFT JOIN portfolio ON portfolio.id = port_array.portfolio_id
-                 LEFT JOIN projeto_fonte_recurso r ON r.projeto_id = projeto.id
-                 LEFT JOIN projeto_orgao_participante po ON po.projeto_id = projeto.id
-                 LEFT JOIN orgao o ON po.orgao_id = o.id
-                 LEFT JOIN orgao orgao_responsavel ON orgao_responsavel.id = projeto.orgao_responsavel_id
-                 LEFT JOIN orgao orgao_gestor ON orgao_gestor.id = projeto.orgao_gestor_id
-                 LEFT JOIN orgao orgao_executor ON orgao_executor.id = projeto.orgao_executor_id
-                 LEFT JOIN orgao orgao_origem ON orgao_origem.id = projeto.orgao_origem_id
-                 LEFT JOIN orgao orgao_colaborador On orgao_colaborador.id = projeto.orgao_colaborador_id
-                 LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
-                 LEFT JOIN projeto_etapa pe ON pe.id = projeto.projeto_etapa_id
-                 LEFT JOIN empreendimento ON empreendimento.id = projeto.empreendimento_id
-                 ${whereCond.whereString.replace('projeto.portfolio_id', 'port_array.portfolio_id')}
-                 `,
+                    projeto.id,
+                    projeto.portfolio_id,
+                    portfolio.titulo as portfolio_titulo,
+                    projeto.meta_id,
+                    meta.titulo as meta_nome,
+                    pdm.id as pdm_id,
+                    pdm.nome as pdm_nome,
+                    projeto.nome,
+                    projeto.codigo,
+                    projeto.objeto,
+                    projeto.objetivo,
+                    tc.previsao_inicio AS inicio_planejado,
+                    tc.previsao_termino AS termino_planejado,
+                    projeto.previsao_inicio AS previsao_inicio,
+                    projeto.previsao_termino AS previsao_termino,
+                    coalesce(tc.previsao_duracao, projeto.previsao_duracao) AS previsao_duracao,
+                    projeto.previsao_custo AS previsao_custo,
+                    tc.previsao_custo AS custo_planejado,
+                    projeto.escopo,
+                    projeto.nao_escopo,
+                    projeto.secretario_responsavel,
+                    projeto.secretario_executivo,
+                    projeto.coordenador_ue,
+                    projeto.data_aprovacao,
+                    projeto.data_revisao,
+                    projeto.versao,
+                    projeto.status,
+                    orgao_responsavel.id AS orgao_responsavel_id,
+                    orgao_responsavel.sigla AS orgao_responsavel_sigla,
+                    orgao_responsavel.descricao AS orgao_responsavel_descricao,
+                    resp.id AS responsavel_id,
+                    resp.nome_exibicao AS responsavel_nome_exibicao,
+                    orgao_gestor.id as orgao_gestor_id,
+                    orgao_gestor.sigla as orgao_gestor_sigla,
+                    orgao_gestor.descricao as orgao_gestor_descricao,
+                    (
+                        SELECT
+                            string_agg(nome_exibicao, '|')
+                        FROM pessoa
+                        WHERE id = ANY(projeto.responsaveis_no_orgao_gestor)
+                    ) as assessores,
+                    (
+                        SELECT
+                            string_agg(nome_exibicao, '|')
+                        FROM pessoa
+                        WHERE id = ANY(projeto.colaboradores_no_orgao)
+                    ) as pontos_focais_colaboradores,
+                    r.valor_percentual AS fonte_recurso_valor_pct,
+                    r.valor_nominal AS fonte_recurso_valor_nominal,
+                    o.id AS orgao_id,
+                    o.sigla AS orgao_sigla,
+                    o.descricao AS orgao_descricao,
+                    orgao_executor.id AS orgao_executor_id,
+                    orgao_executor.sigla AS orgao_executor_sigla,
+                    orgao_executor.descricao AS orgao_executor_descricao,
+                    orgao_origem.id AS orgao_origem_id,
+                    orgao_origem.sigla AS orgao_origem_sigla,
+                    orgao_origem.descricao AS orgao_origem_descricao,
+                    orgao_colaborador.id AS orgao_colaborador_id,
+                    orgao_colaborador.sigla AS orgao_colaborador_sigla,
+                    orgao_colaborador.descricao AS orgao_colaborador_descricao,
+                    pe.descricao AS projeto_etapa,
+                    grupo_tematico.id AS grupo_tematico_id,
+                    grupo_tematico.nome AS grupo_tematico_nome,
+                    tipo_intervencao.id AS tipo_intervencao_id,
+                    tipo_intervencao.nome AS tipo_intervencao_nome,
+                    tipo_intervencao.conceito AS tipo_intervencao_conceito,
+                    equipamento.id AS equipamento_id,
+                    equipamento.nome AS equipamento_nome,
+                    mdo_detalhamento AS detalhamento,
+                    origem_tipo,
+                    origem_outro as descricao,
+                    secretario_colaborador,
+                    mdo_previsao_inauguracao as data_inauguracao_planejada,
+                    (
+                        SELECT
+                            string_agg(regiao.descricao, '|')
+                        FROM projeto_regiao
+                        JOIN regiao ON regiao.id = projeto_regiao.regiao_id
+                        WHERE projeto_regiao.projeto_id = projeto.id
+                        AND projeto_regiao.removido_em IS NULL
+                        AND regiao.removido_em IS NULL
+                    ) AS subprefeituras,
+                    projeto.mdo_programa_habitacional as programa_habitacional,
+                    projeto.mdo_n_unidades_habitacionais AS n_unidades_habitacionais,
+                    projeto.mdo_n_familias_beneficiadas AS n_familias_beneficiadas,
+                    projeto.mdo_n_unidades_atendidas AS n_unidades_atendidas,
+                    empreendimento.id AS empreendimento_id,
+                    empreendimento.identificador AS empreendimento_identificador,
+                    projeto.mdo_observacoes
+                FROM projeto
+                LEFT JOIN meta ON meta.id = projeto.meta_id AND meta.removido_em IS NULL
+                LEFT JOIN pdm ON pdm.id = meta.pdm_id
+                LEFT JOIN grupo_tematico ON grupo_tematico.id = projeto.grupo_tematico_id AND grupo_tematico.removido_em IS NULL
+                LEFT JOIN tipo_intervencao ON tipo_intervencao.id = projeto.tipo_intervencao_id AND tipo_intervencao.removido_em IS NULL
+                LEFT JOIN equipamento ON equipamento.id = projeto.equipamento_id AND equipamento.removido_em IS NULL
+                LEFT JOIN tarefa_cronograma tc ON tc.projeto_id = projeto.id AND tc.removido_em IS NULL
+                LEFT JOIN LATERAL (
+                        SELECT projeto.portfolio_id AS portfolio_id
+                        UNION ALL
+                        SELECT ppc.portfolio_id
+                        FROM portfolio_projeto_compartilhado ppc
+                        WHERE ppc.projeto_id = projeto.id AND ppc.removido_em IS NULL
+                    ) AS port_array ON true
+                LEFT JOIN portfolio ON portfolio.id = port_array.portfolio_id
+                LEFT JOIN projeto_fonte_recurso r ON r.projeto_id = projeto.id
+                LEFT JOIN projeto_orgao_participante po ON po.projeto_id = projeto.id
+                LEFT JOIN orgao o ON po.orgao_id = o.id
+                LEFT JOIN orgao orgao_responsavel ON orgao_responsavel.id = projeto.orgao_responsavel_id
+                LEFT JOIN orgao orgao_gestor ON orgao_gestor.id = projeto.orgao_gestor_id
+                LEFT JOIN orgao orgao_executor ON orgao_executor.id = projeto.orgao_executor_id
+                LEFT JOIN orgao orgao_origem ON orgao_origem.id = projeto.orgao_origem_id
+                LEFT JOIN orgao orgao_colaborador On orgao_colaborador.id = projeto.orgao_colaborador_id
+                LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
+                LEFT JOIN projeto_etapa pe ON pe.id = projeto.projeto_etapa_id
+                LEFT JOIN empreendimento ON empreendimento.id = projeto.empreendimento_id
+                ${whereCond.whereString.replace('projeto.portfolio_id', 'port_array.portfolio_id')}
+                `,
                 whereCond.queryParams,
                 'obras.csv'
             )
