@@ -21,7 +21,7 @@
 
     <form
       class="mt1 flex column"
-      @submit.prevent="carregando && !Object.keys(errors).length && validarEEnviar({ aprovar: false })"
+      @submit.prevent="carregando && !Object.keys(errors).length && validarEEnviar()"
     >
       <hr>
 
@@ -324,13 +324,13 @@
         </table>
       </article>
 
-      <SmaeFieldsetSubmit :erros="errors">
+      <SmaeFieldsetSubmit :erros="aprovar ? errors : null">
         <button
           type="button"
           class="btn outline bgnone tcprimary"
           :disabled="bloqueado"
           :aria-busy="carregando"
-          @click.prevent="enviar({ aprovar: false })"
+          @click.prevent="aprovar = false; enviar()"
         >
           {{
             values.solicitar_complementacao ?
@@ -345,7 +345,7 @@
           :disabled="bloqueado"
           :aria-disabled="!!Object.keys(errors).length"
           :aria-busy="carregando"
-          @click.prevent="!Object.keys(errors).length && validarEEnviar({ aprovar: true })"
+          @click.prevent="!Object.keys(errors).length && validarEEnviar()"
         >
           {{ botoesLabel.salvarESubmeter }}
         </button>
@@ -433,6 +433,7 @@ const {
   initialValues: obterVariavelInicial(),
 });
 
+const aprovar = ref(false);
 const valorPadrao = ref<string>('');
 const variaveisDadosValores = ref(valorInicialVariaveis || []);
 const arquivosLocais = ref<ArquivoAdicionado[]>(emFoco.value?.uploads || []);
@@ -483,7 +484,7 @@ const valoresCalculados = computed<ValoresAcumulados>(() => {
   }, { valor_realizado: 0, valor_realizado_acumulado: 0 });
 });
 
-const enviar = async ({ aprovar = false }) => {
+const enviar = async () => {
   if (!emFoco.value) {
     throw new Error('Erro ao tentar submeter dados');
   }
@@ -500,7 +501,7 @@ const enviar = async ({ aprovar = false }) => {
     analise_qualitativa: !values.solicitar_complementacao
       ? values[analiseFase]
       : undefined,
-    aprovar,
+    aprovar: aprovar.value,
     data_referencia: dataReferencia,
     uploads: arquivosLocais.value,
     valores: values.variaveis_dados || [],
@@ -513,9 +514,11 @@ const enviar = async ({ aprovar = false }) => {
   $emit('enviado');
 };
 
-const validarEEnviar = ({ aprovar = false }) => {
+const validarEEnviar = () => {
+  aprovar.value = true;
+
   handleSubmit(() => {
-    enviar({ aprovar });
+    enviar();
   })();
 };
 
