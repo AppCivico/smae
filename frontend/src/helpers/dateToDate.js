@@ -36,10 +36,12 @@ function dateToDate(d, options = {}) {
     return d;
   }
 
-  const temHoras = dd.getHours !== 0 && dd.getMinutes() !== 0;
+  const podeUsarTimeZone = !['year', 'month', 'day'].some((key) => options[key]);
+
+  const temHoras = dd.getHours() !== 0 && dd.getMinutes() !== 0;
   const dx = (dd) ? dd.toLocaleString('pt-BR', {
-    dateStyle: 'short',
-    timeStyle: temHoras ? 'short' : undefined,
+    dateStyle: podeUsarTimeZone && 'short',
+    timeStyle: podeUsarTimeZone && temHoras ? 'short' : undefined,
     timeZone,
     ...options,
   }) : '';
