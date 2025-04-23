@@ -196,10 +196,19 @@ export class PPObrasRelatorioDto {
     origens: RelObrasOrigemDto[];
     processos_sei: RelObrasSeiDto[];
     enderecos: RelObrasGeolocDto[];
+    incoerentes_mdo: RelObrasStatusIncoerenteDto[];
 }
 
 export class RelObrasGeolocDto {
     obra_id: number;
     endereco: string;
     cep: string;
+}
+
+export class RelObrasStatusIncoerenteDto {
+    nome_do_portfolio: string;
+    nome_obra_intervencao: string;
+    projeto_codigo: string;
+    projeto_status: string;
+    projeto_etapa_atual: string;
 }
