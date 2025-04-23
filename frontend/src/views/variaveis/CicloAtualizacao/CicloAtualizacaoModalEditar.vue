@@ -136,7 +136,7 @@
       <article class="upload-arquivos mt1">
         <UploadArquivos
           :arquivos="arquivosLocais"
-          label="ADICIONAR DOCUMENTOS COMPROBATÓRIOS OU COMPLEMENTARES"
+          label="Adicionar documentos comprobatórios ou complementares"
           @novo-arquivo="adicionarNovoArquivo"
           @remover-arquivo="removerArquivo"
         />
@@ -206,11 +206,11 @@
         <table class="valores-variaveis-tabela mt4">
           <thead>
             <tr>
-              <th>CÓDIGO</th>
-              <th>REFERÊNCIA</th>
-              <th>VALOR REALIZADO</th>
+              <th>Código</th>
+              <th>Referência</th>
+              <th>Valor realizado</th>
               <th v-if="emFoco?.variavel.acumulativa">
-                VALOR REALIZADO ACUMULADO
+                Valor realizado acumulado
               </th>
             </tr>
           </thead>
@@ -235,9 +235,9 @@
                 </div>
               </td>
 
-              <td class="valores-variaveis-tabela__item valores-variaveis-tabela__item--referencia">
-                <strong>{{ variavelDado.referencia }}</strong>
-              </td>
+              <th class="valores-variaveis-tabela__item valores-variaveis-tabela__item--referencia">
+                {{ variavelDado.referencia }}
+              </th>
 
               <td
                 class="valores-variaveis-tabela__item valores-variaveis-tabela__item--valor_realizado"
@@ -284,10 +284,10 @@
               >
                 <Field
                   :name="`variaveis_dados[${variavelDadoIndex}].valor_realizado_acumulado`"
-                  :class="[
-                    'inputtext light f1',
-                    {'error': temErro(`variaveis_dados[${variavelDadoIndex}].valor_realizado_acumulado`)}
-                  ]"
+                  class="inputtext light f1"
+                  :class="{
+                    error: temErro(`variaveis_dados[${variavelDadoIndex}].valor_realizado_acumulado`)
+                  }"
                   type="number"
                   disabled
                 />
@@ -298,21 +298,29 @@
                 type="hidden"
               />
             </tr>
-
+          </tbody>
+          <tfoot
+            v-if="!temCategorica"
+          >
             <tr
-              v-if="!temCategorica"
               class="valores-variaveis-tabela__linha-calculada"
             >
               <td />
               <td />
-              <td>{{ valoresCalculados.valor_realizado }}</td>
+              <td>
+                <output>
+                  {{ valoresCalculados.valor_realizado }}
+                </output>
+              </td>
               <td
                 v-if="emFoco?.variavel.acumulativa"
               >
-                {{ valoresCalculados.valor_realizado_acumulado }}
+                <output>
+                  {{ valoresCalculados.valor_realizado_acumulado }}
+                </output>
               </td>
             </tr>
-          </tbody>
+          </tfoot>
         </table>
       </article>
 
