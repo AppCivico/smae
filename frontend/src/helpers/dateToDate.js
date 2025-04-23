@@ -36,15 +36,26 @@ function dateToDate(d, options = {}) {
     return d;
   }
 
-  const podeUsarTimeZone = !['year', 'month', 'day'].some((key) => options[key]);
-
   const temHoras = dd.getHours() !== 0 && dd.getMinutes() !== 0;
-  const dx = (dd) ? dd.toLocaleString('pt-BR', {
-    dateStyle: podeUsarTimeZone && 'short',
-    timeStyle: podeUsarTimeZone && temHoras ? 'short' : undefined,
+  const podeUsarDateStyle = !['year', 'month', 'day'].some((key) => options[key]);
+
+  if (
+    !podeUsarDateStyle
+    && (options.dateStyle || options.timeStyle)
+  ) {
+    console.warn('Existem configurações conflitatentes com configuração de data.', options);
+    delete options.dateStyle;
+    delete options.timeStyle;
+  }
+
+  const configuracaoDeHorario = {
+    dateStyle: podeUsarDateStyle ? 'short' : undefined,
+    timeStyle: podeUsarDateStyle && temHoras ? 'short' : undefined,
     timeZone,
     ...options,
-  }) : '';
+  };
+
+  const dx = (dd) ? dd.toLocaleString('pt-BR', configuracaoDeHorario) : '';
 
   return dx || '';
 }

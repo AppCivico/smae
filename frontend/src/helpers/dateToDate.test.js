@@ -28,6 +28,11 @@ describe('dateToDate Utilities', () => {
 
       expect(dateToDate('2023-11-29T23:23:43.674Z')).toBe('29/11/2023, 20:23');
     });
+
+    it('Should NOT be considered conflitants options', () => {
+      expect(dateToDate('2023-11-29', { year: 'numeric', dateStyle: 'short' })).toBe('2023');
+      expect(dateToDate('2023-11-29', { dateStyle: 'short' })).toBe('29/11/2023');
+    });
   });
 
   describe('dateToYear', () => {
