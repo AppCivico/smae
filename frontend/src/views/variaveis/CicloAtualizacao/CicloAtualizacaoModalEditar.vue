@@ -283,6 +283,7 @@
                 class="valores-variaveis-tabela__item valores-variaveis-tabela__item--valor_realizado_acumulado"
               >
                 <Field
+                  v-model="variaveisDadosValores[variavelDadoIndex].valor_realizado_acumulado"
                   :name="`variaveis_dados[${variavelDadoIndex}].valor_realizado_acumulado`"
                   class="inputtext light f1"
                   :class="{
