@@ -21,6 +21,16 @@ export interface UpdateService {
     findOne(tipo: any, id: number, user: PessoaFromJwt, readonly: ReadOnlyBooleanType): Promise<any>;
 }
 
+export interface LogResultados {
+    falhas: {
+        id: number;
+        nome: string;
+        tipo: string;
+        col: string;
+        erro: string;
+    }[];
+}
+
 @Injectable()
 export class RunUpdateTaskService implements TaskableService {
     private readonly logger = new Logger(RunUpdateTaskService.name);
@@ -33,19 +43,18 @@ export class RunUpdateTaskService implements TaskableService {
     async executeJob(_params: CreateRunUpdateDto, taskId: string): Promise<any> {
         this.logger.log(`Executing bulk update task. Task ID: ${taskId}`);
 
-        // Verify batch update exists and is pending
+        // Apenas atualizações em lote pendentes.
         const batchUpdate = await this.prisma.atualizacaoEmLote.findUnique({
             where: { id: _params.atualizacao_em_lote_id, status: 'Pendente' },
         });
         if (!batchUpdate) throw new Error('Batch update not found or already processed');
 
-        // Update status to 'Executing'
         await this.prisma.atualizacaoEmLote.update({
             where: { id: _params.atualizacao_em_lote_id },
             data: { status: 'Executando', iniciou_em: new Date() },
         });
 
-        const results_log = { falhas: [] };
+        const results_log: LogResultados = { falhas: [] };
         let n_sucesso = 0;
         let n_erro = 0;
         const sucesso_ids = [];
@@ -54,53 +63,62 @@ export class RunUpdateTaskService implements TaskableService {
 
         for (const id of _params.ids) {
             try {
-                // Process each ID in its own transaction
+                // Cada row possui sua própia tx
                 await this.prisma.$transaction(async (prismaTxn) => {
-                    let operationFailed = false;
+                    let operacaoFalhou = false;
+
+                    // Buscando título/nome da linha para logs.
+                    const paramsBusca = this.preparaParamsParaFindOne(_params.tipo);
+                    const registro = await service.findOne(paramsBusca.tipo, id, user, 'ReadWrite');
 
                     for (const operacao of _params.ops) {
                         const params = this.preparaParamsParaOp(_params.tipo, operacao);
 
                         try {
-                            // Pass transactional client to service
+                            // AVISO: SEMPRE GARANTIR QUE O MÉTODO UPDATE RECEBE TX DO PRISMA.
                             await service.update(params.tipo, id, params.dto, user, prismaTxn);
                         } catch (error) {
-                            // Buscando título/nome da linha para logs.
-                            const registro = await service.findOne(params.tipo, id, user, 'ReadWrite');
                             // TODO: implementar ordem de prioridade para cada tipo de row.
-                            const nome =
-                                registro.nome || registro.titulo || registro.descricao || 'Nome não identificado';
+                            const nome: string =
+                                (registro?.nome as string) ||
+                                (registro?.titulo as string) ||
+                                (registro?.descricao as string) ||
+                                'Nome não identificado';
 
-                            operationFailed = true;
-                            this.handleOperationError(error, id, nome, operacao, results_log);
-                            break; // Stop processing other operations for this ID
+                            operacaoFalhou = true;
+                            this.adicionarLogErro(error, id, nome, operacao, results_log);
+                            break;
                         }
                     }
 
-                    if (operationFailed) {
+                    if (operacaoFalhou) {
                         throw new Error(`Rollback transaction for ID ${id}`);
                     }
                 });
 
-                // Only count as success if transaction committed
                 n_sucesso++;
                 sucesso_ids.push(id);
             } catch (error) {
                 n_erro++;
                 if (n_erro >= 50) {
-                    await this.finalizeBatchUpdate(_params, results_log, n_sucesso, n_erro, sucesso_ids);
+                    await this.finalizarAtualizacaoEmLote(_params, results_log, n_sucesso, n_erro, sucesso_ids);
                     throw new Error('Error limit reached (50 errors)');
                 }
             }
         }
 
-        // Finalize batch update status
-        await this.finalizeBatchUpdate(_params, results_log, n_sucesso, n_erro, sucesso_ids);
+        await this.finalizarAtualizacaoEmLote(_params, results_log, n_sucesso, n_erro, sucesso_ids);
 
         return { success: true };
     }
 
-    private handleOperationError(error: any, id: number, nome: string, operacao: UpdateOperacaoDto, results_log: any) {
+    private adicionarLogErro(
+        error: any,
+        id: number,
+        nome: string,
+        operacao: UpdateOperacaoDto,
+        results_log: LogResultados
+    ) {
         if (error instanceof HttpException) {
             const errorResponse = error.getResponse().toString();
             results_log.falhas.push({
@@ -121,9 +139,9 @@ export class RunUpdateTaskService implements TaskableService {
         }
     }
 
-    private async finalizeBatchUpdate(
+    private async finalizarAtualizacaoEmLote(
         params: CreateRunUpdateDto,
-        results_log: any,
+        results_log: LogResultados,
         n_sucesso: number,
         n_erro: number,
         sucesso_ids: number[]
@@ -134,7 +152,7 @@ export class RunUpdateTaskService implements TaskableService {
             where: { id: params.atualizacao_em_lote_id },
             data: {
                 status,
-                results_log,
+                results_log: JSON.stringify(results_log),
                 n_sucesso,
                 n_erro,
                 n_ignorado: params.ids.length - n_sucesso - n_erro,
@@ -166,7 +184,7 @@ export class RunUpdateTaskService implements TaskableService {
     private preparaParamsParaOp(tipoAtualizacao: TipoAtualizacaoEmLote, op: UpdateOperacaoDto) {
         const params: any = {};
 
-        let value = op.set;
+        let value = op.valor;
 
         // Caso o valor se pareça com uma data (YYYY-MM-DD), convertemos para Date.
         if (typeof value === 'string' && value.match(/^\d{4}-\d{2}-\d{2}$/)) {
@@ -181,6 +199,22 @@ export class RunUpdateTaskService implements TaskableService {
                     [op.col]: value,
                 } as UpdateProjetoDto;
                 params['dto'] = dto;
+                break;
+            }
+            default:
+                throw new Error(`Tipo de atualização não suportado: ${tipoAtualizacao}`);
+        }
+
+        return params;
+    }
+
+    private preparaParamsParaFindOne(tipoAtualizacao: TipoAtualizacaoEmLote) {
+        const params: any = {};
+
+        switch (tipoAtualizacao) {
+            case TipoAtualizacaoEmLote.ProjetoPP:
+            case TipoAtualizacaoEmLote.ProjetoMDO: {
+                params['tipo'] = tipoAtualizacao === TipoAtualizacaoEmLote.ProjetoPP ? 'PP' : ('MDO' as TipoProjeto);
                 break;
             }
             default:

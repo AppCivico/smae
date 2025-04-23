@@ -39,7 +39,7 @@ export class VerificaOpsParaTipoConstraint implements ValidatorConstraintInterfa
         for (const op of ops) {
             const dummyInstance = plainToInstance(
                 targetDtoClass,
-                { [op.col]: op.set }, // Mapeia o valor para a coluna
+                { [op.col]: op.valor }, // Mapeia o valor para a coluna
                 { enableImplicitConversion: true }
             ) as object;
 
@@ -97,12 +97,26 @@ const tipoToDtoMap: Record<TipoAtualizacaoEmLote, any> = {
     [TipoAtualizacaoEmLote.ProjetoPP]: UpdateProjetoDto,
 };
 
+export enum TipoOperacao {
+    Set,
+    Add,
+    Remove,
+}
+
 export class UpdateOperacaoDto {
     @IsString()
     col: string;
 
+    @IsEnum(TipoOperacao)
+    @ApiProperty({
+        description: 'Tipo da operação.',
+        enum: TipoOperacao,
+        enumName: 'TipoOperacao',
+    })
+    tipo_operacao: TipoOperacao;
+
     @IsDefined()
-    set: any;
+    valor: any;
 }
 
 export class CreateRunUpdateDto {
