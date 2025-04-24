@@ -70,12 +70,12 @@ const schema = object({
       }),
       operacao: string()
         .nullable()
-        .transform((curr, orig) => (orig === undefined ? 'replace' : curr))
+        .transform((curr, orig) => (orig === undefined ? 'Set' : curr))
         .when('propriedade', (propriedade, schema) => {
           const tipo = campoConfigPorNome(propriedade)?.tipo;
           if (tipo === 'array') {
             return schema.required('Selecione a operação')
-              .oneOf(['replace', 'append', 'remove']);
+              .oneOf(['Set', 'Add', 'Remove']);
           }
           return schema.notRequired().strip();
         }),
@@ -183,8 +183,8 @@ const onSubmit = handleSubmit(async (valores) => {
       }
 
       const operacao = tipoCampo === 'array'
-        ? edicao.operacao || 'replace'
-        : 'replace';
+        ? edicao.operacao || 'Set'
+        : 'Set';
 
       return {
         col: edicao.propriedade,
@@ -328,9 +328,9 @@ function handlePropertyChange(event, idx) {
               @focus="modoRevisao && $event.target.blur()"
               :class="{ error: errors?.[`edicoes[${idx}].operacao`] }"
             >
-              <option value="replace">Substituir</option>
-              <option value="append">Adicionar</option>
-              <option value="remove">Remover</option>
+              <option value="Set">Substituir</option>
+              <option value="Add">Adicionar</option>
+              <option value="Remove">Remover</option>
             </Field>
             <ErrorMessage
               :name="`edicoes[${idx}].operacao`"
@@ -394,7 +394,7 @@ function handlePropertyChange(event, idx) {
             {
               propriedade: '',
               valor: null,
-              operacao: 'replace',
+              operacao: 'Set',
               dependente: {}
             })"
         >

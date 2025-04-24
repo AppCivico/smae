@@ -3,7 +3,7 @@ import { computed, onMounted, watch } from 'vue';
 import { Field, ErrorMessage } from 'vee-validate';
 import SmaeNumberInput from '@/components/camposDeFormulario/SmaeNumberInput.vue';
 import SmaeDateInput from '@/components/camposDeFormulario/SmaeDateInput.vue';
-import AutocompleteField from '@/components/AutocompleteField2.vue';
+import AutocompleteField2 from '@/components/AutocompleteField2.vue';
 
 const props = defineProps({
   idx: Number,
@@ -52,11 +52,6 @@ const getGrupoParaAutocomplete = (config) => {
   const meta = config?.meta;
   if (!meta) return [];
 
-  if (meta.dependeDe) {
-    const valorPai = props.modelValue?.__dependeDe || null;
-    return Array.isArray(valorPai) ? valorPai : [];
-  }
-
   if (meta.storeKey) {
     const store = props.storeInstances[meta.storeKey];
     const lista = meta.getterKey ? store[meta.getterKey] : store[meta.listState];
@@ -99,7 +94,7 @@ const getGrupoParaAutocomplete = (config) => {
     @update:modelValue="updateValue"
   />
 
-  <AutocompleteField
+  <AutocompleteField2
     v-if="config?.tipo === 'autocomplete'"
     :name="`edicoes[${idx}].valor`"
     :model-value="modelValue"
@@ -109,7 +104,7 @@ const getGrupoParaAutocomplete = (config) => {
     :aria-readonly="readonly"
     :readonly="readonly"
     :label="config.meta.optionLabel || 'value'"
-    @update:modelValue="updateValue"
+    @change="updateValue"
   />
 
   <Field
