@@ -6,7 +6,7 @@ import { defineStore } from 'pinia';
  * @param prefixo - Prefixo opcional para o nome da store
  * @returns Uma instância da store definida pelo Pinia.
  */
-export const useContratosStore = (prefixo: string) => defineStore(prefixo ? `${prefixo}.interface` : 'interface', {
+export const useInterfaceStore = (prefixo: string) => defineStore(prefixo ? `${prefixo}.interface` : 'interface', {
   state: () => ({
     ultimoIdExibido: 0,
     idsSelecionados: [] as number[],
