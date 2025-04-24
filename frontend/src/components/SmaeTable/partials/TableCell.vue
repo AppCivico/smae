@@ -30,7 +30,7 @@ export type ParametrosDaColuna = {
   linha: Linha
   caminho: string
   ehDadoComputado?: boolean
-  formatador?: () => any
+  formatador?: (args: unknown) => number | string
 };
 
 type Props = ParametrosDaColuna & {
@@ -43,8 +43,6 @@ const conteudoColuna = computed(() => {
     return undefined;
   }
 
-  const conteudo = obterParametroNoObjeto(props.caminho, props.linha);
-
-  return conteudo;
+  return obterParametroNoObjeto(props.caminho, props.linha);
 });
 </script>
