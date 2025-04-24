@@ -8,7 +8,6 @@ import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { Field, Form } from 'vee-validate';
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import CheckClose from '../../components/CheckClose.vue';
 
 const portfolioObrasStore = usePortfolioObraStore();
 const alertStore = useAlertStore();
@@ -55,6 +54,7 @@ portfolioObrasStore.buscarTudo();
     <hr class="ml2 f1">
     <CheckClose />
   </div>
+
   <Form
     v-slot="{ errors, isSubmitting, setFieldValue }"
     :validation-schema="schema"
