@@ -89,16 +89,18 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <header class="flex spacebetween center mb2">
-    <TítuloDePágina />
-    <router-link
-      v-if="temPermissãoPara('Reports.executar.')"
-      :to="{ name: $route.meta.rotaNovoRelatorio }"
-      class="btn big ml2"
-    >
-      Novo relatório
-    </router-link>
-  </header>
+  <CabecalhoDePagina class="mb2">
+    <template #acoes>
+      <router-link
+        v-if="temPermissãoPara('Reports.executar.')"
+        :to="{ name: $route.meta.rotaNovoRelatorio }"
+        class="btn big ml2"
+      >
+        Novo relatório
+      </router-link>
+    </template>
+  </CabecalhoDePagina>
+
   <SmaeTable
     class="mt2"
     :dados="relatóriosStore.lista"
@@ -121,24 +123,22 @@ onUnmounted(() => {
 
     <template #celula:parametros_processados="{ linha }">
       <dl>
-        <template
+        <div
           v-for="(parametro) in linha.parametros_processados"
           :key="parametro.filtro"
         >
-          <div>
-            <dt class="w700 inline">
-              {{ parametro.filtro }}:
-            </dt>
-            <dd class="inline">
-              <template v-if="!Array.isArray(parametro.valor)">
-                {{ parametro.valor }}
-              </template>
-              <template v-else>
-                {{ combinadorDeListas(parametro.valor) }}
-              </template>
-            </dd>
-          </div>
-        </template>
+          <dt class="w700 inline">
+            {{ parametro.filtro }}:
+          </dt>
+          <dd class="inline">
+            <template v-if="!Array.isArray(parametro.valor)">
+              {{ parametro.valor }}
+            </template>
+            <template v-else>
+              {{ combinadorDeListas(parametro.valor) }}
+            </template>
+          </dd>
+        </div>
       </dl>
     </template>
     <template #celula:acoes="{ linha }">
