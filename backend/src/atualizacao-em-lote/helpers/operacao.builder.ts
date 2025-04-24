@@ -80,6 +80,8 @@ const COLUMN_LABELS: Record<string, string> = {
     eh_prioritario: 'É Prioritário',
     arquivado: 'Arquivado',
     tolerancia_atraso: 'Tolerância de Atraso',
+
+    portfolios_compartilhados: 'Portfólios Compartilhados',
 };
 
 // Formata valores para exibição com tratamento avançado de tipos
@@ -138,6 +140,17 @@ async function formatValueForDisplay(
                     select: { sigla: true, descricao: true },
                 });
                 return orgaos.map((o) => `${o.sigla} - ${o.descricao}`).join(', ');
+            } catch (error) {
+                // Retorna os IDs originais se a busca falhar
+                return value.join(', ');
+            }
+        } else if (colName === 'portfolios_compartilhados') {
+            try {
+                const portfolios = await prisma.portfolio.findMany({
+                    where: { id: { in: value } },
+                    select: { descricao: true },
+                });
+                return portfolios.map((p) => p.descricao).join(', ');
             } catch (error) {
                 // Retorna os IDs originais se a busca falhar
                 return value.join(', ');
