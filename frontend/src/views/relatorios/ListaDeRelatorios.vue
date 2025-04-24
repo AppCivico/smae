@@ -9,11 +9,9 @@ import { storeToRefs } from 'pinia';
 import {
   computed,
   onMounted,
-  onUnmounted,
   watch,
-  watchEffect,
 } from 'vue';
-import { useRoute } from 'vue-router';
+import { onBeforeRouteLeave, useRoute } from 'vue-router';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 const { temPermissãoPara } = storeToRefs(useAuthStore());
@@ -21,7 +19,7 @@ const relatóriosStore = useRelatoriosStore();
 const route = useRoute();
 const alertStore = useAlertStore();
 
-let intervaloDeAtualizacao = null;
+let idDoIntervaloDeAtualizacao = 0;
 let abaVisivel = true;
 
 const fonte = computed(() => route.meta.fonteDoRelatorio);
@@ -44,15 +42,25 @@ function formatarSeEPublico(publico) {
   return publico ? 'Sim' : 'Não';
 }
 
-function handleVisibilityChange() {
+function redefinirIntervalo() {
+  if (idDoIntervaloDeAtualizacao) {
+    clearInterval(idDoIntervaloDeAtualizacao);
+    idDoIntervaloDeAtualizacao = 0;
+  }
+}
+
+function definirIntervalo() {
+  if (abaVisivel && temAlgumRelatorioEmProcessamento.value && !idDoIntervaloDeAtualizacao) {
+    idDoIntervaloDeAtualizacao = setInterval(carregarRelatorios, 5000);
+  } else if (!abaVisivel) {
+    redefinirIntervalo();
+  }
+}
+
+function gerirVisibilidadeDaJanela() {
   abaVisivel = !document.hidden;
 
-  if (abaVisivel && temAlgumRelatorioEmProcessamento.value && !intervaloDeAtualizacao) {
-    intervaloDeAtualizacao = setInterval(carregarRelatorios, 5000);
-  } else if (!abaVisivel && intervaloDeAtualizacao) {
-    clearInterval(intervaloDeAtualizacao);
-    intervaloDeAtualizacao = null;
-  }
+  definirIntervalo();
 }
 
 function iniciar() {
@@ -66,25 +74,26 @@ watch(fonte, (novaFonte, antigaFonte) => {
   }
 }, { immediate: true });
 
-watchEffect(() => {
-  clearInterval(intervaloDeAtualizacao);
-  intervaloDeAtualizacao = null;
+watch(temAlgumRelatorioEmProcessamento, (valorNovo, valorAnterior) => {
+  if (valorNovo === valorAnterior) {
+    return;
+  }
 
-  if (abaVisivel && temAlgumRelatorioEmProcessamento.value) {
-    if (!intervaloDeAtualizacao) {
-      intervaloDeAtualizacao = setInterval(carregarRelatorios, 5000);
-    }
+  if (valorNovo) {
+    definirIntervalo();
+  } else {
+    redefinirIntervalo();
   }
 });
 
 onMounted(() => {
-  document.addEventListener('visibilitychange', handleVisibilityChange);
+  document.addEventListener('visibilitychange', gerirVisibilidadeDaJanela);
 });
 
-onUnmounted(() => {
-  if (intervaloDeAtualizacao) {
-    clearInterval(intervaloDeAtualizacao);
-  }
+onBeforeRouteLeave(() => {
+  document.removeEventListener('visibilitychange', gerirVisibilidadeDaJanela);
+  redefinirIntervalo();
+  relatóriosStore.$reset();
 });
 </script>
 
