@@ -52,6 +52,8 @@ export class AtualizacaoEmLoteDetalheDto extends AtualizacaoEmLoteResumoDto {
 
     @ApiPropertyOptional({ description: 'JSON contendo o log detalhado dos resultados, especialmente falhas.' })
     results_log?: any;
+
+    operacao_processada: OperacaoProcessadaDto | null;
 }
 
 export class FilterAtualizacaoEmLoteDto {
@@ -102,3 +104,16 @@ export class FilterAtualizacaoEmLoteDto {
 }
 
 export class CreateAtualizacaoEmLoteDto extends OmitType(CreateRunUpdateDto, ['atualizacao_em_lote_id']) {}
+
+export class OperacaoProcessadaItemDto {
+    col: string;
+    col_label: string;
+    tipo_operacao: string;
+    valor: any;
+    valor_formatado?: string;
+}
+
+export class OperacaoProcessadaDto {
+    tipo: TipoAtualizacaoEmLote;
+    items: OperacaoProcessadaItemDto[];
+}

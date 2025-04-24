@@ -7599,7 +7599,7 @@ model PsDashboardVariavel {
     variavel_id Int      @id
     variavel    Variavel @relation(fields: [variavel_id], references: [id])
 
-    pdm_id Int[]
+    pdm_id          Int[]
     pdm_id_completo Int[]
 
     fase                          VariavelFase
@@ -7698,8 +7698,9 @@ model AtualizacaoEmLote {
     status StatusAtualizacaoEmLote @default(Pendente) // Status geral do job
 
     // --- O que está sendo atualizado ---
-    target_ids Int[] // Lista de chaves primárias dos registros a atualizar
-    operacao   Json // A definição da operação: ex: [{"op": "set", "col": "nome", "value": "New Name"}]
+    target_ids          Int[] // Lista de chaves primárias dos registros a atualizar
+    operacao            Json // A definição da operação: ex: [{"op": "set", "col": "nome", "value": "New Name"}]
+    operacao_processada Json?
 
     // --- Rastreamento & Resultados ---
     n_total    Int
