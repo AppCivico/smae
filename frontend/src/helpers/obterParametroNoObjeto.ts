@@ -18,7 +18,7 @@ function obterParametroNoObjeto(caminho: string, objeto: Record<string, unknown>
 
   const caminhoEmPassos = caminho.split('.');
 
-  const saida = caminhoEmPassos.reduce<any>((amount, itemCaminho) => {
+  const saida = caminhoEmPassos.reduce<Record<string, unknown>>((amount, itemCaminho) => {
     if (!amount) {
       return amount;
     }
@@ -34,7 +34,7 @@ function obterParametroNoObjeto(caminho: string, objeto: Record<string, unknown>
       return amount;
     }
 
-    return amount[itemCaminho];
+    return amount[itemCaminho] as Record<string, unknown>;
   }, objeto);
 
   return saida;
