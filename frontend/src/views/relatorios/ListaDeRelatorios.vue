@@ -192,11 +192,13 @@ onUnmounted(() => {
     v-if="relatóriosStore.paginação.temMais && relatóriosStore.paginação.tokenDaPróximaPágina"
     :disabled="relatóriosStore.loading || temAlgumRelatorioEmProcessamento"
     class="btn bgnone outline center mt2"
-    @click="relatóriosStore.getAll({
-      ...$route.query,
-      fonte: fonte.value,
-      token_proxima_pagina: relatóriosStore.paginação.tokenDaPróximaPágina
-    })"
+    @click="relatóriosStore.getAll(Object.assign(
+      structuredClone($route.query),
+      {
+        fonte: fonte.value,
+        token_proxima_pagina: relatóriosStore.paginação.tokenDaPróximaPágina
+      }
+    ))"
   >
     carregar mais
   </button>
