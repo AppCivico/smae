@@ -36,10 +36,15 @@ export type ParametrosDaColuna = {
 type Props = ParametrosDaColuna & {
   classe?: string
 };
+
+const slots = defineSlots();
 const props = defineProps<Props>();
 
 const conteudoColuna = computed(() => {
-  if (props.ehDadoComputado) {
+  if (props.ehDadoComputado
+    || slots[`celula:${props.caminho}`]
+    || slots[`celula-fora:${props.caminho}`]
+  ) {
     return undefined;
   }
 
