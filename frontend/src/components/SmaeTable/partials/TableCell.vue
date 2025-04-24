@@ -22,7 +22,7 @@
 <script lang="ts" setup>
 import { computed, defineProps, defineOptions } from 'vue';
 import obterParametroNoObjeto from '@/helpers/obterParametroNoObjeto';
-import type { Linha } from '../types/tipagem';
+import type { Linha } from '../tipagem';
 
 defineOptions({ inheritAttrs: false });
 

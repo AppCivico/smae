@@ -15,7 +15,7 @@
 
 <script lang="ts" setup>
 import { computed, defineProps } from 'vue';
-import type { Coluna } from '../types/tipagem';
+import type { Coluna } from '../tipagem';
 
 type Props = Coluna;
 

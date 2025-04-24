@@ -159,8 +159,8 @@ import TableCell from './partials/TableCell.vue';
 import TableHeaderCell from './partials/TableHeaderCell.vue';
 import EditButton, { type EditButtonProps } from './partials/EditButton.vue';
 import DeleteButton, { type DeleteButtonEvents, type DeleteButtonProps } from './partials/DeleteButton.vue';
-import { Colunas, Linha, Linhas } from './types/tipagem';
 import RolagemHorizontal from '../rolagem/RolagemHorizontal.vue';
+import { Colunas, Linha, Linhas } from './tipagem';
 
 type Slots = {
   titulo: []

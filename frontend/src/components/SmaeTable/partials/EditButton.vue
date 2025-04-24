@@ -13,7 +13,7 @@
 import { computed } from 'vue';
 import { RouteLocationRaw } from 'vue-router';
 import obterParametroNoObjeto from '@/helpers/obterParametroNoObjeto';
-import type { Linha } from '../types/tipagem';
+import type { Linha } from '../tipagem';
 
 export type EditButtonProps = {
   rotaEditar?: string | RouteLocationRaw
