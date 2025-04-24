@@ -53,12 +53,12 @@ onMounted(() => {
         { chave: 'iniciou_em', label: 'Data do processamento', formatador: (v) => dateToDate(v) },
         { chave: 'n_sucesso', label: 'Item(s) modificado(s)' },
         { chave: 'criador.nome_exibicao', label: 'Responsável pela solicitação' },
-        { chave: 'regitros_processados', label: 'registros processados', ehDadoComputado: true },
+        { chave: 'registros_processados', label: 'registros processados', ehDadoComputado: true },
         { chave: 'status', label: 'Status', ehDadoComputado: true },
         { chave: 'acao', label: 'detalhamento', ehDadoComputado: true },
       ]"
     >
-      <template #celula:regitros_processados="{ linha }">
+      <template #celula:registros_processados="{ linha }">
         {{ linha.n_sucesso + linha.n_ignorado + linha.n_erro }} / {{ linha.n_total }}
       </template>
 
