@@ -55,17 +55,6 @@ function handleVisibilityChange() {
   }
 }
 
-watchEffect(() => {
-  clearInterval(intervaloDeAtualizacao);
-  intervaloDeAtualizacao = null;
-
-  if (abaVisivel && temAlgumRelatorioEmProcessamento.value) {
-    if (!intervaloDeAtualizacao) {
-      intervaloDeAtualizacao = setInterval(carregarRelatorios, 5000);
-    }
-  }
-});
-
 function iniciar() {
   relatóriosStore.$reset();
   carregarRelatorios();
@@ -76,6 +65,17 @@ watch(fonte, (novaFonte, antigaFonte) => {
     iniciar();
   }
 }, { immediate: true });
+
+watchEffect(() => {
+  clearInterval(intervaloDeAtualizacao);
+  intervaloDeAtualizacao = null;
+
+  if (abaVisivel && temAlgumRelatorioEmProcessamento.value) {
+    if (!intervaloDeAtualizacao) {
+      intervaloDeAtualizacao = setInterval(carregarRelatorios, 5000);
+    }
+  }
+});
 
 onMounted(() => {
   document.addEventListener('visibilitychange', handleVisibilityChange);
