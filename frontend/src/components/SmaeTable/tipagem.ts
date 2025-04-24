@@ -3,8 +3,8 @@ export type Coluna = {
   label?: string;
   cabecalho?: boolean;
   ehDadoComputado?: boolean;
-  classe?: any;
-  formatador?: (v: any) => any;
+  classe?: string | string[] | Record<string, unknown>;
+  formatador?: (args: unknown) => number | string;
 };
 export type Colunas = Coluna[];
 
