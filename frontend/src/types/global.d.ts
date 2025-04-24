@@ -10,6 +10,15 @@ import 'vue-router';
 export { };
 
 declare global {
+  interface ImportMetaEnv {
+    readonly VITE_EXPOR_ERROS: string;
+    readonly DEV: boolean;
+  }
+
+  interface ImportMeta {
+    readonly env: ImportMetaEnv;
+  }
+
   type ChamadasPendentes = {
     lista: boolean;
     emFoco: boolean;
