@@ -46,7 +46,7 @@
                 #[nomeSlot]="slotProps"
               >
                 <slot
-                  :name="nomeSlot"
+                  :name="(nomeSlot as keyof Slots)"
                   v-bind="slotProps"
                 />
               </template>
@@ -88,7 +88,7 @@
                 #[nomeSlot]="slotProps"
               >
                 <slot
-                  :name="nomeSlot"
+                  :name="(nomeSlot as keyof Slots)"
                   v-bind="slotProps"
                 />
               </template>
@@ -142,7 +142,7 @@
               #[nomeSlot]="slotProps"
             >
               <slot
-                :name="nomeSlot"
+                :name="(nomeSlot as keyof Slots)"
                 v-bind="slotProps"
               />
             </template>
