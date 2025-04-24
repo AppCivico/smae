@@ -460,13 +460,19 @@ export class TaskService {
                     this.logger.error(`task ${task.id} failed`);
                     this.logger.error(e);
 
-                    await this.prisma.task_queue.update({
-                        where: { id: task.id },
-                        data: {
-                            status: 'errored',
-                            erro_em: new Date(),
-                            erro_mensagem: `${e}`,
-                        },
+                    await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<void> => {
+                        await prismaTx.task_queue.update({
+                            where: { id: task.id },
+                            data: {
+                                status: 'errored',
+                                erro_em: new Date(),
+                                erro_mensagem: `${e}`,
+                            },
+                        });
+
+                        if (task.type == 'run_report') {
+                            await this.runReportService.handleError(task.id, e, prismaTx);
+                        }
                     });
 
                     if (task.pessoa_id) this.current_jobs_pessoa_ids.delete(task.pessoa_id);

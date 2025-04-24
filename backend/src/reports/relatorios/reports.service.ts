@@ -560,6 +560,19 @@ export class ReportsService {
         });
     }
 
+    async handleError(taskId: number, error: Error, prismaTx: Prisma.TransactionClient) {
+        await prismaTx.relatorio.updateMany({
+            where: {
+                id: taskId,
+            },
+            data: {
+                err_msg: error.message,
+                progresso: -1,
+                processado_em: new Date(Date.now()),
+            },
+        });
+    }
+
     async executaRelatorio(relatorio_id: number) {
         this.logger.log(`iniciando processamento do relatório ID ${relatorio_id}`);
 
