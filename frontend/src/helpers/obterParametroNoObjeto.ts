@@ -1,14 +1,15 @@
-function obterParametroNoObjeto(caminho: string, objeto: any) {
+function obterParametroNoObjeto(caminho: string, objeto: Record<string, unknown>) {
   if (!caminho.includes('.')) {
     if (!objeto) {
       return objeto;
     }
 
     if (objeto[caminho] === undefined) {
-      // eslint-disable-next-line no-console
-      console.warn(
-        `Item "${caminho}" não encontrado no objeto`,
-      );
+      if (import.meta.env.VITE_EXPOR_ERROS === 'true' || import.meta.env.DEV) {
+        // eslint-disable-next-line no-console
+        console.warn(`Item "${caminho}" não encontrado no objeto`, objeto);
+      }
+
       return objeto;
     }
 
@@ -23,10 +24,12 @@ function obterParametroNoObjeto(caminho: string, objeto: any) {
     }
 
     if (amount[itemCaminho] === undefined) {
-      // eslint-disable-next-line no-console
-      console.warn(
-        `Item "${itemCaminho}" não encontrado no caminho "${caminho}"`,
-      );
+      if (import.meta.env.VITE_EXPOR_ERROS === 'true' || import.meta.env.DEV) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          `Item "${itemCaminho}" não encontrado no caminho "${caminho}"`,
+        );
+      }
 
       return amount;
     }
