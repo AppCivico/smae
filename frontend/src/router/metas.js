@@ -59,7 +59,7 @@ const rotasParaMenuSecundário = (nível) => {
     case 'meta':
     default:
       rotasDoPdm = [
-        'meta',
+        'pdm.meta',
         'painelDaMeta',
         'evoluçãoDaMeta',
         'cronogramaDaMeta',
