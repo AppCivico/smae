@@ -148,6 +148,7 @@ onUnmounted(() => {
           class="like-a__text"
           arial-label="excluir"
           title="excluir"
+          type="button"
           @click="excluirRelatório(linha.id)"
         >
           <svg
@@ -190,6 +191,7 @@ onUnmounted(() => {
   </SmaeTable>
   <button
     v-if="relatóriosStore.paginação.temMais && relatóriosStore.paginação.tokenDaPróximaPágina"
+    type="button"
     :disabled="relatóriosStore.loading || temAlgumRelatorioEmProcessamento"
     class="btn bgnone outline center mt2"
     @click="relatóriosStore.getAll(Object.assign(
