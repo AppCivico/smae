@@ -34,7 +34,7 @@ import {
 import {
   computed, onUnmounted, ref, watch,
 } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 const formatarData = (data) => dateToDate(data, { dateStyle: undefined, month: '2-digit', year: 'numeric' });
 
@@ -99,6 +99,7 @@ const props = defineProps({
 });
 
 const router = useRouter();
+const route = useRoute();
 
 const gerarMultiplasVariaveis = ref(false);
 
@@ -168,8 +169,16 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   try {
     if (resposta) {
       alertStore.success(msg);
-
-      escaparDaRota(router);
+      if (route.params.variavelId) {
+        escaparDaRota(router);
+      } else {
+        escaparDaRota(router, {
+          query: {
+            ordem_coluna: 'criado_em',
+            ordem_direcao: 'desc',
+          },
+        });
+      }
     }
   } catch (error) {
     alertStore.error(error);
