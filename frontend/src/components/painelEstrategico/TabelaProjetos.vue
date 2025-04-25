@@ -84,6 +84,9 @@ defineProps({
           >
             <td class="tl">
               <router-link
+                :title="projeto.nome_projeto.length > 60
+                  ? projeto.nome_projeto
+                  : undefined"
                 :to="{
                   name: 'projetosResumo',
                   params: {
@@ -91,7 +94,7 @@ defineProps({
                   }
                 }"
               >
-                {{ truncate(projeto.nome_projeto, 40) }}
+                {{ truncate(projeto.nome_projeto, 60) }}
               </router-link>
             </td>
             <td class="tl">
