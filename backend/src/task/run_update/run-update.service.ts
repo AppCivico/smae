@@ -79,24 +79,43 @@ export class RunUpdateTaskService implements TaskableService {
                     const paramsBusca = this.preparaParamsParaFindOne(_params.tipo);
                     const registro = await service.findOne(paramsBusca.tipo, id, pessoaJwt, 'ReadWrite');
 
+                    const paramsAtualizacao: any = {};
+
                     for (const operacao of _params.ops) {
+                        // Adiciona no json de params para atualização.
+                        //const params = this.preparaParamsParaOp(_params.tipo, operacao);
                         const params = this.preparaParamsParaOp(_params.tipo, operacao);
 
-                        try {
-                            // AVISO: SEMPRE GARANTIR QUE O MÉTODO UPDATE RECEBE TX DO PRISMA.
-                            await service.update(params.tipo, id, params.dto, pessoaJwt, prismaTxn);
-                        } catch (error) {
-                            // TODO: implementar ordem de prioridade para cada tipo de row.
-                            const nome: string =
-                                (registro?.nome as string) ||
-                                (registro?.titulo as string) ||
-                                (registro?.descricao as string) ||
-                                'Nome não identificado';
+                        // Adiciona valores do Dto desta operação no dto consolidado.
+                        paramsAtualizacao.dto = {
+                            ...paramsAtualizacao.dto,
+                            ...params.dto,
+                        };
 
-                            operacaoFalhou = true;
-                            this.adicionarLogErro(error, id, nome, operacao, results_log);
-                            break;
+                        // TODO: por agora, atualizações em lote são apenas para PP e MDO.
+                        // E esses serviços necessitam do tipo.
+                        // Implementar solução mais genérica.
+                        if (!paramsAtualizacao.tipo && params.tipo) {
+                            paramsAtualizacao.tipo = params.tipo;
                         }
+                    }
+
+                    try {
+                        // AVISO: SEMPRE GARANTIR QUE O MÉTODO UPDATE RECEBE TX DO PRISMA.
+
+                        await service.update(paramsAtualizacao.tipo, id, paramsAtualizacao.dto, pessoaJwt, prismaTxn);
+                    } catch (error) {
+                        this.logger.error(`Erro ao atualizar ID ${id}: ${error.message}`);
+
+                        // TODO: implementar ordem de prioridade para cada tipo de row.
+                        const nome: string =
+                            (registro?.nome as string) ||
+                            (registro?.titulo as string) ||
+                            (registro?.descricao as string) ||
+                            'Nome não identificado';
+
+                        operacaoFalhou = true;
+                        this.adicionarLogErro(error, id, nome, results_log);
                     }
 
                     if (operacaoFalhou) {
@@ -107,6 +126,7 @@ export class RunUpdateTaskService implements TaskableService {
                 n_sucesso++;
                 sucesso_ids.push(id);
             } catch (error) {
+                this.logger.error(`Erro ao atualizar ID ${id}: ${error.message}`);
                 n_erro++;
                 if (n_erro >= 50) {
                     await this.finalizarAtualizacaoEmLote(_params, results_log, n_sucesso, n_erro, sucesso_ids);
@@ -120,20 +140,20 @@ export class RunUpdateTaskService implements TaskableService {
         return { success: true };
     }
 
-    private adicionarLogErro(
-        error: any,
-        id: number,
-        nome: string,
-        operacao: UpdateOperacaoDto,
-        results_log: LogResultados
-    ) {
+    private adicionarLogErro(error: any, id: number, nome: string, results_log: LogResultados) {
         if (error instanceof HttpException) {
             const errorResponse = error.getResponse().toString();
+
+            // Tentando extrair a coluna do erro.
+            const col = errorResponse.split('|')[0] ?? '';
+
+            if (col === '') this.logger.warn(`Erro não possui coluna identificada: ${errorResponse}`);
+
             results_log.falhas.push({
                 id,
                 nome,
                 tipo: 'Exception',
-                col: operacao.col,
+                col: col,
                 erro: errorResponse.includes('|') ? errorResponse.split('|')[1] : errorResponse,
             });
         } else {
@@ -141,7 +161,8 @@ export class RunUpdateTaskService implements TaskableService {
                 id,
                 nome,
                 tipo: 'Internal',
-                col: operacao.col,
+                // TODO: Pensar em jeito de extrair a coluna do erro interno.
+                col: '',
                 erro: 'Erro interno',
             });
         }
