@@ -15,6 +15,10 @@ import projectStatuses from '@/consts/projectStatuses';
 import ProjetosListaFiltro from './partials/ProjetosListaFiltro.vue';
 import { useAuthStore } from '@/stores/auth.store';
 
+defineOptions({
+  inheritAttrs: false,
+});
+
 const route = useRoute();
 const projetosStore = useProjetosStore();
 const authStore = useAuthStore();
