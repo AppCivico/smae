@@ -165,7 +165,6 @@ onBeforeMount(() => {
   :deep {
     .table-cell--status {
       white-space: nowrap;
-      text-transform: uppercase;
     }
 
     .table-cell--previsao_termino {
