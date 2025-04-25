@@ -286,7 +286,6 @@ export class PPProjetosService implements ReportableService {
         const out_incoerentes_gdp: RetornoDbProjetosIncoerentes[] = [];
 
         const whereCond = await this.buildFilteredWhereStr(dto, user);
-        const _portfolioId: number = whereCond.queryParams[1] as number;
 
         await this.queryDataProjetos(whereCond, out_projetos);
         await this.queryDataRiscos(whereCond, out_riscos);
@@ -298,7 +297,7 @@ export class PPProjetosService implements ReportableService {
         await this.queryDataAditivos(whereCond, out_aditivos);
         await this.queryDataOrigens(whereCond, out_origens);
         await this.queryDataProjetosGeoloc(whereCond, out_enderecos);
-        await this.queryDataProjetosIncoerentesGdp(_portfolioId, out_incoerentes_gdp);
+        await this.queryDataProjetosIncoerentesGdp(whereCond, out_incoerentes_gdp);
         await this.queryDataCronograma(whereCond, out_cronogramas);
 
         return {
@@ -1366,31 +1365,28 @@ export class PPProjetosService implements ReportableService {
         });
     }
 
-    private async queryDataProjetosIncoerentesGdp(portfolioId: number, out: RelProjetosStatusIncoerenteDto[]) {
+    private async queryDataProjetosIncoerentesGdp(whereCond: WhereCond, out: RelProjetosStatusIncoerenteDto[]) {
         const sql = `
-          SELECT
+            SELECT
                 portfolio.titulo AS nome_do_portfolio,
                 projeto.nome AS nome_obra_intervencao,
                 projeto.codigo AS projeto_codigo,
                 projeto.status AS projeto_status,
                 projeto_etapa.descricao AS projeto_etapa_atual,
-                REPLACE(projeto.tipo::text, 'PP', 'GDP') AS projeto_tipo
+            REPLACE(projeto.tipo::text, 'PP', 'GDP') AS projeto_tipo
             FROM projeto
             JOIN projeto_etapa ON projeto.projeto_etapa_id = projeto_etapa.id
             JOIN portfolio ON projeto.portfolio_id = portfolio.id
-            WHERE projeto.removido_em IS NULL
-                AND portfolio.modelo_clonagem = false
-                AND projeto.portfolio_id = $1
-                AND projeto.tipo = 'PP'
+            ${whereCond.whereString}
                 AND NOT (
                 (projeto.status = 'EmPlanejamento'   AND projeto_etapa.descricao IN ('Estudos preliminares', 'Em projeto','Em contratação de projeto', 'Em contratação de projeto e obra (integrado)', 'Em contratação de obra')) OR
                 (projeto.status = 'EmAcompanhamento' AND projeto_etapa.descricao IN ('Em obras', 'Em contratação de projeto', 'Em contratação de projeto e obra (integrado)')) OR
                 (projeto.status = 'Fechado'          AND projeto_etapa.descricao IN ('Projeto concluído', 'Obra concluída')) OR
                 (projeto.status = 'Suspenso'         AND projeto_etapa.descricao = 'Projeto paralisado')
                 )
-            ORDER BY projeto.id;`;
+            ORDER BY projeto.codigo;`;
 
-        const data: RelProjetosStatusIncoerenteDto[] = await this.prisma.$queryRawUnsafe(sql, portfolioId);
+        const data: RelProjetosStatusIncoerenteDto[] = await this.prisma.$queryRawUnsafe(sql, ...whereCond.queryParams);
         out.push(...this.convertRowsProjetosIncoerentes(data));
     }
 

@@ -285,7 +285,7 @@ export class PPObrasService implements ReportableService {
         await this.queryDataOrigens(whereCond, out_origens);
         await this.queryDataObrasSei(whereCond, out_processos_sei);
         await this.queryDataObrasGeoloc(whereCond, out_enderecos);
-        await this.queryDataProjetosIncoerentesMdo(whereCond.queryParams[2], out_incoerentes_mdo);
+        await this.queryDataProjetosIncoerentesMdo(whereCond, out_incoerentes_mdo);
 
         return {
             linhas: out_obras,
@@ -692,8 +692,6 @@ export class PPObrasService implements ReportableService {
             )
         );
 
-        const portfoliId: number = whereCond.queryParams[2] as number;
-
         out.push(
             await this.streamQueryToCSV(
                 `SELECT
@@ -706,18 +704,16 @@ export class PPObrasService implements ReportableService {
                 FROM projeto
                 JOIN projeto_etapa ON projeto.projeto_etapa_id = projeto_etapa.id
                 JOIN portfolio ON projeto.portfolio_id = portfolio.id
-                WHERE projeto.removido_em IS NULL
-                    AND portfolio.modelo_clonagem = false
-                    AND projeto.portfolio_id = $1
-                    AND projeto.tipo = 'MDO'
-                    AND NOT (
+                ${whereCond.whereString}
+                AND NOT (
                     (projeto.status = 'MDO_EmAndamento' AND projeto_etapa.descricao = 'Em obras') OR
-                    (projeto.status = 'MDO_Concluida'     AND projeto_etapa.descricao = 'Obra concluída') OR
-                    (projeto.status = 'MDO_NaoIniciada'   AND projeto_etapa.descricao = 'A iniciar') OR
-                    (projeto.status = 'MDO_Paralisada'    AND projeto_etapa.descricao = 'Obra Contratada')
-                    )
-                ORDER BY projeto.id;`,
-                [portfoliId],
+                    (projeto.status = 'MDO_Concluida' AND projeto_etapa.descricao = 'Obra concluída') OR
+                    (projeto.status = 'MDO_NaoIniciada' AND projeto_etapa.descricao = 'A iniciar') OR
+                    (projeto.status = 'MDO_Paralisada' AND projeto_etapa.descricao = 'Obra Contratada')
+                )
+                ORDER BY projeto.id;
+                `,
+                whereCond.queryParams,
                 'status_incoerentes_mdo.csv'
             )
         );
@@ -850,6 +846,12 @@ export class PPObrasService implements ReportableService {
         whereConditions.push(`portfolio.modelo_clonagem = false`);
 
         const whereString = whereConditions.length > 0 ? 'WHERE ' + whereConditions.join(' AND ') : '';
+        console.log('=====================whereString==================');
+        console.log(whereString);
+        console.log('=====================whereString==================');
+        console.log('=====================queryParams==================');
+        console.log(queryParams);
+        console.log('=====================queryParams==================');
         return { whereString, queryParams };
     }
 
@@ -1567,7 +1569,7 @@ export class PPObrasService implements ReportableService {
         });
     }
 
-    private async queryDataProjetosIncoerentesMdo(portfolioId: number, out: RelObrasStatusIncoerenteDto[]) {
+    private async queryDataProjetosIncoerentesMdo(whereCond: WhereCond, out: RelObrasStatusIncoerenteDto[]) {
         const sql = `
           SELECT
                 portfolio.titulo AS nome_do_portfolio,
@@ -1579,19 +1581,16 @@ export class PPObrasService implements ReportableService {
             FROM projeto
             JOIN projeto_etapa ON projeto.projeto_etapa_id = projeto_etapa.id
             JOIN portfolio ON projeto.portfolio_id = portfolio.id
-            WHERE projeto.removido_em IS NULL
-                AND portfolio.modelo_clonagem = false
-                AND projeto.portfolio_id = $1
-                AND projeto.tipo = 'MDO'
-                AND NOT (
+            ${whereCond.whereString}
+            AND NOT (
                 (projeto.status = 'MDO_EmAndamento' AND projeto_etapa.descricao = 'Em obras') OR
                 (projeto.status = 'MDO_Concluida'     AND projeto_etapa.descricao = 'Obra concluída') OR
                 (projeto.status = 'MDO_NaoIniciada'   AND projeto_etapa.descricao = 'A iniciar') OR
                 (projeto.status = 'MDO_Paralisada'    AND projeto_etapa.descricao = 'Obra Contratada')
-                )
+            )
             ORDER BY projeto.id;`;
 
-        const data: RetornoDbObrasIncoerentes[] = await this.prisma.$queryRawUnsafe(sql, [portfolioId]);
+        const data: RetornoDbObrasIncoerentes[] = await this.prisma.$queryRawUnsafe(sql, [...whereCond.queryParams]);
         out.push(...this.convertRowsObrasIncoerentes(data));
     }
 
