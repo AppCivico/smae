@@ -268,13 +268,10 @@ onUnmounted(() => {
 });
 </script>
 <template>
-  <header class="flex flexwrap spacebetween center mb2 g2">
-    <TítuloDePágina />
-
-    <hr class="f1">
-
-    <CheckClose :formulario-sujo="formularioSujo" />
-  </header>
+  <CabecalhoDePagina
+    class="mb2"
+    :formulario-sujo="formularioSujo"
+  />
 
   <form
     :aria-busy="chamadasPendentes.emFoco && !emFoco"
