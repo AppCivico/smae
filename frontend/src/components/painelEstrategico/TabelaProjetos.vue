@@ -46,13 +46,13 @@ defineProps({
             Nome do Projeto
           </th>
           <th class="tl">
-            Secretaria
+            Orgão Responsável
           </th>
           <th class="tl">
             Meta
           </th>
           <th class="tl">
-            Status
+            Status do Projeto
           </th>
           <th class="tl">
             Etapa Atual
