@@ -34,7 +34,7 @@ import AddEditValoresComposta from '@/views/metas/AddEditValoresComposta.vue';
 import AddEditVariavel from '@/views/metas/AddEditVariavel.vue';
 import AddEditVariavelComposta from '@/views/metas/AddEditVariavelComposta.vue';
 import GerarVariaveisCompostas from '@/views/metas/GerarVariaveisCompostas.vue';
-import SmaeMonth from '@/components/SmaeMonth/SmaeMonth.vue';
+import SmaeMonth from '@/components/camposDeFormulario/SmaeMonth/SmaeMonth.vue';
 
 defineOptions({
   inheritAttrs: false,
