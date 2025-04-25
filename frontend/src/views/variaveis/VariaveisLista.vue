@@ -64,18 +64,16 @@ watchEffect(() => {
 });
 </script>
 <template>
-  <header class="flex spacebetween center mb2 g2">
-    <TítuloDePágina id="titulo-da-pagina" />
-
-    <hr class="f1">
-
-    <router-link
-      :to="{ name: 'variaveisCriar' }"
-      class="btn big ml1"
-    >
-      Nova variável
-    </router-link>
-  </header>
+  <CabecalhoDePagina class="mb2">
+    <template #acoes>
+      <SmaeLink
+        :to="{ name: 'variaveisCriar' }"
+        class="btn big ml1"
+      >
+        Nova variável
+      </SmaeLink>
+    </template>
+  </CabecalhoDePagina>
 
   <FormularioQueryString
     v-slot="{ aplicarQueryStrings }"
