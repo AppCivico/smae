@@ -113,6 +113,7 @@ onBeforeMount(() => {
           <template #cabecalho:acao>
             <button
               class="btn outline bgnone tcprimary"
+              type="button"
               @click="handleDesmarcarTodos"
             >
               Desmarcar todas
