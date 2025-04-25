@@ -92,7 +92,7 @@ onBeforeMount(() => {
             { chave: 'nome', label: 'Nome do Projeto' },
             { chave: 'portfolio.titulo', label: 'Portfólio' },
             { chave: 'orgao_responsavel.sigla', label: 'Órgão Responsável' },
-            { chave: 'status', label: 'Status' },
+            { chave: 'status', label: 'Status do projeto' },
             { chave: 'projeto_etapa', label: 'Etapa Atual' },
             { chave: 'previsao_termino', label: 'Término Planejado' },
             { chave: 'previsao_custo', label: 'Custo Total Planejado' },
