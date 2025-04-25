@@ -846,12 +846,6 @@ export class PPObrasService implements ReportableService {
         whereConditions.push(`portfolio.modelo_clonagem = false`);
 
         const whereString = whereConditions.length > 0 ? 'WHERE ' + whereConditions.join(' AND ') : '';
-        console.log('=====================whereString==================');
-        console.log(whereString);
-        console.log('=====================whereString==================');
-        console.log('=====================queryParams==================');
-        console.log(queryParams);
-        console.log('=====================queryParams==================');
         return { whereString, queryParams };
     }
 
