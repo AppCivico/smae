@@ -37,7 +37,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-
+  readonly: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const control = ref(props.controlador);
@@ -106,6 +109,8 @@ export default {
         v-model="control.busca"
         type="text"
         class="inputtext light mb05"
+        :readonly="readonly"
+        :aria-readonly="readonly"
         @keyup.enter.stop.prevent="buscar($event, control, grupo, label)"
       >
       <ul>
@@ -133,16 +138,30 @@ export default {
         </li>
       </ul>
     </div>
+    <template v-if="!readonly">
+      <button
+        v-for="p in grupo.filter((x) => control.participantes?.includes(x.id))"
+        :key="p.id"
+        class="tagsmall"
+        :title="p.nome || p.titulo || p.descricao || p.nome_completo || null"
+        @click="removeParticipante(control, p.id)"
+      >
+        {{ p[label] }}
+        <svg
+          width="12"
+          height="12"
+        ><use xlink:href="#i_x" /></svg>
+      </button>
+    </template>
     <span
       v-for="p in grupo.filter((x) => control.participantes?.includes(x.id))"
+      v-else
       :key="p.id"
       class="tagsmall"
       :title="p.nome || p.titulo || p.descricao || p.nome_completo || null"
-      @click="removeParticipante(control, p.id)"
-    >{{ p[label] }}<svg
-      width="12"
-      height="12"
-    ><use xlink:href="#i_x" /></svg></span>
+    >
+      {{ p[label] }}
+    </span>
   </template>
   <template v-else>
     <div class="search">

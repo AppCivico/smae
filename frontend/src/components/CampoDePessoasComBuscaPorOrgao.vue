@@ -9,6 +9,7 @@ import AutocompleteField from '@/components/AutocompleteField2.vue';
 import requestS from '@/helpers/requestS.ts';
 import truncate from '@/helpers/texto/truncate';
 import { useOrgansStore } from '@/stores/organs.store';
+import isEqual from 'lodash/isEqual';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -20,6 +21,14 @@ const props = defineProps({
   órgãosPermitidos: {
     type: Array,
     default: () => [],
+  },
+  readonly: {
+    type: Boolean,
+    default: false,
+  },
+  limitarParaUmOrgao: {
+    type: Boolean,
+    default: false,
   },
   // Uma propriedade extra para evitar conferir a lista de órgãos a baixar em
   // cada atualização do valor do campo
@@ -218,6 +227,9 @@ watchEffect(async () => {
 
   if (Array.isArray(linhas)) {
     pessoasSimplificadas.value = linhas;
+    if (props.limitarParaUmOrgao && listaDeÓrgãos.value.length === 0) {
+      listaDeÓrgãos.value.push({ id: 0 });
+    }
     montar();
   } else {
     throw new Error('lista de pessoas entregue fora do padrão esperado');
@@ -226,8 +238,10 @@ watchEffect(async () => {
 
 watch(
   () => props.valoresIniciais,
-  () => {
-    montar();
+  (novos, antigos) => {
+    if (!isEqual(novos, antigos)) {
+      montar();
+    }
   },
   { immediate: true },
 );
@@ -281,6 +295,7 @@ watch(
           }"
           :model-value="órgãosEPessoas[item.id]?.pessoas"
           :grupo="pessoasPorÓrgão[listaDeÓrgãos[idx].id] || []"
+          :readonly="readonly"
           label="nome_exibicao"
           @change="
             ($newValue) => {
@@ -291,6 +306,7 @@ watch(
       </div>
 
       <button
+        v-if="!limitarParaUmOrgao"
         class="like-a__text addlink"
         arial-label="excluir"
         title="excluir"
@@ -304,6 +320,7 @@ watch(
     </div>
 
     <button
+      v-if="!limitarParaUmOrgao"
       class="like-a__text addlink"
       type="button"
       :disabled="

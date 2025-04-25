@@ -2316,8 +2316,8 @@ progress,
 .suggestion {
   position: relative;
 
-  input:focus,
-  input:active {
+  input:not([aria-readonly="true"]):focus,
+  input:not([aria-readonly="true"]):active {
     +ul {
       display: block;
     }

@@ -51,64 +51,12 @@ const fontesEstaticas = {
 
 const loadingOptions = ref({});
 
-const schema = object({
-  edicoes: array().of(
-    object({
-      propriedade: string().required('Selecione o campo'),
-      valor: lazy((value, { parent }) => {
-        const { propriedade } = parent;
-        if (!propriedade) return mixed().nullable();
-
-        const schemaOriginal = schemaObras.fields[propriedade];
-        if (!schemaOriginal) return mixed().required('Configuração inválida.');
-
-        const tipo = schemaOriginal.type;
-
-        if (tipo === 'array') return schemaOriginal;
-
-        return schemaOriginal.required('Informe o novo valor');
-      }),
-      operacao: string()
-        .nullable()
-        .transform((curr, orig) => (orig === undefined ? 'Set' : curr))
-        .when('propriedade', (propriedade, schema) => {
-          const tipo = campoConfigPorNome(propriedade)?.tipo;
-          if (tipo === 'array') {
-            return schema.required('Selecione a operação')
-              .oneOf(['Set', 'Add', 'Remove']);
-          }
-          return schema.notRequired().strip();
-        }),
-      dependente: object().default({}),
-    }),
-  ).min(1, 'Adicione pelo menos uma edição'),
-});
-
-const {
-  values, errors, handleSubmit, setFieldValue,
-} = useForm({
-  validationSchema: schema,
-  initialValues: {
-    edicoes: [],
-  },
-});
-
 const camposDisponiveisParaEdicao = computed(() => Object.entries(schemaObras.fields)
   .filter(([_, fieldSchema]) => fieldSchema.meta()?.permite_edicao_em_massa)
   .map(([fieldName, fieldSchema]) => ({
     value: fieldName,
     label: fieldSchema.spec.label || fieldName,
   })));
-
-function getOpcoesDisponiveis(rowIndex) {
-  const propriedadesSelecionadas = values.edicoes
-    ?.map((edicao, index) => (index !== rowIndex ? edicao.propriedade : null))
-    .filter((prop) => prop != null && prop !== '');
-
-  return camposDisponiveisParaEdicao.value.filter(
-    (opcao) => !propriedadesSelecionadas.includes(opcao.value),
-  );
-}
 
 function detectarTipoCampo(campoSchema, meta) {
   if (meta?.tipo) return meta.tipo;
@@ -121,6 +69,10 @@ function detectarTipoCampo(campoSchema, meta) {
 
   if (meta?.storeKey) {
     return 'select-dinamico';
+  }
+
+  if (meta?.tipo) {
+    return tipo;
   }
 
   const tipoPorYupType = {
@@ -148,17 +100,69 @@ function obterConfiguracaoCampo(nomeCampo) {
   };
 }
 
-function campoConfig(idx) {
-  const prop = values.edicoes?.[idx]?.propriedade;
-  return prop ? obterConfiguracaoCampo(prop) : null;
-}
-
 function campoConfigPorNome(nomeCampo) {
   const campoSchema = schemaObras.fields[nomeCampo];
   if (!campoSchema) return null;
   const meta = campoSchema.meta?.() || {};
   const tipo = detectarTipoCampo(campoSchema, meta);
   return { tipo };
+}
+
+const schema = object({
+  edicoes: array().of(
+    object({
+      propriedade: string().required('Selecione o campo'),
+      valor: lazy((value, { parent }) => {
+        const { propriedade } = parent;
+        if (!propriedade) return mixed().nullable();
+
+        const schemaOriginal = schemaObras.fields[propriedade];
+        if (!schemaOriginal) return mixed().required('Configuração inválida.');
+
+        const tipo = schemaOriginal.type;
+
+        if (tipo === 'array') return schemaOriginal;
+
+        return schemaOriginal.required('Informe o novo valor');
+      }),
+      operacao: string()
+        .nullable()
+        .transform((curr, orig) => (orig === undefined ? 'Set' : curr))
+        .when('propriedade', (propriedade, campoSchema) => {
+          const tipo = campoConfigPorNome(propriedade)?.tipo;
+          if (tipo === 'array') {
+            return campoSchema.required('Selecione a operação')
+              .oneOf(['Set', 'Add', 'Remove']);
+          }
+          return schema.notRequired().strip();
+        }),
+      dependente: object().default({}),
+    }),
+  ).min(1, 'Adicione pelo menos uma edição'),
+});
+
+const {
+  values, errors, handleSubmit, setFieldValue,
+} = useForm({
+  validationSchema: schema,
+  initialValues: {
+    edicoes: [],
+  },
+});
+
+function getOpcoesDisponiveis(rowIndex) {
+  const propriedadesSelecionadas = values.edicoes
+    ?.map((edicao, index) => (index !== rowIndex ? edicao.propriedade : null))
+    .filter((prop) => prop != null && prop !== '');
+
+  return camposDisponiveisParaEdicao.value.filter(
+    (opcao) => !propriedadesSelecionadas.includes(opcao.value),
+  );
+}
+
+function campoConfig(idx) {
+  const prop = values.edicoes?.[idx]?.propriedade;
+  return prop ? obterConfiguracaoCampo(prop) : null;
 }
 
 const onSubmit = handleSubmit(async (valores) => {
@@ -182,9 +186,7 @@ const onSubmit = handleSubmit(async (valores) => {
         valor = String(valor);
       }
 
-      const operacao = tipoCampo === 'array'
-        ? edicao.operacao || 'Set'
-        : 'Set';
+      const operacao = edicao.operacao || 'Set';
 
       return {
         col: edicao.propriedade,
@@ -219,7 +221,9 @@ async function fetchOptionsIfNeeded(rowIndex, fieldConfig) {
   if (!store) return;
 
   const dataSourceKey = meta.getterKey || meta.listState;
-  const jaTemDados = store[dataSourceKey] && Array.isArray(store[dataSourceKey]) && store[dataSourceKey].length > 0;
+  const jaTemDados = store[dataSourceKey]
+    && Array.isArray(store[dataSourceKey])
+    && store[dataSourceKey].length > 0;
 
   if (jaTemDados || loadingOptions.value[`${rowIndex}-${meta.storeKey}`]) return;
 
@@ -309,7 +313,7 @@ function handlePropertyChange(event, idx) {
           </div>
 
           <div
-            v-if="campoConfig(idx)?.tipo === 'autocomplete'"
+            v-if="['autocomplete', 'campo-de-pessoas-orgao'].includes(campoConfig(idx)?.tipo)"
             class="f1"
           >
             <LabelFromYup
@@ -323,14 +327,20 @@ function handlePropertyChange(event, idx) {
               as="select"
               class="inputtext light mb1"
               :aria-readonly="modoRevisao"
+              :class="{ error: errors?.[`edicoes[${idx}].operacao`] }"
               @mousedown="modoRevisao && $event.preventDefault()"
               @keydown="modoRevisao && $event.preventDefault()"
               @focus="modoRevisao && $event.target.blur()"
-              :class="{ error: errors?.[`edicoes[${idx}].operacao`] }"
             >
-              <option value="Set">Substituir</option>
-              <option value="Add">Adicionar</option>
-              <option value="Remove">Remover</option>
+              <option value="Set">
+                Substituir
+              </option>
+              <option value="Add">
+                Adicionar
+              </option>
+              <option value="Remove">
+                Remover
+              </option>
             </Field>
             <ErrorMessage
               :name="`edicoes[${idx}].operacao`"

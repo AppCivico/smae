@@ -1533,12 +1533,10 @@ export const obras = object({
     .nullable()
     .meta({
       permite_edicao_em_massa: true,
-      dependeDe: {
-        campo: 'orgao_gestor_id',
-        storeKey: 'órgãos',
-        listState: 'organs',
-        optionFilterKey: 'id',
-      },
+      tipo: 'campo-de-pessoas-orgao',
+      storeKey: 'órgãos',
+      fetchAction: 'getAll',
+      listState: 'organs',
     }),
   secretario_colaborador: string()
     .label('Secretário colaborador da obra')

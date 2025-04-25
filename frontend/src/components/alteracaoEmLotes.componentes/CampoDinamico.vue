@@ -1,9 +1,9 @@
 <script setup>
-import { computed, onMounted, watch } from 'vue';
 import { Field, ErrorMessage } from 'vee-validate';
 import SmaeNumberInput from '@/components/camposDeFormulario/SmaeNumberInput.vue';
 import SmaeDateInput from '@/components/camposDeFormulario/SmaeDateInput.vue';
 import AutocompleteField2 from '@/components/AutocompleteField2.vue';
+import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
 
 const props = defineProps({
   idx: Number,
@@ -105,6 +105,16 @@ const getGrupoParaAutocomplete = (config) => {
     :readonly="readonly"
     :label="config.meta.optionLabel || 'value'"
     @change="updateValue"
+  />
+
+  <CampoDePessoasComBuscaPorOrgao
+    v-if="config?.tipo === 'campo-de-pessoas-orgao'"
+    :name="`edicoes[${idx}].valor`"
+    :model-value="modelValue || []"
+    :valores-iniciais="[]"
+    :readonly="readonly"
+    :limitar-para-um-orgao="true"
+    @update:modelValue="updateValue"
   />
 
   <Field
