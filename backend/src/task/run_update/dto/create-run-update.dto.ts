@@ -31,7 +31,7 @@ export class VerificaOpsParaTipoConstraint implements ValidatorConstraintInterfa
             return false;
         }
 
-        // Valida valores do 'set' conforme o DTO alvo
+        // Valida valores do campo 'valor' conforme o DTO alvo
         const targetDtoClass = tipoToDtoMap[tipo];
         if (!targetDtoClass) return false;
 

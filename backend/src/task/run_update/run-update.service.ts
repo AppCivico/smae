@@ -1,6 +1,6 @@
 import { forwardRef, HttpException, Inject, Injectable, Logger } from '@nestjs/common';
 import { TaskableService } from '../entities/task.entity';
-import { CreateRunUpdateDto, UpdateOperacaoDto } from './dto/create-run-update.dto';
+import { CreateRunUpdateDto, TipoOperacao, UpdateOperacaoDto } from './dto/create-run-update.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma, TipoAtualizacaoEmLote, TipoProjeto } from '@prisma/client';
 import { ProjetoService } from 'src/pp/projeto/projeto.service';
@@ -82,9 +82,7 @@ export class RunUpdateTaskService implements TaskableService {
                     const paramsAtualizacao: any = {};
 
                     for (const operacao of _params.ops) {
-                        // Adiciona no json de params para atualização.
-                        //const params = this.preparaParamsParaOp(_params.tipo, operacao);
-                        const params = this.preparaParamsParaOp(_params.tipo, operacao);
+                        const params = this.preparaParamsParaOp(_params.tipo, operacao, registro);
 
                         // Adiciona valores do Dto desta operação no dto consolidado.
                         paramsAtualizacao.dto = {
@@ -210,15 +208,10 @@ export class RunUpdateTaskService implements TaskableService {
         return service;
     }
 
-    private preparaParamsParaOp(tipoAtualizacao: TipoAtualizacaoEmLote, op: UpdateOperacaoDto) {
+    private preparaParamsParaOp(tipoAtualizacao: TipoAtualizacaoEmLote, op: UpdateOperacaoDto, registro: any) {
         const params: any = {};
 
-        let value = op.valor;
-
-        // Caso o valor se pareça com uma data (YYYY-MM-DD), convertemos para Date.
-        if (typeof value === 'string' && value.match(/^\d{4}-\d{2}-\d{2}$/)) {
-            value = new Date(value);
-        }
+        const value = this.processaValorParaOp(op, op.tipo_operacao, registro);
 
         switch (tipoAtualizacao) {
             case TipoAtualizacaoEmLote.ProjetoPP:
@@ -235,6 +228,54 @@ export class RunUpdateTaskService implements TaskableService {
         }
 
         return params;
+    }
+
+    private processaValorParaOp(op: UpdateOperacaoDto, tipo_operacao: TipoOperacao, registro: any) {
+        let value = op.valor;
+
+        if (tipo_operacao === TipoOperacao.Set) {
+            // Caso o valor se pareça com uma data (YYYY-MM-DD), convertemos para Date.
+            if (typeof value === 'string' && value.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                value = new Date(value);
+            }
+
+            // Para Set, apenas retornamos o valor.
+        } else if (tipo_operacao === TipoOperacao.Add || tipo_operacao === TipoOperacao.Remove) {
+            if (registro && registro[op.col] !== undefined) {
+                const valorSalvo = registro[op.col];
+
+                // Garantindo que o valor salvo é um array.
+                if (!Array.isArray(valorSalvo)) {
+                    throw new Error(`Coluna "${op.col}" não é um array.`);
+                }
+
+                // Além disso, é necessário planificar a array.
+                // Pois no findOne, geralmente retornamos um array de objetos.
+                // Que contem um campo id.
+                const valorSalvoIds = valorSalvo.map((item: any) => item.id || item);
+
+                // Para Add, adicionamos o valor (sempre array) ao existente.
+                if (tipo_operacao === TipoOperacao.Add) {
+                    value = [...valorSalvoIds, ...(Array.isArray(value) ? value : [value])];
+                }
+                // Para Remove, removemos o valor do existente.
+                else if (tipo_operacao === TipoOperacao.Remove) {
+                    value = valorSalvoIds.filter((item: any) => {
+                        if (Array.isArray(value)) {
+                            return !value.includes(item);
+                        } else {
+                            return item !== value;
+                        }
+                    });
+                }
+            } else {
+                throw new Error(`Coluna "${op.col}" não encontrada no registro.`);
+            }
+        } else {
+            throw new Error(`Operação "${tipo_operacao}" não suportada.`);
+        }
+
+        return value;
     }
 
     private preparaParamsParaFindOne(tipoAtualizacao: TipoAtualizacaoEmLote) {
