@@ -1,6 +1,15 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { Field, Form } from 'vee-validate';
+import {
+  computed,
+  ref, unref, watch,
+} from 'vue';
+import { useRoute } from 'vue-router';
+import { format } from 'date-fns';
 import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
 import SmallModal from '@/components/SmallModal.vue';
+import LabelFromYup from '@/components/camposDeFormulario/LabelFromYup.vue';
 import EditorDeFormula from '@/components/metas/EditorDeFormula.vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import TabelaDeVariaveis from '@/components/metas/TabelaDeVariaveis.vue';
@@ -25,13 +34,7 @@ import AddEditValoresComposta from '@/views/metas/AddEditValoresComposta.vue';
 import AddEditVariavel from '@/views/metas/AddEditVariavel.vue';
 import AddEditVariavelComposta from '@/views/metas/AddEditVariavelComposta.vue';
 import GerarVariaveisCompostas from '@/views/metas/GerarVariaveisCompostas.vue';
-import { storeToRefs } from 'pinia';
-import { Field, Form } from 'vee-validate';
-import {
-  computed,
-  ref, unref, watch,
-} from 'vue';
-import { useRoute } from 'vue-router';
+import SmaeMonth from '@/components/SmaeMonth/SmaeMonth.vue';
 
 defineOptions({
   inheritAttrs: false,
@@ -334,6 +337,17 @@ watch(AssociadorDeVariaveisEstaAberto, (novoValor) => {
   }
 });
 
+function formatarMes(el) {
+  console.log(el.target);
+
+  // const { value } = el.target;
+
+  // const a = format('MM/YYYY', value);
+  // console.log('a', a);
+
+  // el.target.value = a;
+}
+
 watch(() => props.group, () => {
   start();
 }, { immediate: true });
@@ -544,16 +558,23 @@ watch(() => props.group, () => {
       </div>
       <div class="flex g2">
         <div class="f1">
-          <label class="label">Início da Medição <span class="tvermelho">*</span></label>
+          <label class="label">1Início da Medição <span class="tvermelho">*</span></label>
           <Field
+            v-slot="{ value, handleChange }"
             name="inicio_medicao"
-            type="text"
             class="inputtext light mb1"
             :class="{ 'error': errors.inicio_medicao }"
-            maxlength="7"
             placeholder="mm/aaaa"
-            @keyup="maskMonth"
-          />
+            @keyup="formatarMes"
+          >
+            -{{ value }}-
+            <SmaeMonth
+              :model-value="'12312'"
+              dia-prefixo="1"
+              @change="handleChange"
+            />
+          </Field>
+          <!-- maxlength="7" -->
           <div class="error-msg">
             {{ errors.inicio_medicao }}
           </div>

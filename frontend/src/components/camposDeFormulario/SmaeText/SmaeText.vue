@@ -4,62 +4,15 @@ import type { PropType } from 'vue';
 import { computed, toRef } from 'vue';
 import type { AnyObjectSchema } from 'yup';
 import type { Test } from 'yup/lib/util/createValidation.d.ts';
-import buscarDadosDoYup from './helpers/buscarDadosDoYup';
+import buscarDadosDoYup from '../helpers/buscarDadosDoYup';
+import SmaeTextProps from './SmaeTextProps';
 
 defineOptions({
   inheritAttrs: false,
 });
 
 const emit = defineEmits(['update:modelValue']);
-
-const props = defineProps({
-  as: {
-    type: String,
-    default: 'input',
-    validator: (value: string) => ['input', 'textarea'].includes(value.toLocaleLowerCase()),
-  },
-  anularVazio: {
-    type: Boolean,
-    default: false,
-  },
-  // Porque os atributos padrão vão para o campo
-  atributosDaRaiz: {
-    type: Object,
-    default: null,
-  },
-  // Aceitar caixas diferentes
-  maxlength: {
-    type: [
-      Number,
-      String,
-    ],
-    default: 0,
-  },
-  // Aceitar caixas diferentes
-  maxLength: {
-    type: [
-      Number,
-      String,
-    ],
-    default: 0,
-  },
-  modelValue: {
-    type: String,
-    default: '',
-  },
-  modelModifiers: {
-    type: Object as PropType<Record<string, boolean>>,
-    default: () => ({}),
-  },
-  name: {
-    type: String,
-    required: true,
-  },
-  schema: {
-    type: Object as PropType<AnyObjectSchema>,
-    default: () => null,
-  },
-});
+const props = defineProps(SmaeTextProps);
 
 const { handleChange } = useField(toRef(props, 'name'), undefined, {
   initialValue: props.modelValue,
