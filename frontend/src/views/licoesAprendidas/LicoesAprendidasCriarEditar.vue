@@ -1,6 +1,6 @@
 <script setup>
 // eslint-disable-next-line import/no-extraneous-dependencies
-import SmaeText from '@/components/camposDeFormulario/SmaeText.vue';
+import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
 import { liçãoAprendida as schema } from '@/consts/formSchemas';
 import truncate from '@/helpers/texto/truncate';
 import { useAlertStore } from '@/stores/alert.store';

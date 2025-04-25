@@ -6,7 +6,7 @@ import LoadingComponent from '@/components/LoadingComponent.vue';
 import MigalhasDePão from '@/components/MigalhasDePao.vue';
 import SmaeLink from '@/components/SmaeLink.vue';
 import SmaeFieldsetSubmit from '@/components/SmaeFieldsetSubmit.vue';
-import SmaeText from '@/components/camposDeFormulario/SmaeText.vue';
+import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
 import TítuloDePágina from '@/components/TituloDaPagina.vue';
 import detectarPosicaoCongelada from '@/diretivas/detectarPosicaoCongelada';
 import selecionarMultiplasOpcoes from '@/diretivas/selecionarMultiplasOpcoes';

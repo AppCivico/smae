@@ -1,5 +1,5 @@
 <script setup>
-import SmaeText from '@/components/camposDeFormulario/SmaeText.vue';
+import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
 import { acompanhamento as schema } from '@/consts/formSchemas';
 import dateToField from '@/helpers/dateToField';
 import truncate from '@/helpers/texto/truncate';

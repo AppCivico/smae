@@ -1,6 +1,6 @@
 <script setup>
 import AutocompleteField from '@/components/AutocompleteField2.vue';
-import SmaeText from '@/components/camposDeFormulario/SmaeText.vue';
+import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import { contratoDeObras } from '@/consts/formSchemas';
 import truncate from '@/helpers/texto/truncate';
