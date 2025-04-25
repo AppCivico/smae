@@ -1,23 +1,29 @@
 <script lang="ts" setup>
 import { format } from 'date-fns';
 import { computed, ref, watch } from 'vue';
+import SmaeText, { SmaeTextProps } from '../SmaeText';
 
-type Props = {
-  separador?: string
-  diaPrefixo?: string
-  modelValue?: string | Date
-};
 type Emits = {
   (e: 'update:modelValue', value: string): void
   (e: 'change', value: string): void
-
 };
 
-const props = withDefaults(defineProps<Props>(), {
-  separador: '-',
-  diaPrefixo: undefined,
-  modelValue: undefined,
+const props = defineProps({
+  ...SmaeTextProps,
+  separador: {
+    type: String,
+    default: '-',
+  },
+  diaPrefixo: {
+    type: String,
+    default: undefined,
+  },
+  modelValue: {
+    type: [String, Date],
+    default: '',
+  },
 });
+
 const emit = defineEmits<Emits>();
 
 const localValue = ref<string>('');
@@ -92,10 +98,10 @@ watch(localValue, (val) => {
 </script>
 
 <template>
-  <input
-    class="inputtext"
-    :value="valorExibicao"
-    @input="handleInput"
+  <SmaeText
+    v-bind="$attrs"
+    :model-value="valorExibicao || ''"
+    @update:model-value="handleInput"
     @blur="handleAbandonarElemento"
-  >
+  />
 </template>
