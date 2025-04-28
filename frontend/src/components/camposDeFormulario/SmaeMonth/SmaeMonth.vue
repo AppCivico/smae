@@ -1,10 +1,12 @@
 <script lang="ts" setup>
 import { format } from 'date-fns';
+import { useField } from 'vee-validate';
 import {
   computed, ref, watch,
 } from 'vue';
 
 type Props = {
+  name?: string
   separador?: string
   diaPrefixo?: string
   modelValue?: string | Date
@@ -15,11 +17,14 @@ type Emits = {
 };
 
 const props = withDefaults(defineProps<Props>(), {
+  name: undefined,
   separador: '-',
   diaPrefixo: undefined,
   modelValue: undefined,
 });
 const emit = defineEmits<Emits>();
+
+let setValue: (value: unknown) => void | undefined;
 
 const localValue = ref<string>('');
 const valorExibicao = computed(() => localValue.value.replace(props.separador, '/'));
@@ -89,6 +94,12 @@ function formatarParaExpedicao(value: string) {
   return [ano, mes, dia].join(props.separador);
 }
 
+if (props.name) {
+  const { setValue: setValueField, value } = useField(props.name);
+  setValue = setValueField;
+  prepararValorExterno(value.value as string);
+}
+
 watch(localValue, (val) => {
   let data = val;
   if (props.diaPrefixo && val) {
@@ -99,6 +110,9 @@ watch(localValue, (val) => {
 
   emit('change', data);
   emit('update:modelValue', data);
+  if (props.name && setValue) {
+    setValue(data);
+  }
 });
 
 watch(() => props.modelValue, () => {

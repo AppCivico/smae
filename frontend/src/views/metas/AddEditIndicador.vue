@@ -6,10 +6,8 @@ import {
   ref, unref, watch,
 } from 'vue';
 import { useRoute } from 'vue-router';
-import { format } from 'date-fns';
 import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
 import SmallModal from '@/components/SmallModal.vue';
-import LabelFromYup from '@/components/camposDeFormulario/LabelFromYup.vue';
 import EditorDeFormula from '@/components/metas/EditorDeFormula.vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import TabelaDeVariaveis from '@/components/metas/TabelaDeVariaveis.vue';
@@ -18,8 +16,6 @@ import TabelaDeVariaveisCompostasEmUso from '@/components/metas/TabelaDeVariavei
 import TabelaDeVariaveisEmUso from '@/components/metas/TabelaDeVariaveisEmUso.vue';
 import AssociadorDeVariaveis from '@/components/variaveis/AssociadorDeVariaveis.vue';
 import { indicador as schema } from '@/consts/formSchemas';
-import fieldToDate from '@/helpers/fieldToDate';
-import maskMonth from '@/helpers/maskMonth';
 import { router } from '@/router';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAtividadesStore } from '@/stores/atividades.store';
@@ -560,7 +556,6 @@ watch(() => props.group, () => {
               @change="handleChange"
             />
           </Field>
-          <!-- maxlength="7" -->
           <div class="error-msg">
             {{ errors.inicio_medicao }}
           </div>
@@ -575,9 +570,9 @@ watch(() => props.group, () => {
             placeholder="mm/aaaa"
           >
             <SmaeMonth
-              :model-value="value"
               dia-prefixo="1"
               placeholder="MM/YYYY"
+              :model-value="value"
               @change="handleChange"
             />
           </Field>
