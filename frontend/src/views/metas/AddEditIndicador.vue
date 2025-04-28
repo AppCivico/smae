@@ -335,17 +335,6 @@ watch(AssociadorDeVariaveisEstaAberto, (novoValor) => {
   }
 });
 
-function formatarMes(el) {
-  console.log(el.target);
-
-  // const { value } = el.target;
-
-  // const a = format('MM/YYYY', value);
-  // console.log('a', a);
-
-  // el.target.value = a;
-}
-
 watch(() => props.group, () => {
   start();
 }, { immediate: true });
