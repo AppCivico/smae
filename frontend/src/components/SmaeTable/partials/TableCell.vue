@@ -1,6 +1,6 @@
 <template>
   <slot
-    :name="`celula-fora:${caminho}`"
+    :name="`celula-fora:${caminhoSlot}`"
     :caminho="caminho"
     :linha="linha"
   >
@@ -9,7 +9,7 @@
       v-bind="$attrs"
     >
       <slot
-        :name="`celula:${caminho}`"
+        :name="`celula:${caminhoSlot}`"
         :caminho="caminho"
         :linha="linha"
       >
@@ -23,6 +23,7 @@
 import { computed, defineProps, defineOptions } from 'vue';
 import obterParametroNoObjeto from '@/helpers/obterParametroNoObjeto';
 import type { Linha } from '../tipagem';
+import { normalizadorDeSlot } from '../utils';
 
 defineOptions({ inheritAttrs: false });
 
@@ -50,4 +51,6 @@ const conteudoColuna = computed(() => {
 
   return obterParametroNoObjeto(props.caminho, props.linha);
 });
+
+const caminhoSlot = computed(() => normalizadorDeSlot(props.caminho));
 </script>
