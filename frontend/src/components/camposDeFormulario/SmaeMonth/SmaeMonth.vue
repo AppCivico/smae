@@ -29,7 +29,7 @@ function obterMascara(valor: string) {
     return valor;
   }
 
-  let valorEmAndamento = valor.replace(/\D/g, '').replace('-', ''); // remove tudo que não for número
+  let valorEmAndamento = valor.replace(/\D/g, '').replace(props.separador, ''); // remove tudo que não for número
 
   if (valorEmAndamento.length > 6) {
     valorEmAndamento = valorEmAndamento.slice(0, 6); // limita a 6 dígitos
