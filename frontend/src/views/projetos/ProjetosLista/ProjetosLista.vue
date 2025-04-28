@@ -12,8 +12,8 @@ import { useProjetosStore } from '@/stores/projetos.store';
 import dinheiro from '@/helpers/dinheiro';
 import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
 import projectStatuses from '@/consts/projectStatuses';
-import ProjetosListaFiltro from './partials/ProjetosListaFiltro.vue';
 import { useAuthStore } from '@/stores/auth.store';
+import ProjetosListaFiltro from './partials/ProjetosListaFiltro.vue';
 
 defineOptions({
   inheritAttrs: false,
@@ -120,16 +120,12 @@ onBeforeMount(() => {
             </button>
           </template>
 
-          <template #['celula-fora:nome']="{ linha }">
+          <template #celula-fora:nome="{ linha }">
             <th>
               <SmaeLink :to="{ name: 'projetosResumo', params: { projetoId: linha.id }}">
                 {{ linha.nome }}
               </SmaeLink>
             </th>
-          </template>
-
-          <template #['celula:orgao_responsavel.descricao']="{ linha }">
-            {{ linha.orgao_responsavel?.descricao || '-' }}
           </template>
 
           <template #celula:status="{ linha }">
