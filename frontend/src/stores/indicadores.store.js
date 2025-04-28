@@ -71,14 +71,17 @@ export const useIndicadoresStore = defineStore({
         if (r.linhas.length) {
           const x = r.linhas[0];
 
-          x.inicio_medicao = this.dateToField(x.inicio_medicao);
-          x.fim_medicao = this.dateToField(x.fim_medicao);
+          console.log(x.inicio_medicao);
+
+          // x.inicio_medicao = this.dateToField(x.inicio_medicao);
+          // x.fim_medicao = this.dateToField(x.fim_medicao);
           if (x.acumulado_valor_base !== null) {
             x.acumulado_valor_base = Number.parseFloat(x.acumulado_valor_base, 10);
           }
           x.agregador_id = x.agregador ? x.agregador.id : null;
 
           this.singleIndicadores = x;
+          console.log(this.singleIndicadores);
         } else {
           // mantendo comportamento legado
           // eslint-disable-next-line @typescript-eslint/no-throw-literal

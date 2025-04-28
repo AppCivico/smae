@@ -18,7 +18,7 @@ describe('InputDateMasked.vue', () => {
     });
   }
 
-  it.skip('deve formatar corretamente o valor digitado', async () => {
+  it('deve formatar corretamente o valor digitado', async () => {
     const wrapper = montar();
 
     const input = wrapper.find('input');
@@ -27,16 +27,16 @@ describe('InputDateMasked.vue', () => {
     expect(input.element.value).toBe('04/2025');
   });
 
-  it.skip('deve limitar a 6 dígitos numéricos', async () => {
+  it('deve limitar a 6 dígitos numéricos', async () => {
     const wrapper = montar();
 
     const input = wrapper.find('input');
     await input.setValue('042020'); // digita além de 6 dígitos
 
-    expect(input.element.value).toBe('04/2025'); // deve truncar
+    expect(input.element.value).toBe('04/2020'); // deve truncar
   });
 
-  it.skip('deve emitir "update:modelValue" e "change" com valor formatado corretamente', async () => {
+  it('deve emitir "update:modelValue" e "change" com valor formatado corretamente', async () => {
     const wrapper = montar();
 
     const input = wrapper.find('input');
@@ -46,10 +46,10 @@ describe('InputDateMasked.vue', () => {
     expect(wrapper.emitted('change')).toBeTruthy();
 
     const lastEmitted = wrapper.emitted('update:modelValue')?.pop();
-    expect(lastEmitted).toEqual(['01-01-2025']);
+    expect(lastEmitted).toEqual(['2025-01-01']);
   });
 
-  it.skip('deve aceitar valor vindo de props como string', async () => {
+  it('deve aceitar valor vindo de props como string', async () => {
     const wrapper = montar({
       modelValue: '072024',
     });
@@ -58,7 +58,7 @@ describe('InputDateMasked.vue', () => {
     expect(input.element.value).toBe('07/2024');
   });
 
-  it.skip('deve aceitar valor vindo de props como Date', async () => {
+  it('deve aceitar valor vindo de props como Date', async () => {
     const wrapper = montar({
       modelValue: new Date(2025, 3, 1), // abril de 2025
     });
@@ -67,7 +67,7 @@ describe('InputDateMasked.vue', () => {
     expect(input.element.value).toBe('04/2025');
   });
 
-  it.skip('deve preencher com zeros ao sair do campo se valor incompleto', async () => {
+  it('deve preencher com zeros ao sair do campo se valor incompleto', async () => {
     const wrapper = mount(InputDateMasked);
 
     const input = wrapper.find('input');
