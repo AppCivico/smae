@@ -1,6 +1,8 @@
 <script lang="ts" setup>
 import { format } from 'date-fns';
-import { computed, ref, watch } from 'vue';
+import {
+  computed, ref, watch,
+} from 'vue';
 
 type Props = {
   separador?: string
@@ -27,7 +29,8 @@ function obterMascara(valor: string) {
     return valor;
   }
 
-  let valorEmAndamento = valor.replace(/\D/g, ''); // remove tudo que não for número
+  let valorEmAndamento = valor.replace(/\D/g, '').replace('-', ''); // remove tudo que não for número
+
   if (valorEmAndamento.length > 6) {
     valorEmAndamento = valorEmAndamento.slice(0, 6); // limita a 6 dígitos
   }
@@ -62,35 +65,45 @@ function handleAbandonarElemento() {
   }
 }
 
-function prepararValorExterno() {
-  if (!props.modelValue) {
+function prepararValorExterno(valorInicial?: string | Date) {
+  if (!valorInicial || valorInicial === '') {
     return;
   }
 
-  if (props.modelValue instanceof Date) {
-    const dataFormatada = format(props.modelValue, `MM${props.separador}yyyy`);
+  if (valorInicial instanceof Date) {
+    const dataFormatada = format(valorInicial, `MM${props.separador}yyyy`);
 
     localValue.value = dataFormatada;
     return;
   }
 
-  localValue.value = obterMascara(props.modelValue);
+  const [ano, mes] = valorInicial.split(props.separador);
+
+  const formatoInterno = [mes, ano].join(props.separador);
+  localValue.value = obterMascara(formatoInterno);
 }
 
-watch(() => props.modelValue, () => {
-  prepararValorExterno();
-}, { immediate: true });
+function formatarParaExpedicao(value: string) {
+  const [dia, mes, ano] = value.split(props.separador);
+
+  return [ano, mes, dia].join(props.separador);
+}
 
 watch(localValue, (val) => {
   let data = val;
-  if (props.diaPrefixo) {
+  if (props.diaPrefixo && val) {
     data = [props.diaPrefixo.padStart(2, '0'), data].join(props.separador);
   }
 
+  data = formatarParaExpedicao(data);
+
   emit('change', data);
   emit('update:modelValue', data);
-}, { immediate: true });
+});
 
+watch(() => props.modelValue, () => {
+  prepararValorExterno(props.modelValue);
+}, { immediate: true });
 </script>
 
 <template>

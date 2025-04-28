@@ -938,10 +938,10 @@ export const indicador = object()
       .nullable(),
     fim_medicao: string()
       .required('Preencha a data')
-      .matches(regEx['month/year'], 'Formato inválido'),
+      .matches(regEx['year/month/day'], 'Formato inválido'),
     inicio_medicao: string()
       .required('Preencha a data')
-      .matches(regEx['month/year'], 'Formato inválido'),
+      .matches(regEx['year/month/day'], 'Formato inválido'),
     nivel_regionalizacao: string()
       .nullable()
       // eslint-disable-next-line eqeqeq

@@ -34,7 +34,7 @@ import AddEditValoresComposta from '@/views/metas/AddEditValoresComposta.vue';
 import AddEditVariavel from '@/views/metas/AddEditVariavel.vue';
 import AddEditVariavelComposta from '@/views/metas/AddEditVariavelComposta.vue';
 import GerarVariaveisCompostas from '@/views/metas/GerarVariaveisCompostas.vue';
-import SmaeMonth from '@/components/camposDeFormulario/SmaeMonth/SmaeMonth.vue';
+import SmaeMonth from '@/components/camposDeFormulario/SmaeMonth';
 
 defineOptions({
   inheritAttrs: false,
@@ -181,8 +181,6 @@ async function onSubmit(values) {
       values.formula_variaveis = unref(variaveisFormula);
     }
 
-    values.inicio_medicao = fieldToDate(values.inicio_medicao);
-    values.fim_medicao = fieldToDate(values.fim_medicao);
     values.regionalizavel = !!values.regionalizavel;
     values.variavel_categoria_id = values.variavel_categoria_id === '' ? null : values.variavel_categoria_id;
     values.nivel_regionalizacao = values.regionalizavel
@@ -558,19 +556,18 @@ watch(() => props.group, () => {
       </div>
       <div class="flex g2">
         <div class="f1">
-          <label class="label">1Início da Medição <span class="tvermelho">*</span></label>
+          <label class="label">Início da Medição <span class="tvermelho">*</span></label>
           <Field
             v-slot="{ value, handleChange }"
             name="inicio_medicao"
             class="inputtext light mb1"
             :class="{ 'error': errors.inicio_medicao }"
             placeholder="mm/aaaa"
-            @keyup="formatarMes"
           >
-            -{{ value }}-
             <SmaeMonth
-              :model-value="'12312'"
               dia-prefixo="1"
+              placeholder="MM/YYYY"
+              :model-value="value"
               @change="handleChange"
             />
           </Field>
@@ -582,14 +579,19 @@ watch(() => props.group, () => {
         <div class="f1">
           <label class="label">Fim da Medição <span class="tvermelho">*</span></label>
           <Field
+            v-slot="{ value, handleChange }"
             name="fim_medicao"
-            type="text"
             class="inputtext light mb1"
-            :class="{ 'error': errors.fim_medicao }"
-            maxlength="7"
+            :class="{ 'error': errors.inicio_medicao }"
             placeholder="mm/aaaa"
-            @keyup="maskMonth"
-          />
+          >
+            <SmaeMonth
+              :model-value="value"
+              dia-prefixo="1"
+              placeholder="MM/YYYY"
+              @change="handleChange"
+            />
+          </Field>
           <div class="error-msg">
             {{ errors.fim_medicao }}
           </div>
