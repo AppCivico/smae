@@ -207,7 +207,7 @@ BEGIN
             FROM budget_years "by"
             LEFT JOIN completion_status cs ON cs.ano_referencia = "by".year;
 
-            v_pendente_orcamento := (
+            v_pendente_orcamento := v_pdm_ativo AND (
                 SELECT COALESCE(array_length(v_orcamento_total, 1), 0) != COALESCE(array_length(v_orcamento_preenchido, 1), 0)
             );
 
@@ -296,20 +296,30 @@ BEGIN
                 (r_item.tipo = 'atividade' AND i.atividade_id = r_item.id)
             )
             AND v.removido_em IS NULL
+            AND i.removido_em IS NULL
             -- tiras as variáveis de cronograma, que o próprio cronograma já contabiliza
             AND (v.variavel_categorica_id IS NULL OR vc.tipo <> 'Cronograma'::"TipoVariavelCategorica")
         )
         SELECT
             COUNT(DISTINCT family_id),
             COALESCE(ARRAY_AGG(DISTINCT family_id), ARRAY[]::int[]),
-            COUNT(DISTINCT family_id) FILTER (WHERE v_pdm_ativo AND eh_corrente = true),
-            COUNT(DISTINCT family_id) FILTER (WHERE v_pdm_ativo AND eh_corrente = true AND fase = 'Preenchimento' AND
+            COUNT(DISTINCT family_id) FILTER (WHERE v_pdm_ativo AND (eh_corrente = true OR atrasos <> '{}' )),
+            COUNT(DISTINCT family_id) FILTER (WHERE v_pdm_ativo AND (
+                (
+                    eh_corrente = true AND fase = 'Preenchimento' AND
                 (atrasos IS NULL OR atrasos = '{}') AND (prazo IS NULL OR prazo >= (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::date)
+                ) OR (atrasos <> '{}')
+            )
             ),
-            COUNT(DISTINCT family_id) FILTER (WHERE v_pdm_ativo AND eh_corrente = true AND fase = 'Preenchimento' AND
+            COUNT(DISTINCT family_id) FILTER (WHERE v_pdm_ativo AND ((eh_corrente = true AND fase = 'Preenchimento' AND
                 ((atrasos IS NOT NULL AND atrasos <> '{}') OR (prazo IS NOT NULL AND prazo < (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::date))
+            ) OR (
+                atrasos <> '{}'
+             ) )
             ),
-            COUNT(DISTINCT family_id) FILTER (WHERE v_pdm_ativo AND eh_corrente = true AND fase = 'Validacao'),
+            COUNT(DISTINCT family_id) FILTER (WHERE v_pdm_ativo AND eh_corrente = true AND
+                ((fase = 'Validacao') )
+            ),
             COUNT(DISTINCT family_id) FILTER (WHERE v_pdm_ativo AND eh_corrente = true AND fase = 'Liberacao' AND liberacao_enviada = false),
             COUNT(DISTINCT family_id) FILTER (WHERE v_pdm_ativo AND eh_corrente = true AND fase = 'Liberacao' AND liberacao_enviada = true)
         INTO
