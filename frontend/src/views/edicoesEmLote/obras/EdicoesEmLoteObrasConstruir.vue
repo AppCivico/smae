@@ -136,7 +136,6 @@ const schema = object({
           }
           return schema.notRequired().strip();
         }),
-      dependente: object().default({}),
     }),
   ).min(1, 'Adicione pelo menos uma edição'),
 });
@@ -176,6 +175,7 @@ const onSubmit = handleSubmit(async (valores) => {
     ids: edicoesEmLoteStore.idsSelecionados,
     ops: valores.edicoes.map((edicao) => {
       const tipoCampo = campoConfigPorNome(edicao.propriedade)?.tipo;
+      const entidadeAlvo = campo?.meta?.entidade_alvo || null;
       let { valor } = edicao;
 
       if (tipoCampo === 'date' && valor) {
@@ -188,7 +188,17 @@ const onSubmit = handleSubmit(async (valores) => {
 
       const operacao = edicao.operacao || 'Set';
 
+      if (campo?.meta?.campos && Array.isArray(campo.meta.campos)) {
+        return campo.meta.campos.map((subcampo) => ({
+          entidade_alvo: entidadeAlvo,
+          col: subcampo.schema?.spec?.path || '',
+          tipo_operacao: operacao,
+          valor: edicao.valor?.[subcampo.schema?.spec?.path] ?? null,
+        }));
+      }
+
       return {
+        entidade_alvo: entidadeAlvo,
         col: edicao.propriedade,
         tipo_operacao: operacao,
         valor,
@@ -405,7 +415,6 @@ function handlePropertyChange(event, idx) {
               propriedade: '',
               valor: null,
               operacao: 'Set',
-              dependente: {}
             })"
         >
           <svg
