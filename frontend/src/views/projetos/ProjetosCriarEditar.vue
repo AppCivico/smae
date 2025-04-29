@@ -1,4 +1,14 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage,
+  Field,
+  FieldArray,
+  useForm,
+  useIsFormDirty,
+} from 'vee-validate';
+import { computed, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
 import CampoDePlanosMetasRelacionados from '@/components/CampoDePlanosMetasRelacionados.vue';
@@ -17,16 +27,7 @@ import { useObservadoresStore } from '@/stores/observadores.store.ts';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
-import { storeToRefs } from 'pinia';
-import {
-  ErrorMessage,
-  Field,
-  FieldArray,
-  useForm,
-  useIsFormDirty,
-} from 'vee-validate';
-import { computed, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import SmaeTooltip from '@/components/SmaeTooltip/SmaeTooltip.vue';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -280,21 +281,27 @@ watch(itemParaEdicao, (novoValor) => {
 
     <hr class="f1">
 
-    <MenuDeMudançaDeStatusDeProjeto
-      v-if="projetoId"
-    />
+    <MenuDeMudançaDeStatusDeProjeto v-if="projetoId" />
 
     <CheckClose :formulario-sujo="formularioSujo" />
   </header>
+
+  <SmaeTooltip texto="meu texto">
+    conteudo slot
+
+    <template #botao>
+      <div>1234</div>
+    </template>
+  </SmaeTooltip>
 
   <form
     v-if="!projetoId || emFoco"
     @submit.prevent="!isSubmitting ? onSubmit() : null"
   >
     <div class="flex g2 mb1">
-
       <div class="f1 mb1">
         <LabelFromYup
+          informativo="123"
           name="portfolio_id"
           :schema="schema"
         >
@@ -310,7 +317,10 @@ watch(itemParaEdicao, (novoValor) => {
               <svg
                 width="10"
                 height="10"
-              ><use xlink:href="#i_edit" /></svg><div>Trocar de portfolio</div>
+              >
+                <use xlink:href="#i_edit" />
+              </svg>
+              <div>Trocar de portfolio</div>
             </router-link>
           </template>
         </LabelFromYup>
@@ -348,6 +358,7 @@ watch(itemParaEdicao, (novoValor) => {
         class="f1 mb1"
       >
         <LabelFromYup
+          informativo="123"
           name="codigo"
           :schema="schema"
         />
@@ -395,9 +406,7 @@ watch(itemParaEdicao, (novoValor) => {
           :class="{ error: errors.status }"
           :disabled="!emFoco?.permissoes.status_permitidos?.length"
         >
-          <option
-            :value="null"
-          >
+          <option :value="null">
             Selecionar
           </option>
           <option
@@ -448,17 +457,23 @@ watch(itemParaEdicao, (novoValor) => {
 
     <div class="flex g2">
       <div class="f1 mb1">
+        1
         <LabelFromYup
+
           name="resumo"
           :schema="schema"
-        />
+        >
+          <!-- <template #informacao>
+            slot
+          </template> -->
+        </LabelFromYup>
         <SmaeText
+          v-model="values.resumo"
           name="resumo"
           as="textarea"
           rows="5"
           class="inputtext light mb1"
           maxlength="2048"
-          v-model="values.resumo"
           anular-vazio
           :class="{ 'error': errors.resumo }"
         />
@@ -477,12 +492,12 @@ watch(itemParaEdicao, (novoValor) => {
             :schema="schema"
           />
           <SmaeText
+            v-model="values.objeto"
             name="objeto"
             as="textarea"
             rows="5"
             class="inputtext light mb1"
             maxlength="2048"
-            v-model="values.objeto"
             anular-vazio
             :class="{ 'error': errors.objeto }"
             :disabled="!emFoco?.permissoes?.campo_objeto"
@@ -501,12 +516,12 @@ watch(itemParaEdicao, (novoValor) => {
             :schema="schema"
           />
           <SmaeText
+            v-model="values.objetivo"
             name="objetivo"
             as="textarea"
             rows="5"
             class="inputtext light mb1"
             maxlength="2048"
-            v-model="values.objetivo"
             anular-vazio
             :class="{ 'error': errors.objetivo }"
             :disabled="!emFoco?.permissoes?.campo_objetivo"
@@ -525,12 +540,12 @@ watch(itemParaEdicao, (novoValor) => {
             :schema="schema"
           />
           <SmaeText
+            v-model="values.publico_alvo"
             name="publico_alvo"
             as="textarea"
             rows="5"
             class="inputtext light mb1"
             maxlength="2048"
-            v-model="values.publico_alvo"
             anular-vazio
             :class="{ 'error': errors.publico_alvo }"
             :disabled="!emFoco?.permissoes?.campo_publico_alvo"
@@ -595,7 +610,9 @@ watch(itemParaEdicao, (novoValor) => {
               <svg
                 width="20"
                 height="20"
-              ><use xlink:href="#i_remove" /></svg>
+              >
+                <use xlink:href="#i_remove" />
+              </svg>
             </button>
           </div>
 
@@ -609,7 +626,9 @@ watch(itemParaEdicao, (novoValor) => {
             <svg
               width="20"
               height="20"
-            ><use xlink:href="#i_+" /></svg>Adicionar premissa
+            >
+              <use xlink:href="#i_+" />
+            </svg>Adicionar premissa
           </button>
         </FieldArray>
       </div>
@@ -668,7 +687,9 @@ watch(itemParaEdicao, (novoValor) => {
               <svg
                 width="20"
                 height="20"
-              ><use xlink:href="#i_remove" /></svg>
+              >
+                <use xlink:href="#i_remove" />
+              </svg>
             </button>
           </div>
 
@@ -682,7 +703,9 @@ watch(itemParaEdicao, (novoValor) => {
             <svg
               width="20"
               height="20"
-            ><use xlink:href="#i_+" /></svg>Adicionar restrição
+            >
+              <use xlink:href="#i_+" />
+            </svg>Adicionar restrição
           </button>
         </FieldArray>
       </div>
@@ -697,12 +720,12 @@ watch(itemParaEdicao, (novoValor) => {
           :schema="schema"
         />
         <SmaeText
+          v-model="values.principais_etapas"
           name="principais_etapas"
           as="textarea"
           rows="5"
           class="inputtext light mb1"
           maxlength="2048"
-          v-model="values.principais_etapas"
           anular-vazio
           :class="{ 'error': errors.principais_etapas }"
         />
@@ -725,17 +748,17 @@ watch(itemParaEdicao, (novoValor) => {
           Não escopo
           <small class="t13 tc500">(o que <strong>não</strong> será entregue no projeto)</small>
         </LabelFromYup>
-          <SmaeText
-            name="nao_escopo"
-            as="textarea"
-            rows="5"
-            class="inputtext light mb1"
-            maxlength="2048"
-            v-model="values.nao_escopo"
-            anular-vazio
-            :class="{ 'error': errors.nao_escopo }"
-            :disabled="!emFoco?.permissoes?.campo_nao_escopo"
-          />
+        <SmaeText
+          v-model="values.nao_escopo"
+          name="nao_escopo"
+          as="textarea"
+          rows="5"
+          class="inputtext light mb1"
+          maxlength="2048"
+          anular-vazio
+          :class="{ 'error': errors.nao_escopo }"
+          :disabled="!emFoco?.permissoes?.campo_nao_escopo"
+        />
         <ErrorMessage
           name="nao_escopo"
           class="error-msg"
@@ -880,7 +903,9 @@ watch(itemParaEdicao, (novoValor) => {
               <svg
                 width="20"
                 height="20"
-              ><use xlink:href="#i_remove" /></svg>
+              >
+                <use xlink:href="#i_remove" />
+              </svg>
             </button>
           </div>
 
@@ -897,7 +922,9 @@ watch(itemParaEdicao, (novoValor) => {
             <svg
               width="20"
               height="20"
-            ><use xlink:href="#i_+" /></svg>Adicionar fonte de recursos
+            >
+              <use xlink:href="#i_+" />
+            </svg>Adicionar fonte de recursos
           </button>
         </FieldArray>
       </div>
@@ -1598,9 +1625,7 @@ watch(itemParaEdicao, (novoValor) => {
           name="grupo_portfolio"
           class="error-msg"
         />
-        <ErrorComponent
-          :erro="erroNosGruposDeObservadores"
-        />
+        <ErrorComponent :erro="erroNosGruposDeObservadores" />
       </div>
     </div>
 
