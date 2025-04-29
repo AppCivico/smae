@@ -2,7 +2,6 @@ export type Coluna = {
   chave: string;
   label?: string;
   ehCabecalho?: boolean;
-  ehDadoComputado?: boolean;
   atributosDaCelula?: Record<string, unknown>;
   atributosDaColuna?: Record<string, unknown>;
   atributosDoCabecalhoDeColuna?: Record<string, unknown>;

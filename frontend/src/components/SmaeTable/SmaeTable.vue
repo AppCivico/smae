@@ -81,7 +81,6 @@
               :formatador="coluna.formatador"
               :linha="linha"
               :caminho="coluna.chave"
-              :eh-dado-computado="coluna.ehDadoComputado"
               v-bind="coluna.atributosDaCelula"
             >
               <slot
