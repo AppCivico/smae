@@ -1,7 +1,7 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import { onMounted, ref, watch } from 'vue';
-import removerHtml from '@/helpers/html/removerHtmlrHtml';
+import removerHtml from '@/helpers/html/removerHtml';
 import { useAlertStore } from '@/stores/alert.store';
 import { useBlocoDeNotasStore } from '@/stores/blocoNotas.store';
 import { useTipoDeNotasStore } from '@/stores/tipoNotas.store';
