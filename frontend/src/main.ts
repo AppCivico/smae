@@ -1,7 +1,13 @@
+import type { Store } from 'pinia';
+import { createPinia } from 'pinia';
+import {
+  createApp, markRaw, nextTick,
+} from 'vue';
+import type { RouteLocationNormalizedLoaded, Router } from 'vue-router';
 import CheckClose from '@/components/CheckClose.vue';
 import ErrorComponent from '@/components/ErrorComponent.vue';
 import FormErrorsList from '@/components/FormErrorsList.vue';
-import LabelFromYup from '@/components/camposDeFormulario/LabelFromYup.vue';
+import SmaeLabel from '@/components/camposDeFormulario/SmaeLabel.vue';
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import MigalhasDePão from '@/components/MigalhasDePao.vue';
 import SmaeLink from '@/components/SmaeLink.vue';
@@ -13,12 +19,6 @@ import selecionarMultiplasOpcoes from '@/diretivas/selecionarMultiplasOpcoes';
 import type { RequestS } from '@/helpers/requestS';
 import requestS from '@/helpers/requestS';
 import consoleNaTemplate from '@/plugins/consoleNaTemplate';
-import type { Store } from 'pinia';
-import { createPinia } from 'pinia';
-import {
-  createApp, markRaw, nextTick,
-} from 'vue';
-import type { RouteLocationNormalizedLoaded, Router } from 'vue-router';
 import App from './App.vue';
 import CabecalhoDePagina from './components/CabecalhoDePagina.vue';
 import { router } from './router';
@@ -152,7 +152,8 @@ app.component('CheckClose', CheckClose);
 app.component('ErrorComponent', ErrorComponent);
 app.component('FormErrorsList', FormErrorsList);
 app.component('SmaeFieldsetSubmit', SmaeFieldsetSubmit);
-app.component('LabelFromYup', LabelFromYup);
+app.component('LabelFromYup', SmaeLabel);
+app.component('SmaeLabel', SmaeLabel);
 app.component('LoadingComponent', LoadingComponent);
 app.component('MigalhasDePão', MigalhasDePão);
 app.component('MigalhasDePao', MigalhasDePão);

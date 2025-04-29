@@ -7,11 +7,12 @@ import {
   lazy,
 } from 'yup';
 import { format } from 'date-fns';
-import { useEdicoesEmLoteStore } from '@/stores/edicoesEmLote.store';
 import {
   Field, FieldArray, ErrorMessage, useForm,
 } from 'vee-validate';
 import { computed, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { useEdicoesEmLoteStore } from '@/stores/edicoesEmLote.store';
 import { useAlertStore } from '@/stores/alert.store';
 import { useEquipamentosStore } from '@/stores/equipamentos.store';
 import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';
@@ -21,11 +22,9 @@ import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store';
 import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
 import rawStatusObras from '@/consts/statusObras';
 import { obras as schemaObras } from '@/consts/formSchemas';
-import LabelFromYup from '@/components/camposDeFormulario/LabelFromYup.vue';
 import CabecalhoDePagina from '@/components/CabecalhoDePagina.vue';
 import CampoDinamico from '@/components/alteracaoEmLotes.componentes/CampoDinamico.vue';
 import SmaeFieldsetSubmit from '@/components/SmaeFieldsetSubmit.vue';
-import { useRoute, useRouter } from 'vue-router';
 
 const router = useRouter();
 const route = useRoute();
