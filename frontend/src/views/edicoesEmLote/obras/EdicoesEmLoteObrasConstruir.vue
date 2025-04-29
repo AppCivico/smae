@@ -368,8 +368,8 @@ function handlePropertyChange(event, idx) {
               </LabelFromYup>
               <CampoDinamico
                 v-model="values.edicoes[idx].valor"
-                :idx="idx"
                 :config="campoConfig(idx)"
+                :path="`edicoes[${idx}].valor`"
                 :errors="errors"
                 :loading-options="loadingOptions"
                 :store-instances="storeInstances"
@@ -413,7 +413,7 @@ function handlePropertyChange(event, idx) {
           @click="push(
             {
               propriedade: '',
-              valor: null,
+              valor: {},
               operacao: 'Set',
             })"
         >

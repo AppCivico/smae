@@ -1,16 +1,14 @@
 <script setup>
-import { ref, watch, toRaw } from 'vue';
+import { computed } from 'vue';
 import { Field, ErrorMessage } from 'vee-validate';
-import isEqual from 'lodash/isEqual';
 import SmaeNumberInput from '@/components/camposDeFormulario/SmaeNumberInput.vue';
 import SmaeDateInput from '@/components/camposDeFormulario/SmaeDateInput.vue';
 import AutocompleteField2 from '@/components/AutocompleteField2.vue';
-import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
 
 const props = defineProps({
-  idx: Number,
   config: Object,
   modelValue: null,
+  path: { type: String, required: true },
   errors: Object,
   loadingOptions: Object,
   storeInstances: Object,
@@ -20,226 +18,140 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue']);
 
-const localModelValue = ref(toRaw(props.modelValue));
-
-let internalChange = false;
-
-watch(
-  () => props.modelValue,
-  (novoValor) => {
-    if (!internalChange) {
-      if (!isEqual(novoValor, localModelValue.value)) {
-        localModelValue.value = toRaw(novoValor);
-      }
-    }
-    internalChange = false;
-  }
-);
-
-function updateValue(value) {
-  if (!isEqual(value, localModelValue.value)) {
-    internalChange = true;
-    localModelValue.value = value;
-    emit('update:modelValue', value);
+function updateValue(val, key = null) {
+  if (key) {
+    emit('update:modelValue', { ...props.modelValue, [key]: val });
+  } else {
+    emit('update:modelValue', val);
   }
 }
 
-function atualizarSubCampo(campo, valorCampo, configMeta) {
-  console.log('atualizarSubCampo', campo, valorCampo, props.key);
+const fieldName = computed(() => props.path);
 
-  let valorFinal = valorCampo;
-  if (
-    valorCampo &&
-    typeof valorCampo === 'object' &&
-    campo in valorCampo
-  ) {
-    valorFinal = valorCampo[campo];
+function getOptionsForField(config) {
+  if (!config.meta) return [];
+  if (config.tipo === 'select-estatico') {
+    return props.fontesEstaticas?.[config.meta.optionSource] || [];
   }
-
-  const novoValor = { ...(localModelValue.value || {}) };
-  novoValor[campo] = valorFinal;
-
-  if (!isEqual(novoValor, localModelValue.value)) {
-    internalChange = true;
-    localModelValue.value = novoValor;
-    emit('update:modelValue', novoValor);
+  if (config.tipo === 'select-dinamico') {
+    const store = props.storeInstances[config.meta.storeKey];
+    const list = config.meta.getterKey ? store[config.meta.getterKey] : store[config.meta.listState];
+    return list?.map(item => ({
+      value: item[config.meta.optionValue],
+      label: item[config.meta.optionLabel],
+    })) || [];
   }
+  return [];
 }
 
-// Helper para detectar tipo de campo simples
-function detectarTipoCampoSimples(subCampo) {
+function detectarTipoCampo(campoSchema, meta) {
+  if (meta?.tipo) return meta.tipo;
+
+  if (campoSchema.type === 'array') return 'autocomplete';
+
+  if (meta?.optionSource && fontesEstaticas[meta.optionSource]) {
+    return 'select-estatico';
+  }
+
+  if (meta?.storeKey) {
+    return 'select-dinamico';
+  }
+
+  if (meta?.tipo) {
+    return tipo;
+  }
+
   const tipoPorYupType = {
     number: 'number',
     string: 'text',
     date: 'date',
-    array: 'autocomplete',
     object: 'object',
   };
-  return tipoPorYupType[subCampo.type] || 'text';
+
+  return tipoPorYupType[campoSchema.type] || 'text';
 }
 
-// Helper para carregar opções para selects
-function getOptionsForField(config) {
-  const meta = config?.meta;
-  if (!meta) return [];
+function campoConfig(campoSchema) {
+  const meta = campoSchema.meta?.() || {};
+  const tipo = detectarTipoCampo(campoSchema, meta);
 
-  if (config.tipo === 'select-estatico') {
-    return props.fontesEstaticas?.[meta.optionSource] || [];
-  }
-
-  if (config.tipo === 'select-dinamico') {
-    const store = props.storeInstances[meta.storeKey];
-    const list = meta.getterKey ? store[meta.getterKey] : store[meta.listState];
-    if (!list || !Array.isArray(list)) return [];
-
-    const getLabel = typeof meta.optionLabel === 'function'
-      ? meta.optionLabel
-      : (item) => item[meta.optionLabel];
-
-    return list.map((item) => ({
-      value: item[meta.optionValue],
-      label: getLabel(item),
-    }));
-  }
-
-  return [];
-}
-
-// Helper para autocomplete
-function getGrupoParaAutocomplete(config) {
-  const meta = config?.meta;
-  if (!meta) return [];
-
-  if (meta.storeKey) {
-    const store = props.storeInstances[meta.storeKey];
-    const lista = meta.getterKey ? store[meta.getterKey] : store[meta.listState];
-    return Array.isArray(lista) ? lista : [];
-  }
-
-  return [];
+  // debugger;
+  return {
+    schema: campoSchema,
+    tipo,
+    label: campoSchema.spec?.label || 'valor',
+    meta,
+  };
 }
 </script>
 
 <template>
-  <div
-    class="campos-compostos"
-    v-if="config?.tipo === 'campos-compostos'"
-  >
+  <div v-if="config?.tipo === 'campos-compostos'" class="campo-composto">
     <div
-      v-for="(subCampo, keyCampo) in config.meta.campos"
-      :key="keyCampo"
-      class="f1"
+      v-for="(subConfig, key) in config.meta.campos"
+      :key="key"
+      class="mb-2"
     >
       <LabelFromYup
-        :name="`${keyCampo}`"
+        :name="`edicoes[${key}].valor`"
         class="tc300"
       >
-        {{ subCampo.spec.label || 'Valor' }}
+        {{ campoConfig(subConfig).label || 'Valor' }}
       </LabelFromYup>
-      <Field
-        v-if="subCampo.type === 'string'"
-        class="inputtext light"
-        :name="`${keyCampo}`"
-        :model-value="modelValue?.[keyCampo]"
-        @update:modelValue="(val) => atualizarSubCampo(keyCampo, val)"
-      />
-      <SmaeDateInput
-        v-else-if="subCampo.type === 'date'"
-        :model-value="modelValue?.[keyCampo]"
-        :aria-readonly="readonly"
+      <CampoDinamico
+        :config="campoConfig(subConfig)"
+        :model-value="modelValue?.[key] ?? null"
+        :path="`${fieldName}.${key}`"
+        :errors="errors"
+        :loading-options="loadingOptions"
+        :store-instances="storeInstances"
+        :fontes-estaticas="fontesEstaticas"
         :readonly="readonly"
-        class="inputtext light"
-        @update:modelValue="(val) => atualizarSubCampo(keyCampo, val)"
-      />
-      <SmaeNumberInput
-        v-else-if="subCampo.type === 'number'"
-        :model-value="modelValue?.[keyCampo]"
-        @update:modelValue="(val) => atualizarSubCampo(keyCampo, val)"
+        @update:modelValue="val => updateValue(val, key)"
       />
     </div>
   </div>
 
-  <SmaeNumberInput
-    v-else-if="config?.tipo === 'number'"
-    :model-value="localModelValue"
-    class="inputtext light"
-    :aria-readonly="readonly"
-    :readonly="readonly"
-    @update:modelValue="updateValue"
-  />
+  <template v-else>
+    <SmaeNumberInput
+      v-if="config.tipo === 'number'"
+      :name="fieldName"
+      :model-value="modelValue"
+      class="inputtext light"
+      @update:modelValue="updateValue"
+    />
 
-  <Field
-    v-else-if="config?.tipo === 'text'"
-    type="text"
-    class="inputtext light"
-    :model-value="localModelValue"
-    :name="`edicoes[${idx}].valor`"
-    :aria-readonly="readonly"
-    :readonly="readonly"
-    @update:modelValue="updateValue"
-  />
+    <SmaeDateInput
+      v-else-if="config.tipo === 'date'"
+      :name="fieldName"
+      :model-value="modelValue"
+      class="inputtext light"
+      @update:modelValue="updateValue"
+    />
 
-  <SmaeDateInput
-    v-else-if="config?.tipo === 'date'"
-    :model-value="localModelValue"
-    class="inputtext light"
-    :aria-readonly="readonly"
-    :readonly="readonly"
-    @update:modelValue="updateValue"
-  />
+    <AutocompleteField2
+      v-else-if="config.tipo === 'autocomplete'"
+      :name="fieldName"
+      :model-value="modelValue"
+      :grupo="getOptionsForField(config)"
+      @change="updateValue"
+    />
 
-  <AutocompleteField2
-    v-else-if="config?.tipo === 'autocomplete'"
-    :model-value="localModelValue"
-    :grupo="getGrupoParaAutocomplete(config)"
-    :controlador="{ busca: '', participantes: localModelValue || [] }"
-    :aria-busy="loadingOptions?.[`${idx}-${config?.meta?.storeKey}`]"
-    :aria-readonly="readonly"
-    :readonly="readonly"
-    @change="updateValue"
-  />
-
-  <CampoDePessoasComBuscaPorOrgao
-    v-else-if="config?.tipo === 'campo-de-pessoas-orgao'"
-    :model-value="localModelValue || []"
-    :valores-iniciais="[]"
-    :readonly="readonly"
-    :limitar-para-um-orgao="true"
-    @update:modelValue="updateValue"
-  />
-
-  <Field
-    v-else-if="config?.tipo === 'select-estatico'"
-    as="select"
-    class="inputtext light"
-    :model-value="localModelValue"
-    :aria-readonly="readonly"
-    :readonly="readonly"
-    @update:modelValue="updateValue"
-  >
-    <option value="" disabled>Selecione...</option>
-    <option
-      v-for="opcao in getOptionsForField(config)"
-      :key="opcao.value"
-      :value="opcao.value"
-    >
-      {{ opcao.label }}
-    </option>
-  </Field>
-
-  <div v-else-if="config?.tipo === 'select-dinamico'">
-    <div
-      v-if="loadingOptions?.[`${idx}-${config?.meta?.storeKey}`]"
-      class="inputtext light mb1 disabled-placeholder"
-    >
-      Carregando opções...
-    </div>
     <Field
-      v-else
+      v-else-if="config.tipo === 'text'"
+      :name="fieldName"
+      type="text"
+      class="inputtext light"
+      :model-value="modelValue"
+      @update:modelValue="updateValue"
+    />
+
+    <Field
+      v-else-if="config.tipo === 'select-estatico' || config.tipo === 'select-dinamico'"
+      :name="fieldName"
       as="select"
       class="inputtext light"
-      :model-value="localModelValue"
-      :aria-readonly="readonly"
+      :model-value="modelValue"
       @update:modelValue="updateValue"
     >
       <option value="" disabled>Selecione...</option>
@@ -251,21 +163,19 @@ function getGrupoParaAutocomplete(config) {
         {{ opcao.label }}
       </option>
     </Field>
-  </div>
+  </template>
 
-  <ErrorMessage
-    class="error-msg"
-    :name="`edicoes[${idx}].valor`"
-  />
+  <ErrorMessage :name="fieldName" class="error-msg" />
 </template>
 
 <style scoped>
-.campos-compostos {
+.campo-composto {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.5rem;
   border: 1px solid #eee;
-  border-radius: 10px;
   padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
 }
 </style>
