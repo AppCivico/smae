@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import buscarDadosDoYup from './helpers/buscarDadosDoYup';
+import SmaeTooltip from '../SmaeTooltip/SmaeTooltip.vue';
 
 type Slots = {
   default(props: { label: string }): void
   prepend(): void
   append(): void
-  informacao: unknown
+  balaoInformativo: unknown
 };
 
 const props = defineProps({
@@ -33,7 +34,7 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
-  informacao: {
+  balaoInformativo: {
     type: String,
     default: undefined,
   },
@@ -44,15 +45,15 @@ const slots = defineSlots<Slots>();
 const caminhoNoSchema = computed(() => buscarDadosDoYup(props.schema, props.name));
 
 const temInformacao = computed<boolean>(() => {
-  if (props.informacao) {
+  if (props.balaoInformativo) {
     return true;
   }
 
-  if (caminhoNoSchema.value.spec.meta?.informacao) {
+  if (caminhoNoSchema.value.spec.meta?.balaoInformativo) {
     return true;
   }
 
-  if (slots.informacao) {
+  if (slots.balaoInformativo) {
     return true;
   }
 
@@ -63,7 +64,7 @@ const temInformacao = computed<boolean>(() => {
 <template>
   <component
     :is="as"
-    class="smae-label"
+    class="smae-label flex center"
     :class="{ label: classeLabel && as !== 'legend' }"
     :for="as !== 'label'
       ? undefined
@@ -84,20 +85,16 @@ const temInformacao = computed<boolean>(() => {
           {{ caminhoNoSchema?.spec?.label || `Campo: ${name}` }}
         </template>&nbsp;
 
-        <small
-          v-if="temInformacao"
-          class="tipinfo"
-        >
-          <svg
-            width="20"
-            height="20"
-          ><use xlink:href="#i_i" /></svg>
+        <small v-if="temInformacao">
+          <SmaeTooltip
+            :texto="
+              $props.balaoInformativo
+                || caminhoNoSchema.spec.meta?.balaoInformativo
+            "
+          >
+            <slot name="balaoInformativo" />
+          </SmaeTooltip>
 
-          <div>
-            <slot name="informacao">
-              {{ $props.informacao || caminhoNoSchema.spec.meta?.informacao }}
-            </slot>
-          </div>
           &nbsp;
         </small>
 

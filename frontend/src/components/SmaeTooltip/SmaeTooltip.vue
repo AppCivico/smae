@@ -1,8 +1,6 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue';
-
-const TOOLTIP_ID = 'smae-tooltip-button';
-const TOOLTIP_TEXT_ID = 'smae-tooltip-text';
+import removerHtml from '@/helpers/html/removerHtmlrHtml';
 
 type Slots = {
   default(): void
@@ -17,9 +15,10 @@ type Props = {
 defineSlots<Slots>();
 withDefaults(defineProps<Props>(), {
   icone: 'i',
-  texto: '-texto-aqui-',
+  texto: undefined,
 });
 
+const content = ref<HTMLElement>();
 const exibicaoTooltip = ref<boolean>(false);
 const manterExibido = ref<boolean>(false);
 
@@ -29,6 +28,14 @@ const statusTooltip = computed<boolean>(() => {
   }
 
   return !exibicaoTooltip.value;
+});
+
+const descricaoConteudo = computed<string>(() => {
+  if (!content.value) {
+    return '';
+  }
+
+  return removerHtml(content.value.innerHTML);
 });
 
 function esconderTooltip() {
@@ -42,14 +49,13 @@ function exibirTooltip() {
 function trocarManterAberto() {
   manterExibido.value = !manterExibido.value;
 }
-
 </script>
 
 <template>
-  <button
-    :id="TOOLTIP_ID"
-    :aria-describedby="TOOLTIP_TEXT_ID"
+  <div
+    :aria-described="descricaoConteudo"
     :class="['smae-tooltip', { 'smae-tooltip--fixado': manterExibido }]"
+    tabindex="0"
     @mouseenter="exibirTooltip"
     @focus="exibirTooltip"
     @mouseleave="esconderTooltip"
@@ -64,21 +70,17 @@ function trocarManterAberto() {
     </slot>
 
     <div
-      :id="TOOLTIP_TEXT_ID"
+      ref="content"
       class="smae-tooltip__content"
       role="tooltip"
       :hidden="statusTooltip"
     >
       <slot>{{ $props.texto }}</slot>
     </div>
-  </button>
+  </div>
 </template>
 
 <style lang="less" scoped>
-.smae-tooltip {
-  margin-left: 4rem;
-}
-
 .smae-tooltip {
   display: inline-block;
   vertical-align: middle;
@@ -125,6 +127,5 @@ function trocarManterAberto() {
     border-bottom-color: @primary;
     border-left-color: @primary;
   }
-
 }
 </style>
