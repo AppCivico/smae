@@ -19,7 +19,7 @@ const detalhesEdicao = computed(() => {
   return [
     [
       { descricao: 'Iniciado em', valor: emFoco.value ? dateToDate(emFoco.value.iniciou_em) : '-' },
-      { descricao: 'terminado em', valor: emFoco.value ? dateToDate(emFoco.value.terminou_em) : '-' },
+      { descricao: 'Terminado em', valor: emFoco.value ? dateToDate(emFoco.value.terminou_em) : '-' },
       { descricao: 'Executado por', valor: emFoco.value?.criador.nome_exibicao || '-' },
       { descricao: 'Órgão', valor: emFoco.value?.orgao?.sigla || '-' },
     ],
