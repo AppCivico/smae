@@ -81,7 +81,7 @@ watch(
       rolagem-horizontal
       :dados="listaDeObras"
       :colunas="[
-        { chave: 'selecionado', ehDadoComputado: true },
+        { chave: 'selecionado' },
         { chave: 'orgao_origem.sigla', label: obrasSchema.fields['orgao_origem_id'].spec.label },
         { chave: 'portfolio.titulo', label: obrasSchema.fields['portfolio_id'].spec.label },
         { chave: 'nome', label: obrasSchema.fields['nome'].spec.label },

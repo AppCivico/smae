@@ -24,7 +24,6 @@ type ParametrosDaCelula = {
   ehCabecalho?: boolean
   linha: Linha
   caminho: string
-  ehDadoComputado?: boolean
   formatador?: (args: unknown) => number | string
 };
 
@@ -32,9 +31,7 @@ const slots = defineSlots();
 const props = defineProps<ParametrosDaCelula>();
 
 const conteudoColuna = computed((): unknown => {
-  if (props.ehDadoComputado
-    || slots[`celula:${props.caminho}`]
-  ) {
+  if (slots[`celula:${props.caminho}`]) {
     return undefined;
   }
 

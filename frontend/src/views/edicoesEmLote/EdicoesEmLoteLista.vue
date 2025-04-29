@@ -53,9 +53,9 @@ onMounted(() => {
         { chave: 'iniciou_em', label: 'Data do processamento', formatador: (v) => dateToDate(v) },
         { chave: 'n_sucesso', label: 'Item(s) modificado(s)' },
         { chave: 'criador.nome_exibicao', label: 'Responsável pela solicitação' },
-        { chave: 'registros_processados', label: 'registros processados', ehDadoComputado: true },
-        { chave: 'status', label: 'Status', ehDadoComputado: true },
-        { chave: 'acao', label: 'detalhamento', ehDadoComputado: true },
+        { chave: 'registros_processados', label: 'registros processados' },
+        { chave: 'status', label: 'Status' },
+        { chave: 'acao', label: 'detalhamento' },
       ]"
     >
       <template #celula:registros_processados="{ linha }">
