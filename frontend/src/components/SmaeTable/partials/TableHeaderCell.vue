@@ -2,12 +2,8 @@
   <component
     :is="elementoEnvelope"
     class="table-header-cell"
-    :class="classe"
   >
-    <slot
-      :name="normalizadorDeSlots(`cabecalho:${chave}`)"
-      v-bind="$props"
-    >
+    <slot>
       {{ label }}
     </slot>
   </component>
@@ -16,13 +12,10 @@
 <script lang="ts" setup>
 import { computed, defineProps } from 'vue';
 import type { Coluna } from '../tipagem';
-import normalizadorDeSlots from '../utils/normalizadorDeSlots';
 
-type Props = Coluna;
-
-const props = withDefaults(defineProps<Props>(), {
-  cabecalho: true,
+const props = withDefaults(defineProps<Coluna>(), {
+  ehCabecalho: true,
 });
 
-const elementoEnvelope = computed<'td' | 'th'>(() => (props.cabecalho ? 'th' : 'td'));
+const elementoEnvelope = computed<'td' | 'th'>(() => (props.ehCabecalho ? 'th' : 'td'));
 </script>
