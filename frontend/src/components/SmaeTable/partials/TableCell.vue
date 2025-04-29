@@ -23,7 +23,7 @@
 import { computed, defineProps, defineOptions } from 'vue';
 import obterParametroNoObjeto from '@/helpers/obterParametroNoObjeto';
 import type { Linha } from '../tipagem';
-import { normalizadorDeSlot } from '../utils';
+import normalizadorDeSlots from '../utils/normalizadorDeSlots';
 
 defineOptions({ inheritAttrs: false });
 
@@ -52,5 +52,5 @@ const conteudoColuna = computed(() => {
   return obterParametroNoObjeto(props.caminho, props.linha);
 });
 
-const caminhoSlot = computed(() => normalizadorDeSlot(props.caminho));
+const caminhoSlot = computed(() => normalizadorDeSlots(props.caminho));
 </script>
