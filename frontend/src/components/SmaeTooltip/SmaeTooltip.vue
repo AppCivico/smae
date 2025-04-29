@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue';
-import removerHtml from '@/helpers/html/removerHtmlrHtml';
+import removerHtml from '@/helpers/html/removerHtml';
 
 type Slots = {
   default(): void
