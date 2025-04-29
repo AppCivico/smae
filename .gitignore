@@ -2,6 +2,7 @@
 .env
 .env.*
 .~lock*
+!.env.example
 utils/sync-proxy.sh
 *.env
 openapitools.json
