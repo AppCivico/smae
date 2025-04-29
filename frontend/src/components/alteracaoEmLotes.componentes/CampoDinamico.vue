@@ -93,7 +93,7 @@ function campoConfig(campoSchema) {
       class="mb-2"
     >
       <LabelFromYup
-        :name="`edicoes[${key}].valor`"
+        :name="`${fieldName}.${key}`"
         class="tc300"
       >
         {{ campoConfig(subConfig).label || 'Valor' }}
