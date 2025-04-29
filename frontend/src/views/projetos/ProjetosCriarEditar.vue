@@ -286,14 +286,6 @@ watch(itemParaEdicao, (novoValor) => {
     <CheckClose :formulario-sujo="formularioSujo" />
   </header>
 
-  <SmaeTooltip texto="meu texto">
-    conteudo slot
-
-    <template #botao>
-      <div>1234</div>
-    </template>
-  </SmaeTooltip>
-
   <form
     v-if="!projetoId || emFoco"
     @submit.prevent="!isSubmitting ? onSubmit() : null"
@@ -457,16 +449,10 @@ watch(itemParaEdicao, (novoValor) => {
 
     <div class="flex g2">
       <div class="f1 mb1">
-        1
         <LabelFromYup
-
           name="resumo"
           :schema="schema"
-        >
-          <!-- <template #informacao>
-            slot
-          </template> -->
-        </LabelFromYup>
+        />
         <SmaeText
           v-model="values.resumo"
           name="resumo"
@@ -718,6 +704,7 @@ watch(itemParaEdicao, (novoValor) => {
         <LabelFromYup
           name="principais_etapas"
           :schema="schema"
+          informacao="por prop"
         />
         <SmaeText
           v-model="values.principais_etapas"
@@ -938,7 +925,11 @@ watch(itemParaEdicao, (novoValor) => {
           <LabelFromYup
             name="origem_tipo"
             :schema="schema"
-          />
+          >
+            <template #informacao>
+              por slot
+            </template>
+          </LabelFromYup>
           <Field
             name="origem_tipo"
             as="select"

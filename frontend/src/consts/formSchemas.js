@@ -2779,10 +2779,16 @@ export const projeto = object()
       .nullable(),
     responsaveis_no_orgao_gestor: array()
       .label('Responsável pelo acompanhamento')
-      .nullable(),
+      .nullable()
+      .meta({
+        balaoInformativo: 'tooltip Responsável pelo acompanhamento',
+      }),
     responsavel_id: number()
       .label('Gerente do projeto')
-      .nullable(),
+      .nullable()
+      .meta({
+        balaoInformativo: 'tooltip Gerente do projeto',
+      }),
     restricoes: array()
       .label('Restrições')
       .of(
@@ -2800,7 +2806,7 @@ export const projeto = object()
       .label('Resumo')
       .max(2048)
       .meta({
-        informacao: 'Info Meta',
+        balaoInformativo: 'Info Meta',
       }),
     secretario_executivo: string()
       .label('Secretário gestor')
