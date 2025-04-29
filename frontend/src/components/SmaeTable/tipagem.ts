@@ -1,8 +1,12 @@
 export type Coluna = {
   chave: string;
   label?: string;
-  cabecalho?: boolean;
+  ehCabecalho?: boolean;
   ehDadoComputado?: boolean;
+  atributosDaCelula?: Record<string, unknown>;
+  atributosDaColuna?: Record<string, unknown>;
+  atributosDoCabecalhoDeColuna?: Record<string, unknown>;
+  atributosDoRodapeDeColuna?: Record<string, unknown>;
   classe?: string | string[] | Record<string, unknown>;
   formatador?: (args: unknown) => number | string;
 };
