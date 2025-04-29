@@ -41,15 +41,14 @@
             <TableHeaderCell
               v-for="coluna in colunas"
               :key="`header--${coluna.chave}`"
-              v-bind="coluna.atributosDoCabecalhoDeColuna"
-              :chave="coluna.chave"
+              v-bind="coluna"
+              :schema="props.schema"
+              :atributos="coluna.atributosDoCabecalhoDeColuna"
             >
               <slot
                 :name="(`cabecalho:${normalizadorDeSlots(coluna.chave)}` as keyof Slots)"
                 v-bind="coluna"
-              >
-                {{ coluna.label }}
-              </slot>
+              />
             </TableHeaderCell>
 
             <td v-if="hasActionButton">
@@ -129,15 +128,14 @@
           <TableHeaderCell
             v-for="coluna in colunas"
             :key="`footer--${coluna.chave}`"
-            :chave="coluna.chave"
-            v-bind="coluna.atributosDoRodapeDeColuna"
+            v-bind="coluna"
+            :schema="props.schema"
+            :atributos="coluna.atributosDoRodapeDeColuna"
           >
             <slot
               :name="(`rodape:${normalizadorDeSlots(coluna.chave)}` as keyof Slots)"
               v-bind="coluna"
-            >
-              {{ coluna.label }}
-            </slot>
+            />
           </TableHeaderCell>
         </tr>
       </tfoot>
@@ -147,6 +145,7 @@
 
 <script lang="ts" setup>
 import { type Component, computed, useSlots } from 'vue';
+import type { AnyObjectSchema } from 'yup';
 import RolagemHorizontal from '../rolagem/RolagemHorizontal.vue';
 import DeleteButton, { type DeleteButtonEvents, type DeleteButtonProps } from './partials/DeleteButton.vue';
 import EditButton, { type EditButtonProps } from './partials/EditButton.vue';
@@ -170,6 +169,7 @@ type Props =
   & {
     titulo?: string
     tituloRolagemHorizontal?: string
+    schema?: AnyObjectSchema,
     colunas: Colunas,
     dados: Linhas
     replicarCabecalho?: boolean
