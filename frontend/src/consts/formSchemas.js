@@ -1,4 +1,18 @@
 /* eslint-disable no-template-curly-in-string */
+import { isAfter, isBefore } from 'date-fns';
+import {
+  addMethod,
+  array,
+  boolean,
+  date,
+  lazy,
+  mixed,
+  number,
+  object,
+  ref,
+  setLocale,
+  string,
+} from 'yup';
 import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import categoriaDeTransferencia from '@/consts/categoriaDeTransferencia';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
@@ -22,20 +36,6 @@ import tiposNaEquipeDeParlamentar from '@/consts/tiposNaEquipeDeParlamentar';
 import tiposSituacaoSchema from '@/consts/tiposSituacaoSchema';
 import fieldToDate from '@/helpers/fieldToDate';
 import haDuplicatasNaLista from '@/helpers/haDuplicatasNaLista';
-import { isAfter, isBefore } from 'date-fns';
-import {
-  addMethod,
-  array,
-  boolean,
-  date,
-  lazy,
-  mixed,
-  number,
-  object,
-  ref,
-  setLocale,
-  string,
-} from 'yup';
 import tiposStatusDistribuicao from './tiposStatusDistribuicao';
 
 const dataMin = import.meta.env.VITE_DATA_MIN ? new Date(`${import.meta.env.VITE_DATA_MIN}`) : new Date('1900-01-01T00:00:00Z');
@@ -2798,7 +2798,10 @@ export const projeto = object()
       .strict(),
     resumo: string()
       .label('Resumo')
-      .max(2048),
+      .max(2048)
+      .meta({
+        informacao: 'Info Meta',
+      }),
     secretario_executivo: string()
       .label('Secretário gestor')
       .nullable(),
