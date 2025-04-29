@@ -49,7 +49,7 @@ onMounted(() => {
       v-for="(linha, linhaIndex) in detalhesEdicao"
       :key="`detalhe-linha--${linhaIndex}`"
     >
-      <div class="flex column">
+      <div class="flex column mb2">
         <dl class="flex g2 flexwrap f1 mb1">
           <div
             v-for="(itemDetalhe, detalheIndex) in linha"
@@ -67,16 +67,44 @@ onMounted(() => {
         </dl>
       </div>
     </template>
-  </article>
 
-  <SmaeTable
-    titulo-rolagem-horizontal="Tabela: Edição em Lote - Resumo"
-    class="mt2"
-    rolagem-horizontal
-    :dados="emFoco?.results_log?.falhas || []"
-    :colunas="[
-      { chave: 'nome', label: 'nome da obra' },
-      { chave: 'erro', label: 'erros' },
-    ]"
-  />
+    <SmaeTable
+      :dados="emFoco?.operacao_processada?.items || []"
+      :colunas="[
+        {
+          chave: 'col_label',
+          ehCabecalho: true,
+          label: 'Campo',
+        },
+        {
+          chave: 'tipo_operacao',
+          label: 'Tipo de operação',
+          atributosDaCelula: {
+            class: 'cell--minimum',
+          }
+        },
+        {
+          chave: 'valor_formatado',
+          label: 'Valor formatado',
+          atributosDaCelula: {
+            class: 'cell--minimum'
+          }
+        },
+      ]"
+      titulo="Operações"
+      rolagem-horizontal
+      class="mb2"
+    />
+
+    <SmaeTable
+      titulo="Falhas"
+      titulo-rolagem-horizontal="Tabela: Edição em Lote - Resumo"
+      rolagem-horizontal
+      :dados="emFoco?.results_log?.falhas || []"
+      :colunas="[
+        { chave: 'nome', label: 'nome da obra' },
+        { chave: 'erro', label: 'erros' },
+      ]"
+    />
+  </article>
 </template>
