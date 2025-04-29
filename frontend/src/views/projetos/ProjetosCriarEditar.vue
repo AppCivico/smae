@@ -27,7 +27,6 @@ import { useObservadoresStore } from '@/stores/observadores.store.ts';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
-import SmaeTooltip from '@/components/SmaeTooltip/SmaeTooltip.vue';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -293,7 +292,6 @@ watch(itemParaEdicao, (novoValor) => {
     <div class="flex g2 mb1">
       <div class="f1 mb1">
         <LabelFromYup
-          informativo="123"
           name="portfolio_id"
           :schema="schema"
         >
@@ -350,7 +348,6 @@ watch(itemParaEdicao, (novoValor) => {
         class="f1 mb1"
       >
         <LabelFromYup
-          informativo="123"
           name="codigo"
           :schema="schema"
         />
@@ -704,7 +701,6 @@ watch(itemParaEdicao, (novoValor) => {
         <LabelFromYup
           name="principais_etapas"
           :schema="schema"
-          informacao="por prop"
         />
         <SmaeText
           v-model="values.principais_etapas"
@@ -925,11 +921,8 @@ watch(itemParaEdicao, (novoValor) => {
           <LabelFromYup
             name="origem_tipo"
             :schema="schema"
-          >
-            <template #informacao>
-              por slot
-            </template>
-          </LabelFromYup>
+          />
+
           <Field
             name="origem_tipo"
             as="select"
