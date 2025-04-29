@@ -111,9 +111,3 @@ const temInformacao = computed<boolean>(() => {
     <slot name="append" />
   </component>
 </template>
-
-<style lang="less" scoped>
-.smae-label-informativo {
-
-}
-</style>
