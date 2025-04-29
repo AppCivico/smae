@@ -35,6 +35,9 @@ DECLARE
     -- Team arrays
     v_equipes int[] := ARRAY[]::int[];
     v_equipes_orgaos int[] := ARRAY[]::int[];
+
+    v_equipes_vars int[] := ARRAY[]::int[];
+    v_equipes_orgaos_vars int[] := ARRAY[]::int[];
     -- Temporary records
     r_item RECORD;
     v_pdm_ativo BOOLEAN;
@@ -332,6 +335,26 @@ BEGIN
             v_variaveis_conferidas_nao_liberadas,
             v_variaveis_liberadas
         FROM vars;
+
+        WITH equipes AS (
+            SELECT DISTINCT vgr.grupo_responsavel_equipe_id as equipe_id, gre.orgao_id
+            FROM variavel_grupo_responsavel_equipe vgr
+            JOIN grupo_responsavel_equipe gre ON vgr.grupo_responsavel_equipe_id = gre.id
+            WHERE vgr.variavel_id = ANY(v_variaveis)
+            AND vgr.removido_em IS NULL
+            AND gre.removido_em IS NULL
+        )
+        SELECT
+            array_agg(DISTINCT equipe_id),
+            array_agg(DISTINCT orgao_id)
+        INTO
+            v_equipes_vars,
+            v_equipes_orgaos_vars
+        FROM equipes;
+
+        -- append
+        v_equipes := array_cat(v_equipes, coalesce(v_equipes_vars, '{}'::int[]));
+        v_equipes_orgaos := array_cat(v_equipes_orgaos, coalesce(v_equipes_orgaos_vars, '{}'::int[]));
 
         -- any variable in the current cycle is pending
         v_pendente_variavel := v_variaveis_a_coletar > 0;
