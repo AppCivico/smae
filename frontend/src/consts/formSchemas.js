@@ -1689,6 +1689,7 @@ export const obras = object({
         tarefa: tarefa.fields.tarefa,
         inicio_planejado: tarefa.fields.inicio_planejado,
         termino_planejado: tarefa.fields.termino_planejado,
+        duracao_planejado: tarefa.fields.duracao_planejado,
         // orgao: {
         //   ...tarefa.fields.orgao,
         //   meta: () => ({

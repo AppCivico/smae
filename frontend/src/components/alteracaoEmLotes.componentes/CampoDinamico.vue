@@ -143,6 +143,8 @@ function campoConfig(campoSchema) {
       v-if="config.tipo === 'number'"
       :name="fieldName"
       :model-value="modelValue"
+      :aria-readonly="readonly"
+      :readonly="readonly"
       class="inputtext light"
       @update:modelValue="updateValue"
     />
@@ -151,6 +153,8 @@ function campoConfig(campoSchema) {
       v-else-if="config.tipo === 'date'"
       :name="fieldName"
       :model-value="modelValue"
+      :aria-readonly="readonly"
+      :readonly="readonly"
       class="inputtext light"
       @update:modelValue="updateValue"
     />
@@ -179,9 +183,11 @@ function campoConfig(campoSchema) {
 
     <Field
       v-else-if="config.tipo === 'text'"
-      :name="fieldName"
       type="text"
       class="inputtext light"
+      :name="fieldName"
+      :aria-readonly="readonly"
+      :readonly="readonly"
       :model-value="modelValue"
       @update:modelValue="updateValue"
     />

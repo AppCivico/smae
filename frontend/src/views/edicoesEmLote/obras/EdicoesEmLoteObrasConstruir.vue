@@ -119,9 +119,19 @@ const schema = object({
         const schemaOriginal = schemaObras.fields[propriedade];
         if (!schemaOriginal) return mixed().required('Configuração inválida.');
 
-        const tipo = schemaOriginal.type;
+        const meta = schemaOriginal.meta?.() || {};
 
-        if (tipo === 'array') return schemaOriginal;
+        if (meta.tipo === 'campos-compostos' && meta.campos) {
+          const shape = Object.fromEntries(
+            Object.entries(meta.campos)
+              .map(([key, subSchema]) => [key, subSchema.required('Campo obrigatório')]),
+          );
+          return object().shape(shape);
+        }
+
+        if (schemaOriginal.type === 'array') {
+          return schemaOriginal;
+        }
 
         return schemaOriginal.required('Informe o novo valor');
       }),
