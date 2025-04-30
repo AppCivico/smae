@@ -38,7 +38,7 @@ const conteudoColuna = computed((): unknown => {
   const conteudo = obterParametroNoObjeto(props.caminho, props.linha);
 
   return typeof props.formatador === 'function'
-    ? props.formatador(conteudoColuna)
+    ? props.formatador(conteudo)
     : conteudo;
 });
 
