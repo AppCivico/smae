@@ -6,5 +6,6 @@ export const TipoUpload = {
     IMPORTACAO_ORCAMENTO: 'IMPORTACAO_ORCAMENTO',
     FOTO_PARLAMENTAR: 'FOTO_PARLAMENTAR',
     IMPORTACAO_PARLAMENTAR: 'IMPORTACAO_PARLAMENTAR',
-};
+    ATUALIZACAO_EM_LOTE_RELATORIO: 'ATUALIZACAO_EM_LOTE_RELATORIO',
+} as const;
 export type TipoUpload = (typeof TipoUpload)[keyof typeof TipoUpload];

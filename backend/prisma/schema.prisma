@@ -1211,6 +1211,7 @@ model Arquivo {
     FormulaCompostaCicloFisicoDocumento FormulaCompostaCicloFisicoDocumento[]
     transferencia_anexos                TransferenciaAnexo[]
     VariavelGlobalCicloDocumento        VariavelGlobalCicloDocumento[]
+    AtualizacaoEmLote                   AtualizacaoEmLote[]
 
     @@map("arquivo")
 }
@@ -5011,9 +5012,22 @@ model task_queue {
     esperar_ate DateTime?
 
     AtualizacaoEmLote AtualizacaoEmLote[]
+    task_buffer       task_buffer?
 
     @@index([status])
     @@index([criado_em])
+}
+
+model task_buffer {
+    id Int @id @default(autoincrement())
+
+    task_id Int
+    task    task_queue @relation(fields: [task_id], references: [id])
+
+    data      Json     @default("{}")
+    criado_em DateTime @default(now()) @db.Timestamp(6)
+
+    @@unique([task_id])
 }
 
 model feature_flag {
@@ -7722,6 +7736,9 @@ model AtualizacaoEmLote {
     criado_por_id  Int
     criado_em      DateTime      @default(now()) @db.Timestamptz(6)
     criador        Pessoa        @relation("AtualizacaoEmLoteCriador", fields: [criado_por_id], references: [id])
+
+    relatorio_arquivo_id Int? // Arquivo de log gerado, se houver
+    relatorio_arquivo    Arquivo? @relation(fields: [relatorio_arquivo_id], references: [id])
 
     iniciou_em  DateTime? @db.Timestamptz(6)
     terminou_em DateTime? @db.Timestamp(6)

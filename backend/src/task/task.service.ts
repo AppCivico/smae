@@ -24,6 +24,7 @@ import { RefreshVariavelService } from './refresh_variavel/refresh-variavel.serv
 import { RunReportTaskService } from './run_report/run-report.service';
 import { RunUpdateTaskService } from './run_update/run-update.service';
 import { ParseParams } from './task.parseParams';
+import { TaskContext } from './task.context';
 
 export class TaskRetryService {
     static calculateNextRetryTime(retryCount: number, retryConfig: RetryConfigDto): Date {
@@ -679,11 +680,18 @@ export class TaskService {
 
     async startJob(type: task_type, params: string, task_id: string): Promise<JSON> {
         const service: TaskableService = this.serviceFromTaskType(type);
+        const taskId = parseInt(task_id, 10);
+
+        const context = new TaskContext(this.prisma, taskId, type);
 
         const parsedParams = ParseParams(type, params);
 
         try {
-            const result = await service.executeJob(parsedParams, task_id);
+            const result = await service.executeJob(parsedParams, task_id, context);
+
+            await context.removeStashedData().catch((e) => {
+                this.logger.warn(`Failed to clean up task buffer for task ${task_id}: ${e}`);
+            });
 
             return service.outputToJson(result, parsedParams, task_id);
         } catch (error) {
