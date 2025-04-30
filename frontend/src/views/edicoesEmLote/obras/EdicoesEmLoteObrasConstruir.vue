@@ -85,19 +85,26 @@ function detectarTipoCampo(campoSchema, meta) {
   return tipoPorYupType[campoSchema.type] || 'text';
 }
 
+const cacheCampos = new Map();
+
 function obterConfiguracaoCampo(nomeCampo) {
+  if (cacheCampos.has(nomeCampo)) return cacheCampos.get(nomeCampo);
+
   const campoSchema = schemaObras.fields[nomeCampo];
   if (!campoSchema) return null;
 
   const meta = campoSchema.meta?.() || {};
   const tipo = detectarTipoCampo(campoSchema, meta);
 
-  return {
+  const config = {
     schema: campoSchema,
     tipo,
     label: campoSchema.spec?.label || nomeCampo,
     meta,
   };
+
+  cacheCampos.set(nomeCampo, config);
+  return config;
 }
 
 function campoConfigPorNome(nomeCampo) {
