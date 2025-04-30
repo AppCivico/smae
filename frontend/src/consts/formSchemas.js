@@ -2594,13 +2594,16 @@ export const projeto = object()
       .max(dataMax)
       .min(new Date(2003, 0, 1)),
     equipe: array()
-      .label('Equipe')
+      .label('Equipe do Projeto')
       .nullable()
       .of(
         number()
           .label('Pessoa')
           .required(),
-      ),
+      )
+      .meta({
+        balaoInformativo: 'É composta por pessoas responsáveis por executar atividades planejadas e contribuir diretamente para o cumprimento dos objetivos do projeto, conforme escopo definido. Suas principais responsabilidades incluem colaborar com outros membros da equipe, atualizar as informações, reportar ao gerente de projeto e propor soluções para eventuais problemas.',
+      }),
     grupo_portfolio: array()
       .label('Grupos de observadores')
       .nullable()
@@ -2688,14 +2691,23 @@ export const projeto = object()
       .max(2048)
       .nullable(),
     orgao_gestor_id: number()
-      .label('Órgão gestor')
+      .label('Órgão Gestor do Portfólio - Escritório do Projeto')
       .min(1, 'Selecione um órgão gestor')
-      .required('O projeto necessita de um órgão gestor'),
+      .required('O projeto necessita de um órgão gestor')
+      .meta({
+        balaoInformativo: 'É o órgão que cumpre a função de Escritório de Projetos, sendo responsável pelo portfólio no qual o projeto está inserido.',
+      }),
     orgao_responsavel_id: number()
       .label('Órgão responsável')
-      .nullable(),
+      .nullable()
+      .meta({
+        balaoInformativo: 'É o órgão responsável pela execução do projeto.',
+      }),
     orgaos_participantes: array()
-      .label('Órgãos participantes'),
+      .label('Órgãos participantes')
+      .meta({
+        balaoInformativo: 'São os órgãos nos quais estão alocadas as demais partes interessadas do projeto.',
+      }),
     origem_outro: string()
       .label('Descrição de origem fora do PdM')
       .max(2048)
@@ -2778,16 +2790,16 @@ export const projeto = object()
       .label('Região')
       .nullable(),
     responsaveis_no_orgao_gestor: array()
-      .label('Responsável pelo acompanhamento')
+      .label('Assessor do Escritório de Projetos')
       .nullable()
       .meta({
-        balaoInformativo: 'tooltip Responsável pelo acompanhamento',
+        balaoInformativo: 'É a pessoa que atua como facilitador e apoiador na aplicação das metodologias definidas. Suas principais responsabilidades incluem fornecer suporte técnico e metodológico ao gerente do projeto, durante todas as fases, exercendo poder de influência para o alinhamento do projeto com os objetivos estratégicos definidos pela organização.',
       }),
     responsavel_id: number()
       .label('Gerente do projeto')
       .nullable()
       .meta({
-        balaoInformativo: 'tooltip Gerente do projeto',
+        balaoInformativo: 'É a pessoa responsável pela evolução do projeto em todas as suas fases. Suas principais funções incluem definir o escopo, elaborar cronogramas, alocar recursos, gerenciar riscos, liderar a equipe e manter uma comunicação eficaz com todas as partes interessadas, garantindo que todos estejam alinhados e que as entregas ocorram conforme o planejado, promovendo ajustes sempre que necessário.',
       }),
     restricoes: array()
       .label('Restrições')
@@ -2804,16 +2816,19 @@ export const projeto = object()
       .strict(),
     resumo: string()
       .label('Resumo')
-      .max(2048)
-      .meta({
-        balaoInformativo: 'Info Meta',
-      }),
+      .max(2048),
     secretario_executivo: string()
-      .label('Secretário gestor')
-      .nullable(),
+      .label('Secretário Gestor do Portfólio')
+      .nullable()
+      .meta({
+        balaoInformativo: 'É o(a) secretário(a) do Órgão Gestor do Portfólio.',
+      }),
     secretario_responsavel: string()
       .label('Secretário responsável')
-      .nullable(),
+      .nullable()
+      .meta({
+        balaoInformativo: 'É o(a) secretário(a) do Órgão Responsável.',
+      }),
     status: mixed()
       .label('Status')
       .oneOf(Object.keys(statusDeProjetos))
