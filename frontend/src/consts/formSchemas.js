@@ -1677,7 +1677,7 @@ export const planoDeAção = object()
       .nullable(),
     contramedida: string()
       .label('Contramedida')
-      .max(50000)
+      .max(2048)
       .required(),
     custo: number()
       .label('Custo da contramedida')
@@ -1697,7 +1697,7 @@ export const planoDeAção = object()
       .nullable(),
     medidas_de_contingencia: string()
       .label('Medidas de contingência')
-      .max(50000),
+      .max(2048),
     orgao_id: number()
       .label('Órgão')
       .min(1, 'Selecione um órgão responsável')
@@ -2753,7 +2753,7 @@ export const projeto = object()
               .nullable(),
             premissa: string()
               .required('A premissa não pode estar em branco')
-              .max(255, 'Premissa muito longa. Use 255 caracteres ou menos.'),
+              .max(2048, 'Premissa muito longa. Use 2048 caracteres ou menos.'),
           }),
       )
       .strict(),
@@ -2792,7 +2792,7 @@ export const projeto = object()
               .nullable(),
             restricao: string()
               .required('A restrição não pode estar em branco')
-              .max(255, 'Restrição muito longa. Use 255 caracteres ou menos.'),
+              .max(2048, 'Restrição muito longa. Use 2048 caracteres ou menos.'),
           }),
       )
       .strict(),
