@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue';
-import removerHtml from '@/helpers/html/removerHtml';
 
 type Slots = {
   default(): void
@@ -35,7 +34,7 @@ const descricaoConteudo = computed<string>(() => {
     return '';
   }
 
-  return removerHtml(content.value.textContent);
+  return content.value.textContent;
 });
 
 function esconderTooltip() {
