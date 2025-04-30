@@ -65,14 +65,14 @@ const StatusParaFase: Record<ProjetoStatus, ProjetoFase> = {
 } as const;
 
 export const ProjetoStatusParaExibicao: Record<ProjetoStatus, string> = {
-    Registrado: 'Registrado',
-    Selecionado: 'Selecionado',
-    EmPlanejamento: 'Em Planejamento',
-    Planejado: 'Planejado',
-    Validado: 'Validado',
-    EmAcompanhamento: 'Em Acompanhamento',
-    Suspenso: 'Suspenso',
-    Fechado: 'Concluído',
+    Registrado: '1. Registrado',
+    Selecionado: '2. Selecionado',
+    EmPlanejamento: '3. Em Planejamento',
+    Planejado: '4. Planejado',
+    Validado: '5. Validado',
+    EmAcompanhamento: '6. Em Acompanhamento',
+    Suspenso: '8. Suspenso',
+    Fechado: '7. Concluído',
     MDO_Concluida: 'Concluída',
     MDO_EmAndamento: 'Em Andamento',
     MDO_NaoIniciada: 'Não Iniciada',
