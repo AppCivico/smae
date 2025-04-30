@@ -253,14 +253,14 @@ async function fetchOptionsIfNeeded(rowIndex, fieldConfig) {
   }
 }
 
-function handlePropertyChange(event, idx) {
+async function handlePropertyChange(event, idx) {
   const propriedadeSelecionada = event.target.value;
   setFieldValue(`edicoes[${idx}].valor`, null);
 
   if (propriedadeSelecionada) {
     const fieldConfig = obterConfiguracaoCampo(propriedadeSelecionada);
     if (fieldConfig?.meta?.storeKey) {
-      fetchOptionsIfNeeded(idx, fieldConfig);
+      await fetchOptionsIfNeeded(idx, fieldConfig);
     }
   }
 }

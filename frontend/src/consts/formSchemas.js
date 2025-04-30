@@ -1683,7 +1683,7 @@ export const obras = object({
     .meta({
       permite_edicao_em_massa: true,
       tipo: 'campos-compostos',
-      operacao: 'addTarefa',
+      operacao: 'AddTarefa',
       entidade_alvo: 'tarefa',
       campos: {
         tarefa: tarefa.fields.tarefa,

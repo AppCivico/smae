@@ -4,6 +4,7 @@ import { Field, ErrorMessage } from 'vee-validate';
 import SmaeNumberInput from '@/components/camposDeFormulario/SmaeNumberInput.vue';
 import SmaeDateInput from '@/components/camposDeFormulario/SmaeDateInput.vue';
 import AutocompleteField2 from '@/components/AutocompleteField2.vue';
+import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
 
 const props = defineProps({
   config: Object,
@@ -29,20 +30,44 @@ function updateValue(val, key = null) {
 const fieldName = computed(() => props.path);
 
 function getOptionsForField(config) {
-  if (!config.meta) return [];
+  const meta = config?.meta;
+
+  if (!meta) return [];
+
   if (config.tipo === 'select-estatico') {
     return props.fontesEstaticas?.[config.meta.optionSource] || [];
   }
+
   if (config.tipo === 'select-dinamico') {
-    const store = props.storeInstances[config.meta.storeKey];
-    const list = config.meta.getterKey ? store[config.meta.getterKey] : store[config.meta.listState];
-    return list?.map(item => ({
-      value: item[config.meta.optionValue],
-      label: item[config.meta.optionLabel],
-    })) || [];
+    const store = props.storeInstances[meta.storeKey];
+    const list = meta.getterKey ? store[meta.getterKey] : store[meta.listState];
+    if (!list || !Array.isArray(list)) return [];
+
+    const getLabel = typeof meta.optionLabel === 'function'
+      ? meta.optionLabel
+      : (item) => item[meta.optionLabel];
+
+    return list.map((item) => ({
+      value: item[meta.optionValue],
+      label: getLabel(item),
+    }));
   }
+
   return [];
 }
+
+const getGrupoParaAutocomplete = (config) => {
+  const meta = config?.meta;
+  if (!meta) return [];
+
+  if (meta.storeKey) {
+    const store = props.storeInstances[meta.storeKey];
+    const lista = meta.getterKey ? store[meta.getterKey] : store[meta.listState];
+    return Array.isArray(lista) ? lista : [];
+  }
+
+  return [];
+};
 
 function detectarTipoCampo(campoSchema, meta) {
   if (meta?.tipo) return meta.tipo;
@@ -134,8 +159,22 @@ function campoConfig(campoSchema) {
       v-else-if="config.tipo === 'autocomplete'"
       :name="fieldName"
       :model-value="modelValue"
-      :grupo="getOptionsForField(config)"
+      :grupo="getGrupoParaAutocomplete(config)"
+      :controlador="{ busca: '', participantes: modelValue || [] }"
+      :aria-busy="loadingOptions?.[`${path}-${config?.meta?.storeKey}`]"
+      :aria-readonly="readonly"
+      :readonly="readonly"
+      :label="config.meta.optionLabel || 'value'"
       @change="updateValue"
+    />
+
+    <CampoDePessoasComBuscaPorOrgao
+      v-else-if="config?.tipo === 'campo-de-pessoas-orgao'"
+      :model-value="modelValue || []"
+      :valores-iniciais="[]"
+      :readonly="readonly"
+      :limitar-para-um-orgao="true"
+      @update:modelValue="updateValue"
     />
 
     <Field
