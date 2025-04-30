@@ -321,7 +321,7 @@ async function handlePropertyChange(event, idx) {
               @mousedown="modoRevisao && $event.preventDefault()"
               @keydown="modoRevisao && $event.preventDefault()"
               @focus="modoRevisao && $event.target.blur()"
-              @change="(event) => handlePropertyChange(event, idx)"
+              @input="(event) => handlePropertyChange(event, idx)"
             >
               <option
                 value=""
