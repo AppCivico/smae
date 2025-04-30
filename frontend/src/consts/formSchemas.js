@@ -2753,7 +2753,7 @@ export const projeto = object()
               .nullable(),
             premissa: string()
               .required('A premissa não pode estar em branco')
-              .max(255, 'Premissa muito longa. Use 255 caracteres ou menos.'),
+              .max(2048, 'Premissa muito longa. Use 2048 caracteres ou menos.'),
           }),
       )
       .strict(),
@@ -2792,7 +2792,7 @@ export const projeto = object()
               .nullable(),
             restricao: string()
               .required('A restrição não pode estar em branco')
-              .max(255, 'Restrição muito longa. Use 255 caracteres ou menos.'),
+              .max(2048, 'Restrição muito longa. Use 2048 caracteres ou menos.'),
           }),
       )
       .strict(),
