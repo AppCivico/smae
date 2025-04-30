@@ -1,13 +1,12 @@
 <template>
-  <component
-    :is="elementoEnvelope"
+  <th
     class="table-header-cell"
     v-bind="props.atributos"
   >
     <slot>
       {{ conteudo }}
     </slot>
-  </component>
+  </th>
 </template>
 
 <script lang="ts" setup>
@@ -22,8 +21,6 @@ type Props = Coluna & {
 };
 
 const props = defineProps<Props>();
-
-const elementoEnvelope = computed<'td' | 'th'>(() => (props.ehCabecalho ? 'th' : 'td'));
 
 const conteudo = computed(() => (!props.schema || !props.chave
   ? props.label || props.chave
