@@ -144,6 +144,7 @@ export default {
         :key="p.id"
         class="tagsmall"
         :title="p.nome || p.titulo || p.descricao || p.nome_completo || null"
+        type="button"
         @click="removeParticipante(control, p.id)"
       >
         {{ p[label] }}

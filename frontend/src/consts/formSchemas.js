@@ -1683,11 +1683,22 @@ export const obras = object({
     .meta({
       permite_edicao_em_massa: true,
       tipo: 'campos-compostos',
+      operacao: 'addTarefa',
       entidade_alvo: 'tarefa',
       campos: {
         tarefa: tarefa.fields.tarefa,
         inicio_planejado: tarefa.fields.inicio_planejado,
         termino_planejado: tarefa.fields.termino_planejado,
+        // orgao: {
+        //   ...tarefa.fields.orgao,
+        //   meta: () => ({
+        //     storeKey: 'órgãos',
+        //     fetchAction: 'getAll',
+        //     listState: 'organs',
+        //     optionValue: 'id',
+        //     optionLabel: (item) => `${item.sigla} - ${item.descricao}`,
+        //   }),
+        // },
       },
     })
     .nullable(),

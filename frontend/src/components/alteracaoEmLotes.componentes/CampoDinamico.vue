@@ -49,7 +49,7 @@ function detectarTipoCampo(campoSchema, meta) {
 
   if (campoSchema.type === 'array') return 'autocomplete';
 
-  if (meta?.optionSource && fontesEstaticas[meta.optionSource]) {
+  if (meta?.optionSource && props.fontesEstaticas[meta.optionSource]) {
     return 'select-estatico';
   }
 
@@ -72,6 +72,7 @@ function detectarTipoCampo(campoSchema, meta) {
 }
 
 function campoConfig(campoSchema) {
+  // debugger;
   const meta = campoSchema.meta?.() || {};
   const tipo = detectarTipoCampo(campoSchema, meta);
 

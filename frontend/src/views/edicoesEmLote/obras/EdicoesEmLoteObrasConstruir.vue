@@ -164,6 +164,13 @@ function campoConfig(idx) {
   return prop ? obterConfiguracaoCampo(prop) : null;
 }
 
+function formatarValorParaPayload(valor, tipo) {
+  if (tipo === 'date' && valor) return format(new Date(valor), 'yyyy-MM-dd');
+  if (tipo === 'number' && valor !== null) return Number(valor);
+  if (['text', 'string'].includes(tipo) && valor !== null) return String(valor);
+  return valor;
+}
+
 const onSubmit = handleSubmit(async (valores) => {
   if (!modoRevisao.value) {
     modoRevisao.value = true;
@@ -173,36 +180,33 @@ const onSubmit = handleSubmit(async (valores) => {
   const payload = {
     tipo: route.meta.tipoDeAcoesEmLote,
     ids: edicoesEmLoteStore.idsSelecionados,
-    ops: valores.edicoes.map((edicao) => {
-      const tipoCampo = campoConfigPorNome(edicao.propriedade)?.tipo;
-      const entidadeAlvo = campo?.meta?.entidade_alvo || null;
-      let { valor } = edicao;
+    ops: valores.edicoes.flatMap((edicao) => {
+      const campo = obterConfiguracaoCampo(edicao.propriedade);
+      const tipoCampo = campo?.tipo;
 
-      if (tipoCampo === 'date' && valor) {
-        valor = String(format(new Date(valor), 'yyyy-MM-dd'));
-      } else if (tipoCampo === 'number' && valor !== null) {
-        valor = Number(valor);
-      } else if (['text', 'string'].includes(tipoCampo) && valor !== null) {
-        valor = String(valor);
-      }
+      const operacao = campo.meta?.operacao || edicao.operacao || 'Set';
 
-      const operacao = edicao.operacao || 'Set';
-
-      if (campo?.meta?.campos && Array.isArray(campo.meta.campos)) {
-        return campo.meta.campos.map((subcampo) => ({
-          entidade_alvo: entidadeAlvo,
-          col: subcampo.schema?.spec?.path || '',
+      if (tipoCampo === 'campos-compostos' && campo.meta?.campos) {
+        return [{
+          col: edicao.propriedade,
           tipo_operacao: operacao,
-          valor: edicao.valor?.[subcampo.schema?.spec?.path] ?? null,
-        }));
+          valor: Object.fromEntries(
+            Object.entries(campo.meta.campos).map(([chave, subcampoSchema]) => {
+              const rawValor = edicao.valor?.[chave] ?? null;
+              const subTipo = detectarTipoCampo(subcampoSchema, subcampoSchema.meta?.());
+              const valorFormatado = formatarValorParaPayload(rawValor, subTipo);
+              return [chave, valorFormatado];
+            }),
+          ),
+        }];
       }
 
-      return {
-        entidade_alvo: entidadeAlvo,
+      const valor = formatarValorParaPayload(edicao.valor, tipoCampo);
+      return [{
         col: edicao.propriedade,
         tipo_operacao: operacao,
         valor,
-      };
+      }];
     }),
   };
 
