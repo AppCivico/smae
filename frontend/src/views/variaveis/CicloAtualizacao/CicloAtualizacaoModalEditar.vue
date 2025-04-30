@@ -21,7 +21,7 @@
 
     <form
       class="mt1 flex column"
-      @submit.prevent="enviando && !Object.keys(errors).length && validarEEnviar({ aprovar: false })"
+      @submit.prevent="carregando && !Object.keys(errors).length && validarEEnviar()"
     >
       <hr>
 
@@ -136,7 +136,7 @@
       <article class="upload-arquivos mt1">
         <UploadArquivos
           :arquivos="arquivosLocais"
-          label="ADICIONAR DOCUMENTOS COMPROBATÓRIOS OU COMPLEMENTARES"
+          label="Adicionar documentos comprobatórios ou complementares"
           @novo-arquivo="adicionarNovoArquivo"
           @remover-arquivo="removerArquivo"
         />
@@ -206,11 +206,11 @@
         <table class="valores-variaveis-tabela mt4">
           <thead>
             <tr>
-              <th>CÓDIGO</th>
-              <th>REFERÊNCIA</th>
-              <th>VALOR REALIZADO</th>
+              <th>Código</th>
+              <th>Referência</th>
+              <th>Valor realizado</th>
               <th v-if="emFoco?.variavel.acumulativa">
-                VALOR REALIZADO ACUMULADO
+                Valor realizado acumulado
               </th>
             </tr>
           </thead>
@@ -235,9 +235,9 @@
                 </div>
               </td>
 
-              <td class="valores-variaveis-tabela__item valores-variaveis-tabela__item--referencia">
-                <strong>{{ variavelDado.referencia }}</strong>
-              </td>
+              <th class="valores-variaveis-tabela__item valores-variaveis-tabela__item--referencia">
+                {{ variavelDado.referencia }}
+              </th>
 
               <td
                 class="valores-variaveis-tabela__item valores-variaveis-tabela__item--valor_realizado"
@@ -283,11 +283,12 @@
                 class="valores-variaveis-tabela__item valores-variaveis-tabela__item--valor_realizado_acumulado"
               >
                 <Field
+                  v-model="variaveisDadosValores[variavelDadoIndex].valor_realizado_acumulado"
                   :name="`variaveis_dados[${variavelDadoIndex}].valor_realizado_acumulado`"
-                  :class="[
-                    'inputtext light f1',
-                    {'error': temErro(`variaveis_dados[${variavelDadoIndex}].valor_realizado_acumulado`)}
-                  ]"
+                  class="inputtext light f1"
+                  :class="{
+                    error: temErro(`variaveis_dados[${variavelDadoIndex}].valor_realizado_acumulado`)
+                  }"
                   type="number"
                   disabled
                 />
@@ -298,31 +299,39 @@
                 type="hidden"
               />
             </tr>
-
+          </tbody>
+          <tfoot
+            v-if="!temCategorica"
+          >
             <tr
-              v-if="!temCategorica"
               class="valores-variaveis-tabela__linha-calculada"
             >
               <td />
               <td />
-              <td>{{ valoresCalculados.valor_realizado }}</td>
+              <td>
+                <output>
+                  {{ valoresCalculados.valor_realizado }}
+                </output>
+              </td>
               <td
                 v-if="emFoco?.variavel.acumulativa"
               >
-                {{ valoresCalculados.valor_realizado_acumulado }}
+                <output>
+                  {{ valoresCalculados.valor_realizado_acumulado }}
+                </output>
               </td>
             </tr>
-          </tbody>
+          </tfoot>
         </table>
       </article>
 
-      <SmaeFieldsetSubmit :erros="errors">
+      <SmaeFieldsetSubmit :erros="aprovar ? errors : null">
         <button
           type="button"
           class="btn outline bgnone tcprimary"
           :disabled="bloqueado"
-          :aria-busy="enviando"
-          @click.prevent="enviar({ aprovar: false })"
+          :aria-busy="carregando"
+          @click.prevent="aprovar = false; enviar()"
         >
           {{
             values.solicitar_complementacao ?
@@ -336,8 +345,8 @@
           class="btn"
           :disabled="bloqueado"
           :aria-disabled="!!Object.keys(errors).length"
-          :aria-busy="enviando"
-          @click.prevent="!Object.keys(errors).length && validarEEnviar({ aprovar: true })"
+          :aria-busy="carregando"
+          @click.prevent="!Object.keys(errors).length && validarEEnviar()"
         >
           {{ botoesLabel.salvarESubmeter }}
         </button>
@@ -384,7 +393,9 @@ const $emit = defineEmits<Emits>();
 const cicloAtualizacaoStore = useCicloAtualizacaoStore(useRoute().meta.entidadeMãe);
 const variaveisCategoricasStore = useVariaveisCategoricasStore();
 
-const { emFoco, bloqueado, temCategorica } = storeToRefs(cicloAtualizacaoStore);
+const {
+  emFoco, bloqueado, temCategorica, carregando,
+} = storeToRefs(cicloAtualizacaoStore);
 
 const {
   fase, forumlariosAExibir, botoesLabel, fasePosicao, dataReferencia, obterValorAnalise,
@@ -392,7 +403,7 @@ const {
 
 const valorInicialVariaveis = emFoco.value?.valores.map((item) => ({
   variavel_id: item.variavel.id,
-  valor_realizado: item.valor_realizado,
+  valor_realizado: item.valor_realizado || '',
   valor_realizado_acumulado: emFoco.value?.variavel.acumulativa ? item.valor_realizado_acumulado : '0',
 }));
 
@@ -409,7 +420,6 @@ function obterVariavelInicial() {
     ...analises,
   };
 }
-const enviando = ref(false);
 
 const dataCicloAtualizacao = computed<string | null>(() => (
   dateIgnorarTimezone(dataReferencia)
@@ -424,6 +434,7 @@ const {
   initialValues: obterVariavelInicial(),
 });
 
+const aprovar = ref(false);
 const valorPadrao = ref<string>('');
 const variaveisDadosValores = ref(valorInicialVariaveis || []);
 const arquivosLocais = ref<ArquivoAdicionado[]>(emFoco.value?.uploads || []);
@@ -474,12 +485,10 @@ const valoresCalculados = computed<ValoresAcumulados>(() => {
   }, { valor_realizado: 0, valor_realizado_acumulado: 0 });
 });
 
-const enviar = async ({ aprovar = false }) => {
+const enviar = async () => {
   if (!emFoco.value) {
     throw new Error('Erro ao tentar submeter dados');
   }
-
-  enviando.value = true;
 
   let analiseFase = 'analise_qualitativa';
   if (fase.value === 'aprovacao') {
@@ -493,7 +502,7 @@ const enviar = async ({ aprovar = false }) => {
     analise_qualitativa: !values.solicitar_complementacao
       ? values[analiseFase]
       : undefined,
-    aprovar,
+    aprovar: aprovar.value,
     data_referencia: dataReferencia,
     uploads: arquivosLocais.value,
     valores: values.variaveis_dados || [],
@@ -503,14 +512,14 @@ const enviar = async ({ aprovar = false }) => {
 
   await cicloAtualizacaoStore.enviarDados(dados);
 
-  enviando.value = false;
-
   $emit('enviado');
 };
 
-const validarEEnviar = ({ aprovar = false }) => {
+const validarEEnviar = () => {
+  aprovar.value = true;
+
   handleSubmit(() => {
-    enviar({ aprovar });
+    enviar();
   })();
 };
 

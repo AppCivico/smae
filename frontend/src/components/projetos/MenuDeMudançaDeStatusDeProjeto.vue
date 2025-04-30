@@ -56,12 +56,18 @@ const ações = [
   },
 ];
 
+const alertStore = useAlertStore();
+
 const açõesPermitidas = computed(() => ações.filter((x) => !!emFoco.value?.permissoes?.[`acao_${x.ação}`]));
 
 async function mudarStatus(id, { nome, ação }) {
-  useAlertStore()
-    .confirmAction(`${nome}. Você confirma essa mudança de status?`, async () => {
+  alertStore
+    .confirmAction(`Você confirma a mudança de status para "${nome}"?`, async () => {
       const resposta = await projetosStore.mudarStatus(id, ação);
+
+      alertStore
+        .success('Status modificado. Lembre-se de atualizar a etapa do cronograma!');
+
       if (resposta) {
         projetosStore.buscarItem(id);
       }

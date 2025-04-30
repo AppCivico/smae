@@ -109,10 +109,10 @@ BEGIN
         IF (v_ultimo_periodo_valido IS NULL) THEN
             v_ultimo_periodo_valido := v_ciclo.ciclo_data;
             v_primeiro_registro := v_ciclo;
-        END IF;
 
-        IF (v_eh_liberacao_auto IS NULL AND v_ciclo.eh_liberacao_auto[1] IS NOT NULL) THEN
-            v_eh_liberacao_auto := v_ciclo.eh_liberacao_auto[1];
+            IF (v_eh_liberacao_auto IS NULL AND v_ciclo.eh_liberacao_auto[1] IS NOT NULL) THEN
+                v_eh_liberacao_auto := v_ciclo.eh_liberacao_auto[1];
+            END IF;
         END IF;
 
         -- fase desejada pra não ser um atraso, exceto se for o ciclo corrente

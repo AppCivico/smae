@@ -122,8 +122,6 @@ useResizeObserver(listaDeAbas, debounce(async () => {
 watch(
   () => abasVisiveis.value,
   (novoValor) => {
-    console.debug('abasVisiveis', novoValor);
-
     if (!novoValor.includes(abaAberta.value)) {
       iniciar();
     }

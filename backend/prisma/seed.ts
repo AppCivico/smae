@@ -538,6 +538,7 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['SMAE.gestor_distribuicao_recurso', 'Visão limitada, para gestor de distribuição de recurso'],
         ['SMAE.GrupoVariavel.colaborador', 'Pode ser colaborador de grupos de variáveis'],
         ['SMAE.AtualizacaoEmLote', 'Acesso a ferramenta de atualização em lote'],
+        ['SMAE.gerente_de_projeto', 'Editar os responsáveis de projetos após a fase de planejamento'],
     ],
     SMAE_BETA_FEATURES: [
         // também precisade um modulo só para ele, pois não podemos deixar no SMAE... too complexo to explain..
@@ -922,21 +923,6 @@ const PerfilAcessoConfig: PerfilConfigArray = [
     },
 
     {
-        nome: 'Gestor de Projetos no Órgão',
-        descricao: 'Gerenciar todos os projetos no órgão em qual faz parte',
-        privilegios: [
-            'Reports.executar.Projetos', // TODO remover, afinal, precisa dos filtros no reports
-            'Projeto.administrador_no_orgao',
-            'Reports.dashboard_portfolios',
-            'Projeto.administrar_portfolios_no_orgao',
-            'CadastroGrupoPortfolio.administrador_no_orgao',
-            'Projeto.orcamento',
-            'Projeto.revisar_projeto',
-            ...PPCadastroBasico,
-        ],
-    },
-
-    {
         nome: atualizarNomePerfil('Gestor de Cadastros Básicos de Projetos', [
             'Gestor de Cadastros Básicos de Projetos e Obras',
         ]),
@@ -982,11 +968,43 @@ const PerfilAcessoConfig: PerfilConfigArray = [
         ],
     },
     {
-        nome: atualizarNomePerfil('Gestor de projetos', ['Órgão Gestor']),
+        nome: 'Gestor de Projetos no Órgão',
+        descricao: 'Gerenciar todos os projetos no órgão em qual faz parte',
+        privilegios: false,
+    },
+    {
+        nome: atualizarNomePerfil('Escritório de projetos', ['Órgão Gestor', 'Gestor de projetos']),
         descricao: 'Pode ser escolhido como responsável no órgão gestor de projetos',
         privilegios: [
             'Reports.executar.Projetos', // TODO remover, afinal, precisa dos filtros no reports
             'SMAE.gestor_de_projeto',
+            'Reports.dashboard_portfolios',
+            'Projeto.orcamento',
+            'Projeto.revisar_projeto',
+
+            'Reports.executar.Projetos', // TODO remover, afinal, precisa dos filtros no reports
+            'Projeto.administrador_no_orgao',
+            'Reports.dashboard_portfolios',
+            'Projeto.administrar_portfolios_no_orgao',
+            'CadastroGrupoPortfolio.administrador_no_orgao',
+            'Projeto.orcamento',
+            'Projeto.revisar_projeto',
+            ...PPCadastroBasico,
+
+            'CadastroPainelExterno.inserir',
+            'CadastroPainelExterno.editar',
+            'CadastroPainelExterno.remover',
+            'CadastroGrupoPainelExterno.administrador_no_orgao',
+        ],
+    },
+    {
+        nome: 'Gerente de Projeto',
+        descricao: '',
+        privilegios: [
+            'Reports.executar.Projetos', // TODO remover, afinal, precisa dos filtros no reports
+            'SMAE.colaborador_de_projeto', // manter para que seja exposto no mesmo local que os colaboradores
+            'SMAE.gerente_de_projeto', // Diferencial em relação ao colaborador de projeto
+
             'Reports.dashboard_portfolios',
             'Projeto.orcamento',
             'Projeto.revisar_projeto',

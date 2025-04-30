@@ -108,6 +108,7 @@ export class ProjetoPermissoesDto {
      */
     apenas_leitura: boolean;
     sou_responsavel: boolean;
+    pode_editar_apenas_responsaveis_pos_planejamento: boolean; // Novo - Se verdadeiro usado no Gerente de Projeto
 
     @ApiProperty({ enum: ProjetoStatus, enumName: 'ProjetoStatus' })
     status_permitidos: ProjetoStatus[];

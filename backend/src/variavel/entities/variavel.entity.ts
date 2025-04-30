@@ -1,8 +1,10 @@
-import { ApiProperty, getSchemaPath, OmitType, PickType, refs } from '@nestjs/swagger';
+import { ApiHideProperty, ApiProperty, getSchemaPath, OmitType, PickType, refs } from '@nestjs/swagger';
 import { Periodicidade, Polaridade, Prisma, Serie, TipoVariavel } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { Transform } from 'class-transformer';
 import { IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
+import { IdSigla } from 'src/common/dto/IdSigla.dto';
+import { IsDateYMD } from '../../auth/decorators/date.decorator';
 import { DateTransform } from '../../auth/transforms/date.transform';
 import { DateYMD } from '../../common/date2ymd';
 import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
@@ -13,8 +15,6 @@ import { OrgaoResumo } from '../../orgao/entities/orgao.entity';
 import { Regiao } from '../../regiao/entities/regiao.entity';
 import { UnidadeMedida } from '../../unidade-medida/entities/unidade-medida.entity';
 import { VariavelResumo } from '../dto/list-variavel.dto';
-import { IsDateYMD } from '../../auth/decorators/date.decorator';
-import { IdSigla } from 'src/common/dto/IdSigla.dto';
 
 export class IndicadorVariavelOrigemDto {
     id: number;
@@ -111,6 +111,9 @@ export class FilterPeriodoDto {
     @IsBoolean()
     @Transform((v) => v.value === 'true')
     ate_ciclo_corrente?: Boolean;
+
+    @ApiHideProperty()
+    ate_ciclo_corrente_inclusive?: boolean;
 
     @ApiProperty({
         description:

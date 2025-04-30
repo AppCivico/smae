@@ -18,7 +18,6 @@ import { Transform, Type, plainToInstance } from 'class-transformer';
 import { UpdateProjetoDto } from 'src/pp/projeto/dto/update-projeto.dto';
 import { validate } from 'class-validator';
 import { TipoAtualizacaoEmLote } from '@prisma/client';
-import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 
 @ValidatorConstraint({ name: 'VerificaOpsParaTipo', async: true })
 export class VerificaOpsParaTipoConstraint implements ValidatorConstraintInterface {
@@ -32,14 +31,14 @@ export class VerificaOpsParaTipoConstraint implements ValidatorConstraintInterfa
             return false;
         }
 
-        // Valida valores do 'set' conforme o DTO alvo
+        // Valida valores do campo 'valor' conforme o DTO alvo
         const targetDtoClass = tipoToDtoMap[tipo];
         if (!targetDtoClass) return false;
 
         for (const op of ops) {
             const dummyInstance = plainToInstance(
                 targetDtoClass,
-                { [op.col]: op.set }, // Mapeia o valor para a coluna
+                { [op.col]: op.valor }, // Mapeia o valor para a coluna
                 { enableImplicitConversion: true }
             ) as object;
 
@@ -97,12 +96,26 @@ const tipoToDtoMap: Record<TipoAtualizacaoEmLote, any> = {
     [TipoAtualizacaoEmLote.ProjetoPP]: UpdateProjetoDto,
 };
 
+export enum TipoOperacao {
+    Set = 'Set',
+    Add = 'Add',
+    Remove = 'Remove',
+}
+
 export class UpdateOperacaoDto {
     @IsString()
     col: string;
 
+    @IsEnum(TipoOperacao)
+    @ApiProperty({
+        description: 'Tipo da operação.',
+        enum: TipoOperacao,
+        enumName: 'TipoOperacao',
+    })
+    tipo_operacao: TipoOperacao;
+
     @IsDefined()
-    set: any;
+    valor: any;
 }
 
 export class CreateRunUpdateDto {
@@ -128,6 +141,4 @@ export class CreateRunUpdateDto {
 
     @IsNumber()
     atualizacao_em_lote_id: number;
-
-    user: PessoaFromJwt;
 }

@@ -14,7 +14,10 @@ import {
     AtualizacaoEmLoteResumoDto,
     CreateAtualizacaoEmLoteDto,
     FilterAtualizacaoEmLoteDto,
+    OperacaoProcessadaDto,
 } from './dto/atualizacao-em-lote.dto';
+import { BuildOperacaoProcessada } from './helpers/operacao.builder';
+import { UpdateOperacaoDto } from '../task/run_update/dto/create-run-update.dto';
 
 interface NextPageTokenJwtBody {
     offset: number;
@@ -71,6 +74,12 @@ export class AtualizacaoEmLoteService {
         return await this.prisma.$transaction(async (tx) => {
             const now = new Date();
 
+            const operacaoProcessada = await BuildOperacaoProcessada(
+                this.prisma,
+                tipoAtualizacao,
+                dto.ops as UpdateOperacaoDto[]
+            );
+
             // Criar o registro da atualização em lote em status pendente
             const atualizacao = await tx.atualizacaoEmLote.create({
                 data: {
@@ -79,6 +88,7 @@ export class AtualizacaoEmLoteService {
                     modulo_sistema: modulo,
                     target_ids: dto.ids,
                     operacao: dto.ops as any,
+                    operacao_processada: operacaoProcessada as any,
                     n_total: dto.ids.length,
                     n_sucesso: 0,
                     n_erro: 0,
@@ -99,7 +109,6 @@ export class AtualizacaoEmLoteService {
                             tipo: tipoAtualizacao,
                             ids: dto.ids,
                             ops: dto.ops,
-                            user: user,
                         },
                     },
                     user,
@@ -427,6 +436,7 @@ export class AtualizacaoEmLoteService {
             target_ids: logCompleto.target_ids ?? [],
             operacao: logCompleto.operacao ?? {},
             results_log: logCompleto.results_log ?? {},
+            operacao_processada: logCompleto.operacao_processada?.valueOf() as OperacaoProcessadaDto | null,
         };
     }
 
@@ -448,5 +458,62 @@ export class AtualizacaoEmLoteService {
     private encodeNextPageToken(opt: NextPageTokenJwtBody): string {
         const expiresIn = PAGINATION_TOKEN_TTL ?? '1h';
         return this.jwtService.sign(opt, { expiresIn });
+    }
+
+    async syncOperacoesProcessadas(): Promise<{ total: number; updated: number; errors: number }> {
+        this.logger.log('Starting synchronization of operacao_processada for all records...');
+
+        const stats = { total: 0, updated: 0, errors: 0 };
+
+        // busca todos que estão null
+        const records = await this.prisma.atualizacaoEmLote.findMany({
+            where: {
+                removido_em: null,
+                operacao_processada: {
+                    equals: Prisma.JsonNull,
+                },
+            },
+            select: {
+                id: true,
+                tipo: true,
+                operacao: true,
+            },
+        });
+
+        stats.total = records.length;
+        this.logger.log(`Found ${stats.total} records to process`);
+
+        for (const record of records) {
+            try {
+                if (!record.operacao) {
+                    this.logger.warn(`Record ID ${record.id} faltando operacao!`);
+                    continue;
+                }
+
+                const operacaoProcessada = await BuildOperacaoProcessada(
+                    this.prisma,
+                    record.tipo,
+                    record.operacao as any
+                );
+
+                await this.prisma.atualizacaoEmLote.update({
+                    where: { id: record.id },
+                    data: {
+                        operacao_processada: operacaoProcessada as any,
+                    },
+                });
+
+                stats.updated++;
+            } catch (error) {
+                stats.errors++;
+                this.logger.error(
+                    `Erro ao processar operacao_processada para ID ${record.id}: ${error.message}`,
+                    error.stack
+                );
+            }
+        }
+
+        this.logger.log(`Updated: ${stats.updated}, Errors: ${stats.errors}, Total: ${stats.total}`);
+        return stats;
     }
 }

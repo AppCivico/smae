@@ -59,7 +59,7 @@
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx --fix --ignore-path .gitignore",
     "prepare": "cd .. && husky frontend/.husky",
     "preview": "vite preview --port 4173",
-    "test": "vitest run",
+    "test": "vitest run --hideSkippedTests",
     "test:watch": "vitest"
   },
   "type": "module",

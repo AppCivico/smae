@@ -560,6 +560,19 @@ export class ReportsService {
         });
     }
 
+    async handleError(taskId: number, error: Error, prismaTx: Prisma.TransactionClient) {
+        await prismaTx.relatorio.updateMany({
+            where: {
+                id: taskId,
+            },
+            data: {
+                err_msg: error.message,
+                progresso: -1,
+                processado_em: new Date(Date.now()),
+            },
+        });
+    }
+
     async executaRelatorio(relatorio_id: number) {
         this.logger.log(`iniciando processamento do relatório ID ${relatorio_id}`);
 
@@ -597,11 +610,6 @@ export class ReportsService {
             });
 
             const contexto = new ReportContext(this.prisma, relatorio.id, relatorio.sistema);
-
-            await this.prisma.relatorio.update({
-                where: { id: relatorio_id },
-                data: { progresso: 0 },
-            });
 
             const pessoaJwt = relatorio.criado_por
                 ? await this.pessoaService.reportPessoaFromJwt(relatorio.criado_por, relatorio.sistema)

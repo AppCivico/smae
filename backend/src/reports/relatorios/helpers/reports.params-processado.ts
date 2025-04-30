@@ -185,6 +185,12 @@ export const BuildParametrosProcessados = async (
         }
 
         if (typeof valor === 'number' && nomeTabelaCol) {
+            if (valor === 0) {
+                // TODO: esse comportamento aqui é ruim, alinhar com os fronts para mapear quando eles estão enviado 0 e tratar no front.
+                delete parametros_processados[nomeChave];
+                continue;
+            }
+
             const query = `SELECT COALESCE(${nomeTabelaCol.coluna}::text, '') AS nome, removido_em FROM ${nomeTabelaCol.tabela} WHERE id = ${valor}`;
             const rowNome = await prisma.$queryRawUnsafe<Array<{ nome: string; removido_em: Date | undefined }>>(query);
             if (rowNome.length > 0) {

@@ -5,7 +5,7 @@
     :class="classe"
   >
     <slot
-      :name="`cabecalho:${chave}`"
+      :name="normalizadorDeSlots(`cabecalho:${chave}`)"
       v-bind="$props"
     >
       {{ label }}
@@ -15,7 +15,8 @@
 
 <script lang="ts" setup>
 import { computed, defineProps } from 'vue';
-import type { Coluna } from '../types/tipagem';
+import type { Coluna } from '../tipagem';
+import normalizadorDeSlots from '../utils/normalizadorDeSlots';
 
 type Props = Coluna;
 

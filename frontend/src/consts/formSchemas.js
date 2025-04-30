@@ -4347,9 +4347,10 @@ function obterCicloAtaulizacaoCamposCompartilhados(posicao) {
   };
 
   if (posicao !== 1) {
-    schemaCampos.solicitar_complementacao = boolean().label(
-      'Solicitar complementação',
-    );
+    schemaCampos.solicitar_complementacao = boolean()
+      .label(
+        'Solicitar complementação',
+      );
     schemaCampos.pedido_complementacao = string()
       .label('Pedido de complementação')
       .when('solicitar_complementacao', (solicitarComplementacao, field) => (solicitarComplementacao ? field.required() : field.nullable()));
@@ -4389,7 +4390,9 @@ export const cicloAtualizacaoModalEditarSchema = (posicao) => {
   const schemaCampos = {
     variaveis_dados: array().of(
       object().shape({
-        valor_realizado: string().label('valor realizado').required(),
+        valor_realizado: string()
+          .label('valor realizado')
+          .required(),
         valor_realizado_acumulado: string()
           .label('valor realizado acumulado')
           .required(),

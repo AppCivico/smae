@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { task_status, task_type } from '@prisma/client';
 import { IsEnum } from 'class-validator';
+import { TaskContext } from '../task.context';
 
 export class TaskSingleDto {
     id: number;
@@ -20,5 +21,5 @@ export class TaskSingleDto {
 
 export interface TaskableService {
     outputToJson(jobOutput: any, params: any, jobId: string): JSON;
-    executeJob(params: any, jobId: string): Promise<any>;
+    executeJob(params: any, jobId: string, context?: TaskContext): Promise<any>;
 }

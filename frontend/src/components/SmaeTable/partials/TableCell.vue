@@ -1,6 +1,6 @@
 <template>
   <slot
-    :name="`celula-fora:${caminho}`"
+    :name="`celula-fora:${caminhoSlot}`"
     :caminho="caminho"
     :linha="linha"
   >
@@ -9,7 +9,7 @@
       v-bind="$attrs"
     >
       <slot
-        :name="`celula:${caminho}`"
+        :name="`celula:${caminhoSlot}`"
         :caminho="caminho"
         :linha="linha"
       >
@@ -22,7 +22,8 @@
 <script lang="ts" setup>
 import { computed, defineProps, defineOptions } from 'vue';
 import obterParametroNoObjeto from '@/helpers/obterParametroNoObjeto';
-import type { Linha } from '../types/tipagem';
+import type { Linha } from '../tipagem';
+import normalizadorDeSlots from '../utils/normalizadorDeSlots';
 
 defineOptions({ inheritAttrs: false });
 
@@ -30,21 +31,26 @@ export type ParametrosDaColuna = {
   linha: Linha
   caminho: string
   ehDadoComputado?: boolean
-  formatador?: () => any
+  formatador?: (args: unknown) => number | string
 };
 
 type Props = ParametrosDaColuna & {
   classe?: string
 };
+
+const slots = defineSlots();
 const props = defineProps<Props>();
 
 const conteudoColuna = computed(() => {
-  if (props.ehDadoComputado) {
+  if (props.ehDadoComputado
+    || slots[`celula:${props.caminho}`]
+    || slots[`celula-fora:${props.caminho}`]
+  ) {
     return undefined;
   }
 
-  const conteudo = obterParametroNoObjeto(props.caminho, props.linha);
-
-  return conteudo;
+  return obterParametroNoObjeto(props.caminho, props.linha);
 });
+
+const caminhoSlot = computed(() => normalizadorDeSlots(props.caminho));
 </script>

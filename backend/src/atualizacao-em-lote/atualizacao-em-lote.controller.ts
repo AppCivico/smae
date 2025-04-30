@@ -63,4 +63,20 @@ export class AtualizacaoEmLoteController {
     ): Promise<AtualizacaoEmLoteDetalheDto> {
         return this.atualizacaoEmLoteService.getById(params.id, user);
     }
+
+    @Post('sync-operacoes-processadas')
+    @Roles(['SMAE.superadmin'])
+    @ApiOperation({
+        summary: 'Sincroniza o campo operacao_processada para todos os registros que não possuem este campo preenchido',
+    })
+    async syncOperacoesProcessadas(
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<{ message: string; stats: { total: number; updated: number; errors: number } }> {
+        const stats = await this.atualizacaoEmLoteService.syncOperacoesProcessadas();
+
+        return {
+            message: `Sincronização completa. ${stats.updated} de ${stats.total} registros foram atualizados com sucesso. ${stats.errors} erros ocorreram.`,
+            stats,
+        };
+    }
 }

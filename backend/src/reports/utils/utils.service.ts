@@ -192,14 +192,16 @@ export const DefaultCsvOptions = {
 };
 
 export function EnumHumano(enumType: typeof ParlamentarCargo | typeof TipoRelatorio, value: string): string {
+    const normalizedValue = value.trim();
+
     if (enumType === ParlamentarCargo) {
-        if (value === 'DeputadoFederal') return 'Deputado Federal';
-        if (value === 'DepudatoEstadual') return 'Deputado Estadual';
+        if (normalizedValue === 'DeputadoFederal') return 'Deputado Federal';
+        if (normalizedValue === 'DeputadoEstadual') return 'Deputado Estadual';
     }
 
     if (enumType === TipoRelatorio) {
-        if (value === 'Analitico') return 'Analítico';
+        if (normalizedValue === 'Analitico') return 'Analítico';
     }
 
-    return value;
+    return normalizedValue;
 }
