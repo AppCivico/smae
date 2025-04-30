@@ -35,7 +35,7 @@ const descricaoConteudo = computed<string>(() => {
     return '';
   }
 
-  return removerHtml(content.value.innerHTML);
+  return removerHtml(content.value.textContent);
 });
 
 function esconderTooltip() {
