@@ -1677,7 +1677,7 @@ export const planoDeAção = object()
       .nullable(),
     contramedida: string()
       .label('Contramedida')
-      .max(50000)
+      .max(2048)
       .required(),
     custo: number()
       .label('Custo da contramedida')
@@ -1697,7 +1697,7 @@ export const planoDeAção = object()
       .nullable(),
     medidas_de_contingencia: string()
       .label('Medidas de contingência')
-      .max(50000),
+      .max(2048),
     orgao_id: number()
       .label('Órgão')
       .min(1, 'Selecione um órgão responsável')
