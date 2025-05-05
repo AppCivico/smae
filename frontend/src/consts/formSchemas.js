@@ -1605,6 +1605,7 @@ export const obras = object({
     .nullable(),
   ponto_focal_responsavel: string()
     .label('Ponto focal responsável')
+    .transform((value) => (value != null ? String(value) : null))
     .nullable()
     .meta({
       permite_edicao_em_massa: true,
