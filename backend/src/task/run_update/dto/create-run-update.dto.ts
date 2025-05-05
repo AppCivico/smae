@@ -27,7 +27,11 @@ export class VerificaOpsParaTipoConstraint implements ValidatorConstraintInterfa
         const colunasPermitidas = this.buscaColsPermitidas(tipo);
 
         // Verifica colunas válidas
-        if (!ops.every((op) => colunasPermitidas.includes(op.col))) {
+        if (
+            !ops
+                .filter((e) => e.tipo_operacao !== TipoOperacao.CreateTarefa)
+                .every((op) => colunasPermitidas.includes(op.col))
+        ) {
             return false;
         }
 
@@ -36,6 +40,11 @@ export class VerificaOpsParaTipoConstraint implements ValidatorConstraintInterfa
         if (!targetDtoClass) return false;
 
         for (const op of ops) {
+            // Caso a operação seja de tipo 'CreateTarefa', pula a validação
+            if (op.tipo_operacao === TipoOperacao.CreateTarefa) {
+                continue;
+            }
+
             const dummyInstance = plainToInstance(
                 targetDtoClass,
                 { [op.col]: op.valor }, // Mapeia o valor para a coluna
@@ -91,16 +100,17 @@ export function VerificaOpsParaTipo() {
     };
 }
 
-const tipoToDtoMap: Record<TipoAtualizacaoEmLote, any> = {
-    [TipoAtualizacaoEmLote.ProjetoMDO]: UpdateProjetoDto,
-    [TipoAtualizacaoEmLote.ProjetoPP]: UpdateProjetoDto,
-};
-
 export enum TipoOperacao {
     Set = 'Set',
     Add = 'Add',
     Remove = 'Remove',
+    CreateTarefa = 'CreateTarefa',
 }
+
+const tipoToDtoMap: Record<TipoAtualizacaoEmLote, any> = {
+    [TipoAtualizacaoEmLote.ProjetoMDO]: UpdateProjetoDto,
+    [TipoAtualizacaoEmLote.ProjetoPP]: UpdateProjetoDto,
+};
 
 export class UpdateOperacaoDto {
     @IsString()

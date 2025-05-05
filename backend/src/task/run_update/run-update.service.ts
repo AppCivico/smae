@@ -4,6 +4,10 @@ import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { ReadOnlyBooleanType } from 'src/common/TypeReadOnly';
 import { PessoaService } from 'src/pessoa/pessoa.service';
+import { CreateTarefaDto } from 'src/pp/tarefa/dto/create-tarefa.dto';
+import { TarefaService } from 'src/pp/tarefa/tarefa.service';
+import { plainToInstance } from 'class-transformer';
+import { validate } from 'class-validator';
 import { UpdateProjetoDto } from 'src/pp/projeto/dto/update-projeto.dto';
 import { ProjetoService } from 'src/pp/projeto/projeto.service';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -54,6 +58,7 @@ export class RunUpdateTaskService implements TaskableService {
         private readonly prisma: PrismaService,
         @Inject(forwardRef(() => ProjetoService)) private readonly projetoService: ProjetoService,
         @Inject(forwardRef(() => PessoaService)) private readonly pessoaService: PessoaService,
+        @Inject(forwardRef(() => TarefaService)) private readonly tarefaService: TarefaService,
         @Inject(forwardRef(() => UploadService)) private readonly uploadService: UploadService
     ) {}
 
@@ -124,7 +129,6 @@ export class RunUpdateTaskService implements TaskableService {
                         // Buscando título/nome da linha para logs.
                         const paramsBusca = this.preparaParamsParaFindOne(_params.tipo);
                         const registro = await service.findOne(paramsBusca.tipo, id, pessoaJwt, 'ReadWrite');
-
                         // Armazena o registro no nosso log estendido
                         const registroProcessamento: RegistroProcessamento = {
                             id: id,
@@ -139,33 +143,52 @@ export class RunUpdateTaskService implements TaskableService {
                         await context.stashData<LogResultadosEstendido>(resultadosEstendidos);
 
                         const paramsAtualizacao: any = {};
+                        const paramsCriacaoTarefa: any = {};
 
                         for (const operacao of _params.ops) {
-                            const params = this.preparaParamsParaOp(_params.tipo, operacao, registro);
+                            const params = await this.preparaParamsParaOp(_params.tipo, operacao, registro);
 
                             // Adiciona valores do Dto desta operação no dto consolidado.
-                            paramsAtualizacao.dto = {
-                                ...paramsAtualizacao.dto,
-                                ...params.dto,
-                            };
+                            if (operacao.tipo_operacao === TipoOperacao.CreateTarefa) {
+                                paramsCriacaoTarefa.dto = {
+                                    ...params.dto,
+                                };
+                            } else {
+                                paramsAtualizacao.dto = {
+                                    ...paramsAtualizacao.dto,
+                                    ...params.dto,
+                                };
+                            }
 
                             // TODO: por agora, atualizações em lote são apenas para PP e MDO.
-                            // E esses serviços necessitam do tipo.
+                            // E esses serviços necessitam do "tipo".
                             // Implementar solução mais genérica.
-                            if (!paramsAtualizacao.tipo && params.tipo) {
+                            if (
+                                !paramsAtualizacao.tipo &&
+                                params.tipo &&
+                                operacao.tipo_operacao !== TipoOperacao.CreateTarefa
+                            ) {
                                 paramsAtualizacao.tipo = params.tipo;
                             }
                         }
 
                         try {
-                            // AVISO: SEMPRE GARANTIR QUE O MÉTODO UPDATE RECEBE TX DO PRISMA.
-                            await service.update(
-                                paramsAtualizacao.tipo,
-                                id,
-                                paramsAtualizacao.dto,
-                                pessoaJwt,
-                                prismaTxn
-                            );
+                            // AVISO: SEMPRE GARANTIR QUE O MÉTODO UPDATE/CREATE RECEBE TX DO PRISMA.
+                            if (paramsAtualizacao.dto)
+                                await service.update(
+                                    paramsAtualizacao.tipo,
+                                    id,
+                                    paramsAtualizacao.dto,
+                                    pessoaJwt,
+                                    prismaTxn
+                                );
+
+                            if (paramsCriacaoTarefa.dto) {
+                                // Por agora, a única entidade que é criada pela atualização em lote é a tarefa.
+                                // Então utilizando direto o serviço.
+                                // TODO?: Implementar interface para solução mais genérica.
+                                await this.tarefaService.create({ projeto_id: id }, paramsCriacaoTarefa.dto, pessoaJwt);
+                            }
                         } catch (error) {
                             this.logger.error(`Erro ao atualizar ID ${id}: ${error.message}`);
 
@@ -390,29 +413,34 @@ export class RunUpdateTaskService implements TaskableService {
         return service;
     }
 
-    private preparaParamsParaOp(tipoAtualizacao: TipoAtualizacaoEmLote, op: UpdateOperacaoDto, registro: any) {
+    private async preparaParamsParaOp(tipoAtualizacao: TipoAtualizacaoEmLote, op: UpdateOperacaoDto, registro: any) {
         const params: any = {};
 
-        const value = this.processaValorParaOp(op, op.tipo_operacao, registro);
+        const value = await this.processaValorParaOp(op, op.tipo_operacao, registro);
 
         switch (tipoAtualizacao) {
             case TipoAtualizacaoEmLote.ProjetoPP:
             case TipoAtualizacaoEmLote.ProjetoMDO: {
                 params['tipo'] = tipoAtualizacao === TipoAtualizacaoEmLote.ProjetoPP ? 'PP' : ('MDO' as TipoProjeto);
-                const dto = {
-                    [op.col]: value,
-                } as UpdateProjetoDto;
-                params['dto'] = dto;
                 break;
             }
             default:
                 throw new Error(`Tipo de atualização não suportado: ${tipoAtualizacao}`);
         }
 
+        const dto =
+            typeof value === 'object'
+                ? ({
+                      ...value,
+                  } as CreateTarefaDto) // TODO: Isso aqui provavelmente não ficará assim, pois teremos mais casos.
+                : ({
+                      [op.col]: value,
+                  } as UpdateProjetoDto);
+        params['dto'] = dto;
         return params;
     }
 
-    private processaValorParaOp(op: UpdateOperacaoDto, tipo_operacao: TipoOperacao, registro: any) {
+    private async processaValorParaOp(op: UpdateOperacaoDto, tipo_operacao: TipoOperacao, registro: any) {
         let value = op.valor;
 
         if (tipo_operacao === TipoOperacao.Set) {
@@ -452,6 +480,55 @@ export class RunUpdateTaskService implements TaskableService {
                 }
             } else {
                 throw new Error(`Coluna "${op.col}" não encontrada no registro.`);
+            }
+        } else if (tipo_operacao === TipoOperacao.CreateTarefa) {
+            // Para CreateTarefa, o valor deve ser um objeto com os dados da tarefa.
+            if (typeof value !== 'object' || value === null) {
+                throw new Error(`Valor para CreateTarefa deve ser um objeto.`);
+            }
+
+            // Campos de data devem ser convertidos para Date.
+            if (value.inicio_planejado && typeof value.inicio_planejado === 'string') {
+                value.inicio_planejado = new Date(value.inicio_planejado);
+            }
+            if (value.termino_planejado && typeof value.termino_planejado === 'string') {
+                value.termino_planejado = new Date(value.termino_planejado);
+            }
+
+            value.orgao_id = op.col === 'orgao_id' ? value.orgao_id : registro.orgao_responsavel?.id;
+            value.nivel = 1;
+            value.numero = 99999;
+            value.tarefa_pai_id = null;
+            value.descricao = value.tarefa;
+            value.recursos = '';
+
+            // Calculando duracao_planejado.
+            // Ele deve ser enviado junto com inicio_planejado e termino_planejado.
+            // Geralmente, o front-end envia o valor em dias, mas para viabilizar a implementação, faremos o cálculo aqui.
+            // Um detalhe sobre a validação: o valor em dias deve contar com o dia de início e o dia de término.
+            if (value.inicio_planejado && value.termino_planejado) {
+                const inicio = new Date(value.inicio_planejado);
+                const termino = new Date(value.termino_planejado);
+                const diffTime = Math.abs(termino.getTime() - inicio.getTime());
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                value.duracao_planejado = diffDays + 1; // Adicionando 1 para incluir o dia de término.
+            } else {
+                throw new Error(`Inicio e término planejados são obrigatórios para CreateTarefa.`);
+            }
+
+            // Após adicionar os campos, validamos o DTO.
+            // Essa validação é feita aqui, pois no DTO de create da task não temos os valores que foram adicionados aqui neste método.
+            const dummyInstance = plainToInstance(
+                CreateTarefaDto,
+                { ...value }, // Mapeia o valor para a coluna
+                { enableImplicitConversion: true }
+            ) as object;
+            const errors = await validate(dummyInstance, {
+                skipMissingProperties: true,
+                forbidUnknownValues: true,
+            });
+            if (errors.length > 0) {
+                throw new Error(`Erro de validação: ${errors.map((e) => e.toString()).join(', ')}`);
             }
         } else {
             throw new Error(`Operação "${tipo_operacao}" não suportada.`);
