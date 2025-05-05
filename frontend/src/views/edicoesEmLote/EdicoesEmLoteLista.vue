@@ -11,8 +11,10 @@ const route = useRoute();
 const edicoesEmLoteStore = useEdicoesEmLoteStore(route.meta.tipoDeAcoesEmLote as string);
 const { lista } = storeToRefs(edicoesEmLoteStore);
 
-function obterTraducaoStatus(status: string) {
-  const mapaStatus = {
+type MapaStatus = { [key: string]: string };
+
+function obterTraducaoStatus(status: keyof MapaStatus) {
+  const mapaStatus: { [key: string]: string } = {
     Pendente: 'Pendente',
     Executando: 'Executando',
     Concluido: 'Todos os itens processados com sucesso',
@@ -21,7 +23,7 @@ function obterTraducaoStatus(status: string) {
     Abortado: 'Abortado',
   };
 
-  return mapaStatus[status] || status;
+  return mapaStatus[status as keyof MapaStatus] || status;
 }
 
 onMounted(() => {
