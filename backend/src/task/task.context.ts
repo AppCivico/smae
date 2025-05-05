@@ -17,17 +17,20 @@ export class TaskContext {
      */
     async stashData<T>(data: T): Promise<void> {
         try {
+            // Create a fresh copy using JSON methods to ensure no frozen objects
+            const cleanData = JSON.parse(JSON.stringify(data));
+
             await this.prisma.task_buffer.upsert({
                 where: {
                     task_id: this.task_id,
                 },
                 update: {
-                    data: JSON.parse(JSON.stringify(data)) as any,
+                    data: cleanData as any,
                     criado_em: new Date(),
                 },
                 create: {
                     task_id: this.task_id,
-                    data: data as any,
+                    data: cleanData as any,
                 },
             });
         } catch (error) {
@@ -46,7 +49,7 @@ export class TaskContext {
                     task_id: this.task_id,
                 },
             });
-            return buffer ? (JSON.parse(JSON.stringify(buffer.data?.valueOf())) as unknown as T) : def;
+            return JSON.parse(JSON.stringify(buffer ? (buffer.data?.valueOf() as unknown as T) : def));
         } catch (error) {
             console.error('Erro ao carregar dados do buffer da tarefa', error);
             return def;
