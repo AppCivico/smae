@@ -21,7 +21,7 @@ import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
 import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store';
 import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
 import rawStatusObras from '@/consts/statusObras';
-import { obras as schemaObras } from '@/consts/formSchemas';
+import { obras as schemaObras } from '@/consts/formEdicaoEmLoteObras';
 import CabecalhoDePagina from '@/components/CabecalhoDePagina.vue';
 import CampoDinamico from '@/components/alteracaoEmLotes.componentes/CampoDinamico.vue';
 import SmaeFieldsetSubmit from '@/components/SmaeFieldsetSubmit.vue';
