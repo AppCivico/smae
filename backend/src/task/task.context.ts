@@ -22,7 +22,7 @@ export class TaskContext {
                     task_id: this.task_id,
                 },
                 update: {
-                    data: data as any,
+                    data: JSON.parse(JSON.stringify(data)) as any,
                     criado_em: new Date(),
                 },
                 create: {
@@ -39,17 +39,17 @@ export class TaskContext {
     /**
      * Recupera dados previamente guardados do buffer de tarefa
      */
-    async loadStashedData<T>(): Promise<T | null> {
+    async loadStashedData<T>(def: T): Promise<T> {
         try {
             const buffer = await this.prisma.task_buffer.findUnique({
                 where: {
                     task_id: this.task_id,
                 },
             });
-            return buffer ? (buffer.data as unknown as T) : null;
+            return buffer ? (JSON.parse(JSON.stringify(buffer.data?.valueOf())) as unknown as T) : def;
         } catch (error) {
             console.error('Erro ao carregar dados do buffer da tarefa', error);
-            return null;
+            return def;
         }
     }
 

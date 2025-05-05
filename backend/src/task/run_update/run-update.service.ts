@@ -70,7 +70,7 @@ export class RunUpdateTaskService implements TaskableService {
             where: {
                 id: _params.atualizacao_em_lote_id,
                 status: {
-                    in: ['Pendente', 'ConcluidoParcialmente', 'Falhou', 'Abortado'],
+                    in: ['Pendente', 'ConcluidoParcialmente', 'Falhou', 'Abortado', 'Concluido'],
                 },
             },
         });
@@ -87,21 +87,15 @@ export class RunUpdateTaskService implements TaskableService {
             atualizacaoEmLote.modulo_sistema
         );
 
-        let n_sucesso = 0;
+        let n_sucesso = atualizacaoEmLote.n_sucesso || 0;
         let n_erro = 0;
-        const sucesso_ids = [];
+        const sucesso_ids = atualizacaoEmLote.sucesso_ids || [];
 
         // Carrega dados armazenados ou inicializa novos dados
-        let resultadosEstendidos: LogResultadosEstendido | null =
-            await context.loadStashedData<LogResultadosEstendido>();
-        if (!resultadosEstendidos) {
-            resultadosEstendidos = { falhas: [], registrosProcessados: [] };
-            // Armazena dados iniciais
-            await context.stashData<LogResultadosEstendido>(resultadosEstendidos);
-        } else {
-            // Cria uma copia pra desligar o freeze do decode do prisma
-            resultadosEstendidos = JSON.parse(JSON.stringify(resultadosEstendidos)) as LogResultadosEstendido;
-        }
+        const resultadosEstendidos = await context.loadStashedData<LogResultadosEstendido>({
+            falhas: [],
+            registrosProcessados: [],
+        });
 
         // O serviço é definido de maneira dinâmica, dependendo do tipo de atualização.
         const service = this.servicoDoTipo(_params.tipo);
@@ -109,16 +103,9 @@ export class RunUpdateTaskService implements TaskableService {
         try {
             for (const id of _params.ids) {
                 // skip if already processed
-                const registroProcessado = resultadosEstendidos.registrosProcessados.find((r) => r.id === id);
+                const registroProcessado = atualizacaoEmLote.sucesso_ids.find((r) => r === id);
                 if (registroProcessado) {
-                    if (registroProcessado.status === 'ok') {
-                        n_sucesso++;
-                        sucesso_ids.push(id);
-                        continue;
-                    } else if (registroProcessado.status === 'error') {
-                        n_erro++;
-                        continue;
-                    }
+                    continue;
                 }
 
                 try {
@@ -138,7 +125,13 @@ export class RunUpdateTaskService implements TaskableService {
                         };
 
                         // Adiciona aos registros processados
+                        console.log(
+                            'going to push',
+                            resultadosEstendidos.registrosProcessados,
+                            typeof resultadosEstendidos.registrosProcessados
+                        );
                         resultadosEstendidos.registrosProcessados.push(registroProcessamento);
+                        console.log('after push');
                         // Armazena dados após cada registro ser buscado
                         await context.stashData<LogResultadosEstendido>(resultadosEstendidos);
 
@@ -384,7 +377,7 @@ export class RunUpdateTaskService implements TaskableService {
             where: { id: params.atualizacao_em_lote_id },
             data: {
                 status,
-                results_log: JSON.stringify(resultadosOriginais),
+                results_log: resultadosOriginais as any,
                 n_sucesso,
                 n_erro,
                 n_ignorado: params.ids.length - n_sucesso - n_erro,
