@@ -1,17 +1,17 @@
 import { forwardRef, HttpException, Inject, Injectable, Logger } from '@nestjs/common';
-import { TaskableService } from '../entities/task.entity';
-import { CreateRunUpdateDto, TipoOperacao, UpdateOperacaoDto } from './dto/create-run-update.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma, TipoAtualizacaoEmLote, TipoProjeto } from '@prisma/client';
-import { ProjetoService } from 'src/pp/projeto/projeto.service';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
-import { UpdateProjetoDto } from 'src/pp/projeto/dto/update-projeto.dto';
 import { ReadOnlyBooleanType } from 'src/common/TypeReadOnly';
 import { PessoaService } from 'src/pessoa/pessoa.service';
-import { TaskContext } from '../task.context';
-import { utils, writeXLSX } from 'xlsx';
+import { UpdateProjetoDto } from 'src/pp/projeto/dto/update-projeto.dto';
+import { ProjetoService } from 'src/pp/projeto/projeto.service';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { UploadService } from 'src/upload/upload.service';
+import { utils, writeXLSX } from 'xlsx';
+import { TaskableService } from '../entities/task.entity';
+import { TaskContext } from '../task.context';
+import { CreateRunUpdateDto, TipoOperacao, UpdateOperacaoDto } from './dto/create-run-update.dto';
 
 export interface UpdateService {
     update(
@@ -62,7 +62,12 @@ export class RunUpdateTaskService implements TaskableService {
 
         // Apenas atualizações em lote pendentes.
         const atualizacaoEmLote = await this.prisma.atualizacaoEmLote.findUnique({
-            where: { id: _params.atualizacao_em_lote_id, status: 'Pendente' },
+            where: {
+                id: _params.atualizacao_em_lote_id,
+                status: {
+                    in: ['Pendente', 'ConcluidoParcialmente', 'Falhou'],
+                },
+            },
         });
         if (!atualizacaoEmLote) throw new Error('Atualização em lote não encontrada ou já processada');
 
@@ -84,19 +89,33 @@ export class RunUpdateTaskService implements TaskableService {
         // Carrega dados armazenados ou inicializa novos dados
         let resultadosEstendidos: LogResultadosEstendido | null =
             await context.loadStashedData<LogResultadosEstendido>();
-        if (!resultadosEstendidos) resultadosEstendidos = { falhas: [], registrosProcessados: [] };
-
-        // Garante que temos o array de registros processados
-        if (!resultadosEstendidos.registrosProcessados) resultadosEstendidos.registrosProcessados = [];
-
-        // Armazena dados iniciais
-        await context.stashData<LogResultadosEstendido>(resultadosEstendidos);
+        if (!resultadosEstendidos) {
+            resultadosEstendidos = { falhas: [], registrosProcessados: [] };
+            // Armazena dados iniciais
+            await context.stashData<LogResultadosEstendido>(resultadosEstendidos);
+        } else {
+            // Cria uma copia pra desligar o freeze do decode do prisma
+            resultadosEstendidos = JSON.parse(JSON.stringify(resultadosEstendidos)) as LogResultadosEstendido;
+        }
 
         // O serviço é definido de maneira dinâmica, dependendo do tipo de atualização.
         const service = this.servicoDoTipo(_params.tipo);
 
         try {
             for (const id of _params.ids) {
+                // skip if already processed
+                const registroProcessado = resultadosEstendidos.registrosProcessados.find((r) => r.id === id);
+                if (registroProcessado) {
+                    if (registroProcessado.status === 'ok') {
+                        n_sucesso++;
+                        sucesso_ids.push(id);
+                        continue;
+                    } else if (registroProcessado.status === 'error') {
+                        n_erro++;
+                        continue;
+                    }
+                }
+
                 try {
                     // Cada row possui sua própia tx
                     await this.prisma.$transaction(async (prismaTxn) => {
@@ -276,7 +295,6 @@ export class RunUpdateTaskService implements TaskableService {
             // Faz upload do arquivo Excel
             const upload_id = await this.uploadService.upload(
                 {
-
                     arquivo: buffer,
                     descricao: `relatorio-atualizacao-${params.atualizacao_em_lote_id}.xlsx`,
                     tipo: 'ATUALIZACAO_EM_LOTE_RELATORIO',
