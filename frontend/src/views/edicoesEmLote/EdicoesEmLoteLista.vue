@@ -52,12 +52,52 @@ onMounted(() => {
       rolagem-horizontal
       :dados="lista"
       :colunas="[
-        { chave: 'iniciou_em', label: 'Data do processamento', formatador: (v) => dateToDate(v) },
-        { chave: 'n_sucesso', label: 'Item(s) modificado(s)' },
+        {
+          chave: 'iniciou_em',
+          label: 'Data do processamento',
+          formatador: (v) => dateToDate(v),
+          atributosDaColuna: {
+            class: 'col--dataHora'
+          }
+        },
+        {
+          chave: 'n_sucesso',
+          label: 'Item(s) modificado(s)',
+          atributosDaCelula: {
+            class: 'cell--number'
+          },
+          atributosDaColuna: {
+            class: 'col--number'
+          },
+          atributosDoCabecalhoDeColuna: {
+            class: 'cell--number'
+          },
+        },
         { chave: 'criador.nome_exibicao', label: 'Responsável pela solicitação' },
-        { chave: 'registros_processados', label: 'registros processados' },
+        {
+          chave: 'registros_processados',
+          label: 'registros processados',
+          atributosDaCelula: {
+            class: 'tc'
+          },
+          atributosDoCabecalhoDeColuna: {
+            class: 'tc'
+          }
+        },
         { chave: 'status', label: 'Status' },
-        { chave: 'acao', label: 'detalhamento' },
+        {
+          chave: 'acao',
+          label: 'detalhamento',
+          atributosDaCelula: {
+            class: 'tc'
+          },
+          atributosDoCabecalhoDeColuna: {
+            class: 'tc'
+          },
+          atributosDaColuna: {
+            class: 'col--botão-de-ação'
+          },
+        },
       ]"
     >
       <template #celula:registros_processados="{ linha }">
