@@ -319,6 +319,7 @@ export class AtualizacaoEmLoteService {
                     orgao: {
                         select: { id: true, sigla: true, descricao: true },
                     },
+                    relatorio_arquivo_id: true,
                 },
                 orderBy: { criado_em: 'desc' },
                 skip: offset,
@@ -341,6 +342,9 @@ export class AtualizacaoEmLoteService {
 
         // Map to DTO
         const linhasDto: AtualizacaoEmLoteResumoDto[] = linhas.map((log) => ({
+            relatorio_arquivo: log.relatorio_arquivo_id
+                ? this.uploadService.getDownloadToken(log.relatorio_arquivo_id, '1 day').download_token
+                : null,
             id: log.id,
             tipo: log.tipo,
             status: log.status,

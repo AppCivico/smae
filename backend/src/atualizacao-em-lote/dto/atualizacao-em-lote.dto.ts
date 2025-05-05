@@ -39,6 +39,8 @@ export class AtualizacaoEmLoteResumoDto {
 
     @IsOptional()
     orgao: IdSiglaDescricao | null;
+
+    relatorio_arquivo: string | null;
 }
 
 export class ListAtualizacaoEmLoteDto extends PaginatedWithPagesDto<AtualizacaoEmLoteResumoDto> {}
@@ -55,7 +57,6 @@ export class AtualizacaoEmLoteDetalheDto extends AtualizacaoEmLoteResumoDto {
 
     operacao_processada: OperacaoProcessadaDto | null;
 
-    relatorio_arquivo: string | null;
 }
 
 export class FilterAtualizacaoEmLoteDto {
