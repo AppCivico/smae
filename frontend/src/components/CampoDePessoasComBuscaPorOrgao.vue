@@ -255,7 +255,7 @@ watch(
     <div
       v-for="(item, idx) in listaDeÓrgãos"
       :key="item.id"
-      class="flex g2 mb1"
+      class="campo-de-pessoas__inputs"
     >
       <div class="f1">
         <label
@@ -349,3 +349,22 @@ watch(
     <pre v-ScrollLockDebug>props.modelValue:{{ props.modelValue }}</pre>
   </div>
 </template>
+<style lang="less" scoped>
+.campo-de-pessoas {
+  container-type: inline-size;
+}
+
+.campo-de-pessoas__inputs {
+  display: grid;
+  gap: 1.5rem;
+}
+
+@container (width > 600px) {
+  .campo-de-pessoas__inputs {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 1rem;
+  }
+}
+
+</style>

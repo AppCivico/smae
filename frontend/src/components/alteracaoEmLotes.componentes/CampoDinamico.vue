@@ -109,10 +109,17 @@ function campoConfig(campoSchema) {
     meta,
   };
 }
+
+function tipoExibeMultiplosCampos(config) {
+  return ['campo-de-pessoas-orgao', 'campos-compostos'].includes(config?.tipo);
+}
 </script>
 
 <template>
-  <div v-if="config?.tipo === 'campos-compostos'" class="campo-composto">
+  <fieldset
+    v-if="config?.tipo === 'campos-compostos'"
+    class="grupo-de-campos"
+  >
     <div
       v-for="(subConfig, key) in config.meta.campos"
       :key="key"
@@ -142,9 +149,12 @@ function campoConfig(campoSchema) {
         {{ campoConfig(subConfig).meta.explicacoes.campo }}
       </small>
     </div>
-  </div>
+  </fieldset>
 
-  <template v-else>
+  <fieldset
+    v-else
+    :class="{'grupo-de-campos': tipoExibeMultiplosCampos(config) }"
+  >
     <SmaeNumberInput
       v-if="config.tipo === 'number'"
       :name="fieldName"
@@ -221,16 +231,26 @@ function campoConfig(campoSchema) {
       </option>
     </Field>
 
-    <small v-if="config?.meta?.explicacoes?.campo" class="explicacao">
+    <small
+      v-if="config?.meta?.explicacoes?.campo"
+      class="explicacao"
+    >
       {{ config.meta.explicacoes.campo }}
     </small>
-  </template>
-
-  <ErrorMessage :name="fieldName" class="error-msg" />
+  </fieldset>
+  <ErrorMessage
+    :name="fieldName"
+    class="error-msg"
+  />
 </template>
 
 <style scoped>
-.campo-composto {
+fieldset {
+  margin: 0;
+  padding: 0;
+}
+
+.grupo-de-campos {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
