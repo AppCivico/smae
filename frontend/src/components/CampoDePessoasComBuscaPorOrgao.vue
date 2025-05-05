@@ -30,6 +30,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  limitarParaUmaPessoa: {
+    type: Boolean,
+    default: false,
+  },
   // Uma propriedade extra para evitar conferir a lista de órgãos a baixar em
   // cada atualização do valor do campo
   valoresIniciais: {

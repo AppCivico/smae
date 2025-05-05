@@ -1442,7 +1442,16 @@ export const obras = object({
     .label('Detalhamento/Escopo da obra')
     .max(2048)
     .nullable()
-    .meta({ permite_edicao_em_massa: true }),
+    .meta({
+      permite_edicao_em_massa: true,
+      operacoes_permitidas: ['Set', 'Add'],
+      explicacoes: {
+        operacao: {
+          Set: 'Substitui o texto existente',
+          Add: 'Adiciona o texto novo ao existente',
+        },
+      },
+    }),
   mdo_n_familias_beneficiadas: number()
     .label('Número de famílias beneficiadas')
     .nullable()
@@ -1460,7 +1469,16 @@ export const obras = object({
     .label('Observações')
     .max(2048)
     .nullable()
-    .meta({ permite_edicao_em_massa: true }),
+    .meta({
+      permite_edicao_em_massa: true,
+      operacoes_permitidas: ['Set', 'Add'],
+      explicacoes: {
+        operacao: {
+          Set: 'Substitui o texto existente',
+          Add: 'Adiciona o texto novo ao existente',
+        },
+      },
+    }),
   mdo_previsao_inauguracao: date()
     .label('Data de inauguração planejada')
     .max(dataMax)
@@ -1506,7 +1524,22 @@ export const obras = object({
   orgao_gestor_id: number()
     .label('Órgão gestor do portfólio')
     .min(1, 'Órgão inválido')
-    .required(),
+    .required()
+    .meta({
+      permite_edicao_em_massa: true,
+      storeKey: 'órgãos',
+      fetchAction: 'getAll',
+      listState: 'organs',
+      optionValue: 'id',
+      optionLabel: (item) => `${item.sigla} - ${item.descricao}`,
+      operacoes_permitidas: ['Set'],
+      explicacoes: {
+        operacao: {
+          Set: 'Substitui o item existente',
+        },
+        campo: 'A edição do órgão gestor implica na exclusão dos pontos focais de monitoramento',
+      },
+    }),
   orgao_origem_id: number()
     .label('Secretaria/órgão de origem')
     .min(1, 'Secretaria/órgão de origem inválidos')
@@ -1514,7 +1547,22 @@ export const obras = object({
   orgao_responsavel_id: number()
     .label('Órgão responsável pela obra')
     .min(1, 'Órgão responsável pela obra inválidos')
-    .nullable(),
+    .nullable()
+    .meta({
+      permite_edicao_em_massa: true,
+      storeKey: 'órgãos',
+      fetchAction: 'getAll',
+      listState: 'organs',
+      optionValue: 'id',
+      optionLabel: (item) => `${item.sigla} - ${item.descricao}`,
+      operacoes_permitidas: ['Set'],
+      explicacoes: {
+        operacao: {
+          Set: 'Substitui o item existente',
+        },
+        campo: 'A edição do órgão gestor implica na exclusão do ponto focal responsável',
+      },
+    }),
   orgaos_colaboradores: string()
     .label('Órgãos colaboradores da obra')
     .nullable(),
@@ -1557,7 +1605,20 @@ export const obras = object({
     .nullable(),
   ponto_focal_responsavel: string()
     .label('Ponto focal responsável')
-    .nullable(),
+    .nullable()
+    .meta({
+      permite_edicao_em_massa: true,
+      tipo: 'campo-de-pessoas-orgao',
+      storeKey: 'órgãos',
+      fetchAction: 'getAll',
+      listState: 'organs',
+      operacoes_permitidas: ['Set'],
+      explicacoes: {
+        operacao: {
+          Set: 'Substitui o item existente.',
+        },
+      },
+    }),
   portfolios_compartilhados: array()
     .label('Compartilhar com portfólios')
     .nullable()
@@ -1569,6 +1630,14 @@ export const obras = object({
       listState: 'lista',
       optionValue: 'id',
       optionLabel: 'titulo',
+      operacoes_permitidas: ['Add', 'Set', 'Remove'],
+      explicacoes: {
+        operacao: {
+          Add: 'Inclui novo item em lista já existente',
+          Set: 'Substitui o item existente',
+          Remove: 'Remove o item selecionado da obra',
+        },
+      },
     }),
   portfolio_id: number()
     .label('Nome do portfólio')
@@ -1643,6 +1712,14 @@ export const obras = object({
       storeKey: 'órgãos',
       fetchAction: 'getAll',
       listState: 'organs',
+      operacoes_permitidas: ['Set', 'Add', 'Remove'],
+      explicacoes: {
+        operacao: {
+          Set: 'Substitui o item existente',
+          Add: 'Inclui novo item em lista já existente',
+          Remove: 'Exclui o item selecionado da obra',
+        },
+      },
     }),
   secretario_colaborador: string()
     .label('Secretário colaborador da obra')
@@ -1685,6 +1762,12 @@ export const obras = object({
       tipo: 'campos-compostos',
       operacao: 'AddTarefa',
       entidade_alvo: 'tarefa',
+      operacoes_permitidas: ['Add'],
+      explicacoes: {
+        operacao: {
+          Add: 'Inclui uma nova tarefa no final do cronograma',
+        },
+      },
       campos: {
         tarefa: tarefa.fields.tarefa,
         inicio_planejado: tarefa.fields.inicio_planejado,

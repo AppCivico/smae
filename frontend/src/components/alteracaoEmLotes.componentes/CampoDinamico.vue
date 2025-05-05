@@ -135,6 +135,12 @@ function campoConfig(campoSchema) {
         :readonly="readonly"
         @update:modelValue="val => updateValue(val, key)"
       />
+      <small
+        v-if="campoConfig(subConfig)?.meta?.explicacoes?.campo"
+        class="explicacao"
+      >
+        {{ campoConfig(subConfig).meta.explicacoes.campo }}
+      </small>
     </div>
   </div>
 
@@ -178,6 +184,7 @@ function campoConfig(campoSchema) {
       :valores-iniciais="[]"
       :readonly="readonly"
       :limitar-para-um-orgao="true"
+      :limitar-para-uma-pessoa="true"
       @update:modelValue="updateValue"
     />
 
@@ -198,6 +205,10 @@ function campoConfig(campoSchema) {
       as="select"
       class="inputtext light"
       :model-value="modelValue"
+      :aria-readonly="readonly"
+      @mousedown="readonly && $event.preventDefault()"
+      @keydown="readonly && $event.preventDefault()"
+      @focus="readonly && $event.target.blur()"
       @update:modelValue="updateValue"
     >
       <option value="" disabled>Selecione...</option>
@@ -209,6 +220,10 @@ function campoConfig(campoSchema) {
         {{ opcao.label }}
       </option>
     </Field>
+
+    <small v-if="config?.meta?.explicacoes?.campo" class="explicacao">
+      {{ config.meta.explicacoes.campo }}
+    </small>
   </template>
 
   <ErrorMessage :name="fieldName" class="error-msg" />

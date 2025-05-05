@@ -146,12 +146,11 @@ const schema = object({
         .nullable()
         .transform((curr, orig) => (orig === undefined ? 'Set' : curr))
         .when('propriedade', (propriedade, campoSchema) => {
-          const tipo = campoConfigPorNome(propriedade)?.tipo;
-          if (tipo === 'array') {
-            return campoSchema.required('Selecione a operação')
-              .oneOf(['Set', 'Add', 'Remove']);
-          }
-          return schema.notRequired().strip();
+          const config = obterConfiguracaoCampo(propriedade);
+          const permitidas = config?.meta?.operacoes_permitidas || ['Set'];
+          return campoSchema
+            .required('Selecione a operação')
+            .oneOf(permitidas);
         }),
     }),
   ).min(1, 'Adicione pelo menos uma edição'),
@@ -171,9 +170,9 @@ function getOpcoesDisponiveis(rowIndex) {
     ?.map((edicao, index) => (index !== rowIndex ? edicao.propriedade : null))
     .filter((prop) => prop != null && prop !== '');
 
-  return camposDisponiveisParaEdicao.value.filter(
-    (opcao) => !propriedadesSelecionadas.includes(opcao.value),
-  );
+  return camposDisponiveisParaEdicao.value
+    .filter((opcao) => !propriedadesSelecionadas.includes(opcao.value))
+    .sort((a, b) => a.label.localeCompare(b.label));
 }
 
 function campoConfig(idx) {
@@ -272,10 +271,17 @@ async function fetchOptionsIfNeeded(rowIndex, fieldConfig) {
 
 async function handlePropertyChange(event, idx) {
   const propriedadeSelecionada = event.target.value;
+  const fieldConfig = obterConfiguracaoCampo(propriedadeSelecionada);
+  const operacoesPermitidas = fieldConfig?.meta?.operacoes_permitidas || ['Set'];
+  const operacaoAtual = values.edicoes[idx].operacao;
+
   setFieldValue(`edicoes[${idx}].valor`, null);
 
+  if (!operacoesPermitidas.includes(operacaoAtual)) {
+    setFieldValue(`edicoes[${idx}].operacao`, operacoesPermitidas[0] || 'Set');
+  }
+
   if (propriedadeSelecionada) {
-    const fieldConfig = obterConfiguracaoCampo(propriedadeSelecionada);
     if (fieldConfig?.meta?.storeKey) {
       await fetchOptionsIfNeeded(idx, fieldConfig);
     }
@@ -302,7 +308,7 @@ async function handlePropertyChange(event, idx) {
         <div
           v-for="(field, idx) in fields"
           :key="field.key"
-          class="flex g2 mb1 items-start"
+          class="flex g2 mb2 items-start"
         >
           <div class="f1">
             <LabelFromYup
@@ -344,7 +350,7 @@ async function handlePropertyChange(event, idx) {
           </div>
 
           <div
-            v-if="['autocomplete', 'campo-de-pessoas-orgao'].includes(campoConfig(idx)?.tipo)"
+            v-if="campoConfig(idx)?.meta?.operacoes_permitidas?.length > 0"
             class="f1"
           >
             <LabelFromYup
@@ -356,23 +362,28 @@ async function handlePropertyChange(event, idx) {
             <Field
               :name="`edicoes[${idx}].operacao`"
               as="select"
-              class="inputtext light mb1"
+              class="inputtext light"
               :aria-readonly="modoRevisao"
               :class="{ error: errors?.[`edicoes[${idx}].operacao`] }"
               @mousedown="modoRevisao && $event.preventDefault()"
               @keydown="modoRevisao && $event.preventDefault()"
               @focus="modoRevisao && $event.target.blur()"
             >
-              <option value="Set">
-                Substituir
-              </option>
-              <option value="Add">
-                Adicionar
-              </option>
-              <option value="Remove">
-                Remover
+              <option
+                v-for="op in campoConfig(idx)?.meta?.operacoes_permitidas || ['Set']"
+                :key="op"
+                :value="op"
+              >
+                {{ op === 'Set' ? 'Substituir' : op === 'Add' ? 'Adicionar' : 'Remover' }}
               </option>
             </Field>
+            <!-- jesus -->
+            <small
+              v-if="campoConfig(idx)?.meta?.explicacoes?.operacao?.[values.edicoes[idx].operacao]"
+              class="explicacao"
+            >
+              {{ campoConfig(idx).meta.explicacoes.operacao[values.edicoes[idx].operacao] }}
+            </small>
             <ErrorMessage
               :name="`edicoes[${idx}].operacao`"
               class="error-msg"
