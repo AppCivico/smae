@@ -65,7 +65,7 @@ export class RunUpdateTaskService implements TaskableService {
             where: {
                 id: _params.atualizacao_em_lote_id,
                 status: {
-                    in: ['Pendente', 'ConcluidoParcialmente', 'Falhou'],
+                    in: ['Pendente', 'ConcluidoParcialmente', 'Falhou', 'Abortado'],
                 },
             },
         });
