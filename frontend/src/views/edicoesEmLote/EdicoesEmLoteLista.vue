@@ -5,6 +5,9 @@ import { useRoute } from 'vue-router';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import { useEdicoesEmLoteStore } from '@/stores/edicoesEmLote.store';
 import dateToDate from '@/helpers/dateToDate';
+import SmaeTooltip from '@/components/SmaeTooltip/SmaeTooltip.vue';
+
+const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 const route = useRoute();
 
@@ -109,20 +112,44 @@ onMounted(() => {
       </template>
 
       <template #celula:acao="{ linha }">
-        <SmaeLink
-          class="btn small bgnone tcprimary edicoes-em-lote-lista__ler-mais"
-          :to="{
-            name: 'edicoesEmLoteObrasResumo',
-            params: { edicaoEmLoteId: linha.id },
-          }"
-        >
-          <span class="flex g05 center nowrap">
-            <svg
-              width="24"
-              height="24"
-            ><use xlink:href="#i_eye" /></svg>
-          </span>
-        </SmaeLink>
+        <div class="nowrap flex g1 justifyright">
+          <SmaeLink
+            v-if="linha?.relatorio_arquivo"
+            class="tcprimary edicoes-em-lote-lista__ler-mais"
+            download
+            :href="`${baseUrl}/download/${linha?.relatorio_arquivo}`"
+            :title="`Baixar detalhamento da edição em lote ${linha?.id}`"
+          >
+            <SmaeTooltip
+              texto="Baixar detalhamento"
+            >
+              <template #botao>
+                <svg
+                  width="20"
+                  height="20"
+                ><use xlink:href="#i_download" /></svg>
+              </template>
+            </SmaeTooltip>
+          </SmaeLink>
+          <SmaeLink
+            class="tcprimary edicoes-em-lote-lista__ler-mais"
+            :to="{
+              name: 'edicoesEmLoteObrasResumo',
+              params: { edicaoEmLoteId: linha.id },
+            }"
+          >
+            <SmaeTooltip
+              texto="Ler detalhamento"
+            >
+              <template #botao>
+                <svg
+                  width="24"
+                  height="24"
+                ><use xlink:href="#i_eye" /></svg>
+              </template>
+            </SmaeTooltip>
+          </SmaeLink>
+        </div>
       </template>
     </SmaeTable>
   </section>

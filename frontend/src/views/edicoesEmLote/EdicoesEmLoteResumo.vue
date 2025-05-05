@@ -8,6 +8,8 @@ import tiposDeOperacoesEmLote from '@/consts/tiposDeOperacoesEmLote';
 import dateToDate from '@/helpers/dateToDate';
 import type { TipoOperacao } from '@back/task/run_update/dto/create-run-update.dto';
 
+const baseUrl = `${import.meta.env.VITE_API_URL}`;
+
 const route = useRoute();
 
 const edicoesEmLoteStore = useEdicoesEmLoteStore(route.meta.tipoDeAcoesEmLote as string);
@@ -44,7 +46,25 @@ onMounted(() => {
 </script>
 
 <template>
-  <CabecalhoDePagina />
+  <CabecalhoDePagina>
+    <template #acoes>
+      <SmaeLink
+        v-if="emFoco?.relatorio_arquivo"
+        class="btn with-icon amarelo"
+        download
+        :href="`${baseUrl}/download/${emFoco?.relatorio_arquivo}`"
+        :title="`Baixar detalhamento da edição em lote ${emFoco?.id}`"
+      >
+        <svg
+          width="20"
+          height="20"
+        >
+          <use xlink:href="#i_download" />
+        </svg>
+        Arquivo detalhado
+      </SmaeLink>
+    </template>
+  </CabecalhoDePagina>
 
   <article>
     <template
