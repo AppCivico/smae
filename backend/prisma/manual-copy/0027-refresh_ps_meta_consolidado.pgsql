@@ -12,6 +12,7 @@ DECLARE
     -- Counters for meta and its children
     v_pendente BOOLEAN;
     v_pendente_variavel BOOLEAN;
+    v_monitoramento_orcamento BOOLEAN;
 
     -- Schedule counters
     v_cronograma_total int := 0;
@@ -38,6 +39,7 @@ DECLARE
 
     v_equipes_vars int[] := ARRAY[]::int[];
     v_equipes_orgaos_vars int[] := ARRAY[]::int[];
+
     -- Temporary records
     r_item RECORD;
     v_pdm_ativo BOOLEAN;
@@ -53,9 +55,10 @@ BEGIN
         p.id AS v_pdm_id,
         p.ativo AS v_pdm_ativo,
         cf.data_ciclo AS v_data_ciclo,
-        CASE WHEN cf.ativo THEN cf.id ELSE NULL END AS v_CicloFisicoId
+        CASE WHEN cf.ativo THEN cf.id ELSE NULL END AS v_CicloFisicoId,
+        p.monitoramento_orcamento
             INTO
-        v_pdm_id, v_pdm_ativo, v_data_ciclo, v_CicloFisicoId
+        v_pdm_id, v_pdm_ativo, v_data_ciclo, v_CicloFisicoId, v_monitoramento_orcamento
 
     FROM pdm p
     LEFT JOIN ciclo_fisico cf ON p.id = cf.pdm_id
@@ -71,7 +74,7 @@ BEGIN
 
     -- mesmo se v_CicloFisicoId is NULL, continua
     -- vamos deixar o status de tudo como FALSE
-    IF v_CicloFisicoId IS NULL THEN
+    IF v_CicloFisicoId IS NULL OR NOT v_monitoramento_orcamento THEN
         v_fase_analise_preenchida := FALSE;
         v_fase_risco_preenchida := FALSE;
         v_fase_fechamento_preenchida := FALSE;
