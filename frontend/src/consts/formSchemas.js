@@ -1760,7 +1760,7 @@ export const obras = object({
     .meta({
       permite_edicao_em_massa: true,
       tipo: 'campos-compostos',
-      operacao: 'AddTarefa',
+      operacao: 'CreateTarefa',
       entidade_alvo: 'tarefa',
       operacoes_permitidas: ['Add'],
       explicacoes: {
