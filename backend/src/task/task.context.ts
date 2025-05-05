@@ -55,7 +55,7 @@ export class TaskContext {
 
     async removeStashedData(): Promise<void> {
         try {
-            await this.prisma.task_buffer.delete({
+            await this.prisma.task_buffer.deleteMany({
                 where: {
                     task_id: this.task_id,
                 },
