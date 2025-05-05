@@ -1,4 +1,6 @@
 <script setup>
+import { computed } from 'vue';
+import { storeToRefs } from 'pinia';
 import MapaExibir from '@/components/geo/MapaExibir.vue';
 import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudançaDeStatusDeProjeto.vue';
 import { projeto as schema } from '@/consts/formSchemas';
@@ -10,8 +12,6 @@ import truncate from '@/helpers/texto/truncate';
 import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { useOrgansStore } from '@/stores/organs.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
-import { storeToRefs } from 'pinia';
-import { computed } from 'vue';
 
 const DotaçãoStore = useDotaçãoStore();
 const ÓrgãosStore = useOrgansStore();
@@ -22,17 +22,6 @@ const { organs, órgãosPorId } = storeToRefs(ÓrgãosStore);
 const {
   chamadasPendentes, emFoco, erro,
 } = storeToRefs(projetosStore);
-
-const equipeAgrupadaPorÓrgão = computed(() => (Array.isArray(emFoco.value?.equipe)
-  ? emFoco.value.equipe.reduce((acc, cur) => {
-    if (!acc[`_${cur.orgao_id}`]) {
-      acc[`_${cur.orgao_id}`] = { id: cur.orgao_id, pessoas: [] };
-    }
-    acc[`_${cur.orgao_id}`].pessoas.push(cur.pessoa);
-
-    return acc;
-  }, {})
-  : {}));
 
 const mapasAgrupados = computed(() => (Array.isArray(emFoco.value?.geolocalizacao)
   ? emFoco.value.geolocalizacao.reduce((acc, cur) => {
@@ -49,6 +38,20 @@ const mapasAgrupados = computed(() => (Array.isArray(emFoco.value?.geolocalizaca
     return acc;
   }, {})
   : {}));
+
+const equipesAgrupadas = computed(() => emFoco.value?.equipe.reduce((agrupado, item) => {
+  if (!agrupado[item.orgao_id]) {
+    agrupado[item.orgao_id] = {
+      orgao_id: item.orgao_id,
+      orgao_nome: órgãosPorId.value[item.orgao_id]?.descricao || `Orgão1 ${item.orgao_id}`,
+      pessoas: [],
+    };
+  }
+
+  agrupado[item.orgao_id].pessoas.push(item.pessoa);
+
+  return agrupado;
+}, {}));
 
 defineProps({
   projetoId: {
@@ -548,7 +551,11 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
           Custo total planejado
         </dt>
         <dd class="t13">
-          {{ emFoco?.tarefa_cronograma?.previsao_custo ? `R$ ${dinheiro(emFoco.tarefa_cronograma.previsao_custo)}` : '-' }}
+          {{
+            emFoco?.tarefa_cronograma?.previsao_custo ?
+              `R$ ${dinheiro(emFoco.tarefa_cronograma.previsao_custo)}`
+              : '-'
+          }}
         </dd>
       </dl>
     </div>
@@ -632,46 +639,34 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
           </template>
         </dd>
       </dl>
-    </div>
 
-    <hr
-      v-if="emFoco.equipe?.length"
-      class="mb1 f1"
-    >
+      <dl>
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.equipe.spec.label }}
+        </dt>
 
-    <div
-      v-if="emFoco.equipe?.length"
-      class="mb1"
-    >
-      <h2>
-        {{ schema.fields.equipe.spec.label }}
-      </h2>
-      <div class="flex g2 mb1 flexwrap">
-        <dl
-          v-for="(órgão, key) in equipeAgrupadaPorÓrgão"
-          :key="key"
-          class="f1"
-        >
-          <dt class="t12 uc w700 mb05 tamarelo">
-            {{ órgãosPorId[órgão.id]
-              ? `${órgãosPorId[órgão.id].sigla} - ${órgãosPorId[órgão.id].descricao}`
-              : órgão.id }}
-          </dt>
-          <dd class="t13">
-            <ul class="listaComoTexto">
-              <li v-if="!órgão.pessoas?.length">
-                {{ '-' }}
-              </li>
-              <li
-                v-for="item in órgão.pessoas"
-                :key="item.id"
-              >
-                {{ item.nome_exibicao }}
-              </li>
-            </ul>
-          </dd>
-        </dl>
-      </div>
+        <dd>
+          <ol class="pl0">
+            <li
+              v-for="equipe in equipesAgrupadas"
+              :key="`equipes--${equipe.orgao_id}`"
+              class="mb05"
+            >
+              <span>{{ equipe.orgao_nome }}</span>
+              <div class="contentStyle">
+                <ul>
+                  <li
+                    v-for="pessoa in equipe.pessoas"
+                    :key="`pessoa--${equipe.orgao_id}-${pessoa.id}`"
+                  >
+                    {{ pessoa.nome_exibicao }}
+                  </li>
+                </ul>
+              </div>
+            </li>
+          </ol>
+        </dd>
+      </dl>
     </div>
 
     <hr class="mb1 f1">
