@@ -31,6 +31,9 @@ export default {
           'Menu.AtualizacaoEmLote.MDO',
         ],
         tipoDeAcoesEmLote: 'ProjetoMDO',
+        rotasParaMigalhasDePão: [
+          'edicoesEmLoteRaiz',
+        ],
       },
       children: [
         {
@@ -50,7 +53,10 @@ export default {
             rotaDeEscape: 'edicoesEmLoteObras',
             títuloParaMenu: undefined,
             título: 'Resumo de edição de obras em lote',
-            rotasParaMigalhasDePão: ['edicoesEmLoteObras'],
+            rotasParaMigalhasDePão: [
+              'edicoesEmLoteRaiz',
+              'edicoesEmLoteObras',
+            ],
           },
         },
         {
@@ -67,7 +73,10 @@ export default {
               meta: {
                 rotaDeEscape: 'edicoesEmLoteObras',
                 título: 'Selecionar nova edição de obras em lote',
-                rotasParaMigalhasDePão: ['edicoesEmLoteObras'],
+                rotasParaMigalhasDePão: [
+                  'edicoesEmLoteRaiz',
+                  'edicoesEmLoteObras',
+                ],
               },
             },
             {
@@ -77,7 +86,10 @@ export default {
               meta: {
                 rotaDeEscape: 'edicoesEmLoteObras',
                 título: 'Construir nova edição de obras em lote',
-                rotasParaMigalhasDePão: ['edicoesEmLoteObras', 'edicoesEmLoteObrasNovo'],
+                rotasParaMigalhasDePão: [
+                  'edicoesEmLoteObras',
+                  'edicoesEmLoteObrasNovo',
+                ],
               },
             },
           ],
