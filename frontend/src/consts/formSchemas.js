@@ -1258,15 +1258,7 @@ export const obras = object({
   equipamento_id: number()
     .label('Equipamento/Estrutura pública')
     .min(1, 'Equipamento/Estrutura pública inválida')
-    .nullable()
-    .meta({
-      permite_edicao_em_massa: true,
-      storeKey: 'equipamentos',
-      fetchAction: 'buscarTudo',
-      listState: 'lista',
-      optionValue: 'id',
-      optionLabel: 'nome',
-    }),
+    .nullable(),
   fonte_recursos: array()
     .label('Fontes de recursos')
     .nullable()
@@ -1317,15 +1309,7 @@ export const obras = object({
   grupo_tematico_id: number()
     .label('Grupo temático')
     .min(1, 'Grupo temático inválido')
-    .required()
-    .meta({
-      permite_edicao_em_massa: true,
-      storeKey: 'grupos_tematicos',
-      fetchAction: 'buscarTudo',
-      listState: 'lista',
-      optionValue: 'id',
-      optionLabel: 'nome',
-    }),
+    .required(),
   iniciativa_id: number()
     .when(['origem_tipo', 'atividade_id'], {
       is: (origemTipo, atividadeId) => origemTipo === 'PdmSistema' && atividadeId,
@@ -1335,17 +1319,7 @@ export const obras = object({
   mdo_detalhamento: string()
     .label('Detalhamento/Escopo da obra')
     .max(2048)
-    .nullable()
-    .meta({
-      permite_edicao_em_massa: true,
-      operacoes_permitidas: ['Set', 'Add'],
-      explicacoes: {
-        operacao: {
-          Set: 'Substitui o texto existente',
-          Add: 'Adiciona o texto novo ao existente',
-        },
-      },
-    }),
+    .nullable(),
   mdo_n_familias_beneficiadas: number()
     .label('Número de famílias beneficiadas')
     .nullable()
@@ -1362,25 +1336,14 @@ export const obras = object({
   mdo_observacoes: string()
     .label('Observações')
     .max(2048)
-    .nullable()
-    .meta({
-      permite_edicao_em_massa: true,
-      operacoes_permitidas: ['Set', 'Add'],
-      explicacoes: {
-        operacao: {
-          Set: 'Substitui o texto existente',
-          Add: 'Adiciona o texto novo ao existente',
-        },
-      },
-    }),
+    .nullable(),
   mdo_previsao_inauguracao: date()
     .label('Data de inauguração planejada')
     .max(dataMax)
     .min(dataMin)
     .nullable()
     .transform((curr, orig) => (orig === '' ? null : curr))
-    .typeError('Informe uma data válida (AAAA-MM-DD)')
-    .meta({ permite_edicao_em_massa: true }),
+    .typeError('Informe uma data válida (AAAA-MM-DD)'),
   meta_codigo: string()
     .label('Código da Meta')
     .when(['origem_tipo'], {
@@ -1406,34 +1369,11 @@ export const obras = object({
   orgao_executor_id: number()
     .label('Secretaria/órgão executor')
     .min(1, 'Secretaria/órgão executor inválidos')
-    .nullable()
-    .meta({
-      permite_edicao_em_massa: true,
-      storeKey: 'órgãos',
-      fetchAction: 'getAll',
-      listState: 'organs',
-      optionValue: 'id',
-      optionLabel: (item) => `${item.sigla} - ${item.descricao}`,
-    }),
+    .nullable(),
   orgao_gestor_id: number()
     .label('Órgão gestor do portfólio')
     .min(1, 'Órgão inválido')
-    .required()
-    .meta({
-      permite_edicao_em_massa: true,
-      storeKey: 'órgãos',
-      fetchAction: 'getAll',
-      listState: 'organs',
-      optionValue: 'id',
-      optionLabel: (item) => `${item.sigla} - ${item.descricao}`,
-      operacoes_permitidas: ['Set'],
-      explicacoes: {
-        operacao: {
-          Set: 'Substitui o item existente',
-        },
-        campo: 'A edição do órgão gestor implica na exclusão dos pontos focais de monitoramento',
-      },
-    }),
+    .required(),
   orgao_origem_id: number()
     .label('Secretaria/órgão de origem')
     .min(1, 'Secretaria/órgão de origem inválidos')
@@ -1441,22 +1381,7 @@ export const obras = object({
   orgao_responsavel_id: number()
     .label('Órgão responsável pela obra')
     .min(1, 'Órgão responsável pela obra inválidos')
-    .nullable()
-    .meta({
-      permite_edicao_em_massa: true,
-      storeKey: 'órgãos',
-      fetchAction: 'getAll',
-      listState: 'organs',
-      optionValue: 'id',
-      optionLabel: (item) => `${item.sigla} - ${item.descricao}`,
-      operacoes_permitidas: ['Set'],
-      explicacoes: {
-        operacao: {
-          Set: 'Substitui o item existente',
-        },
-        campo: 'A edição do órgão gestor implica na exclusão do ponto focal responsável',
-      },
-    }),
+    .nullable(),
   orgaos_colaboradores: string()
     .label('Órgãos colaboradores da obra')
     .nullable(),
@@ -1500,20 +1425,7 @@ export const obras = object({
   ponto_focal_responsavel: string()
     .label('Ponto focal responsável')
     .transform((value) => (value != null ? String(value) : null))
-    .nullable()
-    .meta({
-      permite_edicao_em_massa: true,
-      tipo: 'campo-de-pessoas-orgao',
-      storeKey: 'órgãos',
-      fetchAction: 'getAll',
-      listState: 'organs',
-      operacoes_permitidas: ['Set'],
-      explicacoes: {
-        operacao: {
-          Set: 'Substitui o item existente.',
-        },
-      },
-    }),
+    .nullable(),
   portfolios_compartilhados: array()
     .label('Compartilhar com portfólios')
     .nullable(),
@@ -1573,13 +1485,11 @@ export const obras = object({
   secretario_executivo: string()
     .label('Secretário gestor do portfólio')
     .max(250)
-    .nullable()
-    .meta({ permite_edicao_em_massa: true }),
+    .nullable(),
   secretario_responsavel: string()
     .label('Secretário responsável pela obra')
     .max(250)
-    .nullable()
-    .meta({ permite_edicao_em_massa: true }),
+    .nullable(),
   secretario: string()
     .label('Secretário gestor do portfólio')
     .nullable(),

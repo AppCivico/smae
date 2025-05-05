@@ -21,6 +21,7 @@ const metasEdicaoEmLote = {
   mdo_detalhamento: {
     permite_edicao_em_massa: true,
     operacoes_permitidas: ['Set', 'Add'],
+    tipo: 'textarea',
     explicacoes: {
       operacao: {
         Set: 'Substitui o texto existente',
@@ -30,6 +31,7 @@ const metasEdicaoEmLote = {
   },
   mdo_observacoes: {
     permite_edicao_em_massa: true,
+    tipo: 'textarea',
     operacoes_permitidas: ['Set', 'Add'],
     explicacoes: {
       operacao: {

@@ -97,11 +97,9 @@ function detectarTipoCampo(campoSchema, meta) {
 }
 
 function campoConfig(campoSchema) {
-  // debugger;
   const meta = campoSchema.meta?.() || {};
   const tipo = detectarTipoCampo(campoSchema, meta);
 
-  // debugger;
   return {
     schema: campoSchema,
     tipo,
@@ -113,6 +111,9 @@ function campoConfig(campoSchema) {
 function tipoExibeMultiplosCampos(config) {
   return ['campo-de-pessoas-orgao', 'campos-compostos'].includes(config?.tipo);
 }
+
+// será podemos deixar isso assim?
+const maxLength = computed(() => props.config?.schema?.tests?.find((test) => test.OPTIONS?.name === 'max')?.OPTIONS?.params?.max || null);
 </script>
 
 <template>
@@ -206,6 +207,19 @@ function tipoExibeMultiplosCampos(config) {
       :aria-readonly="readonly"
       :readonly="readonly"
       :model-value="modelValue"
+      @update:modelValue="updateValue"
+    />
+
+    <SmaeText
+      v-else-if="config.tipo === 'textarea'"
+      :name="fieldName"
+      as="textarea"
+      rows="5"
+      class="inputtext light"
+      :aria-readonly="readonly"
+      :readonly="readonly"
+      :model-value="modelValue"
+      :maxlength="maxLength"
       @update:modelValue="updateValue"
     />
 
