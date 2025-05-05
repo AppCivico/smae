@@ -447,29 +447,38 @@ export class RunUpdateTaskService implements TaskableService {
             if (registro && registro[op.col] !== undefined) {
                 const valorSalvo = registro[op.col];
 
-                // Garantindo que o valor salvo é um array.
-                if (!Array.isArray(valorSalvo)) {
-                    throw new Error(`Coluna "${op.col}" não é um array.`);
-                }
+                if (Array.isArray(valorSalvo)) {
+                    // É necessário planificar a array.
+                    // Pois no findOne, geralmente retornamos um array de objetos.
+                    // Que contem um campo id.
+                    const valorSalvoIds = valorSalvo.map((item: any) => item.id || item);
 
-                // Além disso, é necessário planificar a array.
-                // Pois no findOne, geralmente retornamos um array de objetos.
-                // Que contem um campo id.
-                const valorSalvoIds = valorSalvo.map((item: any) => item.id || item);
-
-                // Para Add, adicionamos o valor (sempre array) ao existente.
-                if (tipo_operacao === TipoOperacao.Add) {
-                    value = [...valorSalvoIds, ...(Array.isArray(value) ? value : [value])];
-                }
-                // Para Remove, removemos o valor do existente.
-                else if (tipo_operacao === TipoOperacao.Remove) {
-                    value = valorSalvoIds.filter((item: any) => {
-                        if (Array.isArray(value)) {
-                            return !value.includes(item);
-                        } else {
-                            return item !== value;
-                        }
-                    });
+                    // Para Add, adicionamos o valor (sempre array) ao existente.
+                    if (tipo_operacao === TipoOperacao.Add) {
+                        value = [...valorSalvoIds, ...(Array.isArray(value) ? value : [value])];
+                    }
+                    // Para Remove, removemos o valor do existente.
+                    else if (tipo_operacao === TipoOperacao.Remove) {
+                        value = valorSalvoIds.filter((item: any) => {
+                            if (Array.isArray(value)) {
+                                return !value.includes(item);
+                            } else {
+                                return item !== value;
+                            }
+                        });
+                    }
+                } else if (typeof valorSalvo === 'string') {
+                    if (tipo_operacao === TipoOperacao.Add) {
+                        // Para Add, concatenamos o valor.
+                        value = `${valorSalvo},${value}`;
+                    } else if (tipo_operacao === TipoOperacao.Remove) {
+                        // Para Remove, removemos o valor.
+                        value = valorSalvo.replace(new RegExp(`,?${value}`, 'g'), '');
+                    } else {
+                        throw new Error(`Operação "${tipo_operacao}" não suportada para string.`);
+                    }
+                } else {
+                    throw new Error(`Coluna "${op.col}" não é um array ou string.`);
                 }
             } else {
                 throw new Error(`Coluna "${op.col}" não encontrada no registro.`);
@@ -488,6 +497,7 @@ export class RunUpdateTaskService implements TaskableService {
                 value.termino_planejado = new Date(value.termino_planejado);
             }
 
+            // TODO?: Aprimorar esta parte, para não ficar hardcoded.
             value.orgao_id = op.col === 'orgao_id' ? value.orgao_id : registro.orgao_responsavel?.id;
             value.nivel = 1;
             value.numero = 99999;
