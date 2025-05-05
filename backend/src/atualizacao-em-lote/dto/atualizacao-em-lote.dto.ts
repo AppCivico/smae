@@ -54,6 +54,8 @@ export class AtualizacaoEmLoteDetalheDto extends AtualizacaoEmLoteResumoDto {
     results_log?: any;
 
     operacao_processada: OperacaoProcessadaDto | null;
+
+    relatorio_arquivo: string | null;
 }
 
 export class FilterAtualizacaoEmLoteDto {

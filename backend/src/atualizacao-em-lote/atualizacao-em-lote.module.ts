@@ -4,6 +4,7 @@ import { PrismaModule } from 'src/prisma/prisma.module';
 import { AtualizacaoEmLoteController } from './atualizacao-em-lote.controller';
 import { AtualizacaoEmLoteService } from './atualizacao-em-lote.service';
 import { TaskModule } from '../task/task.module';
+import { UploadModule } from '../upload/upload.module';
 
 @Module({
     imports: [
@@ -13,6 +14,7 @@ import { TaskModule } from '../task/task.module';
             signOptions: { expiresIn: '1d' },
         }),
         forwardRef(() => TaskModule),
+        UploadModule
     ],
     controllers: [AtualizacaoEmLoteController],
     providers: [AtualizacaoEmLoteService],

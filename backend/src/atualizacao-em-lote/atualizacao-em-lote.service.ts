@@ -18,6 +18,7 @@ import {
 } from './dto/atualizacao-em-lote.dto';
 import { BuildOperacaoProcessada } from './helpers/operacao.builder';
 import { UpdateOperacaoDto } from '../task/run_update/dto/create-run-update.dto';
+import { UploadService } from '../upload/upload.service';
 
 interface NextPageTokenJwtBody {
     offset: number;
@@ -40,6 +41,7 @@ export class AtualizacaoEmLoteService {
 
     constructor(
         private readonly prisma: PrismaService,
+        private readonly uploadService: UploadService,
         private readonly jwtService: JwtService,
         @Inject(forwardRef(() => TaskService))
         private readonly taskService: TaskService
@@ -417,6 +419,10 @@ export class AtualizacaoEmLoteService {
             ? { id: logCompleto.orgao.id, sigla: logCompleto.orgao.sigla, descricao: logCompleto.orgao.descricao }
             : null;
 
+        const relatorio_arquivo = logCompleto.relatorio_arquivo_id
+            ? this.uploadService.getDownloadToken(logCompleto.relatorio_arquivo_id, '1 day').download_token
+            : null;
+
         return {
             // Spread common fields from logCompleto
             id: logCompleto.id,
@@ -437,6 +443,7 @@ export class AtualizacaoEmLoteService {
             operacao: logCompleto.operacao ?? {},
             results_log: logCompleto.results_log ?? {},
             operacao_processada: logCompleto.operacao_processada?.valueOf() as OperacaoProcessadaDto | null,
+            relatorio_arquivo: relatorio_arquivo,
         };
     }
 
