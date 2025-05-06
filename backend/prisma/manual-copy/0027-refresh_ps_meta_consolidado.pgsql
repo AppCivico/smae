@@ -74,10 +74,11 @@ BEGIN
 
     -- mesmo se v_CicloFisicoId is NULL, continua
     -- vamos deixar o status de tudo como FALSE
-    IF v_CicloFisicoId IS NULL OR NOT v_monitoramento_orcamento THEN
+    IF v_CicloFisicoId IS NULL THEN
         v_fase_analise_preenchida := FALSE;
         v_fase_risco_preenchida := FALSE;
         v_fase_fechamento_preenchida := FALSE;
+        v_pendente_orcamento := FALSE;
     ELSE
         SELECT
             EXISTS (
@@ -213,7 +214,7 @@ BEGIN
             FROM budget_years "by"
             LEFT JOIN completion_status cs ON cs.ano_referencia = "by".year;
 
-            v_pendente_orcamento := v_pdm_ativo AND (
+            v_pendente_orcamento := v_pdm_ativo AND v_monitoramento_orcamento AND (
                 SELECT COALESCE(array_length(v_orcamento_total, 1), 0) != COALESCE(array_length(v_orcamento_preenchido, 1), 0)
             );
 
