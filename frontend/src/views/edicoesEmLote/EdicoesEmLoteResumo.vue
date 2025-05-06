@@ -5,6 +5,7 @@ import { useRoute } from 'vue-router';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import { useEdicoesEmLoteStore } from '@/stores/edicoesEmLote.store';
 import tiposDeOperacoesEmLote from '@/consts/tiposDeOperacoesEmLote';
+import combinadorDeListas from '@/helpers/combinadorDeListas';
 import dateToDate from '@/helpers/dateToDate';
 import type { TipoOperacao } from '@back/task/run_update/dto/create-run-update.dto';
 
@@ -120,6 +121,12 @@ onMounted(() => {
       <template #celula:tipo_operacao="{ linha }">
         {{ tiposDeOperacoesEmLote[(linha.tipo_operacao as TipoOperacao)]?.nome
           || linha.tipo_operacao }}
+      </template>
+
+      <template #celula:valor_formatado="{ linha }">
+        {{ Array.isArray(linha.valor_formatado)
+          ? combinadorDeListas(linha.valor_formatado, ', ')
+          : linha.valor_formatado }}
       </template>
     </SmaeTable>
 
