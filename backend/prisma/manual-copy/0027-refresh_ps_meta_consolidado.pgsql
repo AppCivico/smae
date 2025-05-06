@@ -211,6 +211,10 @@ BEGIN
                 SELECT COALESCE(array_length(v_orcamento_total, 1), 0) != COALESCE(array_length(v_orcamento_preenchido, 1), 0)
             );
 
+            IF (NOT v_pendente_orcamento) THEN
+                v_orcamento_total := ARRAY[]::int[];
+            END IF;
+
         ELSE
             -- For non-meta items, set budget values to 0
             v_orcamento_total := ARRAY[]::int[];
