@@ -646,25 +646,24 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
         </dt>
 
         <dd>
-          <ol class="pl0">
-            <li
-              v-for="equipe in equipesAgrupadas"
-              :key="`equipes--${equipe.orgao_id}`"
-              class="mb05"
-            >
-              <span>{{ equipe.orgao_nome }}</span>
-              <div class="contentStyle">
-                <ul>
-                  <li
-                    v-for="pessoa in equipe.pessoas"
-                    :key="`pessoa--${equipe.orgao_id}-${pessoa.id}`"
-                  >
-                    {{ pessoa.nome_exibicao }}
-                  </li>
-                </ul>
-              </div>
-            </li>
-          </ol>
+          <div
+            v-for="equipe in equipesAgrupadas"
+            :key="`equipes--${equipe.orgao_id}`"
+            class="mb05"
+          >
+            <span>{{ equipe.orgao_nome }}</span>
+
+            <div class="contentStyle">
+              <ul>
+                <li
+                  v-for="pessoa in equipe.pessoas"
+                  :key="`pessoa--${equipe.orgao_id}-${pessoa.id}`"
+                >
+                  {{ pessoa.nome_exibicao }}
+                </li>
+              </ul>
+            </div>
+          </div>
         </dd>
       </dl>
     </div>
