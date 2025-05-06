@@ -30,9 +30,9 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-  limitarParaUmaPessoa: {
-    type: Boolean,
-    default: false,
+  numeroMaximoDeParticipantes: {
+    type: Number,
+    default: undefined,
   },
   // Uma propriedade extra para evitar conferir a lista de órgãos a baixar em
   // cada atualização do valor do campo
@@ -300,6 +300,7 @@ watch(
           :model-value="órgãosEPessoas[item.id]?.pessoas"
           :grupo="pessoasPorÓrgão[listaDeÓrgãos[idx].id] || []"
           :readonly="readonly"
+          :numero-maximo-de-participantes="numeroMaximoDeParticipantes"
           label="nome_exibicao"
           @change="
             ($newValue) => {

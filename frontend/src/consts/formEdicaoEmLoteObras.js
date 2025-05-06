@@ -88,6 +88,7 @@ const metasEdicaoEmLote = {
     fetchAction: 'getAll',
     listState: 'organs',
     operacoes_permitidas: ['Set'],
+    numeroMaximoDeParticipantes: 1,
     explicacoes: {
       operacao: {
         Set: 'Substitui o item existente.',
@@ -175,7 +176,7 @@ const metasEdicaoEmLote = {
       tarefa: tarefa.fields.tarefa,
       inicio_planejado: tarefa.fields.inicio_planejado,
       termino_planejado: tarefa.fields.termino_planejado,
-      duracao_planejado: tarefa.fields.duracao_planejado,
+      // duracao_planejado: tarefa.fields.duracao_planejado,
     },
   },
   tipo_intervencao_id: {

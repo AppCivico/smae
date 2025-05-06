@@ -1,7 +1,7 @@
 <script setup>
 import { useField } from 'vee-validate';
 import {
-  onMounted, onUpdated, ref, toRef, watch,
+  onMounted, onUpdated, ref, toRef, watch, computed,
 } from 'vue';
 
 const props = defineProps({
@@ -31,6 +31,10 @@ const props = defineProps({
   name: {
     type: String,
     default: '',
+  },
+  numeroMaximoDeParticipantes: {
+    type: Number,
+    default: undefined,
   },
   // usado para campos opcionais que exigem envio do array vazio no back-end
   retornarArrayVazio: {
@@ -68,6 +72,13 @@ function start() {
   }
 }
 
+const atingiuLimite = computed(() => {
+  if (props.numeroMaximoDeParticipantes) {
+    return control.value.participantes.length >= props.numeroMaximoDeParticipantes;
+  }
+  return false;
+});
+
 start();
 onMounted(() => { start(); });
 onUpdated(() => { start(); });
@@ -78,6 +89,9 @@ function removeParticipante(item, p) {
 }
 
 function pushId(e, id) {
+  if (atingiuLimite.value) {
+    return;
+  }
   e.push(id);
   emit('change', [...new Set(e)]);
 }
@@ -109,8 +123,8 @@ export default {
         v-model="control.busca"
         type="text"
         class="inputtext light mb05"
-        :readonly="readonly"
-        :aria-readonly="readonly"
+        :readonly="readonly || atingiuLimite"
+        :aria-readonly="readonly || atingiuLimite"
         @keyup.enter.stop.prevent="buscar($event, control, grupo, label)"
       >
       <ul>

@@ -195,7 +195,7 @@ const maxLength = computed(() => props.config?.schema?.tests?.find((test) => tes
       :valores-iniciais="[]"
       :readonly="readonly"
       :limitar-para-um-orgao="true"
-      :limitar-para-uma-pessoa="true"
+      :numero-maximo-de-participantes="config?.meta?.numeroMaximoDeParticipantes"
       @update:modelValue="updateValue"
     />
 
