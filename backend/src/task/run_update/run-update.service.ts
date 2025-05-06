@@ -298,6 +298,74 @@ export class RunUpdateTaskService implements TaskableService {
             // Cria planilha a partir das linhas
             const planilha = utils.aoa_to_sheet(linhas);
 
+            // Define larguras de coluna apropriadas
+            const colunaLarguras = [
+                { wch: 10 }, // ID - largura moderada
+                { wch: 30 }, // Nome - coluna mais larga
+                { wch: 15 }, // Status - largura média
+                { wch: 50 }, // Mensagem de Erro - bem larga
+                { wch: 60 }, // Detalhes do Registro - coluna mais larga
+            ];
+            planilha['!cols'] = colunaLarguras;
+
+            // Configura formatação de células
+            // Primeira linha (cabeçalhos) em negrito
+            const range = utils.decode_range(planilha['!ref']!);
+            for (let C = range.s.c; C <= range.e.c; ++C) {
+                const enderecoColuna = utils.encode_col(C);
+                const enderecoCelula = enderecoColuna + '1';
+
+                // Garante que a célula existe
+                if (!planilha[enderecoCelula]) continue;
+
+                // Configura estilo de cabeçalho em negrito
+                planilha[enderecoCelula].s = {
+                    font: { bold: true },
+                    alignment: { vertical: 'center', horizontal: 'center' },
+                };
+            }
+
+            // Configuração para todas as células de dados
+            for (let R = 1; R <= range.e.r; ++R) {
+                for (let C = 0; C <= range.e.c; ++C) {
+                    const enderecoColuna = utils.encode_col(C);
+                    const enderecoCelula = enderecoColuna + (R + 1);
+
+                    // Pula se a célula não existir
+                    if (!planilha[enderecoCelula]) continue;
+
+                    const estiloCelula: any = {
+                        alignment: { vertical: 'top', wrapText: false },
+                    };
+
+                    // Aplica estilos específicos por coluna
+                    if (C === 0) {
+                        // ID
+                        estiloCelula.alignment.horizontal = 'center';
+                    } else if (C === 1) {
+                        // Nome
+                        estiloCelula.alignment.wrapText = true;
+                    } else if (C === 2) {
+                        // Status
+                        estiloCelula.alignment.horizontal = 'center';
+                        // Adiciona cor de acordo com o status
+                        if (planilha[enderecoCelula].v === 'ok') {
+                            estiloCelula.fill = { fgColor: { rgb: 'C6EFCE' } }; // Verde claro
+                            estiloCelula.font = { color: { rgb: '006100' } };
+                        } else if (planilha[enderecoCelula].v === 'error') {
+                            estiloCelula.fill = { fgColor: { rgb: 'FFC7CE' } }; // Vermelho claro
+                            estiloCelula.font = { color: { rgb: '9C0006' } };
+                        }
+                    } else if (C === 4) {
+                        // Detalhes do Registro (JSON)
+                        estiloCelula.font = { name: 'Consolas', sz: 9 }; // Fonte monospace
+                        estiloCelula.alignment.shrinkToFit = true;
+                    }
+
+                    planilha[enderecoCelula].s = estiloCelula;
+                }
+            }
+
             // Adiciona planilha ao workbook
             utils.book_append_sheet(workbook, planilha, 'Resultados');
 
