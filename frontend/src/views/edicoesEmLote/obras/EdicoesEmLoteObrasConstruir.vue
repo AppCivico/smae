@@ -21,7 +21,7 @@ import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
 import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store';
 import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
 import rawStatusObras from '@/consts/statusObras';
-import { obras as schemaObras } from '@/consts/formSchemas';
+import { obras as schemaObras } from '@/consts/formEdicaoEmLoteObras';
 import CabecalhoDePagina from '@/components/CabecalhoDePagina.vue';
 import CampoDinamico from '@/components/alteracaoEmLotes.componentes/CampoDinamico.vue';
 import SmaeFieldsetSubmit from '@/components/SmaeFieldsetSubmit.vue';
@@ -51,22 +51,107 @@ const fontesEstaticas = {
 
 const loadingOptions = ref({});
 
+const camposDisponiveisParaEdicao = computed(() => Object.entries(schemaObras.fields)
+  .filter(([_, fieldSchema]) => fieldSchema.meta()?.permite_edicao_em_massa)
+  .map(([fieldName, fieldSchema]) => ({
+    value: fieldName,
+    label: fieldSchema.spec.label || fieldName,
+  })));
+
+function detectarTipoCampo(campoSchema, meta) {
+  if (meta?.tipo) return meta.tipo;
+
+  if (campoSchema.type === 'array') return 'autocomplete';
+
+  if (meta?.optionSource && fontesEstaticas[meta.optionSource]) {
+    return 'select-estatico';
+  }
+
+  if (meta?.storeKey) {
+    return 'select-dinamico';
+  }
+
+  if (meta?.tipo) {
+    return tipo;
+  }
+
+  const tipoPorYupType = {
+    number: 'number',
+    string: 'text',
+    date: 'date',
+    object: 'object',
+  };
+
+  return tipoPorYupType[campoSchema.type] || 'text';
+}
+
+const cacheCampos = new Map();
+
+function obterConfiguracaoCampo(nomeCampo) {
+  if (cacheCampos.has(nomeCampo)) return cacheCampos.get(nomeCampo);
+
+  const campoSchema = schemaObras.fields[nomeCampo];
+  if (!campoSchema) return null;
+
+  const meta = campoSchema.meta?.() || {};
+  const tipo = detectarTipoCampo(campoSchema, meta);
+
+  const config = {
+    schema: campoSchema,
+    tipo,
+    label: campoSchema.spec?.label || nomeCampo,
+    meta,
+  };
+
+  cacheCampos.set(nomeCampo, config);
+  return config;
+}
+
+function campoConfigPorNome(nomeCampo) {
+  const campoSchema = schemaObras.fields[nomeCampo];
+  if (!campoSchema) return null;
+  const meta = campoSchema.meta?.() || {};
+  const tipo = detectarTipoCampo(campoSchema, meta);
+  return { tipo };
+}
+
 const schema = object({
   edicoes: array().of(
     object({
       propriedade: string().required('Selecione o campo'),
       valor: lazy((value, { parent }) => {
         const { propriedade } = parent;
-        if (!propriedade) {
-          return mixed().nullable();
-        }
-        const campoSchemaOriginal = schemaObras.fields[propriedade];
+        if (!propriedade) return mixed().nullable();
 
-        if (!campoSchemaOriginal) {
-          return mixed().required('Configuração inválida.');
+        const schemaOriginal = schemaObras.fields[propriedade];
+        if (!schemaOriginal) return mixed().required('Configuração inválida.');
+
+        const meta = schemaOriginal.meta?.() || {};
+
+        if (meta.tipo === 'campos-compostos' && meta.campos) {
+          const shape = Object.fromEntries(
+            Object.entries(meta.campos)
+              .map(([key, subSchema]) => [key, subSchema.required('Campo obrigatório')]),
+          );
+          return object().shape(shape);
         }
-        return campoSchemaOriginal.required('Informe o novo valor');
+
+        if (schemaOriginal.type === 'array') {
+          return schemaOriginal;
+        }
+
+        return schemaOriginal.required('Informe o novo valor');
       }),
+      operacao: string()
+        .nullable()
+        .transform((curr, orig) => (orig === undefined ? 'Set' : curr))
+        .when('propriedade', (propriedade, campoSchema) => {
+          const config = obterConfiguracaoCampo(propriedade);
+          const permitidas = config?.meta?.operacoes_permitidas || ['Set'];
+          return campoSchema
+            .required('Selecione a operação')
+            .oneOf(permitidas);
+        }),
     }),
   ).min(1, 'Adicione pelo menos uma edição'),
 });
@@ -80,56 +165,14 @@ const {
   },
 });
 
-const camposDisponiveisParaEdicao = computed(() => Object.entries(schemaObras.fields)
-  .filter(([_, fieldSchema]) => fieldSchema.meta()?.permite_edicao_em_massa)
-  .map(([fieldName, fieldSchema]) => ({
-    value: fieldName,
-    label: fieldSchema.spec.label || fieldName,
-  })));
-
 function getOpcoesDisponiveis(rowIndex) {
   const propriedadesSelecionadas = values.edicoes
     ?.map((edicao, index) => (index !== rowIndex ? edicao.propriedade : null))
     .filter((prop) => prop != null && prop !== '');
 
-  return camposDisponiveisParaEdicao.value.filter(
-    (opcao) => !propriedadesSelecionadas.includes(opcao.value),
-  );
-}
-
-function detectarTipoCampo(campoSchema, meta) {
-  if (meta.optionSource && fontesEstaticas[meta.optionSource]) {
-    return 'select-estatico';
-  }
-
-  if (meta.storeKey) {
-    return 'select-dinamico';
-  }
-
-  const tipoPorYupType = {
-    number: 'number',
-    string: 'text',
-    array: 'array',
-    date: 'date',
-    object: 'object',
-  };
-
-  return tipoPorYupType[campoSchema.type] || 'text';
-}
-
-function obterConfiguracaoCampo(nomeCampo) {
-  const campoSchema = schemaObras.fields[nomeCampo];
-  if (!campoSchema) return null;
-
-  const meta = campoSchema.meta?.() || {};
-  const tipo = detectarTipoCampo(campoSchema, meta);
-
-  return {
-    schema: campoSchema,
-    tipo,
-    label: campoSchema.spec?.label || nomeCampo,
-    meta,
-  };
+  return camposDisponiveisParaEdicao.value
+    .filter((opcao) => !propriedadesSelecionadas.includes(opcao.value))
+    .sort((a, b) => a.label.localeCompare(b.label));
 }
 
 function campoConfig(idx) {
@@ -137,12 +180,11 @@ function campoConfig(idx) {
   return prop ? obterConfiguracaoCampo(prop) : null;
 }
 
-function campoConfigPorNome(nomeCampo) {
-  const campoSchema = schemaObras.fields[nomeCampo];
-  if (!campoSchema) return null;
-  const meta = campoSchema.meta?.() || {};
-  const tipo = detectarTipoCampo(campoSchema, meta);
-  return { tipo };
+function formatarValorParaPayload(valor, tipo) {
+  if (tipo === 'date' && valor) return format(new Date(valor), 'yyyy-MM-dd');
+  if (tipo === 'number' && valor !== null) return Number(valor);
+  if (['text', 'string'].includes(tipo) && valor !== null) return String(valor);
+  return valor;
 }
 
 const onSubmit = handleSubmit(async (valores) => {
@@ -154,17 +196,33 @@ const onSubmit = handleSubmit(async (valores) => {
   const payload = {
     tipo: route.meta.tipoDeAcoesEmLote,
     ids: edicoesEmLoteStore.idsSelecionados,
-    ops: valores.edicoes.map((edicao) => {
-      let { valor } = edicao;
+    ops: valores.edicoes.flatMap((edicao) => {
+      const campo = obterConfiguracaoCampo(edicao.propriedade);
+      const tipoCampo = campo?.tipo;
 
-      if (campoConfigPorNome(edicao.propriedade)?.tipo === 'date') {
-        valor = String(format(new Date(valor), 'yyyy-MM-dd'));
+      const operacao = campo.meta?.operacao || edicao.operacao || 'Set';
+
+      if (tipoCampo === 'campos-compostos' && campo.meta?.campos) {
+        return [{
+          col: edicao.propriedade,
+          tipo_operacao: operacao,
+          valor: Object.fromEntries(
+            Object.entries(campo.meta.campos).map(([chave, subcampoSchema]) => {
+              const rawValor = edicao.valor?.[chave] ?? null;
+              const subTipo = detectarTipoCampo(subcampoSchema, subcampoSchema.meta?.());
+              const valorFormatado = formatarValorParaPayload(rawValor, subTipo);
+              return [chave, valorFormatado];
+            }),
+          ),
+        }];
       }
 
-      return {
+      const valor = formatarValorParaPayload(edicao.valor, tipoCampo);
+      return [{
         col: edicao.propriedade,
-        set: valor,
-      };
+        tipo_operacao: operacao,
+        valor,
+      }];
     }),
   };
 
@@ -187,56 +245,45 @@ const onSubmit = handleSubmit(async (valores) => {
 async function fetchOptionsIfNeeded(rowIndex, fieldConfig) {
   const { meta } = fieldConfig;
 
-  if (!meta?.storeKey || !meta.fetchAction || (!meta.listState && !meta.getterKey)) {
-    console.warn('Configuração de metadados incompleta:', fieldConfig);
-    return;
-  }
+  if (!meta?.storeKey || !meta.fetchAction || (!meta.listState && !meta.getterKey)) return;
 
   const store = storeInstances[meta.storeKey];
-  if (!store) {
-    console.error(`Store não encontrada para a chave: ${meta.storeKey}`);
-    return;
-  }
+  if (!store) return;
 
   const dataSourceKey = meta.getterKey || meta.listState;
   const jaTemDados = store[dataSourceKey]
     && Array.isArray(store[dataSourceKey])
     && store[dataSourceKey].length > 0;
 
-  if (jaTemDados) {
-    return;
-  }
+  if (jaTemDados || loadingOptions.value[`${rowIndex}-${meta.storeKey}`]) return;
 
-  const loadingKey = `${rowIndex}-${meta.storeKey}`;
-
-  if (loadingOptions.value[loadingKey]) {
-    return;
-  }
-
-  loadingOptions.value[loadingKey] = true;
+  loadingOptions.value[`${rowIndex}-${meta.storeKey}`] = true;
 
   try {
-    const fetchFunction = store[meta.fetchAction];
-    if (typeof fetchFunction !== 'function') {
-      throw new Error(`Ação '${meta.fetchAction}' não encontrada na store ${meta.storeKey}`);
+    const fetchFn = store[meta.fetchAction];
+    if (typeof fetchFn === 'function') {
+      await fetchFn();
     }
-
-    await fetchFunction();
-  } catch (error) {
-    console.error(`Erro ao buscar dados para ${meta.storeKey}:`, error);
   } finally {
-    loadingOptions.value[loadingKey] = false;
+    loadingOptions.value[`${rowIndex}-${meta.storeKey}`] = false;
   }
 }
 
-function handlePropertyChange(event, idx) {
+async function handlePropertyChange(event, idx) {
   const propriedadeSelecionada = event.target.value;
+  const fieldConfig = obterConfiguracaoCampo(propriedadeSelecionada);
+  const operacoesPermitidas = fieldConfig?.meta?.operacoes_permitidas || ['Set'];
+  const operacaoAtual = values.edicoes[idx].operacao;
+
   setFieldValue(`edicoes[${idx}].valor`, null);
 
+  if (!operacoesPermitidas.includes(operacaoAtual)) {
+    setFieldValue(`edicoes[${idx}].operacao`, operacoesPermitidas[0] || 'Set');
+  }
+
   if (propriedadeSelecionada) {
-    const fieldConfig = obterConfiguracaoCampo(propriedadeSelecionada);
-    if (fieldConfig?.tipo === 'select-dinamico' && fieldConfig.meta?.storeKey) {
-      fetchOptionsIfNeeded(idx, fieldConfig);
+    if (fieldConfig?.meta?.storeKey) {
+      await fetchOptionsIfNeeded(idx, fieldConfig);
     }
   }
 }
@@ -261,7 +308,7 @@ function handlePropertyChange(event, idx) {
         <div
           v-for="(field, idx) in fields"
           :key="field.key"
-          class="flex g2 mb1 items-start"
+          class="flex g2 mb2 items-start"
         >
           <div class="f1">
             <LabelFromYup
@@ -280,7 +327,7 @@ function handlePropertyChange(event, idx) {
               @mousedown="modoRevisao && $event.preventDefault()"
               @keydown="modoRevisao && $event.preventDefault()"
               @focus="modoRevisao && $event.target.blur()"
-              @change="(event) => handlePropertyChange(event, idx)"
+              @input="(event) => handlePropertyChange(event, idx)"
             >
               <option
                 value=""
@@ -302,6 +349,47 @@ function handlePropertyChange(event, idx) {
             />
           </div>
 
+          <div
+            v-if="campoConfig(idx)?.meta?.operacoes_permitidas?.length > 0"
+            class="f1"
+          >
+            <LabelFromYup
+              :name="`edicoes[${idx}].operacao`"
+              class="tc300"
+            >
+              Operação
+            </LabelFromYup>
+            <Field
+              :name="`edicoes[${idx}].operacao`"
+              as="select"
+              class="inputtext light"
+              :aria-readonly="modoRevisao"
+              :class="{ error: errors?.[`edicoes[${idx}].operacao`] }"
+              @mousedown="modoRevisao && $event.preventDefault()"
+              @keydown="modoRevisao && $event.preventDefault()"
+              @focus="modoRevisao && $event.target.blur()"
+            >
+              <option
+                v-for="op in campoConfig(idx)?.meta?.operacoes_permitidas || ['Set']"
+                :key="op"
+                :value="op"
+              >
+                {{ op === 'Set' ? 'Substituir' : op === 'Add' ? 'Adicionar' : 'Remover' }}
+              </option>
+            </Field>
+            <!-- jesus -->
+            <small
+              v-if="campoConfig(idx)?.meta?.explicacoes?.operacao?.[values.edicoes[idx].operacao]"
+              class="explicacao"
+            >
+              {{ campoConfig(idx).meta.explicacoes.operacao[values.edicoes[idx].operacao] }}
+            </small>
+            <ErrorMessage
+              :name="`edicoes[${idx}].operacao`"
+              class="error-msg"
+            />
+          </div>
+
           <div class="f1">
             <template v-if="values.edicoes?.[idx]?.propriedade">
               <LabelFromYup
@@ -312,8 +400,8 @@ function handlePropertyChange(event, idx) {
               </LabelFromYup>
               <CampoDinamico
                 v-model="values.edicoes[idx].valor"
-                :idx="idx"
                 :config="campoConfig(idx)"
+                :path="`edicoes[${idx}].valor`"
                 :errors="errors"
                 :loading-options="loadingOptions"
                 :store-instances="storeInstances"
@@ -354,7 +442,12 @@ function handlePropertyChange(event, idx) {
           v-if="!modoRevisao"
           class="like-a__text addlink"
           type="button"
-          @click="push({ propriedade: '', valor: null })"
+          @click="push(
+            {
+              propriedade: '',
+              valor: {},
+              operacao: 'Set',
+            })"
         >
           <svg
             width="20"

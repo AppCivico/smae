@@ -9,6 +9,7 @@ import AutocompleteField from '@/components/AutocompleteField2.vue';
 import requestS from '@/helpers/requestS.ts';
 import truncate from '@/helpers/texto/truncate';
 import { useOrgansStore } from '@/stores/organs.store';
+import isEqual from 'lodash/isEqual';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -20,6 +21,18 @@ const props = defineProps({
   órgãosPermitidos: {
     type: Array,
     default: () => [],
+  },
+  readonly: {
+    type: Boolean,
+    default: false,
+  },
+  limitarParaUmOrgao: {
+    type: Boolean,
+    default: false,
+  },
+  numeroMaximoDeParticipantes: {
+    type: Number,
+    default: undefined,
   },
   // Uma propriedade extra para evitar conferir a lista de órgãos a baixar em
   // cada atualização do valor do campo
@@ -218,6 +231,9 @@ watchEffect(async () => {
 
   if (Array.isArray(linhas)) {
     pessoasSimplificadas.value = linhas;
+    if (props.limitarParaUmOrgao && listaDeÓrgãos.value.length === 0) {
+      listaDeÓrgãos.value.push({ id: 0 });
+    }
     montar();
   } else {
     throw new Error('lista de pessoas entregue fora do padrão esperado');
@@ -226,8 +242,10 @@ watchEffect(async () => {
 
 watch(
   () => props.valoresIniciais,
-  () => {
-    montar();
+  (novos, antigos) => {
+    if (!isEqual(novos, antigos)) {
+      montar();
+    }
   },
   { immediate: true },
 );
@@ -237,7 +255,7 @@ watch(
     <div
       v-for="(item, idx) in listaDeÓrgãos"
       :key="item.id"
-      class="flex g2 mb1"
+      class="campo-de-pessoas__inputs"
     >
       <div class="f1">
         <label
@@ -281,6 +299,8 @@ watch(
           }"
           :model-value="órgãosEPessoas[item.id]?.pessoas"
           :grupo="pessoasPorÓrgão[listaDeÓrgãos[idx].id] || []"
+          :readonly="readonly"
+          :numero-maximo-de-participantes="numeroMaximoDeParticipantes"
           label="nome_exibicao"
           @change="
             ($newValue) => {
@@ -291,6 +311,7 @@ watch(
       </div>
 
       <button
+        v-if="!limitarParaUmOrgao"
         class="like-a__text addlink"
         arial-label="excluir"
         title="excluir"
@@ -304,6 +325,7 @@ watch(
     </div>
 
     <button
+      v-if="!limitarParaUmOrgao"
       class="like-a__text addlink"
       type="button"
       :disabled="
@@ -328,3 +350,22 @@ watch(
     <pre v-ScrollLockDebug>props.modelValue:{{ props.modelValue }}</pre>
   </div>
 </template>
+<style lang="less" scoped>
+.campo-de-pessoas {
+  container-type: inline-size;
+}
+
+.campo-de-pessoas__inputs {
+  display: grid;
+  gap: 1.5rem;
+}
+
+@container (width > 600px) {
+  .campo-de-pessoas__inputs {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 1rem;
+  }
+}
+
+</style>

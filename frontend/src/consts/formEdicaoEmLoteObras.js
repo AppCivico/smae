@@ -1,0 +1,208 @@
+import { object } from 'yup';
+import { obras as schemaOriginal, tarefa } from '@/consts/formSchemas';
+
+const metasEdicaoEmLote = {
+  equipamento_id: {
+    permite_edicao_em_massa: true,
+    storeKey: 'equipamentos',
+    fetchAction: 'buscarTudo',
+    listState: 'lista',
+    optionValue: 'id',
+    optionLabel: 'nome',
+  },
+  grupo_tematico_id: {
+    permite_edicao_em_massa: true,
+    storeKey: 'grupos_tematicos',
+    fetchAction: 'buscarTudo',
+    listState: 'lista',
+    optionValue: 'id',
+    optionLabel: 'nome',
+  },
+  mdo_detalhamento: {
+    permite_edicao_em_massa: true,
+    operacoes_permitidas: ['Set', 'Add'],
+    tipo: 'textarea',
+    explicacoes: {
+      operacao: {
+        Set: 'Substitui o texto existente',
+        Add: 'Adiciona o texto novo ao existente',
+      },
+    },
+  },
+  mdo_observacoes: {
+    permite_edicao_em_massa: true,
+    tipo: 'textarea',
+    operacoes_permitidas: ['Set', 'Add'],
+    explicacoes: {
+      operacao: {
+        Set: 'Substitui o texto existente',
+        Add: 'Adiciona o texto novo ao existente',
+      },
+    },
+  },
+  mdo_previsao_inauguracao: {
+    permite_edicao_em_massa: true,
+  },
+  orgao_executor_id: {
+    permite_edicao_em_massa: true,
+    storeKey: 'órgãos',
+    fetchAction: 'getAll',
+    listState: 'organs',
+    optionValue: 'id',
+    optionLabel: (item) => `${item.sigla} - ${item.descricao}`,
+  },
+  orgao_gestor_id: {
+    permite_edicao_em_massa: true,
+    storeKey: 'órgãos',
+    fetchAction: 'getAll',
+    listState: 'organs',
+    optionValue: 'id',
+    optionLabel: (item) => `${item.sigla} - ${item.descricao}`,
+    operacoes_permitidas: ['Set'],
+    explicacoes: {
+      operacao: {
+        Set: 'Substitui o item existente',
+      },
+      campo: 'A edição do órgão gestor implica na exclusão dos pontos focais de monitoramento',
+    },
+  },
+  orgao_responsavel_id: {
+    permite_edicao_em_massa: true,
+    storeKey: 'órgãos',
+    fetchAction: 'getAll',
+    listState: 'organs',
+    optionValue: 'id',
+    optionLabel: (item) => `${item.sigla} - ${item.descricao}`,
+    operacoes_permitidas: ['Set'],
+    explicacoes: {
+      operacao: {
+        Set: 'Substitui o item existente',
+      },
+      campo: 'A edição do órgão gestor implica na exclusão do ponto focal responsável',
+    },
+  },
+  responsavel_id: {
+    permite_edicao_em_massa: true,
+    tipo: 'campo-de-pessoas-orgao',
+    storeKey: 'órgãos',
+    fetchAction: 'getAll',
+    listState: 'organs',
+    operacoes_permitidas: ['Set'],
+    numeroMaximoDeParticipantes: 1,
+    explicacoes: {
+      operacao: {
+        Set: 'Substitui o item existente.',
+      },
+    },
+  },
+  portfolios_compartilhados: {
+    permite_edicao_em_massa: true,
+    tipoComponente: 'autocomplete',
+    storeKey: 'portfolios_obra',
+    fetchAction: 'buscarTudo',
+    listState: 'lista',
+    optionValue: 'id',
+    optionLabel: 'titulo',
+    operacoes_permitidas: ['Add', 'Set', 'Remove'],
+    explicacoes: {
+      operacao: {
+        Add: 'Inclui novo item em lista já existente',
+        Set: 'Substitui o item existente',
+        Remove: 'Remove o item selecionado da obra',
+      },
+    },
+  },
+  portfolio_id: {
+    permite_edicao_em_massa: true,
+    storeKey: 'portfolios_obra',
+    fetchAction: 'buscarTudo',
+    listState: 'lista',
+    optionValue: 'id',
+    optionLabel: 'titulo',
+  },
+  previsao_inicio: {
+    permite_edicao_em_massa: true,
+  },
+  previsao_termino: {
+    permite_edicao_em_massa: true,
+  },
+  projeto_etapa_id: {
+    permite_edicao_em_massa: true,
+    storeKey: 'etapas_projetos',
+    fetchAction: 'buscarTudo',
+    listState: 'lista',
+    optionValue: 'id',
+    optionLabel: 'descricao',
+  },
+  responsaveis_no_orgao_gestor: {
+    permite_edicao_em_massa: true,
+    tipo: 'campo-de-pessoas-orgao',
+    storeKey: 'órgãos',
+    fetchAction: 'getAll',
+    listState: 'organs',
+    operacoes_permitidas: ['Set', 'Add', 'Remove'],
+    explicacoes: {
+      operacao: {
+        Set: 'Substitui o item existente',
+        Add: 'Inclui novo item em lista já existente',
+        Remove: 'Exclui o item selecionado da obra',
+      },
+    },
+  },
+  secretario_colaborador: {
+    permite_edicao_em_massa: true,
+  },
+  secretario_responsavel: {
+    permite_edicao_em_massa: true,
+  },
+  status: {
+    permite_edicao_em_massa: true,
+    optionSource: 'statusObras',
+    optionValue: 'value',
+    optionLabel: 'label',
+  },
+  tarefas: {
+    permite_edicao_em_massa: true,
+    tipo: 'campos-compostos',
+    operacao: 'CreateTarefa',
+    entidade_alvo: 'tarefa',
+    operacoes_permitidas: ['Add'],
+    explicacoes: {
+      operacao: {
+        Add: 'Inclui uma nova tarefa no final do cronograma',
+      },
+    },
+    campos: {
+      tarefa: tarefa.fields.tarefa,
+      inicio_planejado: tarefa.fields.inicio_planejado,
+      termino_planejado: tarefa.fields.termino_planejado,
+      // duracao_planejado: tarefa.fields.duracao_planejado,
+    },
+  },
+  tipo_intervencao_id: {
+    permite_edicao_em_massa: true,
+    storeKey: 'tipos_de_intervencao',
+    fetchAction: 'buscarTudo',
+    listState: 'lista',
+    optionValue: 'id',
+    optionLabel: 'nome',
+  },
+};
+
+const finalFields = {};
+
+Object.entries(schemaOriginal.fields).forEach(([campo, schemaCampo]) => {
+  const metaNova = metasEdicaoEmLote?.[campo];
+
+  let novoCampo = schemaCampo;
+
+  if (metaNova) {
+    novoCampo = schemaCampo.meta(metaNova);
+  }
+
+  finalFields[campo] = novoCampo;
+});
+
+// talvez tenhamos mais exports aqui?
+// eslint-disable-next-line import/prefer-default-export
+export const obras = object(finalFields);
