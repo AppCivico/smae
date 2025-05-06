@@ -504,6 +504,12 @@ export class RunUpdateTaskService implements TaskableService {
     private async processaValorParaOp(op: UpdateOperacaoDto, tipo_operacao: TipoOperacao, registro: any) {
         let value = op.valor;
 
+        // TODO: REMOVER ISSO AQUI.
+        if (op.col === 'responsavel_id') {
+            // O valor enviado é uma array, pegando apenas o primeiro item.
+            value = value[0];
+        }
+
         if (tipo_operacao === TipoOperacao.Set) {
             // Caso o valor se pareça com uma data (YYYY-MM-DD), convertemos para Date.
             if (typeof value === 'string' && value.match(/^\d{4}-\d{2}-\d{2}$/)) {
