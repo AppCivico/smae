@@ -1424,8 +1424,7 @@ export const obras = object({
     .nullable(),
   ponto_focal_responsavel: string()
     .label('Ponto focal responsável')
-    .transform((value) => (value != null ? String(value) : null))
-    .nullable(),
+    .nullableOuVazio(),
   portfolios_compartilhados: array()
     .label('Compartilhar com portfólios')
     .nullable(),
@@ -1470,14 +1469,20 @@ export const obras = object({
   responsavel_id: number()
     .label('Ponto focal responsável')
     .min(1, 'Responsável inválido')
-    .nullable(),
+    .nullable()
+    .meta({
+      balaoInformativo: 'É a pessoa responsável pela evolução da obra em todas as suas fases. Suas principais funções incluem acompanhar o andamento da obra e do(s) respectivo(s) contrato(s), mantendo as informações atualizadas no SMAE.',
+    }),
   responsaveis_no_orgao_gestor: array()
-    .label('Ponto Focal de Monitoramento')
+    .label('Assessor do Portfólio')
     .of(
       number()
         .min(1),
     )
-    .nullable(),
+    .nullable()
+    .meta({
+      balaoInformativo: 'É a pessoa que atua como facilitador e apoiador na aplicação das metodologias definidas. Suas principais responsabilidades incluem fornecer suporte técnico e metodológico ao Ponto Focal Responsável, durante todas as fases.',
+    }),
   secretario_colaborador: string()
     .label('Secretário colaborador da obra')
     .max(250)
