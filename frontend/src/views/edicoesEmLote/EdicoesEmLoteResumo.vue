@@ -53,7 +53,7 @@ onMounted(() => {
         v-if="emFoco?.relatorio_arquivo"
         class="btn with-icon amarelo"
         download
-        :href="`${baseUrl}/download/${emFoco?.relatorio_arquivo}`"
+        :to="`${baseUrl}/download/${emFoco?.relatorio_arquivo}`"
         :title="`Baixar detalhamento da edição em lote ${emFoco?.id}`"
       >
         <svg

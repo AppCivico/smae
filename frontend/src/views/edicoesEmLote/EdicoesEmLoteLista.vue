@@ -117,7 +117,7 @@ onMounted(() => {
             v-if="linha?.relatorio_arquivo"
             class="tcprimary edicoes-em-lote-lista__ler-mais"
             download
-            :href="`${baseUrl}/download/${linha?.relatorio_arquivo}`"
+            :to="`${baseUrl}/download/${linha?.relatorio_arquivo}`"
             :title="`Baixar detalhamento da edição em lote ${linha?.id}`"
           >
             <SmaeTooltip
