@@ -43,7 +43,7 @@ const equipesAgrupadas = computed(() => emFoco.value?.equipe.reduce((agrupado, i
   if (!agrupado[item.orgao_id]) {
     agrupado[item.orgao_id] = {
       orgao_id: item.orgao_id,
-      orgao_nome: órgãosPorId.value[item.orgao_id]?.descricao || `Orgão1 ${item.orgao_id}`,
+      orgao_nome: órgãosPorId.value[item.orgao_id]?.descricao || `Órgão1 ${item.orgao_id}`,
       pessoas: [],
     };
   }
