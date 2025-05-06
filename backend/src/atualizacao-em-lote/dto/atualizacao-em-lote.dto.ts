@@ -113,7 +113,7 @@ export class OperacaoProcessadaItemDto {
     col_label: string;
     tipo_operacao: string;
     valor: any;
-    valor_formatado?: string;
+    valor_formatado?: string | string[];
 }
 
 export class OperacaoProcessadaDto {
