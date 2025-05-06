@@ -645,15 +645,17 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
           {{ schema.fields.equipe.spec.label }}
         </dt>
 
-        <dd>
-          <div
-            v-for="equipe in equipesAgrupadas"
-            :key="`equipes--${equipe.orgao_id}`"
+        <dd class="contentStyle">
+          <ul
+            v-if="Object.keys(equipesAgrupadas).length"
             class="mb05"
           >
-            <span>{{ equipe.orgao_nome }}</span>
+            <li
+              v-for="equipe in equipesAgrupadas"
+              :key="`equipes--${equipe.orgao_id}`"
+            >
+              {{ equipe.orgao_nome }}
 
-            <div class="contentStyle">
               <ul>
                 <li
                   v-for="pessoa in equipe.pessoas"
@@ -662,8 +664,8 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
                   {{ pessoa.nome_exibicao }}
                 </li>
               </ul>
-            </div>
-          </div>
+            </li>
+          </ul>
         </dd>
       </dl>
     </div>
