@@ -526,7 +526,7 @@ export class RunUpdateTaskService implements TaskableService {
         }
 
         const dto =
-            typeof value === 'object'
+            typeof value === 'object' && Array.isArray(value) === false
                 ? ({
                       ...value,
                   } as CreateTarefaDto) // TODO: Isso aqui provavelmente não ficará assim, pois teremos mais casos.
