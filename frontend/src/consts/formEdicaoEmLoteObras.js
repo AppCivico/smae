@@ -81,7 +81,7 @@ const metasEdicaoEmLote = {
       campo: 'A edição do órgão gestor implica na exclusão do ponto focal responsável',
     },
   },
-  ponto_focal_responsavel: {
+  responsavel_id: {
     permite_edicao_em_massa: true,
     tipo: 'campo-de-pessoas-orgao',
     storeKey: 'órgãos',
