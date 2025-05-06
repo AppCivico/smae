@@ -5,11 +5,11 @@ import {
   computed, onMounted, ref, toRef, watch, watchEffect,
 } from 'vue';
 import { useRoute } from 'vue-router';
+import isEqual from 'lodash/isEqual';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import requestS from '@/helpers/requestS.ts';
 import truncate from '@/helpers/texto/truncate';
 import { useOrgansStore } from '@/stores/organs.store';
-import isEqual from 'lodash/isEqual';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -329,7 +329,8 @@ watch(
       class="like-a__text addlink"
       type="button"
       :disabled="
-        !órgãosDisponíveis.length ||
+        $props.readonly ||
+          !órgãosDisponíveis.length ||
           órgãosDisponíveis.length === listaDeÓrgãos.length
       "
       @click="adicionarLinha"

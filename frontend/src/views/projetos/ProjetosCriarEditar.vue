@@ -127,6 +127,22 @@ const orgaosDisponiveisPorPortolio = computed(() => portfolioStore.lista.reduce(
   return acc;
 }, {}));
 
+const desabilitarTodosCampos = computed(() => {
+  const permissoes = emFoco.value?.permissoes || null;
+
+  if (!permissoes?.apenas_leitura) {
+    return {
+      camposComuns: false,
+      camposGestor: false,
+    };
+  }
+
+  return {
+    camposComuns: true,
+    camposGestor: permissoes?.pode_editar_apenas_responsaveis_pos_planejamento,
+  };
+});
+
 const possíveisOrigens = [
   {
     texto: 'Programa de metas / Plano setorial',
@@ -319,7 +335,7 @@ watch(itemParaEdicao, (novoValor) => {
           as="select"
           class="inputtext light mb1"
           :class="{ error: errors.portfolio_id, loading: portfolioStore.chamadasPendentes.lista }"
-          :disabled="!!portfolioId || !!projetoId"
+          :disabled="desabilitarTodosCampos.camposComuns || !!portfolioId || !!projetoId"
           @change="() => setFieldValue('regiao_id', 0)"
         >
           <option :value="0">
@@ -356,7 +372,7 @@ watch(itemParaEdicao, (novoValor) => {
           type="text"
           class="inputtext light mb1"
           maxlength="20"
-          :disabled="!emFoco?.permissoes?.campo_codigo"
+          :disabled="desabilitarTodosCampos.camposComuns || !emFoco?.permissoes?.campo_codigo"
         />
         <ErrorMessage
           class="error-msg mb1"
@@ -373,6 +389,7 @@ watch(itemParaEdicao, (novoValor) => {
           name="nome"
           type="text"
           class="inputtext light mb1"
+          :disabled="desabilitarTodosCampos.camposComuns"
         />
         <ErrorMessage
           class="error-msg mb1"
@@ -393,7 +410,10 @@ watch(itemParaEdicao, (novoValor) => {
           as="select"
           class="inputtext light mb1"
           :class="{ error: errors.status }"
-          :disabled="!emFoco?.permissoes.status_permitidos?.length"
+          :disabled="
+            desabilitarTodosCampos.camposComuns
+              || !emFoco?.permissoes.status_permitidos?.length
+          "
         >
           <option :value="null">
             Selecionar
@@ -436,6 +456,7 @@ watch(itemParaEdicao, (novoValor) => {
             loading: portfolioStore.chamadasPendentes.lista
           }"
           label="titulo"
+          :readonly="desabilitarTodosCampos.camposComuns"
         />
         <ErrorMessage
           name="portfolios_compartilhados"
@@ -459,6 +480,7 @@ watch(itemParaEdicao, (novoValor) => {
           maxlength="2048"
           anular-vazio
           :class="{ 'error': errors.resumo }"
+          :disabled="desabilitarTodosCampos.camposComuns"
         />
         <ErrorMessage
           name="resumo"
@@ -483,7 +505,7 @@ watch(itemParaEdicao, (novoValor) => {
             maxlength="2048"
             anular-vazio
             :class="{ 'error': errors.objeto }"
-            :disabled="!emFoco?.permissoes?.campo_objeto"
+            :disabled="desabilitarTodosCampos.camposComuns || !emFoco?.permissoes?.campo_objeto"
           />
           <ErrorMessage
             name="objeto"
@@ -507,7 +529,7 @@ watch(itemParaEdicao, (novoValor) => {
             maxlength="2048"
             anular-vazio
             :class="{ 'error': errors.objetivo }"
-            :disabled="!emFoco?.permissoes?.campo_objetivo"
+            :disabled="desabilitarTodosCampos.camposComuns || !emFoco?.permissoes?.campo_objetivo"
           />
           <ErrorMessage
             name="objetivo"
@@ -531,7 +553,10 @@ watch(itemParaEdicao, (novoValor) => {
             maxlength="2048"
             anular-vazio
             :class="{ 'error': errors.publico_alvo }"
-            :disabled="!emFoco?.permissoes?.campo_publico_alvo"
+            :disabled="
+              desabilitarTodosCampos.camposComuns
+                || !emFoco?.permissoes?.campo_publico_alvo
+            "
           />
           <ErrorMessage
             name="publico_alvo"
@@ -576,6 +601,7 @@ watch(itemParaEdicao, (novoValor) => {
                 :model-value="fields[idx]?.value?.premissa"
                 anular-vazio
                 :class="{ 'error': errors[`fields[${idx}].premissa`] }"
+                :disabled="desabilitarTodosCampos.camposComuns"
                 @update:model-value="handleChange"
               />
               <ErrorMessage
@@ -588,6 +614,7 @@ watch(itemParaEdicao, (novoValor) => {
               class="like-a__text addlink"
               arial-label="excluir"
               title="excluir"
+              :disabled="desabilitarTodosCampos.camposComuns"
               @click="remove(idx)"
             >
               <svg
@@ -602,6 +629,7 @@ watch(itemParaEdicao, (novoValor) => {
           <button
             class="like-a__text addlink"
             type="button"
+            :disabled="desabilitarTodosCampos.camposComuns"
             @click="push({
               premissa: '',
             })"
@@ -652,6 +680,7 @@ watch(itemParaEdicao, (novoValor) => {
                 :model-value="fields[idx]?.value?.restricao"
                 anular-vazio
                 :class="{ 'error': errors[`fields[${idx}].restricao`] }"
+                :disabled="desabilitarTodosCampos.camposComuns"
                 @update:model-value="handleChange"
               />
 
@@ -665,6 +694,7 @@ watch(itemParaEdicao, (novoValor) => {
               class="like-a__text addlink"
               arial-label="excluir"
               title="excluir"
+              :disabled="desabilitarTodosCampos.camposComuns"
               @click="remove(idx)"
             >
               <svg
@@ -679,6 +709,7 @@ watch(itemParaEdicao, (novoValor) => {
           <button
             class="like-a__text addlink"
             type="button"
+            :disabled="desabilitarTodosCampos.camposComuns"
             @click="push({
               restricao: '',
             })"
@@ -710,6 +741,7 @@ watch(itemParaEdicao, (novoValor) => {
           class="inputtext light mb1"
           maxlength="2048"
           anular-vazio
+          :disabled="desabilitarTodosCampos.camposComuns"
           :class="{ 'error': errors.principais_etapas }"
         />
         <ErrorMessage
@@ -740,7 +772,7 @@ watch(itemParaEdicao, (novoValor) => {
           maxlength="2048"
           anular-vazio
           :class="{ 'error': errors.nao_escopo }"
-          :disabled="!emFoco?.permissoes?.campo_nao_escopo"
+          :disabled="desabilitarTodosCampos.camposComuns || !emFoco?.permissoes?.campo_nao_escopo"
         />
         <ErrorMessage
           name="nao_escopo"
@@ -761,6 +793,7 @@ watch(itemParaEdicao, (novoValor) => {
         v-model="values.geolocalizacao"
         name="geolocalizacao"
         :geolocalização-por-token="geolocalizaçãoPorToken"
+        :disabled="desabilitarTodosCampos.camposComuns"
       />
     </div>
 
@@ -799,6 +832,7 @@ watch(itemParaEdicao, (novoValor) => {
                 min="2003"
                 max="3000"
                 step="1"
+                :disabled="desabilitarTodosCampos.camposComuns"
                 @change="BuscarDotaçãoParaAno"
               />
               <ErrorMessage
@@ -820,6 +854,7 @@ watch(itemParaEdicao, (novoValor) => {
                 maxlength="2"
                 class="inputtext light mb1"
                 as="select"
+                :disabled="desabilitarTodosCampos.camposComuns"
               >
                 <option value="">
                   Selecionar
@@ -851,6 +886,7 @@ watch(itemParaEdicao, (novoValor) => {
                 :name="`fonte_recursos[${idx}].valor_nominal`"
                 :value="fields[idx].value.valor_nominal"
                 class="inputtext light mb1"
+                :disabled="desabilitarTodosCampos.camposComuns"
               />
               <ErrorMessage
                 class="error-msg mb1"
@@ -869,6 +905,7 @@ watch(itemParaEdicao, (novoValor) => {
                 :name="`fonte_recursos[${idx}].valor_percentual`"
                 :value="fields[idx].value.valor_percentual"
                 class="inputtext light mb1"
+                :disabled="desabilitarTodosCampos.camposComuns"
               />
               <ErrorMessage
                 class="error-msg mb1"
@@ -881,6 +918,7 @@ watch(itemParaEdicao, (novoValor) => {
               arial-label="excluir"
               title="excluir"
               type="button"
+              :disabled="desabilitarTodosCampos.camposComuns"
               @click="remove(idx)"
             >
               <svg
@@ -895,6 +933,7 @@ watch(itemParaEdicao, (novoValor) => {
           <button
             class="like-a__text addlink"
             type="button"
+            :disabled="desabilitarTodosCampos.camposComuns"
             @click="push({
               fonte_recurso_cod_sof: '',
               fonte_recurso_ano: null,
@@ -928,6 +967,7 @@ watch(itemParaEdicao, (novoValor) => {
             as="select"
             class="inputtext light mb1"
             :class="{ 'error': errors.origem_tipo }"
+            :disabled="desabilitarTodosCampos.camposComuns"
             @change="() => {
               setFieldValue('meta_id', null);
               setFieldValue('meta_codigo', null);
@@ -966,7 +1006,10 @@ watch(itemParaEdicao, (novoValor) => {
               error: errors.pdm_escolhido,
               loading: chamadasPendentes.pdmsSimplificados
             }"
-            :disabled="!pdmsSimplificadosPorTipo['PDM']?.length"
+            :disabled="
+              desabilitarTodosCampos.camposComuns
+                || !pdmsSimplificadosPorTipo['PDM']?.length
+            "
           >
             <option :value="0">
               Selecionar
@@ -1009,7 +1052,10 @@ watch(itemParaEdicao, (novoValor) => {
             as="select"
             class="inputtext light mb1"
             :class="{ 'error': errors.meta_id }"
-            :disabled="!pdmsPorId[values.pdm_escolhido]?.metas?.length"
+            :disabled="
+              desabilitarTodosCampos.camposComuns
+                || !pdmsPorId[values.pdm_escolhido]?.metas?.length
+            "
             @change="($e) => {
               buscarArvoreDeMetas($e.target.value);
               setFieldValue('iniciativa_id', null);
@@ -1046,6 +1092,7 @@ watch(itemParaEdicao, (novoValor) => {
             class="inputtext light mb1"
             :class="{ 'error': errors.meta_codigo }"
             maxlength="10"
+            :disabled="desabilitarTodosCampos.camposComuns"
           />
           <ErrorMessage
             name="meta_codigo"
@@ -1071,7 +1118,10 @@ watch(itemParaEdicao, (novoValor) => {
               error: errors.iniciativa_id,
               loading: chamadasPendentes.arvoreDeMetas
             }"
-            :disabled="!arvoreDeMetas?.[values.meta_id]?.iniciativas?.length"
+            :disabled="
+              desabilitarTodosCampos.camposComuns
+                || !arvoreDeMetas?.[values.meta_id]?.iniciativas?.length
+            "
             @change="setFieldValue('atividade_id', null)"
           >
             <option :value="null">
@@ -1106,7 +1156,10 @@ watch(itemParaEdicao, (novoValor) => {
               error: errors.atividade_id,
               loading: chamadasPendentes.arvoreDeMetas
             }"
-            :disabled="!arvoreDeMetas?.[values.meta_id]?.[values.iniciativa_id]?.atividades.length"
+            :disabled="
+              desabilitarTodosCampos.camposComuns
+                || !arvoreDeMetas?.[values.meta_id]?.[values.iniciativa_id]?.atividades.length
+            "
           >
             <option :value="null">
               Selecionar
@@ -1150,6 +1203,7 @@ watch(itemParaEdicao, (novoValor) => {
             :model-value="values.origem_outro"
             anular-vazio
             :class="{ 'error': errors.origem_outro }"
+            :disabled="desabilitarTodosCampos.camposComuns"
           />
           <ErrorMessage
             name="origem_outro"
@@ -1167,6 +1221,7 @@ watch(itemParaEdicao, (novoValor) => {
       :valores-iniciais="itemParaEdicao.origens_extra"
       name="origens_extra"
       class="mb2"
+      :disabled="desabilitarTodosCampos.camposComuns"
     >
       <template #rodape>
         <ErrorMessage
@@ -1189,6 +1244,7 @@ watch(itemParaEdicao, (novoValor) => {
             class="inputtext light mb1"
             :class="{ 'error': errors.previsao_inicio }"
             maxlength="10"
+            :disabled="desabilitarTodosCampos.camposComuns"
             @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
             @update:model-value="($v) => { setFieldValue('previsao_inicio', $v || null); }"
           />
@@ -1208,6 +1264,7 @@ watch(itemParaEdicao, (novoValor) => {
             class="inputtext light mb1"
             :class="{ 'error': errors.previsao_termino }"
             maxlength="10"
+            :disabled="desabilitarTodosCampos.camposComuns"
             @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
             @update:model-value="($v) => { setFieldValue('previsao_termino', $v || null); }"
           />
@@ -1228,7 +1285,7 @@ watch(itemParaEdicao, (novoValor) => {
             min="0"
             max="100"
             class="inputtext light mb1"
-            :disabled="emFoco?.n_filhos_imediatos > 0"
+            :disabled="desabilitarTodosCampos.camposComuns || emFoco?.n_filhos_imediatos > 0"
             :class="{ 'error': errors.tolerancia_atraso }"
             @update:model-value="values.tolerancia_atraso = Number(values.tolerancia_atraso)"
           />
@@ -1253,6 +1310,7 @@ watch(itemParaEdicao, (novoValor) => {
             name="previsao_custo"
             :value="values.previsao_custo"
             class="inputtext light mb1"
+            :disabled="desabilitarTodosCampos.camposComuns"
           />
           <ErrorMessage
             class="error-msg mb1"
@@ -1283,7 +1341,10 @@ watch(itemParaEdicao, (novoValor) => {
               error: errors.orgao_gestor_id,
               loading: ÓrgãosStore.organs.loading,
             }"
-            :disabled="!orgaosDisponiveisPorPortolio[values.portfolio_id]?.length"
+            :disabled="
+              desabilitarTodosCampos.camposGestor
+                || !orgaosDisponiveisPorPortolio[values.portfolio_id]?.length
+            "
             @change="setFieldValue('responsaveis_no_orgao_gestor', [])"
           >
             <option :value="0">
@@ -1335,6 +1396,7 @@ watch(itemParaEdicao, (novoValor) => {
               loading: portfolioStore.chamadasPendentes.lista
             }"
             label="nome_exibicao"
+            :readonly="desabilitarTodosCampos.camposGestor"
           />
           <ErrorMessage
             name="responsaveis_no_orgao_gestor"
@@ -1358,7 +1420,10 @@ watch(itemParaEdicao, (novoValor) => {
               error: errors.orgao_responsavel_id,
               loading: portfolioStore.chamadasPendentes.lista
             }"
-            :disabled="!órgãosQueTemResponsáveis?.length"
+            :disabled="
+              desabilitarTodosCampos.camposGestor
+                || !órgãosQueTemResponsáveis?.length
+            "
             @change="setFieldValue('responsavel_id', 0)"
             @update:model-value="values.orgao_responsavel_id = Number(values.orgao_responsavel_id)
               || null"
@@ -1396,7 +1461,10 @@ watch(itemParaEdicao, (novoValor) => {
               error: errors.responsavel_id,
               loading: portfolioStore.chamadasPendentes.lista
             }"
-            :disabled="!possíveisResponsáveisPorÓrgãoId[values.orgao_responsavel_id]?.length"
+            :disabled="
+              desabilitarTodosCampos.camposGestor
+                || !possíveisResponsáveisPorÓrgãoId[values.orgao_responsavel_id]?.length
+            "
             @update:model-value="values.responsavel_id = Number(values.responsavel_id)
               || null"
           >
@@ -1440,6 +1508,7 @@ watch(itemParaEdicao, (novoValor) => {
             }"
             :grupo="órgãosComoLista"
             label="sigla"
+            :readonly="desabilitarTodosCampos.camposComuns"
           />
           <ErrorMessage
             name="orgaos_participantes"
@@ -1464,6 +1533,7 @@ watch(itemParaEdicao, (novoValor) => {
           :valores-iniciais="itemParaEdicao.equipe"
           name="equipe"
           :pessoas="possíveisColaboradores"
+          :readonly="desabilitarTodosCampos.camposGestor"
         />
         <ErrorMessage
           name="equipe"
@@ -1487,7 +1557,10 @@ watch(itemParaEdicao, (novoValor) => {
           name="secretario_responsavel"
           type="text"
           class="inputtext light mb1"
-          :disabled="!emFoco?.permissoes?.campo_secretario_executivo"
+          :disabled="
+            desabilitarTodosCampos.camposComuns
+              || !emFoco?.permissoes?.campo_secretario_executivo
+          "
         />
         <ErrorMessage
           class="error-msg mb1"
@@ -1504,7 +1577,10 @@ watch(itemParaEdicao, (novoValor) => {
           name="secretario_executivo"
           type="text"
           class="inputtext light mb1"
-          :disabled="!emFoco?.permissoes?.campo_secretario_responsavel"
+          :disabled="
+            desabilitarTodosCampos.camposComuns
+              || !emFoco?.permissoes?.campo_secretario_responsavel
+          "
         />
         <ErrorMessage
           class="error-msg mb1"
@@ -1530,6 +1606,7 @@ watch(itemParaEdicao, (novoValor) => {
           type="text"
           class="inputtext light mb1"
           maxlength="20"
+          :disabled="desabilitarTodosCampos.camposComuns"
         />
         <ErrorMessage
           class="error-msg mb1"
@@ -1538,7 +1615,7 @@ watch(itemParaEdicao, (novoValor) => {
       </div>
 
       <div
-        :disabled="!emFoco?.permissoes?.campo_data_aprovacao"
+        :disabled="desabilitarTodosCampos.camposComuns || !emFoco?.permissoes?.campo_data_aprovacao"
         class="f1 mb1"
       >
         <LabelFromYup
@@ -1551,6 +1628,7 @@ watch(itemParaEdicao, (novoValor) => {
           class="inputtext light mb1"
           :class="{ 'error': errors.data_aprovacao }"
           maxlength="10"
+          :disabled="desabilitarTodosCampos.camposComuns"
           @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
           @update:model-value="($v) => { setFieldValue('data_aprovacao', $v || null); }"
         />
@@ -1560,7 +1638,7 @@ watch(itemParaEdicao, (novoValor) => {
         />
       </div>
       <div
-        :disabled="!emFoco?.permissoes?.campo_data_revisao"
+        :disabled="desabilitarTodosCampos.camposComuns || !emFoco?.permissoes?.campo_data_revisao"
         class="f1 mb1"
       >
         <LabelFromYup
@@ -1573,6 +1651,7 @@ watch(itemParaEdicao, (novoValor) => {
           class="inputtext light mb1"
           :class="{ 'error': errors.data_revisao }"
           maxlength="10"
+          :disabled="desabilitarTodosCampos.camposComuns"
           @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
           @update:model-value="($v) => { setFieldValue('data_revisao', $v || null); }"
         />
@@ -1592,7 +1671,7 @@ watch(itemParaEdicao, (novoValor) => {
         />
 
         <AutocompleteField
-          :disabled="gruposDeObservadoresPendentes.lista"
+          :readonly="desabilitarTodosCampos.camposComuns || gruposDeObservadoresPendentes.lista"
           name="grupo_portfolio"
           :controlador="{
             busca: '',
