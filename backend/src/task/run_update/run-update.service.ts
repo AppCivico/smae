@@ -307,7 +307,7 @@ export class RunUpdateTaskService implements TaskableService {
                 { wch: 30 }, // Nome - coluna mais larga
                 { wch: 15 }, // Status - largura média
                 { wch: 50 }, // Mensagem de Erro - bem larga
-                { wch: 60 }, // Detalhes do Registro - coluna mais larga
+                { wch: 100 }, // Detalhes do Registro - coluna mais larga
             ];
             planilha['!cols'] = colunaLarguras;
 
@@ -366,7 +366,7 @@ export class RunUpdateTaskService implements TaskableService {
                         estiloCelula.alignment.horizontal = 'center';
                         // Adiciona cor de acordo com o status
                         const valorCelula = planilha[enderecoCelula].v;
-                        if (valorCelula === 'ok') {
+                        if (valorCelula === 'OK') {
                             estiloCelula.fill = {
                                 patternType: 'solid',
                                 fgColor: { rgb: 'C6EFCE' }, // Verde claro
@@ -375,7 +375,7 @@ export class RunUpdateTaskService implements TaskableService {
                                 color: { rgb: '006100' }, // Verde escuro
                                 bold: true,
                             };
-                        } else if (valorCelula === 'error') {
+                        } else {
                             estiloCelula.fill = {
                                 patternType: 'solid',
                                 fgColor: { rgb: 'FFC7CE' }, // Vermelho claro
@@ -391,7 +391,7 @@ export class RunUpdateTaskService implements TaskableService {
                     } else if (C === 4) {
                         // Detalhes do Registro (JSON)
                         estiloCelula.font = { name: 'Consolas', sz: 9 }; // Fonte monospace
-                        estiloCelula.alignment.wrapText = true;
+                        estiloCelula.alignment.wrapText = false;
                     }
 
                     // Aplica o estilo à célula
