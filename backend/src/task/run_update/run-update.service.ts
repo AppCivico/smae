@@ -12,7 +12,8 @@ import { UpdateProjetoDto } from 'src/pp/projeto/dto/update-projeto.dto';
 import { ProjetoService } from 'src/pp/projeto/projeto.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UploadService } from 'src/upload/upload.service';
-import { utils, writeXLSX } from 'xlsx';
+import { utils, write } from 'xlsx-js-style';
+
 import { TaskableService } from '../entities/task.entity';
 import { TaskContext } from '../task.context';
 import { CreateRunUpdateDto, TipoOperacao, UpdateOperacaoDto } from './dto/create-run-update.dto';
@@ -41,7 +42,7 @@ export interface LogResultados {
 export interface RegistroProcessamento {
     id: number;
     nome: string;
-    status: 'ok' | 'error';
+    status: 'OK' | 'Erro';
     mensagemErro?: string;
     registro?: any;
 }
@@ -120,7 +121,7 @@ export class RunUpdateTaskService implements TaskableService {
                         const registroProcessamento: RegistroProcessamento = {
                             id: id,
                             nome: registro?.nome || registro?.titulo || registro?.descricao || 'Nome não identificado',
-                            status: 'ok',
+                            status: 'OK',
                             registro: registro,
                         };
 
@@ -200,7 +201,7 @@ export class RunUpdateTaskService implements TaskableService {
                                 (r) => r.id === id
                             );
                             if (indiceRegistro >= 0) {
-                                resultadosEstendidos.registrosProcessados[indiceRegistro].status = 'error';
+                                resultadosEstendidos.registrosProcessados[indiceRegistro].status = 'Erro';
                                 resultadosEstendidos.registrosProcessados[indiceRegistro].mensagemErro =
                                     error instanceof HttpException ? error.getResponse().toString() : 'Erro interno';
                                 await context.stashData<LogResultadosEstendido>(resultadosEstendidos);
@@ -227,11 +228,11 @@ export class RunUpdateTaskService implements TaskableService {
                         resultadosEstendidos.registrosProcessados.push({
                             id: id,
                             nome: 'Registro não acessado',
-                            status: 'error',
+                            status: 'Erro',
                             mensagemErro: error.message || 'Erro não capturado',
                         });
-                    } else if (resultadosEstendidos.registrosProcessados[indiceRegistro].status !== 'error') {
-                        resultadosEstendidos.registrosProcessados[indiceRegistro].status = 'error';
+                    } else if (resultadosEstendidos.registrosProcessados[indiceRegistro].status !== 'Erro') {
+                        resultadosEstendidos.registrosProcessados[indiceRegistro].status = 'Erro';
                         resultadosEstendidos.registrosProcessados[indiceRegistro].mensagemErro =
                             error.message || 'Erro não capturado';
                     }
@@ -269,19 +270,21 @@ export class RunUpdateTaskService implements TaskableService {
 
         return { success: true };
     }
-
-    // Novo método para gerar relatório Excel
+    // Método para gerar relatório Excel
     private async gerarRelatorioExcel(
         params: CreateRunUpdateDto,
         resultados: LogResultadosEstendido,
         usuario: PessoaFromJwt
     ): Promise<void> {
         try {
+            // Importações necessárias (considere adicionar no topo do arquivo)
+            //
+
             // Cria novo workbook
             const workbook = utils.book_new();
 
             // Cria cabeçalhos para a planilha
-            const cabecalhos = ['ID', 'Nome', 'Status', 'Mensagem de Erro', 'Detalhes do Registro'];
+            const cabecalhos = ['ID', 'Nome', 'Status', 'Mensagem de Erro', 'Versão Anterior'];
             const linhas = [cabecalhos];
 
             // Adiciona linhas de dados
@@ -318,10 +321,16 @@ export class RunUpdateTaskService implements TaskableService {
                 // Garante que a célula existe
                 if (!planilha[enderecoCelula]) continue;
 
-                // Configura estilo de cabeçalho em negrito
+                // Configura estilo de cabeçalho em negrito com bordas
                 planilha[enderecoCelula].s = {
                     font: { bold: true },
                     alignment: { vertical: 'center', horizontal: 'center' },
+                    border: {
+                        top: { style: 'thin' },
+                        bottom: { style: 'thin' },
+                        left: { style: 'thin' },
+                        right: { style: 'thin' },
+                    },
                 };
             }
 
@@ -334,8 +343,15 @@ export class RunUpdateTaskService implements TaskableService {
                     // Pula se a célula não existir
                     if (!planilha[enderecoCelula]) continue;
 
+                    // Inicializa o objeto de estilo com bordas em todas as células
                     const estiloCelula: any = {
                         alignment: { vertical: 'top', wrapText: false },
+                        border: {
+                            top: { style: 'thin' },
+                            bottom: { style: 'thin' },
+                            left: { style: 'thin' },
+                            right: { style: 'thin' },
+                        },
                     };
 
                     // Aplica estilos específicos por coluna
@@ -349,19 +365,36 @@ export class RunUpdateTaskService implements TaskableService {
                         // Status
                         estiloCelula.alignment.horizontal = 'center';
                         // Adiciona cor de acordo com o status
-                        if (planilha[enderecoCelula].v === 'ok') {
-                            estiloCelula.fill = { fgColor: { rgb: 'C6EFCE' } }; // Verde claro
-                            estiloCelula.font = { color: { rgb: '006100' } };
-                        } else if (planilha[enderecoCelula].v === 'error') {
-                            estiloCelula.fill = { fgColor: { rgb: 'FFC7CE' } }; // Vermelho claro
-                            estiloCelula.font = { color: { rgb: '9C0006' } };
+                        const valorCelula = planilha[enderecoCelula].v;
+                        if (valorCelula === 'ok') {
+                            estiloCelula.fill = {
+                                patternType: 'solid',
+                                fgColor: { rgb: 'C6EFCE' }, // Verde claro
+                            };
+                            estiloCelula.font = {
+                                color: { rgb: '006100' }, // Verde escuro
+                                bold: true,
+                            };
+                        } else if (valorCelula === 'error') {
+                            estiloCelula.fill = {
+                                patternType: 'solid',
+                                fgColor: { rgb: 'FFC7CE' }, // Vermelho claro
+                            };
+                            estiloCelula.font = {
+                                color: { rgb: '9C0006' }, // Vermelho escuro
+                                bold: true,
+                            };
                         }
+                    } else if (C === 3) {
+                        // Mensagem de erro
+                        estiloCelula.alignment.wrapText = true;
                     } else if (C === 4) {
                         // Detalhes do Registro (JSON)
                         estiloCelula.font = { name: 'Consolas', sz: 9 }; // Fonte monospace
-                        estiloCelula.alignment.shrinkToFit = true;
+                        estiloCelula.alignment.wrapText = true;
                     }
 
+                    // Aplica o estilo à célula
                     planilha[enderecoCelula].s = estiloCelula;
                 }
             }
@@ -370,10 +403,11 @@ export class RunUpdateTaskService implements TaskableService {
             utils.book_append_sheet(workbook, planilha, 'Resultados');
 
             // Gera buffer
-            const buffer = writeXLSX(workbook, {
+            const buffer = write(workbook, {
                 type: 'buffer',
                 bookType: 'xlsx',
                 compression: true,
+                cellStyles: true,
             });
 
             // Faz upload do arquivo Excel
@@ -393,6 +427,8 @@ export class RunUpdateTaskService implements TaskableService {
                 where: { id: params.atualizacao_em_lote_id },
                 data: { relatorio_arquivo_id: upload_id },
             });
+
+            this.logger.log(`Arquivo Excel gerado com sucesso! Upload ID: ${upload_id}`);
         } catch (error) {
             this.logger.error(`Erro ao gerar relatório Excel: ${error.message}`);
             throw error;
