@@ -37,6 +37,7 @@ type Props = {
   schema: Record<string, any>
   valoresIniciais?: Record<string, any>
   autoSubmit?: boolean
+  carregando?: boolean
 };
 type Emits = {
   (e: 'update:formularioSujo', value: boolean): void
@@ -153,6 +154,7 @@ if (props.autoSubmit) {
                 v-if="campo.tipo === 'checkbox'"
                 v-slot="{ field: { value }, handleInput }"
                 :name="campoNome"
+                :disabled="$props.carregando"
               >
                 <div
                   class="flex itemscenter"
@@ -162,6 +164,7 @@ if (props.autoSubmit) {
                     type="checkbox"
                     class="interruptor"
                     :checked="value"
+                    :disabled="$props.carregando"
                     @input="(ev) => handleInput(ev.target.checked)"
                   >
                 </div>
@@ -172,6 +175,7 @@ if (props.autoSubmit) {
                 class="inputtext light mb1"
                 :name="campoNome"
                 as="select"
+                :disabled="$props.carregando"
               >
                 <option :value="null">
                   -
@@ -199,6 +203,7 @@ if (props.autoSubmit) {
                   :grupo="campo.opcoes"
                   :label="campo.autocomplete?.label || 'label'"
                   :apenas-um="campo.autocomplete?.apenasUm"
+                  :readonly="$props.carregando"
                   @change="ev => handleChange(ev)"
                 />
               </Field>
@@ -208,6 +213,7 @@ if (props.autoSubmit) {
                 class="inputtext light mb1"
                 :name="campoNome"
                 :type="campo.tipo"
+                :disabled="$props.carregando"
               />
 
               <ErrorMessage
@@ -225,7 +231,8 @@ if (props.autoSubmit) {
           <button
             type="submit"
             class="btn"
-            :disabled="isSubmitting"
+            :class="[{ loading: carregando }]"
+            :disabled="isSubmitting || carregando"
           >
             Filtrar
           </button>
