@@ -175,6 +175,8 @@ onMounted(() => {
       @filtro="limparSelecao"
     />
 
-    <slot :formulario-sujo="formularioSujo" />
+    <div :class="{'filtro-sujo': formularioSujo}">
+      <slot />
+    </div>
   </section>
 </template>
