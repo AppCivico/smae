@@ -61,25 +61,25 @@ watch(
   <CabecalhoDePagina />
 
   <FiltroParaRegistros>
-    <ContadorItems />
+    <ContadorItems class="mb1" />
 
     <MenuPaginacao
       v-bind="paginacao"
-      class="mt1"
+      class="mb2"
     />
 
     <SmaeTable
       v-selecionar-multiplas-opcoes
       titulo-rolagem-horizontal="Tabela: Edição em Lote"
-      class="mt2"
+      class="mb2"
       rolagem-horizontal
       :dados="listaDeObras"
       :colunas="[
         {
           chave: 'selecionado',
           atributosDaColuna: {
-            class: 'col--botão-de-ação',
-          }
+            class: 'col--minimum',
+          },
         },
         { chave: 'orgao_origem.sigla', label: obrasSchema.fields['orgao_origem_id'].spec.label },
         { chave: 'portfolio.titulo', label: obrasSchema.fields['portfolio_id'].spec.label },
@@ -109,14 +109,12 @@ watch(
       </template>
 
       <template #celula:selecionado="{ linha }">
-        <div class="flex justifycenter">
-          <input
-            v-model="idsSelecionados"
-            type="checkbox"
-            name="selecionado"
-            :value="linha.id"
-          >
-        </div>
+        <input
+          v-model="idsSelecionados"
+          type="checkbox"
+          name="selecionado"
+          :value="linha.id"
+        >
       </template>
 
       <template #celula:status="{ linha }">
@@ -126,10 +124,10 @@ watch(
 
     <MenuPaginacao
       v-bind="paginacao"
-      class="mt2"
+      class="mb2"
     />
 
-    <ContadorItems class="mt2" />
+    <ContadorItems class="mb2" />
 
     <SmaeFieldsetSubmit
       as="div"
