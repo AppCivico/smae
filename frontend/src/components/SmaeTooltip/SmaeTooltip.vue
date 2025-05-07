@@ -2,8 +2,8 @@
 import { computed, ref } from 'vue';
 
 type Slots = {
-  default(): void
-  botao(): void
+  default(): [any]
+  botao(): [any]
 };
 
 type Props = {
@@ -11,7 +11,7 @@ type Props = {
   icone?: string
 };
 
-defineSlots<Slots>();
+const slots = defineSlots<Slots>();
 withDefaults(defineProps<Props>(), {
   icone: 'i',
   texto: undefined,
@@ -46,6 +46,10 @@ function exibirTooltip() {
 }
 
 function trocarManterAberto() {
+  if (slots.botao()) {
+    return;
+  }
+
   manterExibido.value = !manterExibido.value;
 }
 </script>

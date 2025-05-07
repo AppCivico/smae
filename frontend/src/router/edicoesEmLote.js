@@ -72,7 +72,7 @@ export default {
               component: () => import('@/views/edicoesEmLote/obras/EdicoesEmLoteObrasSelecionar.vue'),
               meta: {
                 rotaDeEscape: 'edicoesEmLoteObras',
-                título: 'Selecionar nova edição de obras em lote',
+                título: 'Construir ova edição de obras em lote',
                 rotasParaMigalhasDePão: [
                   'edicoesEmLoteRaiz',
                   'edicoesEmLoteObras',

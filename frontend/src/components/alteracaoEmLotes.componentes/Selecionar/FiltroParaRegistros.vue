@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
 import FiltroParaPagina, { Formulario } from '@/components/FiltroParaPagina.vue';
@@ -41,6 +41,8 @@ const { lista: listaDeTiposDeIntervencao } = storeToRefs(tiposDeIntervencaoStore
 const valoresIniciais = ({
   ipp: 30,
 });
+
+const formularioSujo = ref<boolean>(false);
 
 const colunasParaOrdenacao = {
   orgao_origem_id: {
@@ -166,10 +168,13 @@ onMounted(() => {
 <template>
   <section>
     <FiltroParaPagina
+      v-model:formulario-sujo="formularioSujo"
       :formulario="camposFiltro"
       :schema="schema"
       :valores-iniciais="valoresIniciais"
       @filtro="limparSelecao"
     />
+
+    <slot :formulario-sujo="formularioSujo" />
   </section>
 </template>
