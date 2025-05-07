@@ -1,8 +1,6 @@
 <script lang="ts" setup>
 import { useField } from 'vee-validate';
-import type { PropType } from 'vue';
 import { computed, toRef } from 'vue';
-import type { AnyObjectSchema } from 'yup';
 import type { Test } from 'yup/lib/util/createValidation.d.ts';
 import buscarDadosDoYup from '../helpers/buscarDadosDoYup';
 import SmaeTextProps from './SmaeTextProps';
