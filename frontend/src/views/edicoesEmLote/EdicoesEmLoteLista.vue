@@ -65,7 +65,7 @@ onMounted(() => {
         },
         {
           chave: 'n_sucesso',
-          label: 'Item(s) modificado(s)',
+          label: 'Registro(s) modificado(s)',
           atributosDaCelula: {
             class: 'cell--number'
           },
