@@ -1,3 +1,6 @@
+import type { PropType } from 'vue';
+import type { AnyObjectSchema } from 'yup';
+
 const SmaeTextProps = {
   as: {
     type: String,
