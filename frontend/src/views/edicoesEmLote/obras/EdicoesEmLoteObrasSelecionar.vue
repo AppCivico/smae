@@ -57,100 +57,98 @@ watch(
 <template>
   <CabecalhoDePagina />
 
-  <FiltroParaRegistros v-slot="{ formularioSujo }">
-    <section :class="{'filtro-sujo': formularioSujo}">
+  <FiltroParaRegistros>
+    <button
+      class="btn outline bgnone tcprimary mb1"
+      @click="handleSelecionarTodasObras"
+    >
+      selecionar todas obras ({{ paginacao.totalRegistros }})
+    </button>
+
+    <ContadorItems />
+
+    <MenuPaginacao
+      v-bind="paginacao"
+      class="mt1"
+    />
+
+    <SmaeTable
+      v-selecionar-multiplas-opcoes
+      titulo-rolagem-horizontal="Tabela: Edição em Lote"
+      class="mt2"
+      rolagem-horizontal
+      :dados="listaDeObras"
+      :colunas="[
+        { chave: 'selecionado' },
+        { chave: 'orgao_origem.sigla', label: obrasSchema.fields['orgao_origem_id'].spec.label },
+        { chave: 'portfolio.titulo', label: obrasSchema.fields['portfolio_id'].spec.label },
+        { chave: 'nome', label: obrasSchema.fields['nome'].spec.label },
+        {
+          chave: 'grupo_tematico.nome',
+          label: obrasSchema.fields['grupo_tematico_id'].spec.label
+        },
+        {
+          chave: 'tipo_intervencao.nome',
+          label: obrasSchema.fields['tipo_intervencao_id'].spec.label
+        },
+        { chave: 'equipamento.nome', label: obrasSchema.fields['equipamento_id'].spec.label },
+        { chave: 'regioes', label: obrasSchema.fields['regiao_ids'].spec.label },
+        { chave: 'status', label: obrasSchema.fields['status'].spec.label },
+      ]"
+      replicar-cabecalho
+    >
+      <template #cabecalho:selecionado>
+        <button
+          class="btn outline bgnone tcprimary nowrap"
+          type="button"
+          @click="limparSelecionados"
+        >
+          Desmarcar todas
+        </button>
+      </template>
+
+      <template #celula:selecionado="{ linha }">
+        <div class="flex justifycenter">
+          <input
+            v-model="idsSelecionados"
+            type="checkbox"
+            name="selecionado"
+            :value="linha.id"
+          >
+        </div>
+      </template>
+
+      <template #celula:status="{ linha }">
+        {{ statusObras[linha.status]?.nome || linha.status }}
+      </template>
+    </SmaeTable>
+
+    <MenuPaginacao
+      v-bind="paginacao"
+      class="mt2"
+    />
+
+    <ContadorItems class="mt2" />
+
+    <SmaeFieldsetSubmit>
       <button
-        class="btn outline bgnone tcprimary mb1"
+        class="btn big outline bgnone tcprimary"
         @click="handleSelecionarTodasObras"
       >
         selecionar todas obras ({{ paginacao.totalRegistros }})
       </button>
 
-      <ContadorItems />
-
-      <MenuPaginacao
-        v-bind="paginacao"
-        class="mt1"
-      />
-
-      <SmaeTable
-        v-selecionar-multiplas-opcoes
-        titulo-rolagem-horizontal="Tabela: Edição em Lote"
-        class="mt2"
-        rolagem-horizontal
-        :dados="listaDeObras"
-        :colunas="[
-          { chave: 'selecionado' },
-          { chave: 'orgao_origem.sigla', label: obrasSchema.fields['orgao_origem_id'].spec.label },
-          { chave: 'portfolio.titulo', label: obrasSchema.fields['portfolio_id'].spec.label },
-          { chave: 'nome', label: obrasSchema.fields['nome'].spec.label },
-          {
-            chave: 'grupo_tematico.nome',
-            label: obrasSchema.fields['grupo_tematico_id'].spec.label
-          },
-          {
-            chave: 'tipo_intervencao.nome',
-            label: obrasSchema.fields['tipo_intervencao_id'].spec.label
-          },
-          { chave: 'equipamento.nome', label: obrasSchema.fields['equipamento_id'].spec.label },
-          { chave: 'regioes', label: obrasSchema.fields['regiao_ids'].spec.label },
-          { chave: 'status', label: obrasSchema.fields['status'].spec.label },
-        ]"
-        replicar-cabecalho
+      <SmaeLink
+        class="btn big"
+        :aria-disabled="idsSelecionados.length === 0"
+        :desabilitar="idsSelecionados.length === 0"
+        exibir-desabilitado
+        :to="{
+          name: 'edicoesEmLoteObrasNovoConstruir'
+        }"
       >
-        <template #cabecalho:selecionado>
-          <button
-            class="btn outline bgnone tcprimary nowrap"
-            type="button"
-            @click="limparSelecionados"
-          >
-            Desmarcar todas
-          </button>
-        </template>
-
-        <template #celula:selecionado="{ linha }">
-          <div class="flex justifycenter">
-            <input
-              v-model="idsSelecionados"
-              type="checkbox"
-              name="selecionado"
-              :value="linha.id"
-            >
-          </div>
-        </template>
-
-        <template #celula:status="{ linha }">
-          {{ statusObras[linha.status]?.nome || linha.status }}
-        </template>
-      </SmaeTable>
-
-      <MenuPaginacao
-        v-bind="paginacao"
-        class="mt2"
-      />
-
-      <ContadorItems class="mt2" />
-
-      <SmaeFieldsetSubmit>
-        <button
-          class="btn big outline bgnone tcprimary"
-          @click="handleSelecionarTodasObras"
-        >
-          selecionar todas obras ({{ paginacao.totalRegistros }})
-        </button>
-
-        <SmaeLink
-          class="btn big"
-          :aria-disabled="idsSelecionados.length === 0"
-          :desabilitar="idsSelecionados.length === 0"
-          exibir-desabilitado
-          :to="{
-            name: 'edicoesEmLoteObrasNovoConstruir'
-          }"
-        >
-          finalizar seleção
-        </SmaeLink>
-      </SmaeFieldsetSubmit>
-    </section>
+        finalizar seleção
+      </SmaeLink>
+    </SmaeFieldsetSubmit>
   </FiltroParaRegistros>
 </template>
