@@ -79,7 +79,12 @@ watch(
       rolagem-horizontal
       :dados="listaDeObras"
       :colunas="[
-        { chave: 'selecionado' },
+        {
+          chave: 'selecionado',
+          atributosDaColuna: {
+            class: 'col--botão-de-ação',
+          }
+        },
         { chave: 'orgao_origem.sigla', label: obrasSchema.fields['orgao_origem_id'].spec.label },
         { chave: 'portfolio.titulo', label: obrasSchema.fields['portfolio_id'].spec.label },
         { chave: 'nome', label: obrasSchema.fields['nome'].spec.label },
@@ -99,7 +104,7 @@ watch(
     >
       <template #cabecalho:selecionado>
         <button
-          class="btn outline bgnone tcprimary nowrap"
+          class="btn outline bgnone tcprimary"
           type="button"
           @click="limparSelecionados"
         >
