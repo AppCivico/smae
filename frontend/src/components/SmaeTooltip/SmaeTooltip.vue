@@ -2,8 +2,8 @@
 import { computed, ref } from 'vue';
 
 type Slots = {
-  default(): [any]
-  botao(): [any]
+  default(): [unknown]
+  botao(): [unknown]
 };
 
 type Props = {
