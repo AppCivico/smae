@@ -2,7 +2,6 @@
 import { watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
-import { cloneDeep } from 'lodash';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import FiltroParaRegistros from '@/components/alteracaoEmLotes.componentes/Selecionar/FiltroParaRegistros.vue';
 import { useObrasStore } from '@/stores/obras.store';
@@ -28,7 +27,7 @@ function limparSelecionados() {
 async function handleSelecionarTodasObras() {
   const idsObras = await obrasStore.buscarTodosIds(route.query);
 
-  idsSelecionados.value = cloneDeep(idsObras);
+  idsSelecionados.value = structuredClone(idsObras);
 }
 
 watch(
