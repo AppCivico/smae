@@ -40,6 +40,8 @@ const { lista: listaDeTiposDeIntervencao } = storeToRefs(tiposDeIntervencaoStore
 
 const valoresIniciais = ({
   ipp: 30,
+  ordem_coluna: 'registrado_em',
+  ordem_direcao: 'desc',
 });
 
 const formularioSujo = ref<boolean>(false);
@@ -76,6 +78,10 @@ const colunasParaOrdenacao = {
   status: {
     id: 'status',
     label: obrasSchema.fields.status.spec.label,
+  },
+  registrado_em: {
+    id: 'registrado_em',
+    label: 'Data de registro',
   },
 };
 
