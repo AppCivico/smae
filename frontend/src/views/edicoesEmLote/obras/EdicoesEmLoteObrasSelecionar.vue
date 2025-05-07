@@ -10,6 +10,7 @@ import statusObras from '@/consts/statusObras';
 import { useEdicoesEmLoteStore } from '@/stores/edicoesEmLote.store';
 import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import SmaeFieldsetSubmit from '@/components/SmaeFieldsetSubmit.vue';
+import SelecionarTudo from '@/components/camposDeFormulario/SelecionarTudo/SelecionarTudo.vue';
 import ContadorItems from '@/components/alteracaoEmLotes.componentes/Selecionar/ContadorItems.vue';
 
 const route = useRoute();
@@ -23,6 +24,8 @@ const { lista: listaDeObras, paginacao, chamadasPendentes } = storeToRefs(obrasS
 const desabilitarItems = computed<boolean>(() => (
   chamadasPendentes.value.lista || idsSelecionados.value.length === 0
 ));
+
+const idsDaListaDeObras = computed(() => listaDeObras.value.map((obra) => obra.id));
 
 function limparSelecionados() {
   edicoesEmLoteStore.limparIdsSelecionados();
@@ -99,13 +102,17 @@ watch(
       replicar-cabecalho
     >
       <template #cabecalho:selecionado>
-        <button
-          class="btn outline bgnone tcprimary"
-          type="button"
-          @click="limparSelecionados"
-        >
-          Desmarcar todas
-        </button>
+        <SelecionarTudo
+          v-model="idsSelecionados"
+          :lista-de-opcoes="idsDaListaDeObras"
+        />
+      </template>
+
+      <template #rodape:selecionado>
+        <SelecionarTudo
+          v-model="idsSelecionados"
+          :lista-de-opcoes="idsDaListaDeObras"
+        />
       </template>
 
       <template #celula:selecionado="{ linha }">
@@ -134,11 +141,18 @@ watch(
     >
       <button
         class="btn big outline bgnone tcprimary"
-        :aria-disabled="chamadasPendentes.lista"
-        :disabled="chamadasPendentes.lista"
+        type="button"
+        :aria-disabled="!idsSelecionados.length"
+        @click="limparSelecionados"
+      >
+        Desselecionar todas
+      </button>
+
+      <button
+        class="btn big outline bgnone tcprimary"
         @click="handleSelecionarTodasObras"
       >
-        selecionar todas obras ({{ paginacao.totalRegistros }})
+        selecionar todas {{ paginacao.totalRegistros }} obras
       </button>
 
       <SmaeLink
