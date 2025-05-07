@@ -10,6 +10,7 @@ import AutocompleteField from '@/components/AutocompleteField2.vue';
 import requestS from '@/helpers/requestS.ts';
 import truncate from '@/helpers/texto/truncate';
 import { useOrgansStore } from '@/stores/organs.store';
+import SmaeTooltip from './SmaeTooltip/SmaeTooltip.vue';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -90,6 +91,10 @@ const props = defineProps({
   },
   psTecnicoCp: {
     type: Boolean,
+    default: undefined,
+  },
+  textoInformativo: {
+    type: String,
     default: undefined,
   },
 });
@@ -263,7 +268,12 @@ watch(
           class="label"
         >
           {{ props.orgaoLabel }}
+          <SmaeTooltip
+            v-if="$props.textoInformativo"
+            :texto="$props.textoInformativo"
+          />
         </label>
+
         <select
           :id="`${$props.name}__orgao--${idx}`"
           v-model="listaDeÓrgãos[idx].id"
@@ -354,6 +364,7 @@ watch(
 <style lang="less" scoped>
 .campo-de-pessoas {
   container-type: inline-size;
+  width: 100%;
 }
 
 .campo-de-pessoas__inputs {

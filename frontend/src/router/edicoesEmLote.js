@@ -72,7 +72,7 @@ export default {
               component: () => import('@/views/edicoesEmLote/obras/EdicoesEmLoteObrasSelecionar.vue'),
               meta: {
                 rotaDeEscape: 'edicoesEmLoteObras',
-                título: 'Construir ova edição de obras em lote',
+                título: 'Nova edição de obras em lote',
                 rotasParaMigalhasDePão: [
                   'edicoesEmLoteRaiz',
                   'edicoesEmLoteObras',
@@ -85,7 +85,7 @@ export default {
               component: () => import('@/views/edicoesEmLote/obras/EdicoesEmLoteObrasConstruir.vue'),
               meta: {
                 rotaDeEscape: 'edicoesEmLoteObras',
-                título: 'Construir nova edição de obras em lote',
+                título: 'Alteração de obras em lote',
                 rotasParaMigalhasDePão: [
                   'edicoesEmLoteObras',
                   'edicoesEmLoteObrasNovo',

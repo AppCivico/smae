@@ -79,7 +79,7 @@ onMounted(() => {
         { chave: 'criador.nome_exibicao', label: 'Responsável pela solicitação' },
         {
           chave: 'registros_processados',
-          label: 'registros processados',
+          label: 'obras processadas/selecionadas',
           atributosDaCelula: {
             class: 'tc'
           },

@@ -1250,7 +1250,10 @@ export const obras = object({
       number()
         .min(1),
     )
-    .nullable(),
+    .nullable()
+    .meta({
+      balaoInformativo: 'É a pessoa responsável por apoiar o Ponto Focal Responsável na atualização das informações da obra no SMAE.',
+    }),
   empreendimento_id: number()
     .label('Identificador do empreendimento')
     .min(1, 'Empreendimento inválido')
