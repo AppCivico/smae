@@ -86,12 +86,12 @@ export const useEdicoesEmLoteStore = (prefixo = '') => defineStore(prefixo ? `${
       this.chamadasPendentes.emFoco = false;
     },
 
-    async salvarItem(params:CreateRunUpdateDto): Promise<RecordWithId | boolean> {
+    async salvarItem(params:CreateRunUpdateDto, schema): Promise<RecordWithId | boolean> {
       this.chamadasPendentes.emFoco = true;
       this.erros.emFoco = null;
 
       try {
-        const resposta = await this.requestS.post(`${baseUrl}/atualizacao-em-lote`, params as unknown as Record<string, unknown>) as RecordWithId;
+        const resposta = await this.requestS.post(`${baseUrl}/atualizacao-em-lote`, params as unknown as Record<string, unknown>, { schema }) as RecordWithId;
 
         this.chamadasPendentes.emFoco = false;
         return resposta;
