@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
 import FiltroParaPagina, { Formulario } from '@/components/FiltroParaPagina.vue';
+import { useObrasStore } from '@/stores/obras.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { useRegionsStore } from '@/stores/regions.store';
 import { useEquipamentosStore } from '@/stores/equipamentos.store';
@@ -19,6 +20,7 @@ import {
 
 const route = useRoute();
 
+const obrasStore = useObrasStore();
 const organsStore = useOrgansStore();
 const regionsStore = useRegionsStore();
 const equipamentosStore = useEquipamentosStore();
@@ -29,6 +31,7 @@ const portfolioMdoStore = usePortfolioObraStore();
 
 const edicoesEmLoteStore = useEdicoesEmLoteStore(route.meta.tipoDeAcoesEmLote as string);
 
+const { chamadasPendentes } = storeToRefs(obrasStore);
 const { lista: portfolioObrasLista } = storeToRefs(portfolioObraStore);
 const { órgãosComoLista: orgaosLista, organs } = storeToRefs(organsStore);
 
@@ -178,6 +181,7 @@ onMounted(() => {
       :formulario="camposFiltro"
       :schema="schema"
       :valores-iniciais="valoresIniciais"
+      :carregando="chamadasPendentes.lista"
       @filtro="limparSelecao"
     />
 

@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { watch } from 'vue';
+import { computed, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
@@ -18,7 +18,11 @@ const obrasStore = useObrasStore();
 const edicoesEmLoteStore = useEdicoesEmLoteStore(route.meta.tipoDeAcoesEmLote as string);
 
 const { idsSelecionados } = storeToRefs(edicoesEmLoteStore);
-const { lista: listaDeObras, paginacao } = storeToRefs(obrasStore);
+const { lista: listaDeObras, paginacao, chamadasPendentes } = storeToRefs(obrasStore);
+
+const desabilitarItems = computed<boolean>(() => (
+  chamadasPendentes.value.lista || idsSelecionados.value.length === 0
+));
 
 function limparSelecionados() {
   edicoesEmLoteStore.limparIdsSelecionados();
@@ -132,6 +136,8 @@ watch(
     >
       <button
         class="btn big outline bgnone tcprimary"
+        :aria-disabled="chamadasPendentes.lista"
+        :disabled="chamadasPendentes.lista"
         @click="handleSelecionarTodasObras"
       >
         selecionar todas obras ({{ paginacao.totalRegistros }})
@@ -139,8 +145,8 @@ watch(
 
       <SmaeLink
         class="btn big"
-        :aria-disabled="idsSelecionados.length === 0"
-        :desabilitar="idsSelecionados.length === 0"
+        :aria-disabled="desabilitarItems"
+        :desabilitar="desabilitarItems"
         exibir-desabilitado
         :to="{
           name: 'edicoesEmLoteObrasNovoConstruir'
