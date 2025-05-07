@@ -1,5 +1,5 @@
 <template>
-  <header class="flex spacebetween center g2 mb2">
+  <header class="flex spacebetween center g2 mb2 cabecalho">
     <TítuloDePágina id="titulo-da-pagina">
       <slot name="titulo" />
     </TítuloDePágina>
@@ -22,3 +22,27 @@ defineProps({
   },
 });
 </script>
+<style scoped lang="less">
+.cabecalho > {
+  * {
+    max-width: max-content;
+    width: fit-content;
+    flex-grow: 1;
+  }
+
+  h1 {
+    text-wrap: balance;
+  }
+
+  hr {
+    flex-grow: 1;
+    max-width: none;
+    width: auto;
+  }
+
+  :deep(.botao-de-fechamento) {
+    // Por causa de código legado. Tomara que removamos um dia
+    margin-left: 0 !important;
+  }
+}
+</style>
