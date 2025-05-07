@@ -1,4 +1,19 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage,
+  Field,
+  FieldArray,
+  useForm,
+  useIsFormDirty,
+} from 'vee-validate';
+import {
+  computed,
+  nextTick,
+  ref,
+  watch,
+} from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
 import CampoDePlanosMetasRelacionados from '@/components/CampoDePlanosMetasRelacionados.vue';
@@ -22,21 +37,6 @@ import { useOrgansStore } from '@/stores/organs.store';
 import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store.ts';
 import { useProgramaHabitacionalStore } from '@/stores/programaHabitacional.store';
 import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
-import { storeToRefs } from 'pinia';
-import {
-  ErrorMessage,
-  Field,
-  FieldArray,
-  useForm,
-  useIsFormDirty,
-} from 'vee-validate';
-import {
-  computed,
-  nextTick,
-  ref,
-  watch,
-} from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -1537,6 +1537,7 @@ watch(listaDeTiposDeIntervenção, () => {
           name="colaboradores_no_orgao"
           orgao-label="Órgão Colaborador"
           :pessoas="possíveisResponsáveisPorÓrgãoId[values.orgao_colaborador_id] || []"
+          :texto-informativo="schema.fields.colaboradores_no_orgao.meta().balaoInformativo"
         />
       </div>
     </fieldset>

@@ -37,6 +37,26 @@ const detalhesEdicao = computed(() => {
   ];
 });
 
+function verificarCampoData(coluna: string): boolean {
+  const camposComData = [
+    'mdo_previsao_inauguracao',
+  ];
+
+  return camposComData.includes(coluna);
+}
+
+function formatarValorFinal(coluna: string, valorFormatado: unknown) {
+  if (Array.isArray(valorFormatado)) {
+    return combinadorDeListas(valorFormatado, ', ');
+  }
+
+  if (verificarCampoData(coluna)) {
+    return dateToDate(valorFormatado);
+  }
+
+  return valorFormatado;
+}
+
 onMounted(() => {
   if (!route.params.edicaoEmLoteId) {
     throw new Error('Parâmetro "edicaoEmLoteId" não informado');
@@ -111,7 +131,7 @@ onMounted(() => {
           label: 'Valor formatado',
           atributosDaCelula: {
             class: 'cell--minimum'
-          }
+          },
         },
       ]"
       titulo="Operações"
@@ -124,9 +144,7 @@ onMounted(() => {
       </template>
 
       <template #celula:valor_formatado="{ linha }">
-        {{ Array.isArray(linha.valor_formatado)
-          ? combinadorDeListas(linha.valor_formatado, ', ')
-          : linha.valor_formatado }}
+        {{ formatarValorFinal(linha.col, linha.valor_formatado) }}
       </template>
     </SmaeTable>
 

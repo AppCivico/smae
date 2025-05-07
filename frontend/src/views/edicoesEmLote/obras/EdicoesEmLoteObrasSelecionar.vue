@@ -58,13 +58,6 @@ watch(
   <CabecalhoDePagina />
 
   <FiltroParaRegistros>
-    <button
-      class="btn outline bgnone tcprimary mb1"
-      @click="handleSelecionarTodasObras"
-    >
-      selecionar todas obras ({{ paginacao.totalRegistros }})
-    </button>
-
     <ContadorItems />
 
     <MenuPaginacao
