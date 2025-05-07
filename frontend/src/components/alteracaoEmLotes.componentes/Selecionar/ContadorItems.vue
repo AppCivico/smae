@@ -14,7 +14,7 @@ const { lista: listaDeObras, paginacao } = storeToRefs(obrasStore);
 </script>
 
 <template>
-  <article>
+  <aside>
     <p class="mb05">
       Exibindo <strong>{{ listaDeObras.length }}</strong>
       de
@@ -26,5 +26,5 @@ const { lista: listaDeObras, paginacao } = storeToRefs(obrasStore);
       <strong>{{ idsSelecionados.length }}</strong>
       obras selecionadas.
     </p>
-  </article>
+  </aside>
 </template>
