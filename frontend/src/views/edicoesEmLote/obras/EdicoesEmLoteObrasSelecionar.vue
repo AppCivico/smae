@@ -135,7 +135,9 @@ watch(
 
     <ContadorItems class="mt2" />
 
-    <SmaeFieldsetSubmit>
+    <SmaeFieldsetSubmit
+      as="div"
+    >
       <button
         class="btn big outline bgnone tcprimary"
         @click="handleSelecionarTodasObras"
