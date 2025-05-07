@@ -280,8 +280,8 @@ const onSubmit = handleSubmit(async () => {
       : 'Item adicionado com sucesso!';
 
     const resposta = props.obraId
-      ? await obrasStore.salvarItem(cargaManipulada, props.obraId)
-      : await obrasStore.salvarItem(cargaManipulada);
+      ? await obrasStore.salvarItem(cargaManipulada, props.obraId, { schema })
+      : await obrasStore.salvarItem(cargaManipulada, null, { schema });
 
     if (resposta) {
       alertStore.success(msg);
@@ -934,9 +934,6 @@ watch(listaDeTiposDeIntervenção, () => {
           type="number"
           class="inputtext light mb1"
           :class="{ 'error': errors.mdo_n_familias_beneficiadas }"
-          @update:model-value="($v) => {
-            setFieldValue('mdo_n_familias_beneficiadas', Number($v) || null);
-          }"
         />
         <ErrorMessage
           name="mdo_n_familias_beneficiadas"

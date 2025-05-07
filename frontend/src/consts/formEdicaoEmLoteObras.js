@@ -1,4 +1,4 @@
-import { object } from 'yup';
+import { object, number } from 'yup';
 import { obras as schemaOriginal, tarefa } from '@/consts/formSchemas';
 
 const metasEdicaoEmLote = {
@@ -81,21 +81,25 @@ const metasEdicaoEmLote = {
       campo: 'A edição do órgão gestor implica na exclusão do ponto focal responsável',
     },
   },
-  responsavel_id: {
-    permite_edicao_em_massa: true,
-    tipo: 'campo-de-pessoas-orgao',
-    storeKey: 'órgãos',
-    fetchAction: 'getAll',
-    listState: 'organs',
-    operacoes_permitidas: ['Set'],
-    numeroMaximoDeParticipantes: 1,
-    explicacoes: {
-      operacao: {
-        Set: 'Substitui o item existente.',
+  responsavel_id: number()
+    .label('Ponto focal responsável')
+    .nullable()
+    .meta({
+      serialize: (valor) => (Array.isArray(valor) ? valor[0] || null : valor),
+      permite_edicao_em_massa: true,
+      tipo: 'campo-de-pessoas-orgao',
+      storeKey: 'órgãos',
+      fetchAction: 'getAll',
+      listState: 'organs',
+      operacoes_permitidas: ['Set'],
+      numeroMaximoDeParticipantes: 1,
+      explicacoes: {
+        operacao: {
+          Set: 'Substitui o item existente.',
+        },
       },
-    },
-    balaoInformativo: 'É a pessoa responsável pela evolução da obra em todas as suas fases. Suas principais funções incluem acompanhar o andamento da obra e do(s) respectivo(s) contrato(s), mantendo as informações atualizadas no SMAE.',
-  },
+      balaoInformativo: 'É a pessoa responsável pela evolução da obra em todas as suas fases. Suas principais funções incluem acompanhar o andamento da obra e do(s) respectivo(s) contrato(s), mantendo as informações atualizadas no SMAE.',
+    }),
   portfolios_compartilhados: {
     permite_edicao_em_massa: true,
     tipoComponente: 'autocomplete',
@@ -194,12 +198,18 @@ const metasEdicaoEmLote = {
 const finalFields = {};
 
 Object.entries(schemaOriginal.fields).forEach(([campo, schemaCampo]) => {
-  const metaNova = metasEdicaoEmLote?.[campo];
+  const metaOuCampoNovo = metasEdicaoEmLote?.[campo];
 
   let novoCampo = schemaCampo;
 
-  if (metaNova) {
-    novoCampo = schemaCampo.meta(metaNova);
+  if (metaOuCampoNovo) {
+    if (
+      typeof metaOuCampoNovo.describe === 'function' || Array.isArray(metaOuCampoNovo.tests)
+    ) {
+      novoCampo = metaOuCampoNovo;
+    } else {
+      novoCampo = schemaCampo.meta(metaOuCampoNovo);
+    }
   }
 
   finalFields[campo] = novoCampo;
