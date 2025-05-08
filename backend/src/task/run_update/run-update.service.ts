@@ -126,13 +126,7 @@ export class RunUpdateTaskService implements TaskableService {
                         };
 
                         // Adiciona aos registros processados
-                        console.log(
-                            'going to push',
-                            resultadosEstendidos.registrosProcessados,
-                            typeof resultadosEstendidos.registrosProcessados
-                        );
                         resultadosEstendidos.registrosProcessados.push(registroProcessamento);
-                        console.log('after push');
                         // Armazena dados após cada registro ser buscado
                         await context.stashData<LogResultadosEstendido>(resultadosEstendidos);
 
@@ -526,7 +520,7 @@ export class RunUpdateTaskService implements TaskableService {
         }
 
         const dto =
-            typeof value === 'object' && Array.isArray(value) === false
+            typeof value === 'object' && Array.isArray(value) === false && value.tarefa
                 ? ({
                       ...value,
                   } as CreateTarefaDto) // TODO: Isso aqui provavelmente não ficará assim, pois teremos mais casos.
