@@ -392,11 +392,10 @@ export class PPObrasService implements ReportableService {
                     projeto.mdo_observacoes,
                     (
                         SELECT
-                            string_agg(tag.descricao, '|')
+                            string_agg(pt.descricao, '|')
 
                         FROM projeto_tag pt
-                        JOIN tag ON tag.id = pt.tag_id
-                        WHERE pt.projeto_id = projeto.id
+                        WHERE pt.id IN (projeto.tags)
                         AND pt.removido_em IS NULL
                     ) as etiquetas 
                 FROM projeto
