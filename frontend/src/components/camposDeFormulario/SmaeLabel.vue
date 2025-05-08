@@ -83,20 +83,7 @@ const temInformacao = computed<boolean>(() => {
       <template v-else>
         <template v-if="schema">
           {{ caminhoNoSchema?.spec?.label || `Campo: ${name}` }}
-        </template>&nbsp;
-
-        <small v-if="temInformacao">
-          <SmaeTooltip
-            :texto="
-              $props.balaoInformativo
-                || caminhoNoSchema.spec.meta?.balaoInformativo
-            "
-          >
-            <slot name="balaoInformativo" />
-          </SmaeTooltip>
-
-          &nbsp;
-        </small>
+        </template>
 
         <span
           v-if="required ||
@@ -105,9 +92,34 @@ const temInformacao = computed<boolean>(() => {
               && caminhoNoSchema?.type !== 'boolean'
             )"
           class="tvermelho"
-        >*</span>
+        >&nbsp;*</span>
+
+        {{ temInformacao && '&nbsp;' }}
+
+        <SmaeTooltip
+          v-if="temInformacao"
+          as="small"
+          :texto="
+            $props.balaoInformativo
+              || caminhoNoSchema.spec.meta?.balaoInformativo
+          "
+        >
+          <slot name="balaoInformativo" />
+        </SmaeTooltip>
       </template>
     </slot>
     <slot name="append" />
   </component>
 </template>
+
+<style lang="less" scoped>
+.smae-label {
+  :deep(.smae-tooltip) {
+    position: static;
+    min-width: 20px;
+    height: 12px;
+    transform: translateY(-50%);
+  }
+}
+
+</style>

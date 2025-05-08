@@ -9,10 +9,12 @@ type Slots = {
 type Props = {
   texto?: string
   icone?: string
+  as?: string
 };
 
 const slots = defineSlots<Slots>();
 withDefaults(defineProps<Props>(), {
+  as: 'div',
   icone: 'i',
   texto: undefined,
 });
@@ -46,7 +48,7 @@ function exibirTooltip() {
 }
 
 function trocarManterAberto() {
-  if (slots.botao()) {
+  if (slots.botao?.()) {
     return;
   }
 
@@ -55,7 +57,8 @@ function trocarManterAberto() {
 </script>
 
 <template>
-  <div
+  <component
+    :is="$props.as"
     :aria-described="descricaoConteudo"
     :class="['smae-tooltip', { 'smae-tooltip--fixado': manterExibido }]"
     tabindex="0"
@@ -80,7 +83,7 @@ function trocarManterAberto() {
     >
       <slot>{{ $props.texto }}</slot>
     </div>
-  </div>
+  </component>
 </template>
 
 <style lang="less" scoped>
