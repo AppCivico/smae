@@ -149,7 +149,7 @@ const metasEdicaoEmLote = {
       },
     },
   },
-  secretario_colaborador: {
+  secretario_executivo: {
     permite_edicao_em_massa: true,
   },
   secretario_responsavel: {
