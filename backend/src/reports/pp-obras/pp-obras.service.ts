@@ -395,7 +395,7 @@ export class PPObrasService implements ReportableService {
                             string_agg(pt.descricao, '|')
 
                         FROM projeto_tag pt
-                        WHERE pt.id IN (projeto.tags)
+                        WHERE pt.id = ANY(projeto.responsaveis_no_orgao_gestor)
                         AND pt.removido_em IS NULL
                     ) as etiquetas 
                 FROM projeto
