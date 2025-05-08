@@ -2100,6 +2100,7 @@ export class ProjetoService {
 
         // --- Aplica Lógica Específica por Tipo (PP vs MDO) ---
         if (projeto.tipo == 'PP') {
+            permissoes.apenas_leitura = !pessoaPodeEscreverGeral;
             // --- Cálculos Específicos para PP ---
             const ehAposPlanejamento = !FASES_PLANEJAMENTO_E_ANTERIORES.includes(projeto.status);
             const ehGerenteDeProjetoRole =
