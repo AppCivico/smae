@@ -4,6 +4,9 @@
     class="like-a__text"
     :indeterminate.prop="selecaoEstaParcial"
     :checked="selecaoEstaCompleta"
+    :title="selecaoEstaCompleta
+      ? 'Desconsiderar todas as opções na página'
+      : 'Selecionar todas as opções na página'"
     @change="alternarSelecao(!selecaoEstaCompleta)"
   >
 </template>
