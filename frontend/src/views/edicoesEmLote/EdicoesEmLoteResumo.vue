@@ -40,6 +40,8 @@ const detalhesEdicao = computed(() => {
 function verificarCampoData(coluna: string): boolean {
   const camposComData = [
     'mdo_previsao_inauguracao',
+    'previsao_inicio',
+    'previsao_termino',
   ];
 
   return camposComData.includes(coluna);
