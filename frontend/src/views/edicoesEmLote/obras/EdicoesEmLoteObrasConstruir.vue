@@ -507,45 +507,56 @@ async function handlePropertyChange(event, idx) {
 }
 
 .fields-list {
-  display: grid;
+  display: flex;
   gap: 1.5rem 2rem;
   align-items: start;
-  grid-template-columns: 1fr 1fr 1fr 1fr auto;
   margin-bottom: 1rem;
 }
 
 .fields-list .f1 {
-  display: grid;
-  grid-column: span 2;
-  gap: 0.5rem;
-}
-
-.fields-list .f1 label,
-.fields-list .f1 .label {
-  margin-bottom: 0;
+  flex: 1;
 }
 
 .fields-list > :last-child {
-  align-self: center;
+  align-self: flex-start;
+  margin-block-start: 2.2rem;
 }
 
-.fields-list:has(> :nth-child(4)):not(:has(> :nth-child(5))) > *:nth-child(1) {
-  grid-column: 1 / 3;
-  grid-row: 1;
-}
+@supports (selector(:has(*))) {
+  .fields-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr auto;
+  }
 
-.fields-list:has(> :nth-child(4)):not(:has(> :nth-child(5))) > *:nth-child(2) {
-  grid-column: 3 / 5;
-  grid-row: 1;
-}
+  .fields-list .f1 {
+    display: grid;
+    grid-column: span 2;
+    gap: 0.5rem;
+  }
 
-.fields-list:has(> :nth-child(4)):not(:has(> :nth-child(5))) > *:nth-child(3) {
-  grid-column: 3 / 5;
-  grid-row: 2;
-}
+  .fields-list .f1 label,
+  .fields-list .f1 .label {
+    margin-bottom: 0;
+  }
 
-.fields-list:has(> :nth-child(4)):not(:has(> :nth-child(5))) > *:nth-child(4) {
-  grid-column: 5;
-  grid-row: 1;
+  .fields-list:has(> :nth-child(4)):not(:has(> :nth-child(5))) > *:nth-child(1) {
+    grid-column: 1 / 3;
+    grid-row: 1;
+  }
+
+  .fields-list:has(> :nth-child(4)):not(:has(> :nth-child(5))) > *:nth-child(2) {
+    grid-column: 3 / 5;
+    grid-row: 1;
+  }
+
+  .fields-list:has(> :nth-child(4)):not(:has(> :nth-child(5))) > *:nth-child(3) {
+    grid-column: 3 / 5;
+    grid-row: 2;
+  }
+
+  .fields-list:has(> :nth-child(4)):not(:has(> :nth-child(5))) > *:nth-child(4) {
+    grid-column: 5;
+    grid-row: 1;
+  }
 }
 </style>
