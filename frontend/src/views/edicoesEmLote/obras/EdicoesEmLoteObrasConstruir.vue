@@ -308,7 +308,7 @@ async function handlePropertyChange(event, idx) {
         <div
           v-for="(field, idx) in fields"
           :key="field.key"
-          class="flex g2 mb2 items-start"
+          class="fields-list"
         >
           <div class="f1">
             <LabelFromYup
@@ -321,7 +321,7 @@ async function handlePropertyChange(event, idx) {
             <Field
               :name="`edicoes[${idx}].propriedade`"
               as="select"
-              class="inputtext light mb1"
+              class="inputtext light"
               :class="{ error: errors?.[`edicoes[${idx}].propriedade`] }"
               :aria-disabled="modoRevisao"
               @mousedown="modoRevisao && $event.preventDefault()"
@@ -413,7 +413,7 @@ async function handlePropertyChange(event, idx) {
               <div class="label tc300">
                 Selecione
               </div>
-              <div class="inputtext light mb1 disabled-placeholder">
+              <div class="inputtext light disabled-placeholder">
                 Selecione um campo à esquerda
               </div>
               <ErrorMessage
@@ -504,5 +504,47 @@ async function handlePropertyChange(event, idx) {
   height: 38px;
   display: flex;
   align-items: center;
+}
+
+.fields-list {
+  display: grid;
+  gap: 1.5rem 2rem;
+  align-items: start;
+  grid-template-columns: 1fr 1fr 1fr 1fr auto;
+  margin-bottom: 1rem;
+}
+
+.fields-list .f1 {
+  display: grid;
+  grid-column: span 2;
+  gap: 0.5rem;
+}
+
+.fields-list .f1 label {
+  margin-bottom: 0;
+}
+
+.fields-list > :last-child {
+  align-self: center;
+}
+
+.fields-list:has(> :nth-child(4)):not(:has(> :nth-child(5))) > *:nth-child(1) {
+  grid-column: 1 / 3;
+  grid-row: 1;
+}
+
+.fields-list:has(> :nth-child(4)):not(:has(> :nth-child(5))) > *:nth-child(2) {
+  grid-column: 3 / 5;
+  grid-row: 1;
+}
+
+.fields-list:has(> :nth-child(4)):not(:has(> :nth-child(5))) > *:nth-child(3) {
+  grid-column: 3 / 5;
+  grid-row: 2;
+}
+
+.fields-list:has(> :nth-child(4)):not(:has(> :nth-child(5))) > *:nth-child(4) {
+  grid-column: 5;
+  grid-row: 1;
 }
 </style>
