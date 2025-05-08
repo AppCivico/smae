@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed, watch } from 'vue';
+import { computed, toRaw, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
@@ -19,22 +19,34 @@ const obrasStore = useObrasStore();
 const edicoesEmLoteStore = useEdicoesEmLoteStore(route.meta.tipoDeAcoesEmLote as string);
 
 const { idsSelecionados } = storeToRefs(edicoesEmLoteStore);
-const { lista: listaDeObras, paginacao, chamadasPendentes } = storeToRefs(obrasStore);
+const {
+  lista: listaDeObras, listaDeTodosIds, paginacao, chamadasPendentes,
+} = storeToRefs(obrasStore);
 
-const desabilitarItems = computed<boolean>(() => (
-  chamadasPendentes.value.lista || idsSelecionados.value.length === 0
+const desabilitarBuscaDeTodosIds = computed(() => listaDeTodosIds.value
+  .length === idsSelecionados.value.length
+  && !!idsSelecionados.value.length);
+
+const desabilitarAvanco = computed<boolean>(() => (
+  chamadasPendentes.value.lista
+  || chamadasPendentes.value.listaDeTodosIds
+  || !idsSelecionados.value.length
 ));
 
 const idsDaListaDeObras = computed(() => listaDeObras.value.map((obra) => obra.id));
 
-function limparSelecionados() {
+function limparSelecao() {
   edicoesEmLoteStore.limparIdsSelecionados();
 }
 
-async function handleSelecionarTodasObras() {
-  const idsObras = await obrasStore.buscarTodosIds(route.query);
+async function selecionarTodasObras() {
+  if (desabilitarBuscaDeTodosIds.value) return;
 
-  idsSelecionados.value = structuredClone(idsObras);
+  if (!listaDeTodosIds.value.length) {
+    await obrasStore.buscarTodosIds(route.query);
+  }
+
+  idsSelecionados.value = structuredClone(toRaw(listaDeTodosIds.value));
 }
 
 watch(
@@ -134,37 +146,42 @@ watch(
       class="mb2"
     />
 
+    <div class="flex flexwrap g2 justifyright">
+      <button
+        class="btn big outline bgnone tcprimary"
+        type="button"
+        :aria-disabled="!idsSelecionados.length"
+        @click="limparSelecao"
+      >
+        desmarcar {{ idsSelecionados.length }} obras
+      </button>
+
+      <button
+        class="btn big outline bgnone tcprimary"
+        type="button"
+        :aria-busy="chamadasPendentes.listaDeTodosIds"
+        :aria-disabled="desabilitarBuscaDeTodosIds"
+        @click="selecionarTodasObras"
+      >
+        marcar todas {{ paginacao.totalRegistros }} obras
+      </button>
+    </div>
+
     <ContadorItems class="mb2" />
 
     <SmaeFieldsetSubmit
       as="div"
     >
-      <button
-        class="btn big outline bgnone tcprimary"
-        type="button"
-        :aria-disabled="!idsSelecionados.length"
-        @click="limparSelecionados"
-      >
-        Desselecionar todas
-      </button>
-
-      <button
-        class="btn big outline bgnone tcprimary"
-        @click="handleSelecionarTodasObras"
-      >
-        selecionar todas {{ paginacao.totalRegistros }} obras
-      </button>
-
       <SmaeLink
         class="btn big"
-        :aria-disabled="desabilitarItems"
-        :desabilitar="desabilitarItems"
+        :aria-disabled="desabilitarAvanco"
+        :desabilitar="desabilitarAvanco"
         exibir-desabilitado
         :to="{
           name: 'edicoesEmLoteObrasNovoConstruir'
         }"
       >
-        finalizar seleção
+        finalizar marcação
       </SmaeLink>
     </SmaeFieldsetSubmit>
   </FiltroParaRegistros>
