@@ -77,10 +77,8 @@ export class SuperCreateOrcamentoExecutadoDto extends IntersectionType(
     tipo_projeto?: TipoProjeto;
 }
 
-export class SuperCreateOrcamentoExecutadoPDMDto extends IntersectionType(
-    OmitType(FiltroMetasIniAtividadeDto, ['atividade_id', 'iniciativa_id'] as const),
-    OrcamentoExecutadoParams
-) {}
-
 // aqui remove os filtros do projeto
-export class PdmCreateOrcamentoExecutadoDto extends OmitType(SuperCreateOrcamentoExecutadoPDMDto, [] as const) {}
+export class PdmCreateOrcamentoExecutadoDto extends OmitType(SuperCreateOrcamentoExecutadoDto, [
+    'projeto_id',
+    'portfolio_id',
+] as const) {}
