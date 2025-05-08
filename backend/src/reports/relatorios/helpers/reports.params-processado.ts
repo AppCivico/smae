@@ -35,7 +35,7 @@ function nomeTabelaColParametro(
         partido: { coluna: 'nome' },
         regiao: { coluna: 'descricao', chaves: ['regioes'] },
         eleicao: { coluna: 'ano' },
-        grupo_tematico: { coluna: 'nome', chave_exibicao: ['Grupo Temático'] },
+        grupo_tematico: { coluna: 'nome', chaves: ['grupo_tematico_id'], chave_exibicao: ['Grupo Temático'] },
     };
 
     const mapeamento = Object.entries(tabelaConfig).reduce(
