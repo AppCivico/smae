@@ -123,8 +123,8 @@ export const BuildParametrosProcessados = async (
         if (!report) return undefined;
 
         if (!report.parametros) return undefined;
-        if (report.parametros_processados && report.parametros_processados.toString().length > 0)
-            return report.parametros_processados;
+        if (report.parametros_processados && report.parametros_processados.valueOf())
+            return report.parametros_processados.valueOf() as InputJsonValue;
 
         parametros = report.parametros;
     } else {
