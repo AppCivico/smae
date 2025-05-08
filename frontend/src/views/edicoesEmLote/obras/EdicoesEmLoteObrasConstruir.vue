@@ -520,7 +520,8 @@ async function handlePropertyChange(event, idx) {
   gap: 0.5rem;
 }
 
-.fields-list .f1 label {
+.fields-list .f1 label,
+.fields-list .f1 .label {
   margin-bottom: 0;
 }
 
