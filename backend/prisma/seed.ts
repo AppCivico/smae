@@ -836,7 +836,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
     {
         // o TipoAditivo vai ficar fora do "todos os privilégios"
         nome: atualizarNomePerfil('Administrador Geral do SMAE', ['Administrador Geral']),
-        descricao: 'Administrador Geral - Todas as permissões do sistema, exceto regras de negócio específicas.',
+        descricao: 'Administrador(a) Geral - Todas as permissões do sistema, exceto regras de negócio específicas.',
         privilegios: [
             'SMAE.superadmin',
             ...todosPrivilegios.filter((e) => /^(PDM|SMAE|PS|MDO)\./.test(e) === false),
@@ -849,8 +849,8 @@ const PerfilAcessoConfig: PerfilConfigArray = [
         privilegios: ['SMAE.sysadmin'],
     },
     {
-        nome: 'Suspensão de Login',
-        descricao: 'Impede o login do usuário, mas mantém os dados e possibilidade ser responsável',
+        nome: atualizarNomePerfil('Suspensão de Login', []),
+        descricao: 'Impede o login do(a) usuário(a), mas mantém os dados e possibilidade ser responsável',
         privilegios: ['SMAE.login_suspenso'],
     },
     {
@@ -892,7 +892,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
     },
 
     {
-        nome: 'Ponto Focal',
+        nome: atualizarNomePerfil('Ponto Focal', []),
         descricao: 'Vê somente as metas onde há dados para registrar evolução no ciclo corrente',
         privilegios: ['PDM.ponto_focal', 'CadastroMeta.listar', 'CadastroPainel.visualizar'],
     },
@@ -902,7 +902,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'Responsável por meta na CP',
         ]),
         descricao:
-            'Usuários com esta opção podem ser selecionados como Responsável da Coordenadoria na criação/edição de Metas',
+            'Usuários(as) com esta opção podem ser selecionados(as) como Responsável da Coordenadoria na criação/edição de Metas',
         privilegios: PrivRespNaCp,
     },
     {
@@ -974,7 +974,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
     },
     {
         nome: atualizarNomePerfil('Escritório de projetos', ['Órgão Gestor', 'Gestor de projetos']),
-        descricao: 'Pode ser escolhido como responsável no órgão gestor de projetos',
+        descricao: 'Pode ser escolhido(a) como responsável no órgão gestor de projetos',
         privilegios: [
             'Reports.executar.Projetos', // TODO remover, afinal, precisa dos filtros no reports
             'SMAE.gestor_de_projeto',
@@ -1012,7 +1012,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
     },
     {
         nome: atualizarNomePerfil('Gestor da Obra', []),
-        descricao: 'Pode ser escolhido como responsável no órgão gestor de MdO',
+        descricao: 'Pode ser escolhido(a) como responsável no órgão gestor de MdO',
         privilegios: [
             'ProjetoTagMDO.inserir',
             'ProjetoTagMDO.editar',
@@ -1028,9 +1028,9 @@ const PerfilAcessoConfig: PerfilConfigArray = [
         ],
     },
     {
-        nome: 'Colaborador de Projetos',
+        nome: atualizarNomePerfil('Colaborador de Projetos', []),
         descricao:
-            'Pode ser escolhido como responsável no órgão responsável pelo projeto e contribuir durante a fase de registro e planejamento, e dados de execução do cronograma e acompanhamento do risco',
+            'Pode ser escolhido(a) como responsável no órgão responsável pelo projeto e contribuir durante a fase de registro e planejamento, e dados de execução do cronograma e acompanhamento do risco',
         privilegios: [
             'Reports.executar.Projetos', // TODO remover, afinal, precisa dos filtros no reports
             'SMAE.colaborador_de_projeto',
@@ -1040,9 +1040,9 @@ const PerfilAcessoConfig: PerfilConfigArray = [
         ],
     },
     {
-        nome: 'Colaborador de obra no órgão',
+        nome: atualizarNomePerfil('Colaborador de obra no órgão', []),
         descricao:
-            'Pode ser escolhido como responsável no órgão responsável pela obra e contribuir durante a fase de registro e planejamento, e dados de execução do cronograma e acompanhamento do risco',
+            'Pode ser escolhido(a) como responsável no órgão responsável pela obra e contribuir durante a fase de registro e planejamento, e dados de execução do cronograma e acompanhamento do risco',
         privilegios: [
             'Reports.executar.MDO', // TODO remover, afinal, precisa dos filtros no reports
             'MDO.colaborador_de_projeto',
@@ -1055,7 +1055,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
         ],
     },
     {
-        nome: 'Analista de dados',
+        nome: atualizarNomePerfil('Analista de dados', []),
         descricao: 'Tem acesso aos dashboards e painéis externos de metas e projetos',
         privilegios: [
             //'SMAE.loga_direto_na_analise', não é mais necessário no SMAE de 2024/10
@@ -1066,12 +1066,12 @@ const PerfilAcessoConfig: PerfilConfigArray = [
     },
     {
         nome: atualizarNomePerfil('Observador de projetos', ['Espectador de projetos', 'Consulta multissetorial']),
-        descricao: 'Pode participar como leitor em portfólio e projetos',
+        descricao: 'Pode participar como leitor(a) em portfólio e projetos',
         privilegios: ['SMAE.espectador_de_projeto'],
     },
     {
-        nome: 'Observador de projetos com orçamento',
-        descricao: 'Pode participar como leitor em portfólio e projetos e visualizar a execução orçamentária',
+        nome: atualizarNomePerfil('Observador de projetos com orçamento', []),
+        descricao: 'Pode participar como leitor(a) em portfólio e projetos e visualizar a execução orçamentária',
         privilegios: [
             'Projeto.orcamento', // adiciona a permissão de orçamento
             'SMAE.espectador_de_projeto', // manter em sync com o Observador de projetos
@@ -1080,12 +1080,12 @@ const PerfilAcessoConfig: PerfilConfigArray = [
     // TODO Observador de obras
     {
         nome: atualizarNomePerfil('Observador de obra', []),
-        descricao: 'Pode participar como leitor em portfólio e obras',
+        descricao: 'Pode participar como leitor(a) em portfólio e obras',
         privilegios: ['MDO.espectador_de_projeto'],
     },
     {
         nome: atualizarNomePerfil('Observador de painéis externos', []),
-        descricao: 'Pode participar como leitor em painéis externos',
+        descricao: 'Pode participar como leitor(a) em painéis externos',
         privilegios: ['SMAE.espectador_de_painel_externo'],
     },
     {
@@ -1127,7 +1127,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
         ],
     },
     {
-        nome: 'Gestor de Distribuição de Recurso',
+        nome: atualizarNomePerfil('Gestor de Distribuição de Recurso', []),
         descricao: 'Pode visualizar todas as distribuições de recurso para seu órgão.',
         privilegios: [
             // Privs utilizadas para refinamento de controle de permissão em endpoints que possuem "pode_editar".
@@ -1143,7 +1143,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
     },
     {
         nome: atualizarNomePerfil('Gestor de usuários no mesmo órgão', ['Coordenadoria de Planejamento']),
-        descricao: 'Pode criar e editar usuários no mesmo órgão',
+        descricao: 'Pode criar e editar usuários(as) no mesmo órgão',
         privilegios: [
             'CadastroPessoa.inserir',
             'CadastroPessoa.editar',
@@ -1160,7 +1160,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
 ];
 
 const DESC_EQUIPE =
-    'Pode ser participante de equipes, podendo ter qualquer perfil (Administrador de plano, Coleta, Conferencia, Liberação, Ponto Focal e Técnico)';
+    'Pode ser participante de equipes, podendo ter qualquer perfil (Administrador(a) de plano, Coleta, Conferência, Liberação, Ponto Focal e Técnico(a))';
 // Perfis de Plano Setoriais e Programa de Metas
 PerfilAcessoConfig.push(
     {
