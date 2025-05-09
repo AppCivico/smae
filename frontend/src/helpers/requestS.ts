@@ -1,8 +1,9 @@
+import qs from 'qs';
 import $eventHub from '@/components/eventHub';
 import responseDownload from '@/helpers/responseDownload';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
-import qs from 'qs';
+import { serializarCampos, serializarEdicoesEmMassa } from '@/helpers/serializarCamposFormSchema';
 
 type Method = 'GET' | 'POST' | 'UPLOAD' | 'PUT' | 'PATCH' | 'DELETE';
 
@@ -147,11 +148,23 @@ function request(method: Method, upload = false) {
       default:
         $eventHub.emit('envioIniciado');
         if (params && !upload) {
+          let dados = params;
+          const schema = opcoes?.schema;
+
+          if (schema) {
+            // assumimos que .ops existe apenas em edição em lote
+            if (params?.ops && Array.isArray(params.ops)) {
+              const novasOps = serializarEdicoesEmMassa(schema, params.ops);
+              dados = { ...params, ops: novasOps };
+            } else {
+              dados = serializarCampos(schema, params);
+            }
+          }
           requestOptions.headers = {
             ...requestOptions.headers,
             'Content-Type': 'application/json',
           };
-          requestOptions.body = JSON.stringify(params);
+          requestOptions.body = JSON.stringify(dados);
         } else {
           // requestOptions.headers['Content-Type'] = 'multipart/form-data';
           requestOptions.body = params as FormData;
