@@ -107,11 +107,12 @@ function trocarManterAberto() {
 
 .smae-tooltip__content {
   width: max-content;
-  max-width: 200px;
-  padding: 1rem;
+  max-width: 25em;
+  padding: 1em;
   color: white;
   background-color: @primary;
   border-radius: .5rem;
+  font-size: 0.85rem;
   line-height: 1.4;
   text-align: center;
   text-transform: none;
