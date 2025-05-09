@@ -1535,9 +1535,10 @@ watch(listaDeTiposDeIntervenção, () => {
           :model-value="values.colaboradores_no_orgao"
           :valores-iniciais="itemParaEdicao.colaboradores_no_orgao"
           name="colaboradores_no_orgao"
-          orgao-label="Órgão Colaborador"
+          :orgao-label="schema.fields.colaboradores_no_orgao.spec.label"
+          :pessoas-label="schema.fields.ponto_focal_responsavel.spec.label"
           :pessoas="possíveisResponsáveisPorÓrgãoId[values.orgao_colaborador_id] || []"
-          :texto-informativo="schema.fields.colaboradores_no_orgao.meta().balaoInformativo"
+          :pessoa-informativo="schema.fields.colaboradores_no_orgao.meta().balaoInformativo"
         />
       </div>
     </fieldset>

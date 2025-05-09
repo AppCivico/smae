@@ -47,6 +47,10 @@ const props = defineProps({
     type: String,
     default: 'Órgão',
   },
+  pessoasLabel: {
+    type: String,
+    default: 'Pessoas',
+  },
   // necessária para que o vee-validate não se perca
   name: {
     type: String,
@@ -93,7 +97,11 @@ const props = defineProps({
     type: Boolean,
     default: undefined,
   },
-  textoInformativo: {
+  orgaoInformativo: {
+    type: String,
+    default: undefined,
+  },
+  pessoaInformativo: {
     type: String,
     default: undefined,
   },
@@ -269,8 +277,8 @@ watch(
         >
           {{ props.orgaoLabel }}
           <SmaeTooltip
-            v-if="$props.textoInformativo"
-            :texto="$props.textoInformativo"
+            v-if="$props.orgaoInformativo"
+            :texto="$props.orgaoInformativo"
           />
         </label>
 
@@ -300,7 +308,14 @@ watch(
         <label
           :for="`${$props.name}__pessoas--${idx}`"
           class="label"
-        >Pessoas</label>
+        >
+          {{ $props.pessoasLabel }}
+          <SmaeTooltip
+            v-if="$props.pessoaInformativo"
+            :texto="$props.pessoaInformativo"
+          />
+        </label>
+
         <AutocompleteField
           :id="`${$props.name}__pessoas--${idx}`"
           :controlador="{

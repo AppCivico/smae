@@ -1250,10 +1250,7 @@ export const obras = object({
       number()
         .min(1),
     )
-    .nullable()
-    .meta({
-      balaoInformativo: 'É a pessoa responsável por apoiar o Ponto Focal Responsável na atualização das informações da obra no SMAE.',
-    }),
+    .nullable(),
   empreendimento_id: number()
     .label('Identificador do empreendimento')
     .min(1, 'Empreendimento inválido')
@@ -1427,7 +1424,10 @@ export const obras = object({
     .nullable(),
   ponto_focal_responsavel: string()
     .label('Ponto focal responsável')
-    .nullableOuVazio(),
+    .nullableOuVazio()
+    .meta({
+      balaoInformativo: 'É a pessoa responsável por apoiar o Ponto Focal Responsável na atualização das informações da obra no SMAE.',
+    }),
   portfolios_compartilhados: array()
     .label('Compartilhar com portfólios')
     .nullable(),
