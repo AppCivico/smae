@@ -12,46 +12,18 @@ type Props = {
   as?: string
 };
 
-const slots = defineSlots<Slots>();
 withDefaults(defineProps<Props>(), {
   as: 'div',
   icone: 'i',
   texto: undefined,
 });
 
-const content = ref<HTMLElement>();
-const exibicaoTooltip = ref<boolean>(false);
+const elementoConteudo = ref<HTMLElement>();
 const manterExibido = ref<boolean>(false);
 
-const statusTooltip = computed<boolean>(() => {
-  if (manterExibido.value) {
-    return false;
-  }
+const descricaoConteudo = computed<string>(() => elementoConteudo.value?.textContent || '');
 
-  return !exibicaoTooltip.value;
-});
-
-const descricaoConteudo = computed<string>(() => {
-  if (!content.value) {
-    return '';
-  }
-
-  return content.value.textContent;
-});
-
-function esconderTooltip() {
-  exibicaoTooltip.value = false;
-}
-
-function exibirTooltip() {
-  exibicaoTooltip.value = true;
-}
-
-function trocarManterAberto() {
-  if (slots.botao?.()) {
-    return;
-  }
-
+function alternarAbertura() {
   manterExibido.value = !manterExibido.value;
 }
 </script>
@@ -60,13 +32,10 @@ function trocarManterAberto() {
   <component
     :is="$props.as"
     :aria-description="descricaoConteudo"
-    :class="['smae-tooltip', { 'smae-tooltip--fixado': manterExibido }]"
+    class="smae-tooltip"
+    :class="{ 'smae-tooltip--fixado': manterExibido }"
     tabindex="0"
-    @mouseenter="exibirTooltip"
-    @focus="exibirTooltip"
-    @mouseleave="esconderTooltip"
-    @blur="esconderTooltip"
-    @click="trocarManterAberto"
+    @click="alternarAbertura"
   >
     <slot name="botao">
       <svg
@@ -76,10 +45,9 @@ function trocarManterAberto() {
     </slot>
 
     <div
-      ref="content"
+      ref="elementoConteudo"
       class="smae-tooltip__content"
       role="tooltip"
-      :hidden="statusTooltip"
     >
       <slot>{{ $props.texto }}</slot>
     </div>
@@ -106,6 +74,7 @@ function trocarManterAberto() {
 }
 
 .smae-tooltip__content {
+  display: none;
   width: max-content;
   max-width: 25em;
   padding: 1em;
@@ -133,6 +102,13 @@ function trocarManterAberto() {
     border: .5rem solid transparent;
     border-bottom-color: @primary;
     border-left-color: @primary;
+  }
+
+  .smae-tooltip--fixado > &,
+  :focus > &,
+  :hover > &,
+  :focus-within > & {
+    display: block;
   }
 }
 </style>
