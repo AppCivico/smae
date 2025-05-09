@@ -59,7 +59,7 @@ function trocarManterAberto() {
 <template>
   <component
     :is="$props.as"
-    :aria-described="descricaoConteudo"
+    :aria-description="descricaoConteudo"
     :class="['smae-tooltip', { 'smae-tooltip--fixado': manterExibido }]"
     tabindex="0"
     @mouseenter="exibirTooltip"
