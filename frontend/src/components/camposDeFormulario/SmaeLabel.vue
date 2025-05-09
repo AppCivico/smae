@@ -94,7 +94,7 @@ const temInformacao = computed<boolean>(() => {
           class="tvermelho"
         >&nbsp;*</span>
 
-        {{ temInformacao && '&nbsp;' }}
+        {{ temInformacao ? '&nbsp;' : undefined }}
 
         <SmaeTooltip
           v-if="temInformacao"
