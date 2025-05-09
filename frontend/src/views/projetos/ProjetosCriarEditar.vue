@@ -158,6 +158,12 @@ const possíveisOrigens = [
   },
 ];
 
+function alertarTrocaDeStatus() {
+  if (!!itemParaEdicao.value.status && itemParaEdicao.value.status !== values.status) {
+    alertStore.success('Lembre-se de atualizar a etapa do cronograma');
+  }
+}
+
 function BuscarDotaçãoParaAno(valorOuEvento) {
   const ano = valorOuEvento.target?.value || valorOuEvento;
 
@@ -414,6 +420,7 @@ watch(itemParaEdicao, (novoValor) => {
             desabilitarTodosCampos.camposComuns
               || !emFoco?.permissoes.status_permitidos?.length
           "
+          @change.once="alertarTrocaDeStatus"
         >
           <option :value="null">
             Selecionar

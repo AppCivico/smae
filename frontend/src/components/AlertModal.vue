@@ -38,6 +38,7 @@ async function callbackFn(i) {
         </div>
         <template v-if="alert.type == 'confirmAction'">
           <button
+            type="button"
             class="btn amarelo mr1"
             @click="callbackFn(i)"
           >
@@ -75,6 +76,8 @@ async function callbackFn(i) {
         </template>
         <button
           v-else
+          v-focus
+          type="button"
           class="btn amarelo"
           @click="alertas.splice(i, 1)"
         >
