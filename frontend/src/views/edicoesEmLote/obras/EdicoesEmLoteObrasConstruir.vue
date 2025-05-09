@@ -424,7 +424,7 @@ async function handlePropertyChange(event, idx) {
           </div>
 
           <button
-            v-if="!modoRevisao"
+            :disabled="modoRevisao"
             type="button"
             class="like-a__text addlink self-end mb-1"
             aria-label="Remover Edição"
