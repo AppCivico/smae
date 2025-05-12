@@ -101,6 +101,9 @@ export class RunUpdateTaskService implements TaskableService {
         // O serviço é definido de maneira dinâmica, dependendo do tipo de atualização.
         const service = this.servicoDoTipo(_params.tipo);
 
+        // Pré-processamento de operações para adicionar operações implícitas
+        _params.ops = this.preprocessOps(_params.ops);
+
         try {
             for (const id of _params.ids) {
                 // skip if already processed
@@ -130,39 +133,54 @@ export class RunUpdateTaskService implements TaskableService {
                         // Armazena dados após cada registro ser buscado
                         await context.stashData<LogResultadosEstendido>(resultadosEstendidos);
 
-                        const paramsAtualizacao: any = {};
+                        const paramsAtualizacao: any = { dto: {} };
                         const paramsCriacaoTarefa: any = {};
 
+                        // Para cada coluna, armazenamos o estado atual
+                        const estadoAtualColunas: Record<string, any> = {};
+
                         for (const operacao of _params.ops) {
-                            const params = await this.preparaParamsParaOp(_params.tipo, operacao, registro);
+                            try {
+                                // Preparamos os parâmetros para esta operação
+                                const params = await this.preparaParamsParaOp(
+                                    _params.tipo,
+                                    operacao,
+                                    registro,
+                                    estadoAtualColunas
+                                );
 
-                            // Adiciona valores do Dto desta operação no dto consolidado.
-                            if (operacao.tipo_operacao === TipoOperacao.CreateTarefa) {
-                                paramsCriacaoTarefa.dto = {
-                                    ...params.dto,
-                                };
-                            } else {
-                                paramsAtualizacao.dto = {
-                                    ...paramsAtualizacao.dto,
-                                    ...params.dto,
-                                };
-                            }
+                                // Adiciona valores do Dto desta operação no dto consolidado
+                                if (operacao.tipo_operacao === TipoOperacao.CreateTarefa) {
+                                    paramsCriacaoTarefa.dto = {
+                                        ...params.dto,
+                                    };
+                                } else {
+                                    // Atualiza o estado atual da coluna após esta operação
+                                    Object.keys(params.dto).forEach((key) => {
+                                        estadoAtualColunas[key] = params.dto[key];
+                                        paramsAtualizacao.dto[key] = params.dto[key];
+                                    });
+                                }
 
-                            // TODO: por agora, atualizações em lote são apenas para PP e MDO.
-                            // E esses serviços necessitam do "tipo".
-                            // Implementar solução mais genérica.
-                            if (
-                                !paramsAtualizacao.tipo &&
-                                params.tipo &&
-                                operacao.tipo_operacao !== TipoOperacao.CreateTarefa
-                            ) {
-                                paramsAtualizacao.tipo = params.tipo;
+                                // TODO: por agora, atualizações em lote são apenas para PP e MDO.
+                                // E esses serviços necessitam do "tipo".
+                                // Implementar solução mais genérica.
+                                if (
+                                    !paramsAtualizacao.tipo &&
+                                    params.tipo &&
+                                    operacao.tipo_operacao !== TipoOperacao.CreateTarefa
+                                ) {
+                                    paramsAtualizacao.tipo = params.tipo;
+                                }
+                            } catch (error) {
+                                this.logger.error(`Erro ao processar operação ${operacao.col}: ${error.message}`);
+                                throw error;
                             }
                         }
 
                         try {
                             // AVISO: SEMPRE GARANTIR QUE O MÉTODO UPDATE/CREATE RECEBE TX DO PRISMA.
-                            if (paramsAtualizacao.dto)
+                            if (Object.keys(paramsAtualizacao.dto).length > 0)
                                 await service.update(
                                     paramsAtualizacao.tipo,
                                     id,
@@ -264,6 +282,51 @@ export class RunUpdateTaskService implements TaskableService {
 
         return { success: true };
     }
+
+    // Novo método para pré-processar as operações e adicionar operações implícitas
+    private preprocessOps(ops: UpdateOperacaoDto[]): UpdateOperacaoDto[] {
+        // Cria uma cópia das operações originais
+        const processedOps = [...ops];
+
+        // Verifica se há uma operação Set para orgao_gestor_id
+        const hasOrgaoGestorSet = ops.some(
+            (op) => op.col === 'orgao_gestor_id' && op.tipo_operacao === TipoOperacao.Set
+        );
+
+        // Verifica se há alguma operação para responsaveis_no_orgao_gestor
+        const hasResponsaveisOp = ops.some((op) => op.col === 'responsaveis_no_orgao_gestor');
+
+        // Se temos um Set para orgao_gestor_id mas nenhuma operação para responsaveis_no_orgao_gestor,
+        // adiciona uma operação Set para limpar responsaveis_no_orgao_gestor
+        if (hasOrgaoGestorSet && !hasResponsaveisOp) {
+            processedOps.push({
+                col: 'responsaveis_no_orgao_gestor',
+                tipo_operacao: TipoOperacao.Set,
+                valor: [],
+            });
+        }
+
+        // Verifica se há uma operação Set para orgao_responsavel_id
+        const hasOrgaoResponsavelSet = ops.some(
+            (op) => op.col === 'orgao_responsavel_id' && op.tipo_operacao === TipoOperacao.Set
+        );
+
+        // Verifica se há alguma operação para responsavel_id
+        const hasResponsavelOp = ops.some((op) => op.col === 'responsavel_id');
+
+        // Se temos um Set para orgao_responsavel_id mas nenhuma operação para responsavel_id,
+        // adiciona uma operação Set para definir responsavel_id como null
+        if (hasOrgaoResponsavelSet && !hasResponsavelOp) {
+            processedOps.push({
+                col: 'responsavel_id',
+                tipo_operacao: TipoOperacao.Set,
+                valor: null,
+            });
+        }
+
+        return processedOps;
+    }
+
     // Método para gerar relatório Excel
     private async gerarRelatorioExcel(
         params: CreateRunUpdateDto,
@@ -504,10 +567,24 @@ export class RunUpdateTaskService implements TaskableService {
         return service;
     }
 
-    private async preparaParamsParaOp(tipoAtualizacao: TipoAtualizacaoEmLote, op: UpdateOperacaoDto, registro: any) {
+    // Método modificado para aceitar o estado atual das colunas
+    private async preparaParamsParaOp(
+        tipoAtualizacao: TipoAtualizacaoEmLote,
+        op: UpdateOperacaoDto,
+        registro: any,
+        estadoAtualColunas: Record<string, any> = {}
+    ) {
         const params: any = {};
 
-        const value = await this.processaValorParaOp(op, op.tipo_operacao, registro);
+        // Usa o estado atual da coluna se disponível, caso contrário, usa o valor original do registro
+        const valorAtual =
+            estadoAtualColunas[op.col] !== undefined
+                ? estadoAtualColunas[op.col] // Usa o valor acumulado para operações Add/Remove acumulativas
+                : registro
+                  ? registro[op.col]
+                  : undefined; // Usa o valor original do registro
+
+        const value = await this.processaValorParaOp(op, op.tipo_operacao, registro, valorAtual);
 
         switch (tipoAtualizacao) {
             case TipoAtualizacaoEmLote.ProjetoPP:
@@ -531,10 +608,17 @@ export class RunUpdateTaskService implements TaskableService {
         return params;
     }
 
-    private async processaValorParaOp(op: UpdateOperacaoDto, tipo_operacao: TipoOperacao, registro: any) {
+    // Método modificado para usar valorAtual em vez de registro[op.col]
+    private async processaValorParaOp(
+        op: UpdateOperacaoDto,
+        tipo_operacao: TipoOperacao,
+        registro: any,
+        valorAtual: any
+    ) {
         let value = op.valor;
 
-        // TODO: REMOVER ISSO AQUI.
+        // TODO: REMOVER ISSO AQUI. Rever com o frontend quando estiver OK/resolvido lá, ou se vamos botar um 400
+        // e ter que ter a lista dos items que são array's pra virar sozinho o valor
         if (op.col === 'responsavel_id') {
             // O valor enviado é uma array, pegando apenas o primeiro item.
             value = value[0];
@@ -548,21 +632,30 @@ export class RunUpdateTaskService implements TaskableService {
 
             // Para Set, apenas retornamos o valor.
         } else if (tipo_operacao === TipoOperacao.Add || tipo_operacao === TipoOperacao.Remove) {
-            if (registro && registro[op.col] !== undefined) {
-                const valorSalvo = registro[op.col];
+            if (valorAtual !== undefined) {
+                // É necessário planificar a array se for um array de objetos com id
+                // Pois no findOne, geralmente retornamos um array de objetos.
+                // Que contem um campo id.
+                const valorSalvoIds = Array.isArray(valorAtual)
+                    ? valorAtual.length > 0 &&
+                      typeof valorAtual[0] === 'object' &&
+                      valorAtual[0] !== null &&
+                      'id' in valorAtual[0]
+                        ? valorAtual.map((item: any) => item.id)
+                        : valorAtual // Já é um array de valores primitivos
+                    : valorAtual;
 
-                if (Array.isArray(valorSalvo)) {
-                    // É necessário planificar a array.
-                    // Pois no findOne, geralmente retornamos um array de objetos.
-                    // Que contem um campo id.
-                    const valorSalvoIds = valorSalvo.map((item: any) => item.id || item);
-
-                    // Para Add, adicionamos o valor (sempre array) ao existente.
-                    if (tipo_operacao === TipoOperacao.Add) {
-                        value = [...valorSalvoIds, ...(Array.isArray(value) ? value : [value])];
-                    }
-                    // Para Remove, removemos o valor do existente.
-                    else if (tipo_operacao === TipoOperacao.Remove) {
+                // Para Add, adicionamos o valor (sempre array) ao existente.
+                if (tipo_operacao === TipoOperacao.Add) {
+                    value = Array.isArray(valorSalvoIds)
+                        ? [...valorSalvoIds, ...(Array.isArray(value) ? value : [value])]
+                        : typeof valorSalvoIds === 'string'
+                          ? `${valorSalvoIds},${value}`
+                          : [valorSalvoIds, ...(Array.isArray(value) ? value : [value])];
+                }
+                // Para Remove, removemos o valor do existente.
+                else if (tipo_operacao === TipoOperacao.Remove) {
+                    if (Array.isArray(valorSalvoIds)) {
                         value = valorSalvoIds.filter((item: any) => {
                             if (Array.isArray(value)) {
                                 return !value.includes(item);
@@ -570,19 +663,12 @@ export class RunUpdateTaskService implements TaskableService {
                                 return item !== value;
                             }
                         });
-                    }
-                } else if (typeof valorSalvo === 'string') {
-                    if (tipo_operacao === TipoOperacao.Add) {
-                        // Para Add, concatenamos o valor.
-                        value = `${valorSalvo},${value}`;
-                    } else if (tipo_operacao === TipoOperacao.Remove) {
+                    } else if (typeof valorSalvoIds === 'string') {
                         // Para Remove, removemos o valor.
-                        value = valorSalvo.replace(new RegExp(`,?${value}`, 'g'), '');
+                        value = valorSalvoIds.replace(new RegExp(`,?${value}`, 'g'), '');
                     } else {
-                        throw new Error(`Operação "${tipo_operacao}" não suportada para string.`);
+                        throw new Error(`Coluna "${op.col}" não é um array ou string.`);
                     }
-                } else {
-                    throw new Error(`Coluna "${op.col}" não é um array ou string.`);
                 }
             } else {
                 throw new Error(`Coluna "${op.col}" não encontrada no registro.`);
