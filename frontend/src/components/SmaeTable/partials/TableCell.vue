@@ -14,7 +14,7 @@
 </template>
 
 <script lang="ts" setup>
-import obterParametroNoObjeto from '@/helpers/obterParametroNoObjeto';
+import obterPropriedadeNoObjeto from '@/helpers/objetos/obterPropriedadeNoObjeto';
 import { computed } from 'vue';
 import type { Linha } from '../tipagem';
 
@@ -35,7 +35,7 @@ const conteudoColuna = computed((): unknown => {
     return undefined;
   }
 
-  const conteudo = obterParametroNoObjeto(props.caminho, props.linha);
+  const conteudo = obterPropriedadeNoObjeto(props.caminho, props.linha);
 
   return typeof props.formatador === 'function'
     ? props.formatador(conteudo)

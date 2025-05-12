@@ -1,11 +1,15 @@
-function obterParametroNoObjeto(caminho: string, objeto: Record<string, unknown>) {
+function obterPropriedadeNoObjeto(
+  caminho: string,
+  objeto: Record<string, unknown>,
+  alertarIndefinidos = true,
+): string | number | object | undefined {
   if (!caminho.includes('.')) {
     if (!objeto) {
       return objeto;
     }
 
     if (objeto[caminho] === undefined) {
-      if (import.meta.env.VITE_EXPOR_ERROS === 'true' || import.meta.env.DEV) {
+      if (alertarIndefinidos && (import.meta.env.VITE_EXPOR_ERROS === 'true' || import.meta.env.DEV)) {
         // eslint-disable-next-line no-console
         console.warn(`Item "${caminho}" não encontrado no objeto`, objeto);
       }
@@ -24,7 +28,7 @@ function obterParametroNoObjeto(caminho: string, objeto: Record<string, unknown>
     }
 
     if (amount[itemCaminho] === undefined) {
-      if (import.meta.env.VITE_EXPOR_ERROS === 'true' || import.meta.env.DEV) {
+      if (alertarIndefinidos && (import.meta.env.VITE_EXPOR_ERROS === 'true' || import.meta.env.DEV)) {
         // eslint-disable-next-line no-console
         console.warn(
           `Item "${itemCaminho}" não encontrado no caminho "${caminho}"`,
@@ -40,4 +44,4 @@ function obterParametroNoObjeto(caminho: string, objeto: Record<string, unknown>
   return saida;
 }
 
-export default obterParametroNoObjeto;
+export default obterPropriedadeNoObjeto;
