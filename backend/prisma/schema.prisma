@@ -7051,6 +7051,7 @@ view view_parlamentares_mandatos_part_atual {
     dia_aniversario  Int?
     mes_aniversario  Int?
     email            String?
+    zona_atuacao     String?
     ano_eleicao      Int?
     eleicao_id       Int?
     partido_atual_id Int?

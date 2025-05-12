@@ -70,6 +70,10 @@ export class RelTransferenciasDto {
         vigencia: string | null;
         conclusao_suspensiva: string | null;
         registro_sei: string | null;
+        nome_responsavel: string | null;
+        status_nome_base?: string | null;
+        pct_custeio?: number | null;
+        pct_investimento?: number | null;
     } | null;
     tipo_transferencia: string;
     classificacao: string | null;

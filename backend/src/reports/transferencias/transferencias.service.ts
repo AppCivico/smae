@@ -86,6 +86,10 @@ class RetornoDbTransferencias {
     distribuicao_recurso_conclusao_suspensiva: Date | null;
     distribuicao_recurso_sei: string | null;
     distribuicao_recurso_orgao_gestor: string;
+    distribuicao_recurso_status_nome_responsavel: string | null;
+    distribuicao_recurso_status_nome_base: string | null;
+    distribuicao_recurso_pct_custeio: number | null;
+    distribuicao_recurso_pct_investimento: number | null;
     tipo_transferencia: string;
     classificacao: string | null;
 }
@@ -119,6 +123,8 @@ export class TransferenciasService implements ReportableService {
                 t.pendente_preenchimento_valores,
                 t.valor,
                 t.valor_total,
+                t.pct_custeio,
+                t.pct_investimento,
                 t.valor_contrapartida,
                 t.emenda,
                 t.emenda_unitaria,
@@ -167,7 +173,11 @@ export class TransferenciasService implements ReportableService {
                 dr.assinatura_estado AS distribuicao_recurso_assinatura_estado,
                 dr.vigencia AS distribuicao_recurso_vigencia,
                 dr.conclusao_suspensiva AS distribuicao_recurso_conclusao_suspensiva,
+                dr.pct_custeio AS distribuicao_recurso_pct_custeio,
+                dr.pct_investimento AS distribuicao_recurso_pct_investimento,
                 drs.processo_sei AS distribuicao_recurso_sei,
+                drst.nome_responsavel AS distribuicao_recurso_status_nome_responsavel,
+                dsb.nome AS distribuicao_recurso_status_nome_base,
                 o2.descricao AS distribuicao_recurso_orgao_gestor
             FROM transferencia t
             JOIN transferencia_tipo tt ON tt.id = t.tipo_id
@@ -176,6 +186,8 @@ export class TransferenciasService implements ReportableService {
             LEFT JOIN partido pa ON pa.id = tp.partido_id
             JOIN orgao o1 ON o1.id = t.orgao_concedente_id
             LEFT JOIN distribuicao_recurso dr ON dr.transferencia_id = t.id AND dr.removido_em IS NULL
+            LEFT JOIN distribuicao_recurso_status drst ON drst.distribuicao_id = dr.id AND drst.removido_em IS NULL
+            LEFT JOIN distribuicao_status_base dsb ON dsb.id = drst.status_base_id
             LEFT JOIN distribuicao_recurso_sei drs ON drs.distribuicao_recurso_id = dr.id AND drs.removido_em IS NULL
             LEFT JOIN classificacao cl on t.classificacao_id = cl.id and tt.id = cl.transferencia_tipo_id
             JOIN orgao o2 ON dr.orgao_gestor_id = o2.id
@@ -324,7 +336,8 @@ export class TransferenciasService implements ReportableService {
                 ano: db.ano,
                 objeto: db.objeto,
                 detalhamento: db.detalhamento,
-                clausula_suspensiva: db.clausula_suspensiva ? 'Sim' : 'Não',
+                clausula_suspensiva:
+                    db.clausula_suspensiva === true ? 'Sim' : db.clausula_suspensiva === false ? 'Não' : '',
                 clausula_suspensiva_vencimento: Date2YMD.toStringOrNull(db.clausula_suspensiva_vencimento),
                 normativa: db.normativa,
                 observacoes: db.observacoes,
@@ -354,7 +367,6 @@ export class TransferenciasService implements ReportableService {
                 tipo_transferencia: db.tipo_transferencia,
                 classificacao: db.classificacao,
                 cargo: db.cargo,
-
                 partido: db.partido_id
                     ? {
                           id: db.partido_id,
@@ -401,6 +413,10 @@ export class TransferenciasService implements ReportableService {
                           vigencia: Date2YMD.toStringOrNull(db.distribuicao_recurso_vigencia),
                           conclusao_suspensiva: Date2YMD.toStringOrNull(db.distribuicao_recurso_conclusao_suspensiva),
                           registro_sei: db.distribuicao_recurso_sei ? formataSEI(db.distribuicao_recurso_sei) : null,
+                          nome_responsavel: db.distribuicao_recurso_status_nome_responsavel,
+                          status_nome_base: db.distribuicao_recurso_status_nome_base,
+                          pct_custeio: db.distribuicao_recurso_pct_custeio,
+                          pct_investimento: db.distribuicao_recurso_pct_investimento,
                       }
                     : null,
             });
@@ -425,15 +441,142 @@ export class TransferenciasService implements ReportableService {
                 { value: 'id', label: 'ID' },
                 { value: 'identificador', label: 'Identificador' },
                 { value: 'ano', label: 'Ano' },
-                { value: 'objeto', label: 'Objeto/Empreendimento' },
+                { value: 'objeto', label: 'Objeto' },
                 { value: 'detalhamento', label: 'Detalhamento' },
                 { value: 'clausula_suspensiva', label: 'Clausula Suspensiva' },
-                { value: 'clausula_suspensiva_vencimento', label: 'Data de vencimento da Cláusula Suspensiva' },
+                { value: 'clausula_suspensiva_vencimento', label: 'Data de vencimento da Suspensiva' },
                 { value: 'normativa', label: 'Normativa' },
-                { value: 'observacoes', label: 'Observação' },
-                { value: 'programa', label: 'Programa' },
-                { value: 'nome_programa', label: 'Nome do Programa' },
+                { value: 'observacoes', label: 'Observações' },
+                { value: 'nome_programa', label: 'Nome Programa / Portfólio' },
                 { value: 'empenho', label: 'Empenho' },
+                {
+                    value: (row) => this.formatCurrency(row.valor),
+                    label: 'Valor do Repasse',
+                },
+                {
+                    value: (row) => this.formatCurrency(row.valor_total),
+                    label: 'Valor Total',
+                },
+                {
+                    value: (row) => this.formatCurrency(row.valor_contrapartida),
+                    label: 'Contrapartida',
+                },
+                {
+                    value: (row) => (row.emenda ? `="${String(row.emenda).replace(/\D/g, '')}"` : ''),
+                    label: 'Emenda',
+                },
+                { value: 'dotacao', label: 'Dotação Orçamentária' },
+                {
+                    value: (row) => (row.demanda ? `="${String(row.demanda).replace(/\D/g, '')}"` : ''),
+                    label: 'Número da Demanda/Proposta',
+                },
+                { value: 'banco_fim', label: 'Conta - Banco da Secretaria fim' },
+                { value: 'conta_fim', label: 'Conta - Número da Secretaria fim' },
+                { value: 'agencia_fim', label: 'Conta - Agência da Secretaria fim' },
+                { value: 'banco_aceite', label: 'Conta - Banco do aceite' },
+                { value: 'agencia_aceite', label: 'Conta - Agência do aceite' },
+                { value: 'programa', label: 'Nome do Programa' },
+                { value: 'conta_aceite', label: 'Conta - Número do aceite' },
+                { value: 'emenda_unitaria', label: 'Emenda Unitária' },
+                {
+                    value: 'distribuicao_recurso.orgao_gestor_descricao',
+                    label: 'Gestor Municipal do Contrato (secretaria)',
+                },
+                { value: 'ordenador_despesa', label: 'Ordenador de despesas' },
+                { value: 'numero_identificacao', label: 'Nº de identificação' },
+                { value: 'secretaria_concedente_str', label: 'Secretaria do órgão concedente' },
+                { value: 'interface', label: 'Interface' },
+                { value: 'esfera', label: 'Esfera' },
+                { value: 'cargo', label: 'Cargo' },
+                { value: 'partido.sigla', label: 'Partido' },
+                { value: 'parlamentar.nome_popular', label: 'Parlamentar' },
+                { value: 'orgao_concedente.descricao', label: 'Orgão Concedente' },
+                { value: 'distribuicao_recurso.id', label: 'ID Distribuição de Recurso' },
+                { value: 'distribuicao_recurso.nome_responsavel', label: 'Gestor Municipal (servidor)' },
+                { value: 'distribuicao_recurso.objeto', label: 'Objeto detalhado' },
+                {
+                    value: (row) => this.formatCurrency(row.distribuicao_recurso.valor),
+                    label: 'Distribuição - Valor do Repasse',
+                },
+                {
+                    value: (row) => this.formatCurrency(row.distribuicao_recurso.valor_total),
+                    label: 'Distribuição - Valor Total',
+                },
+                {
+                    value: (row) => this.formatCurrency(row.distribuicao_recurso.valor_contrapartida),
+                    label: 'Distribuição - Valor da Contrapartida',
+                },
+                { value: 'distribuicao_recurso.empenho', label: 'Distribuição - Empenho' },
+                {
+                    value: 'distribuicao_recurso.programa_orcamentario_estadual',
+                    label: 'Programa Orçamentário Estadual ou Federal',
+                },
+                {
+                    value: 'distribuicao_recurso.programa_orcamentario_municipal',
+                    label: 'Programa Orçamentário Municipal',
+                },
+                { value: 'distribuicao_recurso.dotacao', label: 'Dotação orçamentária' },
+                { value: 'distribuicao_recurso.proposta', label: 'N° Proposta' },
+                { value: 'distribuicao_recurso.contrato', label: 'Nº do Contrato' },
+                { value: 'distribuicao_recurso.convenio', label: 'Nº do Convênio/Pré Convênio' },
+                {
+                    value: 'distribuicao_recurso.assinatura_termo_aceite',
+                    label: 'Data de assinatura do termo de aceite',
+                },
+                {
+                    value: 'distribuicao_recurso.assinatura_municipio',
+                    label: 'Data de assinatura do representante do Município',
+                },
+                {
+                    value: 'distribuicao_recurso.assinatura_estado',
+                    label: 'Data de assinatura do representante do Estado',
+                },
+                { value: 'distribuicao_recurso.vigencia', label: 'Data de início da vigência' },
+                {
+                    value: 'distribuicao_recurso.conclusao_suspensiva',
+                    label: 'Data de conclusão da Suspensiva',
+                },
+                { value: 'distribuicao_recurso.registro_sei', label: 'Nº SEI' },
+                { value: 'distribuicao_recurso.status_nome_base', label: 'Status da Demanda' },
+                {
+                    value: (row) =>
+                        row.distribuicao_recurso?.pct_custeio != null
+                            ? `="${new Intl.NumberFormat('pt-BR', {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                              }).format(row.distribuicao_recurso.pct_custeio)}"`
+                            : '',
+                    label: 'Custeio/Corrente',
+                },
+                {
+                    value: (row) =>
+                        row.distribuicao_recurso?.pct_investimento != null
+                            ? `="${new Intl.NumberFormat('pt-BR', {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                              }).format(row.distribuicao_recurso.pct_investimento)}"`
+                            : '',
+                    label: 'Investimento/Capital',
+                },
+                { value: '', label: 'Distribuição - Banco' },
+                { value: '', label: 'Distribuição - Agência' },
+                { value: '', label: 'Distribuição - Conta Corrente' },
+                { value: '', label: 'Distribuição - Gestor da Contao' },
+            ];
+        } else {
+            fields = [
+                { value: 'identificador', label: 'identificador' },
+                { value: 'esfera', label: 'esfera' },
+                { value: 'demanda', label: 'Número da Demanda/Proposta' },
+                { value: 'orgao_concedente.descricao', label: 'Orgão Concedente' },
+                { value: 'parlamentar.nome_popular', label: 'parlamentar.nome_popular' },
+                { value: 'partido.sigla', label: 'partido.sigla' },
+                { value: 'programa', label: 'programa' },
+                { value: 'ano', label: 'ano' },
+                { value: 'objeto', label: 'Objeto' },
+                { value: 'detalhamento', label: 'Detalhamento' },
+                { value: 'clausula_suspensiva_vencimento', label: 'Data de vencimento da Suspensiva' },
+                { value: 'observacoes', label: 'Observações' },
                 {
                     value: (row) => this.formatCurrency(row.valor),
                     label: 'Valor do Repasse',
@@ -446,51 +589,12 @@ export class TransferenciasService implements ReportableService {
                     value: (row) => this.formatCurrency(row.valor_contrapartida),
                     label: 'Valor Contrapartida',
                 },
-                { value: 'emenda', label: 'Emenda' },
-                { value: 'emenda_unitaria', label: 'Emenda Unitária' },
-                { value: 'dotacao', label: 'Dotação orçamentária da Distribuição' },
-                { value: 'demanda', label: 'Número da Demanda' },
-                { value: 'banco_fim', label: 'Conta - Banco da Conta Secretaria fim' },
-                { value: 'conta_fim', label: 'Número da Conta-Corrente da Secretaria fim ' },
-                { value: 'agencia_fim', label: 'Agência da Conta Secretaria fim ' },
-                { value: 'banco_aceite', label: 'Banco da conta de aceite' },
-                { value: 'conta_aceite', label: 'Número da conta-corrente de aceite ' },
-                { value: 'agencia_aceite', label: 'Conta - Agência do aceite' },
-                { value: 'gestor_contrato', label: 'Gestor do órgão Concedente' },
-                { value: 'ordenador_despesa', label: 'Ordenador de despesas' },
-                { value: 'interface', label: 'Interface' },
-                { value: 'esfera', label: 'Esfera' },
-                { value: 'cargo', label: 'Cargo' },
-                { value: 'partido.sigla', label: 'Partido' },
-                { value: 'parlamentar.nome_popular', label: 'Parlamentar' },
-                { value: 'orgao_concedente.descricao', label: 'Orgão Concedente' },
-                { value: 'distribuicao_recurso.id', label: 'ID Distribuição de Recurso' },
-                { value: 'distribuicao_recurso.orgao_gestor_descricao', label: 'Gestor Municipal ' },
-                { value: 'distribuicao_recurso.objeto', label: 'Objeto' },
+                { value: 'secretaria_concedente_str', label: 'Secretaria do órgão concedente' },
                 {
-                    value: (row) => this.formatCurrency(row.distribuicao_recurso.valor),
-                    label: 'Valor do Repasse da Distribuição',
+                    value: 'distribuicao_recurso.orgao_gestor_descricao',
+                    label: 'Gestor Municipal do Contrato (secretaria)',
                 },
-                {
-                    value: (row) => this.formatCurrency(row.distribuicao_recurso.valor_total),
-                    label: 'Valor Total da Distribuição',
-                },
-                {
-                    value: (row) => this.formatCurrency(row.distribuicao_recurso.valor_contrapartida),
-                    label: 'Valor Contrapartida da Distribuição',
-                },
-                { value: 'distribuicao_recurso.empenho', label: 'Empenho - Distribuição' },
-                {
-                    value: 'distribuicao_recurso.programa_orcamentario_estadual',
-                    label: 'Programa Orçamentário Estadual ou Federal',
-                },
-                {
-                    value: 'distribuicao_recurso.programa_orcamentario_municipal',
-                    label: 'Programa Orçamentário Municipal',
-                },
-                { value: 'distribuicao_recurso.dotacao', label: 'Dotação orçamentária da Distribuição' },
-                { value: 'distribuicao_recurso.proposta', label: 'Proposta' },
-                { value: 'distribuicao_recurso.contrato', label: 'Nº do Contrato' },
+                { value: 'distribuicao_recurso.registro_sei', label: 'Nº SEI' },
                 { value: 'distribuicao_recurso.convenio', label: 'Nº do Convênio/Pré Convênio' },
                 {
                     value: 'distribuicao_recurso.assinatura_termo_aceite',
@@ -504,59 +608,10 @@ export class TransferenciasService implements ReportableService {
                     value: 'distribuicao_recurso.assinatura_estado',
                     label: 'Data de assinatura do representante do Estado',
                 },
-                { value: 'distribuicao_recurso.vigencia', label: 'Data de vigência' },
+                { value: 'distribuicao_recurso.vigencia', label: 'Data de início de vigência' },
                 {
                     value: 'distribuicao_recurso.conclusao_suspensiva',
                     label: 'Data de conclusão da Suspensiva',
-                },
-                { value: 'distribuicao_recurso.registro_sei', label: 'Nº SEI' },
-            ];
-        } else {
-            fields = [
-                { value: 'identificador', label: 'identificador' },
-                { value: 'esfera', label: 'esfera' },
-                { value: 'demanda', label: 'demanda' },
-                { value: 'orgao_concedente.descricao', label: 'orgao_concedente.descricao' },
-                { value: 'parlamentar.nome_popular', label: 'parlamentar.nome_popular' },
-                { value: 'partido.sigla', label: 'partido.sigla' },
-                { value: 'programa', label: 'programa' },
-                { value: 'ano', label: 'ano' },
-                { value: 'objeto', label: 'Objeto/Empreendimento' },
-                { value: 'detalhamento', label: 'detalhamento' },
-                { value: 'clausula_suspensiva_vencimento', label: 'clausula_suspensiva_vencimento' },
-                { value: 'observacoes', label: 'observacoes' },
-                {
-                    value: (row) => this.formatCurrency(row.valor),
-                    label: 'Valor do Repasse',
-                },
-                {
-                    value: (row) => this.formatCurrency(row.valor_total),
-                    label: 'Valor Total',
-                },
-                {
-                    value: (row) => this.formatCurrency(row.valor_contrapartida),
-                    label: 'Valor Contrapartida',
-                },
-                { value: 'gestor_contrato', label: 'orgao_gestor_contrato' },
-                { value: 'distribuicao_recurso.orgao_gestor_descricao', label: 'orgao_gestor.descricao' },
-                { value: 'distribuicao_recurso.registro_sei', label: 'sei' },
-                { value: 'distribuicao_recurso.convenio', label: 'convenio' },
-                {
-                    value: 'distribuicao_recurso.assinatura_termo_aceite',
-                    label: 'assinatura_termo_aceite',
-                },
-                {
-                    value: 'distribuicao_recurso.assinatura_municipio',
-                    label: 'assinatura_municipio',
-                },
-                {
-                    value: 'distribuicao_recurso.assinatura_estado',
-                    label: 'assinatura_estado',
-                },
-                { value: 'distribuicao_recurso.vigencia', label: 'vigencia' },
-                {
-                    value: 'distribuicao_recurso.conclusao_suspensiva',
-                    label: 'conclusao_suspensiva',
                 },
             ];
         }
@@ -574,7 +629,10 @@ export class TransferenciasService implements ReportableService {
             );
             out.push({
                 name: 'transferencias.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
+                  buffer: Buffer.concat([
+                    Buffer.from('\uFEFF', 'utf8'),
+                    Buffer.from(linhas, 'utf8'),
+                ]),
             });
         }
 
@@ -582,15 +640,33 @@ export class TransferenciasService implements ReportableService {
             const json2csvParser = new Parser({
                 ...DefaultCsvOptions,
                 transforms: defaultTransform,
+                fields: [
+                    { value: 'transferencia_id', label: 'ID da Transferência' },
+                    { value: 'hirearquia', label: 'Hierarquia' },
+                    { value: 'tarefa', label: 'Tarefa' },
+                    {
+                        value: (row: { inicio_planejado: string | null }) =>
+                            row.inicio_planejado ? new Date(row.inicio_planejado).toLocaleDateString('pt-BR') : '',
+                        label: 'Início Planejado',
+                    },
+                    {
+                        value: (row: { termino_planejado: string | null }) =>
+                            row.termino_planejado ? new Date(row.termino_planejado).toLocaleDateString('pt-BR') : '',
+                        label: 'Término Planejado',
+                    },
+                    { value: 'custo_estimado', label: 'Custo Estimado' },
+                    { value: 'duracao_planejado', label: 'Duração Planejada' },
+                ],
             });
-            const linhas = json2csvParser.parse(
-                dados.linhas_cronograma.map((r) => {
-                    return { ...r };
-                })
-            );
+
+            const linhas = json2csvParser.parse(dados.linhas_cronograma);
+
             out.push({
                 name: 'cronograma.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
+                buffer: Buffer.concat([
+                    Buffer.from('\uFEFF', 'utf8'),
+                    Buffer.from(linhas, 'utf8'),
+                ]),
             });
         }
 

@@ -40,6 +40,7 @@ export class TribunalDeContasService implements ReportableService {
                     select: {
                         emenda: true,
                         ano: true,
+                        programa: true,
                     },
                 },
                 parlamentares: {
@@ -84,10 +85,11 @@ export class TribunalDeContasService implements ReportableService {
 
             return {
                 ano: distribuicao.transferencia.ano,
+                emenda: distribuicao.transferencia.emenda ? distribuicao.transferencia.emenda.replace(/\D/g, '') : '',
+                programa: distribuicao.transferencia.programa ? Number(distribuicao.transferencia.programa) : null,
                 parlamentar: distribuicao.parlamentares.map((p) => p.parlamentar.nome_popular).join('|'),
                 status: statusReport ?? null,
-                valor_repasse: distribuicao.valor.toNumber(),
-                emenda: distribuicao.transferencia.emenda,
+                valor_repasse: distribuicao.valor ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(distribuicao.valor)): null,
                 acao: distribuicao.objeto,
                 gestor_municipal: distribuicao.orgao_gestor.sigla + ' - ' + distribuicao.orgao_gestor.descricao,
                 prazo_vigencia: Date2YMD.toStringOrNull(distribuicao.vigencia),
@@ -110,6 +112,18 @@ export class TribunalDeContasService implements ReportableService {
             const json2csvParser = new Parser({
                 ...DefaultCsvOptions,
                 transforms: defaultTransform,
+                fields: [
+                    { value: 'emenda', label: 'Emenda' },
+                    { value: 'programa', label: 'Programa' },
+                    { value: 'ano', label: 'Ano' },
+                    { value: 'parlamentar', label: 'Parlamentar' },
+                    { value: 'valor_repasse', label: 'Valor de Repasse' },
+                    { value: 'acao', label: 'Ação' },
+                    { value: 'gestor_municipal', label: 'Gestor Municipal' },
+                    { value: 'prazo_vigencia', label: 'Prazo de Vigência' },
+                    { value: 'dotacao_orcamentaria', label: 'Dotação Orçamentaria' },
+                    { value: 'rubrica_de_receita', label: 'Rubrica de Receita' },
+                ],
             });
             const linhas = json2csvParser.parse(
                 dados.linhas.map((r) => {
