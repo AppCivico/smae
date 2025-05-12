@@ -2507,9 +2507,14 @@ export class ProjetoService {
         if (!portfolio)
             throw new HttpException('portfolio_id| Portfolio não está liberado para o seu usuário editar', 400);
 
+        console.log('\n\n\n===================================\n\n\n');
+        console.log(dto.responsaveis_no_orgao_gestor);
+        console.log(dto.orgao_responsavel_id);
+        console.log('\n\n\n===================================\n\n\n');
+
         const edit = dto.responsaveis_no_orgao_gestor
             ? {
-                  orgao_gestor_id: projeto.orgao_gestor.id,
+                  orgao_gestor_id: dto.orgao_gestor_id ?? projeto.orgao_gestor.id,
                   responsaveis_no_orgao_gestor: dto.responsaveis_no_orgao_gestor,
               }
             : {};
