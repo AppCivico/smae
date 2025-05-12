@@ -1,5 +1,4 @@
 <script setup>
-import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import { relatórioOrçamentárioPlanosSetoriais as schema } from '@/consts/formSchemas';
 import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
 import maskMonth from '@/helpers/maskMonth';
@@ -59,13 +58,13 @@ PlanosSetoriaisStore.buscarTudo();
 </script>
 
 <template>
-  <header class="flex spacebetween center mb2">
-    <TituloDaPagina />
+  <CabecalhoDePagina :formulario-sujo="formularioSujo" />
 
-    <hr class="ml2 f1">
-
-    <CheckClose :formulario-sujo="formularioSujo" />
-  </header>
+  <p class="texto--explicativo">
+    Serão geradas 2 planilhas contendo os registros de execução orçamentária e do
+    orçamento planejado. A versão analítica retorna todos os registros e a
+    versão consolidada retorna somente o valor vigente no momento.
+  </p>
 
   <Form
     v-slot="{ errors, isSubmitting }"

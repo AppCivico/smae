@@ -15,10 +15,9 @@ import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 // eslint-disable-next-line import/no-cycle
 import { useTagsStore } from '@/stores/tags.store';
 import { storeToRefs } from 'pinia';
-import { Field, Form } from 'vee-validate';
+import { Field, Form, useIsFormDirty } from 'vee-validate';
 import { onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import CheckClose from '../../components/CheckClose.vue';
 
 const TagsStore = useTagsStore();
 const { filtradasPorPdM } = storeToRefs(TagsStore);
@@ -30,6 +29,8 @@ const relatoriosStore = useRelatoriosStore();
 const route = useRoute();
 const router = useRouter();
 const { loading } = storeToRefs(relatoriosStore);
+
+const formularioSujo = useIsFormDirty();
 
 const initialValues = ref({
   fonte: 'MonitoramentoMensal',
@@ -88,11 +89,13 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="flex spacebetween center mb2">
-    <h1>{{ $route.meta.título || $route.name }}</h1>
-    <hr class="ml2 f1">
-    <CheckClose />
-  </div>
+  <CabecalhoDePagina :formulario-sujo="formularioSujo" />
+
+  <p class="texto--explicativo">
+    Será gerado um conjunto de 4 planilhas contendo os dados
+    do ciclo mensal de monitoramento físico do mês informado.
+  </p>
+
   <Form
     v-slot="{ errors, isSubmitting, resetField, values }"
     :validation-schema="schema"
