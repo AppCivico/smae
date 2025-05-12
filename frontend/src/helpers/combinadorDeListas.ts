@@ -1,8 +1,10 @@
+import obterPropriedadeNoObjeto from './objetos/obterPropriedadeNoObjeto';
+
 /**
  * Combina os valores de um array de objetos baseado em uma propriedade,
  * separando-os com o separador escolhido.
  *
- * @param {Array<object | string | number>} array - O array de objetos,
+ * @param {Array<object | string | number>} lista - O array de objetos,
  * strings ou números a serem combinados.
  *
  * @param {string} [separadorFornecido=', '] - O separador usado para juntar os valores.
@@ -13,43 +15,53 @@
  *
  * @returns {string} A string combinada dos valores, separada pelo separador fornecido.
  *
- * @throws {Error} Se o argumento `array` não for um array,
  * exibe um erro no console e retorna uma string vazia.
  */
-import { join } from 'lodash';
-
 export default function combinadorDeListas(
-  array: Array<object | string | number>,
+  lista: Array<object | string | number>,
   separadorFornecido?: string,
   propriedade?: string,
 ): string {
+  // Se o separador não for uma string, exibe um aviso no console
+  if (typeof separadorFornecido !== 'string') {
+    console.error('O separador deve ser uma string');
+  }
+
   const separador = (!separadorFornecido || typeof separadorFornecido !== 'string')
     ? ', '
     : separadorFornecido;
 
-  // Se não for um array retorna uma string vazia pra não quebrar tudo
-  // mas exibe um erro no console
-  if (!Array.isArray(array)) {
-    console.error('O argumento deve ser um array');
+  // Se a propriedade não for uma string, exibe um aviso no console
+  // e retorna uma string vazia para não quebrar o código
+  if (propriedade && typeof propriedade !== 'string') {
+    console.error('O caminho da propriedade deve ser uma string');
     return '';
   }
 
-  // Se a propriedade tiver um "." quer dizer que ela está dentro de um objeto
-  // que deve ser um array, então descemos mais um nível para pegar o valor
-  // da propriedade
-  if (propriedade?.includes('.')) {
-    const [propriedadePrincipal, propriedadeSecundária] = propriedade.split('.');
-    return join(
-      array.map((obj) => obj[propriedadePrincipal as keyof object][propriedadeSecundária as keyof object]),
-      separador,
-    );
+  // Se não for um array retorna uma string vazia pra não quebrar tudo
+  // mas exibe um erro no console
+  if (!Array.isArray(lista)) {
+    if (import.meta.env.VITE_EXPOR_ERROS === 'true' || import.meta.env.DEV) {
+      console.error('O parâmetro deve ser um array');
+    }
+    return '';
   }
 
-  // Se for um array de objetos, combina os valores das propriedades
+  // Se a lista estiver vazia, retorna um texto vazio
+  if (!lista.length) {
+    return '';
+  }
+  // Se a propriedade tiver um "." quer dizer que ela está dentro de um objeto,
+  // então descemos mais um nível para pegar o valor da propriedade
   if (propriedade) {
-    return join(array.map((obj) => obj[propriedade as keyof object]), separador);
+    return lista.reduce<string>((acumulador, item) => {
+      const valor = obterPropriedadeNoObjeto(propriedade, item as Record<string, unknown>, true);
+      return typeof valor !== 'string' && typeof valor !== 'number'
+        ? `${acumulador}${JSON.stringify(valor)}${separador}`
+        : `${acumulador}${valor}${separador}`;
+    }, '').slice(0, -separador.length);
   }
 
   // Se não apenas combina os items do array usando o separador
-  return join(array, separador);
+  return lista.join(separador);
 }
