@@ -17,7 +17,7 @@ export class CasaCivilAtividadesPendentesService implements ReportableService {
     constructor(
         private readonly prisma: PrismaService,
     ) {}
-   async asJSON(params: CreateCasaCivilAtividadesPendentesFilterDto): Promise<RelCasaCivilAtividadesPendentes[]> {
+    async asJSON(params: CreateCasaCivilAtividadesPendentesFilterDto): Promise<RelCasaCivilAtividadesPendentes[]> {
         let sql = ` select
                         t.identificador,
                         (
@@ -25,7 +25,7 @@ export class CasaCivilAtividadesPendentesService implements ReportableService {
                             from parlamentar p
                             inner join transferencia_parlamentar tp on p.id = tp.parlamentar_id and tp.transferencia_id = t.id
                         ) as parlamentares,
-                        'R$ ' || TO_CHAR(t.valor, 'FM999G999G999D00') AS valor,
+                        t.valor AS valor,
                         tf.tarefa as atividade,
                         TO_CHAR(tf.inicio_planejado, 'DD/MM/YYYY') AS inicio_planejado,
                         TO_CHAR(tf.termino_planejado, 'DD/MM/YYYY') AS termino_planejado,
@@ -66,13 +66,24 @@ export class CasaCivilAtividadesPendentesService implements ReportableService {
         const fieldsCSV = [
             { value: 'identificador', label: 'Identificador' },
             { value: 'parlamentares', label: 'Parlamentares' },
-            { value: 'valor', label: 'Valor do Repasse' },
+            {
+                value: (row: { valor: number | null }) =>
+                    row.valor != null
+                        ? new Intl.NumberFormat('pt-BR', {
+                              style: 'currency',
+                              currency: 'BRL',
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                          }).format(row.valor)
+                        : '',
+                label: 'Valor do Repasse',
+            },
             { value: 'atividade', label: 'Atividade' },
-            { value: 'inicio_planejado', label: 'Previsão de Início'},
-            { value: 'termino_planejado', label: 'Previsão de Término'},
+            { value: 'inicio_planejado', label: 'Previsão de Início' },
+            { value: 'termino_planejado', label: 'Previsão de Término' },
             { value: 'inicio_real', label: 'Início Real' },
             { value: 'orgao_responsavel', label: 'Orgão Responsável' },
-            { value: 'responsavel_atividade', label: 'Responsável pela Atividade'},
+            { value: 'responsavel_atividade', label: 'Responsável pela Atividade' },
         ];
 
         const out: FileOutput[] = [];
@@ -90,5 +101,4 @@ export class CasaCivilAtividadesPendentesService implements ReportableService {
         }
         return out;
     }
-
 }

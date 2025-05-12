@@ -239,12 +239,8 @@ export class TransferenciasService implements ReportableService {
                     transferencia_id: tarefaCronoId.transferencia_id!,
                     hirearquia: tarefasHierarquia[e.id],
                     tarefa: e.tarefa,
-                    inicio_planejado: e.inicio_planejado
-                        ? new Date(e.inicio_planejado).toLocaleDateString('pt-BR')
-                        : '',
-                    termino_planejado: e.termino_planejado
-                        ? new Date(e.termino_planejado).toLocaleDateString('pt-BR')
-                        : '',
+                    inicio_planejado: e.inicio_planejado,
+                    termino_planejado: e.termino_planejado,
                     custo_estimado: e.custo_estimado,
                     duracao_planejado: e.duracao_planejado,
                 });
@@ -633,7 +629,10 @@ export class TransferenciasService implements ReportableService {
             );
             out.push({
                 name: 'transferencias.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
+                  buffer: Buffer.concat([
+                    Buffer.from('\uFEFF', 'utf8'),
+                    Buffer.from(linhas, 'utf8'),
+                ]),
             });
         }
 
@@ -645,8 +644,16 @@ export class TransferenciasService implements ReportableService {
                     { value: 'transferencia_id', label: 'ID da Transferência' },
                     { value: 'hirearquia', label: 'Hierarquia' },
                     { value: 'tarefa', label: 'Tarefa' },
-                    { value: 'inicio_planejado', label: 'Início Planejado' },
-                    { value: 'termino_planejado', label: 'Término Planejado' },
+                    {
+                        value: (row: { inicio_planejado: string | null }) =>
+                            row.inicio_planejado ? new Date(row.inicio_planejado).toLocaleDateString('pt-BR') : '',
+                        label: 'Início Planejado',
+                    },
+                    {
+                        value: (row: { termino_planejado: string | null }) =>
+                            row.termino_planejado ? new Date(row.termino_planejado).toLocaleDateString('pt-BR') : '',
+                        label: 'Término Planejado',
+                    },
                     { value: 'custo_estimado', label: 'Custo Estimado' },
                     { value: 'duracao_planejado', label: 'Duração Planejada' },
                 ],
@@ -656,7 +663,10 @@ export class TransferenciasService implements ReportableService {
 
             out.push({
                 name: 'cronograma.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
+                buffer: Buffer.concat([
+                    Buffer.from('\uFEFF', 'utf8'),
+                    Buffer.from(linhas, 'utf8'),
+                ]),
             });
         }
 
