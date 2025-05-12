@@ -40,7 +40,10 @@ const emit = defineEmits<Emits>();
 const alertStore = useAlertStore();
 
 function handleRemoverItem() {
-  const valorDoParametro = obterPropriedadeNoObjeto(props.parametroNoObjetoParaExcluir, props.linha);
+  const valorDoParametro = obterPropriedadeNoObjeto(
+    props.parametroNoObjetoParaExcluir,
+    props.linha,
+  );
 
   alertStore.confirmAction(
     `Deseja mesmo remover o item "${valorDoParametro}"?`,

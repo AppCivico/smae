@@ -35,7 +35,7 @@ const conteudoColuna = computed((): unknown => {
     return undefined;
   }
 
-  const conteudo = obterPropriedadeNoObjeto(props.caminho, props.linha);
+  const conteudo = obterPropriedadeNoObjeto(props.caminho, props.linha, true);
 
   return typeof props.formatador === 'function'
     ? props.formatador(conteudo)
