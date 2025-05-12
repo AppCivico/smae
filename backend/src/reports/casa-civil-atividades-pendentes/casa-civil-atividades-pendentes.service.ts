@@ -18,27 +18,31 @@ export class CasaCivilAtividadesPendentesService implements ReportableService {
         private readonly prisma: PrismaService,
     ) {}
    async asJSON(params: CreateCasaCivilAtividadesPendentesFilterDto): Promise<RelCasaCivilAtividadesPendentes[]> {
-        let sql = ` select t.identificador,
-                           (select string_agg(p.nome::text, ', ')
+        let sql = ` select
+                        t.identificador,
+                        (
+                            select string_agg(p.nome::text, ', ')
                             from parlamentar p
-                                     inner join transferencia_parlamentar tp
-                                                on p.id = tp.parlamentar_id and tp.transferencia_id = t.id) as parlamentares,
-                           to_char_numeric(t.valor) as valor ,
-                           tf.tarefa                                                                        as atividade,
-                           to_char(tf.inicio_planejado::date, 'dd/mm/yyyy') as inicio_planejado,
-                           to_char(tf.termino_planejado, 'dd/mm/yyyy')      as termino_planejado,
-                           to_char(tf.inicio_real, 'dd/mm/yyyy')            as inicio_real,
-                           o.sigla                                                                          as orgao_responsavel,
-                           tf.recursos                                                                      as responsavel_atividade
-                    from tarefa_cronograma tc
-                             inner join tarefa tf on tf.tarefa_cronograma_id = tc.id
-                             inner join transferencia t on t.id = tc.transferencia_id
-                             inner join transferencia_tipo tt on tt.id = t.tipo_id
-                             left join orgao o on o.id = tf.orgao_id
-                    where tc.removido_em is null
-                      and t.removido_em is null
-                      and tf.removido_em is null
-                      and tf.termino_real is null`;
+                            inner join transferencia_parlamentar tp on p.id = tp.parlamentar_id and tp.transferencia_id = t.id
+                        ) as parlamentares,
+                        'R$ ' || TO_CHAR(t.valor, 'FM999G999G999D00') AS valor,
+                        tf.tarefa as atividade,
+                        TO_CHAR(tf.inicio_planejado, 'DD/MM/YYYY') AS inicio_planejado,
+                        TO_CHAR(tf.termino_planejado, 'DD/MM/YYYY') AS termino_planejado,
+                        TO_CHAR(tf.inicio_real, 'DD/MM/YYYY') AS inicio_real,
+                        o.sigla as orgao_responsavel,
+                        tf.recursos as responsavel_atividade
+                        from tarefa_cronograma tc
+                        inner join tarefa tf on tf.tarefa_cronograma_id = tc.id
+                        inner join transferencia t on t.id = tc.transferencia_id
+                        inner join transferencia_tipo tt on tt.id = t.tipo_id
+                        left join orgao o on o.id = tf.orgao_id
+                        where
+                        tc.removido_em is null
+                        and t.removido_em is null
+                        and tf.removido_em is null
+                        and tf.termino_real is null
+                        `;
         if (params.tipo_id && params.tipo_id.length > 0) {
             sql +=" and tt.id in ("+ params.tipo_id.toString() +")";
         }
