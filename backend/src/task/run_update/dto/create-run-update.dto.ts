@@ -56,7 +56,7 @@ export class VerificaOpsParaTipoConstraint implements ValidatorConstraintInterfa
 
         if (duplicatedSetCols.length > 0) {
             args.constraints[0] = `Operação 'Substituir' duplicada para a coluna '${duplicatedSetCols[0]}'.
-                se apenas uma operação 'Substituir' por coluna em cada atualização em lote.`;
+                Use apenas uma operação 'Substituir' por coluna em cada atualização em lote.`;
             return false;
         }
 
