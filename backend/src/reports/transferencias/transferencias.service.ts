@@ -475,7 +475,7 @@ export class TransferenciasService implements ReportableService {
                 { value: 'agencia_fim', label: 'Conta - Agência da Secretaria fim' },
                 { value: 'banco_aceite', label: 'Conta - Banco do aceite' },
                 { value: 'agencia_aceite', label: 'Conta - Agência do aceite' },
-                { value: 'programa', label: 'Nome do Programa' },
+                { value: 'nome_programa', label: 'Nome do Programa' },
                 { value: 'conta_aceite', label: 'Conta - Número do aceite' },
                 { value: 'emenda_unitaria', label: 'Emenda Unitária' },
                 {
