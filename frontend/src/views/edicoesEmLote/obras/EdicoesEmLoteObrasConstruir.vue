@@ -116,44 +116,47 @@ function campoConfigPorNome(nomeCampo) {
 }
 
 const schema = object({
-  edicoes: array().of(
-    object({
-      propriedade: string().required('Selecione o campo'),
-      valor: lazy((value, { parent }) => {
-        const { propriedade } = parent;
-        if (!propriedade) return mixed().nullable();
+  edicoes: array()
+    .of(
+      object({
+        propriedade: string().required('Selecione o campo'),
+        valor: lazy((value, { parent }) => {
+          const { propriedade } = parent;
+          if (!propriedade) return mixed().nullable();
 
-        const schemaOriginal = schemaObras.fields[propriedade];
-        if (!schemaOriginal) return mixed().required('Configuração inválida.');
+          const schemaOriginal = schemaObras.fields[propriedade];
+          if (!schemaOriginal) return mixed().required('Configuração inválida.');
 
-        const meta = schemaOriginal.meta?.() || {};
+          const meta = schemaOriginal.meta?.() || {};
 
-        if (meta.tipo === 'campos-compostos' && meta.campos) {
-          const shape = Object.fromEntries(
-            Object.entries(meta.campos)
-              .map(([key, subSchema]) => [key, subSchema.required('Campo obrigatório')]),
-          );
-          return object().shape(shape);
-        }
+          if (meta.tipo === 'campos-compostos' && meta.campos) {
+            const shape = Object.fromEntries(
+              Object.entries(meta.campos)
+                .map(([key, subSchema]) => [key, subSchema.required('Campo obrigatório')]),
+            );
+            return object().shape(shape);
+          }
 
-        if (schemaOriginal.type === 'array') {
-          return schemaOriginal;
-        }
+          if (schemaOriginal.type === 'array') {
+            return schemaOriginal;
+          }
 
-        return schemaOriginal.required('Informe o novo valor');
-      }),
-      operacao: string()
-        .nullable()
-        .transform((curr, orig) => (orig === undefined ? 'Set' : curr))
-        .when('propriedade', (propriedade, campoSchema) => {
-          const config = obterConfiguracaoCampo(propriedade);
-          const permitidas = config?.meta?.operacoes_permitidas || ['Set'];
-          return campoSchema
-            .required('Selecione a operação')
-            .oneOf(permitidas);
+          return schemaOriginal.required('Informe o novo valor');
         }),
-    }),
-  ).min(1, 'Adicione pelo menos uma edição'),
+        operacao: string()
+          .nullable()
+          .transform((curr, orig) => (orig === undefined ? 'Set' : curr))
+          .when('propriedade', (propriedade, campoSchema) => {
+            const config = obterConfiguracaoCampo(propriedade);
+            const permitidas = config?.meta?.operacoes_permitidas || ['Set'];
+            return campoSchema
+              .required('Selecione a operação')
+              .oneOf(permitidas);
+          }),
+      }),
+    )
+    .min(1, 'Adicione pelo menos uma edição')
+    .required('Adicione pelo menos uma edição'),
 });
 
 const {
@@ -350,7 +353,7 @@ async function handlePropertyChange(event, idx) {
           </div>
 
           <div
-            v-if="campoConfig(idx)?.meta?.operacoes_permitidas?.length > 0"
+            :hidden="!campoConfig(idx)?.meta?.operacoes_permitidas?.length > 0"
             class="f1"
           >
             <LabelFromYup
@@ -466,7 +469,6 @@ async function handlePropertyChange(event, idx) {
         <button
           type="submit"
           class="btn big"
-          :disabled="Object.keys(errors).length > 0 || values.edicoes?.length === 0"
         >
           Aplicar Edição
         </button>
@@ -539,24 +541,11 @@ async function handlePropertyChange(event, idx) {
     margin-bottom: 0;
   }
 
-  .fields-list:has(> :nth-child(4)):not(:has(> :nth-child(5))) > *:nth-child(1) {
-    grid-column: 1 / 3;
-    grid-row: 1;
-  }
-
-  .fields-list:has(> :nth-child(4)):not(:has(> :nth-child(5))) > *:nth-child(2) {
-    grid-column: 3 / 5;
-    grid-row: 1;
-  }
-
-  .fields-list:has(> :nth-child(4)):not(:has(> :nth-child(5))) > *:nth-child(3) {
-    grid-column: 3 / 5;
-    grid-row: 2;
-  }
-
-  .fields-list:has(> :nth-child(4)):not(:has(> :nth-child(5))) > *:nth-child(4) {
-    grid-column: 5;
-    grid-row: 1;
+  .fields-list:not(:has(> *:nth-child(2)[hidden])) {
+    > *:nth-child(3) {
+      grid-column: 3 / 5;
+      grid-row: 2;
+    }
   }
 }
 </style>
