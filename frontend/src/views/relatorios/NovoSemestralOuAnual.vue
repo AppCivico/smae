@@ -1,6 +1,5 @@
 <script setup>
 import AutocompleteField from '@/components/AutocompleteField2.vue';
-import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import { relatórioSemestralOuAnual as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { storeToRefs } from 'pinia';
@@ -85,13 +84,15 @@ onMounted(async () => {
 </script>
 
 <template>
-  <header class="flex spacebetween center mb2">
-    <TituloDaPagina />
+  <CabecalhoDePagina :formulario-sujo="formularioSujo" />
 
-    <hr class="ml2 f1">
-
-    <CheckClose :formulario-sujo="formularioSujo" />
-  </header>
+  <p class="texto--explicativo">
+    Será gerado um conjunto de 2 planilhas contendo os indicadores da meta e de
+    seus desdobramentos e valores das variáveis regionalizadas. A versão
+    analítica retorna todos os valores das séries, desde o inicio da medição até
+    o periodo informado, e a consolidada somente os valores consolidados do
+    final de cada semestre/ano.
+  </p>
 
   <Form
     v-slot="{ errors, isSubmitting, values }"

@@ -1,6 +1,5 @@
 <script setup>
 import AutocompleteField from '@/components/AutocompleteField2.vue';
-import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import { relatórioDePrevisãoDeCustoPlanosSetoriais as schema } from '@/consts/formSchemas';
 import truncate from '@/helpers/texto/truncate';
 import { useAlertStore } from '@/stores/alert.store';
@@ -115,13 +114,12 @@ iniciar();
 </script>
 
 <template>
-  <header class="flex spacebetween center mb2">
-    <TituloDaPagina />
+  <CabecalhoDePagina :formulario-sujo="formularioSujo" />
 
-    <hr class="ml2 f1">
-
-    <CheckClose :formulario-sujo="formularioSujo" />
-  </header>
+  <p class="texto--explicativo">
+    Será gerada uma planilha contendo os registros de previsão de custo
+    registrados nas metas
+  </p>
 
   <Form
     v-slot="{ errors, isSubmitting, resetField, setFieldValue, values }"
