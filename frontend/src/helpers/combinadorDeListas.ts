@@ -1,5 +1,13 @@
 import obterPropriedadeNoObjeto from './objetos/obterPropriedadeNoObjeto';
 
+const juntarValores = (
+  acumulador: string,
+  item: object | string | number | null | undefined,
+  separador: string,
+): string => (typeof item !== 'string' && typeof item !== 'number'
+  ? `${acumulador}${JSON.stringify(item)}${separador}`
+  : `${acumulador}${item}${separador}`);
+
 /**
  * Combina os valores de um array de objetos baseado em uma propriedade,
  * separando-os com o separador escolhido.
@@ -56,12 +64,11 @@ export default function combinadorDeListas(
   if (propriedade) {
     return lista.reduce<string>((acumulador, item) => {
       const valor = obterPropriedadeNoObjeto(propriedade, item as Record<string, unknown>, true);
-      return typeof valor !== 'string' && typeof valor !== 'number'
-        ? `${acumulador}${JSON.stringify(valor)}${separador}`
-        : `${acumulador}${valor}${separador}`;
+      return juntarValores(acumulador, valor, separador);
     }, '').slice(0, -separador.length);
   }
 
   // Se não apenas combina os items do array usando o separador
-  return lista.join(separador);
+  return lista.reduce<string>((acumulador, item) => juntarValores(acumulador, item, separador), '')
+    .slice(0, -separador.length);
 }
