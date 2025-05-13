@@ -14,9 +14,7 @@ const defaultTransform = [flatten({ paths: [] })];
 
 @Injectable()
 export class CasaCivilAtividadesPendentesService implements ReportableService {
-    constructor(
-        private readonly prisma: PrismaService,
-    ) {}
+    constructor(private readonly prisma: PrismaService) {}
     async asJSON(params: CreateCasaCivilAtividadesPendentesFilterDto): Promise<RelCasaCivilAtividadesPendentes[]> {
         let sql = ` select
                         t.identificador,
@@ -27,9 +25,9 @@ export class CasaCivilAtividadesPendentesService implements ReportableService {
                         ) as parlamentares,
                         t.valor AS valor,
                         tf.tarefa as atividade,
-                        TO_CHAR(tf.inicio_planejado, 'DD/MM/YYYY') AS inicio_planejado,
-                        TO_CHAR(tf.termino_planejado, 'DD/MM/YYYY') AS termino_planejado,
-                        TO_CHAR(tf.inicio_real, 'DD/MM/YYYY') AS inicio_real,
+                        tf.inicio_planejado AS inicio_planejado,
+                        tf.termino_planejado AS termino_planejado,
+                        tf.inicio_real AS inicio_real,
                         o.sigla as orgao_responsavel,
                         tf.recursos as responsavel_atividade
                         from tarefa_cronograma tc
@@ -44,18 +42,18 @@ export class CasaCivilAtividadesPendentesService implements ReportableService {
                         and tf.termino_real is null
                         `;
         if (params.tipo_id && params.tipo_id.length > 0) {
-            sql +=" and tt.id in ("+ params.tipo_id.toString() +")";
+            sql += ' and tt.id in (' + params.tipo_id.toString() + ')';
         }
-        if (params.data_inicio){
-            sql +=" and tf.inicio_planejado >= '"+   Date2YMD.toString(params.data_inicio)  +"'";
+        if (params.data_inicio) {
+            sql += " and tf.inicio_planejado >= '" + Date2YMD.toString(params.data_inicio) + "'";
         }
-        if (params.data_termino){
-            sql +=" and tf.inicio_planejado <= '"+ Date2YMD.toString(params.data_termino) +"'";
+        if (params.data_termino) {
+            sql += " and tf.inicio_planejado <= '" + Date2YMD.toString(params.data_termino) + "'";
         }
         if (params.orgao_id && params.orgao_id.length > 0) {
-            sql +=" and tf.orgao_id in("+ params.orgao_id.toString() +")";
+            sql += ' and tf.orgao_id in(' + params.orgao_id.toString() + ')';
         }
-        const linhas  = await this.prisma.$queryRawUnsafe(sql);
+        const linhas = await this.prisma.$queryRawUnsafe(sql);
         return linhas as RelCasaCivilAtividadesPendentes[];
     }
 
@@ -79,9 +77,21 @@ export class CasaCivilAtividadesPendentesService implements ReportableService {
                 label: 'Valor do Repasse',
             },
             { value: 'atividade', label: 'Atividade' },
-            { value: 'inicio_planejado', label: 'Previsão de Início' },
-            { value: 'termino_planejado', label: 'Previsão de Término' },
-            { value: 'inicio_real', label: 'Início Real' },
+            {
+                value: (row: any) =>
+                    row.inicio_planejado ? new Date(row.inicio_planejado).toLocaleDateString('pt-BR') : '',
+                label: 'Previsão de Início',
+            },
+            {
+                value: (row: any) =>
+                    row.termino_planejado ? new Date(row.termino_planejado).toLocaleDateString('pt-BR') : '',
+                label: 'Previsão de Término',
+            },
+            {
+                value: (row: any) => (row.inicio_real ? new Date(row.inicio_real).toLocaleDateString('pt-BR') : ''),
+                label: 'Início Real',
+            },
+
             { value: 'orgao_responsavel', label: 'Orgão Responsável' },
             { value: 'responsavel_atividade', label: 'Responsável pela Atividade' },
         ];

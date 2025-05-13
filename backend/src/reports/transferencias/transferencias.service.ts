@@ -475,7 +475,7 @@ export class TransferenciasService implements ReportableService {
                 { value: 'agencia_fim', label: 'Conta - Agência da Secretaria fim' },
                 { value: 'banco_aceite', label: 'Conta - Banco do aceite' },
                 { value: 'agencia_aceite', label: 'Conta - Agência do aceite' },
-                { value: 'programa', label: 'Nome do Programa' },
+                { value: 'programa', label: 'Código do Programa' },
                 { value: 'conta_aceite', label: 'Conta - Número do aceite' },
                 { value: 'emenda_unitaria', label: 'Emenda Unitária' },
                 {
@@ -561,21 +561,21 @@ export class TransferenciasService implements ReportableService {
                 { value: '', label: 'Distribuição - Banco' },
                 { value: '', label: 'Distribuição - Agência' },
                 { value: '', label: 'Distribuição - Conta Corrente' },
-                { value: '', label: 'Distribuição - Gestor da Contao' },
+                { value: '', label: 'Distribuição - Gestor da Conta' },
             ];
         } else {
             fields = [
-                { value: 'identificador', label: 'identificador' },
+                { value: 'identificador', label: 'Identificador' },
                 { value: 'esfera', label: 'esfera' },
                 { value: 'demanda', label: 'Número da Demanda/Proposta' },
                 { value: 'orgao_concedente.descricao', label: 'Orgão Concedente' },
                 { value: 'parlamentar.nome_popular', label: 'parlamentar.nome_popular' },
-                { value: 'partido.sigla', label: 'partido.sigla' },
-                { value: 'programa', label: 'programa' },
-                { value: 'ano', label: 'ano' },
+                { value: 'partido.sigla', label: 'Partido' },
+                { value: 'programa', label: 'Código do Programa' },
+                { value: 'ano', label: 'Ano' },
                 { value: 'objeto', label: 'Objeto' },
                 { value: 'detalhamento', label: 'Detalhamento' },
-                { value: 'clausula_suspensiva_vencimento', label: 'Data de vencimento da Suspensiva' },
+                { value: 'clausula_suspensiva_vencimento', label: 'Cláusula Suspensiva' },
                 { value: 'observacoes', label: 'Observações' },
                 {
                     value: (row) => this.formatCurrency(row.valor),
@@ -629,10 +629,7 @@ export class TransferenciasService implements ReportableService {
             );
             out.push({
                 name: 'transferencias.csv',
-                  buffer: Buffer.concat([
-                    Buffer.from('\uFEFF', 'utf8'),
-                    Buffer.from(linhas, 'utf8'),
-                ]),
+                buffer: Buffer.from(linhas, 'utf8'),
             });
         }
 
@@ -663,10 +660,7 @@ export class TransferenciasService implements ReportableService {
 
             out.push({
                 name: 'cronograma.csv',
-                buffer: Buffer.concat([
-                    Buffer.from('\uFEFF', 'utf8'),
-                    Buffer.from(linhas, 'utf8'),
-                ]),
+                buffer: Buffer.from(linhas, 'utf8'),
             });
         }
 
