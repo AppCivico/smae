@@ -196,6 +196,7 @@ const maxLength = computed(() => props.config?.schema?.tests?.find((test) => tes
       :readonly="readonly"
       :limitar-para-um-orgao="true"
       :numero-maximo-de-participantes="config?.meta?.numeroMaximoDeParticipantes"
+      :pessoa-informativo="config?.meta?.balaoInformativo"
       @update:modelValue="updateValue"
     />
 
@@ -235,7 +236,12 @@ const maxLength = computed(() => props.config?.schema?.tests?.find((test) => tes
       @focus="readonly && $event.target.blur()"
       @update:modelValue="updateValue"
     >
-      <option value="" disabled>Selecione...</option>
+      <option
+        value=""
+        disabled
+      >
+        Selecione...
+      </option>
       <option
         v-for="opcao in getOptionsForField(config)"
         :key="opcao.value"
