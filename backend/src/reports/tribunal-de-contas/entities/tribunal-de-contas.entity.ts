@@ -7,7 +7,7 @@ export class RelTribunalDeContasDto {
     gestor_municipal: string;
     prazo_vigencia: string | null;
     emenda: string | null;
-    programa: number | null;
+    programa: string | null;
     // Estes dois campos serão preenchidos com string vazia.
     // Pois serão preenchidos manualmente.
     dotacao_orcamentaria: string;

@@ -85,11 +85,11 @@ export class TribunalDeContasService implements ReportableService {
 
             return {
                 ano: distribuicao.transferencia.ano,
-                emenda: distribuicao.transferencia.emenda ? distribuicao.transferencia.emenda.replace(/\D/g, '') : '',
-                programa: distribuicao.transferencia.programa ? Number(distribuicao.transferencia.programa) : null,
+                emenda: distribuicao.transferencia.emenda,
+                programa: distribuicao.transferencia.programa,
                 parlamentar: distribuicao.parlamentares.map((p) => p.parlamentar.nome_popular).join('|'),
                 status: statusReport ?? null,
-                valor_repasse: distribuicao.valor ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(distribuicao.valor)): null,
+                valor_repasse: distribuicao.valor?.toString() ?? null,
                 acao: distribuicao.objeto,
                 gestor_municipal: distribuicao.orgao_gestor.sigla + ' - ' + distribuicao.orgao_gestor.descricao,
                 prazo_vigencia: Date2YMD.toStringOrNull(distribuicao.vigencia),
@@ -113,11 +113,26 @@ export class TribunalDeContasService implements ReportableService {
                 ...DefaultCsvOptions,
                 transforms: defaultTransform,
                 fields: [
-                    { value: 'emenda', label: 'Emenda' },
-                    { value: 'programa', label: 'Programa' },
+                    {
+                        value: (row: any) => (row.emenda ? `="${String(row.emenda).replace(/\D/g, '')}"` : ''),
+                        label: 'Emenda',
+                    },
+                    {
+                        value: (row: any) => (row.programa ? `="${String(row.programa).replace(/\D/g, '')}"` : ''),
+                        label: 'Programa',
+                    },
                     { value: 'ano', label: 'Ano' },
                     { value: 'parlamentar', label: 'Parlamentar' },
-                    { value: 'valor_repasse', label: 'Valor de Repasse' },
+                    {
+                        value: (row: any) =>
+                            row.valor_repasse != null
+                                ? new Intl.NumberFormat('pt-BR', {
+                                      style: 'currency',
+                                      currency: 'BRL',
+                                  }).format(Number(row.valor_repasse))
+                                : '',
+                        label: 'Valor de Repasse',
+                    },
                     { value: 'acao', label: 'Ação' },
                     { value: 'gestor_municipal', label: 'Gestor Municipal' },
                     { value: 'prazo_vigencia', label: 'Prazo de Vigência' },
