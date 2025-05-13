@@ -107,7 +107,6 @@ onMounted(async () => {
           <span class="tvermelho">*</span>
         </label>
         <Field
-          v-model="initialValues.parametros.pdm_id"
           name="parametros.pdm_id"
           as="select"
           class="inputtext light mb1"
