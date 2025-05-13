@@ -1,5 +1,4 @@
 <script setup>
-import MigalhasDePao from '@/components/MigalhasDePao.vue';
 import { relatórioDePrevisãoDeCustoPortfolio as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
@@ -60,8 +59,6 @@ function iniciar() {
 iniciar();
 </script>
 <template>
-  <MigalhasDePao class="mb1" />
-
   <CabecalhoDePagina :formulario-sujo="false" />
 
   <Form

@@ -68,7 +68,7 @@ watchEffect(() => {
     <template #acoes>
       <SmaeLink
         :to="{ name: 'variaveisCriar' }"
-        class="btn big ml1"
+        class="btn big"
       >
         Nova variável
       </SmaeLink>

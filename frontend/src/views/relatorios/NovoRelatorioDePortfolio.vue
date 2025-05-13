@@ -1,5 +1,4 @@
 <script setup>
-import MigalhasDePao from '@/components/MigalhasDePao.vue';
 import { relatórioDePortfolio as schema } from '@/consts/formSchemas';
 import listaDeStatuses from '@/consts/projectStatuses';
 import truncate from '@/helpers/texto/truncate';
@@ -58,8 +57,6 @@ iniciar();
 </script>
 
 <template>
-  <MigalhasDePao class="mb1" />
-
   <CabecalhoDePagina :formulario-sujo="false" />
 
   <Form

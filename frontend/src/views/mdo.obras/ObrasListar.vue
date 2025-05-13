@@ -6,7 +6,7 @@
           :to="{
             name: 'obrasCriar'
           }"
-          class="btn big ml1"
+          class="btn big"
         >
           Nova obra
         </SmaeLink>

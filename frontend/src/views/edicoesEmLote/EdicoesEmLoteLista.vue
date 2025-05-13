@@ -41,7 +41,7 @@ onMounted(() => {
       <router-link
         v-if="$route.meta.rotaDeAdição"
         :to="$route.meta.rotaDeAdição"
-        class="btn big ml1"
+        class="btn big"
       >
         Nova edição em lote
       </router-link>

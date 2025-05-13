@@ -1,5 +1,4 @@
 <script setup>
-import MigalhasDePao from '@/components/MigalhasDePao.vue';
 import { relatórioOrçamentárioPortfolio as schema } from '@/consts/formSchemas';
 import maskMonth from '@/helpers/maskMonth';
 import monthAndYearToDate from '@/helpers/monthAndYearToDate';
@@ -59,8 +58,6 @@ portfolioStore.buscarTudo();
 </script>
 
 <template>
-  <MigalhasDePao class="mb1" />
-
   <CabecalhoDePagina :formulario-sujo="false" />
 
   <Form
