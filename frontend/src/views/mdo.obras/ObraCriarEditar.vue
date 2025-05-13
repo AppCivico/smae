@@ -1544,7 +1544,7 @@ watch(listaDeTiposDeIntervenção, () => {
           :valores-iniciais="itemParaEdicao.colaboradores_no_orgao"
           name="colaboradores_no_orgao"
           :orgao-label="schema.fields.colaboradores_no_orgao.spec.label"
-          :pessoas-label="schema.fields.ponto_focal_responsavel.spec.label"
+          :pessoas-label="schema.fields.ponto_focal_colaborador.spec.label"
           :pessoas="possíveisResponsáveisPorÓrgãoId[values.orgao_colaborador_id] || []"
           :pessoa-informativo="schema.fields.colaboradores_no_orgao.meta().balaoInformativo"
         />
