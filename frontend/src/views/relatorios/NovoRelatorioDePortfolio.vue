@@ -1,6 +1,5 @@
 <script setup>
 import MigalhasDePao from '@/components/MigalhasDePao.vue';
-import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import { relatórioDePortfolio as schema } from '@/consts/formSchemas';
 import listaDeStatuses from '@/consts/projectStatuses';
 import truncate from '@/helpers/texto/truncate';
@@ -10,14 +9,12 @@ import { usePortfolioStore } from '@/stores/portfolios.store.ts';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { storeToRefs } from 'pinia';
 import {
-  Field, Form, useIsFormDirty,
+  Field, Form,
 } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute();
 const router = useRouter();
-
-const formularioSujo = useIsFormDirty();
 
 const alertStore = useAlertStore();
 const relatoriosStore = useRelatoriosStore();
@@ -63,13 +60,7 @@ iniciar();
 <template>
   <MigalhasDePao class="mb1" />
 
-  <header class="flex spacebetween center mb2">
-    <TituloDaPagina />
-
-    <hr class="ml2 f1">
-
-    <CheckClose :formulario-sujo="formularioSujo" />
-  </header>
+  <CabecalhoDePagina :formulario-sujo="false" />
 
   <Form
     v-slot="{ errors, isSubmitting }"

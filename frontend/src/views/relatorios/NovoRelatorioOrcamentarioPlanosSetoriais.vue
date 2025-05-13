@@ -6,7 +6,7 @@ import monthAndYearToDate from '@/helpers/monthAndYearToDate';
 import { useAlertStore } from '@/stores/alert.store';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
-import { Field, Form, useIsFormDirty } from 'vee-validate';
+import { Field, Form } from 'vee-validate';
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -16,8 +16,6 @@ const alertStore = useAlertStore();
 const PlanosSetoriaisStore = usePlanosSetoriaisStore();
 const relatoriosStore = useRelatoriosStore();
 const router = useRouter();
-
-const formularioSujo = useIsFormDirty();
 
 const currentYear = new Date().getFullYear();
 
@@ -58,7 +56,7 @@ PlanosSetoriaisStore.buscarTudo();
 </script>
 
 <template>
-  <CabecalhoDePagina :formulario-sujo="formularioSujo" />
+  <CabecalhoDePagina :formulario-sujo="false" />
 
   <p class="texto--explicativo">
     Serão geradas 2 planilhas contendo os registros de execução orçamentária e do

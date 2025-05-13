@@ -7,7 +7,7 @@ import { useAlertStore } from '@/stores/alert.store';
 // eslint-disable-next-line import/no-cycle
 import { usePdMStore } from '@/stores/pdm.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
-import { Field, Form, useIsFormDirty } from 'vee-validate';
+import { Field, Form } from 'vee-validate';
 import { computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -16,8 +16,6 @@ const PdMStore = usePdMStore();
 const relatoriosStore = useRelatoriosStore();
 const route = useRoute();
 const router = useRouter();
-
-const formularioSujo = useIsFormDirty();
 
 const initialValues = computed(() => ({
   fonte: 'Orcamento',
@@ -61,7 +59,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <CabecalhoDePagina :formulario-sujo="formularioSujo" />
+  <CabecalhoDePagina :formulario-sujo="false" />
 
   <p class="texto--explicativo">
     Serão geradas 2 planilhas contendo os registros de execução orçamentária e do

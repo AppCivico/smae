@@ -6,7 +6,7 @@ import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store.ts';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { storeToRefs } from 'pinia';
 import {
-  ErrorMessage, Field, Form, useIsFormDirty,
+  ErrorMessage, Field, Form,
 } from 'vee-validate';
 import { ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -33,8 +33,6 @@ const { lista: listaDePlanosDisponiveis } = storeToRefs(planosSetoriaisStore);
 
 const planosMetasSimplificadosStore = usePlanosSimplificadosStore(route.meta.entidadeMãe);
 const { chamadasPendentes, planosPorId } = storeToRefs(planosMetasSimplificadosStore);
-
-const formularioSujo = useIsFormDirty();
 
 const { loading } = storeToRefs(relatoriosStore);
 
@@ -76,7 +74,7 @@ if (!listaDePlanosDisponiveis.value.length) {
 }
 </script>
 <template>
-  <CabecalhoDePagina :formulario-sujo="formularioSujo" />
+  <CabecalhoDePagina :formulario-sujo="false" />
 
   <p class="texto--explicativo">
     Será gerado um conjunto de 4 planilhas, contendo os dados
