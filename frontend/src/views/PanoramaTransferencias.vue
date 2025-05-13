@@ -324,7 +324,7 @@ onUnmounted(() => {
           class="inputtext mb1"
           name="visao_pessoal"
         >
-          <option>
+          <option value="">
             -
           </option>
           <option
