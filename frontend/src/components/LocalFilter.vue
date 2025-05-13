@@ -1,9 +1,7 @@
 <script setup>
-import filtrarObjetos from '@/helpers/filtrarObjetos';
+import { ref, watch } from 'vue';
 import { debounce } from 'lodash';
-import {
-  ref, watch,
-} from 'vue';
+import filtrarObjetos from '@/helpers/filtrarObjetos';
 
 const props = defineProps({
   lista: {
@@ -39,7 +37,7 @@ emit('update:modelValue', props.lista);
     <input
       v-model="termoDeBusca"
       type="search"
-      class="inputtext light"
+      class="inputtext light mb1"
       :disabled="!lista.length"
     >
     <button
