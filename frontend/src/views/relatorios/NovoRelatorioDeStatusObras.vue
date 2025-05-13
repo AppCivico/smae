@@ -6,7 +6,6 @@ import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store.ts';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { Field, Form } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
-import CheckClose from '../../components/CheckClose.vue';
 
 const alertStore = useAlertStore();
 const portfolioObrasStore = usePortfolioObraStore();
@@ -49,11 +48,7 @@ obrasStore.buscarTudo();
 </script>
 
 <template>
-  <div class="flex spacebetween center mb2">
-    <h1>{{ $route.meta.título || $route.name }}</h1>
-    <hr class="ml2 f1">
-    <CheckClose />
-  </div>
+  <CabecalhoDePagina :formulario-sujo="false" />
 
   <Form
     v-slot="{ errors, isSubmitting, setFieldValue, values }"

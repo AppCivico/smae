@@ -3,7 +3,7 @@ import AutocompleteField from '@/components/AutocompleteField2.vue';
 import { relatórioSemestralOuAnual as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { storeToRefs } from 'pinia';
-import { Field, Form, useIsFormDirty } from 'vee-validate';
+import { Field, Form } from 'vee-validate';
 import { onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 // Mantendo comportamento legado
@@ -23,8 +23,6 @@ const router = useRouter();
 const { current } = storeToRefs(relatoriosStore);
 
 const { loading } = storeToRefs(relatoriosStore);
-
-const formularioSujo = useIsFormDirty();
 
 const listaDeSemestres = ['Primeiro', 'Segundo'];
 const listaDePeríodos = ['Semestral', 'Anual'];
@@ -84,7 +82,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <CabecalhoDePagina :formulario-sujo="formularioSujo" />
+  <CabecalhoDePagina :formulario-sujo="false" />
 
   <p class="texto--explicativo">
     Será gerado um conjunto de 2 planilhas contendo os indicadores da meta e de

@@ -49,11 +49,7 @@ portfolioObrasStore.buscarTudo();
 </script>
 
 <template>
-  <div class="flex spacebetween center mb2">
-    <h1>{{ $route.meta.título || $route.name }}</h1>
-    <hr class="ml2 f1">
-    <CheckClose />
-  </div>
+  <CabecalhoDePagina :formulario-sujo="false" />
 
   <Form
     v-slot="{ errors, isSubmitting, setFieldValue }"
