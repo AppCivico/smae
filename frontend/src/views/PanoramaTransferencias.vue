@@ -1,4 +1,10 @@
 <script setup>
+import {
+  computed, onUnmounted, ref, watch,
+} from 'vue';
+import { cloneDeep } from 'lodash';
+import { storeToRefs } from 'pinia';
+import { useRoute, useRouter } from 'vue-router';
 import { Dashboard } from '@/components';
 import QuadroNotas from '@/components/notas/QuadroNotas.vue';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
@@ -6,13 +12,6 @@ import truncate from '@/helpers/texto/truncate';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePanoramaTransferenciasStore } from '@/stores/panoramaTransferencias.store';
 import { usePartidosStore } from '@/stores/partidos.store';
-import { cloneDeep } from 'lodash';
-import { storeToRefs } from 'pinia';
-import {
-  computed,
-  onUnmounted, ref, watch,
-} from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 
 const panoramaTransferenciasStore = usePanoramaTransferenciasStore();
 const partidoStore = usePartidosStore();
@@ -27,6 +26,7 @@ const { chamadasPendentes, erro, lista } = storeToRefs(
 const { partidosPorId } = storeToRefs(partidoStore);
 const { órgãosPorId } = storeToRefs(OrgaosStore);
 
+const prazo = ref(route.query.prazo || 60);
 const esfera = ref(route.query.esfera
   ? Object.keys(esferasDeTransferencia)
     .find((x) => x.toLowerCase() === route.query.esfera.toLocaleLowerCase())
@@ -101,6 +101,7 @@ function atualizarUrl() {
       partido_ids: partido.value || undefined,
       orgaos_ids: orgao.value || undefined,
       esfera: esfera.value || undefined,
+      prazo: prazo.value || undefined,
       palavra_chave: palavraChave.value || undefined,
       atividade: atividade.value || undefined,
     },
@@ -113,6 +114,7 @@ watch([
   () => route.query.orgaos_ids,
   () => route.query.palavra_chave,
   () => route.query.atividade,
+  () => route.query.prazo,
 ], async () => {
   if (!partidosDisponiveis.value.length
     && !atividadesDisponiveis.value.length
@@ -144,6 +146,7 @@ watch([
     orgaos_ids: orgaoFiltro,
     palavra_chave: palavraChaveParaBusca,
     atividade: atividadeFiltro,
+    prazo: prazo.value,
   });
 }, { immediate: true });
 
@@ -306,6 +309,32 @@ onUnmounted(() => {
           name="palavra_chave"
           type="text"
         >
+      </div>
+
+      <div class="f1">
+        <label
+          class="label tc300"
+          for="prazo"
+        >
+          Prazo
+        </label>
+        <select
+          id="prazo"
+          v-model="prazo"
+          class="inputtext mb1"
+          name="visao_pessoal"
+        >
+          <option>
+            -
+          </option>
+          <option
+            v-for="prazoItem in [30, 60, 90]"
+            :key="`prazo--${prazoItem}`"
+            :value="prazoItem"
+          >
+            {{ prazoItem }} dias
+          </option>
+        </select>
       </div>
 
       <button class="btn outline bgnone tcprimary mtauto mb1">
