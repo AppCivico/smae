@@ -1,14 +1,14 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { ErrorMessage, Field, Form } from 'vee-validate';
+import { computed, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import { relatórioDeParlamentares as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
 import { usePartidosStore } from '@/stores/partidos.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
-import { storeToRefs } from 'pinia';
-import { ErrorMessage, Field, Form } from 'vee-validate';
-import { computed, ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 
 const alertStore = useAlertStore();
 const partidosStore = usePartidosStore();
@@ -62,6 +62,11 @@ partidosStore.buscarTudo();
 
 <template>
   <CabecalhoDePagina :formulario-sujo="false" />
+
+  <p class="texto--explicativo">
+    Relação de parlamentares contendo nome, partido, eleição, cargo, endereço,
+    telefone e data de nascimento.
+  </p>
 
   <Form
     v-slot="{ errors, isSubmitting }"

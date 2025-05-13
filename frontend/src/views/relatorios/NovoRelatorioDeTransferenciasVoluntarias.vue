@@ -1,4 +1,9 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage, Field, useForm,
+} from 'vee-validate';
+import { useRoute, useRouter } from 'vue-router';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import { relatórioDeTransferênciasVoluntárias as schema } from '@/consts/formSchemas';
 import interfacesDeTransferências from '@/consts/interfacesDeTransferências';
@@ -8,11 +13,6 @@ import { useOrgansStore } from '@/stores/organs.store';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
 import { usePartidosStore } from '@/stores/partidos.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
-import { storeToRefs } from 'pinia';
-import {
-  ErrorMessage, Field, useForm,
-} from 'vee-validate';
-import { useRoute, useRouter } from 'vue-router';
 
 const alertStore = useAlertStore();
 const ÓrgãosStore = useOrgansStore();
@@ -71,6 +71,12 @@ ParlamentaresStore.buscarTudo({ ipp: 500, possui_mandatos: true });
 </script>
 <template>
   <CabecalhoDePagina :formulario-sujo="false" />
+
+  <p class="texto--explicativo">
+    Conjunto de dois arquivos: um com as transferências voluntárias e outro com
+    os respectivos cronogramas. No arquivo "cronograma", a coluna
+    "transferencia_id" serve como vínculo com o arquivo "transferencias".
+  </p>
 
   <pre v-scrollLockDebug>values:{{ values }}</pre>
 

@@ -110,6 +110,10 @@ onBeforeRouteLeave(() => {
     </template>
   </CabecalhoDePagina>
 
+  <p class="texto--explicativo">
+    Relação das transferências para análise do Tribunal de Contas
+  </p>
+
   <SmaeTable
     class="mt2"
     :dados="relatóriosStore.lista"
