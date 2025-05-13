@@ -94,6 +94,7 @@ const metasEdicaoEmLote = {
         Set: 'Substitui o item existente.',
       },
     },
+    balaoInformativo: 'É a pessoa responsável pela evolução da obra em todas as suas fases. Suas principais funções incluem acompanhar o andamento da obra e do(s) respectivo(s) contrato(s), mantendo as informações atualizadas no SMAE.',
   },
   portfolios_compartilhados: {
     permite_edicao_em_massa: true,
@@ -148,6 +149,7 @@ const metasEdicaoEmLote = {
         Remove: 'Exclui o item selecionado da obra',
       },
     },
+    balaoInformativo: 'É a pessoa que atua como facilitador e apoiador na aplicação das metodologias definidas. Suas principais responsabilidades incluem fornecer suporte técnico e metodológico ao Ponto Focal Responsável, durante todas as fases.',
   },
   secretario_executivo: {
     permite_edicao_em_massa: true,
