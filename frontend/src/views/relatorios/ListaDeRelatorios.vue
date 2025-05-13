@@ -103,7 +103,7 @@ onBeforeRouteLeave(() => {
       <router-link
         v-if="temPermissãoPara('Reports.executar.')"
         :to="{ name: $route.meta.rotaNovoRelatorio }"
-        class="btn big ml2"
+        class="btn big"
       >
         Novo relatório
       </router-link>

@@ -1,5 +1,12 @@
 <template>
-  <header class="flex spacebetween center g2 mb2 cabecalho">
+  <slot name="migalhas-de-pao">
+    <MigalhasDePao class="mb1" />
+  </slot>
+
+  <header
+    class="flex spacebetween center g2 mb2 cabecalho"
+    v-bind="$attrs"
+  >
     <TituloDePagina id="titulo-da-pagina">
       <slot name="titulo" />
     </TituloDePagina>
@@ -15,6 +22,10 @@
   </header>
 </template>
 <script setup lang="ts">
+defineOptions({
+  inheritAttrs: false,
+});
+
 defineProps({
   formularioSujo: {
     type: Boolean,
