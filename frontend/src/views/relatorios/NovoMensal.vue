@@ -15,7 +15,7 @@ import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 // eslint-disable-next-line import/no-cycle
 import { useTagsStore } from '@/stores/tags.store';
 import { storeToRefs } from 'pinia';
-import { Field, Form, useIsFormDirty } from 'vee-validate';
+import { Field, Form } from 'vee-validate';
 import { onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -29,8 +29,6 @@ const relatoriosStore = useRelatoriosStore();
 const route = useRoute();
 const router = useRouter();
 const { loading } = storeToRefs(relatoriosStore);
-
-const formularioSujo = useIsFormDirty();
 
 const initialValues = ref({
   fonte: 'MonitoramentoMensal',
@@ -89,7 +87,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <CabecalhoDePagina :formulario-sujo="formularioSujo" />
+  <CabecalhoDePagina :formulario-sujo="false" />
 
   <p class="texto--explicativo">
     Será gerado um conjunto de 4 planilhas contendo os dados

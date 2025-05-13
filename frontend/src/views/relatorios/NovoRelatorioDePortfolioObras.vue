@@ -11,7 +11,6 @@ import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
-import CheckClose from '../../components/CheckClose.vue';
 
 const ÓrgãosStore = useOrgansStore();
 const portfolioObrasStore = usePortfolioObraStore();
@@ -68,11 +67,8 @@ iniciar();
 </script>
 
 <template>
-  <header class="flex spacebetween center mb2">
-    <TituloDePagina />
-    <hr class="ml2 f1">
-    <CheckClose />
-  </header>
+  <CabecalhoDePagina :formulario-sujo="false" />
+
   <Form
     v-slot="{ errors, isSubmitting, setFieldValue }"
     :validation-schema="schema"

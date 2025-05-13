@@ -6,7 +6,7 @@ import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
 import { storeToRefs } from 'pinia';
 import {
-  ErrorMessage, Field, useForm, useIsFormDirty,
+  ErrorMessage, Field, useForm,
 } from 'vee-validate';
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -63,23 +63,9 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
     alertStore.error(error);
   }
 });
-
-const formularioSujo = useIsFormDirty();
-
 </script>
 <template>
-  <div class="flex spacebetween center mb2">
-    <TítuloDePágina />
-    <hr class="ml2 f1">
-    <CheckClose
-      :formulario-sujo="formularioSujo"
-    />
-  </div>
-
-  <!--<pre>values:{{ values }}</pre>
-  <pre>tiposDisponíveis: {{ tiposDisponíveis }}</pre>
-  /<pre>Lista: {{ tipoTransferenciaComoLista }}</pre>
--->
+  <CabecalhoDePagina :formulario-sujo="false" />
 
   <form
     :disabled="isSubmitting"

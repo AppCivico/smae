@@ -12,7 +12,7 @@ import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 // eslint-disable-next-line import/no-cycle
 import { useTagsStore } from '@/stores/tags.store';
 import { storeToRefs } from 'pinia';
-import { Field, Form, useIsFormDirty } from 'vee-validate';
+import { Field, Form } from 'vee-validate';
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -37,8 +37,6 @@ const iniciativasPorId = computed(() => (Array.isArray(metaSimplificada.value?.i
   : {}));
 
 const currentYear = new Date().getFullYear();
-
-const formularioSujo = useIsFormDirty();
 
 const initialValues = computed(() => ({
   fonte: 'PrevisaoCusto',
@@ -112,7 +110,7 @@ iniciar();
 </script>
 
 <template>
-  <CabecalhoDePagina :formulario-sujo="formularioSujo" />
+  <CabecalhoDePagina :formulario-sujo="false" />
 
   <p class="texto--explicativo">
     Será gerada uma planilha contendo os registros de previsão de custo
