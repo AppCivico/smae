@@ -1,8 +1,8 @@
 <template>
   <header class="flex spacebetween center g2 mb2 cabecalho">
-    <TítuloDePágina id="titulo-da-pagina">
+    <TituloDePagina id="titulo-da-pagina">
       <slot name="titulo" />
-    </TítuloDePágina>
+    </TituloDePagina>
 
     <hr class="f1">
 
