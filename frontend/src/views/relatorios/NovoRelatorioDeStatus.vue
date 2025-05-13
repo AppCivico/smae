@@ -1,5 +1,4 @@
 <script setup>
-import MigalhasDePao from '@/components/MigalhasDePao.vue';
 import { relatórioDeStatus as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
@@ -47,8 +46,6 @@ projetosStore.buscarTudo();
 </script>
 
 <template>
-  <MigalhasDePao class="mb1" />
-
   <CabecalhoDePagina :formulario-sujo="false" />
 
   <Form

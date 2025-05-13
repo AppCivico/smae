@@ -41,7 +41,7 @@ if (!Array.isArray(organs) || !organs.length) {
     <template #acoes>
       <SmaeLink
         :to="{ name: '.gruposObservadores.criar' }"
-        class="btn big ml1"
+        class="btn big"
       >
         Novo grupo de observadores
       </SmaeLink>
