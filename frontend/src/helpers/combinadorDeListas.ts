@@ -35,10 +35,6 @@ export default function combinadorDeListas(
     console.error('O separador deve ser uma string');
   }
 
-  const separador = (!separadorFornecido || typeof separadorFornecido !== 'string')
-    ? ', '
-    : separadorFornecido;
-
   // Se a propriedade não for uma string, exibe um aviso no console
   // e retorna uma string vazia para não quebrar o código
   if (propriedade && typeof propriedade !== 'string') {
@@ -59,6 +55,11 @@ export default function combinadorDeListas(
   if (!lista.length) {
     return '';
   }
+
+  const separador = (!separadorFornecido || typeof separadorFornecido !== 'string')
+    ? ', '
+    : separadorFornecido;
+
   // Se a propriedade tiver um "." quer dizer que ela está dentro de um objeto,
   // então descemos mais um nível para pegar o valor da propriedade
   if (propriedade) {
