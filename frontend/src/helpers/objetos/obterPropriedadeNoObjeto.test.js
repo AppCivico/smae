@@ -35,6 +35,12 @@ describe('obterPropriedadeNoObjeto', () => {
     expect(resultado).toStrictEqual({ nome: 'Alice' });
   });
 
+  it('não deve se confundir com propriedades homônimas no caso de um nível inexistente', () => {
+    const objeto = { equipe: { humana: { nome: 'Alice' } } };
+    const resultado = obterPropriedadeNoObjeto('equipe.pessoa.humana.nome', objeto);
+    expect(resultado).toStrictEqual({ humana: { nome: 'Alice' } });
+  });
+
   it('deve lidar com objetos vazios', () => {
     const objeto = {};
     const resultado = obterPropriedadeNoObjeto('nome', objeto);
