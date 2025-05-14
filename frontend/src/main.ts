@@ -1,7 +1,7 @@
 import type { Store } from 'pinia';
 import { createPinia } from 'pinia';
 import {
-  createApp, markRaw, nextTick,
+  createApp, markRaw,
 } from 'vue';
 import type { RouteLocationNormalizedLoaded, Router } from 'vue-router';
 import CheckClose from '@/components/CheckClose.vue';
@@ -14,6 +14,7 @@ import SmaeLink from '@/components/SmaeLink.vue';
 import SmaeFieldsetSubmit from '@/components/SmaeFieldsetSubmit.vue';
 import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
 import TítuloDePágina from '@/components/TituloDaPagina.vue';
+import autofocus from '@/diretivas/autofocus';
 import detectarPosicaoCongelada from '@/diretivas/detectarPosicaoCongelada';
 import selecionarMultiplasOpcoes from '@/diretivas/selecionarMultiplasOpcoes';
 import type { RequestS } from '@/helpers/requestS';
@@ -132,19 +133,7 @@ app.directive('selecionar-multiplas-opcoes', {
 
 app.directive('detectar-posicao-congelada', detectarPosicaoCongelada);
 
-app.directive('focus', {
-  mounted: async (el, binding) => {
-    const { modifiers, value } = binding;
-
-    if (!!value || value === undefined) {
-      await nextTick();
-      el.focus();
-      if (modifiers.select && el instanceof HTMLInputElement) {
-        el.select();
-      }
-    }
-  },
-});
+app.directive('focus', autofocus);
 
 app.use(consoleNaTemplate);
 
