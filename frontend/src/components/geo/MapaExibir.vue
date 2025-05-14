@@ -288,7 +288,6 @@ function criarGeoJson(dados) {
 
     const ícone = L.icon({
       iconUrl: urlDoÍcone,
-      className: 'foobar',
       iconAnchor: [24, 42],
       shadowUrl: sombraDoMarcador,
       shadowSize: [48, 48],
