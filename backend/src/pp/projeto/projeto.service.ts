@@ -493,6 +493,23 @@ export class ProjetoService {
         // TODO verificar se cada [responsaveis_no_orgao_gestor] existe realmente
         // e se tem o privilegio gestor_de_projeto
 
+        // Verificando se cada responsavel existe no orgão gestor
+        if (responsaveis_no_orgao_gestor.length > 0) {
+            const pessoas = await this.prisma.pessoaFisica.findMany({
+                where: {
+                    id: { in: responsaveis_no_orgao_gestor },
+                    orgao_id: orgao_gestor_id,
+                },
+                select: { id: true },
+            });
+
+            if (pessoas.length !== responsaveis_no_orgao_gestor.length)
+                throw new HttpException(
+                    'responsaveis_no_orgao_gestor| Uma ou mais pessoas não foram encontradas no órgão gestor',
+                    400
+                );
+        }
+
         return {
             orgao_gestor_id,
             responsaveis_no_orgao_gestor,
