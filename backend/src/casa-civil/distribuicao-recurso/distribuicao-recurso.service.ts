@@ -731,6 +731,12 @@ export class DistribuicaoRecursoService {
                 assinatura_estado: true,
                 vigencia: true,
                 conclusao_suspensiva: true,
+                banco_fim: true,
+                conta_fim: true,
+                agencia_fim: true,
+                banco_aceite: true,
+                conta_aceite: true,
+                agencia_aceite: true,
                 orgao_gestor: {
                     select: {
                         id: true,
@@ -974,6 +980,12 @@ export class DistribuicaoRecursoService {
                 } satisfies DistribuicaoRecursoSeiDto;
             }),
             parlamentares: parlamentares,
+            banco_fim: row.banco_fim,
+            conta_fim: row.banco_fim,
+            agencia_fim: row.banco_fim,
+            banco_aceite: row.banco_fim,
+            conta_aceite: row.banco_fim,
+            agencia_aceite: row.banco_fim,
         } satisfies DistribuicaoRecursoDetailDto;
     }
 

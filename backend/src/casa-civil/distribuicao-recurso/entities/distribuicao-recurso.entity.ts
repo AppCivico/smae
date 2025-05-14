@@ -64,6 +64,12 @@ export class ParlamentarDistribuicaoDto {
 export class DistribuicaoRecursoDetailDto extends DistribuicaoRecursoDto {
     pode_registrar_status: boolean;
     historico_status: DistribuicaoHistoricoStatusDto[];
+    banco_fim: string | null;
+    conta_fim: string | null;
+    agencia_fim: string | null;
+    banco_aceite: string | null;
+    conta_aceite: string | null;
+    agencia_aceite: string | null;
 }
 
 export class AditamentosDto {

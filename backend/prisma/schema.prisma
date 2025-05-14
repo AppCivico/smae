@@ -5970,6 +5970,14 @@ model DistribuicaoRecurso {
     aviso_email_id Int?
     aviso_email    AvisoEmail? @relation(fields: [aviso_email_id], references: [id])
 
+    // Dados de banco, iguais ao da tabela de transferências.
+    banco_aceite   String?
+    conta_aceite   String?
+    agencia_aceite String?
+    banco_fim      String?
+    conta_fim      String?
+    agencia_fim    String?
+
     criado_por     Int?
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)
     atualizado_por Int?
