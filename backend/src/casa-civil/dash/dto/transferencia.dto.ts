@@ -1,6 +1,6 @@
 import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
 import { TransferenciaTipoEsfera } from '@prisma/client';
-import { Transform, TransformFnParams } from 'class-transformer';
+import { Transform, TransformFnParams, Type } from 'class-transformer';
 import { IsArray, IsInt, IsNumber, IsOptional, IsString, MaxLength } from 'class-validator';
 import { NumberArrayTransformOrUndef } from '../../../auth/transforms/number-array.transform';
 import { BadRequestException } from '@nestjs/common';
@@ -82,6 +82,7 @@ export class FilterDashTransferenciasDto {
 
     @IsOptional()
     @IsNumber()
+    @Type(() => Number)
     prazo?: number;
 }
 
