@@ -20,8 +20,7 @@ function caminhoParaApi(rotaMeta) {
   }
 }
 
-export const usePdMStore = defineStore({
-  id: 'PdM',
+export const usePdMStore = defineStore('PdM', {
   state: () => ({
     PdM: {},
     tempPdM: {},

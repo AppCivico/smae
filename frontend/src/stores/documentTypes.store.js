@@ -5,8 +5,8 @@ const baseUrl = `${import.meta.env.VITE_API_URL}`;
 export const useDocumentTypesStore = () => {
   console.warn('Obsoleto. Prefira `useTiposDeDocumentosStore()`.');
 
-  return defineStore({
-    id: 'documentTypes',
+  return defineStore('documentTypes', {
+
     state: () => ({
       documentTypes: {},
       tempDocumentTypes: {},
