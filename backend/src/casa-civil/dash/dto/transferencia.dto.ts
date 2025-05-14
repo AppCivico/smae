@@ -1,7 +1,7 @@
 import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
 import { TransferenciaTipoEsfera } from '@prisma/client';
 import { Transform, TransformFnParams } from 'class-transformer';
-import { IsArray, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsArray, IsInt, IsNumber, IsOptional, IsString, MaxLength } from 'class-validator';
 import { NumberArrayTransformOrUndef } from '../../../auth/transforms/number-array.transform';
 import { BadRequestException } from '@nestjs/common';
 import { StringArrayTransform } from '../../../auth/transforms/string-array.transform';
@@ -14,7 +14,7 @@ export class MfDashTransferenciasDto {
     transferencia_id: number;
     identificador: string;
     atividade: string;
-    @IsDateYMD({nullable: true})
+    @IsDateYMD({ nullable: true })
     data: string | null;
     data_origem: string;
     orgaos: number[];
@@ -61,7 +61,9 @@ export class FilterDashTransferenciasDto {
 
     @IsOptional()
     @IsArray()
-    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Atividade' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Atividade' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     @IsString({ each: true })
     @ApiProperty({ description: 'Atividade do cronograma' })
     @Transform(StringArrayTransform)
@@ -77,6 +79,10 @@ export class FilterDashTransferenciasDto {
     @IsOptional()
     @IsString()
     palavra_chave?: string;
+
+    @IsOptional()
+    @IsNumber()
+    prazo?: number;
 }
 
 function ValidateTransferenciaTipoEsfera(item: any) {
