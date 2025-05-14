@@ -14,8 +14,7 @@ function caminhoParaApi(rotaMeta) {
   }
 }
 
-export const useIndicadoresStore = defineStore({
-  id: 'Indicadores',
+export const useIndicadoresStore = defineStore('Indicadores', {
   state: () => ({
     Indicadores: {},
     tempIndicadores: {},

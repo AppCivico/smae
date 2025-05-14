@@ -19,8 +19,7 @@ function caminhoParaApi(rotaMeta) {
 export const useMetasStore = (() => {
   console.warn('Obsoleto: prefira `metasPs.store.ts`');
 
-  return defineStore({
-    id: 'Metas',
+  return defineStore('Metas', {
     state: () => ({
       Metas: {},
       tempMetas: {},

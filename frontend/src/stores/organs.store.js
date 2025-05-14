@@ -3,8 +3,7 @@ import { useUsersStore } from '@/stores/users.store';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
-export const useOrgansStore = defineStore({
-  id: 'organs',
+export const useOrgansStore = defineStore('organs', {
   state: () => ({
     organs: {},
     tempOrgans: {},

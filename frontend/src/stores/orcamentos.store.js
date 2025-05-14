@@ -82,8 +82,7 @@ function totalizador(anos, camposFornecidos) {
   return total;
 }
 
-export const useOrcamentosStore = defineStore({
-  id: 'Orcamentos',
+export const useOrcamentosStore = defineStore('Orcamentos', {
   state: () => ({
     OrcamentoCusteio: {},
     OrcamentoPlanejado: {},
