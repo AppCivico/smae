@@ -74,8 +74,10 @@ ParlamentaresStore.buscarTudo({ ipp: 500, possui_mandatos: true });
 
   <p class="texto--explicativo">
     Conjunto de dois arquivos: um com as transferências voluntárias e outro com
-    os respectivos cronogramas. No arquivo "cronograma", a coluna
-    "transferencia_id" serve como vínculo com o arquivo "transferencias".
+    os respectivos cronogramas. No arquivo
+    <code class="destacar">cronograma</code>, a coluna
+    <var class="destacar">transferencia_id</var> serve como vínculo com o
+    arquivo <code class="destacar">transferencias</code>.
   </p>
 
   <pre v-scrollLockDebug>values:{{ values }}</pre>
