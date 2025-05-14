@@ -73,7 +73,7 @@ const COLUMN_LABELS: Record<string, string> = {
     // Arrays e referências
     tags: 'Tags',
     colaboradores_no_orgao: 'Colaboradores no Órgão',
-    responsaveis_no_orgao_gestor: 'Responsáveis no Órgão Gestor',
+    responsaveis_no_orgao_gestor: 'Assessores no Portfólio',
     orgaos_participantes: 'Órgãos Participantes',
 
     // Atributos de controle
