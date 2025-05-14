@@ -570,10 +570,10 @@ watch(() => props.polígonos, (valorNovo) => {
 
 .painel-flutuante {
   font-size: 0.857143rem;
-  width: 6em;
+  width: fit-content;
 
   min-width: min-content;
-  max-width: fit-content;
+  max-width: 90vw;
   padding: 0.5em;
   box-shadow: 0px 6px 4.5px 0px #00000080;
   border-radius: 12px;
