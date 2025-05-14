@@ -1,13 +1,4 @@
 <script setup>
-import FormErrorsList from '@/components/FormErrorsList.vue';
-import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
-import { transferenciaDistribuicaoDeRecursos as schema } from '@/consts/formSchemas';
-import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
-import truncate from '@/helpers/texto/truncate';
-import { useAlertStore } from '@/stores/alert.store';
-import { useOrgansStore } from '@/stores/organs.store';
-import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
-import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import Big from 'big.js';
 import { vMaska } from 'maska';
 import { storeToRefs } from 'pinia';
@@ -26,6 +17,15 @@ import {
   watch,
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import FormErrorsList from '@/components/FormErrorsList.vue';
+import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
+import { transferenciaDistribuicaoDeRecursos as schema } from '@/consts/formSchemas';
+import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
+import truncate from '@/helpers/texto/truncate';
+import { useAlertStore } from '@/stores/alert.store';
+import { useOrgansStore } from '@/stores/organs.store';
+import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
+import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 
 const alertStore = useAlertStore();
 const ÓrgãosStore = useOrgansStore();
@@ -379,32 +379,6 @@ onUnmounted(() => {
         <div class="f1 fb15em">
           <div class="flex center g1">
             <div>
-              <LabelFromYup
-                name="custeio"
-                :schema="schema"
-              />
-
-              <MaskedFloatInput
-                name="custeio"
-                type="text"
-                class="inputtext light"
-                :value="values.custeio"
-                converter-para="string"
-                @update:model-value="(newValue) => {
-                  atualizarValorTotal('custeio', newValue);
-                }"
-                @input="ajusteBruto('custeio')"
-              />
-            </div>
-
-            <small
-              class="addlink text-center mt2"
-              style="cursor: default;"
-            >
-              OU
-            </small>
-
-            <div>
               <label
                 class="label"
                 for="custeio_porcentagem"
@@ -427,29 +401,6 @@ onUnmounted(() => {
                 @input="ajustePercentual('custeio')"
               />
             </div>
-          </div>
-        </div>
-
-        <div class="f1 fb15em">
-          <div class="flex center g1">
-            <div>
-              <LabelFromYup
-                name="investimento"
-                :schema="schema"
-              />
-
-              <MaskedFloatInput
-                name="investimento"
-                type="text"
-                class="inputtext light"
-                :value="values.investimento"
-                converter-para="string"
-                @update:model-value="(newValue) => {
-                  atualizarValorTotal('investimento', newValue);
-                }"
-                @input="ajusteBruto('investimento')"
-              />
-            </div>
 
             <small
               class="addlink text-center mt2"
@@ -458,6 +409,29 @@ onUnmounted(() => {
               OU
             </small>
 
+            <div>
+              <LabelFromYup
+                name="custeio"
+                :schema="schema"
+              />
+
+              <MaskedFloatInput
+                name="custeio"
+                type="text"
+                class="inputtext light"
+                :value="values.custeio"
+                converter-para="string"
+                @update:model-value="(newValue) => {
+                  atualizarValorTotal('custeio', newValue);
+                }"
+                @input="ajusteBruto('custeio')"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="f1 fb15em">
+          <div class="flex center g1">
             <div>
               <label
                 class="label"
@@ -479,6 +453,32 @@ onUnmounted(() => {
                   atualizarValorTotal('investimento_porcentagem', newValue);
                 }"
                 @input="ajustePercentual('investimento')"
+              />
+            </div>
+
+            <small
+              class="addlink text-center mt2"
+              style="cursor: default;"
+            >
+              OU
+            </small>
+
+            <div>
+              <LabelFromYup
+                name="investimento"
+                :schema="schema"
+              />
+
+              <MaskedFloatInput
+                name="investimento"
+                type="text"
+                class="inputtext light"
+                :value="values.investimento"
+                converter-para="string"
+                @update:model-value="(newValue) => {
+                  atualizarValorTotal('investimento', newValue);
+                }"
+                @input="ajusteBruto('investimento')"
               />
             </div>
           </div>
@@ -536,6 +536,120 @@ onUnmounted(() => {
           >
             A soma dos valores não corresponde ao valor total.
           </div>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <div class="flex g2 mb1">
+        <div class="f1">
+          <LabelFromYup
+            name="banco"
+            :schema="schema"
+          />
+          <Field
+            name="banco"
+            type="text"
+            class="inputtext light mb1"
+          />
+          <ErrorMessage
+            class="error-msg mb1"
+            name="banco"
+          />
+        </div>
+
+        <div class="f1">
+          <LabelFromYup
+            name="agencia"
+            :schema="schema"
+          />
+
+          <Field
+            name="agencia"
+            type="text"
+            class="inputtext light mb1"
+          />
+
+          <ErrorMessage
+            class="error-msg mb1"
+            name="agencia"
+          />
+        </div>
+
+        <div class="f1">
+          <LabelFromYup
+            name="conta_corrente"
+            :schema="schema"
+          />
+
+          <Field
+            name="conta_corrente"
+            type="text"
+            class="inputtext light mb1"
+          />
+
+          <ErrorMessage
+            class="error-msg mb1"
+            name="conta_corrente"
+          />
+        </div>
+      </div>
+
+      <div class="flex g2 mb1">
+        <div class="f1">
+          <LabelFromYup
+            name="finalidade"
+            :schema="schema"
+          />
+
+          <Field
+            name="finalidade"
+            type="text"
+            class="inputtext light mb1"
+          />
+
+          <ErrorMessage
+            class="error-msg mb1"
+            name="finalidade"
+          />
+        </div>
+      </div>
+
+      <div class="flex g2 mb1">
+        <div class="f1">
+          <LabelFromYup
+            name="empenho"
+            :schema="schema"
+          />
+
+          <Field
+            name="empenho"
+            type="text"
+            class="inputtext light mb1"
+          />
+
+          <ErrorMessage
+            class="error-msg mb1"
+            name="empenho"
+          />
+        </div>
+
+        <div class="f1">
+          <LabelFromYup
+            name="liquidacao_pagamento"
+            :schema="schema"
+          />
+
+          <Field
+            name="liquidacao_pagamento"
+            type="text"
+            class="inputtext light mb1"
+          />
+
+          <ErrorMessage
+            class="error-msg mb1"
+            name="liquidacao_pagamento"
+          />
         </div>
       </div>
 
