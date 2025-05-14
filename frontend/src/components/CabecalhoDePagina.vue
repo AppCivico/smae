@@ -42,11 +42,11 @@ defineProps({
   }
 
   h1 {
-    text-wrap: balance;
+    flex-basis: min-content;
+    max-width: fit-content;
   }
 
   hr {
-    flex-grow: 1;
     max-width: none;
     width: auto;
   }
