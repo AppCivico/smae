@@ -1,18 +1,18 @@
 <script setup>
-import { storeToRefs } from 'pinia';
-import { useRoute, useRouter } from 'vue-router';
-import {
-  Field, Form, useIsFormDirty,
-} from 'vee-validate';
 import MigalhasDePao from '@/components/MigalhasDePao.vue';
 import TituloDaPagina from '@/components/TituloDaPagina.vue';
-import listaDeStatuses from '@/consts/projectStatuses';
 import { relatórioDePortfolio as schema } from '@/consts/formSchemas';
+import listaDeStatuses from '@/consts/projectStatuses';
 import truncate from '@/helpers/texto/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
+import { storeToRefs } from 'pinia';
+import {
+  Field, Form, useIsFormDirty,
+} from 'vee-validate';
+import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute();
 const router = useRouter();
@@ -33,6 +33,7 @@ const initialValues = {
     orgao_responsavel_id: null,
     portfolio_id: null,
   },
+  eh_publico: null,
 };
 
 async function onSubmit(values) {
@@ -193,7 +194,10 @@ iniciar();
           }"
           :disabled="portfolioStore.chamadasPendentes.lista"
         >
-          <option :value="null">
+          <option
+            value=""
+            disabled
+          >
             Selecionar
           </option>
           <option :value="true">

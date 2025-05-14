@@ -24,8 +24,8 @@ const initialValues = {
     cargo: null,
     partido_id: null,
     eleicao_id: null,
-    eh_publico: null,
   },
+  eh_publico: null,
 };
 
 const { lista } = storeToRefs(partidosStore);
@@ -140,7 +140,10 @@ partidosStore.buscarTudo();
           class="inputtext light mb1"
           :class="{ error: errors['eh_publico'] }"
         >
-          <option :value="null">
+          <option
+            value=""
+            disabled
+          >
             Selecionar
           </option>
           <option :value="true">

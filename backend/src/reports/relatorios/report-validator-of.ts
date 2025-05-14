@@ -30,6 +30,8 @@ export function ReportValidatorOf(property: string, validationOptions?: Validati
                         throw new BadRequestException(FormatValidationErrors(validations));
                     }
 
+                    (args.object as Record<string, unknown>)[args.property] = validatorObject;
+
                     return true;
                 },
             },

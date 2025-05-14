@@ -18,7 +18,7 @@ const props = defineProps({
 const { emFoco } = storeToRefs(planosSetoriaisStore);
 
 function iniciar() {
-  if (emFoco?.id !== Number(props.planoSetorialId)) {
+  if (emFoco?.id !== props.planoSetorialId) {
     planosSetoriaisStore.$reset();
 
     planosSetoriaisStore.buscarItem(props.planoSetorialId, { incluir_auxiliares: true });

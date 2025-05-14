@@ -2548,15 +2548,20 @@ export class ProjetoService {
 
             if (dto.tolerancia_atraso !== undefined) {
                 const feedback = await prismaTx.tarefaCronograma.updateMany({
-                    where: { projeto_id: projetoId, removido_em: null },
+                    where: {
+                        projeto_id: projetoId,
+                        removido_em: null,
+                        NOT: { tolerancia_atraso: dto.tolerancia_atraso },
+                    },
                     data: {
                         tolerancia_atraso: dto.tolerancia_atraso,
                         tarefas_proximo_recalculo: new Date(),
                     },
                 });
-                this.logger.verbose(
-                    `Repassando update de tolerancia_atraso= ${dto.tolerancia_atraso} para tarefaCronograma: ${feedback.count} updated rows`
-                );
+                if (feedback.count)
+                    this.logger.verbose(
+                        `Repassando update de tolerancia_atraso= ${dto.tolerancia_atraso} para tarefaCronograma: ${feedback.count} updated rows`
+                    );
             }
 
             const self = await prismaTx.projeto.update({

@@ -1,5 +1,6 @@
-import type { RouteLocation } from 'vue-router';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
+import type { RouteLocation } from 'vue-router';
+import tiparPropsDeRota from '../helpers/tiparPropsDeRota';
 import metasRoutes from './metas.routes';
 
 const ListaDeRelatorios = () => import('@/views/relatorios/ListaDeRelatorios.vue');
@@ -79,6 +80,21 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
         component: () => import('@/views/planosSetoriais/PlanosSetoriaisLista.vue'),
       },
       {
+        name: `${entidadeMãe}.quadroDeAtividades`,
+        path: 'quadro-de-atividades',
+        component: () => import('@/views/planosSetoriais/PlanosSetoriaisQuadroDeAtividades.vue'),
+        meta: {
+          titulo: 'Quadro de atividades',
+          limitarÀsPermissões: [
+            'ReferencialEm.Equipe.ProgramaDeMetas',
+            'ReferencialEm.Equipe.PS',
+            'ReferencialEm.EquipeBanco.ProgramaDeMetas',
+            'ReferencialEm.EquipeBanco.PS',
+            'SMAE.GrupoVariavel.participante',
+          ],
+        },
+      },
+      {
         name: `${entidadeMãe}.planosSetoriaisCriar`,
         path: 'novo',
         component: () => import('@/views/planosSetoriais/PlanosSetoriaisCriarEditar.vue'),
@@ -96,11 +112,8 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
       },
       {
         path: ':planoSetorialId',
-        props: ({ params }) => ({
-          ...params,
-          planoSetorialId:
-            Number.parseInt(params.planoSetorialId, 10) || undefined,
-        }),
+        component: () => import('@/views/planosSetoriais/PlanosSetoriaisItem.vue'),
+        props: tiparPropsDeRota,
         meta: {
           rotasParaMenuSecundário: () => {
             const rotasParaMenu = [
@@ -125,7 +138,6 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
           },
           rotasParaMigalhasDePão: [`${entidadeMãe}.planosSetoriaisListar`],
         },
-        component: () => import('@/views/planosSetoriais/PlanosSetoriaisItem.vue'),
         children: [
           {
             path: '',
@@ -166,11 +178,7 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
             path: 'resumo',
             name: `${entidadeMãe}.planosSetoriaisResumo`,
             component: () => import('@/views/planosSetoriais/PlanosSetoriaisResumo.vue'),
-            props: ({ params }) => ({
-              ...params,
-              planoSetorialId:
-                Number.parseInt(params.planoSetorialId, 10) || undefined,
-            }),
+            props: tiparPropsDeRota,
             meta: {
               título: () => usePlanosSetoriaisStore(entidadeMãe)?.emFoco?.nome
                 || `Resumo de ${parametrosPagina.tituloSingular}`,
@@ -210,10 +218,10 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
                 ),
                 props: ({ params }) => ({
                   ...params,
-                  ...{
-                    arquivoId:
+                  planoSetorialId:
+                Number.parseInt(params.planoSetorialId, 10) || undefined,
+                  arquivoId:
                       Number.parseInt(params.arquivoId, 10) || undefined,
-                  },
                 }),
                 meta: {
                   rotaDeEscape: `${entidadeMãe}.planosSetoriaisDocumentos`,
@@ -253,7 +261,9 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
                 component: () => import('@/views/ps.tags/TagsCriarEditar.vue'),
                 props: ({ params }) => ({
                   ...params,
-                  ...{ tagId: Number.parseInt(params.tagId, 10) || undefined },
+                  planoSetorialId:
+                Number.parseInt(params.planoSetorialId, 10) || undefined,
+                  tagId: Number.parseInt(params.tagId, 10) || undefined,
                 }),
                 meta: {
                   título: 'Editar Tag',
@@ -303,10 +313,10 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
                 component: () => import('@/views/ps.macrotemas/MacrotemasCriarEditar.vue'),
                 props: ({ params }) => ({
                   ...params,
-                  ...{
-                    macrotemaId:
+                  planoSetorialId:
+                Number.parseInt(params.planoSetorialId, 10) || undefined,
+                  macrotemaId:
                       Number.parseInt(params.macrotemaId, 10) || undefined,
-                  },
                 }),
                 meta: {
                   título: () => {
@@ -361,9 +371,9 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
                 component: () => import('@/views/ps.temas/TemasCriarEditar.vue'),
                 props: ({ params }) => ({
                   ...params,
-                  ...{
-                    temaId: Number.parseInt(params.temaId, 10) || undefined,
-                  },
+                  planoSetorialId:
+                    Number.parseInt(params.planoSetorialId, 10) || undefined,
+                  temaId: Number.parseInt(params.temaId, 10) || undefined,
                 }),
                 meta: {
                   título: () => {
@@ -418,10 +428,10 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
                 component: () => import('@/views/ps.subtemas/SubtemasCriarEditar.vue'),
                 props: ({ params }) => ({
                   ...params,
-                  ...{
-                    subtemaId:
+                  planoSetorialId:
+                Number.parseInt(params.planoSetorialId, 10) || undefined,
+                  subtemaId:
                       Number.parseInt(params.subtemaId, 10) || undefined,
-                  },
                 }),
                 meta: {
                   título: () => {
@@ -441,7 +451,11 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
           },
           {
             path: 'metas',
-            props: true,
+            props: ({ params }) => ({
+              ...params,
+              planoSetorialId:
+                Number.parseInt(params.planoSetorialId, 10) || undefined,
+            }),
             component: () => import('@/views/planosSetoriais/PlanoSetoriaisMetas.vue'),
 
             meta: {

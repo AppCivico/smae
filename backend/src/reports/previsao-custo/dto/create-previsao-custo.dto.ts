@@ -1,5 +1,5 @@
 import { ApiProperty, IntersectionType, OmitType } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
+import { Transform, Expose } from 'class-transformer';
 import { IsEnum, IsInt, IsOptional } from 'class-validator';
 import { FiltroMetasIniAtividadeDto } from '../../relatorios/dto/filtros.dto';
 
@@ -45,6 +45,7 @@ export class SuperCreateRelPrevisaoCustoDto extends IntersectionType(FiltroMetas
     @IsInt()
     @Transform(({ value }: any) => +value)
     @IsOptional()
+    @Expose()
     projeto_id?: number;
 
     /**
@@ -53,6 +54,7 @@ export class SuperCreateRelPrevisaoCustoDto extends IntersectionType(FiltroMetas
     @IsInt()
     @Transform(({ value }: any) => +value)
     @IsOptional()
+    @Expose()
     portfolio_id?: number;
 }
 

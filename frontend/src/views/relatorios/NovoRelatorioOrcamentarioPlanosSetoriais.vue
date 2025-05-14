@@ -34,6 +34,7 @@ const initialValues = computed(() => ({
     fim: dateIgnorarTimezone(`${currentYear}-12-01`, 'MM/yyyy'),
     orgaos: [],
   },
+  eh_publico: null,
 }));
 
 async function onSubmit(values) {
@@ -159,7 +160,10 @@ PlanosSetoriaisStore.buscarTudo();
           }"
           :disabled="PlanosSetoriaisStore.PlanosSetoriais?.loading"
         >
-          <option :value="null">
+          <option
+            value=""
+            disabled
+          >
             Selecionar
           </option>
           <option :value="true">

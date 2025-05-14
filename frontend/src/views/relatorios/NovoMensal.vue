@@ -41,6 +41,7 @@ const initialValues = ref({
     tags: [],
     paineis: [],
   },
+  eh_publico: null,
 });
 
 async function onSubmit(values) {
@@ -192,7 +193,10 @@ onMounted(async () => {
           as="select"
           class="inputtext light"
         >
-          <option>
+          <option
+            value=""
+            disabled
+          >
             Selecionar
           </option>
           <option :value="true">

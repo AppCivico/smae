@@ -179,6 +179,24 @@ details[open] summary {
   }
 }
 
+// Funcionais
+
+.dados-defasados {
+  .dados-defasados();
+}
+
+.rolavel-horizontalmente {
+  .rolavel-horizontalmente();
+}
+
+.congelado-no-topo {
+  .congelado-no-topo();
+}
+
+.link-texto:hover {
+  color: @amarelo;
+}
+
 .accordion-opener {
   position: absolute;
   width: 1px;
@@ -370,6 +388,10 @@ input ~ span[role='alert'],
 
 .w400 {
   font-weight: 400;
+}
+
+.w500 {
+  font-weight: 500;
 }
 
 .w700 {
@@ -823,6 +845,11 @@ p {
 /* Position */
 .relative {
   position: relative !important;
+}
+
+/* Position */
+.container-inline {
+  container-type: inline-size;
 }
 
 /* Flex */
@@ -1784,8 +1811,7 @@ p {
 }
 
 .filtro-sujo {
-  filter: grayscale(1) blur(2px) opacity(0.35);
-  pointer-events: none;
+  .dados-defasados();
 }
 
 // apenas para abrigar as regras comuns a todos os checkboxes e radios, porque
@@ -2057,9 +2083,15 @@ input[type='radio'] {
   }
 }
 
+.subtitulo,
 .legend {
   display: flex;
   gap: 2rem;
+
+  // TO-DO: trocar para unidade de medida relativa quando redefinirmos o corpo
+  // raiz para 16px
+  font-size: 22px;
+  font-weight: 500;
 
   &::after {
     content: '';
@@ -2070,6 +2102,7 @@ input[type='radio'] {
     align-self: center;
   }
 }
+
 .halfInput {
   width: 48%;
 }
@@ -2882,7 +2915,7 @@ div[aria-busy="true"] {
 // https://adrianroselli.com/2020/11/under-engineered-responsive-tables.html
 [role="region"][aria-labelledby][tabindex],
 [role="region"][aria-label][tabindex] {
-  .rolavel-horizontalmente;
+  .rolavel-horizontalmente();
 }
 
 caption {
@@ -3301,4 +3334,3 @@ pre {
   order: 3;
   grid-column: -1 / 1;
 }
-

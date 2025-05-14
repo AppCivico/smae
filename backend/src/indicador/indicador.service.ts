@@ -5,7 +5,7 @@ import { CONST_CRONO_VAR_CATEGORICA_ID } from '../common/consts';
 import { Date2YMD, DateYMD } from '../common/date2ymd';
 import { PdmModoParaTipo, TipoPdmType } from '../common/decorators/current-tipo-pdm';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
-import { MetaService } from '../meta/meta.service';
+import { AddTaskRefreshMeta, MetaService } from '../meta/meta.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { ListSeriesAgrupadas } from '../variavel/dto/list-variavel.dto';
 import {
@@ -13,7 +13,7 @@ import {
     SerieIndicadorValorPorPeriodo,
     ValorSerieExistente,
 } from '../variavel/entities/variavel.entity';
-import { VariavelService } from '../variavel/variavel.service';
+import { AddTaskRecalcVariaveis, VariavelService } from '../variavel/variavel.service';
 import { CreateIndicadorDto, LinkIndicadorVariavelDto, UnlinkIndicadorVariavelDto } from './dto/create-indicador.dto';
 import { FilterIndicadorDto, FilterIndicadorSerieDto } from './dto/filter-indicador.dto';
 import { FormulaVariaveis, UpdateIndicadorDto } from './dto/update-indicador.dto';
@@ -1153,8 +1153,8 @@ export class IndicadorService {
         }
 
         const variableIdsToLink = dto.variavel_ids.filter((varId) => !alreadyLinkedIds.has(varId));
-        await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<void> => {
-            await prisma.indicadorVariavel.createMany({
+        await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<void> => {
+            await prismaTx.indicadorVariavel.createMany({
                 data: variableIdsToLink.map(
                     (varId) =>
                         ({
@@ -1166,6 +1166,9 @@ export class IndicadorService {
                         }) satisfies Prisma.IndicadorVariavelCreateManyInput
                 ),
             });
+
+            await AddTaskRecalcVariaveis(prismaTx, { variavelIds: variableIdsToLink });
+            await AddTaskRefreshMeta(prismaTx, { indicador_id: id });
         });
 
         return;
@@ -1231,6 +1234,8 @@ export class IndicadorService {
                     indicador_origem_id: null,
                 },
             });
+            await AddTaskRecalcVariaveis(prismaTx, { variavelIds: [dto.variavel_id] });
+            await AddTaskRefreshMeta(prismaTx, { indicador_id: id });
         });
 
         return;

@@ -1331,6 +1331,9 @@ model Meta {
     ProjetoOrigemRel                       CompromissoOrigem[]                      @relation("rel")
     PdmPerfil                              PdmPerfil[]
     ViewPainelEstrategicoProjetos          ViewPainelEstrategicoProjetos[]
+    PsDashboardConsolidado                 PsDashboardConsolidado[]
+    view_ps_dashboard_meta_stats           view_ps_dashboard_meta_stats[]
+    ViewPsDashboardConsolidado             view_ps_dashboard_consolidado[]
 
     @@index([pdm_id])
     @@map("meta")
@@ -1767,6 +1770,7 @@ model Variavel {
     VariavelGlobalCicloAnalise         VariavelGlobalCicloAnalise[]
     VariavelGlobalCicloDocumento       VariavelGlobalCicloDocumento[]
     VariavelGlobalPedidoComplementacao VariavelGlobalPedidoComplementacao[]
+    PsDashboardVariavel                PsDashboardVariavel[]
 
     @@index([tipo, removido_em, variavel_mae_id])
     @@index([regiao_id])
@@ -2145,6 +2149,8 @@ model Iniciativa {
     ProjetoOrigemRel                   CompromissoOrigem[]                  @relation("rel")
     PdmPerfil                          PdmPerfil[]
     CompromissoOrigem                  CompromissoOrigem[]
+    PsDashboardConsolidado             PsDashboardConsolidado[]
+    ViewPsDashboardConsolidado         view_ps_dashboard_consolidado[]
 
     @@index([meta_id])
     @@map("iniciativa")
@@ -2235,6 +2241,8 @@ model Atividade {
     ProjetoOrigem                      CompromissoOrigem[]                  @relation("fk")
     ProjetoOrigemRel                   CompromissoOrigem[]                  @relation("rel")
     PdmPerfil                          PdmPerfil[]
+    PsDashboardConsolidado             PsDashboardConsolidado[]
+    ViewPsDashboardConsolidado         view_ps_dashboard_consolidado[]
 
     @@index([iniciativa_id])
     @@map("atividade")
@@ -7257,8 +7265,9 @@ model VariavelCicloCorrente {
     liberacao_enviada        Boolean      @default(false)
     atualizado_em            DateTime     @default(now()) @db.Timestamptz(6)
 
-    variavel           Variavel             @relation(fields: [variavel_id], references: [id])
-    ViewVariavelGlobal ViewVariavelGlobal[]
+    variavel                         Variavel                           @relation(fields: [variavel_id], references: [id])
+    ViewVariavelGlobal               ViewVariavelGlobal[]
+    view_dashboard_variavel_corrente view_dashboard_variavel_corrente[]
 
     @@unique([variavel_id])
     @@map("variavel_ciclo_corrente")
@@ -7457,4 +7466,203 @@ view ViewPainelEstrategicoProjetos {
     status               ProjetoStatus
 
     @@map("view_painel_estrategico_projetos")
+}
+
+enum PsDashboardConsolidadoTipo {
+    meta
+    iniciativa
+    atividade
+}
+
+model PsDashboardConsolidado {
+    id            Int                        @id @default(autoincrement())
+    item_id       Int
+    tipo          PsDashboardConsolidadoTipo // 'meta', 'iniciativa', 'atividade', usado pro order-by funcionar
+    pdm_id        Int
+    meta_id       Int
+    iniciativa_id Int?
+    atividade_id  Int?
+
+    variaveis Int[]
+
+    meta       Meta        @relation(fields: [meta_id], references: [id])
+    iniciativa Iniciativa? @relation(fields: [iniciativa_id], references: [id])
+    atividade  Atividade?  @relation(fields: [atividade_id], references: [id])
+
+    orcamento_total      Int[]   @default([])
+    orcamento_preenchido Int[]   @default([])
+    pendencia_orcamento  Boolean @default(false)
+
+    cronograma_total         Int     @default(0)
+    cronograma_atraso_inicio Int     @default(0)
+    cronograma_atraso_fim    Int     @default(0)
+    cronograma_preenchido    Int     @default(0)
+    pendencia_cronograma     Boolean @default(false)
+
+    variaveis_total                    Int @default(0)
+    variaveis_total_no_ciclo           Int @default(0)
+    variaveis_a_coletar                Int @default(0)
+    variaveis_a_coletar_atrasadas      Int @default(0)
+    variaveis_coletadas_nao_conferidas Int @default(0)
+    variaveis_conferidas_nao_liberadas Int @default(0)
+    variaveis_liberadas                Int @default(0)
+
+    fase_atual                 CicloFase?
+    fase_analise_preenchida    Boolean    @default(false)
+    fase_risco_preenchida      Boolean    @default(false)
+    fase_fechamento_preenchida Boolean    @default(false)
+
+    equipes_orgaos      Int[]   @default([])
+    equipes             Int[]   @default([])
+    pendente            Boolean @default(false)
+    pendente_variavel   Boolean @default(false)
+    pendente_cronograma Boolean @default(false)
+    pendente_orcamento  Boolean @default(false)
+
+    atualizado_em   DateTime @default(now())
+    ciclo_fisico_id Int?
+
+    @@unique([item_id, tipo])
+    @@index([meta_id])
+    @@index([variaveis], name: "idx_ps_dashboard_consolidado_variaveis", type: Gin)
+    @@map("ps_dashboard_consolidado")
+}
+
+model view_ps_dashboard_consolidado {
+    id                                 Int                        @id
+    item_id                            Int
+    tipo                               PsDashboardConsolidadoTipo
+    pdm_id                             Int
+    meta_id                            Int
+    iniciativa_id                      Int?
+    atividade_id                       Int?
+    variaveis                          Int[]
+    orcamento_total                    Int[]
+    orcamento_preenchido               Int[]
+    pendencia_orcamento                Boolean
+    cronograma_total                   Int
+    cronograma_atraso_inicio           Int
+    cronograma_atraso_fim              Int
+    cronograma_preenchido              Int
+    pendencia_cronograma               Boolean
+    variaveis_total                    Int
+    variaveis_total_no_ciclo           Int
+    variaveis_a_coletar                Int
+    variaveis_a_coletar_atrasadas      Int
+    variaveis_coletadas_nao_conferidas Int
+    variaveis_conferidas_nao_liberadas Int
+    variaveis_liberadas                Int
+    fase_atual                         CicloFase?
+    fase_analise_preenchida            Boolean
+    fase_risco_preenchida              Boolean
+    fase_fechamento_preenchida         Boolean
+    equipes_orgaos                     Int[]
+    equipes                            Int[]
+    pendente                           Boolean
+    pendente_variavel                  Boolean
+    pendente_cronograma                Boolean
+    pendente_orcamento                 Boolean
+    atualizado_em                      DateTime
+    ciclo_fisico_id                    Int?
+
+    meta       Meta        @relation(fields: [meta_id], references: [id])
+    iniciativa Iniciativa? @relation(fields: [iniciativa_id], references: [id])
+    atividade  Atividade?  @relation(fields: [atividade_id], references: [id])
+
+    // Added fields from joins
+    meta_codigo       String
+    meta_titulo       String
+    iniciativa_codigo String?
+    iniciativa_titulo String?
+    atividade_codigo  String?
+    atividade_titulo  String?
+
+    order_meta       String
+    order_iniciativa String
+    order_atividade  String
+
+    @@unique([item_id, tipo])
+    @@map("view_ps_dashboard_consolidado")
+}
+
+model PsDashboardVariavel {
+    variavel_id Int      @id
+    variavel    Variavel @relation(fields: [variavel_id], references: [id])
+
+    pdm_id Int[]
+    pdm_id_completo Int[]
+
+    fase                          VariavelFase
+    fase_preenchimento_preenchida Boolean      @default(false)
+    fase_validacao_preenchida     Boolean      @default(false)
+    fase_liberacao_preenchida     Boolean      @default(false)
+
+    possui_atrasos Boolean @default(false)
+
+    equipes        Int[] // Mexeu, não dispara recalc
+    equipes_orgaos Int[] // Mexeu, não dispara recalc
+
+    // Campos de equipe por "fase"
+    equipes_preenchimento Int[] @default([])
+    equipes_conferencia   Int[] @default([])
+    equipes_liberacao     Int[] @default([])
+
+    @@index([pdm_id])
+    @@map("ps_dashboard_variavel")
+}
+
+view view_ps_dashboard_meta_stats {
+    pdm_id         Int
+    // removidos no v2
+    //item_id        Int
+    //tipo           String
+    meta_id        Int
+    equipes        Int[]
+    equipes_orgaos Int[]
+
+    // Status flags (0 or 1)
+    pendente Int
+
+    // Variables status
+    var_liberadas Int
+    var_a_liberar Int
+
+    // Schedule status
+    crono_preenchido  Int
+    crono_a_preencher Int
+
+    // Budget status
+    orc_preenchido  Int
+    orc_a_preencher Int
+
+    // Qualification status
+    qualif_preenchida  Int
+    qualif_a_preencher Int
+
+    // Risk status
+    risco_preenchido  Int
+    risco_a_preencher Int
+
+    // Closing status
+    fechadas Int
+    a_fechar Int
+
+    ciclo_fisico_id Int?
+
+    meta Meta @relation(fields: [meta_id], references: [id])
+
+    @@unique([meta_id])
+    @@map("ps_dashboard_meta_stats_v2")
+}
+
+view view_dashboard_variavel_corrente {
+    item_id                    Int
+    tipo                       String
+    variavel_ciclo_corrente_id Int
+    variavel_ciclo_corrente    VariavelCicloCorrente @relation(fields: [variavel_ciclo_corrente_id], references: [id])
+
+    pdm_id Int
+
+    @@unique([item_id, tipo])
+    @@map("view_dashboard_variavel_corrente")
 }

@@ -1,5 +1,5 @@
 import { OmitType } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
+import { Transform, Expose } from 'class-transformer';
 import { IsInt } from 'class-validator';
 import { SuperCreateRelPrevisaoCustoDto } from 'src/reports/previsao-custo/dto/create-previsao-custo.dto';
 
@@ -17,6 +17,7 @@ export class CreateRelProjetoPrevisaoCustoDto extends OmitType(SuperCreateRelPre
      */
     @IsInt()
     @Transform(({ value }: any) => +value)
+    @Expose()
     portfolio_id: number;
 }
 

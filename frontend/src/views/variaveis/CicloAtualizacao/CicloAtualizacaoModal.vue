@@ -70,8 +70,11 @@ type ConteudoOpcoes = {
   [key in Opcoes]: ConteudoOpcao
 };
 
+const route = useRoute();
+const router = useRouter();
+
 const alertStore = useAlertStore();
-const cicloAtualizacaoStore = useCicloAtualizacaoStore();
+const cicloAtualizacaoStore = useCicloAtualizacaoStore(route.meta.entidadeMãe);
 const variaveisCategoricasStore = useVariaveisCategoricasStore();
 const { fase } = useCicloAtualizacao();
 
@@ -79,18 +82,15 @@ const { emFoco, temCategorica } = storeToRefs(cicloAtualizacaoStore);
 
 const modalVisivel = ref<boolean>(true);
 
-const $route = useRoute();
-const $router = useRouter();
-
 function fecharModal() {
   const { state } = window.history;
 
   if (state.back?.includes('/variaveis/ciclo-atualizacao')) {
-    $router.push(state.back);
+    router.push(state.back);
     return;
   }
 
-  $router.push({
+  router.push({
     name: 'cicloAtualizacao',
     query: {
       aba: 'Preenchimento',
@@ -107,8 +107,8 @@ function checarFecharModal() {
 }
 
 onMounted(async () => {
-  const cicloAtualizacaoId = $route.params.cicloAtualizacaoId as string;
-  const dataReferencia = $route.params.dataReferencia as string;
+  const cicloAtualizacaoId = route.params.cicloAtualizacaoId as string;
+  const dataReferencia = route.params.dataReferencia as string;
 
   if (!cicloAtualizacaoId) {
     fecharModal();

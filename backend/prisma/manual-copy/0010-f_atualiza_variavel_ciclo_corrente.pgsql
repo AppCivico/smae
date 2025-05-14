@@ -389,7 +389,8 @@ BEGIN
         proximo_periodo_abertura,
         eh_corrente,
         prazo,
-        atrasos
+        atrasos,
+        liberacao_enviada
     )
     VALUES (
         v_registro.id,
@@ -398,7 +399,8 @@ BEGIN
         v_proximo_periodo,
         v_corrente,
         v_prazo,
-        v_atrasos
+        v_atrasos,
+        COALESCE(v_liberacao_enviada, FALSE)
     )
     ON CONFLICT (variavel_id)
         DO UPDATE SET
@@ -408,6 +410,7 @@ BEGIN
             prazo = EXCLUDED.prazo,
             fase = EXCLUDED.fase,
             atrasos = EXCLUDED.atrasos,
+            liberacao_enviada = EXCLUDED.liberacao_enviada,
             atualizado_em = now();
 
 

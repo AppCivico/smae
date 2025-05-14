@@ -1,7 +1,7 @@
 import { ApiProperty, IntersectionType } from '@nestjs/swagger';
 import { TipoRelatorio } from '@prisma/client';
-import { Transform } from 'class-transformer';
-import { IsBoolean, IsEnum, IsInt, IsOptional, ValidateIf } from 'class-validator';
+import { Transform, Expose, Type } from 'class-transformer';
+import { IsBoolean, IsEnum, IsInt, IsNumber, IsOptional, ValidateIf } from 'class-validator';
 import { FiltroMetasIniAtividadeDto } from '../../relatorios/dto/filtros.dto';
 import { NumberArrayTransformOrUndef } from '../../../auth/transforms/number-array.transform';
 
@@ -27,6 +27,7 @@ export class IndicadorParams {
     @IsEnum(TipoRelatorio, {
         message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(TipoRelatorio).join(', '),
     })
+    @Expose()
     tipo: TipoRelatorio;
 
     /**
@@ -39,6 +40,7 @@ export class IndicadorParams {
     @IsEnum(SemestreDto, {
         message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(SemestreDto).join(', '),
     })
+    @Expose()
     semestre?: SemestreDto | null;
 
     /**
@@ -48,6 +50,7 @@ export class IndicadorParams {
     @IsEnum(PeriodoRelatorioDto, {
         message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(PeriodoRelatorioDto).join(', '),
     })
+    @Expose()
     periodo: PeriodoRelatorioDto;
 
     /**
@@ -55,6 +58,7 @@ export class IndicadorParams {
      */
     @IsInt()
     @Transform(({ value }: any) => +value)
+    @Expose()
     ano: number;
 
     /**
@@ -63,21 +67,26 @@ export class IndicadorParams {
      */
     @IsOptional()
     @IsBoolean()
+    @Expose()
     analitico_desde_o_inicio?: boolean;
 
-    mes:number
+    @Expose()
+    mes: number;
 }
 
 export class CreateRelIndicadorDto extends IntersectionType(FiltroMetasIniAtividadeDto, IndicadorParams) {
     @IsOptional()
     @IsBoolean()
+    @Expose()
     listar_variaveis_regionalizadas: boolean;
+
+    @IsNumber()
+    @Type(() => Number)
+    pdm_id?: number;
 }
 
 export class CreateRelIndicadorRegioesDto extends CreateRelIndicadorDto {
     @IsOptional()
     @Transform(NumberArrayTransformOrUndef)
     regioes?: number[];
-
-
 }

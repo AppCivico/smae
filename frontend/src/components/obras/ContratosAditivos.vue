@@ -39,7 +39,7 @@ const {
 const {
   lista: listaDeTiposDeAditivos,
   chamadasPendentes: chamadasPendentesDeTiposDeAditivos,
-  erro: erroDeTiposDeAditivos,
+  erros: errosDeTiposDeAditivos,
   tipoDeAditivoPorId,
 } = storeToRefs(aditivosStore);
 
@@ -330,7 +330,7 @@ function limparCamposRelacionados(tipo_aditivo_id) {
             class="error-msg"
           />
           <ErrorComponent
-            :erro="erroDeTiposDeAditivos"
+            :erro="errosDeTiposDeAditivos.lista"
           />
         </div>
         <div

@@ -911,6 +911,10 @@ export const indicador = object()
       .label('Valor base do indicador')
       .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
       .nullable(),
+    meta_valor_nominal: number()
+      .label('Valor alvo')
+      .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
+      .nullable(),
     casas_decimais: number()
       .min(0)
       .max(35)
@@ -3116,7 +3120,7 @@ export const relatórioDeTransferênciasVoluntárias = relatorioValidacaoBase.co
       .max(50000)
       .nullable(),
     orgao_gestor_id: number()
-      .label('Gestor Municipal')
+      .label('Órgão gestor')
       .nullable(),
     parlamentar_id: number()
       .label('Parlamentar')
@@ -4255,7 +4259,7 @@ export const comunicadosGeraisFiltrosSchema = object().shape({
 
 function obterCicloAtaulizacaoCamposCompartilhados(posicao) {
   const schemaCampos = {
-    analise_qualitativa: string().label('análise qualitativa da coleta'),
+    analise_qualitativa: string().label('análise qualitativa da coleta').required(),
   };
 
   if (posicao !== 1) {
@@ -4326,12 +4330,32 @@ export const classificacaoCriarEditarSchema = object().shape({
   transferencia_tipo_id: string().label('Tipo').required(),
 });
 
-export const cicloAtualizacaoFiltrosSchema = (opcoes) => object().shape({
-  codigo: string().label('Código'),
-  palavra_chave: string().label('Palavra chave'),
-  referencia: string().label('Referencia').matches(regEx['month/year'], 'Formato inválido'),
-  equipe_id: mixed().label('Equipe').nullable().oneOf([
-    '',
-    ...opcoes.map((item) => item.id),
-  ]),
+export const cicloAtualizacaoFiltrosSchema = object().shape({
+  atividade_id: number()
+    .label('atividade')
+    .nullableOuVazio()
+    .min(1),
+  codigo: string()
+    .label('Código'),
+  equipe_id: number()
+    .label('Equipe')
+    .nullableOuVazio()
+    .min(1),
+  iniciativa_id: number()
+    .label('iniciativa')
+    .nullableOuVazio()
+    .min(1),
+  meta_id: number()
+    .label('Meta')
+    .nullableOuVazio()
+    .min(1),
+  palavra_chave: string()
+    .label('Palavra chave'),
+  pdm_id: number()
+    .label('PdM/Plano Setorial')
+    .nullableOuVazio()
+    .min(1),
+  referencia: string()
+    .label('Referencia')
+    .matches(regEx['month/year'], 'Formato inválido'),
 });

@@ -49,6 +49,38 @@ export class FilterVariavelGlobalCicloDto extends FilterVariavelDto {
     @Transform(NumberTransform)
     equipe_id?: number;
 
+    @ApiProperty({
+        description: 'ID da meta, prioridade 3, usado apenas no filtro de GET plano-setorial-variavel-ciclo',
+    })
+    @IsOptional()
+    @IsInt()
+    @Transform(NumberTransform)
+    meta_id?: number;
+
+    @ApiProperty({
+        description: 'ID do pdm/ps, prioridade 4, usado apenas no filtro de GET plano-setorial-variavel-ciclo',
+    })
+    @IsOptional()
+    @IsInt()
+    @Transform(NumberTransform)
+    pdm_id?: number;
+
+    @ApiProperty({
+        description: 'ID da iniciativa, prioridade 2, usado apenas no filtro de GET plano-setorial-variavel-ciclo',
+    })
+    @IsOptional()
+    @IsInt()
+    @Transform(NumberTransform)
+    iniciativa_id?: number;
+
+    @ApiProperty({
+        description: 'ID da atividade, prioridade 1, usado apenas no filtro de GET plano-setorial-variavel-ciclo',
+    })
+    @IsOptional()
+    @IsInt()
+    @Transform(NumberTransform)
+    atividade_id?: number;
+
     @IsOptional()
     @IsDateYMD()
     referencia?: Date;

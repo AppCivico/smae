@@ -1,13 +1,13 @@
+import $eventHub from '@/components/eventHub';
+import decodificadorDePrimitivas from '@/helpers/decodificadorDePrimitivas';
+import retornarModuloAPartirDeEntidadeMae from '@/helpers/retornarModuloAPartirDeEntidadeMae';
+import { useAuthStore } from '@/stores/auth.store';
+import { Home } from '@/views';
+import { Login, LostPassword, NewPassword } from '@/views/auth';
+import Panorama from '@/views/Panorama.vue';
 import qs from 'qs';
 import { watch } from 'vue';
 import { createRouter, createWebHistory } from 'vue-router';
-import { Home } from '@/views';
-import Panorama from '@/views/Panorama.vue';
-import $eventHub from '@/components/eventHub';
-import { Login, LostPassword, NewPassword } from '@/views/auth';
-import { useAuthStore } from '@/stores/auth.store';
-import decodificadorDePrimitivas from '@/helpers/decodificadorDePrimitivas';
-import retornarModuloAPartirDeEntidadeMae from '@/helpers/retornarModuloAPartirDeEntidadeMae';
 import administracao from './administracao';
 import análise from './analise';
 import comunicadosGerais from './comunicadosGerais';
@@ -95,10 +95,11 @@ export const router = createRouter({
     // https://github.com/ljharb/qs/issues/91#issuecomment-1833694874
     return qs.parse(query, {
       decoder(str, defaultDecoder, charset, type) {
-        return type !== 'value'
-          ? defaultDecoder(str, defaultDecoder, charset)
-          : decodificadorDePrimitivas(str)
-              || defaultDecoder(str, defaultDecoder, charset);
+        const valorDecodificado = defaultDecoder(str, defaultDecoder, charset);
+
+        return type === 'value' && typeof valorDecodificado === 'string'
+          ? decodificadorDePrimitivas(valorDecodificado)
+          : valorDecodificado;
       },
     });
   },
@@ -128,16 +129,18 @@ router.beforeEach(async (r, from) => {
 });
 
 router.afterEach((to, from) => {
-  const { título, classeRaiz } = to.meta;
+  const { título, tituloParaNavegador, classeRaiz } = to.meta;
   const { classeRaiz: classeRaizAnterior } = from.meta;
 
-  if (título) {
-    if (typeof título === 'function') {
-      watch(() => título(), (novoValor) => {
+  if (título || tituloParaNavegador) {
+    const esteTitulo = tituloParaNavegador || título;
+
+    if (typeof esteTitulo === 'function') {
+      watch(() => esteTitulo(), (novoValor) => {
         document.title = novoValor ? `${novoValor} | SMAE` : 'SMAE';
       }, { immediate: true });
-    } else if (título) {
-      document.title = `${título} | SMAE`;
+    } else if (esteTitulo) {
+      document.title = `${esteTitulo} | SMAE`;
     }
   } else if (document.title !== 'SMAE') {
     document.title = 'SMAE';

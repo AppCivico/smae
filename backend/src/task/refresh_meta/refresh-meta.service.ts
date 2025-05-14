@@ -21,26 +21,37 @@ export class RefreshMetaService implements TaskableService {
         SET status='completed', output = '{"duplicated": true}'
         WHERE type = 'refresh_meta'
         AND status='pending' AND id != ${task.id}
-        AND (params::text, criado_em) = (select params::text, criado_em from task_queue where id = ${task.id})
+        AND (params->>'meta_id')::int = ${inputParams.meta_id}::int
+        AND criado_em = (select criado_em from task_queue where id = ${task.id})
         `;
 
         await RetryOperation(
             5,
             async () => {
-                await RetryPromise(
-                    () =>
-                        this.prisma.$queryRaw`select atualiza_meta_status_consolidado(
-                                ${inputParams.meta_id}::int,
-                                (select id from ciclo_fisico where ativo and tipo='PDM')
-                              );`,
-                    10,
-                    100,
-                    20
-                );
+                await this.prisma.$transaction(async (tx) => {
+                    // Executa o procedimento que atualiza a meta
+                    await RetryPromise(
+                        () =>
+                            tx.$queryRaw`select atualiza_meta_status_consolidado(
+                        ${inputParams.meta_id}::int,
+                        (select id from ciclo_fisico where ativo and tipo='PDM')
+                    );`,
+                        10,
+                        100,
+                        20
+                    );
+
+                    // Se chegou aqui com sucesso, apaga os jobs antigos que deram sucesso ou estão pendentes
+                    await tx.$queryRaw`DELETE FROM task_queue
+                        WHERE type = 'refresh_meta'
+                        AND status IN ('pending', 'completed')
+                        AND id != ${task.id}
+                        AND (params->>'meta_id')::int = ${inputParams.meta_id}::int
+                        AND criado_em < (SELECT criado_em FROM task_queue WHERE id = ${task.id})`;
+                });
             },
             async (error) => {
                 this.logger.error(`Erro ao recalcular meta: ${error}`);
-
                 throw error;
             }
         );

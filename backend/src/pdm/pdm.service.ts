@@ -30,6 +30,7 @@ import { ListPdm } from './entities/list-pdm.entity';
 import { PdmItemDocumentDto } from './entities/pdm-document.entity';
 import { PdmCicloService } from './pdm.ciclo.service';
 import { EnsureString } from '../common/EnsureString';
+import { AddTaskRecalcVariaveis } from '../variavel/variavel.service';
 
 const MAPA_PERFIL_PERMISSAO: Record<PdmPerfilTipo, PerfilResponsavelEquipe> = {
     ADMIN: 'AdminPS',
@@ -775,6 +776,7 @@ export class PdmService {
         const now = new Date(Date.now());
         let verificarCiclos = false;
         let ativarPdm: boolean | undefined = undefined;
+        let verificarVariaveisGlobais = false;
 
         const performUpdate = async (prismaTx: Prisma.TransactionClient): Promise<void> => {
             if (pdm.tipo == 'PDM') {
@@ -791,6 +793,7 @@ export class PdmService {
                 delete dto.ativo;
             } else if (typeof dto.ativo == 'boolean' && dto.ativo !== pdm.ativo) {
                 ativarPdm = dto.ativo;
+                verificarVariaveisGlobais = true;
                 if (ativarPdm == false)
                     await prismaTx.pdm.update({
                         where: { id: id },
@@ -915,6 +918,10 @@ export class PdmService {
             if (verificarCiclos) {
                 this.logger.log(`chamando monta_ciclos_pdm...`);
                 this.logger.log(JSON.stringify(await prismaTx.$queryRaw`select monta_ciclos_pdm(${id}::int, false)`));
+            }
+
+            if (verificarVariaveisGlobais) {
+                await AddTaskRecalcVariaveis(prismaTx, { pdmId: id });
             }
         };
 

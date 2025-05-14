@@ -57,9 +57,9 @@
           Carregando
         </td>
       </tr>
-      <tr v-else-if="erro">
+      <tr v-else-if="erros.lista">
         <td colspan="3">
-          Erro: {{ erro }}
+          Erro: {{ erros.lista }}
         </td>
       </tr>
       <tr v-else-if="!lista.length">
@@ -71,16 +71,16 @@
   </table>
 </template>
 <script setup>
-import { storeToRefs } from 'pinia';
-import { useRoute } from 'vue-router';
 import { useAlertStore } from '@/stores/alert.store';
 import { useTipoDeAditivosStore } from '@/stores/tipoDeAditivos.store';
+import { storeToRefs } from 'pinia';
+import { useRoute } from 'vue-router';
 
 const route = useRoute();
 
 const alertStore = useAlertStore();
 const aditivosStore = useTipoDeAditivosStore();
-const { lista, chamadasPendentes, erro } = storeToRefs(aditivosStore);
+const { lista, chamadasPendentes, erros } = storeToRefs(aditivosStore);
 
 async function excluirAditivo(id, descricao) {
   alertStore.confirmAction(

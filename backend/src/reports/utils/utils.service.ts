@@ -171,7 +171,7 @@ export function ParseParametrosDaFonte(fonte: FonteRelatorio, value: any): any {
     const validatorObject = plainToInstance(theClass, value, {
         enableCircularCheck: false,
         enableImplicitConversion: false,
-        excludeExtraneousValues: false,
+        excludeExtraneousValues: true,
         excludePrefixes: undefined,
         exposeDefaultValues: false,
         exposeUnsetFields: true,
@@ -181,7 +181,6 @@ export function ParseParametrosDaFonte(fonte: FonteRelatorio, value: any): any {
         targetMaps: undefined,
         version: undefined,
     });
-    console.log('validatorObject', validatorObject);
 
     return validatorObject;
 }

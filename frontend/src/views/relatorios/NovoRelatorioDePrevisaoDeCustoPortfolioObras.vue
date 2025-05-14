@@ -1,8 +1,8 @@
 <script setup>
 import { relatórioDePrevisãoDeCustoPortfolioObras as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
-import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store.ts';
 import { useObrasStore } from '@/stores/obras.store';
+import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store.ts';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
@@ -27,6 +27,7 @@ const initialValues = computed(() => ({
     portfolio_id: 0,
     projeto_id: null,
   },
+  eh_publico: null,
 }));
 
 async function onSubmit(values) {
@@ -177,7 +178,10 @@ iniciar();
           }"
           :disabled="loading"
         >
-          <option :value="null">
+          <option
+            value=""
+            disabled
+          >
             Selecionar
           </option>
           <option :value="true">

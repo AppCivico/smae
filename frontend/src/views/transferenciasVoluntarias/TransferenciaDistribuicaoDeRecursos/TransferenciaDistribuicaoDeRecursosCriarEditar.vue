@@ -77,7 +77,6 @@ const {
   errors,
   handleSubmit,
   isSubmitting,
-  resetField,
   resetForm,
   setFieldValue,
   values,
@@ -222,9 +221,9 @@ watch(() => values.vigencia, (novoValor) => {
     && !itemParaEdicao.value?.justificativa_aditamento
     && novoValor !== itemParaEdicao.value?.vigencia
   ) {
-    resetField('justificativa_aditamento', { value: '' });
+    setFieldValue('justificativa_aditamento', '');
   } else {
-    resetField('justificativa_aditamento', { value: itemParaEdicao.value?.justificativa_aditamento });
+    setFieldValue('justificativa_aditamento', itemParaEdicao.value?.justificativa_aditamento);
   }
 });
 
@@ -239,7 +238,9 @@ watch(() => itemParaEdicaoFormatado.value, () => {
 });
 
 onMounted(async () => {
-  ÓrgãosStore.getAll();
+  if (!órgãosComoLista.value.length) {
+    ÓrgãosStore.getAll();
+  }
 });
 
 onUnmounted(() => {
@@ -270,7 +271,7 @@ onUnmounted(() => {
     </div>
   </div>
 
-  <form @submit="onSubmit">
+  <form @submit.prevent="!isSubmitting ? onSubmit() : null">
     <fieldset>
       <div class="flex g2 mb1">
         <div class="f1">
@@ -1023,12 +1024,15 @@ onUnmounted(() => {
       </div>
     </fieldset>
 
+    <FormErrorsList :errors="errors" />
+
     <div class="flex spacebetween center mb2">
       <hr class="mr2 f1">
 
       <button
         class="btn big"
-        :disabled="isSubmitting"
+        :aria-busy="isSubmitting"
+        :aria-disabled="Object.keys(errors)?.length"
         type="submit"
       >
         Salvar

@@ -1,6 +1,6 @@
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>{{ route?.meta?.título || "Grupos temáticos" }}</h1>
+    <TituloDaPagina />
     <hr class="ml2 f1">
     <CheckClose />
   </div>
@@ -28,7 +28,7 @@
       </div>
     </div>
     <p class="w700">
-      Informações adicionais a serem informadas no registro da obra:
+      Informações adicionais a serem incluídas no registro da obra:
     </p>
 
     <label
@@ -139,6 +139,7 @@
 </template>
 
 <script setup>
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import { gruposTematicos as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';

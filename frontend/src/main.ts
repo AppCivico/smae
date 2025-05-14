@@ -1,4 +1,5 @@
 import CheckClose from '@/components/CheckClose.vue';
+import detectarPosicaoCongelada from '@/diretivas/detectarPosicaoCongelada';
 import ErrorComponent from '@/components/ErrorComponent.vue';
 import FormErrorsList from '@/components/FormErrorsList.vue';
 import LabelFromYup from '@/components/LabelFromYup.vue';
@@ -47,7 +48,7 @@ declare module 'pinia' {
     requestS: RequestS;
     router: Router;
     route: RouteLocationNormalizedLoaded;
-    resetAllStores: () => void;
+    resetAllStores: (storeIds: string | string[]) => void;
   }
   export interface PiniaCustomStateProperties {
     route: RouteLocationNormalizedLoaded;
@@ -67,12 +68,21 @@ pinia.use(({ store }) => {
   stores.push(store);
 
   return {
-    resetAllStores: () => {
+    resetAllStores: (storeIds = 'all') => {
       stores.forEach((eachStore) => {
-        eachStore.$reset();
-      });
+        switch (true) {
+          case storeIds === 'all':
+          case Array.isArray(storeIds) && storeIds.includes(eachStore.$id):
+          case storeIds === eachStore.$id:
+            if (eachStore.$reset) {
+              eachStore.$reset();
+            }
+            break;
 
-      stores.splice(0);
+          default:
+            break;
+        }
+      });
     },
   };
 });
@@ -116,6 +126,8 @@ app.directive('ScrollLockDebug', {
 app.directive('selecionar-multiplas-opcoes', {
   mounted: (el) => selecionarMultiplasOpcoes(el),
 });
+
+app.directive('detectar-posicao-congelada', detectarPosicaoCongelada);
 
 app.directive('focus', {
   mounted: async (el, binding) => {

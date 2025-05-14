@@ -17,7 +17,7 @@ async function excluirPainel(id) {
     if (await portfolioStore.excluirItem(id)) {
       portfolioStore.$reset();
       portfolioStore.buscarTudo();
-      alertStore.success('Portfólio removido.');
+      alertStore.success('Painel externo removido.');
     }
   }, 'Remover');
 }

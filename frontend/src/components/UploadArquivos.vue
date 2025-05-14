@@ -164,17 +164,13 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, toRef } from 'vue';
-import { storeToRefs } from 'pinia';
-import { Field, useForm } from 'vee-validate';
-
+import SmaeLink from '@/components/SmaeLink.vue';
+import { arquivoSimples as uploadSchema } from '@/consts/formSchemas';
 import { useDocumentTypesStore } from '@/stores';
 import { useFileStore } from '@/stores/file.store';
-
-import { arquivoSimples as uploadSchema } from '@/consts/formSchemas';
-
-import SmaeLink from '@/components/SmaeLink.vue';
-
+import { storeToRefs } from 'pinia';
+import { Field, useForm } from 'vee-validate';
+import { computed, ref } from 'vue';
 import LabelFromYup from './LabelFromYup.vue';
 
 export type ArquivoAdicionado = {
@@ -198,7 +194,7 @@ type Emits = {
   (event: 'remover-arquivo', itemIndex: number): void
 };
 
-const DOWNLOAD_URL = `${import.meta.env.VITE_API_URL}/download/`;
+const DOWNLOAD_URL = `${import.meta.env.VITE_API_URL}/download`;
 
 const $emit = defineEmits<Emits>();
 const props = defineProps<Props>();

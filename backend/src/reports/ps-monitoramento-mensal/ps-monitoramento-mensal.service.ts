@@ -251,11 +251,12 @@ export class PSMonitoramentoMensal implements ReportableService {
             from ciclo_fisico cf
             join pdm p on p.id = cf.pdm_id and p.removido_em is null AND p.tipo = 'PS'
             join meta m on m.pdm_id = p.id and m.removido_em is null
-            join meta_ciclo_fisico_analise mcf on mcf.ciclo_fisico_id = cf.id and mcf.removido_em is null and mcf.ultima_revisao = true and mcf.referencia_data = :mesAno ::date
-            join meta_ciclo_fisico_risco mcr on mcr.ciclo_fisico_id = cf.id and mcr.removido_em is null and mcr.ultima_revisao = true  and mcr.referencia_data = :mesAno ::date
-            join meta_ciclo_fisico_fechamento mcfec on mcfec.ciclo_fisico_id = cf.id and mcfec.removido_em is null and mcfec.ultima_revisao = true and mcfec.referencia_data = :mesAno ::date
+            left join meta_ciclo_fisico_analise mcf on mcf.ciclo_fisico_id = cf.id and mcf.meta_id = m.id and mcf.removido_em is null and mcf.ultima_revisao = true and mcf.referencia_data = :mesAno ::date
+            left join meta_ciclo_fisico_risco mcr on mcr.ciclo_fisico_id = cf.id and mcr.meta_id = m.id and mcr.removido_em is null and mcr.ultima_revisao = true  and mcr.referencia_data = :mesAno ::date
+            left join meta_ciclo_fisico_fechamento mcfec on mcfec.ciclo_fisico_id = cf.id and mcfec.meta_id = m.id and mcfec.removido_em is null and mcfec.ultima_revisao = true and mcfec.referencia_data = :mesAno ::date
             where m.id in (:metas)
             and cf.pdm_id = :pdm_id
+            and cf.ativo = true
             `;
 
         // Fazendo replace de :metas, :mesAno e :pdm_id
@@ -326,10 +327,6 @@ export class PSMonitoramentoMensal implements ReportableService {
                     fields: [
                         { value: 'meta_id', label: 'ID da Meta' },
                         { value: 'meta_codigo', label: 'Código da Meta' },
-                        { value: 'iniciativa_id', label: 'ID da Iniciativa' },
-                        { value: 'iniciativa_codigo', label: 'Código da Iniciativa' },
-                        { value: 'atividade_id', label: 'ID da Atividade' },
-                        { value: 'atividade_codigo', label: 'Código da Atividade' },
                         { value: 'analise_qualitativa', label: 'Analise Qualitativa' },
                         { value: 'analise_qualitativa_data', label: 'Data da Analise Qualitativa' },
                         { value: 'risco_detalhamento', label: 'Detalhamento do Risco' },

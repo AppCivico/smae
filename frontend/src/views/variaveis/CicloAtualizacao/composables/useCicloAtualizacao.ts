@@ -1,6 +1,6 @@
+import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
-import { storeToRefs } from 'pinia';
 
 import { useCicloAtualizacaoStore } from '@/stores/cicloAtualizacao.store';
 
@@ -12,12 +12,11 @@ export default function useCicloAtualizacao() {
     salvarESubmeter: string;
   };
 
-  const cicloAtualizacaoStore = useCicloAtualizacaoStore();
+  const route = useRoute();
+
+  const cicloAtualizacaoStore = useCicloAtualizacaoStore(route.meta.entidadeMãe);
 
   const { emFoco } = storeToRefs(cicloAtualizacaoStore);
-
-  const $route = useRoute();
-
   const fase = computed<FaseOpcoes>(
     () => {
       const faseAtual = emFoco.value?.fase;
@@ -128,6 +127,6 @@ export default function useCicloAtualizacao() {
     fase,
     fasePosicao,
     forumlariosAExibir,
-    dataReferencia: $route.params.dataReferencia as string,
+    dataReferencia: route.params.dataReferencia as string,
   };
 }

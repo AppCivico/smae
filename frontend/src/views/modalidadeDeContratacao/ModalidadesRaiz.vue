@@ -4,6 +4,7 @@ import { Dashboard } from '@/components';
 
 <template>
   <Dashboard>
+    <MigalhasDePão class="mb1" />
     <router-view />
   </Dashboard>
 </template>

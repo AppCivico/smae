@@ -22,9 +22,19 @@ try {
 
 type IFilenameHash = {
     fileName: string;
+    originalFileName: string; // Only used internally, not for DB storage
     hash: string;
     content: string;
 };
+
+// Function to normalize filename by removing numbers before '-'
+function normalizeFileName(fileName: string): string {
+    // Check if the filename matches the pattern of numbers followed by a dash
+    const match = fileName.match(/^\d+-(.+)$/);
+    // If it matches, return the part after the dash, otherwise return the original filename
+    return match ? match[1] : fileName;
+}
+
 async function main() {
     const pgsqlDir = process.env.PGSQL_DIR || './pgsql';
 
@@ -67,11 +77,29 @@ async function processPgsqlFiles(dir: string) {
         return;
     }
 
+    // First pass: collect all normalized filenames to check for conflicts
+    const normalizedNames = new Map<string, string[]>();
+    files.forEach(file => {
+        const normalized = normalizeFileName(file);
+        if (!normalizedNames.has(normalized)) {
+            normalizedNames.set(normalized, []);
+        }
+        normalizedNames.get(normalized)!.push(file);
+    });
+
+    // Process files and determine which ones to use original names for
     const fileHashes: IFilenameHash[] = await Promise.all(
         files.map(async (file) => {
             const filePath = path.join(dir, file);
+            const normalizedName = normalizeFileName(file);
+
+            // Use original filename if there's a conflict
+            const hasConflict = normalizedNames.get(normalizedName)!.length > 1;
+            const fileNameToUse = hasConflict ? file : normalizedName;
+
             return {
-                fileName: file,
+                fileName: fileNameToUse,
+                originalFileName: file, // Keep track internally, not for DB
                 hash: await calculateSHA256(filePath),
                 content: await fs.promises.readFile(filePath, 'utf-8'),
             };
@@ -141,20 +169,20 @@ async function updateFunctions(filesToUpdate: IFilenameHash[]) {
     });
 
     for (const file of filesToUpdate) {
-        logger.debug(`Updating ${file.fileName}...`);
+        logger.debug(`Updating ${file.originalFileName} (saved as ${file.fileName})...`);
         try {
             await connection.query('BEGIN');
 
             await connection.query(file.content);
 
-            // Insert or update the main _migrate_pgsql table
+            // Insert or update the main _migrate_pgsql table - using normalized name
             await connection.query(
                 'INSERT INTO _migrate_pgsql (file_name, hash, last_sql) VALUES ($1, $2, $3) ' +
                     'ON CONFLICT (file_name) DO UPDATE SET hash = EXCLUDED.hash, last_sql = EXCLUDED.last_sql, updated_at = CURRENT_TIMESTAMP',
                 [file.fileName, file.hash, file.content]
             );
 
-            // Insert a new record into the _migrate_pgsql_history table
+            // Insert a new record into the _migrate_pgsql_history table - using normalized name
             await connection.query('INSERT INTO _migrate_pgsql_history (file_name, hash, sql) VALUES ($1, $2, $3)', [
                 file.fileName,
                 file.hash,
@@ -163,11 +191,11 @@ async function updateFunctions(filesToUpdate: IFilenameHash[]) {
 
             nSuccess++;
             await connection.query('COMMIT');
-            logger.log(`Successfully updated ${file.fileName}`);
+            logger.log(`Successfully updated ${file.originalFileName} (saved as ${file.fileName})`);
         } catch (error) {
             nErrored++;
             await connection.query('ROLLBACK');
-            logger.error(`Error updating ${file.fileName}:`, error.message);
+            logger.error(`Error updating ${file.originalFileName} (saved as ${file.fileName}):`, error.message);
 
             try {
                 await connection.query('BEGIN');
@@ -186,7 +214,7 @@ async function updateFunctions(filesToUpdate: IFilenameHash[]) {
                 await connection.query('COMMIT');
             } catch (error) {
                 await connection.query('ROLLBACK');
-                logger.error(`Error updating ${file.fileName} history:`, error.message);
+                logger.error(`Error updating ${file.originalFileName} (saved as ${file.fileName}) history:`, error.message);
             }
         }
     }

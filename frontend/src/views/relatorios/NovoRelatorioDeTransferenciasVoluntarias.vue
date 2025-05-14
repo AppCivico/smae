@@ -6,8 +6,8 @@ import interfacesDeTransferências from '@/consts/interfacesDeTransferências';
 import truncate from '@/helpers/texto/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOrgansStore } from '@/stores/organs.store';
-import { usePartidosStore } from '@/stores/partidos.store';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
+import { usePartidosStore } from '@/stores/partidos.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { storeToRefs } from 'pinia';
 import {
@@ -31,7 +31,6 @@ const valoresIniciais = {
     esfera: null,
     gestor_contrato: null,
     interface: null,
-    objeto: null,
     orgao_concedente_id: null,
     partido_id: null,
     secretaria_concedente: null,
@@ -39,6 +38,7 @@ const valoresIniciais = {
     orgao_gestor_id: null,
     parlamentar_id: null,
   },
+  eh_publico: null,
 };
 
 const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
@@ -383,7 +383,10 @@ ParlamentaresStore.buscarTudo({ ipp: 500, possui_mandatos: true });
           }"
           :disabled="ÓrgãosStore.organs?.loading"
         >
-          <option :value="null">
+          <option
+            value=""
+            disabled
+          >
             Selecionar
           </option>
           <option :value="true">
@@ -401,32 +404,6 @@ ParlamentaresStore.buscarTudo({ ipp: 500, possui_mandatos: true });
         </div>
       </div>
     </div> <!-- Terceira linha da tela - Fim -->
-
-    <div class="flex flexwrap g2 mb2">
-      <!-- Quarta linha da tela - Início -->
-
-      <!-- OBJETO -->
-      <div class="f1">
-        <LabelFromYup
-          name="objeto"
-          :schema="schema.fields.parametros"
-        />
-        <Field
-          name="parametros.objeto"
-          as="textarea"
-          class="inputtext light mb1"
-          rows="5"
-          :class="{
-            error: errors['parametros.objeto'],
-          }"
-          @change="!$event.target.value ? setFieldValue('parametros.objeto',null) : null"
-        />
-        <ErrorMessage
-          class="error-msg mb1"
-          name="parametros.objeto"
-        />
-      </div>
-    </div> <!-- Quarta linha da tela - Fim -->
 
     <Field
       name="parametros.tipo"

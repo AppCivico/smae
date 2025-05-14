@@ -29,6 +29,7 @@ const initialValues = computed(() => ({
     fim: '',
     orgaos: [],
   },
+  eh_publico: null,
 }));
 
 async function onSubmit(values) {
@@ -153,7 +154,10 @@ onMounted(() => {
           }"
           :disabled="PdMStore.PdM?.loading"
         >
-          <option :value="null">
+          <option
+            value=""
+            disabled
+          >
             Selecionar
           </option>
           <option :value="true">

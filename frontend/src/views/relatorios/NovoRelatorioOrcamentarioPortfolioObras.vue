@@ -25,6 +25,7 @@ const initialValues = computed(() => ({
     portfolio_id: 0,
     projeto_id: 0,
   },
+  eh_publico: null,
 }));
 
 async function onSubmit(values) {
@@ -149,7 +150,10 @@ portfolioObrasStore.buscarTudo();
           }"
           :disabled="loading"
         >
-          <option :value="null">
+          <option
+            value=""
+            disabled
+          >
             Selecionar
           </option>
           <option :value="true">

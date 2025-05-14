@@ -1,12 +1,13 @@
 <script setup>
 import { relatórioDePortfolioObras as schema } from '@/consts/formSchemas';
+import nulificadorTotal from '@/helpers/nulificadorTotal';
 import truncate from '@/helpers/texto/truncate';
 import { useAlertStore } from '@/stores/alert.store';
+import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store.ts';
-import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
-import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';
 import { useRegionsStore } from '@/stores/regions.store';
+import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
@@ -24,20 +25,23 @@ const route = useRoute();
 const router = useRouter();
 
 const {
-  regions, regiõesPorNível,
+  regiõesPorNível,
 } = storeToRefs(regionsStore);
 
 const initialValues = {
   fonte: 'Obras',
   parametros: {
-    status: null,
+    grupo_tematico_id: null,
     orgao_responsavel_id: null,
+    periodo: null,
     portfolio_id: null,
+    regiao_id: null,
   },
+  eh_publico: null,
 };
 
 async function onSubmit(values) {
-  const carga = values;
+  const carga = nulificadorTotal(values);
 
   try {
     const msg = 'Dados salvos com sucesso!';
@@ -64,22 +68,27 @@ iniciar();
 </script>
 
 <template>
-  <div class="flex spacebetween center mb2">
-    <h1>{{ $route.meta.título || $route.name }}</h1>
+  <header class="flex spacebetween center mb2">
+    <TituloDePagina />
     <hr class="ml2 f1">
     <CheckClose />
-  </div>
+  </header>
   <Form
     v-slot="{ errors, isSubmitting, setFieldValue }"
     :validation-schema="schema"
     :initial-values="initialValues"
     @submit="onSubmit"
   >
+    <input
+      type="hidden"
+      name="fonte"
+    >
+
     <div class="flex g2 mb2">
       <div class="f1">
         <LabelFromYup
-          name="portfolio_id"
-          :schema="schema.fields.parametros"
+          name="parametros.portfolio_id"
+          :schema="schema"
         />
         <Field
           name="parametros.portfolio_id"
@@ -91,7 +100,11 @@ iniciar();
           }"
           :disabled="portfolioObrasStore.chamadasPendentes.lista"
         >
-          <option :value="null">
+          <option
+            value=""
+            disabled
+            selected
+          >
             Selecionar
           </option>
           <option
@@ -109,43 +122,10 @@ iniciar();
           {{ errors['parametros.portfolio_id'] }}
         </div>
       </div>
-      <div class="f1">
-        <LabelFromYup
-          name="eh_publico"
-          :schema="schema"
-          required
-        />
-        <Field
-          name="eh_publico"
-          as="select"
-          class="inputtext light"
-          :class="{
-            error: errors['eh_publico'],
-            loading: portfolioObrasStore.chamadasPendentes.lista
-          }"
-          :disabled="portfolioObrasStore.chamadasPendentes.lista"
-        >
-          <option :value="null">
-            Selecionar
-          </option>
-          <option :value="true">
-            Sim
-          </option>
-          <option :value="false">
-            Não
-          </option>
-        </Field>
-        <div
-          v-if="errors['eh_publico']"
-          class="error-msg"
-        >
-          {{ errors['eh_publico'] }}
-        </div>
-      </div>
       <div class="f1 mb1">
         <LabelFromYup
-          name="orgao_responsavel_id"
-          :schema="schema.fields.parametros"
+          name="parametros.orgao_responsavel_id"
+          :schema="schema"
         />
         <Field
           name="parametros.orgao_responsavel_id"
@@ -157,7 +137,10 @@ iniciar();
           }"
           :disabled="!órgãosComoLista?.length"
         >
-          <option :value="null">
+          <option
+            value=""
+            selected
+          >
             Selecionar
           </option>
           <option
@@ -179,8 +162,8 @@ iniciar();
       </div>
       <div class="f1 mb1">
         <LabelFromYup
-          name="grupo_tematico_id"
-          :schema="schema.fields.parametros"
+          name="parametros.grupo_tematico_id"
+          :schema="schema"
         />
         <Field
           name="parametros.grupo_tematico_id"
@@ -192,7 +175,10 @@ iniciar();
           }"
           :disabled="gruposTematicosStore.chamadasPendentes.lista"
         >
-          <option :value="null">
+          <option
+            value=""
+            selected
+          >
             Selecionar
           </option>
           <option
@@ -217,8 +203,8 @@ iniciar();
     <div class="flex g2 mb2">
       <div class="f1 mb1">
         <LabelFromYup
-          name="regiao_id"
-          :schema="schema.fields.parametros"
+          name="parametros.regiao_id"
+          :schema="schema"
         />
         <Field
           name="parametros.regiao_id"
@@ -230,7 +216,10 @@ iniciar();
           }"
           :disabled="regionsStore.chamadasPendentes.lista"
         >
-          <option :value="null">
+          <option
+            value=""
+            selected
+          >
             Selecionar
           </option>
           <option
@@ -252,8 +241,8 @@ iniciar();
       </div>
       <div class="f1">
         <LabelFromYup
-          name="periodo"
-          :schema="schema.fields.parametros"
+          name="parametros.periodo"
+          :schema="schema"
         />
         <Field
           id="periodo"
@@ -287,7 +276,10 @@ iniciar();
           }"
           :disabled="portfolioObrasStore.chamadasPendentes.lista"
         >
-          <option :value="null">
+          <option
+            value=""
+            disabled
+          >
             Selecionar
           </option>
           <option :value="true">

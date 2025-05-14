@@ -1,12 +1,12 @@
 <script setup>
-import { storeToRefs } from 'pinia';
-import { ref } from 'vue';
-import { useRoute } from 'vue-router';
 import LocalFilter from '@/components/LocalFilter.vue';
 import { planoSetorial as schema } from '@/consts/formSchemas';
 import truncate from '@/helpers/texto/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store.ts';
+import { storeToRefs } from 'pinia';
+import { ref } from 'vue';
+import { useRoute } from 'vue-router';
 
 const route = useRoute();
 
@@ -100,49 +100,51 @@ if (!lista.length) {
             {{ item.prefeito }}
           </td>
           <td>{{ item.ativo ? 'Sim' : 'Não' }}</td>
-          <td class="tr">
-            <SmaeLink
-              v-if="item.pode_editar"
-              class="tprimary mr1 tipinfo left"
-              :to="{
-                name: `${route.meta.entidadeMãe}.planosSetoriaisEditar`,
-                params: { planoSetorialId: item.id }
-              }"
-            >
-              <svg
-                width="20"
-                height="20"
-              ><use xlink:href="#i_edit" /></svg>
-            </SmaeLink>
+          <td>
+            <span class="flex justifycenter g1">
+              <SmaeLink
+                v-if="item.pode_editar"
+                class="tprimary tipinfo left"
+                :to="{
+                  name: '.planosSetoriaisEditar',
+                  params: { planoSetorialId: item.id }
+                }"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                ><use xlink:href="#i_edit" /></svg>
+              </SmaeLink>
 
-            <SmaeLink
-              class="tprimary mr1 tipinfo left"
-              :to="{
-                name: `${route.meta.entidadeMãe}.permissoesOrcamento`,
-                params: {
-                  planoSetorialId: item.id
-                }
-              }"
-            >
-              <svg
-                width="20"
-                height="20"
-              ><use xlink:href="#i_calendar" /></svg>
-              <div>Permissões para edições no orçamento</div>
-            </SmaeLink>
+              <SmaeLink
+                class="tprimary tipinfo left"
+                :to="{
+                  name: '.permissoesOrcamento',
+                  params: {
+                    planoSetorialId: item.id
+                  }
+                }"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                ><use xlink:href="#i_calendar" /></svg>
+                <div>Permissões para edições no orçamento</div>
+              </SmaeLink>
 
-            <button
-              v-if="item.pode_editar"
-              class="like-a__text mr1"
-              arial-label="excluir"
-              title="excluir"
-              @click="excluirPlano(item.id, item.nome)"
-            >
-              <svg
-                width="20"
-                height="20"
-              ><use xlink:href="#i_waste" /></svg>
-            </button>
+              <button
+                v-if="item.pode_editar"
+                class="like-a__text"
+                arial-label="excluir"
+                title="excluir"
+                @click="excluirPlano(item.id, item.nome)"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                ><use xlink:href="#i_waste" /></svg>
+              </button>
+            </span>
           </td>
         </tr>
 

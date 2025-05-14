@@ -344,18 +344,14 @@
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 import { ErrorMessage, Field, useForm } from 'vee-validate';
-
 import { useCicloAtualizacaoStore } from '@/stores/cicloAtualizacao.store';
 import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store';
-
 import truncate from '@/helpers/texto/truncate';
 import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
-
 import { cicloAtualizacaoModalEditarSchema } from '@/consts/formSchemas';
-
-import LabelFromYup from '@/components/LabelFromYup.vue';
 import UploadArquivos, { ArquivoAdicionado } from '@/components/UploadArquivos.vue';
 import AuxiliarDePreenchimento from '@/components/AuxiliarDePreenchimento.vue';
+import { useRoute } from 'vue-router';
 import useCicloAtualizacao from './composables/useCicloAtualizacao';
 
 type VariaveisDados = {
@@ -379,7 +375,7 @@ type Emits = {
 
 const $emit = defineEmits<Emits>();
 
-const cicloAtualizacaoStore = useCicloAtualizacaoStore();
+const cicloAtualizacaoStore = useCicloAtualizacaoStore(useRoute().meta.entidadeMãe);
 const variaveisCategoricasStore = useVariaveisCategoricasStore();
 
 const { emFoco, bloqueado, temCategorica } = storeToRefs(cicloAtualizacaoStore);

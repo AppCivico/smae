@@ -30,7 +30,7 @@ const alertStore = useAlertStore();
 const planosSetoriaisStore = usePlanosSetoriaisStore(route.meta.entidadeMãe);
 const { lista: listaDePlanosDisponiveis } = storeToRefs(planosSetoriaisStore);
 
-const planosMetasSimplificadosStore = usePlanosSimplificadosStore();
+const planosMetasSimplificadosStore = usePlanosSimplificadosStore(route.meta.entidadeMãe);
 const { chamadasPendentes, planosPorId } = storeToRefs(planosMetasSimplificadosStore);
 
 const formularioSujo = useIsFormDirty();
@@ -47,6 +47,7 @@ const initialValues = ref({
     tags: [],
     listar_variaveis_regionalizadas: false,
   },
+  eh_publico: null,
 });
 
 async function onSubmit(values) {
@@ -196,7 +197,10 @@ if (!listaDePlanosDisponiveis.value.length) {
             }"
             :disabled="chamadasPendentes.planosSimplificados"
           >
-            <option :value="null">
+            <option
+              value=""
+              disabled
+            >
               Selecionar
             </option>
             <option :value="true">

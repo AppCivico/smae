@@ -12,9 +12,9 @@ const {
   lista, chamadasPendentes, erro,
 } = storeToRefs(tipoDeTransferencia);
 
-
-async function excluirTransferencia(id) {
-  alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
+async function excluirTransferencia(id, nome) {
+  const confMsg = `Deseja mesmo remover o tipo de transferência ${nome}?`;
+  alertStore.confirmAction(confMsg, async () => {
     if (await tipoDeTransferencia.excluirItem(id)) {
       tipoDeTransferencia.$reset();
       tipoDeTransferencia.buscarTudo();
@@ -67,13 +67,6 @@ tipoDeTransferencia.buscarTudo();
           {{ item.esfera }}
         </td>
         <td>
-          <button class="like-a__text" arial-label="excluir" title="excluir" @click="excluirTransferencia(item.id)">
-            <svg width="20" height="20">
-              <use xlink:href="#i_remove" />
-            </svg>
-          </button>
-        </td>
-        <td>
           <router-link :to="{ name: 'tipoDeTransferenciaEditar', params: { tipoId: item.id } }"
             class="tprimary">
             <svg width="20" height="20">
@@ -81,6 +74,15 @@ tipoDeTransferencia.buscarTudo();
             </svg>
           </router-link>
         </td>
+        <td>
+          <button class="like-a__text" arial-label="excluir" title="excluir"
+            @click="excluirTransferencia(item.id, item.nome)">
+            <svg width="20" height="20">
+              <use xlink:href="#i_waste" />
+            </svg>
+          </button>
+        </td>
+
       </tr>
       <tr v-if="chamadasPendentes.lista">
         <td colspan="3">

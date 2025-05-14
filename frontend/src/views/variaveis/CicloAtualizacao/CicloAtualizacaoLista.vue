@@ -7,7 +7,6 @@
     </header>
 
     <CicloAtualizacaoListaFiltro
-      v-if="temEquipes"
       class="mb3"
     />
 
@@ -159,15 +158,16 @@
 </template>
 
 <script lang="ts" setup>
+import { computed, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
 import SmaeLink from '@/components/SmaeLink.vue';
 import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
 import truncate from '@/helpers/texto/truncate';
 import { useCicloAtualizacaoStore, VariavelCiclo } from '@/stores/cicloAtualizacao.store';
-import { useEquipesStore } from '@/stores/equipes.store';
-import { computed, onMounted, watch } from 'vue';
-import { useRoute } from 'vue-router';
 import CicloAtualizacaoListaFiltro from './partials/CicloAtualizacaoLista/CicloAtualizacaoListaFiltro.vue';
+
+export type AbasDisponiveis = 'Preenchimento' | 'Validacao' | 'Liberacao';
 
 type IconOpcoes = 'complementacao' | 'coleta';
 
@@ -186,15 +186,15 @@ type VariavelCicloComIcone = VariavelCiclo & {
   temAtraso: boolean
 };
 
-const equipesStore = useEquipesStore();
-const cicloAtualizacaoStore = useCicloAtualizacaoStore();
+const route = useRoute();
 
-const temEquipes = computed<boolean>(() => equipesStore.lista.length > 0);
-
-const $route = useRoute();
+const cicloAtualizacaoStore = useCicloAtualizacaoStore(route.meta.entidadeMãe);
 
 // TO-DO: passar para v-slots
-const tabs = {
+const tabs: Record<string, {
+  id: AbasDisponiveis,
+  [key: string]: unknown;
+}> = {
   coleta: {
     aberta: true,
     etiqueta: 'Coleta',
@@ -265,7 +265,7 @@ function obterPrimeiroEUlticoAtraso(atrasos: string[] | null): string {
   return `${dateIgnorarTimezone(primeiro, 'dd/MM/yyyy')} ⋯ ${dateIgnorarTimezone(ultimo, 'dd/MM/yyyy')}`;
 }
 
-watch(() => $route.query, (query) => {
+watch(() => route.query, (query) => {
   const { aba, ...params } = query;
 
   if (Object.keys(query).length === 0) {
@@ -278,14 +278,7 @@ watch(() => $route.query, (query) => {
     fase: aba,
   });
 }, { immediate: true });
-
-onMounted(() => {
-  if (!temEquipes.value) {
-    equipesStore.buscarTudo({ remover_participantes: true });
-  }
-});
 </script>
-
 <style lang="less" scoped>
 .ciclo-atualizacao-lista__abas {
   :deep(.abas__navegacao) {

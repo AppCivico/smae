@@ -8,7 +8,7 @@ const route = useRoute();
 
 const planosSetoriaisStore = usePlanosSetoriaisStore(route.meta.entidadeMãe as string);
 const {
-  lista, chamadasPendentes, erros,
+  lista, planoAtivo, chamadasPendentes, erros,
 } = storeToRefs(planosSetoriaisStore);
 
 async function iniciar() {
@@ -23,12 +23,10 @@ async function iniciar() {
     }
   }
 
-  const planoAtivo = lista.value.find((plano) => plano.ativo);
-
-  return planoAtivo
+  return planoAtivo.value
     ? router.push({
       name: `${route.meta.entidadeMãe}.listaDeMetas`,
-      params: { planoSetorialId: planoAtivo.id },
+      params: { planoSetorialId: planoAtivo.value.id },
     })
     : router.push({
       name: `${route.meta.entidadeMãe}.planosSetoriaisListar`,

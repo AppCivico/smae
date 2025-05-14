@@ -1624,38 +1624,64 @@ async function ensurePerfilAcessoIsEmpty(
 
     return perfilAcesso;
 }
-
 async function criaPrivComPerfilDeAcesso(
     codPriv: string,
     perfilAcesso: { id: number },
-    cache: Record<string, Privilegio>
+    cache: Record<string, Privilegio>,
+    maxRetries = 300,
+    retryDelay = 10
 ) {
-    const priv = cache[codPriv];
-    if (!priv) {
-        throw new Error(`Não encontrado priv ${codPriv}`);
-    }
-    const idPriv = priv.id;
+    let attempts = 0;
 
-    const match = await prisma.perfilPrivilegio.findFirst({
-        where: {
-            perfil_acesso_id: perfilAcesso.id,
-            privilegio_id: idPriv,
-        },
-    });
-    if (!match) {
-        await prisma.perfilPrivilegio.upsert({
-            where: {
-                perfil_acesso_id_privilegio_id: {
+    while (attempts < maxRetries) {
+        try {
+            const priv = cache[codPriv];
+            if (!priv) {
+                throw new Error(`Não encontrado priv ${codPriv}`);
+            }
+            const idPriv = priv.id;
+
+            const match = await prisma.perfilPrivilegio.findFirst({
+                where: {
                     perfil_acesso_id: perfilAcesso.id,
                     privilegio_id: idPriv,
                 },
-            },
-            create: {
-                perfil_acesso_id: perfilAcesso.id,
-                privilegio_id: idPriv,
-            },
-            update: {},
-        });
+            });
+            if (!match) {
+                await prisma.perfilPrivilegio.upsert({
+                    where: {
+                        perfil_acesso_id_privilegio_id: {
+                            perfil_acesso_id: perfilAcesso.id,
+                            privilegio_id: idPriv,
+                        },
+                    },
+                    create: {
+                        perfil_acesso_id: perfilAcesso.id,
+                        privilegio_id: idPriv,
+                    },
+                    update: {},
+                });
+            }
+
+            // If we get here, the operation was successful
+            return;
+        } catch (error) {
+            attempts++;
+
+            // If we've reached max retries, throw the error
+            if (attempts >= maxRetries) {
+                throw error;
+            }
+
+            // Log the error and wait before retrying
+            console.error(
+                `Attempt ${attempts} failed: ${error.message}. Retrying in ${retryDelay}ms... codPriv = ${codPriv} perfilAcesso = ${perfilAcesso.id}`
+            );
+            await new Promise((resolve) => setTimeout(resolve, retryDelay));
+
+            // Exponential backoff for subsequent retries
+            retryDelay *= 2;
+        }
     }
 }
 

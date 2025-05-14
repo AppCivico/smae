@@ -2,9 +2,9 @@
 import { defineStore } from 'pinia';
 
 import type {
-  VariavelGlobalCicloDto,
   FilterVariavelGlobalCicloDto,
   VariavelAnaliseQualitativaResponseDto,
+  VariavelGlobalCicloDto,
 } from '@/../../backend/src/variavel/dto/variavel.ciclo.dto';
 
 import type { PaginatedDto } from '@/../../backend/src/common/dto/paginated.dto';
@@ -58,7 +58,7 @@ type DadosASeremEnviados = {
 
 const fileStore = useFileStore();
 
-export const useCicloAtualizacaoStore = defineStore('cicloAtualizacao', {
+export const useCicloAtualizacaoStore = (prefixo = '') => defineStore(prefixo ? `${prefixo}.cicloAtualizacao` : 'cicloAtualizacao', {
   state: (): Estado => ({
     erro: null,
     temMais: false,
@@ -72,12 +72,12 @@ export const useCicloAtualizacaoStore = defineStore('cicloAtualizacao', {
       token_paginacao,
       buscandoMais,
       ...params
-    }: FiltroDadosGerais): Promise<void> {
+    }: FiltroDadosGerais = {}): Promise<void> {
       try {
-        const resposta: PaginatedDto<VariavelGlobalCicloDto> = await this.requestS.get(`${baseUrl}/plano-setorial-variavel-ciclo`, {
+        const resposta = await this.requestS.get(`${baseUrl}/plano-setorial-variavel-ciclo`, {
           ...params,
           token_proxima_pagina: token_paginacao,
-        });
+        }) as PaginatedDto<VariavelGlobalCicloDto>;
 
         if (!buscandoMais) {
           this.dados = resposta.linhas;
@@ -96,10 +96,10 @@ export const useCicloAtualizacaoStore = defineStore('cicloAtualizacao', {
       this.carregando = true;
 
       try {
-        const resposta: VariavelAnaliseQualitativaResponseDto = await this.requestS.get(`${baseUrl}/variavel-analise-qualitativa`, {
+        const resposta = await this.requestS.get(`${baseUrl}/variavel-analise-qualitativa`, {
           variavel_id: id,
           data_referencia: dataReferencia,
-        });
+        }) as VariavelAnaliseQualitativaResponseDto;
 
         this.emFoco = resposta;
       } finally {
@@ -145,4 +145,4 @@ export const useCicloAtualizacaoStore = defineStore('cicloAtualizacao', {
       return state.carregando || fileStore.carregando;
     },
   },
-});
+})();

@@ -216,16 +216,17 @@
   </details>
 </template>
 <script setup>
+import ListaDeDocumentos from '@/components/monitoramentoDeMetas/ListaDeDocumentos.vue';
 import { dateToShortDate } from '@/helpers/dateToDate';
 import dateToTitle from '@/helpers/dateToTitle';
 import { useMonitoramentoDeMetasStore } from '@/stores/monitoramentoDeMetas.store';
 import { storeToRefs } from 'pinia';
-import { computed, ref, watch } from 'vue';
+import {
+  computed, onMounted, ref, watch,
+} from 'vue';
 import { useRoute } from 'vue-router';
-import ListaDeDocumentos from '@/components/monitoramentoDeMetas/ListaDeDocumentos.vue';
 
 const route = useRoute();
-
 
 const props = defineProps({
   ciclo: {
@@ -250,13 +251,12 @@ const props = defineProps({
 });
 
 const monitoramentoDeMetasStore = useMonitoramentoDeMetasStore(route.meta.entidadeMãe);
-const estaAberto = ref(props.open);
+const estaAberto = ref(false);
 
 const {
   saoEditaveis,
   chamadasPendentes,
   ciclosDetalhadosPorId,
-  erros,
 } = storeToRefs(monitoramentoDeMetasStore);
 
 const detailsElem = ref(null);
@@ -271,16 +271,25 @@ function handleToggle(event) {
   estaAberto.value = event.target.open;
 }
 
-watch(() => estaAberto.value, (novoValor) => {
-  if (novoValor && !cicloDetalhes.value) {
-    monitoramentoDeMetasStore
-      .buscarCiclo(route.params.planoSetorialId, props.ciclo.id, {
-        meta_id: route.params.meta_id,
-      });
-  }
+// Nem todas as variáveis tem ciclo de monitoramento
+if (props.ciclo?.id) {
+  watch(() => estaAberto.value, (novoValor) => {
+    if (novoValor && !cicloDetalhes.value) {
+      monitoramentoDeMetasStore.buscarCiclo(
+        route.params.planoSetorialId,
+        props.ciclo.id,
+        {
+          meta_id: route.params.meta_id,
+        },
+      );
+    }
+  });
+}
+
+onMounted(() => {
+  estaAberto.value = props.open;
 });
 </script>
-
 <style scoped>
 .ciclo-atual__summary::before {
   display: none;

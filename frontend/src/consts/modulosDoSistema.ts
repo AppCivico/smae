@@ -53,6 +53,9 @@ const modulos: ModulosDoSistema = {
     ícone: programaDeMetas,
     rotaInicial: [
       {
+        name: 'programaDeMetas.quadroDeAtividades',
+      },
+      {
         name: 'programaDeMetas.metasDoProgramaCorrente',
       },
     ],
@@ -102,6 +105,9 @@ const modulos: ModulosDoSistema = {
     ],
     ícone: planosSetoriais,
     rotaInicial: [
+      {
+        name: 'planoSetorial.quadroDeAtividades',
+      },
       {
         name: 'planoSetorial.planosSetoriaisListar',
       },

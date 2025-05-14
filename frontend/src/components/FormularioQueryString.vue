@@ -6,6 +6,7 @@
   />
 </template>
 <script setup lang="ts">
+import decodificadorDePrimitivas from '@/helpers/decodificadorDePrimitivas';
 import EnvioParaObjeto from '@/helpers/EnvioParaObjeto';
 import type { UrlParams } from '@vueuse/core';
 import { cloneDeep, isEqualWith, pick } from 'lodash';
@@ -29,6 +30,7 @@ const camposSujos = ref<string[]>([]);
 function comparadorSimples(campo: unknown, parametro: unknown) {
   // eslint-disable-next-line eqeqeq
   return campo == parametro
+    || decodificadorDePrimitivas(String(campo)) === decodificadorDePrimitivas(String(parametro))
     || (
       campo === '' && parametro === undefined
     )
@@ -108,7 +110,7 @@ function aplicarFiltros(eventoOuObjeto: SubmitEvent | Record<string, unknown>): 
   parametros = {
     ...cloneDeep(route.query),
     ...cloneDeep(parametros),
-  };
+  } as UrlParams;
 
   // Remover propriedades com valores de string vazia
   Object.keys(parametros).forEach((key) => {
