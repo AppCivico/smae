@@ -1,13 +1,14 @@
 import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
 import { TransferenciaTipoEsfera } from '@prisma/client';
 import { Transform, TransformFnParams, Type } from 'class-transformer';
-import { IsArray, IsInt, IsNumber, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsArray, IsInt, IsNumber, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
 import { NumberArrayTransformOrUndef } from '../../../auth/transforms/number-array.transform';
 import { BadRequestException } from '@nestjs/common';
 import { StringArrayTransform } from '../../../auth/transforms/string-array.transform';
 import { IdSigla, IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 import { IsDateYMD } from '../../../auth/decorators/date.decorator';
 import { MAX_LENGTH_DEFAULT } from 'src/common/consts';
+import { IdNomeDto } from 'src/common/dto/IdNome.dto';
 
 export class MfDashTransferenciasDto {
     @ApiProperty({ description: 'ID da transferência' })
@@ -119,6 +120,27 @@ export class FilterDashTransferenciasAnaliseDto extends PartialType(
     etapa_ids?: number[];
 }
 
+export class FilterDashTransferenciasPainelEstrategicoDto extends PartialType(FilterDashTransferenciasAnaliseDto) {
+    @IsOptional()
+    @IsString()
+    @MaxLength(1000)
+    /**
+     * token pra buscar proxima pagina
+     */
+    token_proxima_pagina?: string;
+
+    /**
+     * itens por pagina, padrão 25
+     * @example "25"
+     */
+    @IsOptional()
+    @IsInt()
+    @Max(500)
+    @Min(1)
+    @Transform((a: TransformFnParams) => (a.value === '' ? undefined : +a.value))
+    ipp?: number;
+}
+
 export class DashAnaliseTranferenciasDto {
     valor_total: number;
 
@@ -179,6 +201,19 @@ export class DashAnaliseTranferenciasChartsDto {
     valor_por_partido: DashTransferenciaBasicChartDto;
     valor_por_orgao: DashTransferenciaBasicChartDto;
     valor_por_parlamentar: DashValorTransferenciasPorParlamentarDto[];
+}
+
+export class DashTransferenciasPainelEstrategicoDto {
+    id: number;
+    identificador: string;
+    esfera: TransferenciaTipoEsfera;
+    tipo: IdNomeDto;
+    partido: string;
+    parlamentar: string;
+    orgao_gestor: IdSiglaDescricao;
+    objeto: string;
+    repasse: number;
+    etapa_id: number | null;
 }
 
 export class ChartDataDto {

@@ -9,8 +9,10 @@ import { FilterDashNotasDto, MfDashNotasDto } from './dto/notas.dto';
 import {
     DashAnaliseTranferenciasChartsDto,
     DashTransferenciaBasicChartDto,
+    DashTransferenciasPainelEstrategicoDto,
     FilterDashTransferenciasAnaliseDto,
     FilterDashTransferenciasDto,
+    FilterDashTransferenciasPainelEstrategicoDto,
     ListMfDashTransferenciasDto,
     MfDashTransferenciasDto,
 } from './dto/transferencia.dto';
@@ -635,6 +637,118 @@ export class DashTransferenciaService {
                     valor: e.valor.toNumber(),
                 };
             }),
+        };
+    }
+
+    async getTransferenciasPainelEstrategico(
+        filter: FilterDashTransferenciasPainelEstrategicoDto,
+        user: PessoaFromJwt
+    ): Promise<PaginatedDto<DashTransferenciasPainelEstrategicoDto>> {
+        let tem_mais = false;
+        let token_proxima_pagina: string | null = null;
+
+        let ipp = filter.ipp ? filter.ipp : 25;
+        let offset = 0;
+        const decodedPageToken = this.decodeNextPageToken(filter.token_proxima_pagina);
+
+        if (decodedPageToken) {
+            offset = decodedPageToken.offset;
+            ipp = decodedPageToken.ipp;
+        }
+
+        const rows = await this.prisma.viewTransferenciaAnalise.findMany({
+            where: {
+                parlamentar_id: filter.parlamentar_ids ? { in: filter.parlamentar_ids } : undefined,
+                ano: filter.anos ? { in: filter.anos } : undefined,
+                partido_id: filter.partido_ids ? { in: filter.partido_ids } : undefined,
+                workflow_etapa_atual_id: filter.etapa_ids ? { in: filter.etapa_ids } : undefined,
+            },
+            select: {
+                transferencia_id: true,
+                esfera: true,
+                valor_total: true,
+                workflow_etapa_atual_id: true,
+                workflow_fase_atual_id: true,
+                parlamentar_id: true,
+                transferencia: {
+                    select: {
+                        identificador: true,
+                        objeto: true,
+                        esfera: true,
+                        tipo: {
+                            select: {
+                                id: true,
+                                nome: true,
+                            },
+                        },
+                        orgao_concedente: {
+                            select: {
+                                id: true,
+                                sigla: true,
+                                descricao: true,
+                            },
+                        },
+                        parlamentar: {
+                            select: {
+                                parlamentar: {
+                                    select: {
+                                        id: true,
+                                        nome_popular: true,
+                                    },
+                                },
+                                partido: {
+                                    select: {
+                                        id: true,
+                                        sigla: true,
+                                        nome: true,
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+            orderBy: [{ valor_total: 'desc' }],
+            skip: offset,
+            take: ipp + 1,
+        });
+
+        const linhas = rows.map((r) => {
+            return {
+                id: r.transferencia_id,
+                esfera: r.esfera,
+                repasse: r.valor_total.toNumber(),
+                etapa_id: r.workflow_etapa_atual_id,
+                workflow_fase_atual_id: r.workflow_fase_atual_id,
+                parlamentar_id: r.parlamentar_id,
+                identificador: r.transferencia.identificador,
+                objeto: r.transferencia.objeto,
+                orgao_gestor: {
+                    id: r.transferencia.orgao_concedente.id,
+                    sigla: r.transferencia.orgao_concedente.sigla,
+                    descricao: r.transferencia.orgao_concedente.descricao,
+                },
+                // Parlamentares e Partidos são relactionamentos 1:N. Juntando tudo com ponto e vírgula
+                parlamentar: r.transferencia.parlamentar.map((p) => p.parlamentar.nome_popular).join('; '),
+                partido: r.transferencia.parlamentar.map((p) => p.partido?.sigla).join('; '),
+                tipo: {
+                    id: r.transferencia.tipo.id,
+                    nome: r.transferencia.tipo.nome,
+                },
+            };
+        });
+
+        if (linhas.length > ipp) {
+            tem_mais = true;
+            linhas.pop();
+            token_proxima_pagina = this.encodeNextPageToken({ ipp: ipp, offset: offset + ipp });
+        }
+
+        return {
+            tem_mais: tem_mais,
+            token_ttl: PAGINATION_TOKEN_TTL,
+            token_proxima_pagina: token_proxima_pagina,
+            linhas,
         };
     }
 
