@@ -328,6 +328,12 @@ export class TransferenciasService implements ReportableService {
         return { whereString, queryParams };
     }
 
+    private formatEmpenho(value: boolean | null | undefined): string | null {
+        if (value === true) return 'Sim';
+        if (value === false) return 'Não';
+        return null;
+    }
+
     private convertRowsTransferenciasInto(input: RetornoDbTransferencias[], out: RelTransferenciasDto[]) {
         for (const db of input) {
             out.push({
@@ -343,7 +349,7 @@ export class TransferenciasService implements ReportableService {
                 observacoes: db.observacoes,
                 programa: db.programa,
                 nome_programa: db.nome_programa,
-                empenho: db.empenho === true ? 'Sim' : db.empenho === false ? 'Não' : null,
+                empenho:  this.formatEmpenho(db.empenho),
                 pendente_preenchimento_valores: db.pendente_preenchimento_valores ? 'Sim' : 'Não',
                 valor: db.valor ? db.valor : null,
                 valor_total: db.valor_total ? db.valor_total : null,
