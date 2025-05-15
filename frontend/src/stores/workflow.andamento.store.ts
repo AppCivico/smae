@@ -1,8 +1,12 @@
-/* eslint-disable import/no-extraneous-dependencies */
-import { defineStore } from 'pinia';
 import type {
-  WorkflowAndamentoDto, WorkflowAndamentoFasesDto, WorkflowAndamentoFluxoDto, TransferenciaHistoricoDto,
-} from '@/../../backend/src/workflow/andamento/entities/workflow-andamento.entity';
+  WorkflowAndamentoDto,
+  WorkflowAndamentoFasesDto,
+  WorkflowAndamentoFluxoDto,
+} from '@back/casa-civil/workflow/andamento/entities/workflow-andamento.entity';
+import type {
+  TransferenciaHistoricoDto,
+} from '@back/casa-civil/transferencia/entities/transferencia.dto';
+import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 

@@ -1,6 +1,8 @@
+import type {
+  GruposPaineisExternosItemDto,
+  ListGruposPaineisExternosDto,
+} from '@back/pp/grupo-paineis-externos/entities/grupo-painel-externo.entity';
 import { defineStore } from 'pinia';
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { GruposPaineisExternosItemDto, ListGruposPaineisExternosDto } from '@/../../backend/src/pp/grupo-paineis-externos/entities/grupo-painel-externo.entity';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 

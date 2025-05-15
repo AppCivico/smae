@@ -1,7 +1,6 @@
-/* eslint-disable import/no-extraneous-dependencies */
-import { CreatePlanoAcaoDto } from '@/../../backend/src/pp/plano-de-acao/dto/create-plano-acao.dto';
-import { ListPlanoAcaoDto, PlanoAcao } from '@/../../backend/src/pp/plano-de-acao/entities/plano-acao.entity';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
+import type { CreatePlanoAcaoDto } from '@back/pp/plano-de-acao/dto/create-plano-acao.dto';
+import type { ListPlanoAcaoDto, PlanoAcao } from '@back/pp/plano-de-acao/entities/plano-acao.entity';
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;

@@ -1,14 +1,10 @@
-/* eslint-disable import/no-extraneous-dependencies */
 import { defineStore } from 'pinia';
-
 import type {
   FilterVariavelGlobalCicloDto,
   VariavelAnaliseQualitativaResponseDto,
   VariavelGlobalCicloDto,
-} from '@/../../backend/src/variavel/dto/variavel.ciclo.dto';
-
-import type { PaginatedDto } from '@/../../backend/src/common/dto/paginated.dto';
-
+} from '@back/variavel/dto/variavel.ciclo.dto';
+import type { PaginatedDto } from '@back/common/dto/paginated.dto';
 import { useFileStore } from './file.store';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
