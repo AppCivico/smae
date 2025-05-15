@@ -88,8 +88,8 @@ class RetornoDbTransferencias {
     distribuicao_recurso_orgao_gestor: string;
     distribuicao_recurso_status_nome_responsavel: string | null;
     distribuicao_recurso_status_nome_base: string | null;
-    distribuicao_recurso_pct_custeio: number | null;
-    distribuicao_recurso_pct_investimento: number | null;
+    distribuicao_recurso_custeio: number | null;
+    distribuicao_recurso_investimento: number | null;
     tipo_transferencia: string;
     classificacao: string | null;
 }
@@ -173,8 +173,8 @@ export class TransferenciasService implements ReportableService {
                 dr.assinatura_estado AS distribuicao_recurso_assinatura_estado,
                 dr.vigencia AS distribuicao_recurso_vigencia,
                 dr.conclusao_suspensiva AS distribuicao_recurso_conclusao_suspensiva,
-                dr.pct_custeio AS distribuicao_recurso_pct_custeio,
-                dr.pct_investimento AS distribuicao_recurso_pct_investimento,
+                dr.custeio as distribuicao_recurso_custeio,
+                dr.investimento as distribuicao_recurso_investimento,
                 drs.processo_sei AS distribuicao_recurso_sei,
                 drst.nome_responsavel AS distribuicao_recurso_status_nome_responsavel,
                 dsb.nome AS distribuicao_recurso_status_nome_base,
@@ -343,7 +343,7 @@ export class TransferenciasService implements ReportableService {
                 observacoes: db.observacoes,
                 programa: db.programa,
                 nome_programa: db.nome_programa,
-                empenho: db.empenho ? 'Sim' : 'Não',
+                empenho: db.empenho === true ? 'Sim' : db.empenho === false ? 'Não' : null,
                 pendente_preenchimento_valores: db.pendente_preenchimento_valores ? 'Sim' : 'Não',
                 valor: db.valor ? db.valor : null,
                 valor_total: db.valor_total ? db.valor_total : null,
@@ -398,16 +398,14 @@ export class TransferenciasService implements ReportableService {
                           valor: db.distribuicao_recurso_valor,
                           valor_total: db.distribuicao_recurso_valor_total,
                           valor_contrapartida: db.distribuicao_recurso_valor_contrapartida,
-                          empenho: db.distribuicao_recurso_empenho ? 'Sim' : 'Não',
+                          empenho: db.distribuicao_recurso_empenho === true ? 'Sim' : db.distribuicao_recurso_empenho === false ? 'Não' : null,
                           programa_orcamentario_estadual: db.distribuicao_recurso_programa_orcamentario_estadual,
                           programa_orcamentario_municipal: db.distribuicao_recurso_programa_orcamentario_municipal,
                           dotacao: db.distribuicao_recurso_dotacao,
                           proposta: db.distribuicao_recurso_proposta,
                           contrato: db.distribuicao_recurso_contrato,
                           convenio: db.distribuicao_recurso_convenio,
-                          assinatura_termo_aceite: Date2YMD.toStringOrNull(
-                              db.distribuicao_recurso_assinatura_termo_aceite
-                          ),
+                          assinatura_termo_aceite: Date2YMD.toStringOrNull(db.distribuicao_recurso_assinatura_termo_aceite),
                           assinatura_municipio: Date2YMD.toStringOrNull(db.distribuicao_recurso_assinatura_municipio),
                           assinatura_estado: Date2YMD.toStringOrNull(db.distribuicao_recurso_assinatura_estado),
                           vigencia: Date2YMD.toStringOrNull(db.distribuicao_recurso_vigencia),
@@ -415,8 +413,14 @@ export class TransferenciasService implements ReportableService {
                           registro_sei: db.distribuicao_recurso_sei ? formataSEI(db.distribuicao_recurso_sei) : null,
                           nome_responsavel: db.distribuicao_recurso_status_nome_responsavel,
                           status_nome_base: db.distribuicao_recurso_status_nome_base,
-                          pct_custeio: db.distribuicao_recurso_pct_custeio,
-                          pct_investimento: db.distribuicao_recurso_pct_investimento,
+                          pct_custeio:
+                            db.distribuicao_recurso_valor != null && db.distribuicao_recurso_custeio != null
+                                ? `="${((db.distribuicao_recurso_custeio / db.distribuicao_recurso_valor) * 100).toFixed(2).replace('.', ',')}%"`
+                                : null,
+                          pct_investimento:
+                            db.distribuicao_recurso_valor != null && db.distribuicao_recurso_investimento != null
+                                ? `="${((db.distribuicao_recurso_investimento / db.distribuicao_recurso_valor) * 100).toFixed(2).replace('.', ',')}%"`
+                                : null,
                       }
                     : null,
             });
@@ -475,7 +479,7 @@ export class TransferenciasService implements ReportableService {
                 { value: 'agencia_fim', label: 'Conta - Agência da Secretaria fim' },
                 { value: 'banco_aceite', label: 'Conta - Banco do aceite' },
                 { value: 'agencia_aceite', label: 'Conta - Agência do aceite' },
-                { value: 'programa', label: 'Código do Programa' },
+                { value: 'nome_programa', label: 'Nome do Programa' },
                 { value: 'conta_aceite', label: 'Conta - Número do aceite' },
                 { value: 'emenda_unitaria', label: 'Emenda Unitária' },
                 {
@@ -539,23 +543,11 @@ export class TransferenciasService implements ReportableService {
                 { value: 'distribuicao_recurso.registro_sei', label: 'Nº SEI' },
                 { value: 'distribuicao_recurso.status_nome_base', label: 'Status da Demanda' },
                 {
-                    value: (row) =>
-                        row.distribuicao_recurso?.pct_custeio != null
-                            ? `="${new Intl.NumberFormat('pt-BR', {
-                                  minimumFractionDigits: 2,
-                                  maximumFractionDigits: 2,
-                              }).format(row.distribuicao_recurso.pct_custeio)}"`
-                            : '',
+                    value: 'distribuicao_recurso.pct_custeio',
                     label: 'Custeio/Corrente',
                 },
                 {
-                    value: (row) =>
-                        row.distribuicao_recurso?.pct_investimento != null
-                            ? `="${new Intl.NumberFormat('pt-BR', {
-                                  minimumFractionDigits: 2,
-                                  maximumFractionDigits: 2,
-                              }).format(row.distribuicao_recurso.pct_investimento)}"`
-                            : '',
+                    value: 'distribuicao_recurso.pct_investimento',
                     label: 'Investimento/Capital',
                 },
                 { value: '', label: 'Distribuição - Banco' },
@@ -571,7 +563,7 @@ export class TransferenciasService implements ReportableService {
                 { value: 'orgao_concedente.descricao', label: 'Orgão Concedente' },
                 { value: 'parlamentar.nome_popular', label: 'parlamentar.nome_popular' },
                 { value: 'partido.sigla', label: 'Partido' },
-                { value: 'programa', label: 'Código do Programa' },
+                { value: 'nome_programa', label: 'Nome do Programa' },
                 { value: 'ano', label: 'Ano' },
                 { value: 'objeto', label: 'Objeto' },
                 { value: 'detalhamento', label: 'Detalhamento' },
