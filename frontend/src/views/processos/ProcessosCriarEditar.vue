@@ -5,7 +5,6 @@ import formatProcesso from '@/helpers/formatProcesso';
 import { useAlertStore } from '@/stores/alert.store';
 import { useProcessosStore } from '@/stores/processos.store.ts';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
-import { values } from 'lodash';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
