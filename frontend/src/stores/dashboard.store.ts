@@ -61,7 +61,7 @@ export const useDashboardStore = defineStore('dashboard', {
         : dashboardEmFoco.opcoes.find((x: DashboardOptionDto) => x.id === Number(opção)) || null;
     },
 
-    endereçoParaIframe(): String | null {
+    endereçoParaIframe(): string | null {
       const { dashboardEmFoco, opçãoEmFoco } = this;
 
       return opçãoEmFoco?.url || dashboardEmFoco?.url || '';
