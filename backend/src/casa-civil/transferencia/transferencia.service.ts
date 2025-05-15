@@ -820,6 +820,8 @@ export class TransferenciaService {
 
                     await this.distribuicaoService.create(
                         {
+                            // Para preencher o nome, extraimos os 100 primeiros caracteres do objeto.
+                            nome: self.objeto.substring(0, 100),
                             transferencia_id: transferencia.id,
                             dotacao: self.dotacao ? self.dotacao : undefined,
                             valor: self.valor!.toNumber(),
