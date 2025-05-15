@@ -5948,6 +5948,8 @@ model DistribuicaoRecurso {
     custeio                         Decimal   @default(0) @db.Decimal(15, 2)
     pct_custeio                     Float?    @db.DoublePrecision
     investimento                    Decimal   @default(0) @db.Decimal(15, 2)
+    valor_empenho                   Decimal   @default(0) @db.Decimal(15, 2)
+    liquidacao_pagamento            Decimal   @default(0) @db.Decimal(15, 2)
     pct_investimento                Float?    @db.DoublePrecision
     empenho                         Boolean?
     data_empenho                    DateTime? @db.Date()
@@ -5971,12 +5973,14 @@ model DistribuicaoRecurso {
     aviso_email    AvisoEmail? @relation(fields: [aviso_email_id], references: [id])
 
     // Dados de banco, iguais ao da tabela de transferências.
-    banco_aceite   String?
-    conta_aceite   String?
-    agencia_aceite String?
-    banco_fim      String?
-    conta_fim      String?
-    agencia_fim    String?
+    banco_aceite       String?
+    conta_aceite       String?
+    agencia_aceite     String?
+    banco_fim          String?
+    conta_fim          String?
+    agencia_fim        String?
+    rubrica_de_receita String?
+    finalidade         String?
 
     criado_por     Int?
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)

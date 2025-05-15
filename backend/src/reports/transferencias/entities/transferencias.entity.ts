@@ -57,7 +57,7 @@ export class RelTransferenciasDto {
         valor: number;
         valor_total: number;
         valor_contrapartida: number;
-        empenho: string;
+        empenho: string | null;
         programa_orcamentario_estadual: string | null;
         programa_orcamentario_municipal: string | null;
         dotacao: string | null;
@@ -72,8 +72,8 @@ export class RelTransferenciasDto {
         registro_sei: string | null;
         nome_responsavel: string | null;
         status_nome_base?: string | null;
-        pct_custeio?: number | null;
-        pct_investimento?: number | null;
+        pct_custeio?: string | null;
+        pct_investimento?: string | null;
     } | null;
     tipo_transferencia: string;
     classificacao: string | null;

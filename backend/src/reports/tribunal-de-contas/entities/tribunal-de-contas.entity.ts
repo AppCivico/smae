@@ -12,6 +12,9 @@ export class RelTribunalDeContasDto {
     // Pois serão preenchidos manualmente.
     dotacao_orcamentaria: string;
     rubrica_de_receita: string;
+    finalidade: string | null;
+    valor_empenho: number | null;
+    liquidacao_pagamento: number | null;
 }
 
 export class RelatorioTribunalDeContasDto {

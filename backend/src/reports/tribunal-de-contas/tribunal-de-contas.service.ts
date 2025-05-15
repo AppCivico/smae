@@ -36,6 +36,11 @@ export class TribunalDeContasService implements ReportableService {
                 valor: true,
                 objeto: true,
                 vigencia: true,
+                dotacao: true,
+                rubrica_de_receita: true,
+                finalidade: true,
+                valor_empenho: true,
+                liquidacao_pagamento: true,
                 transferencia: {
                     select: {
                         emenda: true,
@@ -93,8 +98,11 @@ export class TribunalDeContasService implements ReportableService {
                 acao: distribuicao.objeto,
                 gestor_municipal: distribuicao.orgao_gestor.sigla + ' - ' + distribuicao.orgao_gestor.descricao,
                 prazo_vigencia: Date2YMD.toStringOrNull(distribuicao.vigencia),
-                dotacao_orcamentaria: '',
-                rubrica_de_receita: '',
+                dotacao_orcamentaria: distribuicao.dotacao ?? '',
+                rubrica_de_receita: distribuicao.rubrica_de_receita ?? '',
+                finalidade: distribuicao.finalidade ?? '',
+                valor_empenho: distribuicao.valor_empenho?.toNumber() ?? null,
+                liquidacao_pagamento: distribuicao.liquidacao_pagamento?.toNumber() ?? null,
             };
         });
 
@@ -138,6 +146,27 @@ export class TribunalDeContasService implements ReportableService {
                     { value: 'prazo_vigencia', label: 'Prazo de Vigência' },
                     { value: 'dotacao_orcamentaria', label: 'Dotação Orçamentaria' },
                     { value: 'rubrica_de_receita', label: 'Rubrica de Receita' },
+                    { value: 'finalidade', label: 'Política pública' },
+                    {
+                        value: (row: any) =>
+                            row.valor_empenho != null
+                                ? new Intl.NumberFormat('pt-BR', {
+                                      style: 'currency',
+                                      currency: 'BRL',
+                                  }).format(Number(row.valor_empenho))
+                                : '',
+                        label: 'Empenho',
+                    },
+                    {
+                        value: (row: any) =>
+                            row.liquidacao_pagamento != null
+                                ? new Intl.NumberFormat('pt-BR', {
+                                      style: 'currency',
+                                      currency: 'BRL',
+                                  }).format(Number(row.liquidacao_pagamento))
+                                : '',
+                        label: 'Liquidação/Pagamento',
+                    },
                 ],
             });
             const linhas = json2csvParser.parse(
@@ -146,7 +175,7 @@ export class TribunalDeContasService implements ReportableService {
                 })
             );
             out.push({
-                name: 'distribuicoes.csv',
+                name: 'tribunal-de-contas.csv',
                 buffer: Buffer.from(linhas, 'utf8'),
             });
         }
