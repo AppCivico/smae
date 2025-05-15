@@ -11,6 +11,7 @@ import { MAX_LENGTH_DEFAULT } from 'src/common/consts';
 import { IdNomeDto } from 'src/common/dto/IdNome.dto';
 import { PartidoDto } from 'src/partido/entities/partido.entity';
 import { ParlamnetarIdNomes } from 'src/parlamentar/entities/parlamentar.entity';
+import { NumberTransform } from 'src/auth/transforms/number.transform';
 
 export class MfDashTransferenciasDto {
     @ApiProperty({ description: 'ID da transferência' })
@@ -124,23 +125,18 @@ export class FilterDashTransferenciasAnaliseDto extends PartialType(
 
 export class FilterDashTransferenciasPainelEstrategicoDto extends PartialType(FilterDashTransferenciasAnaliseDto) {
     @IsOptional()
-    @IsString()
-    @MaxLength(1000)
-    /**
-     * token pra buscar proxima pagina
-     */
-    token_proxima_pagina?: string;
+    @IsInt()
+    @Transform(NumberTransform)
+    ipp?: number = 25;
 
-    /**
-     * itens por pagina, padrão 25
-     * @example "25"
-     */
     @IsOptional()
     @IsInt()
-    @Max(500)
-    @Min(1)
-    @Transform((a: TransformFnParams) => (a.value === '' ? undefined : +a.value))
-    ipp?: number;
+    @Transform(NumberTransform)
+    pagina?: number = 1;
+
+    @IsOptional()
+    @IsString()
+    token_paginacao?: string;
 }
 
 export class DashAnaliseTranferenciasDto {

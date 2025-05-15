@@ -2,7 +2,12 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { NotaService } from '../../bloco-nota/nota/nota.service';
-import { PaginatedDto, PAGINATION_TOKEN_TTL } from '../../common/dto/paginated.dto';
+import {
+    AnyPageTokenJwtBody,
+    PaginatedDto,
+    PaginatedWithPagesDto,
+    PAGINATION_TOKEN_TTL,
+} from '../../common/dto/paginated.dto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { TransferenciaService } from '../transferencia/transferencia.service';
 import { FilterDashNotasDto, MfDashNotasDto } from './dto/notas.dto';
@@ -20,6 +25,7 @@ import { TransferenciaTipoEsfera } from '@prisma/client';
 import { UploadService } from 'src/upload/upload.service';
 import { Decimal } from '@prisma/client/runtime/library';
 import { Date2YMD } from '../../common/date2ymd';
+import { Object2Hash } from 'src/common/object2hash';
 
 class NextPageTokenJwtBody {
     offset: number;
@@ -643,18 +649,27 @@ export class DashTransferenciaService {
     async getTransferenciasPainelEstrategico(
         filter: FilterDashTransferenciasPainelEstrategicoDto,
         user: PessoaFromJwt
-    ): Promise<PaginatedDto<DashTransferenciasPainelEstrategicoDto>> {
+    ): Promise<PaginatedWithPagesDto<DashTransferenciasPainelEstrategicoDto>> {
+        let retToken = filter.token_paginacao;
+        const filterToken = filter.token_paginacao;
+        let ipp = filter.ipp ?? 25;
+        const page = filter.pagina ?? 1;
+        let total_registros = 0;
         let tem_mais = false;
-        let token_proxima_pagina: string | null = null;
 
-        let ipp = filter.ipp ? filter.ipp : 25;
-        let offset = 0;
-        const decodedPageToken = this.decodeNextPageToken(filter.token_proxima_pagina);
+        if (page > 1 && !filter.token_paginacao) throw new HttpException('Campo obrigatório para paginação', 400);
 
-        if (decodedPageToken) {
-            offset = decodedPageToken.offset;
-            ipp = decodedPageToken.ipp;
+        delete filter.pagina;
+        delete filter.token_paginacao;
+        let now = new Date(Date.now());
+
+        if (filterToken) {
+            const decoded = this.decodeNextPageTokenComPaginas(filterToken, filter);
+            total_registros = decoded.total_rows;
+            ipp = decoded.ipp;
+            now = new Date(decoded.issued_at);
         }
+        const offset = (page - 1) * ipp;
 
         const rows = await this.prisma.viewTransferenciaAnalise.findMany({
             where: {
@@ -722,7 +737,11 @@ export class DashTransferenciaService {
                 repasse: r.valor_total.toNumber(),
                 etapa_id: r.workflow_etapa_atual_id,
                 identificador: r.transferencia.identificador,
-                objeto: r.transferencia.objeto,
+                // Objeto pode ser uma string grande, portanto iremos retornar apenas os 100 primeiros caracteres
+                objeto:
+                    r.transferencia.objeto.length > 100
+                        ? r.transferencia.objeto.substring(0, 100) + '...'
+                        : r.transferencia.objeto,
                 orgao_gestor: {
                     id: r.transferencia.orgao_concedente.id,
                     sigla: r.transferencia.orgao_concedente.sigla,
@@ -752,17 +771,24 @@ export class DashTransferenciaService {
             } satisfies DashTransferenciasPainelEstrategicoDto;
         });
 
-        if (linhas.length > ipp) {
-            tem_mais = true;
-            linhas.pop();
-            token_proxima_pagina = this.encodeNextPageToken({ ipp: ipp, offset: offset + ipp });
+        if (filterToken) {
+            retToken = filterToken;
+        } else {
+            const info = await this.encodeNextPageTokenListaTransferencias(rows.length, now, filter, filter.ipp);
+            retToken = info.jwt;
+            total_registros = info.body.total_rows;
         }
+        tem_mais = offset + linhas.length < total_registros;
+        const paginas = total_registros > ipp ? Math.ceil(total_registros / ipp) : 1;
 
         return {
             tem_mais: tem_mais,
+            total_registros: total_registros,
+            token_paginacao: retToken,
+            paginas: paginas,
+            pagina_corrente: page,
+            linhas: linhas,
             token_ttl: PAGINATION_TOKEN_TTL,
-            token_proxima_pagina: token_proxima_pagina,
-            linhas,
         };
     }
 
@@ -774,6 +800,47 @@ export class DashTransferenciaService {
             throw new HttpException('Param next_page_token is invalid', 400);
         }
         return tmp;
+    }
+
+    private decodeNextPageTokenComPaginas(
+        jwt: string | undefined,
+        filters: FilterDashTransferenciasPainelEstrategicoDto
+    ): AnyPageTokenJwtBody {
+        let tmp: AnyPageTokenJwtBody | null = null;
+
+        try {
+            if (jwt) tmp = this.jwtService.verify(jwt) as AnyPageTokenJwtBody;
+        } catch {
+            throw new HttpException('token_paginacao invalido', 400);
+        }
+        if (!tmp) throw new HttpException('token_paginacao invalido ou faltando', 400);
+        if (tmp.search_hash != Object2Hash(filters))
+            throw new HttpException(
+                'Parâmetros da busca não podem ser diferente da busca inicial para avançar na paginação.',
+                400
+            );
+        return tmp;
+    }
+
+    private async encodeNextPageTokenListaTransferencias(
+        nroRows: number,
+        issued_at: Date,
+        filter: FilterDashTransferenciasPainelEstrategicoDto,
+        ipp?: number
+    ): Promise<{
+        jwt: string;
+        body: AnyPageTokenJwtBody;
+    }> {
+        const body = {
+            search_hash: Object2Hash(filter),
+            ipp: ipp!,
+            issued_at: issued_at.valueOf(),
+            total_rows: nroRows,
+        } satisfies AnyPageTokenJwtBody;
+        return {
+            jwt: this.jwtService.sign(body),
+            body,
+        };
     }
 
     private encodeNextPageToken(opt: NextPageTokenJwtBody): string {

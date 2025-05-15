@@ -3,7 +3,7 @@ import { ApiBearerAuth, ApiExtraModels, ApiOkResponse, ApiTags, refs } from '@ne
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
-import { PaginatedDto } from '../../common/dto/paginated.dto';
+import { PaginatedDto, PaginatedWithPagesDto } from '../../common/dto/paginated.dto';
 import { RequestInfoDto } from '../../mf/metas/dto/mf-meta.dto';
 import { FilterDashNotasDto, MfDashNotasDto } from './dto/notas.dto';
 import {
@@ -78,7 +78,7 @@ export class DashTransferenciaController {
     async buscaTransferenciasPainelEstrategico(
         @Query() params: FilterDashTransferenciasPainelEstrategicoDto,
         @CurrentUser() user: PessoaFromJwt
-    ): Promise<PaginatedDto<DashTransferenciasPainelEstrategicoDto>> {
+    ): Promise<PaginatedWithPagesDto<DashTransferenciasPainelEstrategicoDto>> {
         return await this.metasDashService.getTransferenciasPainelEstrategico(params, user);
     }
 }
