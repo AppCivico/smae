@@ -694,6 +694,7 @@ export class DashTransferenciaService {
                                     select: {
                                         id: true,
                                         nome_popular: true,
+                                        nome: true,
                                     },
                                 },
                                 partido: {
@@ -701,6 +702,7 @@ export class DashTransferenciaService {
                                         id: true,
                                         sigla: true,
                                         nome: true,
+                                        numero: true,
                                     },
                                 },
                             },
@@ -719,8 +721,6 @@ export class DashTransferenciaService {
                 esfera: r.esfera,
                 repasse: r.valor_total.toNumber(),
                 etapa_id: r.workflow_etapa_atual_id,
-                workflow_fase_atual_id: r.workflow_fase_atual_id,
-                parlamentar_id: r.parlamentar_id,
                 identificador: r.transferencia.identificador,
                 objeto: r.transferencia.objeto,
                 orgao_gestor: {
@@ -728,14 +728,28 @@ export class DashTransferenciaService {
                     sigla: r.transferencia.orgao_concedente.sigla,
                     descricao: r.transferencia.orgao_concedente.descricao,
                 },
-                // Parlamentares e Partidos são relactionamentos 1:N. Juntando tudo com ponto e vírgula
-                parlamentar: r.transferencia.parlamentar.map((p) => p.parlamentar.nome_popular).join('; '),
-                partido: r.transferencia.parlamentar.map((p) => p.partido?.sigla).join('; '),
+                parlamentar: r.transferencia.parlamentar.map((p) => {
+                    return {
+                        id: p.parlamentar.id,
+                        nome_popular: p.parlamentar.nome_popular,
+                        nome: p.parlamentar.nome,
+                    };
+                }),
+                partido: r.transferencia.parlamentar
+                    .filter((e) => e.partido)
+                    .map((p) => {
+                        return {
+                            id: p.partido!.id,
+                            sigla: p.partido!.sigla,
+                            nome: p.partido!.nome,
+                            numero: p.partido!.numero,
+                        };
+                    }),
                 tipo: {
                     id: r.transferencia.tipo.id,
                     nome: r.transferencia.tipo.nome,
                 },
-            };
+            } satisfies DashTransferenciasPainelEstrategicoDto;
         });
 
         if (linhas.length > ipp) {

@@ -9,6 +9,8 @@ import { IdSigla, IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 import { IsDateYMD } from '../../../auth/decorators/date.decorator';
 import { MAX_LENGTH_DEFAULT } from 'src/common/consts';
 import { IdNomeDto } from 'src/common/dto/IdNome.dto';
+import { PartidoDto } from 'src/partido/entities/partido.entity';
+import { ParlamnetarIdNomes } from 'src/parlamentar/entities/parlamentar.entity';
 
 export class MfDashTransferenciasDto {
     @ApiProperty({ description: 'ID da transferência' })
@@ -208,8 +210,8 @@ export class DashTransferenciasPainelEstrategicoDto {
     identificador: string;
     esfera: TransferenciaTipoEsfera;
     tipo: IdNomeDto;
-    partido: string;
-    parlamentar: string;
+    partido: PartidoDto[];
+    parlamentar: ParlamnetarIdNomes[];
     orgao_gestor: IdSiglaDescricao;
     objeto: string;
     repasse: number;
