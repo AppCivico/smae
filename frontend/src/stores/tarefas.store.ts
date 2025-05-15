@@ -1,10 +1,9 @@
-/* eslint-disable import/no-extraneous-dependencies */
-import type { ProjetoDetailDto } from '@/../../backend/src/pp/projeto/entities/projeto.entity';
-import type { ListApenasTarefaListDto, TarefaDetailDto, TarefaItemDto } from '@/../../backend/src/pp/tarefa/entities/tarefa.entity';
 import type { DataSet, DataTreeItem } from '@/helpers/createDataTree';
 import createDataTree from '@/helpers/createDataTree';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
 import flatten from '@/helpers/flatDataTree';
+import type { ProjetoDetailDto } from '@back/pp/projeto/entities/projeto.entity';
+import type { ListApenasTarefaListDto, TarefaDetailDto, TarefaItemDto } from '@back/pp/tarefa/entities/tarefa.entity';
 import { defineStore } from 'pinia';
 import { useProjetosStore } from './projetos.store';
 

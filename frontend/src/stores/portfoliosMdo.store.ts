@@ -1,8 +1,11 @@
 import dateTimeToDate from '@/helpers/dateTimeToDate';
+import type {
+  ListPortfolioDto,
+  PortfolioDto,
+  PortfolioOneDto,
+} from '@back/pp/portfolio/entities/portfolio.entity';
 import { range } from 'lodash';
 import { defineStore } from 'pinia';
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { ListPortfolioDto, PortfolioDto, PortfolioOneDto } from '@/../../backend/src/pp/portfolio/entities/portfolio.entity';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 

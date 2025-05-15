@@ -1,5 +1,4 @@
 <script setup>
-// eslint-disable-next-line import/no-extraneous-dependencies
 import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
 import { processoDeObras as schema } from '@/consts/formSchemas';
 import formatProcesso from '@/helpers/formatProcesso';

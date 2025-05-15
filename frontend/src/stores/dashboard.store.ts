@@ -1,9 +1,10 @@
+import type {
+  DashboardItemComOpcoesDto,
+  DashboardItemDto,
+  DashboardLinhasDto,
+  DashboardOptionDto,
+} from '@back/dashboard/entities/dashboard.entity';
 import { defineStore } from 'pinia';
-
-// eslint-disable-next-line import/no-extraneous-dependencies
-import {
-  DashboardItemComOpcoesDto, DashboardItemDto, DashboardLinhasDto, DashboardOptionDto,
-} from '@/../../backend/src/dashboard/entities/dashboard.entity';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 

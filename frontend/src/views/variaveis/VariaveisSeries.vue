@@ -4,8 +4,7 @@ import {
 } from 'vue';
 import { storeToRefs } from 'pinia';
 import { Field, useForm, useIsFormDirty } from 'vee-validate';
-
-import type { SerieIndicadorValorNominal, SerieValorNomimal } from '@/../../backend/src/variavel/entities/variavel.entity';
+import type { SerieIndicadorValorNominal, SerieValorNomimal } from '@back/variavel/entities/variavel.entity';
 import CheckClose from '@/components/CheckClose.vue';
 import ErrorComponent from '@/components/ErrorComponent.vue';
 import LoadingComponent from '@/components/LoadingComponent.vue';

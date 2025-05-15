@@ -1,5 +1,4 @@
-/* eslint-disable import/no-extraneous-dependencies */
-import type { DetailProjetoAcompanhamentoDto, ListProjetoAcompanhamentoDto, RiscoIdCod } from '@/../../backend/src/pp/acompanhamento/entities/acompanhamento.entity';
+import type { DetailProjetoAcompanhamentoDto, ListProjetoAcompanhamentoDto, RiscoIdCod } from '@back/pp/acompanhamento/entities/acompanhamento.entity';
 
 import dateTimeToDate from '@/helpers/dateTimeToDate';
 import { defineStore } from 'pinia';

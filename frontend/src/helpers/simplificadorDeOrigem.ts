@@ -1,4 +1,4 @@
-import type { DetalheOrigensDto } from '@/../../backend/src/common/dto/origem-pdm.dto';
+import type { DetalheOrigensDto } from '@back/common/dto/origem-pdm.dto';
 
 type OrigemSimplificada = {
   atividade_id?: number | null;

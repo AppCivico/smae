@@ -1,10 +1,7 @@
 import dateToDate from '@/helpers/dateToDate';
+import type { ListImportacaoOrcamentoDto } from '@back/importacao-orcamento/entities/importacao-orcamento.entity';
+import type { PortfolioDto } from '@back/pp/portfolio/entities/portfolio.entity';
 import { defineStore } from 'pinia';
-
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { ListImportacaoOrcamentoDto } from '@/../../backend/src/importacao-orcamento/entities/importacao-orcamento.entity';
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { PortfolioDto } from '@/../../backend/src/pp/portfolio/entities/portfolio.entity';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
