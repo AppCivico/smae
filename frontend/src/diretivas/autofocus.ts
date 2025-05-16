@@ -1,18 +1,28 @@
-import type { Directive } from 'vue';
+import type { Directive, DirectiveBinding } from 'vue';
 import { nextTick } from 'vue';
 
-const directive: Directive = {
-  mounted: async (el:HTMLElement, binding) => {
-    const { modifiers, value } = binding;
+async function setAutofocus(el: HTMLElement, binding: DirectiveBinding) {
+  const { modifiers, value } = binding;
 
-    if (!!value || value === undefined) {
-      await nextTick();
-      el.focus();
-      if (modifiers.select && el instanceof HTMLInputElement) {
-        el.select();
-      }
+  if (!el.hasAttribute('autofocus')) {
+    el.setAttribute('autofocus', '');
+  }
+
+  if (!!value || value === undefined) {
+    await nextTick();
+    if (!(el.offsetParent || el.getClientRects().length)) {
+      return;
     }
-  },
+    el.focus();
+    if (modifiers.select && el instanceof HTMLInputElement) {
+      el.select();
+    }
+  }
+}
+
+const directive: Directive = {
+  mounted: setAutofocus,
+  updated: setAutofocus,
 };
 
 export default directive;
