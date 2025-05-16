@@ -26,6 +26,7 @@ import {
     RelProjetosPlanoAcaoDto,
     RelProjetosPlanoAcaoMonitoramentosDto,
     RelProjetosRiscosDto,
+    RelProjetosStatusIncoerenteDto,
 } from './entities/projetos.entity';
 
 const {
@@ -251,6 +252,14 @@ class RetornoDbLoc {
     geojson: unknown;
 }
 
+class RetornoDbProjetosIncoerentes {
+    nome_do_portfolio: string;
+    nome_obra_intervencao: string;
+    projeto_codigo: string;
+    projeto_status: string;
+    projeto_etapa_atual: string;
+}
+
 @Injectable()
 export class PPProjetosService implements ReportableService {
     private tipo: TipoProjeto = 'PP';
@@ -274,6 +283,7 @@ export class PPProjetosService implements ReportableService {
         const out_aditivos: RelProjetosAditivosDto[] = [];
         const out_origens: RelProjetosOrigemDto[] = [];
         const out_enderecos: RelProjetosGeolocDto[] = [];
+        const out_incoerentes_gdp: RetornoDbProjetosIncoerentes[] = [];
 
         const whereCond = await this.buildFilteredWhereStr(dto, user);
 
@@ -287,7 +297,7 @@ export class PPProjetosService implements ReportableService {
         await this.queryDataAditivos(whereCond, out_aditivos);
         await this.queryDataOrigens(whereCond, out_origens);
         await this.queryDataProjetosGeoloc(whereCond, out_enderecos);
-
+        await this.queryDataProjetosIncoerentesGdp(whereCond, out_incoerentes_gdp);
         await this.queryDataCronograma(whereCond, out_cronogramas);
 
         return {
@@ -302,6 +312,7 @@ export class PPProjetosService implements ReportableService {
             aditivos: out_aditivos,
             origens: out_origens,
             enderecos: out_enderecos,
+            incoerentes_gdp: out_incoerentes_gdp,
         };
     }
 
@@ -447,6 +458,18 @@ export class PPProjetosService implements ReportableService {
             const linhas = json2csvParser.parse(dados.enderecos);
             out.push({
                 name: 'enderecos.csv',
+                buffer: Buffer.from(linhas, 'utf8'),
+            });
+        }
+
+        if (dados.incoerentes_gdp.length) {
+            const json2csvParser = new Parser({
+                ...DefaultCsvOptions,
+                transforms: defaultTransform,
+            });
+            const linhas = json2csvParser.parse(dados.incoerentes_gdp);
+            out.push({
+                name: 'status_incoerentes_gdp.csv',
                 buffer: Buffer.from(linhas, 'utf8'),
             });
         }
@@ -1340,5 +1363,40 @@ export class PPProjetosService implements ReportableService {
                 cep: geojson.properties.cep,
             };
         });
+    }
+
+    private async queryDataProjetosIncoerentesGdp(whereCond: WhereCond, out: RelProjetosStatusIncoerenteDto[]) {
+        const sql = `
+            SELECT
+                portfolio.titulo AS nome_do_portfolio,
+                projeto.nome AS nome_obra_intervencao,
+                projeto.codigo AS projeto_codigo,
+                projeto.status AS projeto_status,
+                projeto_etapa.descricao AS projeto_etapa_atual,
+            REPLACE(projeto.tipo::text, 'PP', 'GDP') AS projeto_tipo
+            FROM projeto
+            JOIN projeto_etapa ON projeto.projeto_etapa_id = projeto_etapa.id
+            JOIN portfolio ON projeto.portfolio_id = portfolio.id
+            ${whereCond.whereString}
+                AND NOT (
+                (projeto.status = 'EmPlanejamento'   AND projeto_etapa.descricao IN ('Estudos preliminares', 'Em projeto','Em contratação de projeto', 'Em contratação de projeto e obra (integrado)', 'Em contratação de obra')) OR
+                (projeto.status = 'EmAcompanhamento' AND projeto_etapa.descricao IN ('Em obras', 'Em contratação de projeto', 'Em contratação de projeto e obra (integrado)')) OR
+                (projeto.status = 'Fechado'          AND projeto_etapa.descricao IN ('Projeto concluído', 'Obra concluída')) OR
+                (projeto.status = 'Suspenso'         AND projeto_etapa.descricao = 'Projeto paralisado')
+                )
+            ORDER BY projeto.codigo;`;
+
+        const data: RelProjetosStatusIncoerenteDto[] = await this.prisma.$queryRawUnsafe(sql, ...whereCond.queryParams);
+        out.push(...this.convertRowsProjetosIncoerentes(data));
+    }
+
+    private convertRowsProjetosIncoerentes(input: RetornoDbProjetosIncoerentes[]): RelProjetosStatusIncoerenteDto[] {
+        return input.map((row) => ({
+            nome_do_portfolio: row.nome_do_portfolio,
+            nome_obra_intervencao: row.nome_obra_intervencao,
+            projeto_codigo: row.projeto_codigo,
+            projeto_status: row.projeto_status,
+            projeto_etapa_atual: row.projeto_etapa_atual,
+        }));
     }
 }
