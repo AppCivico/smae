@@ -22,6 +22,7 @@ import {
 } from '../casa-civil-atividades-pendentes/casa-civil-atividades-pendentes.module';
 import { PessoaModule } from '../../pessoa/pessoa.module';
 import { TaskModule } from '../../task/task.module';
+import { SmaeConfigModule } from '../../common/services/smae-config.module';
 
 @Module({
     imports: [
@@ -46,6 +47,7 @@ import { TaskModule } from '../../task/task.module';
             secret: process.env.SESSION_JWT_SECRET + ':pagination',
             signOptions: { expiresIn: '30d' },
         }),
+        SmaeConfigModule
     ],
     controllers: [ReportsController],
     providers: [ReportsService],

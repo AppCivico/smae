@@ -9,18 +9,21 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { FonteRelatorio, ModuloSistema, Prisma, RelatorioVisibilidade, TipoRelatorio } from '@prisma/client';
+import { fork } from 'child_process';
 import * as crypto from 'crypto';
 import * as fs from 'fs';
 import { DateTime } from 'luxon';
 import * as os from 'os';
 import { tmpdir } from 'os';
 import * as path from 'path';
+import { resolve as resolvePath } from 'path';
 import { uuidv7 } from 'uuidv7';
 import * as XLSX from 'xlsx';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { PaginatedDto, PAGINATION_TOKEN_TTL } from '../../common/dto/paginated.dto';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
+import { SmaeConfigService } from '../../common/services/smae-config.service';
 import { PessoaService } from '../../pessoa/pessoa.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { TaskService } from '../../task/task.service';
@@ -87,7 +90,8 @@ export class ReportsService {
         private readonly psMonitoramentoMensal: PSMonitoramentoMensal,
         @Inject(forwardRef(() => TaskService)) private readonly taskService: TaskService,
         @Inject(forwardRef(() => CasaCivilAtividadesPendentesService))
-        private readonly casaCivilAtividadesPendentesService: CasaCivilAtividadesPendentesService
+        private readonly casaCivilAtividadesPendentesService: CasaCivilAtividadesPendentesService,
+        private readonly smaeConfigService: SmaeConfigService
     ) {
         const parsedUrl = new URL(process.env.URL_LOGIN_SMAE || 'http://smae-frontend/');
         this.baseUrl = `${parsedUrl.protocol}//${parsedUrl.hostname}:${parsedUrl.port}`;
@@ -152,20 +156,81 @@ export class ReportsService {
     }
 
     private async convertCsvToXlsx(csvContent: string | Buffer): Promise<Buffer> {
-        // Parse CSV content
-        const workbook = XLSX.read(csvContent, {
-            type: 'string',
-            cellDates: true,
-            dateNF: 'yyyy-mm-dd',
-        });
+        const useDuckDb = await this.smaeConfigService.getConfig('DUCKDB_XLSX');
 
-        // Write to buffer with proper options
-        return XLSX.write(workbook, {
-            type: 'buffer',
-            bookType: 'xlsx',
-            bookSST: false,
-            compression: true,
-        });
+        if (useDuckDb === 'true') {
+            // Use DuckDB approach
+            const csvFile = GetTempFileName('csv-file', '.csv');
+            const xlsxFile = GetTempFileName('xlsx-file', '.xlsx');
+
+            // Write CSV content to temporary file
+            if (typeof csvContent === 'string') {
+                fs.writeFileSync(csvFile, csvContent);
+            } else {
+                fs.writeFileSync(csvFile, csvContent);
+            }
+
+            let success: boolean = false;
+            let error: any | undefined = undefined;
+
+            await new Promise<void>((resolve, reject) => {
+                const child = fork(resolvePath(__dirname, '../../../src/bin/') + '/duckdb-csv2xlsx.js', [
+                    csvFile,
+                    xlsxFile,
+                ]);
+
+                child.on('error', (err: any) => {
+                    this.logger.error(`error: ${err} converting ${csvFile} to ${xlsxFile}`);
+                });
+
+                child.on('message', (msg: any) => {
+                    if (msg.event == 'success') {
+                        success = true;
+                    } else if (msg.event == 'error') {
+                        error = msg.error;
+                    }
+                });
+
+                child.on('exit', (code: number, signal: string) => {
+                    if (error) reject(error);
+                    if (success) resolve();
+
+                    if (code !== null) reject(`process exited with code ${code}`);
+                    if (signal !== null) reject(`process was killed with signal ${signal}`);
+                });
+            });
+
+            if (!success) throw new InternalServerErrorException(`process did not finished successfully, check logs`);
+
+            // Read the XLSX file to buffer
+            const xlsxBuffer = fs.readFileSync(xlsxFile);
+
+            // Clean up temporary files
+            try {
+                fs.unlinkSync(csvFile);
+                fs.unlinkSync(xlsxFile);
+            } catch (err) {
+                this.logger.warn(`Failed to clean up temporary files: ${err}`);
+            }
+
+            return xlsxBuffer;
+        } else {
+            // Use XLSX library approach (current new code)
+            // Parse CSV content
+            const workbook = XLSX.read(csvContent, {
+                type: 'string',
+                cellDates: true,
+                dateNF: 'yyyy-mm-dd',
+            });
+
+            // Write to buffer with proper options
+            return XLSX.write(workbook, {
+                type: 'buffer',
+                bookType: 'xlsx',
+                bookSST: false,
+                compression: true,
+            });
+        }
     }
 
     async zipFiles(files: FileOutput[]) {
