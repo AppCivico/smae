@@ -100,7 +100,10 @@ export class ParlamentaresService implements ReportableService {
                     { value: 'titular_suplente', label: 'Titular/Suplente/Efetivado' },
                     { value: 'endereco', label: 'Endereço' },
                     { value: 'gabinete', label: 'Gabinete' },
-                    { value: 'telefone', label: 'Telefone' },
+                    {
+                        value: (row:any) => row.telefone ? `\u200C${row.telefone}` : '',
+                        label: 'Telefone'
+                    },
                     { value: 'dia_aniversario', label: 'Dia Aniversário' },
                     { value: 'mes_aniversario', label: 'Mês Aniversário' },
                     { value: 'email', label: 'E-mail' },

@@ -477,7 +477,7 @@ export class TransferenciasService implements ReportableService {
                 },
                 { value: 'dotacao', label: 'Dotação Orçamentária' },
                 {
-                    value: (row) => (row.demanda ? `="${String(row.demanda).replace(/\D/g, '')}"` : ''),
+                    value: (row) => (row.demanda ? String(row.demanda) : ''),
                     label: 'Número da Demanda/Proposta',
                 },
                 { value: 'banco_fim', label: 'Conta - Banco da Secretaria fim' },
@@ -493,7 +493,6 @@ export class TransferenciasService implements ReportableService {
                     label: 'Gestor Municipal do Contrato (secretaria)',
                 },
                 { value: 'ordenador_despesa', label: 'Ordenador de despesas' },
-                { value: 'numero_identificacao', label: 'Nº de identificação' },
                 { value: 'secretaria_concedente_str', label: 'Secretaria do órgão concedente' },
                 { value: 'interface', label: 'Interface' },
                 { value: 'esfera', label: 'Esfera' },
@@ -565,7 +564,10 @@ export class TransferenciasService implements ReportableService {
             fields = [
                 { value: 'identificador', label: 'Identificador' },
                 { value: 'esfera', label: 'esfera' },
-                { value: 'demanda', label: 'Número da Demanda/Proposta' },
+                {
+                   value: (row) => row.demanda ? String(row.demanda) : '',
+                   label: 'Número da Demanda/Proposta'
+                },
                 { value: 'orgao_concedente.descricao', label: 'Orgão Concedente' },
                 { value: 'parlamentar.nome_popular', label: 'parlamentar.nome_popular' },
                 { value: 'partido.sigla', label: 'Partido' },
