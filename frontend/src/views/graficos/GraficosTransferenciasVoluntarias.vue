@@ -224,6 +224,33 @@
       </div>
     </div>
   </div>
+  <div class="w100 bgb mt4 p15">
+    <h2 class="t36 block">
+      Transferências
+    </h2>
+    <div
+      v-if="!carregandoTransferencias"
+      class="grid g2"
+    >
+      <SmaeTable
+        titulo-rolagem-horizontal="Tabela: Transferências"
+        class="mt2"
+        rolagem-horizontal
+        :colunas="colunas"
+        :dados="transferencias"
+      />
+      <div v-if="paginacaoTransferencias.temMais">
+        <MenuPaginacao
+          class="mt2 bgt"
+          v-bind="paginacaoTransferencias"
+          prefixo="transferencias_"
+        />
+      </div>
+    </div>
+    <LoadingComponent
+      v-else
+    />
+  </div>
 </template>
 <script setup>
 import requestS from '@/helpers/requestS.ts';
@@ -237,7 +264,10 @@ import { ref, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
 import dinheiro from '@/helpers/dinheiro';
-import ValorTransferencia from '../../components/graficos/ValorTransferencia.vue';
+import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
+import ValorTransferencia from '@/components/graficos/ValorTransferencia.vue';
+import combinadorDeListas from '@/helpers/combinadorDeListas';
+import MenuPaginacao from '@/components/MenuPaginacao.vue';
 
 const localizeDate = (d) => dateToDate(d, { timeStyle: 'short', timeZone: 'America/Sao_Paulo' });
 const fluxosEtapasProjetos = useEtapasProjetosStore();
@@ -277,6 +307,40 @@ const filtrosEscolhidos = ref({
   partido_ids: route.query.partido_ids?.map((id) => Number(id)) || [],
   parlamentar_ids: route.query.parlamentar_ids?.map((id) => Number(id)) || [],
 });
+const carregandoTransferencias = ref(false);
+const transferencias = ref([]);
+const paginacaoTransferencias = ref({});
+const colunas = [
+  { chave: 'identificador', label: 'Identificador' },
+  { chave: 'esfera', label: 'Esfera' },
+  { chave: 'tipo.nome', label: 'Tipo' },
+  {
+    chave: 'partido',
+    label: 'Partidos',
+    formatador: (valor) => combinadorDeListas(valor, ', ', 'sigla'),
+  },
+  {
+    chave: 'parlamentar',
+    label: 'Parlamentares',
+    formatador: (valor) => combinadorDeListas(valor, ', ', 'nome_popular'),
+  },
+  { chave: 'orgao_gestor.sigla', label: 'Órgão Gestor' },
+  {
+    chave: 'objeto',
+    label: 'Objeto',
+    formatador: (valor) => `${valor.substring(0, 100)}${valor.length > 100 ? '...' : ''}`,
+  },
+  {
+    chave: 'repasse',
+    label: 'Repasse',
+    formatador: (valor) => `R$${dinheiro(valor)}`,
+  },
+  {
+    chave: 'etapa_id',
+    label: 'Etapa',
+    formatador: (valor) => listaEtapas.value.find((etapa) => etapa.id === valor)?.descricao || 'Workflow não iniciado',
+  },
+];
 
 const anoAtual = new Date().getFullYear();
 
@@ -333,6 +397,30 @@ async function buscarGraficos() {
   }
 }
 
+async function buscarTransferencias() {
+  carregandoTransferencias.value = true;
+  try {
+    const retorno = await requestS.get(
+      `${baseUrl}/panorama/painel-estrategico-transferencias`,
+      route.query,
+    );
+    paginacaoTransferencias.value = {
+      temMais: true,
+      paginas: retorno.paginas,
+      tokenPaginacao: retorno.token_paginacao,
+      tokenProximaPagina: retorno.token_paginacao,
+      paginaCorrente: retorno.pagina_corrente,
+      totalRegistros: retorno.total_registros,
+      tokenTtl: retorno.token_ttl,
+    };
+    transferencias.value = retorno.linhas;
+  } catch (erro) {
+    console.log('error:', erro);
+  } finally {
+    carregandoTransferencias.value = false;
+  }
+}
+
 async function iniciar() {
   fluxosEtapasProjetos.buscarTudo();
   parlamentarStore.buscarTudo();
@@ -348,6 +436,7 @@ async function iniciar() {
     });
   }
   buscarGraficos();
+  buscarTransferencias();
 }
 
 iniciar();
@@ -362,6 +451,7 @@ watch(
       parlamentar_ids: route.query.parlamentar_ids?.map((id) => Number(id)) || [],
     };
     buscarGraficos();
+    buscarTransferencias();
   },
 );
 </script>
