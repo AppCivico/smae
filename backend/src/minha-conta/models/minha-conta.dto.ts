@@ -2,6 +2,9 @@ import { ApiProperty, PickType } from '@nestjs/swagger';
 import { ModuloSistema } from '@prisma/client';
 import { PessoaFromJwtBase } from '../../auth/models/PessoaFromJwtBase';
 import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
+import { Transform } from 'class-transformer';
+import { DateTransform } from '../../auth/transforms/date.transform';
+import { IsDateYMD } from '../../auth/decorators/date.decorator';
 
 export class SessaoDto extends PickType(PessoaFromJwtBase, [
     'id',
@@ -24,6 +27,6 @@ export class MinhaContaDto {
 }
 
 export class TesteDataDto {
-    @IsOnlyDate()
+    @IsDateYMD()
     data: Date;
 }
