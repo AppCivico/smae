@@ -774,7 +774,7 @@ export class DashTransferenciaService {
         if (filterToken) {
             retToken = filterToken;
         } else {
-            const info = await this.encodeNextPageTokenListaTransferencias(rows.length, now, filter, filter.ipp);
+            const info = await this.encodeNextPageTokenListaTransferencias(linhas.length, now, filter, filter.ipp);
             retToken = info.jwt;
             total_registros = info.body.total_rows;
         }
@@ -823,7 +823,6 @@ export class DashTransferenciaService {
     }
 
     private async encodeNextPageTokenListaTransferencias(
-        nroRows: number,
         issued_at: Date,
         filter: FilterDashTransferenciasPainelEstrategicoDto,
         ipp?: number
@@ -831,6 +830,15 @@ export class DashTransferenciaService {
         jwt: string;
         body: AnyPageTokenJwtBody;
     }> {
+        const nroRows = await this.prisma.viewTransferenciaAnalise.count({
+            where: {
+                parlamentar_id: filter.parlamentar_ids ? { in: filter.parlamentar_ids } : undefined,
+                ano: filter.anos ? { in: filter.anos } : undefined,
+                partido_id: filter.partido_ids ? { in: filter.partido_ids } : undefined,
+                workflow_etapa_atual_id: filter.etapa_ids ? { in: filter.etapa_ids } : undefined,
+            },
+        });
+
         const body = {
             search_hash: Object2Hash(filter),
             ipp: ipp!,
