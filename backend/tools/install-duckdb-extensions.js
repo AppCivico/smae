@@ -4,7 +4,7 @@ const duckdb_async_1 = require("duckdb-async");
 const process_1 = require("process");
 async function bootstrap() {
     const db = await duckdb_async_1.Database.create(':memory:');
-    for (const extension of ['https', 'postgres', 'sqlite', 'spatial']) {
+    for (const extension of ['https', 'postgres', 'sqlite', 'excel']) {
         console.log(`Installing ${extension} extension`);
         const feedback = await db.all(`INSTALL ${extension}`);
         if (feedback.length > 0) {
