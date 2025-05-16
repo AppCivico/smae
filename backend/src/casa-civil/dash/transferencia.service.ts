@@ -774,7 +774,7 @@ export class DashTransferenciaService {
         if (filterToken) {
             retToken = filterToken;
         } else {
-            const info = await this.encodeNextPageTokenListaTransferencias(linhas.length, now, filter, filter.ipp);
+            const info = await this.encodeNextPageTokenListaTransferencias(now, filter, filter.ipp);
             retToken = info.jwt;
             total_registros = info.body.total_rows;
         }
