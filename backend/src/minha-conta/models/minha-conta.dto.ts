@@ -1,6 +1,7 @@
 import { ApiProperty, PickType } from '@nestjs/swagger';
 import { ModuloSistema } from '@prisma/client';
 import { PessoaFromJwtBase } from '../../auth/models/PessoaFromJwtBase';
+import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
 
 export class SessaoDto extends PickType(PessoaFromJwtBase, [
     'id',
@@ -20,4 +21,9 @@ export class SessaoDto extends PickType(PessoaFromJwtBase, [
 export class MinhaContaDto {
     @ApiProperty({ description: 'Dados da sessão' })
     sessao: SessaoDto;
+}
+
+export class TesteDataDto {
+    @IsOnlyDate()
+    data: Date;
 }
