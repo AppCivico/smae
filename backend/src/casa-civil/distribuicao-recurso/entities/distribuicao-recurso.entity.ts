@@ -16,6 +16,11 @@ export class DistribuicaoRecursoDto {
     valor: Decimal;
     valor_total: Decimal;
     valor_contrapartida: Decimal;
+    valor_empenho: Decimal | null;
+    valor_liquidado: Decimal;
+    rubrica_de_receita: string | null;
+    finalidade: string | null;
+    gestor_contrato: string | null;
     custeio: Decimal;
     pct_custeio: number | null;
     investimento: Decimal;

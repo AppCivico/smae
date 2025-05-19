@@ -91,6 +91,40 @@ export class CreateDistribuicaoRecursoDto {
     @ValidateIf((object, value) => value !== null)
     custeio: number;
 
+    @IsNumberString(
+        {},
+        {
+            message:
+                '$property| Precisa ser um número com até 35 dígitos antes do ponto, e até 2 dígitos após, enviado em formato string',
+        }
+    )
+    @ValidateIf((object, value) => value !== null)
+    @IsOptional()
+    valor_empenho?: number;
+
+    @IsNumberString(
+        {},
+        {
+            message:
+                '$property| Precisa ser um número com até 35 dígitos antes do ponto, e até 2 dígitos após, enviado em formato string',
+        }
+    )
+    @ValidateIf((object, value) => value !== null)
+    @IsOptional()
+    valor_liquidado?: number;
+
+    @IsOptional()
+    @IsString()
+    rubrica_de_receita?: string;
+
+    @IsOptional()
+    @IsString()
+    finalidade?: string;
+
+    @IsOptional()
+    @IsString()
+    gestor_contrato?: string;
+
     @IsOptional()
     @IsNumber(
         { maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false },

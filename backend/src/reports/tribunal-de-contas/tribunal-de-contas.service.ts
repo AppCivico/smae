@@ -40,7 +40,7 @@ export class TribunalDeContasService implements ReportableService {
                 rubrica_de_receita: true,
                 finalidade: true,
                 valor_empenho: true,
-                liquidacao_pagamento: true,
+                valor_liquidado: true,
                 transferencia: {
                     select: {
                         emenda: true,
@@ -102,7 +102,7 @@ export class TribunalDeContasService implements ReportableService {
                 rubrica_de_receita: distribuicao.rubrica_de_receita ?? '',
                 finalidade: distribuicao.finalidade ?? '',
                 valor_empenho: distribuicao.valor_empenho?.toNumber() ?? null,
-                liquidacao_pagamento: distribuicao.liquidacao_pagamento?.toNumber() ?? null,
+                liquidacao_pagamento: distribuicao.valor_liquidado?.toNumber() ?? null,
             };
         });
 
