@@ -1,6 +1,6 @@
 <script setup>
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { impactoDescricao, probabilidadeDescricao, RiscoCalc } from '@/../../common/RiscoCalc.ts';
+import { impactoDescricao, probabilidadeDescricao, RiscoCalc } from '@back/common/RiscoCalc.ts';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import MenuDeMudançaDeStatusDeRisco from '@/components/riscos/MenuDeMudançaDeStatusDeRisco.vue';
 import { risco as schema } from '@/consts/formSchemas';
