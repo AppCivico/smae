@@ -3,6 +3,7 @@ import { useAlertStore } from '@/stores/alert.store';
 import { createTestingPinia } from '@pinia/testing';
 import { mount, RouterLinkStub } from '@vue/test-utils';
 import {
+  afterEach,
   describe,
   expect,
   it,
@@ -28,8 +29,18 @@ const montar = () => mount(AlertModal, {
 });
 
 describe('AlertModal', () => {
+  let envelope: ReturnType<typeof montar>;
+
+  afterEach(() => {
+    if (envelope) {
+      envelope.unmount();
+    }
+    document.body.innerHTML = '';
+    vi.clearAllMocks();
+  });
+
   it('monta apenas um diálogo para uma mensagem de sucesso', async () => {
-    const envelope = montar();
+    envelope = montar();
     const alertStore = useAlertStore();
 
     alertStore.success('Testando abertura!');
@@ -47,7 +58,7 @@ describe('AlertModal', () => {
   });
 
   it('monta apenas um diálogo para uma mensagem de erro', async () => {
-    const envelope = montar();
+    envelope = montar();
 
     const alertStore = useAlertStore();
 
@@ -66,7 +77,7 @@ describe('AlertModal', () => {
   });
 
   it('abre e fecha o diálogo', async () => {
-    const envelope = montar();
+    envelope = montar();
 
     const alertStore = useAlertStore();
 
@@ -85,7 +96,7 @@ describe('AlertModal', () => {
   });
 
   it('seleciona o botão de aceite automaticamente', async () => {
-    const envelope = montar();
+    envelope = montar();
 
     const alertStore = useAlertStore();
 
@@ -103,7 +114,7 @@ describe('AlertModal', () => {
   });
 
   it('monta múltiplos diálogos consecutivos', async () => {
-    const envelope = montar();
+    envelope = montar();
 
     const alertStore = useAlertStore();
 
@@ -132,9 +143,7 @@ describe('AlertModal', () => {
   });
 
   it('exibe um diálogo de confirmação com saída para uma URL', async () => {
-    // vi.spyOn(window, 'location', 'get');
-
-    const envelope = montar();
+    envelope = montar();
     const alertStore = useAlertStore();
 
     alertStore.confirm('Testando confirmação!', '#teste');
@@ -152,7 +161,7 @@ describe('AlertModal', () => {
   it('exibe um diálogo de confirmação com saída para uma função', async () => {
     const spyCallback = vi.fn();
 
-    const envelope = montar();
+    envelope = montar();
     const alertStore = useAlertStore();
 
     alertStore.confirm('Testando confirmação!', spyCallback);
@@ -179,7 +188,7 @@ describe('AlertModal', () => {
     const spyCallback = vi.fn();
     const spyFallback = vi.fn();
 
-    const envelope = montar();
+    envelope = montar();
     const alertStore = useAlertStore();
 
     alertStore.confirmAction('Testando confirmação!', spyCallback, 'aceitar', spyFallback);
