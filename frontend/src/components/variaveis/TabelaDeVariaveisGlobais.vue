@@ -5,40 +5,43 @@
     tabindex="0"
   >
     <table class="tablemain tbody-zebra">
-      <slot name="definicaoPrimeirasColunas" />
+      <colgroup>
+        <slot name="definicaoPrimeirasColunas" />
 
-      <col class="col--minimum">
-      <col>
-      <col>
-      <col class="col--minimum">
-      <col class="col--minimum">
-      <col class="col--minimum">
-      <col>
+        <col class="col--minimum">
+        <col>
+        <col>
+        <col class="col--minimum">
+        <col class="col--minimum">
+        <col class="col--minimum">
+        <col>
 
-      <slot name="definicaoUltimasColunas" />
-
+        <slot name="definicaoUltimasColunas" />
+      </colgroup>
       <thead>
-        <slot name="comecoLinhaCabecalho" />
-        <th />
-        <th>
-          Código
-        </th>
-        <th>
-          {{ schema.fields.titulo?.spec.label }}
-        </th>
-        <th>
-          {{ schema.fields.fonte_id?.spec.label }}
-        </th>
-        <th>
-          {{ schema.fields.periodicidade?.spec.label }}
-        </th>
-        <th>
-          {{ schema.fields.medicao_orgao_id?.spec.label }}
-        </th>
-        <th>
-          Planos
-        </th>
-        <slot name="finalLinhaCabecalho" />
+        <tr>
+          <slot name="comecoLinhaCabecalho" />
+          <th />
+          <th>
+            Código
+          </th>
+          <th>
+            {{ schema.fields.titulo?.spec.label }}
+          </th>
+          <th>
+            {{ schema.fields.fonte_id?.spec.label }}
+          </th>
+          <th>
+            {{ schema.fields.periodicidade?.spec.label }}
+          </th>
+          <th>
+            {{ schema.fields.medicao_orgao_id?.spec.label }}
+          </th>
+          <th>
+            Planos
+          </th>
+          <slot name="finalLinhaCabecalho" />
+        </tr>
       </thead>
 
       <tbody
