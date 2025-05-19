@@ -87,8 +87,6 @@ watch(ultimoDialogo, (novoDialogo) => {
           {{ alert.message }}
         </div>
         <template v-if="alert.type === 'confirmAction'">
-          <pre>{{ alert.fallback }}</pre>
-
           <button
             v-focus
             type="button"
