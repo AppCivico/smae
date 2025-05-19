@@ -173,10 +173,10 @@ type Fase = {
 };
 
 const fasesMapeadas = computed(() => {
-  const mapa: Record<VariavelFase, unknown> = {
-    Preenchimento: '',
-    Validacao: '',
-    Liberacao: '',
+  const mapa: Record<VariavelFase, Fase | null> = {
+    Preenchimento: null,
+    Validacao: null,
+    Liberacao: null,
   };
 
   if (props.analise?.analises && Array.isArray(props.analise?.analises)) {
