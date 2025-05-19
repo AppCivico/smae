@@ -75,10 +75,7 @@
           </tr>
           <tr>
             <td colspan="3">
-              {{ item?.eh_liberacao_auto
-                ? "Liberado retroativamente"
-                : item?.analise_qualitativa
-              }}
+              {{ item.analise_qualitativa }}
             </td>
           </tr>
         </tbody>
