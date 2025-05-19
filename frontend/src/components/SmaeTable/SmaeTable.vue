@@ -89,7 +89,7 @@
             </TableCell>
 
             <td v-if="hasActionButton">
-              <div class="nowrap flex g1 justifyright">
+              <div class="flex g1 justifyright">
                 <EditButton
                   v-if="rotaEditar"
                   :linha="linha"
