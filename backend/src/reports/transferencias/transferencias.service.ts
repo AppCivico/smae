@@ -477,7 +477,7 @@ export class TransferenciasService implements ReportableService {
                 },
                 { value: 'dotacao', label: 'Dotação Orçamentária' },
                 {
-                    value: (row) => (row.demanda ? String(row.demanda) : ''),
+                    value: (row) => row.demanda ? `="${row.demanda}"` : '',
                     label: 'Número da Demanda/Proposta',
                 },
                 { value: 'banco_fim', label: 'Conta - Banco da Secretaria fim' },
