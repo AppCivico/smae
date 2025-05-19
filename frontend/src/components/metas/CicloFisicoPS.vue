@@ -14,18 +14,22 @@
       v-if="Array.isArray(analise?.valores) && analise?.valores.length"
       class="tablemain horizontal-lines mb1"
     >
-      <col class="col--minimum">
-      <col>
-      <col>
-      <col v-if="analise?.valores[0].variavel.acumulativa">
+      <colgroup>
+        <col class="col--minimum">
+        <col>
+        <col>
+        <col v-if="analise?.valores[0].variavel.acumulativa">
+      </colgroup>
       <thead>
-        <th colspan="2">
-          Variável
-        </th>
-        <th>Realizado</th>
-        <th v-if="analise?.valores[0].variavel.acumulativa">
-          Acumulado
-        </th>
+        <tr>
+          <th colspan="2">
+            Variável
+          </th>
+          <th>Realizado</th>
+          <th v-if="analise?.valores[0].variavel.acumulativa">
+            Acumulado
+          </th>
+        </tr>
       </thead>
       <tbody>
         <tr
