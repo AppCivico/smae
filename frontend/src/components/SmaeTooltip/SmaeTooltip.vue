@@ -63,14 +63,25 @@ function alternarAbertura() {
   border: none;
   padding: 0;
   cursor: pointer;
+  position: relative;
 
   > svg {
     display: inline-block;
   }
+
+  &::after {
+    content: "";
+    position: absolute;
+    min-width: 40px;
+    min-height: 40px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
 }
 
 .smae-tooltip--fixado {
-  color: #22222a
+  color: #22222a;
 }
 
 .smae-tooltip__content {
