@@ -54,9 +54,11 @@
     </table>
 
     <table class="tablemain tbody-zebra">
-      <col class="col--minimum">
-      <col>
-      <col class="col--dataHora">
+      <colgroup>
+        <col class="col--minimum">
+        <col>
+        <col class="col--dataHora">
+      </colgroup>
 
       <thead>
         <tr>
@@ -91,10 +93,12 @@
       class="mt2 mb2"
     >
       <table class="tablemain">
-        <col>
-        <col>
-        <col>
-        <col class="col--minimum">
+        <colgroup>
+          <col>
+          <col>
+          <col>
+          <col class="col--minimum">
+        </colgroup>
         <thead>
           <tr>
             <th colspan="2">
