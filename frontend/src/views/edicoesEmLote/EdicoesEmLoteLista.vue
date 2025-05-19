@@ -112,7 +112,7 @@ onMounted(() => {
       </template>
 
       <template #celula:acao="{ linha }">
-        <div class="nowrap flex g1 justifyright">
+        <div class="flex g1 justifyright">
           <SmaeLink
             v-if="linha?.relatorio_arquivo"
             class="tcprimary edicoes-em-lote-lista__ler-mais"
