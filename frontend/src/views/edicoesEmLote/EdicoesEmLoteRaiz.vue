@@ -4,7 +4,6 @@ import Dashboard from '@/components/DashboardLayout.vue';
 
 <template>
   <Dashboard>
-    <MigalhasDePão class="mb1" />
     <router-view />
   </Dashboard>
 </template>
