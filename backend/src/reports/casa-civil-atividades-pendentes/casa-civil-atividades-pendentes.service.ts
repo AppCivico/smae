@@ -40,6 +40,7 @@ export class CasaCivilAtividadesPendentesService implements ReportableService {
                         and t.removido_em is null
                         and tf.removido_em is null
                         and tf.termino_real is null
+                        and tf.termino_planejado < now()::date
                         `;
         if (params.tipo_id && params.tipo_id.length > 0) {
             sql += ' and tt.id in (' + params.tipo_id.toString() + ')';
