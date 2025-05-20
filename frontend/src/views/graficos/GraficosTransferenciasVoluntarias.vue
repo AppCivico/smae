@@ -239,14 +239,13 @@
         :colunas="colunas"
         :dados="transferencias"
       />
-      <div v-if="paginacaoTransferencias.temMais">
-        <MenuPaginacao
-          class="mt2 bgt"
-          v-bind="paginacaoTransferencias"
-          prefixo="transferencias_"
-          @troca-de-pagina-solicitada="scrollPaginaParaTabela"
-        />
-      </div>
+      <MenuPaginacao
+        v-if="paginacaoTransferencias.temMais"
+        class="mt2 bgt"
+        v-bind="paginacaoTransferencias"
+        prefixo="transferencias_"
+        @troca-de-pagina-solicitada="scrollPaginaParaTabela"
+      />
       <LoadingComponent
         v-if="carregandoTransferencias"
         :sobrepoe-conteudo="true"
