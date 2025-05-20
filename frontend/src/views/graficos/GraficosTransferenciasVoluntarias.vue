@@ -320,12 +320,12 @@ const colunas = [
   {
     chave: 'partido',
     label: 'Partidos',
-    formatador: (valor) => combinadorDeListas(valor, ', ', 'sigla'),
+    formatador: (valor) => valor ? combinadorDeListas(valor, ', ', 'sigla') : '',
   },
   {
     chave: 'parlamentar',
     label: 'Parlamentares',
-    formatador: (valor) => combinadorDeListas(valor, ', ', 'nome_popular'),
+    formatador: (valor) => valor ? combinadorDeListas(valor, ', ', 'nome_popular') : '',
   },
   { chave: 'orgao_gestor.sigla', label: 'Órgão Gestor' },
   {
@@ -337,7 +337,11 @@ const colunas = [
   {
     chave: 'repasse',
     label: 'Repasse',
-    formatador: (valor) => `R$${dinheiro(valor)}`,
+-    formatador: (valor) => `R$${dinheiro(valor)}`,
++    formatador: (valor) =>
++      valor !== undefined && valor !== null
++        ? `R$${dinheiro(valor)}`
++        : '-',
   },
   {
     chave: 'etapa_id',
@@ -437,7 +441,9 @@ async function buscarTransferencias() {
 }
 
 function scrollPaginaParaTabela() {
-  tabelaTransferencias.value.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' });
+  if (tabelaTransferencias.value) {
+    tabelaTransferencias.value.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' });
+  }
 }
 
 async function iniciar() {
