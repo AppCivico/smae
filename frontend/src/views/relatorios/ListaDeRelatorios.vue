@@ -110,8 +110,11 @@ onBeforeRouteLeave(() => {
     </template>
   </CabecalhoDePagina>
 
-  <p class="texto--explicativo">
-    Relação das transferências para análise do Tribunal de Contas
+  <p
+    v-if="$route.meta.descricao"
+    class="texto--explicativo"
+  >
+    {{ $route.meta.descricao }}
   </p>
 
   <SmaeTable
