@@ -1,6 +1,6 @@
+import { defineAsyncComponent } from 'vue';
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import RelatoriosRaiz from '@/views/relatorios/RelatoriosRaiz.vue';
-import { defineAsyncComponent } from 'vue';
 
 const ListaDeRelatorios = defineAsyncComponent({
   loader: () => import('@/views/relatorios/ListaDeRelatorios.vue'),
@@ -311,6 +311,7 @@ export default {
           meta: {
             fonteDoRelatorio: 'TribunalDeContas',
             rotaNovoRelatorio: 'novoRelatórioDeTribunalDeContas',
+            descricao: 'Relação das transferências para análise do Tribunal de Contas',
           },
         },
         {
