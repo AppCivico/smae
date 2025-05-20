@@ -47,23 +47,6 @@ export const useEtapasProjetosStore = (prefixo) => defineStore(prefixo ? `${pref
       this.chamadasPendentes.lista = false;
     },
 
-    async buscarTransferencias(params = {}) {
-      this.chamadasPendentes.transferencias = true;
-      this.erro = null;
-
-      try {
-        const linhas = await this.requestS.get('https://run.mocky.io/v3/53702788-fab6-4c38-8965-637009301c34');
-        // const { linhas } = await this.requestS.get(
-        //   `${baseUrl}/${caminhoParaApi(this.route.meta)}`,
-        //   params,
-        // );
-        this.transferencias = linhas;
-      } catch (erro) {
-        this.erro = erro;
-      }
-      this.chamadasPendentes.transferencias = false;
-    },
-
     async excluirItem(id) {
       this.chamadasPendentes.lista = true;
       this.erro = null;
