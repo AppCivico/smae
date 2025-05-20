@@ -1,13 +1,4 @@
 <script setup>
-import FormErrorsList from '@/components/FormErrorsList.vue';
-import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
-import { transferenciaDistribuicaoDeRecursos as schema } from '@/consts/formSchemas';
-import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
-import truncate from '@/helpers/texto/truncate';
-import { useAlertStore } from '@/stores/alert.store';
-import { useOrgansStore } from '@/stores/organs.store';
-import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
-import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import Big from 'big.js';
 import { vMaska } from 'maska';
 import { storeToRefs } from 'pinia';
@@ -26,6 +17,15 @@ import {
   watch,
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import FormErrorsList from '@/components/FormErrorsList.vue';
+import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
+import { transferenciaDistribuicaoDeRecursos as schema } from '@/consts/formSchemas';
+import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
+import truncate from '@/helpers/texto/truncate';
+import { useAlertStore } from '@/stores/alert.store';
+import { useOrgansStore } from '@/stores/organs.store';
+import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
+import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 
 const alertStore = useAlertStore();
 const ÓrgãosStore = useOrgansStore();
@@ -379,32 +379,6 @@ onUnmounted(() => {
         <div class="f1 fb15em">
           <div class="flex center g1">
             <div>
-              <LabelFromYup
-                name="custeio"
-                :schema="schema"
-              />
-
-              <MaskedFloatInput
-                name="custeio"
-                type="text"
-                class="inputtext light"
-                :value="values.custeio"
-                converter-para="string"
-                @update:model-value="(newValue) => {
-                  atualizarValorTotal('custeio', newValue);
-                }"
-                @input="ajusteBruto('custeio')"
-              />
-            </div>
-
-            <small
-              class="addlink text-center mt2"
-              style="cursor: default;"
-            >
-              OU
-            </small>
-
-            <div>
               <label
                 class="label"
                 for="custeio_porcentagem"
@@ -427,29 +401,6 @@ onUnmounted(() => {
                 @input="ajustePercentual('custeio')"
               />
             </div>
-          </div>
-        </div>
-
-        <div class="f1 fb15em">
-          <div class="flex center g1">
-            <div>
-              <LabelFromYup
-                name="investimento"
-                :schema="schema"
-              />
-
-              <MaskedFloatInput
-                name="investimento"
-                type="text"
-                class="inputtext light"
-                :value="values.investimento"
-                converter-para="string"
-                @update:model-value="(newValue) => {
-                  atualizarValorTotal('investimento', newValue);
-                }"
-                @input="ajusteBruto('investimento')"
-              />
-            </div>
 
             <small
               class="addlink text-center mt2"
@@ -458,6 +409,29 @@ onUnmounted(() => {
               OU
             </small>
 
+            <div>
+              <LabelFromYup
+                name="custeio"
+                :schema="schema"
+              />
+
+              <MaskedFloatInput
+                name="custeio"
+                type="text"
+                class="inputtext light"
+                :value="values.custeio"
+                converter-para="string"
+                @update:model-value="(newValue) => {
+                  atualizarValorTotal('custeio', newValue);
+                }"
+                @input="ajusteBruto('custeio')"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="f1 fb15em">
+          <div class="flex center g1">
             <div>
               <label
                 class="label"
@@ -479,6 +453,32 @@ onUnmounted(() => {
                   atualizarValorTotal('investimento_porcentagem', newValue);
                 }"
                 @input="ajustePercentual('investimento')"
+              />
+            </div>
+
+            <small
+              class="addlink text-center mt2"
+              style="cursor: default;"
+            >
+              OU
+            </small>
+
+            <div>
+              <LabelFromYup
+                name="investimento"
+                :schema="schema"
+              />
+
+              <MaskedFloatInput
+                name="investimento"
+                type="text"
+                class="inputtext light"
+                :value="values.investimento"
+                converter-para="string"
+                @update:model-value="(newValue) => {
+                  atualizarValorTotal('investimento', newValue);
+                }"
+                @input="ajusteBruto('investimento')"
               />
             </div>
           </div>
@@ -539,7 +539,10 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <div class="mb1">
+      <div
+        v-if="values.parlamentares?.length !== 0"
+        class="mb1"
+      >
         <LabelFromYup
           :schema="schema"
           name="parlamentares"
@@ -631,6 +634,132 @@ onUnmounted(() => {
       <div class="flex flexwrap g2 mb1">
         <div class="f1">
           <LabelFromYup
+            name="programa_orcamentario_municipal"
+            :schema="schema"
+          />
+
+          <Field
+            name="programa_orcamentario_municipal"
+            type="text"
+            class="inputtext light mb1"
+          />
+
+          <ErrorMessage
+            class="error-msg mb1"
+            name="programa_orcamentario_municipal"
+          />
+        </div>
+      </div>
+
+      <div class="flex flexwrap g2 mb1">
+        <div class="f1">
+          <LabelFromYup
+            name="programa_orcamentario_estadual"
+            :schema="schema"
+          />
+
+          <Field
+            name="programa_orcamentario_estadual"
+            type="text"
+            class="inputtext light mb1"
+          />
+
+          <ErrorMessage
+            class="error-msg mb1"
+            name="programa_orcamentario_estadual"
+          />
+        </div>
+      </div>
+
+      <div class="flex g2 mb1">
+        <div class="f1">
+          <LabelFromYup
+            name="distribuicao_banco"
+            :schema="schema"
+          />
+          <Field
+            name="distribuicao_banco"
+            type="text"
+            class="inputtext light mb1"
+          />
+          <ErrorMessage
+            class="error-msg mb1"
+            name="distribuicao_banco"
+          />
+        </div>
+        <div class="f1">
+          <LabelFromYup
+            name="distribuicao_agencia"
+            :schema="schema"
+          />
+          <Field
+            name="distribuicao_agencia"
+            type="text"
+            class="inputtext light mb1"
+          />
+          <ErrorMessage
+            class="error-msg mb1"
+            name="distribuicao_agencia"
+          />
+        </div>
+        <div class="f1">
+          <LabelFromYup
+            name="distribuicao_conta"
+            :schema="schema"
+          />
+          <Field
+            name="distribuicao_conta"
+            type="text"
+            class="inputtext light mb1"
+          />
+          <ErrorMessage
+            class="error-msg mb1"
+            name="distribuicao_conta"
+          />
+        </div>
+      </div>
+
+      <div class="flex g2 mb1">
+        <div class="f1">
+          <LabelFromYup
+            name="finalidade"
+            :schema="schema"
+          />
+
+          <Field
+            name="finalidade"
+            type="text"
+            class="inputtext light mb1"
+          />
+
+          <ErrorMessage
+            class="error-msg mb1"
+            name="finalidade"
+          />
+        </div>
+
+        <div class="f1">
+          <LabelFromYup
+            name="rubrica_de_receita"
+            :schema="schema"
+          />
+
+          <Field
+            name="rubrica_de_receita"
+            type="text"
+            class="inputtext light mb1"
+          />
+
+          <ErrorMessage
+            class="error-msg mb1"
+            name="rubrica_de_receita"
+          />
+        </div>
+      </div>
+
+      <div class="flex flexwrap g2 mb1">
+        <div class="f1">
+          <LabelFromYup
             name="empenho"
             :schema="schema"
           />
@@ -663,6 +792,7 @@ onUnmounted(() => {
             name="data_empenho"
             :schema="schema"
           />
+
           <Field
             name="data_empenho"
             type="date"
@@ -677,44 +807,61 @@ onUnmounted(() => {
             class="error-msg"
           />
         </div>
-      </div>
 
-      <div class="flex flexwrap g2 mb1">
         <div class="f1">
           <LabelFromYup
-            name="programa_orcamentario_municipal"
+            name="valor_empenho"
             :schema="schema"
           />
 
-          <Field
-            name="programa_orcamentario_municipal"
+          <MaskedFloatInput
+            name="valor_empenho"
             type="text"
-            class="inputtext light mb1"
+            class="inputtext light mb2"
+            :value="values.valor_empenho"
+            converter-para="string"
+            :disabled="!values.empenho"
           />
 
           <ErrorMessage
-            class="error-msg mb1"
-            name="programa_orcamentario_municipal"
+            name="valor_empenho"
+            class="error-msg"
           />
         </div>
       </div>
 
-      <div class="flex flexwrap g2 mb1">
+      <div class="flex g2 mb1">
         <div class="f1">
           <LabelFromYup
-            name="programa_orcamentario_estadual"
+            name="gestor_contrato"
             :schema="schema"
           />
 
           <Field
-            name="programa_orcamentario_estadual"
+            name="gestor_contrato"
             type="text"
             class="inputtext light mb1"
           />
 
           <ErrorMessage
             class="error-msg mb1"
-            name="programa_orcamentario_estadual"
+            name="gestor_contrato"
+          />
+        </div>
+
+        <div class="f1">
+          <LabelFromYup
+            name="valor_liquidado"
+            :schema="schema"
+          />
+          <Field
+            name="valor_liquidado"
+            type="text"
+            class="inputtext light mb1"
+          />
+          <ErrorMessage
+            class="error-msg mb1"
+            name="valor_liquidado"
           />
         </div>
       </div>
