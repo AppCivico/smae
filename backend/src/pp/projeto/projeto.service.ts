@@ -470,7 +470,30 @@ export class ProjetoService {
     }
 
     private async processaOrgaoGestor(dto: CreateProjetoDto, portfolio: PortfolioDto, checkFk: boolean) {
-        if (!dto.orgao_gestor_id) return { orgao_gestor_id: undefined, responsaveis_no_orgao_gestor: undefined };
+        if (!dto.orgao_gestor_id && !dto.responsaveis_no_orgao_gestor)
+            return { orgao_gestor_id: undefined, responsaveis_no_orgao_gestor: undefined };
+
+        // Tentando descobrir o orgao_gestor_id, olhando pelo órgão cadastrado nos responsaveis.
+        if (!dto.orgao_gestor_id && dto.responsaveis_no_orgao_gestor) {
+            const responsaveis = await this.prisma.pessoaFisica.findMany({
+                where: { id: { in: dto.responsaveis_no_orgao_gestor } },
+                select: { orgao_id: true },
+            });
+
+            // Em teoria não será possível ter mais de um orgão, pois as pessoas são filtradas pelo órgão na tela. Mas se tiver, estoura um erro.
+            const orgaoGestor = responsaveis.map((r): number | null => {
+                if (!orgaoGestor.includes(r.orgao_id)) return r.orgao_id;
+
+                return null;
+            });
+            if (orgaoGestor.length > 1)
+                throw new HttpException(
+                    `responsaveis_no_orgao_gestor| Mais de um orgão encontrado entre os responsáveis`,
+                    400
+                );
+
+            dto.orgao_gestor_id = responsaveis[0].orgao_id;
+        }
 
         const orgao_gestor_id: number = +dto.orgao_gestor_id;
         const responsaveis_no_orgao_gestor: number[] = dto.responsaveis_no_orgao_gestor
