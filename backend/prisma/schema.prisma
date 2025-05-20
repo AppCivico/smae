@@ -5972,13 +5972,11 @@ model DistribuicaoRecurso {
     aviso_email_id Int?
     aviso_email    AvisoEmail? @relation(fields: [aviso_email_id], references: [id])
 
-    // Dados de banco, iguais ao da tabela de transferências.
-    banco_aceite       String?
-    conta_aceite       String?
-    agencia_aceite     String?
-    banco_fim          String?
-    conta_fim          String?
-    agencia_fim        String?
+    // Dados de banco
+    distribuicao_banco   String?
+    distribuicao_conta   String?
+    distribuicao_agencia String?
+
     rubrica_de_receita String?
     finalidade         String?
 

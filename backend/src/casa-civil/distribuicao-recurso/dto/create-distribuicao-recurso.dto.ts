@@ -289,7 +289,7 @@ export class CreateDistribuicaoRecursoDto {
     @MaxLength(MAX_LENGTH_DEFAULT, {
         message: `O campo 'Banco aceite' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
     })
-    banco_aceite?: string;
+    distribuicao_banco?: string;
 
     @IsOptional()
     @IsString()
@@ -297,7 +297,7 @@ export class CreateDistribuicaoRecursoDto {
     @MaxLength(MAX_LENGTH_DEFAULT, {
         message: `O campo 'Agência aceite' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
     })
-    agencia_aceite?: string;
+    distribuicao_agencia?: string;
 
     @IsOptional()
     @IsString()
@@ -305,31 +305,7 @@ export class CreateDistribuicaoRecursoDto {
     @MaxLength(MAX_LENGTH_DEFAULT, {
         message: `O campo 'Conta aceite' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
     })
-    conta_aceite?: string;
-
-    @IsOptional()
-    @IsString()
-    @MinLength(1)
-    @MaxLength(MAX_LENGTH_DEFAULT, {
-        message: `O campo 'Conta fim' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
-    })
-    conta_fim?: string;
-
-    @IsOptional()
-    @IsString()
-    @MinLength(1)
-    @MaxLength(MAX_LENGTH_DEFAULT, {
-        message: `O campo 'Agência fim' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
-    })
-    agencia_fim?: string;
-
-    @IsOptional()
-    @IsString()
-    @MinLength(1)
-    @MaxLength(MAX_LENGTH_DEFAULT, {
-        message: `O campo 'Banco fim' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
-    })
-    banco_fim?: string;
+    distribuicao_conta?: string;
 }
 
 export class CreateDistribuicaoParlamentarDto {

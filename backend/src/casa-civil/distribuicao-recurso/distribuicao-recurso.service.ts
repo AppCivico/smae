@@ -747,12 +747,9 @@ export class DistribuicaoRecursoService {
                 assinatura_estado: true,
                 vigencia: true,
                 conclusao_suspensiva: true,
-                banco_fim: true,
-                conta_fim: true,
-                agencia_fim: true,
-                banco_aceite: true,
-                conta_aceite: true,
-                agencia_aceite: true,
+                distribuicao_agencia: true,
+                distribuicao_conta: true,
+                distribuicao_banco: true,
                 orgao_gestor: {
                     select: {
                         id: true,
@@ -1001,12 +998,9 @@ export class DistribuicaoRecursoService {
                 } satisfies DistribuicaoRecursoSeiDto;
             }),
             parlamentares: parlamentares,
-            banco_fim: row.banco_fim,
-            conta_fim: row.banco_fim,
-            agencia_fim: row.banco_fim,
-            banco_aceite: row.banco_fim,
-            conta_aceite: row.banco_fim,
-            agencia_aceite: row.banco_fim,
+            distribuicao_agencia: row.distribuicao_agencia,
+            distribuicao_conta: row.distribuicao_conta,
+            distribuicao_banco: row.distribuicao_banco,
         } satisfies DistribuicaoRecursoDetailDto;
     }
 
@@ -1205,12 +1199,9 @@ export class DistribuicaoRecursoService {
                         rubrica_de_receita: dto.rubrica_de_receita,
                         finalidade: dto.finalidade,
                         gestor_contrato: dto.gestor_contrato,
-                        banco_aceite: dto.banco_aceite,
-                        conta_aceite: dto.conta_aceite,
-                        agencia_aceite: dto.agencia_aceite,
-                        banco_fim: dto.banco_fim,
-                        conta_fim: dto.conta_fim,
-                        agencia_fim: dto.agencia_fim,
+                        distribuicao_agencia: dto.distribuicao_agencia,
+                        distribuicao_conta: dto.distribuicao_conta,
+                        distribuicao_banco: dto.distribuicao_banco,
                         custeio: dto.custeio,
                         investimento: dto.investimento,
                         empenho: dto.empenho,
