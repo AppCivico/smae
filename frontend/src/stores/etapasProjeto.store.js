@@ -22,8 +22,10 @@ function caminhoParaApi(rotaMeta) {
 export const useEtapasProjetosStore = (prefixo) => defineStore(prefixo ? `${prefixo}.etapasProjetos` : 'etapasProjetos', {
   state: () => ({
     lista: [],
+    transferencias: [],
     chamadasPendentes: {
       lista: false,
+      transferencias: false,
       emFoco: false,
     },
     erro: null,
