@@ -332,7 +332,8 @@ const colunas = [
   {
     chave: 'objeto',
     label: 'Objeto',
-    formatador: (valor) => `${valor.substring(0, 100)}${valor.length > 100 ? '...' : ''}`,
+    formatador: (valor = '') =>
+      `${valor.substring(0, 100)}${valor.length > 100 ? '...' : ''}`,
   },
   {
     chave: 'repasse',
