@@ -474,14 +474,21 @@ export class ProjetoService {
             return { orgao_gestor_id: undefined, responsaveis_no_orgao_gestor: undefined };
 
         // Tentando descobrir o orgao_gestor_id, olhando pelo órgão cadastrado nos responsaveis.
-        if (!dto.orgao_gestor_id && dto.responsaveis_no_orgao_gestor) {
+        if (!dto.orgao_gestor_id && dto.responsaveis_no_orgao_gestor?.length) {
             const responsaveis = await this.prisma.pessoaFisica.findMany({
-                where: { id: { in: dto.responsaveis_no_orgao_gestor } },
+                where: {
+                    pessoa: {
+                        some: {
+                            id: { in: dto.responsaveis_no_orgao_gestor },
+                        },
+                    },
+                },
                 select: { orgao_id: true },
             });
 
             // Em teoria não será possível ter mais de um orgão, pois as pessoas são filtradas pelo órgão na tela. Mas se tiver, estoura um erro.
-            const orgaoGestor = responsaveis.map((r): number | null => {
+            let orgaoGestor: (number | null)[] = [];
+            orgaoGestor = responsaveis.map((r): number | null => {
                 if (!orgaoGestor.includes(r.orgao_id)) return r.orgao_id;
 
                 return null;
@@ -520,12 +527,16 @@ export class ProjetoService {
         if (responsaveis_no_orgao_gestor.length > 0) {
             const pessoas = await this.prisma.pessoaFisica.findMany({
                 where: {
-                    id: { in: responsaveis_no_orgao_gestor },
+                    pessoa: {
+                        some: {
+                            id: { in: responsaveis_no_orgao_gestor },
+                        },
+                    },
                     orgao_id: orgao_gestor_id,
                 },
                 select: { id: true },
             });
-
+            console.log({ pessoas, responsaveis_no_orgao_gestor });
             if (pessoas.length !== responsaveis_no_orgao_gestor.length)
                 throw new HttpException(
                     'responsaveis_no_orgao_gestor| Uma ou mais pessoas não foram encontradas no órgão gestor',
@@ -2546,11 +2557,6 @@ export class ProjetoService {
         const portfolio = portfolios.filter((r) => r.id == projeto.portfolio_id)[0];
         if (!portfolio)
             throw new HttpException('portfolio_id| Portfolio não está liberado para o seu usuário editar', 400);
-
-        console.log('\n\n\n===================================\n\n\n');
-        console.log(dto.responsaveis_no_orgao_gestor);
-        console.log(dto.orgao_responsavel_id);
-        console.log('\n\n\n===================================\n\n\n');
 
         const edit = dto.responsaveis_no_orgao_gestor
             ? {
