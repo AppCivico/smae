@@ -162,7 +162,7 @@ const linkParaUltimaPagina = computed(() => (model.value
 async function irParaPagina(numero) {
   emit('trocaDePaginaSolicitada', { pagina: Number(numero) });
   // Não faz nada pois o componente é um router-link
-  if (!model) return;
+  if (!model.value) return;
 
   if (model.value) {
     model.value = Number(numero);
