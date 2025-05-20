@@ -2160,6 +2160,12 @@ export const tipoDeTransferencia = object({
 });
 
 export const transferenciaDistribuicaoDeRecursos = object({
+  agencia: string()
+    .label('Agencia Bancária')
+    .nullable(),
+  banco: string()
+    .label('Banco')
+    .nullable(),
   assinatura_estado: date()
     .label('Data de assinatura do representante do estado')
     .max(dataMax)
@@ -2178,6 +2184,9 @@ export const transferenciaDistribuicaoDeRecursos = object({
     .min(new Date(2003, 0, 1))
     .nullable()
     .transform((v) => (!v ? null : v)),
+  conta_corrente: string()
+    .label('Conta Corente')
+    .nullable(),
   conclusao_suspensiva: date()
     .label('Data de conclusão da suspensiva')
     .max(dataMax)
@@ -2209,10 +2218,16 @@ export const transferenciaDistribuicaoDeRecursos = object({
   empenho: boolean()
     .label('Empenho')
     .nullable(),
+  finalidade: string()
+    .label('Finalidade')
+    .nullable(),
   justificativa_aditamento: string()
     .label('Justificativa para aditamento')
     .max(250)
     .min(1, 'Justificativa para aditamento é obrigatório após editar a data de vigência')
+    .nullable(),
+  liquidacao_pagamento: string()
+    .label('Liquidação/Pagamento')
     .nullable(),
   nome: string()
     .label('Nome')

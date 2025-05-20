@@ -22,6 +22,7 @@ const props = defineProps({
   },
 });
 
+// aqyu
 const conjuntoDeSelecionados = computed(() => (Array.isArray(model.value)
   ? new Set(model.value)
   : new Set()));
