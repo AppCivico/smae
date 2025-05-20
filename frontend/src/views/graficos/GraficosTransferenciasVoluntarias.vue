@@ -320,28 +320,23 @@ const colunas = [
   {
     chave: 'partido',
     label: 'Partidos',
-    formatador: (valor) => valor ? combinadorDeListas(valor, ', ', 'sigla') : '',
+    formatador: (valor) => (valor ? combinadorDeListas(valor, ', ', 'sigla') : ''),
   },
   {
     chave: 'parlamentar',
     label: 'Parlamentares',
-    formatador: (valor) => valor ? combinadorDeListas(valor, ', ', 'nome_popular') : '',
+    formatador: (valor) => (valor ? combinadorDeListas(valor, ', ', 'nome_popular') : ''),
   },
   { chave: 'orgao_gestor.sigla', label: 'Órgão Gestor' },
   {
     chave: 'objeto',
     label: 'Objeto',
-    formatador: (valor = '') =>
-      `${valor.substring(0, 100)}${valor.length > 100 ? '...' : ''}`,
+    formatador: (valor = '') => `${valor.substring(0, 100)}${valor.length > 100 ? '...' : ''}`,
   },
   {
     chave: 'repasse',
     label: 'Repasse',
--    formatador: (valor) => `R$${dinheiro(valor)}`,
-+    formatador: (valor) =>
-+      valor !== undefined && valor !== null
-+        ? `R$${dinheiro(valor)}`
-+        : '-',
+    formatador: (valor) => (valor !== undefined && valor !== null ? `R$${dinheiro(valor)}` : '-'),
   },
   {
     chave: 'etapa_id',
