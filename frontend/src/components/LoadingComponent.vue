@@ -8,6 +8,10 @@ defineProps({
     default: 'div',
     validator(value) { return isValidHtmlTag(value); },
   },
+  sobrepoeConteudo: {
+    type: Boolean,
+    default: false,
+  },
 });
 </script>
 
@@ -15,6 +19,7 @@ defineProps({
   <component
     :is="as"
     class="main-loading"
+    :class="{ 'main-loading--sobrepoe-conteudo': sobrepoeConteudo }"
   >
     <slot>
       carregando
@@ -49,6 +54,16 @@ defineProps({
     justify-content: center;
     gap: 1rem;
   }
+}
+
+.main-loading--sobrepoe-conteudo {
+  position: absolute;
+  inset: 0;
+  justify-content: flex-start;
+  padding-block-start: 2rem;
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(3px);
 }
 
 @keyframes pulsing {
