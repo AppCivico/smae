@@ -80,12 +80,12 @@ export class CasaCivilAtividadesPendentesService implements ReportableService {
             { value: 'atividade', label: 'Atividade' },
             {
                 value: (row: any) =>
-                    row.inicio_planejado ? new Date(row.inicio_planejado).toLocaleDateString('pt-BR') : '',
+                    row.inicio_planejado ? `="${new Date(row.inicio_planejado).toLocaleDateString('pt-BR')}"` : '',
                 label: 'Previsão de Início',
             },
             {
                 value: (row: any) =>
-                    row.termino_planejado ? new Date(row.termino_planejado).toLocaleDateString('pt-BR') : '',
+                    row.termino_planejado ? `="${new Date(row.termino_planejado).toLocaleDateString('pt-BR')}"` : '',
                 label: 'Previsão de Término',
             },
             {
