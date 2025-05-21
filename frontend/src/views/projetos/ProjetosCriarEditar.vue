@@ -130,16 +130,16 @@ const orgaosDisponiveisPorPortolio = computed(() => portfolioStore.lista.reduce(
 const desabilitarTodosCampos = computed(() => {
   const permissoes = emFoco.value?.permissoes || null;
 
-  if (!permissoes?.apenas_leitura) {
+  if (permissoes?.apenas_leitura) {
     return {
-      camposComuns: false,
-      camposGestor: false,
+      camposComuns: true,
+      camposGestor: permissoes?.pode_editar_apenas_responsaveis_pos_planejamento,
     };
   }
 
   return {
-    camposComuns: true,
-    camposGestor: permissoes?.pode_editar_apenas_responsaveis_pos_planejamento,
+    camposComuns: false,
+    camposGestor: false,
   };
 });
 
@@ -1352,7 +1352,7 @@ watch(itemParaEdicao, (novoValor) => {
               loading: ÓrgãosStore.organs.loading,
             }"
             :disabled="
-              desabilitarTodosCampos.camposGestor
+              desabilitarTodosCampos.camposComuns
                 || !orgaosDisponiveisPorPortolio[values.portfolio_id]?.length
             "
             @change="setFieldValue('responsaveis_no_orgao_gestor', [])"
@@ -1406,7 +1406,7 @@ watch(itemParaEdicao, (novoValor) => {
               loading: portfolioStore.chamadasPendentes.lista
             }"
             label="nome_exibicao"
-            :readonly="desabilitarTodosCampos.camposGestor"
+            :readonly="desabilitarTodosCampos.camposComuns"
           />
           <ErrorMessage
             name="responsaveis_no_orgao_gestor"
@@ -1431,7 +1431,7 @@ watch(itemParaEdicao, (novoValor) => {
               loading: portfolioStore.chamadasPendentes.lista
             }"
             :disabled="
-              desabilitarTodosCampos.camposGestor
+              desabilitarTodosCampos.camposComuns
                 || !órgãosQueTemResponsáveis?.length
             "
             @change="setFieldValue('responsavel_id', 0)"
@@ -1472,7 +1472,7 @@ watch(itemParaEdicao, (novoValor) => {
               loading: portfolioStore.chamadasPendentes.lista
             }"
             :disabled="
-              desabilitarTodosCampos.camposGestor
+              desabilitarTodosCampos.camposComuns
                 || !possíveisResponsáveisPorÓrgãoId[values.orgao_responsavel_id]?.length
             "
             @update:model-value="values.responsavel_id = Number(values.responsavel_id)
