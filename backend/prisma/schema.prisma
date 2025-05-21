@@ -7345,6 +7345,9 @@ model VariavelGlobalCicloAnalise {
     removido_em  DateTime?
     removido_por Int?
 
+    sincronizar_serie_variavel Boolean   @default(false)
+    sv_sincronizado_em         DateTime? /// Quando foi sincronizado os valores da fase de Preenchimento com a tabela de serie_variavel
+
     variavel        Variavel @relation(fields: [variavel_id], references: [id])
     pessoaCriador   Pessoa   @relation("criador", fields: [criado_por], references: [id])
     pessoaRemovedor Pessoa?  @relation("removedor", fields: [removido_por], references: [id])
