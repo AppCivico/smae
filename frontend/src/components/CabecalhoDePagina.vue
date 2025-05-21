@@ -52,6 +52,7 @@ defineProps({
   }
 
   :deep(.botao-de-fechamento) {
+    min-width: calc(3em + 4px);
     // Por causa de código legado. Tomara que removamos um dia
     margin-left: 0 !important;
   }
