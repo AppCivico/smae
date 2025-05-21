@@ -47,6 +47,7 @@ import { GeoLocService, UpsertEnderecoDto } from '../../geo-loc/geo-loc.service'
 import { ArquivoBaseDto } from '../../upload/dto/create-upload.dto';
 import { UpdateTarefaDto } from '../tarefa/dto/update-tarefa.dto';
 import { TarefaService } from '../tarefa/tarefa.service';
+import { SmaeConfigService } from 'src/common/services/smae-config.service';
 
 const FASES_PLANEJAMENTO_E_ANTERIORES: ProjetoStatus[] = ['Registrado', 'Selecionado', 'EmPlanejamento'];
 const StatusParaFase: Record<ProjetoStatus, ProjetoFase> = {
@@ -356,7 +357,8 @@ export class ProjetoService {
         @Inject(forwardRef(() => TarefaService))
         private readonly tarefaService: TarefaService,
         private readonly pessoaPrivService: PessoaPrivilegioService,
-        private readonly jwtService: JwtService
+        private readonly jwtService: JwtService,
+        private readonly smaeConfig: SmaeConfigService
     ) {}
 
     private async processaOrigem(dto: CreateProjetoDto) {
@@ -469,7 +471,7 @@ export class ProjetoService {
         }
     }
 
-    private async processaOrgaoGestor(dto: CreateProjetoDto, portfolio: PortfolioDto, checkFk: boolean) {
+    private async processaOrgaoGestor(dto: CreateProjetoDto, portfolio: PortfolioDto) {
         if (!dto.orgao_gestor_id && !dto.responsaveis_no_orgao_gestor)
             return { orgao_gestor_id: undefined, responsaveis_no_orgao_gestor: undefined };
 
@@ -506,6 +508,10 @@ export class ProjetoService {
         const responsaveis_no_orgao_gestor: number[] = dto.responsaveis_no_orgao_gestor
             ? dto.responsaveis_no_orgao_gestor
             : [];
+
+        const checkFkStr = await this.smaeConfig.getConfig('VALIDAR_ORGAO_PORTFOLIO');
+        // getConfig retorna uma string, então tem que converter pra bool
+        const checkFk = checkFkStr == 'true' ? true : false;
 
         if (checkFk) {
             //console.dir({ portfolio, orgao_gestor_id, responsaveis_no_orgao_gestor }, { depth: 44 });
@@ -592,7 +598,7 @@ export class ProjetoService {
             );
 
         const { origem_tipo, meta_id, atividade_id, iniciativa_id, origem_outro } = await this.processaOrigem(dto);
-        const { orgao_gestor_id, responsaveis_no_orgao_gestor } = await this.processaOrgaoGestor(dto, portfolio, true);
+        const { orgao_gestor_id, responsaveis_no_orgao_gestor } = await this.processaOrgaoGestor(dto, portfolio);
 
         if (!origem_tipo) throw new Error('origem_tipo deve estar definido no create de Projeto');
 
@@ -2566,8 +2572,7 @@ export class ProjetoService {
             : {};
         const { orgao_gestor_id, responsaveis_no_orgao_gestor } = await this.processaOrgaoGestor(
             edit as any,
-            portfolio,
-            false
+            portfolio
         );
 
         const now = new Date(Date.now());
