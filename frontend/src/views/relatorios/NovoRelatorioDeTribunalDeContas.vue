@@ -1,15 +1,15 @@
 <script setup>
-import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
-import { relatórioDeTribunalDeContas as schema } from '@/consts/formSchemas';
-import { useAlertStore } from '@/stores/alert.store';
-import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
-import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage, Field, useForm,
 } from 'vee-validate';
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
+import { relatórioDeTribunalDeContas as schema } from '@/consts/formSchemas';
+import { useAlertStore } from '@/stores/alert.store';
+import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
+import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
 
 const TipoDeTransferenciaStore = useTipoDeTransferenciaStore();
 const { lista: tipoTransferenciaComoLista } = storeToRefs(TipoDeTransferenciaStore);
@@ -66,6 +66,13 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
 </script>
 <template>
   <CabecalhoDePagina :formulario-sujo="false" />
+
+  <p
+    v-if="$route.meta.descricao"
+    class="texto--explicativo"
+  >
+    {{ $route.meta.descricao }}
+  </p>
 
   <form
     :disabled="isSubmitting"

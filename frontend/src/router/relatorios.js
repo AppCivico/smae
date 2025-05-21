@@ -320,6 +320,7 @@ export default {
           meta: {
             título: 'Novo relatório do tribunal de contas',
             rotaDeEscape: 'RelatóriosDeTribunalDeContas',
+            descricao: 'Relação das transferências para análise do Tribunal de Contas',
           },
         },
       ],
