@@ -471,7 +471,7 @@ export class ProjetoService {
         }
     }
 
-    private async processaOrgaoGestor(dto: CreateProjetoDto, portfolio: PortfolioDto) {
+    private async processaOrgaoGestor(dto: CreateProjetoDto, portfolio: PortfolioDto, tipo: TipoProjeto) {
         if (!dto.orgao_gestor_id && !dto.responsaveis_no_orgao_gestor)
             return { orgao_gestor_id: undefined, responsaveis_no_orgao_gestor: undefined };
 
@@ -523,6 +523,28 @@ export class ProjetoService {
                         .join(', ')})`,
                     400
                 );
+
+            // Caso seja um projeto do tipo MDO, o órgão deve ter ao menos um usuário com perfil "Gestor da Obra".
+            if (tipo == 'MDO') {
+                const pessoasGestoras = await this.prisma.pessoaPerfil.count({
+                    where: {
+                        pessoa: {
+                            pessoa_fisica: {
+                                orgao_id: orgao_gestor_id,
+                            },
+                        },
+                        perfil_acesso: {
+                            nome: 'Gestor da Obra',
+                        },
+                    },
+                });
+
+                if (pessoasGestoras == 0)
+                    throw new HttpException(
+                        `orgao_gestor_id| Órgão não possui usuários com o perfil Gestor da Obra`,
+                        400
+                    );
+            }
         }
 
         // esse TODO continua existindo
@@ -598,7 +620,7 @@ export class ProjetoService {
             );
 
         const { origem_tipo, meta_id, atividade_id, iniciativa_id, origem_outro } = await this.processaOrigem(dto);
-        const { orgao_gestor_id, responsaveis_no_orgao_gestor } = await this.processaOrgaoGestor(dto, portfolio);
+        const { orgao_gestor_id, responsaveis_no_orgao_gestor } = await this.processaOrgaoGestor(dto, portfolio, tipo);
 
         if (!origem_tipo) throw new Error('origem_tipo deve estar definido no create de Projeto');
 
@@ -2568,7 +2590,8 @@ export class ProjetoService {
             : {};
         const { orgao_gestor_id, responsaveis_no_orgao_gestor } = await this.processaOrgaoGestor(
             edit as any,
-            portfolio
+            portfolio,
+            tipo
         );
 
         const now = new Date(Date.now());
