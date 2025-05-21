@@ -70,13 +70,13 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
     <hr class="ml2 f1">
     <MenuDeMudançaDeStatusDeProjeto class="ml2" />
 
-    <router-link
+    <SmaeLink
       v-if="emFoco?.id && !emFoco?.arquivado && !emFoco?.permissoes?.apenas_leitura"
       :to="{ name: 'projetosEditar', params: { projetoId: emFoco.id } }"
       class="btn big ml2"
     >
       Editar
-    </router-link>
+    </SmaeLink>
   </div>
 
   <div
@@ -564,26 +564,26 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
 
     <div>
       <h2>
-        Órgãos
+        Órgãos/partes interessadas
       </h2>
       <dl class="flex g2 flexwrap">
+        <div class="f1 mb1">
+          <dt class="t12 uc w700 mb05 tamarelo">
+            {{ schema.fields.responsaveis_no_orgao_gestor.spec.label }}
+          </dt>
+          <dd class="t13">
+            {{emFoco?.responsaveis_no_orgao_gestor
+              && Array.isArray(emFoco.responsaveis_no_orgao_gestor)
+              ? emFoco?.responsaveis_no_orgao_gestor?.map((x) => x.nome_exibicao || x).join(', ')
+              : '-'}}
+          </dd>
+        </div>
         <div class="f1 mb1">
           <dt class="t12 uc w700 mb05 tamarelo">
             {{ schema.fields.orgao_gestor_id.spec.label }}
           </dt>
           <dd class="t13">
             {{ emFoco?.orgao_gestor.sigla }} - {{ emFoco?.orgao_gestor.descricao }}
-          </dd>
-        </div>
-        <div class="f1 mb1">
-          <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.responsaveis_no_orgao_gestor.spec.label }}
-          </dt>
-          <dd class="t13">
-            {{ emFoco?.responsaveis_no_orgao_gestor
-              && Array.isArray(emFoco.responsaveis_no_orgao_gestor)
-              ? emFoco?.responsaveis_no_orgao_gestor?.map((x) => x.nome_exibicao || x).join(', ')
-              : '-' }}
           </dd>
         </div>
         <div class="f1 mb1">
@@ -607,20 +607,51 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
         </div>
         <div class="f1 mb1">
           <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.responsavel_id.spec.label }}
-          </dt>
-          <dd class="t13">
-            {{ emFoco?.responsavel?.nome_exibicao || emFoco?.responsavel?.id || '-' }}
-          </dd>
-        </div>
-        <div class="f1 mb1">
-          <dt class="t12 uc w700 mb05 tamarelo">
             {{ schema.fields.secretario_responsavel.spec.label }}
           </dt>
           <dd class="t13">
             {{ emFoco?.secretario_responsavel || '-' }}
           </dd>
         </div>
+        <div class="f1 mb1">
+          <dt class="t12 uc w700 mb05 tamarelo">
+            {{ schema.fields.responsavel_id.spec.label }}
+          </dt>
+          <dd class="t13">
+            {{ emFoco?.responsavel?.nome_exibicao || emFoco?.responsavel?.id || '-' }}
+          </dd>
+        </div>
+      </dl>
+
+      <dl
+        v-if="Object.keys(equipesAgrupadas).length"
+        class="mb1"
+          >
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.equipe.spec.label }}
+        </dt>
+
+        <dd class="contentStyle">
+          <ul
+            class="mb05"
+          >
+            <li
+              v-for="equipe in equipesAgrupadas"
+              :key="`equipes--${equipe.orgao_id}`"
+            >
+              {{ equipe.orgao_nome }}
+
+              <ol>
+                <li
+                  v-for="pessoa in equipe.pessoas"
+                  :key="`pessoa--${equipe.orgao_id}-${pessoa.id}`"
+                >
+                  {{ pessoa.nome_exibicao }}
+                </li>
+              </ol>
+            </li>
+          </ul>
+        </dd>
       </dl>
 
       <dl
@@ -637,35 +668,6 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
           >
             {{ item.sigla }} - {{ item.descricao }},
           </template>
-        </dd>
-      </dl>
-
-      <dl>
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.equipe.spec.label }}
-        </dt>
-
-        <dd class="contentStyle">
-          <ul
-            v-if="Object.keys(equipesAgrupadas).length"
-            class="mb05"
-          >
-            <li
-              v-for="equipe in equipesAgrupadas"
-              :key="`equipes--${equipe.orgao_id}`"
-            >
-              {{ equipe.orgao_nome }}
-
-              <ul>
-                <li
-                  v-for="pessoa in equipe.pessoas"
-                  :key="`pessoa--${equipe.orgao_id}-${pessoa.id}`"
-                >
-                  {{ pessoa.nome_exibicao }}
-                </li>
-              </ul>
-            </li>
-          </ul>
         </dd>
       </dl>
     </div>
