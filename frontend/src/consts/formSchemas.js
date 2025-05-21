@@ -4247,13 +4247,6 @@ export const obra = projeto.concat(obras).shape({
       identificador: string()
         .required(),
     }),
-  responsaveis_no_orgao_gestor: array()
-    .label('Ponto focal do monitoramento')
-    .of(
-      number()
-        .min(1),
-    )
-    .nullable(),
 });
 
 export const comunicadosGeraisFiltrosSchemaTipoOpcoes = [
