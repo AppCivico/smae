@@ -273,7 +273,7 @@ watch(
       <div class="f1">
         <label
           :for="`${$props.name}__orgao--${idx}`"
-          class="label"
+          class="label tc300"
         >
           {{ props.orgaoLabel }}
           <SmaeTooltip
@@ -307,7 +307,7 @@ watch(
       <div class="f2">
         <label
           :for="`${$props.name}__pessoas--${idx}`"
-          class="label"
+          class="label tc300"
         >
           {{ $props.pessoasLabel }}
           <SmaeTooltip
