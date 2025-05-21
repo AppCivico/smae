@@ -1541,6 +1541,7 @@ watch(itemParaEdicao, (novoValor) => {
         <CampoDePessoasComBuscaPorOrgao
           :model-value="values.equipe"
           :valores-iniciais="itemParaEdicao.equipe"
+          :pessoas-label="schema.fields.equipe.innerType.spec.label"
           name="equipe"
           :pessoas="possíveisColaboradores"
           :readonly="desabilitarTodosCampos.camposGestor"
