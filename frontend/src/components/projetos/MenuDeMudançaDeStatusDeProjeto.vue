@@ -77,7 +77,7 @@ async function mudarStatus(id, { nome, ação }) {
 <template>
   <div
     v-if="açõesPermitidas.length"
-    class="ml2 dropbtn"
+    class="dropbtn"
   >
     <span class="btn">Mudar status</span>
     <ul>
