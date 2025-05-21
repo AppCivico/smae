@@ -2496,11 +2496,7 @@ export class ProjetoService {
             const tmpDto: Partial<UpdateProjetoDto> = {};
 
             // Copia apenas os campos que podem ser editáveis
-            if ('responsaveis_no_orgao_gestor' in dto)
-                tmpDto.responsaveis_no_orgao_gestor = dto.responsaveis_no_orgao_gestor;
             if ('equipe' in dto) tmpDto.equipe = dto.equipe;
-            if ('orgao_responsavel_id' in dto) tmpDto.orgao_responsavel_id = dto.orgao_responsavel_id;
-            if ('responsavel_id' in dto) tmpDto.responsavel_id = dto.responsavel_id;
 
             // Testa se o DTO filtrado está vazio, se estiver, lança erro
             if (Object.keys(tmpDto).length === 0 && Object.keys(dto).length > 0) {
