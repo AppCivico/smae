@@ -616,7 +616,7 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
 
     <div>
       <h2>
-        Órgãos
+        Órgãos/Partes interessadas
       </h2>
       <dl class="flex g2 flexwrap">
         <div class="f1 mb1">

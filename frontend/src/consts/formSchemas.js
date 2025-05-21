@@ -1432,7 +1432,7 @@ export const obras = object({
     .label('Compartilhar com portfólios')
     .nullable(),
   portfolio_id: number()
-    .label('Nome do portfólio')
+    .label('Portfólio')
     .min(1, 'Portfólio inválido')
     .required(),
   previsao_custo: number()
