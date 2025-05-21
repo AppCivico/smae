@@ -2573,7 +2573,7 @@ export const projeto = object()
       .nullable()
       .of(
         number()
-          .label('Pessoa')
+          .label('Equipe do projeto')
           .required(),
       )
       .meta({
