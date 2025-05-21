@@ -403,6 +403,7 @@ watch(listaDeTiposDeIntervenção, () => {
     <hr class="f1">
     <!--
   <MenuDeMudançaDeStatusDeProjeto
+      class="ml2"
     v-if="obraId"
   />
 -->
