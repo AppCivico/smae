@@ -12,6 +12,7 @@ import truncate from '@/helpers/texto/truncate';
 import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { useOrgansStore } from '@/stores/organs.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
+import SmaeTooltip from '@/components/SmaeTooltip/SmaeTooltip.vue';
 
 const DotaçãoStore = useDotaçãoStore();
 const ÓrgãosStore = useOrgansStore();
@@ -570,17 +571,23 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
         <div class="f1 mb1">
           <dt class="t12 uc w700 mb05 tamarelo">
             {{ schema.fields.responsaveis_no_orgao_gestor.spec.label }}
+
+            <SmaeTooltip
+              :texto="schema.fields.responsaveis_no_orgao_gestor.spec.meta.balaoInformativo"
+            />
           </dt>
           <dd class="t13">
-            {{emFoco?.responsaveis_no_orgao_gestor
+            {{ emFoco?.responsaveis_no_orgao_gestor
               && Array.isArray(emFoco.responsaveis_no_orgao_gestor)
               ? emFoco?.responsaveis_no_orgao_gestor?.map((x) => x.nome_exibicao || x).join(', ')
-              : '-'}}
+              : '-' }}
           </dd>
         </div>
         <div class="f1 mb1">
           <dt class="t12 uc w700 mb05 tamarelo">
             {{ schema.fields.orgao_gestor_id.spec.label }}
+
+            <SmaeTooltip :texto="schema.fields.orgao_gestor_id.spec.meta.balaoInformativo" />
           </dt>
           <dd class="t13">
             {{ emFoco?.orgao_gestor.sigla }} - {{ emFoco?.orgao_gestor.descricao }}
@@ -589,6 +596,8 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
         <div class="f1 mb1">
           <dt class="t12 uc w700 mb05 tamarelo">
             {{ schema.fields.secretario_executivo.spec.label }}
+
+            <SmaeTooltip :texto="schema.fields.secretario_executivo.spec.meta.balaoInformativo" />
           </dt>
           <dd class="t13">
             {{ emFoco?.secretario_executivo || '-' }}
@@ -600,6 +609,8 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
         <div class="f1 mb1">
           <dt class="t12 uc w700 mb05 tamarelo">
             {{ schema.fields.orgao_responsavel_id.spec.label }}
+
+            <SmaeTooltip :texto="schema.fields.orgao_responsavel_id.spec.meta.balaoInformativo" />
           </dt>
           <dd class="t13">
             {{ emFoco?.orgao_responsavel?.sigla }} - {{ emFoco?.orgao_responsavel?.descricao }}
@@ -608,6 +619,8 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
         <div class="f1 mb1">
           <dt class="t12 uc w700 mb05 tamarelo">
             {{ schema.fields.secretario_responsavel.spec.label }}
+
+            <SmaeTooltip :texto="schema.fields.secretario_responsavel.spec.meta.balaoInformativo" />
           </dt>
           <dd class="t13">
             {{ emFoco?.secretario_responsavel || '-' }}
@@ -616,6 +629,8 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
         <div class="f1 mb1">
           <dt class="t12 uc w700 mb05 tamarelo">
             {{ schema.fields.responsavel_id.spec.label }}
+
+            <SmaeTooltip :texto="schema.fields.responsavel_id.spec.meta.balaoInformativo" />
           </dt>
           <dd class="t13">
             {{ emFoco?.responsavel?.nome_exibicao || emFoco?.responsavel?.id || '-' }}
@@ -626,9 +641,11 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
       <dl
         v-if="Object.keys(equipesAgrupadas).length"
         class="mb1"
-          >
+      >
         <dt class="t12 uc w700 mb05 tamarelo">
           {{ schema.fields.equipe.spec.label }}
+
+          <SmaeTooltip :texto="schema.fields.equipe.spec.meta.balaoInformativo" />
         </dt>
 
         <dd class="contentStyle">
@@ -660,6 +677,8 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
       >
         <dt class="t12 uc w700 mb05 tamarelo">
           {{ schema.fields.orgaos_participantes.spec.label }}
+
+          <SmaeTooltip :texto="schema.fields.orgaos_participantes.spec.meta.balaoInformativo" />
         </dt>
         <dd class="t13">
           <template
