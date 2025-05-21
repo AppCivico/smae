@@ -66,7 +66,7 @@ async function mudarStatus(id, { nome, ação }) {
       const resposta = await projetosStore.mudarStatus(id, ação);
 
       alertStore
-        .success('Status modificado. Lembre-se de atualizar a etapa do cronograma!');
+        .success('Status modificado. Lembre-se de atualizar a etapa do cronograma. Para isso acesse a página Cronograma e atualize a etapa por meio do botão "Mudar etapa".');
 
       if (resposta) {
         projetosStore.buscarItem(id);

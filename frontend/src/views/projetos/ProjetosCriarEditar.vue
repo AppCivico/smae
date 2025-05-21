@@ -160,7 +160,7 @@ const possíveisOrigens = [
 
 function alertarTrocaDeStatus() {
   if (!!itemParaEdicao.value.status && itemParaEdicao.value.status !== values.status) {
-    alertStore.success('Lembre-se de atualizar a etapa do cronograma');
+    alertStore.success('Lembre-se de atualizar a etapa do cronograma. Para isso acesse a página Cronograma e atualize a etapa por meio do botão "Mudar etapa".');
   }
 }
 
