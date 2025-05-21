@@ -7739,18 +7739,18 @@ model AtualizacaoEmLote {
 }
 
 model WikiLink {
-    id         Int    @id @default(autoincrement())
-    chave_smae String @unique
-    url_wiki   String
+    id             Int       @id @default(autoincrement())
+    chave_smae     String    @unique
+    url_wiki       String
 
-    criado_por Int?
-    criado_em  DateTime @default(now())
+    criado_por     Int?
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
 
     atualizado_por Int?
-    atualizado_em  DateTime
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
 
-    removido_por Int?
-    removido_em  DateTime?
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
 
     @@map("wiki_link")
 }
