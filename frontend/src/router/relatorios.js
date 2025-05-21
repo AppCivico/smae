@@ -311,7 +311,6 @@ export default {
           meta: {
             fonteDoRelatorio: 'TribunalDeContas',
             rotaNovoRelatorio: 'novoRelatórioDeTribunalDeContas',
-            descricao: 'Relação das transferências para análise do Tribunal de Contas',
           },
         },
         {
@@ -321,6 +320,7 @@ export default {
           meta: {
             título: 'Novo relatório do tribunal de contas',
             rotaDeEscape: 'RelatóriosDeTribunalDeContas',
+            descricao: 'Relação das transferências para análise do Tribunal de Contas',
           },
         },
       ],
