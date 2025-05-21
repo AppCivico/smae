@@ -1,8 +1,18 @@
 <template>
   <header
-    class="flex spacebetween center g2 mb2 cabecalho"
+    class="flex flexwrap spacebetween center g2 mb2 cabecalho"
     v-bind="$attrs"
   >
+    <p
+      v-if="!!$route.meta.subtitulo || !!$slots.subtitulo?.()"
+      role="doc-subtitle"
+      class="t12 uc w700 tamarelo"
+    >
+      <slot name="subtitulo">
+        {{ $route.meta.subtitulo }}
+      </slot>
+    </p>
+
     <TituloDePagina id="titulo-da-pagina">
       <slot name="titulo" />
     </TituloDePagina>
@@ -37,6 +47,13 @@ defineProps({
     flex-grow: 1;
   }
 
+  [role="doc-subtitle"] {
+    flex-basis: 100%;
+    max-width: 100%;
+    width: 100%;
+    margin: 0;
+  }
+
   :deep(h1) {
     flex-basis: min-content;
   }
@@ -44,6 +61,7 @@ defineProps({
   hr {
     max-width: none;
     width: auto;
+    flex-basis: 1%;
   }
 
   :deep(.botao-de-fechamento) {
