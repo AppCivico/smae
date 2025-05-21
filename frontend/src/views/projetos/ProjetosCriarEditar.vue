@@ -302,7 +302,10 @@ watch(itemParaEdicao, (novoValor) => {
 
     <hr class="f1">
 
-    <MenuDeMudançaDeStatusDeProjeto v-if="projetoId" />
+    <MenuDeMudançaDeStatusDeProjeto
+      v-if="projetoId"
+      class="ml2"
+    />
 
     <CheckClose :formulario-sujo="formularioSujo" />
   </header>
