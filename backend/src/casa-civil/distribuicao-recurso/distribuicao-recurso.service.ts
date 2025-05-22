@@ -491,6 +491,9 @@ export class DistribuicaoRecursoService {
                 assinatura_estado: true,
                 vigencia: true,
                 conclusao_suspensiva: true,
+                distribuicao_agencia: true,
+                distribuicao_conta: true,
+                distribuicao_banco: true,
                 parlamentares: {
                     orderBy: { id: 'asc' },
                     where: { removido_em: null },
@@ -707,6 +710,9 @@ export class DistribuicaoRecursoService {
                 rubrica_de_receita: r.rubrica_de_receita,
                 finalidade: r.finalidade,
                 gestor_contrato: r.gestor_contrato,
+                distribuicao_agencia: r.distribuicao_agencia,
+                distribuicao_conta: r.distribuicao_conta,
+                distribuicao_banco: r.distribuicao_banco,
             } satisfies DistribuicaoRecursoDto;
         });
     }

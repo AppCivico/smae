@@ -52,6 +52,9 @@ export class DistribuicaoRecursoDto {
     status_atual?: string;
     pct_valor_transferencia: number;
     parlamentares?: ParlamentarDistribuicaoDto[];
+    distribuicao_agencia: string | null;
+    distribuicao_conta: string | null;
+    distribuicao_banco: string | null;
 }
 
 export class ParlamentarDistribuicaoDto {
