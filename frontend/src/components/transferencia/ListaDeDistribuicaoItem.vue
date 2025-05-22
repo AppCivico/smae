@@ -6,7 +6,7 @@ import TransitionExpand from '@/components/TransitionExpand.vue';
 import dinheiro from '@/helpers/dinheiro';
 import dateToField from '@/helpers/dateToField';
 import combinadorDeListas from '@/helpers/combinadorDeListas.ts';
-import { dateToShortDate, localizarData, localizarDataHorario } from '@/helpers/dateToDate';
+import dateToDate, { dateToShortDate, localizarData, localizarDataHorario } from '@/helpers/dateToDate';
 import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 
@@ -57,8 +57,8 @@ const recursoFinanceiroValores = computed(() => {
   return [
     { label: 'Valor do repasse', valor: dinheiro(props.distribuicao.valor) },
     { label: 'Valor contrapartida', valor: dinheiro(props.distribuicao.valor_contrapartida) },
-    { label: 'Custeio', valor: dinheiro(props.distribuicao.custeio) },
-    { label: 'Investimento', valor: dinheiro(props.distribuicao.investimento) },
+    { label: 'Custeio', porcentagem: props.distribuicao.pct_custeio, valor: dinheiro(props.distribuicao.custeio) },
+    { label: 'Investimento', porcentagem: props.distribuicao.pct_investimento, valor: dinheiro(props.distribuicao.investimento) },
   ];
 });
 </script>
@@ -123,7 +123,6 @@ const recursoFinanceiroValores = computed(() => {
               </dl>
             </div>
 
-            <h1>2</h1>
             <div class="flex flexwrap g4 mb3">
               <div class="recurso-financeiro-valores f1">
                 <div
@@ -131,9 +130,16 @@ const recursoFinanceiroValores = computed(() => {
                   :key="`recurso-financeiro-valores--${valorItemIndex}`"
                   class="recurso-financeiro-valores__item flex f1 spacebetween center p05"
                 >
-                  <dt class="t16 w700 mb05 tamarelo">
+                  <dt class="t16 w700 mb05 tamarelo recurso-financeiro-valores__item-label">
                     {{ valorItem.label }}
                   </dt>
+
+                  <dd
+                    v-if="valorItem.porcentagem"
+                    class="recurso-financeiro-valores__item-porcentagem"
+                  >
+                    {{ valorItem.porcentagem }}%
+                  </dd>
 
                   <dd>
                     R${{ valorItem.valor }}
@@ -166,9 +172,7 @@ const recursoFinanceiroValores = computed(() => {
               </div>
             </div>
 
-            <h1>2.1</h1>
-
-            <div class="">
+            <div>
               <div class="flex g1 mb2">
                 <dl class="f1">
                   <dt class="t16 w700 mb05 tamarelo">
@@ -198,7 +202,17 @@ const recursoFinanceiroValores = computed(() => {
                 </dl>
               </div>
 
-              <div class="flex f1 mb2">
+              <div class="flex g1 mb2">
+                <dl class="f1">
+                  <dt class="t16 w700 mb05 tamarelo">
+                    Gestor do contrato
+                  </dt>
+
+                  <dd>
+                    {{ distribuicao.gestor_contrato || '-' }}
+                  </dd>
+                </dl>
+
                 <dl class="f1">
                   <dt class="t16 w700 mb05 tamarelo">
                     Empenho
@@ -208,70 +222,74 @@ const recursoFinanceiroValores = computed(() => {
                     {{ distribuicao.empenho ? 'Sim' : 'Não' }}
                   </dd>
                 </dl>
+
+                <dl class="f1">
+                  <dt class="t16 w700 mb05 tamarelo">
+                    Valor empenhado
+                  </dt>
+
+                  <dd>
+                    {{ distribuicao.valor_empenho
+                      ? `R$${dinheiro(distribuicao.valor_empenho)}` : '-'
+                    }}
+                  </dd>
+                </dl>
+              </div>
+
+              <div class="flex g1 mb2">
+                <dl class="f1">
+                  <dt class="t16 w700 mb05 tamarelo">
+                    Data
+                  </dt>
+
+                  <dd>
+                    {{
+                      distribuicao.data_empenho ?
+                        dateToDate(distribuicao.data_empenho) : '-'
+                    }}
+                  </dd>
+                </dl>
+
+                <dl class="f1">
+                  <dt class="t16 w700 mb05 tamarelo">
+                    Finalidade
+                  </dt>
+
+                  <dd>
+                    {{ distribuicao.finalidade || '-' }}
+                  </dd>
+                </dl>
+
+                <dl class="f1" />
+              </div>
+
+              <div class="flex g1 mb2">
+                <dl class="f1">
+                  <dt class="t16 w700 mb05 tamarelo">
+                    Rúbrica da receita
+                  </dt>
+
+                  <dd>
+                    {{ distribuicao.rubrica_de_receita ||'-' }}
+                  </dd>
+                </dl>
+
+                <dl class="f1">
+                  <dt class="t16 w700 mb05 tamarelo">
+                    Liquidação/Pagamento
+                  </dt>
+
+                  <dd>
+                    {{ distribuicao.valor_liquidado
+                      ? `R$${dinheiro(distribuicao.valor_liquidado)}` : '-'
+                    }}
+                  </dd>
+                </dl>
+
+                <dl class="f1" />
               </div>
             </div>
 
-            <h1>3</h1>
-            <div class="flex g2 flexwrap mb2">
-              <dl class="f1">
-                <dt class="t16 w700 mb05 tamarelo">
-                  Número proposta
-                </dt>
-                <dd>
-                  {{ distribuicao.proposta || '-' }}
-                </dd>
-              </dl>
-              <dl class="f1">
-                <dt class="t16 w700 mb05 tamarelo">
-                  Número do convênio/pré convênio
-                </dt>
-                <dd>
-                  {{ distribuicao.convenio || '-' }}
-                </dd>
-              </dl>
-            </div>
-
-            <h1>4</h1>
-            <div class="flex g2 flexwrap mb2">
-              <dl class="f1">
-                <dt class="t16 w700 mb05 tamarelo">
-                  Número do contrato
-                </dt>
-                <dd>
-                  {{ distribuicao.contrato || '-' }}
-                </dd>
-              </dl>
-              <dl class="f1">
-                <dt class="t16 w700 mb05 tamarelo">
-                  Data de vigência
-                </dt>
-                <dd>
-                  {{ distribuicao.vigencia
-                    ? dateToField(distribuicao.vigencia)
-                    : '-' }}
-                </dd>
-              </dl>
-              <dl class="f1">
-                <dt class="t16 w700 mb05 tamarelo">
-                  Motivo do aditamento
-                </dt>
-                <dd>
-                  {{ distribuicao.aditamentos[0]?.justificativa || ' - ' }}
-                </dd>
-              </dl>
-              <dl class="f1">
-                <dt class="t16 w700 mb05 tamarelo">
-                  Data de conclusão da suspensiva
-                </dt>
-                <dd>
-                  {{ distribuicao.conclusao_suspensiva
-                    ? dateToField(distribuicao.conclusao_suspensiva)
-                    : '-' }}
-                </dd>
-              </dl>
-            </div>
-
-            <h1>5</h1>
             <table
               v-if="distribuicao.registros_sei?.length"
               class="tablemain no-zebra horizontal-lines mb1"
@@ -389,40 +407,159 @@ const recursoFinanceiroValores = computed(() => {
               </tbody>
             </table>
 
-            <h1>6</h1>
-            <div class="flex g2 center mt3 mb2">
-              <h3 class="w700 tc600 t20 mb0">
-                Assinaturas
-              </h3>
-              <hr class="f1">
+            <div>
+              <div class="flex g1 mb2">
+                <dl class="f1">
+                  <dt class="t16 w700 mb05 tamarelo">
+                    Número proposta
+                  </dt>
+
+                  <dd>
+                    {{ distribuicao.proposta || '-' }}
+                  </dd>
+                </dl>
+
+                <dl class="f1">
+                  <dt class="t16 w700 mb05 tamarelo">
+                    Número do convênio/pré convênio
+                  </dt>
+
+                  <dd>
+                    {{ distribuicao.convenio || '-' }}
+                  </dd>
+                </dl>
+
+                <dl class="f1">
+                  <dt class="t16 w700 mb05 tamarelo">
+                    Número do contrato
+                  </dt>
+
+                  <dd>
+                    {{ distribuicao.contrato || '-' }}
+                  </dd>
+                </dl>
+              </div>
             </div>
 
-            <h1>7</h1>
             <div class="flex g2 flexwrap mb2">
               <dl class="f1">
                 <dt class="t16 w700 mb05 tamarelo">
-                  Data da assinatura do termo de aceite
+                  Número do contrato
                 </dt>
-                <dd v-if="distribuicao?.assinatura_termo_aceite">
-                  {{ dateToField(distribuicao.assinatura_termo_aceite) }}
+                <dd>
+                  {{ distribuicao.contrato || '-' }}
                 </dd>
               </dl>
               <dl class="f1">
                 <dt class="t16 w700 mb05 tamarelo">
-                  Data da assinatura do representante do estado
+                  Data de vigência
                 </dt>
-                <dd v-if="distribuicao?.assinatura_estado">
-                  {{ dateToField(distribuicao.assinatura_estado) }}
+                <dd>
+                  {{ distribuicao.vigencia
+                    ? dateToField(distribuicao.vigencia)
+                    : '-' }}
                 </dd>
               </dl>
               <dl class="f1">
                 <dt class="t16 w700 mb05 tamarelo">
-                  Data da assinatura do representante do município
+                  Motivo do aditamento
                 </dt>
-                <dd v-if="distribuicao?.assinatura_municipio">
-                  {{ dateToField(distribuicao.assinatura_municipio) }}
+                <dd>
+                  {{ distribuicao.aditamentos[0]?.justificativa || ' - ' }}
                 </dd>
               </dl>
+              <dl class="f1">
+                <dt class="t16 w700 mb05 tamarelo">
+                  Data de conclusão da suspensiva
+                </dt>
+                <dd>
+                  {{ distribuicao.conclusao_suspensiva
+                    ? dateToField(distribuicao.conclusao_suspensiva)
+                    : '-' }}
+                </dd>
+              </dl>
+            </div>
+
+            <div>
+              <div class="flex g2 center mt3 mb2">
+                <h3 class="w700 tc600 t20 mb0">
+                  Assinaturas
+                </h3>
+                <hr class="f1">
+              </div>
+
+              <div>
+                <div class="flex g2 flexwrap mb2">
+                  <dl class="f1">
+                    <dt class="t16 w700 mb05 tamarelo">
+                      Data da assinatura do termo de aceite
+                    </dt>
+
+                    <dd>
+                      {{
+                        distribuicao.assinatura_termo_aceite
+                          ? dateToField(distribuicao.assinatura_termo_aceite) : '-'
+                      }}
+                    </dd>
+                  </dl>
+
+                  <dl class="f1">
+                    <dt class="t16 w700 mb05 tamarelo">
+                      Data da assinatura do representante do estado
+                    </dt>
+
+                    <dd>
+                      {{
+                        distribuicao.assinatura_estado
+                          ? dateToField(distribuicao.assinatura_estado) : '-'
+                      }}
+                    </dd>
+                  </dl>
+
+                  <dl class="f1">
+                    <dt class="t16 w700 mb05 tamarelo">
+                      Data da assinatura do representante do município
+                    </dt>
+
+                    <dd>
+                      {{
+                        distribuicao.assinatura_municipio
+                          ? dateToField(distribuicao.assinatura_municipio) : '-'
+                      }}
+                    </dd>
+                  </dl>
+                </div>
+
+                <div class="flex g2 flexwrap mb2">
+                  <dl class="f1">
+                    <dt class="t16 w700 mb05 tamarelo">
+                      Data de vigência
+                    </dt>
+
+                    <dd>
+                      {{
+                        distribuicao.vigencia
+                          ? dateToField(distribuicao.vigencia) : '-'
+                      }}
+                    </dd>
+                  </dl>
+
+                  <dl class="f1">
+                    <dt class="t16 w700 mb05 tamarelo">
+                      Data de conclusão da suspensiva
+                    </dt>
+
+                    <dd>
+                      {{
+                        distribuicao.conclusao_suspensiva
+                          ? dateToField(distribuicao.conclusao_suspensiva) : '-'
+                      }}
+                    </dd>
+                  </dl>
+
+                  <dl class="f1" />
+                </div>
+              </div>
             </div>
           </div>
         </TransitionExpand>
