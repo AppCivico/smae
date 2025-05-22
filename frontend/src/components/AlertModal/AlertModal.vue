@@ -81,7 +81,7 @@ watch(ultimoDialogo, (novoDialogo) => {
         @close="fecharAlerta(i)"
       >
         <div
-          class="mr2"
+          class="alert-message"
           data-test="mensagem"
         >
           {{ alert.message }}
@@ -195,7 +195,6 @@ dialog {
   justify-content: space-between;
   gap: 1em;
   max-width: 100%;
-  white-space: pre-wrap;
 
   opacity: 0;
   transform: scaleY(0);
@@ -244,5 +243,9 @@ dialog[open]::backdrop {
   dialog[open]::backdrop {
     .backdrop();
   }
+}
+
+.alert-message {
+  max-width: 25em;
 }
 </style>
