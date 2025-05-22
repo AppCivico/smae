@@ -6,6 +6,7 @@ import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { ListWikiLinkDto } from './dto/list-wiki-link.dto';
 import { WikiUrlDto } from './dto/wiki-url.dto';
 import { UpdateWikiLinkDto } from './dto/update-wiki-link.dto';
+import { WikiLinkDto } from './dto/wiki-link.dto';
 
 @Injectable()
 export class WikiLinkService {
@@ -36,13 +37,14 @@ export class WikiLinkService {
         });
     }
 
-    async findByUrl(chave_smae: string): Promise<WikiUrlDto | null> {
+    async findByUrl(dto: WikiLinkDto): Promise<WikiUrlDto | null> {
         return this.prisma.wikiLink.findFirst({
             where: {
-                chave_smae: { equals: chave_smae, mode: 'insensitive' },
+                chave_smae: { equals: dto.chave_smae, mode: 'insensitive' },
                 removido_em: null,
             },
             select: {
+                chave_smae: true,
                 url_wiki: true,
             },
         });

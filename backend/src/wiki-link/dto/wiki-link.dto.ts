@@ -8,5 +8,5 @@ export class WikiLinkDto {
   })
   @IsString()
   @IsNotEmpty()
-  url: string;
+  chave_smae: string;
 }

@@ -34,10 +34,14 @@ export class WikiLinkController {
         return this.wikiLinkService.create(dto, user);
     }
 
-    @Get('url')
+    @Get('chave_smae')
     @ApiBearerAuth('access-token')
     @ApiOperation({ summary: 'Obter link da Wiki para a tela atual' })
-    @ApiQuery({ name: 'url', type: String, description: 'Chave da tela do SMAE (ex: /projetos/cadastro)' })
+    @ApiQuery({
+        name: 'chave_smae',
+        type: String,
+        description: 'Chave da tela do SMAE (ex: /projetos/cadastro)',
+    })
     @ApiResponse({
         status: 200,
         description: 'URL da Wiki',
@@ -45,7 +49,7 @@ export class WikiLinkController {
     })
     @ApiResponse({ status: 404, description: 'Registro de Wiki não encontrado' })
     async findByUrl(@Query() dto: WikiLinkDto): Promise<WikiUrlDto> {
-        const wikiLink = await this.wikiLinkService.findByUrl(dto.url);
+        const wikiLink = await this.wikiLinkService.findByUrl(dto);
         if (!wikiLink) {
             throw new NotFoundException('Registro de Wiki não encontrado');
         }
