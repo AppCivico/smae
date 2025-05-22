@@ -13,7 +13,7 @@ import {
 } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 import { DateTransform } from '../../../auth/transforms/date.transform';
-import { MAX_LENGTH_DEFAULT, MAX_LENGTH_HTML } from 'src/common/consts';
+import { MAX_LENGTH_DEFAULT, MAX_LENGTH_MEDIO } from 'src/common/consts';
 
 export class CreateDistribuicaoRegistroSEIDto {
     @IsOptional()
@@ -42,7 +42,7 @@ export class CreateDistribuicaoRecursoDto {
 
     @IsString()
     @MinLength(1)
-    @MaxLength(MAX_LENGTH_HTML, { message: `O campo 'Objeto' deve ter no máximo ${MAX_LENGTH_HTML} caracteres` })
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo 'Objeto' deve ter no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     objeto: string;
 
     @IsOptional()
@@ -251,7 +251,7 @@ export class CreateDistribuicaoParlamentarDto {
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Objeto' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo 'Objeto' deve ter no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     objeto?: string;
 
     @IsOptional()
