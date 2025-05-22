@@ -1,14 +1,4 @@
 <script setup>
-import { storeToRefs } from 'pinia';
-import {
-  ErrorMessage,
-  Field,
-  FieldArray,
-  useForm,
-  useIsFormDirty,
-} from 'vee-validate';
-import { computed, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
 import CampoDePlanosMetasRelacionados from '@/components/CampoDePlanosMetasRelacionados.vue';
@@ -16,7 +6,6 @@ import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
 import MapaCampo from '@/components/geo/MapaCampo.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudançaDeStatusDeProjeto.vue';
-import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import { projeto as schema } from '@/consts/formSchemas';
 import listaDeStatuses from '@/consts/projectStatuses';
 import requestS from '@/helpers/requestS.ts';
@@ -27,6 +16,16 @@ import { useObservadoresStore } from '@/stores/observadores.store.ts';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage,
+  Field,
+  FieldArray,
+  useForm,
+  useIsFormDirty,
+} from 'vee-validate';
+import { computed, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -89,7 +88,9 @@ const {
 
 const portfolioId = Number.parseInt(route.query.portfolio_id, 10) || undefined;
 const possíveisGestores = ref([]);
+const buscaDePossíveisGestoresPendente = ref(false);
 const possíveisColaboradores = ref([]);
+const buscaDePossíveisColaboradoresPendente = ref(false);
 const portfóliosDisponíveis = computed(() => {
   if (!emFoco.value?.portfolio_id) {
     return [];
@@ -113,7 +114,7 @@ const possíveisGestoresPorÓrgãoId = computed(() => possíveisGestores.value
     return acc;
   }, {}));
 
-const possíveisResponsáveisPorÓrgãoId = computed(() => possíveisColaboradores.value
+const possiveisColaboradoresPorOrgaoId = computed(() => possíveisColaboradores.value
   .reduce((acc, cur) => {
     if (!acc[cur.orgao_id]) {
       acc[cur.orgao_id] = [];
@@ -181,8 +182,11 @@ async function buscarArvoreDeMetas(valorOuEvento) {
 }
 
 async function buscarPossíveisGestores() {
+  buscaDePossíveisGestoresPendente.value = true;
   try {
     const { linhas } = await requestS.get(`${baseUrl}/pessoa`, { gestor_de_projeto: true });
+
+    console.debug('linhas com `{gestor_de_projeto : true}`', linhas);
 
     if (Array.isArray(linhas)) {
       possíveisGestores.value = linhas;
@@ -191,12 +195,17 @@ async function buscarPossíveisGestores() {
     }
   } catch (error) {
     alertStore.error(error);
+  } finally {
+    buscaDePossíveisGestoresPendente.value = false;
   }
 }
 
 async function buscarPossíveisColaboradores() {
+  buscaDePossíveisColaboradoresPendente.value = true;
   try {
     const { linhas } = await requestS.get(`${baseUrl}/pessoa`, { colaborador_de_projeto: true });
+
+    console.debug('linhas com `{colaborador_de_projeto : true}`', linhas);
 
     if (Array.isArray(linhas)) {
       possíveisColaboradores.value = linhas;
@@ -205,6 +214,8 @@ async function buscarPossíveisColaboradores() {
     }
   } catch (error) {
     alertStore.error(error);
+  } finally {
+    buscaDePossíveisColaboradoresPendente.value = false;
   }
 }
 
@@ -268,8 +279,14 @@ const onSubmit = handleSubmit(async () => {
 });
 
 function iniciar() {
-  buscarPossíveisGestores();
-  buscarPossíveisColaboradores();
+  if (!possíveisGestores.value.length && !buscaDePossíveisGestoresPendente.value) {
+    buscarPossíveisGestores();
+  }
+
+  if (!possíveisColaboradores.value.length && !buscaDePossíveisColaboradoresPendente.value) {
+    buscarPossíveisColaboradores();
+  }
+
   projetosStore.buscarPdms({ apenas_pdm: false });
 
   if (emFoco.value?.portfolio_id) {
@@ -309,6 +326,21 @@ watch(itemParaEdicao, (novoValor) => {
 
     <CheckClose :formulario-sujo="formularioSujo" />
   </header>
+
+  <CabecalhoDePagina
+    :formulario-sujo="formularioSujo"
+  >
+    <template #subtitulo>
+      <small class="lc">Portfólio</small> Operações Urbanas Consorciadas (OUCs)
+    </template>
+
+    <template #acoes>
+      <MenuDeMudançaDeStatusDeProjeto
+        v-if="projetoId"
+        class="ml2"
+      />
+    </template>
+  </CabecalhoDePagina>
 
   <form
     v-if="!projetoId || emFoco"
@@ -1355,6 +1387,7 @@ watch(itemParaEdicao, (novoValor) => {
               desabilitarTodosCampos.camposComuns
                 || !orgaosDisponiveisPorPortolio[values.portfolio_id]?.length
             "
+            :aria-busy="buscaDePossíveisGestoresPendente"
             @change="setFieldValue('responsaveis_no_orgao_gestor', [])"
           >
             <option :value="0">
@@ -1394,6 +1427,7 @@ watch(itemParaEdicao, (novoValor) => {
           />
 
           <AutocompleteField
+            :aria-busy="buscaDePossíveisGestoresPendente"
             name="responsaveis_no_orgao_gestor"
             :controlador="{
               busca: '',
@@ -1412,6 +1446,13 @@ watch(itemParaEdicao, (novoValor) => {
             name="responsaveis_no_orgao_gestor"
             class="error-msg"
           />
+          <pre class="debug">{ gestor_de_projeto: true }</pre>
+          <textarea
+            readonly
+            cols="30"
+            rows="10"
+            class="debug"
+          >possíveisGestoresPorÓrgãoId[{{ values.orgao_gestor_id }}]:{{ possíveisGestoresPorÓrgãoId[values.orgao_gestor_id] }}</textarea>
         </div>
       </div>
 
@@ -1445,7 +1486,7 @@ watch(itemParaEdicao, (novoValor) => {
               v-for="item in órgãosQueTemResponsáveis"
               :key="item"
               :value="item.id"
-              :disabled="!possíveisResponsáveisPorÓrgãoId[item.id]?.length"
+              :disabled="!possiveisColaboradoresPorOrgaoId[item.id]?.length"
               :title="item.descricao?.length > 36 ? item.descricao : null"
             >
               {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
@@ -1471,10 +1512,9 @@ watch(itemParaEdicao, (novoValor) => {
               error: errors.responsavel_id,
               loading: portfolioStore.chamadasPendentes.lista
             }"
-            :disabled="
-              desabilitarTodosCampos.camposComuns
-                || !possíveisResponsáveisPorÓrgãoId[values.orgao_responsavel_id]?.length
-            "
+            :disabled="desabilitarTodosCampos.camposComuns
+              || !possíveisGestoresPorÓrgãoId[values.orgao_responsavel_id]?.length"
+            :aria-busy="buscaDePossíveisColaboradoresPendente"
             @update:model-value="values.responsavel_id = Number(values.responsavel_id)
               || null"
           >
@@ -1483,7 +1523,7 @@ watch(itemParaEdicao, (novoValor) => {
             </option>
             <option
               v-for="item in
-                possíveisResponsáveisPorÓrgãoId[values.orgao_responsavel_id] || []"
+                possíveisGestoresPorÓrgãoId[values.orgao_responsavel_id] || []"
               :key="item.id"
               :value="item.id"
             >
@@ -1495,6 +1535,14 @@ watch(itemParaEdicao, (novoValor) => {
             name="responsavel_id"
             class="error-msg"
           />
+
+          <pre class="debug">{ gestor_de_projeto: true }</pre>
+          <textarea
+            readonly
+            cols="30"
+            rows="10"
+            class="debug"
+          >possíveisGestoresPorÓrgãoId[{{ values.orgao_responsavel_id }}]: {{ possíveisGestoresPorÓrgãoId[values.orgao_responsavel_id] }}</textarea>
         </div>
       </div>
 
@@ -1538,18 +1586,28 @@ watch(itemParaEdicao, (novoValor) => {
           :schema="schema"
         />
 
+        sobral
+
         <CampoDePessoasComBuscaPorOrgao
           :model-value="values.equipe"
           :valores-iniciais="itemParaEdicao.equipe"
           :pessoas-label="schema.fields.equipe.innerType.spec.label"
           name="equipe"
-          :pessoas="possíveisColaboradores"
           :readonly="desabilitarTodosCampos.camposGestor"
+          colaborador-de-projeto
         />
         <ErrorMessage
           name="equipe"
           class="error-msg"
         />
+
+        <pre class="debug">{ colaborador_de_projeto: true }</pre>
+        <textarea
+          readonly
+          cols="30"
+          rows="10"
+          class="debug"
+        >possíveisColaboradores:{{ possíveisColaboradores }}</textarea>
       </div>
     </div>
 
