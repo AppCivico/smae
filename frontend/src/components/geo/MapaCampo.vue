@@ -287,22 +287,26 @@ const formularioSujo = useIsFormDirty();
     v-bind="$attrs"
     class="tablemain"
   >
-    <col>
-    <col>
-    <col>
-    <col class="col--number">
-    <col class="col--botão-de-ação">
-    <col class="col--botão-de-ação">
+    <colgroup>
+      <col>
+      <col>
+      <col>
+      <col class="col--number">
+      <col class="col--botão-de-ação">
+      <col class="col--botão-de-ação">
+    </colgroup>
 
     <thead>
-      <th />
-      <th>Endereço</th>
-      <th>Bairro</th>
-      <th class="cell--nowrap">
-        <abbr title="Código de Endereçamento Postal">CEP</abbr>
-      </th>
-      <th />
-      <th />
+      <tr>
+        <th />
+        <th>Endereço</th>
+        <th>Bairro</th>
+        <th class="cell--nowrap">
+          <abbr title="Código de Endereçamento Postal">CEP</abbr>
+        </th>
+        <th />
+        <th />
+      </tr>
     </thead>
     <tbody>
       <tr
