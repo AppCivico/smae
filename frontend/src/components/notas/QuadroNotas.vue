@@ -125,7 +125,6 @@ watch([
   });
 }, { immediate: true });
 
-blocoStore.buscarTudoPanorama({ ipp: 15 });
 </script>
 
 <style scoped lang="less">
