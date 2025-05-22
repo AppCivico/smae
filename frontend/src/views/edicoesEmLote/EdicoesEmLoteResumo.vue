@@ -69,6 +69,7 @@ onMounted(() => {
 </script>
 
 <template>
+  <MigalhasDePão class="mb1" />
   <CabecalhoDePagina>
     <template #acoes>
       <SmaeLink

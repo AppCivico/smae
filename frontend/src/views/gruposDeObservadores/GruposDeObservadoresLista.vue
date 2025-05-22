@@ -37,6 +37,7 @@ if (!Array.isArray(organs) || !organs.length) {
 </script>
 
 <template>
+  <MigalhasDePão class="mb1" />
   <CabecalhoDePagina>
     <template #acoes>
       <SmaeLink

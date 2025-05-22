@@ -1,8 +1,4 @@
 <template>
-  <slot name="migalhas-de-pao">
-    <MigalhasDePao class="mb1" />
-  </slot>
-
   <header
     class="flex spacebetween center g2 mb2 cabecalho"
     v-bind="$attrs"
