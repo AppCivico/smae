@@ -898,7 +898,9 @@ section + section {
   width: 55px;
 }
 
-.recurso-financeiro-valores__item {
-  border-bottom: 1px solid #E3E5E8;
+&, :deep {
+  .recurso-financeiro-valores__item {
+    border-bottom: 1px solid #E3E5E8;
+  }
 }
 </style>
