@@ -835,7 +835,10 @@ const PerfilAcessoConfig: PerfilConfigArray = [
     // metodo atualizarNomePerfil e depois jogar no final aqui o removerNomePerfil
     {
         // o TipoAditivo vai ficar fora do "todos os privilégios"
-        nome: atualizarNomePerfil('Administrador Geral do SMAE', ['Administrador Geral']),
+        nome: atualizarNomePerfil('Administrador(a) Geral do SMAE', [
+            'Administrador Geral do SMAE',
+            'Administrador Geral',
+        ]),
         descricao: 'Administrador(a) Geral - Todas as permissões do sistema, exceto regras de negócio específicas.',
         privilegios: [
             'SMAE.superadmin',
@@ -854,7 +857,10 @@ const PerfilAcessoConfig: PerfilConfigArray = [
         privilegios: ['SMAE.login_suspenso'],
     },
     {
-        nome: atualizarNomePerfil('Administrador Coordenadoria de Planejamento', ['Administrador CP']),
+        nome: atualizarNomePerfil('Administrador(a) Coordenadoria de Planejamento', [
+            'Administrador Coordenadoria de Planejamento',
+            'Administrador CP',
+        ]),
         descricao:
             'No monitoramento, pode visualizar e editar dados de todas as metas, em todos os ciclos. Gerenciar parcialmente as metas e PDM.',
         privilegios: [
@@ -912,18 +918,19 @@ const PerfilAcessoConfig: PerfilConfigArray = [
     },
 
     {
-        nome: 'Administrador de Portfólio',
+        nome: atualizarNomePerfil('Administrador(a) de Portfólio', ['Administrador de Portfólio']),
         descricao: 'Gerenciar os Portfólios',
         privilegios: ['Projeto.administrar_portfolios', 'CadastroGrupoPortfolio.administrador'],
     },
     {
-        nome: 'Administrador de Portfólio do MdO',
+        nome: atualizarNomePerfil('Administrador(a) de Portfólio do MdO', ['Administrador de Portfólio do MdO']),
         descricao: 'Gerenciar os Portfólios',
         privilegios: ['ProjetoMDO.administrar_portfolios', 'CadastroGrupoPortfolioMDO.administrador'],
     },
 
     {
-        nome: atualizarNomePerfil('Gestor de Cadastros Básicos de Projetos', [
+        nome: atualizarNomePerfil('Gestor(a) de Cadastros Básicos de Projetos', [
+            'Gestor de Cadastros Básicos de Projetos',
             'Gestor de Cadastros Básicos de Projetos e Obras',
         ]),
         descricao:
@@ -932,14 +939,14 @@ const PerfilAcessoConfig: PerfilConfigArray = [
     },
 
     {
-        nome: 'Gestor de Cadastros Básicos de Obras',
+        nome: atualizarNomePerfil('Gestor(a) de Cadastros Básicos de Obras', ['Gestor de Cadastros Básicos de Obras']),
         descricao:
             'Responsável por gerenciar os cadastros básicos de projetos e obras, incluindo a criação, edição e remoção de etapas, modalidades de contratação, etiquetas, equipamentos, empreendimentos, programas habitacionais, tipos de intervenção e grupos temáticos.',
         privilegios: [...MDOCadastroBasico],
     },
 
     {
-        nome: 'Administrador do Módulo de Obras',
+        nome: atualizarNomePerfil('Administrador(a) do Módulo de Obras', ['Administrador do Módulo de Obras']),
         descricao: 'Gerenciar cadastros básicos e acesso irrestrito às obras',
         privilegios: [
             'ProjetoMDO.administrador',
@@ -949,7 +956,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
         ],
     },
     {
-        nome: 'Gestor de Obras no Órgão',
+        nome: atualizarNomePerfil('Gestor(a) de Obras no Órgão', ['Gestor de Obras no Órgão']),
         descricao: 'Gerenciar todos as obras no órgão em qual faz parte',
         privilegios: [
             'ProjetoTagMDO.inserir',
@@ -968,7 +975,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
         ],
     },
     {
-        nome: 'Gestor de Projetos no Órgão',
+        nome: atualizarNomePerfil('Gestor(a) de Projetos no Órgão', ['Gestor de Projetos no Órgão']),
         descricao: 'Gerenciar todos os projetos no órgão em qual faz parte',
         privilegios: false,
     },
@@ -998,7 +1005,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
         ],
     },
     {
-        nome: 'Gerente de Projeto',
+        nome: atualizarNomePerfil('Gerente de Projeto', []),
         descricao: '',
         privilegios: [
             'Reports.executar.Projetos', // TODO remover, afinal, precisa dos filtros no reports
@@ -1011,7 +1018,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
         ],
     },
     {
-        nome: atualizarNomePerfil('Gestor da Obra', []),
+        nome: atualizarNomePerfil('Gestor(a) da Obra', ['Gestor da Obra']),
         descricao: 'Pode ser escolhido(a) como responsável no órgão gestor de MdO',
         privilegios: [
             'ProjetoTagMDO.inserir',
@@ -1028,7 +1035,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
         ],
     },
     {
-        nome: atualizarNomePerfil('Colaborador de Projetos', []),
+        nome: atualizarNomePerfil('Equipe de projeto', ['Colaborador de Projetos']),
         descricao:
             'Pode ser escolhido(a) como responsável no órgão responsável pelo projeto e contribuir durante a fase de registro e planejamento, e dados de execução do cronograma e acompanhamento do risco',
         privilegios: [
@@ -1040,7 +1047,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
         ],
     },
     {
-        nome: atualizarNomePerfil('Colaborador de obra no órgão', []),
+        nome: atualizarNomePerfil('Colaborador(a) de obra no órgão', ['Colaborador de obra no órgão']),
         descricao:
             'Pode ser escolhido(a) como responsável no órgão responsável pela obra e contribuir durante a fase de registro e planejamento, e dados de execução do cronograma e acompanhamento do risco',
         privilegios: [
@@ -1065,12 +1072,16 @@ const PerfilAcessoConfig: PerfilConfigArray = [
         ],
     },
     {
-        nome: atualizarNomePerfil('Observador de projetos', ['Espectador de projetos', 'Consulta multissetorial']),
+        nome: atualizarNomePerfil('Observador(a) de projetos', [
+            'Observador de projetos',
+            'Espectador de projetos',
+            'Consulta multissetorial',
+        ]),
         descricao: 'Pode participar como leitor(a) em portfólio e projetos',
         privilegios: ['SMAE.espectador_de_projeto'],
     },
     {
-        nome: atualizarNomePerfil('Observador de projetos com orçamento', []),
+        nome: atualizarNomePerfil('Observador(a) de projetos com orçamento', ['Observador de projetos com orçamento']),
         descricao: 'Pode participar como leitor(a) em portfólio e projetos e visualizar a execução orçamentária',
         privilegios: [
             'Projeto.orcamento', // adiciona a permissão de orçamento
@@ -1079,22 +1090,28 @@ const PerfilAcessoConfig: PerfilConfigArray = [
     },
     // TODO Observador de obras
     {
-        nome: atualizarNomePerfil('Observador de obra', []),
+        nome: atualizarNomePerfil('Observador(a) de obra', ['Observador de obra']),
         descricao: 'Pode participar como leitor(a) em portfólio e obras',
         privilegios: ['MDO.espectador_de_projeto'],
     },
     {
-        nome: atualizarNomePerfil('Observador de painéis externos', []),
+        nome: atualizarNomePerfil('Observador(a) de painéis externos', ['Observador de painéis externos']),
         descricao: 'Pode participar como leitor(a) em painéis externos',
         privilegios: ['SMAE.espectador_de_painel_externo'],
     },
     {
-        nome: atualizarNomePerfil('Administrador Transferências Voluntárias', ['Administrador Casa Civil']),
+        nome: atualizarNomePerfil('Administrador(a) Transferências Voluntárias', [
+            'Administrador Transferências Voluntárias',
+            'Administrador Casa Civil',
+        ]),
         descricao: 'Visualizar o telefone de parlamentares',
         privilegios: ['SMAE.acesso_telefone'],
     },
     {
-        nome: atualizarNomePerfil('Gestor Transferências Voluntárias', ['Gestor Casa Civil']),
+        nome: atualizarNomePerfil('Gestor(a) Transferências Voluntárias', [
+            'Gestor Transferências Voluntárias',
+            'Gestor Casa Civil',
+        ]),
         descricao: 'Pode gerir entidades em Casa Civil',
         privilegios: [
             //            'CadastroBancada.editar',
@@ -1127,7 +1144,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
         ],
     },
     {
-        nome: atualizarNomePerfil('Gestor de Distribuição de Recurso', []),
+        nome: atualizarNomePerfil('Gestor(a) de Distribuição de Recurso', ['Gestor de Distribuição de Recurso']),
         descricao: 'Pode visualizar todas as distribuições de recurso para seu órgão.',
         privilegios: [
             // Privs utilizadas para refinamento de controle de permissão em endpoints que possuem "pode_editar".
@@ -1142,7 +1159,10 @@ const PerfilAcessoConfig: PerfilConfigArray = [
         ],
     },
     {
-        nome: atualizarNomePerfil('Gestor de usuários no mesmo órgão', ['Coordenadoria de Planejamento']),
+        nome: atualizarNomePerfil('Gestor(a) de usuários no mesmo órgão', [
+            'Gestor de usuários no mesmo órgão',
+            'Coordenadoria de Planejamento',
+        ]),
         descricao: 'Pode criar e editar usuários(as) no mesmo órgão',
         privilegios: [
             'CadastroPessoa.inserir',
@@ -1164,7 +1184,8 @@ const DESC_EQUIPE =
 // Perfis de Plano Setoriais e Programa de Metas
 PerfilAcessoConfig.push(
     {
-        nome: atualizarNomePerfil('Administrador Geral dos Planos Setoriais', [
+        nome: atualizarNomePerfil('Administrador(a) Geral dos Planos Setoriais', [
+            'Administrador Geral dos Planos Setoriais',
             'Administrador Geral do Plano Setorial',
             'Administrador **Geral** do Plano Setorial',
             'Administrador Geral de Plano Setorial',
@@ -1179,7 +1200,8 @@ PerfilAcessoConfig.push(
         ],
     },
     {
-        nome: atualizarNomePerfil('Administrador Geral dos Programas de Metas', [
+        nome: atualizarNomePerfil('Administrador(a) Geral dos Programas de Metas', [
+            'Administrador Geral dos Programas de Metas',
             'Administrador Geral dos Programa de Metas',
         ]),
         descricao: 'Acesso irrestrito aos Programa de Metas e Banco de Variáveis.',
@@ -1192,7 +1214,9 @@ PerfilAcessoConfig.push(
         ],
     },
     {
-        nome: atualizarNomePerfil('Administrador de Plano Setorial no órgão', []),
+        nome: atualizarNomePerfil('Administrador(a) de Plano Setorial no órgão', [
+            'Administrador de Plano Setorial no órgão',
+        ]),
         descricao: 'Acesso irrestrito aos Planos Setoriais e Banco de Variáveis do próprio órgão ao qual pertence.',
         privilegios: [
             'CadastroPS.administrador_no_orgao', // so pode criar no orgao_admin dele
@@ -1204,7 +1228,9 @@ PerfilAcessoConfig.push(
         ],
     },
     {
-        nome: atualizarNomePerfil('Administrador de Programa de Metas no órgão', []),
+        nome: atualizarNomePerfil('Administrador(a) de Programa de Metas no órgão', [
+            'Administrador de Programa de Metas no órgão',
+        ]),
         descricao: 'Acesso irrestrito aos Programa de Metas e Banco de Variáveis do próprio órgão ao qual pertence.',
         privilegios: [
             'CadastroPDM.administrador_no_orgao', // so pode criar no orgao_admin dele
