@@ -278,6 +278,7 @@ watch(
           {{ props.orgaoLabel }}
           <SmaeTooltip
             v-if="$props.orgaoInformativo"
+            class="campo-de-pessoas__tooltip"
             :texto="$props.orgaoInformativo"
           />
         </label>
@@ -312,6 +313,7 @@ watch(
           {{ $props.pessoasLabel }}
           <SmaeTooltip
             v-if="$props.pessoaInformativo"
+            class="campo-de-pessoas__tooltip"
             :texto="$props.pessoaInformativo"
           />
         </label>
@@ -380,6 +382,13 @@ watch(
 .campo-de-pessoas {
   container-type: inline-size;
   width: 100%;
+}
+
+.campo-de-pessoas__tooltip {
+  position: static;
+  min-width: 20px;
+  height: 12px;
+  transform: translateY(-50%);
 }
 
 .campo-de-pessoas__inputs {
