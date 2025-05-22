@@ -28,6 +28,7 @@ DECLARE
     v_aplicar_logica_relativa_para_avanco BOOLEAN;
     v_deadline_validacao DATE;
     v_deadline_liberacao DATE;
+    v_valores_anterior JSONB; -- necessário para caso o próprio usuário abra a tela, o valor não vai estar na SV, então precisa fazer o LOCF
 BEGIN
 
     IF p_recursion_depth > 10 THEN
@@ -262,6 +263,13 @@ BEGIN
                      AND fase = 'Validacao' AND ultima_revisao = true AND aprovada = true AND removido_em IS NULL
                ) THEN
                 --RAISE NOTICE '[%] Auto-aprovando Validacao para var %, ciclo %. Deadline: %, Relativa: %', clock_timestamp(), p_variavel_id, v_ultimo_periodo_valido, v_deadline_validacao, v_aplicar_logica_relativa_para_avanco;
+
+                SELECT valores INTO v_valores_anterior
+                FROM variavel_global_ciclo_analise
+                WHERE variavel_id = p_variavel_id AND referencia_data = v_ultimo_periodo_valido
+                  AND fase = 'Preenchimento' AND ultima_revisao = true AND removido_em IS NULL
+                ORDER BY criado_em DESC LIMIT 1;
+
                 INSERT INTO variavel_global_ciclo_analise (
                     variavel_id,
                     fase,
@@ -281,7 +289,7 @@ BEGIN
                     true,
                     -1,
                     true,
-                    '[]'::jsonb
+                    COALESCE(v_valores_anterior, '[]'::jsonb)
                 );
 
                 UPDATE variavel_ciclo_corrente SET fase = 'Liberacao', liberacao_enviada = false
@@ -321,6 +329,22 @@ BEGIN
                      AND fase = 'Liberacao' AND ultima_revisao = true AND removido_em IS NULL -- Aprovada=true or eh_liberacao_auto=true
            ) THEN
                 --RAISE NOTICE '[%] Auto-aprovando Liberacao para var %, ciclo %. Deadline: %, Relativa: %',clock_timestamp(), p_variavel_id, v_ultimo_periodo_valido, v_deadline_liberacao, v_aplicar_logica_relativa_para_avanco;
+
+                SELECT valores INTO v_valores_anterior
+                FROM variavel_global_ciclo_analise
+                WHERE variavel_id = p_variavel_id AND referencia_data = v_ultimo_periodo_valido
+                  AND fase = 'Validacao' AND ultima_revisao = true AND removido_em IS NULL
+                ORDER BY criado_em DESC LIMIT 1;
+
+                -- Se não encontrou valores na validação, tenta pegar da fase anterior (Preenchimento)
+                IF (v_valores_anterior IS NULL OR v_valores_anterior = '[]'::jsonb) THEN
+                    SELECT valores INTO v_valores_anterior
+                    FROM variavel_global_ciclo_analise
+                    WHERE variavel_id = p_variavel_id AND referencia_data = v_ultimo_periodo_valido
+                      AND fase = 'Preenchimento' AND ultima_revisao = true AND removido_em IS NULL
+                    ORDER BY criado_em DESC LIMIT 1;
+                END IF;
+
                 INSERT INTO variavel_global_ciclo_analise (
                     variavel_id,
                     fase,
@@ -340,7 +364,7 @@ BEGIN
                     true,
                     -1,
                     true,
-                    '[]'::jsonb
+                    COALESCE(v_valores_anterior, '[]'::jsonb)
                 );
 
                 UPDATE variavel_ciclo_corrente SET liberacao_enviada = true
