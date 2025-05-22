@@ -128,7 +128,7 @@ describe('AlertModal', () => {
 
     await nextTick();
 
-    const dialogos = envelope.findAll('dialog');
+    let dialogos = envelope.findAll('dialog');
     expect(dialogos).toHaveLength(5);
     expect(dialogos[4].attributes('open')).toBeDefined();
     expect(dialogos[4].classes()).toContain('alert-success');
@@ -137,6 +137,7 @@ describe('AlertModal', () => {
     await dialogos[4].get('[data-test="aceite"]').trigger('click');
     await nextTick();
 
+    dialogos = envelope.findAll('dialog');
     expect(envelope.findAll('dialog')).toHaveLength(4);
     expect(dialogos[3].attributes('open')).toBeDefined();
     expect(dialogos[2].attributes('open')).toBeUndefined();
@@ -154,7 +155,7 @@ describe('AlertModal', () => {
     expect(dialogo.attributes('open')).toBeDefined();
     expect(dialogo.classes()).toContain('confirm');
 
-    const linkDeAceite = envelope.findComponent(RouterLinkStub);
+    const linkDeAceite = dialogo.findComponent(RouterLinkStub);
     expect(linkDeAceite.props().to).toBe('#teste');
   });
 
@@ -171,7 +172,7 @@ describe('AlertModal', () => {
     const dialogo = envelope.get('dialog');
     expect(dialogo.attributes('open')).toBeDefined();
     expect(dialogo.classes()).toContain('confirm');
-    const botaoDeAceite = envelope.get('[data-test="aceite"]');
+    const botaoDeAceite = dialogo.get('[data-test="aceite"]');
 
     await nextTick();
 
@@ -184,7 +185,7 @@ describe('AlertModal', () => {
     expect(envelope.find('dialog').exists()).toBe(false);
   });
 
-  it('exibe um diálogo de confirmação com função de secundária', async () => {
+  it('exibe um diálogo de confirmação com função secundária', async () => {
     const spyCallback = vi.fn();
     const spyFallback = vi.fn();
 
@@ -198,8 +199,8 @@ describe('AlertModal', () => {
     const dialogo = envelope.get('dialog');
     expect(dialogo.attributes('open')).toBeDefined();
     expect(dialogo.classes()).toContain('confirmAction');
-    const botaoDeAceite = envelope.get('[data-test="aceite"]');
-    const botaoDeEscape = envelope.get('[data-test="escape"]');
+    const botaoDeAceite = dialogo.get('[data-test="aceite"]');
+    const botaoDeEscape = dialogo.get('[data-test="escape"]');
 
     expect(botaoDeAceite.text()).toBe('aceitar');
 
