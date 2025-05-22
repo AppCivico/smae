@@ -67,17 +67,21 @@ async function concluirOrçamento(concluir, órgãoId, índice) {
     <pre v-scrollLockDebug>ano:{{ ano }}</pre>
 
     <table class="tablemain">
-      <col>
-      <col class="col--minimum">
-      <col class="col--botão-de-ação">
+      <colgroup>
+        <col>
+        <col class="col--minimum">
+        <col class="col--botão-de-ação">
+      </colgroup>
       <thead>
-        <th>
-          Órgão
-        </th>
-        <th />
-        <th>
-          Concluir
-        </th>
+        <tr>
+          <th>
+            Órgão
+          </th>
+          <th />
+          <th>
+            Concluir
+          </th>
+        </tr>
       </thead>
       <tbody v-if="OrcamentoRealizadoConclusaoAdmin[ano]">
         <tr

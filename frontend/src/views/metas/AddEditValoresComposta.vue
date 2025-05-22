@@ -265,28 +265,35 @@ watch(período, (novoValor) => {
             v-if="fields.length"
             class="tablemain no-zebra mb1 fix"
           >
-            <col>
-            <col>
-            <col>
+            <colgroup>
+              <col>
+              <col>
+              <col>
+            </colgroup>
+
             <thead>
-              <th>Código</th>
-              <th>Título</th>
-              <th>
-                Valor
-              </th>
-              <th>
-                Valor acumulado
-              </th>
+              <tr>
+                <th>Código</th>
+                <th>Título</th>
+                <th>
+                  Valor
+                </th>
+                <th>
+                  Valor acumulado
+                </th>
+              </tr>
             </thead>
             <tfoot>
-              <th />
-              <th />
-              <th>
-                {{ soma.fornecidos }}
-              </th>
-              <th>
-                {{ soma.acumulados }}
-              </th>
+              <tr>
+                <th />
+                <th />
+                <th>
+                  {{ soma.fornecidos }}
+                </th>
+                <th>
+                  {{ soma.acumulados }}
+                </th>
+              </tr>
             </tfoot>
             <template
               v-for="(field, idx) in fields"

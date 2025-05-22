@@ -21,10 +21,12 @@
 
       <RolagemHorizontal aria-labelledby="titulo-projetos-associados">
         <table class="tablemain">
-          <col>
-          <col>
-          <col>
-          <col>
+          <colgroup>
+            <col>
+            <col>
+            <col>
+            <col>
+          </colgroup>
           <thead>
             <tr>
               <th>Portfólio </th>
