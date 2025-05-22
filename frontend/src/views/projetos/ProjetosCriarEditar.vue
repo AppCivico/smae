@@ -1552,8 +1552,6 @@ watch(itemParaEdicao, (novoValor) => {
           :schema="schema"
         />
 
-        sobral
-
         <CampoDePessoasComBuscaPorOrgao
           :model-value="values.equipe"
           :valores-iniciais="itemParaEdicao.equipe"
