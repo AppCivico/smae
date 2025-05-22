@@ -12,7 +12,7 @@ import { IsBoolean, IsEnum, IsNumber, IsOptional, IsString, MaxLength, MinLength
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 import { DateTransform } from '../../auth/transforms/date.transform';
 import { IsValidCPF } from '../../common/decorators/IsValidCPF';
-import { MAX_LENGTH_DEFAULT, MAX_LENGTH_HTML } from 'src/common/consts';
+import { MAX_LENGTH_DEFAULT, MAX_LENGTH_HTML, MAX_LENGTH_MEDIO } from 'src/common/consts';
 
 export class CreateParlamentarDto {
     @IsString({ message: '$property| nome: Precisa ser alfanumérico' })
@@ -21,7 +21,9 @@ export class CreateParlamentarDto {
     nome: string;
 
     @IsString({ message: '$property| Nome popular: Precisa ser alfanumérico' })
-    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Nome popular' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Nome popular' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     @MinLength(1, { message: '$property| nome: Mínimo 1 caractere' })
     nome_popular: string;
 
@@ -36,7 +38,9 @@ export class CreateParlamentarDto {
 
     @IsOptional()
     @IsString()
-    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Telefone' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Telefone' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     telefone?: string;
 
     @IsOptional()
@@ -66,7 +70,9 @@ export class CreateEquipeDto {
     nome: string;
 
     @IsString()
-    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Telefone' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Telefone' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     telefone: string;
 
     @IsString()
@@ -140,7 +146,7 @@ export class CreateMandatoDto {
 
     @IsOptional()
     @IsString({ message: '$property| ocupação: Precisa ser alfanumérico' })
-    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Atuação' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo 'Atuação' deve ter no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     atuacao?: string;
 
     @IsOptional()
@@ -150,7 +156,9 @@ export class CreateMandatoDto {
 
     @IsOptional()
     @IsString()
-    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Telefone' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Telefone' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     telefone: string;
 
     @IsOptional()
