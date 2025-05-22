@@ -98,6 +98,7 @@ onBeforeRouteLeave(() => {
 </script>
 
 <template>
+  <MigalhasDePão class="mb1" />
   <CabecalhoDePagina class="mb2">
     <template #acoes>
       <router-link

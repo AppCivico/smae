@@ -65,6 +65,7 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
 });
 </script>
 <template>
+  <MigalhasDePão class="mb1" />
   <CabecalhoDePagina :formulario-sujo="false" />
 
   <p
