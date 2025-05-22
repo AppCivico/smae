@@ -1332,7 +1332,7 @@ watch(itemParaEdicao, (novoValor) => {
 
     <fieldset>
       <legend class="label mt2 mb1">
-        Partes interessadas
+        Órgãos/Partes interessadas
       </legend>
 
       <div class="flex flexwrap g2">
