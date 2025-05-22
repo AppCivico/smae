@@ -2928,6 +2928,9 @@ export const relatórioDeParlamentares = relatorioValidacaoBase.concat(object({
       .nullable()
       .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
   }),
+  eh_publico: boolean()
+    .label('Relatório Público')
+    .required(),
 }));
 
 export const relatórioDePrevisãoDeCustoPdM = relatorioValidacaoBase.concat(
