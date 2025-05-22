@@ -678,6 +678,7 @@ export class DashTransferenciaService {
                 partido_id: filter.partido_ids ? { in: filter.partido_ids } : undefined,
                 workflow_etapa_atual_id: filter.etapa_ids ? { in: filter.etapa_ids } : undefined,
             },
+            distinct: ['transferencia_id'],
             select: {
                 transferencia_id: true,
                 esfera: true,
