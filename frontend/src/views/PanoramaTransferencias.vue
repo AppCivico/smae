@@ -87,11 +87,6 @@ const orgaosDisponiveis = computed(() => [...new Set(itensEmUso.value.orgaos)]
 const iniciar = async () => {
   OrgaosStore.getAll();
   partidoStore.buscarTudo();
-
-  panoramaTransferenciasStore.buscarTudo()
-    .then(() => {
-      listaSemFiltro.value = cloneDeep(lista.value);
-    });
 };
 
 function atualizarUrl() {
@@ -147,7 +142,10 @@ watch([
     palavra_chave: palavraChaveParaBusca,
     atividade: atividadeFiltro,
     prazo: prazo.value,
-  });
+  })
+    .then(() => {
+      listaSemFiltro.value = cloneDeep(lista.value);
+    });
 }, { immediate: true });
 
 function diferencaEmDias(data1, data2) {
@@ -188,8 +186,6 @@ function dataColor(data) {
 
   return cor;
 }
-
-iniciar();
 
 onUnmounted(() => {
   panoramaTransferenciasStore.$reset();
