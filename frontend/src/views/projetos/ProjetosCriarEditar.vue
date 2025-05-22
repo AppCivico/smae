@@ -186,8 +186,6 @@ async function buscarPossíveisGestores() {
   try {
     const { linhas } = await requestS.get(`${baseUrl}/pessoa`, { gestor_de_projeto: true });
 
-    console.debug('linhas com `{gestor_de_projeto : true}`', linhas);
-
     if (Array.isArray(linhas)) {
       possíveisGestores.value = linhas;
     } else {
@@ -204,8 +202,6 @@ async function buscarPossíveisColaboradores() {
   buscaDePossíveisColaboradoresPendente.value = true;
   try {
     const { linhas } = await requestS.get(`${baseUrl}/pessoa`, { colaborador_de_projeto: true });
-
-    console.debug('linhas com `{colaborador_de_projeto : true}`', linhas);
 
     if (Array.isArray(linhas)) {
       possíveisColaboradores.value = linhas;
@@ -326,21 +322,6 @@ watch(itemParaEdicao, (novoValor) => {
 
     <CheckClose :formulario-sujo="formularioSujo" />
   </header>
-
-  <CabecalhoDePagina
-    :formulario-sujo="formularioSujo"
-  >
-    <template #subtitulo>
-      <small class="lc">Portfólio</small> Operações Urbanas Consorciadas (OUCs)
-    </template>
-
-    <template #acoes>
-      <MenuDeMudançaDeStatusDeProjeto
-        v-if="projetoId"
-        class="ml2"
-      />
-    </template>
-  </CabecalhoDePagina>
 
   <form
     v-if="!projetoId || emFoco"
@@ -1446,13 +1427,6 @@ watch(itemParaEdicao, (novoValor) => {
             name="responsaveis_no_orgao_gestor"
             class="error-msg"
           />
-          <pre class="debug">{ gestor_de_projeto: true }</pre>
-          <textarea
-            readonly
-            cols="30"
-            rows="10"
-            class="debug"
-          >possíveisGestoresPorÓrgãoId[{{ values.orgao_gestor_id }}]:{{ possíveisGestoresPorÓrgãoId[values.orgao_gestor_id] }}</textarea>
         </div>
       </div>
 
@@ -1535,14 +1509,6 @@ watch(itemParaEdicao, (novoValor) => {
             name="responsavel_id"
             class="error-msg"
           />
-
-          <pre class="debug">{ gestor_de_projeto: true }</pre>
-          <textarea
-            readonly
-            cols="30"
-            rows="10"
-            class="debug"
-          >possíveisGestoresPorÓrgãoId[{{ values.orgao_responsavel_id }}]: {{ possíveisGestoresPorÓrgãoId[values.orgao_responsavel_id] }}</textarea>
         </div>
       </div>
 
@@ -1600,14 +1566,6 @@ watch(itemParaEdicao, (novoValor) => {
           name="equipe"
           class="error-msg"
         />
-
-        <pre class="debug">{ colaborador_de_projeto: true }</pre>
-        <textarea
-          readonly
-          cols="30"
-          rows="10"
-          class="debug"
-        >possíveisColaboradores:{{ possíveisColaboradores }}</textarea>
       </div>
     </div>
 
