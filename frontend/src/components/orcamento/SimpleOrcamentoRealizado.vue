@@ -278,15 +278,17 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
         v-if="linhasFiltradas?.length"
         class="tablemain fix no-zebra horizontal-lines"
       >
-        <col>
-        <col>
-        <col>
-        <col>
-        <col v-if="OrcamentoRealizadoPermissões[ano]?.pode_editar">
-        <col
-          v-if="podeExcluirEmLote && config?.execucao_disponivel"
-          class="col--botão-de-ação"
-        >
+        <colgroup>
+          <col>
+          <col>
+          <col>
+          <col>
+          <col v-if="OrcamentoRealizadoPermissões[ano]?.pode_editar">
+          <col
+            v-if="podeExcluirEmLote && config?.execucao_disponivel"
+            class="col--botão-de-ação"
+          >
+        </colgroup>
         <thead>
           <tr>
             <th style="width: 50%">

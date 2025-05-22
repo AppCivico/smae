@@ -206,30 +206,32 @@ iniciar();
       </colgroup>
 
       <thead>
-        <th />
-        <th class="tl">
-          Contramedidas
-        </th>
-        <th class="tl">
-          Responsável
-        </th>
-        <th class="cell--data">
-          Prazo
-        </th>
-        <th class="cell--number tr">
-          Custo
-        </th>
-        <th class="cell--number tr">
-          % custo projeto
-        </th>
-        <th
-          v-if="!permissõesDoProjetoEmFoco.apenas_leitura
-            || permissõesDoProjetoEmFoco.sou_responsavel"
-        />
-        <th
-          v-if="!permissõesDoProjetoEmFoco.apenas_leitura
-            || permissõesDoProjetoEmFoco.sou_responsavel"
-        />
+        <tr>
+          <th />
+          <th class="tl">
+            Contramedidas
+          </th>
+          <th class="tl">
+            Responsável
+          </th>
+          <th class="cell--data">
+            Prazo
+          </th>
+          <th class="cell--number tr">
+            Custo
+          </th>
+          <th class="cell--number tr">
+            % custo projeto
+          </th>
+          <th
+            v-if="!permissõesDoProjetoEmFoco.apenas_leitura
+              || permissõesDoProjetoEmFoco.sou_responsavel"
+          />
+          <th
+            v-if="!permissõesDoProjetoEmFoco.apenas_leitura
+              || permissõesDoProjetoEmFoco.sou_responsavel"
+          />
+        </tr>
       </thead>
 
       <tbody

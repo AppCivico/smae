@@ -9,11 +9,13 @@
     </h4>
 
     <table class="tablemain">
-      <col>
-      <col>
-      <col>
-      <col>
-      <col>
+      <colgroup>
+        <col>
+        <col>
+        <col>
+        <col>
+        <col>
+      </colgroup>
       <thead>
         <tr>
           <th> Mês/ano </th>
