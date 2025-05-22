@@ -139,7 +139,7 @@ partidosStore.buscarTudo();
           as="select"
           class="inputtext light mb1"
           :class="{ error: errors['eh_publico'] }"
-	  required
+          required
         >
           <option
             value=""
