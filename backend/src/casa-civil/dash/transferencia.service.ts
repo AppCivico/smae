@@ -831,7 +831,8 @@ export class DashTransferenciaService {
         jwt: string;
         body: AnyPageTokenJwtBody;
     }> {
-        const nroRows = await this.prisma.viewTransferenciaAnalise.count({
+        const rows = await this.prisma.viewTransferenciaAnalise.findMany({
+            distinct: ['transferencia_id'],
             where: {
                 parlamentar_id: filter.parlamentar_ids ? { in: filter.parlamentar_ids } : undefined,
                 ano: filter.anos ? { in: filter.anos } : undefined,
@@ -839,6 +840,7 @@ export class DashTransferenciaService {
                 workflow_etapa_atual_id: filter.etapa_ids ? { in: filter.etapa_ids } : undefined,
             },
         });
+        const nroRows = rows.length;
 
         const body = {
             search_hash: Object2Hash(filter),
