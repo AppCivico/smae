@@ -902,5 +902,13 @@ section + section {
   .recurso-financeiro-valores__item {
     border-bottom: 1px solid #E3E5E8;
   }
+
+  .recurso-financeiro-valores__item-label {
+    width: 11rem;
+  }
+
+  .recurso-financeiro-valores__item-porcentagem {
+    text-align: center;
+  }
 }
 </style>

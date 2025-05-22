@@ -99,6 +99,8 @@ const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
   const cargaManipulada = nulificadorTotal(controlledValues);
 
   try {
+    cargaManipulada.pct_custeio = porcentagens.value.custeio;
+    cargaManipulada.pct_investimento = porcentagens.value.investimento;
     cargaManipulada.transferencia_id = Number(params.transferenciaId);
 
     let r;
