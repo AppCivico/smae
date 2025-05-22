@@ -1,6 +1,6 @@
 <script setup>
 import { storeToRefs } from 'pinia';
-import { ref, defineProps } from 'vue';
+import { ref, defineProps, computed } from 'vue';
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import TransitionExpand from '@/components/TransitionExpand.vue';
 import dinheiro from '@/helpers/dinheiro';
@@ -10,7 +10,7 @@ import { dateToShortDate, localizarData, localizarDataHorario } from '@/helpers/
 import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 
-defineProps({
+const props = defineProps({
   distribuicao: {
     type: Object,
     default: () => ({}),
@@ -43,6 +43,24 @@ function removeParlamentaresSemValor(distribuicao) {
 
   return distribuicao.parlamentares.filter((parlamentar) => Number(parlamentar.valor));
 }
+
+const recursoFinanceiroValores = computed(() => {
+  if (!props.distribuicao) {
+    return [
+      { label: 'Valor do repasse', valor: '-' },
+      { label: 'Valor contrapartida', valor: '-' },
+      { label: 'Custeio', valor: '-' },
+      { label: 'Investimento', valor: '-' },
+    ];
+  }
+
+  return [
+    { label: 'Valor do repasse', valor: dinheiro(props.distribuicao.valor) },
+    { label: 'Valor contrapartida', valor: dinheiro(props.distribuicao.valor_contrapartida) },
+    { label: 'Custeio', valor: dinheiro(props.distribuicao.custeio) },
+    { label: 'Investimento', valor: dinheiro(props.distribuicao.investimento) },
+  ];
+});
 </script>
 
 <template>
@@ -54,216 +72,91 @@ function removeParlamentaresSemValor(distribuicao) {
       <LoadingComponent v-if="distribuicoesPendentes.lista" />
 
       <div class="resumo-da-distribuicao-de-recursos__descricao f1 fb75 mb2">
-        <div class="flex g2 flexwrap mb2">
-          <dl class="f1">
+        <dl class="flex g2 flexwrap mb2 f1">
+          <div>
             <dt class="t16 w700 mb05 tamarelo">
               Gestor municipal
             </dt>
+
             <dd>
-              {{ distribuicao?.orgao_gestor
-                ? `${distribuicao.orgao_gestor.sigla} - ${distribuicao.orgao_gestor.descricao}`
-                : '-' }}
+              {{ distribuicao?.orgao_gestor?.sigla || '-' }}
             </dd>
-          </dl>
-          <dl class="f1">
-            <dt class="t16 w700 mb05 tamarelo">
-              Status atual
-            </dt>
-            <dd>
-              {{ distribuicao.status_atual }}
-            </dd>
-          </dl>
-          <dl class="f1">
-            <dt class="t16 w700 mb05 tamarelo">
-              Valor de repasse
-            </dt>
-            <dd>
-              {{ distribuicao.valor
-                ? `R$${dinheiro(distribuicao.valor)}`
-                : '' }}
-            </dd>
-          </dl>
+          </div>
+
+          <div class="f1 resumo-da-distribuicao-de-recursos__titulo flex g1">
+            <h5 class="mlauto mr0 t16 w700 tc300">
+              {{ distribuicao.valor ? `R$${dinheiro(distribuicao.valor)}` : '' }}
+            </h5>
+
+            <h6 class="resumo-da-distribuicao-de-recursos__percentagem mr0 t16 w700 tc500">
+              ({{ distribuicao.pct_valor_transferencia }}%)
+            </h6>
+          </div>
+        </dl>
+
+        <div class="mb2">
+          <h3 class="mb1 t16 w700 tc500">
+            <abbr
+              v-if="distribuicao.orgao_gestor"
+              :title="distribuicao.orgao_gestor.descricao"
+            >
+              {{ distribuicao.orgao_gestor.sigla }}
+            </abbr>
+          </h3>
+
+          <h4 class="t14 w400 mb0">
+            {{ distribuicao.orgao_gestor.descricao }}
+          </h4>
         </div>
-        <dl class="mb2">
-          <dt class="t16 w700 mb05 tamarelo">
-            Objeto/Empreendimento
-          </dt>
-          <dd>
-            {{ distribuicao.objeto || '-' }}
-          </dd>
-        </dl>
-        <dl class="mb2">
-          <dt class="t16 w700 mb05 tamarelo">
-            Parlamentares envolvidos
-          </dt>
-          <dd>
-            <template v-if="removeParlamentaresSemValor(distribuicao).length">
-              {{ combinadorDeListas(
-                removeParlamentaresSemValor(distribuicao),
-                null,
-                'parlamentar.nome_popular'
-              ) }}
-            </template>
-            <template v-else>
-              Sem parlamentares envolvidos
-            </template>
-          </dd>
-        </dl>
 
         <TransitionExpand>
           <div v-if="estaExpandido">
-            <hgroup class="resumo-da-distribuicao-de-recursos__titulo flex g1">
-              <h3 class="ml0 t16 w700 tc500">
-                <abbr
-                  v-if="distribuicao.orgao_gestor"
-                  :title="distribuicao.orgao_gestor.descricao"
-                >
-                  {{ distribuicao.orgao_gestor.sigla }}
-                </abbr>
-              </h3>
-              <h4 class="mlauto mr0 t16 w700 tc300">
-                {{ distribuicao.valor
-                  ? `R$${dinheiro(distribuicao.valor)}`
-                  : '' }}
-              </h4>
-              <h5
-                class="resumo-da-distribuicao-de-recursos__percentagem mr0 t16 w700 tc500"
-              >
-                {{ distribuicao.pct_valor_transferencia }}%
-              </h5>
-            </hgroup>
+            <div class="mb2">
+              <dl>
+                <dt class="t16 w700 mb05 tamarelo">
+                  Objeto/Empreendimento
+                </dt>
 
-            <div class="resumo-da-distribuicao-de-recursos__objeto contentStyle f1 mb2">
-              {{ distribuicao.objeto || '-' }}
+                <dd>
+                  {{ distribuicao.objeto || '-' }}
+                </dd>
+              </dl>
             </div>
 
-            <dl
-              class="resumo-da-distribuicao-de-recursos__lista-de-status f0 fg999 fb10em
-              flex flexwrap g2 align-end"
-            >
-              <div
-                v-if="distribuicao?.historico_status"
-                class="resumo-da-distribuicao-de-recursos__status-item f1 mb2"
-              >
-                <ul
-                  ref="listaDeStatus"
-                  class="flex mb2 andamento-fluxo__lista-de-fases"
+            <h1>2</h1>
+            <div class="flex flexwrap g4 mb3">
+              <div class="recurso-financeiro-valores f1">
+                <div
+                  v-for="(valorItem, valorItemIndex) in recursoFinanceiroValores"
+                  :key="`recurso-financeiro-valores--${valorItemIndex}`"
+                  class="recurso-financeiro-valores__item flex f1 spacebetween center p05"
                 >
-                  <li
-                    v-for="(status, index) in distribuicao.historico_status"
-                    :key="status.id"
-                    class="p1 tc andamento-fluxo__fase"
-                    :class="index === distribuicao.historico_status.length - 1
-                      && index === 0
-                      ? 'andamento-fluxo__fase--iniciada'
-                      : 'andamento-fluxo__fase--concluída'"
-                  >
-                    <div class="status-item__header">
-                      <dt class="w700 t16 andamento-fluxo__nome-da-fase">
-                        {{ status.status_customizado?.nome || status.status_base?.nome }}
-                      </dt>
-                      <dd
-                        v-if="status.dias_no_status"
-                        class="card-shadow tc500 p1 mt1 block andamento-fluxo__dados-da-fase"
-                      >
-                        <time :datetime="status.data_troca">
-                          <strong>+ {{ status.dias_no_status }} dias </strong>
-                          <span class="tipinfo">
-                            <svg
-                              width="16"
-                              height="16"
-                            >
-                              <use xlink:href="#i_i" />
-                            </svg>
-                            <div>desde {{ dateToShortDate(status.data_troca) }}</div>
-                          </span>
-                          <p class="mb0">
-                            {{ status.nome_responsavel }}
-                          </p>
-                        </time>
-                      </dd>
-                    </div>
-                  </li>
-                </ul>
-                <dd
-                  v-if="distribuicao.parlamentares.length"
-                  class="parlamentares mb1"
-                >
-                  <div
-                    v-for="parlamentar, index in distribuicao.parlamentares"
-                    :key="parlamentar.id"
-                    :class="['flex spacebetween center g2', { 'mt1': index > 0}]"
-                  >
-                    <dl
-                      class="f1"
-                    >
-                      <dt class="t16 w700 mb05 tc500">
-                        Parlamentar
-                      </dt>
-                      <dd>{{ parlamentar.parlamentar.nome_popular }}</dd>
-                    </dl>
-                    <hr class="f2">
-                    <dl class="f2">
-                      <dt class="t16 w700 mb05 tc500 f1">
-                        Valor do recurso
-                      </dt>
-                      <dd class="tc300">
-                        <strong v-if="parlamentar?.valor && transferenciaEmFoco?.valor">
-                          R$ {{ dinheiro(parlamentar.valor) || '0' }} ({{
-                            (parlamentar.valor / transferenciaEmFoco.valor * 100).toFixed()
-                          }}%)
-                        </strong>
-                      </dd>
-                    </dl>
-                  </div>
-                </dd>
-              </div>
-            </dl>
+                  <dt class="t16 w700 mb05 tamarelo">
+                    {{ valorItem.label }}
+                  </dt>
 
-            <div class="flex flexwrap g2 mb2">
-              <div class="grid valores f1">
-                <dl class="mb1 pb1">
-                  <dt class="t16 w700 mb05 tamarelo">
-                    Valor do repasse
-                  </dt>
                   <dd>
-                    {{ distribuicao.valor ? `R$${dinheiro(distribuicao.valor)}` : '-' }}
+                    R${{ valorItem.valor }}
+                  </dd>
+                </div>
+              </div>
+
+              <div class="flex column spacebetween">
+                <dl class="mb2 f1">
+                  <dt class="t16 w700 mb05 tamarelo">
+                    Dotação orçamentária
+                  </dt>
+
+                  <dd>
+                    {{ distribuicao.dotacao || '-' }}
                   </dd>
                 </dl>
-                <dl class="mb1 pb1">
-                  <dt class="t16 w700 mb05 tamarelo">
-                    Valor contrapartida
-                  </dt>
-                  <dd>
-                    {{ distribuicao.valor_contrapartida
-                      ? `R$${dinheiro(distribuicao.valor_contrapartida)}`
-                      : '-' }}
-                  </dd>
-                </dl>
-                <dl class="mb1 pb1">
-                  <dt class="t16 w700 mb05 tamarelo">
-                    Custeio
-                  </dt>
-                  <dd>
-                    {{ distribuicao.custeio ? `R$${dinheiro(distribuicao.custeio)}` : '-' }}
-                  </dd>
-                </dl>
-                <dl class="mb1 pb1">
-                  <dt class="t16 w700 mb05 tamarelo">
-                    Investimento
-                  </dt>
-                  <dd>
-                    {{
-                      distribuicao.investimento ?
-                        `R$${dinheiro(distribuicao.investimento)}`
-                        : '-'
-                    }}
-                  </dd>
-                </dl>
-                <dl class="mb1 pb1">
+
+                <dl>
                   <dt class="t16 w700 mb05 tamarelo">
                     Valor total
                   </dt>
+
                   <dd>
                     {{ distribuicao.valor_total
                       ? `R$${dinheiro(distribuicao.valor_total)}`
@@ -271,43 +164,54 @@ function removeParlamentaresSemValor(distribuicao) {
                   </dd>
                 </dl>
               </div>
-              <div class="grid f1">
-                <dl class="mb2">
+            </div>
+
+            <h1>2.1</h1>
+
+            <div class="">
+              <div class="flex g1 mb2">
+                <dl class="f1">
+                  <dt class="t16 w700 mb05 tamarelo">
+                    Banco
+                  </dt>
+                  <dd>
+                    {{ distribuicao.distribuicao_banco || '-' }}
+                  </dd>
+                </dl>
+
+                <dl class="f1">
+                  <dt class="t16 w700 mb05 tamarelo">
+                    Agência
+                  </dt>
+                  <dd>
+                    {{ distribuicao.distribuicao_agencia || '-' }}
+                  </dd>
+                </dl>
+
+                <dl class="f1">
+                  <dt class="t16 w700 mb05 tamarelo">
+                    Número da conta
+                  </dt>
+                  <dd>
+                    {{ distribuicao.distribuicao_conta || '-' }}
+                  </dd>
+                </dl>
+              </div>
+
+              <div class="flex f1 mb2">
+                <dl class="f1">
                   <dt class="t16 w700 mb05 tamarelo">
                     Empenho
                   </dt>
+
                   <dd>
                     {{ distribuicao.empenho ? 'Sim' : 'Não' }}
                   </dd>
                 </dl>
-                <dl class="mb2">
-                  <dt class="t16 w700 mb05 tamarelo">
-                    Programa orçamentário municipal
-                  </dt>
-                  <dd>
-                    {{ distribuicao.programa_orcamentario_municipal || '-' }}
-                  </dd>
-                </dl>
-                <dl class="mb2">
-                  <dt class="t16 w700 mb05 tamarelo">
-                    Programa orçamentário estadual
-                  </dt>
-                  <dd>
-                    {{ distribuicao.programa_orcamentario_estadual || '-' }}
-                  </dd>
-                </dl>
-              </div>
-              <div class="grid f1">
-                <dl class="mb2">
-                  <dt class="t16 w700 mb05 tamarelo">
-                    Dotação orçamentária
-                  </dt>
-                  <dd>
-                    {{ distribuicao.dotacao || '-' }}
-                  </dd>
-                </dl>
               </div>
             </div>
+
+            <h1>3</h1>
             <div class="flex g2 flexwrap mb2">
               <dl class="f1">
                 <dt class="t16 w700 mb05 tamarelo">
@@ -326,6 +230,8 @@ function removeParlamentaresSemValor(distribuicao) {
                 </dd>
               </dl>
             </div>
+
+            <h1>4</h1>
             <div class="flex g2 flexwrap mb2">
               <dl class="f1">
                 <dt class="t16 w700 mb05 tamarelo">
@@ -365,6 +271,7 @@ function removeParlamentaresSemValor(distribuicao) {
               </dl>
             </div>
 
+            <h1>5</h1>
             <table
               v-if="distribuicao.registros_sei?.length"
               class="tablemain no-zebra horizontal-lines mb1"
@@ -473,13 +380,16 @@ function removeParlamentaresSemValor(distribuicao) {
                       <svg
                         width="20"
                         height="20"
-                      ><use xlink:href="#i_link" /></svg>
+                      >
+                        <use xlink:href="#i_link" />
+                      </svg>
                     </SmaeLink>
                   </td>
                 </tr>
               </tbody>
             </table>
 
+            <h1>6</h1>
             <div class="flex g2 center mt3 mb2">
               <h3 class="w700 tc600 t20 mb0">
                 Assinaturas
@@ -487,6 +397,7 @@ function removeParlamentaresSemValor(distribuicao) {
               <hr class="f1">
             </div>
 
+            <h1>7</h1>
             <div class="flex g2 flexwrap mb2">
               <dl class="f1">
                 <dt class="t16 w700 mb05 tamarelo">
@@ -517,6 +428,7 @@ function removeParlamentaresSemValor(distribuicao) {
         </TransitionExpand>
       </div>
     </section>
+
     <div class="flex justifycenter">
       <button
         class="btn with-icon bgnone tcprimary"
@@ -528,7 +440,9 @@ function removeParlamentaresSemValor(distribuicao) {
           :class="estaExpandido ? 'rotacionado' : ''"
           width="20"
           height="20"
-        ><use xlink:href="#i_down" /></svg>
+        >
+          <use xlink:href="#i_down" />
+        </svg>
         Detalhamento
       </button>
     </div>
