@@ -62,11 +62,11 @@ const açõesPermitidas = computed(() => ações.filter((x) => !!emFoco.value?.p
 
 async function mudarStatus(id, { nome, ação }) {
   alertStore
-    .confirmAction(`Você confirma a mudança de status para "${nome}"?`, async () => {
+    .confirmAction(`Você confirma a mudança de status para "${nome}"? Lembre-se de atualizar a etapa do cronograma. Para isso acesse a página Cronograma e atualize a etapa por meio do botão "Mudar etapa".`, async () => {
       const resposta = await projetosStore.mudarStatus(id, ação);
 
       alertStore
-        .success('Status modificado. Lembre-se de atualizar a etapa do cronograma. Para isso acesse a página Cronograma e atualize a etapa por meio do botão "Mudar etapa".');
+        .success('Status modificado.');
 
       if (resposta) {
         projetosStore.buscarItem(id);
