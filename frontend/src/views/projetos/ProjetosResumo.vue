@@ -72,7 +72,13 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
     <MenuDeMudançaDeStatusDeProjeto class="ml2" />
 
     <SmaeLink
-      v-if="emFoco?.id && !emFoco?.arquivado && !emFoco?.permissoes?.apenas_leitura"
+      v-if="
+        emFoco?.id
+          && (
+            !emFoco?.arquivado
+            || emFoco?.permissoes?.pode_editar_apenas_responsaveis_pos_planejamento
+          )
+      "
       :to="{ name: 'projetosEditar', params: { projetoId: emFoco.id } }"
       class="btn big ml2"
     >

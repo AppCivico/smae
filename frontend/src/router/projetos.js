@@ -211,6 +211,8 @@ export default {
             limitarÀsPermissões: [
               'Projeto.administrador_no_orgao',
               'Projeto.administrador',
+              'SMAE.colaborador_de_projeto',
+              'SMAE.gerente_de_projeto',
             ],
           },
 

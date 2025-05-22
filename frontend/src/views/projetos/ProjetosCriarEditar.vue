@@ -133,7 +133,7 @@ const desabilitarTodosCampos = computed(() => {
   if (permissoes?.apenas_leitura) {
     return {
       camposComuns: true,
-      camposGestor: permissoes?.pode_editar_apenas_responsaveis_pos_planejamento,
+      camposGestor: !permissoes?.pode_editar_apenas_responsaveis_pos_planejamento,
     };
   }
 
