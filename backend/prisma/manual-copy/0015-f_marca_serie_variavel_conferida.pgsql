@@ -37,7 +37,7 @@ BEGIN
         variavel_id = p_variavel_id
         AND referencia_data = p_data_valor
         AND ultima_revisao = true
-        AND fase = 'Preenchimento'
+        AND fase = 'Liberacao'
         AND removido_em IS NULL;
 
     SELECT value::boolean
