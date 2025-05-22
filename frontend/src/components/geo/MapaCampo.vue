@@ -529,17 +529,21 @@ const formularioSujo = useIsFormDirty();
           v-if="sugestõesDeEndereços.length > 1"
           class="mb1 tablemain"
         >
-          <col class="col--botão-de-ação">
-          <col>
-          <col>
-          <col>
+          <colgroup>
+            <col class="col--botão-de-ação">
+            <col>
+            <col>
+            <col>
+          </colgroup>
           <thead>
-            <th />
-            <th>Endereço</th>
-            <th>Bairro</th>
-            <th class="cell--nowrap">
-              <abbr title="Código de Endereçamento Postal">CEP</abbr>
-            </th>
+            <tr>
+              <th />
+              <th>Endereço</th>
+              <th>Bairro</th>
+              <th class="cell--nowrap">
+                <abbr title="Código de Endereçamento Postal">CEP</abbr>
+              </th>
+            </tr>
           </thead>
           <tr
             v-for="(item, j) in sugestõesDeEndereços"
