@@ -668,7 +668,7 @@ export class PainelEstrategicoService {
             strPortfolio2 = ' and pp.portfolio_id in (' + filtro.portfolio_id.toString() + ')';
         }
         const sql = `select
-                         sum((select valor_planejado total_custo from orcamento_planejado op where op.projeto_id = op.id and op.removido_em is null)) custo_planejado_total,
+                         sum((select previsao_custo total_custo from tarefa_cronograma tc where tc.projeto_id = bp.id and tc.removido_em is null)) custo_planejado_total,
                          sum((select sum(orc.soma_valor_empenho) from orcamento_realizado orc where orc.projeto_id = bp.id and orc.removido_em is null)) valor_empenhado_total,
                          sum((select sum(orc.soma_valor_liquidado) from orcamento_realizado orc where orc.projeto_id = bp.id and orc.removido_em is null)) valor_liquidado_total
                      from
@@ -747,14 +747,15 @@ export class PainelEstrategicoService {
                   ${strOrgao2}
             ),
             tarefa_custos AS (
-                SELECT
-                    sum(op.valor_planejado) AS previsao_custo,
-                    op.ano_referencia,
-                    op.projeto_id
-                FROM orcamento_planejado op
-                WHERE op.removido_em IS NULL
-                    AND op.projeto_id IS NOT NULL
-                GROUP BY op.ano_referencia, op.projeto_id
+                SELECT sum(t.custo_estimado) AS previsao_custo,
+                       date_part('year', t.termino_planejado) AS ano_referencia,
+                       tc.projeto_id
+                FROM tarefa_cronograma tc
+                JOIN tarefa t ON t.tarefa_cronograma_id = tc.id
+                WHERE tc.removido_em IS NULL
+                  AND t.n_filhos_imediatos = 0
+                  AND t.removido_em IS NULL
+              GROUP BY date_part('year', t.termino_planejado), tc.projeto_id
             ),
             orc_realizado as (
                 SELECT sum(orcr.soma_valor_empenho) AS soma_valor_empenho,
@@ -879,77 +880,75 @@ export class PainelEstrategicoService {
         }
         const offset = (page - 1) * ipp;
         //ordernar pelo custo planejado total decrescente
-        const sql = `
-            select * from (
-    select
-        orc.soma_valor_empenho::float as valor_empenhado_total,
-        orc.soma_valor_liquidado::float as valor_liquidado_total,
-        p.nome as nome_projeto,
-        p.codigo as codigo_projeto,
-        p.id as id,
-        (
-            SELECT COALESCE(SUM(op.valor_planejado), 0)
-            FROM orcamento_planejado op
-            WHERE op.projeto_id = p.id
-            AND op.removido_em IS NULL
-        )::float AS valor_custo_planejado_total,
-        (
-            select COALESCE(SUM(t.custo_estimado), 0)
-            from tarefa_cronograma tc
-            inner join tarefa t on t.tarefa_cronograma_id = tc.id and t.removido_em is null
-            where not exists(select tarefa_pai_id from tarefa where tarefa_pai_id = t.id and removido_em is null)
-                and tc.projeto_id = p.id
-                and tc.removido_em is null
-                and t.termino_planejado <= current_date
-        )::float AS valor_custo_planejado_hoje,
-        (
-            exists(
-                SELECT 1
-                FROM tarefa_cronograma tc
-                JOIN tarefa t ON t.tarefa_cronograma_id = tc.id
-                WHERE tc.removido_em IS NULL
-                    AND t.n_filhos_imediatos = 0
-                    AND t.removido_em IS NULL
-                    AND t.termino_planejado is null
-                    AND tc.projeto_id = p.id
-                    AND t.custo_estimado IS NOT NULL
-            )
-        ) AS ha_anos_nulos
-    from (
-        select pr.id, pr.nome, pr.orgao_responsavel_id, pr.codigo
-        from projeto pr
-        where pr.removido_em is null
-            and pr.arquivado = false
-            and pr.tipo = 'PP'
-            ${strPortfolio}
-        union
-        select p.id, p.nome, p.orgao_responsavel_id, p.codigo
-        from projeto p, portfolio_projeto_compartilhado pp
-        where pp.projeto_id = p.id
-            and pp.removido_em is null
-            and p.removido_em is null
-            and p.arquivado = false
-            and p.tipo = 'PP'
-            ${strPortfolio2}
-    ) p
-    LEFT JOIN ( -- Changed from INNER JOIN to LEFT JOIN
-        select
-            vp.nome,
-            vp.id as projeto_id,
-            COALESCE(sum(orcr.soma_valor_empenho), 0) as soma_valor_empenho,
-            COALESCE(sum(orcr.soma_valor_liquidado), 0) as soma_valor_liquidado
-        from orcamento_realizado orcr
-        left join view_projetos vp on orcr.projeto_id = vp.id
-        inner join projeto p on p.id = vp.id
-        where p.tipo = 'PP'
-            and p.removido_em is null
-            and orcr.removido_em is null
-        group by vp.nome, vp.id
-    ) orc on orc.projeto_id = p.id
-    where 1 = 1 ${strFilterGeral}
-) t 
-order by valor_custo_planejado_total desc
-limit ${ipp} offset ${offset}`;
+        const sql = `select * from (
+                        select (
+                             select tc.previsao_custo
+                             from tarefa_cronograma tc
+                             where tc.projeto_id = p.id
+                               and tc.removido_em is null
+                         )::float AS valor_custo_planejado_total,
+                         (
+                            select sum(t.custo_estimado)
+                            from tarefa_cronograma tc
+                             inner join tarefa t on t.tarefa_cronograma_id = tc.id and t.removido_em is null
+                            where not exists(select tarefa_pai_id from tarefa where tarefa_pai_id = t.id and removido_em is null)
+                            and tc.projeto_id = p.id
+                            and tc.removido_em is null
+                            and t.termino_planejado <= current_date
+                         )::float AS valor_custo_planejado_hoje,
+                         orc.soma_valor_empenho ::float as valor_empenhado_total,
+                         orc.soma_valor_liquidado::float as valor_liquidado_total,
+                         p.nome as nome_projeto,
+                         p.codigo as codigo_projeto,
+                         p.id as id,
+                        (
+                            exists(
+                                SELECT 1
+                                FROM tarefa_cronograma tc
+                                JOIN tarefa t ON t.tarefa_cronograma_id = tc.id
+                                WHERE tc.removido_em IS NULL
+                                  AND t.n_filhos_imediatos = 0
+                                  AND t.removido_em IS NULL
+                                  AND t.termino_planejado is null
+                                  AND tc.projeto_id = p.id
+                                  AND t.custo_estimado IS NOT NULL
+                            )
+                        ) AS ha_anos_nulos
+                     from (select pr.id,
+                                  pr.nome,
+                                  pr.orgao_responsavel_id,
+                                  pr.codigo
+                           from projeto pr
+                           where pr.removido_em is null
+                             and pr.arquivado = false
+                             and pr.tipo = 'PP'
+                               ${strPortfolio}
+                           union
+                           select p.id,
+                                  p.nome,
+                                  p.orgao_responsavel_id,
+                                  p.codigo
+                           from projeto p,
+                                portfolio_projeto_compartilhado pp
+                           where pp.projeto_id = p.id
+                             and pp.removido_em is null
+                             and p.removido_em is null
+                             and p.arquivado = false
+                             and p.tipo = 'PP'
+                               ${strPortfolio2}) p
+                              inner join (select vp.nome,
+                                                 vp.id                          as projeto_id,
+                                                 sum(orcr.soma_valor_empenho)   as soma_valor_empenho,
+                                                 sum(orcr.soma_valor_liquidado) as soma_valor_liquidado
+                                          from orcamento_realizado orcr
+                                                   left join view_projetos vp on orcr.projeto_id = vp.id
+                                                   inner join projeto p on p.id = vp.id
+                                          where p.tipo = 'PP'
+                                            and p.removido_em is null
+                                            and orcr.removido_em is null
+                                          group by vp.nome, vp.id) orc on orc.projeto_id = p.id
+                     where 1 = 1 ${strFilterGeral} ) t order by valor_custo_planejado_total desc
+                     limit ${ipp} offset ${offset}`;
         console.log('the query', sql);
         const linhas = (await this.prisma.$queryRawUnsafe(sql)) as PainelEstrategicoExecucaoOrcamentariaLista[];
         console.log('linhas', linhas);
