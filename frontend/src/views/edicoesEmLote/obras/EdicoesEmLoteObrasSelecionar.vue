@@ -73,6 +73,7 @@ watch(
 </script>
 
 <template>
+  <MigalhasDePão class="mb1" />
   <CabecalhoDePagina />
 
   <FiltroParaRegistros>

@@ -36,6 +36,7 @@ onMounted(() => {
 </script>
 
 <template>
+  <MigalhasDePão class="mb1" />
   <CabecalhoDePagina>
     <template #acoes>
       <router-link

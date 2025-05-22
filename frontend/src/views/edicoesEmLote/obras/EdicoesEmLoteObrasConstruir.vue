@@ -293,6 +293,7 @@ async function handlePropertyChange(event, idx) {
 </script>
 
 <template>
+  <MigalhasDePão class="mb1" />
   <CabecalhoDePagina />
   <p v-if="modoRevisao">
     Essa alteração será aplicada nas
