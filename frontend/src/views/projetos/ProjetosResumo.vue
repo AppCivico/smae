@@ -656,7 +656,7 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
               v-for="equipe in equipesAgrupadas"
               :key="`equipes--${equipe.orgao_id}`"
             >
-              {{ equipe.orgao_nome }}
+              {{ equipe.orgao_nome }}:
 
               <ol>
                 <li
