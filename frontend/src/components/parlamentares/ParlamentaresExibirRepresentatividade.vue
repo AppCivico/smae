@@ -62,20 +62,22 @@ function formatarNumero(numero) {
         v-if="representatividade.capital.length"
         class="tablemain mb1"
       >
-        <col class="col--number">
-        <col>
-        <col>
-        <col class="col--number">
-        <col class="col--number">
-        <col class="col--number">
-        <col
-          v-if="exibirEdição"
-          class="col--botão-de-ação"
-        >
-        <col
-          v-if="exibirEdição"
-          class="col--botão-de-ação"
-        >
+        <colgroup>
+          <col class="col--number">
+          <col>
+          <col>
+          <col class="col--number">
+          <col class="col--number">
+          <col class="col--number">
+          <col
+            v-if="exibirEdição"
+            class="col--botão-de-ação"
+          >
+          <col
+            v-if="exibirEdição"
+            class="col--botão-de-ação"
+          >
+        </colgroup>
         <thead>
           <tr>
             <th class="cell--number">

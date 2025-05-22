@@ -233,18 +233,20 @@ vue/singleline-html-element-content-newline -->
     v-if="listaFiltrada.length"
     class="tabela-de-etapas"
   >
-    <col class="col--number">
-    <col class="col--data">
-    <col>
-    <col>
-    <col class="col--number">
-    <col>
-    <col class="col--botão-de-ação">
-    <col
-      v-if="!permissõesDoProjetoEmFoco.apenas_leitura
-        || permissõesDoProjetoEmFoco.sou_responsavel"
-      class="col--botão-de-ação"
-    >
+    <colgroup>
+      <col class="col--number">
+      <col class="col--data">
+      <col>
+      <col>
+      <col class="col--number">
+      <col>
+      <col class="col--botão-de-ação">
+      <col
+        v-if="!permissõesDoProjetoEmFoco.apenas_leitura
+          || permissõesDoProjetoEmFoco.sou_responsavel"
+        class="col--botão-de-ação"
+      >
+    </colgroup>
 
     <thead>
       <tr class="pl3 center mb05 tc300 w700 t12 uc">

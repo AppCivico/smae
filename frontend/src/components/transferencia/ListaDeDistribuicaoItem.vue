@@ -372,29 +372,33 @@ function removeParlamentaresSemValor(distribuicao) {
               <caption class="t16 w700 mb05 tamarelo tl">
                 Números SEI
               </caption>
-              <col class="col--botão-de-ação">
-              <col>
-              <col class="col--dataHora">
-              <col class="col--dataHora">
-              <col class="col--data">
-              <col>
-              <col>
-              <col>
-              <col class="col--botão-de-ação">
 
+              <colgroup>
+                <col class="col--botão-de-ação">
+                <col>
+                <col class="col--dataHora">
+                <col class="col--dataHora">
+                <col class="col--data">
+                <col>
+                <col>
+                <col>
+                <col class="col--botão-de-ação">
+              </colgroup>
               <thead>
-                <th />
-                <th class="cell--nowrap">
-                  Código
-                </th>
-                <th>Tipo</th>
-                <th>Especificação</th>
-                <th>Alteração</th>
-                <th>Andamento</th>
-                <th>Unidade</th>
-                <th>Usuário SEI</th>
-                <th>Lido</th>
-                <th />
+                <tr>
+                  <th />
+                  <th class="cell--nowrap">
+                    Código
+                  </th>
+                  <th>Tipo</th>
+                  <th>Especificação</th>
+                  <th>Alteração</th>
+                  <th>Andamento</th>
+                  <th>Unidade</th>
+                  <th>Usuário SEI</th>
+                  <th>Lido</th>
+                  <th />
+                </tr>
               </thead>
 
               <tbody class="transferencia-sei-body">
