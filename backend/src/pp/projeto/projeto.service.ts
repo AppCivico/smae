@@ -1,4 +1,12 @@
-import { BadRequestException, forwardRef, HttpException, Inject, Injectable, Logger } from '@nestjs/common';
+import {
+    BadRequestException,
+    forwardRef,
+    HttpException,
+    Inject,
+    Injectable,
+    InternalServerErrorException,
+    Logger,
+} from '@nestjs/common';
 import { Prisma, ProjetoFase, ProjetoOrigemTipo, ProjetoStatus, TipoProjeto } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { IdCodTituloDto } from 'src/common/dto/IdCodTitulo.dto';
@@ -2594,6 +2602,14 @@ export class ProjetoService {
             tipo
         );
 
+        if (dto.responsavel_id && dto.responsavel_id != projeto.responsavel?.id) {
+            await this.checkOrgaoResponsavel(
+                tipo,
+                dto.orgao_responsavel_id || projeto.orgao_responsavel?.id,
+                dto.responsavel_id
+            );
+        }
+
         const now = new Date(Date.now());
 
         if (dto.tags == null) dto.tags = [];
@@ -3868,5 +3884,41 @@ export class ProjetoService {
             await prismaTx.projetoPessoaRevisao.deleteMany({ where: { pessoa_id: user.id, projeto: { tipo: tipo } } });
             return;
         });
+    }
+
+    async checkOrgaoResponsavel(
+        tipo: TipoProjeto,
+        orgao_responsavel_id: number | null | undefined,
+        reponsavel_id: number
+    ) {
+        if (!orgao_responsavel_id) {
+            throw new InternalServerErrorException('O órgão responsável não pode ser nulo.');
+        }
+
+        // A pessoa deve ser do órgão responsável e deve ter o perfil "Colaborador de obra no órgão"
+        if (tipo == TipoProjeto.MDO) {
+            const pessoa = await this.prisma.pessoa.findFirstOrThrow({
+                where: {
+                    id: reponsavel_id,
+                    pessoa_fisica: {
+                        orgao_id: orgao_responsavel_id,
+                    },
+                    PessoaPerfil: {
+                        some: {
+                            perfil_acesso: {
+                                nome: 'Colaborador de obra no órgão',
+                            },
+                        },
+                    },
+                },
+            });
+
+            if (!pessoa) {
+                throw new HttpException(
+                    'A pessoa não é do órgão responsável ou não possui o perfil de colaborador de obra no órgão.',
+                    400
+                );
+            }
+        }
     }
 }
