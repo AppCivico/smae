@@ -2327,6 +2327,10 @@ export class ProjetoService {
             throw new HttpException('Você não tem permissão para editar este projeto.', 400);
         }
 
+        console.log('=========================\n\n\n\n\n\n\n');
+        console.log('permissoes', permissoes);
+        console.log('=========================\n\n\n\n\n\n\n');
+
         if (user && readonly === 'ReadWriteTeam' && (!permissoes.sou_responsavel || permissoes.apenas_leitura)) {
             // Lança exceção se escrita específica da equipe for solicitada, mas usuário não está atribuído OU não tem capacidade de escrita
             // (Se eles têm escrita geral OU específica, apenas_leitura será falso)
