@@ -66,7 +66,7 @@ export class CreateIniciativaDto {
      */
     @IsString({ message: '$property| título: Precisa ser alfanumérico, campo obrigatório' })
     @MinLength(1, { message: '$property| título: pelo menos um caractere' })
-    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Título' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo 'Título' deve ter no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     titulo: string;
 
     /**

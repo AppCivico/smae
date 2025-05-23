@@ -84,8 +84,8 @@ export class CreateAnaliseQualitativaDto {
     meta_id: number;
 
     @IsString()
-    @MaxLength(MAX_LENGTH_DEFAULT, {
-        message: `O campo 'Informações Complementares' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    @MaxLength(MAX_LENGTH_MEDIO, {
+        message: `O campo 'Informações Complementares' deve ter no máximo ${MAX_LENGTH_MEDIO} caracteres`,
     })
     informacoes_complementares: string;
 }

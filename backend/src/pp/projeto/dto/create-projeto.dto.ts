@@ -120,7 +120,7 @@ export class CreateProjetoDto {
      * @example "Nome"
      */
     @IsString()
-    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Nome' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo 'Nome' deve ter no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     @MinLength(1)
     nome: string;
 
@@ -212,8 +212,8 @@ export class CreateProjetoDto {
      */
     @IsOptional()
     @IsString()
-    @MaxLength(MAX_LENGTH_DEFAULT, {
-        message: `O campo 'Origem outro' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    @MaxLength(MAX_LENGTH_MEDIO, {
+        message: `O campo 'Origem outro' deve ter no máximo ${MAX_LENGTH_MEDIO} caracteres`,
     })
     @ValidateIf((object, value) => value !== null)
     origem_outro?: string | null;
@@ -396,8 +396,8 @@ export class CreateProjetoDto {
      */
     @IsOptional()
     @IsString()
-    @MaxLength(MAX_LENGTH_MEDIO, {
-        message: `O campo "Principais Etapas" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres`,
+    @MaxLength(MAX_LENGTH_HTML, {
+        message: `O campo "Principais Etapas" pode ser no máximo ${MAX_LENGTH_HTML} caracteres`,
     })
     principais_etapas?: string;
 
@@ -587,7 +587,7 @@ export class CreateProjetoSeiDto {
 
     @IsOptional()
     @IsString()
-    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Link' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo 'Link' deve ter no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     @IsUrl(
         {
             protocols: ['http', 'https'],

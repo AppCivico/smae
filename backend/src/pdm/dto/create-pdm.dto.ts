@@ -146,8 +146,8 @@ export class CreatePdmDto extends UpdatePdmCicloConfigDto {
      */
     @IsOptional()
     @IsString({ message: 'equipe técnica: Precisa ser alfanumérico' })
-    @MaxLength(MAX_LENGTH_DEFAULT, {
-        message: `O campo 'Equipe técnica' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    @MaxLength(MAX_LENGTH_MEDIO, {
+        message: `O campo 'Equipe técnica' deve ter no máximo ${MAX_LENGTH_MEDIO} caracteres`,
     })
     equipe_tecnica: string | null;
 
@@ -344,8 +344,8 @@ export class CreatePdmDto extends UpdatePdmCicloConfigDto {
      * Legislação de instituição.
      */
     @IsOptional()
-    @MaxLength(MAX_LENGTH_DEFAULT, {
-        message: `O campo 'Legislação de instituição' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    @MaxLength(MAX_LENGTH_MEDIO, {
+        message: `O campo 'Legislação de instituição' deve ter no máximo ${MAX_LENGTH_MEDIO} caracteres`,
     })
     @IsString({ message: 'Legislação de instituição: Precisa ser alfanumérico' })
     legislacao_de_instituicao?: string | null;
