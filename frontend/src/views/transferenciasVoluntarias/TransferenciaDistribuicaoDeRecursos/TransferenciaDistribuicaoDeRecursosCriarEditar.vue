@@ -856,10 +856,12 @@ onUnmounted(() => {
             name="valor_liquidado"
             :schema="schema"
           />
-          <Field
+          <MaskedFloatInput
             name="valor_liquidado"
             type="text"
-            class="inputtext light mb1"
+            class="inputtext light mb2"
+            :value="values.valor_liquidado"
+            converter-para="string"
           />
           <ErrorMessage
             class="error-msg mb1"
