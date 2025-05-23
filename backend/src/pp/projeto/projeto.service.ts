@@ -612,11 +612,6 @@ export class ProjetoService {
         // pra criar, verifica se a pessoa pode realmente acessar o portfolio, então
         // começa listando todos os portfolios
         const portfolios = await this.portfolioService.findAll(tipo, user, true);
-        if (tipo == 'PP') {
-            if (!dto.orgao_responsavel_id)
-                throw new HttpException('Campo órgão responsável obrigatório para projetos', 400);
-            if (!dto.responsavel_id) throw new HttpException('Campo responsável obrigatório para projetos', 400);
-        }
 
         const portfolio = portfolios.filter((r) => r.id == dto.portfolio_id)[0];
         if (!portfolio)
