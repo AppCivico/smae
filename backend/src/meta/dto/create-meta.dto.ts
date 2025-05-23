@@ -15,7 +15,7 @@ import {
 } from 'class-validator';
 import { CreatePSEquipePontoFocalDto, CreatePSEquipeTecnicoCPDto } from '../../pdm/dto/create-pdm.dto';
 import { UpsertOrigemDto } from '../../common/dto/origem-pdm.dto';
-import { MAX_LENGTH_DEFAULT, MAX_LENGTH_MEDIO } from 'src/common/consts';
+import { MAX_LENGTH_DEFAULT, MAX_LENGTH_HTML, MAX_LENGTH_MEDIO } from 'src/common/consts';
 
 export class MetaOrgaoParticipante {
     /**
@@ -58,7 +58,7 @@ export class CreateMetaDto {
      */
     @IsString({ message: '$property| título: Precisa ser alfanumérico, campo obrigatório' })
     @MinLength(1, { message: '$property| título: pelo menos um caractere' })
-    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Título' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo 'Título' deve ter no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     titulo: string;
 
     /**
@@ -66,7 +66,7 @@ export class CreateMetaDto {
      */
     @IsOptional()
     @IsString({ message: '$property| contexto: Precisa ser alfanumérico' })
-    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Contexto" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
+    @MaxLength(MAX_LENGTH_HTML, { message: `O campo "Contexto" pode ser no máximo ${MAX_LENGTH_HTML} caracteres` })
     contexto?: string;
 
     /**
@@ -74,7 +74,7 @@ export class CreateMetaDto {
      */
     @IsOptional()
     @IsString({ message: '$property| complemento: Precisa ser alfanumérico' })
-    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Complemento' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo 'Complemento' deve ter no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     complemento?: string;
 
     /**

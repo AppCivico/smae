@@ -50,7 +50,7 @@ export class RiscoDto {
     meta_id: number;
 
     @IsString()
-    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Detalhamento' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
+    @MaxLength(MAX_LENGTH_HTML, { message: `O campo 'Detalhamento' deve ter no máximo ${MAX_LENGTH_HTML} caracteres` })
     detalhamento: string;
 
     @IsString()
