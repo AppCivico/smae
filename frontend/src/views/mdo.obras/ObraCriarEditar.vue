@@ -280,8 +280,8 @@ const onSubmit = handleSubmit(async () => {
       : 'Item adicionado com sucesso!';
 
     const resposta = props.obraId
-      ? await obrasStore.salvarItem(cargaManipulada, props.obraId, { schema })
-      : await obrasStore.salvarItem(cargaManipulada, null, { schema });
+      ? await obrasStore.salvarItem(cargaManipulada, props.obraId)
+      : await obrasStore.salvarItem(cargaManipulada);
 
     if (resposta) {
       alertStore.success(msg);
@@ -582,6 +582,9 @@ watch(listaDeTiposDeIntervenção, () => {
             resetField('programa_id', { value: null });
             resetField('mdo_n_unidades_habitacionais', { value: null });
             resetField('mdo_n_familias_beneficiadas', { value: null });
+          }"
+          @update:model-value="($v) => {
+            setFieldValue('mdo_n_familias_beneficiadas', Number($v) || null);
           }"
         >
           <option value="">

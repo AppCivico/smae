@@ -175,7 +175,7 @@ export const useObrasStore = defineStore('obrasStore', {
       }
     },
 
-    async salvarItem(params = {}, id = 0, schema = {}) {
+    async salvarItem(params = {}, id = 0) {
       this.chamadasPendentes.emFoco = true;
       this.erro = null;
 
@@ -183,9 +183,9 @@ export const useObrasStore = defineStore('obrasStore', {
         let resposta;
 
         if (id) {
-          resposta = await this.requestS.patch(`${baseUrl}/projeto-mdo/${id}`, params, { schema });
+          resposta = await this.requestS.patch(`${baseUrl}/projeto-mdo/${id}`, params);
         } else {
-          resposta = await this.requestS.post(`${baseUrl}/projeto-mdo`, params, { schema });
+          resposta = await this.requestS.post(`${baseUrl}/projeto-mdo`, params);
         }
 
         this.chamadasPendentes.emFoco = false;
