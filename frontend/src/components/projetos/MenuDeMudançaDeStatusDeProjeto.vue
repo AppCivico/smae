@@ -65,11 +65,13 @@ async function mudarStatus(id, { nome, ação }) {
     .confirmAction(`Você confirma a mudança de status para "${nome}"? Lembre-se de atualizar a etapa do cronograma. Para isso acesse a página Cronograma e atualize a etapa por meio do botão "Mudar etapa".`, async () => {
       const resposta = await projetosStore.mudarStatus(id, ação);
 
-      alertStore
-        .success('Status modificado.');
-
       if (resposta) {
+        alertStore
+          .success('Status modificado.');
         projetosStore.buscarItem(id);
+      } else {
+        alertStore
+          .error('Erro ao modificar status.');
       }
     });
 }
