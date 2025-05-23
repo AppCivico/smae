@@ -134,13 +134,13 @@ partidosStore.buscarTudo();
         <LabelFromYup
           name="eh_publico"
           :schema="schema"
+          required
         />
         <Field
           name="eh_publico"
           as="select"
           class="inputtext light mb1"
           :class="{ error: errors['eh_publico'] }"
-          required
         >
           <option
             value=""
