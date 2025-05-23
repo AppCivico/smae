@@ -583,6 +583,9 @@ watch(listaDeTiposDeIntervenção, () => {
             resetField('mdo_n_unidades_habitacionais', { value: null });
             resetField('mdo_n_familias_beneficiadas', { value: null });
           }"
+          @update:model-value="($v) => {
+            setFieldValue('mdo_n_familias_beneficiadas', Number($v) || null);
+          }"
         >
           <option value="">
             Selecionar
@@ -934,9 +937,6 @@ watch(listaDeTiposDeIntervenção, () => {
           type="number"
           class="inputtext light mb1"
           :class="{ 'error': errors.mdo_n_familias_beneficiadas }"
-          @update:model-value="($v) => {
-            setFieldValue('mdo_n_familias_beneficiadas', Number($v) || null);
-          }"
         />
         <ErrorMessage
           name="mdo_n_familias_beneficiadas"

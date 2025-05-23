@@ -230,7 +230,7 @@ const onSubmit = handleSubmit(async (valores) => {
   };
 
   try {
-    if (await edicoesEmLoteStore.salvarItem(payload)) {
+    if (await edicoesEmLoteStore.salvarItem(payload, schemaObras)) {
       alertStore.success('Solicitação realizada com sucesso.');
 
       const rotaDeEscape = route.meta?.rotaDeEscape;
