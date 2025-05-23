@@ -542,14 +542,14 @@ export class ProjetoService {
                             },
                         },
                         perfil_acesso: {
-                            nome: 'Gestor da Obra',
+                            nome: 'Gestor(a) da Obra',
                         },
                     },
                 });
 
                 if (pessoasGestoras == 0)
                     throw new HttpException(
-                        `orgao_gestor_id| Órgão não possui usuários com o perfil Gestor da Obra`,
+                        `orgao_gestor_id| Órgão não possui usuários com o perfil Gestor(a) da Obra`,
                         400
                     );
             }
@@ -3899,7 +3899,7 @@ export class ProjetoService {
                     PessoaPerfil: {
                         some: {
                             perfil_acesso: {
-                                nome: 'Colaborador de obra no órgão',
+                                nome: 'Colaborador(a) de obra no órgão',
                             },
                         },
                     },
