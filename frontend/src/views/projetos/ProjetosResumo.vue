@@ -576,6 +576,28 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
       <dl class="flex g2 flexwrap">
         <div class="f1 mb1">
           <dt class="t12 uc w700 mb05 tamarelo">
+            {{ schema.fields.orgao_gestor_id.spec.label }}
+
+            <SmaeTooltip :texto="schema.fields.orgao_gestor_id.spec.meta.balaoInformativo" />
+          </dt>
+          <dd class="t13">
+            {{ emFoco?.orgao_gestor.sigla }} - {{ emFoco?.orgao_gestor.descricao }}
+          </dd>
+        </div>
+
+        <div class="f1 mb1">
+          <dt class="t12 uc w700 mb05 tamarelo">
+            {{ schema.fields.secretario_executivo.spec.label }}
+
+            <SmaeTooltip :texto="schema.fields.secretario_executivo.spec.meta.balaoInformativo" />
+          </dt>
+          <dd class="t13">
+            {{ emFoco?.secretario_executivo || '-' }}
+          </dd>
+        </div>
+
+        <div class="f1 mb1">
+          <dt class="t12 uc w700 mb05 tamarelo">
             {{ schema.fields.responsaveis_no_orgao_gestor.spec.label }}
 
             <SmaeTooltip
@@ -587,26 +609,6 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
               && Array.isArray(emFoco.responsaveis_no_orgao_gestor)
               ? emFoco?.responsaveis_no_orgao_gestor?.map((x) => x.nome_exibicao || x).join(', ')
               : '-' }}
-          </dd>
-        </div>
-        <div class="f1 mb1">
-          <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.orgao_gestor_id.spec.label }}
-
-            <SmaeTooltip :texto="schema.fields.orgao_gestor_id.spec.meta.balaoInformativo" />
-          </dt>
-          <dd class="t13">
-            {{ emFoco?.orgao_gestor.sigla }} - {{ emFoco?.orgao_gestor.descricao }}
-          </dd>
-        </div>
-        <div class="f1 mb1">
-          <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.secretario_executivo.spec.label }}
-
-            <SmaeTooltip :texto="schema.fields.secretario_executivo.spec.meta.balaoInformativo" />
-          </dt>
-          <dd class="t13">
-            {{ emFoco?.secretario_executivo || '-' }}
           </dd>
         </div>
       </dl>
