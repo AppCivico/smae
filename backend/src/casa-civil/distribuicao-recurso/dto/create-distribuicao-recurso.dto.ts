@@ -48,7 +48,7 @@ export class CreateDistribuicaoRecursoDto {
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Nome' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo 'Nome' deve ter no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     nome?: string;
 
     @IsNumberString(

@@ -72,7 +72,7 @@ export class CreateVariavelBaseDto {
     regiao_id?: number;
 
     @IsString()
-    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Título' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo 'Título' deve ter no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     titulo: string;
 
     /**
@@ -194,7 +194,7 @@ export class CreateVariavelBaseDto {
 
     @IsString()
     @IsOptional()
-    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Metodologia' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo 'Metodologia' deve ter no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     metodologia?: string | null;
 
     @IsString()

@@ -93,7 +93,7 @@ export class CreateEtapaDto {
      */
     @IsString({ message: 'titulo: Precisa ser alfanumérico' })
     @MinLength(1, { message: 'titulo: pelo menos um caractere' })
-    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Título' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo 'Título' deve ter no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     titulo: string;
 
     /**
