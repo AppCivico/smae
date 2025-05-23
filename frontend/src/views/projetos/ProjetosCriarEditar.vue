@@ -88,9 +88,9 @@ const {
 
 const portfolioId = Number.parseInt(route.query.portfolio_id, 10) || undefined;
 const possíveisGestores = ref([]);
-const buscaDePossíveisGestoresPendente = ref(false);
-const possíveisColaboradores = ref([]);
-const buscaDePossíveisColaboradoresPendente = ref(false);
+const buscaDePossiveisGestoresPendente = ref(false);
+const possiveisGerentes = ref([]);
+const buscaDePossiveisGerentesPendente = ref(false);
 const portfóliosDisponíveis = computed(() => {
   if (!emFoco.value?.portfolio_id) {
     return [];
@@ -114,7 +114,7 @@ const possíveisGestoresPorÓrgãoId = computed(() => possíveisGestores.value
     return acc;
   }, {}));
 
-const possiveisColaboradoresPorOrgaoId = computed(() => possíveisColaboradores.value
+const possiveisGerentesPorOrgaoId = computed(() => possiveisGerentes.value
   .reduce((acc, cur) => {
     if (!acc[cur.orgao_id]) {
       acc[cur.orgao_id] = [];
@@ -123,7 +123,7 @@ const possiveisColaboradoresPorOrgaoId = computed(() => possíveisColaboradores.
     return acc;
   }, {}));
 
-const orgaosDisponiveisPorPortolio = computed(() => portfolioStore.lista.reduce((acc, cur) => {
+const orgaosDisponiveisPorPortfolio = computed(() => portfolioStore.lista.reduce((acc, cur) => {
   acc[cur.id] = cur.orgaos.filter((x) => !!órgãosQueTemResponsáveisEPorId.value?.[x.id]) || [];
   return acc;
 }, {}));
@@ -181,8 +181,8 @@ async function buscarArvoreDeMetas(valorOuEvento) {
   }
 }
 
-async function buscarPossíveisGestores() {
-  buscaDePossíveisGestoresPendente.value = true;
+async function buscarPossiveisGestores() {
+  buscaDePossiveisGestoresPendente.value = true;
   try {
     const { linhas } = await requestS.get(`${baseUrl}/pessoa`, { gestor_de_projeto: true });
 
@@ -194,24 +194,24 @@ async function buscarPossíveisGestores() {
   } catch (error) {
     alertStore.error(error);
   } finally {
-    buscaDePossíveisGestoresPendente.value = false;
+    buscaDePossiveisGestoresPendente.value = false;
   }
 }
 
-async function buscarPossíveisColaboradores() {
-  buscaDePossíveisColaboradoresPendente.value = true;
+async function buscarPossiveisGerentes() {
+  buscaDePossiveisGerentesPendente.value = true;
   try {
-    const { linhas } = await requestS.get(`${baseUrl}/pessoa`, { colaborador_de_projeto: true });
+    const { linhas } = await requestS.get(`${baseUrl}/pessoa`, { gerente_de_projeto: true });
 
     if (Array.isArray(linhas)) {
-      possíveisColaboradores.value = linhas;
+      possiveisGerentes.value = linhas;
     } else {
-      throw new Error('Lista de Responsáveis fora do formato esperado');
+      throw new Error('Lista de Gestores fora do formato esperado');
     }
   } catch (error) {
     alertStore.error(error);
   } finally {
-    buscaDePossíveisColaboradoresPendente.value = false;
+    buscaDePossiveisGerentesPendente.value = false;
   }
 }
 
@@ -275,12 +275,12 @@ const onSubmit = handleSubmit(async () => {
 });
 
 function iniciar() {
-  if (!possíveisGestores.value.length && !buscaDePossíveisGestoresPendente.value) {
-    buscarPossíveisGestores();
+  if (!possíveisGestores.value.length && !buscaDePossiveisGestoresPendente.value) {
+    buscarPossiveisGestores();
   }
 
-  if (!possíveisColaboradores.value.length && !buscaDePossíveisColaboradoresPendente.value) {
-    buscarPossíveisColaboradores();
+  if (!possiveisGerentes.value.length && !buscaDePossiveisGerentesPendente.value) {
+    buscarPossiveisGerentes();
   }
 
   projetosStore.buscarPdms({ apenas_pdm: false });
@@ -367,10 +367,10 @@ watch(itemParaEdicao, (novoValor) => {
             v-for="item in portfolioStore.lista"
             :key="item.id"
             :value="item.id"
-            :disabled="!orgaosDisponiveisPorPortolio[item.id]?.length"
+            :disabled="!orgaosDisponiveisPorPortfolio[item.id]?.length"
           >
             {{ item.titulo }}
-            <template v-if="!orgaosDisponiveisPorPortolio[item.id]?.length">
+            <template v-if="!orgaosDisponiveisPorPortfolio[item.id]?.length">
               (órgão sem responsáveis cadastrados)
             </template>
           </option>
@@ -1364,18 +1364,16 @@ watch(itemParaEdicao, (novoValor) => {
               error: errors.orgao_gestor_id,
               loading: ÓrgãosStore.organs.loading,
             }"
-            :disabled="
-              desabilitarTodosCampos.camposComuns
-                || !orgaosDisponiveisPorPortolio[values.portfolio_id]?.length
-            "
-            :aria-busy="buscaDePossíveisGestoresPendente"
+            :disabled="desabilitarTodosCampos.camposComuns
+              || !orgaosDisponiveisPorPortfolio[values.portfolio_id]?.length"
+            :aria-busy="buscaDePossiveisGestoresPendente"
             @change="setFieldValue('responsaveis_no_orgao_gestor', [])"
           >
             <option :value="0">
               Selecionar
             </option>
             <option
-              v-for="item in orgaosDisponiveisPorPortolio[values.portfolio_id] || []"
+              v-for="item in orgaosDisponiveisPorPortfolio[values.portfolio_id] || []"
               :key="item.id"
               :value="item.id"
               :disabled="!possíveisGestoresPorÓrgãoId[item.id]?.length"
@@ -1408,7 +1406,7 @@ watch(itemParaEdicao, (novoValor) => {
           />
 
           <AutocompleteField
-            :aria-busy="buscaDePossíveisGestoresPendente"
+            :aria-busy="buscaDePossiveisGestoresPendente"
             name="responsaveis_no_orgao_gestor"
             :controlador="{
               busca: '',
@@ -1445,10 +1443,8 @@ watch(itemParaEdicao, (novoValor) => {
               error: errors.orgao_responsavel_id,
               loading: portfolioStore.chamadasPendentes.lista
             }"
-            :disabled="
-              desabilitarTodosCampos.camposComuns
-                || !órgãosQueTemResponsáveis?.length
-            "
+            :disabled="desabilitarTodosCampos.camposComuns
+              || !órgãosQueTemResponsáveis?.length"
             @change="setFieldValue('responsavel_id', 0)"
             @update:model-value="values.orgao_responsavel_id = Number(values.orgao_responsavel_id)
               || null"
@@ -1460,7 +1456,7 @@ watch(itemParaEdicao, (novoValor) => {
               v-for="item in órgãosQueTemResponsáveis"
               :key="item"
               :value="item.id"
-              :disabled="!possiveisColaboradoresPorOrgaoId[item.id]?.length"
+              :disabled="!possiveisGerentesPorOrgaoId[item.id]?.length"
               :title="item.descricao?.length > 36 ? item.descricao : null"
             >
               {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
@@ -1487,8 +1483,8 @@ watch(itemParaEdicao, (novoValor) => {
               loading: portfolioStore.chamadasPendentes.lista
             }"
             :disabled="desabilitarTodosCampos.camposComuns
-              || !possíveisGestoresPorÓrgãoId[values.orgao_responsavel_id]?.length"
-            :aria-busy="buscaDePossíveisColaboradoresPendente"
+              || !possiveisGerentesPorOrgaoId[values.orgao_responsavel_id]?.length"
+            :aria-busy="buscaDePossiveisGerentesPendente"
             @update:model-value="values.responsavel_id = Number(values.responsavel_id)
               || null"
           >
@@ -1497,7 +1493,7 @@ watch(itemParaEdicao, (novoValor) => {
             </option>
             <option
               v-for="item in
-                possíveisGestoresPorÓrgãoId[values.orgao_responsavel_id] || []"
+                possiveisGerentesPorOrgaoId[values.orgao_responsavel_id] || []"
               :key="item.id"
               :value="item.id"
             >
