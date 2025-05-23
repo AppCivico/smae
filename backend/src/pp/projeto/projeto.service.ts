@@ -613,8 +613,6 @@ export class ProjetoService {
         // começa listando todos os portfolios
         const portfolios = await this.portfolioService.findAll(tipo, user, true);
         if (tipo == 'PP') {
-            if (!dto.orgaos_participantes || dto.orgaos_participantes.length == 0)
-                throw new HttpException('Campo órgão participantes obrigatório para projetos', 400);
             if (!dto.orgao_responsavel_id)
                 throw new HttpException('Campo órgão responsável obrigatório para projetos', 400);
             if (!dto.responsavel_id) throw new HttpException('Campo responsável obrigatório para projetos', 400);
