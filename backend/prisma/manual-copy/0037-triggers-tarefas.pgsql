@@ -465,7 +465,7 @@ BEGIN
             duracao_planejado = (v_tmp->>'duracao_planejado')::int,
             inicio_planejado = (v_tmp->>'inicio_planejado')::date,
             termino_planejado = (v_tmp->>'termino_planejado')::date,
-            atualizado_em = now()
+            atualizado_em = now() at time zone 'UTC'
         where me.id = r.tarefa_id
         and (
             (duracao_planejado IS DISTINCT FROM (v_tmp->>'duracao_planejado')::int) OR
@@ -548,7 +548,7 @@ BEGIN
             duracao_planejado = (v_tmp->>'duracao_planejado')::int,
             inicio_planejado = (v_tmp->>'inicio_planejado')::date,
             termino_planejado = (v_tmp->>'termino_planejado')::date,
-            atualizado_em = now()
+            atualizado_em = now() at time zone 'UTC'
         where me.id = r.tarefa_id
         and (
             (duracao_planejado IS DISTINCT FROM (v_tmp->>'duracao_planejado')::int) OR
@@ -674,7 +674,7 @@ BEGIN
             percentual_concluido = round(v_percentual_concluido * 100),
             duracao_planejado = v_duracao_planejado,
             duracao_real = v_duracao_real,
-            atualizado_em = now()
+            atualizado_em = now() at time zone 'UTC'
         WHERE t.id = OLD.tarefa_pai_id
         AND (
             (inicio_planejado IS DISTINCT FROM v_inicio_planejado) OR
@@ -805,7 +805,7 @@ BEGIN
             percentual_concluido = round(v_percentual_concluido * 100.0),
             duracao_planejado = v_duracao_planejado,
             duracao_real = v_duracao_real,
-            atualizado_em = now()
+            atualizado_em = now() at time zone 'UTC'
         WHERE t.id = NEW.tarefa_pai_id
         AND (
             (inicio_planejado IS DISTINCT FROM v_inicio_planejado) OR
