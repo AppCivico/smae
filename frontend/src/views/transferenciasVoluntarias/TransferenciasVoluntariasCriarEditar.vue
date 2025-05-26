@@ -662,12 +662,12 @@ watch(itemParaEdicao, (novosValores) => {
       <SmaeText
         name="objeto"
         :model-value="values.objeto"
-        :schema="schena"
+        :schema="schema"
         as="textarea"
         class="inputtext light mb1"
         rows="5"
         maxlength="1000"
-        esconder-limitador
+        esconder-contador
       />
       <ErrorMessage
         class="error-msg mb1"

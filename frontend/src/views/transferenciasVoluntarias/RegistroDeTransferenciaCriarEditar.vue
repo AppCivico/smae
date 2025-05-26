@@ -441,7 +441,7 @@ watch(itemParaEdicao, async (novosValores) => {
             :schema="schema"
             maxlength="1000"
             anular-vazio
-            esconder-limitador
+            esconder-contador
           />
         </div>
       </div>

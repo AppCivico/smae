@@ -6,6 +6,7 @@ import { useAuthStore } from '@/stores/auth.store';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import dinheiro from '@/helpers/dinheiro';
 import truncate from '@/helpers/texto/truncate';
+import combinadorDeListas from '@/helpers/combinadorDeListas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 
@@ -261,8 +262,9 @@ watch([
           {{ item.partido?.length ? item.partido?.map((e) => e.sigla).join(', ') : '-' }}
         </td>
         <td>
-          {{ item.parlamentar?.length ? item.parlamentar?.map(
-            (e) => e.nome_popular).join(', ') : '-'
+          {{
+            item.parlamentar?.length
+              ? combinadorDeListas(item.parlamentar, ', ', 'nome_popular') : '-'
           }}
         </td>
         <td>
@@ -277,8 +279,13 @@ watch([
         <td>
           {{ item.fase_status? item.fase_status : '-' }}
         </td>
-        <td :title="item.objeto">
-          {{ truncate(item.objeto, 35) }}
+        <td>
+          <span
+            :title="
+              item.objeto.length > 35 ?
+                item.objeto : undefined
+            "
+          >{{ truncate(item.objeto, 35) }}</span>
         </td>
         <td class="cell--number">
           {{ item.valor ? `R$${dinheiro(item.valor)}` : '-' }}
