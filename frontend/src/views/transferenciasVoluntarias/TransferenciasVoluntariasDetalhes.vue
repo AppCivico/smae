@@ -1,6 +1,8 @@
 <script setup>
 import { storeToRefs } from 'pinia';
-import { computed, defineAsyncComponent, ref } from 'vue';
+import {
+  computed, defineAsyncComponent, ref, nextTick,
+} from 'vue';
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import SmallModal from '@/components/SmallModal.vue';
 import ListaDeDistribuicaoItem from '@/components/transferencia/ListaDeDistribuicaoItem.vue';
@@ -115,7 +117,9 @@ function formatarTexto(texto) {
 
 TransferenciasVoluntarias.buscarItem(props.transferenciaId);
 distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
-window.scrollTo(0, 0);
+nextTick(() => {
+  window.scrollTo(0, 0);
+});
 </script>
 <template>
   <header class="flex flexwrap spacebetween center mb2 g2">
