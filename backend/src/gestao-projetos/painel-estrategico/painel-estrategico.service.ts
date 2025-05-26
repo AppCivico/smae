@@ -778,7 +778,7 @@ export class PainelEstrategicoService {
             JOIN projeto_base p ON (p.id IN (${projectIds}) OR ${hasProjetos} = -1)
             LEFT JOIN tarefa_custos tc ON tc.ano_referencia = years.yr AND tc.projeto_id = p.id
                 AND (tc.projeto_id IN (${projectIds}) OR ${hasProjetos} = -1)
-            JOIN orc_realizado orcr ON orcr.ano_referencia = years.yr AND orcr.projeto_id = p.id
+            LEFT JOIN orc_realizado orcr ON orcr.ano_referencia = years.yr AND orcr.projeto_id = p.id
                 AND (orcr.projeto_id IN (${projectIds}) OR ${hasProjetos} = -1 )
 
             GROUP BY years.yr
@@ -936,7 +936,7 @@ export class PainelEstrategicoService {
                              and p.arquivado = false
                              and p.tipo = 'PP'
                                ${strPortfolio2}) p
-                              inner join (select vp.nome,
+                              left join (select vp.nome,
                                                  vp.id                          as projeto_id,
                                                  sum(orcr.soma_valor_empenho)   as soma_valor_empenho,
                                                  sum(orcr.soma_valor_liquidado) as soma_valor_liquidado
