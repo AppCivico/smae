@@ -667,6 +667,7 @@ watch(itemParaEdicao, (novosValores) => {
         class="inputtext light mb1"
         rows="5"
         maxlength="1000"
+        esconder-limitador
       />
       <ErrorMessage
         class="error-msg mb1"

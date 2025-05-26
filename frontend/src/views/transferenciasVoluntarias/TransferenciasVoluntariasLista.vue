@@ -5,6 +5,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth.store';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import dinheiro from '@/helpers/dinheiro';
+import truncate from '@/helpers/texto/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 
@@ -260,7 +261,9 @@ watch([
           {{ item.partido?.length ? item.partido?.map((e) => e.sigla).join(', ') : '-' }}
         </td>
         <td>
-          {{ item.parlamentar?.length ? item.parlamentar?.map((e) => e.nome_popular).join(', ') : '-' }}
+          {{ item.parlamentar?.length ? item.parlamentar?.map(
+            (e) => e.nome_popular).join(', ') : '-'
+          }}
         </td>
         <td>
           {{ item.orgao_gestor?.length ? item.orgao_gestor?.map((e) => e.sigla).join(', ') : '-' }}
@@ -274,8 +277,8 @@ watch([
         <td>
           {{ item.fase_status? item.fase_status : '-' }}
         </td>
-        <td>
-          {{ item.objeto }}
+        <td :title="item.objeto">
+          {{ truncate(item.objeto, 35) }}
         </td>
         <td class="cell--number">
           {{ item.valor ? `R$${dinheiro(item.valor)}` : '-' }}

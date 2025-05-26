@@ -42,6 +42,10 @@ const SmaeTextProps = {
     type: Object as PropType<AnyObjectSchema>,
     default: () => null,
   },
+  esconderLimitador: {
+    type: Boolean,
+    default: false,
+  },
 };
 
 export default SmaeTextProps;
