@@ -529,7 +529,7 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
     CadastroPainelExternoRegra: [['SMAE.espectador_de_painel_externo', 'Visualizador de painel externo']],
     Config: [
         ['SMAE.sysadmin', 'SMAE.sysadmin'],
-        ['SMAE.login_suspenso', 'Impede o login do usuário, mas mantém os dados e possibilidade ser responsável'],
+        ['SMAE.login_suspenso', 'Impede o login do(a) usuário(a), mas mantém os dados e possibilidade ser responsável'],
         ['Config.editar', 'Editar configuração de textos do sistema'],
         ['SMAE.superadmin', 'Faz parte do perfil de Administrador Geral'],
         ['SMAE.loga_direto_na_analise', 'Acesso direto à parte de análise ao fazer login'],
