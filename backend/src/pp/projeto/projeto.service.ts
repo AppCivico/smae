@@ -2331,7 +2331,9 @@ export class ProjetoService {
         console.log('permissoes', permissoes);
         console.log('=========================\n\n\n\n\n\n\n');
 
-        if (user && readonly === 'ReadWriteTeam' && !permissoes.sou_responsavel && !permissoes.apenas_leitura) {
+
+        // não precisa testar pelo pode_editar_apenas_responsaveis_pos_planejamento já que lá ele é sou_responsavel=true
+        if (user && readonly === 'ReadWriteTeam' && !permissoes.sou_responsavel && permissoes.apenas_leitura) {
             // Lança exceção se escrita específica da equipe for solicitada, mas usuário não está atribuído OU não tem capacidade de escrita
             // (Se eles têm escrita geral OU específica, apenas_leitura será falso)
             throw new HttpException('Você não faz parte da equipe ou não tem permissão para editar este projeto.', 400);
