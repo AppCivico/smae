@@ -981,7 +981,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
     },
     {
         nome: atualizarNomePerfil('Escritório de projetos', ['Órgão Gestor', 'Gestor de projetos']),
-        descricao: 'Pode ser escolhido(a) como responsável no órgão gestor de projetos',
+        descricao: 'Pode ser escolhido(a) como assessor no escritório de projetos e tem acesso irrestrito aos projetos',
         privilegios: [
             'Reports.executar.Projetos', // TODO remover, afinal, precisa dos filtros no reports
             'SMAE.gestor_de_projeto',
@@ -1006,7 +1006,8 @@ const PerfilAcessoConfig: PerfilConfigArray = [
     },
     {
         nome: atualizarNomePerfil('Gerente de Projeto', []),
-        descricao: '',
+        descricao:
+            'Pode ser escolhido(a) como gerente do projeto e tem acesso irrestrito na fase de registro e planejamento, e após essa fase apenas edição da equipe do projeto e registros de acompanhamento',
         privilegios: [
             'Reports.executar.Projetos', // TODO remover, afinal, precisa dos filtros no reports
             'SMAE.colaborador_de_projeto', // manter para que seja exposto no mesmo local que os colaboradores
@@ -1037,7 +1038,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
     {
         nome: atualizarNomePerfil('Equipe de projeto', ['Colaborador de Projetos']),
         descricao:
-            'Pode ser escolhido(a) como responsável no órgão responsável pelo projeto e contribuir durante a fase de registro e planejamento, e dados de execução do cronograma e acompanhamento do risco',
+            'Pode ser escolhido(a) como participante da equipe do projeto e contribuir durante a fase de registro e planejamento, e aos dados de execução do cronograma e acompanhamento do risco',
         privilegios: [
             'Reports.executar.Projetos', // TODO remover, afinal, precisa dos filtros no reports
             'SMAE.colaborador_de_projeto',
