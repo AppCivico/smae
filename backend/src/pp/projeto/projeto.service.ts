@@ -2331,7 +2331,6 @@ export class ProjetoService {
         console.log('permissoes', permissoes);
         console.log('=========================\n\n\n\n\n\n\n');
 
-
         // não precisa testar pelo pode_editar_apenas_responsaveis_pos_planejamento já que lá ele é sou_responsavel=true
         if (user && readonly === 'ReadWriteTeam' && !permissoes.sou_responsavel && permissoes.apenas_leitura) {
             // Lança exceção se escrita específica da equipe for solicitada, mas usuário não está atribuído OU não tem capacidade de escrita
@@ -3537,7 +3536,10 @@ export class ProjetoService {
                 projeto.status == ProjetoStatus.Suspenso ||
                 projeto.status == ProjetoStatus.Fechado
             )
-                throw new HttpException('Cronograma não pode ser clonado, pois está com status inválido.', 400);
+                throw new HttpException(
+                    `Cronograma não pode ser clonado, pois está com status ${projeto.status}.`,
+                    400
+                );
 
             // O true é para indicar que é clone de projeto e não de transferência.
             await prismaTx.$queryRaw`CALL clone_tarefas('true'::boolean, ${dto.projeto_fonte_id}::int, ${projetoId}::int);`;
