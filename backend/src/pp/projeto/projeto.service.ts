@@ -2188,7 +2188,7 @@ export class ProjetoService {
 
             // Determina se o estado especial "editar apenas responsabilidades" se aplica
             permissoes.pode_editar_apenas_responsaveis_pos_planejamento =
-                ehAposPlanejamento && ehGerenteDeProjetoRole && permissoes.sou_responsavel;
+                ehAposPlanejamento && ehGerenteDeProjetoRole && projeto.responsavel_id == user.id;
 
             if (permissoes.pode_editar_apenas_responsaveis_pos_planejamento) {
                 this.logger.verbose(
@@ -2322,7 +2322,12 @@ export class ProjetoService {
 
         // --- Verificações Finais de Validação ---
         // Estas verificações precisam considerar o status geral de apenas_leitura
-        if (user && readonly === 'ReadWrite' && permissoes.apenas_leitura) {
+        if (
+            user &&
+            readonly === 'ReadWrite' &&
+            permissoes.apenas_leitura &&
+            !permissoes.pode_editar_apenas_responsaveis_pos_planejamento
+        ) {
             // Lança exceção se endpoint ReadWrite for chamado, mas usuário NÃO tem acesso de escrita
             throw new HttpException('Você não tem permissão para editar este projeto.', 400);
         }
