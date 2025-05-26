@@ -82,7 +82,7 @@ defineProps({
             v-for="(projeto, index) in projetos"
             :key="index"
           >
-            <td class="tl">
+            <th class="tl">
               <router-link
                 :title="projeto.nome_projeto.length > 60
                   ? projeto.nome_projeto
@@ -96,7 +96,7 @@ defineProps({
               >
                 {{ truncate(projeto.nome_projeto, 60) }}
               </router-link>
-            </td>
+            </th>
             <td class="tl">
               {{ projeto.secretaria?.codigo || ' - ' }}
             </td>
