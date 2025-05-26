@@ -238,7 +238,20 @@
         rolagem-horizontal
         :colunas="colunas"
         :dados="transferencias"
-      />
+      >
+        <template #celula:identificador="{ linha }">
+          <SmaeLink
+            v-if="linha?.id"
+            :to="{
+              name: 'TransferenciasVoluntariasDetalhes',
+              params: { transferenciaId: linha.id },
+            }"
+            class="tprimary w700"
+          >
+            {{ linha.identificador }}
+          </SmaeLink>
+        </template>
+      </SmaeTable>
       <MenuPaginacao
         v-if="paginacaoTransferencias.temMais"
         class="mt2 bgt"
