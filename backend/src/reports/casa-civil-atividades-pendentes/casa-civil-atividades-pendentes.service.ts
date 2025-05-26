@@ -106,7 +106,7 @@ export class CasaCivilAtividadesPendentesService implements ReportableService {
             });
             const linhas = json2csvParser.parse(rows);
             out.push({
-                name: 'casa-civil-atividades-pendentes.csv',
+                name: 'atividades-pendentes.csv',
                 buffer: Buffer.from(linhas, 'utf8'),
             });
         }
