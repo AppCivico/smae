@@ -1,10 +1,4 @@
 <script setup>
-import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
-import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
-import { transferenciasVoluntarias as schema } from '@/consts/formSchemas';
-import interfacesDeTransferências from '@/consts/interfacesDeTransferências';
-import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
-import truncate from '@/helpers/texto/truncate';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage, Field,
@@ -14,6 +8,12 @@ import {
 } from 'vee-validate';
 import { computed, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
+import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
+import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
+import { transferenciasVoluntarias as schema } from '@/consts/formSchemas';
+import interfacesDeTransferências from '@/consts/interfacesDeTransferências';
+import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
+import truncate from '@/helpers/texto/truncate';
 
 import CampoComBuscaRemota from '@/components/campoComBuscaRemota/CampoComBuscaRemota.vue';
 import { useAlertStore } from '@/stores/alert.store';
@@ -659,12 +659,14 @@ watch(itemParaEdicao, (novosValores) => {
         name="objeto"
         :schema="schema"
       />
-      <Field
+      <SmaeText
         name="objeto"
+        :model-value="values.objeto"
+        :schema="schena"
         as="textarea"
         class="inputtext light mb1"
         rows="5"
-        maxlength="2048"
+        maxlength="1000"
       />
       <ErrorMessage
         class="error-msg mb1"
