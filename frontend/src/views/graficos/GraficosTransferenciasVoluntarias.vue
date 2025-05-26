@@ -240,7 +240,7 @@
         :dados="transferencias"
       >
         <template #celula:identificador="{ linha }">
-          <router-link
+          <SmaeLink
             v-if="linha?.id"
             :to="{
               name: 'TransferenciasVoluntariasDetalhes',
@@ -249,7 +249,7 @@
             class="tprimary w700"
           >
             {{ linha.identificador }}
-          </router-link>
+          </SmaeLink>
         </template>
       </SmaeTable>
       <MenuPaginacao
