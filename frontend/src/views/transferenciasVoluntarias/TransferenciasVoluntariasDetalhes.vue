@@ -115,6 +115,7 @@ function formatarTexto(texto) {
 
 TransferenciasVoluntarias.buscarItem(props.transferenciaId);
 distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
+window.scrollTo(0, 0);
 </script>
 <template>
   <header class="flex flexwrap spacebetween center mb2 g2">
