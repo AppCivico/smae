@@ -102,7 +102,7 @@ const classeDeCondicao = computed(() => {
       @change="emitValue($event, true)"
     >
     <span
-      v-if="!$props.esconderLimitador && max"
+      v-if="!$props.esconderContador && max"
       class="smae-text__contagem-de-caracteres"
     >
       <output

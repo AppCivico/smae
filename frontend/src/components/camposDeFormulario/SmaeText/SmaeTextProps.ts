@@ -42,7 +42,7 @@ const SmaeTextProps = {
     type: Object as PropType<AnyObjectSchema>,
     default: () => null,
   },
-  esconderLimitador: {
+  esconderContador: {
     type: Boolean,
     default: false,
   },
