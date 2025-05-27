@@ -35,6 +35,7 @@ import {
 import { PrismaHelpers } from '../../common/PrismaHelpers';
 import { WorkflowService } from '../workflow/configuracao/workflow.service';
 import { Date2YMD } from '../../common/date2ymd';
+import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 
 class NextPageTokenJwtBody {
     offset: number;
@@ -1237,7 +1238,17 @@ export class TransferenciaService {
                 fase_status: r.workflow_fase_atual && faseStatusAtual ? faseStatusAtual : null,
                 classificacao: r.classificacao,
                 orgao_gestor: r.distribuicao_recursos.length
-                    ? r.distribuicao_recursos.map((e) => e.orgao_gestor)
+                    ? r.distribuicao_recursos.reduce((acc: IdSiglaDescricao[], curr) => {
+                          // Se o órgão gestor já foi adicionado, não adiciona novamente.
+                          if (!acc.find((e) => e.id === curr.orgao_gestor.id)) {
+                              acc.push({
+                                  id: curr.orgao_gestor.id,
+                                  sigla: curr.orgao_gestor.sigla,
+                                  descricao: curr.orgao_gestor.descricao,
+                              });
+                          }
+                          return acc;
+                      }, [] as IdSiglaDescricao[])
                     : null,
             } satisfies TransferenciaDto;
         });
