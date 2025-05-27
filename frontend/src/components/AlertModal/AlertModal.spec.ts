@@ -39,7 +39,7 @@ describe('AlertModal', () => {
     vi.clearAllMocks();
   });
 
-  it('monta apenas um diálogo para uma mensagem de sucesso', async () => {
+  it('monta diálogo para uma mensagem de sucesso', async () => {
     envelope = montar();
     const alertStore = useAlertStore();
 
@@ -57,11 +57,35 @@ describe('AlertModal', () => {
     expect(mensagens[0].text()).toBe('Testando abertura!');
   });
 
-  it('monta apenas um diálogo para uma mensagem de erro', async () => {
+  it('monta diálogo para uma mensagem de erro', async () => {
     envelope = montar();
 
     const alertStore = useAlertStore();
 
+    alertStore.error('Testando mensagem de erro!');
+
+    await nextTick();
+
+    const dialogos = envelope.findAll('dialog');
+    expect(dialogos).toHaveLength(1);
+    expect(dialogos[0].attributes('open')).toBeDefined();
+    expect(dialogos[0].classes()).toContain('alert-danger');
+
+    const mensagens = envelope.findAll('[data-test="mensagem"]');
+    expect(mensagens).toHaveLength(1);
+    expect(mensagens[0].text()).toBe('Testando mensagem de erro!');
+  });
+
+  it('ignora múltiplos erros iguais', async () => {
+    envelope = montar();
+
+    const alertStore = useAlertStore();
+
+    alertStore.error('Testando mensagem de erro!');
+    alertStore.error('Testando mensagem de erro!');
+    alertStore.error('Testando mensagem de erro!');
+    alertStore.error('Testando mensagem de erro!');
+    alertStore.error('Testando mensagem de erro!');
     alertStore.error('Testando mensagem de erro!');
 
     await nextTick();
@@ -214,5 +238,54 @@ describe('AlertModal', () => {
     expect(spyFallback).toHaveBeenCalled();
 
     expect(envelope.find('dialog').exists()).toBe(false);
+  });
+
+  it('exibe um diálogo de confirmação com função que abre novo diálogo', async () => {
+    envelope = montar();
+    const alertStore = useAlertStore();
+
+    alertStore.confirmAction('Testando confirmação!', () => alertStore.success('segundo diálogo!'), 'aceitar');
+
+    await nextTick();
+
+    const dialogo = envelope.get('dialog');
+    expect(dialogo.attributes('open')).toBeDefined();
+    expect(dialogo.classes()).toContain('confirmAction');
+    const botaoDeAceite = dialogo.get('[data-test="aceite"]');
+
+    await botaoDeAceite.trigger('click');
+
+    await nextTick();
+
+    const dialogos = envelope.findAll('dialog');
+    expect(dialogos).toHaveLength(1);
+    expect(dialogos[0].attributes('open')).toBeDefined();
+    expect(dialogos[0].classes()).toContain('alert-success');
+  });
+
+  it('exibe um diálogo de confirmação com função que abre novo diálogo após uma promessa', async () => {
+    envelope = montar();
+    const alertStore = useAlertStore();
+
+    alertStore.confirmAction('Testando confirmação!', () => Promise.resolve().then(() => alertStore.success('Segundo diálogo!')), 'aceitar');
+
+    await nextTick();
+
+    const dialogo = envelope.get('dialog');
+    expect(dialogo.attributes('open')).toBeDefined();
+    expect(dialogo.classes()).toContain('confirmAction');
+    expect(dialogo.get('[data-test="mensagem"]').text()).toBe('Testando confirmação!');
+    const botaoDeAceite = dialogo.get('[data-test="aceite"]');
+
+    await botaoDeAceite.trigger('click');
+
+    await nextTick();
+
+    const dialogos = envelope.findAll('dialog');
+
+    expect(dialogos).toHaveLength(1);
+    expect(dialogos[0].get('[data-test="mensagem"]').text()).toBe('Segundo diálogo!');
+    expect(dialogos[0].attributes('open')).toBeDefined();
+    expect(dialogos[0].classes()).toContain('alert-success');
   });
 });
