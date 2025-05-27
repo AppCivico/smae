@@ -16,11 +16,49 @@ type Emits = {
   (e: 'change', value: string): void
 };
 
-const props = withDefaults(defineProps<Props>(), {
-  name: undefined,
-  separador: '-',
-  diaPrefixo: undefined,
-  modelValue: undefined,
+const mesesDoAno = [
+  { valor: '01', nome: 'Janeiro' },
+  { valor: '02', nome: 'Fevereiro' },
+  { valor: '03', nome: 'Março' },
+  { valor: '04', nome: 'Abril' },
+  { valor: '05', nome: 'Maio' },
+  { valor: '06', nome: 'Junho' },
+  { valor: '07', nome: 'Julho' },
+  { valor: '08', nome: 'Agosto' },
+  { valor: '09', nome: 'Setembro' },
+  { valor: '10', nome: 'Outubro' },
+  { valor: '11', nome: 'Novembro' },
+  { valor: '12', nome: 'Dezembro' },
+];
+
+const navegadorSuportaInputMonth = (() => {
+  const input = document.createElement('input');
+  input.setAttribute('type', 'month');
+  return input.type === 'month';
+})();
+
+const props = defineProps({
+  type: {
+    type: String,
+    default: 'month',
+    validator: (value: string) => ['month', 'text', 'composto'].includes(value),
+  },
+  name: {
+    type: String,
+    default: undefined,
+  },
+  separador: {
+    type: String,
+    default: '-',
+  },
+  diaPrefixo: {
+    type: String,
+    default: undefined,
+  },
+  modelValue: {
+    type: String,
+    default: undefined,
+  },
 });
 const emit = defineEmits<Emits>();
 
@@ -28,6 +66,15 @@ let setValue: (value: unknown) => void | undefined;
 
 const localValue = ref<string>('');
 const valorExibicao = computed(() => localValue.value.replace(props.separador, '/'));
+const tipoParaExibir = computed(() => {
+  if (navegadorSuportaInputMonth && props.type === 'month') {
+    return 'month';
+  }
+  if (props.type === 'composto') {
+    return 'composto';
+  }
+  return 'text';
+});
 
 function obterMascara(valor: string) {
   if (!valor) {
@@ -121,10 +168,10 @@ watch(() => props.modelValue, () => {
 </script>
 
 <template>
-  <input
-    class="inputtext"
-    :value="valorExibicao"
-    @input="handleInput"
-    @blur="handleAbandonarElemento"
-  >
-</template>
+    <input
+      class="inputtext"
+      :value="valorExibicao"
+      @input="handleInput"
+      @blur="handleAbandonarElemento"
+    >
+  </template>

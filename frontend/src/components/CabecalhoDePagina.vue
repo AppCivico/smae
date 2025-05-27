@@ -4,7 +4,9 @@
     v-bind="$attrs"
   >
     <TituloDePagina id="titulo-da-pagina">
-      <slot name="titulo" />
+      <slot name="titulo">
+        {{ $props.titulo }}
+      </slot>
     </TituloDePagina>
 
     <hr class="f1">
@@ -26,6 +28,10 @@ defineProps({
   formularioSujo: {
     type: Boolean,
     default: false,
+  },
+  titulo: {
+    type: String,
+    default: '',
   },
 });
 </script>
