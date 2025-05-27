@@ -1326,7 +1326,10 @@ export const obras = object({
   mdo_n_familias_beneficiadas: number()
     .label('Número de famílias beneficiadas')
     .nullable()
-    .min(0),
+    .min(0)
+    .meta({
+      serialize: (valor) => (valor ? Number(valor) : null),
+    }),
   mdo_n_unidades_habitacionais: number()
     .label('Número de unidades')
     .min(0)
