@@ -7,6 +7,7 @@ DECLARE
     v_indicador RECORD;
     v_formula_composta RECORD;
     v_variaveis_modified int[] := ARRAY[]::int[];
+    vEarlyReturnSerieConferida boolean;
 BEGIN
     -- Busca a variável e verifica se tem filhas
     SELECT
@@ -27,6 +28,30 @@ BEGIN
     IF NOT FOUND THEN
         RAISE EXCEPTION 'Variável % não encontrada', p_variavel_id;
     END IF;
+
+    -- Marca a análise para sincronização na variável mãe
+    UPDATE variavel_global_ciclo_analise
+    SET
+        sincronizar_serie_variavel = true
+    WHERE
+        variavel_id = p_variavel_id
+        AND referencia_data = p_data_valor
+        AND ultima_revisao = true
+        AND fase = 'Liberacao'
+        AND removido_em IS NULL;
+
+    SELECT value::boolean
+    INTO vEarlyReturnSerieConferida
+    FROM smae_config
+    WHERE key = 'EARLY_RETURN_SERIE_CONFERIDA'
+    LIMIT 1;
+
+    -- na teoria não precisamos mais do código abaixo, pois deixamos todo o controle para sempre passar na frente
+    -- e usar os valores diretamente da tabela do variavel_global_ciclo_analise
+    IF vEarlyReturnSerieConferida THEN
+        RETURN;
+    END IF;
+
 
     -- Se tem filhas, atualiza as filhas
     IF v_registro.tem_filhas THEN

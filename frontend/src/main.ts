@@ -1,23 +1,27 @@
+import type { Store } from 'pinia';
+import { createPinia } from 'pinia';
+import {
+  createApp, markRaw,
+} from 'vue';
+import type { RouteLocationNormalizedLoaded, Router } from 'vue-router';
 import CheckClose from '@/components/CheckClose.vue';
-import detectarPosicaoCongelada from '@/diretivas/detectarPosicaoCongelada';
 import ErrorComponent from '@/components/ErrorComponent.vue';
 import FormErrorsList from '@/components/FormErrorsList.vue';
-import LabelFromYup from '@/components/LabelFromYup.vue';
+import SmaeLabel from '@/components/camposDeFormulario/SmaeLabel.vue';
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import MigalhasDePão from '@/components/MigalhasDePao.vue';
 import SmaeLink from '@/components/SmaeLink.vue';
+import SmaeFieldsetSubmit from '@/components/SmaeFieldsetSubmit.vue';
+import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
 import TítuloDePágina from '@/components/TituloDaPagina.vue';
+import autofocus from '@/diretivas/autofocus';
+import detectarPosicaoCongelada from '@/diretivas/detectarPosicaoCongelada';
 import selecionarMultiplasOpcoes from '@/diretivas/selecionarMultiplasOpcoes';
 import type { RequestS } from '@/helpers/requestS';
 import requestS from '@/helpers/requestS';
 import consoleNaTemplate from '@/plugins/consoleNaTemplate';
-import type { Store } from 'pinia';
-import { createPinia } from 'pinia';
-import {
-  createApp, markRaw, nextTick,
-} from 'vue';
-import type { RouteLocationNormalizedLoaded, Router } from 'vue-router';
 import App from './App.vue';
+import CabecalhoDePagina from './components/CabecalhoDePagina.vue';
 import { router } from './router';
 
 const app = createApp(App);
@@ -124,37 +128,30 @@ app.directive('ScrollLockDebug', {
 });
 
 app.directive('selecionar-multiplas-opcoes', {
-  mounted: (el) => selecionarMultiplasOpcoes(el),
+  mounted: (el, binding) => selecionarMultiplasOpcoes(el, binding.value),
 });
 
 app.directive('detectar-posicao-congelada', detectarPosicaoCongelada);
 
-app.directive('focus', {
-  mounted: async (el, binding) => {
-    const { modifiers, value } = binding;
-
-    if (!!value || value === undefined) {
-      await nextTick();
-      el.focus();
-      if (modifiers.select && el instanceof HTMLInputElement) {
-        el.select();
-      }
-    }
-  },
-});
+app.directive('focus', autofocus);
 
 app.use(consoleNaTemplate);
 
 app.component('CheckClose', CheckClose);
 app.component('ErrorComponent', ErrorComponent);
 app.component('FormErrorsList', FormErrorsList);
-app.component('LabelFromYup', LabelFromYup);
+app.component('SmaeFieldsetSubmit', SmaeFieldsetSubmit);
+app.component('LabelFromYup', SmaeLabel);
+app.component('SmaeLabel', SmaeLabel);
 app.component('LoadingComponent', LoadingComponent);
 app.component('MigalhasDePão', MigalhasDePão);
 app.component('MigalhasDePao', MigalhasDePão);
 app.component('SmaeLink', SmaeLink);
+app.component('SmaeText', SmaeText);
 app.component('TítuloDePágina', TítuloDePágina);
 app.component('TituloDePagina', TítuloDePágina);
+app.component('TituloDaPagina', TítuloDePágina);
+app.component('CabecalhoDePagina', CabecalhoDePagina);
 
 app.use(pinia);
 app.use(router);

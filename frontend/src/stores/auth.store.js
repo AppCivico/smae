@@ -5,8 +5,7 @@ import { useAlertStore } from '@/stores/alert.store';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
-export const useAuthStore = defineStore({
-  id: 'auth',
+export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: JSON.parse(localStorage.getItem('user')),
     token: JSON.parse(localStorage.getItem('token')),

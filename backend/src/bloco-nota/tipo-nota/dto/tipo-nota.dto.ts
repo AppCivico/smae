@@ -3,11 +3,12 @@ import { ModuloSistema } from '@prisma/client';
 import { Transform } from 'class-transformer';
 import { IsArray, IsBoolean, IsEnum, IsInt, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 import { NumberTransform } from '../../../auth/transforms/number.transform';
+import { MAX_LENGTH_DEFAULT } from 'src/common/consts';
 
 export class CreateTipoNotaDto {
     @IsString({ message: '$property| descrição: Precisa ser alfanumérico' })
     @MinLength(1, { message: '$property| descrição: Mínimo 1 caracteres' })
-    @MaxLength(100, { message: '$property| descrição: Máximo 100 caracteres' })
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Código' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     codigo: string;
 
     @IsBoolean()

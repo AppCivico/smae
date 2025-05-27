@@ -15,8 +15,7 @@ function caminhoParaApi(rotaMeta) {
   }
 }
 
-export const useMacrotemasStore = defineStore({
-  id: 'Macrotemas',
+export const useMacrotemasStore = defineStore('Macrotemas', {
   state: () => ({
     Macrotemas: {},
     tempMacrotemas: {},

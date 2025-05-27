@@ -13,6 +13,7 @@ import { TaskService } from './task.service';
 import { ImportacaoParlamentarModule } from './importacao_parlamentar/parlamentar.module';
 import { RefreshVariavelModule } from './refresh_variavel/refresh-variavel.module';
 import { RunReportModule } from './run_report/run-report.module';
+import { RunUpdateModule } from './run_update/run-update.module';
 
 @Module({
     imports: [
@@ -28,6 +29,7 @@ import { RunReportModule } from './run_report/run-report.module';
         forwardRef(() => ImportacaoParlamentarModule),
         forwardRef(() => RunReportModule),
         forwardRef(() => RefreshVariavelModule),
+        forwardRef(() => RunUpdateModule),
     ],
     controllers: [TaskController],
     providers: [TaskService],

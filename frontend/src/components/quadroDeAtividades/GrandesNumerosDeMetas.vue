@@ -4,8 +4,12 @@ import { defineProps } from 'vue';
 
 defineProps({
   metas: {
-    type: Object,
+    type: [
+      Object,
+      null,
+    ],
     required: true,
+    validator: (value) => value === null || Object.keys(value).length > 0,
   },
 });
 </script>

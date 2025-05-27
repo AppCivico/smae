@@ -1,5 +1,5 @@
 <script setup>
-// eslint-disable-next-line import/no-extraneous-dependencies
+import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
 import { processo as schema } from '@/consts/formSchemas';
 import formatProcesso from '@/helpers/formatProcesso';
 import { useAlertStore } from '@/stores/alert.store';
@@ -175,18 +175,20 @@ resetForm();
     </div>
 
     <div class="flex g2">
+
       <div class="f1 mb1">
         <LabelFromYup
           name="descricao"
           :schema="schema"
         />
-        <Field
+        <SmaeText
           name="descricao"
           as="textarea"
           rows="5"
           class="inputtext light mb1"
-          maxlength="500"
-          :class="{ 'error': errors.descricao }"
+          maxlength="2048"
+          v-model="carga.descricao"
+          anular-vazio
         />
         <ErrorMessage
           name="descricao"
@@ -200,13 +202,14 @@ resetForm();
           name="comentarios"
           :schema="schema"
         />
-        <Field
+        <SmaeText
           name="comentarios"
           as="textarea"
           rows="5"
           class="inputtext light mb1"
-          maxlength="1024"
-          :class="{ 'error': errors.comentarios }"
+          maxlength="2048"
+          :model-value="carga.comentarios"
+          anular-vazio
         />
         <ErrorMessage
           name="comentarios"
@@ -220,13 +223,14 @@ resetForm();
           name="observacoes"
           :schema="schema"
         />
-        <Field
+        <SmaeText
           name="observacoes"
           as="textarea"
           rows="5"
           class="inputtext light mb1"
-          maxlength="1024"
-          :class="{ 'error': errors.observacoes }"
+          maxlength="2048"
+          :model-value="carga.observacoes"
+          anular-vazio
         />
         <ErrorMessage
           name="observacoes"

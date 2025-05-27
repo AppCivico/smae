@@ -24,8 +24,7 @@ function filtrar(array, nome, id) {
   return array.reduce(conferirDescendentes, []);
 }
 
-export const useRegionsStore = defineStore({
-  id: 'regions',
+export const useRegionsStore = defineStore('regions', {
   state: () => ({
     listregions: [],
     regions: {},

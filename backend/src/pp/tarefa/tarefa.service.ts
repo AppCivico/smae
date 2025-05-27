@@ -113,7 +113,8 @@ export class TarefaService {
     async create(
         tarefaCronoInput: TarefaCronogramaInput,
         dto: CreateTarefaDto,
-        user: PessoaFromJwt
+        user: PessoaFromJwt,
+        prismaTx?: Prisma.TransactionClient
     ): Promise<RecordWithId> {
         const tarefaCronoId = await this.loadOrCreateByInput(tarefaCronoInput, user);
 
@@ -151,121 +152,125 @@ export class TarefaService {
             await this.verificaPaiTemDependencias(pai);
         }
 
-        const created = await this.prisma.$transaction(
-            async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
-                await this.utils.lockTarefaCrono(prismaTx, tarefaCronoId);
+        const executarCriacao = async (prismaTx: Prisma.TransactionClient) => {
+            await this.utils.lockTarefaCrono(prismaTx, tarefaCronoId);
 
-                const calcDependencias = await this.calcDataDependencias(tarefaCronoId, prismaTx, {
-                    tarefa_corrente_id: 0,
-                    dependencias: dto.dependencias,
-                });
-                const dataDependencias = calcDependencias.dependencias_datas;
+            const calcDependencias = await this.calcDataDependencias(tarefaCronoId, prismaTx, {
+                tarefa_corrente_id: 0,
+                dependencias: dto.dependencias,
+            });
+            const dataDependencias = calcDependencias.dependencias_datas;
 
-                let duracao_planejado_calculado = false;
-                let inicio_planejado_calculado = false;
-                let termino_planejado_calculado = false;
+            let duracao_planejado_calculado = false;
+            let inicio_planejado_calculado = false;
+            let termino_planejado_calculado = false;
 
-                if (dataDependencias != null) {
-                    duracao_planejado_calculado = dataDependencias.duracao_planejado_calculado;
-                    inicio_planejado_calculado = dataDependencias.inicio_planejado_calculado;
-                    termino_planejado_calculado = dataDependencias.termino_planejado_calculado;
+            if (dataDependencias != null) {
+                duracao_planejado_calculado = dataDependencias.duracao_planejado_calculado;
+                inicio_planejado_calculado = dataDependencias.inicio_planejado_calculado;
+                termino_planejado_calculado = dataDependencias.termino_planejado_calculado;
 
-                    if (duracao_planejado_calculado && dto.duracao_planejado) {
-                        //throw new HttpException("Duração não é aceita, pois será calculada automaticamente pelas dependências.", 400);
-                        dto.duracao_planejado = dataDependencias.duracao_planejado;
-                    } else if (duracao_planejado_calculado) {
-                        dto.duracao_planejado = dataDependencias.duracao_planejado;
-                    }
-
-                    if (inicio_planejado_calculado && dto.inicio_planejado) {
-                        //throw new HttpException("Início planejado não é aceita, pois será calculado automaticamente pelas dependências.", 400);
-                        dto.inicio_planejado = dataDependencias.inicio_planejado;
-                    } else if (inicio_planejado_calculado) {
-                        dto.inicio_planejado = dataDependencias.inicio_planejado;
-                    }
-
-                    if (termino_planejado_calculado && dto.termino_planejado) {
-                        //throw new HttpException("Término planejado não é aceita, pois será calculado automaticamente pelas dependências.", 400);
-                        dto.termino_planejado = dataDependencias.termino_planejado;
-                    } else if (termino_planejado_calculado) {
-                        dto.termino_planejado = dataDependencias.termino_planejado;
-                    }
-
-                    // usa a função do banco, que sabe fazer conta muito melhor que duplicar o código aqui no JS
-                    const patched = await this.calcInfereDataPeloPeriodo(prismaTx, dto, dataDependencias);
-                    dto.inicio_planejado = patched.inicio_planejado;
-                    dto.termino_planejado = patched.termino_planejado;
-                    dto.duracao_planejado = patched.duracao_planejado;
-                } else {
-                    // não tem dependências, e como é create, tbm não há filhos
-
-                    if (dto.inicio_planejado && dto.termino_planejado && !dto.duracao_planejado)
-                        throw new HttpException('Se há Início e Término planejado, deve existir uma duração.', 400);
-
-                    if (dto.duracao_planejado && dto.inicio_planejado && !dto.termino_planejado)
-                        throw new HttpException('Se há Início e Duração planejado, deve existir um Término.', 400);
-
-                    if (dto.duracao_planejado && dto.termino_planejado && !dto.inicio_planejado)
-                        throw new HttpException('Se há Término e Duração planejado, deve existir um Início.', 400);
+                if (duracao_planejado_calculado && dto.duracao_planejado) {
+                    //throw new HttpException("Duração não é aceita, pois será calculada automaticamente pelas dependências.", 400);
+                    dto.duracao_planejado = dataDependencias.duracao_planejado;
+                } else if (duracao_planejado_calculado) {
+                    dto.duracao_planejado = dataDependencias.duracao_planejado;
                 }
 
-                const maiorNumero = await this.utils.maiorNumeroDoNivel(prismaTx, dto.tarefa_pai_id, tarefaCronoId);
-
-                const numero = await this.utils.incrementaNumero(dto, prismaTx, tarefaCronoId, null, maiorNumero);
-
-                const tarefa = await prismaTx.tarefa.create({
-                    data: {
-                        tarefa_cronograma_id: tarefaCronoId,
-                        orgao_id: dto.orgao_id,
-                        descricao: dto.descricao,
-                        nivel: dto.nivel,
-                        tarefa: dto.tarefa,
-                        recursos: dto.recursos,
-                        tarefa_pai_id: dto.tarefa_pai_id,
-
-                        inicio_planejado: dto.inicio_planejado,
-                        termino_planejado: dto.termino_planejado,
-                        duracao_planejado: dto.duracao_planejado,
-                        custo_estimado: dto.custo_estimado,
-
-                        inicio_real: dto.inicio_real,
-                        termino_real: dto.termino_real,
-                        duracao_real: dto.duracao_real,
-
-                        custo_real: dto.custo_real,
-                        eh_marco: dto.eh_marco,
-
-                        numero: numero,
-
-                        duracao_planejado_calculado,
-                        inicio_planejado_calculado,
-                        termino_planejado_calculado,
-                        ordem_topologica_inicio_planejado: calcDependencias.ordem_topologica_inicio_planejado,
-                        ordem_topologica_termino_planejado: calcDependencias.ordem_topologica_termino_planejado,
-                    },
-                });
-
-                if (dto.dependencias && dto.dependencias.length > 0) {
-                    await prismaTx.tarefaDependente.createMany({
-                        data: dto.dependencias.map((d) => {
-                            return {
-                                tarefa_id: tarefa.id,
-                                dependencia_tarefa_id: d.dependencia_tarefa_id,
-                                latencia: d.latencia,
-                                tipo: d.tipo,
-                            };
-                        }),
-                    });
+                if (inicio_planejado_calculado && dto.inicio_planejado) {
+                    //throw new HttpException("Início planejado não é aceita, pois será calculado automaticamente pelas dependências.", 400);
+                    dto.inicio_planejado = dataDependencias.inicio_planejado;
+                } else if (inicio_planejado_calculado) {
+                    dto.inicio_planejado = dataDependencias.inicio_planejado;
                 }
 
-                return { id: tarefa.id };
-            },
-            {
+                if (termino_planejado_calculado && dto.termino_planejado) {
+                    //throw new HttpException("Término planejado não é aceita, pois será calculado automaticamente pelas dependências.", 400);
+                    dto.termino_planejado = dataDependencias.termino_planejado;
+                } else if (termino_planejado_calculado) {
+                    dto.termino_planejado = dataDependencias.termino_planejado;
+                }
+
+                // usa a função do banco, que sabe fazer conta muito melhor que duplicar o código aqui no JS
+                const patched = await this.calcInfereDataPeloPeriodo(prismaTx, dto, dataDependencias);
+                dto.inicio_planejado = patched.inicio_planejado;
+                dto.termino_planejado = patched.termino_planejado;
+                dto.duracao_planejado = patched.duracao_planejado;
+            } else {
+                // não tem dependências, e como é create, tbm não há filhos
+
+                if (dto.inicio_planejado && dto.termino_planejado && !dto.duracao_planejado)
+                    throw new HttpException('Se há Início e Término planejado, deve existir uma duração.', 400);
+
+                if (dto.duracao_planejado && dto.inicio_planejado && !dto.termino_planejado)
+                    throw new HttpException('Se há Início e Duração planejado, deve existir um Término.', 400);
+
+                if (dto.duracao_planejado && dto.termino_planejado && !dto.inicio_planejado)
+                    throw new HttpException('Se há Término e Duração planejado, deve existir um Início.', 400);
+            }
+
+            const maiorNumero = await this.utils.maiorNumeroDoNivel(prismaTx, dto.tarefa_pai_id, tarefaCronoId);
+
+            const numero = await this.utils.incrementaNumero(dto, prismaTx, tarefaCronoId, null, maiorNumero);
+
+            const tarefa = await prismaTx.tarefa.create({
+                data: {
+                    tarefa_cronograma_id: tarefaCronoId,
+                    orgao_id: dto.orgao_id,
+                    descricao: dto.descricao,
+                    nivel: dto.nivel,
+                    tarefa: dto.tarefa,
+                    recursos: dto.recursos,
+                    tarefa_pai_id: dto.tarefa_pai_id,
+
+                    inicio_planejado: dto.inicio_planejado,
+                    termino_planejado: dto.termino_planejado,
+                    duracao_planejado: dto.duracao_planejado,
+                    custo_estimado: dto.custo_estimado,
+
+                    inicio_real: dto.inicio_real,
+                    termino_real: dto.termino_real,
+                    duracao_real: dto.duracao_real,
+
+                    custo_real: dto.custo_real,
+                    eh_marco: dto.eh_marco,
+
+                    numero: numero,
+
+                    duracao_planejado_calculado,
+                    inicio_planejado_calculado,
+                    termino_planejado_calculado,
+                    ordem_topologica_inicio_planejado: calcDependencias.ordem_topologica_inicio_planejado,
+                    ordem_topologica_termino_planejado: calcDependencias.ordem_topologica_termino_planejado,
+                },
+            });
+
+            if (dto.dependencias && dto.dependencias.length > 0) {
+                await prismaTx.tarefaDependente.createMany({
+                    data: dto.dependencias.map((d) => {
+                        return {
+                            tarefa_id: tarefa.id,
+                            dependencia_tarefa_id: d.dependencia_tarefa_id,
+                            latencia: d.latencia,
+                            tipo: d.tipo,
+                        };
+                    }),
+                });
+            }
+
+            return { id: tarefa.id };
+        };
+
+        let created: { id: number };
+        if (prismaTx) {
+            created = await executarCriacao(prismaTx);
+        } else {
+            created = await this.prisma.$transaction(executarCriacao, {
                 isolationLevel: 'Serializable',
                 maxWait: 15000,
                 timeout: 50000,
-            }
-        );
+            });
+        }
 
         return { id: created.id };
     }

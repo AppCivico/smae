@@ -31,6 +31,7 @@ import {
 import { IsOptionalNonNullable } from '../../../common/helpers/IsOptionalNonNullable';
 import { NumberTransform } from '../../../auth/transforms/number.transform';
 import { UpsertOrigemDto } from '../../../common/dto/origem-pdm.dto';
+import { MAX_LENGTH_DEFAULT, MAX_LENGTH_HTML, MAX_LENGTH_MEDIO } from 'src/common/consts';
 
 export class PPfonteRecursoDto {
     /**
@@ -45,7 +46,9 @@ export class PPfonteRecursoDto {
      * código da fonte de recurso no SOF, no ano escolhido
      */
     @IsString({ message: '$property| precisa ser um alfanumérico' })
-    @MaxLength(2)
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Código da fonte de recurso no SOF' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     fonte_recurso_cod_sof: string;
 
     @IsInt()
@@ -117,7 +120,7 @@ export class CreateProjetoDto {
      * @example "Nome"
      */
     @IsString()
-    @MaxLength(500)
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo 'Nome' deve ter no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     @MinLength(1)
     nome: string;
 
@@ -155,13 +158,17 @@ export class CreateProjetoDto {
 
     @IsOptional()
     @IsString()
-    @MaxLength(50000)
+    @MaxLength(MAX_LENGTH_HTML, {
+        message: `O campo "MDO Detalhamento" pode ser no máximo ${MAX_LENGTH_HTML} caracteres`,
+    })
     @ValidateIf((object, value) => value !== null)
     mdo_detalhamento?: string | null;
 
     @IsOptional()
     @IsString()
-    @MaxLength(1024)
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Programa Habitacional' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     @ValidateIf((object, value) => value !== null)
     @ApiProperty({ deprecated: true })
     mdo_programa_habitacional?: string | null;
@@ -205,7 +212,9 @@ export class CreateProjetoDto {
      */
     @IsOptional()
     @IsString()
-    @MaxLength(2048)
+    @MaxLength(MAX_LENGTH_MEDIO, {
+        message: `O campo 'Origem outro' deve ter no máximo ${MAX_LENGTH_MEDIO} caracteres`,
+    })
     @ValidateIf((object, value) => value !== null)
     origem_outro?: string | null;
 
@@ -327,7 +336,7 @@ export class CreateProjetoDto {
      */
     @IsOptional()
     @IsString()
-    @MaxLength(50000)
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Resumo" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     resumo?: string;
 
     /**
@@ -338,7 +347,7 @@ export class CreateProjetoDto {
     @IsOnlyDate()
     @Transform(DateTransform)
     @ValidateIf((object, value) => value !== null)
-    previsao_inicio: Date;
+    previsao_inicio?: Date;
 
     /**
      * previsao_inicio ou null
@@ -348,7 +357,7 @@ export class CreateProjetoDto {
     @IsOnlyDate()
     @Transform(DateTransform)
     @ValidateIf((object, value) => value !== null)
-    previsao_termino: Date | null;
+    previsao_termino?: Date;
 
     @IsOptional()
     @IsOnlyDate()
@@ -371,7 +380,9 @@ export class CreateProjetoDto {
     @IsOptional()
     @IsString()
     @ValidateIf((object, value) => value !== null)
-    @MaxLength(1024)
+    @MaxLength(MAX_LENGTH_MEDIO, {
+        message: `O campo "MDO Observações" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres`,
+    })
     mdo_observacoes?: string;
 
     @IsOptional()
@@ -385,7 +396,9 @@ export class CreateProjetoDto {
      */
     @IsOptional()
     @IsString()
-    @MaxLength(50000)
+    @MaxLength(MAX_LENGTH_HTML, {
+        message: `O campo "Principais Etapas" pode ser no máximo ${MAX_LENGTH_HTML} caracteres`,
+    })
     principais_etapas?: string;
 
     @IsOptional()
@@ -396,31 +409,39 @@ export class CreateProjetoDto {
     @IsOptional()
     @IsString()
     @ValidateIf((object, value) => value !== null)
-    @MaxLength(1024)
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Logradouro Tipo' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     logradouro_tipo?: string;
 
     @IsOptional()
     @IsString()
     @ValidateIf((object, value) => value !== null)
-    @MaxLength(1024)
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Logradouro Nome' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     logradouro_nome?: string;
 
     @IsOptional()
     @IsString()
     @ValidateIf((object, value) => value !== null)
-    @MaxLength(1024)
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Logradouro Nome' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     logradouro_numero?: string;
 
     @IsOptional()
     @IsString()
     @ValidateIf((object, value) => value !== null)
-    @MaxLength(1024)
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Logradouro CEP' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     logradouro_cep?: string;
 
     @IsOptional()
     @IsString({ each: true })
     @IsArray()
-    geolocalizacao: string[];
+    geolocalizacao?: string[];
 
     /*
      * secretario gestor do projeto
@@ -429,7 +450,9 @@ export class CreateProjetoDto {
      */
     @IsOptional()
     @IsString()
-    @MaxLength(250)
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Secretário Gestor' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     @ValidateIf((object, value) => value !== null)
     secretario_executivo?: string | null;
 
@@ -440,7 +463,9 @@ export class CreateProjetoDto {
      */
     @IsOptional()
     @IsString()
-    @MaxLength(250)
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Secretário Responsável' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     @ValidateIf((object, value) => value !== null)
     secretario_responsavel?: string | null;
 
@@ -460,7 +485,9 @@ export class CreateProjetoDto {
 
     @IsOptional()
     @IsString()
-    @MaxLength(250)
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Secretário Colaborador' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     @ValidateIf((object, value) => value !== null)
     secretario_colaborador?: string | null;
 
@@ -488,7 +515,7 @@ export class CreateProjetoDto {
      */
     @IsOptional()
     @IsInt({ message: '$property| tipo_aditivo_id precisa ser inteiro' })
-    @ApiProperty({deprecated: true})
+    @ApiProperty({ deprecated: true })
     tipo_aditivo_id?: number | null;
 
     /**
@@ -535,7 +562,7 @@ export class CreateProjetoDocumentDto {
     // TODO: este campo aqui será obrigatório, porém mantendo como opcional por motivos de sincronia com o desenvolvimento de front.
     @IsOptional()
     @IsString()
-    @MaxLength(2048)
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Descrição" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     descricao?: string;
 }
 
@@ -547,18 +574,20 @@ export class CreateProjetoSeiDto {
      **/
     @ApiProperty({ description: CONST_PROC_SEI_SINPROC_DESCR, example: '6016201700379910' })
     @IsString()
-    @MaxLength(20)
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Processo SEI' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     @Matches(CONST_PROC_SEI_SINPROC_REGEXP, { message: CONST_PROC_SEI_SINPROC_MESSAGE })
     processo_sei: string;
 
     @IsOptional()
     @IsString()
-    @MaxLength(50000)
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Descrição" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     descricao: string;
 
     @IsOptional()
     @IsString()
-    @MaxLength(2000)
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo 'Link' deve ter no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     @IsUrl(
         {
             protocols: ['http', 'https'],
@@ -581,13 +610,13 @@ export class CreateProjetoSeiDto {
     @IsOptional()
     @IsString()
     @ValidateIf((object, value) => value !== null)
-    @MaxLength(1024)
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Comentários" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     comentarios?: string;
 
     @IsOptional()
     @IsString()
     @ValidateIf((object, value) => value !== null)
-    @MaxLength(1024)
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Observacões" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     observacoes?: string;
 }
 

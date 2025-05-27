@@ -19,6 +19,7 @@ import {
 import { NumberTransform } from '../../../auth/transforms/number.transform';
 import { StringArrayTransform } from '../../../auth/transforms/string-array.transform';
 import { IsOnlyDate } from '../../../common/decorators/IsDateOnly';
+import { MAX_LENGTH_DEFAULT } from 'src/common/consts';
 
 export class FilterProjetoDto {
     @IsOptional()
@@ -109,7 +110,7 @@ export class ProjetoMDOOrderByDto {
     ordem_coluna: string = 'codigo';
 }
 
-export class FilterProjetoMDODto extends IntersectionType(FilterProjetoDto, ProjetoMDOOrderByDto) {
+export class CoreFilterProjetoMDODto extends IntersectionType(FilterProjetoDto) {
     @IsOptional()
     @IsInt({ each: true })
     @Transform(NumberArrayTransformOrEmpty)
@@ -151,22 +152,8 @@ export class FilterProjetoMDODto extends IntersectionType(FilterProjetoDto, Proj
     projeto_etapa_id?: number[];
 
     @IsOptional()
-    @IsInt()
-    @Transform(NumberTransform)
-    ipp?: number = 25;
-
-    @IsOptional()
-    @IsInt()
-    @Transform(NumberTransform)
-    pagina?: number = 1;
-
-    @IsOptional()
     @IsString()
-    token_paginacao?: string;
-
-    @IsOptional()
-    @IsString()
-    @MaxLength(250)
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Palavra chave' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     palavra_chave?: string;
 
     @IsOptional()
@@ -193,4 +180,20 @@ export class FilterProjetoMDODto extends IntersectionType(FilterProjetoDto, Proj
     @IsOnlyDate()
     @IsString()
     registrado_em_ate?: string;
+}
+
+export class FilterProjetoMDODto extends IntersectionType(CoreFilterProjetoMDODto, ProjetoMDOOrderByDto) {
+    @IsOptional()
+    @IsString()
+    token_paginacao?: string;
+
+    @IsOptional()
+    @IsInt()
+    @Transform(NumberTransform)
+    ipp?: number = 25;
+
+    @IsOptional()
+    @IsInt()
+    @Transform(NumberTransform)
+    pagina?: number = 1;
 }

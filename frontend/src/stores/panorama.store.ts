@@ -1,13 +1,8 @@
+import type { IdCodTituloDto } from '@back/common/dto/IdCodTitulo.dto';
+import type { IdTituloOrNullDto } from '@back/common/dto/IdTitulo.dto';
+import type { ListMetaDto } from '@back/meta/dto/list-meta.dto';
+import type { ListMfDashEtapaHierarquiaDto, ListMfDashMetasDto } from '@back/mf/metas/dash/dto/metas.dto';
 import { defineStore } from 'pinia';
-
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { ListMfDashEtapaHierarquiaDto, ListMfDashMetasDto } from '@/../../backend/src/mf/metas/dash/dto/metas.dto';
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { IdCodTituloDto } from '@/../../backend/src/common/dto/IdCodTitulo.dto';
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { IdTituloOrNullDto } from '@/../../backend/src/common/dto/IdTitulo.dto';
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { ListMetaDto } from '@/../../backend/src/meta/dto/list-meta.dto';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 

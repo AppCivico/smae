@@ -1,46 +1,46 @@
 <template>
-  <slot
-    :name="`celula-fora:${caminho}`"
-    :caminho="caminho"
-    :linha="linha"
+  <component
+    :is="elementoEnvelope"
+    :class="['table-cell', `table-cell--${caminho}`, `table-cell--${typeof conteudoColuna}`]"
+    v-bind="$attrs"
   >
-    <td
-      :class="['table-cell', `table-cell--${caminho}`, `table-cell--${typeof conteudoColuna}`]"
-      v-bind="$attrs"
+    <slot
+      :caminho="caminho"
+      :linha="linha"
     >
-      <slot
-        :name="`celula:${caminho}`"
-        :caminho="caminho"
-        :linha="linha"
-      >
-        {{ formatador ? formatador(conteudoColuna) : conteudoColuna || '-' }}
-      </slot>
-    </td>
-  </slot>
+      {{ conteudoColuna || '-' }}
+    </slot>
+  </component>
 </template>
 
 <script lang="ts" setup>
-import { computed, defineProps, defineOptions } from 'vue';
-import obterParametroNoObjeto from '@/helpers/obterParametroNoObjeto';
-import type { Linha } from '../types/tipagem';
+import obterPropriedadeNoObjeto from '@/helpers/objetos/obterPropriedadeNoObjeto';
+import { computed } from 'vue';
+import type { Linha } from '../tipagem';
 
 defineOptions({ inheritAttrs: false });
 
-export type ParametrosDaColuna = {
+type ParametrosDaCelula = {
+  ehCabecalho?: boolean
   linha: Linha
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  formatador?: Function
   caminho: string
+  formatador?: (args: unknown) => number | string
 };
 
-type Props = ParametrosDaColuna & {
-  classe?: string
-};
-const props = defineProps<Props>();
+const slots = defineSlots();
+const props = defineProps<ParametrosDaCelula>();
 
-const conteudoColuna = computed(() => {
-  const conteudo = obterParametroNoObjeto(props.caminho, props.linha);
+const conteudoColuna = computed((): unknown => {
+  if (slots[`celula:${props.caminho}`]) {
+    return undefined;
+  }
 
-  return conteudo;
+  const conteudo = obterPropriedadeNoObjeto(props.caminho, props.linha, true);
+
+  return typeof props.formatador === 'function'
+    ? props.formatador(conteudo)
+    : conteudo;
 });
+
+const elementoEnvelope = computed<'td' | 'th'>(() => (props.ehCabecalho ? 'th' : 'td'));
 </script>

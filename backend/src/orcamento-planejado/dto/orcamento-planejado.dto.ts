@@ -2,6 +2,7 @@ import { OmitType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsInt, IsNumber, IsOptional, IsPositive, IsString, Matches, MaxLength } from 'class-validator';
 import { OrcamentoPlanejado } from '../entities/orcamento-planejado.entity';
+import { MAX_LENGTH_DEFAULT } from 'src/common/consts';
 
 export class CreateOrcamentoPlanejadoDto {
     /**
@@ -57,7 +58,7 @@ export class CreateOrcamentoPlanejadoDto {
      * @example "00.00.00.000.0000.0.000.00000000.00"
      */
     @IsString()
-    @MaxLength(40)
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Dotação' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     @Matches(/^\d{2}\.\d{2}\.\d{2}\.\d{3}\.\d{4}\.\d\.\d{3}\.\d{8}\.\d{2}$/, {
         message: 'Dotação não está no formato esperado: 00.00.00.000.0000.0.000.00000000.00',
     })

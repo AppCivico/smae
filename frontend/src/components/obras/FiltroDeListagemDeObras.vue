@@ -255,22 +255,22 @@
         <div class="f1 fb10em">
           <label
             class="label"
-            for="ordem-direcao"
+            for="ordem-ordem_direcao"
           >Direção</label>
           <select
-            id="ordem-direcao"
+            id="ordem-ordem_direcao"
             class="inputtext light"
             name="ordem_direcao"
           >
             <option value="" />
             <option
-              v-for="direcao in
+              v-for="ordem_direcao in
                 Object.values(direcoesDeOrdenacao)"
-              :key="direcao.valor"
-              :value="direcao.valor"
-              :selected="valoresIniciaisConsolidados.ordem_direcao === direcao.valor"
+              :key="ordem_direcao.valor"
+              :value="ordem_direcao.valor"
+              :selected="valoresIniciaisConsolidados.ordem_direcao === ordem_direcao.valor"
             >
-              {{ direcao.nome || direcao.valor }}
+              {{ ordem_direcao.nome || ordem_direcao.valor }}
             </option>
           </select>
         </div>

@@ -13,6 +13,7 @@ import {
 } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 import { DateTransform } from '../../../auth/transforms/date.transform';
+import { MAX_LENGTH_DEFAULT, MAX_LENGTH_MEDIO } from 'src/common/consts';
 
 export class CreateDistribuicaoRegistroSEIDto {
     @IsOptional()
@@ -22,11 +23,13 @@ export class CreateDistribuicaoRegistroSEIDto {
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(1024)
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Nome' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     nome?: string;
 
     @IsString()
-    @MaxLength(40)
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Processo SEI' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     processo_sei: string;
 }
 
@@ -39,13 +42,13 @@ export class CreateDistribuicaoRecursoDto {
 
     @IsString()
     @MinLength(1)
-    @MaxLength(1024)
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo 'Objeto' deve ter no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     objeto: string;
 
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(1024)
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo 'Nome' deve ter no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     nome?: string;
 
     @IsNumberString(
@@ -134,37 +137,41 @@ export class CreateDistribuicaoRecursoDto {
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(250)
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Programa Orçamentário Estadual' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     programa_orcamentario_estadual?: string;
 
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(250)
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Programa Orçamentário Municipal' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     programa_orcamentario_municipal?: string;
 
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(250)
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Dotação' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     dotacao?: string;
 
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(250)
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Proposta' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     proposta?: string;
 
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(250)
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Contrato' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     contrato?: string;
 
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(250)
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Convênio' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     convenio?: string;
 
     @IsOptional()
@@ -244,7 +251,7 @@ export class CreateDistribuicaoParlamentarDto {
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(1024)
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo 'Objeto' deve ter no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     objeto?: string;
 
     @IsOptional()

@@ -19,7 +19,7 @@ export class ReportContext {
 
     public readonly sistema: ModuloSistema;
 
-    constructor(prisma: PrismaService, relatorio_id: number | null, sistema: ModuloSistema) {
+    constructor(prisma: PrismaService, relatorio_id: number, sistema: ModuloSistema) {
         this.prisma = prisma;
         this.relatorio_id = relatorio_id;
         this.sistema = sistema;

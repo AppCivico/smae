@@ -10,10 +10,10 @@
 </template>
 
 <script lang="ts" setup>
+import obterPropriedadeNoObjeto from '@/helpers/objetos/obterPropriedadeNoObjeto';
 import { computed } from 'vue';
 import { RouteLocationRaw } from 'vue-router';
-import obterParametroNoObjeto from '@/helpers/obterParametroNoObjeto';
-import type { Linha } from '../types/tipagem';
+import type { Linha } from '../tipagem';
 
 export type EditButtonProps = {
   rotaEditar?: string | RouteLocationRaw
@@ -30,7 +30,7 @@ type Props = Omit<EditButtonProps, 'parametroDaRotaEditar' | 'parametroNoObjetoP
 const props = defineProps<Props>();
 
 const parametrosEditar = computed<RouteLocationRaw>(() => {
-  const valorDoParametro = obterParametroNoObjeto(props.parametroNoObjetoParaEditar, props.linha);
+  const valorDoParametro = obterPropriedadeNoObjeto(props.parametroNoObjetoParaEditar, props.linha);
 
   if (typeof props.rotaEditar === 'string') {
     return `${props.rotaEditar}/${valorDoParametro}`;

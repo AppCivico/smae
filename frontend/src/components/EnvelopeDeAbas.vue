@@ -2,7 +2,11 @@
 import { useResizeObserver } from '@vueuse/core';
 import { debounce, kebabCase } from 'lodash';
 import {
-  computed, nextTick, ref, useSlots,
+  computed,
+  nextTick,
+  ref,
+  useSlots,
+  watch,
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -35,11 +39,20 @@ const props = defineProps({
     required: false,
     default: () => ({}),
   },
+  atributosDeCadaAba: {
+    type: Object,
+    required: false,
+    default: () => ({}),
+  },
 });
 
 const listaDeAbas = ref(null);
 
 const abas = computed(() => Object.keys(slots).filter((x) => !x.includes('__cabecalho')));
+
+const abasVisiveis = computed(() => (Object.keys(props.atributosDeCadaAba).length
+  ? abas.value.filter((x) => !props.atributosDeCadaAba[x]?.hidden)
+  : abas.value));
 
 // PRA-FAZER: um registro secundário da aba aberta em paralelo à query na rota
 // para cobrir todas as bases. Infelizmente, não adiantará muito enquanto houver
@@ -63,36 +76,38 @@ const dadosConsolidadosPorId = computed(() => Object.keys(props.metaDadosPorId)
 async function rolarParaAbaCorrente() {
   if (listaDeAbas.value) {
     await nextTick();
-    const índiceDaAbaCorrente = Array.from(listaDeAbas.value.querySelectorAll('a'))
+    const indiceDaAbaCorrente = Array.from(listaDeAbas.value.querySelectorAll('a'))
       .findIndex((x) => x.hasAttribute('aria-current'));
     const { children: filhas } = listaDeAbas.value;
 
-    if (filhas[índiceDaAbaCorrente]) {
-      listaDeAbas.value.scrollLeft = filhas[índiceDaAbaCorrente].offsetLeft;
+    if (filhas[indiceDaAbaCorrente]) {
+      listaDeAbas.value.scrollLeft = filhas[indiceDaAbaCorrente].offsetLeft;
     }
   }
 }
 
 async function iniciar() {
-  const idDaAbaPadrão = Object.keys(slots).find((x) => dadosConsolidadosPorId.value[x]?.aberta);
-  const dadosDaAbaPadrão = dadosConsolidadosPorId.value[idDaAbaPadrão];
+  const idDaAbaPadrao = Object.keys(slots).find((x) => dadosConsolidadosPorId.value[x]?.aberta);
+  const dadosDaAbaPadrão = dadosConsolidadosPorId.value[idDaAbaPadrao];
 
-  const hashDaAbaPadrão = dadosDaAbaPadrão?.hash
+  const hashDaAbaPadrao = dadosDaAbaPadrão?.hash
     || dadosDaAbaPadrão?.id
-    || abas.value?.[0];
+    || abasVisiveis.value?.[0];
 
-  if (props.metaDadosPorId) {
+  if (Object.keys(props.metaDadosPorId).length) {
     console.warn('O uso de `metaDadosPorId` é obsoleto. Utilize slots com o sufixo `__cabecalho` em seus nomes.');
   }
 
-  if (hashDaAbaPadrão && !abaAberta.value) {
+  if (hashDaAbaPadrao && abaAberta.value !== hashDaAbaPadrao) {
     router.replace({
       name: props.nomeDaRotaRaiz || route.name,
       params: route.params,
-      query: {
-        ...route.query,
-        [props.nomeDaChaveDeAbas]: hashDaAbaPadrão,
-      },
+      query: Object.assign(
+        structuredClone(route.query),
+        {
+          [props.nomeDaChaveDeAbas]: hashDaAbaPadrao,
+        },
+      ),
     });
   }
   await nextTick();
@@ -104,7 +119,15 @@ useResizeObserver(listaDeAbas, debounce(async () => {
   rolarParaAbaCorrente();
 }, 400));
 
-iniciar();
+watch(
+  () => abasVisiveis.value,
+  (novoValor) => {
+    if (!novoValor.includes(abaAberta.value)) {
+      iniciar();
+    }
+  },
+  { immediate: true },
+);
 </script>
 <template>
   <div class="abas">
@@ -120,6 +143,7 @@ iniciar();
           v-for="nomeDaAba in abas"
           :key="nomeDaAba"
           class="pt1 pb1"
+          v-bind="atributosDeCadaAba?.[nomeDaAba]"
         >
           <router-link
             class="abas__link like-a__link t16 w700"
@@ -199,7 +223,7 @@ iniciar();
     max-width: max-content;
   }
 
-  > li + li {
+  > li:not([hidden]) ~ li {
     border-left: 1px solid @c400;
     padding-left: 2rem;
   }

@@ -1,13 +1,11 @@
 <script setup>
-import MigalhasDePao from '@/components/MigalhasDePao.vue';
-import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import { relatórioDePrevisãoDeCustoPortfolio as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { storeToRefs } from 'pinia';
-import { Field, Form, useIsFormDirty } from 'vee-validate';
+import { Field, Form } from 'vee-validate';
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -18,8 +16,6 @@ const relatoriosStore = useRelatoriosStore();
 const route = useRoute();
 const router = useRouter();
 const { current, loading } = storeToRefs(relatoriosStore);
-
-const formularioSujo = useIsFormDirty();
 
 const currentYear = new Date().getFullYear();
 
@@ -63,15 +59,8 @@ function iniciar() {
 iniciar();
 </script>
 <template>
-  <MigalhasDePao class="mb1" />
-
-  <header class="flex spacebetween center mb2">
-    <TituloDaPagina />
-
-    <hr class="ml2 f1">
-
-    <CheckClose :formulario-sujo="formularioSujo" />
-  </header>
+  <MigalhasDePão class="mb1" />
+  <CabecalhoDePagina :formulario-sujo="false" />
 
   <Form
     v-slot="{ errors, isSubmitting, setFieldValue, values }"

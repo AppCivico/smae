@@ -8,7 +8,6 @@ import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import CheckClose from '../../components/CheckClose.vue';
 
 const obrasStore = useObrasStore();
 const alertStore = useAlertStore();
@@ -57,11 +56,9 @@ function iniciar() {
 iniciar();
 </script>
 <template>
-  <div class="flex spacebetween center mb2">
-    <h1>{{ $route.meta.título || $route.name }}</h1>
-    <hr class="ml2 f1">
-    <CheckClose />
-  </div>
+  <MigalhasDePão class="mb1" />
+  <CabecalhoDePagina :formulario-sujo="false" />
+
   <Form
     v-slot="{ errors, isSubmitting, setFieldValue, values }"
     :validation-schema="schema"

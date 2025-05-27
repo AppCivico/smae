@@ -59,9 +59,11 @@
       </div>
       <dd>
         <table class="tablemain maxw">
-          <col>
-          <col>
-          <col>
+          <colgroup>
+            <col>
+            <col>
+            <col>
+          </colgroup>
           <thead>
             <tr>
               <td class="tc300 w700 t12">

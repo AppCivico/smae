@@ -1,12 +1,10 @@
 <script setup>
-import MigalhasDePao from '@/components/MigalhasDePao.vue';
-import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import { relatórioOrçamentárioPortfolio as schema } from '@/consts/formSchemas';
 import maskMonth from '@/helpers/maskMonth';
 import monthAndYearToDate from '@/helpers/monthAndYearToDate';
 import { useAlertStore } from '@/stores/alert.store';
 import {
-  Field, Form, useIsFormDirty,
+  Field, Form,
 } from 'vee-validate';
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -35,8 +33,6 @@ const initialValues = computed(() => ({
   eh_publico: null,
 }));
 
-const formularioSujo = useIsFormDirty();
-
 async function onSubmit(values) {
   const carga = values;
   try {
@@ -62,15 +58,8 @@ portfolioStore.buscarTudo();
 </script>
 
 <template>
-  <MigalhasDePao class="mb1" />
-
-  <header class="flex spacebetween center mb2">
-    <TituloDaPagina />
-
-    <hr class="ml2 f1">
-
-    <CheckClose :formulario-sujo="formularioSujo" />
-  </header>
+  <MigalhasDePão class="mb1" />
+  <CabecalhoDePagina :formulario-sujo="false" />
 
   <Form
     v-slot="{ errors, isSubmitting, setFieldValue }"

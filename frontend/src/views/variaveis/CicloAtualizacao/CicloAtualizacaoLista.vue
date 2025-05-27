@@ -38,118 +38,123 @@
       </div>
     </div>
 
-    <table class="ciclo-atualizacao-lista__listagem">
-      <thead>
-        <tr>
-          <th scope="col">
-            Código/Nome
-          </th>
+    <RolagemHorizontal aria-labelledby="titulo-da-pagina">
+      <table class="ciclo-atualizacao-lista__listagem">
+        <thead>
+          <tr>
+            <th scope="col">
+              Código/Nome
+            </th>
 
-          <th scope="col">
-            Referência
-          </th>
+            <th scope="col">
+              Referência
+            </th>
 
-          <th scope="col">
-            Periodicidade
-          </th>
+            <th scope="col">
+              Periodicidade
+            </th>
 
-          <th scope="col">
-            Equipes responsáveis
-          </th>
+            <th scope="col">
+              Equipes responsáveis
+            </th>
 
-          <th scope="col">
-            Prazo
-          </th>
+            <th scope="col">
+              Prazo
+            </th>
 
-          <th scope="col" />
-        </tr>
-      </thead>
+            <th scope="col" />
+          </tr>
+        </thead>
 
-      <tbody
-        v-for="cicloAtualizacao in ciclosAtualizacao"
-        :key="`ciclo-atualizacao--${cicloAtualizacao.id}`"
-        class="listagem-item"
-      >
-        <tr>
-          <th
-            scope="row"
-            class="flex center g05"
-          >
-            <div class="listagem-item__icone">
-              <svg
-                :width="cicloAtualizacao.icone.tamanho"
-                :height="cicloAtualizacao.icone.tamanho"
-              ><use :xlink:href="`#${cicloAtualizacao.icone.icone}`" /></svg>
-            </div>
-
-            <h5 class="listagem-item__conteudo f1">
-              <strong
-                :class="{'tvermelho tipinfo like-a__text': cicloAtualizacao.temAtraso}"
-              >
-                {{ cicloAtualizacao.codigo }}
-                <div v-if="cicloAtualizacao.temAtraso">
-                  Atualização com atraso: {{ obterPrimeiroEUlticoAtraso(cicloAtualizacao.atrasos) }}
-                </div>
-              </strong> -
-              {{ truncate(cicloAtualizacao.titulo, 60) }}
-            </h5>
-          </th>
-
-          <td>
-            {{ dateIgnorarTimezone(cicloAtualizacao.ultimo_periodo_valido, 'MM/yyyy') }}
-          </td>
-
-          <td>
-            {{ cicloAtualizacao.periodicidade }}
-          </td>
-
-          <td>
-            {{ cicloAtualizacao.equipes.map(i => i.titulo).join(", ") }}
-          </td>
-
-          <td>
-            <span :class="{'tvermelho': cicloAtualizacao.temAtraso}">
-              {{ dateIgnorarTimezone(cicloAtualizacao.prazo, 'dd/MM/yyyy') }}
-            </span>
-          </td>
-
-          <th>
-            <!-- TO-DO: passar a essa conferência para o Backend e usar apenas
-`.pode_editar` -->
-            <SmaeLink
-              v-if="cicloAtualizacao.pode_editar && cicloAtualizacao.prazo"
-              type="button"
-              class="tipinfo tprimary like-a__text"
-              exibir-desabilitado
-              :to="{
-                name: 'cicloAtualizacao.editar',
-                params: {
-                  cicloAtualizacaoId: cicloAtualizacao.id,
-                  dataReferencia: cicloAtualizacao.ultimo_periodo_valido
-                }
-              }"
+        <tbody
+          v-for="cicloAtualizacao in ciclosAtualizacao"
+          :key="`ciclo-atualizacao--${cicloAtualizacao.id}`"
+          class="listagem-item"
+        >
+          <tr>
+            <th
+              scope="row"
+              class="flex center g05"
             >
-              <svg
-                width="20"
-                height="20"
-              ><use xlink:href="#i_edit" /></svg>
-              <div>Editar</div>
-            </SmaeLink>
-          </th>
-        </tr>
-      </tbody>
+              <div class="listagem-item__icone">
+                <svg
+                  :width="cicloAtualizacao.icone.tamanho"
+                  :height="cicloAtualizacao.icone.tamanho"
+                ><use :xlink:href="`#${cicloAtualizacao.icone.icone}`" /></svg>
+              </div>
+              <!-- Falar com o Gustavo sobre isso -->
+              <h5 class="listagem-item__conteudo f1">
+                <!-- TODO: Falar com o Gustavo sobre isso! -->
+                <strong
+                  :class="{ 'tvermelho tipinfo like-a__text': cicloAtualizacao.temAtraso }"
+                >
+                  {{ cicloAtualizacao.codigo }}
+                  <div v-if="cicloAtualizacao.temAtraso">
+                    Atualização com atraso: {{
+                      obterPrimeiroEUlticoAtraso(cicloAtualizacao.atrasos)
+                    }}
+                  </div>
+                </strong> -
+                {{ truncate(cicloAtualizacao.titulo, 60) }}
+              </h5>
+            </th>
 
-      <tbody
-        v-if="ciclosAtualizacao.length === 0"
-        class="listagem-item listagem-item--sem-resultado"
-      >
-        <tr>
-          <td colspan="5">
-            Sem itens a exibir
-          </td>
-        </tr>
-      </tbody>
-    </table>
+            <td>
+              {{ dateIgnorarTimezone(cicloAtualizacao.ultimo_periodo_valido, 'MM/yyyy') }}
+            </td>
+
+            <td>
+              {{ cicloAtualizacao.periodicidade }}
+            </td>
+
+            <td>
+              {{ cicloAtualizacao.equipes.map(i => i.titulo).join(", ") }}
+            </td>
+
+            <td>
+              <span :class="{ 'tvermelho': cicloAtualizacao.temAtraso }">
+                {{ dateIgnorarTimezone(cicloAtualizacao.prazo, 'dd/MM/yyyy') }}
+              </span>
+            </td>
+
+            <th>
+              <!-- TO-DO: passar a essa conferência para o Backend e usar apenas
+  `.pode_editar` -->
+              <SmaeLink
+                v-if="cicloAtualizacao.pode_editar && cicloAtualizacao.prazo"
+                type="button"
+                class="tipinfo tprimary like-a__text"
+                exibir-desabilitado
+                :to="{
+                  name: 'cicloAtualizacao.editar',
+                  params: {
+                    cicloAtualizacaoId: cicloAtualizacao.id,
+                    dataReferencia: cicloAtualizacao.ultimo_periodo_valido
+                  }
+                }"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                ><use xlink:href="#i_edit" /></svg>
+                <div>Editar</div>
+              </SmaeLink>
+            </th>
+          </tr>
+        </tbody>
+
+        <tbody
+          v-if="ciclosAtualizacao.length === 0"
+          class="listagem-item listagem-item--sem-resultado"
+        >
+          <tr>
+            <td colspan="5">
+              Sem itens a exibir
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </RolagemHorizontal>
   </section>
 
   <div>
@@ -161,6 +166,7 @@
 import { computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
+import RolagemHorizontal from '@/components/rolagem/RolagemHorizontal.vue';
 import SmaeLink from '@/components/SmaeLink.vue';
 import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
 import truncate from '@/helpers/texto/truncate';

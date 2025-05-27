@@ -40,7 +40,7 @@ const props = defineProps({
   },
   formatter: {
     type: Function,
-    default: (n: number) => n,
+    default: undefined,
     validator(value) { return typeof value === 'function'; },
   },
 });
@@ -51,7 +51,10 @@ const displayNumber = ref<number>(0);
 const element = ref<HTMLElement | null>(null);
 const isVisible = ref(false);
 
-const formattedNumber = computed(() => props.formatter(displayNumber.value));
+const formattedNumber = computed(() => (
+  props.formatter
+    ? props.formatter(displayNumber.value)
+    : displayNumber.value));
 
 const updateDisplayNumber = (newVal: number | string) => {
   const castedNumber = Number(newVal);

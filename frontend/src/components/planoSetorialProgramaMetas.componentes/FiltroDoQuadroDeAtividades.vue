@@ -181,7 +181,7 @@ const dados = ref<Dados>({
 });
 
 const planosSetoriaisOuPdMNovos = computed(() => listaDePlanoSetoriais.value
-  .filter((item) => item.sistema !== 'PDM'));
+  .filter((item) => item.sistema !== 'PDM' && item.ativo));
 
 async function iniciar() {
   const valoresNaQuery = {

@@ -12,8 +12,12 @@ import { useProjetosStore } from '@/stores/projetos.store';
 import dinheiro from '@/helpers/dinheiro';
 import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
 import projectStatuses from '@/consts/projectStatuses';
-import ProjetosListaFiltro from './partials/ProjetosListaFiltro.vue';
 import { useAuthStore } from '@/stores/auth.store';
+import ProjetosListaFiltro from './partials/ProjetosListaFiltro.vue';
+
+defineOptions({
+  inheritAttrs: false,
+});
 
 const route = useRoute();
 const projetosStore = useProjetosStore();
@@ -85,10 +89,10 @@ onBeforeMount(() => {
           class="mt2"
           :dados="listaDeProjetos"
           :colunas="[
-            { chave: 'nome', label: 'Nome do Projeto' },
+            { chave: 'nome', label: 'Nome do Projeto', ehCabecalho: true },
             { chave: 'portfolio.titulo', label: 'Portfólio' },
             { chave: 'orgao_responsavel.sigla', label: 'Órgão Responsável' },
-            { chave: 'status', label: 'Status' },
+            { chave: 'status', label: 'Status do projeto' },
             { chave: 'projeto_etapa', label: 'Etapa Atual' },
             { chave: 'previsao_termino', label: 'Término Planejado' },
             { chave: 'previsao_custo', label: 'Custo Total Planejado' },
@@ -109,22 +113,17 @@ onBeforeMount(() => {
           <template #cabecalho:acao>
             <button
               class="btn outline bgnone tcprimary"
+              type="button"
               @click="handleDesmarcarTodos"
             >
               Desmarcar todas
             </button>
           </template>
 
-          <template #['celula-fora:nome']="{ linha }">
-            <th>
-              <SmaeLink :to="{ name: 'projetosResumo', params: { projetoId: linha.id }}">
-                {{ linha.nome }}
-              </SmaeLink>
-            </th>
-          </template>
-
-          <template #['celula:orgao_responsavel.descricao']="{ linha }">
-            {{ linha.orgao_responsavel?.descricao || '-' }}
+          <template #celula:nome="{ linha }">
+            <SmaeLink :to="{ name: 'projetosResumo', params: { projetoId: linha.id } }">
+              {{ linha.nome }}
+            </SmaeLink>
           </template>
 
           <template #celula:status="{ linha }">
@@ -160,7 +159,6 @@ onBeforeMount(() => {
   :deep {
     .table-cell--status {
       white-space: nowrap;
-      text-transform: uppercase;
     }
 
     .table-cell--previsao_termino {

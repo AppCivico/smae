@@ -5,7 +5,6 @@ import {
   Field, FieldArray, useForm, useIsFormDirty,
 } from 'vee-validate';
 import CheckClose from '@/components/CheckClose.vue';
-import LabelFromYup from '@/components/LabelFromYup.vue';
 import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import months from '@/consts/months';

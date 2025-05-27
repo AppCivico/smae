@@ -20,10 +20,11 @@ import { DateTransform } from '../../auth/transforms/date.transform';
 import { PartialType, PickType } from '@nestjs/swagger';
 import { CreateVariavelBaseDto } from '../../variavel/dto/create-variavel.dto';
 import { CreatePSEquipePontoFocalDto } from '../../pdm/dto/create-pdm.dto';
+import { MAX_LENGTH_DEFAULT, MAX_LENGTH_MEDIO } from 'src/common/consts';
 
 export class UpsertEtapaVariavelDto extends PartialType(PickType(CreateVariavelBaseDto, ['titulo'])) {
     @IsString()
-    @MaxLength(60)
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Código' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     codigo: string;
 }
 
@@ -70,6 +71,7 @@ export class CreateEtapaDto {
      */
     @IsString({ message: 'contexto: Precisa ser alfanumérico' })
     @IsOptional()
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Descrição" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     descricao?: string;
 
     /**
@@ -78,7 +80,7 @@ export class CreateEtapaDto {
     @IsString({ message: 'status: Precisa ser alfanumérico' })
     @MinLength(1, { message: 'status: pelo menos um caractere' })
     @IsOptional()
-    @MaxLength(250, { message: 'status: 250 caracteres' })
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Status' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     status?: string;
 
     @IsNumber()
@@ -91,7 +93,7 @@ export class CreateEtapaDto {
      */
     @IsString({ message: 'titulo: Precisa ser alfanumérico' })
     @MinLength(1, { message: 'titulo: pelo menos um caractere' })
-    @MaxLength(250, { message: 'titulo: 250 caracteres' })
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo 'Título' deve ter no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     titulo: string;
 
     /**

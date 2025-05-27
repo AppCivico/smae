@@ -1,5 +1,4 @@
 <script setup>
-import LabelFromYup from '@/components/LabelFromYup.vue';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import { relatórioDeTransferênciasVoluntárias as schema } from '@/consts/formSchemas';
 import interfacesDeTransferências from '@/consts/interfacesDeTransferências';
@@ -11,7 +10,7 @@ import { usePartidosStore } from '@/stores/partidos.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { storeToRefs } from 'pinia';
 import {
-  ErrorMessage, Field, useForm, useIsFormDirty,
+  ErrorMessage, Field, useForm,
 } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -65,21 +64,14 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   }
 });
 
-const formularioSujo = useIsFormDirty();
-
 ÓrgãosStore.getAll();
 partidosStore.buscarTudo();
 ParlamentaresStore.buscarTudo({ ipp: 500, possui_mandatos: true });
 
 </script>
 <template>
-  <div class="flex spacebetween center mb2">
-    <TítuloDePágina />
-    <hr class="ml2 f1">
-    <CheckClose
-      :formulario-sujo="formularioSujo"
-    />
-  </div>
+  <MigalhasDePão class="mb1" />
+  <CabecalhoDePagina :formulario-sujo="false" />
 
   <pre v-scrollLockDebug>values:{{ values }}</pre>
 

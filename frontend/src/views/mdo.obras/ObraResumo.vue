@@ -96,7 +96,7 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
   <div class="flex spacebetween center mb2">
     <h1>{{ emFoco?.nome }}</h1>
     <hr class="ml2 f1">
-    <MenuDeMudançaDeStatusDeProjeto />
+    <MenuDeMudançaDeStatusDeProjeto class="ml2" />
 
     <router-link
       v-if="emFoco?.id && !emFoco?.arquivado && !emFoco?.permissoes?.apenas_leitura"
@@ -616,7 +616,7 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
 
     <div>
       <h2>
-        Órgãos
+        Órgãos/Partes interessadas
       </h2>
       <dl class="flex g2 flexwrap">
         <div class="f1 mb1">

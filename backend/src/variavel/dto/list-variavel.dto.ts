@@ -1,5 +1,5 @@
 import { ApiProperty, OmitType } from '@nestjs/swagger';
-import { Periodicidade, Serie } from '@prisma/client';
+import { Periodicidade, Serie, TipoPdm } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { IdNomeDto } from '../../common/dto/IdNome.dto';
 import { IdSigla, IdSiglaDescricao } from '../../common/dto/IdSigla.dto';
@@ -10,6 +10,14 @@ import { VariaveisPeriodosDto } from './create-variavel.dto';
 
 export class ListVariavelDto {
     linhas: VariavelItemDto[];
+}
+
+export class PdmSimplesDto extends IdNomeDto {
+    tipo: TipoPdm;
+}
+
+export class ListPdmSimplesDto {
+    linhas: PdmSimplesDto[];
 }
 
 export class VariavelDetailDto extends VariavelItemDto {
@@ -91,7 +99,6 @@ export class VariavelResumo {
     codigo: string;
     titulo: string;
     valor_base: string;
-
     recalculando: boolean;
     recalculo_erro: string | null;
     recalculo_tempo: Decimal | null;

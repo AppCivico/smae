@@ -664,7 +664,7 @@ watch(itemParaEdicao, (novosValores) => {
         as="textarea"
         class="inputtext light mb1"
         rows="5"
-        maxlength="1000"
+        maxlength="2048"
       />
       <ErrorMessage
         class="error-msg mb1"
@@ -682,7 +682,7 @@ watch(itemParaEdicao, (novosValores) => {
         as="textarea"
         class="inputtext light mb1"
         rows="5"
-        maxlength="250"
+        maxlength="2048"
       />
       <ErrorMessage
         class="error-msg mb1"
@@ -765,6 +765,7 @@ watch(itemParaEdicao, (novosValores) => {
       <Field
         name="observacoes"
         as="textarea"
+        maxlength="2048"
         class="inputtext light mb1"
         rows="5"
       />

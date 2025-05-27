@@ -1,42 +1,42 @@
 export default {
   Registrado: {
-    nome: 'registrado', // Arquivado ou Priorizado caso seja priorizado
+    nome: '1. Registrado', // Arquivado ou Priorizado caso seja priorizado
     valor: 'Registrado',
     cor: '#f7c234',
   },
   Selecionado: {
-    nome: 'selecionado', // Arquivado ou EmPlanejamento caso seja Aprovado
+    nome: '2. Selecionado', // Arquivado ou EmPlanejamento caso seja Aprovado
     valor: 'Selecionado',
     cor: '#f7c234',
   },
   EmPlanejamento: {
-    nome: 'em planejamento', // Arquivado ou Validado caso o iniciado
+    nome: '3. Em planejamento', // Arquivado ou Validado caso o iniciado
     valor: 'EmPlanejamento',
     cor: '#f7c234',
   },
   Planejado: {
-    nome: 'planejado',
+    nome: '4. Planejado',
     valor: 'Planejado',
     cor: '#f7c234',
   },
   Validado: {
-    nome: 'validado', // EmSuspensao ou EmFechamento caso fechado
+    nome: '5. Validado', // EmSuspensao ou EmFechamento caso fechado
     valor: 'Validado',
     cor: '#f7c234',
   },
   EmAcompanhamento: {
-    nome: 'em acompanhamento', // Suspenso, fechado
+    nome: '6. Em acompanhamento', // Suspenso, fechado
     valor: 'EmAcompanhamento',
     cor: '#f7c234',
   },
-  Suspenso: {
-    nome: 'suspenso', // Volta pra EmAcompanhamento ou Fechado
-    valor: 'Suspenso',
-    cor: '#ee3b2b',
-  },
   Fechado: {
-    nome: 'concluído', //
+    nome: '7. Concluído', //
     valor: 'Fechado',
     cor: '#8ec122',
+  },
+  Suspenso: {
+    nome: '8. Suspenso', // Volta pra EmAcompanhamento ou Fechado
+    valor: 'Suspenso',
+    cor: '#ee3b2b',
   },
 };

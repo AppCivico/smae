@@ -18,7 +18,6 @@ import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import CheckClose from '../../components/CheckClose.vue';
 
 const TagsStore = useTagsStore();
 const { filtradasPorPdM } = storeToRefs(TagsStore);
@@ -88,11 +87,14 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="flex spacebetween center mb2">
-    <h1>{{ $route.meta.título || $route.name }}</h1>
-    <hr class="ml2 f1">
-    <CheckClose />
-  </div>
+  <MigalhasDePão class="mb1" />
+  <CabecalhoDePagina :formulario-sujo="false" />
+
+  <p class="texto--explicativo">
+    Será gerado um conjunto de 4 planilhas contendo os dados
+    do ciclo mensal de monitoramento físico do mês informado.
+  </p>
+
   <Form
     v-slot="{ errors, isSubmitting, resetField, values }"
     :validation-schema="schema"
@@ -106,7 +108,6 @@ onMounted(async () => {
           <span class="tvermelho">*</span>
         </label>
         <Field
-          v-model="initialValues.parametros.pdm_id"
           name="parametros.pdm_id"
           as="select"
           class="inputtext light mb1"

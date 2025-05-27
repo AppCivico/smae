@@ -1,11 +1,11 @@
 <script setup>
-import removerHtml from '@/helpers/removerHtml';
+import { storeToRefs } from 'pinia';
+import { onMounted, ref, watch } from 'vue';
+import removerHtml from '@/helpers/html/removerHtml';
 import { useAlertStore } from '@/stores/alert.store';
 import { useBlocoDeNotasStore } from '@/stores/blocoNotas.store';
 import { useTipoDeNotasStore } from '@/stores/tipoNotas.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
-import { storeToRefs } from 'pinia';
-import { onMounted, ref, watch } from 'vue';
 import SmaeLink from '../SmaeLink.vue';
 
 const status = {
@@ -163,7 +163,7 @@ watch(statusSelecionado, (novoValor) => {
               height="20"
             ><use xlink:href="#i_edit" /></svg>
           </SmaeLink>
-        </td>        
+        </td>
         <td>
           <button
             v-if="item.pode_editar"
@@ -180,7 +180,6 @@ watch(statusSelecionado, (novoValor) => {
             </svg>
           </button>
         </td>
-
       </tr>
       <tr>
         <td colspan="6">

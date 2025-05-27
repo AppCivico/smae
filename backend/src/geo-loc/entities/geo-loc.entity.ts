@@ -7,10 +7,11 @@ import { GeoJSON } from 'geojson';
 import { IsGeoJSON } from '../../auth/decorators/is-geojson.decorator';
 import { NumberArrayTransformOrUndef } from '../../auth/transforms/number-array.transform';
 import { NumberTransform, PositiveNumberTransform } from '../../auth/transforms/number.transform';
+import { MAX_LENGTH_DEFAULT } from 'src/common/consts';
 
 export class GeoLocDto {
     @IsString()
-    @MaxLength(100)
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Nome' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     busca_endereco: string;
 
     @ApiProperty({ enum: GeoReferenciaTipo, enumName: 'GeoReferenciaTipo' })
@@ -185,6 +186,6 @@ export class FilterGeoJsonDto {
     nivel?: number[];
 
     @IsString()
-    @MaxLength(100)
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Tipo camada' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     tipo_camada: string;
 }

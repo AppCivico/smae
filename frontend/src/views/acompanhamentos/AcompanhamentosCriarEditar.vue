@@ -1,4 +1,5 @@
 <script setup>
+import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
 import { acompanhamento as schema } from '@/consts/formSchemas';
 import dateToField from '@/helpers/dateToField';
 import truncate from '@/helpers/texto/truncate';
@@ -113,7 +114,7 @@ if (!riscosStore?.lista?.length) {
 
   <Form
     v-if="!acompanhamentoId || emFoco"
-    v-slot="{ errors, isSubmitting, setFieldValue }"
+    v-slot="{ errors, isSubmitting, setFieldValue, values }"
     :disabled="chamadasPendentes.emFoco"
     :initial-values="itemParaEdicao"
     :validation-schema="schema"
@@ -227,20 +228,20 @@ if (!riscosStore?.lista?.length) {
         />
       </div>
     </div>
-
     <div class="flex g2">
       <div class="f1 mb1">
         <LabelFromYup
           name="pauta"
           :schema="schema"
         />
-        <Field
-          id="pauta"
+        <SmaeText
           name="pauta"
           as="textarea"
           rows="5"
           class="inputtext light mb1"
-          maxlength="50000"
+          maxlength="2048"
+          v-model="values.pauta"
+          anular-vazio
           :class="{ 'error': errors.pauta }"
         />
         <ErrorMessage
@@ -256,13 +257,14 @@ if (!riscosStore?.lista?.length) {
           name="detalhamento"
           :schema="schema"
         />
-        <Field
-          id="detalhamento"
+        <SmaeText
           name="detalhamento"
           as="textarea"
           rows="5"
           class="inputtext light mb1"
-          maxlength="50000"
+          maxlength="2048"
+          v-model="values.detalhamento"
+          anular-vazio
           :class="{ 'error': errors.detalhamento }"
         />
         <ErrorMessage
@@ -284,13 +286,14 @@ if (!riscosStore?.lista?.length) {
           name="observacao"
           :schema="schema"
         />
-        <Field
-          id="observacao"
+        <SmaeText
           name="observacao"
           as="textarea"
           rows="5"
           class="inputtext light mb1"
-          maxlength="50000"
+          maxlength="2048"
+          v-model="values.observacao"
+          anular-vazio
           :class="{ 'error': errors.observacao }"
         />
         <ErrorMessage
@@ -318,7 +321,7 @@ if (!riscosStore?.lista?.length) {
           as="textarea"
           rows="5"
           class="inputtext light mb1"
-          maxlength="50000"
+          maxlength="2048"
           :class="{ 'error': errors.detalhamento_status }"
         />
         <ErrorMessage
@@ -334,13 +337,14 @@ if (!riscosStore?.lista?.length) {
           name="pontos_atencao"
           :schema="schema"
         />
-        <Field
-          id="pontos_atencao"
+        <SmaeText
           name="pontos_atencao"
           as="textarea"
           rows="5"
           class="inputtext light mb1"
-          maxlength="50000"
+          maxlength="2048"
+          v-model="values.pontos_atencao"
+          anular-vazio
           :class="{ 'error': errors.pontos_atencao }"
         />
         <ErrorMessage
@@ -383,18 +387,22 @@ if (!riscosStore?.lista?.length) {
                   {{ schema.fields.acompanhamentos.innerType.fields.encaminhamento.spec.label }}
                 </template>
               &nbsp;<span
-                v-if="schema.fields.acompanhamentos.innerType.fields.encaminhamento.spec.presence === 'required'"
+                v-if="schema.fields.acompanhamentos.innerType.fields.encaminhamento.spec.presence
+                  === 'required'"
                 class="tvermelho"
               >*</span>
               </label>
-              <Field
-                :id="`acompanhamentos[${idx}].encaminhamento`"
+              <SmaeText
                 :name="`acompanhamentos[${idx}].encaminhamento`"
                 as="textarea"
                 rows="5"
                 class="inputtext light mb1"
-                maxlength="50000"
+                :max-length="2048"
+                :schema="schema"
+                :model-value="fields[idx]?.value?.encaminhamento"
+                anular-vazio
                 :class="{ 'error': errors[`acompanhamentos[${idx}].encaminhamento`] }"
+                @update:model-value="handleChange"
               />
               <ErrorMessage
                 :name="`acompanhamentos[${idx}].encaminhamento`"

@@ -1,6 +1,7 @@
 import { Transform } from 'class-transformer';
 import { IsNumber, IsOptional, IsString, MaxLength, MinLength, ValidateIf } from 'class-validator';
 import { DateTransform } from 'src/auth/transforms/date.transform';
+import { MAX_LENGTH_DEFAULT } from 'src/common/consts';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 
 export class CreateWorkflowDto {
@@ -9,7 +10,7 @@ export class CreateWorkflowDto {
 
     @IsString()
     @MinLength(1)
-    @MaxLength(250)
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Nome' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     nome: string;
 
     /**

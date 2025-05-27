@@ -67,11 +67,15 @@ watchEffect(() => {
         class="migalhas-de-pão__item"
       >
         <SmaeLink
+          v-if="metaId && activePdm?.id"
           class="migalhas-de-pão__link"
           to="/metas"
         >
           {{ activePdm?.nome }}
         </SmaeLink>
+        <template v-else>
+          {{ activePdm?.nome }}
+        </template>
       </li>
       <template v-if="metaId && activePdm?.id">
         <template

@@ -1,6 +1,6 @@
 <script setup>
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { grauDescricao } from '@/../../common/RiscoCalc.ts';
+import { grauDescricao } from '@back/common/RiscoCalc.ts';
 import LocalFilter from '@/components/LocalFilter.vue';
 import { risco as schema } from '@/consts/formSchemas';
 import statuses from '@/consts/riskStatuses';

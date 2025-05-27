@@ -31,8 +31,32 @@ function dateToDate(d, options = {}) {
 
   const timeZone = hasTimeInDate(d) ? 'America/Sao_Paulo' : 'UTC';
   const dd = d ? new Date(d) : false;
-  if (!dd) return d;
-  const dx = (dd) ? dd.toLocaleString('pt-BR', { dateStyle: 'short', timeZone, ...options }) : '';
+
+  if (!dd) {
+    return d;
+  }
+
+  const temHoras = dd.getHours() !== 0 && dd.getMinutes() !== 0;
+  const podeUsarDateStyle = !['year', 'month', 'day'].some((key) => options[key]);
+
+  if (
+    !podeUsarDateStyle
+    && (options.dateStyle || options.timeStyle)
+  ) {
+    console.warn('Existem configurações conflitatentes com configuração de data.', options);
+    delete options.dateStyle;
+    delete options.timeStyle;
+  }
+
+  const configuracaoDeHorario = {
+    dateStyle: podeUsarDateStyle ? 'short' : undefined,
+    timeStyle: podeUsarDateStyle && temHoras ? 'short' : undefined,
+    timeZone,
+    ...options,
+  };
+
+  const dx = (dd) ? dd.toLocaleString('pt-BR', configuracaoDeHorario) : '';
+
   return dx || '';
 }
 

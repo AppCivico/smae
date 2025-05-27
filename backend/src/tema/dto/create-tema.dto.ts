@@ -1,12 +1,13 @@
 import { Type } from 'class-transformer';
 import { IsInt, IsString, MaxLength } from 'class-validator';
+import { MAX_LENGTH_MEDIO } from 'src/common/consts';
 
 export class CreateObjetivoEstrategicoDto {
     /**
      * Descrição
      */
     @IsString({ message: '$property| descrição: Precisa ser alfanumérico' })
-    @MaxLength(500, { message: '$property| descrição: Máximo 500 caracteres' })
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Descrição" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     descricao: string;
 
     /**

@@ -7,7 +7,7 @@
       <slot name="titulo">
         <caption
           v-if="titulo"
-          class="tl"
+          class="tl uc w700 tamarelo"
         >
           {{ titulo }}
         </caption>
@@ -21,6 +21,9 @@
           <col
             v-for="coluna in colunas"
             :key="`colunas--${coluna.chave}`"
+            class="smae-table__coluna"
+            :class="`smae-table__coluna--${coluna.chave}`"
+            v-bind="coluna.atributosDaColuna"
           >
           <col
             v-if="hasActionButton"
@@ -39,17 +42,13 @@
               v-for="coluna in colunas"
               :key="`header--${coluna.chave}`"
               v-bind="coluna"
+              :schema="props.schema"
+              :atributos="coluna.atributosDoCabecalhoDeColuna"
             >
-              <template
-                v-for="nomeSlot in slotsDoCabecalho"
-                :key="nomeSlot"
-                #[nomeSlot]="slotProps"
-              >
-                <slot
-                  :name="nomeSlot"
-                  v-bind="slotProps"
-                />
-              </template>
+              <slot
+                :name="(`cabecalho:${normalizadorDeSlots(coluna.chave)}` as keyof Slots)"
+                v-bind="coluna"
+              />
             </TableHeaderCell>
 
             <td v-if="hasActionButton">
@@ -77,24 +76,20 @@
               v-for="coluna in colunas"
               :key="`linha--${linhaIndex}-${coluna.chave}`"
               class="smae-table__cell"
+              :eh-cabecalho="!!coluna.ehCabecalho"
               :formatador="coluna.formatador"
               :linha="linha"
               :caminho="coluna.chave"
+              v-bind="coluna.atributosDaCelula"
             >
-              <template
-                v-for="nomeSlot in slotsDaCelula"
-                :key="`linha--${linhaIndex}-${coluna.chave}}-${nomeSlot}`"
-                #[nomeSlot]="slotProps"
-              >
-                <slot
-                  :name="nomeSlot"
-                  v-bind="slotProps"
-                />
-              </template>
+              <slot
+                :name="(`celula:${normalizadorDeSlots(coluna.chave)}` as keyof Slots)"
+                :linha="linha"
+              />
             </TableCell>
 
             <td v-if="hasActionButton">
-              <div class="nowrap flex g1 justifyright">
+              <div class="flex g1 justifyright">
                 <EditButton
                   v-if="rotaEditar"
                   :linha="linha"
@@ -113,12 +108,18 @@
               </div>
             </td>
           </tr>
+
+          <tr v-if="dados.length === 0">
+            <td :colspan="colunas.length">
+              Sem dados para exibir
+            </td>
+          </tr>
         </tbody>
       </slot>
 
-      <tfoot v-if="$slots.rodape || replicarCabecalho">
+      <tfoot v-if="$slots.rodape || exibirRodape">
         <slot
-          v-if="!replicarCabecalho"
+          v-if="slots.rodape"
           name="rodape"
           :colunas="colunas"
         />
@@ -126,19 +127,15 @@
         <tr v-else>
           <TableHeaderCell
             v-for="coluna in colunas"
-            :key="`header--${coluna.chave}`"
+            :key="`footer--${coluna.chave}`"
             v-bind="coluna"
+            :schema="props.schema"
+            :atributos="coluna.atributosDoRodapeDeColuna"
           >
-            <template
-              v-for="nomeSlot in slotsDoCabecalho"
-              :key="nomeSlot"
-              #[nomeSlot]="slotProps"
-            >
-              <slot
-                :name="nomeSlot"
-                v-bind="slotProps"
-              />
-            </template>
+            <slot
+              :name="(`rodape:${normalizadorDeSlots(coluna.chave)}` as keyof Slots)"
+              v-bind="coluna"
+            />
           </TableHeaderCell>
         </tr>
       </tfoot>
@@ -148,12 +145,14 @@
 
 <script lang="ts" setup>
 import { type Component, computed, useSlots } from 'vue';
+import type { AnyObjectSchema } from 'yup';
+import RolagemHorizontal from '../rolagem/RolagemHorizontal.vue';
+import DeleteButton, { type DeleteButtonEvents, type DeleteButtonProps } from './partials/DeleteButton.vue';
+import EditButton, { type EditButtonProps } from './partials/EditButton.vue';
 import TableCell from './partials/TableCell.vue';
 import TableHeaderCell from './partials/TableHeaderCell.vue';
-import EditButton, { type EditButtonProps } from './partials/EditButton.vue';
-import DeleteButton, { type DeleteButtonEvents, type DeleteButtonProps } from './partials/DeleteButton.vue';
-import { Colunas, Linha, Linhas } from './types/tipagem';
-import RolagemHorizontal from '../rolagem/RolagemHorizontal.vue';
+import { Colunas, Linha, Linhas } from './tipagem';
+import normalizadorDeSlots from './utils/normalizadorDeSlots';
 
 type Slots = {
   titulo: []
@@ -169,12 +168,12 @@ type Props =
   & DeleteButtonProps
   & {
     titulo?: string
+    tituloRolagemHorizontal?: string
+    schema?: AnyObjectSchema,
     colunas: Colunas,
     dados: Linhas
     replicarCabecalho?: boolean
     rolagemHorizontal?: boolean
-    // eslint-disable-next-line @typescript-eslint/ban-types
-    formatador?: Function
     personalizarLinhas?: {
       parametro: string,
       alvo: unknown,
@@ -198,19 +197,6 @@ defineSlots<Slots>();
 
 const slots = useSlots();
 
-const listaSlots = computed<string[]>(() => Object.keys(slots));
-const slotsDaCelula = computed<string[]>(() => {
-  const slotsCelula = listaSlots.value.filter((slot) => slot.includes('celula:') || slot.includes('celula-fora:'));
-
-  return slotsCelula;
-});
-
-const slotsDoCabecalho = computed<string[]>(() => {
-  const slotsCelula = listaSlots.value.filter((slot) => slot.includes('cabecalho:'));
-
-  return slotsCelula;
-});
-
 const hasActionButton = computed<boolean>(() => {
   if (props.rotaEditar) {
     return true;
@@ -225,12 +211,20 @@ const tituloParaRolagemHorizontal = computed<string | undefined>(() => {
     return undefined;
   }
 
+  if (props.tituloRolagemHorizontal) {
+    return props.tituloRolagemHorizontal;
+  }
+
   if (props.titulo) {
     return props.titulo;
   }
 
   throw new Error('"titulo" é obrigatório para utilizar rolagem horizontal');
 });
+
+const exibirRodape = computed<boolean>(() => props.replicarCabecalho
+  || !!slots.rodape
+  || Object.keys(slots).some((slot) => slot.includes('cabecalho:')));
 
 function obterDestaqueDaLinha(linha: Linha): string | null {
   if (!props.personalizarLinhas) {

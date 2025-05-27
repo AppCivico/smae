@@ -1,4 +1,5 @@
 <script setup>
+import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
 import ErrorComponent from '@/components/ErrorComponent.vue';
 import { acompanhamento as schema } from '@/consts/formSchemas';
 import dateToField from '@/helpers/dateToField';
@@ -57,7 +58,6 @@ async function onSubmit(_, { controlledValues }) {
   if (!carga.cronograma_paralisado) {
     carga.cronograma_paralisado = false;
   }
-
   try {
     const msg = props.acompanhamentoId
       ? 'Dados salvos com sucesso!'
@@ -116,7 +116,7 @@ function excluirAcompanhamento(id) {
 
   <Form
     v-if="!acompanhamentoId || emFoco"
-    v-slot="{ errors, isSubmitting, setFieldValue }"
+    v-slot="{ errors, isSubmitting, setFieldValue, values }"
     :disabled="chamadasPendentes.emFoco"
     :initial-values="itemParaEdicao"
     :validation-schema="schema"
@@ -240,13 +240,15 @@ function excluirAcompanhamento(id) {
           name="pauta"
           :schema="schema"
         />
-        <Field
-          id="pauta"
+        <SmaeText
           name="pauta"
           as="textarea"
           rows="5"
           class="inputtext light mb1"
-          maxlength="50000"
+          maxlength="2048"
+          :schema="schema"
+          :model-value="values.pauta"
+          anular-vazio
           :class="{ 'error': errors.pauta }"
         />
         <ErrorMessage
@@ -262,13 +264,15 @@ function excluirAcompanhamento(id) {
           name="detalhamento"
           :schema="schema"
         />
-        <Field
-          id="detalhamento"
+        <SmaeText
           name="detalhamento"
           as="textarea"
           rows="5"
           class="inputtext light mb1"
-          maxlength="50000"
+          maxlength="2048"
+          :schema="schema"
+          :model-value="values.detalhamento"
+          anular-vazio
           :class="{ 'error': errors.detalhamento }"
         />
         <ErrorMessage
@@ -296,7 +300,7 @@ function excluirAcompanhamento(id) {
           as="textarea"
           rows="5"
           class="inputtext light mb1"
-          maxlength="50000"
+          maxlength="2048"
           :class="{ 'error': errors.observacao }"
         />
         <ErrorMessage
@@ -324,7 +328,7 @@ function excluirAcompanhamento(id) {
           as="textarea"
           rows="5"
           class="inputtext light mb1"
-          maxlength="50000"
+          maxlength="2048"
           :class="{ 'error': errors.detalhamento_status }"
         />
         <ErrorMessage
@@ -340,13 +344,15 @@ function excluirAcompanhamento(id) {
           name="pontos_atencao"
           :schema="schema"
         />
-        <Field
-          id="pontos_atencao"
+        <SmaeText
           name="pontos_atencao"
           as="textarea"
           rows="5"
           class="inputtext light mb1"
-          maxlength="50000"
+          maxlength="2048"
+          :schema="schema"
+          :model-value="values.pontos_atencao"
+          anular-vazio
           :class="{ 'error': errors.pontos_atencao }"
         />
         <ErrorMessage
@@ -362,7 +368,7 @@ function excluirAcompanhamento(id) {
       </legend>
 
       <FieldArray
-        v-slot="{ fields, push, remove }"
+        v-slot="{ fields, push, remove, handleChange }"
         name="acompanhamentos"
       >
         <div
@@ -389,18 +395,22 @@ function excluirAcompanhamento(id) {
                   {{ schema.fields.acompanhamentos.innerType.fields.encaminhamento.spec.label }}
                 </template>
               &nbsp;<span
-                v-if="schema.fields.acompanhamentos.innerType.fields.encaminhamento.spec.presence === 'required'"
+                v-if="schema.fields.acompanhamentos.innerType.fields.encaminhamento.spec.presence
+                    === 'required'"
                 class="tvermelho"
               >*</span>
               </label>
-              <Field
-                :id="`acompanhamentos[${idx}].encaminhamento`"
+              <SmaeText
                 :name="`acompanhamentos[${idx}].encaminhamento`"
                 as="textarea"
                 rows="5"
                 class="inputtext light mb1"
-                maxlength="50000"
+                :max-length="2048"
+                :schema="schema"
+                :model-value="fields[idx]?.value?.encaminhamento"
+                anular-vazio
                 :class="{ 'error': errors[`acompanhamentos[${idx}].encaminhamento`] }"
+                @update:model-value="handleChange"
               />
               <ErrorMessage
                 :name="`acompanhamentos[${idx}].encaminhamento`"

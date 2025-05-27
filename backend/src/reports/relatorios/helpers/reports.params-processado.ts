@@ -35,6 +35,8 @@ function nomeTabelaColParametro(
         partido: { coluna: 'nome' },
         regiao: { coluna: 'descricao', chaves: ['regioes'] },
         eleicao: { coluna: 'ano' },
+        // hack, passa o mesmo nome como chave pra conseguir setar a chave de exibição
+        grupo_tematico: { coluna: 'nome', chaves: ['grupo_tematico'], chave_exibicao: ['Grupo Temático'] },
     };
 
     const mapeamento = Object.entries(tabelaConfig).reduce(
@@ -122,8 +124,8 @@ export const BuildParametrosProcessados = async (
         if (!report) return undefined;
 
         if (!report.parametros) return undefined;
-        if (report.parametros_processados && report.parametros_processados.toString().length > 0)
-            return report.parametros_processados;
+        if (report.parametros_processados && report.parametros_processados.valueOf())
+            return report.parametros_processados.valueOf() as InputJsonValue;
 
         parametros = report.parametros;
     } else {
@@ -147,7 +149,8 @@ export const BuildParametrosProcessados = async (
             .replace('listar_variaveis_regionalizadas', 'Listar variáveis regionalizadas')
             .replace('ano_inicio', 'Ano início')
             .replace('ano_fim', 'Ano fim')
-            .replace('mes', 'Mês');
+            .replace(/\bmes\b/gi, 'Mês')
+            .replace('periodo', 'Período');
 
         parametros_processados[nomeChave] = valor.toString();
 
@@ -184,6 +187,12 @@ export const BuildParametrosProcessados = async (
         }
 
         if (typeof valor === 'number' && nomeTabelaCol) {
+            if (valor === 0) {
+                // TODO: esse comportamento aqui é ruim, alinhar com os fronts para mapear quando eles estão enviado 0 e tratar no front.
+                delete parametros_processados[nomeChave];
+                continue;
+            }
+
             const query = `SELECT COALESCE(${nomeTabelaCol.coluna}::text, '') AS nome, removido_em FROM ${nomeTabelaCol.tabela} WHERE id = ${valor}`;
             const rowNome = await prisma.$queryRawUnsafe<Array<{ nome: string; removido_em: Date | undefined }>>(query);
             if (rowNome.length > 0) {
@@ -192,6 +201,9 @@ export const BuildParametrosProcessados = async (
                     : rowNome[0].nome;
             }
         } else if (Array.isArray(valor) && nomeTabelaCol) {
+            // Removendo valores null
+            valor = valor.filter((v: any) => v !== null);
+
             if (valor.length === 0) continue;
 
             const joinedValues = valor.join(',');

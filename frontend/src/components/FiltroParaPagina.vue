@@ -1,14 +1,11 @@
 <script setup lang="ts">
-import { nextTick, onMounted, watch } from 'vue';
+import { nextTick, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import {
   Field, useForm, ErrorMessage, useIsFormDirty,
 } from 'vee-validate';
-
-import LabelFromYup from '@/components/LabelFromYup.vue';
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
-
-defineOptions({ inheritAttrs: false });
+import AutocompleteField2 from './AutocompleteField2.vue';
 
 type OpcaoPadronizada = {
   id: number | string
@@ -19,14 +16,19 @@ type Opcoes = OpcaoPadronizada[] | string[] | number[];
 
 type CampoFiltro = {
   class?: string
-  tipo: 'select' | 'text' | 'search' | 'date' | 'checkbox'
+  tipo: 'select' | 'text' | 'search' | 'date' | 'checkbox' | 'autocomplete'
   opcoes?: Opcoes
+  autocomplete?: {
+    label?: string
+    apenasUm?: boolean
+  }
 };
 type Campos = Record<string, CampoFiltro>;
 
 type Linha = {
   class?: string,
-  campos: Campos
+  campos: Campos,
+  decorador?: 'esquerda' | 'direita'
 };
 export type Formulario = Linha[];
 
@@ -34,9 +36,12 @@ type Props = {
   formulario: Linha[]
   schema: Record<string, any>
   valoresIniciais?: Record<string, any>
+  autoSubmit?: boolean
+  carregando?: boolean
 };
 type Emits = {
-  'update:formularioSujo': [boolean]
+  (e: 'update:formularioSujo', value: boolean): void
+  (e: 'filtro'): void
 };
 
 const props = defineProps<Props>();
@@ -46,7 +51,7 @@ const route = useRoute();
 const router = useRouter();
 
 const {
-  handleSubmit, isSubmitting, resetForm, setValues,
+  handleSubmit, isSubmitting, resetForm, setValues, meta,
 } = useForm({
   validationSchema: props.schema,
   initialValues: route.query,
@@ -81,6 +86,8 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   router.replace({
     query: queryFiltrada,
   });
+
+  emit('filtro');
 });
 
 function padronizarOpcoes(opcoes: Opcoes): OpcaoPadronizada[] {
@@ -104,25 +111,39 @@ watch(() => route.query, () => {
     resetForm({ values: route.query });
   });
 }, { deep: true, immediate: true });
+
+if (props.autoSubmit) {
+  watch(() => meta.value.dirty, () => {
+    if (meta.value.dirty) {
+      onSubmit();
+    }
+  });
+}
 </script>
 
 <template>
-  <div class="comunicados-gerais-filtro">
+  <div class="filtro-para-pagina">
     <FormularioQueryString :valores-iniciais="valoresIniciais">
       <form @submit="onSubmit">
         <div
           v-for="(linha, linhaIndex) in formulario"
           :key="`linha--${linhaIndex}`"
-          class="flex center g2"
+          class="flex center g2 flexwrap"
+          :class="linha.decorador === 'direita' && 'row-reverse'"
         >
+          <hr
+            v-if="linha.decorador"
+            class="f1"
+          >
+
           <div
-            class="flex g2 fg999"
-            :class="linha.class"
+            class="flex g2 flexwrap"
+            :class="linha.class || 'fg999'"
           >
             <div
               v-for="(campo, campoNome) in linha.campos"
               :key="campoNome"
-              :class="['f1', campo.class]"
+              :class="['f1 align-end', campo.class]"
             >
               <LabelFromYup
                 :name="campoNome"
@@ -133,6 +154,7 @@ watch(() => route.query, () => {
                 v-if="campo.tipo === 'checkbox'"
                 v-slot="{ field: { value }, handleInput }"
                 :name="campoNome"
+                :disabled="$props.carregando"
               >
                 <div
                   class="flex itemscenter"
@@ -142,6 +164,7 @@ watch(() => route.query, () => {
                     type="checkbox"
                     class="interruptor"
                     :checked="value"
+                    :disabled="$props.carregando"
                     @input="(ev) => handleInput(ev.target.checked)"
                   >
                 </div>
@@ -152,6 +175,7 @@ watch(() => route.query, () => {
                 class="inputtext light mb1"
                 :name="campoNome"
                 as="select"
+                :disabled="$props.carregando"
               >
                 <option :value="null">
                   -
@@ -168,10 +192,28 @@ watch(() => route.query, () => {
               </Field>
 
               <Field
+                v-else-if="campo.tipo === 'autocomplete'"
+                v-slot="{ value, handleChange }"
+                class="inputtext light mb1"
+                :name="campoNome"
+              >
+                <AutocompleteField2
+                  class="f1 mb1"
+                  :controlador="{ participantes: value, busca: '' }"
+                  :grupo="campo.opcoes"
+                  :label="campo.autocomplete?.label || 'label'"
+                  :apenas-um="campo.autocomplete?.apenasUm"
+                  :readonly="$props.carregando"
+                  @change="ev => handleChange(ev)"
+                />
+              </Field>
+
+              <Field
                 v-else
                 class="inputtext light mb1"
                 :name="campoNome"
                 :type="campo.tipo"
+                :disabled="$props.carregando"
               />
 
               <ErrorMessage
@@ -182,11 +224,15 @@ watch(() => route.query, () => {
           </div>
         </div>
 
-        <div class="flex justifyright">
+        <div
+          v-if="!autoSubmit"
+          class="flex justifyright"
+        >
           <button
             type="submit"
             class="btn"
-            :disabled="isSubmitting"
+            :class="[{ loading: carregando }]"
+            :disabled="isSubmitting || carregando"
           >
             Filtrar
           </button>

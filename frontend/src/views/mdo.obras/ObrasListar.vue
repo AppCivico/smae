@@ -1,25 +1,26 @@
 <template>
   <div>
-    <header class="flex spacebetween center mb2 g2">
-      <TítuloDePágina id="titulo-da-pagina" />
-      <hr class="f1">
-      <router-link
-        :to="{name: 'obrasCriar'}"
-        class="btn big ml1"
-      >
-        Nova obra
-      </router-link>
-    </header>
+    <CabecalhoDePagina>
+      <template #acoes>
+        <SmaeLink
+          :to="{
+            name: 'obrasCriar'
+          }"
+          class="btn big"
+        >
+          Nova obra
+        </SmaeLink>
+      </template>
+    </CabecalhoDePagina>
 
     <FormularioQueryString
       v-slot="{ aplicarQueryStrings, detectarMudancas, formularioSujo }"
       :valores-iniciais="{
-        ordem_direcao: 'asc',
         ipp: gblIpp,
         pagina: 1,
         token_paginacao: undefined,
-        ordem_coluna: 'codigo',
-        ordem_direcao: 'asc',
+        ordem_coluna: 'registrado_em',
+        ordem_direcao: 'desc',
       }"
     >
       <FiltroDeListagemDeObras

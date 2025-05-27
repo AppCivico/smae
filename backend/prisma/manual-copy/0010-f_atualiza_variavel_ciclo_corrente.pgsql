@@ -19,11 +19,16 @@ DECLARE
     v_liberacao_enviada BOOLEAN;
     v_eh_liberacao_auto BOOLEAN;
     v_primeiro_registro RECORD;
-    v_ultima_analise RECORD;
-    v_preenchimento_data DATE;
-    v_aprovacao_data DATE;
-    v_recursion_depth INT;
+    v_preenchimento_data_conclusao DATE; -- Data de conclusão do Preenchimento para o ciclo atual
+    v_validacao_data_conclusao DATE;   -- Data de conclusão da Validação para o ciclo atual
     v_base_date DATE;
+    v_processando_ciclo_atrasado BOOLEAN; -- Indica se estamos processando um ciclo que é genuinamente um "atraso" antigo
+    -- Indica se a lógica de avanço automático deve ser relativa (baseada na conclusão da fase anterior)
+    -- ou absoluta (baseada nos dias configurados para a fase, respeitando o início da janela da fase)
+    v_aplicar_logica_relativa_para_avanco BOOLEAN;
+    v_deadline_validacao DATE;
+    v_deadline_liberacao DATE;
+    v_valores_anterior JSONB; -- necessário para caso o próprio usuário abra a tela, o valor não vai estar na SV, então precisa fazer o LOCF
 BEGIN
 
     IF p_recursion_depth > 10 THEN
@@ -78,13 +83,6 @@ BEGIN
         v_fase_corrente := 'Preenchimento';
     END IF;
 
-    -- Calcula o último período válido usando a função atualizada
---    v_ultimo_periodo_valido := ultimo_periodo_valido(
---        v_registro.periodicidade,
---        v_registro.atraso_meses,
---        v_registro.inicio_medicao
---    );
-
     -- Busca os ciclos e analisa os atrasos
     FOR v_ciclo IN (
         SELECT
@@ -131,32 +129,22 @@ BEGIN
 
     IF (v_ultimo_periodo_valido IS NULL) THEN
         --RAISE NOTICE 'Nenhum periodo encontrado, removendo variavel_ciclo_corrente para variável ID %', p_variavel_id;
-        DELETE FROM variavel_ciclo_corrente
-        WHERE variavel_id = p_variavel_id;
+        DELETE FROM variavel_ciclo_corrente WHERE variavel_id = p_variavel_id;
         RETURN;
     END IF;
 
     -- ordena os atrasos de forma ascendente
     v_atrasos := ARRAY(SELECT unnest(v_atrasos) ORDER BY 1);
 
-    -- Se houver atrasos, calcula o prazo
+    -- Determina se estamos processando um ciclo antigo "atrasado"
     -- e o atraso não é o mesmo do ciclo corrente (em progresso/preenchimento)
-
     --raise notice 'v_ultimo_p_valido_corrente -> %', v_ultimo_p_valido_corrente;
     --raise notice 'v_atrasos -> %', v_atrasos;
-
     IF array_length(v_atrasos, 1) > 0 AND v_ultimo_p_valido_corrente != v_atrasos[1] THEN
-    --raise notice 'v_atrasos: %', v_atrasos;
-    --raise notice 'v_ultimo_p_valido_corrente: %', v_ultimo_p_valido_corrente;
-
-
+        v_processando_ciclo_atrasado := TRUE;
         v_prazo := v_atrasos[1];
-
-        -- busca a variavel_global_ciclo_analise do mes em atraso
         SELECT * INTO v_quali FROM variavel_global_ciclo_analise
-        WHERE variavel_id = p_variavel_id
-          AND referencia_data = v_atrasos[1]
-          AND ultima_revisao = true;
+        WHERE variavel_id = p_variavel_id AND referencia_data = v_atrasos[1] AND ultima_revisao = true;
 
         IF v_quali.fase IS NOT NULL THEN
 
@@ -172,16 +160,16 @@ BEGIN
 
         ELSE
             v_fase_corrente := 'Preenchimento';
-            -- ? pensar aqui,
+
             v_prazo := v_atrasos[1] + v_registro.dur_preench_interval;
         END IF;
 
-        v_ultimo_periodo_valido := v_atrasos[1];
-
         -- prazo já tava atraso né... então ta estouradão
-
         --RAISE NOTICE 'v_prazo: %', v_prazo;
+        v_ultimo_periodo_valido := v_atrasos[1];
     ELSE
+
+        v_processando_ciclo_atrasado := FALSE;
 
         IF (v_atrasos[1] IS NULL) THEN -- se não há atraso, o ciclo atual é o último válido
             v_ultimo_p_valido_corrente := v_ultimo_periodo_valido;
@@ -203,12 +191,11 @@ BEGIN
             v_fase_corrente := 'Liberacao';
             v_ultimo_p_valido_corrente := v_primeiro_registro.ciclo_data;
         END IF;
-
         --raise notice 'calculando prazo v_ultimo_p_valido_corrente -> %', v_ultimo_p_valido_corrente;
-
-        v_ultimo_periodo_valido := coalesce( v_atrasos[1], v_ultimo_p_valido_corrente, v_ultimo_periodo_valido);
-
+        v_ultimo_periodo_valido := coalesce(v_atrasos[1], v_ultimo_p_valido_corrente, v_ultimo_periodo_valido);
         --raise notice 'v_ultimo_periodo_valido após coalesce %', v_ultimo_periodo_valido;
+        v_base_date := (v_ultimo_periodo_valido + v_registro.intervalo_atraso)::date;
+        --raise notice 'v_base_date após %', v_base_date;
 
         v_base_date := (v_ultimo_periodo_valido + v_registro.intervalo_atraso)::date;
         --raise notice 'v_base_date após %', v_base_date;
@@ -225,145 +212,178 @@ BEGIN
             ELSE
                 v_prazo := date_trunc('month', v_base_date) + ((v_registro.periodo_liberacao[2]) || ' days')::interval;
             END IF;
-
         END IF;
-
-    END IF;
-    --raise notice 'v_prazo -> %', v_prazo;
-
-    v_proximo_periodo := v_ultimo_periodo_valido + periodicidade_intervalo(v_registro.periodicidade);
-
-
-    -- busca ultimo registro de preenchimento/aprovação (ou liberação)
-    SELECT
-        a.fase,
-        timezone('America/Sao_Paulo', (a.criado_em::timestamp without time zone))::date as data_analise
-    INTO v_ultima_analise
-    FROM variavel_global_ciclo_analise a
-    WHERE a.variavel_id = p_variavel_id
-        AND a.referencia_data = v_ultimo_periodo_valido
-        AND a.ultima_revisao = true
-        AND a.aprovada = true
-        AND a.removido_em IS NULL
-    ORDER BY a.criado_em DESC
-    LIMIT 1;
-    --raise notice 'v_ultima_analise -> %', v_ultima_analise;
-
-    -- Se esta na fase de Preenchimento
-    IF v_ultima_analise.fase = 'Preenchimento' THEN
-        v_preenchimento_data := v_ultima_analise.data_analise;
-
-        IF v_fase_corrente = 'Validacao' AND
-           v_preenchimento_data + v_registro.dur_validacao_interval <= v_dia_atual AND
-           NOT EXISTS (
-               SELECT 1
-               FROM variavel_global_ciclo_analise
-               WHERE variavel_id = p_variavel_id
-                   AND referencia_data = v_ultimo_periodo_valido
-                   AND fase = 'Validacao'
-                   AND ultima_revisao = true
-                   AND aprovada = true
-                   AND removido_em IS NULL
-           ) THEN
-
-            INSERT INTO variavel_global_ciclo_analise (
-                variavel_id,
-                fase,
-                referencia_data,
-                informacoes_complementares,
-                eh_liberacao_auto,
-                aprovada,
-                criado_por,
-                ultima_revisao,
-                valores
-            ) VALUES (
-                p_variavel_id,
-                'Validacao',
-                v_ultimo_periodo_valido,
-                'Aprovação automática por decurso de prazo',
-                true,
-                true,
-                -1,
-                true,
-                '[]'::jsonb
-            );
-            UPDATE variavel_ciclo_corrente SET fase = 'Liberacao', liberacao_enviada=true WHERE variavel_id = p_variavel_id;
-
-            PERFORM f_atualiza_variavel_ciclo_corrente_recursion(p_variavel_id, p_recursion_depth + 1);
-            RETURN;
-
-        END IF;
+        --raise notice 'v_prazo após %', v_prazo;
     END IF;
 
---raise notice 'v_ultimo_periodo_valido -> %', v_ultimo_periodo_valido;
+    -- Determina a lógica de avanço (relativa ou absoluta)
+    v_aplicar_logica_relativa_para_avanco := v_processando_ciclo_atrasado;
+    IF NOT v_processando_ciclo_atrasado THEN
+        -- Se estamos no ciclo corrente, mas a fase atual já passou do prazo absoluto, usar lógica relativa para avançar rápido.
+        IF v_prazo IS NOT NULL AND v_dia_atual > v_prazo THEN
+            v_aplicar_logica_relativa_para_avanco := TRUE;
+        END IF;
+    --raise notice 'v_aplicar_logica_relativa_para_avanco -> %', v_aplicar_logica_relativa_para_avanco;
+    END IF;
 
-    -- Validacao
-    IF v_fase_corrente = 'Liberacao' AND EXISTS (
-        SELECT 1
-        FROM variavel_global_ciclo_analise
-        WHERE variavel_id = p_variavel_id
-            AND referencia_data = v_ultimo_periodo_valido
-            AND fase = 'Validacao'
-            AND ultima_revisao = true
-            AND removido_em IS NULL
-            AND aprovada = true
-    ) THEN
-        SELECT
-            timezone('America/Sao_Paulo', (criado_em::timestamp without time zone))::date INTO v_aprovacao_data
-        FROM variavel_global_ciclo_analise
-        WHERE variavel_id = p_variavel_id
-            AND referencia_data = v_ultimo_periodo_valido
-            AND fase = 'Validacao'
-            AND ultima_revisao = true
-            AND removido_em IS NULL
-            AND aprovada = true
-        ORDER BY criado_em DESC
-        LIMIT 1;
+    -- Tenta auto-aprovar 'Validacao' se 'Preenchimento' concluído e prazo de 'Validacao' expirou
+    IF v_fase_corrente = 'Validacao' THEN
+        -- Verifica se Preenchimento foi aprovado para este ciclo (v_ultimo_periodo_valido)
+        IF EXISTS (
+            SELECT 1 FROM variavel_global_ciclo_analise
+            WHERE variavel_id = p_variavel_id AND referencia_data = v_ultimo_periodo_valido
+              AND fase = 'Preenchimento' AND ultima_revisao = true AND aprovada = true AND removido_em IS NULL
+        ) THEN
+            IF v_aplicar_logica_relativa_para_avanco THEN
+                -- Busca a data de conclusão do Preenchimento para o ciclo corrente (v_ultimo_periodo_valido)
+                -- Esta query DEVE retornar um valor devido ao IF EXISTS externo.
+                SELECT timezone('America/Sao_Paulo', (a.criado_em::timestamp without time zone))::date
+                INTO v_preenchimento_data_conclusao
+                FROM variavel_global_ciclo_analise a
+                WHERE a.variavel_id = p_variavel_id AND a.referencia_data = v_ultimo_periodo_valido
+                  AND a.fase = 'Preenchimento' AND a.ultima_revisao = true AND a.aprovada = true AND a.removido_em IS NULL
+                ORDER BY a.criado_em DESC LIMIT 1;
 
-        IF v_aprovacao_data + v_registro.dur_liberacao_interval  <= v_dia_atual AND
-           NOT EXISTS (
-               SELECT 1
-               FROM variavel_global_ciclo_analise
-               WHERE variavel_id = p_variavel_id
-                   AND referencia_data = v_ultimo_periodo_valido
-                   AND fase = 'Liberacao'
-                   AND ultima_revisao = true
-                   AND removido_em IS NULL
+                IF v_preenchimento_data_conclusao IS NOT NULL THEN
+                    v_deadline_validacao := v_preenchimento_data_conclusao + v_registro.dur_validacao_interval;
+                ELSE
+                    -- Este caso não deveria ocorrer se o IF EXISTS externo é verdadeiro.
+                    -- Se ocorrer, indica uma potencial inconsistência de dados ou lógica.
+                    -- Não definir v_deadline_validacao impede o avanço automático até que seja corrigido.
+                    RAISE WARNING '[%] VAR: % CICLO: % - Inconsistência: Preenchimento aprovado existe, mas data de conclusão não encontrada para lógica relativa de Validação.', clock_timestamp(), p_variavel_id, v_ultimo_periodo_valido;
+                    -- v_deadline_validacao permanecerá NULL, impedindo o auto-avanço abaixo.
+                END IF;
+            ELSE
+                -- Usa prazo absoluto da fase de Validação (baseado no v_base_date que já considera v_ultimo_periodo_valido)
+                v_deadline_validacao := date_trunc('month', v_base_date) + ((v_registro.periodo_validacao[2]) || ' days')::interval;
+            END IF;
+
+            --RAISE NOTICE '[%] VAR: % CICLO: % FASE_ATUAL: Validacao, DEADLINE_CALC: %, RELATIVA: %', clock_timestamp(), p_variavel_id, v_ultimo_periodo_valido, v_deadline_validacao, v_aplicar_logica_relativa_para_avanco;
+
+            IF v_deadline_validacao IS NOT NULL AND v_dia_atual >= v_deadline_validacao AND NOT EXISTS (
+                   SELECT 1 FROM variavel_global_ciclo_analise
+                   WHERE variavel_id = p_variavel_id AND referencia_data = v_ultimo_periodo_valido
+                     AND fase = 'Validacao' AND ultima_revisao = true AND aprovada = true AND removido_em IS NULL
+               ) THEN
+                --RAISE NOTICE '[%] Auto-aprovando Validacao para var %, ciclo %. Deadline: %, Relativa: %', clock_timestamp(), p_variavel_id, v_ultimo_periodo_valido, v_deadline_validacao, v_aplicar_logica_relativa_para_avanco;
+
+                SELECT valores INTO v_valores_anterior
+                FROM variavel_global_ciclo_analise
+                WHERE variavel_id = p_variavel_id AND referencia_data = v_ultimo_periodo_valido
+                  AND fase = 'Preenchimento' AND ultima_revisao = true AND removido_em IS NULL
+                ORDER BY criado_em DESC LIMIT 1;
+
+                INSERT INTO variavel_global_ciclo_analise (
+                    variavel_id,
+                    fase,
+                    referencia_data,
+                    informacoes_complementares,
+                    eh_liberacao_auto,
+                    aprovada,
+                    criado_por,
+                    ultima_revisao,
+                    valores
+                ) VALUES (
+                    p_variavel_id,
+                    'Validacao',
+                    v_ultimo_periodo_valido,
+                    'Aprovação automática de Validação por decurso de prazo',
+                    true,
+                    true,
+                    -1,
+                    true,
+                    COALESCE(v_valores_anterior, '[]'::jsonb)
+                );
+
+                UPDATE variavel_ciclo_corrente SET fase = 'Liberacao', liberacao_enviada = false
+                WHERE variavel_id = p_variavel_id;
+
+                PERFORM f_atualiza_variavel_ciclo_corrente_recursion(p_variavel_id, p_recursion_depth + 1);
+                RETURN;
+            END IF;
+
+        END IF; -- Fim IF EXISTS Preenchimento aprovado
+    END IF; -- Fim IF v_fase_corrente = 'Validacao'
+
+
+    -- Tenta auto-aprovar 'Liberacao' se 'Validacao' concluída e prazo de 'Liberacao' expirou
+    IF v_fase_corrente = 'Liberacao' THEN
+        -- Verifica se Validação foi aprovada para este ciclo
+        SELECT timezone('America/Sao_Paulo', (criado_em::timestamp without time zone))::date
+        INTO v_validacao_data_conclusao
+        FROM variavel_global_ciclo_analise
+        WHERE variavel_id = p_variavel_id AND referencia_data = v_ultimo_periodo_valido
+            AND fase = 'Validacao' AND ultima_revisao = true AND removido_em IS NULL AND aprovada = true
+        ORDER BY criado_em DESC LIMIT 1;
+
+        IF v_validacao_data_conclusao IS NOT NULL THEN -- Validação foi aprovada
+
+            IF v_aplicar_logica_relativa_para_avanco THEN
+                v_deadline_liberacao := v_validacao_data_conclusao + v_registro.dur_liberacao_interval;
+                -- Não há fallback para v_atrasos[1] aqui, pois depende da conclusão da validação.
+            ELSE
+                -- Usa prazo absoluto da fase de Liberação
+                v_deadline_liberacao := date_trunc('month', v_base_date) + ((v_registro.periodo_liberacao[2]) || ' days')::interval;
+            END IF;
+
+            IF v_deadline_liberacao IS NOT NULL AND v_dia_atual >= v_deadline_liberacao AND NOT EXISTS (
+                   SELECT 1 FROM variavel_global_ciclo_analise
+                   WHERE variavel_id = p_variavel_id AND referencia_data = v_ultimo_periodo_valido
+                     AND fase = 'Liberacao' AND ultima_revisao = true AND removido_em IS NULL -- Aprovada=true or eh_liberacao_auto=true
            ) THEN
+                --RAISE NOTICE '[%] Auto-aprovando Liberacao para var %, ciclo %. Deadline: %, Relativa: %',clock_timestamp(), p_variavel_id, v_ultimo_periodo_valido, v_deadline_liberacao, v_aplicar_logica_relativa_para_avanco;
 
-            INSERT INTO variavel_global_ciclo_analise (
-                variavel_id,
-                fase,
-                referencia_data,
-                informacoes_complementares,
-                eh_liberacao_auto,
-                aprovada,
-                criado_por,
-                ultima_revisao,
-                valores
-            ) VALUES (
-                p_variavel_id,
-                'Liberacao',
-                v_ultimo_periodo_valido,
-                'Liberação automática por decurso de prazo',
-                true,
-                true,
-                -1,
-                true,
-                '[]'::jsonb
-            );
-            UPDATE variavel_ciclo_corrente SET fase = 'Liberacao', liberacao_enviada=true WHERE variavel_id = p_variavel_id;
+                SELECT valores INTO v_valores_anterior
+                FROM variavel_global_ciclo_analise
+                WHERE variavel_id = p_variavel_id AND referencia_data = v_ultimo_periodo_valido
+                  AND fase = 'Validacao' AND ultima_revisao = true AND removido_em IS NULL
+                ORDER BY criado_em DESC LIMIT 1;
 
-            PERFORM f_marca_serie_variavel_conferida(p_variavel_id, v_ultimo_periodo_valido);
+                -- Se não encontrou valores na validação, tenta pegar da fase anterior (Preenchimento)
+                IF (v_valores_anterior IS NULL OR v_valores_anterior = '[]'::jsonb) THEN
+                    SELECT valores INTO v_valores_anterior
+                    FROM variavel_global_ciclo_analise
+                    WHERE variavel_id = p_variavel_id AND referencia_data = v_ultimo_periodo_valido
+                      AND fase = 'Preenchimento' AND ultima_revisao = true AND removido_em IS NULL
+                    ORDER BY criado_em DESC LIMIT 1;
+                END IF;
 
-            PERFORM f_atualiza_variavel_ciclo_corrente_recursion(p_variavel_id, p_recursion_depth + 1);
-            RETURN;
+                INSERT INTO variavel_global_ciclo_analise (
+                    variavel_id,
+                    fase,
+                    referencia_data,
+                    informacoes_complementares,
+                    eh_liberacao_auto,
+                    aprovada,
+                    criado_por,
+                    ultima_revisao,
+                    valores
+                ) VALUES (
+                    p_variavel_id,
+                    'Liberacao',
+                    v_ultimo_periodo_valido,
+                    'Liberação automática por decurso de prazo',
+                    true,
+                    true,
+                    -1,
+                    true,
+                    COALESCE(v_valores_anterior, '[]'::jsonb)
+                );
+
+                UPDATE variavel_ciclo_corrente SET liberacao_enviada = true
+                WHERE variavel_id = p_variavel_id; -- Fase já é Liberacao
+
+                PERFORM f_marca_serie_variavel_conferida(p_variavel_id, v_ultimo_periodo_valido);
+                PERFORM f_atualiza_variavel_ciclo_corrente_recursion(p_variavel_id, p_recursion_depth + 1);
+                RETURN;
+            END IF;
 
         END IF;
     END IF;
 
     --RAISE NOTICE 'v_registro: %', v_registro;
 
+    v_proximo_periodo := v_ultimo_periodo_valido + periodicidade_intervalo(v_registro.periodicidade);
     -- Assume que sempre é corrente
     v_corrente := true;
     --RAISE NOTICE 'v_dia_atual: %', v_dia_atual;

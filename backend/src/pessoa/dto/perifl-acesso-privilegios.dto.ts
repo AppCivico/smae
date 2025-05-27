@@ -4,7 +4,6 @@ import { ModuloSistema } from '@prisma/client';
 class Privilegio {
     @ApiProperty({ description: 'Nome do privilégio' })
     nome: string;
-
     @ApiProperty({ description: 'Código do privilégio', type: 'string' })
     codigo: string;
 }
@@ -21,14 +20,10 @@ export class PerfilAcessoPrivilegios {
     nome: string;
     @ApiProperty({ description: 'Descrição' })
     descricao?: string | null;
-
     @ApiProperty({ description: 'Lista dos privilégios' })
     perfil_privilegio: PrivilegioData[];
-
     @ApiProperty({ isArray: true, enumName: 'ModuloSistema', enum: ModuloSistema })
     modulos_sistemas: ModuloSistema[];
-
     pode_editar: boolean;
-
     autogerenciavel: boolean;
 }

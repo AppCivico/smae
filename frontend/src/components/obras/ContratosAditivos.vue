@@ -6,6 +6,8 @@ import dateTimeToDate from '@/helpers/dateTimeToDate';
 import { dateToShortDate } from '@/helpers/dateToDate';
 import dinheiro from '@/helpers/dinheiro';
 import { useAlertStore } from '@/stores/alert.store';
+import { useProjetosStore } from '@/stores/projetos.store.ts';
+import { useObrasStore } from '@/stores/obras.store';
 import { useContratosStore } from '@/stores/contratos.store.ts';
 import { useTipoDeAditivosStore } from '@/stores/tipoDeAditivos.store';
 import { storeToRefs } from 'pinia';
@@ -35,6 +37,13 @@ const {
   emFoco: contratoEmFoco,
   erro,
 } = storeToRefs(contratosStore);
+
+const { permissõesDaObraEmFoco } = storeToRefs(useObrasStore());
+const { permissõesDoProjetoEmFoco } = storeToRefs(useProjetosStore());
+
+const permissoesDoItemEmFoco = computed(() => (route.meta.entidadeMãe === 'obras'
+  ? permissõesDaObraEmFoco.value
+  : permissõesDoProjetoEmFoco.value));
 
 const {
   lista: listaDeTiposDeAditivos,
@@ -203,6 +212,8 @@ function limparCamposRelacionados(tipo_aditivo_id) {
         </td>
         <td>
           <button
+            v-if="!permissoesDoItemEmFoco.apenas_leitura
+              || permissoesDoItemEmFoco.sou_responsavel"
             class="block like-a__text tipinfo"
             type="button"
             @click="abrirDialogo(aditivo.id);"
@@ -215,6 +226,8 @@ function limparCamposRelacionados(tipo_aditivo_id) {
         </td>
         <td>
           <button
+            v-if="!permissoesDoItemEmFoco.apenas_leitura
+              || permissoesDoItemEmFoco.sou_responsavel"
             class="like-a__text"
             arial-label="excluir"
             title="excluir"
@@ -232,6 +245,8 @@ function limparCamposRelacionados(tipo_aditivo_id) {
 
   <p>
     <button
+      v-if="!permissoesDoItemEmFoco.apenas_leitura
+        || permissoesDoItemEmFoco.sou_responsavel"
       class="like-a__text addlink"
       type="button"
       @click="abrirDialogo(0)"

@@ -29,7 +29,6 @@ export class FiltroMetasIniAtividadeDto {
     @ArrayMaxSize(1000)
     @Transform(NumberArrayTransformOrUndef)
     @ApiProperty({ deprecated: true, description: 'Use metas_ids instead' })
-    @Expose()
     metas?: number[];
 
     @IsOptional()

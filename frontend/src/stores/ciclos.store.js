@@ -4,8 +4,7 @@ import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
-export const useCiclosStore = defineStore({
-  id: 'Ciclos',
+export const useCiclosStore = defineStore('Ciclos', {
   state: () => ({
     Ciclos: {},
     SingleCiclo: {},

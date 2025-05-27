@@ -1,7 +1,7 @@
+import { defineStore } from 'pinia';
 import consolidarDiretorios from '@/helpers/consolidarDiretorios';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
 import simplificadorDeOrigem from '@/helpers/simplificadorDeOrigem';
-import { defineStore } from 'pinia';
 import mapIniciativas from './helpers/mapIniciativas';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -13,6 +13,7 @@ export const useObrasStore = defineStore('obrasStore', {
     totalRegistrosRevisados: 0,
     emFoco: null,
     arquivos: [],
+    listaDeTodosIds: [],
 
     pdmsSimplificados: [],
     metaSimplificada: [],
@@ -27,6 +28,7 @@ export const useObrasStore = defineStore('obrasStore', {
       mudarStatus: false,
       transferirDePortfolio: false,
       arquivos: false,
+      listaDeTodosIds: false,
     },
     erro: null,
     erros: {
@@ -141,6 +143,21 @@ export const useObrasStore = defineStore('obrasStore', {
         this.erro = erro;
       }
       this.chamadasPendentes.lista = false;
+    },
+    async buscarTodosIds(params = {}) {
+      this.chamadasPendentes.listaDeTodosIds = true;
+      try {
+        const { ids } = await this.requestS.get(`${baseUrl}/projeto-mdo/ids`, params);
+
+        this.listaDeTodosIds = ids;
+
+        this.chamadasPendentes.listaDeTodosIds = false;
+        return ids;
+      } catch (erro) {
+        this.erro = erro;
+        this.chamadasPendentes.listaDeTodosIds = false;
+        throw erro;
+      }
     },
 
     async excluirItem(id) {
@@ -307,6 +324,7 @@ export const useObrasStore = defineStore('obrasStore', {
         portfolios_compartilhados: Array.isArray(emFoco?.portfolios_compartilhados)
           ? emFoco.portfolios_compartilhados.map((x) => x.id)
           : [],
+        previsao_custo: emFoco?.previsao_custo || null,
         previsao_inicio: dateTimeToDate(emFoco?.previsao_inicio) || null,
         previsao_termino: dateTimeToDate(emFoco?.previsao_termino) || null,
         programa_id: emFoco?.programa?.id || null,

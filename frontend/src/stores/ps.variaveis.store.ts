@@ -1,8 +1,5 @@
-/* eslint-disable import/no-extraneous-dependencies */
-import { ListVariavelDto } from '@/../../backend/src/variavel/dto/list-variavel.dto';
-/* eslint-disable import/no-extraneous-dependencies */
-import { VariavelItemDto } from '@/../../backend/src/variavel/entities/variavel.entity';
-
+import type { ListVariavelDto } from '@back/variavel/dto/list-variavel.dto';
+import type { VariavelItemDto } from '@back/variavel/entities/variavel.entity';
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;

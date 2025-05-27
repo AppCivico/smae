@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
-import LabelFromYup from '@/components/LabelFromYup.vue';
 import { cicloAtualizacaoFiltrosSchema as schema } from '@/consts/formSchemas';
 import maskMonth from '@/helpers/maskMonth';
 import truncate from '@/helpers/texto/truncate';
@@ -8,6 +7,8 @@ import { useEquipesStore } from '@/stores/equipes.store';
 import type { ArvoreDeIniciativas, AtividadesPorId } from '@/stores/helpers/mapIniciativas';
 import { usePsMetasStore } from '@/stores/metasPs.store';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
+import type { PlanosSimplificadosPorTipo } from '@/stores/variaveisGlobais.store';
+import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store';
 import type { EquipeRespItemDto } from '@back/equipe-resp/entities/equipe-resp.entity.ts';
 import type { MetaItemDto } from '@back/meta/entities/meta.entity';
 import { storeToRefs } from 'pinia';
@@ -17,14 +18,21 @@ import {
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+defineOptions({
+  inheritAttrs: false,
+});
+
 type FieldsProps = {
   class?: string
   nome: string
   tipo: string
+  agruparOpcoes?: boolean
   opcoes?: EquipeRespItemDto[]
   | MetaItemDto[]
   | ArvoreDeIniciativas
   | AtividadesPorId
+  | PlanosSimplificadosPorTipo;
+  ariaBusy?: boolean
   ariaDisabled?: boolean
   placeholder?: string
   mask?: (el: HTMLInputElement) => void
@@ -41,12 +49,17 @@ const valoresIniciais = {
 const equipesStore = useEquipesStore();
 const metasStore = usePsMetasStore(route.meta.entidadeMãe);
 const planosSetoriaisStore = usePlanosSetoriaisStore(route.meta.entidadeMãe);
+const variaveisGlobaisStore = useVariaveisGlobaisStore();
 
 const { lista: listaDeMetas, metasPorPlano } = storeToRefs(metasStore);
 const {
-  lista: listaDePlanos,
   arvoreDeMetas,
 } = storeToRefs(planosSetoriaisStore);
+const {
+  planosSimplificadosPorTipo,
+  planosSimplificados: listaDePlanosSimplificados,
+  chamadasPendentes: chamadasPendentesDePlanosSimplificados,
+} = storeToRefs(variaveisGlobaisStore);
 
 const {
   handleSubmit, isSubmitting, setValues, setFieldValue, values,
@@ -85,7 +98,9 @@ const campos = computed<FieldsProps[]>(() => [
     class: 'fb20em',
     nome: 'pdm_id',
     tipo: 'select',
-    opcoes: listaDePlanos.value,
+    agruparOpcoes: true,
+    opcoes: planosSimplificadosPorTipo.value,
+    ariaBusy: chamadasPendentesDePlanosSimplificados.value.planosSimplificados,
     onChange: () => {
       setFieldValue('meta_id', null);
       setFieldValue('iniciativa_id', null);
@@ -160,8 +175,9 @@ onMounted(() => {
     metasStore.buscarTudo();
   }
 
-  if (!listaDePlanos.value.length) {
-    planosSetoriaisStore.buscarTudo();
+  if (!listaDePlanosSimplificados.value.length
+    && !chamadasPendentesDePlanosSimplificados.value.planosSimplificados) {
+    variaveisGlobaisStore.buscarPlanosSimplificados();
   }
 
   equipesStore.buscarTudo({ remover_participantes: true });
@@ -173,75 +189,108 @@ onUnmounted(() => {
 });
 </script>
 <template>
-  <section class="comunicados-gerais-filtro">
-    <FormularioQueryString
-      :valores-iniciais="valoresIniciais"
+  <FormularioQueryString
+    :valores-iniciais="valoresIniciais"
+  >
+    <form
+      class="comunicados-gerais-filtro mb2 flex g2 fg999 flexwrap"
+      v-bind="$attrs"
+      @submit.prevent="!isSubmitting && onSubmit()"
     >
-      <form
-        class="flex center g2"
-        @submit="onSubmit"
+      <div
+        v-for="campo in campos"
+        :key="campo.nome"
+        :class="['f1', campo.class]"
       >
-        <div class="flex g1 fg999 flexwrap">
-          <div
-            v-for="campo in campos"
-            :key="campo.nome"
-            :class="['f1', campo.class]"
-          >
-            <LabelFromYup
-              :name="campo.nome"
-              :schema="schema"
-            />
+        <LabelFromYup
+          :name="campo.nome"
+          :schema="schema"
+        />
 
-            <Field
-              v-if="campo.tipo !== 'select'"
-              class="inputtext light mb1"
-              :name="campo.nome"
-              :type="campo.tipo"
-              :placeholder="campo.placeholder"
-              :maxlength="campo.mask && 7"
-              @keyup="campo.mask"
-              @change="campo.onChange"
-            />
-            <Field
-              v-else
-              class="inputtext light mb1"
-              :name="campo.nome"
-              as="select"
-              :aria-disabled="campo.ariaDisabled"
-              @change="campo.onChange"
-            >
-              <option value="">
-                -
-              </option>
+        <Field
+          v-if="campo.tipo !== 'select'"
+          class="inputtext light"
+          :name="campo.nome"
+          :type="campo.tipo"
+          :placeholder="campo.placeholder"
+          :maxlength="campo.mask && 7"
+          :value="$route.query[campo.nome]"
+          @keyup="campo.mask"
+          @change="campo.onChange"
+        />
+        <Field
+          v-else
+          class="inputtext light"
+          :name="campo.nome"
+          as="select"
+          :aria-disabled="campo.ariaDisabled"
+          :aria-busy="campo.ariaBusy"
+          :value="$route.query[campo.nome]"
+          @change="campo.onChange"
+        >
+          <option value="">
+            -
+          </option>
 
+          <template v-if="typeof campo.opcoes === 'object'">
+            <template v-if="!campo.agruparOpcoes">
               <option
-                v-for="opcao in campo.opcoes"
+                v-for="opcao in campo.opcoes as Record<string, any>"
                 :key="`ciclo-atualizacao-equipe--${opcao.id}`"
                 :value="opcao.id"
                 :title="opcao.titulo?.length > 36 ? opcao.titulo : undefined"
               >
-                <template v-if="'orgao' in opcao && opcao.orgao?.sigla">
-                  {{ opcao.orgao?.sigla }} -
+                <template v-if="opcao && typeof opcao === 'object'">
+                  <template v-if="'orgao' in opcao && opcao.orgao?.sigla">
+                    {{ opcao.orgao?.sigla }} -
+                  </template>
+                  {{ 'nome' in opcao ? opcao.nome : truncate(opcao.titulo, 36) }}
                 </template>
-                {{ 'nome' in opcao ? opcao.nome : truncate(opcao.titulo, 36) }}
+                <template v-else>
+                  {{ opcao }}
+                </template>
               </option>
-            </Field>
+            </template>
+            <template v-else>
+              <optgroup
+                v-for="tipo in Object.keys(campo.opcoes)"
+                :key="tipo"
+                :label="tipo"
+              >
+                <option
+                  v-for="opcao in (campo.opcoes as Record<string, any>)[tipo]"
+                  :key="opcao.id"
+                  :value="opcao.id"
+                  :title="opcao.nome?.length > 36 ? opcao.nome : undefined"
+                >
+                  <template v-if="typeof opcao === 'object'">
+                    <template v-if="'orgao' in opcao && opcao.orgao?.sigla">
+                      {{ opcao.orgao?.sigla }} -
+                    </template>
+                    {{ 'nome' in opcao ? opcao.nome : truncate(opcao.titulo, 36) }}
+                  </template>
+                  <template v-else>
+                    {{ opcao }}
+                  </template>
+                </option>
+              </optgroup>
+            </template>
+          </template>
+        </Field>
 
-            <ErrorMessage
-              class="error-msg mb1"
-              :name="campo.nome"
-            />
-          </div>
-        </div>
+        <ErrorMessage
+          class="error-msg mb1"
+          :name="campo.nome"
+        />
+      </div>
 
-        <button
-          type="submit"
-          class="btn"
-          :disabled="isSubmitting"
-        >
-          Filtrar
-        </button>
-      </form>
-    </FormularioQueryString>
-  </section>
+      <button
+        type="submit"
+        class="btn mtauto align-end mlauto mr0"
+        :aria-busy="isSubmitting"
+      >
+        Filtrar
+      </button>
+    </form>
+  </FormularioQueryString>
 </template>

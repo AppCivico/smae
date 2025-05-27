@@ -225,7 +225,7 @@ export class VariavelFormulaCompostaService {
                     return {
                         janela: v.janela,
                         referencia: v.referencia,
-                        usar_serie_acumulada: false,
+                        usar_serie_acumulada: v.usar_serie_acumulada,
                         variavel_id: v.variavel_id,
                     };
                 }),

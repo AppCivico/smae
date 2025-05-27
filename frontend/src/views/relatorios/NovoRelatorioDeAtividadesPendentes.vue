@@ -1,6 +1,5 @@
 <script setup>
 import AutocompleteField from '@/components/AutocompleteField2.vue';
-import LabelFromYup from '@/components/LabelFromYup.vue';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import { relatórioAtividadesPendentes as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
@@ -9,7 +8,7 @@ import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
 import { storeToRefs } from 'pinia';
 import {
-  ErrorMessage, Field, useForm, useIsFormDirty,
+  ErrorMessage, Field, useForm,
 } from 'vee-validate';
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -63,22 +62,11 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
 });
 
 ÓrgãosStore.getAll();
-const formularioSujo = useIsFormDirty();
-
 </script>
 <template>
-  <div class="flex spacebetween center mb2">
-    <TítuloDePágina />
-    <hr class="ml2 f1">
-    <CheckClose
-      :formulario-sujo="formularioSujo"
-    />
-  </div>
+  <MigalhasDePão class="mb1" />
+  <CabecalhoDePagina :formulario-sujo="false" />
 
-  <!--<pre>values:{{ values }}</pre>
-  <pre>tiposDisponíveis: {{ tiposDisponíveis }}</pre>
-  /<pre>Lista: {{ tipoTransferenciaComoLista }}</pre>
--->
   <form
     :disabled="isSubmitting"
     @submit.prevent="onSubmit"

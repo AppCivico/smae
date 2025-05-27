@@ -1,11 +1,10 @@
 <script setup>
 import AutocompleteField from '@/components/AutocompleteField2.vue';
-import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import { relatórioDePrevisãoDeCustoPlanosSetoriais as schema } from '@/consts/formSchemas';
 import truncate from '@/helpers/texto/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { storeToRefs } from 'pinia';
-import { Field, Form, useIsFormDirty } from 'vee-validate';
+import { Field, Form } from 'vee-validate';
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 // Mantendo comportamento legado
@@ -34,8 +33,6 @@ const {
   pdmsPorId,
   metaSimplificada,
 } = storeToRefs(projetosStore);
-
-const formularioSujo = useIsFormDirty();
 
 const iniciativasPorId = computed(() => (Array.isArray(metaSimplificada.value?.iniciativas)
   ? metaSimplificada.value.iniciativas.reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {})
@@ -115,13 +112,13 @@ iniciar();
 </script>
 
 <template>
-  <header class="flex spacebetween center mb2">
-    <TituloDaPagina />
+  <MigalhasDePão class="mb1" />
+  <CabecalhoDePagina :formulario-sujo="false" />
 
-    <hr class="ml2 f1">
-
-    <CheckClose :formulario-sujo="formularioSujo" />
-  </header>
+  <p class="texto--explicativo">
+    Será gerada uma planilha contendo os registros de previsão de custo
+    registrados nas metas
+  </p>
 
   <Form
     v-slot="{ errors, isSubmitting, resetField, setFieldValue, values }"

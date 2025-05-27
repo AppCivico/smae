@@ -1,4 +1,6 @@
 <script setup>
+import { computed } from 'vue';
+import { storeToRefs } from 'pinia';
 import MapaExibir from '@/components/geo/MapaExibir.vue';
 import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudançaDeStatusDeProjeto.vue';
 import { projeto as schema } from '@/consts/formSchemas';
@@ -10,8 +12,7 @@ import truncate from '@/helpers/texto/truncate';
 import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { useOrgansStore } from '@/stores/organs.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
-import { storeToRefs } from 'pinia';
-import { computed } from 'vue';
+import SmaeTooltip from '@/components/SmaeTooltip/SmaeTooltip.vue';
 
 const DotaçãoStore = useDotaçãoStore();
 const ÓrgãosStore = useOrgansStore();
@@ -22,17 +23,6 @@ const { organs, órgãosPorId } = storeToRefs(ÓrgãosStore);
 const {
   chamadasPendentes, emFoco, erro,
 } = storeToRefs(projetosStore);
-
-const equipeAgrupadaPorÓrgão = computed(() => (Array.isArray(emFoco.value?.equipe)
-  ? emFoco.value.equipe.reduce((acc, cur) => {
-    if (!acc[`_${cur.orgao_id}`]) {
-      acc[`_${cur.orgao_id}`] = { id: cur.orgao_id, pessoas: [] };
-    }
-    acc[`_${cur.orgao_id}`].pessoas.push(cur.pessoa);
-
-    return acc;
-  }, {})
-  : {}));
 
 const mapasAgrupados = computed(() => (Array.isArray(emFoco.value?.geolocalizacao)
   ? emFoco.value.geolocalizacao.reduce((acc, cur) => {
@@ -50,6 +40,20 @@ const mapasAgrupados = computed(() => (Array.isArray(emFoco.value?.geolocalizaca
   }, {})
   : {}));
 
+const equipesAgrupadas = computed(() => emFoco.value?.equipe.reduce((agrupado, item) => {
+  if (!agrupado[item.orgao_id]) {
+    agrupado[item.orgao_id] = {
+      orgao_id: item.orgao_id,
+      orgao_nome: órgãosPorId.value[item.orgao_id]?.descricao || `Órgão1 ${item.orgao_id}`,
+      pessoas: [],
+    };
+  }
+
+  agrupado[item.orgao_id].pessoas.push(item.pessoa);
+
+  return agrupado;
+}, {}));
+
 defineProps({
   projetoId: {
     type: Number,
@@ -65,15 +69,21 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
   <div class="flex spacebetween center mb2">
     <h1>{{ emFoco?.nome }}</h1>
     <hr class="ml2 f1">
-    <MenuDeMudançaDeStatusDeProjeto />
+    <MenuDeMudançaDeStatusDeProjeto class="ml2" />
 
-    <router-link
-      v-if="emFoco?.id && !emFoco?.arquivado && !emFoco?.permissoes?.apenas_leitura"
+    <SmaeLink
+      v-if="
+        emFoco?.id
+          && (
+            !emFoco?.arquivado
+            || emFoco?.permissoes?.pode_editar_apenas_responsaveis_pos_planejamento
+          )
+      "
       :to="{ name: 'projetosEditar', params: { projetoId: emFoco.id } }"
       class="btn big ml2"
     >
       Editar
-    </router-link>
+    </SmaeLink>
   </div>
 
   <div
@@ -548,7 +558,11 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
           Custo total planejado
         </dt>
         <dd class="t13">
-          {{ emFoco?.tarefa_cronograma?.previsao_custo ? `R$ ${dinheiro(emFoco.tarefa_cronograma.previsao_custo)}` : '-' }}
+          {{
+            emFoco?.tarefa_cronograma?.previsao_custo ?
+              `R$ ${dinheiro(emFoco.tarefa_cronograma.previsao_custo)}`
+              : '-'
+          }}
         </dd>
       </dl>
     </div>
@@ -557,20 +571,38 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
 
     <div>
       <h2>
-        Órgãos
+        Órgãos/partes interessadas
       </h2>
       <dl class="flex g2 flexwrap">
         <div class="f1 mb1">
           <dt class="t12 uc w700 mb05 tamarelo">
             {{ schema.fields.orgao_gestor_id.spec.label }}
+
+            <SmaeTooltip :texto="schema.fields.orgao_gestor_id.spec.meta.balaoInformativo" />
           </dt>
           <dd class="t13">
             {{ emFoco?.orgao_gestor.sigla }} - {{ emFoco?.orgao_gestor.descricao }}
           </dd>
         </div>
+
+        <div class="f1 mb1">
+          <dt class="t12 uc w700 mb05 tamarelo">
+            {{ schema.fields.secretario_executivo.spec.label }}
+
+            <SmaeTooltip :texto="schema.fields.secretario_executivo.spec.meta.balaoInformativo" />
+          </dt>
+          <dd class="t13">
+            {{ emFoco?.secretario_executivo || '-' }}
+          </dd>
+        </div>
+
         <div class="f1 mb1">
           <dt class="t12 uc w700 mb05 tamarelo">
             {{ schema.fields.responsaveis_no_orgao_gestor.spec.label }}
+
+            <SmaeTooltip
+              :texto="schema.fields.responsaveis_no_orgao_gestor.spec.meta.balaoInformativo"
+            />
           </dt>
           <dd class="t13">
             {{ emFoco?.responsaveis_no_orgao_gestor
@@ -579,20 +611,14 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
               : '-' }}
           </dd>
         </div>
-        <div class="f1 mb1">
-          <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.secretario_executivo.spec.label }}
-          </dt>
-          <dd class="t13">
-            {{ emFoco?.secretario_executivo || '-' }}
-          </dd>
-        </div>
       </dl>
 
       <dl class="flex g2 flexwrap">
         <div class="f1 mb1">
           <dt class="t12 uc w700 mb05 tamarelo">
             {{ schema.fields.orgao_responsavel_id.spec.label }}
+
+            <SmaeTooltip :texto="schema.fields.orgao_responsavel_id.spec.meta.balaoInformativo" />
           </dt>
           <dd class="t13">
             {{ emFoco?.orgao_responsavel?.sigla }} - {{ emFoco?.orgao_responsavel?.descricao }}
@@ -600,20 +626,57 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
         </div>
         <div class="f1 mb1">
           <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.responsavel_id.spec.label }}
-          </dt>
-          <dd class="t13">
-            {{ emFoco?.responsavel?.nome_exibicao || emFoco?.responsavel?.id || '-' }}
-          </dd>
-        </div>
-        <div class="f1 mb1">
-          <dt class="t12 uc w700 mb05 tamarelo">
             {{ schema.fields.secretario_responsavel.spec.label }}
+
+            <SmaeTooltip :texto="schema.fields.secretario_responsavel.spec.meta.balaoInformativo" />
           </dt>
           <dd class="t13">
             {{ emFoco?.secretario_responsavel || '-' }}
           </dd>
         </div>
+        <div class="f1 mb1">
+          <dt class="t12 uc w700 mb05 tamarelo">
+            {{ schema.fields.responsavel_id.spec.label }}
+
+            <SmaeTooltip :texto="schema.fields.responsavel_id.spec.meta.balaoInformativo" />
+          </dt>
+          <dd class="t13">
+            {{ emFoco?.responsavel?.nome_exibicao || emFoco?.responsavel?.id || '-' }}
+          </dd>
+        </div>
+      </dl>
+
+      <dl
+        v-if="Object.keys(equipesAgrupadas).length"
+        class="mb1"
+      >
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.equipe.spec.label }}
+
+          <SmaeTooltip :texto="schema.fields.equipe.spec.meta.balaoInformativo" />
+        </dt>
+
+        <dd class="contentStyle">
+          <ul
+            class="mb05"
+          >
+            <li
+              v-for="equipe in equipesAgrupadas"
+              :key="`equipes--${equipe.orgao_id}`"
+            >
+              {{ equipe.orgao_nome }}:
+
+              <ol>
+                <li
+                  v-for="pessoa in equipe.pessoas"
+                  :key="`pessoa--${equipe.orgao_id}-${pessoa.id}`"
+                >
+                  {{ pessoa.nome_exibicao }}
+                </li>
+              </ol>
+            </li>
+          </ul>
+        </dd>
       </dl>
 
       <dl
@@ -622,6 +685,8 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
       >
         <dt class="t12 uc w700 mb05 tamarelo">
           {{ schema.fields.orgaos_participantes.spec.label }}
+
+          <SmaeTooltip :texto="schema.fields.orgaos_participantes.spec.meta.balaoInformativo" />
         </dt>
         <dd class="t13">
           <template
@@ -632,46 +697,6 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
           </template>
         </dd>
       </dl>
-    </div>
-
-    <hr
-      v-if="emFoco.equipe?.length"
-      class="mb1 f1"
-    >
-
-    <div
-      v-if="emFoco.equipe?.length"
-      class="mb1"
-    >
-      <h2>
-        {{ schema.fields.equipe.spec.label }}
-      </h2>
-      <div class="flex g2 mb1 flexwrap">
-        <dl
-          v-for="(órgão, key) in equipeAgrupadaPorÓrgão"
-          :key="key"
-          class="f1"
-        >
-          <dt class="t12 uc w700 mb05 tamarelo">
-            {{ órgãosPorId[órgão.id]
-              ? `${órgãosPorId[órgão.id].sigla} - ${órgãosPorId[órgão.id].descricao}`
-              : órgão.id }}
-          </dt>
-          <dd class="t13">
-            <ul class="listaComoTexto">
-              <li v-if="!órgão.pessoas?.length">
-                {{ '-' }}
-              </li>
-              <li
-                v-for="item in órgão.pessoas"
-                :key="item.id"
-              >
-                {{ item.nome_exibicao }}
-              </li>
-            </ul>
-          </dd>
-        </dl>
-      </div>
     </div>
 
     <hr class="mb1 f1">

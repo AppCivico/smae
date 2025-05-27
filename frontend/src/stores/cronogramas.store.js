@@ -16,8 +16,7 @@ function caminhoParaApi(rotaMeta) {
   }
 }
 
-export const useCronogramasStore = defineStore({
-  id: 'Cronogramas',
+export const useCronogramasStore = defineStore('Cronogramas', {
   state: () => ({
     Cronogramas: {},
     singleCronograma: {},

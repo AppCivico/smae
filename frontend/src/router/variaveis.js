@@ -21,9 +21,7 @@ export default {
   </defs>
 </svg>`,
     rotaPrescindeDeChave: true,
-    presenteNoMenu: true,
     entidadeMãe,
-    pesoNoMenu: 3,
     limitarÀsPermissões: [
       'CadastroPS.administrador',
       'CadastroPDM.administrador',

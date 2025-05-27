@@ -1,5 +1,5 @@
 <script setup>
-// eslint-disable-next-line import/no-extraneous-dependencies
+import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
 import { liçãoAprendida as schema } from '@/consts/formSchemas';
 import truncate from '@/helpers/texto/truncate';
 import { useAlertStore } from '@/stores/alert.store';
@@ -103,7 +103,7 @@ iniciar();
 
   <Form
     v-if="!licaoAprendidaId || emFoco"
-    v-slot="{ errors, isSubmitting, setFieldValue }"
+    v-slot="{ errors, isSubmitting, setFieldValue, values }"
     :disabled="chamadasPendentes.emFoco"
     :initial-values="itemParaEdicao"
     :validation-schema="schema"
@@ -159,13 +159,15 @@ iniciar();
           name="contexto"
           :schema="schema"
         />
-        <Field
-          id="contexto"
+        <SmaeText
           name="contexto"
           as="textarea"
           rows="5"
           class="inputtext light mb1"
-          maxlength="500"
+          max-length="2048"
+          :schema="schema"
+          :model-value="values.contexto"
+          anular-vazio
           :class="{ 'error': errors.contexto }"
         />
         <ErrorMessage
@@ -181,13 +183,15 @@ iniciar();
           name="descricao"
           :schema="schema"
         />
-        <Field
-          id="descricao"
+        <SmaeText
           name="descricao"
           as="textarea"
           rows="5"
           class="inputtext light mb1"
-          maxlength="500"
+          max-length="2048"
+          :schema="schema"
+          :model-value="values.descricao"
+          anular-vazio
           :class="{ 'error': errors.descricao }"
         />
         <ErrorMessage
@@ -203,13 +207,15 @@ iniciar();
           name="resultado"
           :schema="schema"
         />
-        <Field
-          id="resultado"
+        <SmaeText
           name="resultado"
           as="textarea"
           rows="5"
           class="inputtext light mb1"
-          maxlength="500"
+          max-length="2048"
+          :schema="schema"
+          :model-value="values.resultado"
+          anular-vazio
           :class="{ 'error': errors.resultado }"
         />
         <ErrorMessage
@@ -225,13 +231,15 @@ iniciar();
           name="observacao"
           :schema="schema"
         />
-        <Field
-          id="observacao"
+        <SmaeText
           name="observacao"
           as="textarea"
           rows="5"
           class="inputtext light mb1"
-          maxlength="500"
+          max-length="2048"
+          :schema="schema"
+          :model-value="values.observacao"
+          anular-vazio
           :class="{ 'error': errors.observacao }"
         />
         <ErrorMessage

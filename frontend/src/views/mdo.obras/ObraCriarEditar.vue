@@ -1,9 +1,23 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage,
+  Field,
+  FieldArray,
+  useForm,
+  useIsFormDirty,
+} from 'vee-validate';
+import {
+  computed,
+  nextTick,
+  ref,
+  watch,
+} from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
 import CampoDePlanosMetasRelacionados from '@/components/CampoDePlanosMetasRelacionados.vue';
 import CampoDeRegioesAgrupadas from '@/components/CampoDeRegioesAgrupadas.vue';
-import LabelFromYup from '@/components/LabelFromYup.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import MapaCampo from '@/components/geo/MapaCampo.vue';
 import { obras as schema } from '@/consts/formSchemas';
@@ -23,21 +37,6 @@ import { useOrgansStore } from '@/stores/organs.store';
 import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store.ts';
 import { useProgramaHabitacionalStore } from '@/stores/programaHabitacional.store';
 import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
-import { storeToRefs } from 'pinia';
-import {
-  ErrorMessage,
-  Field,
-  FieldArray,
-  useForm,
-  useIsFormDirty,
-} from 'vee-validate';
-import {
-  computed,
-  nextTick,
-  ref,
-  watch,
-} from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -126,9 +125,6 @@ const props = defineProps({
   },
 });
 
-// necessário por causa de 🤬
-const montarCampoEstático = ref(false);
-
 const portfolioId = Number.parseInt(route.query.portfolio_id, 10) || undefined;
 const possíveisGestores = ref([]);
 const possíveisColaboradores = ref([]);
@@ -187,7 +183,6 @@ const possíveisOrigens = [
 
 const {
   errors,
-  controlledValues,
   handleSubmit,
   isSubmitting,
   resetForm,
@@ -198,6 +193,12 @@ const {
   initialValues: itemParaEdicao,
   validationSchema: schema,
 });
+
+function alertarTrocaDeStatus() {
+  if (!!itemParaEdicao.value.status && itemParaEdicao.value.status !== values.status) {
+    alertStore.success('Lembre-se de atualizar a etapa do cronograma. Para isso acesse a página Cronograma e atualize a etapa por meio do botão "Mudar etapa".');
+  }
+}
 
 function BuscarDotaçãoParaAno(valorOuEvento) {
   const ano = valorOuEvento.target?.value || valorOuEvento;
@@ -351,8 +352,6 @@ function iniciar() {
   if (emFoco.value?.meta_id) {
     buscarArvoreDeMetas(emFoco.value?.meta_id);
   }
-
-  montarCampoEstático.value = true;
 }
 
 function excluirObra(id, nome) {
@@ -377,13 +376,9 @@ watch(emFoco, () => {
 }, { immediate: true });
 
 watch(itemParaEdicao, (novoValor) => {
-  montarCampoEstático.value = false;
-
   resetForm({
     initialValues: novoValor,
   });
-
-  montarCampoEstático.value = true;
 });
 
 watch(listaDeTiposDeIntervenção, () => {
@@ -408,42 +403,16 @@ watch(listaDeTiposDeIntervenção, () => {
     <hr class="f1">
     <!--
   <MenuDeMudançaDeStatusDeProjeto
+      class="ml2"
     v-if="obraId"
   />
 -->
     <CheckClose :formulario-sujo="formularioSujo" />
   </header>
 
-  <div
-    v-scrollLockDebug
-    class="flex flexwrap g2 mb1"
-    style="position: sticky; top: 1rem;"
-  >
-    <textarea
-      class="f1"
-      readonly
-      rows="10"
-      :value="`emFoco: ${emFoco}`"
-    />
-
-    <textarea
-      class="f1"
-      readonly
-      rows="10"
-      :value="`values: ${values}`"
-    />
-
-    <textarea
-      class="f1"
-      readonly
-      rows="10"
-      :value="`controlledValues: ${controlledValues}`"
-    />
-  </div>
-
   <form
     v-if="!obraId || emFoco"
-    @submit.prevent="onSubmit"
+    @submit.prevent="!isSubmitting ? onSubmit() : null"
   >
     <div class="flex flexwrap g2 mb1">
       <div class="f1 mb1 fb20em">
@@ -545,9 +514,11 @@ watch(listaDeTiposDeIntervenção, () => {
           as="select"
           class="inputtext light mb1"
           :class="{ error: errors.status }"
+          @change.once="alertarTrocaDeStatus"
         >
           <option
             :value="null"
+            disabled
           >
             Selecionar
           </option>
@@ -845,13 +816,21 @@ watch(listaDeTiposDeIntervenção, () => {
           :schema="schema"
         />
         <Field
+          v-slot="{ field, handleChange, value }"
           name="mdo_detalhamento"
-          as="textarea"
-          rows="5"
-          class="inputtext light mb1"
-          maxlength="500"
-          :class="{ 'error': errors.mdo_detalhamento }"
-        />
+        >
+          <SmaeText
+            as="textarea"
+            rows="5"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.mdo_detalhamento }"
+            :schema="schema"
+            :name="field.name"
+            :model-value="value"
+            anular-vazio
+            @update:model-value="handleChange"
+          />
+        </Field>
         <ErrorMessage
           name="mdo_detalhamento"
           class="error-msg"
@@ -1362,13 +1341,21 @@ watch(listaDeTiposDeIntervenção, () => {
           :schema="schema"
         />
         <Field
+          v-slot="{ field, handleChange, value }"
           name="mdo_observacoes"
-          as="textarea"
-          rows="5"
-          class="inputtext light mb1"
-          maxlength="500"
-          :class="{ 'error': errors.mdo_observacoes }"
-        />
+        >
+          <SmaeText
+            :name="field.name"
+            as="textarea"
+            rows="5"
+            class="inputtext light mb1"
+            :schema="schema"
+            :model-value="value"
+            anular-vazio
+            :class="{ 'error': errors.mdo_observacoes }"
+            @update:model-value="handleChange"
+          />
+        </Field>
         <ErrorMessage
           name="mdo_observacoes"
           class="error-msg"
@@ -1554,11 +1541,13 @@ watch(listaDeTiposDeIntervenção, () => {
 
       <div class="flex flexwrap g2 mb1">
         <CampoDePessoasComBuscaPorOrgao
-          v-model="values.colaboradores_no_orgao"
+          :model-value="values.colaboradores_no_orgao"
+          :valores-iniciais="itemParaEdicao.colaboradores_no_orgao"
           name="colaboradores_no_orgao"
-          orgao-label="Órgão Colaborador"
+          :orgao-label="schema.fields.colaboradores_no_orgao.spec.label"
+          :pessoas-label="schema.fields.ponto_focal_colaborador.spec.label"
           :pessoas="possíveisResponsáveisPorÓrgãoId[values.orgao_colaborador_id] || []"
-          :pronto-para-montagem="montarCampoEstático"
+          :pessoa-informativo="schema.fields.colaboradores_no_orgao.meta().balaoInformativo"
         />
       </div>
     </fieldset>
@@ -1744,7 +1733,8 @@ watch(listaDeTiposDeIntervenção, () => {
       <hr class="mr2 f1">
       <button
         class="btn big"
-        :disabled="isSubmitting || Object.keys(errors)?.length"
+        :aria-busy="isSubmitting"
+        :aria-disabled="Object.keys(errors)?.length"
         :title="Object.keys(errors)?.length
           ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
           : null"

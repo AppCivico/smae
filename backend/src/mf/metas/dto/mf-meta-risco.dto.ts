@@ -1,5 +1,6 @@
 import { Transform } from 'class-transformer';
 import { IsBoolean, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
+import { MAX_LENGTH_DEFAULT, MAX_LENGTH_HTML } from 'src/common/consts';
 
 export class FilterRiscoDto {
     @IsInt()
@@ -49,10 +50,10 @@ export class RiscoDto {
     meta_id: number;
 
     @IsString()
-    @MaxLength(1024 * 10, { message: 'O texto não pode ter mais de 10KB' })
+    @MaxLength(MAX_LENGTH_HTML, { message: `O campo 'Detalhamento' deve ter no máximo ${MAX_LENGTH_HTML} caracteres` })
     detalhamento: string;
 
     @IsString()
-    @MaxLength(1024 * 10, { message: 'O texto não pode ter mais de 10KB' })
+    @MaxLength(MAX_LENGTH_HTML, { message: `O campo 'Ponto de atenção' deve ter no máximo ${MAX_LENGTH_HTML} caracteres` })
     ponto_de_atencao: string;
 }

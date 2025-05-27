@@ -1,17 +1,18 @@
 import { ArrayMaxSize, IsArray, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
+import { MAX_LENGTH_DEFAULT, MAX_LENGTH_MEDIO } from 'src/common/consts';
 
 export class CreateBancadaDto {
     @IsString({ message: '$property| sigla: Precisa ser alfanumérico' })
-    @MaxLength(20, { message: '$property| sigla: Máximo 20 caracteres' })
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Sigla' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     sigla: string;
 
     @IsString({ message: '$property| nome: Precisa ser alfanumérico' })
-    @MaxLength(250, { message: '$property| nome: Máximo 250 caracteres' })
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Nome' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     nome: string;
 
     @IsOptional()
-    @IsString({ message: '$property| descricao: Precisa ser alfanumérico' })
-    @MaxLength(250, { message: '$property| descricao: Máximo 250 caracteres' })
+    @IsString({ message: 'Precisa ser alfanumérico' })
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Descrição" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     descricao?: string;
 
     @IsOptional()

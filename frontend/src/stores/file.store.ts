@@ -1,7 +1,5 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
+import type { Upload } from '@back/upload/entities/upload.entity';
 import { defineStore } from 'pinia';
-
-import { Upload } from '@/../../backend/src/upload/entities/upload.entity.ts';
 
 const baseUrl = import.meta.env.VITE_API_URL;
 

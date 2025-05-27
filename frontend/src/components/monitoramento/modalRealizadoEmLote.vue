@@ -525,26 +525,30 @@ watch(variaveisComSuasDatas, (novoValor) => {
         class="tablemain no-zebra mb1"
       >
         <thead>
-          <th />
-          <th>código</th>
-          <th>Referência</th>
-          <th class="cell--number">
-            Valor Realizado
-          </th>
-          <th class="cell--number">
-            Valor Realizado Acumulado
-          </th>
+          <tr>
+            <th />
+            <th>código</th>
+            <th>Referência</th>
+            <th class="cell--number">
+              Valor Realizado
+            </th>
+            <th class="cell--number">
+              Valor Realizado Acumulado
+            </th>
+          </tr>
         </thead>
         <tfoot>
-          <th />
-          <th />
-          <th />
-          <th class="cell--number">
-            {{ soma.valor_realizado || '-' }}
-          </th>
-          <th class="cell--number">
-            {{ soma.valor_realizado_acumulado || '-' }}
-          </th>
+          <tr>
+            <th />
+            <th />
+            <th />
+            <th class="cell--number">
+              {{ soma.valor_realizado || '-' }}
+            </th>
+            <th class="cell--number">
+              {{ soma.valor_realizado_acumulado || '-' }}
+            </th>
+          </tr>
         </tfoot>
         <tbody
           v-for="(field, idx) in fields"

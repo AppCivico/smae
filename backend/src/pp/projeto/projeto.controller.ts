@@ -13,6 +13,7 @@ import {
     Res,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiExtraModels, ApiNoContentResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { TipoProjeto } from '@prisma/client';
 import { Response } from 'express';
 import { ListaDePrivilegios } from 'src/common/ListaDePrivilegios';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
@@ -20,10 +21,11 @@ import { ApiPaginatedWithPagesResponse } from '../../auth/decorators/paginated.d
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { FindOneParams, FindTwoParams } from '../../common/decorators/find-params';
+import { DetalheOrigensDto, ResumoOrigensMetasItemDto } from '../../common/dto/origem-pdm.dto';
 import { PaginatedWithPagesDto } from '../../common/dto/paginated.dto';
-import { RecordWithId } from '../../common/dto/record-with-id.dto';
+import { BatchSimpleIds, RecordWithId } from '../../common/dto/record-with-id.dto';
 import { CreateProjetoDocumentDto, CreateProjetoDto, CreateProjetoSeiDto } from './dto/create-projeto.dto';
-import { FilterProjetoDto, FilterProjetoMDODto } from './dto/filter-projeto.dto';
+import { CoreFilterProjetoMDODto, FilterProjetoDto, FilterProjetoMDODto } from './dto/filter-projeto.dto';
 import {
     CloneProjetoTarefasDto,
     RevisarObrasDto,
@@ -44,8 +46,6 @@ import {
 } from './entities/projeto.entity';
 import { ProjetoSeiService } from './projeto.sei.service';
 import { ProjetoService } from './projeto.service';
-import { DetalheOrigensDto, ResumoOrigensMetasItemDto } from '../../common/dto/origem-pdm.dto';
-import { TipoProjeto } from '@prisma/client';
 
 export const PROJETO_READONLY_ROLES: ListaDePrivilegios[] = [
     'SMAE.gestor_de_projeto',
@@ -91,6 +91,16 @@ export class ProjetoController {
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
         return await this.projetoService.create(this.tipo, createProjetoDto, user);
+    }
+
+    @Get('ids')
+    @ApiBearerAuth('access-token')
+    @Roles([...roles])
+    async findAllIds(
+        @Query() filters: CoreFilterProjetoMDODto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<BatchSimpleIds> {
+        return { ids: await this.projetoService.findAllIdsFrontend(this.tipo, filters, user) };
     }
 
     @Get('v2')
@@ -330,6 +340,16 @@ export class ProjetoMDOController {
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
         return await this.projetoService.create(this.tipo, createProjetoDto, user);
+    }
+
+    @Get('ids')
+    @ApiBearerAuth('access-token')
+    @Roles([...rolesMDO])
+    async findAllIds(
+        @Query() filters: CoreFilterProjetoMDODto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<BatchSimpleIds> {
+        return { ids: await this.projetoService.findAllIdsFrontend(this.tipo, filters, user) };
     }
 
     @Get('v2')

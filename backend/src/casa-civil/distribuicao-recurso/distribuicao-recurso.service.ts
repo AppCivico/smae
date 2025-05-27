@@ -365,6 +365,8 @@ export class DistribuicaoRecursoService {
                         conclusao_suspensiva: dto.conclusao_suspensiva,
                         criado_em: agora,
                         criado_por: user.id,
+                        pct_custeio: dto.pct_custeio,
+                        pct_investimento: dto.pct_investimento,
                         registros_sei: {
                             createMany: {
                                 data:
@@ -1184,6 +1186,8 @@ export class DistribuicaoRecursoService {
                         conclusao_suspensiva: dto.conclusao_suspensiva,
                         atualizado_em: now,
                         atualizado_por: user.id,
+                        pct_custeio: dto.pct_custeio,
+                        pct_investimento: dto.pct_investimento,
                     },
                     select: {
                         id: true,

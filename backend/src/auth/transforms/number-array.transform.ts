@@ -17,7 +17,7 @@ export function NumberArrayTransformOrUndef(a: TransformFnParams): number[] | un
         }
 
         return result.length > 0 ? result : undefined;
-    } else if (a.value !== '') {
+    } else if (a.value !== '' && a.value !== undefined) {
         const n = +a.value;
         return isNaN(n) && n <= MAX_DTO_SAFE_NUM && n >= MIN_DTO_SAFE_NUM ? undefined : [n];
     }

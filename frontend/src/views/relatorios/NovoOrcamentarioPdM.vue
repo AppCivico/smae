@@ -10,7 +10,6 @@ import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { Field, Form } from 'vee-validate';
 import { computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import CheckClose from '../../components/CheckClose.vue';
 
 const alertStore = useAlertStore();
 const PdMStore = usePdMStore();
@@ -60,11 +59,15 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="flex spacebetween center mb2">
-    <h1>{{ $route.meta.título || $route.name }}</h1>
-    <hr class="ml2 f1">
-    <CheckClose />
-  </div>
+  <MigalhasDePão class="mb1" />
+  <CabecalhoDePagina :formulario-sujo="false" />
+
+  <p class="texto--explicativo">
+    Serão geradas 2 planilhas contendo os registros de execução orçamentária e do
+    orçamento planejado. A versão analítica retorna todos os registros e a
+    versão consolidada retorna somente o valor vigente no momento.
+  </p>
+
   <Form
     v-slot="{ errors, isSubmitting }"
     :validation-schema="schema"

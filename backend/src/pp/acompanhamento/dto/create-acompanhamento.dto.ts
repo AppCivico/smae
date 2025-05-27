@@ -14,6 +14,7 @@ import {
 } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 import { DateTransform } from '../../../auth/transforms/date.transform';
+import { MAX_LENGTH_LONG, MAX_LENGTH_MEDIO } from 'src/common/consts';
 
 export class ProjetoAcompanhamentoDto {
     @IsOptional()
@@ -24,12 +25,11 @@ export class ProjetoAcompanhamentoDto {
 
     @IsString()
     @MinLength(1)
-    @MaxLength(50000)
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Encaminhamento" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     encaminhamento: string;
 
     @IsOptional()
     @IsString()
-    @MaxLength(250)
     responsavel?: string;
 
     @IsOptional()
@@ -48,7 +48,7 @@ export class ProjetoAcompanhamentoDto {
 export class CreateProjetoAcompanhamentoDto {
     @IsOptional()
     @IsString()
-    @MaxLength(50000)
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Pauta" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     pauta?: string;
 
     @IsOnlyDate()
@@ -57,34 +57,42 @@ export class CreateProjetoAcompanhamentoDto {
     data_registro: Date;
 
     @IsString()
-    @MaxLength(2048)
+    @MaxLength(MAX_LENGTH_MEDIO, {
+        message: `O campo 'Participantes' deve ter no máximo ${MAX_LENGTH_MEDIO} caracteres`,
+    })
     participantes: string;
 
     @IsOptional()
     @IsString()
-    @MaxLength(50000)
+    @MaxLength(MAX_LENGTH_LONG, {
+        message: `O campo "Detalhamento" pode ser no máximo ${MAX_LENGTH_LONG} caracteres`,
+    })
     detalhamento?: string;
 
     @IsOptional()
     @IsArray({ message: 'acompanhamentos precisa ser uma array, campo obrigatório' })
-    @ArrayMaxSize(100, { message: '$property| precisa ter no máximo 100 items' })
+    @ArrayMaxSize(100, { message: 'precisa ter no máximo 100 items' })
     @ValidateNested({ each: true })
     @Type(() => ProjetoAcompanhamentoDto)
     acompanhamentos?: ProjetoAcompanhamentoDto[];
 
     @IsOptional()
     @IsString()
-    @MaxLength(50000)
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Observação" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     observacao?: string;
 
     @IsOptional()
     @IsString()
-    @MaxLength(50000)
+    @MaxLength(MAX_LENGTH_MEDIO, {
+        message: `O campo "Detalhamento status" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres`,
+    })
     detalhamento_status?: string;
 
     @IsOptional()
     @IsString()
-    @MaxLength(50000)
+    @MaxLength(MAX_LENGTH_MEDIO, {
+        message: `O campo "Pontas de atenção" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres`,
+    })
     pontos_atencao?: string;
 
     @IsOptional()
@@ -100,10 +108,10 @@ export class CreateProjetoAcompanhamentoDto {
      * @example "[]"
      */
     @IsOptional()
-    @IsArray({ message: '$property| risco(s): precisa ser uma array ou.' })
-    @ArrayMinSize(0, { message: '$property| risco(s): precisa ter pelo menos um item' })
-    @ArrayMaxSize(100, { message: '$property| risco(s): precisa ter no máximo 100 items' })
-    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
+    @IsArray({ message: 'risco(s): precisa ser uma array ou.' })
+    @ArrayMinSize(0, { message: 'risco(s): precisa ter pelo menos um item' })
+    @ArrayMaxSize(100, { message: 'risco(s): precisa ter no máximo 100 items' })
+    @IsInt({ each: true, message: 'Cada item precisa ser um número inteiro' })
     @ValidateIf((object, value) => value !== null)
     risco?: number[] | null;
 

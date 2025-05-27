@@ -1,16 +1,15 @@
 <script setup>
-import LabelFromYup from '@/components/LabelFromYup.vue';
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage, Field, useForm,
+} from 'vee-validate';
+import { computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import { relatórioDeTribunalDeContas as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
-import { storeToRefs } from 'pinia';
-import {
-  ErrorMessage, Field, useForm, useIsFormDirty,
-} from 'vee-validate';
-import { computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 
 const TipoDeTransferenciaStore = useTipoDeTransferenciaStore();
 const { lista: tipoTransferenciaComoLista } = storeToRefs(TipoDeTransferenciaStore);
@@ -64,23 +63,17 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
     alertStore.error(error);
   }
 });
-
-const formularioSujo = useIsFormDirty();
-
 </script>
 <template>
-  <div class="flex spacebetween center mb2">
-    <TítuloDePágina />
-    <hr class="ml2 f1">
-    <CheckClose
-      :formulario-sujo="formularioSujo"
-    />
-  </div>
+  <MigalhasDePão class="mb1" />
+  <CabecalhoDePagina :formulario-sujo="false" />
 
-  <!--<pre>values:{{ values }}</pre>
-  <pre>tiposDisponíveis: {{ tiposDisponíveis }}</pre>
-  /<pre>Lista: {{ tipoTransferenciaComoLista }}</pre>
--->
+  <p
+    v-if="$route.meta.descricao"
+    class="texto--explicativo"
+  >
+    {{ $route.meta.descricao }}
+  </p>
 
   <form
     :disabled="isSubmitting"

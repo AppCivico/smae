@@ -14,6 +14,7 @@ import {
 import { IdNomeExibicao } from '../../meta/entities/meta.entity';
 import { Transform, Type } from 'class-transformer';
 import { NumberTransform } from '../../auth/transforms/number.transform';
+import { MAX_LENGTH_DEFAULT, MAX_LENGTH_MEDIO } from 'src/common/consts';
 
 export class CreateVariavelCategoricaValorDto {
     /**
@@ -31,12 +32,12 @@ export class CreateVariavelCategoricaValorDto {
     valor_variavel: number;
 
     @IsString()
-    @MaxLength(256, { message: '$property| título pode ter até 256 caracteres' })
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Título' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     titulo: string;
 
     @IsString()
     @IsOptional()
-    @MaxLength(2048, { message: '$property| título pode ter até 2048 caracteres' })
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Descrição" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     descricao: string | null;
 }
 
@@ -60,12 +61,12 @@ export class CreateVariavelCategoricaDto {
     valores: CreateVariavelCategoricaValorDto[]; // manter undefined pq precisamos apagar antes do insert
 
     @IsString()
-    @MaxLength(256, { message: '$property| título pode ter até 256 caracteres' })
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Título' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     titulo: string;
 
     @IsString()
     @IsOptional()
-    @MaxLength(2048, { message: '$property| título pode ter até 2048 caracteres' })
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Descrição" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     descricao: string | null;
 }
 

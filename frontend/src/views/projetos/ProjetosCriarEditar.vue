@@ -1,17 +1,9 @@
 <script setup>
-import { storeToRefs } from 'pinia';
-import {
-  ErrorMessage, Field, FieldArray, Form,
-  useIsFormDirty,
-} from 'vee-validate';
-import { computed, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
 import CampoDePlanosMetasRelacionados from '@/components/CampoDePlanosMetasRelacionados.vue';
+import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
 import MapaCampo from '@/components/geo/MapaCampo.vue';
-import LabelFromYup from '@/components/LabelFromYup.vue';
-import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudançaDeStatusDeProjeto.vue';
 import { projeto as schema } from '@/consts/formSchemas';
@@ -24,6 +16,16 @@ import { useObservadoresStore } from '@/stores/observadores.store.ts';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage,
+  Field,
+  FieldArray,
+  useForm,
+  useIsFormDirty,
+} from 'vee-validate';
+import { computed, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -70,12 +72,25 @@ const props = defineProps({
   },
 });
 
-// necessário por causa de 🤬
-const montarCampoEstático = ref(false);
+const {
+  errors,
+  controlledValues,
+  handleSubmit,
+  isSubmitting,
+  resetForm,
+  resetField,
+  setFieldValue,
+  values,
+} = useForm({
+  initialValues: itemParaEdicao,
+  validationSchema: schema,
+});
 
 const portfolioId = Number.parseInt(route.query.portfolio_id, 10) || undefined;
 const possíveisGestores = ref([]);
-const possíveisColaboradores = ref([]);
+const buscaDePossiveisGestoresPendente = ref(false);
+const possiveisGerentes = ref([]);
+const buscaDePossiveisGerentesPendente = ref(false);
 const portfóliosDisponíveis = computed(() => {
   if (!emFoco.value?.portfolio_id) {
     return [];
@@ -99,7 +114,7 @@ const possíveisGestoresPorÓrgãoId = computed(() => possíveisGestores.value
     return acc;
   }, {}));
 
-const possíveisResponsáveisPorÓrgãoId = computed(() => possíveisColaboradores.value
+const possiveisGerentesPorOrgaoId = computed(() => possiveisGerentes.value
   .reduce((acc, cur) => {
     if (!acc[cur.orgao_id]) {
       acc[cur.orgao_id] = [];
@@ -108,10 +123,26 @@ const possíveisResponsáveisPorÓrgãoId = computed(() => possíveisColaborador
     return acc;
   }, {}));
 
-const orgaosDisponiveisPorPortolio = computed(() => portfolioStore.lista.reduce((acc, cur) => {
+const orgaosDisponiveisPorPortfolio = computed(() => portfolioStore.lista.reduce((acc, cur) => {
   acc[cur.id] = cur.orgaos.filter((x) => !!órgãosQueTemResponsáveisEPorId.value?.[x.id]) || [];
   return acc;
 }, {}));
+
+const desabilitarTodosCampos = computed(() => {
+  const permissoes = emFoco.value?.permissoes || null;
+
+  if (permissoes?.apenas_leitura) {
+    return {
+      camposComuns: true,
+      camposGestor: !permissoes?.pode_editar_apenas_responsaveis_pos_planejamento,
+    };
+  }
+
+  return {
+    camposComuns: false,
+    camposGestor: false,
+  };
+});
 
 const possíveisOrigens = [
   {
@@ -127,6 +158,12 @@ const possíveisOrigens = [
     valor: 'Outro',
   },
 ];
+
+function alertarTrocaDeStatus() {
+  if (!!itemParaEdicao.value.status && itemParaEdicao.value.status !== values.status) {
+    alertStore.success('Lembre-se de atualizar a etapa do cronograma. Para isso acesse a página Cronograma e atualize a etapa por meio do botão "Mudar etapa".');
+  }
+}
 
 function BuscarDotaçãoParaAno(valorOuEvento) {
   const ano = valorOuEvento.target?.value || valorOuEvento;
@@ -144,7 +181,8 @@ async function buscarArvoreDeMetas(valorOuEvento) {
   }
 }
 
-async function buscarPossíveisGestores() {
+async function buscarPossiveisGestores() {
+  buscaDePossiveisGestoresPendente.value = true;
   try {
     const { linhas } = await requestS.get(`${baseUrl}/pessoa`, { gestor_de_projeto: true });
 
@@ -155,27 +193,32 @@ async function buscarPossíveisGestores() {
     }
   } catch (error) {
     alertStore.error(error);
+  } finally {
+    buscaDePossiveisGestoresPendente.value = false;
   }
 }
 
-async function buscarPossíveisColaboradores() {
+async function buscarPossiveisGerentes() {
+  buscaDePossiveisGerentesPendente.value = true;
   try {
-    const { linhas } = await requestS.get(`${baseUrl}/pessoa`, { colaborador_de_projeto: true });
+    const { linhas } = await requestS.get(`${baseUrl}/pessoa`, { gerente_de_projeto: true });
 
     if (Array.isArray(linhas)) {
-      possíveisColaboradores.value = linhas;
+      possiveisGerentes.value = linhas;
     } else {
-      throw new Error('Lista de Responsáveis fora do formato esperado');
+      throw new Error('Lista de Gestores fora do formato esperado');
     }
   } catch (error) {
     alertStore.error(error);
+  } finally {
+    buscaDePossiveisGerentesPendente.value = false;
   }
 }
 
 // PRA-FAZER: não usando o `controlledValues` devido à algum erro no campo de
 // mapa. Trazer de volta.
-async function onSubmit(valores) {
-  const carga = valores;
+const onSubmit = handleSubmit(async () => {
+  const carga = values;
 
   switch (true) {
     case !!carga.atividade_id:
@@ -229,11 +272,17 @@ async function onSubmit(valores) {
   } catch (error) {
     alertStore.error(error);
   }
-}
+});
 
 function iniciar() {
-  buscarPossíveisGestores();
-  buscarPossíveisColaboradores();
+  if (!possíveisGestores.value.length && !buscaDePossiveisGestoresPendente.value) {
+    buscarPossiveisGestores();
+  }
+
+  if (!possiveisGerentes.value.length && !buscaDePossiveisGerentesPendente.value) {
+    buscarPossiveisGerentes();
+  }
+
   projetosStore.buscarPdms({ apenas_pdm: false });
 
   if (emFoco.value?.portfolio_id) {
@@ -247,13 +296,17 @@ function iniciar() {
   if (emFoco.value?.meta_id) {
     buscarArvoreDeMetas(emFoco.value?.meta_id);
   }
-
-  montarCampoEstático.value = true;
 }
 
 watch(emFoco, () => {
   iniciar();
 }, { immediate: true });
+
+watch(itemParaEdicao, (novoValor) => {
+  resetForm({
+    initialValues: novoValor,
+  });
+});
 </script>
 
 <template>
@@ -264,18 +317,15 @@ watch(emFoco, () => {
 
     <MenuDeMudançaDeStatusDeProjeto
       v-if="projetoId"
+      class="ml2"
     />
 
     <CheckClose :formulario-sujo="formularioSujo" />
   </header>
 
-  <Form
+  <form
     v-if="!projetoId || emFoco"
-    v-slot="{ errors, isSubmitting, setFieldValue, values }"
-    :disabled="chamadasPendentes.emFoco"
-    :initial-values="itemParaEdicao"
-    :validation-schema="schema"
-    @submit="onSubmit"
+    @submit.prevent="!isSubmitting ? onSubmit() : null"
   >
     <div class="flex g2 mb1">
       <div class="f1 mb1">
@@ -295,7 +345,10 @@ watch(emFoco, () => {
               <svg
                 width="10"
                 height="10"
-              ><use xlink:href="#i_edit" /></svg><div>Trocar de portfolio</div>
+              >
+                <use xlink:href="#i_edit" />
+              </svg>
+              <div>Trocar de portfolio</div>
             </router-link>
           </template>
         </LabelFromYup>
@@ -304,7 +357,7 @@ watch(emFoco, () => {
           as="select"
           class="inputtext light mb1"
           :class="{ error: errors.portfolio_id, loading: portfolioStore.chamadasPendentes.lista }"
-          :disabled="!!portfolioId || !!projetoId"
+          :disabled="desabilitarTodosCampos.camposComuns || !!portfolioId || !!projetoId"
           @change="() => setFieldValue('regiao_id', 0)"
         >
           <option :value="0">
@@ -314,10 +367,10 @@ watch(emFoco, () => {
             v-for="item in portfolioStore.lista"
             :key="item.id"
             :value="item.id"
-            :disabled="!orgaosDisponiveisPorPortolio[item.id]?.length"
+            :disabled="!orgaosDisponiveisPorPortfolio[item.id]?.length"
           >
             {{ item.titulo }}
-            <template v-if="!orgaosDisponiveisPorPortolio[item.id]?.length">
+            <template v-if="!orgaosDisponiveisPorPortfolio[item.id]?.length">
               (órgão sem responsáveis cadastrados)
             </template>
           </option>
@@ -341,7 +394,7 @@ watch(emFoco, () => {
           type="text"
           class="inputtext light mb1"
           maxlength="20"
-          :disabled="!emFoco?.permissoes?.campo_codigo"
+          :disabled="desabilitarTodosCampos.camposComuns || !emFoco?.permissoes?.campo_codigo"
         />
         <ErrorMessage
           class="error-msg mb1"
@@ -358,6 +411,7 @@ watch(emFoco, () => {
           name="nome"
           type="text"
           class="inputtext light mb1"
+          :disabled="desabilitarTodosCampos.camposComuns"
         />
         <ErrorMessage
           class="error-msg mb1"
@@ -378,11 +432,13 @@ watch(emFoco, () => {
           as="select"
           class="inputtext light mb1"
           :class="{ error: errors.status }"
-          :disabled="!emFoco?.permissoes.status_permitidos?.length"
+          :disabled="
+            desabilitarTodosCampos.camposComuns
+              || !emFoco?.permissoes.status_permitidos?.length
+          "
+          @change.once="alertarTrocaDeStatus"
         >
-          <option
-            :value="null"
-          >
+          <option :value="null">
             Selecionar
           </option>
           <option
@@ -423,6 +479,7 @@ watch(emFoco, () => {
             loading: portfolioStore.chamadasPendentes.lista
           }"
           label="titulo"
+          :readonly="desabilitarTodosCampos.camposComuns"
         />
         <ErrorMessage
           name="portfolios_compartilhados"
@@ -437,13 +494,16 @@ watch(emFoco, () => {
           name="resumo"
           :schema="schema"
         />
-        <Field
+        <SmaeText
+          v-model="values.resumo"
           name="resumo"
           as="textarea"
           rows="5"
           class="inputtext light mb1"
-          maxlength="500"
+          maxlength="2048"
+          anular-vazio
           :class="{ 'error': errors.resumo }"
+          :disabled="desabilitarTodosCampos.camposComuns"
         />
         <ErrorMessage
           name="resumo"
@@ -459,13 +519,16 @@ watch(emFoco, () => {
             name="objeto"
             :schema="schema"
           />
-          <Field
+          <SmaeText
+            v-model="values.objeto"
             name="objeto"
             as="textarea"
             rows="5"
             class="inputtext light mb1"
+            maxlength="2048"
+            anular-vazio
             :class="{ 'error': errors.objeto }"
-            :disabled="!emFoco?.permissoes?.campo_objeto"
+            :disabled="desabilitarTodosCampos.camposComuns || !emFoco?.permissoes?.campo_objeto"
           />
           <ErrorMessage
             name="objeto"
@@ -480,13 +543,16 @@ watch(emFoco, () => {
             name="objetivo"
             :schema="schema"
           />
-          <Field
+          <SmaeText
+            v-model="values.objetivo"
             name="objetivo"
             as="textarea"
             rows="5"
             class="inputtext light mb1"
+            maxlength="2048"
+            anular-vazio
             :class="{ 'error': errors.objetivo }"
-            :disabled="!emFoco?.permissoes?.campo_objetivo"
+            :disabled="desabilitarTodosCampos.camposComuns || !emFoco?.permissoes?.campo_objetivo"
           />
           <ErrorMessage
             name="objetivo"
@@ -501,13 +567,19 @@ watch(emFoco, () => {
             name="publico_alvo"
             :schema="schema"
           />
-          <Field
+          <SmaeText
+            v-model="values.publico_alvo"
             name="publico_alvo"
             as="textarea"
             rows="5"
             class="inputtext light mb1"
+            maxlength="2048"
+            anular-vazio
             :class="{ 'error': errors.publico_alvo }"
-            :disabled="!emFoco?.permissoes?.campo_publico_alvo"
+            :disabled="
+              desabilitarTodosCampos.camposComuns
+                || !emFoco?.permissoes?.campo_publico_alvo
+            "
           />
           <ErrorMessage
             name="publico_alvo"
@@ -529,7 +601,7 @@ watch(emFoco, () => {
         />
 
         <FieldArray
-          v-slot="{ fields, push, remove }"
+          v-slot="{ fields, push, remove, handleChange }"
           name="premissas"
         >
           <div
@@ -541,13 +613,19 @@ watch(emFoco, () => {
               :name="`premissas[${idx}].id`"
               type="hidden"
             />
-
             <div class="f1 mb1">
-              <Field
-                arial-label="Texto da premissa"
+              <SmaeText
                 :name="`premissas[${idx}].premissa`"
-                type="text"
+                as="textarea"
+                rows="5"
                 class="inputtext light mb1"
+                :max-length="2048"
+                :schema="schema"
+                :model-value="fields[idx]?.value?.premissa"
+                anular-vazio
+                :class="{ 'error': errors[`fields[${idx}].premissa`] }"
+                :disabled="desabilitarTodosCampos.camposComuns"
+                @update:model-value="handleChange"
               />
               <ErrorMessage
                 class="error-msg mb1"
@@ -559,18 +637,22 @@ watch(emFoco, () => {
               class="like-a__text addlink"
               arial-label="excluir"
               title="excluir"
+              :disabled="desabilitarTodosCampos.camposComuns"
               @click="remove(idx)"
             >
               <svg
                 width="20"
                 height="20"
-              ><use xlink:href="#i_remove" /></svg>
+              >
+                <use xlink:href="#i_remove" />
+              </svg>
             </button>
           </div>
 
           <button
             class="like-a__text addlink"
             type="button"
+            :disabled="desabilitarTodosCampos.camposComuns"
             @click="push({
               premissa: '',
             })"
@@ -578,7 +660,9 @@ watch(emFoco, () => {
             <svg
               width="20"
               height="20"
-            ><use xlink:href="#i_+" /></svg>Adicionar premissa
+            >
+              <use xlink:href="#i_+" />
+            </svg>Adicionar premissa
           </button>
         </FieldArray>
       </div>
@@ -608,14 +692,21 @@ watch(emFoco, () => {
               :name="`restricoes[${idx}].id`"
               type="hidden"
             />
-
             <div class="f1 mb1">
-              <Field
-                arial-label="Texto da restrição"
+              <SmaeText
                 :name="`restricoes[${idx}].restricao`"
-                type="text"
+                as="textarea"
+                rows="5"
                 class="inputtext light mb1"
+                :max-length="2048"
+                :schema="schema"
+                :model-value="fields[idx]?.value?.restricao"
+                anular-vazio
+                :class="{ 'error': errors[`fields[${idx}].restricao`] }"
+                :disabled="desabilitarTodosCampos.camposComuns"
+                @update:model-value="handleChange"
               />
+
               <ErrorMessage
                 class="error-msg mb1"
                 :name="`restricoes[${idx}].restricao`"
@@ -626,18 +717,22 @@ watch(emFoco, () => {
               class="like-a__text addlink"
               arial-label="excluir"
               title="excluir"
+              :disabled="desabilitarTodosCampos.camposComuns"
               @click="remove(idx)"
             >
               <svg
                 width="20"
                 height="20"
-              ><use xlink:href="#i_remove" /></svg>
+              >
+                <use xlink:href="#i_remove" />
+              </svg>
             </button>
           </div>
 
           <button
             class="like-a__text addlink"
             type="button"
+            :disabled="desabilitarTodosCampos.camposComuns"
             @click="push({
               restricao: '',
             })"
@@ -645,7 +740,9 @@ watch(emFoco, () => {
             <svg
               width="20"
               height="20"
-            ><use xlink:href="#i_+" /></svg>Adicionar restrição
+            >
+              <use xlink:href="#i_+" />
+            </svg>Adicionar restrição
           </button>
         </FieldArray>
       </div>
@@ -659,11 +756,15 @@ watch(emFoco, () => {
           name="principais_etapas"
           :schema="schema"
         />
-        <Field
+        <SmaeText
+          v-model="values.principais_etapas"
           name="principais_etapas"
           as="textarea"
           rows="5"
           class="inputtext light mb1"
+          maxlength="2048"
+          anular-vazio
+          :disabled="desabilitarTodosCampos.camposComuns"
           :class="{ 'error': errors.principais_etapas }"
         />
         <ErrorMessage
@@ -685,14 +786,16 @@ watch(emFoco, () => {
           Não escopo
           <small class="t13 tc500">(o que <strong>não</strong> será entregue no projeto)</small>
         </LabelFromYup>
-
-        <Field
+        <SmaeText
+          v-model="values.nao_escopo"
           name="nao_escopo"
           as="textarea"
           rows="5"
           class="inputtext light mb1"
+          maxlength="2048"
+          anular-vazio
           :class="{ 'error': errors.nao_escopo }"
-          :disabled="!emFoco?.permissoes?.campo_nao_escopo"
+          :disabled="desabilitarTodosCampos.camposComuns || !emFoco?.permissoes?.campo_nao_escopo"
         />
         <ErrorMessage
           name="nao_escopo"
@@ -713,6 +816,7 @@ watch(emFoco, () => {
         v-model="values.geolocalizacao"
         name="geolocalizacao"
         :geolocalização-por-token="geolocalizaçãoPorToken"
+        :disabled="desabilitarTodosCampos.camposComuns"
       />
     </div>
 
@@ -751,6 +855,7 @@ watch(emFoco, () => {
                 min="2003"
                 max="3000"
                 step="1"
+                :disabled="desabilitarTodosCampos.camposComuns"
                 @change="BuscarDotaçãoParaAno"
               />
               <ErrorMessage
@@ -772,6 +877,7 @@ watch(emFoco, () => {
                 maxlength="2"
                 class="inputtext light mb1"
                 as="select"
+                :disabled="desabilitarTodosCampos.camposComuns"
               >
                 <option value="">
                   Selecionar
@@ -803,6 +909,7 @@ watch(emFoco, () => {
                 :name="`fonte_recursos[${idx}].valor_nominal`"
                 :value="fields[idx].value.valor_nominal"
                 class="inputtext light mb1"
+                :disabled="desabilitarTodosCampos.camposComuns"
               />
               <ErrorMessage
                 class="error-msg mb1"
@@ -821,6 +928,7 @@ watch(emFoco, () => {
                 :name="`fonte_recursos[${idx}].valor_percentual`"
                 :value="fields[idx].value.valor_percentual"
                 class="inputtext light mb1"
+                :disabled="desabilitarTodosCampos.camposComuns"
               />
               <ErrorMessage
                 class="error-msg mb1"
@@ -833,18 +941,22 @@ watch(emFoco, () => {
               arial-label="excluir"
               title="excluir"
               type="button"
+              :disabled="desabilitarTodosCampos.camposComuns"
               @click="remove(idx)"
             >
               <svg
                 width="20"
                 height="20"
-              ><use xlink:href="#i_remove" /></svg>
+              >
+                <use xlink:href="#i_remove" />
+              </svg>
             </button>
           </div>
 
           <button
             class="like-a__text addlink"
             type="button"
+            :disabled="desabilitarTodosCampos.camposComuns"
             @click="push({
               fonte_recurso_cod_sof: '',
               fonte_recurso_ano: null,
@@ -855,7 +967,9 @@ watch(emFoco, () => {
             <svg
               width="20"
               height="20"
-            ><use xlink:href="#i_+" /></svg>Adicionar fonte de recursos
+            >
+              <use xlink:href="#i_+" />
+            </svg>Adicionar fonte de recursos
           </button>
         </FieldArray>
       </div>
@@ -870,11 +984,13 @@ watch(emFoco, () => {
             name="origem_tipo"
             :schema="schema"
           />
+
           <Field
             name="origem_tipo"
             as="select"
             class="inputtext light mb1"
             :class="{ 'error': errors.origem_tipo }"
+            :disabled="desabilitarTodosCampos.camposComuns"
             @change="() => {
               setFieldValue('meta_id', null);
               setFieldValue('meta_codigo', null);
@@ -913,7 +1029,10 @@ watch(emFoco, () => {
               error: errors.pdm_escolhido,
               loading: chamadasPendentes.pdmsSimplificados
             }"
-            :disabled="!pdmsSimplificadosPorTipo['PDM']?.length"
+            :disabled="
+              desabilitarTodosCampos.camposComuns
+                || !pdmsSimplificadosPorTipo['PDM']?.length
+            "
           >
             <option :value="0">
               Selecionar
@@ -956,7 +1075,10 @@ watch(emFoco, () => {
             as="select"
             class="inputtext light mb1"
             :class="{ 'error': errors.meta_id }"
-            :disabled="!pdmsPorId[values.pdm_escolhido]?.metas?.length"
+            :disabled="
+              desabilitarTodosCampos.camposComuns
+                || !pdmsPorId[values.pdm_escolhido]?.metas?.length
+            "
             @change="($e) => {
               buscarArvoreDeMetas($e.target.value);
               setFieldValue('iniciativa_id', null);
@@ -993,6 +1115,7 @@ watch(emFoco, () => {
             class="inputtext light mb1"
             :class="{ 'error': errors.meta_codigo }"
             maxlength="10"
+            :disabled="desabilitarTodosCampos.camposComuns"
           />
           <ErrorMessage
             name="meta_codigo"
@@ -1018,7 +1141,10 @@ watch(emFoco, () => {
               error: errors.iniciativa_id,
               loading: chamadasPendentes.arvoreDeMetas
             }"
-            :disabled="!arvoreDeMetas?.[values.meta_id]?.iniciativas?.length"
+            :disabled="
+              desabilitarTodosCampos.camposComuns
+                || !arvoreDeMetas?.[values.meta_id]?.iniciativas?.length
+            "
             @change="setFieldValue('atividade_id', null)"
           >
             <option :value="null">
@@ -1053,7 +1179,10 @@ watch(emFoco, () => {
               error: errors.atividade_id,
               loading: chamadasPendentes.arvoreDeMetas
             }"
-            :disabled="!arvoreDeMetas?.[values.meta_id]?.[values.iniciativa_id]?.atividades.length"
+            :disabled="
+              desabilitarTodosCampos.camposComuns
+                || !arvoreDeMetas?.[values.meta_id]?.[values.iniciativa_id]?.atividades.length
+            "
           >
             <option :value="null">
               Selecionar
@@ -1087,14 +1216,17 @@ watch(emFoco, () => {
           >
             Descrição&nbsp;<span class="tvermelho">*</span>
           </LabelFromYup>
-
-          <Field
+          <SmaeText
             name="origem_outro"
             as="textarea"
             rows="5"
             class="inputtext light mb1"
+            :schema="schema"
+            maxlength="2048"
+            :model-value="values.origem_outro"
+            anular-vazio
             :class="{ 'error': errors.origem_outro }"
-            maxlength="500"
+            :disabled="desabilitarTodosCampos.camposComuns"
           />
           <ErrorMessage
             name="origem_outro"
@@ -1112,6 +1244,7 @@ watch(emFoco, () => {
       :valores-iniciais="itemParaEdicao.origens_extra"
       name="origens_extra"
       class="mb2"
+      :disabled="desabilitarTodosCampos.camposComuns"
     >
       <template #rodape>
         <ErrorMessage
@@ -1134,6 +1267,7 @@ watch(emFoco, () => {
             class="inputtext light mb1"
             :class="{ 'error': errors.previsao_inicio }"
             maxlength="10"
+            :disabled="desabilitarTodosCampos.camposComuns"
             @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
             @update:model-value="($v) => { setFieldValue('previsao_inicio', $v || null); }"
           />
@@ -1153,6 +1287,7 @@ watch(emFoco, () => {
             class="inputtext light mb1"
             :class="{ 'error': errors.previsao_termino }"
             maxlength="10"
+            :disabled="desabilitarTodosCampos.camposComuns"
             @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
             @update:model-value="($v) => { setFieldValue('previsao_termino', $v || null); }"
           />
@@ -1173,7 +1308,7 @@ watch(emFoco, () => {
             min="0"
             max="100"
             class="inputtext light mb1"
-            :disabled="emFoco?.n_filhos_imediatos > 0"
+            :disabled="desabilitarTodosCampos.camposComuns || emFoco?.n_filhos_imediatos > 0"
             :class="{ 'error': errors.tolerancia_atraso }"
             @update:model-value="values.tolerancia_atraso = Number(values.tolerancia_atraso)"
           />
@@ -1198,6 +1333,7 @@ watch(emFoco, () => {
             name="previsao_custo"
             :value="values.previsao_custo"
             class="inputtext light mb1"
+            :disabled="desabilitarTodosCampos.camposComuns"
           />
           <ErrorMessage
             class="error-msg mb1"
@@ -1209,7 +1345,7 @@ watch(emFoco, () => {
 
     <fieldset>
       <legend class="label mt2 mb1">
-        Órgãos
+        Órgãos/Partes interessadas
       </legend>
 
       <div class="flex flexwrap g2">
@@ -1228,14 +1364,16 @@ watch(emFoco, () => {
               error: errors.orgao_gestor_id,
               loading: ÓrgãosStore.organs.loading,
             }"
-            :disabled="!orgaosDisponiveisPorPortolio[values.portfolio_id]?.length"
+            :disabled="desabilitarTodosCampos.camposComuns
+              || !orgaosDisponiveisPorPortfolio[values.portfolio_id]?.length"
+            :aria-busy="buscaDePossiveisGestoresPendente"
             @change="setFieldValue('responsaveis_no_orgao_gestor', [])"
           >
             <option :value="0">
               Selecionar
             </option>
             <option
-              v-for="item in orgaosDisponiveisPorPortolio[values.portfolio_id] || []"
+              v-for="item in orgaosDisponiveisPorPortfolio[values.portfolio_id] || []"
               :key="item.id"
               :value="item.id"
               :disabled="!possíveisGestoresPorÓrgãoId[item.id]?.length"
@@ -1268,6 +1406,7 @@ watch(emFoco, () => {
           />
 
           <AutocompleteField
+            :aria-busy="buscaDePossiveisGestoresPendente"
             name="responsaveis_no_orgao_gestor"
             :controlador="{
               busca: '',
@@ -1280,6 +1419,7 @@ watch(emFoco, () => {
               loading: portfolioStore.chamadasPendentes.lista
             }"
             label="nome_exibicao"
+            :readonly="desabilitarTodosCampos.camposComuns"
           />
           <ErrorMessage
             name="responsaveis_no_orgao_gestor"
@@ -1303,7 +1443,8 @@ watch(emFoco, () => {
               error: errors.orgao_responsavel_id,
               loading: portfolioStore.chamadasPendentes.lista
             }"
-            :disabled="!órgãosQueTemResponsáveis?.length"
+            :disabled="desabilitarTodosCampos.camposComuns
+              || !órgãosQueTemResponsáveis?.length"
             @change="setFieldValue('responsavel_id', 0)"
             @update:model-value="values.orgao_responsavel_id = Number(values.orgao_responsavel_id)
               || null"
@@ -1315,7 +1456,7 @@ watch(emFoco, () => {
               v-for="item in órgãosQueTemResponsáveis"
               :key="item"
               :value="item.id"
-              :disabled="!possíveisResponsáveisPorÓrgãoId[item.id]?.length"
+              :disabled="!possiveisGerentesPorOrgaoId[item.id]?.length"
               :title="item.descricao?.length > 36 ? item.descricao : null"
             >
               {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
@@ -1341,7 +1482,9 @@ watch(emFoco, () => {
               error: errors.responsavel_id,
               loading: portfolioStore.chamadasPendentes.lista
             }"
-            :disabled="!possíveisResponsáveisPorÓrgãoId[values.orgao_responsavel_id]?.length"
+            :disabled="desabilitarTodosCampos.camposComuns
+              || !possiveisGerentesPorOrgaoId[values.orgao_responsavel_id]?.length"
+            :aria-busy="buscaDePossiveisGerentesPendente"
             @update:model-value="values.responsavel_id = Number(values.responsavel_id)
               || null"
           >
@@ -1350,7 +1493,7 @@ watch(emFoco, () => {
             </option>
             <option
               v-for="item in
-                possíveisResponsáveisPorÓrgãoId[values.orgao_responsavel_id] || []"
+                possiveisGerentesPorOrgaoId[values.orgao_responsavel_id] || []"
               :key="item.id"
               :value="item.id"
             >
@@ -1385,6 +1528,7 @@ watch(emFoco, () => {
             }"
             :grupo="órgãosComoLista"
             label="sigla"
+            :readonly="desabilitarTodosCampos.camposComuns"
           />
           <ErrorMessage
             name="orgaos_participantes"
@@ -1405,10 +1549,12 @@ watch(emFoco, () => {
         />
 
         <CampoDePessoasComBuscaPorOrgao
-          v-model="values.equipe"
+          :model-value="values.equipe"
+          :valores-iniciais="itemParaEdicao.equipe"
+          :pessoas-label="schema.fields.equipe.innerType.spec.label"
           name="equipe"
-          :pessoas="possíveisColaboradores"
-          :pronto-para-montagem="montarCampoEstático"
+          :readonly="desabilitarTodosCampos.camposGestor"
+          colaborador-de-projeto
         />
         <ErrorMessage
           name="equipe"
@@ -1432,7 +1578,10 @@ watch(emFoco, () => {
           name="secretario_responsavel"
           type="text"
           class="inputtext light mb1"
-          :disabled="!emFoco?.permissoes?.campo_secretario_executivo"
+          :disabled="
+            desabilitarTodosCampos.camposComuns
+              || !emFoco?.permissoes?.campo_secretario_executivo
+          "
         />
         <ErrorMessage
           class="error-msg mb1"
@@ -1449,7 +1598,10 @@ watch(emFoco, () => {
           name="secretario_executivo"
           type="text"
           class="inputtext light mb1"
-          :disabled="!emFoco?.permissoes?.campo_secretario_responsavel"
+          :disabled="
+            desabilitarTodosCampos.camposComuns
+              || !emFoco?.permissoes?.campo_secretario_responsavel
+          "
         />
         <ErrorMessage
           class="error-msg mb1"
@@ -1475,6 +1627,7 @@ watch(emFoco, () => {
           type="text"
           class="inputtext light mb1"
           maxlength="20"
+          :disabled="desabilitarTodosCampos.camposComuns"
         />
         <ErrorMessage
           class="error-msg mb1"
@@ -1483,7 +1636,7 @@ watch(emFoco, () => {
       </div>
 
       <div
-        :disabled="!emFoco?.permissoes?.campo_data_aprovacao"
+        :disabled="desabilitarTodosCampos.camposComuns || !emFoco?.permissoes?.campo_data_aprovacao"
         class="f1 mb1"
       >
         <LabelFromYup
@@ -1496,6 +1649,7 @@ watch(emFoco, () => {
           class="inputtext light mb1"
           :class="{ 'error': errors.data_aprovacao }"
           maxlength="10"
+          :disabled="desabilitarTodosCampos.camposComuns"
           @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
           @update:model-value="($v) => { setFieldValue('data_aprovacao', $v || null); }"
         />
@@ -1505,7 +1659,7 @@ watch(emFoco, () => {
         />
       </div>
       <div
-        :disabled="!emFoco?.permissoes?.campo_data_revisao"
+        :disabled="desabilitarTodosCampos.camposComuns || !emFoco?.permissoes?.campo_data_revisao"
         class="f1 mb1"
       >
         <LabelFromYup
@@ -1518,6 +1672,7 @@ watch(emFoco, () => {
           class="inputtext light mb1"
           :class="{ 'error': errors.data_revisao }"
           maxlength="10"
+          :disabled="desabilitarTodosCampos.camposComuns"
           @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
           @update:model-value="($v) => { setFieldValue('data_revisao', $v || null); }"
         />
@@ -1537,7 +1692,7 @@ watch(emFoco, () => {
         />
 
         <AutocompleteField
-          :disabled="gruposDeObservadoresPendentes.lista"
+          :readonly="desabilitarTodosCampos.camposComuns || gruposDeObservadoresPendentes.lista"
           name="grupo_portfolio"
           :controlador="{
             busca: '',
@@ -1554,9 +1709,7 @@ watch(emFoco, () => {
           name="grupo_portfolio"
           class="error-msg"
         />
-        <ErrorComponent
-          :erro="erroNosGruposDeObservadores"
-        />
+        <ErrorComponent :erro="erroNosGruposDeObservadores" />
       </div>
     </div>
 
@@ -1568,7 +1721,8 @@ watch(emFoco, () => {
       <hr class="mr2 f1">
       <button
         class="btn big"
-        :disabled="isSubmitting || Object.keys(errors)?.length"
+        :aria-busy="isSubmitting"
+        :aria-disabled="Object.keys(errors)?.length"
         :title="Object.keys(errors)?.length
           ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
           : null"
@@ -1577,7 +1731,7 @@ watch(emFoco, () => {
       </button>
       <hr class="ml2 f1">
     </div>
-  </Form>
+  </form>
 
   <div
     v-if="chamadasPendentes?.emFoco"

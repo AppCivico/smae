@@ -14,6 +14,7 @@ import {
 import { SerieIndicadorValorNominal, SerieValorNomimal } from './entities/variavel.entity';
 import { VariavelCicloService } from './variavel.ciclo.service';
 import { VariavelGlobalController } from './variavel.controller';
+import { LoggerWithLog } from '../common/LoggerWithLog';
 
 @ApiTags('Variável Global - Ciclo')
 @Controller('')
@@ -52,5 +53,15 @@ export class VariavelCicloGlobalController {
         @CurrentUser() user: PessoaFromJwt
     ): Promise<VariavelAnaliseQualitativaResponseDto> {
         return this.variavelCicloService.getVariavelAnaliseQualitativa(dto, user);
+    }
+
+    @Patch('serie-variavel-ciclo/sync')
+    @ApiBearerAuth('access-token')
+    @Roles(['SMAE.sysadmin'])
+    async sincronizaSerieVariavel(): Promise<string> {
+        const logger = LoggerWithLog('VariavelCicloUpdateController');
+        const data = await this.variavelCicloService.sincronizaSerieVariavel(logger);
+
+        return `Sincronização de série de variáveis concluída com sucesso. ${data.message}`;
     }
 }

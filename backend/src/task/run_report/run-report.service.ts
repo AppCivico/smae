@@ -1,7 +1,8 @@
 import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
+import { ReportsService } from '../../reports/relatorios/reports.service';
 import { TaskableService } from '../entities/task.entity';
 import { CreateRunReportDto } from './dto/create-run-report.dto';
-import { ReportsService } from '../../reports/relatorios/reports.service';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class RunReportTaskService implements TaskableService {
@@ -23,6 +24,10 @@ export class RunReportTaskService implements TaskableService {
             this.logger.error(`Failed to execute report task: ${error}`);
             throw error;
         }
+    }
+
+    async handleError(taskId: number, error: Error, prismaTx: Prisma.TransactionClient) {
+        await this.reportsService.handleError(taskId, error, prismaTx);
     }
 
     outputToJson(executeOutput: any, _inputParams: any, _taskId: string): JSON {

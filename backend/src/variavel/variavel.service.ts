@@ -45,6 +45,7 @@ import {
 import { FilterVariavelDto, FilterVariavelGlobalDto } from './dto/filter-variavel.dto';
 import {
     ListSeriesAgrupadas,
+    PdmSimplesDto,
     VariavelDetailComAuxiliaresDto,
     VariavelDetailDto,
     VariavelGlobalDetailDto,
@@ -632,7 +633,7 @@ export class VariavelService {
                         codigo,
                         regioes_ids,
                         nivel_regionalizacao,
-                        dto.acumulativa, // usar_serie_acumulada
+                        false, // não usar acumuladas nas calculadas pelo sistema
                         variavelMae?.id,
                         supraId,
                         prismaTxn
@@ -2716,6 +2717,12 @@ export class VariavelService {
                 }
             }
             if (filters.serie == 'Realizado') filters.ate_ciclo_corrente = true;
+
+            if (cicloCorrente && cicloCorrente.atrasos.length > 0) {
+                // caso tenha mais de um atraso, então o ciclo atual não é o ciclo corrente, então vamos pular já direto
+                // na query o ultimo ciclo corrente
+                filters.ate_ciclo_corrente_inclusive = false;
+            }
         }
 
         // TODO adicionar limpeza da serie para quem for ponto focal
@@ -4163,6 +4170,23 @@ export class VariavelService {
         }
 
         return detailDto;
+    }
+
+    async findAllPdms(): Promise<PdmSimplesDto[]> {
+        const rows = await this.prisma.pdm.findMany({
+            where: {
+                removido_em: null,
+            },
+            select: {
+                id: true,
+                nome: true,
+                tipo: true,
+            },
+            orderBy: {
+                nome: 'asc',
+            },
+        });
+        return rows;
     }
 }
 

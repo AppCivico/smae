@@ -123,8 +123,6 @@ import {
   computed, onMounted, watch,
 } from 'vue';
 
-import LabelFromYup from '@/components/LabelFromYup.vue';
-
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import { classificacaoCriarEditarSchema as schema } from '@/consts/formSchemas';
 

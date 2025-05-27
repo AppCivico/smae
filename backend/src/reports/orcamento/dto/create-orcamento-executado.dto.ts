@@ -1,7 +1,7 @@
 import { ApiHideProperty, ApiProperty, IntersectionType, OmitType } from '@nestjs/swagger';
 import { TipoProjeto, TipoRelatorio } from '@prisma/client';
 import { Transform, Expose } from 'class-transformer';
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsEnum, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsEnum, IsInt, IsOptional, IsString } from 'class-validator';
 import { DateTransform } from '../../../auth/transforms/date.transform';
 import { IsOnlyDate } from '../../../common/decorators/IsDateOnly';
 import { FiltroMetasIniAtividadeDto } from '../../relatorios/dto/filtros.dto';
@@ -14,6 +14,7 @@ export class OrcamentoExecutadoParams {
     @IsEnum(TipoRelatorio, {
         message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(TipoRelatorio).join(', '),
     })
+    @Expose()
     tipo: TipoRelatorio;
 
     /**
@@ -21,6 +22,7 @@ export class OrcamentoExecutadoParams {
      */
     @IsOnlyDate()
     @Transform(DateTransform)
+    @Expose()
     inicio: Date;
 
     /**
@@ -28,6 +30,7 @@ export class OrcamentoExecutadoParams {
      */
     @IsOnlyDate()
     @Transform(DateTransform)
+    @Expose()
     fim: Date;
 
     /**
@@ -39,7 +42,7 @@ export class OrcamentoExecutadoParams {
     @ArrayMinSize(0, { message: '$property| tag(s): precisa ter pelo menos um item' })
     @ArrayMaxSize(100, { message: '$property| tag(s): precisa ter no máximo 100 items' })
     @IsString({ each: true, message: '$property| Cada item precisa ser um texto' })
-    @MaxLength(40, { each: true })
+    @Expose()
     orgaos?: string[];
 }
 

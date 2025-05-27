@@ -1,10 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { WorkflowSituacaoTipo } from '@prisma/client';
 import { IsEnum, IsString, MaxLength, MinLength } from 'class-validator';
+import { MAX_LENGTH_DEFAULT } from 'src/common/consts';
 
 export class CreateWorkflowSituacaoDto {
     @IsString()
-    @MaxLength(250)
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Situação' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     @MinLength(1)
     situacao: string;
 

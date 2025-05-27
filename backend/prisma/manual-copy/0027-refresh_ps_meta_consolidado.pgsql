@@ -12,6 +12,7 @@ DECLARE
     -- Counters for meta and its children
     v_pendente BOOLEAN;
     v_pendente_variavel BOOLEAN;
+    v_monitoramento_orcamento BOOLEAN;
 
     -- Schedule counters
     v_cronograma_total int := 0;
@@ -35,8 +36,13 @@ DECLARE
     -- Team arrays
     v_equipes int[] := ARRAY[]::int[];
     v_equipes_orgaos int[] := ARRAY[]::int[];
+
+    v_equipes_vars int[] := ARRAY[]::int[];
+    v_equipes_orgaos_vars int[] := ARRAY[]::int[];
+
     -- Temporary records
     r_item RECORD;
+    v_pdm_ativo BOOLEAN;
 BEGIN
     PERFORM pg_advisory_xact_lock(pMetaId);
     v_debug := '';
@@ -47,10 +53,12 @@ BEGIN
 
     SELECT
         p.id AS v_pdm_id,
+        p.ativo AS v_pdm_ativo,
         cf.data_ciclo AS v_data_ciclo,
-        CASE WHEN cf.ativo THEN cf.id ELSE NULL END AS v_CicloFisicoId
+        CASE WHEN cf.ativo THEN cf.id ELSE NULL END AS v_CicloFisicoId,
+        p.monitoramento_orcamento
             INTO
-        v_pdm_id, v_data_ciclo, v_CicloFisicoId
+        v_pdm_id, v_pdm_ativo, v_data_ciclo, v_CicloFisicoId, v_monitoramento_orcamento
 
     FROM pdm p
     LEFT JOIN ciclo_fisico cf ON p.id = cf.pdm_id
@@ -70,6 +78,7 @@ BEGIN
         v_fase_analise_preenchida := FALSE;
         v_fase_risco_preenchida := FALSE;
         v_fase_fechamento_preenchida := FALSE;
+        v_pendente_orcamento := FALSE;
     ELSE
         SELECT
             EXISTS (
@@ -205,9 +214,13 @@ BEGIN
             FROM budget_years "by"
             LEFT JOIN completion_status cs ON cs.ano_referencia = "by".year;
 
-            v_pendente_orcamento := (
+            v_pendente_orcamento := v_pdm_ativo AND v_monitoramento_orcamento AND (
                 SELECT COALESCE(array_length(v_orcamento_total, 1), 0) != COALESCE(array_length(v_orcamento_preenchido, 1), 0)
             );
+
+            IF (NOT v_pendente_orcamento) THEN
+                v_orcamento_total := ARRAY[]::int[];
+            END IF;
 
         ELSE
             -- For non-meta items, set budget values to 0
@@ -294,22 +307,32 @@ BEGIN
                 (r_item.tipo = 'atividade' AND i.atividade_id = r_item.id)
             )
             AND v.removido_em IS NULL
+            AND i.removido_em IS NULL
             -- tiras as variáveis de cronograma, que o próprio cronograma já contabiliza
             AND (v.variavel_categorica_id IS NULL OR vc.tipo <> 'Cronograma'::"TipoVariavelCategorica")
         )
         SELECT
             COUNT(DISTINCT family_id),
             COALESCE(ARRAY_AGG(DISTINCT family_id), ARRAY[]::int[]),
-            COUNT(DISTINCT family_id) FILTER (WHERE eh_corrente = true),
-            COUNT(DISTINCT family_id) FILTER (WHERE eh_corrente = true AND fase = 'Preenchimento' AND
+            COUNT(DISTINCT family_id) FILTER (WHERE v_pdm_ativo AND (eh_corrente = true OR atrasos <> '{}' )),
+            COUNT(DISTINCT family_id) FILTER (WHERE v_pdm_ativo AND (
+                (
+                    eh_corrente = true AND fase = 'Preenchimento' AND
                 (atrasos IS NULL OR atrasos = '{}') AND (prazo IS NULL OR prazo >= (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::date)
+                ) OR (atrasos <> '{}')
+            )
             ),
-            COUNT(DISTINCT family_id) FILTER (WHERE eh_corrente = true AND fase = 'Preenchimento' AND
+            COUNT(DISTINCT family_id) FILTER (WHERE v_pdm_ativo AND ((eh_corrente = true AND fase = 'Preenchimento' AND
                 ((atrasos IS NOT NULL AND atrasos <> '{}') OR (prazo IS NOT NULL AND prazo < (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::date))
+            ) OR (
+                atrasos <> '{}'
+             ) )
             ),
-            COUNT(DISTINCT family_id) FILTER (WHERE eh_corrente = true AND fase = 'Validacao'),
-            COUNT(DISTINCT family_id) FILTER (WHERE eh_corrente = true AND fase = 'Liberacao' AND liberacao_enviada = false),
-            COUNT(DISTINCT family_id) FILTER (WHERE eh_corrente = true AND fase = 'Liberacao' AND liberacao_enviada = true)
+            COUNT(DISTINCT family_id) FILTER (WHERE v_pdm_ativo AND eh_corrente = true AND
+                ((fase = 'Validacao') )
+            ),
+            COUNT(DISTINCT family_id) FILTER (WHERE v_pdm_ativo AND eh_corrente = true AND fase = 'Liberacao' AND liberacao_enviada = false),
+            COUNT(DISTINCT family_id) FILTER (WHERE v_pdm_ativo AND eh_corrente = true AND fase = 'Liberacao' AND liberacao_enviada = true)
         INTO
             v_variaveis_total,
             v_variaveis,
@@ -320,6 +343,26 @@ BEGIN
             v_variaveis_conferidas_nao_liberadas,
             v_variaveis_liberadas
         FROM vars;
+
+        WITH equipes AS (
+            SELECT DISTINCT vgr.grupo_responsavel_equipe_id as equipe_id, gre.orgao_id
+            FROM variavel_grupo_responsavel_equipe vgr
+            JOIN grupo_responsavel_equipe gre ON vgr.grupo_responsavel_equipe_id = gre.id
+            WHERE vgr.variavel_id = ANY(v_variaveis)
+            AND vgr.removido_em IS NULL
+            AND gre.removido_em IS NULL
+        )
+        SELECT
+            array_agg(DISTINCT equipe_id),
+            array_agg(DISTINCT orgao_id)
+        INTO
+            v_equipes_vars,
+            v_equipes_orgaos_vars
+        FROM equipes;
+
+        -- append
+        v_equipes := array_cat(v_equipes, coalesce(v_equipes_vars, '{}'::int[]));
+        v_equipes_orgaos := array_cat(v_equipes_orgaos, coalesce(v_equipes_orgaos_vars, '{}'::int[]));
 
         -- any variable in the current cycle is pending
         v_pendente_variavel := v_variaveis_a_coletar > 0;

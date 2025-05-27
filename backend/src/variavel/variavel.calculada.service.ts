@@ -2,14 +2,16 @@ import { Injectable } from '@nestjs/common';
 import { Interval } from '@nestjs/schedule';
 import { Prisma, Variavel } from '@prisma/client';
 
+import { CONST_BOT_USER_ID } from '../common/consts';
 import { CrontabIsEnabled } from '../common/CrontabIsEnabled';
+import { JOB_CALC_LOCK } from '../common/dto/locks';
 import { LoggerWithLog } from '../common/LoggerWithLog';
 import { PrismaService } from '../prisma/prisma.service';
-import { CONST_BOT_USER_ID } from '../common/consts';
 
 @Injectable()
 export class VariavelCalculadaService {
     private enabled: boolean;
+    private is_running: boolean = false;
     constructor(private readonly prisma: PrismaService) {
         this.enabled = false;
     }
@@ -26,9 +28,39 @@ export class VariavelCalculadaService {
     }
 
     @Interval(1000)
-    async variavelCalcCrontab() {
+    async handleCron() {
         if (!this.enabled) return;
+        if (this.is_running) return;
+        this.is_running = true;
 
+        process.env.INTERNAL_DISABLE_QUERY_LOG = '1';
+        await this.prisma.$transaction(
+            async (prisma: Prisma.TransactionClient) => {
+                const lockPromise: Promise<{ locked: boolean }[]> =
+                    prisma.$queryRaw`SELECT pg_try_advisory_xact_lock(${JOB_CALC_LOCK}) as locked`;
+
+                lockPromise.then(() => {
+                    process.env.INTERNAL_DISABLE_QUERY_LOG = '';
+                });
+
+                const locked = await lockPromise;
+                if (!locked[0].locked) return;
+
+                await this.variavelCalcCrontab();
+
+                process.env.INTERNAL_DISABLE_QUERY_LOG = '1';
+            },
+            {
+                maxWait: 15000,
+                timeout: 60 * 1000,
+                isolationLevel: 'ReadCommitted',
+            }
+        );
+        process.env.INTERNAL_DISABLE_QUERY_LOG = '';
+        this.is_running = false;
+    }
+
+    private async variavelCalcCrontab() {
         process.env.INTERNAL_DISABLE_QUERY_LOG = '1';
         const rows = await this.prisma.formulaComposta.findMany({
             where: {

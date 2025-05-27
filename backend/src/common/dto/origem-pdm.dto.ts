@@ -5,6 +5,7 @@ import { IsEnum, IsInt, IsOptional, IsString, MaxLength, ValidateIf } from 'clas
 import { ProjetoMetaDetailDto } from '../../pp/projeto/entities/projeto.entity';
 import { IdNomeDto } from './IdNome.dto';
 import { IdCodTituloDto } from './IdCodTitulo.dto';
+import { MAX_LENGTH_DEFAULT } from '../consts';
 
 export class UpsertOrigemDto {
     @IsOptional()
@@ -32,7 +33,7 @@ export class UpsertOrigemDto {
      */
     @IsOptional()
     @IsString()
-    @MaxLength(2048)
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Origem outro' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     @ValidateIf((object, value) => value !== null)
     origem_outro?: string | null;
 
@@ -66,6 +67,7 @@ export class UpsertOrigemDto {
     @IsOptional()
     @IsString()
     @ValidateIf((object, value) => value !== null)
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Mata código' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     meta_codigo?: string | null;
 }
 

@@ -10,6 +10,7 @@ import níveisDeSuplência from '@/consts/niveisDeSuplencia';
 import regEx from '@/consts/patterns';
 import periodicidades from '@/consts/periodicidades';
 import polaridadeDeVariaveis from '@/consts/polaridadeDeVariaveis';
+import statusDeProjetos from '@/consts/projectStatuses';
 import responsabilidadeEtapaFluxo from '@/consts/responsabilidadeEtapaFluxo';
 import statusObras from '@/consts/statusObras';
 import tipoDePerfil from '@/consts/tipoDePerfil';
@@ -186,7 +187,7 @@ export const acompanhamento = object()
           .shape({
             encaminhamento: string()
               .label('Encaminhamento')
-              .max(50000)
+              .max(2048)
               .min(1)
               .required(),
             responsavel: string()
@@ -217,7 +218,11 @@ export const acompanhamento = object()
       .required(),
     detalhamento: string()
       .label('Detalhamento')
-      .max(50000)
+      .max(2048)
+      .nullable(),
+    observacao: string()
+      .label('Observação')
+      .max(2048)
       .nullable(),
     participantes: string()
       .label('Participantes')
@@ -225,11 +230,11 @@ export const acompanhamento = object()
       .required(),
     pauta: string()
       .label('Pauta')
-      .max(50000)
+      .max(2048)
       .nullable(),
     pontos_atencao: string()
       .label('Pontos de atenção')
-      .max(50000)
+      .max(2048)
       .nullable(),
     // campo não utilizado em Obras
     risco: array()
@@ -506,9 +511,13 @@ export const contratoDeObras = (tela = 'projeto') => object()
       .nullable()
       .label('Área gestora'),
     objeto_resumo: string()
+      .max(2048)
+      .min(1)
       .nullable()
       .label('Objeto do contrato - resumido'),
     objeto_detalhado: string()
+      .max(2048)
+      .min(1)
       .nullable()
       .label('Objeto do contrato - detalhado'),
     contratante: string()
@@ -549,6 +558,8 @@ export const contratoDeObras = (tela = 'projeto') => object()
       .nullable()
       .label('Valor do contrato'),
     observacoes: string()
+      .max(2048)
+      .min(1)
       .nullable()
       .label('Observações'),
   });
@@ -927,10 +938,10 @@ export const indicador = object()
       .nullable(),
     fim_medicao: string()
       .required('Preencha a data')
-      .matches(regEx['month/year'], 'Formato inválido'),
+      .matches(regEx['year/month/day'], 'Formato inválido'),
     inicio_medicao: string()
       .required('Preencha a data')
-      .matches(regEx['month/year'], 'Formato inválido'),
+      .matches(regEx['year/month/day'], 'Formato inválido'),
     nivel_regionalizacao: string()
       .nullable()
       // eslint-disable-next-line eqeqeq
@@ -1005,6 +1016,7 @@ export const liçãoAprendida = object()
   .shape({
     contexto: string()
       .label('Contexto')
+      .max(2048)
       .required(),
     data_registro: date()
       .label('Data do registro')
@@ -1014,12 +1026,15 @@ export const liçãoAprendida = object()
     descricao: string()
       .label('O que foi feito')
       .required()
+      .max(2048)
       .nullable(),
     observacao: string()
       .label('Observação')
+      .max(2048)
       .nullable(),
     resultado: string()
       .label('Resultado')
+      .max(2048)
       .nullable(),
     responsavel: string()
       .label('Responsável')
@@ -1235,7 +1250,10 @@ export const obras = object({
       number()
         .min(1),
     )
-    .nullable(),
+    .nullable()
+    .meta({
+      balaoInformativo: 'É a pessoa responsável por apoiar o Ponto Focal Responsável na atualização das informações da obra no SMAE.',
+    }),
   empreendimento_id: number()
     .label('Identificador do empreendimento')
     .min(1, 'Empreendimento inválido')
@@ -1303,12 +1321,12 @@ export const obras = object({
     }),
   mdo_detalhamento: string()
     .label('Detalhamento/Escopo da obra')
-    .max(50000)
+    .max(2048)
     .nullable(),
   mdo_n_familias_beneficiadas: number()
     .label('Número de famílias beneficiadas')
-    .min(0)
-    .nullable(),
+    .nullable()
+    .min(0),
   mdo_n_unidades_habitacionais: number()
     .label('Número de unidades')
     .min(0)
@@ -1320,13 +1338,15 @@ export const obras = object({
     .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
   mdo_observacoes: string()
     .label('Observações')
-    .max(1024)
+    .max(2048)
     .nullable(),
   mdo_previsao_inauguracao: date()
     .label('Data de inauguração planejada')
     .max(dataMax)
     .min(dataMin)
-    .nullable(),
+    .nullable()
+    .transform((curr, orig) => (orig === '' ? null : curr))
+    .typeError('Informe uma data válida (AAAA-MM-DD)'),
   meta_codigo: string()
     .label('Código da Meta')
     .when(['origem_tipo'], {
@@ -1407,12 +1427,12 @@ export const obras = object({
     .nullable(),
   ponto_focal_responsavel: string()
     .label('Ponto focal responsável')
-    .nullable(),
+    .nullableOuVazio(),
   portfolios_compartilhados: array()
     .label('Compartilhar com portfólios')
     .nullable(),
   portfolio_id: number()
-    .label('Nome do portfólio')
+    .label('Portfólio')
     .min(1, 'Portfólio inválido')
     .required(),
   previsao_custo: number()
@@ -1427,12 +1447,20 @@ export const obras = object({
   previsao_termino: date()
     .label('Previsão de término')
     .max(dataMax)
-    .min(ref('previsao_inicio'), 'Precisa ser posterior à data de início')
+    .when('previsao_inicio', (inicio, schema) => {
+      if (inicio) {
+        return schema.min(inicio, 'Precisa ser posterior à data de início');
+      }
+      return schema;
+    })
     .nullable(),
   programa_id: number()
     .label('Programa Habitacional')
     .positive()
     .integer()
+    .nullable(),
+  projeto_etapa_id: number()
+    .label('Etapa')
     .nullable(),
   regiao_ids: array()
     .label('Subprefeitura')
@@ -1444,14 +1472,20 @@ export const obras = object({
   responsavel_id: number()
     .label('Ponto focal responsável')
     .min(1, 'Responsável inválido')
-    .nullable(),
+    .nullable()
+    .meta({
+      balaoInformativo: 'É a pessoa responsável pela evolução da obra em todas as suas fases. Suas principais funções incluem acompanhar o andamento da obra e do(s) respectivo(s) contrato(s), mantendo as informações atualizadas no SMAE.',
+    }),
   responsaveis_no_orgao_gestor: array()
-    .label('Ponto Focal de Monitoramento')
+    .label('Assessor do Portfólio')
     .of(
       number()
         .min(1),
     )
-    .nullable(),
+    .nullable()
+    .meta({
+      balaoInformativo: 'É a pessoa que atua como facilitador e apoiador na aplicação das metodologias definidas. Suas principais responsabilidades incluem fornecer suporte técnico e metodológico ao Ponto Focal Responsável, durante todas as fases.',
+    }),
   secretario_colaborador: string()
     .label('Secretário colaborador da obra')
     .max(250)
@@ -1477,6 +1511,9 @@ export const obras = object({
       number()
         .min(1),
     )
+    .nullable(),
+  tarefas: array()
+    .label('Tarefas')
     .nullable(),
   tipo_intervencao_id: number()
     .label('Tipo de obra/intervenção')
@@ -1591,7 +1628,7 @@ export const planoDeAção = object()
       .nullable(),
     contramedida: string()
       .label('Contramedida')
-      .max(50000)
+      .max(2048)
       .required(),
     custo: number()
       .label('Custo da contramedida')
@@ -1611,7 +1648,7 @@ export const planoDeAção = object()
       .nullable(),
     medidas_de_contingencia: string()
       .label('Medidas de contingência')
-      .max(50000),
+      .max(2048),
     orgao_id: number()
       .label('Órgão')
       .min(1, 'Selecione um órgão responsável')
@@ -2459,11 +2496,11 @@ export const processoDeObras = object()
   .shape({
     comentarios: string()
       .label('Comentários')
-      .max(1024)
+      .max(2048)
       .nullable(),
     descricao: string()
       .label('Descrição')
-      .max(2000)
+      .max(2048)
       .nullable(),
     link: string()
       .label('Link')
@@ -2472,7 +2509,7 @@ export const processoDeObras = object()
       .url(),
     observacoes: string()
       .label('Observações')
-      .max(1024)
+      .max(2048)
       .nullable(),
     processo_sei: string()
       .label('Processo SEI')
@@ -2508,13 +2545,16 @@ export const projeto = object()
       .max(dataMax)
       .min(new Date(2003, 0, 1)),
     equipe: array()
-      .label('Equipe')
+      .label('Equipe do Projeto')
       .nullable()
       .of(
         number()
-          .label('Pessoa')
+          .label('Equipe do projeto')
           .required(),
-      ),
+      )
+      .meta({
+        balaoInformativo: 'É composta por pessoas responsáveis por executar atividades planejadas e contribuir diretamente para o cumprimento dos objetivos do projeto, conforme escopo definido. Suas principais responsabilidades incluem colaborar com outros membros da equipe, atualizar as informações, reportar ao gerente de projeto e propor soluções para eventuais problemas.',
+      }),
     grupo_portfolio: array()
       .label('Grupos de observadores')
       .nullable()
@@ -2587,7 +2627,7 @@ export const projeto = object()
     nao_escopo: string()
       .label('Não escopo')
       .nullable()
-      .max(50000),
+      .max(2048),
     nome: string()
       .label('Nome do projeto')
       .required('Um projeto requer um nome')
@@ -2595,22 +2635,33 @@ export const projeto = object()
       .max(500, 'Esse nome é muito longo'),
     objetivo: string()
       .label('Objetivo')
+      .max(2048)
       .nullable(),
     objeto: string()
       .label('Objeto')
+      .max(2048)
       .nullable(),
     orgao_gestor_id: number()
-      .label('Órgão gestor')
+      .label('Órgão Gestor do Portfólio - Escritório do Projeto')
       .min(1, 'Selecione um órgão gestor')
-      .required('O projeto necessita de um órgão gestor'),
+      .required('O projeto necessita de um órgão gestor')
+      .meta({
+        balaoInformativo: 'É o órgão que cumpre a função de Escritório de Projetos, sendo responsável pelo portfólio no qual o projeto está inserido.',
+      }),
     orgao_responsavel_id: number()
       .label('Órgão responsável')
-      .nullable(),
+      .nullable()
+      .meta({
+        balaoInformativo: 'É o órgão responsável pela execução do projeto.',
+      }),
     orgaos_participantes: array()
-      .label('Órgãos participantes'),
+      .label('Órgãos participantes')
+      .meta({
+        balaoInformativo: 'São os órgãos nos quais estão alocadas as demais partes interessadas do projeto.',
+      }),
     origem_outro: string()
       .label('Descrição de origem fora do PdM')
-      .max(500)
+      .max(2048)
       .nullable()
       .when('origem_tipo', (origemTipo, field) => (origemTipo && origemTipo !== 'PdmSistema'
         ? field.required('Descrição de origem é obrigatório caso não se escolha um Programa de Metas corrente')
@@ -2650,6 +2701,7 @@ export const projeto = object()
       .nullable(),
     publico_alvo: string()
       .label('Público alvo')
+      .max(2048)
       .nullable(),
     portfolio_id: number('O projeto precisa pertencer a um portfólio')
       .label('Portfólio')
@@ -2664,7 +2716,7 @@ export const projeto = object()
               .nullable(),
             premissa: string()
               .required('A premissa não pode estar em branco')
-              .max(2048, 'Premissa muito longa. use menos de 2048 caracteres'),
+              .max(2048, 'Premissa muito longa. Use 2048 caracteres ou menos.'),
           }),
       )
       .strict(),
@@ -2684,16 +2736,22 @@ export const projeto = object()
       .nullable(),
     principais_etapas: string()
       .label('Principais etapas')
-      .max(50000),
+      .max(2048),
     regiao_id: number()
       .label('Região')
       .nullable(),
     responsaveis_no_orgao_gestor: array()
-      .label('Responsável pelo acompanhamento')
-      .nullable(),
+      .label('Assessor do Escritório de Projetos')
+      .nullable()
+      .meta({
+        balaoInformativo: 'É a pessoa que atua como facilitador e apoiador na aplicação das metodologias definidas. Suas principais responsabilidades incluem fornecer suporte técnico e metodológico ao gerente do projeto, durante todas as fases, exercendo poder de influência para o alinhamento do projeto com os objetivos estratégicos definidos pela organização.',
+      }),
     responsavel_id: number()
       .label('Gerente do projeto')
-      .nullable(),
+      .nullable()
+      .meta({
+        balaoInformativo: 'É a pessoa responsável pela evolução do projeto em todas as suas fases. Suas principais funções incluem definir o escopo, elaborar cronogramas, alocar recursos, gerenciar riscos, liderar a equipe e manter uma comunicação eficaz com todas as partes interessadas, garantindo que todos estejam alinhados e que as entregas ocorram conforme o planejado, promovendo ajustes sempre que necessário.',
+      }),
     restricoes: array()
       .label('Restrições')
       .of(
@@ -2703,31 +2761,28 @@ export const projeto = object()
               .nullable(),
             restricao: string()
               .required('A restrição não pode estar em branco')
-              .max(2048, 'Restrição muito longa. use menos de 2048 caracteres'),
+              .max(2048, 'Restrição muito longa. Use 2048 caracteres ou menos.'),
           }),
       )
       .strict(),
     resumo: string()
       .label('Resumo')
-      .max(500),
+      .max(2048),
     secretario_executivo: string()
-      .label('Secretário gestor')
-      .nullable(),
+      .label('Secretário Gestor do Portfólio')
+      .nullable()
+      .meta({
+        balaoInformativo: 'É o(a) secretário(a) do Órgão Gestor do Portfólio.',
+      }),
     secretario_responsavel: string()
       .label('Secretário responsável')
-      .nullable(),
+      .nullable()
+      .meta({
+        balaoInformativo: 'É o(a) secretário(a) do Órgão Responsável.',
+      }),
     status: mixed()
       .label('Status')
-      .oneOf([
-        'Registrado',
-        'Selecionado',
-        'EmPlanejamento',
-        'Planejado',
-        'Validado',
-        'EmAcompanhamento',
-        'Suspenso',
-        'Fechado',
-      ])
+      .oneOf(Object.keys(statusDeProjetos))
       .nullable(),
     tolerancia_atraso: number()
       .label('Percentual de tolerância com atraso')
@@ -2873,6 +2928,9 @@ export const relatórioDeParlamentares = relatorioValidacaoBase.concat(object({
       .nullable()
       .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
   }),
+  eh_publico: boolean()
+    .label('Relatório Público')
+    .required(),
 }));
 
 export const relatórioDePrevisãoDeCustoPdM = relatorioValidacaoBase.concat(
@@ -3518,6 +3576,7 @@ export const risco = object()
   .shape({
     causa: string()
       .label('Causa raiz')
+      .max(2048)
       .nullable(),
     codigo: number()
       .label('Código')
@@ -3528,9 +3587,11 @@ export const risco = object()
       .required(),
     consequencia: string()
       .label('Consequências')
+      .max(2048)
       .nullable(),
     descricao: string()
       .label('Descrição')
+      .max(2048)
       .nullable(),
     impacto: number()
       .label('Impacto')
@@ -3556,6 +3617,55 @@ export const risco = object()
     titulo: string()
       .label('Nome')
       .required(),
+  });
+
+export const emailTransferencia = object()
+  .shape({
+    ativo: boolean()
+      .label('Disparo de e-mail?'),
+    com_copia: array()
+      .nullable()
+      .label('CC (com cópia)'),
+    recorrencia_dias: number()
+      .label('Recorrência (dias)')
+      .min(0)
+      .integer()
+      .required(),
+    numero: number()
+      .label('Dias antes da previsão de termino')
+      .min(0)
+      .integer()
+      .required(),
+    numero_periodo: string()
+      .label('Periodicidade')
+      .required(),
+  });
+
+export const empreendimento = object({
+  identificador: string()
+    .label('Identificador')
+    .max(250)
+    .min(1)
+    .required(),
+  nome: string()
+    .label('Nome')
+    .max(250)
+    .min(3)
+    .required(),
+});
+
+export const tag = object()
+  .shape({
+    descricao: string()
+      .label('Descrição')
+      .required('Preencha a descrição'),
+    ods_id: string()
+      .label('Categoria')
+      .required('Categoria é obrigatória'),
+    pdm_id: string(),
+    upload_icone: string()
+      .label('Ícone')
+      .nullable(),
   });
 
 export const tarefa = object()
@@ -3661,55 +3771,6 @@ export const tarefa = object()
       .label('Data de término real')
       .max(dataMax)
       .min(ref('inicio_real'), 'Precisa ser posterior à data de início')
-      .nullable(),
-  });
-
-export const emailTransferencia = object()
-  .shape({
-    ativo: boolean()
-      .label('Disparo de e-mail?'),
-    com_copia: array()
-      .nullable()
-      .label('CC (com cópia)'),
-    recorrencia_dias: number()
-      .label('Recorrência (dias)')
-      .min(0)
-      .integer()
-      .required(),
-    numero: number()
-      .label('Dias antes da previsão de termino')
-      .min(0)
-      .integer()
-      .required(),
-    numero_periodo: string()
-      .label('Periodicidade')
-      .required(),
-  });
-
-export const empreendimento = object({
-  identificador: string()
-    .label('Identificador')
-    .max(250)
-    .min(1)
-    .required(),
-  nome: string()
-    .label('Nome')
-    .max(250)
-    .min(3)
-    .required(),
-});
-
-export const tag = object()
-  .shape({
-    descricao: string()
-      .label('Descrição')
-      .required('Preencha a descrição'),
-    ods_id: string()
-      .label('Categoria')
-      .required('Categoria é obrigatória'),
-    pdm_id: string(),
-    upload_icone: string()
-      .label('Ícone')
       .nullable(),
   });
 
@@ -3978,6 +4039,7 @@ export const variavelGlobal = object({
     preenchimento_inicio: number()
       .label('Dia inicio da coleta')
       .min(1)
+      .max(30)
       .positive()
       .required()
       .transform((v) => (v === '' || Number.isNaN(v) ? null : Number(v))),
@@ -4164,13 +4226,6 @@ export const obra = projeto.concat(obras).shape({
       identificador: string()
         .required(),
     }),
-  responsaveis_no_orgao_gestor: array()
-    .label('Ponto focal do monitoramento')
-    .of(
-      number()
-        .min(1),
-    )
-    .nullable(),
 });
 
 export const comunicadosGeraisFiltrosSchemaTipoOpcoes = [
@@ -4263,9 +4318,10 @@ function obterCicloAtaulizacaoCamposCompartilhados(posicao) {
   };
 
   if (posicao !== 1) {
-    schemaCampos.solicitar_complementacao = boolean().label(
-      'Solicitar complementação',
-    );
+    schemaCampos.solicitar_complementacao = boolean()
+      .label(
+        'Solicitar complementação',
+      );
     schemaCampos.pedido_complementacao = string()
       .label('Pedido de complementação')
       .when('solicitar_complementacao', (solicitarComplementacao, field) => (solicitarComplementacao ? field.required() : field.nullable()));
@@ -4305,7 +4361,9 @@ export const cicloAtualizacaoModalEditarSchema = (posicao) => {
   const schemaCampos = {
     variaveis_dados: array().of(
       object().shape({
-        valor_realizado: string().label('valor realizado').required(),
+        valor_realizado: string()
+          .label('valor realizado')
+          .required(),
         valor_realizado_acumulado: string()
           .label('valor realizado acumulado')
           .required(),
@@ -4358,4 +4416,19 @@ export const cicloAtualizacaoFiltrosSchema = object().shape({
   referencia: string()
     .label('Referencia')
     .matches(regEx['month/year'], 'Formato inválido'),
+});
+
+export const alteracaoEmLoteNovoFiltro = object().shape({
+  ordem_direcao: string().label('Direção').oneOf(direcaoOpcoes).nullableOuVazio(),
+  equipamento_id: number().label('Equipamento/Estrutura pública').nullableOuVazio(),
+  grupo_tematico_id: number().label('Grupo temático').nullableOuVazio(),
+  ipp: number().label('Número de itens').nullableOuVazio(),
+  ordem_coluna: string().label('Ordenar por').nullableOuVazio(),
+  orgao_origem_id: number().label('Secretaria/órgão de origem').nullableOuVazio(),
+  palavra_chave: string().label('Busca livre').nullableOuVazio(),
+  portfolio_id: number().label('Portfólio').nullableOuVazio(),
+  registros_sei: string().label('Processos SEI').nullableOuVazio(),
+  status: number().label('Status da obra').nullableOuVazio(),
+  regioes: number().label('Subprefeitura').nullableOuVazio(),
+  tipo_intervencao_id: number().label('Tipo de obra').nullableOuVazio(),
 });

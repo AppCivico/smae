@@ -3,29 +3,15 @@ import { computed, onMounted, ref } from 'vue';
 import FiltroParaPagina, { type Formulario } from '@/components/FiltroParaPagina.vue';
 import { projetoFiltro as schema } from '@/consts/formSchemas';
 import projectStatuses from '@/consts/projectStatuses';
-import statusObras from '@/consts/statusObras';
 import { useOrgansStore, usePortfolioStore } from '@/stores';
 import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
 
-const mapaStatus = [
-  'Registrado',
-  'Selecionado',
-  'EmPlanejamento',
-  'Planejado',
-  'Validado',
-  'EmAcompanhamento',
-  'Suspenso',
-  'Fechado',
-  'MDO_NaoIniciada',
-  'MDO_EmAndamento',
-  'MDO_Concluida',
-  'MDO_Paralisada',
-].map((item) => ({
-  id: item,
-  label: projectStatuses[item]?.nome
-    || statusObras[item]?.nome
+const mapaStatus = Object.keys(projectStatuses)
+  .map((item) => ({
+    id: item,
+    label: projectStatuses[item]?.nome
     || item,
-}));
+  }));
 
 const organsStore = useOrgansStore();
 const portfolioStore = usePortfolioStore();

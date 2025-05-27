@@ -1,5 +1,5 @@
 import { Transform, TransformFnParams } from 'class-transformer';
-import { IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsInt, IsOptional, IsString } from 'class-validator';
 
 export class DiretorioDto {
     @IsOptional()
@@ -28,7 +28,6 @@ export class DiretorioItemDto {
 
 export class PatchDiretorioDto {
     @IsString()
-    @MaxLength(2000)
     caminho: string;
 }
 

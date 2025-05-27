@@ -36,6 +36,14 @@ A configuração do MinIO pode ser trocada pelo S3 ou outro serviço equivalente
 
 Na primeira vez que subir o sistema com gerenciamento de arquivos via MinIO, será necessário subir o MinIO, criar um bucket, e configurar um usuário e senha para os uploads, e então atualizar o `.env` com as configurações realizadas. Todas essas tarefas podem ser feitas pelo console web, https://min.io/docs/minio/linux/administration/minio-console.html
 
+### Testando configurações
+
+Verifique se há alguma variavel pendente no docker-compose com o comando
+
+    ./testa-config.sh
+
+Não deve aparecer nenhum "WARNING" na tela.
+
 Para realizar o deploy, execute os seguintes comandos:
 
     git clone https://github.com/\[SEU\_USUARIO\_GIT\]/smae.git
@@ -79,6 +87,42 @@ Existem diversas variáveis que podem ser personalizadas:
 Disponível na versão open-source do metabase, é possível configurar embed via token signed dentro do SMAE, abrindo um menu lateral de analises.
 
 Veja os detalhes do metabase+SMAE em [metabase.md](metabase.md) ou a documentação completa em https://www.metabase.com/docs/latest/embedding/introduction#signed-embedding
+
+## Restaurando um backup do banco de dados
+
+Para restaurar um backup do banco de dados PostgreSQL, siga os passos abaixo:
+
+1. **Inicie apenas o serviço do banco de dados:**
+
+./inicia-db.sh
+
+2. **Copie o arquivo `.sql` para dentro do container:**
+
+```bash
+docker cp seu_backup.sql smae_postgres:/tmp/
+```
+Substitua `seu_backup.sql` pelo nome do seu arquivo de backup.
+
+3. **Acesse o container:**
+
+```bash
+docker exec -it smae_postgres bash
+```
+
+4. **Restaure o banco de dados:**
+
+```bash
+psql -U smae -d smae_dev_persistent -f /tmp/seu_backup.sql
+```
+
+Lembre-se de substituir `seu_backup.sql` pelo nome do arquivo que você copiou e `smae_dev_persistent`  pelo nome do seu banco de dados, caso seja diferente.
+
+5. **Saia do container:**
+
+```bash
+exit
+```
+
 
 # Licença
 

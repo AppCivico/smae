@@ -19,6 +19,7 @@ import {
 } from './dto/create-variavel.dto';
 import { FilterVariavelDto, FilterVariavelGlobalDto } from './dto/filter-variavel.dto';
 import {
+    ListPdmSimplesDto,
     ListSeriesAgrupadas,
     ListVariavelDto,
     VariavelDetailComAuxiliaresDto,
@@ -148,6 +149,13 @@ export class VariavelGlobalController {
     ];
 
     constructor(private readonly variavelService: VariavelService) {}
+
+    @Get('proxy/pdm-e-planos-setoriais')
+    @ApiBearerAuth('access-token')
+    @Roles([...ROLES_ACESSO_VARIAVEL_PS])
+    async listAllPDMs(): Promise<ListPdmSimplesDto> {
+        return { linhas: await this.variavelService.findAllPdms() };
+    }
 
     @Post('variavel')
     @ApiBearerAuth('access-token')

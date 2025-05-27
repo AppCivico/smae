@@ -59,7 +59,7 @@ const rotasParaMenuSecundário = (nível) => {
     case 'meta':
     default:
       rotasDoPdm = [
-        'meta',
+        'pdm.meta',
         'painelDaMeta',
         'evoluçãoDaMeta',
         'cronogramaDaMeta',
@@ -96,23 +96,31 @@ export default {
       'CadastroMeta.orcamento',
     ],
     entidadeMãe: 'pdm',
-    presenteNoMenu: true,
     título: 'Metas',
     íconeParaMenu: `<svg width="19" height="22" viewBox="0 0 19 22" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
 <path fill-rule="evenodd" clip-rule="evenodd" d="M15 0H8C7.46957 0 6.96086 0.210712 6.58578 0.585785C6.21071 0.960858 6 1.46957 6 2V14C6 14.5304 6.21071 15.0391 6.58578 15.4142C6.96086 15.7893 7.46957 16 8 16H17C17.5304 16 18.0391 15.7893 18.4142 15.4142C18.7893 15.0391 19 14.5304 19 14V4L15 0ZM17 14H8V2H13V6H17V14Z" />
 <path d="M5 5H3V17C3 17.5304 3.21071 18.0391 3.58578 18.4142C3.96086 18.7893 4.46957 19 5 19H14V17H5V5Z" />
 <path d="M0 8H2V20H11V22H2C1.46957 22 0.960858 21.7893 0.585785 21.4142C0.210712 21.0391 0 20.5304 0 20V8Z" />
 </svg>`,
-    pesoNoMenu: 2,
   },
 
   children: [
     { path: '', component: ListMetas, name: 'pdm.metas' },
     {
-      path: 'novo', component: AddEditMetas, props: { type: 'novo', parentPage: 'metas' }, meta: { rotaDeEscape: 'pdm.metas' },
+      path: 'novo',
+      component: AddEditMetas,
+      props: { type: 'novo', parentPage: 'metas' },
+      meta: { rotaDeEscape: 'pdm.metas' },
     },
     {
-      path: 'editar/:meta_id', component: AddEditMetas, props: { type: 'editar', parentPage: 'meta' }, meta: { rotaDeEscape: 'meta' },
+      path: 'editar/:meta_id',
+      name: 'pdm.editarMeta',
+      component: AddEditMetas,
+      props: {
+        type: 'editar',
+        parentPage: 'meta',
+      },
+      meta: { rotaDeEscape: 'meta' },
     },
     { path: 'macrotemas/novo', component: ListMetas, props: { type: 'novo', group: 'macrotemas', parentPage: 'metas' } },
     { path: 'subtemas/novo', component: ListMetas, props: { type: 'novo', group: 'subtemas', parentPage: 'metas' } },
@@ -127,7 +135,7 @@ export default {
     { path: 'tags/:id', component: ListMetasGroup, props: { type: 'list', group: 'tags', parentPage: 'metas' } },
     {
       path: ':meta_id',
-      name: 'meta',
+      name: 'pdm.meta',
       component: SingleMeta,
       meta: {
         títuloParaMenu: 'Resumo',
@@ -347,6 +355,7 @@ export default {
     {
       path: ':meta_id/cronograma/novo',
       component: AddEditCronograma,
+      name: 'pdm.faseCronograma.novo',
       meta: {
         rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
       },
@@ -354,11 +363,13 @@ export default {
     {
       path: ':meta_id/cronograma/:cronograma_id',
       component: AddEditCronograma,
+      name: 'pdm.faseCronograma.editar',
       meta: {
         rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
       },
     },
     {
+      name: 'pdm.etapaCronograma.novo',
       path: ':meta_id/cronograma/:cronograma_id/etapas/novo',
       component: SingleCronograma,
       props: { group: 'etapas' },
@@ -367,6 +378,7 @@ export default {
       },
     },
     {
+      name: 'pdm.etapaCronograma.editar',
       path: ':meta_id/cronograma/:cronograma_id/etapas/:etapa_id',
       component: SingleCronograma,
       props: { group: 'etapas' },
@@ -375,6 +387,7 @@ export default {
       },
     },
     {
+      name: 'pdm.faseCronograma.novo',
       path: ':meta_id/cronograma/:cronograma_id/etapas/:etapa_id/novo',
       component: SingleCronograma,
       props: { group: 'fase' },
@@ -383,6 +396,7 @@ export default {
       },
     },
     {
+      name: 'pdm.faseCronograma.editar',
       path: ':meta_id/cronograma/:cronograma_id/etapas/:etapa_id/:fase_id',
       component: SingleCronograma,
       props: { group: 'fase' },
@@ -391,6 +405,7 @@ export default {
       },
     },
     {
+      name: 'pdm.subfaseCronograma.novo',
       path: ':meta_id/cronograma/:cronograma_id/etapas/:etapa_id/:fase_id/novo',
       component: SingleCronograma,
       props: { group: 'subfase' },
@@ -399,6 +414,7 @@ export default {
       },
     },
     {
+      name: 'pdm.subfaseCronograma.editar',
       path: ':meta_id/cronograma/:cronograma_id/etapas/:etapa_id/:fase_id/:subfase_id',
       component: SingleCronograma,
       props: { group: 'subfase' },
