@@ -1456,7 +1456,6 @@ export class VariavelService {
                     pode_editar = false;
                     pode_editar_valor = false;
                 }
-
                 if (r.variavel_mae_id) pode_editar = false;
 
                 return {

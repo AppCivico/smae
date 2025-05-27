@@ -197,9 +197,6 @@ BEGIN
         v_base_date := (v_ultimo_periodo_valido + v_registro.intervalo_atraso)::date;
         --raise notice 'v_base_date após %', v_base_date;
 
-        v_base_date := (v_ultimo_periodo_valido + v_registro.intervalo_atraso)::date;
-        --raise notice 'v_base_date após %', v_base_date;
-
         IF (v_fase_corrente = 'Preenchimento') THEN
             v_prazo := date_trunc('month', v_base_date) + ((v_registro.periodo_preenchimento[2]) || ' days')::interval;
         ELSIF (v_fase_corrente = 'Validacao') THEN
