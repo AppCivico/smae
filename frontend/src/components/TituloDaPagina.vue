@@ -19,10 +19,6 @@ defineProps({
     type: String,
     default: '',
   },
-  titulo: {
-    type: String,
-    default: '',
-  },
 });
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;

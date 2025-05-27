@@ -1,11 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import SmaeTooltip from '../SmaeTooltip/SmaeTooltip.vue';
 import buscarDadosDoYup from './helpers/buscarDadosDoYup';
-
-defineOptions({
-  inheritAttrs: false,
-});
+import SmaeTooltip from '../SmaeTooltip/SmaeTooltip.vue';
 
 type Slots = {
   default(props: { label: string }): void
@@ -73,7 +69,6 @@ const temInformacao = computed<boolean>(() => {
     :for="as !== 'label'
       ? undefined
       : name || $attrs.for || null"
-    v-bind="$attrs"
   >
     <slot name="prepend" />
 
@@ -114,12 +109,6 @@ const temInformacao = computed<boolean>(() => {
       </template>
     </slot>
     <slot name="append" />
-    <span
-      v-ScrollLockDebug
-      style="text-transform: none; font-weight: normal;"
-    >
-      {{ $props.name }}
-    </span>
   </component>
 </template>
 

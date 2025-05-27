@@ -13,16 +13,13 @@
     />
   </KeepAlive>
   <!-- @link https://stackoverflow.com/a/51033863/15425845 -->
-
-  <Teleport to="body">
-    <div
-      ref="elementoPainelFlutuante"
-      class="painel-flutuante__conteudo"
-      hidden
-    >
-      <component :is="() => conteudoPainelFlutuante" />
-    </div>
-  </Teleport>
+  <div
+    ref="elementoPainelFlutuante"
+    class="painel-flutuante__conteudo"
+    hidden
+  >
+    <component :is="() => conteudoPainelFlutuante" />
+  </div>
 </template>
 <script setup>
 import marcadorLaranja from '@/assets/icons/mapas/map-pin--laranja.svg';
