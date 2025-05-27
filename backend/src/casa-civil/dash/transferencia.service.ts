@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { NotaService } from '../../bloco-nota/nota/nota.service';
@@ -194,16 +194,36 @@ export class DashTransferenciaService {
     ): Promise<DashAnaliseTranferenciasChartsDto> {
         const rows = await this.prisma.viewTransferenciaAnalise.findMany({
             where: {
-                parlamentar_id: filter.parlamentar_ids ? { in: filter.parlamentar_ids } : undefined,
+                parlamentar_id: filter.parlamentar_ids ? { hasSome: filter.parlamentar_ids } : undefined,
                 ano: filter.anos ? { in: filter.anos } : undefined,
-                partido_id: filter.partido_ids ? { in: filter.partido_ids } : undefined,
+                partido_id: filter.partido_ids ? { hasSome: filter.partido_ids } : undefined,
                 workflow_etapa_atual_id: filter.etapa_ids ? { in: filter.etapa_ids } : undefined,
+            },
+            include: {
+                transferencia: {
+                    include: {
+                        parlamentar: {
+                            select: {
+                                parlamentar_id: true,
+                                valor: true,
+                                partido: {
+                                    select: {
+                                        id: true,
+                                        sigla: true,
+                                        nome: true,
+                                        numero: true,
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
             },
         });
 
         const partidosRows = await this.prisma.partido.findMany({
             where: {
-                id: { in: rows.filter((r) => r.partido_id != null).map((r) => r.partido_id!) },
+                id: { in: rows.flatMap((r) => r.partido_id).filter((id) => id != null) },
             },
             select: {
                 id: true,
@@ -284,17 +304,13 @@ export class DashTransferenciaService {
             xAxis: { type: 'value' },
             yAxis: {
                 type: 'category',
-                data: ['Prejudicadas', 'Concluídas', 'Em Andamento', 'Disponibilizadas'],
+                data: ['Concluídas', 'Em Andamento', 'Disponibilizadas'],
             },
             series: [
                 {
                     type: 'bar',
                     barWidth: '20%',
                     data: [
-                        {
-                            value: uniqueTransferencias.filter((e) => e.prejudicada == true).length.toString(),
-                            itemStyle: { color: '#8AC4D6' },
-                        },
                         {
                             value: uniqueTransferencias.filter((e) => e.workflow_finalizado == true).length.toString(),
                             itemStyle: { color: '#B5E48C' },
@@ -312,45 +328,70 @@ export class DashTransferenciaService {
             ],
         };
 
-        const dadosPorPartido = partidosRows
-            .map((partido) => {
-                const etapasSoma = uniqueTransferencias
-                    .filter((r) => r.partido_id === partido.id && r.workflow_etapa_atual_id !== null)
-                    .reduce(
-                        (acc, curr) => {
-                            const etapaId = curr.workflow_etapa_atual_id!;
-                            const valor = Number(curr.valor_total);
+        const dadosPorPartido = partidosRows.map((partido) => {
+            const etapasSoma = uniqueTransferencias
+                .filter((r) => r.partido_id.includes(partido.id) && r.workflow_etapa_atual_id !== null)
+                .reduce(
+                    (acc, curr) => {
+                        const etapaId = curr.workflow_etapa_atual_id!;
 
-                            const existingObjIndex = acc.findIndex((obj) => obj.workflow_etapa_atual_id === etapaId);
+                        // Distribuição pode ter múltiplos parlamentares, e com partidos diferentes ou iguais.
+                        const valor = Number(
+                            curr.transferencia.parlamentar
+                                .filter((p) => p.partido?.id == partido.id)
+                                .reduce((sum, current) => sum + (Number(current.valor) ?? 0), 0)
+                        );
+                        if (!valor)
+                            throw new InternalServerErrorException(
+                                'Valor não encontrado para o partido: ' + partido.sigla
+                            );
 
-                            if (existingObjIndex !== -1) {
-                                acc[existingObjIndex].sum += valor;
-                            } else {
-                                acc.push({ workflow_etapa_atual_id: etapaId, sum: valor });
-                            }
-                            return acc;
-                        },
-                        [] as { workflow_etapa_atual_id: number; sum: number }[]
-                    );
+                        const existingObjIndex = acc.findIndex((obj) => obj.workflow_etapa_atual_id === etapaId);
 
-                return {
-                    sigla: partido.sigla,
-                    count_estadual: uniqueTransferencias
-                        .filter((r) => r.partido_id == partido.id)
-                        .filter((r) => r.esfera == TransferenciaTipoEsfera.Estadual).length,
-                    count_federal: uniqueTransferencias
-                        .filter((r) => r.partido_id == partido.id)
-                        .filter((r) => r.esfera == TransferenciaTipoEsfera.Federal).length,
-                    count_all: uniqueTransferencias.filter((r) => r.partido_id == partido.id).length,
-                    valor: uniqueTransferencias
-                        .filter((r) => r.partido_id == partido.id)
-                        .reduce((sum, current) => sum + +current.valor_total, 0),
+                        if (existingObjIndex !== -1) {
+                            acc[existingObjIndex].sum += valor;
+                        } else {
+                            acc.push({ workflow_etapa_atual_id: etapaId, sum: valor });
+                        }
+                        return acc;
+                    },
+                    [] as { workflow_etapa_atual_id: number; sum: number }[]
+                );
 
-                    etapas: etapasSoma.sort((a, b) => b.sum - a.sum),
-                    valor_etapas: etapasSoma.reduce((acc, curr) => acc + curr.sum, 0),
-                };
-            })
-            .sort((a, b) => b.valor - a.valor);
+            return {
+                sigla: partido.sigla,
+                count_estadual: uniqueTransferencias
+                    .filter((r) => r.partido_id.includes(partido.id))
+                    .filter((r) => r.esfera == TransferenciaTipoEsfera.Estadual).length,
+                count_federal: uniqueTransferencias
+                    .filter((r) => r.partido_id.includes(partido.id))
+                    .filter((r) => r.esfera == TransferenciaTipoEsfera.Federal).length,
+                count_all: uniqueTransferencias.filter((r) => r.partido_id.includes(partido.id)).length,
+                valor: uniqueTransferencias
+                    .filter((r) => r.partido_id.includes(partido.id))
+                    .reduce((sum, current) => sum + +current.valor_total, 0),
+
+                etapas: etapasSoma.sort((a, b) => b.sum - a.sum),
+                valor_etapas: etapasSoma.reduce((acc, curr) => acc + curr.sum, 0),
+            };
+        });
+
+        // Adicionando item de "partido indefinido" para transferências sem partido
+        dadosPorPartido.push({
+            sigla: 'Partido Indefinido',
+            count_estadual: uniqueTransferencias
+                .filter((r) => r.partido_id.length == 0)
+                .filter((r) => r.esfera == TransferenciaTipoEsfera.Estadual).length,
+            count_federal: uniqueTransferencias
+                .filter((r) => r.partido_id.length == 0)
+                .filter((r) => r.esfera == TransferenciaTipoEsfera.Federal).length,
+            count_all: uniqueTransferencias.filter((r) => r.partido_id.length == 0).length,
+            valor: uniqueTransferencias
+                .filter((r) => r.partido_id.length == 0)
+                .reduce((sum, current) => sum + +current.valor_total, 0),
+            etapas: [],
+            valor_etapas: 0,
+        });
 
         const chartNroPorPartido: DashTransferenciaBasicChartDto = {
             title: {
@@ -606,22 +647,41 @@ export class DashTransferenciaService {
             parlamentar_foto_id: number | null;
             count: number;
             valor: Decimal;
-        }[] = await this.prisma.$queryRaw`SELECT
+        }[] = await this.prisma.$queryRaw`WITH ranked_parlamentares AS (
+        SELECT
             t.parlamentar_id,
             p.nome_popular,
-            count(1) AS count,
-            SUM(valor_total) AS valor,
-            p.foto_upload_id AS parlamentar_foto_id
+            COUNT(1) AS count,
+            SUM(tp.valor) AS valor,
+            p.foto_upload_id AS parlamentar_foto_id,
+            DENSE_RANK() OVER (ORDER BY SUM(tp.valor) DESC) AS rank
         FROM (
             SELECT DISTINCT ON (transferencia_id) * FROM view_transferencia_analise
         ) AS t
-        JOIN transferencia_parlamentar tp ON tp.transferencia_id = t.transferencia_id AND tp.removido_em IS NULL
-        JOIN parlamentar p ON tp.parlamentar_id = p.id AND p.removido_em IS NULL
-        WHERE t.parlamentar_id IS NOT NULL
-        AND t.transferencia_id = ANY ( ${transferenciaIds} )
-        GROUP BY t.parlamentar_id, p.foto_upload_id, p.nome_popular
-        ORDER BY valor DESC
-        LIMIT 3`;
+        JOIN transferencia_parlamentar tp 
+            ON tp.transferencia_id = t.transferencia_id 
+            AND tp.removido_em IS NULL
+        JOIN parlamentar p 
+            ON tp.parlamentar_id = p.id 
+            AND p.removido_em IS NULL
+        WHERE 
+            t.parlamentar_id IS NOT NULL 
+            AND tp.valor IS NOT NULL
+            AND t.transferencia_id = ANY (${transferenciaIds})
+        GROUP BY 
+            t.parlamentar_id, 
+            p.foto_upload_id, 
+            p.nome_popular
+    )
+    SELECT 
+        parlamentar_id,
+        nome_popular,
+        parlamentar_foto_id,
+        count,
+        valor
+    FROM ranked_parlamentares
+    WHERE rank <= 3
+    ORDER BY valor DESC`;
 
         return {
             valor_total: valorTotal,
@@ -673,9 +733,9 @@ export class DashTransferenciaService {
 
         const rows = await this.prisma.viewTransferenciaAnalise.findMany({
             where: {
-                parlamentar_id: filter.parlamentar_ids ? { in: filter.parlamentar_ids } : undefined,
+                parlamentar_id: filter.parlamentar_ids ? { hasSome: filter.parlamentar_ids } : undefined,
                 ano: filter.anos ? { in: filter.anos } : undefined,
-                partido_id: filter.partido_ids ? { in: filter.partido_ids } : undefined,
+                partido_id: filter.partido_ids ? { hasSome: filter.partido_ids } : undefined,
                 workflow_etapa_atual_id: filter.etapa_ids ? { in: filter.etapa_ids } : undefined,
             },
             distinct: ['transferencia_id'],
@@ -834,9 +894,9 @@ export class DashTransferenciaService {
         const rows = await this.prisma.viewTransferenciaAnalise.findMany({
             distinct: ['transferencia_id'],
             where: {
-                parlamentar_id: filter.parlamentar_ids ? { in: filter.parlamentar_ids } : undefined,
+                parlamentar_id: filter.parlamentar_ids ? { hasSome: filter.parlamentar_ids } : undefined,
                 ano: filter.anos ? { in: filter.anos } : undefined,
-                partido_id: filter.partido_ids ? { in: filter.partido_ids } : undefined,
+                partido_id: filter.partido_ids ? { hasSome: filter.partido_ids } : undefined,
                 workflow_etapa_atual_id: filter.etapa_ids ? { in: filter.etapa_ids } : undefined,
             },
         });

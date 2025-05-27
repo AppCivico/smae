@@ -6732,10 +6732,10 @@ view ViewTransferenciaAnalise {
 
     workflow_finalizado     Boolean
     ano                     Int
-    partido_id              Int?
+    partido_id              Int[]
     workflow_etapa_atual_id Int?
     workflow_fase_atual_id  Int?
-    parlamentar_id          Int?
+    parlamentar_id          Int[]
     valor_total             Decimal
 
     distribuicao_orgao_id    Int?
