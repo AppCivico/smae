@@ -1,3 +1,4 @@
+import gerarId from '@/helpers/texto/gerarId';
 import { defineStore } from 'pinia';
 
 export const useAlertStore = defineStore('alert', {
@@ -11,7 +12,7 @@ export const useAlertStore = defineStore('alert', {
     },
     success(message) {
       this.alertas.push({
-        id: crypto?.randomUUID(),
+        id: gerarId(),
         message,
         type: 'alert-success',
       });
@@ -19,14 +20,14 @@ export const useAlertStore = defineStore('alert', {
     error(message, ignorarDuplicadas = true) {
       if (ignorarDuplicadas && this.alertas.some((v) => v.message === message && v.type === 'alert-danger')) return;
       this.alertas.push({
-        id: crypto?.randomUUID(),
+        id: gerarId(),
         message,
         type: 'alert-danger',
       });
     },
     confirm(message, url) {
       this.alertas.push({
-        id: crypto?.randomUUID(),
+        id: gerarId(),
         message,
         url,
         type: 'confirm',
@@ -34,7 +35,7 @@ export const useAlertStore = defineStore('alert', {
     },
     confirmAction(message, callback, label, fallback) {
       this.alertas.push({
-        id: crypto?.randomUUID(),
+        id: gerarId(),
         message,
         callback,
         type: 'confirmAction',
