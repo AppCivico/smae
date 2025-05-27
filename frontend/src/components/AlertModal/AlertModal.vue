@@ -25,7 +25,8 @@ async function removerAlerta(i) {
       dialogos.value[i].close();
     }
 
-    nextTick().then(alertas.value.splice(i, 1));
+    await nextTick();
+    alertas.value.splice(i, 1);
   }
 }
 
@@ -34,7 +35,8 @@ async function callbackFn(i) {
     await alertas.value[i].callback();
   }
 
-  nextTick().then(removerAlerta(i));
+  await nextTick();
+  removerAlerta(i);
 }
 
 async function fallbackFn(i) {
@@ -42,7 +44,8 @@ async function fallbackFn(i) {
     await alertas.value[i].fallback();
   }
 
-  nextTick().then(removerAlerta(i));
+  await nextTick();
+  removerAlerta(i);
 }
 
 watch(ultimoDialogo, (novoDialogo) => {

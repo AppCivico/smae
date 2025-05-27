@@ -234,6 +234,8 @@ describe('AlertModal', () => {
 
     await botaoDeEscape.trigger('click');
 
+    await nextTick();
+
     expect(spyCallback).not.toHaveBeenCalled();
     expect(spyFallback).toHaveBeenCalled();
 
@@ -281,7 +283,12 @@ describe('AlertModal', () => {
 
     await nextTick();
 
-    const dialogos = envelope.findAll('dialog');
+    let dialogos = envelope.findAll('dialog');
+    expect(dialogos).toHaveLength(2);
+
+    await nextTick();
+
+    dialogos = envelope.findAll('dialog');
 
     expect(dialogos).toHaveLength(1);
     expect(dialogos[0].get('[data-test="mensagem"]').text()).toBe('Segundo diálogo!');
