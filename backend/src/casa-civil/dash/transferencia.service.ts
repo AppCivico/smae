@@ -207,26 +207,11 @@ export class DashTransferenciaService {
                                 fase: true, // if null, set 'Workflow Não Iniciado'
                             },
                         },
-                        distribuicao_recursos: {
-                            where: {
-                                removido_em: null,
-                            },
-                            select: {
-                                parlamentares: {
-                                    where: {
-                                        removido_em: null,
-                                    },
-                                    select: {
-                                        partido_id: true,
-                                        valor: true,
-                                    },
-                                },
-                            },
-                        },
                         parlamentar: {
                             select: {
                                 parlamentar_id: true,
                                 valor: true,
+                                partido_id: true,
                                 partido: {
                                     select: {
                                         id: true,
@@ -269,35 +254,32 @@ export class DashTransferenciaService {
 
             uniqueTransferencias.forEach((transferencia) => {
                 const fase = transferencia.transferencia.workflow_fase_atual?.fase || 'Workflow Não Iniciado';
-
-                transferencia.transferencia.distribuicao_recursos.forEach((distribuicao) => {
-                    distribuicao.parlamentares.forEach((parlamentar) => {
-                        if (parlamentar.valor && Number(parlamentar.valor) > 0) {
-                            let partidoSigla = 'N/A';
-                            if (parlamentar.partido_id) {
-                                const partido = partidosRows.find((p) => p.id === parlamentar.partido_id);
-                                partidoSigla = partido?.sigla || 'N/A';
-                            }
-
-                            if (!partidoData.has(partidoSigla)) {
-                                partidoData.set(partidoSigla, {
-                                    sigla: partidoSigla,
-                                    fases: new Map<string, number>(),
-                                    total: 0,
-                                });
-                            }
-
-                            const partido = partidoData.get(partidoSigla)!;
-                            const valor = Number(parlamentar.valor);
-
-                            // Adiciona o valor à fase correspondente
-                            const currentPhaseValue = partido.fases.get(fase) || 0;
-                            partido.fases.set(fase, currentPhaseValue + valor);
-
-                            // soma o valor total do partido
-                            partido.total += valor;
+                transferencia.transferencia.parlamentar.forEach((parlamentar) => {
+                    if (parlamentar.valor && Number(parlamentar.valor) > 0) {
+                        let partidoSigla = 'N/A';
+                        if (parlamentar.partido_id) {
+                            const partido = partidosRows.find((p) => p.id === parlamentar.partido_id);
+                            partidoSigla = partido?.sigla || 'N/A';
                         }
-                    });
+
+                        if (!partidoData.has(partidoSigla)) {
+                            partidoData.set(partidoSigla, {
+                                sigla: partidoSigla,
+                                fases: new Map<string, number>(),
+                                total: 0,
+                            });
+                        }
+
+                        const partido = partidoData.get(partidoSigla)!;
+                        const valor = Number(parlamentar.valor);
+
+                        // Adiciona o valor à fase correspondente
+                        const currentPhaseValue = partido.fases.get(fase) || 0;
+                        partido.fases.set(fase, currentPhaseValue + valor);
+
+                        // soma o valor total do partido
+                        partido.total += valor;
+                    }
                 });
             });
 
@@ -521,6 +503,7 @@ export class DashTransferenciaService {
 
             return Array.from(transferenciasAgrupadas.values());
         })();
+        console.log(dadosPorPartidoAgrupado);
 
         const chartNroPorPartido: DashTransferenciaBasicChartDto = {
             title: {
