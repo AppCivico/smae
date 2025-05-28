@@ -32,14 +32,18 @@ function alternaExpandido() {
   }
 }
 
-function atualizarLido(linha, lido) {
-  linha.lido = lido;
+async function atualizarLido(linha, lido) {
+  try {
+    await distribuicaoRecursosStore.selectionarSeiLido({
+      id: props.distribuicao.transferencia_id,
+      processoSei: linha.integracao_sei.processo_sei,
+      lido,
+    });
 
-  distribuicaoRecursosStore.selectionarSeiLido({
-    id: props.distribuicao.transferencia_id,
-    processoSei: linha.integracao_sei.processo_sei,
-    lido,
-  });
+    linha.lido = lido;
+  } catch {
+    linha.lido = false;
+  }
 }
 
 const recursoFinanceiroValores = computed(() => {
