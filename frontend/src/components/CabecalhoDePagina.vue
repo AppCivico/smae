@@ -31,15 +31,14 @@ defineProps({
 </script>
 <style scoped lang="less">
 .cabecalho > {
-  * {
-    max-width: max-content;
+  :deep(*) {
+    max-width: fit-content;
     width: fit-content;
     flex-grow: 1;
   }
 
-  h1 {
+  :deep(h1) {
     flex-basis: min-content;
-    max-width: fit-content;
   }
 
   hr {
