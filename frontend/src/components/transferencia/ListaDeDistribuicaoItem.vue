@@ -1,14 +1,13 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import { ref, defineProps, computed } from 'vue';
+import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import TransitionExpand from '@/components/TransitionExpand.vue';
 import dinheiro from '@/helpers/dinheiro';
+import dateToDate from '@/helpers/dateToDate';
 import dateToField from '@/helpers/dateToField';
-import combinadorDeListas from '@/helpers/combinadorDeListas.ts';
-import dateToDate, { dateToShortDate, localizarData, localizarDataHorario } from '@/helpers/dateToDate';
 import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
-import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 
 const props = defineProps({
   distribuicao: {
@@ -18,13 +17,10 @@ const props = defineProps({
   },
 });
 
-const TransferenciasVoluntarias = useTransferenciasVoluntariasStore();
-const { emFoco: transferenciaEmFoco } = storeToRefs(TransferenciasVoluntarias);
-
-const distribuicaoRecursos = useDistribuicaoRecursosStore();
+const distribuicaoRecursosStore = useDistribuicaoRecursosStore();
 const {
   chamadasPendentes: distribuicoesPendentes,
-} = storeToRefs(distribuicaoRecursos);
+} = storeToRefs(distribuicaoRecursosStore);
 
 const resumoCompleto = ref(null);
 const estaExpandido = ref(false);
@@ -36,12 +32,14 @@ function alternaExpandido() {
   }
 }
 
-function removeParlamentaresSemValor(distribuicao) {
-  if (!distribuicao.parlamentares.length) {
-    return [];
-  }
+function atualizarLido(linha, lido) {
+  linha.lido = lido;
 
-  return distribuicao.parlamentares.filter((parlamentar) => Number(parlamentar.valor));
+  distribuicaoRecursosStore.selectionarSeiLido({
+    id: props.distribuicao.transferencia_id,
+    processoSei: linha.integracao_sei.processo_sei,
+    lido,
+  });
 }
 
 const recursoFinanceiroValores = computed(() => {
@@ -61,6 +59,23 @@ const recursoFinanceiroValores = computed(() => {
     { label: 'Investimento', porcentagem: props.distribuicao.pct_investimento, valor: dinheiro(props.distribuicao.investimento) },
   ];
 });
+
+const registrosSei = computed(() => {
+  if (!props.distribuicao.registros_sei) {
+    return [];
+  }
+
+  const data = props.distribuicao.registros_sei.map((item) => {
+    if (item.integracao_sei && typeof item.integracao_sei.json_resposta === 'string') {
+      item.integracao_sei.json_resposta = JSON.parse(item.integracao_sei.json_resposta);
+    }
+
+    return item;
+  });
+
+  return data;
+});
+
 </script>
 
 <template>
@@ -290,125 +305,88 @@ const recursoFinanceiroValores = computed(() => {
               </div>
             </div>
 
-            <table
-              v-if="distribuicao.registros_sei?.length"
-              class="tablemain no-zebra horizontal-lines mb1"
+            <SmaeTable
+              v-if="registrosSei?.length"
+              :dados="registrosSei"
+              rolagem-horizontal
+              titulo="Números SEI"
+              :colunas="[
+                {
+                  chave: 'processo_sei',
+                  label: 'Código SEI',
+                  ehCabecalho: true,
+                },
+                {
+                  chave: 'integracao_sei.relatorio_sincronizado_em',
+                  label: 'data sincronização',
+                  formatador: dateToDate
+                },
+                {
+                  chave: 'integracao_sei.sei_atualizado_em',
+                  label: 'Data última alteração',
+                  formatador: dateToDate
+                },
+                {
+                  chave: 'integracao_sei.json_resposta.ultimo_andamento.data',
+                  label: 'Data último andamento',
+                  formatador: dateToDate
+                },
+                {
+                  chave: 'integracao_sei.json_resposta.ultimo_andamento.unidade.sigla',
+                  label: 'unidade',
+                },
+                {
+                  chave: 'integracao_sei.json_resposta.ultimo_andamento.usuario.nome',
+                  label: 'usuário'
+                },
+                {
+                  chave: 'lido',
+                  label: 'não lido'
+                },
+                {
+                  chave: 'link',
+                },
+              ]"
             >
-              <caption class="t16 w700 mb05 tamarelo tl">
-                Números SEI
-              </caption>
+              <template #titulo>
+                <caption class="t16 w700 mb05 tamarelo tl">
+                  Números SEI
+                </caption>
+              </template>
 
-              <colgroup>
-                <col class="col--botão-de-ação">
-                <col>
-                <col class="col--dataHora">
-                <col class="col--dataHora">
-                <col class="col--data">
-                <col>
-                <col>
-                <col>
-                <col class="col--botão-de-ação">
-              </colgroup>
-              <thead>
-                <tr>
-                  <th />
-                  <th class="cell--nowrap">
-                    Código
-                  </th>
-                  <th>Tipo</th>
-                  <th>Especificação</th>
-                  <th>Alteração</th>
-                  <th>Andamento</th>
-                  <th>Unidade</th>
-                  <th>Usuário SEI</th>
-                  <th>Lido</th>
-                  <th />
-                </tr>
-              </thead>
+              <template #celula:lido="{ linha }">
+                <label>
+                  <input
+                    v-if="linha.integracao_sei"
+                    type="checkbox"
+                    class="interruptor"
+                    :checked="linha.lido"
+                    :aria-disabled="!linha.integracao_sei"
+                    @input="ev => atualizarLido(linha, ev.target.checked)"
+                  >
+                </label>
+              </template>
 
-              <tbody class="transferencia-sei-body">
-                <tr
-                  v-for="registro, idx in distribuicao.registros_sei"
-                  :key="idx"
-                  class="transferencia-sei-body__item"
-                >
-                  <td>
-                    <span
-                      v-if="registro?.integracao_sei?.relatorio_sincronizado_em"
-                      class="tipinfo right"
+              <template #celula:link="{ linha }">
+                <span>
+                  <SmaeLink
+                    v-if="linha.integracao_sei?.link"
+                    :to="linha.integracao_sei?.link"
+                    title="Abrir no site do SEI"
+                    @click="atualizarLido(linha, true)"
+                  >
+                    <svg
+                      width="20"
+                      height="20"
                     >
-                      <svg
-                        width="24"
-                        height="24"
-                        color="#F2890D"
-                      >
-                        <use xlink:href="#i_i" />
-                      </svg>
-
-                      <div>
-                        Sincronização:
-                        {{
-                          localizarDataHorario(registro?.integracao_sei?.relatorio_sincronizado_em)
-                        }}
-                      </div>
-                    </span>
-                  </td>
-                  <th class="cell--nowrap">
-                    {{ registro?.processo_sei }}
-                  </th>
-                  <th>{{ registro?.integracao_sei?.json_resposta?.tipo }}</th>
-                  <th>{{ registro?.integracao_sei?.json_resposta?.especificacao }}</th>
-                  <td>
-                    {{ localizarDataHorario(registro?.integracao_sei?.sei_atualizado_em) }}
-                  </td>
-                  <td>
-                    {{ localizarData(registro?.integracao_sei?.processado?.ultimo_andamento_em) }}
-                  </td>
-                  <td>
-                    {{ registro?.integracao_sei?.processado?.ultimo_andamento_unidade?.descricao }}
-                    -
-                    {{ registro?.integracao_sei?.processado?.ultimo_andamento_unidade?.sigla }}
-                  </td>
-                  <td>{{ registro?.integracao_sei?.processado?.ultimo_andamento_por?.nome }}</td>
-                  <td>
-                    <label
-                      v-if="registro.integracao_sei"
-                      class="transferencia-sei-body__item--lido flex column g05 start"
-                    >
-                      {{ registro.lido ? "Lido" : "Não lido" }}
-                      <input
-                        type="checkbox"
-                        class="interruptor"
-                        :checked="registro.lido"
-                        @input="atualizaSeiLido(
-                          registro,
-                          distribuicao.id,
-                          $event.target.checked
-                        )"
-                      >
-                    </label>
-                  </td>
-                  <td>
-                    <SmaeLink
-                      v-if="registro?.integracao_sei?.link"
-                      :to="registro?.integracao_sei?.link"
-                      title="Abrir no site do SEI"
-                      @click="atualizaSeiLido(registro, distribuicao.transferencia_id, true)"
-                    >
-                      <svg
-                        width="20"
-                        height="20"
-                      >
-                        <use xlink:href="#i_link" />
-                      </svg>
-                    </SmaeLink>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-
+                      <use xlink:href="#i_link" />
+                    </svg>
+                  </SmaeLink>
+                </span>
+              </template>
+            </SmaeTable>
             <div>
-              <div class="flex g1 mb2">
+              <div class="flex g1 mt1 mb2">
                 <dl class="f1">
                   <dt class="t16 w700 mb05 tamarelo">
                     Número proposta
