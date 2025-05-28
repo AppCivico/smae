@@ -230,6 +230,8 @@ export class DashTransferenciaService {
                 sigla: true,
             },
         });
+        console.dir(['rows', rows], { depth: 4 });
+        console.dir(['partidosRows', partidosRows], { depth: 4 });
 
         const uniqueTransferencias = rows.filter((elem, index, self) => {
             return index === self.findIndex((t) => t.transferencia_id === elem.transferencia_id);
@@ -375,6 +377,7 @@ export class DashTransferenciaService {
                 valor_etapas: etapasSoma.reduce((acc, curr) => acc + curr.sum, 0),
             };
         });
+        console.dir(['dadosPorPartido', dadosPorPartido], { depth: 4 });
 
         // Adicionando item de "partido indefinido" para transferências sem partido
         dadosPorPartido.push({
@@ -392,6 +395,55 @@ export class DashTransferenciaService {
             etapas: [],
             valor_etapas: 0,
         });
+        const dadosPorPartidoAgrupado = (() => {
+            // Agrupa as transferências por sigla de partido, chave é o partido "sigla"
+            const transferenciasAgrupadas = new Map<
+                string,
+                {
+                    sigla: string;
+                    transferencias_estadual: number;
+                    transferencias_federal: number;
+                    transferencias_total: number;
+                    valor_total: number;
+                }
+            >();
+
+            uniqueTransferencias.forEach((transferencia) => {
+                // Cria uma lista de siglas de partidos para a transferência atual
+                const partidoSiglas = transferencia.partido_id
+                    .map((partidoId) => partidosRows.find((p) => p.id === partidoId)?.sigla)
+                    .filter((sigla) => sigla !== undefined)
+                    .sort();
+
+                // Gera uma chave única para o grupo de partidos
+                const chavePartidos = partidoSiglas.length > 0 ? partidoSiglas.join('/') : 'Partido Indefinido';
+
+                if (!transferenciasAgrupadas.has(chavePartidos)) {
+                    transferenciasAgrupadas.set(chavePartidos, {
+                        sigla: chavePartidos,
+                        transferencias_estadual: 0,
+                        transferencias_federal: 0,
+                        transferencias_total: 0,
+                        valor_total: 0,
+                    });
+                }
+
+                const grupo = transferenciasAgrupadas.get(chavePartidos)!;
+
+                // por esfera
+                if (transferencia.esfera === TransferenciaTipoEsfera.Estadual) {
+                    grupo.transferencias_estadual++;
+                } else if (transferencia.esfera === TransferenciaTipoEsfera.Federal) {
+                    grupo.transferencias_federal++;
+                }
+
+                grupo.transferencias_total++;
+                grupo.valor_total += Number(transferencia.valor_total);
+            });
+
+            return Array.from(transferenciasAgrupadas.values());
+        })();
+        console.log(dadosPorPartidoAgrupado);
 
         const chartNroPorPartido: DashTransferenciaBasicChartDto = {
             title: {
@@ -421,9 +473,9 @@ export class DashTransferenciaService {
             },
             xAxis: {
                 type: 'category',
-                data: dadosPorPartido
-                    .filter((e) => e.count_all != 0)
-                    .sort((a, b) => b.count_all - a.count_all)
+                data: dadosPorPartidoAgrupado
+                    .filter((e) => e.transferencias_total > 0)
+                    .sort((a, b) => b.transferencias_total - a.transferencias_total)
                     .map((e) => e.sigla),
             },
             grid: { left: '30%' },
@@ -433,10 +485,10 @@ export class DashTransferenciaService {
                     type: 'bar',
                     stack: 'total',
                     label: { show: true },
-                    data: dadosPorPartido
-                        .filter((e) => e.count_all != 0)
-                        .sort((a, b) => b.count_all - a.count_all)
-                        .map((e) => e.count_estadual.toString()),
+                    data: dadosPorPartidoAgrupado
+                        .filter((e) => e.transferencias_total > 0)
+                        .sort((a, b) => b.transferencias_total - a.transferencias_total)
+                        .map((e) => e.transferencias_estadual.toString()),
                     color: '#372EA2',
                     barWidth: '20%',
                 },
@@ -445,10 +497,10 @@ export class DashTransferenciaService {
                     type: 'bar',
                     stack: 'total',
                     label: { show: true },
-                    data: dadosPorPartido
-                        .filter((e) => e.count_all != 0)
-                        .sort((a, b) => b.count_all - a.count_all)
-                        .map((e) => e.count_federal.toString()),
+                    data: dadosPorPartidoAgrupado
+                        .filter((e) => e.transferencias_total > 0)
+                        .sort((a, b) => b.transferencias_total - a.transferencias_total)
+                        .map((e) => e.transferencias_federal.toString()),
                     color: '#C6C1FB',
                     barWidth: '20%',
                 },
@@ -658,22 +710,22 @@ export class DashTransferenciaService {
         FROM (
             SELECT DISTINCT ON (transferencia_id) * FROM view_transferencia_analise
         ) AS t
-        JOIN transferencia_parlamentar tp 
-            ON tp.transferencia_id = t.transferencia_id 
+        JOIN transferencia_parlamentar tp
+            ON tp.transferencia_id = t.transferencia_id
             AND tp.removido_em IS NULL
-        JOIN parlamentar p 
-            ON tp.parlamentar_id = p.id 
+        JOIN parlamentar p
+            ON tp.parlamentar_id = p.id
             AND p.removido_em IS NULL
-        WHERE 
-            t.parlamentar_id IS NOT NULL 
+        WHERE
+            t.parlamentar_id IS NOT NULL
             AND tp.valor IS NOT NULL
             AND t.transferencia_id = ANY (${transferenciaIds})
-        GROUP BY 
-            t.parlamentar_id, 
-            p.foto_upload_id, 
+        GROUP BY
+            t.parlamentar_id,
+            p.foto_upload_id,
             p.nome_popular
     )
-    SELECT 
+    SELECT
         parlamentar_id,
         nome_popular,
         parlamentar_foto_id,
