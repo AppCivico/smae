@@ -1,10 +1,14 @@
+import { defineStore } from 'pinia';
+import type {
+  ListApenasTarefaListDto,
+  TarefaDetailDto,
+  TarefaItemDto,
+} from '@back/pp/tarefa/entities/tarefa.entity';
+import type { ProjetoDetailDto } from '@back/pp/projeto/entities/projeto.entity';
 import type { DataSet, DataTreeItem } from '@/helpers/createDataTree';
 import createDataTree from '@/helpers/createDataTree';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
 import flatten from '@/helpers/flatDataTree';
-import type { ProjetoDetailDto } from '@back/pp/projeto/entities/projeto.entity';
-import type { ListApenasTarefaListDto, TarefaDetailDto, TarefaItemDto } from '@back/pp/tarefa/entities/tarefa.entity';
-import { defineStore } from 'pinia';
 import { useProjetosStore } from './projetos.store';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -243,6 +247,7 @@ export const useTarefasStore = defineStore('tarefas', {
       const posiçõesEmUso = tarefasAgrupadasPorMãe[idDaTarefaMãe || 0]?.length || 0;
 
       return {
+        dependencias: [],
         ...emFoco,
         descricao: emFoco?.descricao || '',
         inicio_planejado: dateTimeToDate(emFoco?.inicio_planejado),
