@@ -71,7 +71,12 @@ const registrosSei = computed(() => {
 
   const data = props.distribuicao.registros_sei.map((item) => {
     if (item.integracao_sei && typeof item.integracao_sei.json_resposta === 'string') {
-      item.integracao_sei.json_resposta = JSON.parse(item.integracao_sei.json_resposta);
+      try {
+        item.integracao_sei.json_resposta = JSON.parse(item.integracao_sei.json_resposta);
+      } catch (error) {
+        console.warn('Erro ao fazer parse do JSON da resposta SEI:', error);
+        item.integracao_sei.json_resposta = {};
+      }
     }
 
     return item;
