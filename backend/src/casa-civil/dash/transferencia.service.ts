@@ -240,7 +240,6 @@ export class DashTransferenciaService {
         const uniqueTransferencias = rows.filter((elem, index, self) => {
             return index === self.findIndex((t) => t.transferencia_id === elem.transferencia_id);
         });
-        //console.dir(['uniqueTransferencias', JSON.parse(JSON.stringify(uniqueTransferencias))], { depth: 7 });
 
         const dadosPorPartidoDistribuicao = (() => {
             const partidoData = new Map<
@@ -437,7 +436,6 @@ export class DashTransferenciaService {
                 valor_etapas: etapasSoma.reduce((acc, curr) => acc + curr.sum, 0),
             };
         });
-        //console.dir(['dadosPorPartido', dadosPorPartido], { depth: 4 });
 
         // Adicionando item de "partido indefinido" para transferências sem partido
         dadosPorPartido.push({
@@ -503,7 +501,6 @@ export class DashTransferenciaService {
 
             return Array.from(transferenciasAgrupadas.values());
         })();
-        console.log(dadosPorPartidoAgrupado);
 
         const chartNroPorPartido: DashTransferenciaBasicChartDto = {
             title: {
@@ -675,7 +672,7 @@ export class DashTransferenciaService {
               })
             : [];
 
-        //console.dir(['dadosPorOrgao', dadosPorOrgao], { depth: null });
+
         const chartValPorOrgao: DashTransferenciaBasicChartDto = {
             title: {
                 id: 'chart__ValOrgao',
@@ -754,41 +751,43 @@ export class DashTransferenciaService {
             parlamentar_foto_id: number | null;
             count: number;
             valor: Decimal;
-        }[] = await this.prisma.$queryRaw`WITH ranked_parlamentares AS (
-        SELECT
-            t.parlamentar_id,
-            p.nome_popular,
-            COUNT(1) AS count,
-            SUM(tp.valor) AS valor,
-            p.foto_upload_id AS parlamentar_foto_id,
-            DENSE_RANK() OVER (ORDER BY SUM(tp.valor) DESC) AS rank
-        FROM (
-            SELECT DISTINCT ON (transferencia_id) * FROM view_transferencia_analise
-        ) AS t
-        JOIN transferencia_parlamentar tp
-            ON tp.transferencia_id = t.transferencia_id
-            AND tp.removido_em IS NULL
-        JOIN parlamentar p
-            ON tp.parlamentar_id = p.id
-            AND p.removido_em IS NULL
-        WHERE
-            t.parlamentar_id IS NOT NULL
-            AND tp.valor IS NOT NULL
-            AND t.transferencia_id = ANY (${transferenciaIds})
-        GROUP BY
-            t.parlamentar_id,
-            p.foto_upload_id,
-            p.nome_popular
-    )
-    SELECT
-        parlamentar_id,
-        nome_popular,
-        parlamentar_foto_id,
-        count,
-        valor
-    FROM ranked_parlamentares
-    WHERE rank <= 3
-    ORDER BY valor DESC`;
+        }[] = await this.prisma.$queryRaw`
+            WITH parlamentar_totals AS (
+                SELECT
+                    tp.parlamentar_id,
+                    p.nome_popular,
+                    p.foto_upload_id AS parlamentar_foto_id,
+                    COUNT(DISTINCT tp.transferencia_id) AS count,
+                    SUM(tp.valor) AS valor
+                FROM transferencia_parlamentar tp
+                JOIN parlamentar p
+                    ON tp.parlamentar_id = p.id
+                    AND p.removido_em IS NULL
+                WHERE tp.transferencia_id = ANY (${transferenciaIds})
+                 AND tp.removido_em IS NULL AND tp.valor IS NOT NULL
+                GROUP BY
+                    tp.parlamentar_id,
+                    p.nome_popular,
+                    p.foto_upload_id
+            ), ranked_parlamentares AS (
+                SELECT
+                    parlamentar_id,
+                    nome_popular,
+                    parlamentar_foto_id,
+                    count,
+                    valor,
+                    DENSE_RANK() OVER (ORDER BY valor DESC) AS rank
+                FROM parlamentar_totals
+            )
+            SELECT
+                parlamentar_id,
+                nome_popular,
+                parlamentar_foto_id,
+                count,
+                valor
+            FROM ranked_parlamentares
+            WHERE rank <= 3
+            ORDER BY valor DESC, parlamentar_id ASC`;
 
         return {
             valor_total: valorTotal,
