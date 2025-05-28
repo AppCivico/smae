@@ -628,6 +628,7 @@ export class DashTransferenciaService {
               })
             : [];
 
+        console.dir(['dadosPorOrgao', dadosPorOrgao], { depth: null });
         const chartValPorOrgao: DashTransferenciaBasicChartDto = {
             title: {
                 id: 'chart__ValOrgao',
@@ -647,7 +648,6 @@ export class DashTransferenciaService {
                     .sort((a, b) => {
                         const sumA = a.valor.reduce((acc, curr) => acc + curr.sum, 0);
                         const sumB = b.valor.reduce((acc, curr) => acc + curr.sum, 0);
-
                         return sumB - sumA;
                     })
                     .map((o) => o.sigla),
@@ -674,18 +674,26 @@ export class DashTransferenciaService {
                     stack: 'total',
                     barWidth: '20%',
                     color: coresLegenda[itt],
+                    label: {
+                        show: true,
+                        position: 'inside',
+                        formatter: function (params: any) {
+                            return params.value > 0 ? params.value : '';
+                        },
+                        fontSize: 12,
+                        color: '#fff',
+                        fontWeight: 'bold',
+                    },
                     data: dadosPorOrgao
                         .sort((a, b) => {
                             const sumA = a.valor.reduce((acc, curr) => acc + curr.sum, 0);
                             const sumB = b.valor.reduce((acc, curr) => acc + curr.sum, 0);
-
                             return sumB - sumA;
                         })
                         .map((orgaoDados) => {
                             const valorParaEtapa = orgaoDados.valor.find(
                                 (agregado) => agregado.workflow_etapa_atual_id == etapa.id
                             );
-
                             return valorParaEtapa ? (valorParaEtapa.sum / 1000).toFixed().toString() : '0';
                         }),
                 };
