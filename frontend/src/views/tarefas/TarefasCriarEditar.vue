@@ -177,10 +177,8 @@ async function handleLiberarPrevisaoAposDependenciaRemovida(tarefaAtual) {
   setValues({
     ...tarefaAtual,
     duracao_planejado_calculado: false,
-    inicio_planejado: null,
     inicio_planejado_calculado: false,
-    termino_planejado: null,
-    termino_planejado_calculado: true,
+    termino_planejado_calculado: false,
   });
 }
 
@@ -192,13 +190,12 @@ async function iniciar() {
   }
 }
 
-function verificarDependenciasAoIniciar(tarefa) {
-  if (tarefa.dependencias.length === 0) {
-    handleLiberarPrevisaoAposDependenciaRemovida(tarefa);
+function verificarDependenciasAoIniciar(tarefaAtual) {
+  if (tarefaAtual.dependencias.length === 0) {
     return;
   }
 
-  validarDependencias(tarefa);
+  validarDependencias(tarefaAtual);
 }
 
 iniciar();
