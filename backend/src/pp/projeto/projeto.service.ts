@@ -3548,9 +3548,7 @@ export class ProjetoService {
 
             // O true é para indicar que é clone de projeto e não de transferência.
             await prismaTx.$queryRaw`CALL clone_tarefas('true'::boolean, ${dto.projeto_fonte_id}::int, ${projetoId}::int);`;
-        });
 
-        await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             // Buscando tarefas criadas e disparando calc de topologia.
             const tarefas = await prismaTx.tarefa.findMany({
                 where: {
@@ -3562,10 +3560,9 @@ export class ProjetoService {
                 },
                 select: {
                     id: true,
+                    tarefa_cronograma_id: true,
                     dependencias: {
                         select: {
-                            id: true,
-                            tarefa_id: true,
                             dependencia_tarefa_id: true,
                             tipo: true,
                             latencia: true,
@@ -3587,8 +3584,15 @@ export class ProjetoService {
                             };
                         }),
                     };
+                    console.log(dto);
 
-                    await this.tarefaService.update({ projeto_id: projetoId }, tarefa.id, dto, user);
+                    await this.tarefaService.update(
+                        { tarefa_cronograma_id: tarefa.tarefa_cronograma_id },
+                        tarefa.id,
+                        dto,
+                        user,
+                        prismaTx
+                    );
                 }
             }
         });
