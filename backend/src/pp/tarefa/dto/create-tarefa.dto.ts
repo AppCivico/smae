@@ -207,6 +207,7 @@ export class FilterEAPDto {
 }
 
 export class TarefaCronogramaInput {
+    tarefa_cronograma_id?: number;
     projeto_id?: number;
     transferencia_id?: number;
 }
