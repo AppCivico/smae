@@ -12,7 +12,7 @@ BEGIN
         INSERT INTO tarefa_cronograma (projeto_id) VALUES (projeto_target_id) RETURNING id INTO _tarefa_cronograma_id;
     ELSE
         SELECT id FROM tarefa_cronograma WHERE projeto_id = projeto_target_id AND removido_em IS NULL INTO _tarefa_cronograma_id;
-        
+
         -- Caso o projeto "alvo" já tenha cronograma. Remover as tarefas existentes.
         UPDATE tarefa SET removido_em = NOW() WHERE tarefa_cronograma_id = _tarefa_cronograma_id AND removido_em IS NULL;
 
@@ -67,7 +67,7 @@ BEGIN
         WHERE id = _tarefa_cronograma_id;
     END IF;
 
-    SELECT nivel_maximo_tarefa FROM transferencia WHERE id = transferencia_source_id INTO _nvl_tarefas; 
+    SELECT nivel_maximo_tarefa FROM transferencia WHERE id = transferencia_source_id INTO _nvl_tarefas;
 
     RETURN (_tarefa_cronograma_id, _nvl_tarefas);
 COMMIT;
@@ -118,7 +118,9 @@ BEGIN
             t.tarefa_pai_id,
             t.tarefa || '_old_id_' || t.id,
             t.descricao, t.recursos, t.numero, t.nivel,
-            t.n_dep_inicio_planejado, t.n_dep_termino_planejado, CASE WHEN _nvl_tarefas = 1 THEN 0 ELSE t.n_filhos_imediatos END,
+            0, -- a trigger vai subir de novo
+            0,
+             CASE WHEN _nvl_tarefas = 1 THEN 0 ELSE t.n_filhos_imediatos END,
             t.eh_marco, t.duracao_planejado
         FROM temp_source_tarefas t
         RETURNING *
@@ -128,7 +130,7 @@ BEGIN
         n_dep_inicio_planejado, n_dep_termino_planejado, n_filhos_imediatos,
         eh_marco, duracao_planejado, old_id
     )
-    SELECT 
+    SELECT
         nt.id, nt.tarefa_cronograma_id, nt.tarefa_pai_id, nt.tarefa, nt.descricao, nt.recursos, nt.numero, nt.nivel,
         nt.n_dep_inicio_planejado, nt.n_dep_termino_planejado, nt.n_filhos_imediatos,
         nt.eh_marco, nt.duracao_planejado,
