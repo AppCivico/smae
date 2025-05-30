@@ -370,7 +370,7 @@ export class ReportsService {
             case 'PSMonitoramentoMensal':
                 service = this.psMonitoramentoMensal;
                 break;
-            case 'CasaCivilAtvPendentes':
+            case 'AtvPendentes':
                 service = this.casaCivilAtividadesPendentesService;
                 break;
             default:
@@ -782,7 +782,7 @@ export class ReportsService {
 
     private async getRelatorioFonteString(fonte: FonteRelatorio): Promise<string> {
         switch (fonte) {
-            case FonteRelatorio.CasaCivilAtvPendentes:
+            case FonteRelatorio.AtvPendentes:
                 return 'Casa Civil - Atividades Pendentes';
             case FonteRelatorio.Indicadores:
                 return 'Indicadores';

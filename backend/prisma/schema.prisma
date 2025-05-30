@@ -3469,7 +3469,7 @@ enum FonteRelatorio {
     ObrasPrevisaoCusto
     PSPrevisaoCusto
     PSOrcamento
-    CasaCivilAtvPendentes
+    AtvPendentes
     PSMonitoramentoMensal
     PSIndicadores
 }

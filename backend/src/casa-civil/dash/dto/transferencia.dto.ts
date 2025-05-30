@@ -7,7 +7,6 @@ import { BadRequestException } from '@nestjs/common';
 import { StringArrayTransform } from '../../../auth/transforms/string-array.transform';
 import { IdSigla, IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 import { IsDateYMD } from '../../../auth/decorators/date.decorator';
-import { MAX_LENGTH_DEFAULT } from 'src/common/consts';
 import { IdNomeDto } from 'src/common/dto/IdNome.dto';
 import { PartidoDto } from 'src/partido/entities/partido.entity';
 import { ParlamnetarIdNomes } from 'src/parlamentar/entities/parlamentar.entity';
@@ -65,9 +64,6 @@ export class FilterDashTransferenciasDto {
 
     @IsOptional()
     @IsArray()
-    @MaxLength(MAX_LENGTH_DEFAULT, {
-        message: `O campo 'Atividade' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
-    })
     @IsString({ each: true })
     @ApiProperty({ description: 'Atividade do cronograma' })
     @Transform(StringArrayTransform)
