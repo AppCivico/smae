@@ -1,63 +1,6 @@
-import { defineAsyncComponent } from 'vue';
-import LoadingComponent from '@/components/LoadingComponent.vue';
 import RelatoriosRaiz from '@/views/relatorios/RelatoriosRaiz.vue';
 
-const ListaDeRelatorios = defineAsyncComponent({
-  loader: () => import('@/views/relatorios/ListaDeRelatorios.vue'),
-  loadingComponent: LoadingComponent,
-});
-const NovoMensal = defineAsyncComponent({
-  loader: () => import('@/views/relatorios/NovoMensal.vue'),
-  loadingComponent: LoadingComponent,
-});
-const NovoOrcamentarioPdM = defineAsyncComponent({
-  loader: () => import('@/views/relatorios/NovoOrcamentarioPdM.vue'),
-  loadingComponent: LoadingComponent,
-});
-const NovoOrçamentárioPortfolio = defineAsyncComponent({
-  loader: () => import('@/views/relatorios/NovoOrcamentarioPortfolio.vue'),
-  loadingComponent: LoadingComponent,
-});
-const NovoRelatórioDePortfolio = defineAsyncComponent({
-  loader: () => import('@/views/relatorios/NovoRelatorioDePortfolio.vue'),
-  loadingComponent: LoadingComponent,
-});
-const NovoRelatórioDePrevisãoDeCustoPdM = defineAsyncComponent({
-  loader: () => import('@/views/relatorios/NovoRelatorioDePrevisaoDeCustoPdM.vue'),
-  loadingComponent: LoadingComponent,
-});
-const NovoRelatórioDePrevisãoDeCustoPortfolio = defineAsyncComponent({
-  loader: () => import('@/views/relatorios/NovoRelatorioDePrevisaoDeCustoPortfolio.vue'),
-  loadingComponent: LoadingComponent,
-});
-const NovoRelatórioDeProjeto = defineAsyncComponent({
-  loader: () => import('@/views/relatorios/NovoRelatorioDeProjeto.vue'),
-  loadingComponent: LoadingComponent,
-});
-const NovoRelatórioDeStatus = defineAsyncComponent({
-  loader: () => import('@/views/relatorios/NovoRelatorioDeStatus.vue'),
-  loadingComponent: LoadingComponent,
-});
-const NovoSemestralOuAnual = defineAsyncComponent({
-  loader: () => import('@/views/relatorios/NovoSemestralOuAnual.vue'),
-  loadingComponent: LoadingComponent,
-});
-const NovoRelatórioDePortfolioObras = defineAsyncComponent({
-  loader: () => import('@/views/relatorios/NovoRelatorioDePortfolioObras.vue'),
-  loadingComponent: LoadingComponent,
-});
-const NovoRelatórioDeStatusObras = defineAsyncComponent({
-  loader: () => import('@/views/relatorios/NovoRelatorioDeStatusObras.vue'),
-  loadingComponent: LoadingComponent,
-});
-const NovoRelatórioDePrevisãoDeCustoPortfolioObras = defineAsyncComponent({
-  loader: () => import('@/views/relatorios/NovoRelatorioDePrevisaoDeCustoPortfolioObras.vue'),
-  loadingComponent: LoadingComponent,
-});
-const NovoRelatórioOrçamentárioPortfolioObras = defineAsyncComponent({
-  loader: () => import('@/views/relatorios/NovoRelatorioOrcamentarioPortfolioObras.vue'),
-  loadingComponent: LoadingComponent,
-});
+const ListaDeRelatorios = () => import('@/views/relatorios/ListaDeRelatorios.vue');
 
 export default {
   path: '/relatorios',
@@ -135,7 +78,7 @@ export default {
           },
         },
         {
-          component: NovoMensal,
+          component: () => import('@/views/relatorios/NovoMensal.vue'),
           path: 'novo',
           name: 'novoRelatórioMensal',
           meta: {
@@ -169,7 +112,7 @@ export default {
           },
         },
         {
-          component: NovoSemestralOuAnual,
+          component: () => import('@/views/relatorios/NovoSemestralOuAnual.vue'),
           path: 'novo',
           name: 'pdm.novoRelatórioSemestralOuAnual',
           meta: {
@@ -203,7 +146,7 @@ export default {
           },
         },
         {
-          component: NovoOrcamentarioPdM,
+          component: () => import('@/views/relatorios/NovoOrcamentarioPdM.vue'),
           path: 'novo',
           name: 'novoRelatórioOrçamentárioPdM',
           meta: {
@@ -236,7 +179,7 @@ export default {
           },
         },
         {
-          component: NovoOrçamentárioPortfolio,
+          component: () => import('@/views/relatorios/NovoOrcamentarioPortfolio.vue'),
           path: 'novo',
           name: 'novoRelatórioOrçamentárioPortfolio',
           meta: {
@@ -404,7 +347,7 @@ export default {
           },
         },
         {
-          component: NovoRelatórioDeProjeto,
+          component: () => import('@/views/relatorios/NovoRelatorioDeProjeto.vue'),
           path: 'novo',
           name: 'novoRelatórioDeProjeto',
           meta: {
@@ -440,7 +383,7 @@ export default {
         {
           path: 'novo',
           name: 'novoRelatórioDePrevisãoDeCustoPdM',
-          component: NovoRelatórioDePrevisãoDeCustoPdM,
+          component: () => import('@/views/relatorios/NovoRelatorioDePrevisaoDeCustoPdM.vue'),
           meta: {
             rotaDeEscape: 'RelatóriosDePrevisãoDeCustoPdM',
             rotasParaMigalhasDePão: [
@@ -473,7 +416,7 @@ export default {
         {
           path: 'novo',
           name: 'novoRelatórioDePrevisãoDeCustoPortfolio',
-          component: NovoRelatórioDePrevisãoDeCustoPortfolio,
+          component: () => import('@/views/relatorios/NovoRelatorioDePrevisaoDeCustoPortfolio.vue'),
           meta: {
             título: 'Novo relatório de previsão de custo de portfólio',
             tituloParaMigalhaDePao: 'Novo relatório de previsão de custo de portfólio',
@@ -504,7 +447,7 @@ export default {
           },
         },
         {
-          component: NovoRelatórioDePortfolio,
+          component: () => import('@/views/relatorios/NovoRelatorioDePortfolio.vue'),
           path: 'novo',
           name: 'novoRelatórioDePortfolio',
           meta: {
@@ -537,7 +480,7 @@ export default {
           },
         },
         {
-          component: NovoRelatórioDeStatus,
+          component: () => import('@/views/relatorios/NovoRelatorioDeStatus.vue'),
           path: 'novo',
           name: 'novoRelatórioDeStatus',
           meta: {
@@ -570,7 +513,7 @@ export default {
           },
         },
         {
-          component: NovoRelatórioDePortfolioObras,
+          component: () => import('@/views/relatorios/NovoRelatorioDePortfolioObras.vue'),
           path: 'novo',
           name: 'novoRelatórioDePortfolioObras',
           meta: {
@@ -603,7 +546,7 @@ export default {
           },
         },
         {
-          component: NovoRelatórioDeStatusObras,
+          component: () => import('@/views/relatorios/NovoRelatorioDeStatusObras.vue'),
           path: 'novo',
           name: 'NovoRelatórioDeStatusObras',
           meta: {
@@ -638,7 +581,7 @@ export default {
         {
           path: 'novo',
           name: 'novoRelatórioDePrevisãoDeCustoPortfolioObras',
-          component: NovoRelatórioDePrevisãoDeCustoPortfolioObras,
+          component: () => import('@/views/relatorios/NovoRelatorioDePrevisaoDeCustoPortfolioObras.vue'),
           meta: {
             título: 'Novo relatório de previsão de custo de portfólio de obras',
             tituloParaMigalhaDePao: 'Novo relatório de previsão de custo de portfólio de obras',
@@ -669,7 +612,7 @@ export default {
           },
         },
         {
-          component: NovoRelatórioOrçamentárioPortfolioObras,
+          component: () => import('@/views/relatorios/NovoRelatorioOrcamentarioPortfolioObras.vue'),
           path: 'novo',
           name: 'novoRelatórioOrçamentárioPortfolioObras',
           meta: {
