@@ -24,7 +24,7 @@ const route = useRoute();
 const router = useRouter();
 
 const valoresIniciais = {
-  fonte: 'CasaCivilAtvPendentes',
+  fonte: 'AtvPendentes',
   parametros: {
     tipo_id: [],
     data_inicio: null,
@@ -78,7 +78,7 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
     <Field
       name="fonte"
       type="hidden"
-      value="CasaCivilAtvPendentes"
+      value="AtvPendentes"
     />
 
     <div class="flex flexwrap g2 mb2">
