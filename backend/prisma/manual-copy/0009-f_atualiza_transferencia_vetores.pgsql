@@ -44,7 +44,7 @@ BEGIN
                 ) || ' ' ||
                 COALESCE(
                     ( SELECT string_agg(
-                        CAST(o.sigla AS TEXT) || ' ' || CAST(o.descricao AS TEXT), ' ')
+                        CAST(o.sigla AS TEXT) || ' ' || CAST(o.descricao AS TEXT) || ' ' || CAST(dr.nome AS TEXT) || ' ' || CAST(dr.objeto AS TEXT), ' ')
                         FROM distribuicao_recurso dr
                         JOIN orgao o ON o.id = dr.orgao_gestor_id
                         WHERE dr.transferencia_id = t.id AND dr.removido_em IS NULL

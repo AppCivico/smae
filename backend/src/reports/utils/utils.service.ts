@@ -162,7 +162,7 @@ export function ParseParametrosDaFonte(fonte: FonteRelatorio, value: any): any {
         case 'PSMonitoramentoMensal':
             theClass = CreatePsMonitoramentoMensalFilterDto;
             break;
-        case 'CasaCivilAtvPendentes':
+        case 'AtvPendentes':
             theClass = CreateCasaCivilAtividadesPendentesFilterDto;
             break;
         default:
