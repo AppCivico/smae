@@ -299,8 +299,7 @@ export default {
     {
       path: 'atividades-pendentes',
       meta: {
-        título: 'Novo Relatório de Atividades Pendentes',
-        tituloParaMigalhaDePao: 'Novo Relatório de Atividades Pendentes',
+        título: 'Relatórios de Atividades Pendentes',
         títuloParaMenu: 'Atividades pendentes',
         limitarÀsPermissões: 'Reports.executar.CasaCivil',
       },
@@ -320,6 +319,7 @@ export default {
           name: 'novoRelatórioDeAtividadePendente',
           meta: {
             título: 'Nova atividade pendente',
+            tituloParaMigalhaDePao: 'Novo Relatório de Atividades Pendentes',
             rotaDeEscape: 'RelatóriosDeAtividadesPendentes',
             rotasParaMigalhasDePão: [
               'RelatóriosDeAtividadesPendentes',
