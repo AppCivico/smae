@@ -1,6 +1,17 @@
-import type { PainelEstrategicoGeoLocalizacaoDto } from '@back/gestao-projetos/painel-estrategico/entities/painel-estrategico-responses.dto';
+import type {
+  PainelEstrategicoExecucaoOrcamentariaAno,
+  PainelEstrategicoGeoLocalizacaoDto,
+  PainelEstrategicoGrandesNumeros,
+  PainelEstrategicoOrgaoResponsavel,
+  PainelEstrategicoProjetoEtapa,
+  PainelEstrategicoProjetosAno,
+  PainelEstrategicoProjetosMesAno,
+  PainelEstrategicoProjetoStatus,
+  PainelEstrategicoQuantidadesAnoCorrente,
+  PainelEstrategicoResponseDto,
+  PainelEstrategicoResumoOrcamentario,
+} from '@back/gestao-projetos/painel-estrategico/entities/painel-estrategico-responses.dto';
 import { jwtDecode } from 'jwt-decode';
-import { camelCase } from 'lodash';
 import type { StoreGeneric } from 'pinia';
 import { defineStore } from 'pinia';
 
@@ -25,11 +36,20 @@ type ItemGenerico = Record<string, (unknown[] | Record<string, unknown>)>;
 type Estado = ItemGenerico & {
   chamadasPendentes: ChamadasPendentes;
   erros: Erros;
-  grandesNumeros: {
-    total_projetos?: number;
-    total_orgaos?: number;
-    total_metas?: number;
-  };
+  anosMapaCalorConcluidos: number[];
+  anosMapaCalorPlanejados: number[];
+  execucaoOrcamentariaAno: PainelEstrategicoExecucaoOrcamentariaAno[];
+  grandesNumeros: PainelEstrategicoGrandesNumeros | Record<string, never>;
+  projetoEtapas: PainelEstrategicoProjetoEtapa[];
+  projetoOrgaoResponsavel: PainelEstrategicoOrgaoResponsavel[];
+  projetosConcluidosAno: PainelEstrategicoProjetosAno[];
+  projetosConcluidosMes: PainelEstrategicoProjetosMesAno[];
+  projetosPlanejadosAno: PainelEstrategicoProjetosAno[];
+  projetosPlanejadosMes: PainelEstrategicoProjetosMesAno[];
+  projetoStatus: PainelEstrategicoProjetoStatus[];
+  quantidadesProjeto: PainelEstrategicoQuantidadesAnoCorrente | Record<string, never>;
+  resumoOrcamentario: PainelEstrategicoResumoOrcamentario | Record<string, never>;
+
   paginacaoProjetos: {
     tokenPaginacao: string;
     paginas: number;
@@ -63,8 +83,9 @@ export const usePainelEstrategicoStore = (prefixo: string): StoreGeneric => defi
     projetosConcluidosMes: [],
     projetosPlanejadosAno: [],
     projetosPlanejadosMes: [],
-    quantidadesProjeto: [],
-    resumoOrcamentario: [],
+    quantidadesProjeto: {},
+    resumoOrcamentario: {},
+
     projetosParaMapa: [],
     chamadasPendentes: {
       dados: false,
@@ -104,15 +125,21 @@ export const usePainelEstrategicoStore = (prefixo: string): StoreGeneric => defi
       this.chamadasPendentes.dados = true;
       this.erros.dados = null;
       try {
-        const resposta = await this.requestS.post(`${baseUrl}/painel-estrategico`, params);
+        const resposta = await this.requestS.post(`${baseUrl}/painel-estrategico`, params) as PainelEstrategicoResponseDto;
 
-        Object.keys(resposta).forEach((chave) => {
-          const chaveConvertida = camelCase(chave);
-
-          if (this[chaveConvertida]) {
-            this[chaveConvertida] = resposta[chave];
-          }
-        });
+        this.anosMapaCalorConcluidos = resposta.anos_mapa_calor_concluidos;
+        this.anosMapaCalorPlanejados = resposta.anos_mapa_calor_planejados;
+        this.execucaoOrcamentariaAno = resposta.execucao_orcamentaria_ano;
+        this.grandesNumeros = resposta.grandes_numeros;
+        this.projetoEtapas = resposta.projeto_etapas;
+        this.projetoOrgaoResponsavel = resposta.projeto_orgao_responsavel;
+        this.projetosConcluidosAno = resposta.projetos_concluidos_ano;
+        this.projetosConcluidosMes = resposta.projetos_concluidos_mes;
+        this.projetosPlanejadosAno = resposta.projetos_planejados_ano;
+        this.projetosPlanejadosMes = resposta.projetos_planejados_mes;
+        this.projetoStatus = resposta.projeto_status;
+        this.quantidadesProjeto = resposta.quantidades_projeto;
+        this.resumoOrcamentario = resposta.resumo_orcamentario;
       } catch (erro: unknown) {
         this.erros.dados = erro;
       }
