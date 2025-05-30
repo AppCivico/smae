@@ -14,6 +14,8 @@ import { ImportacaoParlamentarModule } from './importacao_parlamentar/parlamenta
 import { RefreshVariavelModule } from './refresh_variavel/refresh-variavel.module';
 import { RunReportModule } from './run_report/run-report.module';
 import { RunUpdateModule } from './run_update/run-update.module';
+import { ApiLogBackupService } from 'src/api-log/api-log-backup/api-log-backup.service';
+import { ApiLogRestoreService } from 'src/api-log/api-log-restore/api-log-restore.service';
 
 @Module({
     imports: [
@@ -32,7 +34,7 @@ import { RunUpdateModule } from './run_update/run-update.module';
         forwardRef(() => RunUpdateModule),
     ],
     controllers: [TaskController],
-    providers: [TaskService],
+    providers: [TaskService, ApiLogBackupService, ApiLogRestoreService],
     exports: [TaskService],
 })
 export class TaskModule {}
