@@ -346,11 +346,13 @@ onUnmounted(() => {
         class="mb1 f1 fb25em"
       >
         <table class="tablemain">
-          <col class="col--minimum">
-          <col>
-          <col>
-          <col>
-          <col class="col--data">
+          <colgroup>
+            <col class="col--minimum">
+            <col>
+            <col>
+            <col>
+            <col class="col--data">
+          </colgroup>
           <thead>
             <tr>
               <th>Identificador</th>

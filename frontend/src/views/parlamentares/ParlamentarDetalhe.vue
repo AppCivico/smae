@@ -100,9 +100,11 @@
           <hr class="ml2 f1">
         </div>
         <table class="tablemain ">
-          <col>
-          <col>
-          <col>
+          <colgroup>
+            <col>
+            <col>
+            <col>
+          </colgroup>
           <thead>
             <tr>
               <th>Nome</th>
