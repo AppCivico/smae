@@ -339,7 +339,7 @@ export default {
           name: 'RelatóriosDeAtividadesPendentes',
           component: ListaDeRelatorios,
           meta: {
-            fonteDoRelatorio: 'CasaCivilAtvPendentes',
+            fonteDoRelatorio: 'AtvPendentes',
             rotaNovoRelatorio: 'novoRelatórioDeAtividadePendente',
           },
         },
