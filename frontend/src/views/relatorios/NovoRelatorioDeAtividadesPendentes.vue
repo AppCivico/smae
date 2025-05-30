@@ -64,7 +64,6 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
 ÓrgãosStore.getAll();
 </script>
 <template>
-  <MigalhasDePão class="mb1" />
   <CabecalhoDePagina :formulario-sujo="false" />
 
   <p class="texto--explicativo">
