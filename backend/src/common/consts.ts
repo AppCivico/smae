@@ -1,4 +1,4 @@
-import { ListaDePrivilegios } from "./ListaDePrivilegios";
+import { ListaDePrivilegios } from './ListaDePrivilegios';
 
 export const CONST_BOT_USER_ID = -1;
 export const CONST_CRONO_VAR_CATEGORICA_ID = -1;
@@ -14,3 +14,4 @@ export const MAX_LENGTH_DEFAULT = 255;
 export const MAX_LENGTH_MEDIO = 2048;
 export const MAX_LENGTH_HTML = 10240;
 export const MAX_LENGTH_LONG = 23000;
+export const CHUNK_SIZE = 10000;

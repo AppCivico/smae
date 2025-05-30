@@ -4976,6 +4976,8 @@ enum task_type {
     importacao_parlamentar
     run_report
     run_update
+    backup_api_log_day
+    restore_api_log_day
 }
 
 enum task_status {
@@ -7770,3 +7772,26 @@ model AtualizacaoEmLote {
     @@index([criado_em, tipo])
     @@map("atualizacao_em_lote")
 }
+
+model ApiRequestLogControl {
+    log_date        DateTime            @id @db.Date
+    status          ApiRequestLogControlStatus
+    task_id         Int?
+    backup_location String?
+    last_error      String?
+    created_at      DateTime            @default(now())
+    updated_at      DateTime            @updatedAt
+
+    @@map("api_request_log_control")
+}
+
+enum ApiRequestLogControlStatus {
+  AWAITING_BACKUP
+  BACKING_UP
+  BACKED_UP
+  RESTORING
+  RESTORED
+  FAILED_BACKUP
+  FAILED_RESTORE
+}
+

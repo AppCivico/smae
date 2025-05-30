@@ -56,6 +56,7 @@ import { RequestLogModule } from './request_log/request_log.module';
 import { RunReportModule } from './task/run_report/run-report.module';
 import { TaskModule } from './task/task.module';
 import { ClassificacaoModule } from './transferencias-voluntarias/classificacao/classificacao.module';
+import { DuckDBProviderService } from './common/duckdb/duckdb-provider.service';
 
 // Hacks pro JS
 /*
@@ -115,6 +116,7 @@ import { ClassificacaoModule } from './transferencias-voluntarias/classificacao/
         PSMFDashboardModule,
         RunReportModule,
         AtualizacaoEmLoteModule,
+        DuckDBProviderService
     ],
     controllers: [AppController],
     providers: [
