@@ -220,7 +220,7 @@
           >
         </div>
         <p>{{ parlamentar.parlamentar.nome_popular }}</p>
-        <p>R${{ dinheiro(parlamentar.valor, true) }}</p>
+        <p>R${{ dinheiro(parlamentar.valor, { semDecimais: true }) }}</p>
       </div>
     </div>
   </div>
@@ -267,22 +267,22 @@
   </div>
 </template>
 <script setup>
-import requestS from '@/helpers/requestS.ts';
-import dateToDate from '@/helpers/dateToDate';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
-import Grafico from '@/components/graficos/GraficoDashboard.vue';
-import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
-import { usePartidosStore } from '@/stores/partidos.store';
-import { useParlamentaresStore } from '@/stores/parlamentares.store';
-import { ref, watch } from 'vue';
-import { storeToRefs } from 'pinia';
-import { useRoute, useRouter } from 'vue-router';
-import dinheiro from '@/helpers/dinheiro';
+import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
+import Grafico from '@/components/graficos/GraficoDashboard.vue';
 import ValorTransferencia from '@/components/graficos/ValorTransferencia.vue';
 import combinadorDeListas from '@/helpers/combinadorDeListas';
-import MenuPaginacao from '@/components/MenuPaginacao.vue';
+import dateToDate from '@/helpers/dateToDate';
+import dinheiro from '@/helpers/dinheiro';
+import requestS from '@/helpers/requestS.ts';
+import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
+import { useParlamentaresStore } from '@/stores/parlamentares.store';
+import { usePartidosStore } from '@/stores/partidos.store';
 import isEqual from 'lodash/isEqual';
+import { storeToRefs } from 'pinia';
+import { ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 const localizeDate = (d) => dateToDate(d, { timeStyle: 'short', timeZone: 'America/Sao_Paulo' });
 const fluxosEtapasProjetos = useEtapasProjetosStore();
