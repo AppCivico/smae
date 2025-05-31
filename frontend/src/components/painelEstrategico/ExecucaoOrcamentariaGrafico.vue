@@ -4,26 +4,45 @@
     aria-label="Gráfico de execução orçamentária"
     tabindex="0"
   >
+    <label class="mb1">
+      <input
+        v-model="numeroCompactado"
+        type="checkbox"
+        class="inputcheckbox interruptor"
+        aria-label="Exibir valores em formato compactado"
+      >
+      valores compactados
+    </label>
+
     <div
       class="min-width"
       style="--min-width: 55rem;"
     >
-      <GraficoDashboard :option="chartOption" />
+      <GraficoDashboard
+        :key="String(numeroCompactado)"
+        :option="chartOption"
+      />
     </div>
   </div>
 </template>
 
-<script setup>
-import { computed } from 'vue';
+<script lang="ts" setup>
 import GraficoDashboard from '@/components/graficos/GraficoDashboard.vue';
 import dinheiro from '@/helpers/dinheiro';
+import type {
+  PainelEstrategicoExecucaoOrcamentariaAno,
+} from '@back/gestao-projetos/painel-estrategico/entities/painel-estrategico-responses.dto';
+import type { DefaultLabelFormatterCallbackParams } from 'echarts';
+import { computed, ref } from 'vue';
 
 const props = defineProps({
   execucaoOrcamentaria: {
-    type: Array,
+    type: Array as () => PainelEstrategicoExecucaoOrcamentariaAno[],
     required: true,
   },
 });
+
+const numeroCompactado = ref<boolean>(true);
 
 const chartOption = computed(() => ({
   grid: {
@@ -53,7 +72,7 @@ const chartOption = computed(() => ({
       fontFamily: 'Roboto',
       fontWeight: 600,
       color: '#142133',
-      formatter: (value) => `R$ ${dinheiro(value, { semDecimais: true })}`,
+      formatter: (value: number) => `R$ ${dinheiro(value, { compactado: numeroCompactado.value, minimumFractionDigits: 0 })}`,
     },
     splitLine: {
       lineStyle: {
@@ -76,7 +95,13 @@ const chartOption = computed(() => ({
         align: 'verticalCenter',
         position: 'center',
         offset: [5, 0],
-        formatter: (params) => (params.value ? `R$ ${dinheiro(params.value, { semDecimais: true })}` : ''),
+        formatter: (params: DefaultLabelFormatterCallbackParams) => (params.value
+          ? `R$ ${dinheiro(Number(params.value), {
+            semDecimais: numeroCompactado.value,
+            compactado: numeroCompactado.value,
+            maximumSignificantDigits: 3,
+          })}`
+          : ''),
         fontSize: 14,
         fontWeight: 600,
         fontFamily: 'Roboto',
@@ -99,7 +124,13 @@ const chartOption = computed(() => ({
         position: 'center',
         offset: [5, 10],
         rotate: 90,
-        formatter: (params) => (params.value ? `R$ ${dinheiro(params.value, { semDecimais: true })}` : ''),
+        formatter: (params: DefaultLabelFormatterCallbackParams) => (params.value
+          ? `R$ ${dinheiro(Number(params.value), {
+            semDecimais: numeroCompactado.value,
+            compactado: numeroCompactado.value,
+            maximumSignificantDigits: 3,
+          })}`
+          : ''),
         fontSize: 14,
         fontWeight: 600,
         fontFamily: 'Roboto',
@@ -121,7 +152,13 @@ const chartOption = computed(() => ({
         align: 'verticalCenter',
         position: 'center',
         offset: [5, 10],
-        formatter: (params) => (params.value ? `R$ ${dinheiro(params.value, { semDecimais: true })}` : ''),
+        formatter: (params: DefaultLabelFormatterCallbackParams) => (params.value
+          ? `R$ ${dinheiro(Number(params.value), {
+            semDecimais: numeroCompactado.value,
+            compactado: numeroCompactado.value,
+            maximumSignificantDigits: 3,
+          })}`
+          : ''),
         fontSize: 14,
         fontWeight: 600,
         fontFamily: 'Roboto',
