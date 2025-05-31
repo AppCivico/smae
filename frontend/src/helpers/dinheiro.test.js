@@ -38,4 +38,10 @@ describe('dinheiro', () => {
     expect(dinheiro(1234.56, { localidade: 'fr-FR' })).toBe('1 234,56');
     expect(dinheiro(1234.56, { localidade: 'ar-EG' })).toBe('١٬٢٣٤٫٥٦');
   });
+
+  it('deve aplicar opções adicionais de formatação', () => {
+    expect(dinheiro(1234.56, { style: 'currency', currency: 'USD', maximumSignificantDigits: 3 })).toBe('US$ 1.230');
+    expect(dinheiro(1234.56, { style: 'currency', currency: 'EUR', maximumSignificantDigits: 3 })).toBe('€ 1.230');
+    expect(dinheiro(1234.56, { style: 'currency', currency: 'BRL', maximumSignificantDigits: 3 })).toBe('R$ 1.230');
+  });
 });

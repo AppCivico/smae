@@ -40,8 +40,8 @@ export default (valor, {
   }
 
   const options = semDecimais
-    ? { opcoes, minimumFractionDigits: 0, maximumFractionDigits: 0 }
-    : { opcoes, minimumFractionDigits: 2 };
+    ? { ...opcoes, minimumFractionDigits: 0, maximumFractionDigits: 0 }
+    : { ...opcoes, minimumFractionDigits: 2 };
 
   if (compactado) {
     options.notation = 'compact';
