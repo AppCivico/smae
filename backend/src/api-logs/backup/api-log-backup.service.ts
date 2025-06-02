@@ -126,7 +126,7 @@ export class ApiLogBackupService implements TaskableService {
                     where: {
                         created_at: {
                             gte: new Date(`${date}T00:00:00.000Z`),
-                            lt: new Date(`${date}T23:59:59.999Z`),
+                            lt: new Date(new Date(date).getTime() + 86400000),
                         },
                     },
                 });
