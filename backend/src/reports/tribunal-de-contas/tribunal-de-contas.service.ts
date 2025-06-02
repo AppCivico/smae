@@ -98,7 +98,7 @@ export class TribunalDeContasService implements ReportableService {
                 acao: distribuicao.objeto,
                 gestor_municipal: distribuicao.orgao_gestor.sigla + ' - ' + distribuicao.orgao_gestor.descricao,
                 prazo_vigencia: Date2YMD.toStringOrNull(distribuicao.vigencia),
-                dotacao_orcamentaria: ` ${distribuicao.dotacao} `,
+                dotacao_orcamentaria: `="${distribuicao.dotacao}"`,
                 rubrica_de_receita: distribuicao.rubrica_de_receita ?? '',
                 finalidade: distribuicao.finalidade ?? '',
                 valor_empenho: distribuicao.valor_empenho?.toNumber() ?? null,
