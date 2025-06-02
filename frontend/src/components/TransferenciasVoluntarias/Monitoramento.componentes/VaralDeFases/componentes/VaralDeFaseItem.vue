@@ -6,7 +6,8 @@ export type VaralDeItemProps = {
   duracao?: number,
   responsavel: string,
   situacao: string,
-  situacoes?: any[]
+  tarefas?: any[]
+  pendente?: boolean
 };
 
 type Props = VaralDeItemProps & {
@@ -21,22 +22,34 @@ defineProps<Props>();
 
 <template>
   <article :class="{'varal-de-fase-item__raiz': !$props.secundario}">
+    <!-- atual == true -->
     <main
       :class="[
         'varal-de-fase-item',
-        { 'varal-de-fase-item--secundario': $props.secundario }
+        { 'varal-de-fase-item--pendente': $props.pendente },
+        { 'varal-de-fase-item--secundario': $props.secundario },
       ]"
     >
-      <header v-if="!web">
-        <h4 class="varal-de-fase-item__titulo w600">
+      <header
+        v-if="!web && !$props.secundario"
+        class="varal-de-fase-item__titulo-container"
+      >
+        <h4 class="varal-de-fase-item__titulo">
           {{ $props.titulo }}
         </h4>
       </header>
 
       <div class="varal-de-fase-item__conteudo">
-        <header v-if="web">
-          <span v-if="$props.secundario">*</span>
-          <h4 class="varal-de-fase-item__titulo w600">
+        <header
+          v-if="web || $props.secundario"
+          class="varal-de-fase-item__titulo-container"
+        >
+          <span
+            v-if="$props.secundario"
+            class="varal-de-fase-item__titulo-situacao"
+          />
+
+          <h4 class="varal-de-fase-item__titulo">
             {{ $props.titulo }}
           </h4>
         </header>
@@ -63,27 +76,30 @@ defineProps<Props>();
         </div>
 
         <di>
-          <button v-if="$props.situacoes?.length">
-            {{ 1 }}/ {{ $props.situacoes?.length }}
+          <button v-if="$props.tarefas?.length">
+            {{ 1 }}/ {{ $props.tarefas?.length }}
           </button>
 
+          <!-- fase => concluida === false -->
+          <!-- tarefa => concluida === false -->
           <button>Editar</button>
         </di>
       </div>
     </main>
 
     <div
-      v-if="$props.situacoes?.length"
-      class="varal-de-fase-item__situacoes"
+      v-if="$props.tarefas?.length"
+      class="varal-de-fase-item__tarefas"
     >
       <VaralDeFaseItem
-        v-for="situacaoObjeto in $props.situacoes"
-        :key="`fase--${situacaoObjeto.id}`"
-        class="varal-de-fase-item__situacao-item"
+        v-for="tarefa in $props.tarefas"
+        :key="`fase--${tarefa.id}`"
+        class="varal-de-fase-item__tarefa-item"
         secundario
-        :titulo="'titulo '+situacaoObjeto.id"
-        :situacao="situacaoObjeto.tipo_situacao"
-        responsavel="responsavel"
+        :titulo="tarefa.workflow_tarefa?.descricao"
+        :duracao="tarefa.duracao"
+        :situacao="tarefa.tipo_situacao || '-'"
+        :responsavel="tarefa.andamento.orgao_responsavel || '-'"
       />
     </div>
   </article>
@@ -121,14 +137,52 @@ article {
   }
 }
 
+.varal-de-fase-item--pendente {
+  .varal-de-fase-item__conteudo {
+    background-color: #FFF6DF;
+    border-color: #F7C234;
+  }
+
+  &.varal-de-fase-item--secundario {
+    .varal-de-fase-item__conteudo {
+      background-color: #fff;
+      border-color: #005C8A;
+    }
+
+    .varal-de-fase-item__titulo-situacao {
+      background-color: #F7C234;
+    }
+  }
+
+}
+
 .varal-de-fase-item__titulo {
   margin: 0;
+  font-weight: 600;
+}
+
+.varal-de-fase-item__titulo-container {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
   margin-bottom: 9px;
 
   .breakpoint-web();
   .-aplicar-web() {
     margin-bottom: 12px;
   }
+}
+
+.varal-de-fase-item__titulo-situacao {
+  content: '';
+  width: 0.5rem;
+  height: 0.5rem;
+  background-color: #005C8A;
+  border-radius: 999px;
+}
+.varal-de-fase-item__titulo-situacao--pendente {
+  background-color: #F7C234;
 }
 
 .varal-de-fase-item__conteudo {
@@ -206,12 +260,12 @@ article {
   }
 }
 
-.varal-de-fase-item__situacoes {
+.varal-de-fase-item__tarefas {
   width: 100%;
   margin-top: 2rem;
 }
 
-.varal-de-fase-item__situacao-item {
+.varal-de-fase-item__tarefa-item {
   margin-bottom: 2rem;
 
   &:last-child {
