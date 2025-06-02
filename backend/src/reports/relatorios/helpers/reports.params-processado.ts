@@ -179,7 +179,7 @@ export const BuildParametrosProcessados = async (
             }
 
             // Pode ser uma data
-            if (valor.match(/^\d{4}-\d{2}-\d{2}/)) {
+            if (typeof valor == 'string' && valor.match(/^\d{4}-\d{2}-\d{2}/)) {
                 // Caso o valor se pareça com uma data, precisamos verificar se é possui algo como "T00:00:00.000Z"
                 // e remover para apresentar apenas a data.
                 // O valor enviado pelo front segue o seguinte padrão: "2025-12-31T00:00:00.000Z"
