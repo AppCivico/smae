@@ -26,7 +26,7 @@ onMounted(() => {
         :duracao="faseObjeto.duracao"
         :situacao="faseObjeto.andamento?.situacao?.tipo_situacao"
         :responsavel="faseObjeto.andamento?.orgao_responsavel.sigla"
-        :situacoes="faseObjeto.situacoes"
+        :tarefas="faseObjeto.tarefas"
       />
     </div>
   </section>
