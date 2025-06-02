@@ -15,7 +15,10 @@ onMounted(() => {
 
 <template>
   <section class="varal-de-fases mt2">
-    <div v-if="etapaCorrente?.fases.length">
+    <div
+      v-if="etapaCorrente?.fases.length"
+      class="flex column g2"
+    >
       <VaralDeFaseItem
         v-for="faseObjeto in etapaCorrente.fases"
         :key="`fase--${faseObjeto.id}`"
@@ -24,9 +27,7 @@ onMounted(() => {
         :situacao="faseObjeto.andamento?.situacao?.tipo_situacao"
         :responsavel="faseObjeto.andamento?.orgao_responsavel.sigla"
         :situacoes="faseObjeto.situacoes"
-      >
-        {{ faseObjeto.andamento }}
-      </VaralDeFaseItem>
+      />
     </div>
   </section>
 </template>
