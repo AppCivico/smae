@@ -12,6 +12,7 @@ import { CreateRefreshTransferenciaDto } from './refresh_transferencia/dto/creat
 import { CreateRefreshVariavelDto } from './refresh_variavel/dto/create-refresh-variavel.dto';
 import { CreateRunReportDto } from './run_report/dto/create-run-report.dto';
 import { CreateRunUpdateDto } from './run_update/dto/create-run-update.dto';
+import { CreateApiLogDayDto } from 'src/api-logs/dto/create-api-log-day.dto.ts';
 
 export function ParseParams(taskType: task_type, value: any): any {
     let theClass: any = undefined;
@@ -53,6 +54,10 @@ export function ParseParams(taskType: task_type, value: any): any {
             theClass = CreateRunReportDto;
             break;
         }
+        case 'restore_api_log_day':
+        case 'backup_api_log_day':
+            theClass = CreateApiLogDayDto;
+            break;
         default:
             taskType satisfies never;
     }

@@ -17,7 +17,9 @@ export class ApiLogBackupService implements TaskableService {
     async executeJob(payload: { date: string; task_id?: number }): Promise<any> {
         const { date, task_id } = payload;
         const logDateUTC = new Date(`${date}T00:00:00Z`);
+
         let totalRecords = 0;
+        const duckDB = await this.duckDBProviderService.getConfiguredInstance();
 
         try {
             await this.prisma.apiRequestLogControl.update({
@@ -32,8 +34,6 @@ export class ApiLogBackupService implements TaskableService {
             const bucket = await this.smaeConfigService.getConfig('S3_BUCKET');
             const fileName = `api_log_${date}.parquet`;
             const s3Path = `s3://${bucket}/api_request_logs/${fileName}`;
-
-            const duckDB = await this.duckDBProviderService.getConfiguredInstance();
 
             await duckDB.run(`
                 CREATE TABLE logs_for_backup (
@@ -65,7 +65,7 @@ export class ApiLogBackupService implements TaskableService {
                     where: {
                         created_at: {
                             gte: new Date(`${date}T00:00:00.000Z`),
-                            lt: new Date(`${date}T23:59:59.999Z`),
+                            lt: new Date(new Date(`${date}T00:00:00.000Z`).getTime() + 86400000),
                         },
                     },
                     select: {
@@ -89,45 +89,27 @@ export class ApiLogBackupService implements TaskableService {
 
                 if (logs.length === 0) break;
 
-                for (const log of logs) {
-                    const row = {
-                        created_at: log.created_at.toISOString(),
-                        cf_ray: log.cf_ray,
-                        request_num: log.request_num,
-                        ip: log.ip,
-                        response_time: log.response_time,
-                        response_size: log.response_size,
-                        req_method: log.req_method,
-                        req_path: log.req_path,
-                        req_host: log.req_host,
-                        req_headers: JSON.stringify(tryDecodeJson(log.req_headers)),
-                        req_query: JSON.stringify(tryDecodeJson(log.req_query)),
-                        req_body: JSON.stringify(tryDecodeJson(log.req_body)),
-                        req_body_size: log.req_body_size ?? 0,
-                        res_code: log.res_code,
-                        created_pessoa_id: log.created_pessoa_id ?? null,
-                    };
+                const batchData = logs.map((log) => [
+                    log.created_at.toISOString(),
+                    log.cf_ray,
+                    log.request_num,
+                    log.ip,
+                    log.response_time,
+                    log.response_size,
+                    log.req_method,
+                    log.req_path,
+                    log.req_host,
+                    JSON.stringify(tryDecodeJson(log.req_headers)),
+                    JSON.stringify(tryDecodeJson(log.req_query)),
+                    JSON.stringify(tryDecodeJson(log.req_body)),
+                    log.req_body_size ?? 0,
+                    log.res_code,
+                    log.created_pessoa_id ?? null,
+                ]);
 
-                    const values = [
-                        `'${row.created_at}'`,
-                        `'${row.cf_ray}'`,
-                        row.request_num,
-                        `'${row.ip}'`,
-                        row.response_time,
-                        row.response_size,
-                        `'${row.req_method}'`,
-                        `'${row.req_path}'`,
-                        `'${row.req_host}'`,
-                        `'${row.req_headers}'`,
-                        `'${row.req_query}'`,
-                        `'${row.req_body}'`,
-                        row.req_body_size,
-                        row.res_code,
-                        row.created_pessoa_id ?? 'NULL',
-                    ].join(', ');
-
-                    await duckDB.run(`INSERT INTO logs_for_backup VALUES (${values});`);
-                }
+                const placeholders = batchData.map(() => '(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)').join(',');
+                const flatData = batchData.flat();
+                await duckDB.run(`INSERT INTO logs_for_backup VALUES ${placeholders}`, flatData);
 
                 totalRecords += logs.length;
                 offset += CHUNK_SIZE;
@@ -139,22 +121,24 @@ export class ApiLogBackupService implements TaskableService {
 
             await duckDB.run(`COPY logs_for_backup TO '${s3Path}' (FORMAT PARQUET, COMPRESSION 'ZSTD');`);
 
-            await this.prisma.api_request_log.deleteMany({
-                where: {
-                    created_at: {
-                        gte: new Date(`${date}T00:00:00.000Z`),
-                        lt: new Date(`${date}T23:59:59.999Z`),
+            await this.prisma.$transaction(async (tx) => {
+                await tx.api_request_log.deleteMany({
+                    where: {
+                        created_at: {
+                            gte: new Date(`${date}T00:00:00.000Z`),
+                            lt: new Date(`${date}T23:59:59.999Z`),
+                        },
                     },
-                },
-            });
+                });
 
-            await this.prisma.apiRequestLogControl.update({
-                where: { log_date: logDateUTC },
-                data: {
-                    status: 'BACKED_UP',
-                    backup_location: s3Path,
-                    last_error: null,
-                },
+                await tx.apiRequestLogControl.update({
+                    where: { log_date: logDateUTC },
+                    data: {
+                        status: 'BACKED_UP',
+                        backup_location: s3Path,
+                        last_error: null,
+                    },
+                });
             });
 
             await duckDB.close();
@@ -166,6 +150,7 @@ export class ApiLogBackupService implements TaskableService {
                 recordsBackedUp: totalRecords,
             };
         } catch (error) {
+            await duckDB.close();
             await this.prisma.apiRequestLogControl.update({
                 where: { log_date: logDateUTC },
                 data: {

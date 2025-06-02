@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { TaskableService } from 'src/task/entities/task.entity';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { SmaeConfigService } from 'src/common/services/smae-config.service';
 import { DuckDBProviderService } from 'src/common/duckdb/duckdb-provider.service';
 import { tryDecodeJson } from '../utils/json-utils';
 
@@ -9,7 +8,6 @@ import { tryDecodeJson } from '../utils/json-utils';
 export class ApiLogRestoreService implements TaskableService {
     constructor(
         private readonly prisma: PrismaService,
-        private readonly smaeConfigService: SmaeConfigService,
         private readonly duckDBProviderService: DuckDBProviderService
     ) {}
 

@@ -25,8 +25,8 @@ import { RunReportTaskService } from './run_report/run-report.service';
 import { RunUpdateTaskService } from './run_update/run-update.service';
 import { ParseParams } from './task.parseParams';
 import { TaskContext } from './task.context';
-import { ApiLogBackupService } from 'src/api-log/api-log-backup/api-log-backup.service';
-import { ApiLogRestoreService } from 'src/api-log/api-log-restore/api-log-restore.service';
+import { ApiLogBackupService } from 'src/api-logs/backup/api-log-backup.service';
+import { ApiLogRestoreService } from 'src/api-logs/restore/api-log-restore.service';
 
 export class TaskRetryService {
     static calculateNextRetryTime(retryCount: number, retryConfig: RetryConfigDto): Date {

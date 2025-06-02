@@ -56,7 +56,7 @@ import { RequestLogModule } from './request_log/request_log.module';
 import { RunReportModule } from './task/run_report/run-report.module';
 import { TaskModule } from './task/task.module';
 import { ClassificacaoModule } from './transferencias-voluntarias/classificacao/classificacao.module';
-import { DuckDBProviderService } from './common/duckdb/duckdb-provider.service';
+import { DuckDBModule } from './common/duckdb/duckdb.module';
 
 // Hacks pro JS
 /*
@@ -116,7 +116,7 @@ import { DuckDBProviderService } from './common/duckdb/duckdb-provider.service';
         PSMFDashboardModule,
         RunReportModule,
         AtualizacaoEmLoteModule,
-        DuckDBProviderService
+        
     ],
     controllers: [AppController],
     providers: [
@@ -164,6 +164,7 @@ import { DuckDBProviderService } from './common/duckdb/duckdb-provider.service';
             }),
         },
         UtilsService,
+        DuckDBModule
     ],
 })
 export class AppModule implements NestModule {
