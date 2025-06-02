@@ -179,6 +179,7 @@ export const BuildParametrosProcessados = async (
             }
 
             // Pode ser uma data
+            // Valores de data, nos DTOs são Dates, mas no banco são strings.
             if (typeof valor == 'string' && valor.match(/^\d{4}-\d{2}-\d{2}/)) {
                 // Caso o valor se pareça com uma data, precisamos verificar se é possui algo como "T00:00:00.000Z"
                 // e remover para apresentar apenas a data.
@@ -186,6 +187,10 @@ export const BuildParametrosProcessados = async (
                 valor = valor.split('T')[0]; // Pega apenas a parte da data
                 parametros_processados[nomeChave] = valor;
                 continue;
+            } else if (valor instanceof Date) {
+                // Tratando data que é Date
+                valor = valor.toISOString().split('T')[0];
+                parametros_processados[nomeChave] = valor;
             }
 
             continue;
