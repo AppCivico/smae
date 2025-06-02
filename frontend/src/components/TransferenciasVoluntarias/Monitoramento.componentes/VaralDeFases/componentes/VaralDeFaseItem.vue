@@ -20,49 +20,71 @@ defineProps<Props>();
 </script>
 
 <template>
-  <article class="varal-de-fase-item">
-    <header v-if="!web">
-      <h4 class="varal-de-fase-item__titulo w600">
-        {{ $props.titulo }}
-      </h4>
-    </header>
-
-    <div class="varal-de-fase-item__conteudo">
-      <header v-if="web">
-        <span v-if="$props.secundario">*</span>
+  <article :class="{'varal-de-fase-item__raiz': !$props.secundario}">
+    <main
+      :class="[
+        'varal-de-fase-item',
+        { 'varal-de-fase-item--secundario': $props.secundario }
+      ]"
+    >
+      <header v-if="!web">
         <h4 class="varal-de-fase-item__titulo w600">
           {{ $props.titulo }}
         </h4>
       </header>
 
-      <div
-        v-if="$props.duracao"
-        class="varal-de-fase-item__linha varal-de-fase-item__mesma-linha"
-      >
-        <h5>Duração</h5>
+      <div class="varal-de-fase-item__conteudo">
+        <header v-if="web">
+          <span v-if="$props.secundario">*</span>
+          <h4 class="varal-de-fase-item__titulo w600">
+            {{ $props.titulo }}
+          </h4>
+        </header>
 
-        <h6>{{ $props.duracao }}d</h6>
+        <div
+          v-if="$props.duracao"
+          class="varal-de-fase-item__linha varal-de-fase-item__mesma-linha"
+        >
+          <h5>Duração</h5>
+
+          <h6>{{ $props.duracao }}d</h6>
+        </div>
+
+        <div class="varal-de-fase-item__linha varal-de-fase-item__linha--duas">
+          <h5>Responsável</h5>
+
+          <h6>{{ $props.responsavel }}</h6>
+        </div>
+
+        <div class="varal-de-fase-item__linha varal-de-fase-item__linha--duas">
+          <h5>Situação</h5>
+
+          <h6>{{ $props.situacao }}</h6>
+        </div>
+
+        <di>
+          <button v-if="$props.situacoes?.length">
+            {{ 1 }}/ {{ $props.situacoes?.length }}
+          </button>
+
+          <button>Editar</button>
+        </di>
       </div>
+    </main>
 
-      <div class="varal-de-fase-item__linha varal-de-fase-item__linha--duas">
-        <h5>Responsável</h5>
-
-        <h6>{{ $props.responsavel }}</h6>
-      </div>
-
-      <div class="varal-de-fase-item__linha varal-de-fase-item__linha--duas">
-        <h5>Situação</h5>
-
-        <h6>{{ $props.situacao }}</h6>
-      </div>
-
-      <di>
-        <button v-if="$props.situacoes?.length">
-          {{ 1 }}/ {{ $props.situacoes?.length }}
-        </button>
-
-        <button>Editar</button>
-      </di>
+    <div
+      v-if="$props.situacoes?.length"
+      class="varal-de-fase-item__situacoes"
+    >
+      <VaralDeFaseItem
+        v-for="situacaoObjeto in $props.situacoes"
+        :key="`fase--${situacaoObjeto.id}`"
+        class="varal-de-fase-item__situacao-item"
+        secundario
+        :titulo="'titulo '+situacaoObjeto.id"
+        :situacao="situacaoObjeto.tipo_situacao"
+        responsavel="responsavel"
+      />
     </div>
   </article>
 </template>
@@ -70,8 +92,33 @@ defineProps<Props>();
 <style lang="less" scoped>
 @import "@/_less/tamanho-dispostivo.less";
 
+article {
+  width: 100%;
+}
+
 .varal-de-fase-item {
-  margin-bottom: 2rem;
+  width: 100%;
+}
+
+.varal-de-fase-item__raiz {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    height: calc(100% - 5px);
+    border: 1px dashed #B8C0CC;
+    z-index: -1;
+  }
+}
+
+.varal-de-fase-item--secundario {
+  .varal-de-fase-item__conteudo {
+    border-style: dashed;
+  }
 }
 
 .varal-de-fase-item__titulo {
@@ -89,6 +136,7 @@ defineProps<Props>();
   padding: 8px 12px;
   border-radius: 18px;
   border: 1px solid #B8C0CC;
+  width: 100%;
 }
 
 .varal-de-fase-item__conteudo:not(:has(.varal-de-fase-item__titulo)) {
@@ -155,6 +203,19 @@ defineProps<Props>();
     h6 {
       margin-top: initial;
     }
+  }
+}
+
+.varal-de-fase-item__situacoes {
+  width: 100%;
+  margin-top: 2rem;
+}
+
+.varal-de-fase-item__situacao-item {
+  margin-bottom: 2rem;
+
+  &:last-child {
+    margin-bottom: initial;
   }
 }
 </style>
