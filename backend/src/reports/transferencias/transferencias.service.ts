@@ -92,6 +92,8 @@ class RetornoDbTransferencias {
     distribuicao_recurso_investimento: number | null;
     tipo_transferencia: string;
     classificacao: string | null;
+    pct_investimento: number | null;
+    pct_custeio: number | null;
 }
 
 @Injectable()
@@ -237,7 +239,7 @@ export class TransferenciasService implements ReportableService {
             tarefasRows.linhas.map((e) => {
                 tarefasOut.push({
                     transferencia_id: tarefaCronoId.transferencia_id!,
-                    hirearquia: tarefasHierarquia[e.id],
+                    hirearquia: `="${tarefasHierarquia[e.id]}"`,
                     tarefa: e.tarefa,
                     inicio_planejado: e.inicio_planejado,
                     termino_planejado: e.termino_planejado,
@@ -355,15 +357,15 @@ export class TransferenciasService implements ReportableService {
                 valor_total: db.valor_total ? db.valor_total : null,
                 valor_contrapartida: db.valor_contrapartida ? db.valor_contrapartida : null,
                 emenda: db.emenda,
-                emenda_unitaria: db.emenda_unitaria,
-                dotacao: String(db.dotacao),
+                emenda_unitaria: `="${db.emenda_unitaria}"`,
+                dotacao: db.dotacao ? `="${db.dotacao}"` : ' - ',
                 demanda: db.demanda,
-                banco_fim: db.banco_fim,
-                conta_fim: db.conta_fim,
-                agencia_fim: db.agencia_fim,
-                banco_aceite: db.banco_aceite,
-                conta_aceite: db.conta_aceite,
-                agencia_aceite: db.agencia_aceite,
+                banco_fim: `=${db.banco_fim}"`,
+                conta_fim: `=${db.conta_fim}"`,
+                agencia_fim: `="${db.agencia_fim}"`,
+                banco_aceite: `=${db.banco_aceite}"`,
+                conta_aceite: `=${db.conta_aceite}"`,
+                agencia_aceite: `=${db.agencia_aceite}"`,
                 gestor_contrato: db.gestor_contrato,
                 ordenador_despesa: db.ordenador_despesa,
                 numero_identificacao: db.numero_identificacao,
@@ -426,14 +428,8 @@ export class TransferenciasService implements ReportableService {
                           registro_sei: db.distribuicao_recurso_sei ? formataSEI(db.distribuicao_recurso_sei) : null,
                           nome_responsavel: db.distribuicao_recurso_status_nome_responsavel,
                           status_nome_base: db.distribuicao_recurso_status_nome_base,
-                          pct_custeio:
-                              db.distribuicao_recurso_valor != null && db.distribuicao_recurso_custeio != null
-                                  ? `="${((db.distribuicao_recurso_custeio / db.distribuicao_recurso_valor) * 100).toFixed(2).replace('.', ',')}%"`
-                                  : null,
-                          pct_investimento:
-                              db.distribuicao_recurso_valor != null && db.distribuicao_recurso_investimento != null
-                                  ? `="${((db.distribuicao_recurso_investimento / db.distribuicao_recurso_valor) * 100).toFixed(2).replace('.', ',')}%"`
-                                  : null,
+                          pct_custeio: db.pct_custeio?.toString() ?? `0`,
+                          pct_investimento: db.pct_investimento?.toString() ?? `0`,
                       }
                     : null,
             });
