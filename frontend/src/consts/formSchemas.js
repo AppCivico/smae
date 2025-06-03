@@ -3247,7 +3247,8 @@ export const relatórioDeTribunalDeContas = relatorioValidacaoBase.concat(object
       .oneOf([...Object.keys(esferasDeTransferencia), null]),
     tipo_id: mixed()
       .label('Tipo de Transferência')
-      .required(),
+      .required()
+      .nullableOuVazio(),
     // .oneOf([...Object.keys(tiposTransferências), null]),
     tipo: mixed()
       .label('Tipo')
