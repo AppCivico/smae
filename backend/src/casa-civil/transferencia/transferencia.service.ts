@@ -1714,6 +1714,24 @@ export class TransferenciaService {
 
         await prismaTxn.$queryRaw`CALL create_workflow_cronograma(${transferencia_id}::int, ${workflow_id}::int);`;
 
+        // Caso a transferência possua distribuição(es).
+        // Criamos as tarefas que não são responsabilidade própria.
+        const distribuicoes = await prismaTxn.distribuicaoRecurso.findMany({
+            where: {
+                transferencia_id: transferencia_id,
+                removido_em: null,
+            },
+            select: {
+                id: true,
+            },
+        });
+
+        for (const distribuicao of distribuicoes) {
+            const distribuicaoId = distribuicao.id;
+
+            await this.distribuicaoService._createTarefasOutroOrgao(prismaTxn, distribuicaoId, user);
+        }
+
         // Atualizando data de início de primeiro nível.
         const andamentoPrimeiraFase = await prismaTxn.transferenciaAndamento.findFirstOrThrow({
             where: {

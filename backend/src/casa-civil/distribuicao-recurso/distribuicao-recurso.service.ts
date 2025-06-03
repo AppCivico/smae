@@ -1738,11 +1738,7 @@ export class DistribuicaoRecursoService {
         await Promise.all(operations);
     }
 
-    private async _createTarefasOutroOrgao(
-        prismaTx: Prisma.TransactionClient,
-        distribuicao_id: number,
-        user: PessoaFromJwt
-    ) {
+    async _createTarefasOutroOrgao(prismaTx: Prisma.TransactionClient, distribuicao_id: number, user: PessoaFromJwt) {
         const distribuicaoRecurso = await prismaTx.distribuicaoRecurso.findFirstOrThrow({
             where: {
                 id: distribuicao_id,
