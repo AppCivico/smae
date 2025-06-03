@@ -186,7 +186,7 @@ resetForm();
           as="textarea"
           rows="5"
           class="inputtext light mb1"
-          v-model="carga.descricao"
+          :model-value="carga.descricao"
           anular-vazio
         />
         <ErrorMessage
