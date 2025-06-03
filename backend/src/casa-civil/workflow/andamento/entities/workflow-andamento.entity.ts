@@ -19,6 +19,7 @@ export class WorkflowAndamentoDto extends PartialType(OmitType(WorkflowDetailDto
 }
 
 export class WorkflowAndamentoFluxoDto extends DetailWorkflowFluxoDto {
+    atual: boolean;
     @ApiProperty({ type: () => [WorkflowAndamentoFasesDto] })
     fases: WorkflowAndamentoFasesDto[];
 }

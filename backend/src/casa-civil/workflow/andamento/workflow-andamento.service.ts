@@ -33,14 +33,13 @@ export class WorkflowAndamentoService {
                 andamentoWorkflow: {
                     where: {
                         removido_em: null,
-                        data_inicio: { not: null },
                     },
-                    take: 1,
                     orderBy: [{ id: 'desc' }, { criado_em: 'desc' }],
                     select: {
                         id: true,
                         workflow_etapa_id: true,
                         data_termino: true,
+                        data_inicio: true,
                     },
                 },
             },
@@ -51,16 +50,18 @@ export class WorkflowAndamentoService {
             return;
         }
 
-        if (transferencia.andamentoWorkflow.length > 1)
-            throw new Error('Erro interno ao definir etapa relevante para acompanhamento');
-
         const workflow = await this.workflowService.findOne(transferencia.workflow_id, user);
 
         // Processando booleans de controle de etapa.
         let possui_proxima_etapa: boolean;
 
+        // A etapa atual é a que está com data de início definida e sem data de término no andamento.
+        const etapaAtualAndamento = transferencia.andamentoWorkflow.find((e) => {
+            return e.data_inicio && !e.data_termino;
+        });
+
         const etapaAtual = workflow.fluxo.find((e) => {
-            return e.workflow_etapa_de!.id == transferencia.andamentoWorkflow[0].workflow_etapa_id;
+            return e.workflow_etapa_de!.id == etapaAtualAndamento!.workflow_etapa_id;
         });
         const proxEtapa = etapaAtual!.workflow_etapa_para;
 
@@ -125,42 +126,40 @@ export class WorkflowAndamentoService {
             pode_passar_para_proxima_etapa: pode_passar_para_proxima_etapa,
             pode_reabrir_fase: pode_reabrir_fase,
             fluxo: await Promise.all(
-                workflow.fluxo
-                    .filter((e) => e.workflow_etapa_de!.id == transferencia.andamentoWorkflow[0].workflow_etapa_id)
-                    .map(async (fluxo) => {
-                        return {
-                            ...fluxo,
+                workflow.fluxo.map(async (fluxo) => {
+                    return {
+                        ...fluxo,
+                        atual: fluxo.workflow_etapa_de!.id == etapaAtualAndamento!.workflow_etapa_id,
+                        fases: await Promise.all(
+                            fluxo.fases.map(async (fase) => {
+                                return {
+                                    ...fase,
+                                    andamento: await this.getAndamentoFaseRet(
+                                        transferencia.id,
+                                        fase.fase!.id,
+                                        transferencia.workflow_id!,
+                                        fluxo.workflow_etapa_de!.id
+                                    ),
 
-                            fases: await Promise.all(
-                                fluxo.fases.map(async (fase) => {
-                                    return {
-                                        ...fase,
-                                        andamento: await this.getAndamentoFaseRet(
-                                            transferencia.id,
-                                            fase.fase!.id,
-                                            transferencia.workflow_id!,
-                                            fluxo.workflow_etapa_de!.id
-                                        ),
+                                    tarefas: await Promise.all(
+                                        fase.tarefas.map(async (tarefa) => {
+                                            return {
+                                                ...tarefa,
 
-                                        tarefas: await Promise.all(
-                                            fase.tarefas.map(async (tarefa) => {
-                                                return {
-                                                    ...tarefa,
-
-                                                    andamento: await this.getAndamentoTarefaRet(
-                                                        fase.fase!.id,
-                                                        transferencia.id,
-                                                        tarefa.workflow_tarefa!.id,
-                                                        transferencia.workflow_id!
-                                                    ),
-                                                };
-                                            })
-                                        ),
-                                    };
-                                })
-                            ),
-                        };
-                    })
+                                                andamento: await this.getAndamentoTarefaRet(
+                                                    fase.fase!.id,
+                                                    transferencia.id,
+                                                    tarefa.workflow_tarefa!.id,
+                                                    transferencia.workflow_id!
+                                                ),
+                                            };
+                                        })
+                                    ),
+                                };
+                            })
+                        ),
+                    };
+                })
             ),
         };
     }
