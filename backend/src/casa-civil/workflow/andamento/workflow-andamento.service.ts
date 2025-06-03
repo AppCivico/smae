@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { FilterWorkflowAndamentoDto } from './dto/filter-andamento.dto';
@@ -55,13 +55,19 @@ export class WorkflowAndamentoService {
         // Processando booleans de controle de etapa.
         let possui_proxima_etapa: boolean;
 
-        // A etapa atual é a que está com data de início definida e sem data de término no andamento.
-        const etapaAtualAndamento = transferencia.andamentoWorkflow.find((e) => {
-            return e.data_inicio && !e.data_termino;
-        });
+        // Descobrindo a fase atual para buscar a etapa atual.
+        const faseAtualAndamento = transferencia.andamentoWorkflow
+            .filter((e) => e.data_inicio != null)
+            .find((e) => {
+                return (e.data_inicio && !e.data_termino) || (e.data_inicio && e.data_termino);
+            });
+
+        if (!faseAtualAndamento) {
+            throw new InternalServerErrorException('Não foi possível encontrar fase atual do workflow.');
+        }
 
         const etapaAtual = workflow.fluxo.find((e) => {
-            return e.workflow_etapa_de!.id == etapaAtualAndamento!.workflow_etapa_id;
+            return e.workflow_etapa_de!.id == faseAtualAndamento.workflow_etapa_id;
         });
         const proxEtapa = etapaAtual!.workflow_etapa_para;
 
@@ -129,7 +135,7 @@ export class WorkflowAndamentoService {
                 workflow.fluxo.map(async (fluxo) => {
                     return {
                         ...fluxo,
-                        atual: fluxo.workflow_etapa_de!.id == etapaAtualAndamento!.workflow_etapa_id,
+                        atual: fluxo.workflow_etapa_de!.id == faseAtualAndamento!.workflow_etapa_id,
                         fases: await Promise.all(
                             fluxo.fases.map(async (fase) => {
                                 return {
