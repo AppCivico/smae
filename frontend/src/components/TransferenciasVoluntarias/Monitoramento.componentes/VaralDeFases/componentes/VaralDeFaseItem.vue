@@ -97,18 +97,6 @@ defineProps<Props>();
         v-for="(tarefa, tarefaIndex) in [
           ...$props.tarefas,
           ...$props.tarefas,
-          ...$props.tarefas,
-          ...$props.tarefas,
-          ...$props.tarefas,
-          ...$props.tarefas,
-          ...$props.tarefas,
-          ...$props.tarefas,
-          ...$props.tarefas,
-          ...$props.tarefas,
-          ...$props.tarefas,
-          ...$props.tarefas,
-          ...$props.tarefas,
-          ...$props.tarefas,
         ]"
         :key="`fase--${tarefaIndex}`"
         class="varal-de-fase-item__tarefa-item"
@@ -117,6 +105,7 @@ defineProps<Props>();
         :duracao="tarefa.duracao"
         :situacao="tarefa.tipo_situacao || '-'"
         :responsavel="tarefa.andamento.orgao_responsavel || '-'"
+        :pendente="!tarefa.andamento.concluida"
       />
     </div>
   </article>
@@ -193,6 +182,7 @@ article {
   border-radius: 18px;
   border: 1px solid #B8C0CC;
   width: 100%;
+  position: relative;
 }
 
 .varal-de-fase-item__conteudo:not(:has(.varal-de-fase-item__titulo)) {
@@ -267,7 +257,11 @@ article {
   margin-top: 2rem;
 }
 
-.varal-de-fase-item__tarefa-item + .varal-de-fase-item__tarefa-item {
+.varal-de-fase-item__tarefa-item {
+  position: relative;
+}
+
+article:has(+ article), article + article {
   display: flex;
   justify-content: center;
   margin-top: 2rem;
@@ -275,10 +269,10 @@ article {
   &::before {
     content: '';
     position: absolute;
-    height: 100%;
+    height: calc(100% + 2rem);
     border: 1px dashed #B8C0CC;
     z-index: -1;
-    top: 0;
+    bottom: 0;
   }
 }
 </style>
