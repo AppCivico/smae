@@ -77,7 +77,7 @@ onMounted(() => {
 }
 
 .fase-item__contador-container {
-  transform: translateY(-25%);
+  transform: translateY(-5px);
   padding: 5px;
   border: 1px solid #B8C0CC;
   border-radius: 999px;
