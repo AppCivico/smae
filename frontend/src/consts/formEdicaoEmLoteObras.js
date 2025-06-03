@@ -63,7 +63,7 @@ const metasEdicaoEmLote = {
       operacao: {
         Set: 'Substitui o item existente',
       },
-      campo: 'A edição do órgão gestor implica na exclusão dos pontos focais de monitoramento',
+      campo: 'A edição do órgão gestor implica na exclusão dos assessores do portfólio',
     },
   },
   orgao_responsavel_id: {
