@@ -1,7 +1,11 @@
+<script setup>
+import MonitoramentoCards from '@/components/transferencia/MonitoramentoCards.vue';
+
+</script>
 <template>
   <CabecalhoDePagina />
 
-  &lt;ComponenteDeCard/&gt;
+  <MonitoramentoCards />
 
   &lt;VaralDeEtapas/&gt;
 
