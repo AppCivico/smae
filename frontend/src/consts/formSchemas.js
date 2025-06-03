@@ -2496,11 +2496,11 @@ export const processo = object()
   .shape({
     comentarios: string()
       .label('Comentários')
-      .max(1024)
+      .max(2048)
       .nullable(),
     descricao: string()
       .label('Descrição')
-      .max(2000)
+      .max(2048)
       .nullable(),
     link: string()
       .label('Link')
@@ -2509,7 +2509,7 @@ export const processo = object()
       .url(),
     observacoes: string()
       .label('Observações')
-      .max(1024)
+      .max(2048)
       .nullable(),
     processo_sei: string()
       .label('Processo SEI')
