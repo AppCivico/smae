@@ -92,8 +92,23 @@ defineProps<Props>();
       class="varal-de-fase-item__tarefas"
     >
       <VaralDeFaseItem
-        v-for="tarefa in $props.tarefas"
-        :key="`fase--${tarefa.id}`"
+        v-for="(tarefa, tarefaIndex) in [
+          ...$props.tarefas,
+          ...$props.tarefas,
+          ...$props.tarefas,
+          ...$props.tarefas,
+          ...$props.tarefas,
+          ...$props.tarefas,
+          ...$props.tarefas,
+          ...$props.tarefas,
+          ...$props.tarefas,
+          ...$props.tarefas,
+          ...$props.tarefas,
+          ...$props.tarefas,
+          ...$props.tarefas,
+          ...$props.tarefas,
+        ]"
+        :key="`fase--${tarefaIndex}`"
         class="varal-de-fase-item__tarefa-item"
         secundario
         :titulo="tarefa.workflow_tarefa?.descricao"
@@ -125,9 +140,10 @@ article {
   &::before {
     content: '';
     position: absolute;
-    height: calc(100% - 5px);
+    height: 85%;
     border: 1px dashed #B8C0CC;
     z-index: -1;
+    bottom: 0;
   }
 }
 
@@ -175,7 +191,6 @@ article {
 }
 
 .varal-de-fase-item__titulo-situacao {
-  content: '';
   width: 0.5rem;
   height: 0.5rem;
   background-color: #005C8A;
