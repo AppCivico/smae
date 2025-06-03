@@ -56,7 +56,7 @@ defineProps<Props>();
 
         <div
           v-if="$props.duracao"
-          class="varal-de-fase-item__linha varal-de-fase-item__mesma-linha"
+          class="varal-de-fase-item__linha"
         >
           <h5>Duração</h5>
 
@@ -82,7 +82,9 @@ defineProps<Props>();
 
           <!-- fase => concluida === false -->
           <!-- tarefa => concluida === false -->
-          <button>Editar</button>
+          <button class="btn">
+            Editar
+          </button>
         </di>
       </div>
     </main>
@@ -131,25 +133,9 @@ article {
   width: 100%;
 }
 
-.varal-de-fase-item__raiz {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
-
-  &::before {
-    content: '';
-    position: absolute;
-    height: 85%;
-    border: 1px dashed #B8C0CC;
-    z-index: -1;
-    bottom: 0;
-  }
-}
-
 .varal-de-fase-item--secundario {
   .varal-de-fase-item__conteudo {
-    border-style: dashed;
+    border: 2px dashed #005C8A;
   }
 }
 
@@ -196,6 +182,7 @@ article {
   background-color: #005C8A;
   border-radius: 999px;
 }
+
 .varal-de-fase-item__titulo-situacao--pendente {
   background-color: #F7C234;
 }
@@ -280,11 +267,18 @@ article {
   margin-top: 2rem;
 }
 
-.varal-de-fase-item__tarefa-item {
-  margin-bottom: 2rem;
+.varal-de-fase-item__tarefa-item + .varal-de-fase-item__tarefa-item {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
 
-  &:last-child {
-    margin-bottom: initial;
+  &::before {
+    content: '';
+    position: absolute;
+    height: 100%;
+    border: 1px dashed #B8C0CC;
+    z-index: -1;
+    top: 0;
   }
 }
 </style>
