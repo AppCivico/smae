@@ -20,24 +20,31 @@ onMounted(() => {
       class="varal-de-fases__lista"
     >
       <div
-        v-for="faseObjeto in etapaCorrente.fases"
-        :key="`fase--${faseObjeto.id}`"
+        v-for="(faseObjeto, faseIndex) in [
+          ...etapaCorrente.fases,
+          ...etapaCorrente.fases,
+          ...etapaCorrente.fases,
+          ...etapaCorrente.fases,
+        ]"
+        :key="`fase--${faseIndex}`"
         class="fase-item"
       >
         <div class="fase-item__contador">
           <div class="fase-item__contador-container">
             <div class="fase-item__contador-wrapper">
-              {{ `${faseObjeto.ordem}`.padStart(2, 0) }}
+              {{ `${faseIndex+1}`.padStart(2, 0) }}
             </div>
           </div>
         </div>
 
         <VaralDeFaseItem
+          style="min-width: 150px;"
           :titulo="faseObjeto.fase.fase"
           :duracao="faseObjeto.duracao"
           :situacao="faseObjeto.andamento?.situacao?.tipo_situacao"
           :responsavel="faseObjeto.andamento?.orgao_responsavel.sigla"
           :tarefas="faseObjeto.tarefas"
+          :pendente="!faseObjeto.andamento?.concluida"
         />
       </div>
     </div>
@@ -45,9 +52,17 @@ onMounted(() => {
 </template>
 
 <style lang="less" scoped>
+@import "@/_less/tamanho-dispostivo.less";
+
 .varal-de-fases__lista {
   display: flex;
   flex-direction: column;
+
+  .breakpoint-web();
+  .-aplicar-web() {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
 }
 
 .fase-item {
@@ -59,6 +74,14 @@ onMounted(() => {
 
   &:last-of-type {
     padding-bottom: initial;
+  }
+
+  .breakpoint-web();
+  .-aplicar-web() {
+    flex-direction: column;
+    align-items: center;
+    padding-bottom: initial;
+    padding-right: 60px;
   }
 }
 
@@ -74,6 +97,18 @@ onMounted(() => {
     background-color: #B8C0CC;
     z-index: -1;
   }
+
+  .breakpoint-web();
+  .-aplicar-web() {
+    justify-content: initial;
+    align-items: center;
+
+    &::before {
+      width: 100%;
+      height: 1px;
+      left: 0;
+    }
+  }
 }
 
 .fase-item__contador-container {
@@ -82,6 +117,11 @@ onMounted(() => {
   border: 1px solid #B8C0CC;
   border-radius: 999px;
   background-color: #fff;
+
+  .breakpoint-web();
+  .-aplicar-web() {
+    transform: initial;
+  }
 }
 
 .fase-item__contador-wrapper {
