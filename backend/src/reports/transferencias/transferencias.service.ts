@@ -1,7 +1,7 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { Date2YMD } from '../../common/date2ymd';
 import { PrismaService } from '../../prisma/prisma.service';
-import { DefaultCsvOptions, FileOutput, ReportableService } from '../utils/utils.service';
+import { DefaultCsvOptions, EnumHumano, FileOutput, ReportableService } from '../utils/utils.service';
 import { CreateRelTransferenciasDto, TipoRelatorioTransferencia } from './dto/create-transferencias.dto';
 import {
     RelTransferenciaCronogramaDto,
@@ -11,6 +11,7 @@ import {
 import { TarefaService } from 'src/pp/tarefa/tarefa.service';
 import { formataSEI } from 'src/common/formata-sei';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
+import { ParlamentarCargo } from '@prisma/client';
 
 const {
     Parser,
@@ -374,7 +375,7 @@ export class TransferenciasService implements ReportableService {
                 esfera: db.esfera,
                 tipo_transferencia: db.tipo_transferencia,
                 classificacao: db.classificacao,
-                cargo: db.cargo,
+                cargo: db.cargo ? EnumHumano(ParlamentarCargo, db.cargo) : '',
                 partido: db.partido_id
                     ? {
                           id: db.partido_id,
@@ -488,8 +489,8 @@ export class TransferenciasService implements ReportableService {
                 { value: 'agencia_fim', label: 'Conta - Agência da Secretaria fim' },
                 { value: 'banco_aceite', label: 'Conta - Banco do aceite' },
                 { value: 'agencia_aceite', label: 'Conta - Agência do aceite' },
-                { value: 'nome_programa', label: 'Nome do Programa' },
                 { value: 'conta_aceite', label: 'Conta - Número do aceite' },
+                { value: 'nome_programa', label: 'Nome do Programa' },
                 { value: 'emenda_unitaria', label: 'Emenda Unitária' },
                 {
                     value: 'distribuicao_recurso.orgao_gestor_descricao',
