@@ -1,17 +1,21 @@
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { task_type } from '@prisma/client';
-import { ApiTags, ApiOkResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOkResponse, ApiBearerAuth, ApiResponse, ApiOperation } from '@nestjs/swagger';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { TaskService } from 'src/task/task.service';
 import { CreateApiLogDayDto } from '../dto/create-api-log-day.dto.ts.js';
+import { ApiLogRestoreService } from './api-log-restore.service.js';
 
-@ApiTags('api-logs')
+@ApiTags('Api Logs')
 @Controller('logs')
 export class ApiLogManagementController {
-    constructor(private readonly taskService: TaskService) {}
+    constructor(
+        private readonly taskService: TaskService,
+        private readonly apiRestoreService: ApiLogRestoreService
+    ) {}
 
     @Post('restore')
     @UseGuards(JwtAuthGuard, RolesGuard)
@@ -34,5 +38,29 @@ export class ApiLogManagementController {
             user
         );
         return { taskId: task.id };
+    }
+
+    @Post('drop')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(['SMAE.sysadmin'])
+    @ApiBearerAuth('access-token')
+    @ApiOperation({ summary: 'Dropa dados restaurados do dia informado (UTC).' })
+    @ApiResponse({
+        status: 200,
+        description: 'Drop concluído com sucesso.',
+        schema: {
+            example: {},
+        },
+    })
+    @ApiResponse({
+        status: 404,
+        description: 'Nenhum log restaurado encontrado para o dia especificado.',
+    })
+    @ApiResponse({
+        status: 400,
+        description: 'Requisição inválida ou status incorreto.',
+    })
+    async dropApiLogs(@Body() dto: CreateApiLogDayDto): Promise<void> {
+        await this.apiRestoreService.dropDay(dto);
     }
 }

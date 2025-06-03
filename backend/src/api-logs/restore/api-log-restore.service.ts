@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { TaskableService } from 'src/task/entities/task.entity';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { DuckDBProviderService } from 'src/common/duckdb/duckdb-provider.service';
 import { tryDecodeJson } from '../utils/json-utils';
+import { CreateApiLogDayDto } from '../dto/create-api-log-day.dto.ts';
 
 @Injectable()
 export class ApiLogRestoreService implements TaskableService {
@@ -103,6 +104,34 @@ export class ApiLogRestoreService implements TaskableService {
                 error: error.message,
             };
         }
+    }
+
+    async dropDay(dto: CreateApiLogDayDto): Promise<void> {
+        const { date } = dto;
+        const logDateUTC = new Date(`${date}T00:00:00Z`);
+
+        const control = await this.prisma.apiRequestLogControl.findUnique({
+            where: { log_date: logDateUTC },
+        });
+
+        if (!control || control.status !== 'RESTORED') {
+            throw new NotFoundException('Nenhum log restaurado encontrado para o dia especificado.');
+        }
+
+        await this.prisma.$transaction([
+            this.prisma.apiRequestLogControl.update({
+                where: { log_date: logDateUTC },
+                data: { status: 'BACKED_UP' },
+            }),
+            this.prisma.api_request_log.deleteMany({
+                where: {
+                    created_at: {
+                        gte: new Date(`${date}T00:00:00.000Z`),
+                        lt: new Date(new Date(date).getTime() + 86400000),
+                    },
+                },
+            }),
+        ]);
     }
 
     outputToJson(): any {
