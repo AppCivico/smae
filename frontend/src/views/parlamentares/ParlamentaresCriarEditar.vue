@@ -279,10 +279,12 @@ iniciar();
         v-if="equipe.assessores.length || equipe.contatos.length"
         class="tablemain mb1"
       >
-        <col>
-        <col>
-        <col class="col--botão-de-ação">
-        <col class="col--botão-de-ação">
+        <colgroup>
+          <col>
+          <col>
+          <col class="col--botão-de-ação">
+          <col class="col--botão-de-ação">
+        </colgroup>
         <thead>
           <tr>
             <th>Nome</th>

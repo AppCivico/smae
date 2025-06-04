@@ -89,7 +89,8 @@ export class CasaCivilAtividadesPendentesService implements ReportableService {
                 label: 'Previsão de Término',
             },
             {
-                value: (row: any) => (row.inicio_real ? new Date(row.inicio_real).toLocaleDateString('pt-BR') : ''),
+                value: (row: any) =>
+                    row.inicio_real ? `="${new Date(row.inicio_real).toLocaleDateString('pt-BR')}"` : '',
                 label: 'Início Real',
             },
 

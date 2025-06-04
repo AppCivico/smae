@@ -115,7 +115,6 @@ function formatarTexto(texto) {
   return texto.replace(/([a-z])([A-Z])/g, '$1 $2');
 }
 
-TransferenciasVoluntarias.buscarItem(props.transferenciaId);
 distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
 nextTick(() => {
   window.scrollTo(0, 0);

@@ -94,18 +94,20 @@
   </FormularioQueryString>
   <h2>Transferências disponíveis</h2>
   <table class="tablemain mb1">
-    <col>
-    <col>
-    <col>
-    <col>
-    <col>
-    <col>
-    <col>
-    <col>
-    <col>
-    <col>
-    <col>
-    <col class="col--botão-de-ação">
+    <colgroup>
+      <col>
+      <col>
+      <col>
+      <col>
+      <col>
+      <col>
+      <col>
+      <col>
+      <col>
+      <col>
+      <col>
+      <col class="col--botão-de-ação">
+    </colgroup>
     <thead>
       <tr>
         <th>

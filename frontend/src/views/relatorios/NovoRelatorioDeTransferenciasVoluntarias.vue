@@ -70,7 +70,6 @@ ParlamentaresStore.buscarTudo({ ipp: 500, possui_mandatos: true });
 
 </script>
 <template>
-  <MigalhasDePão class="mb1" />
   <CabecalhoDePagina :formulario-sujo="false" />
 
   <p class="texto--explicativo">

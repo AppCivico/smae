@@ -1,7 +1,7 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { Date2YMD } from '../../common/date2ymd';
 import { PrismaService } from '../../prisma/prisma.service';
-import { DefaultCsvOptions, FileOutput, ReportableService } from '../utils/utils.service';
+import { DefaultCsvOptions, EnumHumano, FileOutput, ReportableService } from '../utils/utils.service';
 import { CreateRelTransferenciasDto, TipoRelatorioTransferencia } from './dto/create-transferencias.dto';
 import {
     RelTransferenciaCronogramaDto,
@@ -11,6 +11,7 @@ import {
 import { TarefaService } from 'src/pp/tarefa/tarefa.service';
 import { formataSEI } from 'src/common/formata-sei';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
+import { ParlamentarCargo } from '@prisma/client';
 
 const {
     Parser,
@@ -92,6 +93,8 @@ class RetornoDbTransferencias {
     distribuicao_recurso_investimento: number | null;
     tipo_transferencia: string;
     classificacao: string | null;
+    pct_investimento: number | null;
+    pct_custeio: number | null;
 }
 
 @Injectable()
@@ -237,7 +240,7 @@ export class TransferenciasService implements ReportableService {
             tarefasRows.linhas.map((e) => {
                 tarefasOut.push({
                     transferencia_id: tarefaCronoId.transferencia_id!,
-                    hirearquia: tarefasHierarquia[e.id],
+                    hirearquia: `="${tarefasHierarquia[e.id]}"`,
                     tarefa: e.tarefa,
                     inicio_planejado: e.inicio_planejado,
                     termino_planejado: e.termino_planejado,
@@ -349,21 +352,21 @@ export class TransferenciasService implements ReportableService {
                 observacoes: db.observacoes,
                 programa: db.programa,
                 nome_programa: db.nome_programa,
-                empenho:  this.formatEmpenho(db.empenho),
+                empenho: this.formatEmpenho(db.empenho),
                 pendente_preenchimento_valores: db.pendente_preenchimento_valores ? 'Sim' : 'Não',
                 valor: db.valor ? db.valor : null,
                 valor_total: db.valor_total ? db.valor_total : null,
                 valor_contrapartida: db.valor_contrapartida ? db.valor_contrapartida : null,
                 emenda: db.emenda,
-                emenda_unitaria: db.emenda_unitaria,
-                dotacao: db.dotacao,
+                emenda_unitaria: `="${db.emenda_unitaria}"`,
+                dotacao: db.dotacao ? `="${db.dotacao}"` : ' - ',
                 demanda: db.demanda,
-                banco_fim: db.banco_fim,
-                conta_fim: db.conta_fim,
-                agencia_fim: db.agencia_fim,
-                banco_aceite: db.banco_aceite,
-                conta_aceite: db.conta_aceite,
-                agencia_aceite: db.agencia_aceite,
+                banco_fim: `=${db.banco_fim}"`,
+                conta_fim: `=${db.conta_fim}"`,
+                agencia_fim: `="${db.agencia_fim}"`,
+                banco_aceite: `=${db.banco_aceite}"`,
+                conta_aceite: `=${db.conta_aceite}"`,
+                agencia_aceite: `=${db.agencia_aceite}"`,
                 gestor_contrato: db.gestor_contrato,
                 ordenador_despesa: db.ordenador_despesa,
                 numero_identificacao: db.numero_identificacao,
@@ -372,7 +375,7 @@ export class TransferenciasService implements ReportableService {
                 esfera: db.esfera,
                 tipo_transferencia: db.tipo_transferencia,
                 classificacao: db.classificacao,
-                cargo: db.cargo,
+                cargo: db.cargo ? EnumHumano(ParlamentarCargo, db.cargo) : '',
                 partido: db.partido_id
                     ? {
                           id: db.partido_id,
@@ -404,14 +407,21 @@ export class TransferenciasService implements ReportableService {
                           valor: db.distribuicao_recurso_valor,
                           valor_total: db.distribuicao_recurso_valor_total,
                           valor_contrapartida: db.distribuicao_recurso_valor_contrapartida,
-                          empenho: db.distribuicao_recurso_empenho === true ? 'Sim' : db.distribuicao_recurso_empenho === false ? 'Não' : null,
+                          empenho:
+                              db.distribuicao_recurso_empenho === true
+                                  ? 'Sim'
+                                  : db.distribuicao_recurso_empenho === false
+                                    ? 'Não'
+                                    : null,
                           programa_orcamentario_estadual: db.distribuicao_recurso_programa_orcamentario_estadual,
                           programa_orcamentario_municipal: db.distribuicao_recurso_programa_orcamentario_municipal,
-                          dotacao: db.distribuicao_recurso_dotacao,
+                          dotacao: String(db.distribuicao_recurso_dotacao),
                           proposta: db.distribuicao_recurso_proposta,
                           contrato: db.distribuicao_recurso_contrato,
                           convenio: db.distribuicao_recurso_convenio,
-                          assinatura_termo_aceite: Date2YMD.toStringOrNull(db.distribuicao_recurso_assinatura_termo_aceite),
+                          assinatura_termo_aceite: Date2YMD.toStringOrNull(
+                              db.distribuicao_recurso_assinatura_termo_aceite
+                          ),
                           assinatura_municipio: Date2YMD.toStringOrNull(db.distribuicao_recurso_assinatura_municipio),
                           assinatura_estado: Date2YMD.toStringOrNull(db.distribuicao_recurso_assinatura_estado),
                           vigencia: Date2YMD.toStringOrNull(db.distribuicao_recurso_vigencia),
@@ -419,14 +429,8 @@ export class TransferenciasService implements ReportableService {
                           registro_sei: db.distribuicao_recurso_sei ? formataSEI(db.distribuicao_recurso_sei) : null,
                           nome_responsavel: db.distribuicao_recurso_status_nome_responsavel,
                           status_nome_base: db.distribuicao_recurso_status_nome_base,
-                          pct_custeio:
-                            db.distribuicao_recurso_valor != null && db.distribuicao_recurso_custeio != null
-                                ? `="${((db.distribuicao_recurso_custeio / db.distribuicao_recurso_valor) * 100).toFixed(2).replace('.', ',')}%"`
-                                : null,
-                          pct_investimento:
-                            db.distribuicao_recurso_valor != null && db.distribuicao_recurso_investimento != null
-                                ? `="${((db.distribuicao_recurso_investimento / db.distribuicao_recurso_valor) * 100).toFixed(2).replace('.', ',')}%"`
-                                : null,
+                          pct_custeio: db.pct_custeio?.toString() ?? `0`,
+                          pct_investimento: db.pct_investimento?.toString() ?? `0`,
                       }
                     : null,
             });
@@ -477,7 +481,7 @@ export class TransferenciasService implements ReportableService {
                 },
                 { value: 'dotacao', label: 'Dotação Orçamentária' },
                 {
-                    value: (row) => row.demanda ? `="${row.demanda}"` : '',
+                    value: (row) => (row.demanda ? `="${row.demanda}"` : ''),
                     label: 'Número da Demanda/Proposta',
                 },
                 { value: 'banco_fim', label: 'Conta - Banco da Secretaria fim' },
@@ -485,8 +489,8 @@ export class TransferenciasService implements ReportableService {
                 { value: 'agencia_fim', label: 'Conta - Agência da Secretaria fim' },
                 { value: 'banco_aceite', label: 'Conta - Banco do aceite' },
                 { value: 'agencia_aceite', label: 'Conta - Agência do aceite' },
-                { value: 'nome_programa', label: 'Nome do Programa' },
                 { value: 'conta_aceite', label: 'Conta - Número do aceite' },
+                { value: 'nome_programa', label: 'Nome do Programa' },
                 { value: 'emenda_unitaria', label: 'Emenda Unitária' },
                 {
                     value: 'distribuicao_recurso.orgao_gestor_descricao',
@@ -565,8 +569,8 @@ export class TransferenciasService implements ReportableService {
                 { value: 'identificador', label: 'Identificador' },
                 { value: 'esfera', label: 'esfera' },
                 {
-                   value: (row) => row.demanda ? String(row.demanda) : '',
-                   label: 'Número da Demanda/Proposta'
+                    value: (row) => (row.demanda ? String(row.demanda) : ''),
+                    label: 'Número da Demanda/Proposta',
                 },
                 { value: 'orgao_concedente.descricao', label: 'Orgão Concedente' },
                 { value: 'parlamentar.nome_popular', label: 'parlamentar.nome_popular' },

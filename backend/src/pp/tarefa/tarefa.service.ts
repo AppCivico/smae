@@ -64,6 +64,8 @@ export class TarefaService {
     ) {}
 
     async loadOrCreateByInput(dto: TarefaCronogramaInput, user: PessoaFromJwt): Promise<number> {
+        if (dto.tarefa_cronograma_id) return dto.tarefa_cronograma_id; // skip query
+
         if (dto.projeto_id) {
             const exists = await this.prisma.tarefaCronograma.findFirst({
                 where: {
@@ -990,6 +992,11 @@ export class TarefaService {
                     inicio_real: true,
                     termino_real: true,
                     orgao: { select: { id: true } },
+                    tarefa_cronograma: {
+                        select: {
+                            projeto_id: true,
+                        },
+                    },
                 },
             });
             if (!tarefa) throw new HttpException('Tarefa não encontrada.', 404);
@@ -1194,11 +1201,11 @@ export class TarefaService {
                             400
                         );
 
-                    if (novoPai && tarefaCronoInput.projeto_id) {
+                    if (novoPai && tarefa.tarefa_cronograma.projeto_id) {
                         await this.verifica_nivel_maximo_e_filhos_portfolio(
                             tarefa,
                             prismaTx,
-                            tarefaCronoInput.projeto_id,
+                            tarefa.tarefa_cronograma.projeto_id,
                             novoPai
                         );
                     }
@@ -1721,6 +1728,9 @@ export class TarefaService {
                     break;
             }
         };
+
+        // plot grafo as text
+        this.logger.debug(`Grafo de dependências: ${JSON.stringify(grafo.nodes())}`);
 
         // Adiciona os já existentes
         for (const dep of todasTarefaDepsProj) {

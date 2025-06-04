@@ -57,6 +57,7 @@ import { RunReportModule } from './task/run_report/run-report.module';
 import { TaskModule } from './task/task.module';
 import { ClassificacaoModule } from './transferencias-voluntarias/classificacao/classificacao.module';
 import { DuckDBModule } from './common/duckdb/duckdb.module';
+import { GeoBuscaModule } from './geo-busca/geo-busca.module';
 
 // Hacks pro JS
 /*
@@ -115,6 +116,7 @@ import { DuckDBModule } from './common/duckdb/duckdb.module';
         PSMFDashboardModule,
         RunReportModule,
         DuckDBModule,
+        GeoBuscaModule,
         AtualizacaoEmLoteModule,
     ],
     controllers: [AppController],

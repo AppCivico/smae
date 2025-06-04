@@ -160,27 +160,25 @@ async function obterDependenciasValidadas(dependências) {
   }
 }
 
-async function validarDependencias() {
-  const dependenciasValidadas = await obterDependenciasValidadas(values.dependencias);
+async function validarDependencias(tarefaAtual) {
+  const dependenciasValidadas = await obterDependenciasValidadas(tarefaAtual.dependencias);
 
   setValues({
-    ...values,
+    ...tarefaAtual,
     ...dependenciasValidadas,
   });
 }
 
-async function handleVerificarAposDependenciaRemovida() {
-  if (values.dependencias.length !== 0) {
+async function handleLiberarPrevisaoAposDependenciaRemovida(tarefaAtual) {
+  if (tarefaAtual.dependencias.length !== 0) {
     return;
   }
 
   setValues({
-    ...values,
+    ...tarefaAtual,
     duracao_planejado_calculado: false,
-    inicio_planejado: null,
     inicio_planejado_calculado: false,
-    termino_planejado: null,
-    termino_planejado_calculado: true,
+    termino_planejado_calculado: false,
   });
 }
 
@@ -190,6 +188,14 @@ async function iniciar() {
   if (route.meta.entidadeMãe !== 'projeto') {
     ÓrgãosStore.getAll();
   }
+}
+
+function verificarDependenciasAoIniciar(tarefaAtual) {
+  if (tarefaAtual.dependencias.length === 0) {
+    return;
+  }
+
+  validarDependencias(tarefaAtual);
 }
 
 iniciar();
@@ -204,6 +210,8 @@ watch(itemParaEdicao, (novoValor) => {
   resetForm({
     values: novoValor,
   });
+
+  verificarDependenciasAoIniciar(novoValor);
 });
 </script>
 <template>
@@ -553,7 +561,7 @@ watch(itemParaEdicao, (novoValor) => {
               :disabled="chamadasPendentes.validaçãoDeDependências"
               @click="() => {
                 remove(idx);
-                handleVerificarAposDependenciaRemovida();
+                handleLiberarPrevisaoAposDependenciaRemovida(values);
               }"
             >
               <svg
@@ -590,7 +598,7 @@ watch(itemParaEdicao, (novoValor) => {
           class="btn outline bgnone tcprimary mr2"
           type="button"
           :disabled="chamadasPendentes.validaçãoDeDependências"
-          @click="validarDependencias"
+          @click="validarDependencias(values)"
         >
           Validar dependências
         </button>

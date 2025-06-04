@@ -55,17 +55,19 @@ parlamentarStore.buscarTudo();
   </div>
 
   <table class="tablemain">
-    <col>
-    <col>
-    <col>
-    <col
-      v-if="authStore.temPermissãoPara('CadastroParlamentar.remover')"
-      class="col--botão-de-ação"
-    >
-    <col
-      v-if="authStore.temPermissãoPara('CadastroParlamentar.editar')"
-      class="col--botão-de-ação"
-    >
+    <colgroup>
+      <col>
+      <col>
+      <col>
+      <col
+        v-if="authStore.temPermissãoPara('CadastroParlamentar.remover')"
+        class="col--botão-de-ação"
+      >
+      <col
+        v-if="authStore.temPermissãoPara('CadastroParlamentar.editar')"
+        class="col--botão-de-ação"
+      >
+    </colgroup>
     <thead>
       <tr>
         <th>

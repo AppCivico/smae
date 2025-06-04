@@ -19,14 +19,13 @@ const dialogos = ref([]);
 
 const ultimoDialogo = computed(() => dialogos.value[dialogos.value.length - 1]);
 
-async function fecharAlerta(i) {
+async function removerAlerta(i) {
   if (dialogos.value[i]) {
     if (typeof dialogos.value[i].close === 'function' && dialogos.value[i].open) {
       dialogos.value[i].close();
     }
 
     await nextTick();
-
     alertas.value.splice(i, 1);
   }
 }
@@ -36,15 +35,17 @@ async function callbackFn(i) {
     await alertas.value[i].callback();
   }
 
-  fecharAlerta(i);
+  await nextTick();
+  removerAlerta(i);
 }
 
 async function fallbackFn(i) {
   if (typeof alertas.value[i]?.fallback === 'function') {
-    alertas.value[i].fallback();
+    await alertas.value[i].fallback();
   }
 
-  fecharAlerta(i);
+  await nextTick();
+  removerAlerta(i);
 }
 
 watch(ultimoDialogo, (novoDialogo) => {
@@ -64,13 +65,13 @@ watch(ultimoDialogo, (novoDialogo) => {
   >
     <div
       v-for="(alert, i) in alertas"
-      :key="i"
+      :key="alert.id || i"
       class="alert-wrap"
     >
       <div
         class="overlay"
         @click="['alert-danger', 'alert-success'].indexOf(alert.type) > -1
-          ? fecharAlerta(i)
+          ? removerAlerta(i)
           : null"
       />
       <dialog
@@ -78,7 +79,7 @@ watch(ultimoDialogo, (novoDialogo) => {
         class="alert"
         :class="alert.type"
         :aria-busy="estaCarregando"
-        @close="fecharAlerta(i)"
+        @close.prevent
       >
         <div
           class="alert-message"
@@ -112,7 +113,7 @@ watch(ultimoDialogo, (novoDialogo) => {
             :to="alert.url"
             class="btn amarelo mr1"
             data-test="aceite"
-            @click="fecharAlerta(i)"
+            @click="removerAlerta(i)"
           >
             Sair sem salvar
           </router-link>
@@ -122,14 +123,14 @@ watch(ultimoDialogo, (novoDialogo) => {
             type="button"
             class="btn amarelo mr1"
             data-test="aceite"
-            @click="alert.url(); fecharAlerta(i);"
+            @click="alert.url(); removerAlerta(i);"
           >
             Sair sem salvar
           </button>
           <button
             class="btn amarelo outline"
             data-test="escape"
-            @click="fecharAlerta(i)"
+            @click="removerAlerta(i)"
           >
             Cancelar
           </button>
@@ -140,7 +141,7 @@ watch(ultimoDialogo, (novoDialogo) => {
           type="button"
           class="btn amarelo"
           data-test="aceite"
-          @click="fecharAlerta(i)"
+          @click="removerAlerta(i)"
         >
           OK
         </button>

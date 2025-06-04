@@ -149,6 +149,8 @@ export const BuildParametrosProcessados = async (
             .replace('listar_variaveis_regionalizadas', 'Listar variáveis regionalizadas')
             .replace('ano_inicio', 'Ano início')
             .replace('ano_fim', 'Ano fim')
+            .replace('data_inicio', 'Data início')
+            .replace('data_termino', 'Data término')
             .replace(/\bmes\b/gi, 'Mês')
             .replace('periodo', 'Período');
 
@@ -176,6 +178,21 @@ export const BuildParametrosProcessados = async (
                 parametros_processados[nomeChave] = valor ? 'Sim' : 'Não';
             }
 
+            // Pode ser uma data
+            // Valores de data, nos DTOs são Dates, mas no banco são strings.
+            if (typeof valor == 'string' && valor.match(/^\d{4}-\d{2}-\d{2}/)) {
+                // Caso o valor se pareça com uma data, precisamos verificar se é possui algo como "T00:00:00.000Z"
+                // e remover para apresentar apenas a data.
+                // O valor enviado pelo front segue o seguinte padrão: "2025-12-31T00:00:00.000Z"
+                valor = valor.split('T')[0]; // Pega apenas a parte da data
+                parametros_processados[nomeChave] = valor;
+                continue;
+            } else if (valor instanceof Date) {
+                // Tratando data que é Date
+                valor = valor.toISOString().split('T')[0];
+                parametros_processados[nomeChave] = valor;
+            }
+
             continue;
         }
 
@@ -186,6 +203,7 @@ export const BuildParametrosProcessados = async (
             parametros_processados[nomeChave] = valor;
         }
 
+        // Aqui são tratados valores que são IDs de tabelas, ou seja, são números ou arrays de números.
         if (typeof valor === 'number' && nomeTabelaCol) {
             if (valor === 0) {
                 // TODO: esse comportamento aqui é ruim, alinhar com os fronts para mapear quando eles estão enviado 0 e tratar no front.

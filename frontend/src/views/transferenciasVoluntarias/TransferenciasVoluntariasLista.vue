@@ -172,18 +172,20 @@ watch([
   </form>
 
   <table class="tablemain mb1">
-    <col class="col--botão-de-ação">
-    <col>
-    <col>
-    <col>
-    <col>
-    <col>
-    <col>
-    <col>
-    <col>
-    <col>
-    <col class="col--botão-de-ação">
-    <col class="col--botão-de-ação">
+    <colgroup>
+      <col class="col--botão-de-ação">
+      <col>
+      <col>
+      <col>
+      <col>
+      <col>
+      <col>
+      <col>
+      <col>
+      <col>
+      <col class="col--botão-de-ação">
+      <col class="col--botão-de-ação">
+    </colgroup>
     <thead>
       <tr>
         <th />
