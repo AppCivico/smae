@@ -200,6 +200,7 @@ export class TransferenciasService implements ReportableService {
                     status_base_id,
                     status_id,
                     distribuicao_id,
+                    nome_responsavel,
                     removido_em -- Added missing removido_em for subquery consistency
                 FROM distribuicao_recurso_status 
                 ORDER BY data_troca DESC, id DESC
@@ -390,7 +391,7 @@ export class TransferenciasService implements ReportableService {
                 valor_contrapartida: db.valor_contrapartida ? db.valor_contrapartida : null,
                 emenda: db.emenda ?? '',
                 emenda_unitaria: this.formatExcelString(db.emenda_unitaria),
-                dotacao: db.dotacao ? this.formatExcelString(db.dotacao) : '', // Keeps ' - ' logic if desired for nulls
+                dotacao: db.dotacao ? this.formatExcelString(db.dotacao) : '',
                 demanda: db.demanda ?? '',
                 banco_fim: this.formatExcelString(db.banco_fim),
                 conta_fim: this.formatExcelString(db.conta_fim),
