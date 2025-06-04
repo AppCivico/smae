@@ -56,6 +56,7 @@ import { RequestLogModule } from './request_log/request_log.module';
 import { RunReportModule } from './task/run_report/run-report.module';
 import { TaskModule } from './task/task.module';
 import { ClassificacaoModule } from './transferencias-voluntarias/classificacao/classificacao.module';
+import { GeoBuscaModule } from './geo-busca/geo-busca.module';
 
 // Hacks pro JS
 /*
@@ -114,6 +115,7 @@ import { ClassificacaoModule } from './transferencias-voluntarias/classificacao/
         CategoriaAssuntoVariavelModule,
         PSMFDashboardModule,
         RunReportModule,
+        GeoBuscaModule,
         AtualizacaoEmLoteModule,
     ],
     controllers: [AppController],
