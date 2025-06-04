@@ -40,7 +40,13 @@ const legendas = {
         orientacao="horizontal"
       />
 
-      <div class="lista-cards">
+      <p v-if="!lista?.length">
+        Nenhuma distribuição de recursos encontrada.
+      </p>
+      <div
+        v-else
+        class="lista-cards"
+      >
         <MonitoramentoCard
           v-for="recurso in lista"
           :key="recurso.id"
