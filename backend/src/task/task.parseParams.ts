@@ -1,5 +1,6 @@
 import { task_type } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
+import { CreateApiLogDayDto } from 'src/api-logs/dto/create-api-log-day.dto';
 import { CreateAvisoEmailJobDto } from './aviso_email/dto/create-aviso_email.dto';
 import { CreateAeCronogramaTpJobDto } from './aviso_email_cronograma_tp/dto/ae_cronograma_tp.dto';
 import { CreateNotaJobDto } from './aviso_email_nota/dto/ae_nota.dto';
@@ -12,7 +13,6 @@ import { CreateRefreshTransferenciaDto } from './refresh_transferencia/dto/creat
 import { CreateRefreshVariavelDto } from './refresh_variavel/dto/create-refresh-variavel.dto';
 import { CreateRunReportDto } from './run_report/dto/create-run-report.dto';
 import { CreateRunUpdateDto } from './run_update/dto/create-run-update.dto';
-import { CreateApiLogDayDto } from 'src/api-logs/dto/create-api-log-day.dto.ts';
 
 export function ParseParams(taskType: task_type, value: any): any {
     let theClass: any = undefined;
