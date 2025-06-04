@@ -119,9 +119,6 @@ const mostrarEmColunas = computed(() => props.orientacao === 'vertical');
 .legenda-item__icon--apenas-cor {
   width: 0.8rem;
   height: 0.8rem;
-}
-
-.legenda-item__icon--apenas-cor {
   border-radius: 50%;
 }
 
