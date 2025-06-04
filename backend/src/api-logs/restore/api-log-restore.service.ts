@@ -3,7 +3,7 @@ import { TaskableService } from 'src/task/entities/task.entity';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { DuckDBProviderService } from 'src/common/duckdb/duckdb-provider.service';
 import { tryDecodeJson } from '../utils/json-utils';
-import { CreateApiLogDayDto } from '../dto/create-api-log-day.dto.ts';
+import { CreateApiLogDayDto } from '../dto/create-api-log-day.dto';
 
 @Injectable()
 export class ApiLogRestoreService implements TaskableService {
@@ -17,6 +17,16 @@ export class ApiLogRestoreService implements TaskableService {
         const logDateUTC = new Date(`${date}T00:00:00Z`);
 
         try {
+            // Primeiro busca o registro de controle e valida o status
+            const control = await this.prisma.apiRequestLogControl.findUnique({
+                where: { log_date: logDateUTC },
+            });
+
+            if (!control || control.status !== 'BACKED_UP' || !control.backup_location) {
+                throw new Error('Backup não encontrado ou inválido para restauração.');
+            }
+
+            // Só atualiza para RESTORING se o status for válido
             await this.prisma.apiRequestLogControl.update({
                 where: { log_date: logDateUTC },
                 data: {
@@ -25,14 +35,6 @@ export class ApiLogRestoreService implements TaskableService {
                 },
             });
             const duckDB = await this.duckDBProviderService.getConfiguredInstance();
-
-            const control = await this.prisma.apiRequestLogControl.findUnique({
-                where: { log_date: logDateUTC },
-            });
-
-            if (!control || control.status !== 'BACKED_UP' || !control.backup_location) {
-                throw new Error('Backup não encontrado ou inválido para restauração.');
-            }
 
             const s3Path = control.backup_location;
 
