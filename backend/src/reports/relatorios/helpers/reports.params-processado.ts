@@ -109,6 +109,8 @@ export const BuildParametrosProcessados = async (
     let parametros;
     const parametros_processados: RelatorioProcesado = {};
 
+    let relatorioFonte: FonteRelatorio | undefined;
+
     // Caso esteja passando ID de report, é porque a chamada é de sync.
     if (reportId) {
         const report = await prisma.relatorio.findUnique({
@@ -119,6 +121,7 @@ export const BuildParametrosProcessados = async (
             select: {
                 parametros: true,
                 parametros_processados: true,
+                fonte: true,
             },
         });
         if (!report) return undefined;
@@ -128,6 +131,8 @@ export const BuildParametrosProcessados = async (
             return report.parametros_processados.valueOf() as InputJsonValue;
 
         parametros = report.parametros;
+
+        relatorioFonte = report.fonte;
     } else {
         if (!dto) return undefined;
 
@@ -140,6 +145,17 @@ export const BuildParametrosProcessados = async (
 
         let valor = parametros[paramKey];
         if (!valor) continue;
+
+        // Para relatórios de transferências voluntárias. O campo "tipo" é sobre o tipo de transferência, que é um ID.
+        // Mas existe também, no sistema de relatório, outro campo "tipo", que possui como valores: "Geral" e "Analítico".
+        // Caso chegue aqui, removemos.
+        if (
+            relatorioFonte === FonteRelatorio.Transferencias &&
+            paramKey === 'tipo' &&
+            typeof valor === 'string' &&
+            valor.match(/^(Geral|Analítico)$/)
+        )
+            continue;
 
         let nomeChave = paramKey
             .replace(/(_id|_ids)$/, '') // remove _id ou _ids
