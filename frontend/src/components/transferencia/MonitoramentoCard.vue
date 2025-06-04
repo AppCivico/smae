@@ -30,7 +30,10 @@ const status = computed(() => props.recurso.historico_status[0].status_customiza
         </dd>
       </div>
 
-      <template v-if="recurso.historico_status[0].nome_responsavel">
+      <template
+        v-if="recurso.historico_status.length > 0
+          && recurso.historico_status[0].nome_responsavel"
+      >
         <div class="card-monitoramento__dl-group">
           <dt class="t13 w300">
             Responsável
@@ -77,10 +80,13 @@ const status = computed(() => props.recurso.historico_status[0].status_customiza
         </dd>
       </div>
 
-      <template v-if="recurso.historico_status[0].motivo">
+      <template
+        v-if="recurso.historico_status.length > 0
+          && recurso.historico_status[0].motivo"
+      >
         <div class="card-monitoramento__dl-group">
           <dt class="t13 w300">
-            Data
+            Motivo
           </dt>
           <dd class="t20 w400">
             {{ recurso.historico_status[0].motivo }}
