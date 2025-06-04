@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { GeoReferenciaTipo, ProjetoStatus, TipoProjeto } from '@prisma/client';
+import { GeoReferenciaTipo, ModuloSistema, ProjetoStatus, TipoProjeto } from '@prisma/client';
 import { IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
 import { GeoJSON } from 'geojson';
 
@@ -166,6 +166,7 @@ export class PdmRotuloInfo {
     rotulo_atividade: string;
     rotulo_iniciativa: string;
     rotulo_macro_tema: string;
+    sistema: ModuloSistema;
 }
 
 export class MetaLookupInfoDto {
