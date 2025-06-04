@@ -220,7 +220,9 @@
           >
         </div>
         <p>{{ parlamentar.parlamentar.nome_popular }}</p>
-        <p>R${{ dinheiro(parlamentar.valor, { semDecimais: true }) }}</p>
+        <p class="nowrap">
+          R$ {{ dinheiro(parlamentar.valor, { semDecimais: true }) }}
+        </p>
       </div>
     </div>
   </div>
