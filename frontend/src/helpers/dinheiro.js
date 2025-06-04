@@ -44,6 +44,10 @@ export default (valor, {
     return '';
   }
 
+  if (opcoes.style === 'currency' && !opcoes.currency) {
+    opcoes.currency = 'BRL'; // Define a moeda padrão como Real Brasileiro
+  }
+
   const options = semDecimais
     ? { ...opcoes, minimumFractionDigits: 0, maximumFractionDigits: 0 }
     : { minimumFractionDigits: 2, ...opcoes };
