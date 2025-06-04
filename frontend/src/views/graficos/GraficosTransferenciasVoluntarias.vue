@@ -354,8 +354,7 @@ const anos = (() => {
   return listaDeAnos;
 })();
 
-let graficosPendentes = false;
-
+const graficosPendentes = ref(false);
 const exibirFiltros = ref(false);
 const tabelaTransferencias = ref(null);
 const graficos = ref({});
@@ -402,16 +401,16 @@ function removeTitleProperty(obj) {
 }
 
 async function buscarGraficos() {
-  graficosPendentes = true;
+  graficosPendentes.value = true;
   try {
     const retorno = await requestS.get(
       `${baseUrl}/panorama/analise-transferencias`,
       route.query,
     );
     graficos.value.values = retorno;
-    graficosPendentes = false;
+    graficosPendentes.value = false;
   } catch (error) {
-    graficosPendentes = false;
+    graficosPendentes.value = false;
     console.log('error:', error);
   }
 }
