@@ -14,17 +14,12 @@ import { ImportacaoParlamentarModule } from './importacao_parlamentar/parlamenta
 import { RefreshVariavelModule } from './refresh_variavel/refresh-variavel.module';
 import { RunReportModule } from './run_report/run-report.module';
 import { RunUpdateModule } from './run_update/run-update.module';
-import { ApiLogBackupService } from 'src/api-logs/backup/api-log-backup.service';
-import { ApiLogRestoreService } from 'src/api-logs/restore/api-log-restore.service';
-import { SmaeConfigModule } from 'src/common/services/smae-config.module';
-import { DuckDBModule } from 'src/common/duckdb/duckdb.module';
-import { ApiLogManagementController } from 'src/api-logs/restore/api-log-restore.controller';
+import { ApiLogModule } from 'src/api-logs/api-log.module';
 
 @Module({
     imports: [
         PrismaModule,
-        SmaeConfigModule,
-        DuckDBModule,
+        forwardRef(() => ApiLogModule),
         forwardRef(() => EchoModule),
         forwardRef(() => RefreshMvModule),
         forwardRef(() => RefreshMetaModule),
@@ -38,8 +33,8 @@ import { ApiLogManagementController } from 'src/api-logs/restore/api-log-restore
         forwardRef(() => RefreshVariavelModule),
         forwardRef(() => RunUpdateModule),
     ],
-    controllers: [TaskController, ApiLogManagementController],
-    providers: [TaskService, ApiLogBackupService, ApiLogRestoreService],
+    controllers: [TaskController],
+    providers: [TaskService],
     exports: [TaskService],
 })
 export class TaskModule {}

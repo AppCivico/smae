@@ -58,6 +58,7 @@ import { TaskModule } from './task/task.module';
 import { ClassificacaoModule } from './transferencias-voluntarias/classificacao/classificacao.module';
 import { DuckDBModule } from './common/duckdb/duckdb.module';
 import { GeoBuscaModule } from './geo-busca/geo-busca.module';
+import { ApiLogModule } from './api-logs/api-log.module';
 
 // Hacks pro JS
 /*
@@ -118,6 +119,7 @@ import { GeoBuscaModule } from './geo-busca/geo-busca.module';
         DuckDBModule,
         GeoBuscaModule,
         AtualizacaoEmLoteModule,
+        ApiLogModule,
     ],
     controllers: [AppController],
     providers: [
