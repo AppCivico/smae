@@ -411,7 +411,13 @@ export class GeoBuscaService {
         if (seenPDMIds.size > 0) {
             response.pdm_info = await this.prisma.pdm.findMany({
                 where: { id: { in: Array.from(seenPDMIds) } },
-                select: { id: true, rotulo_atividade: true, rotulo_iniciativa: true, rotulo_macro_tema: true },
+                select: {
+                    id: true,
+                    rotulo_atividade: true,
+                    rotulo_iniciativa: true,
+                    rotulo_macro_tema: true,
+                    sistema: true,
+                },
             });
         }
 
