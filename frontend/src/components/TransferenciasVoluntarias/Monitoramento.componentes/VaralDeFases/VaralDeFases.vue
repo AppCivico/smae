@@ -22,23 +22,23 @@ onMounted(() => {
       <div
         v-for="(faseObjeto, faseIndex) in [
           ...etapaCorrente.fases,
-          ...etapaCorrente.fases,
-          ...etapaCorrente.fases,
-          ...etapaCorrente.fases,
+          // ...etapaCorrente.fases,
+          // ...etapaCorrente.fases,
+          // ...etapaCorrente.fases,
         ]"
         :key="`fase--${faseIndex}`"
         class="fase-item"
       >
-        <div class="fase-item__contador">
+        <!-- <div class="fase-item__contador">
           <div class="fase-item__contador-container">
             <div class="fase-item__contador-wrapper">
               {{ `${faseIndex+1}`.padStart(2, 0) }}
             </div>
           </div>
-        </div>
+        </div> -->
 
+        <!-- style="min-width: 150px;" -->
         <VaralDeFaseItem
-          style="min-width: 150px;"
           :titulo="faseObjeto.fase.fase"
           :duracao="faseObjeto.duracao"
           :situacao="faseObjeto.andamento?.situacao?.tipo_situacao"
