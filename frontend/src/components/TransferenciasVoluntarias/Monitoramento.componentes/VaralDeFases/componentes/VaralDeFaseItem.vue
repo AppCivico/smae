@@ -21,61 +21,59 @@ defineProps<Props>();
 </script>
 
 <template>
-  <article :class="{'varal-de-fase-item__raiz': !$props.secundario}">
+  <article :class="{'varal-de-fase-item__raiz container-inline': true}">
     <!-- atual == true -->
-    <main
+    <section
       :class="[
+        ,
         'varal-de-fase-item',
         { 'varal-de-fase-item--pendente': $props.pendente },
         { 'varal-de-fase-item--secundario': $props.secundario },
       ]"
     >
-      <header
+      <dt
         v-if="!web && !$props.secundario"
-        class="varal-de-fase-item__titulo-container"
+        class="varal-de-fase-item__titulo"
       >
-        <h4 class="varal-de-fase-item__titulo">
-          {{ $props.titulo }}
-        </h4>
-      </header>
+        {{ $props.titulo }}
+      </dt>
 
       <div class="varal-de-fase-item__conteudo">
-        <header
+        <dt
           v-if="web || $props.secundario"
-          class="varal-de-fase-item__titulo-container"
+          class="varal-de-fase-item__titulo"
         >
           <span
             v-if="$props.secundario"
             class="varal-de-fase-item__titulo-situacao"
           />
 
-          <h4 class="varal-de-fase-item__titulo">
-            {{ $props.titulo }}
-          </h4>
-        </header>
+          {{ $props.titulo }}
+        </dt>
 
-        <div
-          v-if="$props.duracao"
-          class="varal-de-fase-item__linha"
-        >
-          <h5>Duração</h5>
+        <dd>
+          <dl class="varal-de-fase-item__lista">
+            <div
+              v-if="$props.duracao"
+              class="varal-de-fase-item__item varal-de-fase-item__item--duracao"
+            >
+              <dt>Duração</dt>
+              <dd>{{ $props.duracao }}d</dd>
+            </div>
 
-          <h6>{{ $props.duracao }}d</h6>
-        </div>
+            <div class="varal-de-fase-item__item">
+              <dt>Responsável</dt>
+              <dd>{{ $props.responsavel }}</dd>
+            </div>
 
-        <div class="varal-de-fase-item__linha varal-de-fase-item__linha--duas">
-          <h5>Responsável</h5>
+            <div class="varal-de-fase-item__item">
+              <dt>Situação</dt>
+              <dd>{{ $props.situacao }}</dd>
+            </div>
+          </dl>
+        </dd>
 
-          <h6>{{ $props.responsavel }}</h6>
-        </div>
-
-        <div class="varal-de-fase-item__linha varal-de-fase-item__linha--duas">
-          <h5>Situação</h5>
-
-          <h6>{{ $props.situacao }}</h6>
-        </div>
-
-        <di>
+        <div>
           <button v-if="$props.tarefas?.length">
             {{ 1 }}/ {{ $props.tarefas?.length }}
           </button>
@@ -85,11 +83,11 @@ defineProps<Props>();
           <button class="btn">
             Editar
           </button>
-        </di>
+        </div>
       </div>
-    </main>
+    </section>
 
-    <div
+    <!-- <div
       v-if="$props.tarefas?.length"
       class="varal-de-fase-item__tarefas"
     >
@@ -107,19 +105,24 @@ defineProps<Props>();
         :responsavel="tarefa.andamento.orgao_responsavel || '-'"
         :pendente="!tarefa.andamento.concluida"
       />
-    </div>
+    </div> -->
   </article>
 </template>
 
 <style lang="less" scoped>
 @import "@/_less/tamanho-dispostivo.less";
 
-article {
+@card-minimo: 235px;
+
+.varal-de-fase-item__raiz {
   width: 100%;
+  min-width: @card-minimo;
+
 }
 
 .varal-de-fase-item {
-  width: 100%;
+  // width: 100%;
+  // min-width: @card-minimo;
 }
 
 .varal-de-fase-item--secundario {
@@ -144,36 +147,6 @@ article {
       background-color: #F7C234;
     }
   }
-
-}
-
-.varal-de-fase-item__titulo {
-  margin: 0;
-  font-weight: 600;
-}
-
-.varal-de-fase-item__titulo-container {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-
-  margin-bottom: 9px;
-
-  .breakpoint-web();
-  .-aplicar-web() {
-    margin-bottom: 12px;
-  }
-}
-
-.varal-de-fase-item__titulo-situacao {
-  width: 0.5rem;
-  height: 0.5rem;
-  background-color: #005C8A;
-  border-radius: 999px;
-}
-
-.varal-de-fase-item__titulo-situacao--pendente {
-  background-color: #F7C234;
 }
 
 .varal-de-fase-item__conteudo {
@@ -185,70 +158,81 @@ article {
   position: relative;
 }
 
-.varal-de-fase-item__conteudo:not(:has(.varal-de-fase-item__titulo)) {
-  .varal-de-fase-item__linha:first-of-type {
-    border-top: initial;
-  }
+.varal-de-fase-item__titulo {
+  margin-bottom: 9px;
+  font-weight: 600;
+  font-size: 1.14rem;
+  line-height: 1.14rem;
 }
 
-.varal-de-fase-item__linha {
+.varal-de-fase-item__titulo-situacao  {
+  width: 0.5rem;
+  height: 0.5rem;
+  background-color: #005C8A;
+  border-radius: 999px;
+}
+
+// .varal-de-fase-item__conteudo:not(:has(.varal-de-fase-item__titulo)) {
+//   .varal-de-fase-item__item:first-of-type {
+//     border-block-start: initial;
+//   }
+// }
+
+.varal-de-fase-item__item {
   display: flex;
   align-items: center;
+  gap: 8px;
   padding: 4px 0;
-  border-top: 1px solid #B8C0CC;
+  border-block-end: 1px solid #B8C0CC;
 
-  h5, h6 {
+  dt, dd {
     font-size: 1rem;
     margin: 0;
   }
 
-  h5 {
-    font-weight: 300;
+  dt {
+    font-weight: 400;
     line-height: 1.43rem;
     color: #595959;
-    margin-right: 8px;
   }
 
-  h6  {
+  dd  {
     line-height: 1;
+    font-weight: 600;
     color: #333333;
-  }
-
-  .breakpoint-web();
-  .-aplicar-web() {
-    padding: 12px 8px;
-    justify-content: space-between;
-
-    h5, h6 {
-      line-height: 1.71rem;
-    }
-
-    h5 {
-      font-weight: 300;
-      font-size: 1.14rem;
-    }
-
-    h6  {
-      font-weight: 400;
-      font-size: 1.43rem;
-    }
   }
 }
 
-.varal-de-fase-item__linha--duas {
-  flex-direction: column;
-  align-items: start;
-
-  h6 {
-    margin-top: 4px;
+@container (width <= @card-minimo) {
+  .varal-de-fase-item__titulo {
+    background-color: #005C8A;
+    margin-bottom: 12px;
+    font-weight: 1.43rem;
+    line-height: 1.43rem;
   }
 
-  .breakpoint-mobile();
-  .-aplicar-mobile() {
-    flex-direction: row;
-    h6 {
-      margin-top: initial;
+  .varal-de-fase-item__item {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 12px 8px;
+
+    dt, dd {
+      line-height: 1.71rem;
     }
+
+    dt {
+      font-size: 1.14rem;
+    }
+
+    dd {
+      font-size: 1.43rem;
+      font-weight: 400;
+    }
+  }
+
+  .varal-de-fase-item__item--duracao {
+    flex-direction: row;
+    justify-content: space-between;
   }
 }
 
@@ -274,5 +258,4 @@ article:has(+ article), article + article {
     z-index: -1;
     bottom: 0;
   }
-}
-</style>
+}</style>
