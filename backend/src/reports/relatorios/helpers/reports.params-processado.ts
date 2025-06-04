@@ -137,6 +137,7 @@ export const BuildParametrosProcessados = async (
         if (!dto) return undefined;
 
         parametros = dto.parametros;
+        relatorioFonte = dto.fonte;
     }
 
     for (const paramKey of Object.keys(parametros)) {
