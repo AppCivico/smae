@@ -10,7 +10,11 @@ const props = defineProps({
   },
 });
 
-const status = computed(() => props.recurso.historico_status[0].status_customizado?.tipo || '');
+const status = computed(() => {
+  const historicoStatus = props.recurso.historico_status;
+  if (!historicoStatus || historicoStatus.length === 0) return '';
+  return historicoStatus[0].status_customizado?.tipo || '';
+});
 </script>
 <template>
   <article
