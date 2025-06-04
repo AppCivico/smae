@@ -36,6 +36,13 @@ describe('dinheiro', () => {
     expect(dinheiro(123456789, { semDecimais: true, compactado: true })).toBe('123 milhões');
   });
 
+  it('deve assumir Real Brasileiro como moeda padrão', () => {
+    expect(dinheiro(1234.56, { style: 'currency' })).toBe('R$ 1.234,56');
+    expect(dinheiro(1234.56, { style: 'currency', currency: 'BRL' })).toBe('R$ 1.234,56');
+    expect(dinheiro(1234.56, { style: 'currency', currency: 'USD' })).toBe('US$ 1.234,56');
+    expect(dinheiro(1234.56, { style: 'currency', currency: 'EUR' })).toBe('€ 1.234,56');
+  });
+
   it('deve formatar um número com localidade específica', () => {
     expect(dinheiro(1234.56, { localidade: 'en-US' })).toBe('1,234.56');
     expect(dinheiro(1234.56, { localidade: 'fr-FR' })).toBe('1 234,56');
