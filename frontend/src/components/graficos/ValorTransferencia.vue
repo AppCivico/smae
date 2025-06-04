@@ -3,7 +3,7 @@
     v-if="valor"
     class="container br20"
   >
-    <strong>R$</strong> {{ dinheiro(valor, { semDecimais: true }) }}
+    <strong>R$</strong>&nbsp;{{ dinheiro(valor, { semDecimais: true }) }}
     <p>valor das emendas</p>
   </div>
   <div
