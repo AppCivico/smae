@@ -47,7 +47,7 @@ const legendas = {
           :recurso="recurso"
         />
       </div>
-    </CardEnvelope.conteudo>
+    </CardEnvelope.Conteudo>
   </template>
 </template>
 <style scoped>
