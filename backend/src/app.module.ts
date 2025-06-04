@@ -84,7 +84,6 @@ import { DuckDBModule } from './common/duckdb/duckdb.module';
         OrcamentoModule,
         OrcamentoPlanejadoModule,
         OrcamentoRealizadoModule,
-
         OrcamentoPrevistoModule,
         DashboardModule,
         BancadaModule,
@@ -115,8 +114,8 @@ import { DuckDBModule } from './common/duckdb/duckdb.module';
         CategoriaAssuntoVariavelModule,
         PSMFDashboardModule,
         RunReportModule,
+        DuckDBModule,
         AtualizacaoEmLoteModule,
-        
     ],
     controllers: [AppController],
     providers: [
@@ -164,7 +163,6 @@ import { DuckDBModule } from './common/duckdb/duckdb.module';
             }),
         },
         UtilsService,
-        DuckDBModule
     ],
 })
 export class AppModule implements NestModule {
