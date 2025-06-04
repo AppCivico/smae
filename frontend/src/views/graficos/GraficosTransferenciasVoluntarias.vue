@@ -1,6 +1,6 @@
 <template>
   <div class="flex spacebetween fixed">
-    <h5>ANÁLISE GERADA EM {{ localizeDate(data) }}</h5>
+    <h5>ANÁLISE GERADA EM {{ localizeDate(dataCorrente) }}</h5>
     <button
       class="like-a__text margintop"
       @click="exibirFiltros = !exibirFiltros"
@@ -291,7 +291,6 @@ const fluxosEtapasProjetos = useEtapasProjetosStore();
 const partidoStore = usePartidosStore();
 const parlamentarStore = useParlamentaresStore();
 
-// eslint-disable-next-line max-len
 const {
   lista: listaEtapas,
   chamadasPendentes: chamadasPendentesEtapas,
@@ -299,8 +298,11 @@ const {
   erro: erroNaListaDeEtapas,
 } = storeToRefs(fluxosEtapasProjetos);
 
-// eslint-disable-next-line max-len
-const { lista: listaPartidos, chamadasPendentes: chamadasPendentesPartidos, partidosPorId } = storeToRefs(partidoStore);
+const {
+  lista: listaPartidos,
+  chamadasPendentes: chamadasPendentesPartidos,
+  partidosPorId,
+} = storeToRefs(partidoStore);
 
 const {
   lista: listaParlamentares,
@@ -308,26 +310,11 @@ const {
   parlamentaresPorId,
 } = storeToRefs(parlamentarStore);
 
-// eslint-disable-next-line prefer-const
-let exibirFiltros = ref(false);
-const tabelaTransferencias = ref(null);
-
 const route = useRoute();
 const router = useRouter();
 
-let data = new Date();
+let dataCorrente = new Date();
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
-const graficos = ref({});
-let graficosPendentes = false;
-const filtrosEscolhidos = ref({
-  etapa_ids: route.query.etapa_ids?.map((id) => Number(id)) || [],
-  anos: route.query.anos?.map((ano) => Number(ano)) || [],
-  partido_ids: route.query.partido_ids?.map((id) => Number(id)) || [],
-  parlamentar_ids: route.query.parlamentar_ids?.map((id) => Number(id)) || [],
-});
-const carregandoTransferencias = ref(false);
-const transferencias = ref([]);
-const paginacaoTransferencias = ref({});
 const colunas = [
   { chave: 'identificador', label: 'Identificador' },
   { chave: 'esfera', label: 'Esfera' },
@@ -359,14 +346,28 @@ const colunas = [
     formatador: (valor) => listaEtapas.value.find((etapa) => etapa.id === valor)?.descricao || 'Workflow não iniciado',
   },
 ];
+const anos = (() => {
+  const listaDeAnos = [];
+  for (let ano = new Date().getFullYear(); ano >= 2004; ano -= 1) {
+    listaDeAnos.push({ ano: ano.toString(), id: ano });
+  }
+  return listaDeAnos;
+})();
 
-const anoAtual = new Date().getFullYear();
+let graficosPendentes = false;
 
-const anos = [];
-
-for (let ano = anoAtual; ano >= 2004; ano -= 1) {
-  anos.push({ ano: ano.toString(), id: ano });
-}
+const exibirFiltros = ref(false);
+const tabelaTransferencias = ref(null);
+const graficos = ref({});
+const filtrosEscolhidos = ref({
+  etapa_ids: route.query.etapa_ids?.map((id) => Number(id)) || [],
+  anos: route.query.anos?.map((ano) => Number(ano)) || [],
+  partido_ids: route.query.partido_ids?.map((id) => Number(id)) || [],
+  parlamentar_ids: route.query.parlamentar_ids?.map((id) => Number(id)) || [],
+});
+const carregandoTransferencias = ref(false);
+const transferencias = ref([]);
+const paginacaoTransferencias = ref({});
 
 function atualizarQuery() {
   const filtrosLimpos = Object.keys(filtrosEscolhidos.value).reduce(
@@ -391,7 +392,7 @@ function atualizarQuery() {
 
 function onSubmit() {
   atualizarQuery();
-  data = new Date();
+  dataCorrente = new Date();
   exibirFiltros.value = false;
 }
 
@@ -466,7 +467,7 @@ async function iniciar() {
     await router.replace({
       query: {
         ...route.query,
-        anos: [data.getFullYear()],
+        anos: [dataCorrente.getFullYear()],
       },
     });
   }
@@ -572,6 +573,7 @@ watch(
   margin-right: -50px;
   box-shadow: 0px 8px 16px 0px #1527411a;
 }
+
 .parlamentar {
   box-shadow: 0px 8px 16px 0px #1527411a;
   padding: 10px 40px;
