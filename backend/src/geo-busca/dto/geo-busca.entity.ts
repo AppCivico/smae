@@ -162,29 +162,19 @@ export class EtapaSearchResultDto {
 }
 
 export class PdmRotuloInfo {
-    @ApiProperty()
-    id: number; // PDM ID
-
-    @ApiPropertyOptional()
-    rotulo_atividade?: string | null;
-
-    @ApiPropertyOptional()
-    rotulo_iniciativa?: string | null;
+    id: number;
+    rotulo_atividade: string;
+    rotulo_iniciativa: string;
+    rotulo_macro_tema: string;
 }
 
 export class MetaLookupInfoDto {
-    @ApiProperty()
     id: number;
-
-    @ApiProperty()
     codigo: string;
-
-    @ApiProperty()
     titulo: string;
-
-    @ApiProperty()
     pdm_id: number;
-
+    macro_tema_id: number | null;
+    macro_tema_nome: string | null;
     @ApiPropertyOptional({ description: 'Siglas dos órgãos da meta', type: [String] })
     orgaos_sigla?: string[];
 }

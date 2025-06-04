@@ -5,6 +5,7 @@ import { GeoJSON } from 'geojson';
 import { PrismaService } from '../prisma/prisma.service';
 import {
     GeoInfoBaseDto,
+    MetaLookupInfoDto,
     ProjetoSearchResultDto,
     SearchEntitiesNearbyDto,
     SearchEntitiesNearbyResponseDto,
@@ -385,7 +386,9 @@ export class GeoBuscaService {
                     id: true,
                     codigo: true,
                     titulo: true,
-                    pdm_id: true, // Ensure pdm_id is selected
+                    macro_tema_id: true,
+                    macro_tema: { select: { id: true, descricao: true } },
+                    pdm_id: true,
                     meta_orgao: { select: { orgao: { select: { sigla: true } } } },
                 },
             });
@@ -397,8 +400,10 @@ export class GeoBuscaService {
                     codigo: m.codigo,
                     titulo: m.titulo,
                     pdm_id: m.pdm_id,
+                    macro_tema_nome: m.macro_tema?.descricao ?? null,
+                    macro_tema_id: m.macro_tema_id,
                     orgaos_sigla: m.meta_orgao.map((mo) => mo.orgao.sigla),
-                };
+                } satisfies MetaLookupInfoDto;
             });
         }
 
@@ -406,7 +411,7 @@ export class GeoBuscaService {
         if (seenPDMIds.size > 0) {
             response.pdm_info = await this.prisma.pdm.findMany({
                 where: { id: { in: Array.from(seenPDMIds) } },
-                select: { id: true, rotulo_atividade: true, rotulo_iniciativa: true },
+                select: { id: true, rotulo_atividade: true, rotulo_iniciativa: true, rotulo_macro_tema: true },
             });
         }
 
