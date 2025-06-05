@@ -5,11 +5,11 @@ import { DateTime } from 'luxon';
 import { SmaeConfigService } from 'src/common/services/smae-config.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { TaskService } from 'src/task/task.service';
-import { JOB_LOG_BACKUP_JOB_LOCK_NUMBER } from '../../common/dto/locks';
+import { JOB_LOG_BACKUP_JOB_LOCK_NUMBER } from '../common/dto/locks';
 
 @Injectable()
-export class ApiLogBackupSchedulerService {
-    private readonly logger = new Logger('ApiLogBackupSchedulerService');
+export class BackupSchedulerService {
+    private readonly logger = new Logger('BackupSchedulerService');
     private is_running = false;
 
     constructor(

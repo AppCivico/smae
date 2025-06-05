@@ -1,9 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { TaskableService } from 'src/task/entities/task.entity';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { DateTime } from 'luxon';
 import { DuckDBProviderService } from 'src/common/duckdb/duckdb-provider.service';
-import { tryDecodeJson } from '../utils/json-utils';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { TaskableService } from 'src/task/entities/task.entity';
 import { CreateApiLogDayDto } from '../dto/create-api-log-day.dto';
+import { tryDecodeJson } from '../utils/json-utils';
 
 @Injectable()
 export class ApiLogRestoreService implements TaskableService {
@@ -109,11 +110,8 @@ export class ApiLogRestoreService implements TaskableService {
     }
 
     async dropDay(dto: CreateApiLogDayDto): Promise<void> {
-        const { date } = dto;
-        const logDateUTC = new Date(`${date}T00:00:00Z`);
-
         const control = await this.prisma.apiRequestLogControl.findUnique({
-            where: { log_date: logDateUTC },
+            where: { log_date: dto.date },
         });
 
         if (!control || control.status !== 'RESTORED') {
@@ -122,14 +120,14 @@ export class ApiLogRestoreService implements TaskableService {
 
         await this.prisma.$transaction([
             this.prisma.apiRequestLogControl.update({
-                where: { log_date: logDateUTC },
+                where: { log_date: dto.date },
                 data: { status: 'BACKED_UP' },
             }),
             this.prisma.api_request_log.deleteMany({
                 where: {
                     created_at: {
-                        gte: new Date(`${date}T00:00:00.000Z`),
-                        lt: new Date(new Date(date).getTime() + 86400000),
+                        gte: DateTime.fromJSDate(dto.date, { zone: 'utc' }).startOf('day').toJSDate(),
+                        lt: DateTime.fromJSDate(dto.date, { zone: 'utc' }).plus({ days: 1 }).startOf('day').toJSDate(),
                     },
                 },
             }),

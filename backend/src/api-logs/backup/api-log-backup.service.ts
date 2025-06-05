@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { SmaeConfigService } from 'src/common/services/smae-config.service';
-import { TaskableService } from 'src/task/entities/task.entity';
-import { DuckDBProviderService } from 'src/common/duckdb/duckdb-provider.service';
+import { DateTime } from 'luxon';
 import { CHUNK_SIZE } from 'src/common/consts';
+import { DuckDBProviderService } from 'src/common/duckdb/duckdb-provider.service';
+import { SmaeConfigService } from 'src/common/services/smae-config.service';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { TaskableService } from 'src/task/entities/task.entity';
 import { tryDecodeJson } from '../utils/json-utils';
 
 @Injectable()
@@ -16,7 +17,10 @@ export class ApiLogBackupService implements TaskableService {
 
     async executeJob(payload: { date: string; task_id?: number }): Promise<any> {
         const { date, task_id } = payload;
-        const logDateUTC = new Date(`${date}T00:00:00Z`);
+        const logDateUTC = DateTime.fromISO(date, { zone: 'utc' }).toJSDate();
+        if (!logDateUTC) {
+            throw new Error('Data inválida fornecida para backup.');
+        }
 
         let totalRecords = 0;
         const duckDB = await this.duckDBProviderService.getConfiguredInstance();
@@ -64,8 +68,8 @@ export class ApiLogBackupService implements TaskableService {
                     take: CHUNK_SIZE,
                     where: {
                         created_at: {
-                            gte: new Date(`${date}T00:00:00.000Z`),
-                            lt: new Date(new Date(`${date}T00:00:00.000Z`).getTime() + 86400000),
+                            gte: DateTime.fromISO(date, { zone: 'utc' }).startOf('day').toJSDate(),
+                            lt: DateTime.fromISO(date, { zone: 'utc' }).plus({ days: 1 }).startOf('day').toJSDate(),
                         },
                     },
                     select: {
@@ -125,8 +129,8 @@ export class ApiLogBackupService implements TaskableService {
                 await tx.api_request_log.deleteMany({
                     where: {
                         created_at: {
-                            gte: new Date(`${date}T00:00:00.000Z`),
-                            lt: new Date(new Date(date).getTime() + 86400000),
+                            gte: DateTime.fromISO(date, { zone: 'utc' }).startOf('day').toJSDate(),
+                            lt: DateTime.fromISO(date, { zone: 'utc' }).plus({ days: 1 }).startOf('day').toJSDate(),
                         },
                     },
                 });

@@ -8,6 +8,7 @@ import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { TaskService } from 'src/task/task.service';
 import { CreateApiLogDayDto } from '../dto/create-api-log-day.dto';
 import { ApiLogRestoreService } from './api-log-restore.service.js';
+import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 
 @ApiTags('Api Logs')
 @Controller('logs')
@@ -27,7 +28,10 @@ export class ApiLogManagementController {
         },
     })
     @ApiBearerAuth('access-token')
-    async restoreApiLogs(@Body() dto: CreateApiLogDayDto, user: PessoaFromJwt | null): Promise<{ taskId: number }> {
+    async restoreApiLogs(
+        @Body() dto: CreateApiLogDayDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<{ taskId: number }> {
         const task = await this.taskService.create(
             {
                 type: task_type.restore_api_log_day,

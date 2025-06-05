@@ -1,6 +1,6 @@
-import { IsDateString } from 'class-validator';
+import { IsDateYMD } from '../../auth/decorators/date.decorator';
 
-export class CreateApiLogDayDto  {
-  @IsDateString()
-  date: string;
+export class CreateApiLogDayDto {
+    @IsDateYMD()
+    date: Date;
 }
