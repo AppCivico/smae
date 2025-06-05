@@ -419,14 +419,12 @@ watchEffect(async () => {
     if (props.pdmId) {
       if (props.metaId || props.iniciativaId || props.atividadeId) {
         carregando.value = true;
-        console.debug('Consultando relacionamentos...');
         const response = await requestS.get(`${import.meta.env.VITE_API_URL}/${caminhoParaApi(route.meta)}/relacionados/`, {
           pdm_id: props.pdmId,
           meta_id: props.metaId,
           iniciativa_id: props.iniciativaId,
           atividade_id: props.atividadeId,
         }) as RelacionadosDTO;
-        console.debug('Relacionamentos:', response);
         relacionamentos.value = response;
       }
     }
