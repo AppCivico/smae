@@ -59,6 +59,7 @@ import { ClassificacaoModule } from './transferencias-voluntarias/classificacao/
 import { DuckDBModule } from './common/duckdb/duckdb.module';
 import { GeoBuscaModule } from './geo-busca/geo-busca.module';
 import { ApiLogModule } from './api-logs/api-log.module';
+import { BuscaGlobalModule } from './busca-global/busca-global.module';
 
 // Hacks pro JS
 /*
@@ -118,6 +119,7 @@ import { ApiLogModule } from './api-logs/api-log.module';
         RunReportModule,
         DuckDBModule,
         GeoBuscaModule,
+        BuscaGlobalModule,
         AtualizacaoEmLoteModule,
         ApiLogModule,
     ],

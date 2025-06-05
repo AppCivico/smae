@@ -617,13 +617,6 @@ export class RunUpdateTaskService implements TaskableService {
     ) {
         let value = op.valor;
 
-        // TODO: REMOVER ISSO AQUI. Rever com o frontend quando estiver OK/resolvido lá, ou se vamos botar um 400
-        // e ter que ter a lista dos items que são array's pra virar sozinho o valor
-        if (op.col === 'responsavel_id') {
-            // O valor enviado é uma array, pegando apenas o primeiro item.
-            value = value[0];
-        }
-
         if (tipo_operacao === TipoOperacao.Set) {
             // Caso o valor se pareça com uma data (YYYY-MM-DD), convertemos para Date.
             if (typeof value === 'string' && value.match(/^\d{4}-\d{2}-\d{2}$/)) {

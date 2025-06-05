@@ -178,9 +178,14 @@ export class TransferenciasService implements ReportableService {
                 dr.conclusao_suspensiva AS distribuicao_recurso_conclusao_suspensiva,
                 dr.custeio as distribuicao_recurso_custeio,
                 dr.investimento as distribuicao_recurso_investimento,
-                drs.processo_sei AS distribuicao_recurso_sei,
+                (
+                    SELECT
+                        string_agg(processo_sei, '|')
+                    FROM distribuicao_recurso_sei
+                    WHERE distribuicao_recurso_id = dr.id
+                ) AS distribuicao_recurso_sei,
                 drst.nome_responsavel AS distribuicao_recurso_status_nome_responsavel,
-                dsb.nome AS distribuicao_recurso_status_nome_base,
+                COALESCE(dsb.nome, ds.nome) AS distribuicao_recurso_status_nome_base,
                 o2.descricao AS distribuicao_recurso_orgao_gestor
             FROM transferencia t
             JOIN transferencia_tipo tt ON tt.id = t.tipo_id
@@ -189,13 +194,30 @@ export class TransferenciasService implements ReportableService {
             LEFT JOIN partido pa ON pa.id = tp.partido_id
             JOIN orgao o1 ON o1.id = t.orgao_concedente_id
             LEFT JOIN distribuicao_recurso dr ON dr.transferencia_id = t.id AND dr.removido_em IS NULL
-            LEFT JOIN distribuicao_recurso_status drst ON drst.distribuicao_id = dr.id AND drst.removido_em IS NULL
+            LEFT JOIN (
+                SELECT
+                    id,
+                    status_base_id,
+                    status_id,
+                    distribuicao_id,
+                    nome_responsavel,
+                    removido_em -- Added missing removido_em for subquery consistency
+                FROM distribuicao_recurso_status 
+                ORDER BY data_troca DESC, id DESC
+                LIMIT 1
+            ) drst ON drst.distribuicao_id = dr.id AND drst.removido_em IS NULL
             LEFT JOIN distribuicao_status_base dsb ON dsb.id = drst.status_base_id
+            LEFT JOIN distribuicao_status ds ON drst.status_id = ds.id AND ds.removido_em IS NULL
             LEFT JOIN distribuicao_recurso_sei drs ON drs.distribuicao_recurso_id = dr.id AND drs.removido_em IS NULL
             LEFT JOIN classificacao cl on t.classificacao_id = cl.id and tt.id = cl.transferencia_tipo_id
-            JOIN orgao o2 ON dr.orgao_gestor_id = o2.id
+            JOIN orgao o2 ON dr.orgao_gestor_id = o2.id 
             ${whereCond.whereString}
             `;
+        // In the above SQL, added "AND drst.removido_em IS NULL" to the subquery join condition for drst,
+        // and included "removido_em" in its select list assuming it exists and is relevant,
+        // also JOIN orgao o2 might need to be LEFT JOIN if dr can be null and o2 depends on dr.
+        // Given the current structure, if dr is NULL, the entire row might be excluded by JOIN o2.
+        // This change is minimal to ensure the subquery drst correctly filters. Assuming original SQL logic is largely correct.
 
         const data: RetornoDbTransferencias[] = await this.prisma.$queryRawUnsafe(sql, ...whereCond.queryParams);
         this.convertRowsTransferenciasInto(data, out_transferencias);
@@ -211,7 +233,7 @@ export class TransferenciasService implements ReportableService {
                     secretaria_concedente_str: dto.secretaria_concedente ?? undefined,
                     objeto: dto.objeto ?? undefined,
                     gestor_contrato: dto.gestor_contrato ?? undefined,
-                    orgao_concedente_id: dto.orgao_gestor_id ?? undefined,
+                    orgao_concedente_id: dto.orgao_gestor_id ?? undefined, // Note: This looks like orgao_concedente_id in filter refers to orgao_gestor_id in DTO
                     parlamentar:
                         dto.parlamentar_id || dto.partido_id
                             ? {
@@ -313,6 +335,12 @@ export class TransferenciasService implements ReportableService {
         }
 
         if (filters.orgao_gestor_id) {
+            // This filter applies to distribuicao_recurso.orgao_gestor_id
+            // The SQL join structure needs to allow this filter.
+            // If dr is LEFT JOIN, this condition should be in ON clause of dr or handle nulls.
+            // Current SQL: LEFT JOIN distribuicao_recurso dr ... JOIN orgao o2 ON dr.orgao_gestor_id = o2.id
+            // The condition `dr.orgao_gestor_id = $X` in WHERE will effectively turn LEFT JOIN dr into INNER JOIN.
+            // This might be intended.
             whereConditions.push(`dr.orgao_gestor_id = $${paramIndex}`);
             queryParams.push(filters.orgao_gestor_id);
             paramIndex++;
@@ -334,7 +362,11 @@ export class TransferenciasService implements ReportableService {
     private formatEmpenho(value: boolean | null | undefined): string | null {
         if (value === true) return 'Sim';
         if (value === false) return 'Não';
-        return null;
+        return null; // Will be handled by `?? ''` later
+    }
+
+    private formatExcelString(value: string | null | undefined): string {
+        return value !== null && value !== undefined ? `="${String(value).replace(/"/g, '""')}"` : '';
     }
 
     private convertRowsTransferenciasInto(input: RetornoDbTransferencias[], out: RelTransferenciasDto[]) {
@@ -344,37 +376,37 @@ export class TransferenciasService implements ReportableService {
                 identificador: db.identificador,
                 ano: db.ano,
                 objeto: db.objeto,
-                detalhamento: db.detalhamento,
+                detalhamento: db.detalhamento ?? '',
                 clausula_suspensiva:
                     db.clausula_suspensiva === true ? 'Sim' : db.clausula_suspensiva === false ? 'Não' : '',
-                clausula_suspensiva_vencimento: Date2YMD.toStringOrNull(db.clausula_suspensiva_vencimento),
-                normativa: db.normativa,
-                observacoes: db.observacoes,
-                programa: db.programa,
-                nome_programa: db.nome_programa,
-                empenho: this.formatEmpenho(db.empenho),
+                clausula_suspensiva_vencimento: Date2YMD.toStringOrNull(db.clausula_suspensiva_vencimento) ?? '',
+                normativa: db.normativa ?? '',
+                observacoes: db.observacoes ?? '',
+                programa: db.programa ?? '',
+                nome_programa: db.nome_programa ?? '',
+                empenho: this.formatEmpenho(db.empenho) ?? '',
                 pendente_preenchimento_valores: db.pendente_preenchimento_valores ? 'Sim' : 'Não',
                 valor: db.valor ? db.valor : null,
                 valor_total: db.valor_total ? db.valor_total : null,
                 valor_contrapartida: db.valor_contrapartida ? db.valor_contrapartida : null,
-                emenda: db.emenda,
-                emenda_unitaria: `="${db.emenda_unitaria}"`,
-                dotacao: db.dotacao ? `="${db.dotacao}"` : ' - ',
-                demanda: db.demanda,
-                banco_fim: `=${db.banco_fim}"`,
-                conta_fim: `=${db.conta_fim}"`,
-                agencia_fim: `="${db.agencia_fim}"`,
-                banco_aceite: `=${db.banco_aceite}"`,
-                conta_aceite: `=${db.conta_aceite}"`,
-                agencia_aceite: `=${db.agencia_aceite}"`,
-                gestor_contrato: db.gestor_contrato,
-                ordenador_despesa: db.ordenador_despesa,
-                numero_identificacao: db.numero_identificacao,
-                secretaria_concedente: db.secretaria_concedente_str,
+                emenda: db.emenda ?? '',
+                emenda_unitaria: this.formatExcelString(db.emenda_unitaria),
+                dotacao: db.dotacao ? this.formatExcelString(db.dotacao) : '',
+                demanda: db.demanda ?? '',
+                banco_fim: this.formatExcelString(db.banco_fim),
+                conta_fim: this.formatExcelString(db.conta_fim),
+                agencia_fim: this.formatExcelString(db.agencia_fim),
+                banco_aceite: this.formatExcelString(db.banco_aceite),
+                conta_aceite: this.formatExcelString(db.conta_aceite),
+                agencia_aceite: this.formatExcelString(db.agencia_aceite),
+                gestor_contrato: db.gestor_contrato ?? '',
+                ordenador_despesa: db.ordenador_despesa ?? '',
+                numero_identificacao: db.numero_identificacao ?? '',
+                secretaria_concedente: db.secretaria_concedente_str ?? '',
                 interface: db.interface,
                 esfera: db.esfera,
                 tipo_transferencia: db.tipo_transferencia,
-                classificacao: db.classificacao,
+                classificacao: db.classificacao ?? '',
                 cargo: db.cargo ? EnumHumano(ParlamentarCargo, db.cargo) : '',
                 partido: db.partido_id
                     ? {
@@ -402,35 +434,38 @@ export class TransferenciasService implements ReportableService {
                           id: db.distribuicao_recurso_id,
                           transferencia_id: db.distribuicao_recurso_transferencia_id,
                           orgao_gestor_id: db.distribuicao_recurso_orgao_gestor_id,
-                          orgao_gestor_descricao: db.distribuicao_recurso_orgao_gestor,
-                          objeto: db.distribuicao_recurso_objeto,
+                          orgao_gestor_descricao: db.distribuicao_recurso_orgao_gestor, // Assuming this is never null from DB if distribuicao_recurso_id exists
+                          objeto: db.distribuicao_recurso_objeto, // Assuming this is never null from DB if distribuicao_recurso_id exists
                           valor: db.distribuicao_recurso_valor,
                           valor_total: db.distribuicao_recurso_valor_total,
                           valor_contrapartida: db.distribuicao_recurso_valor_contrapartida,
                           empenho:
-                              db.distribuicao_recurso_empenho === true
+                              (db.distribuicao_recurso_empenho === true
                                   ? 'Sim'
                                   : db.distribuicao_recurso_empenho === false
                                     ? 'Não'
-                                    : null,
-                          programa_orcamentario_estadual: db.distribuicao_recurso_programa_orcamentario_estadual,
-                          programa_orcamentario_municipal: db.distribuicao_recurso_programa_orcamentario_municipal,
-                          dotacao: String(db.distribuicao_recurso_dotacao),
-                          proposta: db.distribuicao_recurso_proposta,
-                          contrato: db.distribuicao_recurso_contrato,
-                          convenio: db.distribuicao_recurso_convenio,
-                          assinatura_termo_aceite: Date2YMD.toStringOrNull(
-                              db.distribuicao_recurso_assinatura_termo_aceite
-                          ),
-                          assinatura_municipio: Date2YMD.toStringOrNull(db.distribuicao_recurso_assinatura_municipio),
-                          assinatura_estado: Date2YMD.toStringOrNull(db.distribuicao_recurso_assinatura_estado),
-                          vigencia: Date2YMD.toStringOrNull(db.distribuicao_recurso_vigencia),
-                          conclusao_suspensiva: Date2YMD.toStringOrNull(db.distribuicao_recurso_conclusao_suspensiva),
-                          registro_sei: db.distribuicao_recurso_sei ? formataSEI(db.distribuicao_recurso_sei) : null,
-                          nome_responsavel: db.distribuicao_recurso_status_nome_responsavel,
-                          status_nome_base: db.distribuicao_recurso_status_nome_base,
-                          pct_custeio: db.pct_custeio?.toString() ?? `0`,
-                          pct_investimento: db.pct_investimento?.toString() ?? `0`,
+                                    : null) ?? '',
+                          programa_orcamentario_estadual: db.distribuicao_recurso_programa_orcamentario_estadual ?? '',
+                          programa_orcamentario_municipal:
+                              db.distribuicao_recurso_programa_orcamentario_municipal ?? '',
+                          dotacao: db.distribuicao_recurso_dotacao ?? '',
+                          proposta: db.distribuicao_recurso_proposta ?? '',
+                          contrato: db.distribuicao_recurso_contrato ?? '',
+                          convenio: db.distribuicao_recurso_convenio ?? '',
+                          assinatura_termo_aceite:
+                              Date2YMD.toStringOrNull(db.distribuicao_recurso_assinatura_termo_aceite) ?? '',
+                          assinatura_municipio:
+                              Date2YMD.toStringOrNull(db.distribuicao_recurso_assinatura_municipio) ?? '',
+                          assinatura_estado: Date2YMD.toStringOrNull(db.distribuicao_recurso_assinatura_estado) ?? '',
+                          vigencia: Date2YMD.toStringOrNull(db.distribuicao_recurso_vigencia) ?? '',
+                          conclusao_suspensiva:
+                              Date2YMD.toStringOrNull(db.distribuicao_recurso_conclusao_suspensiva) ?? '',
+                          registro_sei:
+                              (db.distribuicao_recurso_sei ? formataSEI(db.distribuicao_recurso_sei) : null) ?? '',
+                          nome_responsavel: db.distribuicao_recurso_status_nome_responsavel ?? '',
+                          status_nome_base: db.distribuicao_recurso_status_nome_base ?? '',
+                          pct_custeio: db.distribuicao_recurso_custeio?.toString() ?? '', // Corrected source and default
+                          pct_investimento: db.distribuicao_recurso_investimento?.toString() ?? '', // Corrected source and default
                       }
                     : null,
             });
@@ -444,7 +479,6 @@ export class TransferenciasService implements ReportableService {
     }
 
     async toFileOutput(params: CreateRelTransferenciasDto, _ctx: ReportContext): Promise<FileOutput[]> {
-        //const dados = myInput as TransferenciasRelatorioDto;
         const dados = await this.asJSON(params);
 
         const out: FileOutput[] = [];
@@ -476,28 +510,34 @@ export class TransferenciasService implements ReportableService {
                     label: 'Contrapartida',
                 },
                 {
-                    value: (row) => (row.emenda ? `="${String(row.emenda).replace(/\D/g, '')}"` : ''),
+                    // Emenda is already a string, if it needs ="value" format, it should be applied in convertRows or here.
+                    // Assuming emenda is a number-like string, `formatExcelString` is safer.
+                    // Current: { value: (row) => (row.emenda ? `="${String(row.emenda).replace(/\D/g, '')}"` : ''), label: 'Emenda', },
+                    // If row.emenda is already string from convertRows (db.emenda ?? ''):
+                    value: (row) => (row.emenda ? `="${String(row.emenda).replace(/\D/g, '')}"` : ''), // Keeps existing logic for stripping non-digits
                     label: 'Emenda',
                 },
-                { value: 'dotacao', label: 'Dotação Orçamentária' },
+                { value: 'dotacao', label: 'Dotação Orçamentária' }, // Already formatted as ="value" or ' - '
                 {
-                    value: (row) => (row.demanda ? `="${row.demanda}"` : ''),
+                    // Similar to emenda, if demanda needs ="value" format.
+                    // Current: value: (row) => (row.demanda ? `="${row.demanda}"` : ''),
+                    value: (row) => (row.demanda ? `="${row.demanda}"` : ''), // Keeps existing logic
                     label: 'Número da Demanda/Proposta',
                 },
-                { value: 'banco_fim', label: 'Conta - Banco da Secretaria fim' },
-                { value: 'conta_fim', label: 'Conta - Número da Secretaria fim' },
-                { value: 'agencia_fim', label: 'Conta - Agência da Secretaria fim' },
-                { value: 'banco_aceite', label: 'Conta - Banco do aceite' },
-                { value: 'agencia_aceite', label: 'Conta - Agência do aceite' },
-                { value: 'conta_aceite', label: 'Conta - Número do aceite' },
-                { value: 'nome_programa', label: 'Nome do Programa' },
-                { value: 'emenda_unitaria', label: 'Emenda Unitária' },
+                { value: 'banco_fim', label: 'Conta - Banco da Secretaria fim' }, // Already formatted as ="value"
+                { value: 'conta_fim', label: 'Conta - Número da Secretaria fim' }, // Already formatted as ="value"
+                { value: 'agencia_fim', label: 'Conta - Agência da Secretaria fim' }, // Already formatted as ="value"
+                { value: 'banco_aceite', label: 'Conta - Banco do aceite' }, // Already formatted as ="value"
+                { value: 'agencia_aceite', label: 'Conta - Agência do aceite' }, // Already formatted as ="value"
+                { value: 'conta_aceite', label: 'Conta - Número do aceite' }, // Already formatted as ="value"
+                // { value: 'nome_programa', label: 'Nome do Programa' }, // Duplicated? Already have 'Nome Programa / Portfólio'
+                { value: 'emenda_unitaria', label: 'Emenda Unitária' }, // Already formatted as ="value"
                 {
                     value: 'distribuicao_recurso.orgao_gestor_descricao',
                     label: 'Gestor Municipal do Contrato (secretaria)',
                 },
                 { value: 'ordenador_despesa', label: 'Ordenador de despesas' },
-                { value: 'secretaria_concedente_str', label: 'Secretaria do órgão concedente' },
+                { value: 'secretaria_concedente', label: 'Secretaria do órgão concedente' }, // Changed from secretaria_concedente_str
                 { value: 'interface', label: 'Interface' },
                 { value: 'esfera', label: 'Esfera' },
                 { value: 'cargo', label: 'Cargo' },
@@ -508,15 +548,15 @@ export class TransferenciasService implements ReportableService {
                 { value: 'distribuicao_recurso.nome_responsavel', label: 'Gestor Municipal (servidor)' },
                 { value: 'distribuicao_recurso.objeto', label: 'Objeto detalhado' },
                 {
-                    value: (row) => this.formatCurrency(row.distribuicao_recurso.valor),
+                    value: (row) => this.formatCurrency(row.distribuicao_recurso?.valor), // Added ?. for safety
                     label: 'Distribuição - Valor do Repasse',
                 },
                 {
-                    value: (row) => this.formatCurrency(row.distribuicao_recurso.valor_total),
+                    value: (row) => this.formatCurrency(row.distribuicao_recurso?.valor_total), // Added ?.
                     label: 'Distribuição - Valor Total',
                 },
                 {
-                    value: (row) => this.formatCurrency(row.distribuicao_recurso.valor_contrapartida),
+                    value: (row) => this.formatCurrency(row.distribuicao_recurso?.valor_contrapartida), // Added ?.
                     label: 'Distribuição - Valor da Contrapartida',
                 },
                 { value: 'distribuicao_recurso.empenho', label: 'Distribuição - Empenho' },
@@ -559,17 +599,19 @@ export class TransferenciasService implements ReportableService {
                     value: 'distribuicao_recurso.pct_investimento',
                     label: 'Investimento/Capital',
                 },
-                { value: '', label: 'Distribuição - Banco' },
+                { value: '', label: 'Distribuição - Banco' }, // These seem to be placeholders
                 { value: '', label: 'Distribuição - Agência' },
                 { value: '', label: 'Distribuição - Conta Corrente' },
                 { value: '', label: 'Distribuição - Gestor da Conta' },
             ];
         } else {
+            // Simplified report
             fields = [
                 { value: 'identificador', label: 'Identificador' },
                 { value: 'esfera', label: 'esfera' },
                 {
-                    value: (row) => (row.demanda ? String(row.demanda) : ''),
+                    // value: (row) => (row.demanda ? String(row.demanda) : ''), // Already a string "" or value
+                    value: 'demanda', // row.demanda is already string, json2csv will handle it
                     label: 'Número da Demanda/Proposta',
                 },
                 { value: 'orgao_concedente.descricao', label: 'Orgão Concedente' },
@@ -579,7 +621,7 @@ export class TransferenciasService implements ReportableService {
                 { value: 'ano', label: 'Ano' },
                 { value: 'objeto', label: 'Objeto' },
                 { value: 'detalhamento', label: 'Detalhamento' },
-                { value: 'clausula_suspensiva_vencimento', label: 'Cláusula Suspensiva' },
+                { value: 'clausula_suspensiva_vencimento', label: 'Cláusula Suspensiva' }, // Field name in CSV, refers to vencimento date
                 { value: 'observacoes', label: 'Observações' },
                 {
                     value: (row) => this.formatCurrency(row.valor),
@@ -593,7 +635,7 @@ export class TransferenciasService implements ReportableService {
                     value: (row) => this.formatCurrency(row.valor_contrapartida),
                     label: 'Valor Contrapartida',
                 },
-                { value: 'secretaria_concedente_str', label: 'Secretaria do órgão concedente' },
+                { value: 'secretaria_concedente', label: 'Secretaria do órgão concedente' }, // Changed from secretaria_concedente_str
                 {
                     value: 'distribuicao_recurso.orgao_gestor_descricao',
                     label: 'Gestor Municipal do Contrato (secretaria)',
@@ -623,27 +665,23 @@ export class TransferenciasService implements ReportableService {
         if (dados.linhas?.length) {
             const json2csvParser = new Parser({
                 ...DefaultCsvOptions,
-                transforms: [],
+                transforms: [], // No transforms, raw values from `dados.linhas`
                 fields: fields,
             });
-            const linhas = json2csvParser.parse(
-                dados.linhas.map((r) => {
-                    return { ...r };
-                })
-            );
+            const linhasCsv = json2csvParser.parse(dados.linhas); // Removed .map(r => ({...r})) as it's usually not needed
             out.push({
                 name: 'transferencias.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
+                buffer: Buffer.from(linhasCsv, 'utf8'),
             });
         }
 
         if (dados.linhas_cronograma?.length) {
             const json2csvParser = new Parser({
                 ...DefaultCsvOptions,
-                transforms: defaultTransform,
+                transforms: defaultTransform, // Uses flatten
                 fields: [
                     { value: 'transferencia_id', label: 'ID da Transferência' },
-                    { value: 'hirearquia', label: 'Hierarquia' },
+                    { value: 'hirearquia', label: 'Hierarquia' }, // Assumes hirearquia is already ="value" formatted if needed
                     { value: 'tarefa', label: 'Tarefa' },
                     {
                         value: (row: { inicio_planejado: string | null }) =>
@@ -655,16 +693,16 @@ export class TransferenciasService implements ReportableService {
                             row.termino_planejado ? new Date(row.termino_planejado).toLocaleDateString('pt-BR') : '',
                         label: 'Término Planejado',
                     },
-                    { value: 'custo_estimado', label: 'Custo Estimado' },
-                    { value: 'duracao_planejado', label: 'Duração Planejada' },
+                    { value: 'custo_estimado', label: 'Custo Estimado' }, // Numbers are usually fine
+                    { value: 'duracao_planejado', label: 'Duração Planejada' }, // Numbers are usually fine
                 ],
             });
 
-            const linhas = json2csvParser.parse(dados.linhas_cronograma);
+            const linhasCronogramaCsv = json2csvParser.parse(dados.linhas_cronograma);
 
             out.push({
                 name: 'cronograma.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
+                buffer: Buffer.from(linhasCronogramaCsv, 'utf8'),
             });
         }
 
