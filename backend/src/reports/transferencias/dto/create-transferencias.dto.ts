@@ -50,7 +50,9 @@ export class CreateRelTransferenciasDto {
 
     @IsOptional()
     @IsString()
-    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo 'Objeto/Empreendimento' deve ter no máximo ${MAX_LENGTH_MEDIO} caracteres` })
+    @MaxLength(MAX_LENGTH_MEDIO, {
+        message: `O campo 'Objeto/Empreendimento' deve ter no máximo ${MAX_LENGTH_MEDIO} caracteres`,
+    })
     objeto?: string;
 
     @IsOptional()
