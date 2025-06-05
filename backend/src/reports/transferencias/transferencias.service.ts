@@ -95,6 +95,8 @@ class RetornoDbTransferencias {
     distribuicao_recurso_conta: string | null;
     distribuicao_recurso_agencia: string | null;
     distribuicao_recurso_gestor_contrato: string | null;
+    distribuicao_recurso_pct_custeio: number | null;
+    distribuicao_recurso_pct_investimento: number | null;
     tipo_transferencia: string;
     classificacao: string | null;
     pct_investimento: number | null;
@@ -194,7 +196,9 @@ export class TransferenciasService implements ReportableService {
                 dr.distribuicao_banco as distribuicao_recurso_banco,
                 dr.distribuicao_conta as distribuicao_recurso_conta,
                 dr.distribuicao_agencia as distribuicao_recurso_agencia,
-                dr.gestor_contrato as distribuicao_recurso_gestor_contrato
+                dr.gestor_contrato as distribuicao_recurso_gestor_contrato,
+                dr.pct_custeio as distribuicao_recurso_pct_custeio,
+                dr.pct_investimento as distribuicao_recurso_pct_investimento
             FROM transferencia t
             JOIN transferencia_tipo tt ON tt.id = t.tipo_id
             LEFT JOIN transferencia_parlamentar tp ON tp.transferencia_id = t.id AND tp.removido_em IS NULL
@@ -474,9 +478,10 @@ export class TransferenciasService implements ReportableService {
                               (db.distribuicao_recurso_sei ? formataSEI(db.distribuicao_recurso_sei) : null) ?? '',
                           nome_responsavel: this.formatExcelString(db.distribuicao_recurso_status_nome_responsavel),
                           status_nome_base: db.distribuicao_recurso_status_nome_base ?? '',
-                          pct_custeio: this.formatExcelString(db.distribuicao_recurso_custeio?.toPrecision(2)) ?? null, // Corrected source and default
+                          pct_custeio:
+                              this.formatExcelString(db.distribuicao_recurso_pct_custeio?.toPrecision(2)) ?? null, // Corrected source and default
                           pct_investimento:
-                              this.formatExcelString(db.distribuicao_recurso_investimento?.toPrecision(2)) ?? null, // Corrected source and default
+                              this.formatExcelString(db.distribuicao_recurso_pct_investimento?.toPrecision(2)) ?? null, // Corrected source and default
                           conta: this.formatExcelString(db.distribuicao_recurso_conta),
                           banco: this.formatExcelString(db.distribuicao_recurso_banco),
                           agencia: this.formatExcelString(db.distribuicao_recurso_agencia),
