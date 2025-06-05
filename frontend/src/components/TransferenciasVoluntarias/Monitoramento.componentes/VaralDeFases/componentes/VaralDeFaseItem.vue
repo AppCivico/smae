@@ -7,40 +7,50 @@ export type VaralDeItemProps = {
   responsavel: string,
   situacao: string,
   tarefas?: any[]
-  pendente?: boolean
+  pendente?: boolean,
+  atual?: boolean,
 };
 
 type Props = VaralDeItemProps & {
-  secundario?: boolean
+  secundario?: boolean,
+  largo?: boolean
 };
-
-const { web } = useTamanhoDispositivo();
 
 defineProps<Props>();
 
 </script>
 
 <template>
-  <article :class="{'varal-de-fase-item__raiz container-inline': true}">
+  <article
+    :class="[
+      'varal-de-fase-item__raiz'
+    ]"
+  >
     <!-- atual == true -->
     <section
       :class="[
-        ,
         'varal-de-fase-item',
+        {'varal-de-fase-item--largo': $props.largo},
         { 'varal-de-fase-item--pendente': $props.pendente },
         { 'varal-de-fase-item--secundario': $props.secundario },
       ]"
     >
       <dt
-        v-if="!web && !$props.secundario"
+        v-if="!$props.largo && !$props.secundario"
         class="varal-de-fase-item__titulo"
       >
+        <div
+          v-if="$props.atual"
+          class="smae-tooltip smae-tooltip--direito"
+        >
+          <span class="smae-tooltip__conteudo">Fase atual</span>
+        </div>
         {{ $props.titulo }}
       </dt>
 
       <div class="varal-de-fase-item__conteudo">
         <dt
-          v-if="web || $props.secundario"
+          v-if="$props.largo || $props.secundario"
           class="varal-de-fase-item__titulo"
         >
           <span
@@ -87,7 +97,7 @@ defineProps<Props>();
       </div>
     </section>
 
-    <!-- <div
+    <div
       v-if="$props.tarefas?.length"
       class="varal-de-fase-item__tarefas"
     >
@@ -105,24 +115,23 @@ defineProps<Props>();
         :responsavel="tarefa.andamento.orgao_responsavel || '-'"
         :pendente="!tarefa.andamento.concluida"
       />
-    </div> -->
+    </div>
   </article>
 </template>
 
 <style lang="less" scoped>
 @import "@/_less/tamanho-dispostivo.less";
 
-@card-minimo: 235px;
+@grupo-minimo: 540px;
 
 .varal-de-fase-item__raiz {
   width: 100%;
-  min-width: @card-minimo;
-
+  min-width: 235px;
 }
 
 .varal-de-fase-item {
-  // width: 100%;
-  // min-width: @card-minimo;
+  width: 100%;
+  min-width: 235px;
 }
 
 .varal-de-fase-item--secundario {
@@ -163,20 +172,27 @@ defineProps<Props>();
   font-weight: 600;
   font-size: 1.14rem;
   line-height: 1.14rem;
+
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.varal-de-fase-item__titulo:has(.smae-tooltip) {
+  gap: 23px;
+}
+
+.smae-tooltip {
+  color: #F7C234;
 }
 
 .varal-de-fase-item__titulo-situacao  {
+  display: block;
   width: 0.5rem;
   height: 0.5rem;
   background-color: #005C8A;
   border-radius: 999px;
 }
-
-// .varal-de-fase-item__conteudo:not(:has(.varal-de-fase-item__titulo)) {
-//   .varal-de-fase-item__item:first-of-type {
-//     border-block-start: initial;
-//   }
-// }
 
 .varal-de-fase-item__item {
   display: flex;
@@ -203,15 +219,22 @@ defineProps<Props>();
   }
 }
 
-@container (width <= @card-minimo) {
+.varal-de-fase-item--largo {
   .varal-de-fase-item__titulo {
-    background-color: #005C8A;
-    margin-bottom: 12px;
-    font-weight: 1.43rem;
+    font-size: 1.43rem;
     line-height: 1.43rem;
+    margin-bottom: 12px;
+  }
+
+  .varal-de-fase-item__conteudo {
+    padding: 12px 20px;
   }
 
   .varal-de-fase-item__item {
+    &:first-of-type {
+      border-block-start: 1px solid #B8C0CC;
+    }
+
     flex-direction: column;
     align-items: flex-start;
     padding: 12px 8px;
@@ -258,4 +281,5 @@ article:has(+ article), article + article {
     z-index: -1;
     bottom: 0;
   }
-}</style>
+}
+</style>
