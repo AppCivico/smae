@@ -25,6 +25,8 @@ import { RunReportTaskService } from './run_report/run-report.service';
 import { RunUpdateTaskService } from './run_update/run-update.service';
 import { ParseParams } from './task.parseParams';
 import { TaskContext } from './task.context';
+import { ApiLogBackupService } from 'src/api-logs/backup/api-log-backup.service';
+import { ApiLogRestoreService } from 'src/api-logs/restore/api-log-restore.service';
 
 export class TaskRetryService {
     static calculateNextRetryTime(retryCount: number, retryConfig: RetryConfigDto): Date {
@@ -188,7 +190,13 @@ export class TaskService {
         private readonly importacaoParlamentarService: ImportacaoParlamentarService,
         //
         @Inject(forwardRef(() => RunUpdateTaskService))
-        private readonly runUpdateTaskService: RunUpdateTaskService
+        private readonly runUpdateTaskService: RunUpdateTaskService,
+        //
+        @Inject(forwardRef(() => ApiLogBackupService))
+        private readonly apiLogBackupService: ApiLogBackupService,
+        //
+        @Inject(forwardRef(() => ApiLogRestoreService))
+        private readonly apiLogRestoreService: ApiLogRestoreService
     ) {
         this.enabled = CrontabIsEnabled('task');
         this.logger.debug(`task crontab enabled? ${this.enabled}`);
@@ -739,6 +747,12 @@ export class TaskService {
                 break;
             case 'run_update':
                 service = this.runUpdateTaskService;
+                break;
+            case 'backup_api_log_day':
+                service = this.apiLogBackupService;
+                break;
+            case 'restore_api_log_day':
+                service = this.apiLogRestoreService;
                 break;
             default:
                 task_type satisfies never;

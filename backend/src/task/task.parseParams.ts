@@ -1,5 +1,6 @@
 import { task_type } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
+import { CreateApiLogDayDto } from 'src/api-logs/dto/create-api-log-day.dto';
 import { CreateAvisoEmailJobDto } from './aviso_email/dto/create-aviso_email.dto';
 import { CreateAeCronogramaTpJobDto } from './aviso_email_cronograma_tp/dto/ae_cronograma_tp.dto';
 import { CreateNotaJobDto } from './aviso_email_nota/dto/ae_nota.dto';
@@ -53,6 +54,10 @@ export function ParseParams(taskType: task_type, value: any): any {
             theClass = CreateRunReportDto;
             break;
         }
+        case 'restore_api_log_day':
+        case 'backup_api_log_day':
+            theClass = CreateApiLogDayDto;
+            break;
         default:
             taskType satisfies never;
     }

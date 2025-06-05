@@ -56,7 +56,9 @@ import { RequestLogModule } from './request_log/request_log.module';
 import { RunReportModule } from './task/run_report/run-report.module';
 import { TaskModule } from './task/task.module';
 import { ClassificacaoModule } from './transferencias-voluntarias/classificacao/classificacao.module';
+import { DuckDBModule } from './common/duckdb/duckdb.module';
 import { GeoBuscaModule } from './geo-busca/geo-busca.module';
+import { ApiLogModule } from './api-logs/api-log.module';
 import { BuscaGlobalModule } from './busca-global/busca-global.module';
 
 // Hacks pro JS
@@ -85,7 +87,6 @@ import { BuscaGlobalModule } from './busca-global/busca-global.module';
         OrcamentoModule,
         OrcamentoPlanejadoModule,
         OrcamentoRealizadoModule,
-
         OrcamentoPrevistoModule,
         DashboardModule,
         BancadaModule,
@@ -116,9 +117,11 @@ import { BuscaGlobalModule } from './busca-global/busca-global.module';
         CategoriaAssuntoVariavelModule,
         PSMFDashboardModule,
         RunReportModule,
+        DuckDBModule,
         GeoBuscaModule,
         BuscaGlobalModule,
         AtualizacaoEmLoteModule,
+        ApiLogModule,
     ],
     controllers: [AppController],
     providers: [
