@@ -614,11 +614,11 @@ export class TransferenciasService implements ReportableService {
                 { value: 'distribuicao_recurso.registro_sei', label: 'Nº SEI' },
                 { value: 'distribuicao_recurso.status_nome_base', label: 'Status da Demanda' },
                 {
-                    value: (row) => `${row.distribuicao_recurso.pct_custeio}`,
+                    value: (row) => `${row.distribuicao_recurso?.pct_custeio ?? ''}`,
                     label: 'Custeio/Corrente (%)',
                 },
                 {
-                    value: (row) => `${row.distribuicao_recurso.pct_investimento}`,
+                    value: (row) => `${row.distribuicao_recurso?.pct_investimento ?? ''}`,
                     label: 'Investimento/Capital (%)',
                 },
                 { value: 'distribuicao_recurso.banco', label: 'Distribuição - Banco' },
