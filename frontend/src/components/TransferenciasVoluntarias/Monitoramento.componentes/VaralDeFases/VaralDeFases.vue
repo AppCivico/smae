@@ -1,12 +1,25 @@
 <script lang="ts" setup>
-import { onMounted } from 'vue';
+import { nextTick, onMounted, ref } from 'vue';
 import { storeToRefs } from 'pinia';
+import { useResizeObserver } from '@vueuse/core';
+import { debounce } from 'lodash';
 import { useWorkflowAndamentoStore } from '@/stores/workflow.andamento.store';
 import VaralDeFaseItem from './componentes/VaralDeFaseItem.vue';
 
+const TAMANHO_LARGO = 600;
+
 const workflowAndamentoStore = useWorkflowAndamentoStore();
 
+const varalDeFasesEl = ref<HTMLElement>();
+const tamanhoLargo = ref<boolean>(true);
+
 const { etapaCorrente } = storeToRefs(workflowAndamentoStore);
+
+useResizeObserver(varalDeFasesEl, debounce(async ([ev]) => {
+  await nextTick();
+
+  tamanhoLargo.value = ev.contentRect.width > TAMANHO_LARGO;
+}, 0));
 
 onMounted(() => {
   workflowAndamentoStore.buscar();
@@ -14,37 +27,45 @@ onMounted(() => {
 </script>
 
 <template>
-  <section class="varal-de-fases mt2">
+  <section
+    ref="varalDeFasesEl"
+    class="varal-de-fases mt2 container-inline"
+  >
     <div
       v-if="etapaCorrente?.fases.length"
-      class="varal-de-fases__lista"
+      class="varal-de-fases__lista "
     >
       <div
-        v-for="(faseObjeto, faseIndex) in [
-          ...etapaCorrente.fases,
-          // ...etapaCorrente.fases,
-          // ...etapaCorrente.fases,
-          // ...etapaCorrente.fases,
-        ]"
+        v-for="(faseObjeto, faseIndex) in etapaCorrente.fases"
         :key="`fase--${faseIndex}`"
         class="fase-item"
       >
-        <!-- <div class="fase-item__contador">
-          <div class="fase-item__contador-container">
-            <div class="fase-item__contador-wrapper">
-              {{ `${faseIndex+1}`.padStart(2, 0) }}
-            </div>
-          </div>
-        </div> -->
+        <div
+          :class="[
+            'item-contador',
+            {'item-contador--atual': faseIndex === etapaCorrente.fases.length -1},
+          ]"
+        >
+          {{ `${faseIndex+1}`.padStart(2, '0') }}
 
-        <!-- style="min-width: 150px;" -->
+          <div
+            v-if="tamanhoLargo && faseIndex === etapaCorrente.fases.length -1"
+            class="item-contador__fase-atual smae-tooltip"
+          >
+            <span class="smae-tooltip__conteudo">Fase atual</span>
+          </div>
+        </div>
+
         <VaralDeFaseItem
+          class="fase-item__card"
           :titulo="faseObjeto.fase.fase"
           :duracao="faseObjeto.duracao"
           :situacao="faseObjeto.andamento?.situacao?.tipo_situacao"
           :responsavel="faseObjeto.andamento?.orgao_responsavel.sigla"
           :tarefas="faseObjeto.tarefas"
           :pendente="!faseObjeto.andamento?.concluida"
+          :atual="faseIndex === etapaCorrente.fases.length - 1"
+          :largo="tamanhoLargo"
         />
       </div>
     </div>
@@ -54,81 +75,103 @@ onMounted(() => {
 <style lang="less" scoped>
 @import "@/_less/tamanho-dispostivo.less";
 
+@gap-items: 50px;
+@tamanho-largo: 600px;
+
 .varal-de-fases__lista {
   display: flex;
   flex-direction: column;
+  gap: @gap-items;
 
-  .breakpoint-web();
-  .-aplicar-web() {
-    flex-direction: row;
-    flex-wrap: wrap;
-  }
+  padding-top: 1px;
+  padding-left: 1px;
 }
 
 .fase-item {
+  width: 100%;
   display: flex;
   align-items: flex-start;
   gap: 16px;
   position: relative;
-  padding-bottom: 60px;
 
-  &:last-of-type {
-    padding-bottom: initial;
-  }
-
-  .breakpoint-web();
-  .-aplicar-web() {
-    flex-direction: column;
-    align-items: center;
-    padding-bottom: initial;
-    padding-right: 60px;
+  &:last-child {
+    .item-contador::before {
+      height: 100%;
+    }
   }
 }
 
-.fase-item__contador {
+.item-contador {
   display: flex;
   justify-content: center;
 
+  padding: 5px;
+  border: 5px solid #fff;
+  border-radius: 999px;
+  background-color: #E0F2FF;
+  outline: 1px solid #B8C0CC;
+
   &::before {
     content: '';
-    height: 100%;
+    height: calc(100% + @gap-items);
     position: absolute;
     width: 1px;
     background-color: #B8C0CC;
     z-index: -1;
   }
+}
 
-  .breakpoint-web();
-  .-aplicar-web() {
-    justify-content: initial;
+.item-contador--atual {
+  background-color: #F7C234;
+}
+
+@container (width > @tamanho-largo) {
+  .varal-de-fases__lista {
+    flex-direction: row;
+    overflow: auto;
+    padding: 140px 0 20px;
+  }
+
+  .fase-item {
+    width: fit-content;
+    flex-direction: column;
     align-items: center;
 
-    &::before {
-      width: 100%;
-      height: 1px;
-      left: 0;
+    &:last-child {
+      .item-contador::before {
+        height: 2px;
+        width: 100%;
+      }
     }
   }
-}
 
-.fase-item__contador-container {
-  transform: translateY(-5px);
-  padding: 5px;
-  border: 1px solid #B8C0CC;
-  border-radius: 999px;
-  background-color: #fff;
+  .item-contador {
+    justify-content: center;
+    align-items: center;
+    font-size: 1.71rem;
+    line-height: 1;
+    padding: 12px;
 
-  .breakpoint-web();
-  .-aplicar-web() {
-    transform: initial;
+    &::before {
+      left: 0;
+      height: 2px;
+      width: calc(100% + @gap-items);
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      width: 2px;
+      height: 100px;
+      background-color: #B8C0CC;
+      z-index: -1;
+    }
   }
-}
 
-.fase-item__contador-wrapper {
-  padding: .42rem;
-  background-color: #E0F2FF;
-  border-radius: 999px;
-  font-size: 1.14rem;
-  font-weight: 700;
-}
-</style>
+    .item-contador__fase-atual {
+      position: absolute;
+      color: #F7C234;
+      bottom: calc(100% + 25px);
+    }
+}</style>
