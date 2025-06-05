@@ -36,17 +36,7 @@ export class RelTransferenciasDto {
     secretaria_concedente: string; // Changed from string | null
     interface: string;
     esfera: string;
-    cargo: string; // Changed from string | null
     orgao_concedente: IdSiglaDescricao;
-    partido: {
-        id: number | null;
-        sigla: string | null;
-    } | null;
-    parlamentar: {
-        id: number | null;
-        nome: string | null;
-        nome_popular: string | null;
-    } | null;
 
     distribuicao_recurso: {
         id: number;
@@ -81,6 +71,7 @@ export class RelTransferenciasDto {
     } | null;
     tipo_transferencia: string;
     classificacao: string; // Changed from string | null
+    parlamentares_info: string | null;
 }
 
 export class TransferenciasRelatorioDto {

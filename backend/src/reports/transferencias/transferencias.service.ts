@@ -1,17 +1,16 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { formataSEI } from 'src/common/formata-sei';
+import { TarefaService } from 'src/pp/tarefa/tarefa.service';
 import { Date2YMD } from '../../common/date2ymd';
 import { PrismaService } from '../../prisma/prisma.service';
-import { DefaultCsvOptions, EnumHumano, FileOutput, ReportableService } from '../utils/utils.service';
+import { ReportContext } from '../relatorios/helpers/reports.contexto';
+import { DefaultCsvOptions, FileOutput, ReportableService } from '../utils/utils.service';
 import { CreateRelTransferenciasDto, TipoRelatorioTransferencia } from './dto/create-transferencias.dto';
 import {
     RelTransferenciaCronogramaDto,
     RelTransferenciasDto,
     TransferenciasRelatorioDto,
 } from './entities/transferencias.entity';
-import { TarefaService } from 'src/pp/tarefa/tarefa.service';
-import { formataSEI } from 'src/common/formata-sei';
-import { ReportContext } from '../relatorios/helpers/reports.contexto';
-import { ParlamentarCargo } from '@prisma/client';
 
 const {
     Parser,
@@ -101,6 +100,7 @@ class RetornoDbTransferencias {
     classificacao: string | null;
     pct_investimento: number | null;
     pct_custeio: number | null;
+    parlamentares_formatado: string | null; // Added for aggregated parlamentar info
 }
 
 @Injectable()
@@ -116,6 +116,20 @@ export class TransferenciasService implements ReportableService {
         const out_transferencias: RelTransferenciasDto[] = [];
 
         const sql = `
+            WITH parlamentar_agg AS (
+                SELECT
+                    tp.transferencia_id,
+                    STRING_AGG(
+                        COALESCE(p.nome_popular, p.nome) || ' (' || COALESCE(pa.sigla, 'Sem Partido') || ' - ' || COALESCE(tp.cargo::text, 'Sem Cargo') || ')',
+                        ', '
+                        ORDER BY COALESCE(p.nome_popular, p.nome)
+                    ) AS parlamentares_formatado
+                FROM transferencia_parlamentar tp
+                LEFT JOIN parlamentar p ON p.id = tp.parlamentar_id AND p.removido_em IS NULL
+                LEFT JOIN partido pa ON pa.id = tp.partido_id
+                WHERE tp.removido_em IS NULL
+                GROUP BY tp.transferencia_id
+            )
             SELECT
                 t.id,
                 t.identificador,
@@ -153,16 +167,10 @@ export class TransferenciasService implements ReportableService {
                 t.esfera,
                 tt.nome as tipo_transferencia,
                 cl.nome as classificacao,
-                tp.cargo,
-                pa.id AS partido_id,
-                pa.sigla AS partido_sigla,
-                pa.nome AS partido_nome,
                 o1.id AS orgao_concedente_id,
                 o1.sigla AS orgao_concedente_sigla,
                 o1.descricao AS orgao_concedente_descricao,
-                p.id AS parlamentar_id,
-                p.nome_popular AS parlamentar_nome_popular,
-                p.nome AS parlamentar_nome,
+                p_agg.parlamentares_formatado,
                 dr.id AS distribuicao_recurso_id,
                 dr.transferencia_id AS distribuicao_recurso_transferencia_id,
                 dr.orgao_gestor_id AS distribuicao_recurso_orgao_gestor_id,
@@ -190,7 +198,7 @@ export class TransferenciasService implements ReportableService {
                     FROM distribuicao_recurso_sei
                     WHERE distribuicao_recurso_id = dr.id
                 ) AS distribuicao_recurso_sei,
-                drs_inner.nome_responsavel AS distribuicao_recurso_status_nome_responsavel,
+                drst.nome_responsavel AS distribuicao_recurso_status_nome_responsavel,
                 COALESCE(dsb.nome, ds.nome) AS distribuicao_recurso_status_nome_base,
                 o2.descricao AS distribuicao_recurso_orgao_gestor,
                 dr.distribuicao_banco as distribuicao_recurso_banco,
@@ -201,9 +209,7 @@ export class TransferenciasService implements ReportableService {
                 dr.pct_investimento as distribuicao_recurso_pct_investimento
             FROM transferencia t
             JOIN transferencia_tipo tt ON tt.id = t.tipo_id
-            LEFT JOIN transferencia_parlamentar tp ON tp.transferencia_id = t.id AND tp.removido_em IS NULL
-            LEFT JOIN parlamentar p ON p.id = tp.parlamentar_id AND p.removido_em IS NULL
-            LEFT JOIN partido pa ON pa.id = tp.partido_id
+            LEFT JOIN parlamentar_agg p_agg ON p_agg.transferencia_id = t.id
             JOIN orgao o1 ON o1.id = t.orgao_concedente_id
             LEFT JOIN distribuicao_recurso dr ON dr.transferencia_id = t.id AND dr.removido_em IS NULL
             LEFT JOIN LATERAL (
@@ -222,7 +228,7 @@ export class TransferenciasService implements ReportableService {
             LEFT JOIN distribuicao_status ds ON drst.status_id = ds.id AND ds.removido_em IS NULL
             LEFT JOIN distribuicao_recurso_sei drs ON drs.distribuicao_recurso_id = dr.id AND drs.removido_em IS NULL
             LEFT JOIN classificacao cl on t.classificacao_id = cl.id and tt.id = cl.transferencia_tipo_id
-            JOIN orgao o2 ON dr.orgao_gestor_id = o2.id
+            LEFT JOIN orgao o2 ON dr.orgao_gestor_id = o2.id
             ${whereCond.whereString}
             `;
         // In the above SQL, added "AND drst.removido_em IS NULL" to the subquery join condition for drst,
@@ -341,7 +347,10 @@ export class TransferenciasService implements ReportableService {
         }
 
         if (filters.partido_id) {
-            whereConditions.push(`tp.partido_id = $${paramIndex}`);
+            // whereConditions.push(`tp.partido_id = $${paramIndex}`); // Old
+            whereConditions.push(
+                `EXISTS (SELECT 1 FROM transferencia_parlamentar tp_filter WHERE tp_filter.transferencia_id = t.id AND tp_filter.partido_id = $${paramIndex} AND tp_filter.removido_em IS NULL)`
+            );
             queryParams.push(filters.partido_id);
             paramIndex++;
         }
@@ -359,7 +368,10 @@ export class TransferenciasService implements ReportableService {
         }
 
         if (filters.parlamentar_id) {
-            whereConditions.push(`tp.parlamentar_id = $${paramIndex}`);
+            // whereConditions.push(`tp.parlamentar_id = $${paramIndex}`); // Old
+            whereConditions.push(
+                `EXISTS (SELECT 1 FROM transferencia_parlamentar tp_filter WHERE tp_filter.transferencia_id = t.id AND tp_filter.parlamentar_id = $${paramIndex} AND tp_filter.removido_em IS NULL)`
+            );
             queryParams.push(filters.parlamentar_id);
             paramIndex++;
         }
@@ -419,13 +431,8 @@ export class TransferenciasService implements ReportableService {
                 esfera: db.esfera,
                 tipo_transferencia: this.formatExcelString(db.tipo_transferencia),
                 classificacao: this.formatExcelString(db.classificacao),
-                cargo: db.cargo ? EnumHumano(ParlamentarCargo, db.cargo) : '',
-                partido: db.partido_id
-                    ? {
-                          id: db.partido_id,
-                          sigla: db.partido_sigla,
-                      }
-                    : null,
+
+                parlamentares_info: this.formatExcelString(db.parlamentares_formatado), // Added
 
                 orgao_concedente: {
                     id: db.orgao_concedente_id,
@@ -433,13 +440,13 @@ export class TransferenciasService implements ReportableService {
                     sigla: db.orgao_concedente_sigla,
                 },
 
-                parlamentar: db.parlamentar_id
-                    ? {
-                          id: db.parlamentar_id,
-                          nome: db.parlamentar_nome,
-                          nome_popular: db.parlamentar_nome_popular,
-                      }
-                    : null,
+                // parlamentar: db.parlamentar_id // Removed
+                //     ? {
+                //           id: db.parlamentar_id,
+                //           nome: db.parlamentar_nome,
+                //           nome_popular: db.parlamentar_nome_popular,
+                //       }
+                //     : null,
 
                 distribuicao_recurso: db.distribuicao_recurso_id
                     ? {
@@ -503,7 +510,7 @@ export class TransferenciasService implements ReportableService {
         const dados = await this.asJSON(params);
 
         const out: FileOutput[] = [];
-
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let fields: { value: string | ((row: any) => string); label: string }[];
         if (dados.tipo == TipoRelatorioTransferencia.Geral) {
             fields = [
@@ -557,9 +564,7 @@ export class TransferenciasService implements ReportableService {
                 { value: 'secretaria_concedente', label: 'Secretaria do órgão concedente' }, // Changed from secretaria_concedente_str
                 { value: 'interface', label: 'Interface' },
                 { value: 'esfera', label: 'Esfera' },
-                { value: 'cargo', label: 'Cargo' },
-                { value: 'partido.sigla', label: 'Partido' },
-                { value: 'parlamentar.nome_popular', label: 'Parlamentar' },
+                { value: 'parlamentares_info', label: 'Parlamentares' }, // Added
                 { value: 'orgao_concedente.descricao', label: 'Orgão Concedente' },
                 { value: 'distribuicao_recurso.id', label: 'ID Distribuição de Recurso' },
                 { value: 'distribuicao_recurso.nome_responsavel', label: 'Gestor Municipal (servidor)' },
@@ -625,21 +630,9 @@ export class TransferenciasService implements ReportableService {
             // Simplified report
             fields = [
                 { value: 'identificador', label: 'Identificador' },
-                { value: 'esfera', label: 'esfera' },
-                {
-                    // value: (row) => (row.demanda ? String(row.demanda) : ''), // Already a string "" or value
-                    value: 'demanda', // row.demanda is already string, json2csv will handle it
-                    label: 'Número da Demanda/Proposta',
-                },
-                { value: 'orgao_concedente.descricao', label: 'Orgão Concedente' },
-                { value: 'parlamentar.nome_popular', label: 'parlamentar.nome_popular' },
-                { value: 'partido.sigla', label: 'Partido' },
-                { value: 'nome_programa', label: 'Nome do Programa' },
                 { value: 'ano', label: 'Ano' },
                 { value: 'objeto', label: 'Objeto' },
-                { value: 'detalhamento', label: 'Detalhamento' },
-                { value: 'clausula_suspensiva_vencimento', label: 'Cláusula Suspensiva' }, // Field name in CSV, refers to vencimento date
-                { value: 'observacoes', label: 'Observações' },
+                { value: 'parlamentares_info', label: 'Parlamentares' },
                 {
                     value: (row) => this.formatCurrency(row.valor),
                     label: 'Valor do Repasse',
@@ -648,49 +641,19 @@ export class TransferenciasService implements ReportableService {
                     value: (row) => this.formatCurrency(row.valor_total),
                     label: 'Valor Total',
                 },
-                {
-                    value: (row) => this.formatCurrency(row.valor_contrapartida),
-                    label: 'Valor Contrapartida',
-                },
-                { value: 'secretaria_concedente', label: 'Secretaria do órgão concedente' }, // Changed from secretaria_concedente_str
-                {
-                    value: 'distribuicao_recurso.orgao_gestor_descricao',
-                    label: 'Gestor Municipal do Contrato (secretaria)',
-                },
-                { value: 'distribuicao_recurso.registro_sei', label: 'Nº SEI' },
-                { value: 'distribuicao_recurso.convenio', label: 'Nº do Convênio/Pré Convênio' },
-                {
-                    value: 'distribuicao_recurso.assinatura_termo_aceite',
-                    label: 'Data de assinatura do termo de aceite',
-                },
-                {
-                    value: 'distribuicao_recurso.assinatura_municipio',
-                    label: 'Data de assinatura do representante do município',
-                },
-                {
-                    value: 'distribuicao_recurso.assinatura_estado',
-                    label: 'Data de assinatura do representante do Estado',
-                },
-                { value: 'distribuicao_recurso.vigencia', label: 'Data de início de vigência' },
-                {
-                    value: 'distribuicao_recurso.conclusao_suspensiva',
-                    label: 'Data de conclusão da Suspensiva',
-                },
+                { value: 'orgao_concedente.sigla', label: 'Orgão Concedente' },
+                { value: 'distribuicao_recurso.orgao_gestor_descricao', label: 'Gestor Municipal' },
+                { value: 'distribuicao_recurso.status_nome_base', label: 'Status da Demanda' },
+                { value: 'id', label: 'ID' },
             ];
         }
 
-        if (dados.linhas?.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: [], // No transforms, raw values from `dados.linhas`
-                fields: fields,
-            });
-            const linhasCsv = json2csvParser.parse(dados.linhas); // Removed .map(r => ({...r})) as it's usually not needed
-            out.push({
-                name: 'transferencias.csv',
-                buffer: Buffer.from(linhasCsv, 'utf8'),
-            });
-        }
+        const json2csvParser = new Parser({ fields, ...DefaultCsvOptions });
+        const linhasCsv = json2csvParser.parse(dados.linhas); // Removed .map(r => ({...r})) as it's usually not needed
+        out.push({
+            name: 'transferencias.csv',
+            buffer: Buffer.from(linhasCsv, 'utf8'),
+        });
 
         if (dados.linhas_cronograma?.length) {
             const json2csvParser = new Parser({
