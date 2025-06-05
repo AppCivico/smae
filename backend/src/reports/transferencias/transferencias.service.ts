@@ -216,6 +216,7 @@ export class TransferenciasService implements ReportableService {
                     removido_em -- Added missing removido_em for subquery consistency
                 FROM distribuicao_recurso_status 
                 ORDER BY data_troca DESC, id DESC
+                LIMIT 1
             ) drst ON drst.distribuicao_id = dr.id AND drst.removido_em IS NULL
             LEFT JOIN distribuicao_status_base dsb ON dsb.id = drst.status_base_id
             LEFT JOIN distribuicao_status ds ON drst.status_id = ds.id AND ds.removido_em IS NULL
