@@ -42,6 +42,10 @@ const SmaeTextProps = {
     type: Object as PropType<AnyObjectSchema>,
     default: () => null,
   },
+  esconderContador: {
+    type: Boolean,
+    default: false,
+  },
 };
 
 export default SmaeTextProps;

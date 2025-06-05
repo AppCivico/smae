@@ -111,6 +111,13 @@ onBeforeRouteLeave(() => {
     </template>
   </CabecalhoDePagina>
 
+  <p
+    v-if="$route.meta.descricao"
+    class="texto--explicativo"
+  >
+    {{ $route.meta.descricao }}
+  </p>
+
   <SmaeTable
     class="mt2"
     :dados="relatóriosStore.lista"

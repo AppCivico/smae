@@ -2203,16 +2203,34 @@ export const transferenciaDistribuicaoDeRecursos = object({
     .max(dataMax)
     .min(new Date(2003, 0, 1))
     .nullableOuVazio(),
+  distribuicao_agencia: string()
+    .label('Agência Bancária')
+    .nullable(),
+  distribuicao_banco: string()
+    .label('Banco')
+    .nullable(),
+  distribuicao_conta: string()
+    .label('Conta Corrente')
+    .nullable(),
   dotacao: string()
     .label('Dotacao')
     .nullable(),
   empenho: boolean()
     .label('Empenho')
     .nullable(),
+  finalidade: string()
+    .label('Finalidade')
+    .nullable(),
+  gestor_contrato: string()
+    .label('Gestor do contrato')
+    .nullable(),
   justificativa_aditamento: string()
     .label('Justificativa para aditamento')
     .max(250)
     .min(1, 'Justificativa para aditamento é obrigatório após editar a data de vigência')
+    .nullable(),
+  valor_liquidado: string()
+    .label('Liquidação/Pagamento')
     .nullable(),
   nome: string()
     .label('Nome')
@@ -2253,6 +2271,9 @@ export const transferenciaDistribuicaoDeRecursos = object({
         .required(),
     }))
     .strict(),
+  rubrica_de_receita: string()
+    .label('Rubrica de receita')
+    .nullable(),
   valor: number()
     .label('Valor do Repasse')
     .required()
@@ -2260,6 +2281,9 @@ export const transferenciaDistribuicaoDeRecursos = object({
   valor_contrapartida: number()
     .label('Valor contrapartida')
     .required()
+    .nullable(),
+  valor_empenho: number()
+    .label('Valor empenho')
     .nullable(),
   valor_total: number()
     .label('Valor total')

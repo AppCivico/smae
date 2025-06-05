@@ -1,4 +1,10 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage, Field, useForm,
+} from 'vee-validate';
+import { computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import { relatórioAtividadesPendentes as schema } from '@/consts/formSchemas';
@@ -6,12 +12,6 @@ import { useAlertStore } from '@/stores/alert.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
-import { storeToRefs } from 'pinia';
-import {
-  ErrorMessage, Field, useForm,
-} from 'vee-validate';
-import { computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 
 const TipoDeTransferenciaStore = useTipoDeTransferenciaStore();
 const { lista: tipoTransferenciaComoLista } = storeToRefs(TipoDeTransferenciaStore);
@@ -24,7 +24,7 @@ const route = useRoute();
 const router = useRouter();
 
 const valoresIniciais = {
-  fonte: 'CasaCivilAtvPendentes',
+  fonte: 'AtvPendentes',
   parametros: {
     tipo_id: [],
     data_inicio: null,
@@ -67,6 +67,10 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   <MigalhasDePão class="mb1" />
   <CabecalhoDePagina :formulario-sujo="false" />
 
+  <p class="texto--explicativo">
+    Relação das atividades pendentes nos cronogramas das transferências.
+  </p>
+
   <form
     :disabled="isSubmitting"
     @submit.prevent="onSubmit"
@@ -74,7 +78,7 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
     <Field
       name="fonte"
       type="hidden"
-      value="CasaCivilAtvPendentes"
+      value="AtvPendentes"
     />
 
     <div class="flex flexwrap g2 mb2">

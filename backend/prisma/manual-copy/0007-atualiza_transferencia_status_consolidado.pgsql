@@ -43,7 +43,6 @@ BEGIN
         AND tf.n_filhos_imediatos = 0
         AND tc.removido_em IS NULL
         AND tf.removido_em IS NULL
-        AND tf.eh_marco
         AND tf.termino_planejado IS NOT NULL
         AND (tf.termino_real IS NULL
             AND (tf.percentual_concluido IS NULL

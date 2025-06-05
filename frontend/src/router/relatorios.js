@@ -1,6 +1,6 @@
+import { defineAsyncComponent } from 'vue';
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import RelatoriosRaiz from '@/views/relatorios/RelatoriosRaiz.vue';
-import { defineAsyncComponent } from 'vue';
 
 const ListaDeRelatorios = defineAsyncComponent({
   loader: () => import('@/views/relatorios/ListaDeRelatorios.vue'),
@@ -339,7 +339,7 @@ export default {
           name: 'RelatóriosDeAtividadesPendentes',
           component: ListaDeRelatorios,
           meta: {
-            fonteDoRelatorio: 'CasaCivilAtvPendentes',
+            fonteDoRelatorio: 'AtvPendentes',
             rotaNovoRelatorio: 'novoRelatórioDeAtividadePendente',
           },
         },

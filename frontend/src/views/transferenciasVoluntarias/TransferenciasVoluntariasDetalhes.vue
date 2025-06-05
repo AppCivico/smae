@@ -1,6 +1,8 @@
 <script setup>
 import { storeToRefs } from 'pinia';
-import { computed, defineAsyncComponent, ref } from 'vue';
+import {
+  computed, defineAsyncComponent, ref, nextTick,
+} from 'vue';
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import SmallModal from '@/components/SmallModal.vue';
 import ListaDeDistribuicaoItem from '@/components/transferencia/ListaDeDistribuicaoItem.vue';
@@ -115,6 +117,9 @@ function formatarTexto(texto) {
 
 TransferenciasVoluntarias.buscarItem(props.transferenciaId);
 distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
+nextTick(() => {
+  window.scrollTo(0, 0);
+});
 </script>
 <template>
   <header class="flex flexwrap spacebetween center mb2 g2">
@@ -554,7 +559,8 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
       <dt class="t16 w700 mb05 tamarelo">
         Objeto
       </dt>
-      <dd>
+
+      <dd class="break-word">
         {{ parlamentar.objeto || '-' }}
       </dd>
     </dl>
@@ -599,7 +605,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
         <dt class="t16 w700 mb05 tamarelo">
           Objeto/Empreendimento
         </dt>
-        <dd class="text">
+        <dd class="break-word">
           {{ transferenciaEmFoco?.objeto || '-' }}
         </dd>
       </dl>
@@ -898,7 +904,17 @@ section + section {
   width: 55px;
 }
 
-.recurso-financeiro-valores__item {
-  border-bottom: 1px solid #E3E5E8;
+&, :deep {
+  .recurso-financeiro-valores__item {
+    border-bottom: 1px solid #E3E5E8;
+  }
+
+  .recurso-financeiro-valores__item-label {
+    width: 11rem;
+  }
+
+  .recurso-financeiro-valores__item-porcentagem {
+    text-align: center;
+  }
 }
 </style>

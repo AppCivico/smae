@@ -224,6 +224,47 @@
       </div>
     </div>
   </div>
+  <div class="w100 bgb mt4 p15">
+    <h2
+      ref="tabelaTransferencias"
+      class="t36 block"
+    >
+      Transferências
+    </h2>
+    <div class="grid g2 relative">
+      <SmaeTable
+        titulo-rolagem-horizontal="Tabela: Transferências"
+        class="mt2"
+        rolagem-horizontal
+        :colunas="colunas"
+        :dados="transferencias"
+      >
+        <template #celula:identificador="{ linha }">
+          <SmaeLink
+            v-if="linha?.id"
+            :to="{
+              name: 'TransferenciasVoluntariasDetalhes',
+              params: { transferenciaId: linha.id },
+            }"
+            class="tprimary w700"
+          >
+            {{ linha.identificador }}
+          </SmaeLink>
+        </template>
+      </SmaeTable>
+      <MenuPaginacao
+        v-if="paginacaoTransferencias.temMais"
+        class="mt2 bgt"
+        v-bind="paginacaoTransferencias"
+        prefixo="transferencias_"
+        @troca-de-pagina-solicitada="scrollPaginaParaTabela"
+      />
+      <LoadingComponent
+        v-if="carregandoTransferencias"
+        :sobrepoe-conteudo="true"
+      />
+    </div>
+  </div>
 </template>
 <script setup>
 import requestS from '@/helpers/requestS.ts';
@@ -237,7 +278,11 @@ import { ref, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
 import dinheiro from '@/helpers/dinheiro';
-import ValorTransferencia from '../../components/graficos/ValorTransferencia.vue';
+import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
+import ValorTransferencia from '@/components/graficos/ValorTransferencia.vue';
+import combinadorDeListas from '@/helpers/combinadorDeListas';
+import MenuPaginacao from '@/components/MenuPaginacao.vue';
+import isEqual from 'lodash/isEqual';
 
 const localizeDate = (d) => dateToDate(d, { timeStyle: 'short', timeZone: 'America/Sao_Paulo' });
 const fluxosEtapasProjetos = useEtapasProjetosStore();
@@ -263,6 +308,7 @@ const {
 
 // eslint-disable-next-line prefer-const
 let exibirFiltros = ref(false);
+const tabelaTransferencias = ref(null);
 
 const route = useRoute();
 const router = useRouter();
@@ -277,6 +323,40 @@ const filtrosEscolhidos = ref({
   partido_ids: route.query.partido_ids?.map((id) => Number(id)) || [],
   parlamentar_ids: route.query.parlamentar_ids?.map((id) => Number(id)) || [],
 });
+const carregandoTransferencias = ref(false);
+const transferencias = ref([]);
+const paginacaoTransferencias = ref({});
+const colunas = [
+  { chave: 'identificador', label: 'Identificador' },
+  { chave: 'esfera', label: 'Esfera' },
+  { chave: 'tipo.nome', label: 'Tipo' },
+  {
+    chave: 'partido',
+    label: 'Partidos',
+    formatador: (valor) => (valor ? combinadorDeListas(valor, ', ', 'sigla') : ''),
+  },
+  {
+    chave: 'parlamentar',
+    label: 'Parlamentares',
+    formatador: (valor) => (valor ? combinadorDeListas(valor, ', ', 'nome_popular') : ''),
+  },
+  { chave: 'orgao_gestor.sigla', label: 'Órgão Gestor' },
+  {
+    chave: 'objeto',
+    label: 'Objeto',
+    formatador: (valor = '') => `${valor.substring(0, 100)}${valor.length > 100 ? '...' : ''}`,
+  },
+  {
+    chave: 'repasse',
+    label: 'Repasse',
+    formatador: (valor) => (valor !== undefined && valor !== null ? `R$${dinheiro(valor)}` : '-'),
+  },
+  {
+    chave: 'etapa_id',
+    label: 'Etapa',
+    formatador: (valor) => listaEtapas.value.find((etapa) => etapa.id === valor)?.descricao || 'Workflow não iniciado',
+  },
+];
 
 const anoAtual = new Date().getFullYear();
 
@@ -333,6 +413,47 @@ async function buscarGraficos() {
   }
 }
 
+async function buscarTransferencias() {
+  carregandoTransferencias.value = true;
+
+  const paramsLimpos = Object.entries(route.query).reduce((acc, [key, value]) => {
+    if (!key.startsWith('transferencias_')) {
+      acc[key] = value;
+    } else {
+      acc[key.replace('transferencias_', '')] = value;
+    }
+    return acc;
+  }, {});
+
+  try {
+    const retorno = await requestS.get(
+      `${baseUrl}/panorama/painel-estrategico-transferencias`,
+      paramsLimpos,
+    );
+    paginacaoTransferencias.value = {
+      temMais: true,
+      paginas: retorno.paginas,
+      tokenPaginacao: retorno.token_paginacao,
+      tokenProximaPagina: retorno.token_paginacao,
+      paginaCorrente: retorno.pagina_corrente,
+      totalRegistros: retorno.total_registros,
+      tokenTtl: retorno.token_ttl,
+    };
+
+    transferencias.value = retorno.linhas;
+  } catch (erro) {
+    console.log('error:', erro);
+  } finally {
+    carregandoTransferencias.value = false;
+  }
+}
+
+function scrollPaginaParaTabela() {
+  if (tabelaTransferencias.value) {
+    tabelaTransferencias.value.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' });
+  }
+}
+
 async function iniciar() {
   fluxosEtapasProjetos.buscarTudo();
   parlamentarStore.buscarTudo();
@@ -348,20 +469,75 @@ async function iniciar() {
     });
   }
   buscarGraficos();
+  buscarTransferencias();
 }
 
 iniciar();
 
+function resetarPaginacao() {
+  paginacaoTransferencias.value = {
+    temMais: true,
+    paginas: 1,
+    tokenPaginacao: null,
+    tokenProximaPagina: null,
+    paginaCorrente: 1,
+    totalRegistros: 0,
+    tokenTtl: null,
+  };
+
+  const querySemTransferencias = Object.fromEntries(
+    Object.entries(route.query).filter(
+      ([key]) => !key.startsWith('transferencias_'),
+    ),
+  );
+
+  router.replace({
+    query: {
+      ...querySemTransferencias,
+      transferencias_pagina: 1,
+    },
+  });
+}
+
 watch(
   () => route.query,
-  () => {
+  (queryNova, queryAnterior) => {
+    const queryStringsDosFiltrosNova = Object
+      .fromEntries(Object.entries(queryNova)
+        .filter(([key]) => !key.startsWith('transferencias_')));
+
+    const queryStringsDosFiltrosAntiga = Object
+      .fromEntries(Object.entries(queryAnterior)
+        .filter(([key]) => !key.startsWith('transferencias_')));
+
+    const queryStringsDeTransferenciasNova = Object.fromEntries(Object.entries(queryNova).filter(([key]) => key.startsWith('transferencias_')));
+    const queryStringsDeTransferenciasAntiga = Object.fromEntries(Object.entries(queryAnterior).filter(([key]) => key.startsWith('transferencias_')));
+
+    const teveMudancaNaQueryDosFiltros = !isEqual(
+      queryStringsDosFiltrosNova,
+      queryStringsDosFiltrosAntiga,
+    );
+
+    const teveMudancaNaQueryDasTransferencias = !isEqual(
+      queryStringsDeTransferenciasNova,
+      queryStringsDeTransferenciasAntiga,
+    );
+
     filtrosEscolhidos.value = {
       etapa_ids: route.query.etapa_ids?.map((id) => Number(id)) || [],
       anos: route.query.anos?.map((ano) => Number(ano)) || [],
       partido_ids: route.query.partido_ids?.map((id) => Number(id)) || [],
       parlamentar_ids: route.query.parlamentar_ids?.map((id) => Number(id)) || [],
     };
-    buscarGraficos();
+
+    if (teveMudancaNaQueryDosFiltros) {
+      resetarPaginacao(); // resetar a paginação já faz o request para buscar as transferências
+      buscarGraficos();
+    }
+
+    if (teveMudancaNaQueryDasTransferencias) {
+      buscarTransferencias();
+    }
   },
 );
 </script>

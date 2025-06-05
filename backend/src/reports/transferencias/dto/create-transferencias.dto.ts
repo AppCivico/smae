@@ -1,7 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { TransferenciaInterface, TransferenciaTipoEsfera } from '@prisma/client';
-import { Expose, Transform, Type } from 'class-transformer';
-import { IsEnum, IsInt, IsNumber, IsOptional, IsString } from 'class-validator';
+import { Expose, Type } from 'class-transformer';
+import { IsEnum, IsInt, IsNumber, IsOptional, IsString, MaxLength } from 'class-validator';
+import { MAX_LENGTH_MEDIO } from '../../../common/consts';
 
 export enum TipoRelatorioTransferencia {
     'Geral' = 'Geral',
@@ -49,6 +50,9 @@ export class CreateRelTransferenciasDto {
 
     @IsOptional()
     @IsString()
+    @MaxLength(MAX_LENGTH_MEDIO, {
+        message: `O campo 'Objeto/Empreendimento' deve ter no máximo ${MAX_LENGTH_MEDIO} caracteres`,
+    })
     objeto?: string;
 
     @IsOptional()

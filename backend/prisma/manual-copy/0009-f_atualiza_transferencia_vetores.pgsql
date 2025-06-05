@@ -44,7 +44,7 @@ BEGIN
                 ) || ' ' ||
                 COALESCE(
                     ( SELECT string_agg(
-                        CAST(o.sigla AS TEXT) || ' ' || CAST(o.descricao AS TEXT), ' ')
+                        CAST(o.sigla AS TEXT) || ' ' || CAST(o.descricao AS TEXT) || ' ' || CAST(dr.nome AS TEXT) || ' ' || CAST(dr.objeto AS TEXT), ' ')
                         FROM distribuicao_recurso dr
                         JOIN orgao o ON o.id = dr.orgao_gestor_id
                         WHERE dr.transferencia_id = t.id AND dr.removido_em IS NULL
@@ -111,7 +111,11 @@ EXECUTE PROCEDURE f_transferencia_update_tsvector();
 CREATE TRIGGER trigger_distribuicao_update_tsvector_update
 BEFORE UPDATE ON distribuicao_recurso
 FOR EACH ROW
-WHEN ( OLD.nome IS DISTINCT FROM NEW.nome )
+WHEN ( OLD.nome IS DISTINCT FROM NEW.nome OR
+       OLD.objeto IS DISTINCT FROM NEW.objeto OR
+       OLD.orgao_gestor_id IS DISTINCT FROM NEW.orgao_gestor_id OR
+       OLD.removido_em IS DISTINCT FROM NEW.removido_em
+)
 EXECUTE PROCEDURE f_transferencia_update_tsvector();
 EXCEPTION
    WHEN duplicate_object THEN

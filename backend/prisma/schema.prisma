@@ -3469,7 +3469,7 @@ enum FonteRelatorio {
     ObrasPrevisaoCusto
     PSPrevisaoCusto
     PSOrcamento
-    CasaCivilAtvPendentes
+    AtvPendentes
     PSMonitoramentoMensal
     PSIndicadores
 }
@@ -5948,6 +5948,8 @@ model DistribuicaoRecurso {
     custeio                         Decimal   @default(0) @db.Decimal(15, 2)
     pct_custeio                     Float?    @db.DoublePrecision
     investimento                    Decimal   @default(0) @db.Decimal(15, 2)
+    valor_empenho                   Decimal?  @default(0) @db.Decimal(15, 2)
+    valor_liquidado                 Decimal   @default(0) @db.Decimal(15, 2)
     pct_investimento                Float?    @db.DoublePrecision
     empenho                         Boolean?
     data_empenho                    DateTime? @db.Date()
@@ -5969,6 +5971,16 @@ model DistribuicaoRecurso {
     nota           Nota?       @relation(fields: [nota_id], references: [id])
     aviso_email_id Int?
     aviso_email    AvisoEmail? @relation(fields: [aviso_email_id], references: [id])
+
+    // Dados de banco
+    distribuicao_banco   String?
+    distribuicao_conta   String?
+    distribuicao_agencia String?
+
+    rubrica_de_receita String?
+    finalidade         String?
+
+    gestor_contrato String?
 
     criado_por     Int?
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)
@@ -6720,10 +6732,10 @@ view ViewTransferenciaAnalise {
 
     workflow_finalizado     Boolean
     ano                     Int
-    partido_id              Int?
+    partido_id              Int[]
     workflow_etapa_atual_id Int?
     workflow_fase_atual_id  Int?
-    parlamentar_id          Int?
+    parlamentar_id          Int[]
     valor_total             Decimal
 
     distribuicao_orgao_id    Int?
@@ -7051,6 +7063,7 @@ view view_parlamentares_mandatos_part_atual {
     dia_aniversario  Int?
     mes_aniversario  Int?
     email            String?
+    zona_atuacao     String?
     ano_eleicao      Int?
     eleicao_id       Int?
     partido_atual_id Int?
