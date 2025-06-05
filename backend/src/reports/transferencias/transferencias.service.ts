@@ -190,7 +190,7 @@ export class TransferenciasService implements ReportableService {
                     FROM distribuicao_recurso_sei
                     WHERE distribuicao_recurso_id = dr.id
                 ) AS distribuicao_recurso_sei,
-                drst.nome_responsavel AS distribuicao_recurso_status_nome_responsavel,
+                drs_inner.nome_responsavel AS distribuicao_recurso_status_nome_responsavel,
                 COALESCE(dsb.nome, ds.nome) AS distribuicao_recurso_status_nome_base,
                 o2.descricao AS distribuicao_recurso_orgao_gestor,
                 dr.distribuicao_banco as distribuicao_recurso_banco,
@@ -206,22 +206,23 @@ export class TransferenciasService implements ReportableService {
             LEFT JOIN partido pa ON pa.id = tp.partido_id
             JOIN orgao o1 ON o1.id = t.orgao_concedente_id
             LEFT JOIN distribuicao_recurso dr ON dr.transferencia_id = t.id AND dr.removido_em IS NULL
-            LEFT JOIN (
+            LEFT JOIN LATERAL (
                 SELECT
-                    id,
-                    status_base_id,
-                    status_id,
-                    distribuicao_id,
-                    nome_responsavel,
-                    removido_em
-                FROM distribuicao_recurso_status
-                ORDER BY data_troca DESC, id DESC
-            ) drst ON drst.distribuicao_id = dr.id AND drst.removido_em IS NULL
+                    drs_inner.id,
+                    drs_inner.status_base_id,
+                    drs_inner.status_id,
+                    drs_inner.nome_responsavel
+                FROM distribuicao_recurso_status drs_inner
+                WHERE drs_inner.distribuicao_id = dr.id
+                  AND drs_inner.removido_em IS NULL
+                ORDER BY drs_inner.data_troca DESC, drs_inner.id DESC
+                LIMIT 1
+            ) drst ON true
             LEFT JOIN distribuicao_status_base dsb ON dsb.id = drst.status_base_id
             LEFT JOIN distribuicao_status ds ON drst.status_id = ds.id AND ds.removido_em IS NULL
             LEFT JOIN distribuicao_recurso_sei drs ON drs.distribuicao_recurso_id = dr.id AND drs.removido_em IS NULL
             LEFT JOIN classificacao cl on t.classificacao_id = cl.id and tt.id = cl.transferencia_tipo_id
-            JOIN orgao o2 ON dr.orgao_gestor_id = o2.id 
+            JOIN orgao o2 ON dr.orgao_gestor_id = o2.id
             ${whereCond.whereString}
             `;
         // In the above SQL, added "AND drst.removido_em IS NULL" to the subquery join condition for drst,
