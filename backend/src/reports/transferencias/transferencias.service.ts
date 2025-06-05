@@ -91,6 +91,10 @@ class RetornoDbTransferencias {
     distribuicao_recurso_status_nome_base: string | null;
     distribuicao_recurso_custeio: number | null;
     distribuicao_recurso_investimento: number | null;
+    distribuicao_recurso_banco: string | null;
+    distribuicao_recurso_conta: string | null;
+    distribuicao_recurso_agencia: string | null;
+    distribuicao_recurso_gestor_contrato: string | null;
     tipo_transferencia: string;
     classificacao: string | null;
     pct_investimento: number | null;
@@ -186,7 +190,11 @@ export class TransferenciasService implements ReportableService {
                 ) AS distribuicao_recurso_sei,
                 drst.nome_responsavel AS distribuicao_recurso_status_nome_responsavel,
                 COALESCE(dsb.nome, ds.nome) AS distribuicao_recurso_status_nome_base,
-                o2.descricao AS distribuicao_recurso_orgao_gestor
+                o2.descricao AS distribuicao_recurso_orgao_gestor,
+                dr.distribuicao_banco as distribuicao_recurso_banco,
+                dr.distribuicao_conta as distribuicao_recurso_conta,
+                dr.distribuicao_agencia as distribuicao_recurso_agencia,
+                dr.gestor_contrato as distribuicao_recurso_gestor_contrato
             FROM transferencia t
             JOIN transferencia_tipo tt ON tt.id = t.tipo_id
             LEFT JOIN transferencia_parlamentar tp ON tp.transferencia_id = t.id AND tp.removido_em IS NULL
@@ -204,7 +212,6 @@ export class TransferenciasService implements ReportableService {
                     removido_em -- Added missing removido_em for subquery consistency
                 FROM distribuicao_recurso_status 
                 ORDER BY data_troca DESC, id DESC
-                LIMIT 1
             ) drst ON drst.distribuicao_id = dr.id AND drst.removido_em IS NULL
             LEFT JOIN distribuicao_status_base dsb ON dsb.id = drst.status_base_id
             LEFT JOIN distribuicao_status ds ON drst.status_id = ds.id AND ds.removido_em IS NULL
@@ -399,14 +406,14 @@ export class TransferenciasService implements ReportableService {
                 banco_aceite: this.formatExcelString(db.banco_aceite),
                 conta_aceite: this.formatExcelString(db.conta_aceite),
                 agencia_aceite: this.formatExcelString(db.agencia_aceite),
-                gestor_contrato: db.gestor_contrato ?? '',
-                ordenador_despesa: db.ordenador_despesa ?? '',
-                numero_identificacao: db.numero_identificacao ?? '',
-                secretaria_concedente: db.secretaria_concedente_str ?? '',
+                gestor_contrato: this.formatExcelString(db.gestor_contrato),
+                ordenador_despesa: this.formatExcelString(db.ordenador_despesa),
+                numero_identificacao: this.formatExcelString(db.numero_identificacao),
+                secretaria_concedente: this.formatExcelString(db.secretaria_concedente_str),
                 interface: db.interface,
                 esfera: db.esfera,
-                tipo_transferencia: db.tipo_transferencia,
-                classificacao: db.classificacao ?? '',
+                tipo_transferencia: this.formatExcelString(db.tipo_transferencia),
+                classificacao: this.formatExcelString(db.classificacao),
                 cargo: db.cargo ? EnumHumano(ParlamentarCargo, db.cargo) : '',
                 partido: db.partido_id
                     ? {
@@ -466,6 +473,10 @@ export class TransferenciasService implements ReportableService {
                           status_nome_base: db.distribuicao_recurso_status_nome_base ?? '',
                           pct_custeio: db.distribuicao_recurso_custeio?.toString() ?? '', // Corrected source and default
                           pct_investimento: db.distribuicao_recurso_investimento?.toString() ?? '', // Corrected source and default
+                          conta: this.formatExcelString(db.distribuicao_recurso_conta),
+                          banco: this.formatExcelString(db.distribuicao_recurso_banco),
+                          agencia: this.formatExcelString(db.distribuicao_recurso_agencia),
+                          gestor_conta: this.formatExcelString(db.distribuicao_recurso_gestor_contrato),
                       }
                     : null,
             });
@@ -510,11 +521,7 @@ export class TransferenciasService implements ReportableService {
                     label: 'Contrapartida',
                 },
                 {
-                    // Emenda is already a string, if it needs ="value" format, it should be applied in convertRows or here.
-                    // Assuming emenda is a number-like string, `formatExcelString` is safer.
-                    // Current: { value: (row) => (row.emenda ? `="${String(row.emenda).replace(/\D/g, '')}"` : ''), label: 'Emenda', },
-                    // If row.emenda is already string from convertRows (db.emenda ?? ''):
-                    value: (row) => (row.emenda ? `="${String(row.emenda).replace(/\D/g, '')}"` : ''), // Keeps existing logic for stripping non-digits
+                    value: (row) => row.emenda,
                     label: 'Emenda',
                 },
                 { value: 'dotacao', label: 'Dotação Orçamentária' }, // Already formatted as ="value" or ' - '
@@ -599,10 +606,10 @@ export class TransferenciasService implements ReportableService {
                     value: 'distribuicao_recurso.pct_investimento',
                     label: 'Investimento/Capital',
                 },
-                { value: '', label: 'Distribuição - Banco' }, // These seem to be placeholders
-                { value: '', label: 'Distribuição - Agência' },
-                { value: '', label: 'Distribuição - Conta Corrente' },
-                { value: '', label: 'Distribuição - Gestor da Conta' },
+                { value: 'distribuicao_recurso.banco', label: 'Distribuição - Banco' },
+                { value: 'distribuicao_recurso.agencia', label: 'Distribuição - Agência' },
+                { value: 'distribuicao_recurso.conta', label: 'Distribuição - Conta Corrente' },
+                { value: 'distribuicao_recurso.gestor_conta', label: 'Distribuição - Gestor da Conta' },
             ];
         } else {
             // Simplified report

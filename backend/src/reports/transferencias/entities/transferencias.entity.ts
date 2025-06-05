@@ -74,6 +74,10 @@ export class RelTransferenciasDto {
         status_nome_base: string; // Changed from string | null, non-optional
         pct_custeio: string; // Changed from string | null, non-optional
         pct_investimento: string; // Changed from string | null, non-optional
+        conta: string;
+        banco: string;
+        agencia: string;
+        gestor_conta: string;
     } | null;
     tipo_transferencia: string;
     classificacao: string; // Changed from string | null
