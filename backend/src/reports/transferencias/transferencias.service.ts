@@ -382,21 +382,21 @@ export class TransferenciasService implements ReportableService {
                 id: db.id,
                 identificador: db.identificador,
                 ano: db.ano,
-                objeto: db.objeto,
-                detalhamento: db.detalhamento ?? '',
+                objeto: this.formatExcelString(db.objeto),
+                detalhamento: this.formatExcelString(db.detalhamento),
                 clausula_suspensiva:
                     db.clausula_suspensiva === true ? 'Sim' : db.clausula_suspensiva === false ? 'Não' : '',
                 clausula_suspensiva_vencimento: Date2YMD.toStringOrNull(db.clausula_suspensiva_vencimento) ?? '',
-                normativa: db.normativa ?? '',
-                observacoes: db.observacoes ?? '',
-                programa: db.programa ?? '',
-                nome_programa: db.nome_programa ?? '',
+                normativa: this.formatExcelString(db.normativa),
+                observacoes: this.formatExcelString(db.observacoes),
+                programa: this.formatExcelString(db.programa),
+                nome_programa: this.formatExcelString(db.nome_programa),
                 empenho: this.formatEmpenho(db.empenho) ?? '',
                 pendente_preenchimento_valores: db.pendente_preenchimento_valores ? 'Sim' : 'Não',
                 valor: db.valor ? db.valor : null,
                 valor_total: db.valor_total ? db.valor_total : null,
                 valor_contrapartida: db.valor_contrapartida ? db.valor_contrapartida : null,
-                emenda: db.emenda ?? '',
+                emenda: db.emenda ? this.formatExcelString(db.emenda) : '',
                 emenda_unitaria: this.formatExcelString(db.emenda_unitaria),
                 dotacao: db.dotacao ? this.formatExcelString(db.dotacao) : '',
                 demanda: db.demanda ?? '',
@@ -441,8 +441,8 @@ export class TransferenciasService implements ReportableService {
                           id: db.distribuicao_recurso_id,
                           transferencia_id: db.distribuicao_recurso_transferencia_id,
                           orgao_gestor_id: db.distribuicao_recurso_orgao_gestor_id,
-                          orgao_gestor_descricao: db.distribuicao_recurso_orgao_gestor, // Assuming this is never null from DB if distribuicao_recurso_id exists
-                          objeto: db.distribuicao_recurso_objeto, // Assuming this is never null from DB if distribuicao_recurso_id exists
+                          orgao_gestor_descricao: this.formatExcelString(db.distribuicao_recurso_orgao_gestor),
+                          objeto: this.formatExcelString(db.distribuicao_recurso_objeto),
                           valor: db.distribuicao_recurso_valor,
                           valor_total: db.distribuicao_recurso_valor_total,
                           valor_contrapartida: db.distribuicao_recurso_valor_contrapartida,
@@ -452,13 +452,16 @@ export class TransferenciasService implements ReportableService {
                                   : db.distribuicao_recurso_empenho === false
                                     ? 'Não'
                                     : null) ?? '',
-                          programa_orcamentario_estadual: db.distribuicao_recurso_programa_orcamentario_estadual ?? '',
-                          programa_orcamentario_municipal:
-                              db.distribuicao_recurso_programa_orcamentario_municipal ?? '',
-                          dotacao: db.distribuicao_recurso_dotacao ?? '',
-                          proposta: db.distribuicao_recurso_proposta ?? '',
-                          contrato: db.distribuicao_recurso_contrato ?? '',
-                          convenio: db.distribuicao_recurso_convenio ?? '',
+                          programa_orcamentario_estadual: this.formatExcelString(
+                              db.distribuicao_recurso_programa_orcamentario_estadual
+                          ),
+                          programa_orcamentario_municipal: this.formatExcelString(
+                              db.distribuicao_recurso_programa_orcamentario_municipal
+                          ),
+                          dotacao: this.formatExcelString(db.distribuicao_recurso_dotacao),
+                          proposta: this.formatExcelString(db.distribuicao_recurso_proposta),
+                          contrato: this.formatExcelString(db.distribuicao_recurso_contrato),
+                          convenio: this.formatExcelString(db.distribuicao_recurso_convenio),
                           assinatura_termo_aceite:
                               Date2YMD.toStringOrNull(db.distribuicao_recurso_assinatura_termo_aceite) ?? '',
                           assinatura_municipio:
@@ -469,10 +472,10 @@ export class TransferenciasService implements ReportableService {
                               Date2YMD.toStringOrNull(db.distribuicao_recurso_conclusao_suspensiva) ?? '',
                           registro_sei:
                               (db.distribuicao_recurso_sei ? formataSEI(db.distribuicao_recurso_sei) : null) ?? '',
-                          nome_responsavel: db.distribuicao_recurso_status_nome_responsavel ?? '',
+                          nome_responsavel: this.formatExcelString(db.distribuicao_recurso_status_nome_responsavel),
                           status_nome_base: db.distribuicao_recurso_status_nome_base ?? '',
-                          pct_custeio: db.distribuicao_recurso_custeio?.toString() ?? '', // Corrected source and default
-                          pct_investimento: db.distribuicao_recurso_investimento?.toString() ?? '', // Corrected source and default
+                          pct_custeio: db.distribuicao_recurso_custeio ?? null, // Corrected source and default
+                          pct_investimento: db.distribuicao_recurso_investimento ?? null, // Corrected source and default
                           conta: this.formatExcelString(db.distribuicao_recurso_conta),
                           banco: this.formatExcelString(db.distribuicao_recurso_banco),
                           agencia: this.formatExcelString(db.distribuicao_recurso_agencia),
@@ -521,7 +524,7 @@ export class TransferenciasService implements ReportableService {
                     label: 'Contrapartida',
                 },
                 {
-                    value: (row) => row.emenda,
+                    value: (row) => (row.emenda ? `="${row.demanda}"` : ''),
                     label: 'Emenda',
                 },
                 { value: 'dotacao', label: 'Dotação Orçamentária' }, // Already formatted as ="value" or ' - '
