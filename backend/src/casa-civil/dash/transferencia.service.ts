@@ -687,6 +687,9 @@ export class DashTransferenciaService {
             top: 'middle',
             grid: { left: '30%' },
             xAxis: {
+                nameTextStyle: {
+                    align: 'right',
+                },
                 type: 'category',
                 data: dadosPorOrgao
                     .sort((a, b) => {
@@ -715,17 +718,22 @@ export class DashTransferenciaService {
                 return {
                     name: etapa.etapa_fluxo,
                     type: 'bar',
-                    stack: 'total',
                     barWidth: '20%',
                     color: coresLegenda[itt],
+                    itemStyle: {
+                        barBorderRadius: [100, 100, 0, 0],
+                    },
                     label: {
                         show: true,
-                        position: 'inside',
+                        position: 'top',
+                        align: 'left',
                         formatter: function (params: any) {
                             return params.value > 0 ? params.value : '';
                         },
                         fontSize: 12,
-                        color: '#fff',
+                        color: coresLegenda[itt],
+                        rotate: 90,
+                        verticalAlign: 'middle',
                         fontWeight: 'bold',
                     },
                     data: dadosPorOrgao
