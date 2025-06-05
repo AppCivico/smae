@@ -72,8 +72,8 @@ export class RelTransferenciasDto {
         registro_sei: string; // Changed from string | null
         nome_responsavel: string; // Changed from string | null
         status_nome_base: string; // Changed from string | null, non-optional
-        pct_custeio: string; // Changed from string | null, non-optional
-        pct_investimento: string; // Changed from string | null, non-optional
+        pct_custeio: number | null; // Changed from string | null, non-optional
+        pct_investimento: number | null; // Changed from string | null, non-optional
         conta: string;
         banco: string;
         agencia: string;
