@@ -1,0 +1,20 @@
+@mobile: 440px;
+@tablet: 770px;
+
+.breakpoint-mobile() {
+  @media (max-width: 440px) {
+    .-aplicar-mobile();
+  }
+}
+
+.breakpoint-tablet() {
+  @media(min-width: @mobile) and (max-width: @tablet) {
+    .-aplicar-tablet();
+  }
+}
+
+.breakpoint-web() {
+  @media(min-width: @tablet) {
+    .-aplicar-web();
+  }
+}
