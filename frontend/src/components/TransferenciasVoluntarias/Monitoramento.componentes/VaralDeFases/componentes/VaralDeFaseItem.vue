@@ -1,10 +1,12 @@
 <script lang="ts" setup>
-import useTamanhoDispositivo from '@/hooks/useTamanhoDispositivo';
-
 export type VaralDeItemProps = {
   titulo: string,
   duracao?: number,
-  responsavel: string,
+  responsavel?: {
+    id: string,
+    sigla: string,
+    descricao: string,
+  },
   situacao: string,
   tarefas?: any[]
   pendente?: boolean,
@@ -16,8 +18,7 @@ type Props = VaralDeItemProps & {
   largo?: boolean
 };
 
-defineProps<Props>();
-
+const props = defineProps<Props>();
 </script>
 
 <template>
@@ -45,6 +46,7 @@ defineProps<Props>();
         >
           <span class="smae-tooltip__conteudo">Fase atual</span>
         </div>
+
         {{ $props.titulo }}
       </dt>
 
@@ -64,33 +66,38 @@ defineProps<Props>();
         <dd>
           <dl class="varal-de-fase-item__lista">
             <div
-              v-if="$props.duracao"
+              v-if="$props.duracao !== undefined"
               class="varal-de-fase-item__item varal-de-fase-item__item--duracao"
             >
               <dt>Duração</dt>
-              <dd>{{ $props.duracao }}d</dd>
+
+              <dd>{{ $props.duracao }} d</dd>
             </div>
 
             <div class="varal-de-fase-item__item">
               <dt>Responsável</dt>
-              <dd>{{ $props.responsavel }}</dd>
+
+              <dd>{{ $props.responsavel?.sigla || '-' }}</dd>
             </div>
 
             <div class="varal-de-fase-item__item">
-              <dt>Situação</dt>
-              <dd>{{ $props.situacao }}</dd>
+              <dt v-if="!props.secundario">
+                Situação
+              </dt>
+
+              <dd>{{ $props.situacao || '-' }}</dd>
             </div>
           </dl>
         </dd>
 
-        <div>
-          <button v-if="$props.tarefas?.length">
-            {{ 1 }}/ {{ $props.tarefas?.length }}
-          </button>
-
-          <!-- fase => concluida === false -->
-          <!-- tarefa => concluida === false -->
-          <button class="btn">
+        <div
+          v-if="$props.pendente"
+          class="varal-de-fase-item__agrupador-botoes"
+        >
+          <button
+            class="varal-de-fase-item__botao"
+            type="button"
+          >
             Editar
           </button>
         </div>
@@ -102,18 +109,15 @@ defineProps<Props>();
       class="varal-de-fase-item__tarefas"
     >
       <VaralDeFaseItem
-        v-for="(tarefa, tarefaIndex) in [
-          ...$props.tarefas,
-          ...$props.tarefas,
-        ]"
+        v-for="(tarefa, tarefaIndex) in $props.tarefas"
         :key="`fase--${tarefaIndex}`"
         class="varal-de-fase-item__tarefa-item"
         secundario
         :titulo="tarefa.workflow_tarefa?.descricao"
-        :duracao="tarefa.duracao"
         :situacao="tarefa.tipo_situacao || '-'"
         :responsavel="tarefa.andamento.orgao_responsavel || '-'"
         :pendente="!tarefa.andamento.concluida"
+        :largo="$props.largo"
       />
     </div>
   </article>
@@ -136,7 +140,7 @@ defineProps<Props>();
 
 .varal-de-fase-item--secundario {
   .varal-de-fase-item__conteudo {
-    border: 2px dashed #005C8A;
+    border: 2px dotted #005C8A;
   }
 }
 
@@ -217,6 +221,37 @@ defineProps<Props>();
     font-weight: 600;
     color: #333333;
   }
+
+  &:last-of-type {
+    border-block-end-width: 0;
+  }
+}
+
+.varal-de-fase-item__agrupador-botoes {
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.varal-de-fase-item:has(.varal-de-fase-item__agrupador-botoes) {
+  .varal-de-fase-item__item:last-of-type {
+    border-block-end-width: 1px;
+  }
+}
+
+.varal-de-fase-item__botao {
+  text-align: center;
+  border-radius: 12px;
+  flex-grow: 1;
+  color: #FFF;
+  background-color: #005C8A;
+  border: initial;
+
+  font-size: 1.14rem;
+  line-height: 1;
+  text-transform: lowercase;
+  padding: 4px 0;
+  font-weight: 500;
 }
 
 .varal-de-fase-item--largo {
@@ -231,6 +266,8 @@ defineProps<Props>();
   }
 
   .varal-de-fase-item__item {
+    gap: 4px;
+
     &:first-of-type {
       border-block-start: 1px solid #B8C0CC;
     }
@@ -257,7 +294,18 @@ defineProps<Props>();
     flex-direction: row;
     justify-content: space-between;
   }
-}
+
+  .varal-de-fase-item__agrupador-botoes {
+    flex-direction: column;
+    margin-top: 12px;
+  }
+
+  &.varal-de-fase-item--secundario {
+    .varal-de-fase-item__agrupador-botoes {
+      margin-top: 8px;
+    }
+  }
+ }
 
 .varal-de-fase-item__tarefas {
   width: 100%;
