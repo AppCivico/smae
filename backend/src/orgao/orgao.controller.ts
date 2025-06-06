@@ -33,12 +33,7 @@ export class OrgaoController {
     @ApiBearerAuth('access-token')
     @Get('search')
     async search(@Query() dto: FilterOrgaoDto): Promise<OrgaoResumo[]> {
-        const resultados = await this.orgaoService.search(dto);
-        return resultados.map((orgao) => ({
-            id: orgao.id,
-            sigla: orgao.sigla,
-            descricao: orgao.descricao,
-        }));
+        return await this.orgaoService.search(dto);
     }
 
     @Patch(':id')
