@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -9,6 +9,8 @@ import { CreateOrgaoDto } from './dto/create-orgao.dto';
 import { ListOrgaoDto } from './dto/list-orgao.dto';
 import { UpdateOrgaoDto } from './dto/update-orgao.dto';
 import { OrgaoService } from './orgao.service';
+import { FilterOrgaoDto } from './dto/filter-orgao.dto';
+import { OrgaoResumo } from './entities/orgao.entity';
 
 @ApiTags('Órgão')
 @Controller('orgao')
@@ -26,6 +28,17 @@ export class OrgaoController {
     @Get()
     async findAll(): Promise<ListOrgaoDto> {
         return { linhas: await this.orgaoService.findAll() };
+    }
+
+    @ApiBearerAuth('access-token')
+    @Get('search')
+    async search(@Query() dto: FilterOrgaoDto): Promise<OrgaoResumo[]> {
+        const resultados = await this.orgaoService.search(dto);
+        return resultados.map((orgao) => ({
+            id: orgao.id,
+            sigla: orgao.sigla,
+            descricao: orgao.descricao,
+        }));
     }
 
     @Patch(':id')
