@@ -258,7 +258,11 @@ export class WorkflowAndamentoService {
                     : Math.trunc(now.diff(DateTime.fromJSDate(row.data_inicio, { zone: 'utc' })).as('days'));
         }
 
+        // Descobrindo se a fase é a atual.
+        const faseAtual = row.data_inicio && !row.data_termino ? true : false;
+
         return {
+            atual: faseAtual,
             data_inicio: Date2YMD.toStringOrNull(row.data_inicio),
             data_termino: Date2YMD.toStringOrNull(row.data_termino),
             dias_na_fase: dias_na_fase,

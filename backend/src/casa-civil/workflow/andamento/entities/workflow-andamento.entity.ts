@@ -35,6 +35,7 @@ export class WorkflowAndamentoTarefasDto extends DetailWorkflowFluxoFaseTarefaDt
 }
 
 export class AndamentoFaseDto {
+    atual: boolean;
     situacao: WorkflowSituacaoDto | null;
     orgao_responsavel: IdSiglaDescricao | null;
     pessoa_responsavel: IdNomeExibicao | null;
