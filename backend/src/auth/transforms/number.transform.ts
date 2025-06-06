@@ -3,6 +3,7 @@ import { MAX_DTO_SAFE_NUM, MIN_DTO_SAFE_NUM } from '../../common/dto/consts';
 import { BadRequestException } from '@nestjs/common';
 
 export function NumberTransform(a: TransformFnParams): number {
+    console.log('NumberTransform', a.value);
     if (a.value === '') {
         const stack = new Error().stack;
         throw new BadRequestException(

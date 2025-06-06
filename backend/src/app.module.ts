@@ -60,6 +60,7 @@ import { DuckDBModule } from './common/duckdb/duckdb.module';
 import { GeoBuscaModule } from './geo-busca/geo-busca.module';
 import { ApiLogModule } from './api-logs/api-log.module';
 import { BuscaGlobalModule } from './busca-global/busca-global.module';
+import { TransfereGovApiModule } from './transfere-gov-api/transfere-gov-api.module';
 
 // Hacks pro JS
 /*
@@ -118,6 +119,7 @@ import { BuscaGlobalModule } from './busca-global/busca-global.module';
         PSMFDashboardModule,
         RunReportModule,
         DuckDBModule,
+        TransfereGovApiModule,
         GeoBuscaModule,
         BuscaGlobalModule,
         AtualizacaoEmLoteModule,

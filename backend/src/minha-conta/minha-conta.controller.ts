@@ -3,15 +3,20 @@ import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { ModuloSistema } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { Date2YMD } from '../common/date2ymd';
 import { PessoaService } from '../pessoa/pessoa.service';
+import { TransfereGovApiOportunidadesApiService } from '../transfere-gov-api/transfere-gov-api.service';
 import { MinhaContaDto, SessaoDto, TesteDataDto } from './models/minha-conta.dto';
 import { NovaSenhaDto } from './models/nova-senha.dto';
-import { Date2YMD } from '../common/date2ymd';
 
 @ApiTags('Minha Conta')
 @Controller('')
 export class MinhaContaController {
-    constructor(private readonly pessoaService: PessoaService) {}
+    constructor(
+        private readonly pessoaService: PessoaService,
+
+        private readonly oportunidadesApi: TransfereGovApiOportunidadesApiService
+    ) {}
 
     @Post('teste-sistema')
     @ApiBearerAuth('access-token')
@@ -21,6 +26,24 @@ export class MinhaContaController {
             filter.data
         )}
         `;
+    }
+
+    @Get('xxxx-conta')
+    @ApiBearerAuth('access-token')
+    async gxetMe(@CurrentUser() user: PessoaFromJwt): Promise<any> {
+        const planos = await this.oportunidadesApi.getPlanosAcaoDetalhados('3445');
+
+        console.log(`Successfully fetched ${planos.length} plans.`);
+
+        // Now you can work with the strongly-typed 'planos' array
+        planos.forEach((plano) => {
+            console.log(`ID: ${plano.id}, Situação: ${plano.situacao}`);
+            if (plano.dt_inicio_propostas) {
+                console.log(`Propostas iniciam em: ${plano.dt_inicio_propostas.toLocaleDateString()}`);
+            }
+        });
+
+        return planos;
     }
 
     @Get('minha-conta')
