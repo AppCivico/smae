@@ -497,14 +497,16 @@ watch(statusesDistribuicaoSelecionados, (newValue) => {
         tabindex="0"
       >
         <table class="tablemain mb4">
-          <col>
-          <col class="col--minimum">
-          <col class="col--minimum">
-          <col>
-          <col>
-          <col class="col--botão-de-ação">
-          <col class="col--botão-de-ação">
-          <col class="col--botão-de-ação">
+          <colgroup>
+            <col>
+            <col class="col--minimum">
+            <col class="col--minimum">
+            <col>
+            <col>
+            <col class="col--botão-de-ação">
+            <col class="col--botão-de-ação">
+            <col class="col--botão-de-ação">
+          </colgroup>
           <thead>
             <tr>
               <th>
