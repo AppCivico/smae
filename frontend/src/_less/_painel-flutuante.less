@@ -94,6 +94,14 @@
     }
   }
 
+  &:has(> :only-child) {
+    display: block;
+
+    &::before {
+      content: none;
+    }
+  }
+
   div {
   }
 
