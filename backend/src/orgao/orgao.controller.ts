@@ -10,7 +10,7 @@ import { ListOrgaoDto } from './dto/list-orgao.dto';
 import { UpdateOrgaoDto } from './dto/update-orgao.dto';
 import { OrgaoService } from './orgao.service';
 import { FilterOrgaoDto } from './dto/filter-orgao.dto';
-import { OrgaoResumo } from './entities/orgao.entity';
+import { OrgaoReduzidoDto } from './entities/orgao.entity';
 
 @ApiTags('Órgão')
 @Controller('orgao')
@@ -31,9 +31,9 @@ export class OrgaoController {
     }
 
     @ApiBearerAuth('access-token')
-    @Get('search')
-    async search(@Query() dto: FilterOrgaoDto): Promise<OrgaoResumo[]> {
-        return await this.orgaoService.search(dto);
+    @Get('reduzido')
+    async getReducedOrgao(@Query() dto: FilterOrgaoDto): Promise<OrgaoReduzidoDto[]> {
+        return await this.orgaoService.findReducedOrgao(dto);
     }
 
     @Patch(':id')

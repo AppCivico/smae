@@ -6,7 +6,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrgaoDto } from './dto/create-orgao.dto';
 import { UpdateOrgaoDto } from './dto/update-orgao.dto';
 import { FilterOrgaoDto } from './dto/filter-orgao.dto';
-import { OrgaoResumo } from './entities/orgao.entity';
+import { OrgaoReduzidoDto } from './entities/orgao.entity';
 
 @Injectable()
 export class OrgaoService {
@@ -86,6 +86,29 @@ export class OrgaoService {
             orderBy: [{ sigla: 'asc' }],
         });
         return listActive;
+    }
+
+    async findReducedOrgao(dto: FilterOrgaoDto): Promise<OrgaoReduzidoDto[]> {
+        const { palavra_chave, limit = 10 } = dto;
+
+        return this.prisma.orgao.findMany({
+            where: {
+                removido_em: null,
+                OR: palavra_chave
+                    ? [
+                          { descricao: { contains: palavra_chave, mode: 'insensitive' } },
+                          { sigla: { contains: palavra_chave, mode: 'insensitive' } },
+                      ]
+                    : undefined,
+            },
+            select: {
+                id: true,
+                sigla: true,
+                descricao: true,
+            },
+            orderBy: { descricao: 'asc' },
+            take: limit,
+        });
     }
 
     async findOne(id: number) {
@@ -210,28 +233,5 @@ export class OrgaoService {
         });
 
         return created;
-    }
-
-    async search(dto: FilterOrgaoDto): Promise<OrgaoResumo[]> {
-        const { palavra_chave, limit = 10 } = dto;
-
-        return this.prisma.orgao.findMany({
-            where: {
-                removido_em: null,
-                OR: palavra_chave
-                    ? [
-                          { descricao: { contains: palavra_chave, mode: 'insensitive' } },
-                          { sigla: { contains: palavra_chave, mode: 'insensitive' } },
-                      ]
-                    : undefined,
-            },
-            select: {
-                id: true,
-                sigla: true,
-                descricao: true,
-            },
-            orderBy: { descricao: 'asc' },
-            take: limit,
-        });
     }
 }
