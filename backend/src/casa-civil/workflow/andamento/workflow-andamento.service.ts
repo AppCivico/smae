@@ -214,6 +214,8 @@ export class WorkflowAndamentoService {
                                                         necessita_preencher_orgao: false,
                                                         concluida: tarefa.termino_real ? true : false,
                                                         atual: false,
+                                                        termino_real: Date2YMD.toStringOrNull(tarefa.termino_real),
+                                                        inicio_real: Date2YMD.toStringOrNull(tarefa.inicio_real),
                                                     },
                                                 };
                                             })
