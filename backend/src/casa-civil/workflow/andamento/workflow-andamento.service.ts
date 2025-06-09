@@ -201,8 +201,10 @@ export class WorkflowAndamentoService {
                                             ...tarefasCronogramaFase.map((tarefa) => {
                                                 return {
                                                     tarefa_cronograma_id: tarefa.id,
-                                                    workflow_tarefa: null,
-                                                    tarefa: tarefa.tarefa,
+                                                    workflow_tarefa: {
+                                                        id: 0,
+                                                        descricao: tarefa.tarefa,
+                                                    },
                                                     ordem: tarefa.numero,
                                                     marco: tarefa.eh_marco,
                                                     responsabilidade: WorkflowResponsabilidade.OutroOrgao,
