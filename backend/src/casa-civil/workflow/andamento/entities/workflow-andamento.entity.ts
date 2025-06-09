@@ -48,10 +48,11 @@ export class AndamentoFaseDto {
     necessita_preencher_orgao: boolean;
     necessita_preencher_pessoa: boolean;
     dias_na_fase: number;
+    tarefa_espelhada_id: number | null;
 }
 
 export class AndamentoTarefaDto {
-    id: number;
+    id: number | null;
     orgao_responsavel: IdSiglaDescricao | null;
     necessita_preencher_orgao: boolean;
     concluida: boolean;

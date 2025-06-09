@@ -126,6 +126,35 @@ export class WorkflowAndamentoService {
         const pode_passar_para_proxima_etapa: boolean = fasesNaoConcluidas == 0 && possui_proxima_etapa ? true : false;
         const pode_reabrir_fase: boolean = fasesConcluidas ? true : false;
 
+        // Buscando tarefas que são do cronograma.
+        const tarefasCronograma = await this.prisma.tarefa.findMany({
+            where: {
+                tarefa_cronograma: {
+                    transferencia_id: transferencia.id,
+                    removido_em: null,
+                },
+                removido_em: null,
+                nivel: 3,
+            },
+            orderBy: [{ tarefa_pai_id: 'asc' }, { numero: 'asc' }],
+            select: {
+                id: true,
+                tarefa_pai_id: true,
+                tarefa: true,
+                numero: true,
+                inicio_real: true,
+                termino_real: true,
+                eh_marco: true,
+                orgao: {
+                    select: {
+                        id: true,
+                        sigla: true,
+                        descricao: true,
+                    },
+                },
+            },
+        });
+
         return {
             ...workflow,
             possui_proxima_etapa: possui_proxima_etapa,
@@ -138,14 +167,45 @@ export class WorkflowAndamentoService {
                         atual: fluxo.workflow_etapa_de!.id == faseAtualAndamento!.workflow_etapa_id,
                         fases: await Promise.all(
                             fluxo.fases.map(async (fase) => {
+                                // Buscando o andamento da fase.
+                                const andamentoFase = await this.getAndamentoFaseRet(
+                                    transferencia.id,
+                                    fase.fase!.id,
+                                    transferencia.workflow_id!,
+                                    fluxo.workflow_etapa_de!.id
+                                );
+
+                                // Verificando se a fase possui tarefas de cronograma que precisam ser inseridas no retorno.
+                                if (andamentoFase && andamentoFase.tarefa_espelhada_id) {
+                                    const tarefasCronogramaFase = tarefasCronograma.filter(
+                                        (tarefa) => tarefa.tarefa_pai_id == andamentoFase.tarefa_espelhada_id
+                                    );
+
+                                    if (tarefasCronogramaFase.length) {
+                                        fase.tarefas.push(
+                                            ...tarefasCronogramaFase.map((tarefa) => {
+                                                return {
+                                                    tarefa_cronograma_id: tarefa.id,
+                                                    workflow_tarefa: null,
+                                                    ordem: tarefa.numero,
+                                                    marco: tarefa.eh_marco,
+                                                    responsabilidade: WorkflowResponsabilidade.OutroOrgao,
+                                                    andamento: {
+                                                        id: null,
+                                                        orgao_responsavel: tarefa.orgao,
+                                                        necessita_preencher_orgao: false,
+                                                        concluida: tarefa.termino_real ? true : false,
+                                                        atual: false,
+                                                    },
+                                                };
+                                            })
+                                        );
+                                    }
+                                }
+
                                 return {
                                     ...fase,
-                                    andamento: await this.getAndamentoFaseRet(
-                                        transferencia.id,
-                                        fase.fase!.id,
-                                        transferencia.workflow_id!,
-                                        fluxo.workflow_etapa_de!.id
-                                    ),
+                                    andamento: andamentoFase,
 
                                     tarefas: await Promise.all(
                                         fase.tarefas.map(async (tarefa) => {
@@ -186,6 +246,12 @@ export class WorkflowAndamentoService {
             select: {
                 data_inicio: true,
                 data_termino: true,
+
+                tarefaEspelhada: {
+                    select: {
+                        id: true,
+                    },
+                },
 
                 workflow_situacao: {
                     select: {
@@ -295,6 +361,8 @@ export class WorkflowAndamentoService {
                       nome_exibicao: row.pessoa_responsavel.nome_exibicao,
                   }
                 : null,
+
+            tarefa_espelhada_id: row.tarefaEspelhada ? row.tarefaEspelhada[0].id : null,
         };
     }
 
