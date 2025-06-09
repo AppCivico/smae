@@ -99,7 +99,7 @@ const chartOption = computed(() => ({
           ? `R$ ${dinheiro(Number(params.value), {
             semDecimais: numeroCompactado.value,
             compactado: numeroCompactado.value,
-            maximumSignificantDigits: 3,
+            maximumFractionDigits: 3,
           })}`
           : ''),
         fontSize: 14,
@@ -128,7 +128,7 @@ const chartOption = computed(() => ({
           ? `R$ ${dinheiro(Number(params.value), {
             semDecimais: numeroCompactado.value,
             compactado: numeroCompactado.value,
-            maximumSignificantDigits: 3,
+            maximumFractionDigits: 3,
           })}`
           : ''),
         fontSize: 14,
@@ -156,7 +156,7 @@ const chartOption = computed(() => ({
           ? `R$ ${dinheiro(Number(params.value), {
             semDecimais: numeroCompactado.value,
             compactado: numeroCompactado.value,
-            maximumSignificantDigits: 3,
+            maximumFractionDigits: 3,
           })}`
           : ''),
         fontSize: 14,
