@@ -208,18 +208,20 @@ export class WorkflowAndamentoService {
                                     andamento: andamentoFase,
 
                                     tarefas: await Promise.all(
-                                        fase.tarefas.map(async (tarefa) => {
-                                            return {
-                                                ...tarefa,
+                                        fase.tarefas
+                                            .filter((e) => !e.tarefa_cronograma_id)
+                                            .map(async (tarefa) => {
+                                                return {
+                                                    ...tarefa,
 
-                                                andamento: await this.getAndamentoTarefaRet(
-                                                    fase.fase!.id,
-                                                    transferencia.id,
-                                                    tarefa.workflow_tarefa!.id,
-                                                    transferencia.workflow_id!
-                                                ),
-                                            };
-                                        })
+                                                    andamento: await this.getAndamentoTarefaRet(
+                                                        fase.fase!.id,
+                                                        transferencia.id,
+                                                        tarefa.workflow_tarefa!.id,
+                                                        transferencia.workflow_id!
+                                                    ),
+                                                };
+                                            })
                                     ),
                                 };
                             })
