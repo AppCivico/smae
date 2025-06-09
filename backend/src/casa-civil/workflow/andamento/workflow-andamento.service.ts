@@ -162,9 +162,18 @@ export class WorkflowAndamentoService {
             pode_reabrir_fase: pode_reabrir_fase,
             fluxo: await Promise.all(
                 workflow.fluxo.map(async (fluxo) => {
+                    const ehEtapaAtual = fluxo.workflow_etapa_de!.id == faseAtualAndamento!.workflow_etapa_id;
+                    const faseIds = fluxo.fases.map((fase) => fase.fase!.id);
+                    const concluida = await this.isEtapaConcluida(
+                        transferencia.id,
+                        fluxo.workflow_etapa_de!.id,
+                        faseIds
+                    );
+
                     return {
                         ...fluxo,
-                        atual: fluxo.workflow_etapa_de!.id == faseAtualAndamento!.workflow_etapa_id,
+                        atual: ehEtapaAtual,
+                        concluida: concluida,
                         fases: await Promise.all(
                             fluxo.fases.map(async (fase) => {
                                 // Buscando o andamento da fase.
@@ -668,5 +677,20 @@ export class WorkflowAndamentoService {
                 );
             }
         });
+    }
+
+    private async isEtapaConcluida(transferencia_id: number, etapa_id: number, faseIds: number[]): Promise<boolean> {
+        const count = await this.prisma.transferenciaAndamento.count({
+            where: {
+                transferencia_id: transferencia_id,
+                workflow_etapa_id: etapa_id,
+                workflow_fase_id: { in: faseIds },
+                removido_em: null,
+                data_termino: { not: null }, // Only completed phases
+            },
+        });
+
+        // Stage is complete if all its phases are completed
+        return count === faseIds.length;
     }
 }
