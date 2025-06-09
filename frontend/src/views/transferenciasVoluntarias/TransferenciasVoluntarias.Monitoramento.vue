@@ -1,5 +1,6 @@
 <script setup>
 import MonitoramentoCards from '@/components/transferencia/MonitoramentoCards.vue';
+import VaralDeEtapas from '@/components/transferencia/VaralDeEtapas.vue';
 
 </script>
 <template>
@@ -7,7 +8,7 @@ import MonitoramentoCards from '@/components/transferencia/MonitoramentoCards.vu
 
   <MonitoramentoCards />
 
-  &lt;VaralDeEtapas/&gt;
+  <VaralDeEtapas />
 
   &lt;VaralDeFases/&gt;
 </template>
