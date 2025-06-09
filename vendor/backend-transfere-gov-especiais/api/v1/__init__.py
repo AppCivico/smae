@@ -1,0 +1,1 @@
+from .endpoints.planos_acao import app as endpoints_planos_acao
