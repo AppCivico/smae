@@ -133,6 +133,10 @@ export class WorkflowAndamentoService {
                     transferencia_id: transferencia.id,
                     removido_em: null,
                 },
+                distribuicao_recurso: {
+                    removido_em: null,
+                    transferencia_id: transferencia.id,
+                },
                 removido_em: null,
                 nivel: 3,
             },
@@ -176,6 +180,8 @@ export class WorkflowAndamentoService {
                         concluida: concluida,
                         fases: await Promise.all(
                             fluxo.fases.map(async (fase) => {
+                                const tarefasVindasDoCronograma = [];
+
                                 // Buscando o andamento da fase.
                                 const andamentoFase = await this.getAndamentoFaseRet(
                                     transferencia.id,
@@ -191,7 +197,7 @@ export class WorkflowAndamentoService {
                                     );
 
                                     if (tarefasCronogramaFase.length) {
-                                        fase.tarefas.push(
+                                        tarefasVindasDoCronograma.push(
                                             ...tarefasCronogramaFase.map((tarefa) => {
                                                 return {
                                                     tarefa_cronograma_id: tarefa.id,
@@ -212,26 +218,28 @@ export class WorkflowAndamentoService {
                                     }
                                 }
 
+                                const tarefasConfiguradas = await Promise.all(
+                                    fase.tarefas.map(async (tarefa) => {
+                                        return {
+                                            ...tarefa,
+                                            andamento: await this.getAndamentoTarefaRet(
+                                                fase.fase!.id,
+                                                transferencia.id,
+                                                tarefa.workflow_tarefa!.id,
+                                                transferencia.workflow_id!
+                                            ),
+                                        };
+                                    })
+                                );
+
+                                // Adicionando tarefas vindas do cronograma e ordenando.
+                                const tarefasDaFase = [...tarefasConfiguradas, ...tarefasVindasDoCronograma];
+                                tarefasDaFase.sort((a, b) => a.ordem! - b.ordem!);
+
                                 return {
                                     ...fase,
                                     andamento: andamentoFase,
-
-                                    tarefas: await Promise.all(
-                                        fase.tarefas
-                                            .filter((e) => !e.tarefa_cronograma_id)
-                                            .map(async (tarefa) => {
-                                                return {
-                                                    ...tarefa,
-
-                                                    andamento: await this.getAndamentoTarefaRet(
-                                                        fase.fase!.id,
-                                                        transferencia.id,
-                                                        tarefa.workflow_tarefa!.id,
-                                                        transferencia.workflow_id!
-                                                    ),
-                                                };
-                                            })
-                                    ),
+                                    tarefas: tarefasDaFase,
                                 };
                             })
                         ),
