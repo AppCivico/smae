@@ -21,6 +21,7 @@ interface Estado {
   workflow: WorkflowAndamentoDto | null;
   chamadasPendentes: ChamadasPendentes;
   historico: TransferenciaHistoricoDto | null;
+  etapaEmFoco: WorkflowAndamentoDto | null;
   erro: null | unknown;
 }
 
@@ -28,6 +29,7 @@ export const useWorkflowAndamentoStore = defineStore('workflowAndamento', {
   state: (): Estado => ({
     workflow: null,
     historico: null,
+    etapaEmFoco: null,
     chamadasPendentes: {
       workflow: false,
       fase: false,
@@ -48,11 +50,16 @@ export const useWorkflowAndamentoStore = defineStore('workflowAndamento', {
 
         if (typeof resposta === 'object') {
           this.workflow = resposta;
+          this.etapaEmFoco = this.workflow.fluxo.find((etapa) => etapa.atual) || null;
         }
       } catch (erro: unknown) {
         this.erro = erro;
       }
       this.chamadasPendentes.workflow = false;
+    },
+
+    setEtapaEmFoco(id: number): void {
+      this.etapaEmFoco = this.workflow?.fluxo.find((etapa) => etapa.id === id) || null;
     },
 
     async buscarHistorico(transferênciaId?: number): Promise<void> {
