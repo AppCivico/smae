@@ -545,7 +545,7 @@ export class DistribuicaoRecursoService {
                     },
                 },
                 status: {
-                    orderBy: { data_troca: 'desc', id: 'desc' },
+                    orderBy: [{ data_troca: 'desc' }, { id: 'desc' }],
                     where: { removido_em: null },
                     select: {
                         id: true,
@@ -784,7 +784,7 @@ export class DistribuicaoRecursoService {
                 },
 
                 status: {
-                    orderBy: { data_troca: 'desc', id: 'desc' },
+                    orderBy: [{ data_troca: 'desc' }, { id: 'desc' }],
                     where: { removido_em: null },
                     select: {
                         id: true,
