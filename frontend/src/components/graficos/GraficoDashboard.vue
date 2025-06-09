@@ -91,6 +91,12 @@ const props = withDefaults(defineProps<{
 
 const definirPadroes = (opcoes: ECBasicOption) => ({
   ...opcoes,
+  grid: {
+    containLabel: true,
+    right: 30,
+    bottom: 0,
+    left: 0,
+  },
   tooltip: {
     confine: true,
     className: 'painel-flutuante',
