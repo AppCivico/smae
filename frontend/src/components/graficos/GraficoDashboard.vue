@@ -122,7 +122,6 @@ const preparedOptions = computed((): ECBasicOption => {
 
             return `
               <div style="color: ${params.color}" class="grafico-dashboard__tooltip-conteudo">
-              foobar:
                 ${tooltipText}
               </div>
             `;
