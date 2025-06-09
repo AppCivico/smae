@@ -226,7 +226,6 @@ export class TransferenciasService implements ReportableService {
             ) drst ON true
             LEFT JOIN distribuicao_status_base dsb ON dsb.id = drst.status_base_id
             LEFT JOIN distribuicao_status ds ON drst.status_id = ds.id AND ds.removido_em IS NULL
-            LEFT JOIN distribuicao_recurso_sei drs ON drs.distribuicao_recurso_id = dr.id AND drs.removido_em IS NULL
             LEFT JOIN classificacao cl on t.classificacao_id = cl.id and tt.id = cl.transferencia_tipo_id
             LEFT JOIN orgao o2 ON dr.orgao_gestor_id = o2.id
             ${whereCond.whereString}
