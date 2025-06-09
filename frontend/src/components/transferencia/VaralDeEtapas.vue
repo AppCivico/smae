@@ -44,7 +44,7 @@ workflowAndamento.buscar();
           class="w400 like-a__text varal-etapas__nome-da-etapa"
           @click="workflowAndamento.setEtapaEmFoco(item.id)"
         >
-          <span class="w400">Etapa</span>
+          <span class="w400">Etapa {{ item.atual ? 'atual' : '' }}</span>
           {{ item.workflow_etapa_de.descricao }}
         </button>
       </li>
@@ -129,6 +129,17 @@ workflowAndamento.buscar();
   }
 }
 
+.varal-etapas__nome-da-etapa {
+  display: grid;
+  gap: 0.4rem;
+  padding-block-end: 1rem;
+  padding-inline: 1rem;
+  text-align: start;
+  font-weight: 700;
+  font-size: 1.4rem;
+  width: max-content;
+}
+
 .varal-etapas__nome-da-etapa span {
   &::before {
     content: '';
@@ -147,11 +158,11 @@ workflowAndamento.buscar();
     background:
       linear-gradient(var(--step-yellow), var(--step-yellow))
       no-repeat
-      0 100% / 4px 50%,
+      0px 60% / 4px 30%,
 
       linear-gradient(var(--step-yellow), var(--step-yellow))
       no-repeat
-      right 23px / 5px 78%,
+      right 27px / 5px calc(100% - 30px),
 
       linear-gradient(var(--step-yellow), var(--step-yellow))
       no-repeat
@@ -161,14 +172,5 @@ workflowAndamento.buscar();
       no-repeat
       bottom right 62% / 6px 8px
   }
-}
-
-.varal-etapas__nome-da-etapa {
-  display: grid;
-  gap: 0.4rem;
-  padding-block-end: 1rem;
-  padding-inline: 1rem;
-  text-align: start;
-  font-weight: 700;
 }
 </style>
