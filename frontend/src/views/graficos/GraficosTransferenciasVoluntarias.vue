@@ -329,7 +329,7 @@
     class="w100 bgb mt4 p15"
   >
     <h2 class="t36">
-      {{ graficoDeValorPorOrgao.title.text }} (novo)
+      {{ graficoDeValorPorOrgao.title.text }}
     </h2>
 
     <label class="mb1">
