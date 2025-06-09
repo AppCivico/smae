@@ -102,13 +102,21 @@
   }
 
   div {
+    display: grid;
+    grid-template-rows: subgrid;
+    grid-row-start: span 2;
+    grid-row-end: auto;
+    gap: 0;
   }
 
   dt {
     font-weight: 400;
+    text-overflow: ellipsis;
+      overflow: hidden;
     color: @cinza-medio;
     margin-bottom: 0.25em;
     font-size: 100%;
+    align-self: end;
   }
 
   dd {
@@ -116,5 +124,6 @@
     font-size: 100%;
     text-overflow: ellipsis;
     overflow: hidden;
+    align-self: start;
   }
 }
