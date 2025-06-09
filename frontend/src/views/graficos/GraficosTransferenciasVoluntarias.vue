@@ -146,6 +146,7 @@
       {{ parlamentaresPorId[parlamentar]?.nome_popular || parlamentar }}
     </span>
   </div>
+
   <div
     v-if="graficos?.values?.valor_total"
     class="flex flexwrap gap50 center mt4 mb2"
@@ -154,6 +155,7 @@
       class="f1"
       :valor="graficos?.values?.valor_total"
     />
+
     <div
       v-if="graficos?.values?.numero_por_esfera && graficos?.values?.valor_total"
       class="bgb br20 p15 f1"
@@ -161,9 +163,35 @@
       <h2 class="t36">
         {{ graficos?.values?.numero_por_esfera.title.text }}
       </h2>
-      <Grafico :option="removeTitleProperty(graficos?.values?.numero_por_esfera)" />
+      <Grafico
+        :option="removeTitleProperty(graficos?.values?.numero_por_esfera)"
+      >
+        <template #painel-flutuante="data">
+          <dl
+            v-if="data?.length"
+          >
+            <div
+              v-for="(serie) in data"
+              :key="serie.seriesIndex"
+            >
+              <dt>
+                {{ serie.name }}
+              </dt>
+              <dd
+                class="painel-flutuante__item-com-legenda"
+                :style="{
+                  '--cor-da-legenda': serie.color,
+                }"
+              >
+                {{ serie.value }}%
+              </dd>
+            </div>
+          </dl>
+        </template>
+      </Grafico>
     </div>
   </div>
+
   <div
     v-if="graficos?.values?.numero_por_status && graficos?.values?.valor_total"
     class="w100 bgb mt4 p15"
@@ -171,35 +199,190 @@
     <h2 class="t36">
       {{ graficos.values.numero_por_status.title.text }}
     </h2>
-    <Grafico :option="removeTitleProperty(graficos.values.numero_por_status)" />
+    <Grafico :option="removeTitleProperty(graficos.values.numero_por_status)">
+      <template #painel-flutuante="data">
+        <dl
+          v-if="data?.length"
+        >
+          <div
+            v-for="(serie) in data"
+            :key="serie.seriesIndex"
+          >
+            <dt>
+              {{ serie.name }}
+            </dt>
+            <dd
+              class="painel-flutuante__item-com-legenda"
+              :style="{
+                '--cor-da-legenda': serie.color,
+              }"
+            >
+              {{ serie.value }}
+            </dd>
+          </div>
+        </dl>
+      </template>
+    </Grafico>
   </div>
+
   <div
-    v-if="graficos?.values?.numero_por_partido && graficos?.values?.valor_total"
+    v-if="graficosDeNumeroPorPartido && graficos?.values?.valor_total"
     class="w100 bgb mt4 p15"
   >
     <h2 class="t36">
-      {{ graficos.values.numero_por_partido.title.text }}
+      {{ graficosDeNumeroPorPartido.title.text }}
     </h2>
-    <Grafico :option="removeTitleProperty(graficos.values.numero_por_partido)" />
+    <Grafico :option="removeTitleProperty(graficosDeNumeroPorPartido)">
+      <template #painel-flutuante="data">
+        <p
+          v-if="data[0].name"
+          class="painel-flutuante__titulo"
+        >
+          {{ data[0].name }}
+        </p>
+
+        <dl
+          v-if="data?.length"
+        >
+          <div
+            v-for="(serie) in data"
+            :key="serie.seriesIndex"
+          >
+            <dt>
+              {{ serie.seriesName }}
+            </dt>
+            <dd
+              class="painel-flutuante__item-com-legenda"
+              :style="{
+                '--cor-da-legenda': serie.color,
+              }"
+            >
+              {{ serie.value }}
+            </dd>
+          </div>
+        </dl>
+      </template>
+    </Grafico>
   </div>
+
   <div
-    v-if="graficos?.values?.valor_por_partido && graficos?.values?.valor_total"
+    v-if="graficoDeValorPorPartido && graficos?.values?.valor_total"
     class="w100 bgb mt4 p15"
   >
     <h2 class="t36">
-      {{ graficos.values.valor_por_partido.title.text }}
+      {{ graficoDeValorPorPartido.title.text }}
     </h2>
-    <Grafico :option="removeTitleProperty(graficos.values.valor_por_partido)" />
+
+    <label class="mb1">
+      <input
+        v-model="numeroCompactado.porPartidos"
+        type="checkbox"
+        class="inputcheckbox interruptor"
+        aria-label="Exibir valores em formato compactado"
+      >
+      valores compactados
+    </label>
+
+    <Grafico
+      :key="`graficos--valor-por-partido__${String(numeroCompactado.porPartidos)}`"
+      :option="removeTitleProperty(graficoDeValorPorPartido)"
+    >
+      <template #painel-flutuante="data">
+        <p
+          v-if="data[0].name"
+          class="painel-flutuante__titulo"
+        >
+          {{ data[0].name }}
+        </p>
+
+        <dl
+          v-if="data?.length"
+        >
+          <div
+            v-for="(serie) in data"
+            :key="serie.seriesIndex"
+          >
+            <dt>
+              {{ serie.seriesName }}
+            </dt>
+            <dd
+              class="painel-flutuante__item-com-legenda"
+              :style="{
+                '--cor-da-legenda': serie.color,
+              }"
+            >
+              {{ dinheiro(serie.value, {
+                style: 'currency',
+                semDecimais: numeroCompactado.porPartidos,
+                compactado: numeroCompactado.porPartidos,
+                maximumFractionDigits: 3,
+              }) }}
+            </dd>
+          </div>
+        </dl>
+      </template>
+    </Grafico>
   </div>
+
   <div
-    v-if="graficos?.values?.valor_por_orgao && graficos?.values?.valor_total"
+    v-if="graficoDeValorPorOrgao && graficos?.values?.valor_total"
     class="w100 bgb mt4 p15"
   >
     <h2 class="t36">
-      {{ graficos.values.valor_por_orgao.title.text }}
+      {{ graficoDeValorPorOrgao.title.text }} (novo)
     </h2>
-    <Grafico :option="removeTitleProperty(graficos.values.valor_por_orgao)" />
+
+    <label class="mb1">
+      <input
+        v-model="numeroCompactado.porOrgaos"
+        type="checkbox"
+        class="inputcheckbox interruptor"
+        aria-label="Exibir valores em formato compactado"
+      >
+      valores compactados
+    </label>
+
+    <Grafico
+      :key="`graficos--valor-por-orgao__${String(numeroCompactado.porOrgaos)}`"
+      :option="removeTitleProperty(graficoDeValorPorOrgao)"
+    >
+      <template #painel-flutuante="data">
+        <p
+          v-if="data[0].name"
+          class="painel-flutuante__titulo"
+        >
+          {{ data[0].name }}
+        </p>
+
+        <dl
+          v-if="data?.length"
+        >
+          <div
+            v-for="(serie) in data"
+            :key="serie.seriesIndex"
+          >
+            <dt>
+              {{ serie.seriesName }}
+            </dt>
+            <dd
+              class="painel-flutuante__item-com-legenda"
+              :style="{
+                '--cor-da-legenda': serie.color,
+              }"
+            >
+              {{ dinheiro(serie.value, {
+                style: 'currency',
+                semDecimais: numeroCompactado.porOrgaos,
+                compactado: numeroCompactado.porOrgaos,
+                maximumFractionDigits: 3,
+              }) }}
+            </dd>
+          </div>
+        </dl>
+      </template>
+    </Grafico>
   </div>
+
   <div
     v-if=" graficos?.values?.valor_por_parlamentar.length && graficos?.values?.valor_total"
     class="w100 bgb mt4 p15 "
@@ -283,7 +466,7 @@ import { useParlamentaresStore } from '@/stores/parlamentares.store';
 import { usePartidosStore } from '@/stores/partidos.store';
 import isEqual from 'lodash/isEqual';
 import { storeToRefs } from 'pinia';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const localizeDate = (d) => dateToDate(d, { timeStyle: 'short', timeZone: 'America/Sao_Paulo' });
@@ -367,6 +550,93 @@ const filtrosEscolhidos = ref({
 const carregandoTransferencias = ref(false);
 const transferencias = ref([]);
 const paginacaoTransferencias = ref({});
+
+const numeroCompactado = ref({
+  porPartidos: true,
+  porOrgaos: true,
+});
+
+const graficosDeNumeroPorPartido = computed(() => (!Array.isArray(
+  graficos.value?.values?.numero_por_partido?.series,
+)
+  ? null
+  : {
+    ...graficos.value.values.numero_por_partido,
+    xAxis: {
+      ...graficos.value.values.numero_por_partido.xAxis,
+      axisLabel: {
+        ...graficos.value.values.numero_por_partido.xAxis.axisLabel,
+        rotate: 45,
+        align: 'right',
+      },
+    },
+    series: graficos.value.values.numero_por_partido.series.map((serie) => ({
+      ...serie,
+      stack: undefined,
+      barWidth: '40%',
+      label: serie.value ? serie.label : undefined,
+    })),
+  }));
+
+const graficoDeValorPorPartido = computed(() => (!Array.isArray(
+  graficos.value?.values?.valor_por_partido?.series,
+)
+  ? null
+  : {
+    ...graficos.value.values.valor_por_partido,
+    xAxis: {
+      ...graficos.value.values.valor_por_partido.xAxis,
+      axisLabel: {
+        ...graficos.value.values.valor_por_partido.xAxis.axisLabel,
+        rotate: 45,
+        align: 'right',
+      },
+    },
+    yAxis: {
+      ...graficos.value.values.valor_por_partido.yAxis,
+      name: undefined,
+      axisLabel: {
+        formatter: (value) => `R$ ${dinheiro(value, { compactado: numeroCompactado.value.porPartidos, minimumFractionDigits: 0 })}`,
+      },
+    },
+    series: graficos.value.values.valor_por_partido.series.map((serie) => ({
+      ...serie,
+      stack: 'total',
+      barWidth: '80%',
+      label: undefined,
+    })),
+  }));
+
+const graficoDeValorPorOrgao = computed(() => (!Array.isArray(
+  graficos.value?.values?.valor_por_orgao?.series,
+)
+  ? null
+  : {
+    ...graficos.value.values.valor_por_orgao,
+    xAxis: {
+      ...graficos.value.values.valor_por_orgao.xAxis,
+      axisLabel: {
+        ...graficos.value.values.valor_por_orgao.xAxis.axisLabel,
+        rotate: 45,
+        align: 'right',
+      },
+    },
+
+    yAxis: {
+      ...graficos.value.values.valor_por_orgao.yAxis,
+      name: undefined,
+      axisLabel: {
+        formatter: (value) => `R$ ${dinheiro(value, { compactado: numeroCompactado.value.porOrgaos, minimumFractionDigits: 0 })}`,
+      },
+    },
+
+    series: graficos.value.values.valor_por_orgao.series.map((serie) => ({
+      ...serie,
+      stack: 'total',
+      barWidth: '80%',
+      label: undefined,
+    })),
+  }));
 
 function atualizarQuery() {
   const filtrosLimpos = Object.keys(filtrosEscolhidos.value).reduce(
