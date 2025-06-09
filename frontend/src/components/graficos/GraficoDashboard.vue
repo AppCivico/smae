@@ -36,6 +36,7 @@ import {
 import { use } from 'echarts/core';
 import { CanvasRenderer } from 'echarts/renderers';
 import type { ECBasicOption } from 'echarts/types/dist/shared';
+import { merge } from 'lodash';
 import type { VNode } from 'vue';
 import {
   computed,
@@ -89,8 +90,7 @@ const props = withDefaults(defineProps<{
   tooltipTemplate: undefined,
 });
 
-const definirPadroes = (opcoes: ECBasicOption) => ({
-  ...opcoes,
+const definirPadroes = (opcoes: ECBasicOption) => (merge({
   grid: {
     containLabel: true,
     right: 30,
@@ -100,40 +100,19 @@ const definirPadroes = (opcoes: ECBasicOption) => ({
   tooltip: {
     confine: true,
     className: 'painel-flutuante',
-    ...(typeof opcoes.tooltip === 'object' && opcoes.tooltip !== null ? opcoes.tooltip : {}),
   },
   xAxis: {
-    ...(opcoes.xAxis || {}),
     axisLabel: {
-      ...formatoPadraoDeEtiquetaDeEixo,
       hideOverlap: false,
-      ...(
-        typeof opcoes?.xAxis?.axisLabel === 'object' && opcoes?.xAxis?.axisLabel !== null
-          ? opcoes.xAxis.axisLabel
-          : {}
-      ),
     },
   },
   yAxis: {
-    ...(opcoes.yAxis || {}),
     nameTextStyle: {
       align: 'right',
-      ...(
-        typeof opcoes?.yAxis?.nameTextStyle === 'object' && opcoes?.yAxis?.nameTextStyle !== null
-          ? opcoes.yAxis.nameTextStyle
-          : {}
-      ),
     },
-    axisLabel: {
-      ...formatoPadraoDeEtiquetaDeEixo,
-      ...(
-        typeof opcoes?.yAxis?.axisLabel === 'object' && opcoes?.yAxis?.axisLabel !== null
-          ? opcoes.yAxis.axisLabel
-          : {}
-      ),
-    },
+    axisLabel: formatoPadraoDeEtiquetaDeEixo,
   },
-});
+}, opcoes));
 
 const el = ref(null);
 const elementoPainelFlutuante = ref<HTMLElement | null>(null);
@@ -179,6 +158,7 @@ const preparedOptions = computed((): ECBasicOption => {
               </div>
             `;
           }
+
           default:
             return `
               <div style="color: ${params.color}" class="painel-flutuante__conteudo">
