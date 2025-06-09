@@ -471,8 +471,9 @@ watch(
                   Status
                 </dt>
                 <dd
+                  class="painel-flutuante__item-com-legenda"
                   :style="{
-                    '--statusColor': projectStatuses[dados.projeto_status]?.cor,
+                    '--cor-da-legenda': projectStatuses[dados.projeto_status]?.cor,
                   }"
                 >
                   {{ projectStatuses[dados.projeto_status]?.nome || dados.projeto_status }}
@@ -688,26 +689,5 @@ watch(
 
 :deep(.camada) {
   mix-blend-mode: multiply;
-}
-
-.painel-flutuante__status dd {
-  border-radius: 4px 8px 8px 4px;
-  position: relative;
-  background-color: color-mix(in srgb, var(--statusColor, @cinza-medio) 15%, transparent);
-  padding-left: calc(0.25em + 8px);
-  padding-right: 0.25em;
-
-  &::before {
-    color: var(--statusColor, @cinza-medio);
-    content: '';
-    width: 8px;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    position: absolute;
-    background-color: currentColor;
-    display: block;
-    border-radius: 8px;
-  }
 }
 </style>

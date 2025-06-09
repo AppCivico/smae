@@ -127,3 +127,24 @@
     align-self: start;
   }
 }
+
+.painel-flutuante__item-com-legenda {
+  border-radius: 4px 8px 8px 4px;
+  position: relative;
+  background-color: color-mix(in srgb, var(--cor-da-legenda, @cinza-medio) 15%, transparent);
+  padding-left: calc(0.25em + 8px);
+  padding-right: 0.25em;
+
+  &::before {
+    color: var(--cor-da-legenda, @cinza-medio);
+    content: '';
+    min-width: 8px;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    position: absolute;
+    background-color: currentColor;
+    display: block;
+    border-radius: 8px;
+  }
+}
