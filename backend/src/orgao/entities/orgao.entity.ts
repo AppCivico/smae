@@ -14,7 +14,7 @@ export class OrgaoDto {
     tipo_orgao?: TipoOrgao;
 }
 
-export class OrgaoResumo {
+export class OrgaoReduzidoDto {
     id: number;
     sigla: string | null;
     descricao: string;
