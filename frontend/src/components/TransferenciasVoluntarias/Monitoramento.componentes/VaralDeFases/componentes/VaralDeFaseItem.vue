@@ -1,4 +1,7 @@
 <script lang="ts" setup>
+import { ref } from 'vue';
+import EdicaoTarefaComCronogramaModal, { type EdicaoTarefaComCronogramaModalExposed } from './EdicaoTarefaComCronogramaModal.vue';
+
 export type VaralDeItemProps = {
   titulo: string,
   duracao?: number,
@@ -18,7 +21,19 @@ type Props = VaralDeItemProps & {
   largo?: boolean
 };
 
+type Emits = {
+  editar(faseMaeId: string, tarefa: VaralDeItemProps): void
+};
+
 const props = defineProps<Props>();
+const emit = defineEmits<Emits>();
+
+const edicaoModal = ref<EdicaoTarefaComCronogramaModalExposed | undefined>();
+
+function handleEditar() {
+  console.log(props, edicaoModal.value?.abrirModalFase);
+}
+
 </script>
 
 <template>
@@ -97,12 +112,15 @@ const props = defineProps<Props>();
           <button
             class="varal-de-fase-item__botao"
             type="button"
+            @click="handleEditar"
           >
             Editar
           </button>
         </div>
       </div>
     </section>
+
+    <!-- <pre>{{ $props.tarefas }}</pre> -->
 
     <div
       v-if="$props.tarefas?.length"
@@ -119,8 +137,14 @@ const props = defineProps<Props>();
         :pendente="!tarefa.andamento.concluida"
         :largo="$props.largo"
       />
+      <!-- @editar="" -->
     </div>
   </article>
+
+  <EdicaoTarefaComCronogramaModal
+    ref="edicaoModal"
+    v-bind="$props"
+  />
 </template>
 
 <style lang="less" scoped>
@@ -129,6 +153,7 @@ const props = defineProps<Props>();
 @grupo-minimo: 540px;
 
 .varal-de-fase-item__raiz {
+  position: relative;
   width: 100%;
   min-width: 235px;
 }
@@ -192,7 +217,7 @@ const props = defineProps<Props>();
 
 .varal-de-fase-item__titulo-situacao  {
   display: block;
-  width: 0.5rem;
+  min-width: 0.5rem;
   height: 0.5rem;
   background-color: #005C8A;
   border-radius: 999px;

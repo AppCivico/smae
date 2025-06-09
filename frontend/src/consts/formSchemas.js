@@ -714,7 +714,7 @@ export const fase = object()
     inicio_real: string()
       .nullable()
       .matches(regEx['day/month/year'], 'Formato inválido')
-      .label('Início real'),
+      .label('xInício real'),
     ordem: string()
       .nullable()
       .label('Ordem'),
@@ -4421,4 +4421,24 @@ export const alteracaoEmLoteNovoFiltro = object().shape({
   status: number().label('Status da obra').nullableOuVazio(),
   regioes: number().label('Subprefeitura').nullableOuVazio(),
   tipo_intervencao_id: number().label('Tipo de obra').nullableOuVazio(),
+});
+
+export const EdicaoTarefaComCronograma = object().shape({
+  inicio_real: date()
+    .label('Previsão Início')
+    .required(),
+  orgao_id: string()
+    .label('Órgão Responsável')
+    .required(),
+  percentual_concluido: number()
+    .label('Percentual concluído')
+    .min(0)
+    .max(100)
+    .required(),
+  recursos: string()
+    .label('Responsável pela atividade')
+    .required(),
+  termino_real: date()
+    .label('Previsão Término')
+    .required(),
 });
