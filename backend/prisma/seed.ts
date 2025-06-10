@@ -17,6 +17,7 @@ import {
     CONST_VAR_SEM_UN_MEDIDA,
     CONST_PERFIL_PARTICIPANTE_EQUIPE,
     CONST_PERFIL_PARTICIPANTE_EQUIPE_PDM,
+    CONST_PERFIL_CASA_CIVIL,
 } from '../src/common/consts';
 import { JOB_LOCK_NUMBER } from '../src/common/dto/locks';
 const prisma = new PrismaClient({ log: ['query'] });
@@ -1109,7 +1110,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
         privilegios: ['SMAE.acesso_telefone'],
     },
     {
-        nome: atualizarNomePerfil('Gestor(a) Transferências Voluntárias', [
+        nome: atualizarNomePerfil(CONST_PERFIL_CASA_CIVIL, [
             'Gestor Transferências Voluntárias',
             'Gestor Casa Civil',
         ]),

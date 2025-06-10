@@ -13,7 +13,7 @@ import { DateTime } from 'luxon';
 import { uuidv7 } from 'uuidv7';
 import { BlocoNotaService } from '../bloco-nota/bloco-nota/bloco-nota.service';
 import { NotaService } from '../bloco-nota/nota/nota.service';
-import { CONST_BOT_USER_ID, CONST_TIPO_NOTA_TRANSF_GOV } from '../common/consts';
+import { CONST_BOT_USER_ID, CONST_PERFIL_CASA_CIVIL, CONST_TIPO_NOTA_TRANSF_GOV } from '../common/consts';
 import { Date2YMD, SYSTEM_TIMEZONE } from '../common/date2ymd';
 import { JOB_TRANSFERE_GOV_LOCK } from '../common/dto/locks';
 import { PaginatedDto, PAGINATION_TOKEN_TTL } from '../common/dto/paginated.dto';
@@ -448,7 +448,7 @@ export class TransfereGovSyncService {
                 PessoaPerfil: {
                     some: {
                         perfil_acesso: {
-                            nome: 'Gestor Casa Civil',
+                            nome: CONST_PERFIL_CASA_CIVIL,
                         },
                     },
                 },
