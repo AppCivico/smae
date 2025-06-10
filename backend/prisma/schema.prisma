@@ -7400,6 +7400,7 @@ enum TransfereGovOportunidadeTipo {
     Voluntaria
     Especifica
     Emenda
+    Especial
 }
 
 enum TransfereGovOportunidadeAvaliacao {
@@ -7416,15 +7417,16 @@ model TransfereGovOportunidade {
     id_programa                BigInt
     natureza_juridica_programa String
     transferencia_incorporada  Boolean                            @default(false)
-    cod_orgao_sup_programa     BigInt
-    desc_orgao_sup_programa    String
+    cod_orgao_sup_programa     BigInt?
+    desc_orgao_sup_programa    String?
     cod_programa               BigInt
     nome_programa              String
     sit_programa               String
-    ano_disponibilizacao       Int
-    data_disponibilizacao      DateTime                           @db.Date()
-    dt_ini_receb               DateTime                           @db.Date()
-    dt_fim_receb               DateTime                           @db.Date()
+    ano_disponibilizacao       Int?
+    data_disponibilizacao      DateTime?                          @db.Date()
+    dt_ini_receb               DateTime?                          @db.Date()
+    dt_fim_receb               DateTime?                          @db.Date()
+    finalidades                String?
     modalidade_programa        String
     acao_orcamentaria          String
     vetores_busca              Unsupported("tsvector")?           @default(dbgenerated())
@@ -7774,24 +7776,23 @@ model AtualizacaoEmLote {
 }
 
 model ApiRequestLogControl {
-    log_date        DateTime            @id @db.Date
+    log_date        DateTime                   @id @db.Date
     status          ApiRequestLogControlStatus
     task_id         Int?
     backup_location String?
     last_error      String?
-    created_at      DateTime            @default(now())
-    updated_at      DateTime            @updatedAt
+    created_at      DateTime                   @default(now())
+    updated_at      DateTime                   @updatedAt
 
     @@map("api_request_log_control")
 }
 
 enum ApiRequestLogControlStatus {
-  AWAITING_BACKUP
-  BACKING_UP
-  BACKED_UP
-  RESTORING
-  RESTORED
-  FAILED_BACKUP
-  FAILED_RESTORE
+    AWAITING_BACKUP
+    BACKING_UP
+    BACKED_UP
+    RESTORING
+    RESTORED
+    FAILED_BACKUP
+    FAILED_RESTORE
 }
-

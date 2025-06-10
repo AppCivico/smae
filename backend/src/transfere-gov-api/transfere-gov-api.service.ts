@@ -362,6 +362,7 @@ export class TransfereGovApiOportunidadesApiService implements OnModuleInit {
     private readonly logger = new Logger(TransfereGovApiOportunidadesApiService.name);
     private API_PREFIX: string;
     private PAGE_SIZE: number;
+    private ID_FILTRO: string;
 
     constructor(private readonly configService: SmaeConfigService) {}
 
@@ -371,6 +372,10 @@ export class TransfereGovApiOportunidadesApiService implements OnModuleInit {
             'http://localhost:8000/'
         );
         this.PAGE_SIZE = await this.configService.getConfigWithDefault('TRANSFEREGOV_API_OPORTUNIDADES_PAGE_SIZE', 100);
+        this.ID_FILTRO = await this.configService.getConfigWithDefault(
+            'TRANSFEREGOV_API_OPORTUNIDADES_ID_BENEFICIARIO',
+            '3445' // esse ID representa a cidade de São Paulo
+        );
 
         this.got = got.extend({
             prefixUrl: this.API_PREFIX,
@@ -389,22 +394,22 @@ export class TransfereGovApiOportunidadesApiService implements OnModuleInit {
      * @param idBeneficiario O ID do beneficiário para consulta.
      * @returns Uma promise que resolve para um array de todos os planos de ação detalhados.
      */
-    async getPlanosAcaoDetalhados(idBeneficiario: string): Promise<PlanoAcaoDetalhado[]> {
+    async getPlanosAcaoDetalhados(): Promise<PlanoAcaoDetalhado[]> {
         const allPlanos: PlanoAcaoDetalhado[] = [];
         let skip = 0;
         let hasMore = true;
 
         const endpoint = 'planos-acao-detailed/beneficiario/';
-
+        const id_beneficiario = this.ID_FILTRO;
         while (hasMore) {
             this.logger.debug(
-                `Chamando GET ${endpoint} - idBeneficiario: ${idBeneficiario}, skip: ${skip}, limit: ${this.PAGE_SIZE}`
+                `Chamando GET ${endpoint} - idBeneficiario: ${id_beneficiario}, skip: ${skip}, limit: ${this.PAGE_SIZE}`
             );
 
             try {
                 // Construir a URL com os parâmetros de consulta
                 const searchParams = new URLSearchParams({
-                    id_beneficiario: idBeneficiario,
+                    id_beneficiario: id_beneficiario,
                     skip: skip.toString(),
                     limit: this.PAGE_SIZE.toString(),
                 });
@@ -452,7 +457,7 @@ export class TransfereGovApiOportunidadesApiService implements OnModuleInit {
         }
 
         this.logger.log(
-            `Total de ${allPlanos.length} planos de ação detalhados obtidos para o beneficiário ${idBeneficiario}.`
+            `Total de ${allPlanos.length} planos de ação detalhados obtidos para o beneficiário ${id_beneficiario}.`
         );
         return allPlanos;
     }
