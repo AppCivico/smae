@@ -47,7 +47,11 @@ onMounted(() => {
         <div
           :class="[
             'item-contador',
-            {'item-contador--atual': faseObjeto.andamento.atual},
+            { 'item-contador--atual': faseObjeto.andamento.atual },
+            {
+              'item-contador--bloqueado':
+                !faseObjeto.andamento?.pode_concluir && !faseObjeto.andamento?.concluida
+            },
           ]"
         >
           {{ `${faseIndex+1}`.padStart(2, '0') }}
@@ -60,6 +64,8 @@ onMounted(() => {
           </div>
         </div>
 
+        <!-- <pre>{{ faseObjeto.andamento }}</pre> -->
+
         <VaralDeFaseItem
           :id="faseObjeto.id"
           class="fase-item__card"
@@ -68,8 +74,10 @@ onMounted(() => {
           :situacao="faseObjeto.andamento?.situacao?.tipo_situacao"
           :responsavel="faseObjeto.andamento?.orgao_responsavel"
           :tarefas="faseObjeto.tarefas"
-          :pendente="!faseObjeto.andamento?.concluida"
           :atual="faseObjeto.andamento.atual"
+          :concluida="faseObjeto.andamento?.concluida"
+          :pode-concluir="faseObjeto.andamento?.pode_concluir"
+          :bloqueado="!faseObjeto.andamento?.pode_concluir && !faseObjeto.andamento?.concluida"
           :largo="tamanhoLargo"
         />
       </div>
@@ -130,6 +138,10 @@ onMounted(() => {
   background-color: #F7C234;
 }
 
+.item-contador--bloqueado {
+  background-color: #C8C8C8;
+}
+
 @container (width > @tamanho-largo) {
   .varal-de-fases__lista {
     flex-direction: row;
@@ -174,9 +186,11 @@ onMounted(() => {
     }
   }
 
-    .item-contador__fase-atual {
-      position: absolute;
-      color: #F7C234;
-      bottom: calc(100% + 25px);
-    }
-}</style>
+  .item-contador__fase-atual {
+    position: absolute;
+    color: #F7C234;
+    bottom: calc(100% + 25px);
+    text-wrap: nowrap;
+  }
+}
+</style>

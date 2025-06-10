@@ -1,15 +1,16 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue';
 import { ErrorMessage, Field, useForm } from 'vee-validate';
-import SmallModal from '@/components/SmallModal.vue';
+import dateToDate from '@/helpers/dateToDate';
 import {
   EdicaoTransferenciaFase,
   EdicaoTransferenciaFaseTarefa,
 } from '@/consts/formSchemas';
 
 import { useTarefasStore } from '@/stores/tarefas.store';
+import SmallModal from '@/components/SmallModal.vue';
 
-const { tarefaStore } = useTarefasStore();
+const tarefaStore = useTarefasStore();
 
 const modalEdicaoFase = ref<boolean>(false);
 const tipoFase = ref<'tarefa' | 'fase' | undefined>(undefined);
@@ -69,9 +70,18 @@ defineExpose<EdicaoTarefaComCronogramaModalExposed>({
 });
 
 const onSubmit = handleSubmit((valoresControlados) => {
-  console.log('submit', valoresControlados);
+  let dadosControlados = { ...valoresControlados };
 
-  // tarefaStore.salvarItem()
+  if (valoresControlados.concluido) {
+    dadosControlados = {
+      ...dadosControlados,
+      data_conclusao: dateToDate(new Date()),
+    };
+  }
+
+  console.log(dadosControlados);
+
+  // tarefaStore.salvarItem();
 });
 </script>
 
