@@ -203,7 +203,7 @@ function ajusteBruto(campoValorBruto) {
     return;
   }
 
-  porcentagens.value[campoValorBruto] = valorPercentual.toNumber();
+  porcentagens.value[campoValorBruto] = valorPercentual.round(2, Big.roundHalfUp).toNumber();
 }
 
 function ajustePercentual(campoValorBruto) {
