@@ -389,7 +389,9 @@ export class TransfereGovSyncService {
 
                 if (!transferenciasExistentes.find((t) => t.hash === transformedOportunidade.hash)) {
                     newItems.push(result);
-                    novasTransferencias.push(result.nome_programa);
+                    novasTransferencias.push(
+                        (result.nome_programa || (result.finalidades ?? '')) + ' - ' + result.tipo
+                    );
                 }
             } catch (error) {
                 this.logger.error(`Erro ao atualizar oportunidades: ${error.message}`);
