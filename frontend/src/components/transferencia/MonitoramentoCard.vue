@@ -13,17 +13,28 @@ const props = defineProps({
 const status = computed(() => {
   const historicoStatus = props.recurso.historico_status;
   if (!historicoStatus || historicoStatus.length === 0) return '';
-  return historicoStatus[0].status_customizado?.tipo || '';
+
+  return historicoStatus[0].status_customizado?.tipo
+    || historicoStatus[0].status_base?.tipo
+    || '';
 });
+
+const statusFinalizada = new Set(['ConcluidoComSucesso', 'EncerradoSemSucesso']);
+const statusCancelada = new Set(['Terminal', 'Cancelada']);
+
+const classeDoStatus = computed(() => {
+  if (statusFinalizada.has(status.value)) return 'card-monitoramento--finalizada';
+  if (statusCancelada.has(status.value)) return 'card-monitoramento--cancelada';
+  return 'card-monitoramento--em-curso';
+});
+
 </script>
 <template>
   <article
     class="card-monitoramento"
-    :class="{
-      'card-monitoramento--finalizada': status === 'Finalizado',
-      'card-monitoramento--em-curso': status === 'EmAndamento',
-    }"
+    :class="classeDoStatus"
   >
+    status: {{ status }}
     <dl>
       <div class="card-monitoramento__dl-group">
         <dt class="t13 w300">
@@ -102,7 +113,7 @@ const status = computed(() => {
 </template>
 <style scoped>
 .card-monitoramento {
-  --cor-de-tema: #ee3b2b;
+  --cor-de-tema: #ffda00;
 
   position: relative;
   display: flex;
@@ -137,11 +148,15 @@ const status = computed(() => {
 }
 
 .card-monitoramento--finalizada {
-  --cor-de-tema: #7a7a7a;
+  --cor-de-tema: #00b300;
 }
 
 .card-monitoramento--em-curso {
   --cor-de-tema: #ffda00;
+}
+
+.card-monitoramento--cancelada {
+  --cor-de-tema: #ee3b2b;
 }
 
 .card-monitoramento__dl-group {
