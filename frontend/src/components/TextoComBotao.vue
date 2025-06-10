@@ -12,14 +12,12 @@
 .texto-com-botao {
   display: flex;
   flex-wrap: wrap;
-  grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 1.5rem;
 
   &::after {
     content: '';
     flex-grow: 1;
-    /* width: 100%; */
     min-width: 2rem;
     height: 2px;
     background-color: @cinza-claro;
