@@ -397,12 +397,11 @@ export class DashTransferenciaService {
                         const etapaId = curr.workflow_etapa_atual_id!;
 
                         // Distribuição pode ter múltiplos parlamentares, e com partidos diferentes ou iguais.
-                        const valor = Number(
-                            curr.transferencia.parlamentar
-                                .filter((p) => p.partido?.id == partido.id)
-                                .reduce((sum, current) => sum + (Number(current.valor) ?? 0), 0)
-                        );
-                        if (!valor)
+                        const valor = curr.transferencia.parlamentar
+                            .filter((p) => p.partido?.id == partido.id)
+                            .reduce((sum, current) => sum.add(current.valor ?? Decimal(0)), Decimal(0));
+
+                        if (Number.isNaN(valor) || valor === undefined || valor === null)
                             throw new InternalServerErrorException(
                                 'Valor não encontrado para o partido: ' + partido.sigla
                             );
@@ -410,9 +409,9 @@ export class DashTransferenciaService {
                         const existingObjIndex = acc.findIndex((obj) => obj.workflow_etapa_atual_id === etapaId);
 
                         if (existingObjIndex !== -1) {
-                            acc[existingObjIndex].sum += valor;
+                            acc[existingObjIndex].sum += Number(valor);
                         } else {
-                            acc.push({ workflow_etapa_atual_id: etapaId, sum: valor });
+                            acc.push({ workflow_etapa_atual_id: etapaId, sum: Number(valor) });
                         }
                         return acc;
                     },
@@ -671,7 +670,6 @@ export class DashTransferenciaService {
                   };
               })
             : [];
-
 
         const chartValPorOrgao: DashTransferenciaBasicChartDto = {
             title: {
