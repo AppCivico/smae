@@ -82,9 +82,9 @@ const isSomaCorreta = computed(() => {
 const calcularValorCusteio = (fieldName) => {
   const valor = Big(values.valor || 0);
   const custeio = Big(values.custeio || 0);
-  const percentagemCusteio = Big(values.percentagem_custeio || 0);
+  const percentagemCusteio = Big(values.pct_custeio || 0);
 
-  if (fieldName === 'percentagem_custeio' || fieldName === 'valor') {
+  if (fieldName === 'pct_custeio' || fieldName === 'valor') {
     const valorArredondado = valor
       .times(percentagemCusteio).div(100).round(2, Big.roundHalfUp);
     setFieldValue('custeio', valorArredondado.toString());
@@ -92,8 +92,8 @@ const calcularValorCusteio = (fieldName) => {
     const porcentagemCusteio = valor.eq(0)
       ? Big(0)
       : custeio.div(valor).times(100);
-    setFieldValue('percentagem_custeio', porcentagemCusteio.toFixed(2));
-    setFieldValue('percentagem_investimento', Big(100).minus(porcentagemCusteio).toFixed(2));
+    setFieldValue('pct_custeio', porcentagemCusteio.toFixed(2));
+    setFieldValue('pct_investimento', Big(100).minus(porcentagemCusteio).toFixed(2));
   }
 };
 
@@ -101,9 +101,9 @@ const calcularValorInvestimento = (fieldName) => {
   const valor = Big(values.valor || 0);
   const investimento = Big(values.investimento || 0);
   const custeio = Big(values.custeio || 0);
-  const percentagemInvestimento = Big(values.percentagem_investimento || 0);
+  const percentagemInvestimento = Big(values.pct_investimento || 0);
 
-  if (fieldName === 'percentagem_investimento' || fieldName === 'valor') {
+  if (fieldName === 'pct_investimento' || fieldName === 'valor') {
     const investimentoCalculado = custeio.gt(0)
       ? valor.minus(custeio)
       : valor.times(percentagemInvestimento).div(100);
@@ -115,14 +115,14 @@ const calcularValorInvestimento = (fieldName) => {
     const pct = valor.eq(0)
       ? Big(0)
       : investimentoFinal.div(valor).times(100);
-    setFieldValue('percentagem_investimento', pct.toFixed(2));
-    setFieldValue('percentagem_custeio', Big(100).minus(pct).toFixed(2));
+    setFieldValue('pct_investimento', pct.toFixed(2));
+    setFieldValue('pct_custeio', Big(100).minus(pct).toFixed(2));
   } else if (fieldName === 'investimento') {
     const porcentagemInvestimento = valor.eq(0)
       ? 0
       : investimento.div(valor).times(100);
-    setFieldValue('percentagem_investimento', porcentagemInvestimento.toFixed(2));
-    setFieldValue('percentagem_custeio', Big(100).minus(porcentagemInvestimento).toFixed(2));
+    setFieldValue('pct_investimento', porcentagemInvestimento.toFixed(2));
+    setFieldValue('pct_custeio', Big(100).minus(porcentagemInvestimento).toFixed(2));
   }
 };
 
@@ -224,20 +224,20 @@ watch(itemParaEdicao, async (novosValores) => {
       <div class="flex f1 g2 center">
         <div class="fb20em">
           <LabelFromYup
-            name="percentagem_investimento"
+            name="pct_investimento"
             :schema="schema"
           />
           <MaskedFloatInput
-            name="percentagem_custeio"
+            name="pct_custeio"
             type="text"
             class="inputtext light"
-            :value="values.percentagem_custeio"
+            :value="values.pct_custeio"
             converter-para="string"
             :max="100"
             maxlength="6"
             @update:model-value="(newValue) => {
-              setFieldValue('percentagem_custeio', newValue);
-              calcularValorCusteio('percentagem_custeio');
+              setFieldValue('pct_custeio', newValue);
+              calcularValorCusteio('pct_custeio');
             }"
           />
         </div>
@@ -272,20 +272,20 @@ watch(itemParaEdicao, async (novosValores) => {
       <div class="flex f1 g2 center">
         <div class="fb20em">
           <LabelFromYup
-            name="percentagem_investimento"
+            name="pct_investimento"
             :schema="schema"
           />
           <MaskedFloatInput
-            name="percentagem_investimento"
+            name="pct_investimento"
             type="text"
             class="inputtext light"
-            :value="values.percentagem_investimento"
+            :value="values.pct_investimento"
             converter-para="string"
             :max="100"
             maxlength="6"
             @update:model-value="(newValue) => {
-              setFieldValue('percentagem_investimento', newValue);
-              calcularValorInvestimento('percentagem_investimento');
+              setFieldValue('pct_investimento', newValue);
+              calcularValorInvestimento('pct_investimento');
             }"
           />
         </div>
