@@ -33,17 +33,17 @@ parlamentarStore.buscarTudo();
 
 </script>
 <template>
-  <div class="flex spacebetween center mb2">
-    <h1>{{ route?.meta?.título || 'Lista de Parlamentares' }}</h1>
-    <hr class="ml2 f1">
-    <router-link
-      v-if="authStore.temPermissãoPara('CadastroParlamentar.inserir')"
-      :to="{name: 'parlamentaresCriar'}"
-      class="btn big ml1"
-    >
-      Novo parlamentar
-    </router-link>
-  </div>
+  <CabecalhoDePagina>
+    <template #acoes>
+      <SmaeLink
+        v-if="authStore.temPermissãoPara('CadastroParlamentar.inserir')"
+        :to="{ name: 'parlamentaresCriar' }"
+        class="btn big ml1"
+      >
+        Novo parlamentar
+      </SmaeLink>
+    </template>
+  </CabecalhoDePagina>
 
   <div class="flex center mb2 spacebetween">
     <LocalFilter
