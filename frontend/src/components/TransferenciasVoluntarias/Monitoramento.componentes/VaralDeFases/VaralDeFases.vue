@@ -23,6 +23,10 @@ useResizeObserver(varalDeFasesEl, debounce(async ([ev]) => {
 
 onMounted(() => {
   workflowAndamentoStore.buscar();
+
+  setTimeout(() => {
+    console.log(etapaCorrente.value);
+  }, 2000);
 });
 </script>
 
@@ -43,13 +47,13 @@ onMounted(() => {
         <div
           :class="[
             'item-contador',
-            {'item-contador--atual': faseIndex === etapaCorrente.fases.length -1},
+            {'item-contador--atual': faseObjeto.andamento.atual},
           ]"
         >
           {{ `${faseIndex+1}`.padStart(2, '0') }}
 
           <div
-            v-if="tamanhoLargo && faseIndex === etapaCorrente.fases.length -1"
+            v-if="tamanhoLargo && faseObjeto.andamento.atual"
             class="item-contador__fase-atual smae-tooltip"
           >
             <span class="smae-tooltip__conteudo">Fase atual</span>
@@ -57,14 +61,15 @@ onMounted(() => {
         </div>
 
         <VaralDeFaseItem
+          :id="faseObjeto.id"
           class="fase-item__card"
           :titulo="faseObjeto.fase.fase"
           :duracao="faseObjeto.duracao"
           :situacao="faseObjeto.andamento?.situacao?.tipo_situacao"
-          :responsavel="faseObjeto.andamento?.orgao_responsavel.sigla"
+          :responsavel="faseObjeto.andamento?.orgao_responsavel"
           :tarefas="faseObjeto.tarefas"
           :pendente="!faseObjeto.andamento?.concluida"
-          :atual="faseIndex === etapaCorrente.fases.length - 1"
+          :atual="faseObjeto.andamento.atual"
           :largo="tamanhoLargo"
         />
       </div>

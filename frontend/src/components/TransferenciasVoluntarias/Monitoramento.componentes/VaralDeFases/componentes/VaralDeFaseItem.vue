@@ -3,6 +3,8 @@ import { ref } from 'vue';
 import EdicaoTarefaComCronogramaModal, { type EdicaoTarefaComCronogramaModalExposed } from './EdicaoTarefaComCronogramaModal.vue';
 
 export type VaralDeItemProps = {
+  id: number,
+  faseMaeId?: number,
   titulo: string,
   duracao?: number,
   responsavel?: {
@@ -21,17 +23,18 @@ type Props = VaralDeItemProps & {
   largo?: boolean
 };
 
-type Emits = {
-  editar(faseMaeId: string, tarefa: VaralDeItemProps): void
-};
-
 const props = defineProps<Props>();
-const emit = defineEmits<Emits>();
 
 const edicaoModal = ref<EdicaoTarefaComCronogramaModalExposed | undefined>();
 
 function handleEditar() {
-  console.log(props, edicaoModal.value?.abrirModalFase);
+  edicaoModal.value?.abrirModalFase({
+    id: props.id,
+    faseMaeId: props.faseMaeId,
+    secundario: props.secundario,
+    orgao_responsavel: props.responsavel,
+    situacao: props.situacao,
+  });
 }
 
 </script>
@@ -42,12 +45,11 @@ function handleEditar() {
       'varal-de-fase-item__raiz'
     ]"
   >
-    <!-- atual == true -->
     <section
       :class="[
         'varal-de-fase-item',
         {'varal-de-fase-item--largo': $props.largo},
-        { 'varal-de-fase-item--pendente': $props.pendente },
+        { 'varal-de-fase-item--pendente': $props.pendente && $props.atual },
         { 'varal-de-fase-item--secundario': $props.secundario },
       ]"
     >
@@ -120,24 +122,23 @@ function handleEditar() {
       </div>
     </section>
 
-    <!-- <pre>{{ $props.tarefas }}</pre> -->
-
     <div
       v-if="$props.tarefas?.length"
       class="varal-de-fase-item__tarefas"
     >
       <VaralDeFaseItem
         v-for="(tarefa, tarefaIndex) in $props.tarefas"
+        :id="tarefa.tarefa_cronograma_id || tarefa.id"
         :key="`fase--${tarefaIndex}`"
+        :fase-mae-id="$props.id"
         class="varal-de-fase-item__tarefa-item"
         secundario
         :titulo="tarefa.workflow_tarefa?.descricao"
-        :situacao="tarefa.tipo_situacao || '-'"
-        :responsavel="tarefa.andamento.orgao_responsavel || '-'"
-        :pendente="!tarefa.andamento.concluida"
+        :situacao="tarefa.tipo_situacao"
+        :responsavel="tarefa.andamento.orgao_responsavel"
+        :pendente="tarefa.andamento.necessita_preencher_orgao"
         :largo="$props.largo"
       />
-      <!-- @editar="" -->
     </div>
   </article>
 
