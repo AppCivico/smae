@@ -31,7 +31,7 @@ function abrirConfigurarWorkflow() {
   configurarWorkflow.value = true;
 }
 
-function rabrirFase() {
+function reabrirFase() {
   alertStore.confirmAction('Tem certeza?', async () => {
     if (await workflowAndamento.reabrirFase()) {
       await workflowAndamento.buscar();
@@ -304,7 +304,7 @@ function formatarTexto(texto) {
           v-if="workflow?.pode_reabrir_fase"
           type="button"
           class="btn mr1"
-          @click="rabrirFase()"
+          @click="reabrirFase()"
         >
           reabrir fase
         </button>
