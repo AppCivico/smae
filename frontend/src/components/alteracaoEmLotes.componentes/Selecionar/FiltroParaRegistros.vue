@@ -186,7 +186,7 @@ onMounted(() => {
       @filtro="limparSelecao"
     />
 
-    <div :class="{'filtro-sujo': formularioSujo}">
+    <div :class="{ 'dependente-de-filtro-sujo': formularioSujo }">
       <slot />
     </div>
   </section>
