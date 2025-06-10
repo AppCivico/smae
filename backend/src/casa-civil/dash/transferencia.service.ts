@@ -402,7 +402,7 @@ export class DashTransferenciaService {
                                 .filter((p) => p.partido?.id == partido.id)
                                 .reduce((sum, current) => sum + (Number(current.valor) ?? 0), 0)
                         );
-                        if (!valor)
+                        if (isNaN(valor))
                             throw new InternalServerErrorException(
                                 'Valor não encontrado para o partido: ' + partido.sigla
                             );
