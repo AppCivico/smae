@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watchEffect } from 'vue';
+import { ref, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useAuthStore } from '@/stores/auth.store';
 import { useAlertStore } from '@/stores/alert.store';
@@ -25,9 +25,13 @@ const {
 const configurarWorkflow = ref(false);
 const tabRefs = ref([]);
 
-watchEffect(() => {
-  tabRefs.value = [];
-});
+watch(
+  () => workflow.value?.fluxo?.length,
+  () => {
+    tabRefs.value = [];
+  },
+  { immediate: true },
+);
 
 function setTabRef(el) {
   if (el && !tabRefs.value.includes(el)) {
