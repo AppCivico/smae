@@ -56,6 +56,7 @@ import { ArquivoBaseDto } from '../../upload/dto/create-upload.dto';
 import { UpdateTarefaDto } from '../tarefa/dto/update-tarefa.dto';
 import { TarefaService } from '../tarefa/tarefa.service';
 import { SmaeConfigService } from 'src/common/services/smae-config.service';
+import { CONST_PERFIL_COLAB_OBRA_NO_ORGAO, CONST_PERFIL_GESTOR_OBRA } from '../../common/consts';
 
 const FASES_PLANEJAMENTO_E_ANTERIORES: ProjetoStatus[] = ['Registrado', 'Selecionado', 'EmPlanejamento'];
 const StatusParaFase: Record<ProjetoStatus, ProjetoFase> = {
@@ -504,10 +505,7 @@ export class ProjetoService {
                 return null;
             });
             if (orgaoGestor.length > 1)
-                throw new HttpException(
-                    `responsaveis_no_orgao_gestor| Mais de um orgão encontrado entre os responsáveis`,
-                    400
-                );
+                throw new HttpException(`Mais de um órgão encontrado entre os responsáveis`, 400);
 
             dto.orgao_gestor_id = responsaveis[0].orgao_id;
         }
@@ -526,9 +524,7 @@ export class ProjetoService {
             // se o banco ficou corrompido, não tem como o usuário arrumar
             if (portfolio.orgaos.map((r) => r.id).includes(orgao_gestor_id) == false)
                 throw new HttpException(
-                    `orgao_gestor_id| Órgão não faz parte do Portfolio (${portfolio.orgaos
-                        .map((r) => r.sigla)
-                        .join(', ')})`,
+                    `Órgão não faz parte do Portfolio (${portfolio.orgaos.map((r) => r.sigla).join(', ')})`,
                     400
                 );
 
@@ -542,16 +538,13 @@ export class ProjetoService {
                             },
                         },
                         perfil_acesso: {
-                            nome: 'Gestor(a) da Obra',
+                            nome: CONST_PERFIL_GESTOR_OBRA,
                         },
                     },
                 });
 
                 if (pessoasGestoras == 0)
-                    throw new HttpException(
-                        `orgao_gestor_id| Órgão não possui usuários com o perfil Gestor(a) da Obra`,
-                        400
-                    );
+                    throw new HttpException(`Órgão não possui usuários com o perfil ${CONST_PERFIL_GESTOR_OBRA}`, 400);
             }
         }
 
@@ -3916,7 +3909,7 @@ export class ProjetoService {
                     PessoaPerfil: {
                         some: {
                             perfil_acesso: {
-                                nome: 'Colaborador(a) de obra no órgão',
+                                nome: CONST_PERFIL_COLAB_OBRA_NO_ORGAO,
                             },
                         },
                     },
