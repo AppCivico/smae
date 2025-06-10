@@ -132,40 +132,52 @@ const isSomaCorreta = computed(() => {
 });
 
 function calcularValorCusteio(fieldName) {
-  const valor = parseFloat(values.valor) || 0;
-  const custeio = parseFloat(values.custeio) || 0;
-  const percentagemCusteio = parseFloat(values.percentagem_custeio) || 0;
+  const valor = Big(values.valor || 0);
+  const custeio = Big(values.custeio || 0);
+  const percentagemCusteio = Big(values.percentagem_custeio || 0);
 
   if (fieldName === 'percentagem_custeio' || fieldName === 'valor') {
-    const valorArredondado = new Big(valor)
+    const valorArredondado = valor
       .times(percentagemCusteio).div(100).round(2, Big.roundHalfUp);
     setFieldValue('custeio', valorArredondado.toString());
   } else if (fieldName === 'custeio') {
-    const porcentagemCusteio = ((custeio / valor) * 100);
+    const porcentagemCusteio = valor.eq(0)
+      ? 0
+      : custeio
+        .div(valor)
+        .times(100);
     setFieldValue('percentagem_custeio', porcentagemCusteio.toFixed(2));
-    setFieldValue('percentagem_investimento', (100 - porcentagemCusteio).toFixed(2));
+    setFieldValue('percentagem_investimento', Big(100).minus(porcentagemCusteio).toFixed(2));
   }
 }
 
 function calcularValorInvestimento(fieldName) {
-  const valor = parseFloat(values.valor) || 0;
-  const investimento = parseFloat(values.investimento) || 0;
-  const custeio = parseFloat(values.custeio) || 0;
-  const percentagemInvestimento = parseFloat(values.percentagem_investimento) || 0;
+  const valor = Big(values.valor || 0);
+  const investimento = Big(values.investimento || 0);
+  const custeio = Big(values.custeio || 0);
+  const percentagemInvestimento = Big(values.percentagem_investimento || 0);
 
   if (fieldName === 'percentagem_investimento' || fieldName === 'valor') {
-    const valorArredondado = new Big(valor)
-      .times(percentagemInvestimento).div(100).round(2);
-    let valorArredondadoConvertido = parseFloat(valorArredondado.toString());
-    if (custeio > 0) {
-      valorArredondadoConvertido = valor - custeio;
+    let valorArredondado = valor
+      .times(percentagemInvestimento)
+      .div(100)
+      .round(2, Big.roundHalfUp);
+
+    if (custeio.gt(0)) {
+      valorArredondado = valor.minus(custeio);
     }
-    const valorFinal = new Big(valorArredondadoConvertido).round(2, Big.roundHalfUp);
+    const valorFinal = valorArredondado.round(2, Big.roundHalfUp);
     setFieldValue('investimento', valorFinal.toString());
   } else if (fieldName === 'investimento') {
-    const porcentagemInvestimento = ((investimento / valor) * 100);
+    const porcentagemInvestimento = valor.eq(0)
+      ? 0
+      : investimento
+        .div(valor)
+        .times(100);
     setFieldValue('percentagem_investimento', porcentagemInvestimento.toFixed(2));
-    setFieldValue('percentagem_custeio', (100 - porcentagemInvestimento).toFixed(2));
+    setFieldValue('percentagem_custeio', Big(100)
+      .minus(porcentagemInvestimento)
+      .toFixed(2));
   }
 }
 
@@ -181,28 +193,32 @@ function atualizarValorTotal(fieldName, newValue) {
 }
 
 function ajusteBruto(campoValorBruto) {
-  const valorPercentual = (100 / values.valor) * values[campoValorBruto];
+  const valorPercentual = Big(values[campoValorBruto] || 0)
+    .div(values.valor || 1)
+    .times(100);
 
-  if (valorPercentual >= 100) {
+  if (valorPercentual.gte(100)) {
     setFieldValue(campoValorBruto, values.valor);
     porcentagens.value[campoValorBruto] = 100;
     return;
   }
 
-  porcentagens.value[campoValorBruto] = valorPercentual;
+  porcentagens.value[campoValorBruto] = valorPercentual.toNumber();
 }
 
 function ajustePercentual(campoValorBruto) {
-  const valorBruto = (values.valor / 100) * porcentagens.value[campoValorBruto];
+  const valorBruto = Big(values.valor || 0)
+    .times(porcentagens.value[campoValorBruto] || 0)
+    .div(100);
 
-  if (valorBruto >= values.valor) {
+  if (valorBruto.gte(Big(values.valor || 0))) {
     setFieldValue(campoValorBruto, values.valor.toString());
     porcentagens.value[campoValorBruto] = 100;
 
     return;
   }
 
-  setFieldValue(campoValorBruto, Number(valorBruto).toFixed(2));
+  setFieldValue(campoValorBruto, valorBruto.toFixed(2));
 }
 
 watch(itemParaEdicao, async () => {
