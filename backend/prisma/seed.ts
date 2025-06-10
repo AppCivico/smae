@@ -18,6 +18,8 @@ import {
     CONST_PERFIL_PARTICIPANTE_EQUIPE,
     CONST_PERFIL_PARTICIPANTE_EQUIPE_PDM,
     CONST_PERFIL_CASA_CIVIL,
+    CONST_PERFIL_COLAB_OBRA_NO_ORGAO,
+    CONST_PERFIL_GESTOR_OBRA,
 } from '../src/common/consts';
 import { JOB_LOCK_NUMBER } from '../src/common/dto/locks';
 const prisma = new PrismaClient({ log: ['query'] });
@@ -1020,7 +1022,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
         ],
     },
     {
-        nome: atualizarNomePerfil('Gestor(a) da Obra', ['Gestor da Obra']),
+        nome: atualizarNomePerfil(CONST_PERFIL_GESTOR_OBRA, ['Gestor da Obra']),
         descricao: 'Pode ser escolhido(a) como responsável no órgão gestor de MdO',
         privilegios: [
             'ProjetoTagMDO.inserir',
@@ -1049,7 +1051,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
         ],
     },
     {
-        nome: atualizarNomePerfil('Colaborador(a) de obra no órgão', ['Colaborador de obra no órgão']),
+        nome: atualizarNomePerfil(CONST_PERFIL_COLAB_OBRA_NO_ORGAO, ['Colaborador de obra no órgão']),
         descricao:
             'Pode ser escolhido(a) como responsável no órgão responsável pela obra e contribuir durante a fase de registro e planejamento, e dados de execução do cronograma e acompanhamento do risco',
         privilegios: [
@@ -1110,10 +1112,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
         privilegios: ['SMAE.acesso_telefone'],
     },
     {
-        nome: atualizarNomePerfil(CONST_PERFIL_CASA_CIVIL, [
-            'Gestor Transferências Voluntárias',
-            'Gestor Casa Civil',
-        ]),
+        nome: atualizarNomePerfil(CONST_PERFIL_CASA_CIVIL, ['Gestor Transferências Voluntárias', 'Gestor Casa Civil']),
         descricao: 'Pode gerir entidades em Casa Civil',
         privilegios: [
             //            'CadastroBancada.editar',
