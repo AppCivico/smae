@@ -171,8 +171,8 @@ services:
   smae_transferegov:
     container_name: "${API_CONTAINER_NAME}_transferegov"
     build:
-      context: ./backend-transfere-gov/
-      dockerfile: Dockerfile
+      context: ./
+      dockerfile: ./backend-transfere-gov/Dockerfile
     restart: unless-stopped
     networks:
       - smae_network
