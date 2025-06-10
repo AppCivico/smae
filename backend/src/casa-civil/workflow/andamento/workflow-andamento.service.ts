@@ -224,17 +224,23 @@ export class WorkflowAndamentoService {
                                 }
 
                                 const tarefasConfiguradas = await Promise.all(
-                                    fase.tarefas.map(async (tarefa) => {
-                                        return {
-                                            ...tarefa,
-                                            andamento: await this.getAndamentoTarefaRet(
-                                                fase.fase!.id,
-                                                transferencia.id,
-                                                tarefa.workflow_tarefa!.id,
-                                                transferencia.workflow_id!
-                                            ),
-                                        };
-                                    })
+                                    fase.tarefas
+                                        .filter((t) => {
+                                            // removendo tarefas que são de responsabilidade "Outro Órgão".
+                                            // pois elas irão vir do cronograma.
+                                            return t.responsabilidade != WorkflowResponsabilidade.OutroOrgao;
+                                        })
+                                        .map(async (tarefa) => {
+                                            return {
+                                                ...tarefa,
+                                                andamento: await this.getAndamentoTarefaRet(
+                                                    fase.fase!.id,
+                                                    transferencia.id,
+                                                    tarefa.workflow_tarefa!.id,
+                                                    transferencia.workflow_id!
+                                                ),
+                                            };
+                                        })
                                 );
 
                                 // Adicionando tarefas vindas do cronograma e ordenando.
