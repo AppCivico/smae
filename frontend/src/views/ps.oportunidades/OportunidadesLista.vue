@@ -98,11 +98,11 @@
       <col>
       <col>
       <col>
+      <col class="col--number">
       <col>
-      <col>
-      <col>
-      <col>
-      <col>
+      <col class="col--data">
+      <col class="col--data">
+      <col class="col--data">
       <col>
       <col>
       <col>
@@ -138,7 +138,10 @@
           Modalidade do programa
         </th>
         <th>
-          Ação Orçamentária
+          Ação orçamentária
+        </th>
+        <th>
+          Finalidades
         </th>
         <th>
           Avaliação
@@ -160,19 +163,19 @@
         <td>
           {{ item.nome_programa || ' - ' }}
         </td>
-        <td>
+        <td class="cell--number">
           {{ item.cod_programa || ' - ' }}
         </td>
         <td>
           {{ item.sit_programa || ' - ' }}
         </td>
-        <td>
+        <td class="cell--data">
           {{ dateToField(item.data_disponibilizacao) || ' - ' }}
         </td>
-        <td>
+        <td class="cell--data">
           {{ dateToField(item.dt_ini_receb) || ' - ' }}
         </td>
-        <td>
+        <td class="cell--data">
           {{ dateToField(item.dt_fim_receb) || ' - ' }}
         </td>
         <td>
@@ -180,6 +183,9 @@
         </td>
         <td>
           {{ item.acao_orcamentaria || ' - ' }}
+        </td>
+        <td>
+          {{ item.finalidades || ' - ' }}
         </td>
         <td>
           <span class="avaliacao">
