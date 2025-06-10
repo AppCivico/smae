@@ -267,13 +267,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="flex spacebetween center mt2">
-    <TítuloDePágina />
-
-    <hr class="ml2 f1">
-
-    <CheckClose :formulario-sujo="formularioSujo" />
-  </div>
+  <CabecalhoDePagina :formulario-sujo="formularioSujo" />
 
   <span
     v-if="chamadasPendentes?.emFoco"
