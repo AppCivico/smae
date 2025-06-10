@@ -64,21 +64,20 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- <pre>{{ faseObjeto.andamento }}</pre> -->
-
         <VaralDeFaseItem
-          :id="faseObjeto.id"
-          class="fase-item__card"
+          :id="faseObjeto.fase.id"
           :titulo="faseObjeto.fase.fase"
           :duracao="faseObjeto.duracao"
           :situacao="faseObjeto.andamento?.situacao?.tipo_situacao"
           :responsavel="faseObjeto.andamento?.orgao_responsavel"
           :tarefas="faseObjeto.tarefas"
+          :situacoes="faseObjeto.situacoes"
           :atual="faseObjeto.andamento.atual"
           :concluida="faseObjeto.andamento?.concluida"
           :pode-concluir="faseObjeto.andamento?.pode_concluir"
           :bloqueado="!faseObjeto.andamento?.pode_concluir && !faseObjeto.andamento?.concluida"
           :largo="tamanhoLargo"
+          tipo="fase"
         />
       </div>
     </div>

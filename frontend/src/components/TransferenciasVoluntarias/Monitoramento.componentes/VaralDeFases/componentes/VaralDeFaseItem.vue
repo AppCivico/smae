@@ -2,9 +2,18 @@
 import { ref } from 'vue';
 import EdicaoTarefaComCronogramaModal, { type EdicaoTarefaComCronogramaModalExposed } from './EdicaoTarefaComCronogramaModal.vue';
 
+export type FaseTipo = 'fase' | 'tarefa-cronograma' | 'tarefa-workflow';
+export type DadosTarefa = {
+  faseMaeId: number,
+  inicioReal?: string,
+};
+
 export type VaralDeItemProps = {
   id: number,
-  faseMaeId?: number,
+  dadosTarefa?: {
+    faseMaeId: number,
+    inicioReal?: string
+  },
   titulo: string,
   duracao?: number,
   responsavel?: {
@@ -12,12 +21,14 @@ export type VaralDeItemProps = {
     sigla: string,
     descricao: string,
   },
-  situacao: string,
+  situacao?: string,
   tarefas?: any[]
+  situacoes?: any[]
   atual?: boolean,
   concluida?: boolean,
   podeConcluir?: boolean,
   bloqueado?: boolean,
+  tipo: FaseTipo
 };
 
 type Props = VaralDeItemProps & {
@@ -32,10 +43,12 @@ const edicaoModal = ref<EdicaoTarefaComCronogramaModalExposed | undefined>();
 function handleEditar() {
   edicaoModal.value?.abrirModalFase({
     id: props.id,
-    faseMaeId: props.faseMaeId,
     secundario: props.secundario,
     orgao_responsavel: props.responsavel,
     situacao: props.situacao,
+    situacoes: props.situacoes,
+    tipo: props.tipo,
+    dadosTarefa: props.dadosTarefa,
   });
 }
 
@@ -47,18 +60,6 @@ function handleEditar() {
       'varal-de-fase-item__raiz'
     ]"
   >
-    <div>
-      <p>
-        podeConcluir: {{ $props.podeConcluir }}
-      </p>
-      <p>
-        concluida: {{ $props.concluida }}
-      </p>
-      <p>
-        atual: {{ $props.atual }}
-      </p>
-    </div>
-
     <section
       :class="[
         'varal-de-fase-item',
@@ -123,7 +124,7 @@ function handleEditar() {
         </dd>
 
         <div
-          v-if="$props.atual "
+          v-if="$props.atual || !$props.concluida || true"
           class="varal-de-fase-item__agrupador-botoes"
         >
           <button
@@ -141,20 +142,27 @@ function handleEditar() {
       v-if="$props.tarefas?.length"
       class="varal-de-fase-item__tarefas"
     >
-      <VaralDeFaseItem
+      <template
         v-for="(tarefa, tarefaIndex) in $props.tarefas"
-        :id="tarefa.tarefa_cronograma_id || tarefa.id"
         :key="`fase--${tarefaIndex}`"
-        :fase-mae-id="$props.id"
-        class="varal-de-fase-item__tarefa-item"
-        secundario
-        :titulo="tarefa.workflow_tarefa?.descricao"
-        :situacao="tarefa.tipo_situacao"
-        :responsavel="tarefa.andamento.orgao_responsavel"
-        :atual="$props.atual"
-        :bloqueado="$props.bloqueado"
-        :largo="$props.largo"
-      />
+      >
+        <VaralDeFaseItem
+          :id="tarefa.tarefa_cronograma_id || tarefa.id"
+          secundario
+          :titulo="tarefa.workflow_tarefa?.descricao"
+          :situacao="tarefa.tipo_situacao"
+          :responsavel="tarefa.andamento.orgao_responsavel"
+          :atual="$props.atual"
+          :bloqueado="$props.bloqueado"
+          :tipo="!tarefa.tarefa_cronograma_id ? 'tarefa-workflow' : 'tarefa-cronograma'"
+          :largo="$props.largo"
+          :dados-tarefa="{
+            faseMaeId: $props.id,
+            inicioReal: tarefa.andamento.inicio_real
+          }"
+          :concluida="tarefa.andamento.concluida"
+        />
+      </template>
     </div>
   </article>
 
@@ -362,15 +370,11 @@ function handleEditar() {
       margin-top: 8px;
     }
   }
- }
+}
 
 .varal-de-fase-item__tarefas {
   width: 100%;
   margin-top: 2rem;
-}
-
-.varal-de-fase-item__tarefa-item {
-  position: relative;
 }
 
 article:has(+ article), article + article {

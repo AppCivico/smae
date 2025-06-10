@@ -4463,13 +4463,12 @@ export const alteracaoEmLoteNovoFiltro = object().shape({
 
 export const EdicaoTransferenciaFase = object().shape({
   orgao_id: number().label('Órgão responsável'),
-  orgao_responsavel_nome: string().label('Órgão responsável'),
-  situacao: string().label('Situação').required(),
+  pessoa_responsavel_id: number().label('Pessoa Responsável').required(),
+  situacao_id: number().label('Situação').required(),
 });
 
 export const EdicaoTransferenciaFaseTarefa = object().shape({
   concluido: boolean().label('Concluído'),
   orgao_id: number().label('Órgão responsável'),
-  orgao_responsavel_nome: string().label('Órgão responsável'),
   pessoa_responsavel: string().label('Pessoa responsável'),
 });
