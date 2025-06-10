@@ -57,6 +57,30 @@ export class BackupSchedulerService {
     private async scheduleApiLogBackupTasks(
         tx: Omit<PrismaService, '$connect' | '$disconnect' | '$on' | '$transaction' | '$use'>
     ) {
+        await tx.apiRequestLogControl.updateMany({
+            where: {
+                status: 'BACKING_UP',
+                task: {
+                    status: { in: ['errored'] },
+                },
+            },
+            data: {
+                status: 'FAILED_BACKUP',
+                last_error: 'Tarefa de backup anterior falhou ou não foi concluída.',
+            },
+        });
+
+        const verificaExistente = await tx.apiRequestLogControl.count({
+            where: {
+                status: 'BACKING_UP',
+            },
+        });
+
+        if (verificaExistente > 0) {
+            this.logger.log(`Já existem ${verificaExistente} tarefas em BACKING_UP. Pulando processamento.`);
+            return;
+        }
+
         const retentionDays = await this.getApiLogRetentionDays();
 
         const now = DateTime.utc();
@@ -82,7 +106,8 @@ export class BackupSchedulerService {
             where: {
                 status: { in: ['AWAITING_BACKUP', 'FAILED_BACKUP'] },
             },
-            orderBy: { log_date: 'asc' },
+            orderBy: { log_date: 'desc' },
+            take: 1,
         });
 
         let count = 0;
@@ -96,7 +121,8 @@ export class BackupSchedulerService {
                             date: entrada.log_date.toISOString().substring(0, 10),
                         },
                     },
-                    null
+                    null,
+                    tx
                 );
 
                 await tx.apiRequestLogControl.update({

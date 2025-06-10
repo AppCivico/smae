@@ -17,8 +17,8 @@ export class ApiLogBackupService implements TaskableService {
 
     async executeJob(payload: { date: string; task_id?: number }): Promise<any> {
         const { date, task_id } = payload;
-        const logDateUTC = DateTime.fromISO(date, { zone: 'utc' }).toJSDate();
-        if (!logDateUTC) {
+        const logDateUTC = DateTime.fromSQL(date, { zone: 'utc' }).toJSDate();
+        if (isNaN(logDateUTC.valueOf())) {
             throw new Error('Data inválida fornecida para backup.');
         }
 

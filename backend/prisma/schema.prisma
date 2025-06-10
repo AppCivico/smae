@@ -5013,8 +5013,9 @@ model task_queue {
     n_retry     Int       @default(0)
     esperar_ate DateTime?
 
-    AtualizacaoEmLote AtualizacaoEmLote[]
-    task_buffer       task_buffer?
+    AtualizacaoEmLote    AtualizacaoEmLote[]
+    task_buffer          task_buffer?
+    ApiRequestLogControl ApiRequestLogControl[]
 
     @@index([status])
     @@index([criado_em])
@@ -7783,6 +7784,8 @@ model ApiRequestLogControl {
     last_error      String?
     created_at      DateTime                   @default(now())
     updated_at      DateTime                   @updatedAt
+
+    task task_queue? @relation(fields: [task_id], references: [id])
 
     @@map("api_request_log_control")
 }

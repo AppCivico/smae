@@ -28,6 +28,10 @@ export class DuckDBProviderService {
                 URL_STYLE '${urlStyle}'
             );
         `);
+
+        await duckDB.run('SET memory_limit = 800MB');
+        await duckDB.run('SET threads = 1');
+
         return duckDB;
     }
 }

@@ -15,7 +15,10 @@ export class ApiLogRestoreService implements TaskableService {
 
     async executeJob(payload: { date: string; task_id?: number }): Promise<any> {
         const { date, task_id } = payload;
-        const logDateUTC = new Date(`${date}T00:00:00Z`);
+        const logDateUTC = DateTime.fromSQL(date, { zone: 'utc' }).toJSDate();
+        if (isNaN(logDateUTC.valueOf())) {
+            throw new Error('Data inválida fornecida para restore.');
+        }
 
         try {
             // Primeiro busca o registro de controle e valida o status
