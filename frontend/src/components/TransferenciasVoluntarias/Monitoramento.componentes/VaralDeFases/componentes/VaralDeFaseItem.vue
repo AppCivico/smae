@@ -14,8 +14,10 @@ export type VaralDeItemProps = {
   },
   situacao: string,
   tarefas?: any[]
-  pendente?: boolean,
   atual?: boolean,
+  concluida?: boolean,
+  podeConcluir?: boolean,
+  bloqueado?: boolean,
 };
 
 type Props = VaralDeItemProps & {
@@ -45,12 +47,25 @@ function handleEditar() {
       'varal-de-fase-item__raiz'
     ]"
   >
+    <div>
+      <p>
+        podeConcluir: {{ $props.podeConcluir }}
+      </p>
+      <p>
+        concluida: {{ $props.concluida }}
+      </p>
+      <p>
+        atual: {{ $props.atual }}
+      </p>
+    </div>
+
     <section
       :class="[
         'varal-de-fase-item',
         {'varal-de-fase-item--largo': $props.largo},
-        { 'varal-de-fase-item--pendente': $props.pendente && $props.atual },
         { 'varal-de-fase-item--secundario': $props.secundario },
+        { 'varal-de-fase-item--atual': $props.atual },
+        { 'varal-de-fase-item--bloqueado': $props.bloqueado },
       ]"
     >
       <dt
@@ -108,7 +123,7 @@ function handleEditar() {
         </dd>
 
         <div
-          v-if="$props.pendente"
+          v-if="$props.atual "
           class="varal-de-fase-item__agrupador-botoes"
         >
           <button
@@ -136,7 +151,8 @@ function handleEditar() {
         :titulo="tarefa.workflow_tarefa?.descricao"
         :situacao="tarefa.tipo_situacao"
         :responsavel="tarefa.andamento.orgao_responsavel"
-        :pendente="tarefa.andamento.necessita_preencher_orgao"
+        :atual="$props.atual"
+        :bloqueado="$props.bloqueado"
         :largo="$props.largo"
       />
     </div>
@@ -170,7 +186,7 @@ function handleEditar() {
   }
 }
 
-.varal-de-fase-item--pendente {
+.varal-de-fase-item--atual {
   .varal-de-fase-item__conteudo {
     background-color: #FFF6DF;
     border-color: #F7C234;
@@ -178,12 +194,27 @@ function handleEditar() {
 
   &.varal-de-fase-item--secundario {
     .varal-de-fase-item__conteudo {
-      background-color: #fff;
+      background-color: #FFF6DF;
       border-color: #005C8A;
     }
 
     .varal-de-fase-item__titulo-situacao {
       background-color: #F7C234;
+    }
+  }
+}
+
+.varal-de-fase-item--bloqueado {
+  &, &.varal-de-fase-item--secundario {
+    .varal-de-fase-item__conteudo {
+      background-color: #F0F0F0;
+      border-color: #B8C0CC;
+    }
+  }
+
+  &.varal-de-fase-item--secundario {
+    .varal-de-fase-item__titulo-situacao {
+      background-color: #C8C8C8;
     }
   }
 }
