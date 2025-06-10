@@ -94,7 +94,7 @@
   }
 
   &:has(> :only-child) {
-    display: block;
+    grid-template-columns: 1fr;
 
     &::before {
       content: none;
@@ -112,11 +112,12 @@
   dt {
     font-weight: 400;
     text-overflow: ellipsis;
-      overflow: hidden;
+    overflow: hidden;
     color: @cinza-medio;
     margin-bottom: 0.25em;
     font-size: 100%;
     align-self: end;
+    min-width: min-content;
   }
 
   dd {
@@ -125,6 +126,7 @@
     text-overflow: ellipsis;
     overflow: hidden;
     align-self: start;
+    min-width: min-content;
   }
 }
 
