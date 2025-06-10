@@ -159,6 +159,7 @@ if (props.autoSubmit) {
               <LabelFromYup
                 :name="campoNome"
                 :schema="schema"
+                class="tc300"
               />
 
               <Field
@@ -241,11 +242,11 @@ if (props.autoSubmit) {
         >
           <button
             type="submit"
-            class="btn"
+            class="btn outline bgnone tcprimary mtauto mb1"
             :class="[{ loading: carregando }]"
             :aria-busy="isSubmitting || carregando"
           >
-            Filtrar
+            Pesquisar
           </button>
         </div>
       </form>
