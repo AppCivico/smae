@@ -1,56 +1,78 @@
 <script lang="ts" setup>
-import { ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 import { ErrorMessage, Field, useForm } from 'vee-validate';
 import SmallModal from '@/components/SmallModal.vue';
-import { EdicaoTarefaComCronograma as schema } from '@/consts/formSchemas';
+import {
+  EdicaoTransferenciaFase,
+  EdicaoTransferenciaFaseTarefa,
+} from '@/consts/formSchemas';
 
 import { useTarefasStore } from '@/stores/tarefas.store';
-import { VaralDeItemProps } from './VaralDeFaseItem.vue';
 
 const { tarefaStore } = useTarefasStore();
 
-const props = defineProps<VaralDeItemProps>();
-export type EdicaoTarefaComCronogramaModalExposed = {
-  abrirModalFase(): void
-};
-
 const modalEdicaoFase = ref<boolean>(false);
+const tipoFase = ref<'tarefa' | 'fase' | undefined>(undefined);
 
-function abrirModalFase() {
+const schema = computed(() => {
+  if (!tipoFase.value) {
+    return undefined;
+  }
+
+  if (tipoFase.value === 'fase') {
+    return EdicaoTransferenciaFase;
+  }
+
+  return EdicaoTransferenciaFaseTarefa;
+});
+
+const {
+  handleSubmit, resetForm, values,
+} = useForm({
+  validationSchema: schema.value,
+});
+
+type EdicaoDados = {
+  id: number,
+  faseMaeId?: number,
+  secundario: boolean,
+  orgao_responsavel?: {
+    id: string,
+    sigla: string,
+    descricao: string,
+  }
+  situacao?: string
+};
+function abrirModalFase(dadosEdicao: EdicaoDados) {
   modalEdicaoFase.value = true;
+
+  tipoFase.value = !dadosEdicao.secundario ? 'fase' : 'tarefa';
+
+  console.log(dadosEdicao);
+
+  resetForm({
+    values: {
+      id: dadosEdicao.id,
+      orgao_id: dadosEdicao.orgao_responsavel?.id,
+      orgao_responsavel_nome: dadosEdicao.orgao_responsavel?.sigla,
+      situacao: dadosEdicao.situacao,
+    },
+  });
 }
+
+export type EdicaoTarefaComCronogramaModalExposed = {
+  abrirModalFase: typeof abrirModalFase
+};
 
 defineExpose<EdicaoTarefaComCronogramaModalExposed>({
   abrirModalFase,
 });
 
-const {
-  handleSubmit, resetForm,
-} = useForm({
-
-  validationSchema: schema,
-});
-
-const onSubmit = handleSubmit.withControlled((valoresControlados) => {
+const onSubmit = handleSubmit((valoresControlados) => {
   console.log('submit', valoresControlados);
 
   // tarefaStore.salvarItem()
 });
-
-watch(modalEdicaoFase, () => {
-  if (!modalEdicaoFase.value) {
-    return;
-  }
-
-  console.log(props);
-
-  resetForm({
-    values: {
-      orgao_responsavel_id: '1234',
-    },
-  });
-});
-
 </script>
 
 <template>
@@ -72,101 +94,86 @@ watch(modalEdicaoFase, () => {
           />
 
           <Field
-            name="orgao_id"
-            as="select"
+            name="orgao_responsavel_nome"
             class="inputtext"
+            :model-value="values.orgao_responsavel_nome"
             disabled
-            aria-disabled="true"
-          >
-            <option :value="0">
-              Selecionar
-            </option>
-
-            <!-- <option
-              v-for="item in órgãosDisponíveis"
-              :key="item"
-              :value="item.id"
-            >
-              {{ item.sigla }} - {{ item.descricao }}
-            </option> -->
-          </Field>
-
-          <ErrorMessage
-            name="orgao_id"
-            class="error-msg"
-          />
-        </div>
-
-        <div class="f1 mb1">
-          <SmaeLabel
-            :schema="schema"
-            name="recursos"
           />
 
           <Field
-            name="recursos"
+            name="orgao_id"
+            class="inputtext"
+            hidden
+          />
+        </div>
+
+        <div
+          v-if="tipoFase === 'fase'"
+          class="f1 mb1"
+        >
+          <SmaeLabel
+            :schema="schema"
+            name="situacao"
+          />
+
+          <Field
+            name="situacao"
             type="select"
             class="inputtext"
           />
 
           <ErrorMessage
-            name="recursos"
+            name="situacao"
             class="error-msg"
           />
         </div>
       </div>
 
-      <div class="flex g2 mb1">
-        <div class="f1 mb1">
-          <SmaeLabel
-            :schema="schema"
-            name="inicio_real"
-          />
+      <div v-if="tipoFase === 'tarefa'">
+        <Field
+          name="fase_mae_id"
+          hidden
+        />
 
-          <Field
-            name="inicio_real"
-            type="select"
-            class="inputtext"
-          />
+        <div class="mb1">
+          <label class="flex g1">
+            <Field
+              name="concluido"
+              class="inputtext"
+              type="checkbox"
+              :value="true"
+              :unchecked-value="false"
+            />
+
+            <SmaeLabel
+              class="mb0"
+              as="div"
+              :schema="schema"
+              name="concluido"
+            />
+
+          </label>
 
           <ErrorMessage
-            name="inicio_real"
+            name="concluido"
             class="error-msg"
           />
         </div>
 
-        <div class="f1 mb1">
+        <div class="mb1">
           <SmaeLabel
             :schema="schema"
-            name="termino_real"
+            name="pessoa_responsavel"
           />
 
           <Field
-            name="termino_real"
+            name="pessoa_responsavel"
             type="select"
             class="inputtext"
           />
 
           <ErrorMessage
-            name="termino_real"
-            class="error-msg"
-          />
-        </div>
-
-        <div class="f1 mb1">
-          <SmaeLabel
-            :schema="schema"
-            name="percentual_concluido"
-          />
-
-          <Field
-            name="percentual_concluido"
-            type="select"
-            class="inputtext"
-          />
-
-          <ErrorMessage
-            name="percentual_concluido"
+            name="pessoa_responsavel"
             class="error-msg"
           />
         </div>

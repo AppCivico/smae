@@ -4461,22 +4461,15 @@ export const alteracaoEmLoteNovoFiltro = object().shape({
   tipo_intervencao_id: number().label('Tipo de obra').nullableOuVazio(),
 });
 
-export const EdicaoTarefaComCronograma = object().shape({
-  inicio_real: date()
-    .label('Previsão Início')
-    .required(),
-  orgao_id: string()
-    .label('Órgão Responsável')
-    .required(),
-  percentual_concluido: number()
-    .label('Percentual concluído')
-    .min(0)
-    .max(100)
-    .required(),
-  recursos: string()
-    .label('Responsável pela atividade')
-    .required(),
-  termino_real: date()
-    .label('Previsão Término')
-    .required(),
+export const EdicaoTransferenciaFase = object().shape({
+  orgao_id: number().label('Órgão responsável'),
+  orgao_responsavel_nome: string().label('Órgão responsável'),
+  situacao: string().label('Situação').required(),
+});
+
+export const EdicaoTransferenciaFaseTarefa = object().shape({
+  concluido: boolean().label('Concluído'),
+  orgao_id: number().label('Órgão responsável'),
+  orgao_responsavel_nome: string().label('Órgão responsável'),
+  pessoa_responsavel: string().label('Pessoa responsável'),
 });
