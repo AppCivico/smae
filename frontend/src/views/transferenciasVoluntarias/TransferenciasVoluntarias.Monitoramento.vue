@@ -6,9 +6,11 @@ import VaralDeEtapas from '@/components/transferencia/VaralDeEtapas.vue';
 <template>
   <CabecalhoDePagina />
 
-  <MonitoramentoCards />
+  <div class="flex g3 column">
+    <MonitoramentoCards />
 
-  <VaralDeEtapas />
+    <VaralDeEtapas />
 
-  &lt;VaralDeFases/&gt;
+    &lt;VaralDeFases/&gt;
+  </div>
 </template>
