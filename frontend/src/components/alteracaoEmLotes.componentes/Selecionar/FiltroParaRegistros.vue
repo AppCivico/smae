@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
-import FiltroParaPagina, { Formulario } from '@/components/FiltroParaPagina.vue';
+import FiltroParaPagina from '@/components/FiltroParaPagina.vue';
 import { useObrasStore } from '@/stores/obras.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { useRegionsStore } from '@/stores/regions.store';
@@ -17,6 +17,7 @@ import {
   alteracaoEmLoteNovoFiltro as schema,
   obras as obrasSchema,
 } from '@/consts/formSchemas';
+import type { Formulario } from '@/components/FiltroParaPagina.vue';
 
 const route = useRoute();
 
