@@ -5,18 +5,13 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { Date2YMD } from '../common/date2ymd';
 import { PessoaService } from '../pessoa/pessoa.service';
-import { TransfereGovApiOportunidadesApiService } from '../transfere-gov-api/transfere-gov-api.service';
 import { MinhaContaDto, SessaoDto, TesteDataDto } from './models/minha-conta.dto';
 import { NovaSenhaDto } from './models/nova-senha.dto';
 
 @ApiTags('Minha Conta')
 @Controller('')
 export class MinhaContaController {
-    constructor(
-        private readonly pessoaService: PessoaService,
-
-        private readonly oportunidadesApi: TransfereGovApiOportunidadesApiService
-    ) {}
+    constructor(private readonly pessoaService: PessoaService) {}
 
     @Post('teste-sistema')
     @ApiBearerAuth('access-token')
