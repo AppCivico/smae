@@ -630,12 +630,12 @@ export class TaskService {
                     status: 'pending',
                     n_retry: retryCount,
                     esperar_ate: nextRetryTime,
-                    erro_mensagem: `Retry ${retryCount}/${retryConfig.maxRetries}: ${lastError.message}`,
-                    erro_em: new Date(),
                 },
             });
 
-            throw new Error(`Task terá nova tentativa em ${nextRetryTime.toISOString()}`);
+            throw new Error(
+                `Retry ${retryCount}/${retryConfig.maxRetries}: ${lastError.message} Task terá nova tentativa em ${nextRetryTime.toISOString()}`
+            );
         }
     }
 
