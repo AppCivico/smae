@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, watchEffect } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useAuthStore } from '@/stores/auth.store';
 import { useAlertStore } from '@/stores/alert.store';
@@ -23,6 +23,46 @@ const {
 } = storeToRefs(workflowAndamento);
 
 const configurarWorkflow = ref(false);
+const tabRefs = ref([]);
+
+watchEffect(() => {
+  tabRefs.value = [];
+});
+
+function setTabRef(el) {
+  if (el && !tabRefs.value.includes(el)) {
+    tabRefs.value.push(el);
+  }
+}
+
+function handleKeydown(event, index) {
+  const total = tabRefs.value.length;
+  let newIndex = index;
+
+  switch (event.key) {
+    case 'ArrowRight':
+    case 'Right':
+      newIndex = (index + 1) % total;
+      break;
+    case 'ArrowLeft':
+    case 'Left':
+      newIndex = (index - 1 + total) % total;
+      break;
+    case 'Home':
+      newIndex = 0;
+      break;
+    case 'End':
+      newIndex = total - 1;
+      break;
+    default:
+      return;
+  }
+
+  event.preventDefault();
+  const novaEtapa = workflow.value.fluxo[newIndex];
+  workflowAndamento.setEtapaEmFoco(novaEtapa.id);
+  tabRefs.value[newIndex]?.focus();
+}
 
 workflowAndamento.buscar();
 
@@ -98,10 +138,11 @@ function formatarTexto(texto) {
       <ol
         v-else
         ref="listaDeEtapas"
+        role="tablist"
         class="flex pb1 varal-etapas"
       >
         <li
-          v-for="item in workflow.fluxo"
+          v-for="(item, index) in workflow.fluxo"
           :key="item.id"
           class="tc varal-etapas__etapa"
           :class="{
@@ -111,9 +152,16 @@ function formatarTexto(texto) {
           }"
         >
           <button
+            :id="`tab-${item.id}`"
+            :ref="setTabRef"
             type="button"
+            role="tab"
+            :aria-selected="item.id === etapaEmFoco?.id"
+            :aria-controls="`panel-${item.id}`"
+            :tabindex="item.id === etapaEmFoco?.id ? '0' : '-1'"
             class="w400 like-a__text varal-etapas__nome-da-etapa"
             @click="workflowAndamento.setEtapaEmFoco(item.id)"
+            @keydown="handleKeydown($event, index)"
           >
             <span class="w400">Etapa {{ item.atual ? 'atual' : '' }}</span>
             {{ item.workflow_etapa_de.descricao }}
