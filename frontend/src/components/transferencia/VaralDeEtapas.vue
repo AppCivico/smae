@@ -42,7 +42,7 @@ function reabrirFase() {
 
 function deletarWorkflow() {
   alertStore.confirmAction('Tem certeza?', async () => {
-    if (await workflowAndamento.deletarWorklow()) {
+    if (await workflowAndamento.deletarWorkflow()) {
       await workflowAndamento.buscar();
       alertStore.success('Workflow deletado!');
       configurarWorkflow.value = false;
