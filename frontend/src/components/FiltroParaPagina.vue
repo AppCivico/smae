@@ -34,8 +34,8 @@ export type Formulario = Linha[];
 
 type Props = {
   formulario: Linha[]
-  schema: Record<string, any>
-  valoresIniciais?: Record<string, any>
+  schema: Record<string, unknown>
+  valoresIniciais?: Record<string, unknown>
   autoSubmit?: boolean
   carregando?: boolean
 };
