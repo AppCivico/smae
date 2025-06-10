@@ -34,7 +34,6 @@ const classeDoStatus = computed(() => {
     class="card-monitoramento"
     :class="classeDoStatus"
   >
-    status: {{ status }}
     <dl>
       <div class="card-monitoramento__dl-group">
         <dt class="t13 w300">
