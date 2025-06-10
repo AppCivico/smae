@@ -5782,9 +5782,9 @@ model Transferencia {
     valor_total                    Decimal? @default(0) @db.Decimal(15, 2)
     valor_contrapartida            Decimal? @default(0) @db.Decimal(15, 2)
     custeio                        Decimal? @default(0) @db.Decimal(15, 2)
-    pct_custeio                    Float?   @db.DoublePrecision
+    pct_custeio                    Decimal? @default(0) @db.Decimal(5, 2)
     investimento                   Decimal? @default(0) @db.Decimal(15, 2)
-    pct_investimento               Float?   @db.DoublePrecision
+    pct_investimento               Decimal? @default(0) @db.Decimal(5, 2)
 
     ano                  Int?
     emenda               String?
@@ -5948,11 +5948,11 @@ model DistribuicaoRecurso {
     valor_total                     Decimal   @default(0) @db.Decimal(15, 2)
     valor_contrapartida             Decimal   @default(0) @db.Decimal(15, 2)
     custeio                         Decimal   @default(0) @db.Decimal(15, 2)
-    pct_custeio                     Float?    @db.DoublePrecision
+    pct_custeio                     Decimal?  @db.Decimal(5, 2)
     investimento                    Decimal   @default(0) @db.Decimal(15, 2)
     valor_empenho                   Decimal?  @default(0) @db.Decimal(15, 2)
     valor_liquidado                 Decimal   @default(0) @db.Decimal(15, 2)
-    pct_investimento                Float?    @db.DoublePrecision
+    pct_investimento                Decimal?  @db.Decimal(5, 2)
     empenho                         Boolean?
     data_empenho                    DateTime? @db.Date()
     programa_orcamentario_estadual  String?

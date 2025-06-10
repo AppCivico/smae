@@ -22,9 +22,9 @@ export class DistribuicaoRecursoDto {
     finalidade: string | null;
     gestor_contrato: string | null;
     custeio: Decimal;
-    pct_custeio: number | null;
+    pct_custeio: Decimal | null;
     investimento: Decimal;
-    pct_investimento: number | null;
+    pct_investimento: Decimal | null;
     empenho: Boolean | null;
     @IsDateYMD({ nullable: true })
     data_empenho: string | null;

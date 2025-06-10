@@ -66,9 +66,9 @@ export class TransferenciaDetailDto {
     valor_contrapartida: Decimal | null;
     valor_distribuido: number | null;
     custeio: Decimal | null;
-    pct_custeio: number | null;
+    pct_custeio: Decimal | null;
     investimento: Decimal | null;
-    pct_investimento: number | null;
+    pct_investimento: Decimal | null;
     emenda: string | null;
     dotacao: string | null;
     demanda: string | null;
