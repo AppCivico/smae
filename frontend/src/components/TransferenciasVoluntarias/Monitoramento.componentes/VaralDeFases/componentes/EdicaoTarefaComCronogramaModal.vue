@@ -1,19 +1,28 @@
 <script lang="ts" setup>
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { ErrorMessage, Field, useForm } from 'vee-validate';
-import dateToDate from '@/helpers/dateToDate';
+import { storeToRefs } from 'pinia';
+import { differenceInDays } from 'date-fns';
 import {
   EdicaoTransferenciaFase,
   EdicaoTransferenciaFaseTarefa,
 } from '@/consts/formSchemas';
 
+import { useUsersStore } from '@/stores/users.store';
 import { useTarefasStore } from '@/stores/tarefas.store';
+import { useWorkflowAndamentoStore } from '@/stores/workflow.andamento.store';
 import SmallModal from '@/components/SmallModal.vue';
+import { type DadosTarefa, type FaseTipo } from './VaralDeFaseItem.vue';
 
+const userStore = useUsersStore();
 const tarefaStore = useTarefasStore();
+const workflowAndamentoStore = useWorkflowAndamentoStore();
+
+const { pessoasSimplificadas } = storeToRefs(userStore);
 
 const modalEdicaoFase = ref<boolean>(false);
-const tipoFase = ref<'tarefa' | 'fase' | undefined>(undefined);
+const tipoFase = ref<FaseTipo | undefined>(undefined);
+const situacoes = ref<any[]>([]);
 
 const schema = computed(() => {
   if (!tipoFase.value) {
@@ -35,7 +44,6 @@ const {
 
 type EdicaoDados = {
   id: number,
-  faseMaeId?: number,
   secundario: boolean,
   orgao_responsavel?: {
     id: string,
@@ -43,13 +51,17 @@ type EdicaoDados = {
     descricao: string,
   }
   situacao?: string
+  situacoes?: any[]
+  tipo: FaseTipo,
+  dadosTarefa?: DadosTarefa,
 };
 function abrirModalFase(dadosEdicao: EdicaoDados) {
   modalEdicaoFase.value = true;
 
-  tipoFase.value = !dadosEdicao.secundario ? 'fase' : 'tarefa';
+  tipoFase.value = dadosEdicao.tipo;
+  situacoes.value = dadosEdicao.situacoes || [];
 
-  console.log(dadosEdicao);
+  console.log('->', dadosEdicao);
 
   resetForm({
     values: {
@@ -57,6 +69,8 @@ function abrirModalFase(dadosEdicao: EdicaoDados) {
       orgao_id: dadosEdicao.orgao_responsavel?.id,
       orgao_responsavel_nome: dadosEdicao.orgao_responsavel?.sigla,
       situacao: dadosEdicao.situacao,
+      fase_mae_id: dadosEdicao.dadosTarefa?.faseMaeId,
+      inicio_real: dadosEdicao.dadosTarefa?.inicioReal,
     },
   });
 }
@@ -69,19 +83,61 @@ defineExpose<EdicaoTarefaComCronogramaModalExposed>({
   abrirModalFase,
 });
 
-const onSubmit = handleSubmit((valoresControlados) => {
-  let dadosControlados = { ...valoresControlados };
-
-  if (valoresControlados.concluido) {
-    dadosControlados = {
-      ...dadosControlados,
-      data_conclusao: dateToDate(new Date()),
-    };
+const pessoasDisponíveis = computed(() => {
+  if (!Array.isArray(pessoasSimplificadas.value)) {
+    return [];
   }
 
-  console.log(dadosControlados);
+  return !values.orgao_id
+    ? pessoasSimplificadas.value
+    : pessoasSimplificadas.value.filter((x) => x.orgao_id === Number(values.orgao_id));
+});
 
-  // tarefaStore.salvarItem();
+const onSubmit = handleSubmit(async (valoresControlados) => {
+  if (tipoFase.value === 'fase') {
+    await workflowAndamentoStore.editarFase({
+      transferencia_id: 250,
+      fase_id: valoresControlados.id,
+      situacao_id: valoresControlados.situacao_id,
+      orgao_responsavel_id: valoresControlados.orgao_id,
+      pessoa_responsavel_id: valoresControlados.pessoa_responsavel_id,
+    });
+  } else if (tipoFase.value === 'tarefa-workflow') {
+    await workflowAndamentoStore.editarFase({
+      transferencia_id: 250,
+      fase_id: valoresControlados.fase_mae_id,
+      orgao_responsavel_id: valoresControlados.orgao_id,
+      tarefa: {
+        id: valoresControlados.id,
+        orgao_responsavel_id: valoresControlados.orgao_id,
+        concluida: valoresControlados.concluido,
+      },
+    });
+  } else if (tipoFase.value === 'tarefa-cronograma') {
+    let dados = {};
+
+    if (valoresControlados.concluido) {
+      const inicioReal = new Date(valoresControlados.inicio_real);
+      const terminoReal = new Date();
+
+      dados = {
+        inicio_real: (inicioReal || terminoReal).toISOString(),
+        termino_real: terminoReal.toISOString(),
+        duracao_real: differenceInDays(inicioReal, terminoReal) || 1,
+      };
+    }
+
+    await tarefaStore.salvarItem({
+      ...dados,
+      recursos: valoresControlados.pessoa_responsavel,
+    }, valoresControlados.id, {
+      transferenciaId: 250,
+    });
+  }
+});
+
+onMounted(() => {
+  userStore.buscarPessoasSimplificadas();
 });
 </script>
 
@@ -116,76 +172,123 @@ const onSubmit = handleSubmit((valoresControlados) => {
             hidden
           />
         </div>
+      </div>
 
+      <div
+        v-if="tipoFase === 'fase'"
+        class="flex g2 mb1"
+      >
         <div
-          v-if="tipoFase === 'fase'"
           class="f1 mb1"
         >
-          <SmaeLabel
+          <LabelFromYup
+            name="situacao_id"
             :schema="schema"
-            name="situacao"
+          />
+          <Field
+            name="situacao_id"
+            as="select"
+            rows="5"
+            class="inputtext light mb1"
+          >
+            <option value="" />
+            <option
+              v-for="item in situacoes"
+              :key="item.id"
+              :value="item.id"
+            >
+              {{ item.situacao }}
+            </option>
+          </Field>
+
+          <ErrorMessage
+            class="error-msg mb2"
+            name="situacao_id"
+          />
+        </div>
+
+        <div
+          class="f1 mb1"
+        >
+          <LabelFromYup
+            name="pessoa_responsavel_id"
+            :schema="schema"
           />
 
           <Field
-            name="situacao"
-            type="select"
-            class="inputtext"
-          />
+            name="pessoa_responsavel_id"
+            as="select"
+            class="inputtext light mb1"
+          >
+            <option value="" />
+            <option
+              v-for="item in pessoasDisponíveis"
+              :key="item"
+              :value="item.id"
+            >
+              {{ item.nome_exibicao }}
+            </option>
+          </Field>
 
           <ErrorMessage
-            name="situacao"
-            class="error-msg"
+            class="error-msg mb2"
+            name="pessoa_responsavel_id"
           />
         </div>
       </div>
 
-      <div v-if="tipoFase === 'tarefa'">
-        <Field
-          name="fase_mae_id"
-          hidden
-        />
-
-        <div class="mb1">
-          <label class="flex g1">
-            <Field
-              name="concluido"
-              class="inputtext"
-              type="checkbox"
-              :value="true"
-              :unchecked-value="false"
-            />
-
-            <SmaeLabel
-              class="mb0"
-              as="div"
-              :schema="schema"
-              name="concluido"
-            />
-
-          </label>
-
-          <ErrorMessage
-            name="concluido"
-            class="error-msg"
-          />
-        </div>
-
-        <div class="mb1">
-          <SmaeLabel
-            :schema="schema"
-            name="pessoa_responsavel"
-          />
-
+      <div v-if="tipoFase?.includes('tarefa')">
+        <div>
           <Field
-            name="pessoa_responsavel"
-            type="select"
-            class="inputtext"
+            name="fase_mae_id"
+            hidden
           />
 
-          <ErrorMessage
-            name="pessoa_responsavel"
-            class="error-msg"
-          />
+          <div class="mb1">
+            <label class="flex g1">
+              <Field
+                name="concluido"
+                class="inputtext"
+                type="checkbox"
+                :value="true"
+                :unchecked-value="false"
+              />
+
+              <SmaeLabel
+                class="mb0"
+                as="div"
+                :schema="schema"
+                name="concluido"
+              />
+
+            </label>
+
+            <ErrorMessage
+              name="concluido"
+              class="error-msg"
+            />
+          </div>
+
+          <div
+            v-if="tipoFase === 'tarefa-cronograma'"
+            class="mb1"
+          >
+            <SmaeLabel
+              :schema="schema"
+              name="pessoa_responsavel"
+            />
+
+            <Field
+              name="pessoa_responsavel"
+              type="select"
+              class="inputtext"
+            />
+
+            <ErrorMessage
+              name="pessoa_responsavel"
+              class="error-msg"
+            />
+          </div>
         </div>
       </div>
 
