@@ -16,6 +16,7 @@ import { JwtService } from '@nestjs/jwt';
 import { DateTime } from 'luxon';
 import { uuidv7 } from 'uuidv7';
 import { SmaeConfigService } from '../common/services/smae-config.service';
+import { CONST_PERFIL_CASA_CIVIL } from '../common/consts';
 const convertToJsonString = require('fast-json-stable-stringify');
 
 class NextPageTokenJwtBody {
@@ -621,7 +622,7 @@ export class SeiIntegracaoService {
                     PessoaPerfil: {
                         some: {
                             perfil_acesso: {
-                                nome: 'Gestor Casa Civil',
+                                nome: CONST_PERFIL_CASA_CIVIL,
                             },
                         },
                     },
