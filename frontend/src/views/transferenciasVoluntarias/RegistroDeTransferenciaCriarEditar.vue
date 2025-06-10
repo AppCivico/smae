@@ -75,51 +75,69 @@ const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
 });
 
 const isSomaCorreta = computed(() => {
-  const soma = parseFloat(values.valor || 0) + parseFloat(values.valor_contrapartida || 0);
-  return soma === parseFloat(values.valor_total);
+  const soma = Big(values.valor || 0).plus(values.valor_contrapartida || 0);
+  return soma.eq(Big(values.valor_total || 0));
 });
 
 const calcularValorCusteio = (fieldName) => {
-  const valor = parseFloat(values.valor) || 0;
-  const custeio = parseFloat(values.custeio) || 0;
-  const percentagemCusteio = parseFloat(values.percentagem_custeio) || 0;
+  const valor = Big(values.valor || 0);
+  const custeio = Big(values.custeio || 0);
+  const percentagemCusteio = Big(values.percentagem_custeio || 0);
+
   if (fieldName === 'percentagem_custeio' || fieldName === 'valor') {
-    const valorArredondado = new Big(valor)
+    const valorArredondado = valor
       .times(percentagemCusteio).div(100).round(2, Big.roundHalfUp);
     setFieldValue('custeio', valorArredondado.toString());
   } else if (fieldName === 'custeio') {
-    const porcentagemCusteio = ((custeio / valor) * 100);
+    const porcentagemCusteio = valor.eq(0)
+      ? Big(0)
+      : custeio.div(valor).times(100);
     setFieldValue('percentagem_custeio', porcentagemCusteio.toFixed(2));
-    setFieldValue('percentagem_investimento', (100 - porcentagemCusteio).toFixed(2));
+    setFieldValue('percentagem_investimento', Big(100).minus(porcentagemCusteio).toFixed(2));
   }
 };
 
 const calcularValorInvestimento = (fieldName) => {
-  const valor = parseFloat(values.valor) || 0;
-  const investimento = parseFloat(values.investimento) || 0;
-  const custeio = parseFloat(values.custeio) || 0;
-  const percentagemInvestimento = parseFloat(values.percentagem_investimento) || 0;
+  const valor = Big(values.valor || 0);
+  const investimento = Big(values.investimento || 0);
+  const custeio = Big(values.custeio || 0);
+  const percentagemInvestimento = Big(values.percentagem_investimento || 0);
+
   if (fieldName === 'percentagem_investimento' || fieldName === 'valor') {
-    const valorArredondado = new Big(valor)
-      .times(percentagemInvestimento).div(100).round(2);
-    let valorArredondadoConvertido = parseFloat(valorArredondado.toString());
-    if (custeio > 0) {
-      valorArredondadoConvertido = valor - custeio;
-    }
-    const valorFinal = new Big(valorArredondadoConvertido).round(2, Big.roundHalfUp);
-    setFieldValue('investimento', valorFinal.toString());
+    const investimentoCalculado = custeio.gt(0)
+      ? valor.minus(custeio)
+      : valor.times(percentagemInvestimento).div(100);
+
+    const investimentoFinal = investimentoCalculado.round(2, Big.roundHalfUp);
+    setFieldValue('investimento', investimentoFinal.toString());
+
+    // manter coerência das porcentagens
+    const pct = valor.eq(0)
+      ? Big(0)
+      : investimentoFinal.div(valor).times(100);
+    setFieldValue('percentagem_investimento', pct.toFixed(2));
+    setFieldValue('percentagem_custeio', Big(100).minus(pct).toFixed(2));
   } else if (fieldName === 'investimento') {
-    const porcentagemInvestimento = ((investimento / valor) * 100);
+    const porcentagemInvestimento = valor.eq(0)
+      ? 0
+      : investimento.div(valor).times(100);
     setFieldValue('percentagem_investimento', porcentagemInvestimento.toFixed(2));
-    setFieldValue('percentagem_custeio', (100 - porcentagemInvestimento).toFixed(2));
+    setFieldValue('percentagem_custeio', Big(100).minus(porcentagemInvestimento).toFixed(2));
   }
 };
 
 const updateValorTotal = (fieldName, newValue) => {
-  const valor = fieldName === 'valor' ? parseFloat(newValue) || 0 : parseFloat(values.valor) || 0;
-  const valorContraPartida = fieldName === 'valor_contrapartida' ? parseFloat(newValue) || 0 : parseFloat(values.valor_contrapartida) || 0;
-  const valorArredondado = new Big((valor + valorContraPartida)).round(2);
-  setFieldValue('valor_total', valorArredondado.toString());
+  const valor = fieldName === 'valor'
+    ? Big(newValue || 0)
+    : Big(values.valor || 0);
+
+  const valorContraPartida = fieldName === 'valor_contrapartida'
+    ? Big(newValue || 0)
+    : Big(values.valor_contrapartida || 0);
+
+  const valorArredondado = valor.plus(valorContraPartida);
+
+  setFieldValue('valor_total', valorArredondado.toFixed(2));
   calcularValorCusteio(fieldName);
   calcularValorInvestimento(fieldName);
 };
@@ -332,6 +350,7 @@ watch(itemParaEdicao, async (novosValores) => {
         />
       </div>
     </div>
+
     <div class="flex g2 mb1">
       <div class="f1">
         <LabelFromYup
