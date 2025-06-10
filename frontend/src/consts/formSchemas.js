@@ -37,6 +37,7 @@ import tiposSituacaoSchema from '@/consts/tiposSituacaoSchema';
 import fieldToDate from '@/helpers/fieldToDate';
 import haDuplicatasNaLista from '@/helpers/haDuplicatasNaLista';
 import tiposStatusDistribuicao from './tiposStatusDistribuicao';
+import i18n from './formSchemas/i18n';
 
 const dataMin = import.meta.env.VITE_DATA_MIN ? new Date(`${import.meta.env.VITE_DATA_MIN}`) : new Date('1900-01-01T00:00:00Z');
 const dataMax = import.meta.env.VITE_DATA_MAX ? new Date(`${import.meta.env.VITE_DATA_MAX}`) : new Date('2100-12-31T23:59:59Z');
@@ -129,46 +130,7 @@ addMethod(mixed, 'semDuplicatas', function semDuplicatas(message = '${path} não
   });
 });
 
-setLocale({
-  array: {
-    min: ({ label, min }) => (label
-      ? `${label}: escolha ao menos ${min}`
-      : 'Escolha ao menos ${min}'
-    ),
-    max: ({ label, max }) => (label
-      ? `${label}: escolha no máximo ${max}`
-      : 'Escolha no máximo ${max}'
-    ),
-  },
-  date: {
-    max: ({ label }) => (label ? `${label} está muito no futuro` : 'Essa data é muito no futuro'),
-    min: ({ label }) => (label ? `${label} está muito no passado` : 'Essa data é muito no passado'),
-    required: ({ label }) => (label ? `${label} não é opcional` : 'Data obrigatória'),
-  },
-  mixed: {
-    default: 'Valor de ${label} não é válido',
-    oneOf: 'Opção inválida para ${label}',
-    notType: ({ label }) => (label ? `Valor de ${label} inválido` : 'Valor inválido'),
-    required: ({ label }) => (label ? `${label} não é opcional` : 'Campo obrigatório'),
-  },
-  number: {
-    integer: ({ label }) => (label ? `${label} deve ser um número inteiro` : 'Deve ser um número inteiro'),
-    max: ({ label, max }) => (label ? `${label} deve ser no máximo ${max}` : 'Deve ser no máximo ${max}'),
-    min: ({ label, min }) => (label ? `${label} deve ser no mínimo ${min}` : 'Deve ser no mínimo ${min}'),
-    positive: ({ label }) => (label ? `${label} deve ser maior do que zero` : 'Deve ser maior do que zero'),
-  },
-  string: {
-    email: ({ label }) => (label ? `${label} não é e-mail válido` : 'E-mail inválido'),
-    min: ({ label, min }) => (label
-      ? `${label} está menor que ${min} caracteres`
-      : 'Esse texto é menor que ${min} caracteres'),
-    matches: ({ label }) => (label ? `${label} está fora do formato` : 'Formato inválido'),
-    max: ({ label, max }) => (label
-      ? `${label} está maior que ${max} caracteres`
-      : 'Esse texto é maior que ${max} caracteres'),
-    required: ({ label }) => (label ? `${label} não é opcional` : 'Campo obrigatório'),
-  },
-});
+setLocale(i18n);
 
 // https://github.com/jquense/yup/issues/384#issuecomment-442958997
 
