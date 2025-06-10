@@ -688,6 +688,7 @@ export class TransfereGovSyncService {
                     modalidade_programa: item.modalidade_programa,
                     acao_orcamentaria: item.acao_orcamentaria,
                     natureza_juridica_programa: item.natureza_juridica_programa,
+                    finalidades: item.finalidades,
                 }) satisfies TransfereGovTransferenciasDto
         );
 

@@ -68,6 +68,7 @@ export class TransfereGovTransferenciasDto {
     dt_fim_receb: string | null;
     modalidade_programa: string;
     acao_orcamentaria: string;
+    finalidades: string | null;
 }
 
 export enum AvaliacaoFilter {
