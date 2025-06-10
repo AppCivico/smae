@@ -122,9 +122,20 @@ if (props.autoSubmit) {
 </script>
 
 <template>
-  <div class="filtro-para-pagina">
-    <FormularioQueryString :valores-iniciais="valoresIniciais">
-      <form @submit="onSubmit">
+  <div
+    class="filtro-para-pagina"
+    :class="formularioSujo ? 'filtro-sujo' : ''"
+  >
+    <FormularioQueryString
+      v-slot="{
+        pendente,
+      }"
+      :valores-iniciais="valoresIniciais"
+    >
+      <form
+        :aria-busy="pendente"
+        @submit.prevent="!carregando && !pendente && onSubmit()"
+      >
         <div
           v-for="(linha, linhaIndex) in formulario"
           :key="`linha--${linhaIndex}`"
@@ -154,7 +165,7 @@ if (props.autoSubmit) {
                 v-if="campo.tipo === 'checkbox'"
                 v-slot="{ field: { value }, handleInput }"
                 :name="campoNome"
-                :disabled="$props.carregando"
+                :aria-busy="$props.carregando"
               >
                 <div
                   class="flex itemscenter"
@@ -164,7 +175,7 @@ if (props.autoSubmit) {
                     type="checkbox"
                     class="interruptor"
                     :checked="value"
-                    :disabled="$props.carregando"
+                    :aria-busy="$props.carregando"
                     @input="(ev) => handleInput(ev.target.checked)"
                   >
                 </div>
@@ -175,7 +186,7 @@ if (props.autoSubmit) {
                 class="inputtext light mb1"
                 :name="campoNome"
                 as="select"
-                :disabled="$props.carregando"
+                :aria-busy="$props.carregando"
               >
                 <option :value="null">
                   -
@@ -213,7 +224,7 @@ if (props.autoSubmit) {
                 class="inputtext light mb1"
                 :name="campoNome"
                 :type="campo.tipo"
-                :disabled="$props.carregando"
+                :aria-busy="$props.carregando"
               />
 
               <ErrorMessage
@@ -232,7 +243,7 @@ if (props.autoSubmit) {
             type="submit"
             class="btn"
             :class="[{ loading: carregando }]"
-            :disabled="isSubmitting || carregando"
+            :aria-busy="isSubmitting || carregando"
           >
             Filtrar
           </button>
