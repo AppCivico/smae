@@ -34,7 +34,6 @@ const TransferenciasVoluntarias = useTransferenciasVoluntariasStore();
 
 const router = useRouter();
 const { params, meta } = useRoute();
-const formularioSujo = useIsFormDirty();
 
 const {
   itemParaEdicao: transferenciaAtual,
@@ -84,6 +83,8 @@ const {
   initialValues: itemParaEdicaoFormatado,
   validationSchema: schema,
 });
+
+const formularioSujo = useIsFormDirty();
 
 function voltarTela() {
   router.push({
