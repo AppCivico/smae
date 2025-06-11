@@ -78,7 +78,7 @@ function abrirModalFase(dadosEdicao: EdicaoDados) {
       id: dadosEdicao.id,
       orgao_id: dadosEdicao.orgao_responsavel?.id,
       orgao_responsavel_nome: dadosEdicao.orgao_responsavel?.sigla,
-      situacao_id: dadosEdicao.situacao.id,
+      situacao_id: dadosEdicao.situacao?.id,
       pessoa_responsavel_id: dadosEdicao.pessoa_responsavel?.id,
       fase_mae_id: dadosEdicao.dadosTarefa?.faseMaeId,
       inicio_real: dadosEdicao.dadosTarefa?.inicioReal,
@@ -116,9 +116,9 @@ async function salvarEFinaliarFase() {
     await workflowAndamentoStore.editarFase({
       transferencia_id: route.params.transferenciaId,
       fase_id: values.id,
-      situacao_id: controlledValues.situacao_id,
+      situacao_id: controlledValues.situacao_id || undefined,
       orgao_responsavel_id: controlledValues.orgao_id,
-      pessoa_responsavel_id: controlledValues.pessoa_responsavel_id,
+      pessoa_responsavel_id: controlledValues.pessoa_responsavel_id || undefined,
     });
 
     await workflowAndamentoStore.encerrarFase(
@@ -141,9 +141,9 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
       await workflowAndamentoStore.editarFase({
         transferencia_id: route.params.transferenciaId,
         fase_id: values.id,
-        situacao_id: valoresControlados.situacao_id,
+        situacao_id: valoresControlados.situacao_id || undefined,
         orgao_responsavel_id: valoresControlados.orgao_id,
-        pessoa_responsavel_id: valoresControlados.pessoa_responsavel_id,
+        pessoa_responsavel_id: valoresControlados.pessoa_responsavel_id || undefined,
       });
     } else if (tipoFase.value === 'tarefa-workflow') {
       await workflowAndamentoStore.editarFase({
