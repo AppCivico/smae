@@ -41,7 +41,7 @@ const schema = computed(() => {
 });
 
 const {
-  handleSubmit, resetForm, values, errors, validate,
+  handleSubmit, resetForm, values, controlledValues, errors, validate,
 } = useForm({
   validationSchema: () => schema.value,
 });
@@ -95,6 +95,33 @@ const pessoasDisponíveis = computed(() => {
     : pessoasSimplificadas.value.filter((x) => x.orgao_id === Number(values.orgao_id));
 });
 
+async function salvarEFinaliarFase() {
+  const { valid } = await validate();
+  if (!valid) {
+    return;
+  }
+
+  try {
+    carregando.value = true;
+
+    await workflowAndamentoStore.editarFase({
+      transferencia_id: route.params.transferenciaId,
+      fase_id: values.id,
+      situacao_id: controlledValues.situacao_id,
+      orgao_responsavel_id: controlledValues.orgao_id,
+      pessoa_responsavel_id: controlledValues.pessoa_responsavel_id,
+    });
+
+    await workflowAndamentoStore.encerrarFase(
+      values.id,
+      route.params.transferenciaId,
+    );
+  } finally {
+    exibirModalFase.value = false;
+    carregando.value = false;
+  }
+}
+
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   carregando.value = true;
 
@@ -107,6 +134,11 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
         orgao_responsavel_id: valoresControlados.orgao_id,
         pessoa_responsavel_id: valoresControlados.pessoa_responsavel_id,
       });
+
+      await workflowAndamentoStore.encerrarFase(
+        values.id,
+        route.params.transferenciaId,
+      );
     } else if (tipoFase.value === 'tarefa-workflow') {
       await workflowAndamentoStore.editarFase({
         transferencia_id: route.params.transferenciaId,
@@ -304,7 +336,18 @@ onMounted(() => {
         </div>
       </div>
 
-      <div class="flex justifycenter">
+      <div class="flex g1 justifycenter">
+        <button
+          v-if="tipoFase === 'fase'"
+          class="btn outline bgnone"
+          type="button"
+          :disabled="carregando"
+          :aria-disabled="carregando"
+          @click="salvarEFinaliarFase"
+        >
+          Salvar e Finaliza
+        </button>
+
         <button
           class="btn"
           type="submit"
