@@ -188,7 +188,7 @@ export const useWorkflowAndamentoStore = defineStore('workflowAndamento', {
   getters: {
     etapaCorrente: ({ workflow }): WorkflowAndamentoFluxoDto | null => workflow?.fluxo?.[0] || null,
     faseAtual: ({ etapaEmFoco }) => {
-      const faseAtual = etapaEmFoco?.fases.find((fase) => fase.andamento.andamento);
+      const faseAtual = etapaEmFoco?.fases.find((fase) => fase.andamento.atual);
 
       if (!faseAtual) {
         return null;
@@ -206,8 +206,8 @@ export const useWorkflowAndamentoStore = defineStore('workflowAndamento', {
       return proximaFase;
     },
 
-    inícioDeFasePermitido() {
-      return this.etapaCorrente?.fases?.some((
+    inícioDeFasePermitido({ etapaEmFoco }) {
+      return etapaEmFoco?.fases?.some((
         x: WorkflowAndamentoFasesDto,
         i: number,
         lista: WorkflowAndamentoFasesDto[],
