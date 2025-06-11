@@ -1,9 +1,8 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import {
-  computed, defineAsyncComponent, ref, nextTick,
+  computed, nextTick,
 } from 'vue';
-import LoadingComponent from '@/components/LoadingComponent.vue';
 import ListaDeDistribuicaoItem from '@/components/transferencia/ListaDeDistribuicaoItem.vue';
 import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
@@ -13,11 +12,6 @@ import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuica
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import { useWorkflowAndamentoStore } from '@/stores/workflow.andamento.store.ts';
 import SmaeLink from '@/components/SmaeLink.vue';
-
-const AndamentoDoWorkflow = defineAsyncComponent({
-  loader: () => import('@/components/transferencia/AndamentoDoWorkflow.vue'),
-  loadingComponent: LoadingComponent,
-});
 
 const props = defineProps({
   transferenciaId: {
@@ -119,16 +113,12 @@ nextTick(() => {
       </li>
     </menu>
   </header>
-  <AndamentoDoWorkflow
-    v-if="temPermissãoPara('AndamentoWorkflow.listar') && transferenciaEmFoco?.workflow_id"
-    class="mb2"
-  />
 
   <pre v-scrollLockDebug>transferenciaEmFoco:{{ transferenciaEmFoco }}</pre>
   <pre v-scrollLockDebug>listaDeDistribuicao:{{ listaDeDistribuicao }}</pre>
 
-  <div class="flex g2 flexwrap center mt3 mb2">
-    <h3 class="sr-only">
+  <div class="flex g2 center mt3 mb2">
+    <h3 class="w700 tc600 t20 mb0">
       Identificação
     </h3>
     <hr class="f1">
@@ -145,13 +135,6 @@ nextTick(() => {
       </svg>
       Editar
     </SmaeLink>
-  </div>
-
-  <div class="flex g2 center mt3 mb2">
-    <h3 class="w700 tc600 t20 mb0">
-      Identificação
-    </h3>
-    <hr class="f1">
   </div>
   <div class="flex flexwrap g2 mb2">
     <dl class="f1 fb66 flex g2 flexwrap">
