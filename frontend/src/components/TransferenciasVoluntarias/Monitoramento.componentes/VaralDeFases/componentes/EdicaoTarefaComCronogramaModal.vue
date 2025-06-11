@@ -116,9 +116,9 @@ async function salvarEFinaliarFase() {
     await workflowAndamentoStore.editarFase({
       transferencia_id: route.params.transferenciaId,
       fase_id: values.id,
-      situacao_id: controlledValues.situacao_id || undefined,
-      orgao_responsavel_id: controlledValues.orgao_id,
-      pessoa_responsavel_id: controlledValues.pessoa_responsavel_id || undefined,
+      situacao_id: controlledValues.value.situacao_id || undefined,
+      orgao_responsavel_id: controlledValues.value.orgao_id,
+      pessoa_responsavel_id: controlledValues.value.pessoa_responsavel_id || undefined,
     });
 
     await workflowAndamentoStore.encerrarFase(
