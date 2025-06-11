@@ -1,6 +1,6 @@
 <script setup>
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { impactoDescricao, probabilidadeDescricao, RiscoCalc } from '@/../../common/RiscoCalc.ts';
+import { impactoDescricao, probabilidadeDescricao, RiscoCalc } from '@back/common/RiscoCalc.ts';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import MenuDeMudançaDeStatusDeRisco from '@/components/riscos/MenuDeMudançaDeStatusDeRisco.vue';
 import { risco as schema } from '@/consts/formSchemas';
@@ -187,12 +187,14 @@ iniciar();
           name="descricao"
           :schema="schema"
         />
-        <Field
+        <SmaeText
           name="descricao"
           as="textarea"
           rows="5"
-          class="inputtext light mb1"
-          maxlength="500"
+          class="mb1"
+          :model-value="values.descricao"
+          :schema="schema"
+          anular-vazio
           :class="{ 'error': errors.descricao }"
         />
         <ErrorMessage
@@ -370,10 +372,15 @@ iniciar();
           name="causa"
           :schema="schema"
         />
-        <Field
+        <SmaeText
           name="causa"
-          type="text"
-          class="inputtext light mb1"
+          as="textarea"
+          rows="5"
+          class="mb1"
+          :class="{ error: errors.causa }"
+          :model-value="values.causa"
+          :schema="schema"
+          anular-vazio
         />
         <ErrorMessage
           class="error-msg mb1"
@@ -388,10 +395,15 @@ iniciar();
           name="consequencia"
           :schema="schema"
         />
-        <Field
+        <SmaeText
           name="consequencia"
-          type="text"
-          class="inputtext light mb1"
+          as="textarea"
+          rows="5"
+          class="mb1"
+          :class="{ error: errors.consequencia }"
+          :model-value="values.consequencia"
+          :schema="schema"
+          anular-vazio
         />
         <ErrorMessage
           class="error-msg mb1"

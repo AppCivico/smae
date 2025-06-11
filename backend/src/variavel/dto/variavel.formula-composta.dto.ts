@@ -1,7 +1,7 @@
 import { OmitType, PartialType } from '@nestjs/swagger';
 import { Periodicidade } from '@prisma/client';
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsEnum, IsInt, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsEnum, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
 import { DateTransform } from '../../auth/transforms/date.transform';
 import { NumberTransform } from '../../auth/transforms/number.transform';
 import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
@@ -10,6 +10,7 @@ import { CreateIndicadorFormulaCompostaDto } from '../../indicador/dto/create-in
 import { IndicadorFormulaCompostaDto } from '../../indicador/entities/indicador.formula-composta.entity';
 import { IdCodTituloDto } from '../../common/dto/IdCodTitulo.dto';
 import { IsDateYMD } from '../../auth/decorators/date.decorator';
+import { MAX_LENGTH_DEFAULT } from 'src/common/consts';
 
 export class PeriodoFormulaCompostaDto {
     periodo: string;
@@ -26,6 +27,7 @@ export class ListaPeriodoFormulaCompostaDto {
 export class FilterPeriodoFormulaCompostaDto {
     @IsOnlyDate()
     @Transform(DateTransform)
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Período' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     periodo: Date;
 }
 
@@ -33,12 +35,16 @@ export class PSFormulaCompostaDto extends OmitType(IndicadorFormulaCompostaDto, 
     casas_decimais: number;
     periodicidade: Periodicidade | null;
     regionalizavel: boolean;
-    @IsDateYMD({nullable: true})
+    @IsDateYMD({ nullable: true })
     inicio_medicao: string | null;
-    @IsDateYMD({nullable: true})
+    @IsDateYMD({ nullable: true })
     fim_medicao: string | null;
     orgao: IdSiglaDescricao | null;
+
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Código' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     codigo: string | null;
+
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Variável cálculo erro' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     variavel_calc_erro: string | null;
     variavel_calc: IdCodTituloDto | null;
 }

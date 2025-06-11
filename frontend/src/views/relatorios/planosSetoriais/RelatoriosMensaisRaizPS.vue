@@ -1,8 +1,9 @@
 <script setup>
 import { usePlanosSimplificadosStore } from '@/stores/planosMetasSimplificados.store';
 import { storeToRefs } from 'pinia';
+import { useRoute } from 'vue-router';
 
-const planosMetasSimplificadosStore = usePlanosSimplificadosStore();
+const planosMetasSimplificadosStore = usePlanosSimplificadosStore(useRoute().meta.entidadeMãe);
 
 const { planosSimplificados } = storeToRefs(planosMetasSimplificadosStore);
 

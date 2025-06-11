@@ -89,6 +89,8 @@ export class ProjetoPermissoesDto {
     acao_concluir_obra: boolean;
     acao_paralisar_obra: boolean;
 
+    acao_clonar_cronograma: boolean;
+
     campo_nao_escopo: boolean;
     campo_objeto: boolean;
     campo_objetivo: boolean;
@@ -106,6 +108,7 @@ export class ProjetoPermissoesDto {
      */
     apenas_leitura: boolean;
     sou_responsavel: boolean;
+    pode_editar_apenas_responsaveis_pos_planejamento: boolean; // Novo - Se verdadeiro usado no Gerente de Projeto
 
     @ApiProperty({ enum: ProjetoStatus, enumName: 'ProjetoStatus' })
     status_permitidos: ProjetoStatus[];

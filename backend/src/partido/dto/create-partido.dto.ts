@@ -2,6 +2,7 @@ import { Transform } from 'class-transformer';
 import { IsNumber, IsOptional, IsString, Max, MaxLength } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 import { DateTransform } from '../../auth/transforms/date.transform';
+import { MAX_LENGTH_DEFAULT } from 'src/common/consts';
 
 export class CreatePartidoDto {
     @IsNumber()
@@ -9,16 +10,16 @@ export class CreatePartidoDto {
     numero: number;
 
     @IsString({ message: '$property| sigla: Precisa ser alfanumérico' })
-    @MaxLength(20, { message: '$property| sigla: Máximo 20 caracteres' })
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Sigla' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     sigla: string;
 
     @IsString({ message: '$property| nome: Precisa ser alfanumérico' })
-    @MaxLength(250, { message: '$property| nome: Máximo 250 caracteres' })
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Nome' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     nome: string;
 
     @IsOptional()
     @IsString({ message: '$property| observação: Precisa ser alfanumérico' })
-    @MaxLength(250, { message: '$property| observação: Máximo 250 caracteres' })
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Observação' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     observacao?: string;
 
     /**

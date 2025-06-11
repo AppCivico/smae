@@ -171,7 +171,6 @@ import { useFileStore } from '@/stores/file.store';
 import { storeToRefs } from 'pinia';
 import { Field, useForm } from 'vee-validate';
 import { computed, ref } from 'vue';
-import LabelFromYup from './LabelFromYup.vue';
 
 export type ArquivoAdicionado = {
   nome_original: string,

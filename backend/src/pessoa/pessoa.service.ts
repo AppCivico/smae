@@ -1073,6 +1073,31 @@ export class PessoaService {
         }
 
         {
+            logger.log(`Trocou de órgão: verificando o ${orgaoAntigoStr} se é gerente de projeto (responsavel_id)`);
+
+            const projetosSouResponsavel = await prismaTx.projeto.findMany({
+                where: {
+                    removido_em: null,
+                    responsavel_id: self.id,
+                },
+                select: {
+                    tipo: true,
+                    nome: true,
+                },
+            });
+
+            if (projetosSouResponsavel.length) {
+                throw new BadRequestException(
+                    `Não é possível mudar de órgão, pois ainda é Ponto focal responsável/Gerente do projeto em: ${projetosSouResponsavel
+                        .map((r) => {
+                            return `${r.tipo == 'PP' ? 'Projeto' : 'Obra'} ${r.nome}`;
+                        })
+                        .join('\n')}`
+                );
+            }
+        }
+
+        {
             logger.log(`Trocou de órgão: verificando o ${orgaoAntigoStr} se há responsabilidades em equipes`);
 
             const grupoQSouResp = await prismaTx.grupoResponsavelEquipeResponsavel.findMany({
@@ -1698,6 +1723,30 @@ export class PessoaService {
                 filterModulos.includes(config.modulo)
             ) {
                 ret.privilegios.push(...config.privilegios);
+            }
+        }
+
+        const configuracoesModuloAtualizacao: {
+            privilegioBase: ListaDePrivilegios;
+            modulo: ModuloSistema;
+            privilegiosRequeridos: ListaDePrivilegios[];
+            privilegioMenu: ListaDePrivilegios;
+        }[] = [
+            {
+                privilegioBase: 'SMAE.AtualizacaoEmLote',
+                modulo: 'MDO',
+                privilegiosRequeridos: ['ProjetoMDO.administrador', 'ProjetoMDO.administrador_no_orgao'],
+                privilegioMenu: 'Menu.AtualizacaoEmLote.MDO',
+            },
+        ];
+
+        for (const config of configuracoesModuloAtualizacao) {
+            if (
+                ret.privilegios.includes(config.privilegioBase) &&
+                filterModulos.includes(config.modulo) &&
+                Arr.hasIntersection(ret.privilegios, config.privilegiosRequeridos)
+            ) {
+                ret.privilegios.push(config.privilegioMenu);
             }
         }
 

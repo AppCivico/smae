@@ -6,11 +6,13 @@ import { IsDateYMD } from '../../../auth/decorators/date.decorator';
 import { NumberArrayTransformOrUndef } from '../../../auth/transforms/number-array.transform';
 import { NumberTransform } from '../../../auth/transforms/number.transform';
 import { PaginatedWithPagesDto } from '../../../common/dto/paginated.dto';
+import { OmitType } from '@nestjs/mapped-types';
 
 export class PSMFFiltroDashboardQuadroDto {
     @IsInt()
+    @IsOptional()
     @Transform(NumberTransform)
-    pdm_id: number;
+    pdm_id?: number;
 
     @IsOptional()
     @IsInt({ each: true })
@@ -36,7 +38,16 @@ export class PSMFFiltroDashboardQuadroDto {
     @IsBoolean()
     @Transform(({ value }: any) => value === 'true')
     apenas_pendentes?: boolean; // Mostrar apenas itens com pendências
+}
 
+export class PSMFFiltroDashboardQuadroVariaveisDto extends OmitType(PSMFFiltroDashboardQuadroDto, ['pdm_id']) {
+    @IsOptional()
+    @IsInt()
+    @Transform(NumberTransform)
+    pdm_id?: number;
+}
+
+export class PSMFFiltroDashboardMetasDto extends PSMFFiltroDashboardQuadroDto {
     @IsOptional()
     @IsInt()
     @Transform((a: TransformFnParams) => (a.value === '' ? undefined : +a.value))
@@ -74,22 +85,22 @@ export class PSMFSituacaoVariavelDto {
 
 export class PSMFQuadroVariaveisDto {
     @ApiProperty({ description: 'Quadro 1: Variáveis associadas ao PDM/PS selecionado (visao pessoal)' })
-    associadas_plano_atual: PSMFSituacaoVariavelDto;
+    associadas_plano_atual: PSMFSituacaoVariavelDto | null;
 
     @ApiProperty({
         description:
             'Quadro 2: Variáveis da equipe que ele faz parte não associadas ao PDM/PS que passou e nem a nenhum outro ativo (visão pessoal)',
     })
-    nao_associadas_plano_atual: PSMFSituacaoVariavelDto;
+    nao_associadas_plano_atual: PSMFSituacaoVariavelDto | null;
 
     @ApiProperty({ description: 'Quadro 3: Total de variáveis por situação usadas no PDM/PS (visão geral)' })
-    total_por_situacao: PSMFSituacaoVariavelDto;
+    total_por_situacao: PSMFSituacaoVariavelDto | null;
 
     @ApiProperty({
         description:
             'Quadro 4: todas variaveis ativas que estão sem pdm, [considerar permissão do órgão] (visão geral)',
     })
-    nao_associadas: PSMFSituacaoVariavelDto;
+    nao_associadas: PSMFSituacaoVariavelDto | null;
 }
 
 export class PSMFQuadroMetasDto {
@@ -146,6 +157,9 @@ export class PSMFStatusVariaveisMetaDto {
     @ApiProperty({ description: 'Variáveis a coletar' })
     a_coletar: number;
 
+    @ApiProperty({ description: 'Variáveis a coletar' })
+    a_coletar_atrasadas: number;
+
     @ApiProperty({ description: 'Variáveis coletadas não conferidas' })
     coletadas_nao_conferidas: number;
 
@@ -164,12 +178,18 @@ export class PSMFCicloDto {
     data_ciclo: string;
 }
 
+export class PSMFOrcamentoCountDto {
+    total: number[];
+    preenchido: number[];
+}
+
 export class PSMFCountDto {
     total: number;
     preenchido: number;
 }
 
 export class PSMFSituacaoCicloDto {
+    @ApiProperty({ enum: CicloFase, enumName: 'CicloFase' })
     fase: CicloFase;
     preenchido: boolean;
 }
@@ -190,7 +210,7 @@ export class PSMFItemMetaDto {
     tipo: StrMIA;
 
     @ApiProperty({ description: 'Contadores de pendência de orçamento (se existir orçamento terá total 1)' })
-    pendencia_orcamento: PSMFCountDto;
+    pendencia_orcamento: PSMFOrcamentoCountDto;
 
     @ApiProperty({
         description: 'Contadores de pendência de cronograma (ou cronogramas, se existirem no futuro vários)',
@@ -204,7 +224,7 @@ export class PSMFItemMetaDto {
     variaveis: PSMFStatusVariaveisMetaDto;
 
     @ApiProperty({ description: 'ID da meta pai (para iniciativas e atividades)', required: false })
-    meta_id?: number;
+    meta_id: number;
 
     @ApiProperty({ description: 'ID da iniciativa pai (para atividades)', required: false })
     iniciativa_id?: number;

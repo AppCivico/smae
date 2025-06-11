@@ -40,15 +40,15 @@ async function processCsvToXlsx(csvFile: string, outputXlsx: string) {
     LogMemoryUsage('before loading duckdb');
     const db = await Database.create(':memory:');
 
-    await db.all(`INSTALL spatial; LOAD spatial;`);
+    await db.all(`LOAD excel;`);
 
     LogMemoryUsage('after loading spatial extension');
     console.log(`Loading CSV file: ${csvFile}`);
-    await db.all(`CREATE TABLE tbl AS SELECT * FROM read_csv_auto('${csvFile}', all_varchar='true')`);
+    await db.all(`CREATE TABLE tbl AS SELECT * FROM read_csv_auto('${csvFile}')`);
     LogMemoryUsage('after importing CSV file');
 
     console.log(`Exporting to XLSX file: ${outputXlsx}`);
-    await db.all(`COPY tbl TO '${outputXlsx}' (FORMAT GDAL, DRIVER 'xlsx')`);
+    await db.all(`COPY tbl TO '${outputXlsx}' (FORMAT xlsx, HEADER true)`);
     LogMemoryUsage('after processing');
     await db.close();
 }

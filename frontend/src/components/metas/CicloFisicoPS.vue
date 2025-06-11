@@ -14,18 +14,22 @@
       v-if="Array.isArray(analise?.valores) && analise?.valores.length"
       class="tablemain horizontal-lines mb1"
     >
-      <col class="col--minimum">
-      <col>
-      <col>
-      <col v-if="analise?.valores[0].variavel.acumulativa">
+      <colgroup>
+        <col class="col--minimum">
+        <col>
+        <col>
+        <col v-if="analise?.valores[0].variavel.acumulativa">
+      </colgroup>
       <thead>
-        <th colspan="2">
-          Variável
-        </th>
-        <th>Realizado</th>
-        <th v-if="analise?.valores[0].variavel.acumulativa">
-          Acumulado
-        </th>
+        <tr>
+          <th colspan="2">
+            Variável
+          </th>
+          <th>Realizado</th>
+          <th v-if="analise?.valores[0].variavel.acumulativa">
+            Acumulado
+          </th>
+        </tr>
       </thead>
       <tbody>
         <tr
@@ -50,9 +54,11 @@
     </table>
 
     <table class="tablemain tbody-zebra">
-      <col class="col--minimum">
-      <col>
-      <col class="col--dataHora">
+      <colgroup>
+        <col class="col--minimum">
+        <col>
+        <col class="col--dataHora">
+      </colgroup>
 
       <thead>
         <tr>
@@ -75,10 +81,7 @@
           </tr>
           <tr>
             <td colspan="3">
-              {{ item?.eh_liberacao_auto
-                ? "Liberado retroativamente"
-                : item?.analise_qualitativa
-              }}
+              {{ item.analise_qualitativa }}
             </td>
           </tr>
         </tbody>
@@ -90,10 +93,12 @@
       class="mt2 mb2"
     >
       <table class="tablemain">
-        <col>
-        <col>
-        <col>
-        <col class="col--minimum">
+        <colgroup>
+          <col>
+          <col>
+          <col>
+          <col class="col--minimum">
+        </colgroup>
         <thead>
           <tr>
             <th colspan="2">
@@ -173,10 +178,10 @@ type Fase = {
 };
 
 const fasesMapeadas = computed(() => {
-  const mapa: Record<VariavelFase, unknown> = {
-    Preenchimento: '',
-    Validacao: '',
-    Liberacao: '',
+  const mapa: Record<VariavelFase, Fase | null> = {
+    Preenchimento: null,
+    Validacao: null,
+    Liberacao: null,
   };
 
   if (props.analise?.analises && Array.isArray(props.analise?.analises)) {

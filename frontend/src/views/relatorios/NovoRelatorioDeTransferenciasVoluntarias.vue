@@ -1,5 +1,9 @@
 <script setup>
-import LabelFromYup from '@/components/LabelFromYup.vue';
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage, Field, useForm,
+} from 'vee-validate';
+import { useRoute, useRouter } from 'vue-router';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import { relatórioDeTransferênciasVoluntárias as schema } from '@/consts/formSchemas';
 import interfacesDeTransferências from '@/consts/interfacesDeTransferências';
@@ -9,11 +13,6 @@ import { useOrgansStore } from '@/stores/organs.store';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
 import { usePartidosStore } from '@/stores/partidos.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
-import { storeToRefs } from 'pinia';
-import {
-  ErrorMessage, Field, useForm, useIsFormDirty,
-} from 'vee-validate';
-import { useRoute, useRouter } from 'vue-router';
 
 const alertStore = useAlertStore();
 const ÓrgãosStore = useOrgansStore();
@@ -31,7 +30,6 @@ const valoresIniciais = {
     esfera: null,
     gestor_contrato: null,
     interface: null,
-    objeto: null,
     orgao_concedente_id: null,
     partido_id: null,
     secretaria_concedente: null,
@@ -66,21 +64,21 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   }
 });
 
-const formularioSujo = useIsFormDirty();
-
 ÓrgãosStore.getAll();
 partidosStore.buscarTudo();
 ParlamentaresStore.buscarTudo({ ipp: 500, possui_mandatos: true });
 
 </script>
 <template>
-  <div class="flex spacebetween center mb2">
-    <TítuloDePágina />
-    <hr class="ml2 f1">
-    <CheckClose
-      :formulario-sujo="formularioSujo"
-    />
-  </div>
+  <CabecalhoDePagina :formulario-sujo="false" />
+
+  <p class="texto--explicativo">
+    Conjunto de dois arquivos: um com as transferências voluntárias e outro com
+    os respectivos cronogramas. No arquivo
+    <code class="destacar">cronograma</code>, a coluna
+    <var class="destacar">transferencia_id</var> serve como vínculo com o
+    arquivo <code class="destacar">transferencias</code>.
+  </p>
 
   <pre v-scrollLockDebug>values:{{ values }}</pre>
 
@@ -405,32 +403,6 @@ ParlamentaresStore.buscarTudo({ ipp: 500, possui_mandatos: true });
         </div>
       </div>
     </div> <!-- Terceira linha da tela - Fim -->
-
-    <div class="flex flexwrap g2 mb2">
-      <!-- Quarta linha da tela - Início -->
-
-      <!-- OBJETO -->
-      <div class="f1">
-        <LabelFromYup
-          name="objeto"
-          :schema="schema.fields.parametros"
-        />
-        <Field
-          name="parametros.objeto"
-          as="textarea"
-          class="inputtext light mb1"
-          rows="5"
-          :class="{
-            error: errors['parametros.objeto'],
-          }"
-          @change="!$event.target.value ? setFieldValue('parametros.objeto',null) : null"
-        />
-        <ErrorMessage
-          class="error-msg mb1"
-          name="parametros.objeto"
-        />
-      </div>
-    </div> <!-- Quarta linha da tela - Fim -->
 
     <Field
       name="parametros.tipo"

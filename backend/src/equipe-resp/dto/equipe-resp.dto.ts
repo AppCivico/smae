@@ -1,10 +1,11 @@
 import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
 import { PerfilResponsavelEquipe } from '@prisma/client';
 import { ArrayMaxSize, IsArray, IsEnum, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
+import { MAX_LENGTH_DEFAULT } from 'src/common/consts';
 
 export class CreateEquipeRespDto {
     @IsString()
-    @MaxLength(120)
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Título' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     titulo: string;
 
     @IsEnum(PerfilResponsavelEquipe)

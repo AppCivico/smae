@@ -1,15 +1,15 @@
 <script setup>
-import { tipoDeAcompanhamento as schema } from '@/consts/formSchemas';
-import { useAlertStore } from '@/stores/alert.store';
-import { useTiposDeAcompanhamentoStore } from '@/stores/tiposDeAcompanhamento.store.ts';
-import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
   Field,
   Form,
 } from 'vee-validate';
 import { computed } from 'vue';
+import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
+import { useAlertStore } from '@/stores/alert.store';
+import { useTiposDeAcompanhamentoStore } from '@/stores/tiposDeAcompanhamento.store.ts';
+import { tipoDeAcompanhamento as schema } from '@/consts/formSchemas';
 
 const alertStore = useAlertStore();
 const tiposDeAcompanhamentoStore = useTiposDeAcompanhamentoStore();
@@ -54,21 +54,6 @@ async function onSubmit(_, { controlledValues }) {
   }
 }
 
-function excluirTipoDeAcompanhamento(id) {
-  alertStore.confirmAction('Todos os acompanhamentos associados perderão seu tipo. Deseja mesmo remover esse item?', async () => {
-    if (await tiposDeAcompanhamentoStore.excluirItem(id)) {
-      tiposDeAcompanhamentoStore.$reset();
-      tiposDeAcompanhamentoStore.buscarTudo();
-      alertStore.success('Acompanhamento removido.');
-
-      const rotaDeEscape = route.meta?.rotaDeEscape;
-
-      if (rotaDeEscape) {
-        router.push(typeof rotaDeEscape === 'string' ? { name: rotaDeEscape } : rotaDeEscape);
-      }
-    }
-  }, 'Remover');
-}
 </script>
 <template>
   <div class="flex spacebetween center mb2">
@@ -145,14 +130,6 @@ function excluirTipoDeAcompanhamento(id) {
   >
     Carregando
   </div>
-
-  <button
-    v-else-if="emFoco?.id"
-    class="btn amarelo big"
-    @click="excluirTipoDeAcompanhamento(emFoco.id)"
-  >
-    Remover item
-  </button>
 
   <div
     v-if="erro"

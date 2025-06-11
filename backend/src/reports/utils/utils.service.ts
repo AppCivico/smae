@@ -111,13 +111,13 @@ export function ParseParametrosDaFonte(fonte: FonteRelatorio, value: any): any {
     let theClass: any = undefined;
 
     switch (fonte) {
-        case 'Orcamento':
-            theClass = CreateRelPdmOrcamentoExecutadoDto;
-            break;
         case 'ProjetoOrcamento':
         case 'ObrasOrcamento':
-        case 'PSOrcamento':
             theClass = CreateRelProjetoOrcamentoDto;
+            break;
+        case 'Orcamento':
+        case 'PSOrcamento':
+            theClass = CreateRelPdmOrcamentoExecutadoDto;
             break;
         case 'Indicadores':
         case 'PSIndicadores':
@@ -162,7 +162,7 @@ export function ParseParametrosDaFonte(fonte: FonteRelatorio, value: any): any {
         case 'PSMonitoramentoMensal':
             theClass = CreatePsMonitoramentoMensalFilterDto;
             break;
-        case 'CasaCivilAtvPendentes':
+        case 'AtvPendentes':
             theClass = CreateCasaCivilAtividadesPendentesFilterDto;
             break;
         default:
@@ -192,14 +192,16 @@ export const DefaultCsvOptions = {
 };
 
 export function EnumHumano(enumType: typeof ParlamentarCargo | typeof TipoRelatorio, value: string): string {
+    const normalizedValue = value.trim();
+
     if (enumType === ParlamentarCargo) {
-        if (value === 'DeputadoFederal') return 'Deputado Federal';
-        if (value === 'DepudatoEstadual') return 'Deputado Estadual';
+        if (normalizedValue === 'DeputadoFederal') return 'Deputado Federal';
+        if (normalizedValue === 'DeputadoEstadual') return 'Deputado Estadual';
     }
 
     if (enumType === TipoRelatorio) {
-        if (value === 'Analitico') return 'Analítico';
+        if (normalizedValue === 'Analitico') return 'Analítico';
     }
 
-    return value;
+    return normalizedValue;
 }

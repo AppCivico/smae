@@ -58,7 +58,7 @@ const erros = ref({
   diretórios: null,
 });
 
-const arquivosOrdenados = computed(() => [...props.arquivos]
+const arquivosOrdenados = computed(() => props.arquivos.slice()
   .sort((a, b) => {
     if (a[ordenadoPor.value] || b[ordenadoPor.value]) {
       return ordem.value === 'crescente'
@@ -96,7 +96,7 @@ const árvoreDeDiretórios = computed(() => createDataTree(
         }))
         .filter((x) => !acc.some((y) => y.id === x.id)),
     ), []),
-  'pai',
+  { parentPropertyName: 'pai' },
 ) || []);
 
 watchEffect(async () => {

@@ -1,6 +1,9 @@
+import type {
+  AcompanhamentoTipo,
+  ListAcompanhamentoTipoDto,
+} from '@back/pp/acompanhamento-tipo/entities/acompanhament-tipo.entities.dto';
 import { defineStore } from 'pinia';
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { AcompanhamentoTipo, ListAcompanhamentoTipoDto } from '@/../../backend/src/pp/acompanhamento-tipo/entities/acompanhament-tipo.entities.dto';
+import { useAuthStore } from './auth.store';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -21,22 +24,21 @@ type Estado = {
   erro: null | unknown;
 };
 
-type RouteMeta = {
-  [key: string]: any;
-};
+function caminhoParaApi() {
+  const authStore = useAuthStore();
 
-function caminhoParaApi(rotaMeta:RouteMeta) {
-  if (
-    rotaMeta.entidadeMãe === 'projeto'
-  ) {
-    return 'acompanhamento-tipo';
+  switch (authStore.sistemaEscolhido) {
+    case 'Projetos':
+      return 'acompanhamento-tipo';
+
+    case 'MDO':
+      return 'acompanhamento-tipo-mdo';
+
+    default:
+      throw new Error(
+        'Você precisa estar em algum módulo para executar essa ação.',
+      );
   }
-  if (
-    rotaMeta.entidadeMãe === 'obras' || rotaMeta.entidadeMãe === 'mdo'
-  ) {
-    return 'acompanhamento-tipo-mdo';
-  }
-  throw new Error('Você precisa estar em algum módulo para executar essa ação.');
 }
 
 export const useTiposDeAcompanhamentoStore = defineStore('tiposDeAcompanhamento', {
@@ -57,7 +59,7 @@ export const useTiposDeAcompanhamentoStore = defineStore('tiposDeAcompanhamento'
       try {
         const {
           linhas,
-        } = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta)}`, params);
+        } = await this.requestS.get(`${baseUrl}/${caminhoParaApi()}`, params);
 
         this.lista = linhas;
       } catch (erro: unknown) {
@@ -72,7 +74,7 @@ export const useTiposDeAcompanhamentoStore = defineStore('tiposDeAcompanhamento'
       this.chamadasPendentes.lista = true;
 
       try {
-        await this.requestS.delete(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${id || this.route.params.tipoDeAtendimentoId}`);
+        await this.requestS.delete(`${baseUrl}/${caminhoParaApi()}/${id || this.route.params.tipoDeAtendimentoId}`);
 
         this.chamadasPendentes.lista = false;
         return true;
@@ -88,9 +90,9 @@ export const useTiposDeAcompanhamentoStore = defineStore('tiposDeAcompanhamento'
 
       try {
         if (id) {
-          await this.requestS.patch(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${id || this.route.params.tipoDeAtendimentoId}`, params);
+          await this.requestS.patch(`${baseUrl}/${caminhoParaApi()}/${id || this.route.params.tipoDeAtendimentoId}`, params);
         } else {
-          await this.requestS.post(`${baseUrl}/${caminhoParaApi(this.route.meta)}`, params);
+          await this.requestS.post(`${baseUrl}/${caminhoParaApi()}`, params);
         }
 
         this.chamadasPendentes.emFoco = false;

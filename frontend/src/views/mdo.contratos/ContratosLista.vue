@@ -42,7 +42,7 @@ const {
   permissõesDoProjetoEmFoco,
 } = storeToRefs(useProjetosStore());
 
-const permissoesDoItemEmFoco = computed(() => (route.params.entidadeMãe === 'obras'
+const permissoesDoItemEmFoco = computed(() => (route.meta.entidadeMãe === 'obras'
   ? permissõesDaObraEmFoco.value
   : permissõesDoProjetoEmFoco.value));
 

@@ -69,14 +69,16 @@ function openParent(e) {
 
     <div class="content">
       <table class="tablemain no-zebra">
-        <col class="col--minimum">
-        <col>
-        <col class="col--minimum">
-        <col class="col--minimum">
-        <col class="col--minimum">
-        <col class="col--minimum">
-        <col class="col--minimum">
-        <col class="col--botão-de-ação">
+        <colgroup>
+          <col class="col--minimum">
+          <col>
+          <col class="col--minimum">
+          <col class="col--minimum">
+          <col class="col--minimum">
+          <col class="col--minimum">
+          <col class="col--minimum">
+          <col class="col--botão-de-ação">
+        </colgroup>
         <thead>
           <tr>
             <th>

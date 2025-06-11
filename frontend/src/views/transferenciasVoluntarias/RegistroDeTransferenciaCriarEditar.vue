@@ -1,5 +1,11 @@
 <script setup>
-import LabelFromYup from '@/components/LabelFromYup.vue';
+import Big from 'big.js';
+import { storeToRefs } from 'pinia';
+import { useRouter } from 'vue-router';
+import {
+  ErrorMessage, Field, FieldArray, useForm,
+} from 'vee-validate';
+import { computed, nextTick, watch } from 'vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import { registroDeTransferencia as schema } from '@/consts/formSchemas';
 import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
@@ -7,15 +13,6 @@ import { useAlertStore } from '@/stores/alert.store';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
 import { usePartidosStore } from '@/stores/partidos.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
-import Big from 'big.js';
-import { storeToRefs } from 'pinia';
-import {
-  ErrorMessage, Field, FieldArray, useForm,
-} from 'vee-validate';
-import {
-  computed, nextTick, watch,
-} from 'vue';
-import { useRouter } from 'vue-router';
 
 const TransferenciasVoluntarias = useTransferenciasVoluntariasStore();
 const {
@@ -435,11 +432,16 @@ watch(itemParaEdicao, async (novosValores) => {
             :schema="schema.fields.parlamentares.innerType"
             :for="`parlamentares[${idx}].objeto`"
           />
-          <Field
+          <SmaeText
+            :model-value="values.parlamentares[idx].objeto"
             :name="`parlamentares[${idx}].objeto`"
             class="inputtext light mb1"
             as="textarea"
             rows="10"
+            :schema="schema"
+            maxlength="1000"
+            anular-vazio
+            esconder-contador
           />
         </div>
       </div>

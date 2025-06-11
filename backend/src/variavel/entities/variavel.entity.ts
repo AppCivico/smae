@@ -1,20 +1,20 @@
-import { ApiProperty, getSchemaPath, OmitType, PickType, refs } from '@nestjs/swagger';
+import { ApiHideProperty, ApiProperty, getSchemaPath, OmitType, PickType, refs } from '@nestjs/swagger';
 import { Periodicidade, Polaridade, Prisma, Serie, TipoVariavel } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { Transform } from 'class-transformer';
 import { IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
+import { IdSigla } from 'src/common/dto/IdSigla.dto';
+import { IsDateYMD } from '../../auth/decorators/date.decorator';
 import { DateTransform } from '../../auth/transforms/date.transform';
 import { DateYMD } from '../../common/date2ymd';
 import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
 import { IdNomeDto } from '../../common/dto/IdNome.dto';
 import { IdNomeExibicaoDto } from '../../common/dto/IdNomeExibicao.dto';
 import { IdTituloDto } from '../../common/dto/IdTitulo.dto';
-import { OrgaoResumo } from '../../orgao/entities/orgao.entity';
+import { OrgaoReduzidoDto } from '../../orgao/entities/orgao.entity';
 import { Regiao } from '../../regiao/entities/regiao.entity';
 import { UnidadeMedida } from '../../unidade-medida/entities/unidade-medida.entity';
 import { VariavelResumo } from '../dto/list-variavel.dto';
-import { IsDateYMD } from '../../auth/decorators/date.decorator';
-import { IdSigla } from 'src/common/dto/IdSigla.dto';
 
 export class IndicadorVariavelOrigemDto {
     id: number;
@@ -43,7 +43,7 @@ export class VariavelItemDto {
     valor_base: Decimal;
     @ApiProperty({ type: String })
     periodicidade: Periodicidade;
-    orgao: OrgaoResumo;
+    orgao: OrgaoReduzidoDto;
     regiao: Regiao | null;
     polaridade: Polaridade;
     indicador_variavel: IndicadorVariavelItemDto[];
@@ -81,7 +81,7 @@ export class VariavelGlobalItemDto extends PickType(VariavelItemDto, [
     'possui_variaveis_filhas',
     'supraregional',
 ]) {
-    orgao_proprietario: OrgaoResumo;
+    orgao_proprietario: OrgaoReduzidoDto;
     tipo: TipoVariavel;
     fonte: IdNomeDto | null;
     planos: IdNomeDto[];
@@ -111,6 +111,18 @@ export class FilterPeriodoDto {
     @IsBoolean()
     @Transform((v) => v.value === 'true')
     ate_ciclo_corrente?: Boolean;
+
+    @ApiHideProperty()
+    ate_ciclo_corrente_inclusive?: boolean;
+
+    @ApiProperty({
+        description:
+            'Recebe a serie do ciclo ativo com a referencia ":no_ciclo:" para indicar que a data encontra-se no ciclo ativo',
+    })
+    @IsOptional()
+    @IsBoolean()
+    @Transform((v) => v.value === 'true')
+    suporta_ciclo_info?: Boolean;
 }
 
 export const TipoUso = { 'leitura': 'leitura', 'escrita': 'escrita' } as const;

@@ -257,13 +257,15 @@ watch(props, (novosValores) => {
       </div>
 
       <table class="tablemain">
-        <col>
-        <col>
-        <col>
-        <col class="col--percentagem">
-        <col>
-        <col class="col--percentagem">
-        <col>
+        <colgroup>
+          <col>
+          <col>
+          <col>
+          <col class="col--percentagem">
+          <col>
+          <col class="col--percentagem">
+          <col>
+        </colgroup>
         <thead>
           <tr>
             <th />

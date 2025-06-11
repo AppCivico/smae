@@ -21,6 +21,7 @@ import { IdNomeExibicaoDto } from '../../common/dto/IdNomeExibicao.dto';
 import { IdSiglaDescricao } from '../../common/dto/IdSigla.dto';
 import { CONST_PROC_SEI_SINPROC_DESCR, CONST_PROC_SEI_SINPROC_MESSAGE, CONST_PROC_SEI_SINPROC_REGEXP } from '../../dotacao/dto/dotacao.dto';
 import { OrcamentoRealizado } from '../entities/orcamento-realizado.entity';
+import { MAX_LENGTH_DEFAULT } from 'src/common/consts';
 
 export class CreateOrcamentoRealizadoItemDto {
     /**
@@ -134,7 +135,7 @@ export class CreateOrcamentoRealizadoDto {
      * @example "00.00.00.000.0000.0.000.00000000.00"
      */
     @Type(() => String) // fazendo cast pra texto sempre, já que tem a mask
-    @MaxLength(100)
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Dotação' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     @Matches(/^\d{2}\.\d{2}\.\d{2}\.\d{3}\.\d{4}\.\d\.\d{3}\.\d{8}\.\d{2}(?:\.\d{1}\.\d{3}\.\d{4})?(?:\.\d{1})?$/, {
         message:
             'Dotação não está no formato esperado: 00.00.00.000.0000.0.000.00000000.00, 00.00.00.000.0000.0.000.00000000.00.0.000.0000 ou 00.00.00.000.0000.0.000.00000000.00.0.000.0000.0',
@@ -148,7 +149,7 @@ export class CreateOrcamentoRealizadoDto {
      */
     @IsOptional()
     @Type(() => String) // fazendo cast pra texto sempre, já que tem a mask
-    @MaxLength(100)
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Dotação empenho' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     @Matches(/^\d{1}\.\d{3}\.\d{4}(\.\d{1})?$/, {
         message: 'Dotação Complemento não está no formato esperado: 0.000.0000 ou 0.000.0000.0',
     })
@@ -158,7 +159,7 @@ export class CreateOrcamentoRealizadoDto {
 
     @IsOptional()
     @Type(() => String) // fazendo cast pra texto sempre, já que tem a mask
-    @MaxLength(20)
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Processo' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     @ApiProperty({ description: CONST_PROC_SEI_SINPROC_DESCR, example: '6016201700379910' })
     @Matches(CONST_PROC_SEI_SINPROC_REGEXP, { message: CONST_PROC_SEI_SINPROC_MESSAGE })
     @ValidateIf((object, value) => value !== null && value !== '')
@@ -170,7 +171,7 @@ export class CreateOrcamentoRealizadoDto {
      */
     @IsOptional()
     @Type(() => String) // fazendo cast pra texto sempre, já que tem a mask
-    @MaxLength(12)
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Nota empenho' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     @Matches(/^\d{1,6}\/2\d{3}$/, {
         message: 'Nota não está no formato esperado: 000000/' + new Date(Date.now()).getFullYear(),
     })
@@ -234,7 +235,6 @@ export class FilterOrcamentoRealizadoDto {
      */
     @IsOptional()
     @IsString()
-    @MaxLength(20)
     processo?: string | null;
 
     /**
@@ -243,7 +243,6 @@ export class FilterOrcamentoRealizadoDto {
      */
     @IsOptional()
     @IsString()
-    @MaxLength(7)
     nota_empenho?: string | null;
 
     /**
@@ -279,7 +278,6 @@ export class FilterOrcamentoRealizadoCompartilhadoDto extends PickType(FilterOrc
 
     @IsOptional()
     @IsString()
-    @MaxLength(20)
     nota_empenho?: string | null;
 }
 

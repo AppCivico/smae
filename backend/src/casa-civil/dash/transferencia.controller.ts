@@ -3,13 +3,15 @@ import { ApiBearerAuth, ApiExtraModels, ApiOkResponse, ApiTags, refs } from '@ne
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
-import { PaginatedDto } from '../../common/dto/paginated.dto';
+import { PaginatedDto, PaginatedWithPagesDto } from '../../common/dto/paginated.dto';
 import { RequestInfoDto } from '../../mf/metas/dto/mf-meta.dto';
 import { FilterDashNotasDto, MfDashNotasDto } from './dto/notas.dto';
 import {
     DashAnaliseTranferenciasChartsDto,
+    DashTransferenciasPainelEstrategicoDto,
     FilterDashTransferenciasAnaliseDto,
     FilterDashTransferenciasDto,
+    FilterDashTransferenciasPainelEstrategicoDto,
     ListMfDashTransferenciasDto,
 } from './dto/transferencia.dto';
 import { DashTransferenciaService } from './transferencia.service';
@@ -66,5 +68,17 @@ export class DashTransferenciaController {
             ...analiseTransferencias,
             requestInfo: { queryTook: Date.now() - start },
         };
+    }
+
+    // Pensar em um nome para esse endpoint é complicado, pois já temos "transferências" lá em cima.
+    // E é utilizado em uma outra tela. Essa aqui é para o painel estratégico.
+    @Get('painel-estrategico-transferencias')
+    @ApiBearerAuth('access-token')
+    @Roles(['CadastroTransferencia.dashboard'])
+    async buscaTransferenciasPainelEstrategico(
+        @Query() params: FilterDashTransferenciasPainelEstrategicoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<PaginatedWithPagesDto<DashTransferenciasPainelEstrategicoDto>> {
+        return await this.metasDashService.getTransferenciasPainelEstrategico(params, user);
     }
 }

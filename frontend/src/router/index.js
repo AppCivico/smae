@@ -12,7 +12,9 @@ import administracao from './administracao';
 import análise from './analise';
 import comunicadosGerais from './comunicadosGerais';
 import configuracoes from './configuracoes';
+import edicoesEmLote from './edicoesEmLote';
 import envios from './envios';
+import ferramentas from './ferramentas';
 import graficos from './graficos';
 import metas from './metas';
 import monitoramento from './monitoramento';
@@ -63,6 +65,9 @@ export const router = createRouter({
 
     ...administracao,
     ...configuracoes,
+
+    ferramentas,
+    edicoesEmLote,
 
     monitoramento,
     metas,
@@ -129,16 +134,18 @@ router.beforeEach(async (r, from) => {
 });
 
 router.afterEach((to, from) => {
-  const { título, classeRaiz } = to.meta;
+  const { título, tituloParaNavegador, classeRaiz } = to.meta;
   const { classeRaiz: classeRaizAnterior } = from.meta;
 
-  if (título) {
-    if (typeof título === 'function') {
-      watch(() => título(), (novoValor) => {
+  if (título || tituloParaNavegador) {
+    const esteTitulo = tituloParaNavegador || título;
+
+    if (typeof esteTitulo === 'function') {
+      watch(() => esteTitulo(), (novoValor) => {
         document.title = novoValor ? `${novoValor} | SMAE` : 'SMAE';
       }, { immediate: true });
-    } else if (título) {
-      document.title = `${título} | SMAE`;
+    } else if (esteTitulo) {
+      document.title = `${esteTitulo} | SMAE`;
     }
   } else if (document.title !== 'SMAE') {
     document.title = 'SMAE';

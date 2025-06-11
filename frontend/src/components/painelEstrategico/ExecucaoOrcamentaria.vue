@@ -135,29 +135,31 @@
         </tr>
       </tbody>
       <tfoot>
-        <td colspan="5" />
-        <td>
-          <dl
-            class="legendas mt1"
-          >
-            <div class="legenda-item">
-              <dd class="custo-planejado-total" />
-              <dt>Custo Planejado Total</dt>
-            </div>
-            <div class="legenda-item">
-              <dd class="custo-planejado" />
-              <dt>Custo Planejado até a Presente Data</dt>
-            </div>
-            <div class="legenda-item">
-              <dd class="valor-empenhado" />
-              <dt>Valor Empenhado Total</dt>
-            </div>
-            <div class="legenda-item">
-              <dd class="valor-liquidado" />
-              <dt>Valor Liquidado Total</dt>
-            </div>
-          </dl>
-        </td>
+        <tr>
+          <td colspan="5" />
+          <td>
+            <dl
+              class="legendas mt1"
+            >
+              <div class="legenda-item">
+                <dd class="custo-planejado-total" />
+                <dt>Custo Planejado Total</dt>
+              </div>
+              <div class="legenda-item">
+                <dd class="custo-planejado" />
+                <dt>Custo Planejado até a Presente Data</dt>
+              </div>
+              <div class="legenda-item">
+                <dd class="valor-empenhado" />
+                <dt>Valor Empenhado Total</dt>
+              </div>
+              <div class="legenda-item">
+                <dd class="valor-liquidado" />
+                <dt>Valor Liquidado Total</dt>
+              </div>
+            </dl>
+          </td>
+        </tr>
       </tfoot>
     </table>
     <div class="flex justifycenter">

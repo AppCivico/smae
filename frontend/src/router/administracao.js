@@ -1,5 +1,5 @@
 import { defineAsyncComponent } from 'vue';
-
+// eslint-disable-next-line import/no-cycle
 import {
   useODSStore,
   useOrgansStore,
@@ -62,6 +62,9 @@ import EtapasRaiz from '@/views/etapasProjeto/EtapasRaiz.vue';
 import ClassificacaoCriarEditar from '@/views/classificacao/ClassificacaoCriarEditar.vue';
 import ClassificacaoLista from '@/views/classificacao/ClassificacaoLista.vue';
 import ClassificacaoRaiz from '@/views/classificacao/ClassificacaoRaiz.vue';
+import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';
+import { useModalidadeDeContratacaoStore } from '@/stores/modalidadeDeContratacao.store';
+import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
 
 const TiposDeAcompanhamentoLista = defineAsyncComponent({
   loader: () => import('@/views/tiposDeAcompanhamento/TiposLista.vue'),
@@ -108,6 +111,7 @@ export default [
   {
     path: '/administracao',
     component: Administracao,
+    name: 'administracaoRaiz',
     meta: {
       limitarÀsPermissões: [
         'CadastroEquipamentoMDO.',
@@ -127,8 +131,6 @@ export default [
         'CadastroUnidadeMedida.',
         'Projeto.administrar_portfolios',
       ],
-      presenteNoMenu: true,
-      pesoNoMenu: Infinity,
       título: 'Administração',
       íconeParaMenu: `<svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
   <path fill-rule="evenodd" clip-rule="evenodd" d="M18 12V11.2V8.8V8.001H3.6L2 8V12H18ZM18 6V5.2V2.8V2.001H3.6L2 2V6H18ZM2 0H17.99C19.33 0 20 0.668 20 2V17.92C20 19.307 19.333 20 18 20H2C0.667 20 0 19.307 0 17.92V2C0 0.667 0.667 0 2 0ZM3.6 14H2V18H18V17.2V14.8V14.001H3.6V14ZM4 5C3.73478 5 3.48043 4.89464 3.29289 4.70711C3.10536 4.51957 3 4.26522 3 4C3 3.73478 3.10536 3.48043 3.29289 3.29289C3.48043 3.10536 3.73478 3 4 3C4.26522 3 4.51957 3.10536 4.70711 3.29289C4.89464 3.48043 5 3.73478 5 4C5 4.26522 4.89464 4.51957 4.70711 4.70711C4.51957 4.89464 4.26522 5 4 5ZM4 11C3.73478 11 3.48043 10.8946 3.29289 10.7071C3.10536 10.5196 3 10.2652 3 10C3 9.73478 3.10536 9.48043 3.29289 9.29289C3.48043 9.10536 3.73478 9 4 9C4.26522 9 4.51957 9.10536 4.70711 9.29289C4.89464 9.48043 5 9.73478 5 10C5 10.2652 4.89464 10.5196 4.70711 10.7071C4.51957 10.8946 4.26522 11 4 11ZM4 17C3.73478 17 3.48043 16.8946 3.29289 16.7071C3.10536 16.5196 3 16.2652 3 16C3 15.7348 3.10536 15.4804 3.29289 15.2929C3.48043 15.1054 3.73478 15 4 15C4.26522 15 4.51957 15.1054 4.70711 15.2929C4.89464 15.4804 5 15.7348 5 16C5 16.2652 4.89464 16.5196 4.70711 16.7071C4.51957 16.8946 4.26522 17 4 17Z" />
@@ -197,7 +199,6 @@ export default [
             component: GruposTematicosLista,
             meta: {
               título: 'Grupos temáticos',
-              rotasParaMigalhasDePão: ['cadastrosBasicos'],
             },
           },
           {
@@ -207,7 +208,6 @@ export default [
             meta: {
               título: 'Novo grupo temático',
               rotasParaMigalhasDePão: [
-                'cadastrosBasicos',
                 'gruposTematicosObras',
               ],
             },
@@ -224,9 +224,8 @@ export default [
               },
             }),
             meta: {
-              título: 'Editar',
+              título: () => useGruposTematicosStore()?.emFoco?.nome || 'Editar Grupo Temático',
               rotasParaMigalhasDePão: [
-                'cadastrosBasicos',
                 'gruposTematicosObras',
               ],
             },
@@ -249,7 +248,6 @@ export default [
             component: TiposDeIntervencaoLista,
             meta: {
               título: 'Tipos de intervenção',
-              rotasParaMigalhasDePão: ['cadastrosBasicos'],
             },
           },
           {
@@ -257,9 +255,8 @@ export default [
             path: 'novo',
             component: TiposDeIntervencaoCriarEditar,
             meta: {
-              título: 'Novo',
+              título: 'Novo tipo de intervenção',
               rotasParaMigalhasDePão: [
-                'cadastrosBasicos',
                 'tiposDeIntervencao',
               ],
             },
@@ -276,9 +273,8 @@ export default [
               },
             }),
             meta: {
-              título: 'Editar',
+              título: () => useTiposDeIntervencaoStore()?.emFoco?.nome || 'Editar Tipo de Intervenção',
               rotasParaMigalhasDePão: [
-                'cadastrosBasicos',
                 'tiposDeIntervencao',
               ],
             },
@@ -378,11 +374,12 @@ export default [
         component: TiposDeAcompanhamentoRaiz,
         meta: {
           título: 'Tipos de acompanhamento',
-          presenteNoMenu: true,
           rotaPrescindeDeChave: true,
-          limitarÀsPermissões: 'Projeto.administrar_portfolios',
+          limitarÀsPermissões: [
+            'Projeto.administrar_portfolios',
+            'ProjetoMDO.administrador',
+          ],
           rotasParaMenuSecundário,
-          entidadeMãe: 'projeto',
         },
 
         children: [
@@ -469,7 +466,6 @@ export default [
         meta: {
           título: 'Etapas de obra',
           entidadeMãe: 'mdo',
-          presenteNoMenu: true,
           rotaPrescindeDeChave: true,
           limitarÀsPermissões: 'CadastroProjetoEtapaMDO.',
           rotasParaMenuSecundário,
@@ -516,7 +512,6 @@ export default [
         meta: {
           título: 'Etapas de projeto',
           entidadeMãe: 'projeto',
-          presenteNoMenu: true,
           rotaPrescindeDeChave: true,
           limitarÀsPermissões: 'CadastroProjetoEtapa.',
           rotasParaMenuSecundário,
@@ -1139,7 +1134,7 @@ export default [
         }),
 
         meta: {
-          título: 'Editar modalidade',
+          título: () => useModalidadeDeContratacaoStore()?.emFoco?.nome || 'Editar modalidade',
           rotasParaMigalhasDePão: ['modalidadesListar'],
         },
       },

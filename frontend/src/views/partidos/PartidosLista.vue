@@ -37,11 +37,13 @@ partidoStore.buscarTudo();
     </router-link>
   </div>
   <table class="tablemain">
-    <col>
-    <col>
-    <col>
-    <col class="col--botão-de-ação">
-    <col class="col--botão-de-ação">
+    <colgroup>
+      <col>
+      <col>
+      <col>
+      <col class="col--botão-de-ação">
+      <col class="col--botão-de-ação">
+    </colgroup>
     <thead>
       <tr>
         <th>

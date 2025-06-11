@@ -111,6 +111,7 @@ class RetornoDbProjeto {
 
     empreendimento_id?: number;
     empreendimento_identificador?: string;
+    etiquetas: string;
 }
 
 class RetornoDbCronograma {
@@ -388,7 +389,15 @@ export class PPObrasService implements ReportableService {
                     projeto.mdo_n_unidades_atendidas AS n_unidades_atendidas,
                     empreendimento.id AS empreendimento_id,
                     empreendimento.identificador AS empreendimento_identificador,
-                    projeto.mdo_observacoes
+                    projeto.mdo_observacoes,
+                    (
+                        SELECT
+                            string_agg(pt.descricao, '|')
+
+                        FROM projeto_tag pt
+                        WHERE pt.id = ANY(projeto.tags)
+                        AND pt.removido_em IS NULL
+                    ) as etiquetas 
                 FROM projeto
                 LEFT JOIN meta ON meta.id = projeto.meta_id AND meta.removido_em IS NULL
                 LEFT JOIN pdm ON pdm.id = meta.pdm_id
@@ -984,6 +993,7 @@ export class PPObrasService implements ReportableService {
                 previsao_duracao: db.previsao_duracao ? db.previsao_duracao : null,
                 previsao_custo: db.previsao_custo ? db.previsao_custo : null,
                 custo_planejado: db.custo_planejado ? db.custo_planejado : null,
+                etiquetas: db.etiquetas ?? null,
                 data_inauguracao_planejada: db.data_inauguracao_planejada
                     ? Date2YMD.toString(db.data_inauguracao_planejada)
                     : null,
@@ -1380,8 +1390,8 @@ export class PPObrasService implements ReportableService {
                 WHERE ar.projeto_acompanhamento_id = projeto_acompanhamento.id
             ) AS riscos
         FROM projeto
-          JOIN projeto_acompanhamento ON projeto_acompanhamento.projeto_id = projeto.id
-          JOIN projeto_acompanhamento_item ON projeto_acompanhamento_item.projeto_acompanhamento_id = projeto_acompanhamento.id
+          JOIN projeto_acompanhamento ON projeto_acompanhamento.projeto_id = projeto.id AND projeto_acompanhamento.removido_em IS NULL
+          LEFT JOIN projeto_acompanhamento_item ON projeto_acompanhamento_item.projeto_acompanhamento_id = projeto_acompanhamento.id AND projeto_acompanhamento_item.removido_em IS NULL
           JOIN portfolio ON projeto.portfolio_id = portfolio.id
         ${whereCond.whereString}
         `;

@@ -498,6 +498,9 @@ model Pessoa {
     CategoriaAssuntoVariavelQAtualizei CategoriaAssuntoVariavel[] @relation("atualizador")
     CategoriaAssuntoVariavelQRemovi    CategoriaAssuntoVariavel[] @relation("removedor")
 
+    AtualizacoesEmLoteCriadas   AtualizacaoEmLote[] @relation("AtualizacaoEmLoteCriador")
+    AtualizacoesEmLoteRemovidas AtualizacaoEmLote[] @relation("AtualizacaoEmLoteRemovedor")
+
     @@index([email])
     @@map("pessoa")
 }
@@ -605,6 +608,7 @@ model Orgao {
     ViewPainelEstrategicoProjetos     ViewPainelEstrategicoProjetos[]
     ViewProjetoV2Resp                 ViewProjetoV2[]                      @relation("orgao_responsavel")
     ViewProjetoV2Origem               ViewProjetoV2[]                      @relation("orgao_origem")
+    AtualizacaoEmLote                 AtualizacaoEmLote[]
 
     @@map("orgao")
 }
@@ -1207,6 +1211,7 @@ model Arquivo {
     FormulaCompostaCicloFisicoDocumento FormulaCompostaCicloFisicoDocumento[]
     transferencia_anexos                TransferenciaAnexo[]
     VariavelGlobalCicloDocumento        VariavelGlobalCicloDocumento[]
+    AtualizacaoEmLote                   AtualizacaoEmLote[]
 
     @@map("arquivo")
 }
@@ -1332,6 +1337,8 @@ model Meta {
     PdmPerfil                              PdmPerfil[]
     ViewPainelEstrategicoProjetos          ViewPainelEstrategicoProjetos[]
     PsDashboardConsolidado                 PsDashboardConsolidado[]
+    view_ps_dashboard_meta_stats           view_ps_dashboard_meta_stats[]
+    ViewPsDashboardConsolidado             view_ps_dashboard_consolidado[]
 
     @@index([pdm_id])
     @@map("meta")
@@ -1768,6 +1775,7 @@ model Variavel {
     VariavelGlobalCicloAnalise         VariavelGlobalCicloAnalise[]
     VariavelGlobalCicloDocumento       VariavelGlobalCicloDocumento[]
     VariavelGlobalPedidoComplementacao VariavelGlobalPedidoComplementacao[]
+    PsDashboardVariavel                PsDashboardVariavel[]
 
     @@index([tipo, removido_em, variavel_mae_id])
     @@index([regiao_id])
@@ -2147,6 +2155,7 @@ model Iniciativa {
     PdmPerfil                          PdmPerfil[]
     CompromissoOrigem                  CompromissoOrigem[]
     PsDashboardConsolidado             PsDashboardConsolidado[]
+    ViewPsDashboardConsolidado         view_ps_dashboard_consolidado[]
 
     @@index([meta_id])
     @@map("iniciativa")
@@ -2238,6 +2247,7 @@ model Atividade {
     ProjetoOrigemRel                   CompromissoOrigem[]                  @relation("rel")
     PdmPerfil                          PdmPerfil[]
     PsDashboardConsolidado             PsDashboardConsolidado[]
+    ViewPsDashboardConsolidado         view_ps_dashboard_consolidado[]
 
     @@index([iniciativa_id])
     @@map("atividade")
@@ -3459,7 +3469,7 @@ enum FonteRelatorio {
     ObrasPrevisaoCusto
     PSPrevisaoCusto
     PSOrcamento
-    CasaCivilAtvPendentes
+    AtvPendentes
     PSMonitoramentoMensal
     PSIndicadores
 }
@@ -3495,15 +3505,19 @@ model Relatorio {
     // Coluna espelhada da RelatorioFilha, para facilitar a busca.
     processado_em DateTime? @db.Timestamptz(6)
 
+    err_msg     String?   @db.Text
+    iniciado_em DateTime? @db.Timestamptz(6)
+
     tipo  TipoRelatorio? // não deu certo remover, o prisma não cria o Enum pq não ta sendo usado!
     fonte FonteRelatorio
 
-    criador              Pessoa?                @relation("criador", fields: [criado_por], references: [id])
-    removedor            Pessoa?                @relation("removedor", fields: [removido_por], references: [id])
-    arquivo              Arquivo?               @relation(fields: [arquivo_id], references: [id])
-    pdm                  Pdm?                   @relation(fields: [pdm_id], references: [id])
-    ProjetoRelatorioFila ProjetoRelatorioFila[]
-    processamento        RelatorioFila?
+    criador       Pessoa?        @relation("criador", fields: [criado_por], references: [id])
+    removedor     Pessoa?        @relation("removedor", fields: [removido_por], references: [id])
+    arquivo       Arquivo?       @relation(fields: [arquivo_id], references: [id])
+    pdm           Pdm?           @relation(fields: [pdm_id], references: [id])
+    //ProjetoRelatorioFila ProjetoRelatorioFila[]
+    //processamento        RelatorioFila?
+    RelatorioFila RelatorioFila? @ignore
 
     @@index([pdm_id, criado_em, removido_em])
     @@index([fonte, criado_em])
@@ -3525,6 +3539,7 @@ model RelatorioFila {
     @@unique([relatorio_id])
     @@index([executado_em, congelado_em])
     @@map("relatorio_fila")
+    @@ignore
 }
 
 enum ProjetoFase {
@@ -3840,7 +3855,7 @@ model Projeto {
     removido_em               DateTime?
     removido_por              Int?
     ProjetoRegistroSei        ProjetoRegistroSei[]
-    ProjetoRelatorioFila      ProjetoRelatorioFila[]
+    //ProjetoRelatorioFila      ProjetoRelatorioFila[]
     ProjetoNumerosSequenciais ProjetoNumeroSequencial[]
 
     MetaOrcamento            OrcamentoPrevisto[]
@@ -3866,6 +3881,7 @@ model Projeto {
     origem_cache                  Json                            @default("{}") @db.Json
     ViewPainelEstrategicoProjetos ViewPainelEstrategicoProjetos[]
     ViewProjetoV2                 ViewProjetoV2[]
+    ProjetoRelatorioFila          ProjetoRelatorioFila[]          @ignore
 
     @@index([removido_em])
     @@map("projeto")
@@ -4140,12 +4156,13 @@ model ProjetoRelatorioFila {
     executado_em DateTime?
 
     relatorio_id Int?
-    relatorio    Relatorio? @relation(fields: [relatorio_id], references: [id])
+    ///relatorio    Relatorio? @relation(fields: [relatorio_id], references: [id])
 
     motivado_relatorio ProjetoMotivoRelatorio @default(MudancaDeStatus)
 
     @@index([projeto_id])
     @@map("projeto_relatorio_fila")
+    @@ignore
 }
 
 enum ProjetoOrigemTipo {
@@ -4957,6 +4974,10 @@ enum task_type {
     refresh_indicador
     refresh_variavel
     importacao_parlamentar
+    run_report
+    run_update
+    backup_api_log_day
+    restore_api_log_day
 }
 
 enum task_status {
@@ -4987,9 +5008,29 @@ model task_queue {
 
     erro_em       DateTime? @db.Timestamp(6)
     erro_mensagem String?
+    worker_info   Json      @default("{}")
+
+    n_retry     Int       @default(0)
+    esperar_ate DateTime?
+
+    AtualizacaoEmLote    AtualizacaoEmLote[]
+    task_buffer          task_buffer?
+    ApiRequestLogControl ApiRequestLogControl[]
 
     @@index([status])
     @@index([criado_em])
+}
+
+model task_buffer {
+    id Int @id @default(autoincrement())
+
+    task_id Int
+    task    task_queue @relation(fields: [task_id], references: [id])
+
+    data      Json     @default("{}")
+    criado_em DateTime @default(now()) @db.Timestamp(6)
+
+    @@unique([task_id])
 }
 
 model feature_flag {
@@ -5742,9 +5783,9 @@ model Transferencia {
     valor_total                    Decimal? @default(0) @db.Decimal(15, 2)
     valor_contrapartida            Decimal? @default(0) @db.Decimal(15, 2)
     custeio                        Decimal? @default(0) @db.Decimal(15, 2)
-    pct_custeio                    Float?   @db.DoublePrecision
+    pct_custeio                    Decimal? @default(0) @db.Decimal(5, 2)
     investimento                   Decimal? @default(0) @db.Decimal(15, 2)
-    pct_investimento               Float?   @db.DoublePrecision
+    pct_investimento               Decimal? @default(0) @db.Decimal(5, 2)
 
     ano                  Int?
     emenda               String?
@@ -5908,9 +5949,11 @@ model DistribuicaoRecurso {
     valor_total                     Decimal   @default(0) @db.Decimal(15, 2)
     valor_contrapartida             Decimal   @default(0) @db.Decimal(15, 2)
     custeio                         Decimal   @default(0) @db.Decimal(15, 2)
-    pct_custeio                     Float?    @db.DoublePrecision
+    pct_custeio                     Decimal?  @db.Decimal(5, 2)
     investimento                    Decimal   @default(0) @db.Decimal(15, 2)
-    pct_investimento                Float?    @db.DoublePrecision
+    valor_empenho                   Decimal?  @default(0) @db.Decimal(15, 2)
+    valor_liquidado                 Decimal   @default(0) @db.Decimal(15, 2)
+    pct_investimento                Decimal?  @db.Decimal(5, 2)
     empenho                         Boolean?
     data_empenho                    DateTime? @db.Date()
     programa_orcamentario_estadual  String?
@@ -5931,6 +5974,16 @@ model DistribuicaoRecurso {
     nota           Nota?       @relation(fields: [nota_id], references: [id])
     aviso_email_id Int?
     aviso_email    AvisoEmail? @relation(fields: [aviso_email_id], references: [id])
+
+    // Dados de banco
+    distribuicao_banco   String?
+    distribuicao_conta   String?
+    distribuicao_agencia String?
+
+    rubrica_de_receita String?
+    finalidade         String?
+
+    gestor_contrato String?
 
     criado_por     Int?
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)
@@ -6682,10 +6735,10 @@ view ViewTransferenciaAnalise {
 
     workflow_finalizado     Boolean
     ano                     Int
-    partido_id              Int?
+    partido_id              Int[]
     workflow_etapa_atual_id Int?
     workflow_fase_atual_id  Int?
-    parlamentar_id          Int?
+    parlamentar_id          Int[]
     valor_total             Decimal
 
     distribuicao_orgao_id    Int?
@@ -7013,6 +7066,7 @@ view view_parlamentares_mandatos_part_atual {
     dia_aniversario  Int?
     mes_aniversario  Int?
     email            String?
+    zona_atuacao     String?
     ano_eleicao      Int?
     eleicao_id       Int?
     partido_atual_id Int?
@@ -7251,8 +7305,9 @@ model VariavelCicloCorrente {
     liberacao_enviada        Boolean      @default(false)
     atualizado_em            DateTime     @default(now()) @db.Timestamptz(6)
 
-    variavel           Variavel             @relation(fields: [variavel_id], references: [id])
-    ViewVariavelGlobal ViewVariavelGlobal[]
+    variavel                         Variavel                           @relation(fields: [variavel_id], references: [id])
+    ViewVariavelGlobal               ViewVariavelGlobal[]
+    view_dashboard_variavel_corrente view_dashboard_variavel_corrente[]
 
     @@unique([variavel_id])
     @@map("variavel_ciclo_corrente")
@@ -7306,6 +7361,9 @@ model VariavelGlobalCicloAnalise {
     removido_em  DateTime?
     removido_por Int?
 
+    sincronizar_serie_variavel Boolean   @default(false)
+    sv_sincronizado_em         DateTime? /// Quando foi sincronizado os valores da fase de Preenchimento com a tabela de serie_variavel
+
     variavel        Variavel @relation(fields: [variavel_id], references: [id])
     pessoaCriador   Pessoa   @relation("criador", fields: [criado_por], references: [id])
     pessoaRemovedor Pessoa?  @relation("removedor", fields: [removido_por], references: [id])
@@ -7343,6 +7401,7 @@ enum TransfereGovOportunidadeTipo {
     Voluntaria
     Especifica
     Emenda
+    Especial
 }
 
 enum TransfereGovOportunidadeAvaliacao {
@@ -7359,15 +7418,16 @@ model TransfereGovOportunidade {
     id_programa                BigInt
     natureza_juridica_programa String
     transferencia_incorporada  Boolean                            @default(false)
-    cod_orgao_sup_programa     BigInt
-    desc_orgao_sup_programa    String
+    cod_orgao_sup_programa     BigInt?
+    desc_orgao_sup_programa    String?
     cod_programa               BigInt
     nome_programa              String
     sit_programa               String
-    ano_disponibilizacao       Int
-    data_disponibilizacao      DateTime                           @db.Date()
-    dt_ini_receb               DateTime                           @db.Date()
-    dt_fim_receb               DateTime                           @db.Date()
+    ano_disponibilizacao       Int?
+    data_disponibilizacao      DateTime?                          @db.Date()
+    dt_ini_receb               DateTime?                          @db.Date()
+    dt_fim_receb               DateTime?                          @db.Date()
+    finalidades                String?
     modalidade_programa        String
     acao_orcamentaria          String
     vetores_busca              Unsupported("tsvector")?           @default(dbgenerated())
@@ -7453,21 +7513,29 @@ view ViewPainelEstrategicoProjetos {
     @@map("view_painel_estrategico_projetos")
 }
 
+enum PsDashboardConsolidadoTipo {
+    meta
+    iniciativa
+    atividade
+}
+
 model PsDashboardConsolidado {
-    id            Int    @id @default(autoincrement())
+    id            Int                        @id @default(autoincrement())
     item_id       Int
-    tipo          String // 'meta', 'iniciativa', 'atividade'
+    tipo          PsDashboardConsolidadoTipo // 'meta', 'iniciativa', 'atividade', usado pro order-by funcionar
     pdm_id        Int
     meta_id       Int
     iniciativa_id Int?
     atividade_id  Int?
 
+    variaveis Int[]
+
     meta       Meta        @relation(fields: [meta_id], references: [id])
     iniciativa Iniciativa? @relation(fields: [iniciativa_id], references: [id])
     atividade  Atividade?  @relation(fields: [atividade_id], references: [id])
 
-    orcamento_total      Int     @default(0)
-    orcamento_preenchido Int     @default(0)
+    orcamento_total      Int[]   @default([])
+    orcamento_preenchido Int[]   @default([])
     pendencia_orcamento  Boolean @default(false)
 
     cronograma_total         Int     @default(0)
@@ -7485,9 +7553,9 @@ model PsDashboardConsolidado {
     variaveis_liberadas                Int @default(0)
 
     fase_atual                 CicloFase?
-    fase_analise_preenchida    Boolean   @default(false)
-    fase_risco_preenchida      Boolean   @default(false)
-    fase_fechamento_preenchida Boolean   @default(false)
+    fase_analise_preenchida    Boolean    @default(false)
+    fase_risco_preenchida      Boolean    @default(false)
+    fase_fechamento_preenchida Boolean    @default(false)
 
     equipes_orgaos      Int[]   @default([])
     equipes             Int[]   @default([])
@@ -7501,5 +7569,233 @@ model PsDashboardConsolidado {
 
     @@unique([item_id, tipo])
     @@index([meta_id])
+    @@index([variaveis], name: "idx_ps_dashboard_consolidado_variaveis", type: Gin)
     @@map("ps_dashboard_consolidado")
+}
+
+view view_ps_dashboard_consolidado {
+    id                                 Int                        @id
+    item_id                            Int
+    tipo                               PsDashboardConsolidadoTipo
+    pdm_id                             Int
+    meta_id                            Int
+    iniciativa_id                      Int?
+    atividade_id                       Int?
+    variaveis                          Int[]
+    orcamento_total                    Int[]
+    orcamento_preenchido               Int[]
+    pendencia_orcamento                Boolean
+    cronograma_total                   Int
+    cronograma_atraso_inicio           Int
+    cronograma_atraso_fim              Int
+    cronograma_preenchido              Int
+    pendencia_cronograma               Boolean
+    variaveis_total                    Int
+    variaveis_total_no_ciclo           Int
+    variaveis_a_coletar                Int
+    variaveis_a_coletar_atrasadas      Int
+    variaveis_coletadas_nao_conferidas Int
+    variaveis_conferidas_nao_liberadas Int
+    variaveis_liberadas                Int
+    fase_atual                         CicloFase?
+    fase_analise_preenchida            Boolean
+    fase_risco_preenchida              Boolean
+    fase_fechamento_preenchida         Boolean
+    equipes_orgaos                     Int[]
+    equipes                            Int[]
+    pendente                           Boolean
+    pendente_variavel                  Boolean
+    pendente_cronograma                Boolean
+    pendente_orcamento                 Boolean
+    atualizado_em                      DateTime
+    ciclo_fisico_id                    Int?
+
+    meta       Meta        @relation(fields: [meta_id], references: [id])
+    iniciativa Iniciativa? @relation(fields: [iniciativa_id], references: [id])
+    atividade  Atividade?  @relation(fields: [atividade_id], references: [id])
+
+    // Added fields from joins
+    meta_codigo       String
+    meta_titulo       String
+    iniciativa_codigo String?
+    iniciativa_titulo String?
+    atividade_codigo  String?
+    atividade_titulo  String?
+
+    order_meta       String
+    order_iniciativa String
+    order_atividade  String
+
+    @@unique([item_id, tipo])
+    @@map("view_ps_dashboard_consolidado")
+}
+
+model PsDashboardVariavel {
+    variavel_id Int      @id
+    variavel    Variavel @relation(fields: [variavel_id], references: [id])
+
+    pdm_id          Int[]
+    pdm_id_completo Int[]
+
+    fase                          VariavelFase
+    fase_preenchimento_preenchida Boolean      @default(false)
+    fase_validacao_preenchida     Boolean      @default(false)
+    fase_liberacao_preenchida     Boolean      @default(false)
+
+    possui_atrasos Boolean @default(false)
+
+    equipes        Int[] // Mexeu, não dispara recalc
+    equipes_orgaos Int[] // Mexeu, não dispara recalc
+
+    // Campos de equipe por "fase"
+    equipes_preenchimento Int[] @default([])
+    equipes_conferencia   Int[] @default([])
+    equipes_liberacao     Int[] @default([])
+
+    @@index([pdm_id])
+    @@map("ps_dashboard_variavel")
+}
+
+view view_ps_dashboard_meta_stats {
+    pdm_id         Int
+    // removidos no v2
+    //item_id        Int
+    //tipo           String
+    meta_id        Int
+    equipes        Int[]
+    equipes_orgaos Int[]
+
+    // Status flags (0 or 1)
+    pendente Int
+
+    // Variables status
+    var_liberadas Int
+    var_a_liberar Int
+
+    // Schedule status
+    crono_preenchido  Int
+    crono_a_preencher Int
+
+    // Budget status
+    orc_preenchido  Int
+    orc_a_preencher Int
+
+    // Qualification status
+    qualif_preenchida  Int
+    qualif_a_preencher Int
+
+    // Risk status
+    risco_preenchido  Int
+    risco_a_preencher Int
+
+    // Closing status
+    fechadas Int
+    a_fechar Int
+
+    ciclo_fisico_id Int?
+
+    meta Meta @relation(fields: [meta_id], references: [id])
+
+    @@unique([meta_id])
+    @@map("ps_dashboard_meta_stats_v2")
+}
+
+view view_dashboard_variavel_corrente {
+    item_id                    Int
+    tipo                       String
+    variavel_ciclo_corrente_id Int
+    variavel_ciclo_corrente    VariavelCicloCorrente @relation(fields: [variavel_ciclo_corrente_id], references: [id])
+
+    pdm_id Int
+
+    @@unique([item_id, tipo])
+    @@map("view_dashboard_variavel_corrente")
+}
+
+enum TipoAtualizacaoEmLote {
+    ProjetoPP
+    ProjetoMDO
+}
+
+enum StatusAtualizacaoEmLote {
+    Pendente
+    Executando
+    Concluido // Todos os itens processados com sucesso
+    ConcluidoParcialmente // Finalizado, mas alguns itens falharam
+    Falhou // Abortado devido a erros (ex: max_exceptions) ou todos falharam
+    Abortado // Parado na metade, se matar o job precisa detectar isso
+}
+
+model AtualizacaoEmLote {
+    id   Int                   @id @default(autoincrement())
+    tipo TipoAtualizacaoEmLote // Que tipo de entidade está sendo atualizada
+
+    status StatusAtualizacaoEmLote @default(Pendente) // Status geral do job
+
+    // --- O que está sendo atualizado ---
+    target_ids          Int[] // Lista de chaves primárias dos registros a atualizar
+    operacao            Json // A definição da operação: ex: [{"op": "set", "col": "nome", "value": "New Name"}]
+    operacao_processada Json?
+
+    // --- Rastreamento & Resultados ---
+    n_total    Int
+    n_sucesso  Int @default(0)
+    n_erro     Int @default(0)
+    n_ignorado Int @default(0) // Quantos foram pulados (ex: após exceder max_exceptions)
+
+    // Log detalhado, especialmente para falhas. Estrutura pode ser: {falhas: [{"id": 123, "erros": "Validação falhou: ..."}]
+    results_log Json?
+
+    sucesso_ids Int[] // IDs dos registros que foram atualizados com sucesso
+
+    // --- Associação com Task ---
+    task_id Int? // Link para o job task_queue que executa isso
+    task    task_queue? @relation(fields: [task_id], references: [id])
+
+    // --- Auditoria & Contexto ---
+    modulo_sistema ModuloSistema // Qual parte da app iniciou isso
+    criado_por_id  Int
+    criado_em      DateTime      @default(now()) @db.Timestamptz(6)
+    criador        Pessoa        @relation("AtualizacaoEmLoteCriador", fields: [criado_por_id], references: [id])
+
+    relatorio_arquivo_id Int? // Arquivo de log gerado, se houver
+    relatorio_arquivo    Arquivo? @relation(fields: [relatorio_arquivo_id], references: [id])
+
+    iniciou_em  DateTime? @db.Timestamptz(6)
+    terminou_em DateTime? @db.Timestamp(6)
+
+    // Campos de remoção opcionais - geralmente logs não são removidos, mas mantidos para histórico
+    removido_por_id Int?
+    removido_em     DateTime? @db.Timestamptz(6)
+    removedor       Pessoa?   @relation("AtualizacaoEmLoteRemovedor", fields: [removido_por_id], references: [id])
+
+    orgao_id Int?
+    orgao    Orgao? @relation(fields: [orgao_id], references: [id])
+
+    @@index([criado_em, tipo])
+    @@map("atualizacao_em_lote")
+}
+
+model ApiRequestLogControl {
+    log_date        DateTime                   @id @db.Date
+    status          ApiRequestLogControlStatus
+    task_id         Int?
+    backup_location String?
+    last_error      String?
+    created_at      DateTime                   @default(now())
+    updated_at      DateTime                   @updatedAt
+
+    task task_queue? @relation(fields: [task_id], references: [id])
+
+    @@map("api_request_log_control")
+}
+
+enum ApiRequestLogControlStatus {
+    AWAITING_BACKUP
+    BACKING_UP
+    BACKED_UP
+    RESTORING
+    RESTORED
+    FAILED_BACKUP
+    FAILED_RESTORE
 }

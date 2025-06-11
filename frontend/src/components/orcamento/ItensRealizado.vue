@@ -143,12 +143,15 @@ async function addItem() {
   <pre v-scrollLockDebug>orçamentoEmFoco:{{ orçamentoEmFoco }}</pre>
 
   <table class="tablemain no-zebra mb1">
-    <col>
-    <col class="col--percentagem">
-    <col>
-    <col class="col--percentagem">
-    <col>
-    <col class="col--botão-de-ação">
+    <colgroup>
+      <col>
+      <col class="col--percentagem">
+      <col>
+      <col class="col--percentagem">
+      <col>
+      <col class="col--botão-de-ação">
+    </colgroup>
+
     <thead>
       <tr>
         <th rowspan="2">

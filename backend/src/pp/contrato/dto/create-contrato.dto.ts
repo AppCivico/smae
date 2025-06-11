@@ -17,11 +17,12 @@ import {
 import { DateTransform } from 'src/auth/transforms/date.transform';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 import { Transform, Type } from 'class-transformer';
+import { MAX_LENGTH_DEFAULT, MAX_LENGTH_MEDIO } from 'src/common/consts';
 
 export class CreateContratoDto {
     @IsString()
     @MinLength(1)
-    @MaxLength(500)
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Número' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     numero: string;
 
     @IsBoolean({ message: '$property| precisa ser um boolean' })
@@ -64,22 +65,26 @@ export class CreateContratoDto {
 
     @IsOptional()
     @MinLength(1)
-    @MaxLength(500)
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Objeto Resumo" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     objeto_resumo?: string;
 
     @IsOptional()
     @MinLength(1)
-    @MaxLength(50000)
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Objeto Detalhado" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     objeto_detalhado?: string;
 
     @IsOptional()
     @MinLength(1)
-    @MaxLength(500)
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Contratante' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     contratante?: string;
 
     @IsOptional()
     @MinLength(1)
-    @MaxLength(500)
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Empresa contratada' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     empresa_contratada?: string;
 
     @IsOptional()
@@ -96,7 +101,7 @@ export class CreateContratoDto {
 
     @IsOptional()
     @MinLength(1)
-    @MaxLength(5000)
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Observacões" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     observacoes?: string;
 
     @IsOptional()

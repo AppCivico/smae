@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, forwardRef, Get, HttpCode, HttpStatus, Inject, Param, Patch, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
@@ -25,6 +25,7 @@ const roles: ListaDePrivilegios[] = [
 export class RiscoController {
     constructor(
         private readonly riscoService: RiscoService,
+        @Inject(forwardRef(() => ProjetoService))
         private readonly projetoService: ProjetoService
     ) {}
 

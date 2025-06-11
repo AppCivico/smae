@@ -10,6 +10,15 @@ import 'vue-router';
 export { };
 
 declare global {
+  interface ImportMetaEnv {
+    readonly VITE_EXPOR_ERROS: string;
+    readonly DEV: boolean;
+  }
+
+  interface ImportMeta {
+    readonly env: ImportMetaEnv;
+  }
+
   type ChamadasPendentes = {
     lista: boolean;
     emFoco: boolean;
@@ -20,8 +29,15 @@ declare global {
     emFoco: null | unknown;
   };
 
+  type Estado = {
+    lista: unknown[];
+    emFoco: unknown | null;
+    chamadasPendentes: ChamadasPendentes;
+    erros: Erros;
+  };
+
   type Paginacao = {
-    tokenPaginacao: string;
+    tokenPaginacao: string | null;
     paginas: number;
     paginaCorrente: number;
     temMais: boolean;
@@ -36,11 +52,11 @@ declare module 'vue-router' {
     entidadeMãe?: string;
     título?: string | (() => string);
     títuloParaMenu?: string | (() => string);
-    rotaDeEscape?: string | string[];
+    rotaDeAdição?: RouteLocationRaw;
+    rotaDeEscape?: RouteLocationRaw;
+    rotaDeEdição?: string | string[];
     rotasParaMigalhasDePão?: string[];
     limitarÀsPermissões?: string | string[];
-    presenteNoMenu?: boolean;
-    pesoNoMenu? : number;
     íconeParaMenu?: string;
     rotasParaMenuSecundário?: string[];
     rotasParaMenuPrincipal?: string[];

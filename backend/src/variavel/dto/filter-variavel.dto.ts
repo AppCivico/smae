@@ -6,6 +6,7 @@ import { NumberArrayTransformOrUndef } from '../../auth/transforms/number-array.
 import { NumberTransform } from '../../auth/transforms/number.transform';
 import { AscDescEnum } from '../../pp/projeto/dto/filter-projeto.dto';
 import { VAR_CATEGORICA_AS_NULL } from '../../common/dto/consts';
+import { MAX_LENGTH_DEFAULT, MAX_LENGTH_MEDIO } from 'src/common/consts';
 
 export class FilterVariavelDto {
     /**
@@ -97,7 +98,7 @@ export class FilterVariavelDto {
 
     @IsOptional()
     @IsString()
-    @MaxLength(250)
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Palavra Chave' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     palavra_chave?: string;
 
     @IsOptional()
@@ -124,17 +125,17 @@ export class FilterVariavelDto {
 
     @IsOptional()
     @IsString()
-    @MaxLength(60)
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Código' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     codigo?: string;
 
     @IsOptional()
     @IsString()
-    @MaxLength(60)
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Descrição" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     descricao?: string;
 
     @IsOptional()
     @IsString()
-    @MaxLength(60)
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Título' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     titulo?: string;
 
     @IsOptional()
@@ -161,6 +162,7 @@ export class VariavelOrderByDto {
 
     @IsEnum(VariavelOrderEnum)
     @ApiProperty({ enum: VariavelOrderEnum, enumName: 'VariavelOrderEnum', default: 'codigo' })
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Ordem Coluna' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     ordem_coluna: string = 'codigo';
 }
 

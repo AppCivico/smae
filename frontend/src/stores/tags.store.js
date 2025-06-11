@@ -16,8 +16,7 @@ function caminhoParaApi(rotaMeta) {
   }
 }
 
-export const useTagsStore = defineStore({
-  id: 'Tags',
+export const useTagsStore = defineStore('Tags', {
   state: () => ({
     Tags: {},
     tempTags: {},

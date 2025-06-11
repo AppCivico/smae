@@ -3,14 +3,25 @@ import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { ModuloSistema } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { Date2YMD } from '../common/date2ymd';
 import { PessoaService } from '../pessoa/pessoa.service';
-import { MinhaContaDto, SessaoDto } from './models/minha-conta.dto';
+import { MinhaContaDto, SessaoDto, TesteDataDto } from './models/minha-conta.dto';
 import { NovaSenhaDto } from './models/nova-senha.dto';
 
 @ApiTags('Minha Conta')
 @Controller('')
 export class MinhaContaController {
     constructor(private readonly pessoaService: PessoaService) {}
+
+    @Post('teste-sistema')
+    @ApiBearerAuth('access-token')
+    postData(@CurrentUser() user: PessoaFromJwt, @Body() filter: TesteDataDto): string {
+        return `
+        ${user.nome_exibicao} - toISOString = ${filter.data.toISOString()} - Date2YMD.toString = ${Date2YMD.toString(
+            filter.data
+        )}
+        `;
+    }
 
     @Get('minha-conta')
     @ApiBearerAuth('access-token')

@@ -1,8 +1,9 @@
 import { IsBoolean, IsOptional, IsString, MaxLength } from 'class-validator';
+import { MAX_LENGTH_DEFAULT } from 'src/common/consts';
 
 export class CreateGrupoTematicoDto {
     @IsString({ message: '$property| descricao: Precisa ser alfanumérico' })
-    @MaxLength(250, { message: '$property| descricao: Máximo 250 caracteres' })
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Nome' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     nome: string;
 
     @IsBoolean()

@@ -1,7 +1,7 @@
 import { OmitType, PartialType } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { Expose } from 'class-transformer';
-import { IsNumber, IsOptional } from 'class-validator';
+import { IsNumber, IsOptional, ValidateIf } from 'class-validator';
 import { FilterProjetoDto } from 'src/pp/projeto/dto/filter-projeto.dto';
 import { NumberTransform } from '../../../auth/transforms/number.transform';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
@@ -14,7 +14,6 @@ export class CreateRelObrasDto extends OmitType(PartialType(FilterProjetoDto), [
     'portfolio_id',
 ]) {
     @IsNumber()
-    @Transform(NumberTransform)
     @Expose()
     portfolio_id: number;
 
@@ -24,24 +23,18 @@ export class CreateRelObrasDto extends OmitType(PartialType(FilterProjetoDto), [
     grupo_tematico_id?: number;
 
     @IsOptional()
-    @IsOnlyDate()
-    @Transform(DateTransform)
-    @Expose()
-    data_termino?: Date;
-
-    @IsOptional()
     @IsNumber()
     @Expose()
     orgao_responsavel_id?: number;
 
     @IsOptional()
     @IsNumber()
-    @Transform(NumberTransform)
     @Expose()
     projeto_regiao_id?: number;
 
     @IsOptional()
     @IsOnlyDate()
+    @ValidateIf((object, value) => value !== null)
     @Transform(DateTransform)
     @Expose()
     periodo?: Date;

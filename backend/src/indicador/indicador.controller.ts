@@ -196,6 +196,7 @@ export class IndicadorPSController {
         return { linhas: await this.indicadorService.findAll(tipo, filters, user) };
     }
 
+    // todo: refresh de painel
     @Patch('plano-setorial-indicador/:id/associar-variavel')
     @ApiBearerAuth('access-token')
     @Roles(MetaSetorialController.WritePerm)
@@ -208,6 +209,7 @@ export class IndicadorPSController {
         return await this.indicadorService.linkVariavel(tipo, +params.id, dto, user);
     }
 
+    // todo: refresh de painel
     @Delete('plano-setorial-indicador/:id/desassociar-variavel')
     @ApiBearerAuth('access-token')
     @Roles(MetaSetorialController.WritePerm)

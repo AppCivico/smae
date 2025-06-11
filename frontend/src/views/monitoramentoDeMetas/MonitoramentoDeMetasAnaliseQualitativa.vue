@@ -1,13 +1,4 @@
 <script setup>
-import EnvioDeArquivos from '@/components/monitoramentoDeMetas/EnvioDeArquivos.vue';
-import ListaDeDocumentos from '@/components/monitoramentoDeMetas/ListaDeDocumentos.vue';
-import SmallModal from '@/components/SmallModal.vue';
-import TextEditor from '@/components/TextEditor.vue';
-import { monitoramentoDeMetasAnalise as schema } from '@/consts/formSchemas';
-import { dateToShortDate } from '@/helpers/dateToDate';
-import dateToTitle from '@/helpers/dateToTitle';
-import { useAlertStore } from '@/stores/alert.store';
-import { useMonitoramentoDeMetasStore } from '@/stores/monitoramentoDeMetas.store';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
@@ -20,6 +11,15 @@ import {
   ref, watch, watchEffect,
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import EnvioDeArquivos from '@/components/monitoramentoDeMetas/EnvioDeArquivos.vue';
+import ListaDeDocumentos from '@/components/monitoramentoDeMetas/ListaDeDocumentos.vue';
+import SmallModal from '@/components/SmallModal.vue';
+import TextEditor from '@/components/TextEditor.vue';
+import { monitoramentoDeMetasAnalise as schema } from '@/consts/formSchemas';
+import { dateToShortDate } from '@/helpers/dateToDate';
+import dateToTitle from '@/helpers/dateToTitle';
+import { useAlertStore } from '@/stores/alert.store';
+import { useMonitoramentoDeMetasStore } from '@/stores/monitoramentoDeMetas.store';
 
 const route = useRoute();
 const router = useRouter();
@@ -50,7 +50,8 @@ const analiseEmFocoParaEdicao = computed(() => ({
 
 const analiseAnterior = computed(() => ({
   ciclo_fisico_id: route.params.cicloId,
-  informacoes_complementares: analiseEmFoco.value?.corrente.analises[0]?.informacoes_complementares,
+  informacoes_complementares:
+      analiseEmFoco.value?.anterior.analises[0]?.informacoes_complementares,
   meta_id: route.params.meta_id,
   criador: analiseEmFoco.value?.anterior.analises[0]?.criador,
   criado_em: analiseEmFoco.value?.anterior.analises[0]?.criado_em,
@@ -146,9 +147,7 @@ watchEffect(() => {
 
     <hr class="ml2 f1">
 
-    <CheckClose
-      :formulario-sujo="formularioSujo"
-    />
+    <CheckClose :formulario-sujo="formularioSujo" />
   </div>
 
   <form
@@ -178,10 +177,14 @@ watchEffect(() => {
       <button
         class="label-com-botao__botao btn bgnone tcprimary outline"
         type="button"
-        :disabled="!analiseAnterior?.detalhamento"
-        :aria-disabled="!analiseAnterior?.detalhamento"
-        :title="!analiseAnterior?.detalhamento ? 'Nenhuma informação complementar anterior' : ''"
-        @click="setFieldValue('detalhamento', analiseAnterior.informacoes_complementares)"
+        :disabled="!analiseAnterior?.informacoes_complementares"
+        :aria-disabled="!analiseAnterior?.informacoes_complementares"
+        :title="
+          !analiseAnterior?.informacoes_complementares && 'Nenhuma informação complementar anterior'
+        "
+        @click="
+          setFieldValue('informacoes_complementares', analiseAnterior.informacoes_complementares)
+        "
       >
         Repetir anterior
       </button>
@@ -196,9 +199,7 @@ watchEffect(() => {
           v-slot="{ field }"
           name="informacoes_complementares"
         >
-          <TextEditor
-            v-bind="field"
-          />
+          <TextEditor v-bind="field" />
         </Field>
       </div>
     </div>
@@ -222,7 +223,9 @@ watchEffect(() => {
         <svg
           width="20"
           height="20"
-        ><use xlink:href="#i_+" /></svg> <span>Adicionar documentos</span>
+        >
+          <use xlink:href="#i_+" />
+        </svg> <span>Adicionar documentos</span>
       </button>
     </div>
 

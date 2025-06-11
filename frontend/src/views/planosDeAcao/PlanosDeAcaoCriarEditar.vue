@@ -1,4 +1,5 @@
 <script setup>
+import SmaeText from '@/components/camposDeFormulario/SmaeText';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import { planoDeAção as schema } from '@/consts/formSchemas';
 import truncate from '@/helpers/texto/truncate';
@@ -125,12 +126,15 @@ iniciar();
           name="contramedida"
           :schema="schema"
         />
-        <Field
+
+        <SmaeText
           name="contramedida"
           as="textarea"
           rows="5"
           class="inputtext light mb1"
-          maxlength="500"
+          :schema="schema"
+          :model-value="values.contramedida"
+          anular-vazio
           :class="{ 'error': errors.contramedida }"
         />
         <ErrorMessage
@@ -312,12 +316,14 @@ iniciar();
           name="medidas_de_contingencia"
           :schema="schema"
         />
-        <Field
+        <SmaeText
           name="medidas_de_contingencia"
           as="textarea"
           rows="5"
           class="inputtext light mb1"
-          maxlength="500"
+          :schema="schema"
+          :model-value="values.medidas_de_contingencia"
+          anular-vazio
           :class="{ 'error': errors.medidas_de_contingencia }"
         />
         <ErrorMessage

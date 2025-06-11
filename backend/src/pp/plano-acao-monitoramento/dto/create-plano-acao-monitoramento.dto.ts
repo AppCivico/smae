@@ -3,6 +3,7 @@ import { Transform } from 'class-transformer';
 import { IsBoolean, IsInt, IsOptional, IsString, MaxLength, ValidateIf } from 'class-validator';
 import { DateTransform } from '../../../auth/transforms/date.transform';
 import { IsOnlyDate } from '../../../common/decorators/IsDateOnly';
+import { MAX_LENGTH_MEDIO } from 'src/common/consts';
 
 export class CreatePlanoAcaoMonitoramentoDto {
     @IsInt()
@@ -14,7 +15,7 @@ export class CreatePlanoAcaoMonitoramentoDto {
     data_afericao: Date;
 
     @IsString()
-    @MaxLength(2048)
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Descrição" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     descricao: string;
 }
 

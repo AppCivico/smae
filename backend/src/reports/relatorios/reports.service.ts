@@ -8,24 +8,25 @@ import {
     Logger,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Interval } from '@nestjs/schedule';
 import { FonteRelatorio, ModuloSistema, Prisma, RelatorioVisibilidade, TipoRelatorio } from '@prisma/client';
+import { fork } from 'child_process';
 import * as crypto from 'crypto';
 import * as fs from 'fs';
 import { DateTime } from 'luxon';
 import * as os from 'os';
 import { tmpdir } from 'os';
 import * as path from 'path';
-import { CrontabIsEnabled } from 'src/common/CrontabIsEnabled';
+import { resolve as resolvePath } from 'path';
 import { uuidv7 } from 'uuidv7';
 import * as XLSX from 'xlsx';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { SYSTEM_TIMEZONE } from '../../common/date2ymd';
-import { JOB_PP_REPORT_LOCK, JOB_REPORT_LOCK } from '../../common/dto/locks';
 import { PaginatedDto, PAGINATION_TOKEN_TTL } from '../../common/dto/paginated.dto';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
+import { SmaeConfigService } from '../../common/services/smae-config.service';
 import { PessoaService } from '../../pessoa/pessoa.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { TaskService } from '../../task/task.service';
 import { UploadService } from '../../upload/upload.service';
 import { CasaCivilAtividadesPendentesService } from '../casa-civil-atividades-pendentes/casa-civil-atividades-pendentes.service';
 import { IndicadoresService } from '../indicadores/indicadores.service';
@@ -64,9 +65,7 @@ class NextPageTokenJwtBody {
 @Injectable()
 export class ReportsService {
     private readonly logger = new Logger(ReportsService.name);
-    private enabled: boolean;
     baseUrl: string;
-    private is_running = false;
 
     constructor(
         private readonly jwtService: JwtService,
@@ -89,12 +88,13 @@ export class ReportsService {
         private readonly tribunalDeContasService: TribunalDeContasService,
         @Inject(forwardRef(() => PSMonitoramentoMensal))
         private readonly psMonitoramentoMensal: PSMonitoramentoMensal,
+        @Inject(forwardRef(() => TaskService)) private readonly taskService: TaskService,
         @Inject(forwardRef(() => CasaCivilAtividadesPendentesService))
-        private readonly casaCivilAtividadesPendentesService: CasaCivilAtividadesPendentesService
+        private readonly casaCivilAtividadesPendentesService: CasaCivilAtividadesPendentesService,
+        private readonly smaeConfigService: SmaeConfigService
     ) {
         const parsedUrl = new URL(process.env.URL_LOGIN_SMAE || 'http://smae-frontend/');
         this.baseUrl = `${parsedUrl.protocol}//${parsedUrl.hostname}:${parsedUrl.port}`;
-        this.enabled = CrontabIsEnabled('reports');
     }
 
     private async runReport(dto: CreateReportDto, user: PessoaFromJwt | null, ctx: ReportContext): Promise<void> {
@@ -156,20 +156,81 @@ export class ReportsService {
     }
 
     private async convertCsvToXlsx(csvContent: string | Buffer): Promise<Buffer> {
-        // Parse CSV content
-        const workbook = XLSX.read(csvContent, {
-            type: 'string',
-            cellDates: true,
-            dateNF: 'yyyy-mm-dd',
-        });
+        const useDuckDb = await this.smaeConfigService.getConfig('DUCKDB_XLSX');
 
-        // Write to buffer with proper options
-        return XLSX.write(workbook, {
-            type: 'buffer',
-            bookType: 'xlsx',
-            bookSST: false,
-            compression: true,
-        });
+        if (useDuckDb === 'true') {
+            // Use DuckDB approach
+            const csvFile = GetTempFileName('csv-file', '.csv');
+            const xlsxFile = GetTempFileName('xlsx-file', '.xlsx');
+
+            // Write CSV content to temporary file
+            if (typeof csvContent === 'string') {
+                fs.writeFileSync(csvFile, csvContent);
+            } else {
+                fs.writeFileSync(csvFile, csvContent);
+            }
+
+            let success: boolean = false;
+            let error: any | undefined = undefined;
+
+            await new Promise<void>((resolve, reject) => {
+                const child = fork(resolvePath(__dirname, '../../../src/bin/') + '/duckdb-csv2xlsx.js', [
+                    csvFile,
+                    xlsxFile,
+                ]);
+
+                child.on('error', (err: any) => {
+                    this.logger.error(`error: ${err} converting ${csvFile} to ${xlsxFile}`);
+                });
+
+                child.on('message', (msg: any) => {
+                    if (msg.event == 'success') {
+                        success = true;
+                    } else if (msg.event == 'error') {
+                        error = msg.error;
+                    }
+                });
+
+                child.on('exit', (code: number, signal: string) => {
+                    if (error) reject(error);
+                    if (success) resolve();
+
+                    if (code !== null) reject(`process exited with code ${code}`);
+                    if (signal !== null) reject(`process was killed with signal ${signal}`);
+                });
+            });
+
+            if (!success) throw new InternalServerErrorException(`process did not finished successfully, check logs`);
+
+            // Read the XLSX file to buffer
+            const xlsxBuffer = fs.readFileSync(xlsxFile);
+
+            // Clean up temporary files
+            try {
+                fs.unlinkSync(csvFile);
+                fs.unlinkSync(xlsxFile);
+            } catch (err) {
+                this.logger.warn(`Failed to clean up temporary files: ${err}`);
+            }
+
+            return xlsxBuffer;
+        } else {
+            // Use XLSX library approach (current new code)
+            // Parse CSV content
+            const workbook = XLSX.read(csvContent, {
+                type: 'string',
+                cellDates: true,
+                dateNF: 'yyyy-mm-dd',
+            });
+
+            // Write to buffer with proper options
+            return XLSX.write(workbook, {
+                type: 'buffer',
+                bookType: 'xlsx',
+                bookSST: false,
+                compression: true,
+            });
+        }
     }
 
     async zipFiles(files: FileOutput[]) {
@@ -225,38 +286,41 @@ export class ReportsService {
 
     async saveReport(
         dto: CreateReportDto,
-        arquivoId: number | null,
         user: PessoaFromJwt | null,
         sistema: ModuloSistema = 'SMAE'
     ): Promise<RecordWithId> {
         const parametros = dto.parametros;
         const pdmId = parametros.pdm_id !== undefined ? Number(parametros.pdm_id) : null;
-        //if (!pdmId) throw new HttpException('parametros.pdm_id é necessário para salvar um relatório', 400);
 
-        const result = await this.prisma.relatorio.create({
-            data: {
-                pdm_id: pdmId,
-                arquivo_id: arquivoId,
-                fonte: dto.fonte,
-                sistema: sistema,
-                /// here it's easy because the user is saying what he wants
-                visibilidade: dto.eh_publico ? 'Publico' : 'Privado',
-                tipo: TipoRelatorio[parametros.tipo as TipoRelatorio] ? parametros.tipo : null,
-                parametros: parametros,
-                parametros_processados: await BuildParametrosProcessados(this.prisma, dto),
-                criado_por: user ? user.id : null,
-                criado_em: new Date(Date.now()),
-            },
-            select: { id: true },
+        return await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+            const result = await prismaTx.relatorio.create({
+                data: {
+                    pdm_id: pdmId,
+                    fonte: dto.fonte,
+                    sistema: sistema,
+                    /// here it's easy because the user is saying what he wants
+                    visibilidade: dto.eh_publico ? 'Publico' : 'Privado',
+                    tipo: TipoRelatorio[parametros.tipo as TipoRelatorio] ? parametros.tipo : null,
+                    parametros: parametros,
+                    parametros_processados: await BuildParametrosProcessados(this.prisma, dto),
+                    criado_por: user ? user.id : null,
+                    criado_em: new Date(Date.now()),
+                },
+                select: { id: true },
+            });
+
+            await this.taskService.create(
+                {
+                    type: 'run_report',
+                    params: {
+                        relatorio_id: result.id,
+                    },
+                },
+                user,
+                prismaTx
+            );
+            return { id: result.id };
         });
-
-        await this.prisma.relatorioFila.create({
-            data: {
-                relatorio_id: result.id,
-            },
-        });
-
-        return { id: result.id };
     }
 
     private servicoDaFonte(dto: CreateReportDto) {
@@ -306,7 +370,7 @@ export class ReportsService {
             case 'PSMonitoramentoMensal':
                 service = this.psMonitoramentoMensal;
                 break;
-            case 'CasaCivilAtvPendentes':
+            case 'AtvPendentes':
                 service = this.casaCivilAtividadesPendentesService;
                 break;
             default:
@@ -415,14 +479,9 @@ export class ReportsService {
                 parametros_processados: true,
                 pdm_id: true,
                 progresso: true,
-                processamento: {
-                    select: {
-                        id: true,
-                        congelado_em: true,
-                        executado_em: true,
-                        err_msg: true,
-                    },
-                },
+                err_msg: true,
+                iniciado_em: true,
+                processado_em: true,
             },
             orderBy: {
                 criado_em: 'desc',
@@ -452,14 +511,12 @@ export class ReportsService {
                     arquivo: r.arquivo_id
                         ? this.uploadService.getDownloadToken(r.arquivo_id, '1d').download_token
                         : null,
-                    processamento: r.processamento
-                        ? ({
-                              id: r.processamento.id,
-                              congelado_em: r.processamento.congelado_em,
-                              executado_em: r.processamento.executado_em,
-                              err_msg: r.processamento.err_msg,
-                          } satisfies RelatorioProcessamentoDto)
-                        : null,
+                    processamento: {
+                        id: 0,
+                        congelado_em: r.iniciado_em,
+                        executado_em: r.processado_em,
+                        err_msg: r.err_msg,
+                    } satisfies RelatorioProcessamentoDto,
                 } satisfies RelatorioDto;
             }),
             tem_mais: tem_mais,
@@ -494,86 +551,37 @@ export class ReportsService {
         return this.jwtService.sign(opt);
     }
 
-    @Interval(5000)
-    async handleCron() {
-        if (!this.enabled || this.is_running) return;
-        if (process.env['DISABLE_REPORT_CRONTAB']) return;
-
-        this.is_running = true;
-        try {
-            process.env.INTERNAL_DISABLE_QUERY_LOG = '1';
-            await this.prisma.$transaction(
-                async (prisma: Prisma.TransactionClient) => {
-                    const locked: {
-                        locked: boolean;
-                    }[] = await prisma.$queryRaw`SELECT
-                    pg_try_advisory_xact_lock(${JOB_PP_REPORT_LOCK}) as locked
-                `;
-                    if (!locked[0].locked) {
-                        return;
-                    }
-
-                    await this.verificaRelatorioProjetos();
+    async criaRelatorioProjeto(
+        projeto_id: number,
+        motivo: string,
+        user: PessoaFromJwt,
+        prismaTx: Prisma.TransactionClient
+    ) {
+        const result = await prismaTx.relatorio.create({
+            data: {
+                fonte: 'Projeto',
+                parametros: {
+                    projeto_id: projeto_id,
+                    motivo,
                 },
-                {
-                    maxWait: 30000,
-                    timeout: 60 * 1000 * 5,
-                }
-            );
-        } catch (error) {
-            this.logger.error(`Erro ao processar fila de relatórios: ${error}`);
-        } finally {
-            process.env.INTERNAL_DISABLE_QUERY_LOG = '';
-            this.is_running = false;
-        }
-    }
+                visibilidade: 'Restrito',
+                progresso: 0,
+                sistema: 'Projetos',
+            },
+            select: { id: true },
+        });
 
-    @Interval(100)
-    async handleRelatorioFilaCron() {
-        if (!this.enabled || this.is_running) return;
-        if (process.env['DISABLE_REPORT_CRONTAB']) return;
-        this.is_running = true;
-
-        try {
-            process.env.INTERNAL_DISABLE_QUERY_LOG = '1';
-            await this.prisma.$transaction(
-                async (prisma: Prisma.TransactionClient) => {
-                    const lockPromise: Promise<{ locked: boolean }[]> =
-                        prisma.$queryRaw`SELECT pg_try_advisory_xact_lock(${JOB_REPORT_LOCK}) as locked`;
-
-                    lockPromise.then(() => {
-                        process.env.INTERNAL_DISABLE_QUERY_LOG = '';
-                    });
-
-                    const locked = await lockPromise;
-                    if (!locked[0].locked) return;
-
-                    if (!locked[0].locked) {
-                        return;
-                    }
-
-                    await this.verificaRelatorioFila();
-                    process.env.INTERNAL_DISABLE_QUERY_LOG = '1';
+        await this.taskService.create(
+            {
+                type: 'run_report',
+                params: {
+                    relatorio_id: result.id,
                 },
-                {
-                    maxWait: 30000,
-                    timeout: 60 * 1000 * 15, // 15 minutos
-                }
-            );
-        } catch (error) {
-            this.logger.error(`Erro ao processar fila de relatórios: ${error}`);
-        } finally {
-            process.env.INTERNAL_DISABLE_QUERY_LOG = '';
-            this.is_running = false;
-        }
-    }
-
-    async executaRelatorioProjetos(filaId: number) {
-        try {
-            await this.verificaRelatorioProjetos(filaId);
-        } catch (error) {
-            this.logger.error(`Falha ao executar executaRelatorioProjetos(${filaId}): ${error}`);
-        }
+            },
+            user,
+            prismaTx
+        );
+        return { id: result.id };
     }
 
     async syncRelatoriosParametros(): Promise<void> {
@@ -598,102 +606,16 @@ export class ReportsService {
         }
     }
 
-    private async verificaRelatorioProjetos(filtroId?: number | undefined) {
-        process.env.INTERNAL_DISABLE_QUERY_LOG = '1';
-        const pending = await this.prisma.projetoRelatorioFila.findMany({
-            where: {
-                executado_em: null,
-                AND: [
-                    {
-                        OR: [
-                            { id: filtroId },
-                            { congelado_em: null },
-                            {
-                                congelado_em: {
-                                    lt: DateTime.now().minus({ hour: 1 }).toJSDate(),
-                                },
-                            },
-                        ],
-                    },
-                ],
-            },
-        });
-        process.env.INTERNAL_DISABLE_QUERY_LOG = '';
-
-        for (const job of pending) {
-            try {
-                const now = new Date(Date.now());
-                await this.prisma.projetoRelatorioFila.update({
-                    where: { id: job.id },
-                    data: {
-                        congelado_em: new Date(Date.now()),
-                    },
-                });
-
-                const contentType = 'application/zip';
-                const filename = ['Projeto', DateTime.local({ zone: SYSTEM_TIMEZONE }).toISO() + '.zip']
-                    .filter((r) => r)
-                    .join('-');
-
-                const relatorio = await this.prisma.relatorio.create({
-                    data: {
-                        fonte: 'Projeto',
-                        parametros: {
-                            projeto_id: job.projeto_id,
-                        },
-                        visibilidade: 'Restrito',
-                        progresso: 0,
-                        sistema: 'Projetos',
-                    },
-                });
-
-                const contexto = new ReportContext(this.prisma, relatorio.id, relatorio.sistema);
-
-                await this.runReport(
-                    {
-                        fonte: relatorio.fonte,
-                        parametros: {
-                            projeto_id: job.projeto_id,
-                        },
-                    },
-                    null,
-                    contexto
-                );
-                const zipBuffer = await this.zipFiles(contexto.getFiles());
-
-                const arquivoId = await this.uploadService.uploadReport(
-                    relatorio.fonte,
-                    filename,
-                    zipBuffer,
-                    contentType,
-                    null
-                );
-                const relatorioId = relatorio.id;
-
-                await this.updateRelatorioMetadata(relatorioId, arquivoId, now, contexto);
-
-                await this.prisma.projetoRelatorioFila.update({
-                    where: { id: job.id },
-                    data: {
-                        executado_em: new Date(Date.now()),
-                        relatorio_id: relatorio.id,
-                    },
-                });
-            } catch (error) {
-                console.error(error);
-
-                this.logger.error(`Falha ao processar relatório ID ${job.id}: ${error}`);
-
-                // timeout do lock vai tentar novamente em 1 hr
-                continue;
-            }
-        }
-    }
-
-    private async updateRelatorioMetadata(relatorioId: number, arquivoId: number, now: Date, contexto: ReportContext) {
+    private async updateRelatorioMetadata(
+        relatorioId: number,
+        arquivoId: number,
+        now: Date,
+        contexto: ReportContext,
+        prismaTx: Prisma.TransactionClient
+    ) {
         const obj = contexto.getRestricaoAcesso();
 
-        await this.prisma.relatorio.update({
+        await prismaTx.relatorio.update({
             where: { id: relatorioId },
             data: {
                 arquivo_id: arquivoId,
@@ -703,142 +625,125 @@ export class ReportsService {
         });
     }
 
-    private async verificaRelatorioFila(filtroId?: number | undefined) {
-        process.env.INTERNAL_DISABLE_QUERY_LOG = '1';
-        const pending = await this.prisma.relatorioFila.findMany({
+    async handleError(taskId: number, error: Error, prismaTx: Prisma.TransactionClient) {
+        await prismaTx.relatorio.updateMany({
             where: {
-                executado_em: null,
-                AND: [
-                    {
-                        OR: [
-                            { id: filtroId },
-                            { congelado_em: null },
-                            {
-                                congelado_em: {
-                                    lt: DateTime.now().minus({ hour: 1 }).toJSDate(),
-                                },
-                            },
-                        ],
-                    },
-                ],
+                id: taskId,
             },
-            take: 1,
-            orderBy: { criado_em: 'asc' },
+            data: {
+                err_msg: error.message,
+                progresso: -1,
+                processado_em: new Date(Date.now()),
+            },
         });
-        process.env.INTERNAL_DISABLE_QUERY_LOG = '';
+    }
 
-        for (const job of pending) {
-            this.logger.log(`iniciando processamento do relatório ID ${job.relatorio_id}`);
+    async executaRelatorio(relatorio_id: number) {
+        this.logger.log(`iniciando processamento do relatório ID ${relatorio_id}`);
 
-            await this.prisma.relatorioFila.update({
-                where: { id: job.id },
+        try {
+            const now = new Date(Date.now());
+
+            const relatorio = await this.prisma.relatorio.findFirst({
+                where: { id: relatorio_id },
+                select: {
+                    id: true,
+                    fonte: true,
+                    parametros: true,
+                    parametros_processados: true,
+                    sistema: true,
+                    criado_em: true,
+                    criado_por: true,
+                    criador: {
+                        select: {
+                            email: true,
+                        },
+                    },
+                },
+            });
+            if (!relatorio) {
+                this.logger.warn(`Relatório ${relatorio_id} não encontrado, completando job.`);
+                return;
+            }
+            await this.prisma.relatorio.update({
+                where: { id: relatorio_id },
                 data: {
-                    congelado_em: new Date(Date.now()),
+                    iniciado_em: new Date(Date.now()),
+                    err_msg: null,
+                    progresso: 0,
                 },
             });
 
-            try {
-                const now = new Date(Date.now());
+            const contexto = new ReportContext(this.prisma, relatorio.id, relatorio.sistema);
 
-                const relatorio = await this.prisma.relatorio.findFirst({
-                    where: { id: job.relatorio_id },
-                    select: {
-                        id: true,
-                        fonte: true,
-                        parametros: true,
-                        parametros_processados: true,
-                        sistema: true,
-                        criado_em: true,
-                        criado_por: true,
-                        criador: {
-                            select: {
-                                email: true,
-                            },
-                        },
-                    },
-                });
-                if (!relatorio) throw new InternalServerErrorException(`Relatório ${job.relatorio_id} não encontrado`);
-                const contexto = new ReportContext(this.prisma, relatorio.id, relatorio.sistema);
+            const pessoaJwt = relatorio.criado_por
+                ? await this.pessoaService.reportPessoaFromJwt(relatorio.criado_por, relatorio.sistema)
+                : null;
 
-                await this.prisma.relatorio.update({
-                    where: { id: job.relatorio_id },
-                    data: { progresso: 0 },
-                });
+            await this.runReport(
+                {
+                    fonte: relatorio.fonte,
+                    parametros: relatorio.parametros,
+                },
+                pessoaJwt,
+                contexto
+            );
 
-                const pessoaJwt = relatorio.criado_por
-                    ? await this.pessoaService.reportPessoaFromJwt(relatorio.criado_por, relatorio.sistema)
-                    : null;
+            const contentType = 'application/zip';
+            const filename = [relatorio.fonte.toString(), DateTime.local({ zone: SYSTEM_TIMEZONE }).toISO() + '.zip']
+                .filter((r) => r)
+                .join('-');
 
-                await this.runReport(
-                    {
-                        fonte: relatorio.fonte,
-                        parametros: relatorio.parametros,
-                    },
-                    pessoaJwt,
-                    contexto
-                );
+            const zipBuffer = await this.zipFiles(contexto.getFiles());
 
-                const contentType = 'application/zip';
-                const filename = [
-                    relatorio.fonte.toString(),
-                    DateTime.local({ zone: SYSTEM_TIMEZONE }).toISO() + '.zip',
-                ]
-                    .filter((r) => r)
-                    .join('-');
+            const arquivoId = await this.uploadService.uploadReport(
+                relatorio.fonte,
+                filename,
+                zipBuffer,
+                contentType,
+                null
+            );
 
-                const zipBuffer = await this.zipFiles(contexto.getFiles());
+            await this.prisma.$transaction(async (prismaTx) => {
+                await this.updateRelatorioMetadata(relatorio.id, arquivoId, now, contexto, prismaTx);
 
-                const arquivoId = await this.uploadService.uploadReport(
-                    relatorio.fonte,
-                    filename,
-                    zipBuffer,
-                    contentType,
-                    null
-                );
-
-                await this.updateRelatorioMetadata(relatorio.id, arquivoId, now, contexto);
-
-                await this.prisma.relatorioFila.update({
-                    where: { id: job.id },
+                await prismaTx.relatorio.update({
+                    where: { id: relatorio_id },
                     data: {
-                        executado_em: new Date(Date.now()),
+                        progresso: 100,
+                        err_msg: null,
+                        processado_em: new Date(Date.now()),
                     },
                 });
 
                 // Enviando email com o relatório para o usuário.
-                await this.sendEmailNotification(relatorio, job);
-            } catch (error) {
-                this.logger.debug(`Falha ao processar relatório ID ${job.relatorio_id}: ${error}`);
+                await this.sendEmailNotification(relatorio, prismaTx);
+            });
+        } catch (error) {
+            this.logger.error(`Falha ao processar relatório ID ${relatorio_id}: ${error}`);
 
-                await this.prisma.relatorioFila.update({
-                    where: { id: job.id },
+            await this.prisma.$transaction(async (prisma) => {
+                await prisma.relatorio.updateMany({
+                    where: { id: relatorio_id },
                     data: {
-                        err_msg: error.toString().replace(/\s/g, ''),
-                        executado_em: new Date(Date.now()),
-                        congelado_em: null,
+                        err_msg: error.message,
+                        progresso: -1,
+                        processado_em: new Date(Date.now()),
                     },
                 });
-
-                continue;
-            }
+            });
         }
     }
 
     private async sendEmailNotification(
         relatorio: {
+            id: number;
             criador: { email: string } | null;
             fonte: FonteRelatorio;
             parametros_processados: any;
             criado_em: Date;
         },
-        job: {
-            id: number;
-            criado_em: Date;
-            relatorio_id: number;
-            err_msg: string | null;
-            congelado_em: Date | null;
-            executado_em: Date | null;
-        }
+        prismaTx: Prisma.TransactionClient
     ) {
         if (!relatorio.criador) return;
 
@@ -846,7 +751,7 @@ export class ReportsService {
         const fonteSlug = relatorio.fonte.toLowerCase().replace(/ /g, '-');
         const url = new URL([this.baseUrl, 'relatorios', fonteSlug].join('/')).toString();
 
-        await this.prisma.emaildbQueue.create({
+        await prismaTx.emaildbQueue.create({
             data: {
                 id: uuidv7(),
                 config_id: 1,
@@ -854,11 +759,15 @@ export class ReportsService {
                 template: 'report.html',
                 to: relatorio.criador.email,
                 variables: {
-                    id: job.relatorio_id,
+                    id: relatorio.id,
                     fonte: await this.getRelatorioFonteString(relatorio.fonte),
                     parametros: relatorio.parametros_processados
                         ? (Object.entries(relatorio.parametros_processados).map(([key, value]) => ({
-                              key: key.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase()),
+                              key: key
+                                  .replace(/_/g, ' ')
+                                  .split(' ')
+                                  .map((word) => word.charAt(0).toLocaleUpperCase('pt-BR') + word.slice(1))
+                                  .join(' '),
                               value: value,
                           })) as Array<{ key: string; value: string }>)
                         : null,
@@ -873,7 +782,7 @@ export class ReportsService {
 
     private async getRelatorioFonteString(fonte: FonteRelatorio): Promise<string> {
         switch (fonte) {
-            case FonteRelatorio.CasaCivilAtvPendentes:
+            case FonteRelatorio.AtvPendentes:
                 return 'Casa Civil - Atividades Pendentes';
             case FonteRelatorio.Indicadores:
                 return 'Indicadores';

@@ -2,6 +2,7 @@ import { Transform } from 'class-transformer';
 import { IsBoolean, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
 import { ArquivoBaseDto } from '../../../upload/dto/create-upload.dto';
 import { PickType } from '@nestjs/swagger';
+import { MAX_LENGTH_DEFAULT, MAX_LENGTH_MEDIO } from 'src/common/consts';
 
 export class AnaliseQualitativaDocumentoDto {
     @IsInt()
@@ -14,7 +15,7 @@ export class AnaliseQualitativaDocumentoDto {
 
     @IsOptional()
     @IsString()
-    @MaxLength(1024 * 10, { message: 'O texto não pode ter mais de 10KB' })
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Descrição" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     descricao?: string | null;
 
     /**
@@ -64,6 +65,7 @@ export class ArquivoAnaliseQualitativaDocumentoDto {
     criador: {
         nome_exibicao: string;
     };
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Descrição" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     descricao: string | null;
 }
 
@@ -82,6 +84,8 @@ export class CreateAnaliseQualitativaDto {
     meta_id: number;
 
     @IsString()
-    @MaxLength(1024 * 10, { message: 'O texto não pode ter mais de 10KB' })
+    @MaxLength(MAX_LENGTH_MEDIO, {
+        message: `O campo 'Informações Complementares' deve ter no máximo ${MAX_LENGTH_MEDIO} caracteres`,
+    })
     informacoes_complementares: string;
 }

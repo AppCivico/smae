@@ -17,12 +17,13 @@ import {
     TipoVariavelCategorica,
     VariavelCategoricaValor,
 } from '@prisma/client';
+import { PrismaClient } from '@prisma/client/extension';
 import { Regiao } from 'src/regiao/entities/regiao.entity';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { LoggerWithLog } from '../common/LoggerWithLog';
 import { PrismaHelpers } from '../common/PrismaHelpers';
 import { CONST_CRONO_VAR_CATEGORICA_ID, CONST_VAR_SEM_UN_MEDIDA } from '../common/consts';
-import { Date2YMD, DateYMD } from '../common/date2ymd';
+import { Date2YMD, DateYMD, SYSTEM_TIMEZONE } from '../common/date2ymd';
 import { MIN_DTO_SAFE_NUM, VAR_CATEGORICA_AS_NULL } from '../common/dto/consts';
 import { AnyPageTokenJwtBody, PaginatedWithPagesDto, PAGINATION_TOKEN_TTL } from '../common/dto/paginated.dto';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
@@ -44,6 +45,7 @@ import {
 import { FilterVariavelDto, FilterVariavelGlobalDto } from './dto/filter-variavel.dto';
 import {
     ListSeriesAgrupadas,
+    PdmSimplesDto,
     VariavelDetailComAuxiliaresDto,
     VariavelDetailDto,
     VariavelGlobalDetailDto,
@@ -66,6 +68,7 @@ import {
 } from './entities/variavel.entity';
 import { SerieCompactToken } from './serie.token.encoder';
 import { VariavelUtilService } from './variavel.util.service';
+import { DateTime } from 'luxon';
 
 const SUPRA_SUFIXO = ' - Supra';
 /**
@@ -142,6 +145,104 @@ function getMaxDiasPeriodicidade(periodicidade: Periodicidade): number {
             periodicidade satisfies never;
     }
     throw new Error(`getMaxDiasPeriodicidade: Periodicidade=${periodicidade} não reconhecida`);
+}
+
+export function GetVariavelPalavraChave(input: string | undefined, prisma: PrismaClient) {
+    return PrismaHelpers.buscaIdsPalavraChave(prisma, 'variavel', input);
+}
+
+export function GetVariavelWhereSet(filters: FilterVariavelDto) {
+    const firstSet: Prisma.Enumerable<Prisma.VariavelWhereInput> = [];
+    if (filters.remover_desativados || filters.remover_desativados === undefined) {
+        // não acredito que sirva de nada, mas vou manter pois já estava assim
+        // da na mesma colocar o else-if ou não, pois o banco vai gerar 0 resultados no caso de combinações
+        // impossíveis
+        if (filters.indicador_id)
+            firstSet.push({
+                indicador_variavel: {
+                    some: {
+                        desativado: false,
+                        indicador_id: filters.indicador_id,
+                    },
+                },
+            });
+
+        if (filters.meta_id)
+            firstSet.push({
+                indicador_variavel: {
+                    some: {
+                        desativado: false,
+                        indicador: {
+                            meta_id: filters.meta_id,
+                        },
+                    },
+                },
+            });
+        if (filters.iniciativa_id)
+            firstSet.push({
+                indicador_variavel: {
+                    some: {
+                        desativado: false,
+                        indicador: {
+                            iniciativa_id: filters.iniciativa_id,
+                        },
+                    },
+                },
+            });
+        if (filters.atividade_id)
+            firstSet.push({
+                indicador_variavel: {
+                    some: {
+                        desativado: false,
+                        indicador: {
+                            atividade_id: filters.atividade_id,
+                        },
+                    },
+                },
+            });
+        if (filters.formula_composta_id) {
+            firstSet.push({
+                FormulaCompostaRelVariavel: {
+                    some: {
+                        formula_composta_id: filters.formula_composta_id,
+                    },
+                },
+            });
+        }
+    }
+
+    let variavel_categorica_id: number | undefined | null = filters.variavel_categorica_id ?? undefined;
+    if (variavel_categorica_id === VAR_CATEGORICA_AS_NULL) variavel_categorica_id = null;
+
+    const permissionsBaseSet: Prisma.Enumerable<Prisma.VariavelWhereInput> = [
+        {
+            AND: firstSet,
+            removido_em: null,
+            medicao_orgao_id: filters.medicao_orgao_id,
+            validacao_orgao_id: filters.validacao_orgao_id,
+            liberacao_orgao_id: filters.liberacao_orgao_id,
+            variavel_categorica_id: variavel_categorica_id,
+            VariavelAssuntoVariavel: Array.isArray(filters.assuntos)
+                ? { some: { assunto_variavel: { id: { in: filters.assuntos } } } }
+                : undefined,
+            id: filters.id,
+            orgao_id: filters.orgao_id,
+            orgao_proprietario_id: filters.orgao_proprietario_id,
+            periodicidade: filters.periodicidade,
+            regiao_id: filters.regiao_id,
+            titulo: filters.titulo ? { contains: filters.titulo, mode: 'insensitive' } : undefined,
+            codigo: filters.codigo ? { contains: filters.codigo, mode: 'insensitive' } : undefined,
+            descricao: filters.descricao ? { contains: filters.descricao, mode: 'insensitive' } : undefined,
+        },
+    ];
+
+    if (filters.nivel_regionalizacao && !filters.regiao_id) {
+        firstSet.push({
+            regiao: { nivel: filters.nivel_regionalizacao },
+        });
+    }
+
+    return permissionsBaseSet;
 }
 
 @Injectable()
@@ -532,7 +633,7 @@ export class VariavelService {
                         codigo,
                         regioes_ids,
                         nivel_regionalizacao,
-                        dto.acumulativa, // usar_serie_acumulada
+                        false, // não usar acumuladas nas calculadas pelo sistema
                         variavelMae?.id,
                         supraId,
                         prismaTxn
@@ -753,6 +854,12 @@ export class VariavelService {
         await this.insertEquipeResponsavel(dto, prismaTxn, variavelId, logger);
 
         await this.recalc_series_dependentes([variavel.id], prismaTxn);
+
+        // Caso a variável seja Global, ela deve entrar na tabela de vars consolidadas, de dashboard do PS
+        // OBS: apenas vars mães
+        if (tipo == 'Global' && variavelMaeId == null) {
+            await AddTaskRecalcVariaveis(prismaTxn, { variavelIds: [variavel.id] });
+        }
 
         return variavel;
     }
@@ -1416,96 +1523,7 @@ export class VariavelService {
     }
 
     getVariavelWhereSet(filters: FilterVariavelDto) {
-        const firstSet: Prisma.Enumerable<Prisma.VariavelWhereInput> = [];
-        if (filters.remover_desativados || filters.remover_desativados === undefined) {
-            // não acredito que sirva de nada, mas vou manter pois já estava assim
-            // da na mesma colocar o else-if ou não, pois o banco vai gerar 0 resultados no caso de combinações
-            // impossíveis
-            if (filters.indicador_id)
-                firstSet.push({
-                    indicador_variavel: {
-                        some: {
-                            desativado: false,
-                            indicador_id: filters.indicador_id,
-                        },
-                    },
-                });
-            if (filters.meta_id)
-                firstSet.push({
-                    indicador_variavel: {
-                        some: {
-                            desativado: false,
-                            indicador: {
-                                meta_id: filters.meta_id,
-                            },
-                        },
-                    },
-                });
-            if (filters.iniciativa_id)
-                firstSet.push({
-                    indicador_variavel: {
-                        some: {
-                            desativado: false,
-                            indicador: {
-                                iniciativa_id: filters.iniciativa_id,
-                            },
-                        },
-                    },
-                });
-            if (filters.atividade_id)
-                firstSet.push({
-                    indicador_variavel: {
-                        some: {
-                            desativado: false,
-                            indicador: {
-                                atividade_id: filters.atividade_id,
-                            },
-                        },
-                    },
-                });
-            if (filters.formula_composta_id) {
-                firstSet.push({
-                    FormulaCompostaRelVariavel: {
-                        some: {
-                            formula_composta_id: filters.formula_composta_id,
-                        },
-                    },
-                });
-            }
-        }
-
-        let variavel_categorica_id: number | undefined | null = filters.variavel_categorica_id ?? undefined;
-        if (variavel_categorica_id === VAR_CATEGORICA_AS_NULL) variavel_categorica_id = null;
-
-        const permissionsBaseSet: Prisma.Enumerable<Prisma.VariavelWhereInput> = [
-            {
-                AND: firstSet,
-                removido_em: null,
-                medicao_orgao_id: filters.medicao_orgao_id,
-                validacao_orgao_id: filters.validacao_orgao_id,
-                liberacao_orgao_id: filters.liberacao_orgao_id,
-                variavel_categorica_id: variavel_categorica_id,
-                VariavelAssuntoVariavel: Array.isArray(filters.assuntos)
-                    ? { some: { assunto_variavel: { id: { in: filters.assuntos } } } }
-                    : undefined,
-                id: filters.id,
-                orgao_id: filters.orgao_id,
-                orgao_proprietario_id: filters.orgao_proprietario_id,
-                periodicidade: filters.periodicidade,
-                regiao_id: filters.regiao_id,
-                titulo: filters.titulo ? { contains: filters.titulo, mode: 'insensitive' } : undefined,
-                codigo: filters.codigo ? { contains: filters.codigo, mode: 'insensitive' } : undefined,
-                descricao: filters.descricao ? { contains: filters.descricao, mode: 'insensitive' } : undefined,
-            },
-        ];
-
-        if (filters.nivel_regionalizacao && !filters.regiao_id) {
-            firstSet.push({
-                regiao: { nivel: filters.nivel_regionalizacao },
-            });
-        }
-
-        return permissionsBaseSet;
+        return GetVariavelWhereSet(filters);
     }
 
     private getVariavelGlobalWhereSet(filters: FilterVariavelGlobalDto, ids: number[] | undefined) {
@@ -1569,7 +1587,7 @@ export class VariavelService {
     }
 
     async buscaIdsPalavraChave(input: string | undefined): Promise<number[] | undefined> {
-        return PrismaHelpers.buscaIdsPalavraChave(this.prisma, 'variavel', input);
+        return GetVariavelPalavraChave(input, this.prisma);
     }
 
     async update(tipo: TipoVariavel, variavelId: number, dto: UpdateVariavelDto, user: PessoaFromJwt) {
@@ -2496,7 +2514,12 @@ export class VariavelService {
         await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient) => {
                 const refEmUso = await prismaTx.indicadorFormulaVariavel.findMany({
-                    where: { variavel_id: variavelId },
+                    where: {
+                        variavel_id: variavelId,
+                        indicador: {
+                            removido_em: null,
+                        },
+                    },
                     select: {
                         indicador: { select: { codigo: true, titulo: true } },
                     },
@@ -2547,6 +2570,8 @@ export class VariavelService {
                 await prismaTx.indicadorVariavel.deleteMany({
                     where: { variavel_id: variavelId },
                 });
+
+                await AddTaskRecalcVariaveis(prismaTx, { variavelIds: [variavelId] });
 
                 await logger.saveLogs(prismaTx, user.getLogData());
             },
@@ -2675,6 +2700,14 @@ export class VariavelService {
 
         const series: Serie[] = [...ORDEM_SERIES_RETORNO];
         SeriesArrayShuffle(series); // garante que o consumidor não está usando os valores das series cegamente
+        const cicloCorrente =
+            filters.serie == 'Realizado' || filters.ate_ciclo_corrente
+                ? await this.prisma.variavelCicloCorrente.findUnique({
+                      where: { variavel_id: variavelId },
+                      select: { ultimo_periodo_valido: true, prazo: true, atrasos: true },
+                  })
+                : null;
+
         if (filters.serie) {
             series.length = 0;
             for (const serie of ORDEM_SERIES_RETORNO) {
@@ -2683,6 +2716,12 @@ export class VariavelService {
                 }
             }
             if (filters.serie == 'Realizado') filters.ate_ciclo_corrente = true;
+
+            if (cicloCorrente && cicloCorrente.atrasos.length > 0) {
+                // caso tenha mais de um atraso, então o ciclo atual não é o ciclo corrente, então vamos pular já direto
+                // na query o ultimo ciclo corrente
+                filters.ate_ciclo_corrente_inclusive = false;
+            }
         }
 
         // TODO adicionar limpeza da serie para quem for ponto focal
@@ -2739,7 +2778,31 @@ export class VariavelService {
         }
 
         const todosPeriodos = await this.util.gerarPeriodoVariavelEntreDatas(variavel.id, indicadorId, filters);
+
+        let prazoPassou = true; // Default para true (mostra tudo)
+        let ultimoPeriodoValidoStr: string | null = null;
+        if (filters.serie === 'Realizado' && cicloCorrente) {
+            const currentDate = Date2YMD.toString(DateTime.local({ zone: SYSTEM_TIMEZONE }).startOf('day').toJSDate());
+            // se o ciclo corrente não tem prazo, assume que o prazo não passou
+            prazoPassou = cicloCorrente.prazo ? currentDate > Date2YMD.toString(cicloCorrente.prazo) : false;
+
+            console.log(
+                `Prazo: ${Date2YMD.toStringOrNull(cicloCorrente.prazo)}, Data atual: ${currentDate}, Prazo passou: ${prazoPassou}`
+            );
+            ultimoPeriodoValidoStr = Date2YMD.toString(cicloCorrente.ultimo_periodo_valido);
+        }
+
         for (const periodoYMD of todosPeriodos) {
+            const isCurrentCycle = ultimoPeriodoValidoStr === periodoYMD;
+
+            if (isCurrentCycle && !prazoPassou) {
+                if (!filters.suporta_ciclo_info) {
+                    this.logger.debug(`Prazo não passou para ${periodoYMD} e frontend não suporta info. Pulando.`);
+                    continue;
+                }
+                this.logger.debug(`Prazo não passou para ${periodoYMD}, mas frontend suporta info. Processando.`);
+            }
+
             const seriesExistentes = this.populaSeriesExistentes(
                 porPeriodo,
                 periodoYMD,
@@ -2748,7 +2811,6 @@ export class VariavelService {
                 filters.uso,
                 user
             );
-
             let ciclo_fisico: SACicloFisicoDto | undefined = undefined;
 
             const analiseCiclo = mapAnalisesCiclo[periodoYMD];
@@ -2768,6 +2830,17 @@ export class VariavelService {
                 series: seriesExistentes,
                 ciclo_fisico: ciclo_fisico,
             });
+
+            if (isCurrentCycle && !prazoPassou && filters.suporta_ciclo_info) {
+                // Busca o 'Realizado'
+                const realizadoIndex = ORDEM_SERIES_RETORNO.indexOf('Realizado');
+                if (realizadoIndex !== -1 && seriesExistentes[realizadoIndex]) {
+                    const realizadoSerie = seriesExistentes[realizadoIndex] as SerieValorNomimal;
+                    if (realizadoSerie) {
+                        realizadoSerie.referencia = ':no_ciclo:';
+                    }
+                }
+            }
         }
 
         if (filters.incluir_auxiliares) {
@@ -3742,6 +3815,21 @@ export class VariavelService {
         }
     }
 
+    async recalc_vars_ps_dashboard(
+        variaveis: number[],
+        prismaTxn: Prisma.TransactionClient | undefined = undefined
+    ): Promise<number> {
+        if (prismaTxn) {
+            return prismaTxn.$executeRaw`
+                SELECT recalc_vars_ps_dashboard(${variaveis}::int[])
+            `;
+        } else {
+            return this.prisma.$executeRaw`
+                SELECT recalc_vars_ps_dashboard(${variaveis}::int[])
+            `;
+        }
+    }
+
     async getMetaIdDaVariavel(variavel_id: number, prismaTxn: Prisma.TransactionClient): Promise<number> {
         const result: {
             meta_id: number;
@@ -4081,5 +4169,95 @@ export class VariavelService {
         }
 
         return detailDto;
+    }
+
+    async findAllPdms(): Promise<PdmSimplesDto[]> {
+        const rows = await this.prisma.pdm.findMany({
+            where: {
+                removido_em: null,
+            },
+            select: {
+                id: true,
+                nome: true,
+                tipo: true,
+            },
+            orderBy: {
+                nome: 'asc',
+            },
+        });
+        return rows;
+    }
+}
+
+/**
+ * Obtém os IDs das variáveis relacionadas a um PDM
+ * @param pdmId O ID do PDM
+ * @param prismaTx Cliente de transação do Prisma
+ * @returns Array de IDs de variáveis
+ */
+async function getPdmVariavelIds(pdmId: number, prismaTx: Prisma.TransactionClient): Promise<number[]> {
+    const variaveis = await prismaTx.$queryRaw<{ id: number }[]>`
+        WITH pdm_items AS (
+            SELECT id, tipo, meta_id, iniciativa_id, atividade_id
+            FROM view_metas_arvore_pdm
+            WHERE pdm_id = ${pdmId}
+        )
+        SELECT DISTINCT v.id
+        FROM variavel v
+        JOIN indicador_variavel iv ON v.id = iv.variavel_id
+        JOIN indicador i ON iv.indicador_id = i.id
+        JOIN pdm_items pi ON
+            (pi.tipo = 'meta' AND i.meta_id = pi.id) OR
+            (pi.tipo = 'iniciativa' AND i.iniciativa_id = pi.id) OR
+            (pi.tipo = 'atividade' AND i.atividade_id = pi.id)
+        WHERE v.removido_em IS NULL
+        AND v.tipo = 'Global'
+    `;
+
+    return variaveis.map((v) => v.id);
+}
+
+/**
+ * Recalcula variáveis para PDM ou IDs de variáveis específicas
+ * @param prismaTx Cliente de transação do Prisma
+ * @param options Opções contendo pdmId ou variavelIds
+ * @returns Promise que é resolvida quando o recálculo é concluído
+ */
+export async function AddTaskRecalcVariaveis(
+    prismaTx: Prisma.TransactionClient,
+    options: { pdmId?: number; variavelIds?: number[] }
+): Promise<void> {
+    const logger = new Logger('VariaveisRecalc'); // Ajuste conforme necessário para seu logger
+
+    let variavelIds: number[] = [];
+
+    // Se os variavelIds forem fornecidos diretamente, use-os
+    if (options.variavelIds && options.variavelIds.length > 0) {
+        variavelIds = options.variavelIds;
+        logger.log(`Recalculando ${variavelIds.length} variáveis específicas`);
+    }
+    // Caso contrário, obtenha variáveis do PDM
+    else if (options.pdmId) {
+        logger.log(`Recalculando variáveis para o PDM ID: ${options.pdmId}`);
+        variavelIds = await getPdmVariavelIds(options.pdmId, prismaTx);
+
+        if (variavelIds.length > 0) {
+            logger.log(
+                `Encontrou ${variavelIds.length} variáveis para recalcular o dashboard do PDM ID: ${options.pdmId}`
+            );
+        } else {
+            logger.log(`Nenhuma variável global no PDM ID: ${options.pdmId}`);
+            return;
+        }
+    } else {
+        throw new Error('É necessário fornecer pdmId ou variavelIds');
+    }
+
+    // Executa refresh_variavel para todas as variáveis em uma única consulta
+    if (variavelIds.length > 0) {
+        await prismaTx.$queryRaw`
+            SELECT refresh_variavel(v, null)::text
+            FROM unnest(${variavelIds}::int[]) AS v
+        `;
     }
 }

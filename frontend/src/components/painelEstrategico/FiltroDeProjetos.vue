@@ -87,11 +87,11 @@
   </form>
 </template>
 <script setup lang="ts">
-import type { ProjetoDto } from '@/../../backend/src/pp/projeto/entities/projeto.entity';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import { useOrgansStore } from '@/stores';
 import { usePortfolioStore } from '@/stores/portfolios.store';
 import { useProjetosStore } from '@/stores/projetos.store';
+import type { ProjetoDto } from '@back/pp/projeto/entities/projeto.entity';
 import { storeToRefs } from 'pinia';
 import type { Ref } from 'vue';
 import { computed, onUnmounted, ref } from 'vue';

@@ -1,7 +1,7 @@
 <script setup>
-import { useAuthStore } from '@/stores/auth.store';
 import { computed, defineOptions } from 'vue';
 import { RouterLink, useRoute } from 'vue-router';
+import { useAuthStore } from '@/stores/auth.store';
 
 defineOptions({
   inheritAttrs: false,
@@ -22,6 +22,10 @@ const props = defineProps({
   sufixoDosCaminhos: {
     type: String,
     default: undefined,
+  },
+  desabilitar: {
+    type: Boolean,
+    default: false,
   },
   exibirDesabilitado: {
     type: Boolean,
@@ -85,8 +89,13 @@ const propriedadesManipuladas = computed(() => {
     custom
   >
     <a
-      v-if="!route.meta?.limitarÀsPermissões
-        || temPermissãoPara(route.meta.limitarÀsPermissões)"
+      v-if="
+        !$props.desabilitar
+          && (
+            !route.meta?.limitarÀsPermissões
+            || temPermissãoPara(route.meta.limitarÀsPermissões)
+          )
+      "
       v-bind="$attrs"
       :href="href"
       @click="navigate"
@@ -94,7 +103,7 @@ const propriedadesManipuladas = computed(() => {
       <slot />
     </a>
     <span
-      v-else-if="$props.exibirDesabilitado"
+      v-else-if="$props.desabilitar || $props.exibirDesabilitado"
       v-bind="$attrs"
     >
       <slot />

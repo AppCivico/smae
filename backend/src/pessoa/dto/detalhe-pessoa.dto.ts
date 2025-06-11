@@ -26,13 +26,10 @@ export class DetalhePessoaDto {
     cpf: string | null;
     equipes: number[];
     grupos: IdNomeDto[];
-
     orgao_id?: number | undefined;
     perfil_acesso_ids: number[];
     responsavel_pelos_projetos: ProjetosResponsavelDto[];
-
     sobreescrever_modulos: boolean;
     modulos_permitidos: ModuloSistema[];
-
     permissoes: PessoaMetaPermissoesDto;
 }

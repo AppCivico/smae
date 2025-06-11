@@ -92,7 +92,17 @@ const lastParent = ref({});
 const usersAvailable = ref([]);
 const responsaveis = ref({ participantes: [], busca: '' });
 
-const permissaoLiberada = computed(() => singleEtapa.value.etapa.pode_editar_realizado);
+const permissaoLiberada = computed(() => {
+  if (!singleEtapa.value?.etapa) {
+    return true;
+  }
+
+  if (singleEtapa.value.etapa.pode_editar) {
+    return true;
+  }
+
+  return !singleEtapa.value?.etapa?.pode_editar_realizado;
+});
 
 const geolocalizaçãoPorToken = computed(() => (
   singleEtapa.value?.loading
@@ -488,7 +498,7 @@ watch(valoresIniciais, (novoValor) => {
                   busca: '',
                   participantes: values?.ps_ponto_focal?.equipes || [],
                 }"
-                :grupo="EquipesStore.equipesPorIds(singleMeta.ps_ponto_focal.equipes)"
+                :grupo="EquipesStore.equipesPorIds(singleMeta?.ps_ponto_focal?.equipes)"
                 label="titulo"
               />
             </div>

@@ -365,6 +365,8 @@ export class DistribuicaoRecursoService {
                         conclusao_suspensiva: dto.conclusao_suspensiva,
                         criado_em: agora,
                         criado_por: user.id,
+                        pct_custeio: dto.pct_custeio,
+                        pct_investimento: dto.pct_investimento,
                         registros_sei: {
                             createMany: {
                                 data:
@@ -469,6 +471,11 @@ export class DistribuicaoRecursoService {
                 valor: true,
                 valor_total: true,
                 valor_contrapartida: true,
+                valor_empenho: true,
+                valor_liquidado: true,
+                rubrica_de_receita: true,
+                finalidade: true,
+                gestor_contrato: true,
                 custeio: true,
                 pct_custeio: true,
                 investimento: true,
@@ -486,6 +493,9 @@ export class DistribuicaoRecursoService {
                 assinatura_estado: true,
                 vigencia: true,
                 conclusao_suspensiva: true,
+                distribuicao_agencia: true,
+                distribuicao_conta: true,
+                distribuicao_banco: true,
                 parlamentares: {
                     orderBy: { id: 'asc' },
                     where: { removido_em: null },
@@ -535,7 +545,7 @@ export class DistribuicaoRecursoService {
                     },
                 },
                 status: {
-                    orderBy: { data_troca: 'desc' },
+                    orderBy: [{ data_troca: 'desc' }, { id: 'desc' }],
                     where: { removido_em: null },
                     select: {
                         id: true,
@@ -696,6 +706,15 @@ export class DistribuicaoRecursoService {
                 historico_status: historico_status,
 
                 status_atual: status_atual,
+
+                valor_empenho: r.valor_empenho,
+                valor_liquidado: r.valor_liquidado,
+                rubrica_de_receita: r.rubrica_de_receita,
+                finalidade: r.finalidade,
+                gestor_contrato: r.gestor_contrato,
+                distribuicao_agencia: r.distribuicao_agencia,
+                distribuicao_conta: r.distribuicao_conta,
+                distribuicao_banco: r.distribuicao_banco,
             } satisfies DistribuicaoRecursoDto;
         });
     }
@@ -714,6 +733,11 @@ export class DistribuicaoRecursoService {
                 valor: true,
                 valor_total: true,
                 valor_contrapartida: true,
+                valor_empenho: true,
+                valor_liquidado: true,
+                rubrica_de_receita: true,
+                finalidade: true,
+                gestor_contrato: true,
                 custeio: true,
                 pct_custeio: true,
                 investimento: true,
@@ -731,6 +755,9 @@ export class DistribuicaoRecursoService {
                 assinatura_estado: true,
                 vigencia: true,
                 conclusao_suspensiva: true,
+                distribuicao_agencia: true,
+                distribuicao_conta: true,
+                distribuicao_banco: true,
                 orgao_gestor: {
                     select: {
                         id: true,
@@ -757,7 +784,7 @@ export class DistribuicaoRecursoService {
                 },
 
                 status: {
-                    orderBy: { data_troca: 'desc' },
+                    orderBy: [{ data_troca: 'desc' }, { id: 'desc' }],
                     where: { removido_em: null },
                     select: {
                         id: true,
@@ -931,6 +958,11 @@ export class DistribuicaoRecursoService {
             valor: row.valor,
             valor_total: row.valor_total,
             valor_contrapartida: row.valor_contrapartida,
+            valor_empenho: row.valor_empenho,
+            valor_liquidado: row.valor_liquidado,
+            rubrica_de_receita: row.rubrica_de_receita,
+            finalidade: row.finalidade,
+            gestor_contrato: row.gestor_contrato,
             custeio: row.custeio,
             pct_custeio: row.pct_custeio,
             investimento: row.investimento,
@@ -974,6 +1006,9 @@ export class DistribuicaoRecursoService {
                 } satisfies DistribuicaoRecursoSeiDto;
             }),
             parlamentares: parlamentares,
+            distribuicao_agencia: row.distribuicao_agencia,
+            distribuicao_conta: row.distribuicao_conta,
+            distribuicao_banco: row.distribuicao_banco,
         } satisfies DistribuicaoRecursoDetailDto;
     }
 
@@ -1167,6 +1202,14 @@ export class DistribuicaoRecursoService {
                         valor: dto.valor,
                         valor_total: dto.valor_total,
                         valor_contrapartida: dto.valor_contrapartida,
+                        valor_empenho: dto.valor_empenho,
+                        valor_liquidado: dto.valor_liquidado,
+                        rubrica_de_receita: dto.rubrica_de_receita,
+                        finalidade: dto.finalidade,
+                        gestor_contrato: dto.gestor_contrato,
+                        distribuicao_agencia: dto.distribuicao_agencia,
+                        distribuicao_conta: dto.distribuicao_conta,
+                        distribuicao_banco: dto.distribuicao_banco,
                         custeio: dto.custeio,
                         investimento: dto.investimento,
                         empenho: dto.empenho,
@@ -1184,6 +1227,8 @@ export class DistribuicaoRecursoService {
                         conclusao_suspensiva: dto.conclusao_suspensiva,
                         atualizado_em: now,
                         atualizado_por: user.id,
+                        pct_custeio: dto.pct_custeio,
+                        pct_investimento: dto.pct_investimento,
                     },
                     select: {
                         id: true,
@@ -1462,6 +1507,10 @@ export class DistribuicaoRecursoService {
         user: PessoaFromJwt,
         now: Date
     ) {
+        // Verificando se a justificativa foi enviada e não é null.
+        // Ela é required na tabela.
+        if (!dto.justificativa_aditamento) throw new HttpException('justificativa_aditamento| Deve ser enviada.', 400);
+
         const self = await prismaTx.distribuicaoRecurso.findFirstOrThrow({
             where: {
                 id: distribuicaoRecursoId,
@@ -1689,11 +1738,7 @@ export class DistribuicaoRecursoService {
         await Promise.all(operations);
     }
 
-    private async _createTarefasOutroOrgao(
-        prismaTx: Prisma.TransactionClient,
-        distribuicao_id: number,
-        user: PessoaFromJwt
-    ) {
+    async _createTarefasOutroOrgao(prismaTx: Prisma.TransactionClient, distribuicao_id: number, user: PessoaFromJwt) {
         const distribuicaoRecurso = await prismaTx.distribuicaoRecurso.findFirstOrThrow({
             where: {
                 id: distribuicao_id,

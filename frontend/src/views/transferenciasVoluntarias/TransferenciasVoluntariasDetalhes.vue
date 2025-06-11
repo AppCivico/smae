@@ -1,10 +1,10 @@
 <script setup>
 import { storeToRefs } from 'pinia';
-import { computed, defineAsyncComponent, ref } from 'vue';
+import {
+  computed, defineAsyncComponent, ref, nextTick,
+} from 'vue';
 import LoadingComponent from '@/components/LoadingComponent.vue';
-import SmallModal from '@/components/SmallModal.vue';
 import ListaDeDistribuicaoItem from '@/components/transferencia/ListaDeDistribuicaoItem.vue';
-import { localizarDataHorario } from '@/helpers/dateToDate';
 import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
 import { useAlertStore } from '@/stores/alert.store';
@@ -38,11 +38,8 @@ const {
   workflow,
   inícioDeFasePermitido,
   idDaPróximaFasePendente,
-  historico: historicoDoWorkflow,
 } = storeToRefs(workflowAndamento);
 const { temPermissãoPara } = storeToRefs(authStore);
-
-const ConfigurarWorkflow = ref(false);
 
 const recursoFinanceiroValores = computed(() => {
   if (!transferenciaEmFoco.value) {
@@ -64,16 +61,6 @@ const recursoFinanceiroValores = computed(() => {
   ];
 });
 
-function deletarWorkflow() {
-  alertStore.confirmAction('Tem certeza?', async () => {
-    if (await workflowAndamento.deletarWorklow()) {
-      workflowAndamento.buscar();
-      alertStore.success('Workflow deletado!');
-      ConfigurarWorkflow.value = false;
-    }
-  }, 'Deletar');
-}
-
 function iniciarFase(idDaFase) {
   alertStore.confirmAction('Tem certeza?', async () => {
     if (await workflowAndamento.iniciarFase(idDaFase)) {
@@ -92,29 +79,10 @@ function avançarEtapa() {
   }, 'Avançar');
 }
 
-function rabrirFase() {
-  alertStore.confirmAction('Tem certeza?', async () => {
-    if (await workflowAndamento.reabrirFase()) {
-      workflowAndamento.buscar();
-      alertStore.success('Fase reaberta!');
-    }
-  }, 'Reabrir');
-}
-
-function abrirConfigurarWorkflow() {
-  workflowAndamento.buscarHistorico();
-  ConfigurarWorkflow.value = true;
-}
-
-function formatarTexto(texto) {
-  if (!texto) {
-    return '';
-  }
-  return texto.replace(/([a-z])([A-Z])/g, '$1 $2');
-}
-
-TransferenciasVoluntarias.buscarItem(props.transferenciaId);
 distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
+nextTick(() => {
+  window.scrollTo(0, 0);
+});
 </script>
 <template>
   <header class="flex flexwrap spacebetween center mb2 g2">
@@ -126,16 +94,6 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
       v-if="temPermissãoPara('AndamentoWorkflow.listar') && workflow"
       class="flex g1 mr0 mlauto"
     >
-      <li class="f0">
-        <button
-          v-if="transferenciaEmFoco?.workflow_id && temPermissãoPara('CadastroWorkflows.editar')"
-          type="button"
-          class="btn bgnone outline tcprimary"
-          @click="abrirConfigurarWorkflow"
-        >
-          configurar workflow
-        </button>
-      </li>
       <li class="f0">
         <button
           v-if="inícioDeFasePermitido && temPermissãoPara('CadastroWorkflows.editar')"
@@ -161,201 +119,6 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
       </li>
     </menu>
   </header>
-  <SmallModal v-if="ConfigurarWorkflow">
-    <div class="flex spacebetween center mb2">
-      <h2>
-        Configurar Workflow
-      </h2>
-      <hr class="ml2 f1">
-
-      <CheckClose
-        :apenas-modal="true"
-        :formulario-sujo="false"
-        @close="ConfigurarWorkflow = false"
-      />
-    </div>
-    <div v-if="historicoDoWorkflow?.linhas?.length">
-      <div
-        v-for="(linha, index) in historicoDoWorkflow?.linhas"
-        :key="index"
-        class="mb2"
-      >
-        <div v-if="linha.acao==='DelecaoWorkflow'">
-          <strong class="tc600">
-            <span class="tamarelo mr1">DELEÇÃO WORKFLOW </span>
-            {{ linha.criador?.nome_exibicao }} - {{ localizarDataHorario(linha.criado_em) }}
-          </strong>
-        </div>
-        <div v-if="linha.acao==='TrocaTipo'">
-          <strong class="tc600">
-            <span class="tamarelo mr1">
-              TROCA TIPO
-            </span>
-            {{ linha.criador?.nome_exibicao }} - {{ localizarDataHorario(linha.criado_em) }}
-          </strong>
-          <div class="flex mt1">
-            <dl class="mr2">
-              <p class="tc500 w700 mb0">
-                Informação anterior
-              </p>
-              <div class="flex mt05">
-                <dt class="w700 mr1">
-                  Nome:
-                </dt>
-                <dd> {{ linha.tipo_antigo.nome }}</dd>
-              </div>
-              <div class="flex mt05">
-                <dt class="w700 mr1">
-                  Esfera:
-                </dt>
-                <dd>{{ linha.tipo_antigo.esfera }} </dd>
-              </div>
-            </dl>
-            <dl>
-              <p class="tc500 w700 mb0">
-                Informação nova
-              </p>
-              <div class="flex mt05">
-                <dt class="w700 mr1">
-                  Nome:
-                </dt>
-                <dd> {{ linha.tipo_novo.nome }}</dd>
-              </div>
-              <div class="flex mt05">
-                <dt class="w700 mr1">
-                  Esfera:
-                </dt>
-                <dd>{{ linha.tipo_novo.esfera }} </dd>
-              </div>
-            </dl>
-          </div>
-        </div>
-        <div v-if="linha.acao==='ReaberturaFaseWorkflow'">
-          <strong class="tc600 uc">
-            <span class="tamarelo mr1">
-              ABERTURA FASE:
-            </span>
-            {{ formatarTexto(linha.dados_extra?.faseReaberta?.fase) || ' - ' }}
-          </strong> <br>
-          <strong class="tc600">
-            {{ linha.criador?.nome_exibicao }} - {{ localizarDataHorario(linha.criado_em) }}
-          </strong>
-          <div class="flex mt1">
-            <dl class="mr2">
-              <p class="tc500 w700 mb0">
-                Fase reaberta
-              </p>
-              <div class="flex mt05">
-                <dt class="w700 mr1">
-                  Órgão responsável:
-                </dt>
-                <dd>{{ linha.dados_extra?.faseReaberta?.orgao_responsavel?.sigla || ' - ' }}</dd>
-              </div>
-              <div class="flex mt05">
-                <dt class="w700 mr1">
-                  Pessoa responsável:
-                </dt>
-                <dd>
-                  {{ linha.dados_extra?.faseReaberta?.pessoa_responsavel?.nome_exibicao || ' - ' }}
-                </dd>
-              </div>
-              <div class="flex mt05">
-                <dt class="w700 mr1">
-                  Data de início:
-                </dt>
-                <dd>{{ dateToField(linha.dados_extra?.faseReaberta?.data_inicio) || ' - ' }} </dd>
-              </div>
-              <div class="flex mt05">
-                <dt class="w700 mr1">
-                  Situação:
-                </dt>
-                <dd>
-                  {{ formatarTexto(
-                    linha.dados_extra?.faseReaberta?.situacao?.tipo_situacao
-                  ) || ' - ' }}
-                </dd>
-              </div>
-            </dl>
-            <dl
-              v-if="linha.dados_extra?.faseIncompleta"
-              class="mr2"
-            >
-              <p class="tc500 w700 mb0">
-                Fase incompleta
-              </p>
-              <div class="flex mt05">
-                <dt class="w700 mr1">
-                  Órgão responsável:
-                </dt>
-                <dd>
-                  {{ linha.dados_extra?.faseIncompleta?.orgao_responsavel?.sigla || ' - ' }}
-                </dd>
-              </div>
-              <div class="flex mt05">
-                <dt class="w700 mr1">
-                  Pessoa responsável:
-                </dt>
-                <dd>
-                  {{
-                    linha.dados_extra?.faseIncompleta?.pessoa_responsavel?.nome_exibicao || ' - '
-                  }}
-                </dd>
-              </div>
-              <div class="flex mt05">
-                <dt class="w700 mr1">
-                  Data de início:
-                </dt>
-                <dd>
-                  {{ dateToField(linha.dados_extra?.faseIncompleta?.data_inicio) || ' - ' }}
-                </dd>
-              </div>
-              <div class="flex mt05">
-                <dt class="w700 mr1">
-                  Situação:
-                </dt>
-                <dd>
-                  {{ formatarTexto(
-                    linha.dados_extra?.faseIncompleta?.situacao?.tipo_situacao
-                  ) || ' - ' }}
-                </dd>
-              </div>
-            </dl>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div
-      v-else
-      class="mb1"
-    >
-      Este workflow ainda <strong>não</strong> possui histórico.
-    </div>
-    <div class="flex justifycenter">
-      <button
-        type="button"
-        class="btn bgnone outline tvermelho mr1"
-        @click="deletarWorkflow()"
-      >
-        fechar e deletar workflow
-      </button>
-      <button
-        v-if="workflow?.pode_reabrir_fase"
-        type="button"
-        class="btn mr1"
-        @click="rabrirFase()"
-      >
-        reabrir fase
-      </button>
-      <button
-        type="button"
-        class="btn"
-        @click="ConfigurarWorkflow = false"
-      >
-        fechar
-      </button>
-    </div>
-    <div />
-  </SmallModal>
   <AndamentoDoWorkflow
     v-if="temPermissãoPara('AndamentoWorkflow.listar') && transferenciaEmFoco?.workflow_id"
     class="mb2"
@@ -554,7 +317,8 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
       <dt class="t16 w700 mb05 tamarelo">
         Objeto
       </dt>
-      <dd>
+
+      <dd class="break-word">
         {{ parlamentar.objeto || '-' }}
       </dd>
     </dl>
@@ -599,7 +363,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
         <dt class="t16 w700 mb05 tamarelo">
           Objeto/Empreendimento
         </dt>
-        <dd class="text">
+        <dd class="break-word">
           {{ transferenciaEmFoco?.objeto || '-' }}
         </dd>
       </dl>
@@ -898,7 +662,17 @@ section + section {
   width: 55px;
 }
 
-.recurso-financeiro-valores__item {
-  border-bottom: 1px solid #E3E5E8;
+&, :deep {
+  .recurso-financeiro-valores__item {
+    border-bottom: 1px solid #E3E5E8;
+  }
+
+  .recurso-financeiro-valores__item-label {
+    width: 11rem;
+  }
+
+  .recurso-financeiro-valores__item-porcentagem {
+    text-align: center;
+  }
 }
 </style>

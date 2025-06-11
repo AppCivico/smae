@@ -125,16 +125,18 @@ function permitirEdição(indicadorVariavel) {
     <table
       class="tablemain mb1"
     >
-      <col>
-      <col>
-      <col>
-      <col class="col--number">
-      <col>
-      <col>
-      <col class="col--number">
-      <col class="col--number">
-      <col>
-      <col class="col--minimum">
+      <colgroup>
+        <col>
+        <col>
+        <col>
+        <col class="col--number">
+        <col>
+        <col>
+        <col class="col--number">
+        <col class="col--number">
+        <col>
+        <col class="col--minimum">
+      </colgroup>
 
       <thead>
         <tr>

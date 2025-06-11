@@ -15,8 +15,7 @@ function caminhoParaApi(rotaMeta) {
   }
 }
 
-export const useSubtemasStore = defineStore({
-  id: 'Subtemas',
+export const useSubtemasStore = defineStore('Subtemas', {
   state: () => ({
     Subtemas: {},
     tempSubtemas: {},

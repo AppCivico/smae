@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { TransferenciaHistoricoAcao, TransferenciaTipoEsfera } from '@prisma/client';
 import { Transform, TransformFnParams, Type } from 'class-transformer';
 import { IsOptional, IsString, MaxLength, IsInt, Max, Min, IsEnum, IsBoolean } from 'class-validator';
+import { MAX_LENGTH_DEFAULT } from 'src/common/consts';
 
 export class FilterTransferenciaDto {
     @IsOptional()
@@ -43,7 +44,9 @@ export class FilterTransferenciaDto {
 
     @IsOptional()
     @IsString()
-    @MaxLength(250)
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Palavra-Chave' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     palavra_chave?: string;
 }
 

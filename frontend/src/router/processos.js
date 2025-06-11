@@ -54,7 +54,6 @@ export default {
           'projetosListar',
           'projetosResumo',
           'processosListar',
-          'processosCriar',
         ],
       },
     },

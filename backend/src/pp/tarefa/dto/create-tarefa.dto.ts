@@ -20,6 +20,7 @@ import {
 import { GraphvizServiceFormat } from 'src/graphviz/graphviz.service';
 import { DateTransform } from '../../../auth/transforms/date.transform';
 import { IsOnlyDate } from '../../../common/decorators/IsDateOnly';
+import { MAX_LENGTH_DEFAULT, MAX_LENGTH_MEDIO } from 'src/common/consts';
 
 export class TarefaDependenciaDto {
     @IsInt({ message: '$property| precisa ser inteiro' })
@@ -78,7 +79,7 @@ export class CreateTarefaDto {
      */
     @IsString({ message: '$property| precisa ser um texto' })
     @MinLength(1, { message: '$property| Tamanho Mínimo 1' })
-    @MaxLength(60)
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Tarefa' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     tarefa: string;
 
     /**
@@ -86,7 +87,7 @@ export class CreateTarefaDto {
      */
     @IsString({ message: '$property| precisa ser um texto, mesmo que vazio' })
     @MinLength(0)
-    @MaxLength(2048)
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Descrição" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     descricao: string;
 
     /**
@@ -94,7 +95,7 @@ export class CreateTarefaDto {
      */
     @IsString({ message: '$property| precisa ser um texto, mesmo que vazio' })
     @MinLength(0)
-    @MaxLength(2048)
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Recursos' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     recursos: string;
 
     /**
@@ -206,6 +207,7 @@ export class FilterEAPDto {
 }
 
 export class TarefaCronogramaInput {
+    tarefa_cronograma_id?: number;
     projeto_id?: number;
     transferencia_id?: number;
 }

@@ -77,7 +77,7 @@ const temCabeçalho = computed(() => props.colunas.some((x) => x.etiqueta));
               >
                 {{ item[coluna.nomeDaPropriedade].texto ?? item[coluna.nomeDaPropriedade] }}
               </a>
-              <router-link
+              <SmaeLink
                 v-else-if="item[coluna.nomeDaPropriedade]?.rota"
                 :to="item[coluna.nomeDaPropriedade].rota"
                 :title="item[coluna.nomeDaPropriedade]?.texto || coluna.texto || undefined"
@@ -87,17 +87,19 @@ const temCabeçalho = computed(() => props.colunas.some((x) => x.etiqueta));
                   width="20"
                   height="20"
                 >
-                  <use :xlink:href="`#i_${item[coluna.nomeDaPropriedade]?.svgId || coluna.svgId}`" />
+                  <use
+                    :xlink:href="`#i_${item[coluna.nomeDaPropriedade]?.svgId || coluna.svgId}`"
+                  />
                 </svg>
                 <template v-else>
                   {{ item[coluna.nomeDaPropriedade].texto
                     ?? coluna.texto
                     ?? item[coluna.nomeDaPropriedade] }}
                 </template>
-              </router-link>
+              </SmaeLink>
               <button
                 v-else-if="item[coluna.nomeDaPropriedade]?.ação"
-                class="like-a__text addlink"
+                class="like-a__text"
                 :arial-label="item[coluna.nomeDaPropriedade]?.texto || undefined"
                 :title="item[coluna.nomeDaPropriedade]?.texto || coluna.texto || undefined"
                 @click="() => item[coluna.nomeDaPropriedade]?.ação()"
@@ -107,7 +109,9 @@ const temCabeçalho = computed(() => props.colunas.some((x) => x.etiqueta));
                   width="20"
                   height="20"
                 >
-                  <use :xlink:href="`#i_${item[coluna.nomeDaPropriedade]?.svgId || coluna.svgId}`" />
+                  <use
+                    :xlink:href="`#i_${item[coluna.nomeDaPropriedade]?.svgId || coluna.svgId}`"
+                  />
                 </svg>
                 <template v-else>
                   {{ item[coluna.nomeDaPropriedade]?.texto ?? coluna.texto }}
@@ -130,11 +134,6 @@ const temCabeçalho = computed(() => props.colunas.some((x) => x.etiqueta));
             aria-busy="true"
           >
             Carregando
-          </td>
-        </tr>
-        <tr v-else-if="erro">
-          <td :colspan="colunas.length">
-            {{ erro }}
           </td>
         </tr>
       </tbody>

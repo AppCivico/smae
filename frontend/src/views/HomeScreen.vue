@@ -7,7 +7,6 @@ import { useAuthStore } from '@/stores/auth.store';
 import { useMacrotemasStore } from '@/stores/macrotemas.store';
 import { useMacrotemasPsStore } from '@/stores/macrotemasPs.store';
 import { useMetasStore } from '@/stores/metas.store';
-import { usePsMetasStore } from '@/stores/metasPs.store';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
 import { useProcessosStore } from '@/stores/processos.store';
 import { useRegionsStore } from '@/stores/regions.store';
@@ -66,7 +65,6 @@ async function escolher(opção: keyof ModulosDoSistema) {
       useUsersStore().$reset();
       useTarefasStore().$reset();
       useOrcamentosStore().$reset();
-      usePsMetasStore().$reset();
       useMetasStore().$reset();
       useProcessosStore().$reset();
       useAcompanhamentosStore().$reset();

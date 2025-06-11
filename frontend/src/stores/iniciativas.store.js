@@ -14,8 +14,7 @@ function caminhoParaApi(rotaMeta) {
   }
 }
 
-export const useIniciativasStore = defineStore({
-  id: 'Iniciativas',
+export const useIniciativasStore = defineStore('Iniciativas', {
   state: () => ({
     Iniciativas: {},
     singleIniciativa: {},

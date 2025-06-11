@@ -37,18 +37,22 @@ if (!Array.isArray(organs) || !organs.length) {
 </script>
 
 <template>
-  <div class="flex spacebetween center mb2">
-    <TítuloDePágina> Grupos de observadores </TítuloDePágina>
+  <MigalhasDePão class="mb1" />
+  <CabecalhoDePagina>
+    <template #acoes>
+      <SmaeLink
+        :to="{ name: '.gruposObservadores.criar' }"
+        class="btn big"
+      >
+        Novo grupo de observadores
+      </SmaeLink>
+    </template>
+  </CabecalhoDePagina>
 
-    <hr class="ml2 f1">
-
-    <SmaeLink
-      :to="{ name: '.gruposObservadores.criar' }"
-      class="btn big ml1"
-    >
-      Novo grupo de observadores
-    </SmaeLink>
-  </div>
+  <ErrorComponent
+    v-if="erro"
+    :erro="erro"
+  />
 
   <table class="tablemain">
     <col>
@@ -102,7 +106,10 @@ if (!Array.isArray(organs) || !organs.length) {
           </ul>
         </td>
         <td>
-          <ul>
+          <ul
+            v-if="$route.meta.rotaParaItensAssociados.nome
+              && $route.meta.rotaParaItensAssociados.nomeDoParametro"
+          >
             <li v-if="!item.projetos?.length">
               Nenhum projeto associado
             </li>
@@ -110,17 +117,17 @@ if (!Array.isArray(organs) || !organs.length) {
               v-for="projeto in item.projetos"
               :key="projeto.id"
             >
-              <router-link
+              <SmaeLink
                 :to="{
-                  name: 'projetosResumo',
+                  name: $route.meta.rotaParaItensAssociados.nome,
                   params: {
-                    projetoId: projeto.id,
+                    [$route.meta.rotaParaItensAssociados.nomeDoParametro]: projeto.id,
                   },
                 }"
               >
                 <strong v-if="projeto.codigo"> {{ projeto.codigo }} - </strong>
                 {{ projeto.nome }}
-              </router-link>
+              </SmaeLink>
             </li>
           </ul>
         </td>
@@ -155,11 +162,6 @@ if (!Array.isArray(organs) || !organs.length) {
       <tr v-if="chamadasPendentes.lista">
         <td colspan="7">
           Carregando
-        </td>
-      </tr>
-      <tr v-else-if="erro">
-        <td colspan="7">
-          Erro: {{ erro }}
         </td>
       </tr>
       <tr v-else-if="!lista.length">

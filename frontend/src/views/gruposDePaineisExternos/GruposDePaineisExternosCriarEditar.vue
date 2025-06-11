@@ -5,13 +5,12 @@ import truncate from '@/helpers/texto/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useGruposPaineisExternos } from '@/stores/grupospaineisExternos.store.ts';
 import { useOrgansStore } from '@/stores/organs.store';
-import { useUsersStore } from '@/stores/users.store';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
   Field,
   useForm,
-  useIsFormDirty
+  useIsFormDirty,
 } from 'vee-validate';
 import { ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -33,12 +32,6 @@ const {
   chamadasPendentes, emFoco, erro, itemParaEdicao,
 } = storeToRefs(useGruposPaineisExternosStore);
 const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
-
-// necessário por causa de 🤬
-const montarCampoEstático = ref(false);
-
-const UserStore = useUsersStore();
-const { pessoasSimplificadas } = storeToRefs(UserStore);
 
 const {
   errors, handleSubmit, isSubmitting, resetForm, values,
@@ -71,7 +64,6 @@ const onSubmit = handleSubmit.withControlled(async () => {
 
 async function iniciar() {
   useGruposPaineisExternosStore.$reset();
-  UserStore.buscarPessoasSimplificadas({ espectador_de_painel_externo: true });
 
   if (props.gruposPaineisExternosId) {
     await useGruposPaineisExternosStore.buscarItem(props.gruposPaineisExternosId);
@@ -166,10 +158,9 @@ watch(itemParaEdicao, (novosValores) => {
         />
 
         <CampoDePessoasComBuscaPorOrgao
-          v-model="values.participantes"
+          :model-value="values.participantes"
+          :valores-iniciais="itemParaEdicao.participantes"
           name="participantes"
-          :pessoas="Array.isArray(pessoasSimplificadas) ? pessoasSimplificadas : []"
-          :pronto-para-montagem="montarCampoEstático"
         />
         <ErrorMessage
           name="participantes"

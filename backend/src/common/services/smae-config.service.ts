@@ -25,6 +25,23 @@ export class SmaeConfigService {
 
         return null;
     }
+
+    async getConfigWithDefault<T>(key: string, defaultValue: T, parser?: (value: string) => T): Promise<T> {
+        const value = await this.getConfig(key);
+        if (!value) return defaultValue;
+
+        if (parser) {
+            return parser(value);
+        }
+
+        try {
+            // Tenta fazer o parse do valor como JSON primeiro
+            return JSON.parse(value) as T;
+        } catch {
+            // Se não for JSON válido, retorna o valor como está
+            return value as unknown as T;
+        }
+    }
 }
 
 @Injectable()

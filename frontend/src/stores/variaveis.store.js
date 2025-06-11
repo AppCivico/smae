@@ -15,8 +15,7 @@ function caminhoParaApi(rotaMeta, segmentoOriginal) {
   }
 }
 
-export const useVariaveisStore = defineStore({
-  id: 'Variaveis',
+export const useVariaveisStore = defineStore('Variaveis', {
   state: () => ({
     // atentar que propriedades aninhadas não são reativas.
     // A sua criação é, mas a alteração não!

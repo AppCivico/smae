@@ -18,6 +18,7 @@ import {
 } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 import { DateTransform } from '../../../auth/transforms/date.transform';
+import { MAX_LENGTH_DEFAULT, MAX_LENGTH_MEDIO } from 'src/common/consts';
 
 export class CreateTransferenciaDto {
     @IsNumber()
@@ -29,12 +30,14 @@ export class CreateTransferenciaDto {
     @IsString()
     @IsOptional()
     @MinLength(1)
-    @MaxLength(250)
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Secretária Concedente' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     secretaria_concedente?: string;
 
     @IsString()
     @MinLength(1)
-    @MaxLength(1024)
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo 'Objeto' deve ter no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     objeto: string;
 
     @IsOptional()
@@ -78,61 +81,75 @@ export class CreateTransferenciaDto {
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(250)
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Emenda' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     emenda?: string;
 
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(250)
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Demanda' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     demanda?: string;
 
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(250)
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Programa' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     programa?: string;
 
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(250)
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Normativa' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     normativa?: string;
 
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(1024)
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Observacões" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     observacoes?: string;
 
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(250)
+    @MaxLength(MAX_LENGTH_MEDIO, {
+        message: `O campo "Detalhamento" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres`,
+    })
     detalhamento?: string;
 
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(250)
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Nome programar' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     nome_programa?: string;
 
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(250)
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Agência aceite' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     agencia_aceite?: string;
 
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(250)
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Emenda unitária' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     emenda_unitaria?: string;
 
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(250)
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Número identificação' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     numero_identificacao?: string;
 
     @IsOptional()
@@ -171,7 +188,7 @@ export class CreateTransferenciaParlamentarDto {
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(1024)
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo 'objeto' deve ter no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     objeto: string;
 }
 
@@ -198,6 +215,6 @@ export class CreateTransferenciaAnexoDto {
 
     @IsOptional()
     @IsString()
-    @MaxLength(2048)
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Descrição" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     descricao?: string;
 }

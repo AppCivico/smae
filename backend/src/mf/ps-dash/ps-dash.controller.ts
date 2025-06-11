@@ -5,7 +5,9 @@ import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { MetaSetorialController } from '../../meta/meta.controller';
 import {
+    PSMFFiltroDashboardMetasDto,
     PSMFFiltroDashboardQuadroDto,
+    PSMFFiltroDashboardQuadroVariaveisDto,
     PSMFListaMetasDto,
     PSMFQuadroMetasDto,
     PSMFQuadroVariaveisDto,
@@ -23,7 +25,7 @@ export class PSMFDashboardController {
     @ApiBearerAuth('access-token')
     @Roles(MetaSetorialController.ReadPerm)
     async getQuadroVariaveis(
-        @Query() filtros: PSMFFiltroDashboardQuadroDto,
+        @Query() filtros: PSMFFiltroDashboardQuadroVariaveisDto,
         @CurrentUser() user: PessoaFromJwt,
         @TipoPDM() tipo: TipoPdmType
     ): Promise<PSMFQuadroVariaveisDto> {
@@ -39,7 +41,7 @@ export class PSMFDashboardController {
         @CurrentUser() user: PessoaFromJwt,
         @TipoPDM() tipo: TipoPdmType
     ): Promise<PSMFQuadroMetasDto> {
-        return await this.dashboardService.getQuadroMetas(tipo, filtros, user);
+        return await this.dashboardService.getQuadroMetasIniAtv(tipo, filtros, user);
     }
 
     @Get('metas')
@@ -47,7 +49,7 @@ export class PSMFDashboardController {
     @ApiBearerAuth('access-token')
     @Roles(MetaSetorialController.ReadPerm)
     async getListaMetasIniAtv(
-        @Query() filtros: PSMFFiltroDashboardQuadroDto,
+        @Query() filtros: PSMFFiltroDashboardMetasDto,
         @CurrentUser() user: PessoaFromJwt,
         @TipoPDM() tipo: TipoPdmType
     ): Promise<PSMFListaMetasDto> {

@@ -4,8 +4,7 @@ import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
-export const useUsersStore = defineStore({
-  id: 'users',
+export const useUsersStore = defineStore('users', {
   state: () => ({
     accessProfiles: {},
     users: {},

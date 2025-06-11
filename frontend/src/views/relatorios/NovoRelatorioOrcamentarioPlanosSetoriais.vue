@@ -1,5 +1,4 @@
 <script setup>
-import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import { relatórioOrçamentárioPlanosSetoriais as schema } from '@/consts/formSchemas';
 import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
 import maskMonth from '@/helpers/maskMonth';
@@ -7,7 +6,7 @@ import monthAndYearToDate from '@/helpers/monthAndYearToDate';
 import { useAlertStore } from '@/stores/alert.store';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
-import { Field, Form, useIsFormDirty } from 'vee-validate';
+import { Field, Form } from 'vee-validate';
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -17,8 +16,6 @@ const alertStore = useAlertStore();
 const PlanosSetoriaisStore = usePlanosSetoriaisStore();
 const relatoriosStore = useRelatoriosStore();
 const router = useRouter();
-
-const formularioSujo = useIsFormDirty();
 
 const currentYear = new Date().getFullYear();
 
@@ -59,13 +56,13 @@ PlanosSetoriaisStore.buscarTudo();
 </script>
 
 <template>
-  <header class="flex spacebetween center mb2">
-    <TituloDaPagina />
+  <CabecalhoDePagina :formulario-sujo="false" />
 
-    <hr class="ml2 f1">
-
-    <CheckClose :formulario-sujo="formularioSujo" />
-  </header>
+  <p class="texto--explicativo">
+    Serão geradas 2 planilhas contendo os registros de execução orçamentária e do
+    orçamento planejado. A versão analítica retorna todos os registros e a
+    versão consolidada retorna somente o valor vigente no momento.
+  </p>
 
   <Form
     v-slot="{ errors, isSubmitting }"

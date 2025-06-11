@@ -1,6 +1,6 @@
-import type { DadosCodTituloAtividadeDto, DadosCodTituloIniciativaDto } from '@/../../backend/src/meta/dto/create-meta.dto';
+import type { DadosCodTituloAtividadeDto, DadosCodTituloIniciativaDto } from '@back/meta/dto/create-meta.dto';
 
-type AtividadesPorId = {
+export type AtividadesPorId = {
   [k: number]: DadosCodTituloAtividadeDto;
 };
 
@@ -12,7 +12,7 @@ const mapAtividades = (atividades: DadosCodTituloAtividadeDto[]): AtividadesPorI
   return resultado;
 };
 
-type ArvoreDeIniciativas = {
+export type ArvoreDeIniciativas = {
   [k: number]: Omit<DadosCodTituloAtividadeDto, 'atividades'> & {
     atividades: AtividadesPorId;
   };

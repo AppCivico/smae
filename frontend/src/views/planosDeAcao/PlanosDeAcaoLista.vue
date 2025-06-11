@@ -1,6 +1,6 @@
 <script setup>
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { grauDescricao } from '@/../../common/RiscoCalc.ts';
+import { grauDescricao } from '@back/common/RiscoCalc.ts';
 import MenuDeMudançaDeStatusDeRisco from '@/components/riscos/MenuDeMudançaDeStatusDeRisco.vue';
 import { risco as schema } from '@/consts/formSchemas';
 import statuses from '@/consts/riskStatuses';
@@ -206,30 +206,32 @@ iniciar();
       </colgroup>
 
       <thead>
-        <th />
-        <th class="tl">
-          Contramedidas
-        </th>
-        <th class="tl">
-          Responsável
-        </th>
-        <th class="cell--data">
-          Prazo
-        </th>
-        <th class="cell--number tr">
-          Custo
-        </th>
-        <th class="cell--number tr">
-          % custo projeto
-        </th>
-        <th
-          v-if="!permissõesDoProjetoEmFoco.apenas_leitura
-            || permissõesDoProjetoEmFoco.sou_responsavel"
-        />
-        <th
-          v-if="!permissõesDoProjetoEmFoco.apenas_leitura
-            || permissõesDoProjetoEmFoco.sou_responsavel"
-        />
+        <tr>
+          <th />
+          <th class="tl">
+            Contramedidas
+          </th>
+          <th class="tl">
+            Responsável
+          </th>
+          <th class="cell--data">
+            Prazo
+          </th>
+          <th class="cell--number tr">
+            Custo
+          </th>
+          <th class="cell--number tr">
+            % custo projeto
+          </th>
+          <th
+            v-if="!permissõesDoProjetoEmFoco.apenas_leitura
+              || permissõesDoProjetoEmFoco.sou_responsavel"
+          />
+          <th
+            v-if="!permissõesDoProjetoEmFoco.apenas_leitura
+              || permissõesDoProjetoEmFoco.sou_responsavel"
+          />
+        </tr>
       </thead>
 
       <tbody

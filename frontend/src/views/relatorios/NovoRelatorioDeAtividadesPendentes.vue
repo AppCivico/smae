@@ -1,18 +1,17 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage, Field, useForm,
+} from 'vee-validate';
+import { computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
-import LabelFromYup from '@/components/LabelFromYup.vue';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import { relatórioAtividadesPendentes as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
-import { storeToRefs } from 'pinia';
-import {
-  ErrorMessage, Field, useForm, useIsFormDirty,
-} from 'vee-validate';
-import { computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 
 const TipoDeTransferenciaStore = useTipoDeTransferenciaStore();
 const { lista: tipoTransferenciaComoLista } = storeToRefs(TipoDeTransferenciaStore);
@@ -25,7 +24,7 @@ const route = useRoute();
 const router = useRouter();
 
 const valoresIniciais = {
-  fonte: 'CasaCivilAtvPendentes',
+  fonte: 'AtvPendentes',
   parametros: {
     tipo_id: [],
     data_inicio: null,
@@ -63,22 +62,14 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
 });
 
 ÓrgãosStore.getAll();
-const formularioSujo = useIsFormDirty();
-
 </script>
 <template>
-  <div class="flex spacebetween center mb2">
-    <TítuloDePágina />
-    <hr class="ml2 f1">
-    <CheckClose
-      :formulario-sujo="formularioSujo"
-    />
-  </div>
+  <CabecalhoDePagina :formulario-sujo="false" />
 
-  <!--<pre>values:{{ values }}</pre>
-  <pre>tiposDisponíveis: {{ tiposDisponíveis }}</pre>
-  /<pre>Lista: {{ tipoTransferenciaComoLista }}</pre>
--->
+  <p class="texto--explicativo">
+    Relação das atividades pendentes nos cronogramas das transferências.
+  </p>
+
   <form
     :disabled="isSubmitting"
     @submit.prevent="onSubmit"
@@ -86,7 +77,7 @@ const formularioSujo = useIsFormDirty();
     <Field
       name="fonte"
       type="hidden"
-      value="CasaCivilAtvPendentes"
+      value="AtvPendentes"
     />
 
     <div class="flex flexwrap g2 mb2">

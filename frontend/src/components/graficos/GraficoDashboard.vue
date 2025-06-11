@@ -1,5 +1,8 @@
 <template>
-  <div>
+  <div
+    v-once
+    v-bind="$attrs"
+  >
     <v-chart
       v-if="option"
       ref="el"
@@ -8,13 +11,19 @@
       :option="preparedOptions"
     />
   </div>
+
+  <div
+    ref="elementoPainelFlutuante"
+    class="painel-flutuante__conteudo"
+    hidden
+  >
+    <component
+      :is="() => conteudoPainelFlutuante"
+    />
+  </div>
 </template>
 <script lang="ts" setup>
-import {
-  defineProps, provide, ref, computed,
-} from 'vue';
-import type { ECBasicOption } from 'echarts/types/dist/shared';
-import { BarChart, LineChart, HeatmapChart } from 'echarts/charts';
+import { BarChart, HeatmapChart, LineChart } from 'echarts/charts';
 import {
   GridComponent,
   LegendComponent,
@@ -26,7 +35,21 @@ import {
 } from 'echarts/components';
 import { use } from 'echarts/core';
 import { CanvasRenderer } from 'echarts/renderers';
+import type { ECBasicOption } from 'echarts/types/dist/shared';
+import { merge } from 'lodash';
+import type { VNode } from 'vue';
+import {
+  computed,
+  nextTick,
+  provide,
+  ref,
+  useSlots,
+} from 'vue';
 import VChart, { THEME_KEY } from 'vue-echarts';
+
+defineOptions({
+  inheritAttrs: false,
+});
 
 export type TooltipOptions = {
   data: number,
@@ -50,6 +73,15 @@ use([
 
 provide(THEME_KEY, 'light');
 
+const formatoPadraoDeEtiquetaDeEixo = {
+  fontSize: 14,
+  fontFamily: 'Roboto',
+  fontWeight: 600,
+  color: '#142133',
+};
+
+const slots = useSlots();
+
 const props = withDefaults(defineProps<{
   option: ECBasicOption,
   tooltipTemplate?:(params: TooltipOptions) => string
@@ -58,34 +90,84 @@ const props = withDefaults(defineProps<{
   tooltipTemplate: undefined,
 });
 
+const definirPadroes = (opcoes: ECBasicOption) => (merge({
+  grid: {
+    containLabel: true,
+    right: 30,
+    bottom: 0,
+    left: 0,
+  },
+  tooltip: {
+    confine: true,
+    className: 'painel-flutuante',
+  },
+  xAxis: {
+    axisLabel: {
+      hideOverlap: false,
+    },
+  },
+  yAxis: {
+    nameTextStyle: {
+      align: 'right',
+    },
+    axisLabel: formatoPadraoDeEtiquetaDeEixo,
+  },
+}, opcoes));
+
 const el = ref(null);
+const elementoPainelFlutuante = ref<HTMLElement | null>(null);
+const conteudoPainelFlutuante = ref<VNode[] | null>(null);
 
 const preparedOptions = computed((): ECBasicOption => {
   const { tooltipTemplate } = props;
-  if (!tooltipTemplate) {
-    return props.option;
+  if (!tooltipTemplate && !slots['painel-flutuante']) {
+    return definirPadroes(props.option);
   }
 
   return {
-    ...props.option,
+    ...definirPadroes(props.option),
     tooltip: {
       trigger: 'item',
       renderMode: 'html',
       confine: true,
-      className: 'grafico-dashboard__tooltip',
-      formatter: (params: any) => {
-        const tooltipText = tooltipTemplate({
-          data: params.data,
-          dataIndex: params.dataIndex,
-          name: params.name,
-        });
+      className: 'painel-flutuante',
+      formatter: (params: unknown) => {
+        switch (true) {
+          case !!slots['painel-flutuante']:
+            elementoPainelFlutuante.value?.setAttribute('hidden', '');
+            conteudoPainelFlutuante.value = slots['painel-flutuante'](params);
 
-        return `
-          <div style="color: ${params.color}" class="grafico-dashboard__tooltip-conteudo">
-            ${tooltipText}
-          </div>
-        `;
+            nextTick(() => {
+              if (elementoPainelFlutuante.value?.hasAttribute('hidden')) {
+                elementoPainelFlutuante.value.removeAttribute('hidden');
+              }
+            });
+
+            return elementoPainelFlutuante.value;
+
+          case !!tooltipTemplate: {
+            const tooltipText = tooltipTemplate({
+              data: params.data,
+              dataIndex: params.dataIndex,
+              name: params.name,
+            });
+
+            return `
+              <div style="color: ${params.color}" class="painel-flutuante__conteudo">
+                ${tooltipText}
+              </div>
+            `;
+          }
+
+          default:
+            return `
+              <div style="color: ${params.color}" class="painel-flutuante__conteudo">
+                ${params.name}: ${params.data}
+              </div>
+            `;
+        }
       },
+      ...((props.option.tooltip as object) || {}),
     },
   };
 });
@@ -94,33 +176,5 @@ const preparedOptions = computed((): ECBasicOption => {
 <style scoped>
 .chart {
   height: 400px;
-}
-</style>
-
-<style lang="less">
-.grafico-dashboard__tooltip {
-  background-color: #E8E8E8 !important;
-  border-radius: 10px !important;
-  padding: 5px !important;
-  border: none !important;
-
-  display: none;
-  flex-direction: column;
-
-  &:before, &:after {
-    content: '';
-    margin: 0 auto;
-    width: 60%;
-    height: 1px;
-    color: #232046;
-    background: #232046;
-  }
-}
-.grafico-dashboard__tooltip:has(.grafico-dashboard__tooltip-conteudo) {
-  display: flex !important;
-}
-
-.grafico-dashboard__tooltip-conteudo {
-  padding: 5px 0 8px;
 }
 </style>

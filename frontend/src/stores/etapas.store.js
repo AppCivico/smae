@@ -14,8 +14,7 @@ function caminhoParaApi(rotaMeta, segmentoOriginal) {
   }
 }
 
-export const useEtapasStore = defineStore({
-  id: 'Etapas',
+export const useEtapasStore = defineStore('Etapas', {
   state: () => ({
     Etapas: {},
     singleEtapa: {},

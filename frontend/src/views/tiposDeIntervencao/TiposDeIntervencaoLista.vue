@@ -1,6 +1,6 @@
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>{{ route?.meta?.título || "Tipos de intervenção" }}</h1>
+    <TituloDaPagina />
     <hr class="ml2 f1">
     <router-link
       :to="{ name: 'tiposDeIntervencaoCriar' }"
@@ -10,10 +10,12 @@
     </router-link>
   </div>
   <table class="tablemain">
-    <col>
-    <col>
-    <col class="col--botão-de-ação">
-    <col class="col--botão-de-ação">
+    <colgroup>
+      <col>
+      <col>
+      <col class="col--botão-de-ação">
+      <col class="col--botão-de-ação">
+    </colgroup>
     <thead>
       <tr>
         <th>Tipo</th>
@@ -50,7 +52,7 @@
             <svg
               width="20"
               height="20"
-            ><use xlink:href="#i_remove" /></svg>
+            ><use xlink:href="#i_waste" /></svg>
           </button>
         </td>
       </tr>
@@ -78,6 +80,7 @@ import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
 import { useAlertStore } from '@/stores/alert.store';
 import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
 
 const route = useRoute();
 const alertStore = useAlertStore();

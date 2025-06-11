@@ -1,5 +1,5 @@
 <script setup>
-// eslint-disable-next-line import/no-extraneous-dependencies
+import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
 import { processo as schema } from '@/consts/formSchemas';
 import formatProcesso from '@/helpers/formatProcesso';
 import { useAlertStore } from '@/stores/alert.store';
@@ -180,13 +180,14 @@ resetForm();
           name="descricao"
           :schema="schema"
         />
-        <Field
+        <SmaeText
+          :schema="schema"
           name="descricao"
           as="textarea"
           rows="5"
           class="inputtext light mb1"
-          maxlength="500"
-          :class="{ 'error': errors.descricao }"
+          :model-value="carga.descricao"
+          anular-vazio
         />
         <ErrorMessage
           name="descricao"
@@ -200,13 +201,14 @@ resetForm();
           name="comentarios"
           :schema="schema"
         />
-        <Field
+        <SmaeText
+          :schema="schema"
           name="comentarios"
           as="textarea"
           rows="5"
           class="inputtext light mb1"
-          maxlength="1024"
-          :class="{ 'error': errors.comentarios }"
+          :model-value="carga.comentarios"
+          anular-vazio
         />
         <ErrorMessage
           name="comentarios"
@@ -220,13 +222,14 @@ resetForm();
           name="observacoes"
           :schema="schema"
         />
-        <Field
+        <SmaeText
+          :schema="schema"
           name="observacoes"
           as="textarea"
           rows="5"
           class="inputtext light mb1"
-          maxlength="1024"
-          :class="{ 'error': errors.observacoes }"
+          :model-value="carga.observacoes"
+          anular-vazio
         />
         <ErrorMessage
           name="observacoes"

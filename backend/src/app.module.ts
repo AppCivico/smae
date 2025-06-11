@@ -9,6 +9,7 @@ import { AppModuleCommon } from './app.module.common';
 import { AppModulePdm } from './app.module.pdm';
 import { AppModuleProjeto } from './app.module.projeto';
 import { AppService } from './app.service';
+import { AtualizacaoEmLoteModule } from './atualizacao-em-lote/atualizacao-em-lote.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RolesGuard } from './auth/guards/roles.guard';
 import { PessoaPrivilegioModule } from './auth/pessoaPrivilegio.module';
@@ -38,6 +39,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { DotacaoModule } from './dotacao/dotacao.module';
 import { EleicaoModule } from './eleicao/eleicao.module';
 import { PainelEstrategicoModule } from './gestao-projetos/painel-estrategico/painel-estrategico.module';
+import { PSMFDashboardModule } from './mf/ps-dash/ps-dash.module';
 import { MinhaContaModule } from './minha-conta/minha-conta.module';
 import { OrcamentoPlanejadoModule } from './orcamento-planejado/orcamento-planejado.module';
 import { OrcamentoRealizadoModule } from './orcamento-realizado/orcamento-realizado.module';
@@ -51,10 +53,16 @@ import { OrcamentoModule } from './reports/orcamento/orcamento.module';
 import { ReportsModule } from './reports/relatorios/reports.module';
 import { UtilsService } from './reports/utils/utils.service';
 import { RequestLogModule } from './request_log/request_log.module';
+import { RunReportModule } from './task/run_report/run-report.module';
 import { TaskModule } from './task/task.module';
 import { ClassificacaoModule } from './transferencias-voluntarias/classificacao/classificacao.module';
 import { PSMFDashboardModule } from './mf/ps-dash/ps-dash.module';
 import { SyncCadastroBasicoModule } from './sync-cadastro-basico/sync-cadastro-basico.module';
+import { DuckDBModule } from './common/duckdb/duckdb.module';
+import { GeoBuscaModule } from './geo-busca/geo-busca.module';
+import { ApiLogModule } from './api-logs/api-log.module';
+import { BuscaGlobalModule } from './busca-global/busca-global.module';
+import { TransfereGovApiModule } from './transfere-gov-api/transfere-gov-api.module';
 
 // Hacks pro JS
 /*
@@ -82,7 +90,6 @@ import { SyncCadastroBasicoModule } from './sync-cadastro-basico/sync-cadastro-b
         OrcamentoModule,
         OrcamentoPlanejadoModule,
         OrcamentoRealizadoModule,
-
         OrcamentoPrevistoModule,
         DashboardModule,
         BancadaModule,
@@ -113,6 +120,13 @@ import { SyncCadastroBasicoModule } from './sync-cadastro-basico/sync-cadastro-b
         CategoriaAssuntoVariavelModule,
         PSMFDashboardModule,
         SyncCadastroBasicoModule,
+        RunReportModule,
+        DuckDBModule,
+        TransfereGovApiModule,
+        GeoBuscaModule,
+        BuscaGlobalModule,
+        AtualizacaoEmLoteModule,
+        ApiLogModule,
     ],
     controllers: [AppController],
     providers: [

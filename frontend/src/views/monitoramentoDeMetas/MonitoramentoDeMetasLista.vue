@@ -1,11 +1,11 @@
 <script setup>
 import AutocompleteField from '@/components/AutocompleteField2.vue';
+import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import DetalhamentoDeCiclo from '@/components/monitoramentoDeMetas/DetalhamentoDeCiclo.vue';
 import { useMonitoramentoDeMetasStore } from '@/stores/monitoramentoDeMetas.store';
 import { storeToRefs } from 'pinia';
 import {
-  computed,
-  ref,
+  computed, onMounted, ref,
   watch,
 } from 'vue';
 import { useRoute } from 'vue-router';
@@ -47,9 +47,14 @@ watch(
   },
   { immediate: true },
 );
+
+onMounted(() => {
+  monitoramentoDeMetasStore.limparCiclos();
+});
+
 </script>
 <template>
-  <MigalhasDePao />
+  <MigalhasDeMetas class="mb1" />
 
   <TituloDePagina />
 
@@ -59,6 +64,7 @@ watch(
     <template v-else>
       <DetalhamentoDeCiclo
         :id="`ciclo--${cicloAtivo?.id}`"
+        :key="`ciclo--${cicloAtivo?.id}`"
         :ciclo-atual="true"
         :ciclo="cicloAtivo"
         :meta-id="$route.params.meta_id"
@@ -78,7 +84,6 @@ watch(
       </div>
       <AutocompleteField
         name="anos"
-        @change="anosSelecionados = $event"
         :controlador="{
           busca: '',
           participantes: anosSelecionados,
@@ -86,6 +91,7 @@ watch(
         :grupo="anosDisponiveisNosCiclosPassados"
         :aria-busy="false"
         label="ano"
+        @change="anosSelecionados = $event"
       />
       <DetalhamentoDeCiclo
         v-for="ciclo in listaDeCiclosFiltrados"

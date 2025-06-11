@@ -16,6 +16,7 @@ import {
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 import { DateTransform } from '../../../auth/transforms/date.transform';
 import { CreateTransferenciaDto, CreateTransferenciaParlamentarDto } from './create-transferencia.dto';
+import { MAX_LENGTH_DEFAULT, MAX_LENGTH_MEDIO } from 'src/common/consts';
 
 export class UpdateTransferenciaDto extends PartialType(OmitType(CreateTransferenciaDto, [])) {}
 
@@ -91,55 +92,69 @@ export class CompletarTransferenciaDto {
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(250)
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Dotação' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     dotacao?: string;
 
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(250)
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Ordenador despesa' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     ordenador_despesa?: string;
 
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(250)
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Gestor contrato' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     gestor_contrato?: string;
 
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(250)
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Banco aceite' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     banco_aceite?: string;
 
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(250)
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Agência aceite' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     agencia_aceite?: string;
 
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(250)
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Conta aceite' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     conta_aceite?: string;
 
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(250)
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Conta fim' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     conta_fim?: string;
 
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(250)
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Agência fim' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     agencia_fim?: string;
 
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(250)
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Banco fim' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     banco_fim?: string;
 
     @IsOptional()
@@ -190,6 +205,7 @@ export class UpdateTransferenciaAnexoDto {
     @IsOptional()
     @IsString()
     @ValidateIf((object, value) => value !== null)
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Descrição" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     descricao?: string | null;
 
     @IsOptional()

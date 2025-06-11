@@ -96,6 +96,8 @@ services:
       SEI_API_PREFIX: "${SEI_API_PREFIX}" # http://smae_sei:80
       TRANSFEREGOV_API_PREFIX: "${TRANSFEREGOV_API_PREFIX}" # http://smae_transferegov:80
       TRANSFEREGOV_API_TRANSFERENCIAS_PREFIX: "${TRANSFEREGOV_API_TRANSFERENCIAS_PREFIX}" # "http://smae_transferegov_transferencias:80/"
+      DOTACAO_SOF_SIMULTANEIDADE: "${DOTACAO_SOF_SIMULTANEIDADE}"
+      API_HOST_NAME: "${API_HOST_NAME}"
     networks:
       #- postgres
       #- minio
@@ -169,8 +171,8 @@ services:
   smae_transferegov:
     container_name: "${API_CONTAINER_NAME}_transferegov"
     build:
-      context: ./backend-transfere-gov/
-      dockerfile: Dockerfile
+      context: ./
+      dockerfile: ./backend-transfere-gov/Dockerfile
     restart: unless-stopped
     networks:
       - smae_network

@@ -19,7 +19,7 @@ type Estado = {
   variaveis: PSMFQuadroVariaveisDto | null;
   estatisticasMetas: PSMFQuadroMetasDto | null;
 
-  listaMetas: PSMFListaMetasDto['linhas'] | null;
+  listaMetas: PSMFListaMetasDto['linhas'];
   cicloAtual: PSMFListaMetasDto['ciclo_atual'] | null;
 
   chamadasPendentes: ChamadasPendentes;
@@ -30,7 +30,7 @@ type Estado = {
 };
 
 export type Parametros = {
-  pdm_id: number;
+  pdm_id?: number;
   orgao_id?: number[];
   equipes?: number[];
   visao_pessoal?: boolean;
@@ -39,12 +39,16 @@ export type Parametros = {
   ipp?: number;
 };
 
+export type ParametrosComPdmIdObrigatorio = Parametros & {
+  pdm_id: number;
+};
+
 export const usePanoramaPlanoSetorialStore = (prefixo = '') => defineStore(prefixo ? `${prefixo}.panorama` : 'panorama', {
   state: (): Estado => ({
     variaveis: null,
     estatisticasMetas: null,
 
-    listaMetas: null,
+    listaMetas: [],
     cicloAtual: null,
 
     chamadasPendentes: {
@@ -69,12 +73,6 @@ export const usePanoramaPlanoSetorialStore = (prefixo = '') => defineStore(prefi
   }),
 
   actions: {
-    buscarTudo(params:Parametros) {
-      this.buscarVariaveis(params);
-      this.buscarEstatisticasMetas(params);
-      this.buscarListaMetas(params);
-    },
-
     async buscarVariaveis(params:Parametros) {
       this.chamadasPendentes.variaveis = true;
       this.erros.variaveis = null;
@@ -88,7 +86,7 @@ export const usePanoramaPlanoSetorialStore = (prefixo = '') => defineStore(prefi
       this.chamadasPendentes.variaveis = false;
     },
 
-    async buscarEstatisticasMetas(params:Parametros) {
+    async buscarEstatisticasMetas(params:ParametrosComPdmIdObrigatorio) {
       this.chamadasPendentes.estatisticasMetas = true;
       this.erros.estatisticasMetas = null;
 
@@ -101,7 +99,7 @@ export const usePanoramaPlanoSetorialStore = (prefixo = '') => defineStore(prefi
       this.chamadasPendentes.estatisticasMetas = false;
     },
 
-    async buscarListaMetas(params:Parametros) {
+    async buscarListaMetas(params:ParametrosComPdmIdObrigatorio) {
       this.chamadasPendentes.listaMetas = true;
       this.erros.listaMetas = null;
 

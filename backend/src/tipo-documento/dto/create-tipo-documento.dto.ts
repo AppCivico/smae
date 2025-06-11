@@ -1,4 +1,5 @@
 import { IsOptional, IsString, MaxLength, registerDecorator, ValidationOptions } from 'class-validator';
+import { MAX_LENGTH_MEDIO } from 'src/common/consts';
 
 function CheckExt(validationOptions?: ValidationOptions) {
     return function (object: Object, propertyName: string) {
@@ -37,7 +38,7 @@ export class CreateTipoDocumentoDto {
      * Descrição
      */
     @IsString({ message: '$property| Descrição: Precisa ser alfanumérico' })
-    @MaxLength(250, { message: '$property| Descrição: Máximo 250 caracteres' })
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Descrição" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     descricao: string;
 
     /**

@@ -21,6 +21,7 @@ import { VariavelResumo } from './list-variavel.dto';
 import { NumberArrayTransformOrEmpty } from '../../auth/transforms/number-array.transform';
 import { IdTituloDto } from '../../common/dto/IdTitulo.dto';
 import { FilterVariavelDto } from './filter-variavel.dto';
+import { MAX_LENGTH_DEFAULT, MAX_LENGTH_MEDIO } from 'src/common/consts';
 
 export class ListVariavelGlobalCicloDto {
     linhas: VariavelGlobalCicloDto[];
@@ -49,6 +50,38 @@ export class FilterVariavelGlobalCicloDto extends FilterVariavelDto {
     @Transform(NumberTransform)
     equipe_id?: number;
 
+    @ApiProperty({
+        description: 'ID da meta, prioridade 3, usado apenas no filtro de GET plano-setorial-variavel-ciclo',
+    })
+    @IsOptional()
+    @IsInt()
+    @Transform(NumberTransform)
+    meta_id?: number;
+
+    @ApiProperty({
+        description: 'ID do pdm/ps, prioridade 4, usado apenas no filtro de GET plano-setorial-variavel-ciclo',
+    })
+    @IsOptional()
+    @IsInt()
+    @Transform(NumberTransform)
+    pdm_id?: number;
+
+    @ApiProperty({
+        description: 'ID da iniciativa, prioridade 2, usado apenas no filtro de GET plano-setorial-variavel-ciclo',
+    })
+    @IsOptional()
+    @IsInt()
+    @Transform(NumberTransform)
+    iniciativa_id?: number;
+
+    @ApiProperty({
+        description: 'ID da atividade, prioridade 1, usado apenas no filtro de GET plano-setorial-variavel-ciclo',
+    })
+    @IsOptional()
+    @IsInt()
+    @Transform(NumberTransform)
+    atividade_id?: number;
+
     @IsOptional()
     @IsDateYMD()
     referencia?: Date;
@@ -73,7 +106,9 @@ export class VariavelGlobalCicloDto {
      * @example "1"
      */
     id: number;
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Código' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     codigo: string;
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Título' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     titulo: string;
 
     @ApiProperty({ type: String })
@@ -89,6 +124,7 @@ export class VariavelGlobalCicloDto {
 
     pedido_complementacao: boolean;
 
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Atrasos' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     atrasos: string[] | null;
     equipes: IdTituloDto[];
 
@@ -116,7 +152,7 @@ export class VariavelGlobalAnaliseItemDto {
 
     @IsOptional()
     @IsString()
-    @MaxLength(50000)
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Análise qualitativa' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     @ValidateIf((object, value) => value !== '')
     analise_qualitativa: string;
 }
@@ -124,11 +160,10 @@ export class VariavelGlobalAnaliseItemDto {
 export class UpsertVariavelGlobalCicloDocumentoDto {
     @IsOptional()
     @IsString()
-    @MaxLength(255)
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Descrição" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     descricao?: string | null;
-
     @IsString()
-    @MaxLength(255)
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Upload Token' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     upload_token: string;
 }
 
@@ -139,8 +174,9 @@ export class BatchAnaliseQualitativaDto {
 
     @IsOptional()
     @IsString()
-    @MaxLength(50000, { message: 'Pedido de complementação não pode ter mais de 50000 caracteres' })
-    @MinLength(1, { message: 'Análise qualitativa não pode ser vazia' })
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Análise qualitativa' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     analise_qualitativa?: string;
 
     @IsDateYMD()
@@ -163,7 +199,9 @@ export class BatchAnaliseQualitativaDto {
 
     @IsOptional()
     @IsString()
-    @MaxLength(5000)
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Pedido de complementação' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     pedido_complementacao?: string;
 }
 
@@ -184,7 +222,11 @@ export class FilterVariavelAnaliseQualitativaGetDto {
 
 export class VariavelValorDto {
     variavel: VariavelResumo;
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Valor realizado' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     valor_realizado: string | null;
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Valor realizado acumulado' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     valor_realizado_acumulado: string | null;
     analise_qualitativa: string | null;
 }
@@ -193,6 +235,7 @@ export class AnaliseQualitativaDto {
     @ApiProperty({ description: 'Análise qualitativa' })
     analise_qualitativa: string;
     criado_em: Date;
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Criador nome' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     criador_nome: string;
     fase: VariavelFase;
     eh_liberacao_auto: boolean;
@@ -211,6 +254,7 @@ export class VariavelAnaliseDocumento extends PickType(ArquivoBaseDto, [
 
 export class PSPedidoComplementacaoDto {
     @ApiProperty({ description: 'Pedido de complementação' })
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Pedido' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     pedido: string;
     criado_em: Date;
     criador_nome: string;

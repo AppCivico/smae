@@ -38,10 +38,18 @@ export class TransfereGovController {
         return await this.transfereGovSyncService.listaComunicados(params);
     }
 
-    @Post('sync-transferencias')
+    @Post('sync-transferencias-especiais')
     @ApiBearerAuth('access-token')
     @Roles(['TransfereGov.sincronizar'])
-    async syncTransferencias(): Promise<TransfereGovSyncDto> {
+    async manualSyncOportunidadesEspeciais(): Promise<TransfereGovSyncDto> {
+        const newItems = await this.transfereGovSyncService.manualSyncOportunidadesEspeciais();
+        return { novos_itens: newItems.map((item) => item.id) };
+    }
+
+    @Post('sync-transferencias-completo')
+    @ApiBearerAuth('access-token')
+    @Roles(['TransfereGov.sincronizar'])
+    async manualSyncTransferencias(): Promise<TransfereGovSyncDto> {
         const newItems = await this.transfereGovSyncService.manualSyncTransferencias();
         return { novos_itens: newItems.map((item) => item.id) };
     }

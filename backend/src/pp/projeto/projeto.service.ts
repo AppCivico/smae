@@ -1,4 +1,12 @@
-import { BadRequestException, forwardRef, HttpException, Inject, Injectable, Logger } from '@nestjs/common';
+import {
+    BadRequestException,
+    forwardRef,
+    HttpException,
+    Inject,
+    Injectable,
+    InternalServerErrorException,
+    Logger,
+} from '@nestjs/common';
 import { Prisma, ProjetoFase, ProjetoOrigemTipo, ProjetoStatus, TipoProjeto } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { IdCodTituloDto } from 'src/common/dto/IdCodTitulo.dto';
@@ -12,7 +20,7 @@ import { UploadService } from '../../upload/upload.service';
 import { PortfolioDto } from '../portfolio/entities/portfolio.entity';
 import { PortfolioService } from '../portfolio/portfolio.service';
 import { CreateProjetoDocumentDto, CreateProjetoDto, PPfonteRecursoDto } from './dto/create-projeto.dto';
-import { FilterProjetoDto, FilterProjetoMDODto } from './dto/filter-projeto.dto';
+import { CoreFilterProjetoMDODto, FilterProjetoDto, FilterProjetoMDODto } from './dto/filter-projeto.dto';
 import {
     CloneProjetoTarefasDto,
     RevisarObrasDto,
@@ -47,8 +55,10 @@ import { GeoLocService, UpsertEnderecoDto } from '../../geo-loc/geo-loc.service'
 import { ArquivoBaseDto } from '../../upload/dto/create-upload.dto';
 import { UpdateTarefaDto } from '../tarefa/dto/update-tarefa.dto';
 import { TarefaService } from '../tarefa/tarefa.service';
+import { SmaeConfigService } from 'src/common/services/smae-config.service';
+import { CONST_PERFIL_COLAB_OBRA_NO_ORGAO, CONST_PERFIL_GESTOR_OBRA } from '../../common/consts';
 
-const FASES_LIBERAR_COLABORADOR: ProjetoStatus[] = ['Registrado', 'Selecionado', 'EmPlanejamento'];
+const FASES_PLANEJAMENTO_E_ANTERIORES: ProjetoStatus[] = ['Registrado', 'Selecionado', 'EmPlanejamento'];
 const StatusParaFase: Record<ProjetoStatus, ProjetoFase> = {
     Registrado: 'Registro',
     Selecionado: 'Planejamento',
@@ -65,14 +75,14 @@ const StatusParaFase: Record<ProjetoStatus, ProjetoFase> = {
 } as const;
 
 export const ProjetoStatusParaExibicao: Record<ProjetoStatus, string> = {
-    Registrado: 'Registrado',
-    Selecionado: 'Selecionado',
-    EmPlanejamento: 'Em Planejamento',
-    Planejado: 'Planejado',
-    Validado: 'Validado',
-    EmAcompanhamento: 'Em Acompanhamento',
-    Suspenso: 'Suspenso',
-    Fechado: 'Concluído',
+    Registrado: '1. Registrado',
+    Selecionado: '2. Selecionado',
+    EmPlanejamento: '3. Em Planejamento',
+    Planejado: '4. Planejado',
+    Validado: '5. Validado',
+    EmAcompanhamento: '6. Em Acompanhamento',
+    Suspenso: '8. Suspenso',
+    Fechado: '7. Concluído',
     MDO_Concluida: 'Concluída',
     MDO_EmAndamento: 'Em Andamento',
     MDO_NaoIniciada: 'Não Iniciada',
@@ -356,7 +366,8 @@ export class ProjetoService {
         @Inject(forwardRef(() => TarefaService))
         private readonly tarefaService: TarefaService,
         private readonly pessoaPrivService: PessoaPrivilegioService,
-        private readonly jwtService: JwtService
+        private readonly jwtService: JwtService,
+        private readonly smaeConfig: SmaeConfigService
     ) {}
 
     private async processaOrigem(dto: CreateProjetoDto) {
@@ -469,29 +480,98 @@ export class ProjetoService {
         }
     }
 
-    private async processaOrgaoGestor(dto: CreateProjetoDto, portfolio: PortfolioDto, checkFk: boolean) {
-        if (!dto.orgao_gestor_id) return { orgao_gestor_id: undefined, responsaveis_no_orgao_gestor: undefined };
+    private async processaOrgaoGestor(dto: CreateProjetoDto, portfolio: PortfolioDto, tipo: TipoProjeto) {
+        if (!dto.orgao_gestor_id && !dto.responsaveis_no_orgao_gestor)
+            return { orgao_gestor_id: undefined, responsaveis_no_orgao_gestor: undefined };
+
+        // Tentando descobrir o orgao_gestor_id, olhando pelo órgão cadastrado nos responsaveis.
+        if (!dto.orgao_gestor_id && dto.responsaveis_no_orgao_gestor?.length) {
+            const responsaveis = await this.prisma.pessoaFisica.findMany({
+                where: {
+                    pessoa: {
+                        some: {
+                            id: { in: dto.responsaveis_no_orgao_gestor },
+                        },
+                    },
+                },
+                select: { orgao_id: true },
+            });
+
+            // Em teoria não será possível ter mais de um orgão, pois as pessoas são filtradas pelo órgão na tela. Mas se tiver, estoura um erro.
+            let orgaoGestor: (number | null)[] = [];
+            orgaoGestor = responsaveis.map((r): number | null => {
+                if (!orgaoGestor.includes(r.orgao_id)) return r.orgao_id;
+
+                return null;
+            });
+            if (orgaoGestor.length > 1)
+                throw new HttpException(`Mais de um órgão encontrado entre os responsáveis`, 400);
+
+            dto.orgao_gestor_id = responsaveis[0].orgao_id;
+        }
 
         const orgao_gestor_id: number = +dto.orgao_gestor_id;
         const responsaveis_no_orgao_gestor: number[] = dto.responsaveis_no_orgao_gestor
             ? dto.responsaveis_no_orgao_gestor
             : [];
 
+        const checkFkStr = await this.smaeConfig.getConfig('VALIDAR_ORGAO_PORTFOLIO');
+        // getConfig retorna uma string, então tem que converter pra bool
+        const checkFk = checkFkStr == 'true' ? true : false;
+
         if (checkFk) {
             //console.dir({ portfolio, orgao_gestor_id, responsaveis_no_orgao_gestor }, { depth: 44 });
             // se o banco ficou corrompido, não tem como o usuário arrumar
             if (portfolio.orgaos.map((r) => r.id).includes(orgao_gestor_id) == false)
                 throw new HttpException(
-                    `orgao_gestor_id| Órgão não faz parte do Portfolio (${portfolio.orgaos
-                        .map((r) => r.sigla)
-                        .join(', ')})`,
+                    `Órgão não faz parte do Portfolio (${portfolio.orgaos.map((r) => r.sigla).join(', ')})`,
                     400
                 );
+
+            // Caso seja um projeto do tipo MDO, o órgão deve ter ao menos um usuário com perfil "Gestor da Obra".
+            if (tipo == 'MDO') {
+                const pessoasGestoras = await this.prisma.pessoaPerfil.count({
+                    where: {
+                        pessoa: {
+                            pessoa_fisica: {
+                                orgao_id: orgao_gestor_id,
+                            },
+                        },
+                        perfil_acesso: {
+                            nome: CONST_PERFIL_GESTOR_OBRA,
+                        },
+                    },
+                });
+
+                if (pessoasGestoras == 0)
+                    throw new HttpException(`Órgão não possui usuários com o perfil ${CONST_PERFIL_GESTOR_OBRA}`, 400);
+            }
         }
 
         // esse TODO continua existindo
         // TODO verificar se cada [responsaveis_no_orgao_gestor] existe realmente
         // e se tem o privilegio gestor_de_projeto
+
+        // Verificando se cada responsavel existe no orgão gestor
+        if (responsaveis_no_orgao_gestor.length > 0) {
+            const pessoas = await this.prisma.pessoaFisica.findMany({
+                where: {
+                    pessoa: {
+                        some: {
+                            id: { in: responsaveis_no_orgao_gestor },
+                        },
+                    },
+                    orgao_id: orgao_gestor_id,
+                },
+                select: { id: true },
+            });
+            console.log({ pessoas, responsaveis_no_orgao_gestor });
+            if (pessoas.length !== responsaveis_no_orgao_gestor.length)
+                throw new HttpException(
+                    'responsaveis_no_orgao_gestor| Uma ou mais pessoas não foram encontradas no órgão gestor',
+                    400
+                );
+        }
 
         return {
             orgao_gestor_id,
@@ -525,13 +605,6 @@ export class ProjetoService {
         // pra criar, verifica se a pessoa pode realmente acessar o portfolio, então
         // começa listando todos os portfolios
         const portfolios = await this.portfolioService.findAll(tipo, user, true);
-        if (tipo == 'PP') {
-            if (!dto.orgaos_participantes || dto.orgaos_participantes.length == 0)
-                throw new HttpException('Campo órgão participantes obrigatório para projetos', 400);
-            if (!dto.orgao_responsavel_id)
-                throw new HttpException('Campo órgão responsável obrigatório para projetos', 400);
-            if (!dto.responsavel_id) throw new HttpException('Campo responsável obrigatório para projetos', 400);
-        }
 
         const portfolio = portfolios.filter((r) => r.id == dto.portfolio_id)[0];
         if (!portfolio)
@@ -541,7 +614,7 @@ export class ProjetoService {
             );
 
         const { origem_tipo, meta_id, atividade_id, iniciativa_id, origem_outro } = await this.processaOrigem(dto);
-        const { orgao_gestor_id, responsaveis_no_orgao_gestor } = await this.processaOrgaoGestor(dto, portfolio, true);
+        const { orgao_gestor_id, responsaveis_no_orgao_gestor } = await this.processaOrgaoGestor(dto, portfolio, tipo);
 
         if (!origem_tipo) throw new Error('origem_tipo deve estar definido no create de Projeto');
 
@@ -697,7 +770,6 @@ export class ProjetoService {
                         data: { codigo: codigo },
                     });
                 }
-                //await this.verificaCampos(prismaTx, row.id, tipo);
 
                 if (dto.origens_extra)
                     await CompromissoOrigemHelper.upsert(row.id, 'projeto', dto.origens_extra, prismaTx, user, now);
@@ -828,18 +900,6 @@ export class ProjetoService {
             throw new BadRequestException(`Todas as subprefeituras devem estar no mesmo município (região de nível 1)`);
     }
 
-    private async verificaGrupoTematico(dto: CreateProjetoDto | UpdateProjetoDto) {
-        const grupo_tematico = await this.prisma.grupoTematico.findFirstOrThrow({
-            where: { id: dto.grupo_tematico_id },
-        });
-        if (grupo_tematico.familias_beneficiadas && !dto.mdo_n_familias_beneficiadas)
-            throw new HttpException('número de famílias beneficiadas: Campo obrigatório para obras', 400);
-        if (grupo_tematico.unidades_habitacionais && !dto.mdo_n_unidades_habitacionais)
-            throw new HttpException('número de unidades habitacionais: Campo obrigatório para obras', 400);
-        if (grupo_tematico.programa_habitacional && !dto.programa_id)
-            throw new HttpException('programa habitacional: Campo obrigatório para obras', 400);
-    }
-
     private removeCampos(tipo: string, dto: CreateProjetoDto | UpdateProjetoDto, op: 'create' | 'update') {
         if (tipo == 'MDO') {
             delete dto.resumo;
@@ -896,14 +956,6 @@ export class ProjetoService {
             ];
             if (dto.status && !liberados.includes(dto.status))
                 throw new HttpException('status| Status inválido para Projetos', 400);
-        }
-    }
-
-    private async verificaCampos(prismaTx: Prisma.TransactionClient, id: number, tipo: string) {
-        const _self = await prismaTx.projeto.findFirstOrThrow({ where: { id: id } });
-        if (tipo == 'PP') {
-            // em teoria estava antes aceitando string vazia então talvez nem seja tão necessário assim
-            // if (!self.resumo) throw new HttpException('resumo| Resumo é obrigatório para Gestão de Projetos', 400);
         }
     }
 
@@ -1251,6 +1303,24 @@ export class ProjetoService {
                 };
             }),
         };
+    }
+
+    async findAllIdsFrontend(
+        tipo: TipoProjeto,
+        filters: CoreFilterProjetoMDODto,
+        user: PessoaFromJwt
+    ): Promise<number[]> {
+        const palavrasChave = await this.buscaIdsPalavraChave(filters.palavra_chave);
+        const permissionsSet = await ProjetoGetPermissionSet(tipo, user, false);
+        const filterSet = this.getProjetoV2WhereSet(filters, palavrasChave, user.id);
+
+        const projetoIds = await this.prisma.projeto.findMany({
+            where: {
+                AND: [...permissionsSet, ...filterSet],
+            },
+            select: { id: true },
+        });
+        return projetoIds.map((p) => p.id);
     }
 
     async findAllV2(
@@ -2024,9 +2094,11 @@ export class ProjetoService {
         user: PessoaFromJwt | undefined,
         readonly: ReadOnlyBooleanType
     ): Promise<ProjetoPermissoesDto> {
-        const camposLiberadosPorPadrao = projeto.tipo == 'MDO';
+        const camposLiberadosPorPadrao = projeto.tipo == 'MDO'; // Para MDO o estado padrão dos campos é habilitado
 
+        // Inicializa permissões - Começa com padrões, potencialmente sobrescritos depois
         const permissoes: ProjetoPermissoesDto = {
+            // Ações por padrão são falsas
             acao_arquivar: false,
             acao_restaurar: false,
             acao_selecionar: false,
@@ -2038,6 +2110,12 @@ export class ProjetoService {
             acao_reiniciar: false,
             acao_cancelar: false,
             acao_terminar: false,
+            acao_clonar_cronograma: false,
+            acao_iniciar_obra: camposLiberadosPorPadrao, // Ações específicas para MDO com valores padrão
+            acao_concluir_obra: camposLiberadosPorPadrao,
+            acao_paralisar_obra: camposLiberadosPorPadrao,
+
+            // Campos por padrão são falsos, exceto os específicos do MDO, se aplicável
             campo_premissas: false,
             campo_restricoes: false,
             campo_data_aprovacao: false,
@@ -2051,158 +2129,211 @@ export class ProjetoService {
             campo_secretario_responsavel: camposLiberadosPorPadrao,
             campo_coordenador_ue: false,
             campo_nao_escopo: false,
-            apenas_leitura: true,
-            sou_responsavel: false,
-            acao_iniciar_obra: camposLiberadosPorPadrao,
-            acao_concluir_obra: camposLiberadosPorPadrao,
-            acao_paralisar_obra: camposLiberadosPorPadrao,
+
+            // Flags de controle
+            apenas_leitura: true, // Padrão é verdadeiro, será definido como falso se qualquer escrita for permitida
+            sou_responsavel: false, // Será definido por calcPessoaPodeEscrever
+            pode_editar_apenas_responsaveis_pos_planejamento: false, // NOVO: flag específica para PP
+
+            // Controle de mudança de status
             status_permitidos: [],
         };
 
-        // se o projeto está arquivado, não podemos arquivar novamente
-        // mas podemos restaurar (retornar para o status e fase anterior)
+        //  Trata Usuário Não Autenticado, como relatórios, tudo readonly
+        if (!user) return permissoes;
+
+        // Calcula Permissões Principais
+        // Esta função determina se o usuário tem acesso de escrita GERAL para a fase ATUAL
+        // Também define permissoes.sou_responsavel internamente
+        const pessoaPodeEscreverGeral = this.calcPessoaPodeEscrever(user, false, projeto, permissoes);
+
+        // --- Trata Estado Arquivado Primeiro ---
+        // Independentemente do usuário ou tipo, o estado arquivado dita ações básicas
         if (projeto.arquivado == true) {
-            permissoes.acao_restaurar = true;
+            permissoes.acao_restaurar = pessoaPodeEscreverGeral;
+
+            return permissoes; // Retorna cedo, tudo o mais é somente leitura
         } else {
-            permissoes.acao_arquivar = true;
+            // Verifica se o usuário tem permissão para arquivar (assumindo Admin/Escritório)
+            if (
+                (
+                    [
+                        'Fechado',
+                        'MDO_Concluida',
+                        'MDO_EmAndamento',
+                        'MDO_NaoIniciada',
+                        'MDO_Paralisada',
+                    ] as ProjetoStatus[]
+                ).includes(projeto.status)
+            ) {
+                // Ajuste a verificação de função se necessário
+                permissoes.acao_arquivar = pessoaPodeEscreverGeral;
+            }
         }
 
-        let pessoaPodeEscrever = false;
+        // --- Aplica Lógica Específica por Tipo (PP vs MDO) ---
+        if (projeto.tipo == 'PP') {
+            permissoes.apenas_leitura = !pessoaPodeEscreverGeral;
+            // --- Cálculos Específicos para PP ---
+            const ehAposPlanejamento = !FASES_PLANEJAMENTO_E_ANTERIORES.includes(projeto.status);
+            const ehGerenteDeProjetoRole =
+                user.hasSomeRoles(['SMAE.colaborador_de_projeto']) && user.hasSomeRoles(['SMAE.gerente_de_projeto']);
 
-        if (user) {
-            pessoaPodeEscrever = this.calcPessoaPodeEscrever(user, pessoaPodeEscrever, projeto, permissoes);
-        } else {
-            // user null == sistema puxando o relatório, então se precisar só mudar pra pessoaPodeEscrever=true
-        }
+            // Determina se o estado especial "editar apenas responsabilidades" se aplica
+            permissoes.pode_editar_apenas_responsaveis_pos_planejamento =
+                ehAposPlanejamento && ehGerenteDeProjetoRole && projeto.responsavel_id == user.id;
 
-        permissoes.apenas_leitura = pessoaPodeEscrever == false;
-
-        if (projeto.arquivado == false) {
-            if (projeto.tipo == 'PP') {
-                // se já saiu da fase de registro, então está liberado preencher o campo
-                // de código, pois esse campo de código, quando preenchido durante o status "Selecionado" irá automaticamente
-                // migrar o status para "EmPlanejamento"
-                permissoes.campo_nao_escopo = true;
+            if (permissoes.pode_editar_apenas_responsaveis_pos_planejamento) {
+                this.logger.verbose(
+                    `PP: Permitindo edição APENAS de responsabilidades pós-planejamento para Gerente de Projeto assignado.`
+                );
+                // Nenhum campo geral ou ações serão habilitados abaixo porque pessoaPodeEscreverGeral é falso.
+            } else if (pessoaPodeEscreverGeral) {
+                this.logger.verbose(`PP: Permitindo escrita GERAL para o usuário nesta fase.`);
+                // Habilita campos gerais do PP baseado na fase (apenas se escrita geral for permitida)
+                permissoes.campo_nao_escopo = true; // Assumindo sempre editável se escrita geral permitida
                 permissoes.campo_objeto = true;
                 permissoes.campo_objetivo = true;
-            }
 
-            if (projeto.status !== 'Registrado' && projeto.tipo == 'PP') {
-                permissoes.campo_premissas = true;
-                permissoes.campo_restricoes = true;
-
-                permissoes.campo_data_aprovacao = true;
-                permissoes.campo_data_revisao = true;
-                permissoes.campo_versao = true;
-
-                permissoes.campo_publico_alvo = true;
-                permissoes.campo_secretario_executivo = true;
-                permissoes.campo_secretario_responsavel = true;
-                permissoes.campo_coordenador_ue = true;
-            }
-
-            if (pessoaPodeEscrever) {
-                switch (projeto.status) {
-                    case 'Registrado':
-                        permissoes.acao_selecionar = true;
-                        break;
-                    case 'Selecionado':
-                        permissoes.status_permitidos.push('Registrado');
-                        permissoes.acao_iniciar_planejamento = true;
-                        break;
-                    case 'EmPlanejamento':
-                        permissoes.status_permitidos.push('Selecionado');
-                        permissoes.status_permitidos.push('Registrado');
-                        permissoes.acao_finalizar_planejamento = true;
-                        break;
-                    case 'Planejado':
-                        permissoes.status_permitidos.push('EmPlanejamento');
-                        permissoes.status_permitidos.push('Selecionado');
-                        permissoes.status_permitidos.push('Registrado');
-                        permissoes.acao_validar = true;
-                        break;
-                    case 'Validado':
-                        permissoes.status_permitidos.push('Planejado');
-                        permissoes.status_permitidos.push('EmPlanejamento');
-                        permissoes.status_permitidos.push('Selecionado');
-                        permissoes.status_permitidos.push('Registrado');
-                        permissoes.acao_iniciar = true;
-                        break;
-                    case 'EmAcompanhamento':
-                        permissoes.status_permitidos.push('Validado');
-                        permissoes.status_permitidos.push('Planejado');
-                        permissoes.status_permitidos.push('EmPlanejamento');
-                        permissoes.status_permitidos.push('Selecionado');
-                        permissoes.status_permitidos.push('Registrado');
-                        permissoes.acao_suspender = permissoes.acao_terminar = true;
-                        break;
-                    case 'Suspenso':
-                        permissoes.status_permitidos.push('EmAcompanhamento');
-                        permissoes.status_permitidos.push('Validado');
-                        permissoes.status_permitidos.push('Planejado');
-                        permissoes.status_permitidos.push('EmPlanejamento');
-                        permissoes.status_permitidos.push('Selecionado');
-                        permissoes.status_permitidos.push('Registrado');
-                        permissoes.acao_cancelar = permissoes.acao_reiniciar = true;
-                        break;
-                    case 'Fechado':
-                        permissoes.status_permitidos.push('EmAcompanhamento');
-                        permissoes.status_permitidos.push('Validado');
-                        permissoes.status_permitidos.push('Planejado');
-                        permissoes.status_permitidos.push('EmPlanejamento');
-                        permissoes.status_permitidos.push('Selecionado');
-                        permissoes.status_permitidos.push('Registrado');
-                        permissoes.acao_arquivar = true;
-                        break;
-                    case 'MDO_Concluida':
-                        permissoes.status_permitidos.push('MDO_EmAndamento');
-                        permissoes.status_permitidos.push('MDO_NaoIniciada');
-                        permissoes.status_permitidos.push('MDO_Paralisada');
-                        permissoes.acao_arquivar = true;
-                        break;
-                    case 'MDO_EmAndamento':
-                        permissoes.status_permitidos.push('MDO_Concluida');
-                        permissoes.status_permitidos.push('MDO_NaoIniciada');
-                        permissoes.status_permitidos.push('MDO_Paralisada');
-                        permissoes.acao_concluir_obra = true;
-                        permissoes.acao_paralisar_obra = true;
-                        break;
-                    case 'MDO_NaoIniciada':
-                        permissoes.status_permitidos.push('MDO_Concluida');
-                        permissoes.status_permitidos.push('MDO_EmAndamento');
-                        permissoes.status_permitidos.push('MDO_Paralisada');
-                        permissoes.acao_iniciar_obra = true;
-                        permissoes.acao_arquivar = true;
-                        break;
-                    case 'MDO_Paralisada':
-                        permissoes.status_permitidos.push('MDO_Concluida');
-                        permissoes.status_permitidos.push('MDO_EmAndamento');
-                        permissoes.status_permitidos.push('MDO_NaoIniciada');
-                        permissoes.acao_iniciar_obra = true;
-                        permissoes.acao_arquivar = true;
-                        break;
+                if (projeto.status !== 'Registrado') {
+                    permissoes.campo_premissas = true;
+                    permissoes.campo_restricoes = true;
+                    permissoes.campo_data_aprovacao = true;
+                    permissoes.campo_data_revisao = true;
+                    permissoes.campo_versao = true;
+                    permissoes.campo_publico_alvo = true;
+                    permissoes.campo_secretario_executivo = true; // Sobrescreve o padrão do MDO baseado na lógica do PP
+                    permissoes.campo_secretario_responsavel = true; // Sobrescreve o padrão do MDO
+                    permissoes.campo_coordenador_ue = true;
                 }
+            } else {
+                this.logger.verbose(`PP: Usuário em modo apenas leitura.`);
+                // permissoes.apenas_leitura já é verdadeiro
+            }
+        } else {
+            // --- Cálculos Específicos para MDO ---
+            // MDO não tem o estado especial pós-planejamento
+            permissoes.apenas_leitura = !pessoaPodeEscreverGeral;
+
+            if (pessoaPodeEscreverGeral) {
+                this.logger.verbose(`MDO: Permitindo escrita GERAL para o usuário.`);
+                // Campos do MDO geralmente estão habilitados por padrão (`camposLiberadosPorPadrao`)
+            } else {
+                this.logger.verbose(`MDO: Usuário em modo apenas leitura.`);
             }
         }
 
-        if (user && readonly === 'ReadWrite' && pessoaPodeEscrever == false) {
-            throw new HttpException('Você não pode executar a ação no projeto.', 400);
-        } else if (
+        // --- Habilita Ações baseado na Permissão de Escrita Geral e Status ---
+        // Apenas usuários com acesso de escrita GERAL para a fase atual podem realizar ações
+        if (pessoaPodeEscreverGeral) {
+            // O switch trata os status de PP e MDO corretamente baseado em pessoaPodeEscreverGeral
+            switch (projeto.status) {
+                case 'Registrado':
+                    permissoes.acao_selecionar = true;
+                    permissoes.acao_clonar_cronograma = true;
+                    break;
+                case 'Selecionado':
+                    permissoes.status_permitidos.push('Registrado');
+                    permissoes.acao_iniciar_planejamento = true;
+                    permissoes.acao_clonar_cronograma = true;
+                    break;
+                case 'EmPlanejamento':
+                    permissoes.status_permitidos.push('Selecionado');
+                    permissoes.status_permitidos.push('Registrado');
+                    permissoes.acao_finalizar_planejamento = true;
+                    permissoes.acao_clonar_cronograma = true;
+                    break;
+                case 'Planejado':
+                    permissoes.status_permitidos.push('EmPlanejamento');
+                    permissoes.status_permitidos.push('Selecionado');
+                    permissoes.status_permitidos.push('Registrado');
+                    permissoes.acao_validar = true;
+                    permissoes.acao_clonar_cronograma = true;
+                    break;
+                case 'Validado':
+                    permissoes.status_permitidos.push('Planejado');
+                    permissoes.status_permitidos.push('EmPlanejamento');
+                    permissoes.status_permitidos.push('Selecionado');
+                    permissoes.status_permitidos.push('Registrado');
+                    permissoes.acao_iniciar = true;
+                    break;
+                case 'EmAcompanhamento':
+                    permissoes.status_permitidos.push('Validado');
+                    permissoes.status_permitidos.push('Planejado');
+                    permissoes.status_permitidos.push('EmPlanejamento');
+                    permissoes.status_permitidos.push('Selecionado');
+                    permissoes.status_permitidos.push('Registrado');
+                    permissoes.acao_suspender = permissoes.acao_terminar = true;
+                    break;
+                case 'Suspenso':
+                    permissoes.status_permitidos.push('EmAcompanhamento');
+                    permissoes.status_permitidos.push('Validado');
+                    permissoes.status_permitidos.push('Planejado');
+                    permissoes.status_permitidos.push('EmPlanejamento');
+                    permissoes.status_permitidos.push('Selecionado');
+                    permissoes.status_permitidos.push('Registrado');
+                    permissoes.acao_cancelar = permissoes.acao_reiniciar = true;
+                    break;
+                case 'Fechado':
+                    permissoes.status_permitidos.push('EmAcompanhamento');
+                    permissoes.status_permitidos.push('Validado');
+                    permissoes.status_permitidos.push('Planejado');
+                    permissoes.status_permitidos.push('EmPlanejamento');
+                    permissoes.status_permitidos.push('Selecionado');
+                    permissoes.status_permitidos.push('Registrado');
+                    permissoes.acao_arquivar = true;
+                    break;
+                case 'MDO_Concluida':
+                    permissoes.status_permitidos.push('MDO_EmAndamento');
+                    permissoes.status_permitidos.push('MDO_NaoIniciada');
+                    permissoes.status_permitidos.push('MDO_Paralisada');
+                    permissoes.acao_arquivar = true;
+                    break;
+                case 'MDO_EmAndamento':
+                    permissoes.status_permitidos.push('MDO_Concluida');
+                    permissoes.status_permitidos.push('MDO_NaoIniciada');
+                    permissoes.status_permitidos.push('MDO_Paralisada');
+                    permissoes.acao_concluir_obra = true;
+                    permissoes.acao_paralisar_obra = true;
+                    break;
+                case 'MDO_NaoIniciada':
+                    permissoes.status_permitidos.push('MDO_Concluida');
+                    permissoes.status_permitidos.push('MDO_EmAndamento');
+                    permissoes.status_permitidos.push('MDO_Paralisada');
+                    permissoes.acao_iniciar_obra = true;
+                    permissoes.acao_arquivar = true;
+                    break;
+                case 'MDO_Paralisada':
+                    permissoes.status_permitidos.push('MDO_Concluida');
+                    permissoes.status_permitidos.push('MDO_EmAndamento');
+                    permissoes.status_permitidos.push('MDO_NaoIniciada');
+                    permissoes.acao_iniciar_obra = true;
+                    permissoes.acao_arquivar = true;
+                    break;
+            }
+        }
+
+        // --- Verificações Finais de Validação ---
+        // Estas verificações precisam considerar o status geral de apenas_leitura
+        if (
             user &&
-            readonly === 'ReadWriteTeam' &&
-            pessoaPodeEscrever == false &&
-            permissoes.sou_responsavel == false
+            readonly === 'ReadWrite' &&
+            permissoes.apenas_leitura &&
+            !permissoes.pode_editar_apenas_responsaveis_pos_planejamento
         ) {
-            throw new HttpException('Você não pode executar está a ação no projeto sem participar da equipe.', 400);
+            // Lança exceção se endpoint ReadWrite for chamado, mas usuário NÃO tem acesso de escrita
+            throw new HttpException('Você não tem permissão para editar este projeto.', 400);
         }
 
-        // se não pode escrever, logo, não pode ter nenhum campo ou acao habilitada
-        if (pessoaPodeEscrever == false) {
-            for (const key in permissoes) {
-                if (key.startsWith('campo_') || key.startsWith('acao_')) {
-                    (permissoes as any)[key] = false;
-                }
-            }
+        console.log('=========================\n\n\n\n\n\n\n');
+        console.log('permissoes', permissoes);
+        console.log('=========================\n\n\n\n\n\n\n');
+
+        // não precisa testar pelo pode_editar_apenas_responsaveis_pos_planejamento já que lá ele é sou_responsavel=true
+        if (user && readonly === 'ReadWriteTeam' && !permissoes.sou_responsavel && permissoes.apenas_leitura) {
+            // Lança exceção se escrita específica da equipe for solicitada, mas usuário não está atribuído OU não tem capacidade de escrita
+            // (Se eles têm escrita geral OU específica, apenas_leitura será falso)
+            throw new HttpException('Você não faz parte da equipe ou não tem permissão para editar este projeto.', 400);
         }
 
         return permissoes;
@@ -2307,79 +2438,107 @@ export class ProjetoService {
         if (user.hasSomeRoles(['Projeto.administrador'])) {
             // admin pode tudo, nem precisa testar mais coisas
 
-            this.logger.verbose(
-                `Pode escrever pois está na lista de responsável no órgão gestor (SMAE.gestor_de_projeto)`
-            );
+            this.logger.verbose(`Pode escrever pois é administrador global.`);
             return true;
         }
 
-        // começa pelo mais barato
-        if (user.hasSomeRoles(['SMAE.gestor_de_projeto']) && projeto.responsaveis_no_orgao_gestor.includes(+user.id)) {
-            if (pessoaPodeEscrever)
-                this.logger.verbose(
-                    `Pode escrever pois está na lista de responsável no órgão gestor (SMAE.gestor_de_projeto)`
-                );
-
-            return true;
-        }
-
-        // testa agora com um reduce, já ta carregado anyway
-        if (user.hasSomeRoles(['Projeto.administrador_no_orgao'])) {
-            // precisa ter o órgão no portfólio
-            pessoaPodeEscrever = projeto.portfolio.orgaos.filter((r) => r.orgao_id == user.orgao_id)[0] != undefined;
-
-            if (pessoaPodeEscrever) {
-                this.logger.verbose(`pode escrever pois faz parte do órgão (Projeto.administrador_no_orgao)`);
+        // 'Escritório de projetos' (via SMAE.gestor_de_projeto) OU
+        // 'Escritório de projetos' (via Projeto.administrador_no_orgao + associado ao projeto)
+        if (user.hasSomeRoles(['SMAE.gestor_de_projeto'])) {
+            // verifica se está na lista dos orgãos do portfolio
+            const isAdminNoOrgaoDoPortfolio = projeto.portfolio.orgaos.some((r) => r.orgao_id == user.orgao_id);
+            if (isAdminNoOrgaoDoPortfolio) {
+                this.logger.verbose(`Pode escrever pois é Escritório de Projetos / Admin no Órgão do portfolio.`);
                 return true;
             }
+            //
+            const ehGestorNoOrgao = projeto.responsaveis_no_orgao_gestor.includes(+user.id);
+            if (ehGestorNoOrgao) {
+                // esse check pode ser redudante já que o SMAE.gestor_de_projeto está junto do mesmo perfil
+                const temPermOrgao = user.hasSomeRoles(['Projeto.administrador_no_orgao']);
+                if (temPermOrgao) {
+                    this.logger.verbose(
+                        `Pode escrever pois é Escritório de Projetos (via gestor_de_projeto) e está assignado.`
+                    );
+                    return true;
+                }
+            }
         }
 
+        // Verificações de escrita por fase
         if (user.hasSomeRoles(['SMAE.colaborador_de_projeto'])) {
-            const ehResp = projeto.responsavel_id && projeto.responsavel_id == +user.id;
-            const ehEquipe = projeto.equipe.filter((r) => r.pessoa.id == user.id)[0] != undefined;
+            // Verifica cada das possibilidades: Responsavel, Equipe, Colaborador no Orgao
+            const ehResp = projeto.responsavel_id === +user.id;
+            const ehEquipe = projeto.equipe.some((r) => r.pessoa.id == user.id);
             const ehColaborador = projeto.colaboradores_no_orgao.includes(+user.id);
+            const souResponsavel = ehResp || ehEquipe || ehColaborador;
 
-            if (ehResp || ehEquipe || ehColaborador) {
-                pessoaPodeEscrever = FASES_LIBERAR_COLABORADOR.includes(projeto.status);
-                // mesmo não podendo escrever, ele ainda é o responsável, ele pode fazer algumas escritas (do realizado, no cronograma)
+            if (souResponsavel) {
+                // coloca como sou_responsavel independente da fase
                 permissoes.sou_responsavel = true;
-            }
+                this.logger.verbose(
+                    `Usuário ${user.id} é considerado responsável/equipe (ehResp:${ehResp}, ehEquipe:${ehEquipe}, ehColaborador:${ehColaborador})`
+                );
 
-            this.logger.verbose(
-                `pessoa pode escrever: pessoaPodeEscrever=${pessoaPodeEscrever} sou_responsavel=${permissoes.sou_responsavel} ehResp: ${ehResp} ehEquipe: ${ehEquipe} ehColaborador: ${ehColaborador}`
-            );
+                const estaEmPlanejamento = FASES_PLANEJAMENTO_E_ANTERIORES.includes(projeto.status);
 
-            if (ehResp) {
-                if (pessoaPodeEscrever)
+                if (estaEmPlanejamento) {
                     this.logger.verbose(
-                        `pode escrever pois é responsavel e está em FASES_LIBERAR_COLABORADOR (SMAE.colaborador_de_projeto)`
+                        `Pode escrever pois é Colaborador/Gerente assignado DENTRO da fase de planejamento.`
                     );
-                else this.logger.verbose(`não pode escrever mas ainda é o é responsavel (SMAE.colaborador_de_projeto)`);
-            }
-
-            if (ehEquipe) {
-                if (pessoaPodeEscrever)
+                    return true;
+                } else {
                     this.logger.verbose(
-                        `pode escrever pois está na equipe e está em FASES_LIBERAR_COLABORADOR (SMAE.colaborador_de_projeto)`
+                        `NÃO pode escrever (geral) pois é Colaborador/Gerente assignado FORA da fase de planejamento.`
                     );
-                else
-                    this.logger.verbose(
-                        `não pode escrever mas está na equipe então é responsável (SMAE.colaborador_de_projeto)`
-                    );
+                }
+            } else {
+                this.logger.verbose(
+                    `Usuário ${user.id} tem role Colaborador/Gerente mas NÃO está assignado ao projeto.`
+                );
             }
         }
 
-        return pessoaPodeEscrever;
+        this.logger.verbose(`Não se encaixa em nenhum critério para escrita GERAL.`);
+        return false;
     }
 
     async update(
         tipo: TipoProjeto,
         projetoId: number,
         dto: UpdateProjetoDto,
-        user: PessoaFromJwt
+        user: PessoaFromJwt,
+        prismaTx?: Prisma.TransactionClient
     ): Promise<RecordWithId> {
         // aqui é feito a verificação se esse usuário pode realmente acessar esse recurso
         const projeto = await this.findOne(tipo, projetoId, user, 'ReadWrite');
+        const hasOnlyResponsibilityEdit =
+            projeto.permissoes.pode_editar_apenas_responsaveis_pos_planejamento && projeto.permissoes.apenas_leitura;
+
+        if (hasOnlyResponsibilityEdit) {
+            this.logger.warn(
+                `Filtrando DTO para o projeto ${projeto.id} - Usuário ${user.id} só pode editar responsabilidades.`
+            );
+            const tmpDto: Partial<UpdateProjetoDto> = {};
+
+            // Copia apenas os campos que podem ser editáveis
+            if ('equipe' in dto) tmpDto.equipe = dto.equipe;
+
+            // Testa se o DTO filtrado está vazio, se estiver, lança erro
+            if (Object.keys(tmpDto).length === 0 && Object.keys(dto).length > 0) {
+                throw new BadRequestException(
+                    'Você não tem permissão para editar nenhum campo enviado nesta fase do projeto.'
+                );
+            }
+
+            dto = tmpDto;
+        } else if (projeto.permissoes.apenas_leitura) {
+            // Se o user chegou aqui sem acesso de escrita, mas chegou aqui somehow (findOne deveria pegar isso)
+            this.logger.error(
+                `Tentativa de update inválida (apenas_leitura=true) pelo usuário ${user.id} no projeto ${projeto.id}. DTO: ${JSON.stringify(dto)}`
+            );
+            throw new HttpException('Você não tem permissão para editar este projeto.', 403);
+        }
         this.removeCampos(tipo, dto, 'update');
 
         // migrou de status, verificar se  realmente poderia mudar
@@ -2429,15 +2588,23 @@ export class ProjetoService {
 
         const edit = dto.responsaveis_no_orgao_gestor
             ? {
-                  orgao_gestor_id: projeto.orgao_gestor.id,
+                  orgao_gestor_id: dto.orgao_gestor_id ?? projeto.orgao_gestor.id,
                   responsaveis_no_orgao_gestor: dto.responsaveis_no_orgao_gestor,
               }
             : {};
         const { orgao_gestor_id, responsaveis_no_orgao_gestor } = await this.processaOrgaoGestor(
             edit as any,
             portfolio,
-            false
+            tipo
         );
+
+        if (dto.responsavel_id && dto.responsavel_id != projeto.responsavel?.id) {
+            await this.checkOrgaoResponsavel(
+                tipo,
+                dto.orgao_responsavel_id || projeto.orgao_responsavel?.id,
+                dto.responsavel_id
+            );
+        }
 
         const now = new Date(Date.now());
 
@@ -2448,7 +2615,7 @@ export class ProjetoService {
             origem_cache = await CompromissoOrigemHelper.processaOrigens(dto.origens_extra, this.prisma);
         }
 
-        await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+        const executarAtualizacao = async (prismaTx: Prisma.TransactionClient) => {
             await this.upsertPremissas(dto, prismaTx, projetoId);
             await this.upsertRestricoes(dto, prismaTx, projetoId);
             await this.upsertFonteRecurso(dto, prismaTx, projetoId);
@@ -2561,6 +2728,34 @@ export class ProjetoService {
                 if (feedback.count)
                     this.logger.verbose(
                         `Repassando update de tolerancia_atraso= ${dto.tolerancia_atraso} para tarefaCronograma: ${feedback.count} updated rows`
+                    );
+            }
+
+            // Caso o portfolio_id seja modificado, mandar para func de transfer de portfolio
+            if (dto.portfolio_id && dto.portfolio_id != projeto.portfolio_id) {
+                // Esse bypasss aqui (chamada de transferPortfolio) é feita para viabilizar a edição de portfolio_id em lote.
+                // Pois a tela chama um outro endpoint, logo chamo o delete do portfolio_id após utilizar.
+                await this.transferPortfolio(tipo, projetoId, { portfolio_id: dto.portfolio_id }, user, prismaTx);
+                delete dto.portfolio_id;
+            }
+
+            // Caso a previsão de término seja enviada/modificada (e for diferente do que está salvo). Garantir que não seja menor que a previsão de início.
+            if (
+                (dto.previsao_termino && dto.previsao_termino.toISOString() != projeto.previsao_termino) ||
+                (dto.previsao_inicio && dto.previsao_inicio.toISOString() != projeto.previsao_inicio)
+            ) {
+                let previsaoInicio = dto.previsao_inicio ? dto.previsao_inicio : projeto.previsao_inicio;
+                if (!previsaoInicio) throw new Error('Erro interno ao verificar data de previsão de início');
+                previsaoInicio = new Date(previsaoInicio);
+
+                let previsaoTermino = dto.previsao_termino ? dto.previsao_termino : projeto.previsao_termino;
+                if (!previsaoTermino) throw new Error('Erro interno ao verificar data de previsão de término');
+                previsaoTermino = new Date(previsaoTermino);
+
+                if (previsaoTermino < previsaoInicio)
+                    throw new HttpException(
+                        'previsao_inicio| A previsão de término não pode ser menor que a previsão de início.',
+                        400
                     );
             }
 
@@ -2702,11 +2897,15 @@ export class ProjetoService {
                     await prismaTx.projeto.update({ where: { id: projeto.id }, data: { codigo: codigo } });
             }
 
-            //await this.verificaCampos(prismaTx, projetoId, tipo);
-
             await this.upsertGrupoPort(prismaTx, projeto, dto, now, user);
             await this.upsertEquipe(tipo, prismaTx, projeto, dto, now, user);
-        });
+        };
+
+        if (prismaTx) {
+            await executarAtualizacao(prismaTx);
+        } else {
+            await this.prisma.$transaction(executarAtualizacao);
+        }
 
         return { id: projetoId };
     }
@@ -3319,11 +3518,30 @@ export class ProjetoService {
 
     async cloneTarefas(tipo: TipoProjeto, projetoId: number, dto: CloneProjetoTarefasDto, user: PessoaFromJwt) {
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+            // Buscando projeto para verificar status.
+            const projeto = await prismaTx.projeto.findFirstOrThrow({
+                where: { id: dto.projeto_fonte_id, removido_em: null },
+                select: {
+                    id: true,
+                    status: true,
+                },
+            });
+
+            // TODO: validar statuses do MDO.
+            if (
+                projeto.status == ProjetoStatus.Validado ||
+                projeto.status == ProjetoStatus.EmAcompanhamento ||
+                projeto.status == ProjetoStatus.Suspenso ||
+                projeto.status == ProjetoStatus.Fechado
+            )
+                throw new HttpException(
+                    `Cronograma não pode ser clonado, pois está com status ${projeto.status}.`,
+                    400
+                );
+
             // O true é para indicar que é clone de projeto e não de transferência.
             await prismaTx.$queryRaw`CALL clone_tarefas('true'::boolean, ${dto.projeto_fonte_id}::int, ${projetoId}::int);`;
-        });
 
-        await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             // Buscando tarefas criadas e disparando calc de topologia.
             const tarefas = await prismaTx.tarefa.findMany({
                 where: {
@@ -3335,10 +3553,9 @@ export class ProjetoService {
                 },
                 select: {
                     id: true,
+                    tarefa_cronograma_id: true,
                     dependencias: {
                         select: {
-                            id: true,
-                            tarefa_id: true,
                             dependencia_tarefa_id: true,
                             tipo: true,
                             latencia: true,
@@ -3360,8 +3577,15 @@ export class ProjetoService {
                             };
                         }),
                     };
+                    console.log(dto);
 
-                    await this.tarefaService.update({ projeto_id: projetoId }, tarefa.id, dto, user);
+                    await this.tarefaService.update(
+                        { tarefa_cronograma_id: tarefa.tarefa_cronograma_id },
+                        tarefa.id,
+                        dto,
+                        user,
+                        prismaTx
+                    );
                 }
             }
         });
@@ -3371,96 +3595,96 @@ export class ProjetoService {
         tipo: TipoProjeto,
         projetoId: number,
         dto: TransferProjetoPortfolioDto,
-        user: PessoaFromJwt
+        user: PessoaFromJwt,
+        prismaTx?: Prisma.TransactionClient
     ): Promise<RecordWithId> {
         const projeto = await this.findOne(tipo, projetoId, user, 'ReadWrite');
 
-        const updated = await this.prisma.$transaction(
-            async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
-                const portfolioAntigo = projeto.portfolio;
+        const updated = async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+            const portfolioAntigo = projeto.portfolio;
 
-                const portfolioNovo = await prismaTx.portfolio
-                    .findFirstOrThrow({
-                        where: { id: dto.portfolio_id, removido_em: null },
-                        select: {
-                            id: true,
-                            nivel_maximo_tarefa: true,
-                            nivel_regionalizacao: true,
-                            orcamento_execucao_disponivel_meses: true,
-                            orgaos: {
-                                select: { orgao_id: true },
-                            },
+            const portfolioNovo = await prismaTx.portfolio
+                .findFirstOrThrow({
+                    where: { id: dto.portfolio_id, removido_em: null },
+                    select: {
+                        id: true,
+                        nivel_maximo_tarefa: true,
+                        nivel_regionalizacao: true,
+                        orcamento_execucao_disponivel_meses: true,
+                        orgaos: {
+                            select: { orgao_id: true },
                         },
-                    })
-                    .catch(() => {
-                        throw new HttpException('portfolio_id| Não foi encontrado', 400);
-                    });
-                const estaCompartilhado = projeto.portfolios_compartilhados?.some((p) => p.id == dto.portfolio_id);
-                if (estaCompartilhado)
-                    throw new HttpException(
-                        'portfolio_id| Projeto está compartilhado com o Portfolio destino.' +
-                            ' Remova primeiro o compartilhamento, e poderá transferir o projeto.',
-                        400
-                    );
+                    },
+                })
+                .catch(() => {
+                    throw new HttpException('portfolio_id| Não foi encontrado', 400);
+                });
+            const estaCompartilhado = projeto.portfolios_compartilhados?.some((p) => p.id == dto.portfolio_id);
+            if (estaCompartilhado)
+                throw new HttpException(
+                    'portfolio_id| Projeto está compartilhado com o Portfolio destino.' +
+                        ' Remova primeiro o compartilhamento, e poderá transferir o projeto.',
+                    400
+                );
 
-                // Nível de tarefas, do port novo, não pode ser menor.
-                if (portfolioNovo.nivel_maximo_tarefa < portfolioAntigo.nivel_maximo_tarefa)
-                    throw new HttpException(
-                        'portfolio_id| Portfolio novo deve ter nível máximo de tarefa maior ou igual ao portfolio original.',
-                        400
-                    );
+            // Nível de tarefas, do port novo, não pode ser menor.
+            if (portfolioNovo.nivel_maximo_tarefa < portfolioAntigo.nivel_maximo_tarefa)
+                throw new HttpException(
+                    'portfolio_id| Portfolio novo deve ter nível máximo de tarefa maior ou igual ao portfolio original.',
+                    400
+                );
 
-                // Nível de regionalização deve ser igual.
-                if (portfolioNovo.nivel_regionalizacao != portfolioAntigo.nivel_regionalizacao)
-                    throw new HttpException(
-                        'portfolio_id| Portfolio novo deve ter mesmo nível de regionalização.',
-                        400
-                    );
+            // Nível de regionalização deve ser igual.
+            if (portfolioNovo.nivel_regionalizacao != portfolioAntigo.nivel_regionalizacao)
+                throw new HttpException('portfolio_id| Portfolio novo deve ter mesmo nível de regionalização.', 400);
 
-                // Meses disponíveis para orçamento devem ser iguais.
-                if (
-                    !assertOrcamentoDisponivelEqual(
-                        portfolioNovo.orcamento_execucao_disponivel_meses,
-                        portfolioAntigo.orcamento_execucao_disponivel_meses
-                    )
+            // Meses disponíveis para orçamento devem ser iguais.
+            if (
+                !assertOrcamentoDisponivelEqual(
+                    portfolioNovo.orcamento_execucao_disponivel_meses,
+                    portfolioAntigo.orcamento_execucao_disponivel_meses
                 )
-                    throw new HttpException(
-                        'portfolio_id| Portfolio novo deve ter mesmos meses disponíveis para orçamento.',
-                        400
-                    );
+            )
+                throw new HttpException(
+                    'portfolio_id| Portfolio novo deve ter mesmos meses disponíveis para orçamento.',
+                    400
+                );
 
-                // Por agora o órgão gestor não será modificado.
-                // Portanto deve ser verificado se ele está presente nos órgãos do novo port.
-                if (!portfolioNovo.orgaos.map((o) => o.orgao_id).some((o) => o == projeto.orgao_gestor.id))
-                    throw new HttpException('portfolio_id| Órgão gestor do Projeto deve estar no Portfolio novo.', 400);
+            // Por agora o órgão gestor não será modificado.
+            // Portanto deve ser verificado se ele está presente nos órgãos do novo port.
+            if (!portfolioNovo.orgaos.map((o) => o.orgao_id).some((o) => o == projeto.orgao_gestor.id))
+                throw new HttpException('portfolio_id| Órgão gestor do Projeto deve estar no Portfolio novo.', 400);
 
-                await Promise.all([
-                    prismaTx.projeto.update({ where: { id: projetoId }, data: { portfolio_id: dto.portfolio_id } }),
+            await Promise.all([
+                prismaTx.projeto.update({ where: { id: projetoId }, data: { portfolio_id: dto.portfolio_id } }),
 
-                    // Números sequenciais utilizados pelo Projeto
-                    prismaTx.projetoNumeroSequencial.updateMany({
-                        where: {
-                            portfolio_id: portfolioAntigo.id,
-                            projeto_id: projetoId,
-                        },
-                        data: { portfolio_id: portfolioNovo.id },
-                    }),
+                // Números sequenciais utilizados pelo Projeto
+                prismaTx.projetoNumeroSequencial.updateMany({
+                    where: {
+                        portfolio_id: portfolioAntigo.id,
+                        projeto_id: projetoId,
+                    },
+                    data: { portfolio_id: portfolioNovo.id },
+                }),
 
-                    // Removendo projeto de grupos de Portfolio.
-                    prismaTx.projetoGrupoPortfolio.updateMany({
-                        where: { projeto_id: projetoId },
-                        data: {
-                            removido_em: new Date(Date.now()),
-                            removido_por: user.id,
-                        },
-                    }),
-                ]);
+                // Removendo projeto de grupos de Portfolio.
+                prismaTx.projetoGrupoPortfolio.updateMany({
+                    where: { projeto_id: projetoId },
+                    data: {
+                        removido_em: new Date(Date.now()),
+                        removido_por: user.id,
+                    },
+                }),
+            ]);
 
-                return { id: projeto.id };
-            }
-        );
+            return { id: projeto.id };
+        };
 
-        return updated;
+        if (prismaTx) {
+            return await updated(prismaTx);
+        } else {
+            return await this.prisma.$transaction(updated);
+        }
 
         function assertOrcamentoDisponivelEqual(novo: number[], velho: number[]): boolean {
             if (novo.length !== velho.length) {
@@ -3478,7 +3702,7 @@ export class ProjetoService {
     }
 
     private getProjetoV2WhereSet(
-        filters: FilterProjetoMDODto,
+        filters: CoreFilterProjetoMDODto,
         ids: number[] | undefined,
         userId?: number
     ): Prisma.ProjetoWhereInput[] {
@@ -3663,5 +3887,41 @@ export class ProjetoService {
             await prismaTx.projetoPessoaRevisao.deleteMany({ where: { pessoa_id: user.id, projeto: { tipo: tipo } } });
             return;
         });
+    }
+
+    async checkOrgaoResponsavel(
+        tipo: TipoProjeto,
+        orgao_responsavel_id: number | null | undefined,
+        reponsavel_id: number
+    ) {
+        if (!orgao_responsavel_id) {
+            throw new InternalServerErrorException('O órgão responsável não pode ser nulo.');
+        }
+
+        // A pessoa deve ser do órgão responsável e deve ter o perfil "Colaborador de obra no órgão"
+        if (tipo == TipoProjeto.MDO) {
+            const pessoa = await this.prisma.pessoa.findFirst({
+                where: {
+                    id: reponsavel_id,
+                    pessoa_fisica: {
+                        orgao_id: orgao_responsavel_id,
+                    },
+                    PessoaPerfil: {
+                        some: {
+                            perfil_acesso: {
+                                nome: CONST_PERFIL_COLAB_OBRA_NO_ORGAO,
+                            },
+                        },
+                    },
+                },
+            });
+
+            if (!pessoa) {
+                throw new HttpException(
+                    'A pessoa não é do órgão responsável ou não possui o perfil de colaborador de obra no órgão.',
+                    400
+                );
+            }
+        }
     }
 }

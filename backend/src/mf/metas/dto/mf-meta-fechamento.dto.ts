@@ -1,5 +1,6 @@
 import { Transform } from 'class-transformer';
 import { IsBoolean, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
+import { MAX_LENGTH_DEFAULT } from 'src/common/consts';
 
 export class FilterFechamentoDto {
     @IsInt()
@@ -49,6 +50,6 @@ export class FechamentoDto {
     meta_id: number;
 
     @IsString()
-    @MaxLength(1024 * 10, { message: 'O texto não pode ter mais de 10KB' })
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Comentário' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     comentario: string;
 }

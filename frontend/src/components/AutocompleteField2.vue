@@ -1,7 +1,7 @@
 <script setup>
 import { useField } from 'vee-validate';
 import {
-  onMounted, onUpdated, ref, toRef, watch,
+  onMounted, onUpdated, ref, toRef, watch, computed,
 } from 'vue';
 
 const props = defineProps({
@@ -32,14 +32,23 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  numeroMaximoDeParticipantes: {
+    type: Number,
+    default: undefined,
+  },
   // usado para campos opcionais que exigem envio do array vazio no back-end
   retornarArrayVazio: {
+    type: Boolean,
+    default: false,
+  },
+  readonly: {
     type: Boolean,
     default: false,
   },
 });
 
 const control = ref(props.controlador);
+
 const emit = defineEmits(['change']);
 
 // se tivermos o nome do campo, podemos habilitar o vee-validate.
@@ -63,6 +72,13 @@ function start() {
   }
 }
 
+const atingiuLimite = computed(() => {
+  if (props.numeroMaximoDeParticipantes) {
+    return control.value.participantes.length >= props.numeroMaximoDeParticipantes;
+  }
+  return false;
+});
+
 start();
 onMounted(() => { start(); });
 onUpdated(() => { start(); });
@@ -71,10 +87,15 @@ function removeParticipante(item, p) {
   item.participantes.splice(item.participantes.indexOf(p), 1);
   emit('change', item.participantes);
 }
+
 function pushId(e, id) {
+  if (atingiuLimite.value) {
+    return;
+  }
   e.push(id);
   emit('change', [...new Set(e)]);
 }
+
 function buscar(e, item, g, label) {
   e.preventDefault();
   e.stopPropagation();
@@ -102,11 +123,13 @@ export default {
         v-model="control.busca"
         type="text"
         class="inputtext light mb05"
+        :readonly="readonly || atingiuLimite"
+        :aria-readonly="readonly || atingiuLimite"
         @keyup.enter.stop.prevent="buscar($event, control, grupo, label)"
       >
       <ul>
         <li
-          v-for="r in grupo.filter((x) => !control.participantes.includes(x.id)
+          v-for="r in grupo.filter((x) => !control.participantes?.includes(x.id)
             && String(x[label])?.toLowerCase().includes(control.busca.toLowerCase()))"
           :key="r.id"
         >
@@ -129,16 +152,31 @@ export default {
         </li>
       </ul>
     </div>
+    <template v-if="!readonly">
+      <button
+        v-for="p in grupo.filter((x) => control.participantes?.includes(x.id))"
+        :key="p.id"
+        class="tagsmall"
+        :title="p.nome || p.titulo || p.descricao || p.nome_completo || null"
+        type="button"
+        @click="removeParticipante(control, p.id)"
+      >
+        {{ p[label] }}
+        <svg
+          width="12"
+          height="12"
+        ><use xlink:href="#i_x" /></svg>
+      </button>
+    </template>
     <span
-      v-for="p in grupo.filter((x) => control.participantes.includes(x.id))"
+      v-for="p in grupo.filter((x) => control.participantes?.includes(x.id))"
+      v-else
       :key="p.id"
       class="tagsmall"
       :title="p.nome || p.titulo || p.descricao || p.nome_completo || null"
-      @click="removeParticipante(control, p.id)"
-    >{{ p[label] }}<svg
-      width="12"
-      height="12"
-    ><use xlink:href="#i_x" /></svg></span>
+    >
+      {{ p[label] }}
+    </span>
   </template>
   <template v-else>
     <div class="search">

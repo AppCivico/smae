@@ -23,6 +23,7 @@ import { FindOneParams } from '../../../common/decorators/find-params';
 import { IdSigla } from '../../../common/dto/IdSigla.dto';
 import { IdNomeExibicao } from '../../../meta/entities/meta.entity';
 import { IsDateYMD } from '../../../auth/decorators/date.decorator';
+import { MAX_LENGTH_DEFAULT, MAX_LENGTH_HTML } from 'src/common/consts';
 
 const TransformStatusNota = (a: TransformFnParams): StatusNota[] | undefined => {
     if (!a.value) return undefined;
@@ -40,7 +41,7 @@ const TransformStatusNota = (a: TransformFnParams): StatusNota[] | undefined => 
 export class CreateNotaDto {
     @IsString({ message: '$property| nota: Precisa ser alfanumérico' })
     @MinLength(1, { message: '$property| nota: Mínimo 1 caracteres' })
-    @MaxLength(5000, { message: '$property| nota: Máximo 5000 caracteres' })
+    @MaxLength(MAX_LENGTH_HTML, { message: `O campo 'Nota' deve ter no máximo ${MAX_LENGTH_HTML} caracteres` })
     nota: string;
 
     @Transform(DateTransform)
@@ -77,7 +78,7 @@ export class CreateNotaDto {
 
     @IsOptional()
     @IsString()
-    @MaxLength(5000)
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Título' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     titulo?: string;
 
     @IsOptional()
@@ -131,7 +132,7 @@ export class UpdateNotaDto extends PartialType(
 export class NovaRespostaDto {
     @IsString({ message: '$property| resposta: Precisa ser alfanumérico' })
     @MinLength(1, { message: '$property| resposta: Mínimo 1 caracteres' })
-    @MaxLength(5000, { message: '$property| resposta: Máximo 5000 caracteres' })
+    @MaxLength(MAX_LENGTH_HTML, { message: `O campo 'Resposta' deve ter no máximo ${MAX_LENGTH_HTML} caracteres` })
     resposta: string;
 
     @IsInt()

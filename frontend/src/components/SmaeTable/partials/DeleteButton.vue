@@ -15,9 +15,9 @@
 </template>
 
 <script lang="ts" setup>
+import obterPropriedadeNoObjeto from '@/helpers/objetos/obterPropriedadeNoObjeto';
 import { useAlertStore } from '@/stores/alert.store';
-import obterParametroNoObjeto from '@/helpers/obterParametroNoObjeto';
-import { Linha } from '../types/tipagem';
+import { Linha } from '../tipagem';
 
 export type DeleteButtonProps = {
   esconderDeletar?: boolean
@@ -40,7 +40,10 @@ const emit = defineEmits<Emits>();
 const alertStore = useAlertStore();
 
 function handleRemoverItem() {
-  const valorDoParametro = obterParametroNoObjeto(props.parametroNoObjetoParaExcluir, props.linha);
+  const valorDoParametro = obterPropriedadeNoObjeto(
+    props.parametroNoObjetoParaExcluir,
+    props.linha,
+  );
 
   alertStore.confirmAction(
     `Deseja mesmo remover o item "${valorDoParametro}"?`,

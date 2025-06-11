@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -63,11 +63,13 @@ export class AcompanhamentoTipoService {
 
     async remove(tipo: TipoProjeto, id: number, user: PessoaFromJwt): Promise<void> {
         await this.prisma.$transaction(async (prismaTx) => {
-            // Limpando ligação com rows de Acompanhamento
-            await prismaTx.projetoAcompanhamento.updateMany({
-                where: { acompanhanmento_tipo_id: id },
-                data: { acompanhanmento_tipo_id: null },
+            // Se o tipo de acompanhamento estiver associado a algum projeto, não pode ser removido
+            const tipoAcompanhamentoAssociado = await prismaTx.projetoAcompanhamento.count({
+                where: { acompanhanmento_tipo_id: id, removido_em: null },
             });
+            if (tipoAcompanhamentoAssociado) {
+                throw new HttpException('Tipo de acompanhamento associado à um projeto, não pode ser removido.', 400);
+            }
 
             return await prismaTx.acompanhamentoTipo.update({
                 where: { id },

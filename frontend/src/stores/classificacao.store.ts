@@ -1,8 +1,7 @@
-import { defineStore } from 'pinia';
-
-import {
+import type {
   ClassificacaoDto,
-} from '@/../../backend/src/transferencias-voluntarias/classificacao/entities/classificacao.dto';
+} from '@back/transferencias-voluntarias/classificacao/entities/classificacao.dto';
+import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}/classificacao`;
 

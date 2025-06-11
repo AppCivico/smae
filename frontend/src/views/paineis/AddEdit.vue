@@ -392,7 +392,6 @@ function toggleAccordeon(t) {
                     </th>
                   </tr>
                 </thead>
-                <hr>
                 <tbody class="subtable">
                   <tr v-if="m.mostrar_indicador">
                     <th>

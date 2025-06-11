@@ -56,14 +56,20 @@ const ações = [
   },
 ];
 
+const alertStore = useAlertStore();
+
 const açõesPermitidas = computed(() => ações.filter((x) => !!emFoco.value?.permissoes?.[`acao_${x.ação}`]));
 
-async function mudarStatus(id, { nome, ação }) {
-  useAlertStore()
-    .confirmAction(`${nome}. Você confirma essa mudança de status?`, async () => {
-      const resposta = await projetosStore.mudarStatus(id, ação);
-      if (resposta) {
+function mudarStatus(id, { nome, ação }) {
+  alertStore
+    .confirmAction(`Você confirma a mudança de status para "${nome}"? Lembre-se de atualizar a etapa do cronograma. Para isso acesse a página Cronograma e atualize a etapa por meio do botão "Mudar etapa".`, async () => {
+      if (await projetosStore.mudarStatus(id, ação)) {
+        alertStore
+          .success('Status modificado.');
         projetosStore.buscarItem(id);
+      } else {
+        alertStore
+          .error('Erro ao modificar status.');
       }
     });
 }
@@ -71,7 +77,7 @@ async function mudarStatus(id, { nome, ação }) {
 <template>
   <div
     v-if="açõesPermitidas.length"
-    class="ml2 dropbtn"
+    class="dropbtn"
   >
     <span class="btn">Mudar status</span>
     <ul>

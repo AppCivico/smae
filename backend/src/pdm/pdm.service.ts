@@ -30,6 +30,7 @@ import { ListPdm } from './entities/list-pdm.entity';
 import { PdmItemDocumentDto } from './entities/pdm-document.entity';
 import { PdmCicloService } from './pdm.ciclo.service';
 import { EnsureString } from '../common/EnsureString';
+import { AddTaskRecalcVariaveis } from '../variavel/variavel.service';
 
 const MAPA_PERFIL_PERMISSAO: Record<PdmPerfilTipo, PerfilResponsavelEquipe> = {
     ADMIN: 'AdminPS',
@@ -775,6 +776,7 @@ export class PdmService {
         const now = new Date(Date.now());
         let verificarCiclos = false;
         let ativarPdm: boolean | undefined = undefined;
+        let verificarVariaveisGlobais = false;
 
         const performUpdate = async (prismaTx: Prisma.TransactionClient): Promise<void> => {
             if (pdm.tipo == 'PDM') {
@@ -791,6 +793,7 @@ export class PdmService {
                 delete dto.ativo;
             } else if (typeof dto.ativo == 'boolean' && dto.ativo !== pdm.ativo) {
                 ativarPdm = dto.ativo;
+                verificarVariaveisGlobais = true;
                 if (ativarPdm == false)
                     await prismaTx.pdm.update({
                         where: { id: id },
@@ -915,6 +918,10 @@ export class PdmService {
             if (verificarCiclos) {
                 this.logger.log(`chamando monta_ciclos_pdm...`);
                 this.logger.log(JSON.stringify(await prismaTx.$queryRaw`select monta_ciclos_pdm(${id}::int, false)`));
+            }
+
+            if (verificarVariaveisGlobais) {
+                await AddTaskRecalcVariaveis(prismaTx, { pdmId: id });
             }
         };
 
@@ -1244,8 +1251,10 @@ export class PdmService {
             select: {
                 data_inicio: true,
                 data_fim: true,
+                monitoramento_orcamento: true,
             },
         });
+        if (!pdm.monitoramento_orcamento) return null;
 
         const defaultConfig: Record<
             TipoPdm,
@@ -1289,7 +1298,7 @@ export class PdmService {
                 coalesce(execucao_disponivel, ${pdmConfig.execucao_disponivel}::boolean) as execucao_disponivel,
                 coalesce(execucao_disponivel_meses, ${pdmConfig.execucao_disponivel_meses}::int[]) as execucao_disponivel_meses,
                 oc.id as id
-            FROM generate_series(${pdm.data_inicio}, ${pdm.data_fim}, '1 year'::interval) x
+            FROM generate_series(${Date2YMD.toStringOrNull(pdm.data_inicio)}::date, ${Date2YMD.toStringOrNull(pdm.data_fim)}::date, '1 year'::interval) x
             LEFT JOIN meta_orcamento_config oc ON oc.pdm_id = ${pdm_id}::int AND oc.ano_referencia = extract('year' from x.x)
         `;
 

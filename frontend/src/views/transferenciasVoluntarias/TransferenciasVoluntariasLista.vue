@@ -5,6 +5,8 @@ import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth.store';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import dinheiro from '@/helpers/dinheiro';
+import truncate from '@/helpers/texto/truncate';
+import combinadorDeListas from '@/helpers/combinadorDeListas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 
@@ -170,18 +172,20 @@ watch([
   </form>
 
   <table class="tablemain mb1">
-    <col class="col--botão-de-ação">
-    <col>
-    <col>
-    <col>
-    <col>
-    <col>
-    <col>
-    <col>
-    <col>
-    <col>
-    <col class="col--botão-de-ação">
-    <col class="col--botão-de-ação">
+    <colgroup>
+      <col class="col--botão-de-ação">
+      <col>
+      <col>
+      <col>
+      <col>
+      <col>
+      <col>
+      <col>
+      <col>
+      <col>
+      <col class="col--botão-de-ação">
+      <col class="col--botão-de-ação">
+    </colgroup>
     <thead>
       <tr>
         <th />
@@ -260,7 +264,10 @@ watch([
           {{ item.partido?.length ? item.partido?.map((e) => e.sigla).join(', ') : '-' }}
         </td>
         <td>
-          {{ item.parlamentar?.length ? item.parlamentar?.map((e) => e.nome_popular).join(', ') : '-' }}
+          {{
+            item.parlamentar?.length
+              ? combinadorDeListas(item.parlamentar, ', ', 'nome_popular') : '-'
+          }}
         </td>
         <td>
           {{ item.orgao_gestor?.length ? item.orgao_gestor?.map((e) => e.sigla).join(', ') : '-' }}
@@ -274,8 +281,13 @@ watch([
         <td>
           {{ item.fase_status? item.fase_status : '-' }}
         </td>
-        <td>
-          {{ item.objeto }}
+        <td
+          :title="
+            item.objeto.length > 35 ?
+              item.objeto : undefined
+          "
+        >
+          {{ truncate(item.objeto, 35) }}
         </td>
         <td class="cell--number">
           {{ item.valor ? `R$${dinheiro(item.valor)}` : '-' }}

@@ -1,5 +1,7 @@
-import type { ListVariavelCategoricaDto, VariavelCategoricaItem } from '@/../../backend/src/variavel-categorica/dto/variavel-categorica.dto';
-
+import type {
+  ListVariavelCategoricaDto,
+  VariavelCategoricaItem,
+} from '@back/variavel-categorica/dto/variavel-categorica.dto';
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;

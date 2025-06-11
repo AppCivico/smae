@@ -1,7 +1,6 @@
 <script setup>
 import AgrupadorDeAutocomplete from '@/components/AgrupadorDeAutocomplete.vue';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
-import LabelFromYup from '@/components/LabelFromYup.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import escaparDaRota from '@/helpers/escaparDaRota';
 import {
@@ -35,7 +34,7 @@ import {
 import {
   computed, onUnmounted, ref, watch,
 } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 const formatarData = (data) => dateToDate(data, { dateStyle: undefined, month: '2-digit', year: 'numeric' });
 
@@ -100,6 +99,7 @@ const props = defineProps({
 });
 
 const router = useRouter();
+const route = useRoute();
 
 const gerarMultiplasVariaveis = ref(false);
 
@@ -169,8 +169,16 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   try {
     if (resposta) {
       alertStore.success(msg);
-
-      escaparDaRota(router);
+      if (route.params.variavelId) {
+        escaparDaRota(router);
+      } else {
+        escaparDaRota(router, {
+          query: {
+            ordem_coluna: 'criado_em',
+            ordem_direcao: 'desc',
+          },
+        });
+      }
     }
   } catch (error) {
     alertStore.error(error);
@@ -260,13 +268,10 @@ onUnmounted(() => {
 });
 </script>
 <template>
-  <header class="flex flexwrap spacebetween center mb2 g2">
-    <TítuloDePágina />
-
-    <hr class="f1">
-
-    <CheckClose :formulario-sujo="formularioSujo" />
-  </header>
+  <CabecalhoDePagina
+    class="mb2"
+    :formulario-sujo="formularioSujo"
+  />
 
   <form
     :aria-busy="chamadasPendentes.emFoco && !emFoco"
@@ -998,6 +1003,7 @@ onUnmounted(() => {
               name="periodos.preenchimento_inicio"
               type="number"
               min="1"
+              max="30"
               class="inputtext light mb1"
               :class="{ error: errors['periodos.preenchimento_inicio'] }"
             />

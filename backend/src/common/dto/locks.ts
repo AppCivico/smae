@@ -14,3 +14,5 @@ export const JOB_LISTA_SEI_LOCK = id++;
 export const JOB_TRANSFERE_GOV_LOCK = id++;
 export const JOB_CICLO_VARIAVEL = id++;
 export const JOB_REPORT_LOCK = id++;
+export const JOB_CALC_LOCK = id++;
+export const JOB_LOG_BACKUP_JOB_LOCK_NUMBER = id++;

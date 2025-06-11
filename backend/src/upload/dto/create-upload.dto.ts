@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsEnum, IsInt, IsOptional, IsString, MaxLength, ValidateIf } from 'class-validator';
 import { TipoUpload } from '../entities/tipo-upload';
+import { MAX_LENGTH_MEDIO } from 'src/common/consts';
 
 export class CreateUploadDto {
     /**
@@ -29,8 +30,8 @@ export class CreateUploadDto {
      */
     @IsOptional()
     @IsString({ message: '$property| descrição: Precisa ser alfanumérico' })
-    @MaxLength(10000, { message: '$property| descrição: Máximo 10000 caracteres' })
     @ApiProperty({ deprecated: true, description: 'Não usar, descrição deve ser colocada no documento, salvo apenas no S3 após 2024-07-08'})
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Descrição" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     descricao?: string;
 
     @ApiProperty({ type: 'string', format: 'binary', required: true })

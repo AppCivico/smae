@@ -1,19 +1,23 @@
 import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
 import { TransferenciaTipoEsfera } from '@prisma/client';
-import { Transform, TransformFnParams } from 'class-transformer';
-import { IsArray, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
+import { Transform, TransformFnParams, Type } from 'class-transformer';
+import { IsArray, IsInt, IsNumber, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
 import { NumberArrayTransformOrUndef } from '../../../auth/transforms/number-array.transform';
 import { BadRequestException } from '@nestjs/common';
 import { StringArrayTransform } from '../../../auth/transforms/string-array.transform';
 import { IdSigla, IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 import { IsDateYMD } from '../../../auth/decorators/date.decorator';
+import { IdNomeDto } from 'src/common/dto/IdNome.dto';
+import { PartidoDto } from 'src/partido/entities/partido.entity';
+import { ParlamnetarIdNomes } from 'src/parlamentar/entities/parlamentar.entity';
+import { NumberTransform } from 'src/auth/transforms/number.transform';
 
 export class MfDashTransferenciasDto {
     @ApiProperty({ description: 'ID da transferência' })
     transferencia_id: number;
     identificador: string;
     atividade: string;
-    @IsDateYMD({nullable: true})
+    @IsDateYMD({ nullable: true })
     data: string | null;
     data_origem: string;
     orgaos: number[];
@@ -60,7 +64,6 @@ export class FilterDashTransferenciasDto {
 
     @IsOptional()
     @IsArray()
-    @MaxLength(1000, { each: true })
     @IsString({ each: true })
     @ApiProperty({ description: 'Atividade do cronograma' })
     @Transform(StringArrayTransform)
@@ -76,6 +79,11 @@ export class FilterDashTransferenciasDto {
     @IsOptional()
     @IsString()
     palavra_chave?: string;
+
+    @IsOptional()
+    @IsNumber()
+    @Type(() => Number)
+    prazo?: number;
 }
 
 function ValidateTransferenciaTipoEsfera(item: any) {
@@ -109,6 +117,22 @@ export class FilterDashTransferenciasAnaliseDto extends PartialType(
     @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
     @Transform(NumberArrayTransformOrUndef)
     etapa_ids?: number[];
+}
+
+export class FilterDashTransferenciasPainelEstrategicoDto extends PartialType(FilterDashTransferenciasAnaliseDto) {
+    @IsOptional()
+    @IsInt()
+    @Transform(NumberTransform)
+    ipp?: number = 25;
+
+    @IsOptional()
+    @IsInt()
+    @Transform(NumberTransform)
+    pagina?: number = 1;
+
+    @IsOptional()
+    @IsString()
+    token_paginacao?: string;
 }
 
 export class DashAnaliseTranferenciasDto {
@@ -171,6 +195,19 @@ export class DashAnaliseTranferenciasChartsDto {
     valor_por_partido: DashTransferenciaBasicChartDto;
     valor_por_orgao: DashTransferenciaBasicChartDto;
     valor_por_parlamentar: DashValorTransferenciasPorParlamentarDto[];
+}
+
+export class DashTransferenciasPainelEstrategicoDto {
+    id: number;
+    identificador: string;
+    esfera: TransferenciaTipoEsfera;
+    tipo: IdNomeDto;
+    partido: PartidoDto[];
+    parlamentar: ParlamnetarIdNomes[];
+    orgao_gestor: IdSiglaDescricao;
+    objeto: string;
+    repasse: number;
+    etapa_id: number | null;
 }
 
 export class ChartDataDto {

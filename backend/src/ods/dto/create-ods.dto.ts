@@ -1,5 +1,6 @@
 import { Type } from 'class-transformer';
 import { IsInt, IsString, MaxLength, MinLength } from 'class-validator';
+import { MAX_LENGTH_DEFAULT, MAX_LENGTH_MEDIO } from 'src/common/consts';
 
 export class CreateOdsDto {
     /**
@@ -16,7 +17,7 @@ export class CreateOdsDto {
      */
     @IsString({ message: '$property| Título: Precisa ser alfanumérico' })
     @MinLength(1, { message: '$property| Título: Mínimo de 1 caracteres' })
-    @MaxLength(60, { message: '$property| Título: Máximo 60 caracteres' })
+    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Título' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     titulo: string;
 
     /**
@@ -24,6 +25,6 @@ export class CreateOdsDto {
      */
     @IsString({ message: '$property| Descrição: Precisa ser alfanumérico' })
     @MinLength(4, { message: '$property| Descrição: Mínimo de 4 caracteres' })
-    @MaxLength(250, { message: '$property| Descrição: Máximo 250 caracteres' })
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Descrição" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     descricao: string;
 }

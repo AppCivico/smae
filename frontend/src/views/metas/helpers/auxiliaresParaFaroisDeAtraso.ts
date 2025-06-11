@@ -1,5 +1,5 @@
 /* eslint-disable max-len */
-import type { CronogramaEtapaAtrasoGrau } from '@/../../common/CronogramaEtapaAtrasoGrau';
+import type { CronogramaEtapaAtrasoGrau } from '@back/cronograma-etapas/entities/cronograma-etapa.entity';
 
 export const textoParaFarolDeAtraso = ((grau: CronogramaEtapaAtrasoGrau | unknown, dias = 0): string | null => {
   switch (grau) {

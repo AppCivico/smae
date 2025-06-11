@@ -10,6 +10,7 @@ import type { PlanoSetorialDto } from '@back/pdm/dto/pdm.dto';
 import type { ListPdmDocument } from '@back/pdm/entities/list-pdm-document.entity';
 import type { ListPdm } from '@back/pdm/entities/list-pdm.entity';
 import { defineStore } from 'pinia';
+import type { ArvoreDeIniciativas } from './helpers/mapIniciativas';
 import mapIniciativas from './helpers/mapIniciativas';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -32,6 +33,10 @@ interface Erros {
 
 type EmFoco = PlanoSetorialDto & { orcamento_config?: OrcamentoConfig[] | null };
 
+type FolhaDeMeta = Omit<DadosCodTituloMetaDto, 'iniciativas'> & {
+  iniciativas: ArvoreDeIniciativas;
+};
+
 export type TiposDeOrcamentosDisponiveis = {
   execucao_disponivel?: boolean;
   planejado_disponivel?: boolean;
@@ -42,17 +47,17 @@ interface Estado {
   lista: Lista;
   emFoco: EmFoco | null;
   arquivos: ListPdmDocument['linhas'] | [];
-  arvoreDeMetas: { [k: number]: unknown };
+  arvoreDeMetas: { [k: number]: FolhaDeMeta };
   chamadasPendentes: ChamadasPendentes;
   erros: Erros;
 }
 
-export const usePlanosSetoriaisStore = (prefixo='') => defineStore(prefixo ? `${prefixo}.planosSetoriais` : 'planosSetoriais', {
+export const usePlanosSetoriaisStore = (prefixo = '') => defineStore(prefixo ? `${prefixo}.planosSetoriais` : 'planosSetoriais', {
   state: (): Estado => ({
     lista: [],
     emFoco: null,
     arquivos: [],
-    arvoreDeMetas: [],
+    arvoreDeMetas: {},
 
     chamadasPendentes: {
       lista: false,
@@ -201,10 +206,10 @@ export const usePlanosSetoriaisStore = (prefixo='') => defineStore(prefixo ? `${
       this.erros.arvoreDeMetas = null;
 
       try {
-        const { linhas } = await this.requestS.get(`${baseUrl}/projeto/proxy/iniciativas-atividades`, params) as ListDadosMetaIniciativaAtividadesDto;
+        const { linhas } = await this.requestS.get(`${baseUrl}/plano-setorial-meta/iniciativas-atividades`, params) as ListDadosMetaIniciativaAtividadesDto;
 
         if (Array.isArray(linhas)) {
-          linhas.forEach((cur:DadosCodTituloMetaDto) => {
+          linhas.forEach((cur) => {
             this.arvoreDeMetas[cur.id] = {
               ...cur,
               iniciativas: mapIniciativas(cur.iniciativas),

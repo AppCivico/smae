@@ -1,19 +1,17 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import {
+  computed,
+  onMounted,
+  watch,
+} from 'vue';
+import { onBeforeRouteLeave, useRoute } from 'vue-router';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import combinadorDeListas from '@/helpers/combinadorDeListas';
 import { localizarDataHorario } from '@/helpers/dateToDate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
-import { storeToRefs } from 'pinia';
-import {
-  computed,
-  onMounted,
-  onUnmounted,
-  watch,
-  watchEffect,
-} from 'vue';
-import { useRoute } from 'vue-router';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 const { temPermissãoPara } = storeToRefs(useAuthStore());
@@ -21,7 +19,7 @@ const relatóriosStore = useRelatoriosStore();
 const route = useRoute();
 const alertStore = useAlertStore();
 
-let intervaloDeAtualizacao = null;
+let idDoIntervaloDeAtualizacao = 0;
 let abaVisivel = true;
 
 const fonte = computed(() => route.meta.fonteDoRelatorio);
@@ -31,6 +29,18 @@ const temAlgumRelatorioEmProcessamento = computed(() => relatóriosStore
 function carregarRelatorios() {
   if (abaVisivel) {
     relatóriosStore.getAll({ fonte: fonte.value });
+  }
+}
+
+function carregarMais() {
+  if (relatóriosStore.paginação.temMais && !relatóriosStore.loading) {
+    relatóriosStore.getAll(Object.assign(
+      structuredClone(route.query),
+      {
+        fonte: fonte.value,
+        token_proxima_pagina: relatóriosStore.paginação.tokenDaPróximaPágina,
+      },
+    ));
   }
 }
 
@@ -44,27 +54,26 @@ function formatarSeEPublico(publico) {
   return publico ? 'Sim' : 'Não';
 }
 
-function handleVisibilityChange() {
-  abaVisivel = !document.hidden;
-
-  if (abaVisivel && temAlgumRelatorioEmProcessamento.value && !intervaloDeAtualizacao) {
-    intervaloDeAtualizacao = setInterval(carregarRelatorios, 5000);
-  } else if (!abaVisivel && intervaloDeAtualizacao) {
-    clearInterval(intervaloDeAtualizacao);
-    intervaloDeAtualizacao = null;
+function redefinirIntervalo() {
+  if (idDoIntervaloDeAtualizacao) {
+    clearInterval(idDoIntervaloDeAtualizacao);
+    idDoIntervaloDeAtualizacao = 0;
   }
 }
 
-watchEffect(() => {
-  clearInterval(intervaloDeAtualizacao);
-  intervaloDeAtualizacao = null;
-
-  if (abaVisivel && temAlgumRelatorioEmProcessamento.value) {
-    if (!intervaloDeAtualizacao) {
-      intervaloDeAtualizacao = setInterval(carregarRelatorios, 5000);
-    }
+function definirIntervalo() {
+  if (abaVisivel && temAlgumRelatorioEmProcessamento.value && !idDoIntervaloDeAtualizacao) {
+    idDoIntervaloDeAtualizacao = setInterval(carregarRelatorios, 5000);
+  } else if (!abaVisivel) {
+    redefinirIntervalo();
   }
-});
+}
+
+function gerirVisibilidadeDaJanela() {
+  abaVisivel = !document.hidden;
+
+  definirIntervalo();
+}
 
 function iniciar() {
   relatóriosStore.$reset();
@@ -77,28 +86,49 @@ watch(fonte, (novaFonte, antigaFonte) => {
   }
 }, { immediate: true });
 
-onMounted(() => {
-  document.addEventListener('visibilitychange', handleVisibilityChange);
+watch(temAlgumRelatorioEmProcessamento, (valorNovo, valorAnterior) => {
+  if (valorNovo === valorAnterior) {
+    return;
+  }
+
+  if (valorNovo) {
+    definirIntervalo();
+  } else {
+    redefinirIntervalo();
+  }
 });
 
-onUnmounted(() => {
-  if (intervaloDeAtualizacao) {
-    clearInterval(intervaloDeAtualizacao);
-  }
+onMounted(() => {
+  document.addEventListener('visibilitychange', gerirVisibilidadeDaJanela);
+});
+
+onBeforeRouteLeave(() => {
+  document.removeEventListener('visibilitychange', gerirVisibilidadeDaJanela);
+  redefinirIntervalo();
+  relatóriosStore.$reset();
 });
 </script>
 
 <template>
-  <header class="flex spacebetween center mb2">
-    <TítuloDePágina />
-    <router-link
-      v-if="temPermissãoPara('Reports.executar.')"
-      :to="{ name: $route.meta.rotaNovoRelatorio }"
-      class="btn big ml2"
-    >
-      Novo relatório
-    </router-link>
-  </header>
+  <CabecalhoDePagina class="mb2">
+    <template #acoes>
+      <router-link
+        v-if="temPermissãoPara('Reports.executar.')"
+        :to="{ name: $route.meta.rotaNovoRelatorio }"
+        class="btn big"
+      >
+        Novo relatório
+      </router-link>
+    </template>
+  </CabecalhoDePagina>
+
+  <p
+    v-if="$route.meta.descricao"
+    class="texto--explicativo"
+  >
+    {{ $route.meta.descricao }}
+  </p>
+
   <SmaeTable
     class="mt2"
     :dados="relatóriosStore.lista"
@@ -121,26 +151,25 @@ onUnmounted(() => {
 
     <template #celula:parametros_processados="{ linha }">
       <dl>
-        <template
+        <div
           v-for="(parametro) in linha.parametros_processados"
           :key="parametro.filtro"
         >
-          <div>
-            <dt class="w700 inline">
-              {{ parametro.filtro }}:
-            </dt>
-            <dd class="inline">
-              <template v-if="!Array.isArray(parametro.valor)">
-                {{ parametro.valor }}
-              </template>
-              <template v-else>
-                {{ combinadorDeListas(parametro.valor) }}
-              </template>
-            </dd>
-          </div>
-        </template>
+          <dt class="w700 inline">
+            {{ parametro.filtro }}:
+          </dt>
+          <dd class="inline">
+            <template v-if="!Array.isArray(parametro.valor)">
+              {{ parametro.valor }}
+            </template>
+            <template v-else>
+              {{ combinadorDeListas(parametro.valor) }}
+            </template>
+          </dd>
+        </div>
       </dl>
     </template>
+
     <template #celula:acoes="{ linha }">
       <div class="flex g1">
         <button
@@ -148,6 +177,7 @@ onUnmounted(() => {
           class="like-a__text"
           arial-label="excluir"
           title="excluir"
+          type="button"
           @click="excluirRelatório(linha.id)"
         >
           <svg
@@ -190,13 +220,10 @@ onUnmounted(() => {
   </SmaeTable>
   <button
     v-if="relatóriosStore.paginação.temMais && relatóriosStore.paginação.tokenDaPróximaPágina"
+    type="button"
     :disabled="relatóriosStore.loading || temAlgumRelatorioEmProcessamento"
     class="btn bgnone outline center mt2"
-    @click="relatóriosStore.getAll({
-      ...$route.query,
-      fonte: fonte.value,
-      token_proxima_pagina: relatóriosStore.paginação.tokenDaPróximaPágina
-    })"
+    @click="carregarMais"
   >
     carregar mais
   </button>

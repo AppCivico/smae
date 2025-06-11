@@ -1,7 +1,7 @@
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
 import type { RouteLocation } from 'vue-router';
-import metasRoutes from './metas.routes';
 import tiparPropsDeRota from '../helpers/tiparPropsDeRota';
+import metasRoutes from './metas.routes';
 
 const ListaDeRelatorios = () => import('@/views/relatorios/ListaDeRelatorios.vue');
 
@@ -12,7 +12,6 @@ export type ParametrosPagina = {
   segmentoRaiz: string;
   privilegioRaiz: string[] | string;
   privilegiosParaRelatorio: string[] | string;
-  presenteNoMenu: boolean;
 };
 
 function getParametrosPagina(entidadeMãe: EntidadesPossiveis): ParametrosPagina {
@@ -29,7 +28,6 @@ function getParametrosPagina(entidadeMãe: EntidadesPossiveis): ParametrosPagina
         privilegiosParaRelatorio: [
           'Reports.executar.PlanoSetorial',
         ],
-        presenteNoMenu: true,
       };
 
     case 'programaDeMetas':
@@ -44,7 +42,6 @@ function getParametrosPagina(entidadeMãe: EntidadesPossiveis): ParametrosPagina
         privilegiosParaRelatorio: [
           'Reports.executar.ProgramaDeMetas',
         ],
-        presenteNoMenu: false,
       };
 
     default:
@@ -69,8 +66,6 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
 <path d="M18 11H14.82C14.4 9.84 13.3 9 12 9C10.7 9 9.6 9.84 9.18 11H6C5.67 11 4 10.9 4 9V8.00001C4 6.17001 5.54 6.00001 6 6.00001H16.18V8.37004L21.5 4.99999L16.18 1.68481C16.18 1.68481 16.18 2.278 16.18 4.00001H6C4.39 4.00001 2 5.06001 2 8.00001V9C2 11.94 4.39 13 6 13H9.18C9.6 14.16 10.7 15 12 15C13.3 15 14.4 14.16 14.82 13H18C18.33 13 20 13.1 20 15V16C20 17.83 18.46 18 18 18H7.82C7.4 16.84 6.3 16 5 16C4.20435 16 3.44129 16.3161 2.87868 16.8787C2.31607 17.4413 2 18.2044 2 19C2 19.7957 2.31607 20.5587 2.87868 21.1213C3.44129 21.6839 4.20435 22 5 22C6.3 22 7.4 21.16 7.82 20H18C19.61 20 22 18.93 22 16V15C22 12.07 19.61 11 18 11ZM5 20C4.73478 20 4.48043 19.8947 4.29289 19.7071C4.10536 19.5196 4 19.2652 4 19C4 18.7348 4.10536 18.4804 4.29289 18.2929C4.48043 18.1054 4.73478 18 5 18C5.26522 18 5.51957 18.1054 5.70711 18.2929C5.89464 18.4804 6 18.7348 6 19C6 19.2652 5.89464 19.5196 5.70711 19.7071C5.51957 19.8947 5.26522 20 5 20Z"/>
 </svg>`,
       rotaPrescindeDeChave: true,
-      presenteNoMenu: parametrosPagina.presenteNoMenu,
-      pesoNoMenu: 2,
       limitarÀsPermissões: parametrosPagina.privilegioRaiz,
     },
     children: [
@@ -83,6 +78,16 @@ function prepararRotasParaProgramaDeMetas(entidadeMãe: EntidadesPossiveis) {
         name: `${entidadeMãe}.quadroDeAtividades`,
         path: 'quadro-de-atividades',
         component: () => import('@/views/planosSetoriais/PlanosSetoriaisQuadroDeAtividades.vue'),
+        meta: {
+          titulo: 'Quadro de atividades',
+          limitarÀsPermissões: [
+            'ReferencialEm.Equipe.ProgramaDeMetas',
+            'ReferencialEm.Equipe.PS',
+            'ReferencialEm.EquipeBanco.ProgramaDeMetas',
+            'ReferencialEm.EquipeBanco.PS',
+            'SMAE.GrupoVariavel.participante',
+          ],
+        },
       },
       {
         name: `${entidadeMãe}.planosSetoriaisCriar`,

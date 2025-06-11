@@ -22,6 +22,5 @@ export class TarefaCronogramaDto {
     tolerancia_atraso: number | null;
     percentual_atraso: number | null;
     status_cronograma: string | null;
-
     nivel_maximo_tarefa?: number;
 }

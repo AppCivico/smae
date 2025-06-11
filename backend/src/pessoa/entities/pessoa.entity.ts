@@ -6,16 +6,12 @@ export class Pessoa {
     nome_exibicao: string;
     nome_completo: string;
     lotacao?: string;
-
     atualizado_em?: Date;
-
     token_acesso_api?: string;
     session_id?: number;
     senha_bloqueada?: boolean;
     senha_bloqueada_em: Date | null;
-
     desativado: boolean;
-
     pessoa_fisica: PessoaFisica | null;
     perfis_equipe_pdm: PerfilResponsavelEquipe[];
     perfis_equipe_ps: PerfilResponsavelEquipe[];
