@@ -3,7 +3,10 @@ import { nextTick, onMounted, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useResizeObserver } from '@vueuse/core';
 import { debounce } from 'lodash';
+import { useRoute } from 'vue-router';
+import { useAuthStore } from '@/stores/auth.store';
 import { useWorkflowAndamentoStore } from '@/stores/workflow.andamento.store';
+import TextoComBotao from '@/components/TextoComBotao.vue';
 import VaralDeFaseItem from './componentes/VaralDeFaseItem.vue';
 
 const TAMANHO_LARGO = 600;
@@ -13,7 +16,11 @@ const workflowAndamentoStore = useWorkflowAndamentoStore();
 const varalDeFasesEl = ref<HTMLElement>();
 const tamanhoLargo = ref<boolean>(true);
 
-const { etapaCorrente } = storeToRefs(workflowAndamentoStore);
+const route = useRoute();
+const authStore = useAuthStore();
+const { temPermissãoPara } = storeToRefs(authStore);
+
+const { etapaEmFoco, faseAtual, inícioDeFasePermitido } = storeToRefs(workflowAndamentoStore);
 
 useResizeObserver(varalDeFasesEl, debounce(async ([ev]) => {
   await nextTick();
@@ -21,26 +28,50 @@ useResizeObserver(varalDeFasesEl, debounce(async ([ev]) => {
   tamanhoLargo.value = ev.contentRect.width > TAMANHO_LARGO;
 }, 0));
 
+function iniciarFase() {
+  workflowAndamentoStore.iniciarFase(faseAtual.value.id, route.params.transferenciaId);
+}
+
 onMounted(() => {
   workflowAndamentoStore.buscar();
-
-  setTimeout(() => {
-    console.log(etapaCorrente.value);
-  }, 2000);
 });
 </script>
 
 <template>
   <section
+    v-if="etapaEmFoco"
     ref="varalDeFasesEl"
     class="varal-de-fases mt2 container-inline"
   >
+    <TextoComBotao>
+      <template #texto>
+        <p class="t20 mb0">
+          Você está na etapa <strong>"{{ etapaEmFoco.fluxo_etapa_de.etapa_fluxo }}"</strong>
+          e na fase <strong>“{{ faseAtual.fase.fase }}”</strong>
+        </p>
+      </template>
+
+      <template
+        v-if="inícioDeFasePermitido && temPermissãoPara('CadastroWorkflows.editar')"
+        #botao
+      >
+        <button
+
+          type="button"
+          class="btn"
+          @click="iniciarFase"
+        >
+          Iniciar fase
+        </button>
+      </template>
+    </TextoComBotao>
+
     <div
-      v-if="etapaCorrente?.fases.length"
+      v-if="etapaEmFoco.fases.length"
       class="varal-de-fases__lista "
     >
       <div
-        v-for="(faseObjeto, faseIndex) in etapaCorrente.fases"
+        v-for="(faseObjeto, faseIndex) in etapaEmFoco.fases"
         :key="`fase--${faseIndex}`"
         class="fase-item"
       >
@@ -95,7 +126,7 @@ onMounted(() => {
   flex-direction: column;
   gap: @gap-items;
 
-  padding-top: 1px;
+  padding-top: 25px;
   padding-left: 1px;
 }
 
@@ -145,7 +176,7 @@ onMounted(() => {
   .varal-de-fases__lista {
     flex-direction: row;
     overflow: auto;
-    padding: 140px 0 20px;
+    padding: 90px 0 20px;
   }
 
   .fase-item {

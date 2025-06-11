@@ -3,7 +3,11 @@
     <div class="texto-com-botao__texto">
       <slot name="texto" />
     </div>
-    <div class="texto-com-botao__botao">
+
+    <div
+      v-if="$slots['botao']"
+      class="texto-com-botao__botao"
+    >
       <slot name="botao" />
     </div>
   </div>
@@ -15,12 +19,14 @@
   align-items: center;
   gap: 1.5rem;
 
-  &::after {
-    content: '';
-    flex-grow: 1;
-    min-width: 2rem;
-    height: 2px;
-    background-color: @cinza-claro;
+  &:has(.texto-com-botao__botao) {
+    &::after {
+      content: '';
+      flex-grow: 1;
+      min-width: 2rem;
+      height: 2px;
+      background-color: @cinza-claro;
+    }
   }
 }
 .texto-com-botao__botao {
