@@ -125,8 +125,6 @@ function formatarTexto(texto) {
       </template>
     </TextoComBotao>
 
-    Etapa em foco: {{ etapaEmFoco?.id }}
-
     <LoadingComponent
       v-if="chamadasPendentes?.workflow"
       class="horizontal"
