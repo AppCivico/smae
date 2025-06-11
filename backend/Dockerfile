@@ -35,6 +35,8 @@ RUN npx prisma generate
 
 COPY . .
 
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+
 RUN npm run build
 
 RUN mkdir /usr/src/app/logs && chown node:node /usr/src/app/logs
