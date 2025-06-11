@@ -541,6 +541,23 @@ export class WorkflowAndamentoFaseService {
                     },
                 });
 
+                // Buscando ids de distribuições de recursos, pois elas podem ter tarefas.
+                const distribuicoes = await prismaTxn.distribuicaoRecurso.findMany({
+                    where: { transferencia_id: dto.transferencia_id, removido_em: null },
+                    select: { id: true },
+                });
+                if (distribuicoes.length > 0) {
+                    await prismaTxn.tarefa.updateMany({
+                        where: {
+                            distribuicao_recurso_id: { in: distribuicoes.map((d) => d.id) },
+                        },
+                        data: {
+                            inicio_real: new Date(Date.now()),
+                            atualizado_em: new Date(Date.now()),
+                        },
+                    });
+                }
+
                 return { id: andamentoNovaFase.id };
             }
         );
