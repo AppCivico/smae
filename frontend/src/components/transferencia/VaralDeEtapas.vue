@@ -151,7 +151,7 @@ function formatarTexto(texto) {
           class="tc varal-etapas__etapa"
           :class="{
             'varal-etapas__etapa--atual': item?.atual,
-            'varal-etapas__etapa--concluida': !!item?.andamento?.concluida,
+            'varal-etapas__etapa--concluida': !!item?.concluida,
             'varal-etapas__etapa--selecionada': item.id === etapaEmFoco?.id
           }"
         >
