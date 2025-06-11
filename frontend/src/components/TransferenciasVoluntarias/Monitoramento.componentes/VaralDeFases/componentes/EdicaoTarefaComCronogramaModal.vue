@@ -122,13 +122,15 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
       let dados = {};
 
       if (valoresControlados.concluido) {
-        const inicioReal = values.inicio_real ? new Date(values.inicio_real) : null;
         const terminoReal = new Date();
+        const inicioReal = values.inicio_real ? new Date(values.inicio_real) : terminoReal;
+
+        const diasDecorridos = differenceInDays(inicioReal, terminoReal);
 
         dados = {
-          inicio_real: (inicioReal || terminoReal).toISOString(),
+          inicio_real: inicioReal.toISOString(),
           termino_real: terminoReal.toISOString(),
-          duracao_real: differenceInDays(inicioReal, terminoReal) || 1,
+          duracao_real: diasDecorridos > 1 ? diasDecorridos : 1,
         };
       }
 
