@@ -160,8 +160,12 @@ function handleEditar() {
           :id="tarefa.tarefa_cronograma_id || tarefa.workflow_tarefa.id"
           secundario
           :titulo="tarefa.workflow_tarefa?.descricao"
-          :situacao="tarefa.tipo_situacao"
-          :responsavel="tarefa.andamento.orgao_responsavel"
+          :situacao="
+            tarefa.andamento.concluida
+              ? { id: null, situacao: 'Concluida' }
+              : undefined"
+          :responsavel="
+            tarefa.andamento.orgao_responsavel"
           :atual="$props.atual"
           :bloqueado="$props.bloqueado"
           :tipo="!tarefa.tarefa_cronograma_id ? 'tarefa-workflow' : 'tarefa-cronograma'"
