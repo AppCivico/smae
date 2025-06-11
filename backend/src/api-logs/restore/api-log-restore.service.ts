@@ -13,17 +13,11 @@ export class ApiLogRestoreService implements TaskableService {
         private readonly duckDBProviderService: DuckDBProviderService
     ) {}
 
-    async executeJob(payload: { date: string; task_id?: number }): Promise<any> {
-        const { date, task_id } = payload;
-        const logDateUTC = DateTime.fromSQL(date, { zone: 'utc' }).toJSDate();
-        if (isNaN(logDateUTC.valueOf())) {
-            throw new Error('Data inválida fornecida para restore.');
-        }
-
+    async executeJob(params: CreateApiLogDayDto, task_id: string): Promise<any> {
         try {
             // Primeiro busca o registro de controle e valida o status
             const control = await this.prisma.apiRequestLogControl.findUnique({
-                where: { log_date: logDateUTC },
+                where: { log_date: params.date },
             });
 
             if (!control || control.status !== 'BACKED_UP' || !control.backup_location) {
@@ -32,10 +26,10 @@ export class ApiLogRestoreService implements TaskableService {
 
             // Só atualiza para RESTORING se o status for válido
             await this.prisma.apiRequestLogControl.update({
-                where: { log_date: logDateUTC },
+                where: { log_date: params.date },
                 data: {
                     status: 'RESTORING',
-                    task_id: task_id ?? null,
+                    task_id: +task_id,
                 },
             });
             const duckDB = await this.duckDBProviderService.getConfiguredInstance();
@@ -74,7 +68,7 @@ export class ApiLogRestoreService implements TaskableService {
             });
 
             await this.prisma.apiRequestLogControl.update({
-                where: { log_date: logDateUTC },
+                where: { log_date: params.date },
                 data: {
                     status: 'RESTORED',
                     last_error: null,
@@ -84,13 +78,13 @@ export class ApiLogRestoreService implements TaskableService {
             await duckDB.close();
 
             return {
-                date,
+                date: params.date,
                 status: 'success',
                 recordsRestored: logsToInsert.length,
             };
         } catch (error) {
             await this.prisma.apiRequestLogControl.update({
-                where: { log_date: logDateUTC },
+                where: { log_date: params.date },
                 data: {
                     status: 'FAILED_RESTORE',
                     last_error: error.message,
@@ -99,13 +93,13 @@ export class ApiLogRestoreService implements TaskableService {
 
             if (task_id) {
                 await this.prisma.task_queue.update({
-                    where: { id: task_id },
+                    where: { id: +task_id },
                     data: { status: 'errored' },
                 });
             }
 
             return {
-                date,
+                date: params.date,
                 status: 'failed',
                 error: error.message,
             };

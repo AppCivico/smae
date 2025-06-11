@@ -5,7 +5,9 @@ import { DuckDBProviderService } from 'src/common/duckdb/duckdb-provider.service
 import { SmaeConfigService } from 'src/common/services/smae-config.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { TaskableService } from 'src/task/entities/task.entity';
+import { CreateApiLogDayDto } from '../dto/create-api-log-day.dto';
 import { tryDecodeJson } from '../utils/json-utils';
+import { Date2YMD } from '../../common/date2ymd';
 
 @Injectable()
 export class ApiLogBackupService implements TaskableService {
@@ -15,12 +17,8 @@ export class ApiLogBackupService implements TaskableService {
         private readonly duckDBProviderService: DuckDBProviderService
     ) {}
 
-    async executeJob(payload: { date: string; task_id?: number }): Promise<any> {
-        const { date, task_id } = payload;
-        const logDateUTC = DateTime.fromSQL(date, { zone: 'utc' }).toJSDate();
-        if (isNaN(logDateUTC.valueOf())) {
-            throw new Error('Data inválida fornecida para backup.');
-        }
+    async executeJob(payload: CreateApiLogDayDto, task_id: string): Promise<any> {
+        const logDateUTC = payload.date;
 
         let totalRecords = 0;
         const duckDB = await this.duckDBProviderService.getConfiguredInstance();
@@ -30,13 +28,13 @@ export class ApiLogBackupService implements TaskableService {
                 where: { log_date: logDateUTC },
                 data: {
                     status: 'BACKING_UP',
-                    task_id: task_id ?? null,
+                    task_id: +task_id,
                     last_error: null,
                 },
             });
 
             const bucket = await this.smaeConfigService.getConfig('S3_BUCKET');
-            const fileName = `api_log_${date}.parquet`;
+            const fileName = `api_log_${Date2YMD.toString(payload.date)}.parquet`;
             const s3Path = `s3://${bucket}/api_request_logs/${fileName}`;
 
             await duckDB.run(`
@@ -68,8 +66,11 @@ export class ApiLogBackupService implements TaskableService {
                     take: CHUNK_SIZE,
                     where: {
                         created_at: {
-                            gte: DateTime.fromISO(date, { zone: 'utc' }).startOf('day').toJSDate(),
-                            lt: DateTime.fromISO(date, { zone: 'utc' }).plus({ days: 1 }).startOf('day').toJSDate(),
+                            gte: DateTime.fromJSDate(logDateUTC, { zone: 'utc' }).startOf('day').toJSDate(),
+                            lt: DateTime.fromJSDate(logDateUTC, { zone: 'utc' })
+                                .plus({ days: 1 })
+                                .startOf('day')
+                                .toJSDate(),
                         },
                     },
                     select: {
@@ -120,7 +121,7 @@ export class ApiLogBackupService implements TaskableService {
             }
 
             if (totalRecords === 0) {
-                return { status: 'no_data', date };
+                return { status: 'no_data', date: payload.date };
             }
 
             await duckDB.run(`COPY logs_for_backup TO '${s3Path}' (FORMAT PARQUET, COMPRESSION 'ZSTD');`);
@@ -129,8 +130,11 @@ export class ApiLogBackupService implements TaskableService {
                 await tx.api_request_log.deleteMany({
                     where: {
                         created_at: {
-                            gte: DateTime.fromISO(date, { zone: 'utc' }).startOf('day').toJSDate(),
-                            lt: DateTime.fromISO(date, { zone: 'utc' }).plus({ days: 1 }).startOf('day').toJSDate(),
+                            gte: DateTime.fromJSDate(logDateUTC, { zone: 'utc' }).startOf('day').toJSDate(),
+                            lt: DateTime.fromJSDate(logDateUTC, { zone: 'utc' })
+                                .plus({ days: 1 })
+                                .startOf('day')
+                                .toJSDate(),
                         },
                     },
                 });
@@ -148,7 +152,7 @@ export class ApiLogBackupService implements TaskableService {
             await duckDB.close();
 
             return {
-                date,
+                date: payload.date,
                 status: 'success',
                 parquetFileS3Path: s3Path,
                 recordsBackedUp: totalRecords,
@@ -165,14 +169,14 @@ export class ApiLogBackupService implements TaskableService {
 
             if (task_id) {
                 await this.prisma.task_queue.update({
-                    where: { id: task_id },
+                    where: { id: +task_id },
                     data: { status: 'errored' },
                 });
             }
 
             return {
                 status: 'failed',
-                date,
+                date: payload.date,
                 error: error.message,
             };
         }
