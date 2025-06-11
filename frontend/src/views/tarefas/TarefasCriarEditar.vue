@@ -14,7 +14,7 @@ import {
 import { useRoute, useRouter } from 'vue-router';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import dependencyTypes from '@/consts/dependencyTypes';
-import { tarefa as schema } from '@/consts/formSchemas';
+import schema from '@/consts/formSchemas/tarefa';
 import addToDates from '@/helpers/addToDates';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
 import dinheiro from '@/helpers/dinheiro';
@@ -243,11 +243,12 @@ watch(itemParaEdicao, (novoValor) => {
           name="tarefa"
           :schema="schema"
         />
-        <Field
+        <SmaeText
           name="tarefa"
-          type="text"
           class="inputtext light mb1"
-          maxlength="60"
+          :schema="schema"
+          :model-value="values.tarefa"
+          :class="{ 'error': errors.tarefa }"
         />
         <ErrorMessage
           class="error-msg mb1"

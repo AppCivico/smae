@@ -1,6 +1,6 @@
 <script setup>
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
-import { tarefa as schema } from '@/consts/formSchemas';
+import schema from '@/consts/formSchemas/tarefa';
 import addToDates from '@/helpers/addToDates';
 import dateToField from '@/helpers/dateToField';
 import subtractDates from '@/helpers/subtractDates';
