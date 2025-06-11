@@ -134,7 +134,7 @@ function handleEditar() {
         </dd>
 
         <div
-          v-if="$props.atual && !$props.concluida && !$props.bloqueado"
+          v-if="($props.atual || !$props.concluida) && !$props.bloqueado"
           class="varal-de-fase-item__agrupador-botoes"
         >
           <button
