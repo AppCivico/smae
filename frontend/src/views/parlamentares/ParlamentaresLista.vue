@@ -1,9 +1,10 @@
 <script setup>
 import { storeToRefs } from 'pinia';
-import { ref } from 'vue';
+import { onUnmounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import LocalFilter from '@/components/LocalFilter.vue';
+import FiltroParaPagina from '@/components/FiltroParaPagina.vue';
 import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
+import schemaDaBusca from '@/consts/formSchemas/buscaLivre';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
@@ -16,7 +17,14 @@ const route = useRoute();
 const alertStore = useAlertStore();
 const authStore = useAuthStore();
 
-const listaFiltradaPorTermoDeBusca = ref([]);
+const camposDeFiltro = [{
+  campos: {
+    palavra_chave: {
+      tipo: 'text',
+      placeholder: 'Termo de busca',
+    },
+  },
+}];
 
 async function excluirParlamentar(id) {
   alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
@@ -28,9 +36,23 @@ async function excluirParlamentar(id) {
   }, 'Remover');
 }
 
-parlamentarStore.$reset();
-parlamentarStore.buscarTudo();
+onUnmounted(() => {
+  parlamentarStore.$reset();
+});
 
+watch(
+  () => route.query.palavra_chave,
+  (novaPalavraChave) => {
+    parlamentarStore.$reset();
+
+    if (novaPalavraChave) {
+      parlamentarStore.buscarTudo({ palavra_chave: novaPalavraChave });
+    } else {
+      parlamentarStore.buscarTudo();
+    }
+  },
+  { immediate: true },
+);
 </script>
 <template>
   <CabecalhoDePagina>
@@ -45,14 +67,12 @@ parlamentarStore.buscarTudo();
     </template>
   </CabecalhoDePagina>
 
-  <div class="flex center mb2 spacebetween">
-    <LocalFilter
-      v-model="listaFiltradaPorTermoDeBusca"
-      :lista="lista"
-      class="mr1"
-    />
-    <hr class="ml2 f1">
-  </div>
+  <FiltroParaPagina
+    class="mb2"
+    :formulario="camposDeFiltro"
+    :schema="schemaDaBusca"
+    :carregando="chamadasPendentes.lista"
+  />
 
   <table class="tablemain">
     <colgroup>
@@ -85,7 +105,7 @@ parlamentarStore.buscarTudo();
     </thead>
     <tbody>
       <tr
-        v-for="item in listaFiltradaPorTermoDeBusca"
+        v-for="item in lista"
         :key="item.id"
       >
         <td>
