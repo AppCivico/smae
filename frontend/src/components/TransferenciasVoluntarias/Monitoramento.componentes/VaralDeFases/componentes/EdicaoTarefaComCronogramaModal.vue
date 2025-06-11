@@ -136,11 +136,6 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
         orgao_responsavel_id: valoresControlados.orgao_id,
         pessoa_responsavel_id: valoresControlados.pessoa_responsavel_id,
       });
-
-      await workflowAndamentoStore.encerrarFase(
-        values.id,
-        route.params.transferenciaId,
-      );
     } else if (tipoFase.value === 'tarefa-workflow') {
       await workflowAndamentoStore.editarFase({
         transferencia_id: route.params.transferenciaId,
