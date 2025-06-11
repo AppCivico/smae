@@ -125,7 +125,7 @@ function handleEditar() {
         </dd>
 
         <div
-          v-if="($props.atual || !$props.concluida) && !$props.bloqueado"
+          v-if="$props.atual && !$props.concluida && !$props.bloqueado"
           class="varal-de-fase-item__agrupador-botoes"
         >
           <button
@@ -148,7 +148,7 @@ function handleEditar() {
         :key="`fase--${tarefaIndex}`"
       >
         <VaralDeFaseItem
-          :id="tarefa.tarefa_cronograma_id || tarefa.id"
+          :id="tarefa.tarefa_cronograma_id || tarefa.workflow_tarefa.id"
           secundario
           :titulo="tarefa.workflow_tarefa?.descricao"
           :situacao="tarefa.tipo_situacao"
