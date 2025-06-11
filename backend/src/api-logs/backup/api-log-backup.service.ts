@@ -114,7 +114,7 @@ export class ApiLogBackupService implements TaskableService {
 
                 const placeholders = batchData.map(() => '(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)').join(',');
                 const flatData = batchData.flat();
-                await duckDB.run(`INSERT INTO logs_for_backup VALUES ${placeholders}`, flatData);
+                await duckDB.run(`INSERT INTO logs_for_backup VALUES ${placeholders}`, ...flatData);
 
                 totalRecords += logs.length;
                 offset += CHUNK_SIZE;
