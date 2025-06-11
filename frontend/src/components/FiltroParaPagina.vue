@@ -1,8 +1,15 @@
 <script setup lang="ts">
-import { nextTick, watch } from 'vue';
+import {
+  computed,
+  nextTick,
+  watch,
+} from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import {
-  Field, useForm, ErrorMessage, useIsFormDirty,
+  ErrorMessage,
+  Field,
+  useForm,
+  useIsFormDirty,
 } from 'vee-validate';
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
 import AutocompleteField2 from './AutocompleteField2.vue';
@@ -51,13 +58,15 @@ const route = useRoute();
 const router = useRouter();
 
 const {
-  handleSubmit, isSubmitting, resetForm, setValues, meta,
+  errors, handleSubmit, isSubmitting, resetForm, setValues, meta,
 } = useForm({
   validationSchema: props.schema,
   initialValues: route.query,
 });
 
 const formularioSujo = useIsFormDirty();
+
+const idsDasMensagensDeErro = computed(() => Object.keys(errors.value).reduce((acc, key) => `${acc}err__${key} `, ''));
 
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   const query = {
@@ -167,6 +176,8 @@ if (props.autoSubmit) {
                 v-slot="{ field: { value }, handleInput }"
                 :name="campoNome"
                 :aria-busy="$props.carregando"
+                :aria-invalid="!!errors[campoNome]"
+                :aria-errormessage="errors[campoNome] ? `err__${campoNome}` : undefined"
               >
                 <div
                   class="flex itemscenter"
@@ -188,6 +199,8 @@ if (props.autoSubmit) {
                 :name="campoNome"
                 as="select"
                 :aria-busy="$props.carregando"
+                :aria-invalid="!!errors[campoNome]"
+                :aria-errormessage="errors[campoNome] ? `err__${campoNome}` : undefined"
               >
                 <option :value="null">
                   -
@@ -208,6 +221,8 @@ if (props.autoSubmit) {
                 v-slot="{ value, handleChange }"
                 class="inputtext light mb1"
                 :name="campoNome"
+                :aria-invalid="!!errors[campoNome]"
+                :aria-errormessage="errors[campoNome] ? `err__${campoNome}` : undefined"
               >
                 <AutocompleteField2
                   class="f1 mb1"
@@ -226,9 +241,12 @@ if (props.autoSubmit) {
                 :name="campoNome"
                 :type="campo.tipo"
                 :aria-busy="$props.carregando"
+                :aria-invalid="!!errors[campoNome]"
+                :aria-errormessage="errors[campoNome] ? `err__${campoNome}` : undefined"
               />
 
               <ErrorMessage
+                :id="`err__${campoNome}`"
                 class="error-msg mb1"
                 :name="campoNome"
               />
@@ -245,6 +263,9 @@ if (props.autoSubmit) {
             class="btn outline bgnone tcprimary mtauto mb1"
             :class="[{ loading: carregando }]"
             :aria-busy="isSubmitting || carregando"
+            :aria-disabled="!!Object.keys(errors)?.length"
+            :aria-invalid="!!Object.keys(errors)?.length"
+            :aria-errormessage="idsDasMensagensDeErro"
           >
             Pesquisar
           </button>
