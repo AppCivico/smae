@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { createEntidadesSync } from './entities/sync-entities.config';
 import { EntidadesSyncMap, PrismaModelDelegate, EntidadeSyncConfig, BaseSelect } from './entities/sync-entities.type';
+import { SyncCadastroBasicoRequestDto } from './dto/sync-cadastro-basico.dto';
 
 @Injectable()
 export class SyncCadastroBasicoService {
@@ -11,42 +12,50 @@ export class SyncCadastroBasicoService {
     onModuleInit() {
         this.entidadesSync = createEntidadesSync(this.prisma);
     }
+
     constructor(private readonly prisma: PrismaService) {}
 
-    async sync(query: { atualizado_em?: number; versao?: string; tipos?: string }) {
-        const atualizadoEm = query.atualizado_em ? new Date(query.atualizado_em * 1000) : null;
-        const requestedTipos = query.tipos
-            ? (query.tipos.split(',').filter((tipo) => tipo in this.entidadesSync) as Array<keyof EntidadesSyncMap>)
-            : (Object.keys(this.entidadesSync) as Array<keyof EntidadesSyncMap>);
+    async sync(request: SyncCadastroBasicoRequestDto) {
+        const atualizadoEm = request.atualizado_em ? new Date(request.atualizado_em) : null;
+        const validTipos = new Set(Object.keys(this.entidadesSync));
+
+        console.log(validTipos, request);
+
+        // Se tipos não foram especificados, incluir todos os tipos disponíveis
+        const requestedTipos =
+            request.tipos && request.tipos.length > 0
+                ? request.tipos.filter((item) => validTipos.has(item.tipo))
+                : Object.keys(this.entidadesSync).map((tipo) => ({ tipo, versao: null }));
 
         const dados = [];
 
         this.logger.log(
-            `Starting sync for types: ${requestedTipos.join(', ')} ${atualizadoEm ? `since ${atualizadoEm.toISOString()}` : '(full sync)'}`
+            `Starting sync for types: ${requestedTipos.map((t) => t.tipo).join(', ')} ${atualizadoEm ? `since ${atualizadoEm.toISOString()}` : '(full sync)'}`
         );
 
-        for (const tipo of requestedTipos) {
-            const config = this.entidadesSync[tipo];
+        for (const tipoRequest of requestedTipos) {
+            const config = this.entidadesSync[tipoRequest.tipo as keyof EntidadesSyncMap];
+            console.log(config);
 
             if (!config) {
-                this.logger.warn(`Sync configuration not found for type: ${tipo}`);
+                this.logger.warn(`Sync configuration not found for type: ${tipoRequest.tipo}`);
                 continue;
             }
 
             try {
                 const entidade = await this.syncEntidadeGenerica<typeof config.prismaDelegate, typeof config.select>(
-                    tipo,
+                    tipoRequest.tipo,
                     config as EntidadeSyncConfig<typeof config.prismaDelegate, typeof config.select>,
-                    query.versao,
+                    tipoRequest.versao,
                     atualizadoEm
                 );
                 dados.push(entidade);
             } catch (error) {
-                this.logger.error(`Error syncing entity ${tipo}: ${error.message}`, error.stack);
+                this.logger.error(`Error syncing entity ${tipoRequest.tipo}: ${error.message}`, error.stack);
             }
         }
 
-        this.logger.log(`Sync completed for types: ${requestedTipos.join(', ')}`);
+        this.logger.log(`Sync completed for types: ${requestedTipos.map((t) => t.tipo).join(', ')}`);
 
         return {
             dados,
@@ -54,28 +63,32 @@ export class SyncCadastroBasicoService {
         };
     }
 
-    // Função generica para sincronizar entidades dos cadastros basicos
+    // Função genérica para sincronizar entidades dos cadastros básicos
     private async syncEntidadeGenerica<TDelegate extends PrismaModelDelegate, TSelect extends BaseSelect>(
         nomeTipo: string,
         config: EntidadeSyncConfig<TDelegate, TSelect>,
-        queryVersao: string | undefined,
+        versaoTipoRequisitada: string | null | undefined,
         atualizadoEm: Date | null
     ) {
         const { prismaDelegate, select, versao: versaoAtual } = config;
 
         this.logger.debug(`Syncing ${nomeTipo}...`);
 
-        const schemaDesatualizado = queryVersao !== versaoAtual;
+        // Schema está desatualizado se:
+        // 1. Versão requisitada foi fornecida e é diferente da atual, OU
+        // 2. Versão requisitada é null (força sync completo)
+        const schemaDesatualizado =
+            versaoTipoRequisitada !== undefined
+                ? versaoTipoRequisitada === null || versaoTipoRequisitada !== versaoAtual
+                : false;
+
         const isFullSync = schemaDesatualizado || !atualizadoEm;
 
         const whereClause: NonNullable<Parameters<TDelegate['findMany']>[0]>['where'] = isFullSync
             ? { removido_em: null }
             : {
                   removido_em: null,
-                  OR: [
-                      { criado_em: { gt: atualizadoEm } },
-                      { atualizado_em: { gt: atualizadoEm } },
-                  ],
+                  OR: [{ criado_em: { gt: atualizadoEm } }, { atualizado_em: { gt: atualizadoEm } }],
               };
 
         const linhas = await prismaDelegate.findMany({
@@ -95,7 +108,9 @@ export class SyncCadastroBasicoService {
             removidos = (removidosResult as Array<{ id: number }>).map((r) => r.id);
         }
 
-        this.logger.debug(`Synced ${nomeTipo}: ${linhas.length} rows found, ${removidos.length} rows removed.`);
+        this.logger.debug(
+            `Synced ${nomeTipo}: ${linhas.length} rows found, ${removidos.length} rows removed. Schema desatualizado: ${schemaDesatualizado}`
+        );
 
         return {
             tipo: nomeTipo,
