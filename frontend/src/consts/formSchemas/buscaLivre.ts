@@ -10,7 +10,6 @@ setLocale(i18n);
 export default object()
   .shape({
     palavra_chave: string()
-      .defined()
       .label('Termo de busca')
       .max(100)
       .min(1)
