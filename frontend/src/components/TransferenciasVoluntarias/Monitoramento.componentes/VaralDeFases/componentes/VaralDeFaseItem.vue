@@ -84,6 +84,7 @@ function handleEditar() {
       </dt>
 
       <div class="varal-de-fase-item__conteudo">
+        <!-- {{ tipo }} -->
         <dt
           v-if="$props.largo || $props.secundario"
           class="varal-de-fase-item__titulo"
@@ -124,7 +125,7 @@ function handleEditar() {
         </dd>
 
         <div
-          v-if="$props.atual || !$props.concluida || true"
+          v-if="$props.atual || !$props.concluida"
           class="varal-de-fase-item__agrupador-botoes"
         >
           <button

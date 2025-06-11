@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue';
 import { ErrorMessage, Field, useForm } from 'vee-validate';
 import { storeToRefs } from 'pinia';
 import { differenceInDays } from 'date-fns';
+import { useRoute } from 'vue-router';
 import {
   EdicaoTransferenciaFase,
   EdicaoTransferenciaFaseTarefa,
@@ -14,13 +15,16 @@ import { useWorkflowAndamentoStore } from '@/stores/workflow.andamento.store';
 import SmallModal from '@/components/SmallModal.vue';
 import { type DadosTarefa, type FaseTipo } from './VaralDeFaseItem.vue';
 
+const route = useRoute();
+
 const userStore = useUsersStore();
 const tarefaStore = useTarefasStore();
 const workflowAndamentoStore = useWorkflowAndamentoStore();
 
 const { pessoasSimplificadas } = storeToRefs(userStore);
 
-const modalEdicaoFase = ref<boolean>(false);
+const carregando = ref<boolean>(false);
+const exibirModalFase = ref<boolean>(false);
 const tipoFase = ref<FaseTipo | undefined>(undefined);
 const situacoes = ref<any[]>([]);
 
@@ -37,9 +41,9 @@ const schema = computed(() => {
 });
 
 const {
-  handleSubmit, resetForm, values,
+  handleSubmit, resetForm, values, errors, validate,
 } = useForm({
-  validationSchema: schema.value,
+  validationSchema: () => schema.value,
 });
 
 type EdicaoDados = {
@@ -56,12 +60,10 @@ type EdicaoDados = {
   dadosTarefa?: DadosTarefa,
 };
 function abrirModalFase(dadosEdicao: EdicaoDados) {
-  modalEdicaoFase.value = true;
+  exibirModalFase.value = true;
 
   tipoFase.value = dadosEdicao.tipo;
   situacoes.value = dadosEdicao.situacoes || [];
-
-  console.log('->', dadosEdicao);
 
   resetForm({
     values: {
@@ -93,46 +95,55 @@ const pessoasDisponíveis = computed(() => {
     : pessoasSimplificadas.value.filter((x) => x.orgao_id === Number(values.orgao_id));
 });
 
-const onSubmit = handleSubmit(async (valoresControlados) => {
-  if (tipoFase.value === 'fase') {
-    await workflowAndamentoStore.editarFase({
-      transferencia_id: 250,
-      fase_id: valoresControlados.id,
-      situacao_id: valoresControlados.situacao_id,
-      orgao_responsavel_id: valoresControlados.orgao_id,
-      pessoa_responsavel_id: valoresControlados.pessoa_responsavel_id,
-    });
-  } else if (tipoFase.value === 'tarefa-workflow') {
-    await workflowAndamentoStore.editarFase({
-      transferencia_id: 250,
-      fase_id: valoresControlados.fase_mae_id,
-      orgao_responsavel_id: valoresControlados.orgao_id,
-      tarefa: {
-        id: valoresControlados.id,
+const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
+  carregando.value = true;
+
+  try {
+    if (tipoFase.value === 'fase') {
+      await workflowAndamentoStore.editarFase({
+        transferencia_id: route.params.transferenciaId,
+        fase_id: values.id,
+        situacao_id: valoresControlados.situacao_id,
         orgao_responsavel_id: valoresControlados.orgao_id,
-        concluida: valoresControlados.concluido,
-      },
-    });
-  } else if (tipoFase.value === 'tarefa-cronograma') {
-    let dados = {};
+        pessoa_responsavel_id: valoresControlados.pessoa_responsavel_id,
+      });
+    } else if (tipoFase.value === 'tarefa-workflow') {
+      await workflowAndamentoStore.editarFase({
+        transferencia_id: route.params.transferenciaId,
+        fase_id: valoresControlados.fase_mae_id,
+        orgao_responsavel_id: valoresControlados.orgao_id,
+        tarefa: {
+          id: values.id,
+          orgao_responsavel_id: valoresControlados.orgao_id,
+          concluida: valoresControlados.concluido,
+        },
+      });
+    } else if (tipoFase.value === 'tarefa-cronograma') {
+      let dados = {};
 
-    if (valoresControlados.concluido) {
-      const inicioReal = new Date(valoresControlados.inicio_real);
-      const terminoReal = new Date();
+      if (valoresControlados.concluido) {
+        const inicioReal = values.inicio_real ? new Date(values.inicio_real) : null;
+        const terminoReal = new Date();
 
-      dados = {
-        inicio_real: (inicioReal || terminoReal).toISOString(),
-        termino_real: terminoReal.toISOString(),
-        duracao_real: differenceInDays(inicioReal, terminoReal) || 1,
-      };
+        dados = {
+          inicio_real: (inicioReal || terminoReal).toISOString(),
+          termino_real: terminoReal.toISOString(),
+          duracao_real: differenceInDays(inicioReal, terminoReal) || 1,
+        };
+      }
+
+      await tarefaStore.salvarItem({
+        ...dados,
+        recursos: valoresControlados.pessoa_responsavel,
+      }, values.id, {
+        transferenciaId: route.params.transferenciaId,
+      });
     }
 
-    await tarefaStore.salvarItem({
-      ...dados,
-      recursos: valoresControlados.pessoa_responsavel,
-    }, valoresControlados.id, {
-      transferenciaId: 250,
-    });
+    workflowAndamentoStore.buscar();
+  } finally {
+    exibirModalFase.value = false;
+    carregando.value = false;
   }
 });
 
@@ -143,9 +154,9 @@ onMounted(() => {
 
 <template>
   <SmallModal
-    :active="modalEdicaoFase"
+    :active="exibirModalFase"
     has-close-button
-    @close="modalEdicaoFase = false"
+    @close="exibirModalFase = false"
   >
     <h2>
       Disponibilização do Recurso
@@ -296,6 +307,8 @@ onMounted(() => {
         <button
           class="btn"
           type="submit"
+          :disabled="carregando"
+          :aria-disabled="carregando"
         >
           Salvar
         </button>
