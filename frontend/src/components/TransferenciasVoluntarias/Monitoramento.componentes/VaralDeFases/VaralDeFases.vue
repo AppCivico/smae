@@ -28,15 +28,17 @@ useResizeObserver(varalDeFasesEl, debounce(async ([ev]) => {
   tamanhoLargo.value = ev.contentRect.width > TAMANHO_LARGO;
 }, 100));
 
-function iniciarFase() {
+async function iniciarFase() {
   if (!faseAtual.value || !route.params.transferenciaId) {
     return;
   }
 
-  workflowAndamentoStore.iniciarFase(
-    faseAtual.value.id,
+  await workflowAndamentoStore.iniciarFase(
+    faseAtual.value.fase.id,
     route.params.transferenciaId,
   );
+
+  workflowAndamentoStore.buscar();
 }
 
 onMounted(() => {
