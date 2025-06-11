@@ -120,6 +120,8 @@ async function salvarEFinaliarFase() {
     exibirModalFase.value = false;
     carregando.value = false;
   }
+
+  workflowAndamentoStore.buscar();
 }
 
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
