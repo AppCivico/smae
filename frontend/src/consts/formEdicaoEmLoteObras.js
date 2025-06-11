@@ -1,5 +1,6 @@
 import { object, number } from 'yup';
-import { obras as schemaOriginal, tarefa } from '@/consts/formSchemas';
+import { obras as schemaOriginal } from '@/consts/formSchemas';
+import tarefa from '@/consts/formSchemas/tarefa';
 
 const metasEdicaoEmLote = {
   equipamento_id: {
