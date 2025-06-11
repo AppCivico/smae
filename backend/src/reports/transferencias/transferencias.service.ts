@@ -485,9 +485,9 @@ export class TransferenciasService implements ReportableService {
                               (db.distribuicao_recurso_sei ? formataSEI(db.distribuicao_recurso_sei) : null) ?? '',
                           nome_responsavel: this.formatExcelString(db.distribuicao_recurso_status_nome_responsavel),
                           status_nome_base: db.distribuicao_recurso_status_nome_base ?? '',
-                          pct_custeio: this.formatExcelString(db.distribuicao_recurso_pct_custeio?.toString()) ?? '',
+                          pct_custeio: this.formatExcelString(db.distribuicao_recurso_pct_custeio?.toString()) ?? '  ',
                           pct_investimento:
-                              this.formatExcelString(db.distribuicao_recurso_pct_investimento?.toString()) ?? '',
+                              this.formatExcelString(db.distribuicao_recurso_pct_investimento?.toString()) ?? '  ',
                           conta: this.formatExcelString(db.distribuicao_recurso_conta),
                           banco: this.formatExcelString(db.distribuicao_recurso_banco),
                           agencia: this.formatExcelString(db.distribuicao_recurso_agencia),
