@@ -538,23 +538,23 @@ export class WorkflowAndamentoFaseService {
                             atualizado_em: new Date(Date.now()),
                         },
                     });
+                }
 
-                    if (distribuicoes.length > 0) {
-                        await prismaTxn.tarefa.updateMany({
-                            where: {
-                                tarefa_pai: {
-                                    transferencia_fase_id: andamentoNovaFase.id,
-                                    removido_em: null,
-                                },
+                if (distribuicoes.length > 0) {
+                    await prismaTxn.tarefa.updateMany({
+                        where: {
+                            tarefa_pai: {
+                                transferencia_fase_id: andamentoNovaFase.id,
                                 removido_em: null,
-                                distribuicao_recurso_id: { in: distribuicoes.map((d) => d.id) },
                             },
-                            data: {
-                                inicio_real: new Date(Date.now()),
-                                atualizado_em: new Date(Date.now()),
-                            },
-                        });
-                    }
+                            removido_em: null,
+                            distribuicao_recurso_id: { in: distribuicoes.map((d) => d.id) },
+                        },
+                        data: {
+                            inicio_real: new Date(Date.now()),
+                            atualizado_em: new Date(Date.now()),
+                        },
+                    });
                 }
 
                 await prismaTxn.transferencia.update({
