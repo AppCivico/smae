@@ -54,7 +54,15 @@ type EdicaoDados = {
     sigla: string,
     descricao: string,
   }
-  situacao?: string
+  pessoa_responsavel?: {
+    id: number,
+    nome_exibicao: string,
+  }
+  situacao?: {
+    id: number,
+    situacao: string,
+    tipo_situacao: string
+  },
   situacoes?: any[]
   tipo: FaseTipo,
   dadosTarefa?: DadosTarefa,
@@ -70,7 +78,8 @@ function abrirModalFase(dadosEdicao: EdicaoDados) {
       id: dadosEdicao.id,
       orgao_id: dadosEdicao.orgao_responsavel?.id,
       orgao_responsavel_nome: dadosEdicao.orgao_responsavel?.sigla,
-      situacao: dadosEdicao.situacao,
+      situacao_id: dadosEdicao.situacao.id,
+      pessoa_responsavel_id: dadosEdicao.pessoa_responsavel?.id,
       fase_mae_id: dadosEdicao.dadosTarefa?.faseMaeId,
       inicio_real: dadosEdicao.dadosTarefa?.inicioReal,
     },

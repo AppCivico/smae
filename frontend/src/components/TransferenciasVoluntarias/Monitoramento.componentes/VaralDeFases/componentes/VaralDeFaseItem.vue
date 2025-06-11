@@ -21,7 +21,15 @@ export type VaralDeItemProps = {
     sigla: string,
     descricao: string,
   },
-  situacao?: string,
+  pessoaResponsavel?: {
+    id: number,
+    nome_exibicao: string,
+  },
+  situacao?: {
+    id: number,
+    situacao: string,
+    tipo_situacao: string
+  },
   tarefas?: any[]
   situacoes?: any[]
   atual?: boolean,
@@ -46,6 +54,7 @@ function handleEditar() {
     secundario: props.secundario,
     orgao_responsavel: props.responsavel,
     situacao: props.situacao,
+    pessoa_responsavel: props.pessoaResponsavel,
     situacoes: props.situacoes,
     tipo: props.tipo,
     dadosTarefa: props.dadosTarefa,
@@ -119,7 +128,7 @@ function handleEditar() {
                 Situação
               </dt>
 
-              <dd>{{ $props.situacao || '-' }}</dd>
+              <dd>{{ $props.situacao?.situacao || '-' }}</dd>
             </div>
           </dl>
         </dd>
