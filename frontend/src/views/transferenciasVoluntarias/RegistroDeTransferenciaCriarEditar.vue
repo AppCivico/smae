@@ -119,7 +119,7 @@ const calcularValorInvestimento = (fieldName) => {
     setFieldValue('pct_custeio', Big(100).minus(pct).toFixed(2));
   } else if (fieldName === 'investimento') {
     const porcentagemInvestimento = valor.eq(0)
-      ? 0
+      ? Big(0)
       : investimento.div(valor).times(100);
     setFieldValue('pct_investimento', porcentagemInvestimento.toFixed(2));
     setFieldValue('pct_custeio', Big(100).minus(porcentagemInvestimento).toFixed(2));
@@ -224,7 +224,7 @@ watch(itemParaEdicao, async (novosValores) => {
       <div class="flex f1 g2 center">
         <div class="fb20em">
           <LabelFromYup
-            name="pct_investimento"
+            name="pct_custeio"
             :schema="schema"
           />
           <MaskedFloatInput
