@@ -298,7 +298,7 @@ export default {
         },
         {
           name: 'TransferenciasVoluntariasDetalhes',
-          path: 'detalhes',
+          path: 'resumo',
           component: () => import('@/views/transferenciasVoluntarias/TransferenciasVoluntariasDetalhes.vue'),
           props: tiparPropsDeRota,
           meta: {
@@ -313,7 +313,7 @@ export default {
         {
           name: 'TransferenciasVoluntarias.Monitoramento',
           component: () => import('@/views/transferenciasVoluntarias/TransferenciasVoluntarias.Monitoramento.vue'),
-          path: 'resumo',
+          path: 'monitoramento',
           props: tiparPropsDeRota,
           meta: {
             título: () => (useTransferenciasVoluntariasStore()?.emFoco?.identificador
