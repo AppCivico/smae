@@ -524,6 +524,12 @@ export class WorkflowAndamentoFaseService {
                     },
                 });
 
+                // Buscando ids de distribuições de recursos, pois elas podem ter tarefas.
+                const distribuicoes = await prismaTxn.distribuicaoRecurso.findMany({
+                    where: { transferencia_id: dto.transferencia_id, removido_em: null },
+                    select: { id: true },
+                });
+
                 for (const tarefa of andamentoNovaFase.tarefas) {
                     await prismaTxn.tarefa.update({
                         where: { id: tarefa.tarefaEspelhada[0].id },
@@ -532,6 +538,23 @@ export class WorkflowAndamentoFaseService {
                             atualizado_em: new Date(Date.now()),
                         },
                     });
+
+                    if (distribuicoes.length > 0) {
+                        await prismaTxn.tarefa.updateMany({
+                            where: {
+                                tarefa_pai: {
+                                    transferencia_fase_id: andamentoNovaFase.id,
+                                    removido_em: null,
+                                },
+                                removido_em: null,
+                                distribuicao_recurso_id: { in: distribuicoes.map((d) => d.id) },
+                            },
+                            data: {
+                                inicio_real: new Date(Date.now()),
+                                atualizado_em: new Date(Date.now()),
+                            },
+                        });
+                    }
                 }
 
                 await prismaTxn.transferencia.update({
@@ -540,23 +563,6 @@ export class WorkflowAndamentoFaseService {
                         workflow_fase_atual_id: andamentoNovaFase.workflow_fase_id,
                     },
                 });
-
-                // Buscando ids de distribuições de recursos, pois elas podem ter tarefas.
-                const distribuicoes = await prismaTxn.distribuicaoRecurso.findMany({
-                    where: { transferencia_id: dto.transferencia_id, removido_em: null },
-                    select: { id: true },
-                });
-                if (distribuicoes.length > 0) {
-                    await prismaTxn.tarefa.updateMany({
-                        where: {
-                            distribuicao_recurso_id: { in: distribuicoes.map((d) => d.id) },
-                        },
-                        data: {
-                            inicio_real: new Date(Date.now()),
-                            atualizado_em: new Date(Date.now()),
-                        },
-                    });
-                }
 
                 return { id: andamentoNovaFase.id };
             }
