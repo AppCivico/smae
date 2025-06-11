@@ -1,4 +1,4 @@
-import i18n from '@/consts/formSchemas/i18n';
+import i18n from '@/consts/formSchemas/config/i18n';
 import {
   object,
   setLocale,

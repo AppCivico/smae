@@ -34,17 +34,16 @@ import tiposDeMunicípio from '@/consts/tiposDeMunicipio';
 import tiposDeOrigens from '@/consts/tiposDeOrigens';
 import tiposNaEquipeDeParlamentar from '@/consts/tiposNaEquipeDeParlamentar';
 import tiposSituacaoSchema from '@/consts/tiposSituacaoSchema';
+import tiposStatusDistribuicao from '@/consts/tiposStatusDistribuicao';
 import fieldToDate from '@/helpers/fieldToDate';
 import haDuplicatasNaLista from '@/helpers/haDuplicatasNaLista';
-import tiposStatusDistribuicao from './tiposStatusDistribuicao';
-import i18n from './formSchemas/i18n';
-
-const dataMin = import.meta.env.VITE_DATA_MIN ? new Date(`${import.meta.env.VITE_DATA_MIN}`) : new Date('1900-01-01T00:00:00Z');
-const dataMax = import.meta.env.VITE_DATA_MAX ? new Date(`${import.meta.env.VITE_DATA_MAX}`) : new Date('2100-12-31T23:59:59Z');
-
-// Carrega os anos possíveis - começa em 2003 e termina no corrente mais cinco
-const endYear = new Date().getFullYear() + 5;
-const startYear = 2003;
+import {
+  dataMax,
+  dataMin,
+  endYear,
+  startYear,
+} from './formSchemas/config/datas';
+import i18n from './formSchemas/config/i18n';
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 addMethod(string, 'fieldUntilToday', function _(errorMessage = 'Valor de ${path} futuro') {
