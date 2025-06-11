@@ -141,11 +141,11 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
         transferencia_id: route.params.transferenciaId,
         fase_id: valoresControlados.fase_mae_id,
         orgao_responsavel_id: valoresControlados.orgao_id,
-        tarefa: {
+        tarefas: [{
           id: values.id,
           orgao_responsavel_id: valoresControlados.orgao_id,
           concluida: valoresControlados.concluido,
-        },
+        }],
       });
     } else if (tipoFase.value === 'tarefa-cronograma') {
       let dados = {};
