@@ -10,8 +10,12 @@ export class DuckDBProviderService {
         const accessKey = await this.smaeConfigService.getConfig('S3_ACCESS_KEY');
         const secretKey = await this.smaeConfigService.getConfig('S3_SECRET_KEY');
         const region = (await this.smaeConfigService.getConfig('S3_REGION')) ?? 'us-east-1';
-        const endpoint = await this.smaeConfigService.getConfig('S3_HOST');
+        let endpoint = await this.smaeConfigService.getConfig('S3_HOST');
         const urlStyle = (await this.smaeConfigService.getConfig('S3_URL_STYLE')) ?? 'vhost';
+        if (endpoint?.startsWith('http')) {
+            // If the endpoint starts with http, we assume it's a full URL them must remove the protocol
+            endpoint = endpoint.replace(/^https?:\/\//, '');
+        }
 
         const duckDB = await Database.create(':memory:');
         await duckDB.run('INSTALL httpfs;');
