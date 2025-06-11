@@ -182,7 +182,7 @@ export class ApiLogBackupService implements TaskableService {
         }
     }
 
-    outputToJson(): any {
-        return {};
+    outputToJson(executeOutput: any, _inputParams: any, _taskId: string): JSON {
+        return JSON.stringify(executeOutput) as any;
     }
 }
