@@ -327,16 +327,20 @@ const {
 
 const tipos = [
   {
-    value: 'Voluntaria',
-    name: 'Voluntária',
+    value: 'Emenda',
+    name: 'Emenda',
+  },
+  {
+    value: 'Especial',
+    name: 'Especial',
   },
   {
     value: 'Especifica',
     name: 'Específica',
   },
   {
-    value: 'Emenda',
-    name: 'Emenda',
+    value: 'Voluntaria',
+    name: 'Voluntária',
   },
 ];
 
