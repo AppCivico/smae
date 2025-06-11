@@ -85,13 +85,7 @@ export default {
           'TransferenciasVoluntariasDetalhes',
         ],
       },
-      props: ({ params }) => ({
-        ...params,
-        ...{
-          transferenciaId:
-            Number.parseInt(params.transferenciaId, 10) || undefined,
-        },
-      }),
+      props: tiparPropsDeRota,
       children: [
         {
           name: 'TransferenciaDistribuicaoDeRecursos.Lista',

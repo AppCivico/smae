@@ -3,20 +3,28 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue';
+import { watch } from 'vue';
+import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
 import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 
-const { params } = useRoute();
+const route = useRoute();
 const distribuicaoRecursosStore = useDistribuicaoRecursosStore();
 const transferenciasVoluntariasStore = useTransferenciasVoluntariasStore();
 
-onMounted(() => {
-  transferenciasVoluntariasStore.buscarItem(params.transferenciaId);
+const { emFoco: distribuicaoEmFoco } = storeToRefs(distribuicaoRecursosStore);
+const { emFoco: transferenciaEmFoco } = storeToRefs(transferenciasVoluntariasStore);
 
-  if (params.recursoId) {
-    distribuicaoRecursosStore.buscarItem(params.recursoId);
+watch(() => route.params.transferenciaId, (novoTransferenciaId) => {
+  if (novoTransferenciaId !== transferenciaEmFoco.value?.id) {
+    transferenciasVoluntariasStore.buscarItem(novoTransferenciaId);
   }
-});
+}, { immediate: true });
+
+watch(() => route.params.recursoId, (novoRecursoId) => {
+  if (novoRecursoId !== distribuicaoEmFoco.value?.id) {
+    distribuicaoRecursosStore.buscarItem(novoRecursoId);
+  }
+}, { immediate: true });
 </script>

@@ -12,7 +12,6 @@ import {
 import {
   computed,
   onMounted,
-  onUnmounted,
   ref,
   watch,
 } from 'vue';
@@ -262,10 +261,6 @@ onMounted(async () => {
   if (!órgãosComoLista.value.length) {
     ÓrgãosStore.getAll();
   }
-});
-
-onUnmounted(() => {
-  distribuicaoRecursos.$reset();
 });
 </script>
 
