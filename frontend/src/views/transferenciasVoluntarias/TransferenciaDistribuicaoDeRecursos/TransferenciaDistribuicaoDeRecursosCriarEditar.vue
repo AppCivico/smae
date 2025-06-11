@@ -193,9 +193,13 @@ function atualizarValorTotal(fieldName, newValue) {
 }
 
 function ajusteBruto(campoValorBruto) {
-  const valorPercentual = Big(values[campoValorBruto] || 0)
-    .div(values.valor || 1)
-    .times(100);
+  const valor = Big(values.valor || 0);
+
+  const valorPercentual = valor.eq(0)
+    ? Big(0)
+    : Big(values[campoValorBruto] || 0)
+      .div(valor)
+      .times(100);
 
   if (valorPercentual.gte(100)) {
     setFieldValue(campoValorBruto, values.valor);
