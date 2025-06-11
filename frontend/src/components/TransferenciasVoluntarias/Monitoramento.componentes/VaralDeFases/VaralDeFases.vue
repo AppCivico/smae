@@ -116,8 +116,6 @@ onMounted(() => {
 </template>
 
 <style lang="less" scoped>
-@import "@/_less/tamanho-dispostivo.less";
-
 @gap-items: 50px;
 @tamanho-largo: 600px;
 

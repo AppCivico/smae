@@ -174,8 +174,6 @@ function handleEditar() {
 </template>
 
 <style lang="less" scoped>
-@import "@/_less/tamanho-dispostivo.less";
-
 @grupo-minimo: 540px;
 
 .varal-de-fase-item__raiz {
