@@ -26,10 +26,17 @@ useResizeObserver(varalDeFasesEl, debounce(async ([ev]) => {
   await nextTick();
 
   tamanhoLargo.value = ev.contentRect.width > TAMANHO_LARGO;
-}, 0));
+}, 100));
 
 function iniciarFase() {
-  workflowAndamentoStore.iniciarFase(faseAtual.value.id, route.params.transferenciaId);
+  if (!faseAtual.value || !route.params.transferenciaId) {
+    return;
+  }
+
+  workflowAndamentoStore.iniciarFase(
+    faseAtual.value.id,
+    route.params.transferenciaId,
+  );
 }
 
 onMounted(() => {

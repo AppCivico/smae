@@ -13,7 +13,7 @@ import { useUsersStore } from '@/stores/users.store';
 import { useTarefasStore } from '@/stores/tarefas.store';
 import { useWorkflowAndamentoStore } from '@/stores/workflow.andamento.store';
 import SmallModal from '@/components/SmallModal.vue';
-import { type DadosTarefa, type FaseTipo } from './VaralDeFaseItem.vue';
+import type { DadosTarefa, FaseTipo } from './VaralDeFaseItem.vue';
 
 const route = useRoute();
 
@@ -125,7 +125,7 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
         const terminoReal = new Date();
         const inicioReal = values.inicio_real ? new Date(values.inicio_real) : terminoReal;
 
-        const diasDecorridos = differenceInDays(inicioReal, terminoReal);
+        const diasDecorridos = differenceInDays(terminoReal, inicioReal);
 
         dados = {
           inicio_real: inicioReal.toISOString(),
@@ -293,7 +293,6 @@ onMounted(() => {
 
             <Field
               name="pessoa_responsavel"
-              type="select"
               class="inputtext"
             />
 

@@ -61,8 +61,8 @@ function handleEditar() {
     ]"
   >
     <section
+      class="varal-de-fase-item"
       :class="[
-        'varal-de-fase-item',
         {'varal-de-fase-item--largo': $props.largo},
         { 'varal-de-fase-item--secundario': $props.secundario },
         { 'varal-de-fase-item--atual': $props.atual },
