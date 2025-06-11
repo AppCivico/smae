@@ -33,7 +33,7 @@ const distribuicaoRecursos = useDistribuicaoRecursosStore();
 const TransferenciasVoluntarias = useTransferenciasVoluntariasStore();
 
 const router = useRouter();
-const { params, meta } = useRoute();
+const route = useRoute();
 
 const {
   itemParaEdicao: transferenciaAtual,
@@ -88,10 +88,8 @@ const formularioSujo = useIsFormDirty();
 
 function voltarTela() {
   router.push({
-    name: meta.rotaDeEscape,
-    params: {
-      ...params,
-    },
+    name: route.meta.rotaDeEscape,
+    params: structuredClone(route.params),
   });
 }
 
@@ -102,7 +100,7 @@ const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
   try {
     cargaManipulada.pct_custeio = porcentagens.value.custeio;
     cargaManipulada.pct_investimento = porcentagens.value.investimento;
-    cargaManipulada.transferencia_id = Number(params.transferenciaId);
+    cargaManipulada.transferencia_id = Number(route.params.transferenciaId);
 
     let r;
     const msg = itemParaEdicao.value.id
@@ -126,7 +124,7 @@ const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
 });
 
 const isSomaCorreta = computed(() => {
-  if (!params.transferenciaId || !camposModificados.value) return true;
+  if (!route.params.transferenciaId || !camposModificados.value) return true;
   const soma = (parseFloat(values.valor) || 0) + (parseFloat(values.valor_contrapartida) || 0);
 
   return soma === parseFloat(values.valor_total);
@@ -548,7 +546,7 @@ onUnmounted(() => {
           />
 
           <div
-            v-if="!params.transferenciaId || !isSomaCorreta"
+            v-if="!$route.params.transferenciaId || !isSomaCorreta"
             class="tamarelo"
           >
             A soma dos valores não corresponde ao valor total.
