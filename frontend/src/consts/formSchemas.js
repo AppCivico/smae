@@ -714,7 +714,7 @@ export const fase = object()
     inicio_real: string()
       .nullable()
       .matches(regEx['day/month/year'], 'Formato inválido')
-      .label('xInício real'),
+      .label('Início real'),
     ordem: string()
       .nullable()
       .label('Ordem'),
