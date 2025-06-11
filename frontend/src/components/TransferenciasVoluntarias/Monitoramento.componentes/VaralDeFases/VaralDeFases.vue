@@ -20,7 +20,9 @@ const route = useRoute();
 const authStore = useAuthStore();
 const { temPermissãoPara } = storeToRefs(authStore);
 
-const { etapaEmFoco, faseAtual, inícioDeFasePermitido } = storeToRefs(workflowAndamentoStore);
+const {
+  etapaEmFoco, faseAtual, proximaFase, inícioDeFasePermitido,
+} = storeToRefs(workflowAndamentoStore);
 
 useResizeObserver(varalDeFasesEl, debounce(async ([ev]) => {
   await nextTick();
@@ -29,12 +31,12 @@ useResizeObserver(varalDeFasesEl, debounce(async ([ev]) => {
 }, 100));
 
 async function iniciarFase() {
-  if (!faseAtual.value || !route.params.transferenciaId) {
+  if (!proximaFase.value || !route.params.transferenciaId) {
     return;
   }
 
   await workflowAndamentoStore.iniciarFase(
-    faseAtual.value.fase.id,
+    proximaFase.value.fase.id,
     route.params.transferenciaId,
   );
 
@@ -54,7 +56,10 @@ onMounted(() => {
   >
     <TextoComBotao>
       <template #texto>
-        <p class="t20 mb0">
+        <p
+          v-if="faseAtual?.fase"
+          class="t20 mb0"
+        >
           Você está na etapa <strong>"{{ etapaEmFoco.fluxo_etapa_de.etapa_fluxo }}"</strong>
           e na fase <strong>“{{ faseAtual.fase.fase }}”</strong>
         </p>
