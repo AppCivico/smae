@@ -1,6 +1,8 @@
 <script setup>
+import { computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
+import { orderBy } from 'lodash';
 import * as CardEnvelope from '@/components/cardEnvelope';
 import MonitoramentoCard from '@/components/transferencia/MonitoramentoCard.vue';
 import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
@@ -20,6 +22,22 @@ const legendas = {
     { item: 'Registro histórico', color: '#ff0000' },
   ],
 };
+
+const statusFinalizada = new Set(['ConcluidoComSucesso', 'EncerradoSemSucesso']);
+const statusCancelada = new Set(['Terminal', 'Cancelada']);
+
+function statusPrioridade(tipo) {
+  if (statusFinalizada.has(tipo)) return 1;
+  if (statusCancelada.has(tipo)) return 2;
+  return 0;
+}
+
+const listaOrdenada = computed(() => orderBy(lista.value, (recurso) => {
+  const tipo = recurso.historico_status?.[0]?.status_customizado?.tipo
+    || recurso.historico_status?.[0]?.status_base?.tipo || '';
+
+  return statusPrioridade(tipo);
+}));
 </script>
 <template>
   <LoadingComponent v-if="chamadasPendentes.lista" />
@@ -40,7 +58,7 @@ const legendas = {
         orientacao="horizontal"
       />
 
-      <p v-if="!lista?.length">
+      <p v-if="!listaOrdenada?.length">
         Nenhuma distribuição de recursos encontrada.
       </p>
       <div
@@ -48,7 +66,7 @@ const legendas = {
         class="lista-cards"
       >
         <MonitoramentoCard
-          v-for="recurso in lista"
+          v-for="recurso in listaOrdenada"
           :key="recurso.id"
           :recurso="recurso"
         />
