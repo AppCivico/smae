@@ -28,6 +28,7 @@ import {
     RelObrasOrigemDto,
     RelObrasRegioesDto,
     RelObrasSeiDto,
+    RelObrasStatusIncoerenteDto,
 } from './entities/obras.entity';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
 
@@ -241,6 +242,14 @@ class RetornoDbLoc {
     geojson: unknown;
 }
 
+class RetornoDbObrasIncoerentes {
+    nome_do_portfolio: string;
+    nome_obra_intervencao: string;
+    projeto_codigo: string;
+    projeto_status: string;
+    projeto_etapa_atual: string;
+}
+
 @Injectable()
 export class PPObrasService implements ReportableService {
     private tipo: TipoProjeto = 'MDO';
@@ -263,6 +272,7 @@ export class PPObrasService implements ReportableService {
         const out_origens: RelObrasOrigemDto[] = [];
         const out_processos_sei: RelObrasSeiDto[] = [];
         const out_enderecos: RelObrasGeolocDto[] = [];
+        const out_incoerentes_mdo: RelObrasStatusIncoerenteDto[] = [];
 
         const whereCond = await this.buildFilteredWhereStr(dto, user);
 
@@ -276,6 +286,7 @@ export class PPObrasService implements ReportableService {
         await this.queryDataOrigens(whereCond, out_origens);
         await this.queryDataObrasSei(whereCond, out_processos_sei);
         await this.queryDataObrasGeoloc(whereCond, out_enderecos);
+        await this.queryDataProjetosIncoerentesMdo(whereCond, out_incoerentes_mdo);
 
         return {
             linhas: out_obras,
@@ -288,6 +299,7 @@ export class PPObrasService implements ReportableService {
             origens: out_origens,
             processos_sei: out_processos_sei,
             enderecos: out_enderecos,
+            incoerentes_mdo: out_incoerentes_mdo,
         };
     }
 
@@ -686,6 +698,32 @@ export class PPObrasService implements ReportableService {
                 `,
                 whereCond.queryParams,
                 'enderecos.csv'
+            )
+        );
+
+        out.push(
+            await this.streamQueryToCSV(
+                `SELECT
+                    portfolio.titulo AS nome_do_portfolio,
+                    projeto.nome AS nome_obra_intervencao,
+                    projeto.codigo AS projeto_codigo,
+                    REPLACE(projeto.status::text, 'MDO_', '') as projeto_status,
+                    projeto_etapa.descricao AS projeto_etapa_atual,
+                    projeto.tipo AS projeto_tipo
+                FROM projeto
+                JOIN projeto_etapa ON projeto.projeto_etapa_id = projeto_etapa.id
+                JOIN portfolio ON projeto.portfolio_id = portfolio.id
+                ${whereCond.whereString}
+                AND NOT (
+                    (projeto.status = 'MDO_EmAndamento' AND projeto_etapa.descricao = 'Em obras') OR
+                    (projeto.status = 'MDO_Concluida' AND projeto_etapa.descricao = 'Obra concluída') OR
+                    (projeto.status = 'MDO_NaoIniciada' AND projeto_etapa.descricao = 'A iniciar') OR
+                    (projeto.status = 'MDO_Paralisada' AND projeto_etapa.descricao = 'Obra Contratada')
+                )
+                ORDER BY projeto.id;
+                `,
+                whereCond.queryParams,
+                'status_incoerentes_mdo.csv'
             )
         );
 
@@ -1533,5 +1571,40 @@ export class PPObrasService implements ReportableService {
                 cep: geojson.properties.cep,
             };
         });
+    }
+
+    private async queryDataProjetosIncoerentesMdo(whereCond: WhereCond, out: RelObrasStatusIncoerenteDto[]) {
+        const sql = `
+          SELECT
+                portfolio.titulo AS nome_do_portfolio,
+                projeto.nome AS nome_obra_intervencao,
+                projeto.codigo AS projeto_codigo,
+                REPLACE(projeto.status::text, 'MDO_', '') as projeto_status,
+                projeto_etapa.descricao AS projeto_etapa_atual,
+                projeto.tipo AS projeto_tipo
+            FROM projeto
+            JOIN projeto_etapa ON projeto.projeto_etapa_id = projeto_etapa.id
+            JOIN portfolio ON projeto.portfolio_id = portfolio.id
+            ${whereCond.whereString}
+            AND NOT (
+                (projeto.status = 'MDO_EmAndamento' AND projeto_etapa.descricao = 'Em obras') OR
+                (projeto.status = 'MDO_Concluida'     AND projeto_etapa.descricao = 'Obra concluída') OR
+                (projeto.status = 'MDO_NaoIniciada'   AND projeto_etapa.descricao = 'A iniciar') OR
+                (projeto.status = 'MDO_Paralisada'    AND projeto_etapa.descricao = 'Obra Contratada')
+            )
+            ORDER BY projeto.id;`;
+
+        const data: RetornoDbObrasIncoerentes[] = await this.prisma.$queryRawUnsafe(sql, [...whereCond.queryParams]);
+        out.push(...this.convertRowsObrasIncoerentes(data));
+    }
+
+    private convertRowsObrasIncoerentes(input: RetornoDbObrasIncoerentes[]): RelObrasStatusIncoerenteDto[] {
+        return input.map((row) => ({
+            nome_do_portfolio: row.nome_do_portfolio,
+            nome_obra_intervencao: row.nome_obra_intervencao,
+            projeto_codigo: row.projeto_codigo,
+            projeto_status: row.projeto_status,
+            projeto_etapa_atual: row.projeto_etapa_atual,
+        }));
     }
 }
