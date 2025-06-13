@@ -1225,6 +1225,10 @@ export class IndicadorService {
                     400
                 );
             }
+            // precisa mandar recalcular as variáveis e atualizar a meta antes de remover a variável, se não
+            // não vai dar o match pra pegar a atualização
+            await AddTaskRecalcVariaveis(prismaTx, { variavelIds: [dto.variavel_id] });
+            await AddTaskRefreshMeta(prismaTx, { indicador_id: id });
 
             await prismaTx.indicadorVariavel.deleteMany({
                 where: {
@@ -1234,8 +1238,6 @@ export class IndicadorService {
                     indicador_origem_id: null,
                 },
             });
-            await AddTaskRecalcVariaveis(prismaTx, { variavelIds: [dto.variavel_id] });
-            await AddTaskRefreshMeta(prismaTx, { indicador_id: id });
         });
 
         return;
