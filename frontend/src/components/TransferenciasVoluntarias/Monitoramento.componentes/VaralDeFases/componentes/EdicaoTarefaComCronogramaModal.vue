@@ -351,7 +351,7 @@ onMounted(() => {
           :aria-disabled="carregando"
           @click="salvarEFinaliarFase"
         >
-          Salvar e Finaliza
+          Salvar e Finalizar
         </button>
 
         <button
