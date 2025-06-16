@@ -62,6 +62,7 @@ import { RunReportModule } from './task/run_report/run-report.module';
 import { TaskModule } from './task/task.module';
 import { TransfereGovApiModule } from './transfere-gov-api/transfere-gov-api.module';
 import { ClassificacaoModule } from './transferencias-voluntarias/classificacao/classificacao.module';
+import { WikiLinkModule } from './wiki-link/wiki-link.module';
 
 // Hacks pro JS
 /*
@@ -125,7 +126,7 @@ import { ClassificacaoModule } from './transferencias-voluntarias/classificacao/
         GeoBuscaModule,
         BuscaGlobalModule,
         AtualizacaoEmLoteModule,
-        ApiLogModule,
+        WikiLinkModule,
     ],
     controllers: [AppController],
     providers: [
