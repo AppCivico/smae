@@ -1,13 +1,12 @@
 <script setup>
 import AutocompleteField from '@/components/AutocompleteField2.vue';
-import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import { useAlertStore } from '@/stores/alert.store';
 import { usePlanosSimplificadosStore } from '@/stores/planosMetasSimplificados.store';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store.ts';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { storeToRefs } from 'pinia';
 import {
-  ErrorMessage, Field, Form, useIsFormDirty,
+  ErrorMessage, Field, Form,
 } from 'vee-validate';
 import { ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -16,6 +15,8 @@ import { useRoute, useRouter } from 'vue-router';
 import { relatórioMensalPS as schema } from '@/consts/formSchemas';
 import months from '@/consts/months';
 import nulificadorTotal from '@/helpers/nulificadorTotal';
+// Mantendo comportamento legado
+// eslint-disable-next-line import/no-cycle
 import { useTagsStore } from '@/stores/tags.store';
 
 const route = useRoute();
@@ -32,8 +33,6 @@ const { lista: listaDePlanosDisponiveis } = storeToRefs(planosSetoriaisStore);
 
 const planosMetasSimplificadosStore = usePlanosSimplificadosStore(route.meta.entidadeMãe);
 const { chamadasPendentes, planosPorId } = storeToRefs(planosMetasSimplificadosStore);
-
-const formularioSujo = useIsFormDirty();
 
 const { loading } = storeToRefs(relatoriosStore);
 
@@ -75,13 +74,13 @@ if (!listaDePlanosDisponiveis.value.length) {
 }
 </script>
 <template>
-  <header class="flex spacebetween center mb2">
-    <TituloDaPagina />
+  <CabecalhoDePagina :formulario-sujo="false" />
 
-    <hr class="ml2 f1">
-
-    <CheckClose :formulario-sujo="formularioSujo" />
-  </header>
+  <p class="texto--explicativo">
+    Será gerado um conjunto de 4 planilhas, contendo os dados
+    do ciclo mensal de monitoramento físico do mês informado, considerando
+    somente as variáveis que estiverem LIBERADAS.
+  </p>
 
   <Form
     v-slot="{ errors, isSubmitting, resetField, values }"

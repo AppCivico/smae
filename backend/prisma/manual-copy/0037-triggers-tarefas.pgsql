@@ -35,8 +35,8 @@ CREATE OR REPLACE FUNCTION f_trg_pp_tarefa_dependente_inc_counter() RETURNS trig
 BEGIN
     UPDATE tarefa t
     SET
-        n_dep_inicio_planejado =  n_dep_inicio_planejado + case when new.tipo in ('termina_pro_inicio', 'inicia_pro_inicio') then 1 else 0 end,
-        n_dep_termino_planejado = n_dep_termino_planejado + case when new.tipo in ('termina_pro_inicio', 'inicia_pro_inicio') then 0 else 1 end
+        n_dep_inicio_planejado =  n_dep_inicio_planejado + CASE WHEN NEW.tipo IN ('termina_pro_inicio', 'inicia_pro_inicio') THEN 1 ELSE 0 END,
+        n_dep_termino_planejado = n_dep_termino_planejado + CASE WHEN NEW.tipo IN ('termina_pro_termino', 'inicia_pro_termino') THEN 1 ELSE 0 END
     WHERE t.id = NEW.tarefa_id;
 
     RETURN NEW;
@@ -47,8 +47,8 @@ CREATE OR REPLACE FUNCTION f_trg_pp_tarefa_dependente_dec_counter() RETURNS trig
 BEGIN
     UPDATE tarefa t
     SET
-        n_dep_inicio_planejado =  n_dep_inicio_planejado - case when OLD.tipo in ('termina_pro_inicio', 'inicia_pro_inicio') then 1 else 0 end,
-        n_dep_termino_planejado = n_dep_termino_planejado - case when OLD.tipo in ('termina_pro_inicio', 'inicia_pro_inicio') then 0 else 1 end
+        n_dep_inicio_planejado =  n_dep_inicio_planejado - CASE WHEN OLD.tipo IN ('termina_pro_inicio', 'inicia_pro_inicio') THEN 1 ELSE 0 END,
+        n_dep_termino_planejado = n_dep_termino_planejado - CASE WHEN OLD.tipo IN ('termina_pro_termino', 'inicia_pro_termino') THEN 1 ELSE 0 END
     WHERE t.id = OLD.tarefa_id;
 
     RETURN null;
@@ -465,7 +465,7 @@ BEGIN
             duracao_planejado = (v_tmp->>'duracao_planejado')::int,
             inicio_planejado = (v_tmp->>'inicio_planejado')::date,
             termino_planejado = (v_tmp->>'termino_planejado')::date,
-            atualizado_em = now()
+            atualizado_em = now() at time zone 'UTC'
         where me.id = r.tarefa_id
         and (
             (duracao_planejado IS DISTINCT FROM (v_tmp->>'duracao_planejado')::int) OR
@@ -548,7 +548,7 @@ BEGIN
             duracao_planejado = (v_tmp->>'duracao_planejado')::int,
             inicio_planejado = (v_tmp->>'inicio_planejado')::date,
             termino_planejado = (v_tmp->>'termino_planejado')::date,
-            atualizado_em = now()
+            atualizado_em = now() at time zone 'UTC'
         where me.id = r.tarefa_id
         and (
             (duracao_planejado IS DISTINCT FROM (v_tmp->>'duracao_planejado')::int) OR
@@ -674,7 +674,7 @@ BEGIN
             percentual_concluido = round(v_percentual_concluido * 100),
             duracao_planejado = v_duracao_planejado,
             duracao_real = v_duracao_real,
-            atualizado_em = now()
+            atualizado_em = now() at time zone 'UTC'
         WHERE t.id = OLD.tarefa_pai_id
         AND (
             (inicio_planejado IS DISTINCT FROM v_inicio_planejado) OR
@@ -805,7 +805,7 @@ BEGIN
             percentual_concluido = round(v_percentual_concluido * 100.0),
             duracao_planejado = v_duracao_planejado,
             duracao_real = v_duracao_real,
-            atualizado_em = now()
+            atualizado_em = now() at time zone 'UTC'
         WHERE t.id = NEW.tarefa_pai_id
         AND (
             (inicio_planejado IS DISTINCT FROM v_inicio_planejado) OR
@@ -1005,3 +1005,39 @@ BEGIN
 END
 $$
 LANGUAGE plpgsql;
+
+-- Recalculate counts for tasks that HAVE active dependencies
+WITH correct_counts AS (
+    SELECT
+        td.tarefa_id,
+        SUM(CASE WHEN td.tipo IN ('termina_pro_inicio', 'inicia_pro_inicio') THEN 1 ELSE 0 END) AS calculated_n_dep_inicio,
+        SUM(CASE WHEN td.tipo IN ('termina_pro_termino', 'inicia_pro_termino') THEN 1 ELSE 0 END) AS calculated_n_dep_termino
+    FROM tarefa_dependente td
+    -- Ensure the task itself (dependent task) is not removed
+    JOIN tarefa dependent_task ON dependent_task.id = td.tarefa_id AND dependent_task.removido_em IS NULL
+    -- Ensure the predecessor task (dependency_tarefa_id) is not removed
+    JOIN tarefa predecessor_task ON predecessor_task.id = td.dependencia_tarefa_id AND predecessor_task.removido_em IS NULL
+    GROUP BY td.tarefa_id
+)
+UPDATE tarefa t
+SET
+    n_dep_inicio_planejado = cc.calculated_n_dep_inicio,
+    n_dep_termino_planejado = cc.calculated_n_dep_termino
+FROM correct_counts cc
+WHERE t.id = cc.tarefa_id
+  AND t.removido_em IS NULL
+  AND (t.n_dep_inicio_planejado != cc.calculated_n_dep_inicio OR t.n_dep_termino_planejado != cc.calculated_n_dep_termino);
+
+-- não deveria ter, mas teve mexida no banco...
+UPDATE tarefa t
+SET
+    n_dep_inicio_planejado = 0,
+    n_dep_termino_planejado = 0
+WHERE t.removido_em IS NULL
+  AND NOT EXISTS (
+    SELECT 1
+    FROM tarefa_dependente td
+    JOIN tarefa predecessor_task ON predecessor_task.id = td.dependencia_tarefa_id AND predecessor_task.removido_em IS NULL
+    WHERE td.tarefa_id = t.id
+  )
+  AND (t.n_dep_inicio_planejado != 0 OR t.n_dep_termino_planejado != 0);

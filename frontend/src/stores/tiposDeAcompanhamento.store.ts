@@ -1,6 +1,8 @@
+import type {
+  AcompanhamentoTipo,
+  ListAcompanhamentoTipoDto,
+} from '@back/pp/acompanhamento-tipo/entities/acompanhament-tipo.entities.dto';
 import { defineStore } from 'pinia';
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { AcompanhamentoTipo, ListAcompanhamentoTipoDto } from '@back/pp/acompanhamento-tipo/entities/acompanhament-tipo.entities.dto';
 import { useAuthStore } from './auth.store';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;

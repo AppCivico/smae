@@ -1,7 +1,5 @@
-/* eslint-disable import/no-extraneous-dependencies */
-import { CreateProjetoSeiDto } from '@/../../backend/src/pp/projeto/dto/create-projeto.dto.ts';
-
 import dateTimeToDate from '@/helpers/dateTimeToDate';
+import type { CreateProjetoSeiDto } from '@back/pp/projeto/dto/create-projeto.dto';
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;

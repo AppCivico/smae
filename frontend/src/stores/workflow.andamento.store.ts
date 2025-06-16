@@ -1,8 +1,12 @@
-/* eslint-disable import/no-extraneous-dependencies */
-import { defineStore } from 'pinia';
 import type {
-  WorkflowAndamentoDto, WorkflowAndamentoFasesDto, WorkflowAndamentoFluxoDto, TransferenciaHistoricoDto,
-} from '@/../../backend/src/workflow/andamento/entities/workflow-andamento.entity';
+  WorkflowAndamentoDto,
+  WorkflowAndamentoFasesDto,
+  WorkflowAndamentoFluxoDto,
+} from '@back/casa-civil/workflow/andamento/entities/workflow-andamento.entity';
+import type {
+  TransferenciaHistoricoDto,
+} from '@back/casa-civil/transferencia/entities/transferencia.dto';
+import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -17,6 +21,7 @@ interface Estado {
   workflow: WorkflowAndamentoDto | null;
   chamadasPendentes: ChamadasPendentes;
   historico: TransferenciaHistoricoDto | null;
+  etapaEmFoco: WorkflowAndamentoDto | null;
   erro: null | unknown;
 }
 
@@ -24,6 +29,7 @@ export const useWorkflowAndamentoStore = defineStore('workflowAndamento', {
   state: (): Estado => ({
     workflow: null,
     historico: null,
+    etapaEmFoco: null,
     chamadasPendentes: {
       workflow: false,
       fase: false,
@@ -44,11 +50,16 @@ export const useWorkflowAndamentoStore = defineStore('workflowAndamento', {
 
         if (typeof resposta === 'object') {
           this.workflow = resposta;
+          this.etapaEmFoco = this.workflow.fluxo.find((etapa) => etapa.atual) || null;
         }
       } catch (erro: unknown) {
         this.erro = erro;
       }
       this.chamadasPendentes.workflow = false;
+    },
+
+    setEtapaEmFoco(id: number): void {
+      this.etapaEmFoco = this.workflow?.fluxo.find((etapa) => etapa.id === id) || null;
     },
 
     async buscarHistorico(transferênciaId?: number): Promise<void> {
@@ -103,7 +114,7 @@ export const useWorkflowAndamentoStore = defineStore('workflowAndamento', {
       }
     },
 
-    async deletarWorklow(transferênciaId?: number): Promise<boolean> {
+    async deletarWorkflow(transferênciaId?: number): Promise<boolean> {
       const id = transferênciaId || Number(this.route.params.transferenciaId);
       try {
         const resposta = await this.requestS.patch(`${baseUrl}/transferencia/${id}/limpar-workflow`, {
@@ -176,9 +187,27 @@ export const useWorkflowAndamentoStore = defineStore('workflowAndamento', {
 
   getters: {
     etapaCorrente: ({ workflow }): WorkflowAndamentoFluxoDto | null => workflow?.fluxo?.[0] || null,
+    faseAtual: ({ etapaEmFoco }) => {
+      const faseAtual = etapaEmFoco?.fases.find((fase) => fase.andamento.atual);
 
-    inícioDeFasePermitido() {
-      return this.etapaCorrente?.fases?.some((
+      if (!faseAtual) {
+        return null;
+      }
+
+      return faseAtual;
+    },
+    proximaFase: ({ etapaEmFoco }) => {
+      const proximaFase = etapaEmFoco?.fases.find((fase) => !fase.andamento.concluida);
+
+      if (!proximaFase) {
+        return null;
+      }
+
+      return proximaFase;
+    },
+
+    inícioDeFasePermitido({ etapaEmFoco }) {
+      return etapaEmFoco?.fases?.some((
         x: WorkflowAndamentoFasesDto,
         i: number,
         lista: WorkflowAndamentoFasesDto[],

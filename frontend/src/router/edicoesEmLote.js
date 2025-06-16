@@ -31,6 +31,9 @@ export default {
           'Menu.AtualizacaoEmLote.MDO',
         ],
         tipoDeAcoesEmLote: 'ProjetoMDO',
+        rotasParaMigalhasDePão: [
+          'edicoesEmLoteRaiz',
+        ],
       },
       children: [
         {
@@ -50,7 +53,10 @@ export default {
             rotaDeEscape: 'edicoesEmLoteObras',
             títuloParaMenu: undefined,
             título: 'Resumo de edição de obras em lote',
-            rotasParaMigalhasDePão: ['edicoesEmLoteObras'],
+            rotasParaMigalhasDePão: [
+              'edicoesEmLoteRaiz',
+              'edicoesEmLoteObras',
+            ],
           },
         },
         {
@@ -66,8 +72,11 @@ export default {
               component: () => import('@/views/edicoesEmLote/obras/EdicoesEmLoteObrasSelecionar.vue'),
               meta: {
                 rotaDeEscape: 'edicoesEmLoteObras',
-                título: 'Selecionar nova edição de obras em lote',
-                rotasParaMigalhasDePão: ['edicoesEmLoteObras'],
+                título: 'Nova edição de obras em lote',
+                rotasParaMigalhasDePão: [
+                  'edicoesEmLoteRaiz',
+                  'edicoesEmLoteObras',
+                ],
               },
             },
             {
@@ -76,8 +85,11 @@ export default {
               component: () => import('@/views/edicoesEmLote/obras/EdicoesEmLoteObrasConstruir.vue'),
               meta: {
                 rotaDeEscape: 'edicoesEmLoteObras',
-                título: 'Construir nova edição de obras em lote',
-                rotasParaMigalhasDePão: ['edicoesEmLoteObras', 'edicoesEmLoteObrasNovo'],
+                título: 'Alteração de obras em lote',
+                rotasParaMigalhasDePão: [
+                  'edicoesEmLoteObras',
+                  'edicoesEmLoteObrasNovo',
+                ],
               },
             },
           ],

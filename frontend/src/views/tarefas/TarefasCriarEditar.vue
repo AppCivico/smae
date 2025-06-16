@@ -1,15 +1,7 @@
 <script setup>
-import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
-import dependencyTypes from '@/consts/dependencyTypes';
-import { tarefa as schema } from '@/consts/formSchemas';
-import addToDates from '@/helpers/addToDates';
-import dateTimeToDate from '@/helpers/dateTimeToDate';
-import dinheiro from '@/helpers/dinheiro';
-import subtractDates from '@/helpers/subtractDates';
-import { useAlertStore } from '@/stores/alert.store';
-import { useOrgansStore } from '@/stores/organs.store';
-import { useProjetosStore } from '@/stores/projetos.store.ts';
-import { useTarefasStore } from '@/stores/tarefas.store.ts';
+import {
+  computed, defineOptions, ref, watch,
+} from 'vue';
 import { isEqual } from 'lodash';
 import { storeToRefs } from 'pinia';
 import {
@@ -19,10 +11,18 @@ import {
   useForm,
   useIsFormDirty,
 } from 'vee-validate';
-import {
-  computed, defineOptions, ref, watch,
-} from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
+import dependencyTypes from '@/consts/dependencyTypes';
+import schema from '@/consts/formSchemas/tarefa';
+import addToDates from '@/helpers/addToDates';
+import dateTimeToDate from '@/helpers/dateTimeToDate';
+import dinheiro from '@/helpers/dinheiro';
+import subtractDates from '@/helpers/subtractDates';
+import { useAlertStore } from '@/stores/alert.store';
+import { useOrgansStore } from '@/stores/organs.store';
+import { useProjetosStore } from '@/stores/projetos.store.ts';
+import { useTarefasStore } from '@/stores/tarefas.store.ts';
 
 defineOptions({ inheritAttrs: false });
 
@@ -116,7 +116,7 @@ const onSubmit = handleSubmit.withControlled(async (valores) => {
   }
 });
 
-async function validarDependências(dependências) {
+async function obterDependenciasValidadas(dependências) {
   const params = {
     tarefa_corrente_id: Number(props.tarefaId),
     dependencias: dependências,
@@ -125,32 +125,33 @@ async function validarDependências(dependências) {
   try {
     const resposta = await tarefasStore.validarDependências(params);
 
-    const atualização = {
+    const atualizacao = {
       inicio_planejado_calculado: resposta.inicio_planejado_calculado,
       duracao_planejado_calculado: resposta.duracao_planejado_calculado,
       termino_planejado_calculado: resposta.termino_planejado_calculado,
     };
 
     if (resposta.inicio_planejado_calculado) {
-      atualização.inicio_planejado = dateTimeToDate(resposta.inicio_planejado);
+      atualizacao.inicio_planejado = dateTimeToDate(resposta.inicio_planejado);
 
       if (!resposta.inicio_planejado) {
-        atualização.termino_planejado = null;
+        atualizacao.termino_planejado = null;
       }
     }
     if (resposta.duracao_planejado_calculado) {
-      atualização.duracao_planejado = resposta.duracao_planejado;
+      atualizacao.duracao_planejado = resposta.duracao_planejado;
     }
     if (resposta.termino_planejado_calculado) {
-      atualização.termino_planejado = dateTimeToDate(resposta.termino_planejado);
+      atualizacao.termino_planejado = dateTimeToDate(resposta.termino_planejado);
 
       if (!resposta.termino_planejado) {
-        atualização.inicio_planejado = null;
+        atualizacao.inicio_planejado = null;
       }
     }
 
     dependênciasValidadas.value = dependências;
-    return atualização;
+
+    return atualizacao;
   } catch (error) {
     dependênciasValidadas.value = [];
     alertStore.error(error);
@@ -159,12 +160,42 @@ async function validarDependências(dependências) {
   }
 }
 
+async function validarDependencias(tarefaAtual) {
+  const dependenciasValidadas = await obterDependenciasValidadas(tarefaAtual.dependencias);
+
+  setValues({
+    ...tarefaAtual,
+    ...dependenciasValidadas,
+  });
+}
+
+async function handleLiberarPrevisaoAposDependenciaRemovida(tarefaAtual) {
+  if (tarefaAtual.dependencias.length !== 0) {
+    return;
+  }
+
+  setValues({
+    ...tarefaAtual,
+    duracao_planejado_calculado: false,
+    inicio_planejado_calculado: false,
+    termino_planejado_calculado: false,
+  });
+}
+
 async function iniciar() {
   // apenas porque alguma tarefa nova pode ter sido criada por outra pessoa
   tarefasStore.buscarTudo();
   if (route.meta.entidadeMãe !== 'projeto') {
     ÓrgãosStore.getAll();
   }
+}
+
+function verificarDependenciasAoIniciar(tarefaAtual) {
+  if (tarefaAtual.dependencias.length === 0) {
+    return;
+  }
+
+  validarDependencias(tarefaAtual);
 }
 
 iniciar();
@@ -179,10 +210,11 @@ watch(itemParaEdicao, (novoValor) => {
   resetForm({
     values: novoValor,
   });
+
+  verificarDependenciasAoIniciar(novoValor);
 });
 </script>
 <template>
-  <div class="spacebetween">&nbsp</div>
   <div class="flex spacebetween center mb2">
     <h1>
       <div
@@ -211,11 +243,12 @@ watch(itemParaEdicao, (novoValor) => {
           name="tarefa"
           :schema="schema"
         />
-        <Field
+        <SmaeText
           name="tarefa"
-          type="text"
           class="inputtext light mb1"
-          maxlength="60"
+          :schema="schema"
+          :model-value="values.tarefa"
+          :class="{ 'error': errors.tarefa }"
         />
         <ErrorMessage
           class="error-msg mb1"
@@ -527,7 +560,10 @@ watch(itemParaEdicao, (novoValor) => {
               title="excluir"
               type="button"
               :disabled="chamadasPendentes.validaçãoDeDependências"
-              @click="remove(idx)"
+              @click="() => {
+                remove(idx);
+                handleLiberarPrevisaoAposDependenciaRemovida(values);
+              }"
             >
               <svg
                 width="20"
@@ -563,10 +599,7 @@ watch(itemParaEdicao, (novoValor) => {
           class="btn outline bgnone tcprimary mr2"
           type="button"
           :disabled="chamadasPendentes.validaçãoDeDependências"
-          @click="async () => setValues({
-            ...values,
-            ...await validarDependências(values.dependencias)
-          })"
+          @click="validarDependencias(values)"
         >
           Validar dependências
         </button>

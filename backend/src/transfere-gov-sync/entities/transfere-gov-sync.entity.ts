@@ -54,20 +54,21 @@ export class TransfereGovTransferenciasDto {
     avaliacao: TransfereGovOportunidadeAvaliacao | null;
     natureza_juridica_programa: string;
     id_programa: bigint;
-    cod_orgao_sup_programa: bigint;
-    desc_orgao_sup_programa: string;
+    cod_orgao_sup_programa: bigint | null;
+    desc_orgao_sup_programa: string | null;
     cod_programa: bigint;
     nome_programa: string;
     sit_programa: string;
-    ano_disponibilizacao: number;
-    @IsDateYMD()
-    data_disponibilizacao: string;
-    @IsDateYMD()
-    dt_ini_receb: string;
-    @IsDateYMD()
-    dt_fim_receb: string;
+    ano_disponibilizacao: number | null;
+    @IsDateYMD({ nullable: true })
+    data_disponibilizacao: string | null;
+    @IsDateYMD({ nullable: true })
+    dt_ini_receb: string | null;
+    @IsDateYMD({ nullable: true })
+    dt_fim_receb: string | null;
     modalidade_programa: string;
     acao_orcamentaria: string;
+    finalidades: string | null;
 }
 
 export enum AvaliacaoFilter {

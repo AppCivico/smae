@@ -37,11 +37,12 @@ if (!Array.isArray(organs) || !organs.length) {
 </script>
 
 <template>
+  <MigalhasDePão class="mb1" />
   <CabecalhoDePagina>
     <template #acoes>
       <SmaeLink
         :to="{ name: '.gruposObservadores.criar' }"
-        class="btn big ml1"
+        class="btn big"
       >
         Novo grupo de observadores
       </SmaeLink>

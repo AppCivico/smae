@@ -1,0 +1,43 @@
+.smae-tooltip {
+  padding: 8px 18px;
+  background-color: currentColor;
+  display: flex;
+  justify-content: center;
+  position: relative;
+  border-radius: 999px;
+
+  &:after {
+    content: '';
+    width: 18px;
+    height: 18px;
+    position: absolute;
+    top: 100%;
+    z-index: 1;
+    background-color: currentColor;
+    transform: translateY(-9px) rotate(45deg);
+  }
+}
+
+.smae-tooltip--direito {
+  height: 32px;
+  margin-right: 16px;
+  border-radius: 18px 2px 2px 18px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &.smae-tooltip:after {
+    width: 21px;
+    height: 21px;
+    top: initial;
+    left: 100%;
+    transform: translateX(-50%) rotate(45deg);
+  }
+}
+
+.smae-tooltip__conteudo {
+  font-size: 1.14rem;
+  line-height: 1;
+  color: #333;
+}

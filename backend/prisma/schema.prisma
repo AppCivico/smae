@@ -1211,6 +1211,7 @@ model Arquivo {
     FormulaCompostaCicloFisicoDocumento FormulaCompostaCicloFisicoDocumento[]
     transferencia_anexos                TransferenciaAnexo[]
     VariavelGlobalCicloDocumento        VariavelGlobalCicloDocumento[]
+    AtualizacaoEmLote                   AtualizacaoEmLote[]
 
     @@map("arquivo")
 }
@@ -3468,7 +3469,7 @@ enum FonteRelatorio {
     ObrasPrevisaoCusto
     PSPrevisaoCusto
     PSOrcamento
-    CasaCivilAtvPendentes
+    AtvPendentes
     PSMonitoramentoMensal
     PSIndicadores
 }
@@ -4975,6 +4976,8 @@ enum task_type {
     importacao_parlamentar
     run_report
     run_update
+    backup_api_log_day
+    restore_api_log_day
 }
 
 enum task_status {
@@ -5010,10 +5013,24 @@ model task_queue {
     n_retry     Int       @default(0)
     esperar_ate DateTime?
 
-    AtualizacaoEmLote AtualizacaoEmLote[]
+    AtualizacaoEmLote    AtualizacaoEmLote[]
+    task_buffer          task_buffer?
+    ApiRequestLogControl ApiRequestLogControl[]
 
     @@index([status])
     @@index([criado_em])
+}
+
+model task_buffer {
+    id Int @id @default(autoincrement())
+
+    task_id Int
+    task    task_queue @relation(fields: [task_id], references: [id])
+
+    data      Json     @default("{}")
+    criado_em DateTime @default(now()) @db.Timestamp(6)
+
+    @@unique([task_id])
 }
 
 model feature_flag {
@@ -5766,9 +5783,9 @@ model Transferencia {
     valor_total                    Decimal? @default(0) @db.Decimal(15, 2)
     valor_contrapartida            Decimal? @default(0) @db.Decimal(15, 2)
     custeio                        Decimal? @default(0) @db.Decimal(15, 2)
-    pct_custeio                    Float?   @db.DoublePrecision
+    pct_custeio                    Decimal? @default(0) @db.Decimal(5, 2)
     investimento                   Decimal? @default(0) @db.Decimal(15, 2)
-    pct_investimento               Float?   @db.DoublePrecision
+    pct_investimento               Decimal? @default(0) @db.Decimal(5, 2)
 
     ano                  Int?
     emenda               String?
@@ -5932,9 +5949,11 @@ model DistribuicaoRecurso {
     valor_total                     Decimal   @default(0) @db.Decimal(15, 2)
     valor_contrapartida             Decimal   @default(0) @db.Decimal(15, 2)
     custeio                         Decimal   @default(0) @db.Decimal(15, 2)
-    pct_custeio                     Float?    @db.DoublePrecision
+    pct_custeio                     Decimal?  @db.Decimal(5, 2)
     investimento                    Decimal   @default(0) @db.Decimal(15, 2)
-    pct_investimento                Float?    @db.DoublePrecision
+    valor_empenho                   Decimal?  @default(0) @db.Decimal(15, 2)
+    valor_liquidado                 Decimal   @default(0) @db.Decimal(15, 2)
+    pct_investimento                Decimal?  @db.Decimal(5, 2)
     empenho                         Boolean?
     data_empenho                    DateTime? @db.Date()
     programa_orcamentario_estadual  String?
@@ -5955,6 +5974,16 @@ model DistribuicaoRecurso {
     nota           Nota?       @relation(fields: [nota_id], references: [id])
     aviso_email_id Int?
     aviso_email    AvisoEmail? @relation(fields: [aviso_email_id], references: [id])
+
+    // Dados de banco
+    distribuicao_banco   String?
+    distribuicao_conta   String?
+    distribuicao_agencia String?
+
+    rubrica_de_receita String?
+    finalidade         String?
+
+    gestor_contrato String?
 
     criado_por     Int?
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)
@@ -6706,10 +6735,10 @@ view ViewTransferenciaAnalise {
 
     workflow_finalizado     Boolean
     ano                     Int
-    partido_id              Int?
+    partido_id              Int[]
     workflow_etapa_atual_id Int?
     workflow_fase_atual_id  Int?
-    parlamentar_id          Int?
+    parlamentar_id          Int[]
     valor_total             Decimal
 
     distribuicao_orgao_id    Int?
@@ -7037,6 +7066,7 @@ view view_parlamentares_mandatos_part_atual {
     dia_aniversario  Int?
     mes_aniversario  Int?
     email            String?
+    zona_atuacao     String?
     ano_eleicao      Int?
     eleicao_id       Int?
     partido_atual_id Int?
@@ -7331,6 +7361,9 @@ model VariavelGlobalCicloAnalise {
     removido_em  DateTime?
     removido_por Int?
 
+    sincronizar_serie_variavel Boolean   @default(false)
+    sv_sincronizado_em         DateTime? /// Quando foi sincronizado os valores da fase de Preenchimento com a tabela de serie_variavel
+
     variavel        Variavel @relation(fields: [variavel_id], references: [id])
     pessoaCriador   Pessoa   @relation("criador", fields: [criado_por], references: [id])
     pessoaRemovedor Pessoa?  @relation("removedor", fields: [removido_por], references: [id])
@@ -7368,6 +7401,7 @@ enum TransfereGovOportunidadeTipo {
     Voluntaria
     Especifica
     Emenda
+    Especial
 }
 
 enum TransfereGovOportunidadeAvaliacao {
@@ -7384,15 +7418,16 @@ model TransfereGovOportunidade {
     id_programa                BigInt
     natureza_juridica_programa String
     transferencia_incorporada  Boolean                            @default(false)
-    cod_orgao_sup_programa     BigInt
-    desc_orgao_sup_programa    String
+    cod_orgao_sup_programa     BigInt?
+    desc_orgao_sup_programa    String?
     cod_programa               BigInt
     nome_programa              String
     sit_programa               String
-    ano_disponibilizacao       Int
-    data_disponibilizacao      DateTime                           @db.Date()
-    dt_ini_receb               DateTime                           @db.Date()
-    dt_fim_receb               DateTime                           @db.Date()
+    ano_disponibilizacao       Int?
+    data_disponibilizacao      DateTime?                          @db.Date()
+    dt_ini_receb               DateTime?                          @db.Date()
+    dt_fim_receb               DateTime?                          @db.Date()
+    finalidades                String?
     modalidade_programa        String
     acao_orcamentaria          String
     vetores_busca              Unsupported("tsvector")?           @default(dbgenerated())
@@ -7723,6 +7758,9 @@ model AtualizacaoEmLote {
     criado_em      DateTime      @default(now()) @db.Timestamptz(6)
     criador        Pessoa        @relation("AtualizacaoEmLoteCriador", fields: [criado_por_id], references: [id])
 
+    relatorio_arquivo_id Int? // Arquivo de log gerado, se houver
+    relatorio_arquivo    Arquivo? @relation(fields: [relatorio_arquivo_id], references: [id])
+
     iniciou_em  DateTime? @db.Timestamptz(6)
     terminou_em DateTime? @db.Timestamp(6)
 
@@ -7754,3 +7792,6 @@ model WikiLink {
 
     @@map("wiki_link")
 }
+
+
+

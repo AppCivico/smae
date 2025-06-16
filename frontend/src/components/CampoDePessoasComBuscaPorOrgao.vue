@@ -5,10 +5,12 @@ import {
   computed, onMounted, ref, toRef, watch, watchEffect,
 } from 'vue';
 import { useRoute } from 'vue-router';
+import isEqual from 'lodash/isEqual';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import requestS from '@/helpers/requestS.ts';
 import truncate from '@/helpers/texto/truncate';
 import { useOrgansStore } from '@/stores/organs.store';
+import SmaeTooltip from './SmaeTooltip/SmaeTooltip.vue';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -21,6 +23,18 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  readonly: {
+    type: Boolean,
+    default: false,
+  },
+  limitarParaUmOrgao: {
+    type: Boolean,
+    default: false,
+  },
+  numeroMaximoDeParticipantes: {
+    type: Number,
+    default: undefined,
+  },
   // Uma propriedade extra para evitar conferir a lista de órgãos a baixar em
   // cada atualização do valor do campo
   valoresIniciais: {
@@ -32,6 +46,10 @@ const props = defineProps({
   orgaoLabel: {
     type: String,
     default: 'Órgão',
+  },
+  pessoasLabel: {
+    type: String,
+    default: 'Pessoas',
   },
   // necessária para que o vee-validate não se perca
   name: {
@@ -77,6 +95,14 @@ const props = defineProps({
   },
   psTecnicoCp: {
     type: Boolean,
+    default: undefined,
+  },
+  orgaoInformativo: {
+    type: String,
+    default: undefined,
+  },
+  pessoaInformativo: {
+    type: String,
     default: undefined,
   },
 });
@@ -218,6 +244,9 @@ watchEffect(async () => {
 
   if (Array.isArray(linhas)) {
     pessoasSimplificadas.value = linhas;
+    if (props.limitarParaUmOrgao && listaDeÓrgãos.value.length === 0) {
+      listaDeÓrgãos.value.push({ id: 0 });
+    }
     montar();
   } else {
     throw new Error('lista de pessoas entregue fora do padrão esperado');
@@ -226,8 +255,10 @@ watchEffect(async () => {
 
 watch(
   () => props.valoresIniciais,
-  () => {
-    montar();
+  (novos, antigos) => {
+    if (!isEqual(novos, antigos)) {
+      montar();
+    }
   },
   { immediate: true },
 );
@@ -237,15 +268,21 @@ watch(
     <div
       v-for="(item, idx) in listaDeÓrgãos"
       :key="item.id"
-      class="flex g2 mb1"
+      class="campo-de-pessoas__inputs"
     >
       <div class="f1">
         <label
           :for="`${$props.name}__orgao--${idx}`"
-          class="label"
+          class="label tc300"
         >
           {{ props.orgaoLabel }}
+          <SmaeTooltip
+            v-if="$props.orgaoInformativo"
+            class="campo-de-pessoas__tooltip"
+            :texto="$props.orgaoInformativo"
+          />
         </label>
+
         <select
           :id="`${$props.name}__orgao--${idx}`"
           v-model="listaDeÓrgãos[idx].id"
@@ -271,8 +308,16 @@ watch(
       <div class="f2">
         <label
           :for="`${$props.name}__pessoas--${idx}`"
-          class="label"
-        >Pessoas</label>
+          class="label tc300"
+        >
+          {{ $props.pessoasLabel }}
+          <SmaeTooltip
+            v-if="$props.pessoaInformativo"
+            class="campo-de-pessoas__tooltip"
+            :texto="$props.pessoaInformativo"
+          />
+        </label>
+
         <AutocompleteField
           :id="`${$props.name}__pessoas--${idx}`"
           :controlador="{
@@ -281,6 +326,8 @@ watch(
           }"
           :model-value="órgãosEPessoas[item.id]?.pessoas"
           :grupo="pessoasPorÓrgão[listaDeÓrgãos[idx].id] || []"
+          :readonly="readonly"
+          :numero-maximo-de-participantes="numeroMaximoDeParticipantes"
           label="nome_exibicao"
           @change="
             ($newValue) => {
@@ -291,6 +338,7 @@ watch(
       </div>
 
       <button
+        v-if="!limitarParaUmOrgao"
         class="like-a__text addlink"
         arial-label="excluir"
         title="excluir"
@@ -304,10 +352,12 @@ watch(
     </div>
 
     <button
+      v-if="!limitarParaUmOrgao"
       class="like-a__text addlink"
       type="button"
       :disabled="
-        !órgãosDisponíveis.length ||
+        $props.readonly ||
+          !órgãosDisponíveis.length ||
           órgãosDisponíveis.length === listaDeÓrgãos.length
       "
       @click="adicionarLinha"
@@ -328,3 +378,30 @@ watch(
     <pre v-ScrollLockDebug>props.modelValue:{{ props.modelValue }}</pre>
   </div>
 </template>
+<style lang="less" scoped>
+.campo-de-pessoas {
+  container-type: inline-size;
+  width: 100%;
+}
+
+.campo-de-pessoas__tooltip {
+  position: static;
+  min-width: 20px;
+  height: 12px;
+  transform: translateY(-50%);
+}
+
+.campo-de-pessoas__inputs {
+  display: grid;
+  gap: 1.5rem;
+}
+
+@container (width > 600px) {
+  .campo-de-pessoas__inputs {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 1rem;
+  }
+}
+
+</style>

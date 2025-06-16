@@ -111,13 +111,13 @@ export function ParseParametrosDaFonte(fonte: FonteRelatorio, value: any): any {
     let theClass: any = undefined;
 
     switch (fonte) {
-        case 'Orcamento':
-            theClass = CreateRelPdmOrcamentoExecutadoDto;
-            break;
         case 'ProjetoOrcamento':
         case 'ObrasOrcamento':
-        case 'PSOrcamento':
             theClass = CreateRelProjetoOrcamentoDto;
+            break;
+        case 'Orcamento':
+        case 'PSOrcamento':
+            theClass = CreateRelPdmOrcamentoExecutadoDto;
             break;
         case 'Indicadores':
         case 'PSIndicadores':
@@ -162,7 +162,7 @@ export function ParseParametrosDaFonte(fonte: FonteRelatorio, value: any): any {
         case 'PSMonitoramentoMensal':
             theClass = CreatePsMonitoramentoMensalFilterDto;
             break;
-        case 'CasaCivilAtvPendentes':
+        case 'AtvPendentes':
             theClass = CreateCasaCivilAtividadesPendentesFilterDto;
             break;
         default:

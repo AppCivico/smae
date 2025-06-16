@@ -55,17 +55,21 @@ const rotasParaMigalhasDePão = computed(() => {
           class="migalhas-de-pão__link"
           :to="item.href"
         >
-          {{ item.meta?.títuloParaMenu || (typeof item.meta?.título === 'function'
-            ? item.meta?.título()
-            : item.meta?.título || item.name) }}
+          {{ item.meta?.tituloParaMigalhaDePao
+            || item.meta?.títuloParaMenu
+            || (typeof item.meta?.título === 'function'
+              ? item.meta?.título()
+              : item.meta?.título || item.name) }}
         </router-link>
       </li>
       <li
         class="migalhas-de-pão__item"
       >
-        {{ $route.meta?.títuloParaMenu || (typeof $route.meta?.título === 'function'
-          ? $route.meta?.título()
-          : $route.meta?.título || $route.name ) }}
+        {{ $route.meta?.tituloParaMigalhaDePao
+          || $route.meta?.títuloParaMenu
+          || (typeof $route.meta?.título === 'function'
+            ? $route.meta?.título()
+            : $route.meta?.título || $route.name) }}
       </li>
     </ul>
   </nav>

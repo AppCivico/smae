@@ -1,8 +1,8 @@
-import type { ContratoAditivoItemDto } from '@/../../backend/src/pp/contrato-aditivo/entities/contrato-aditivo.entity';
-import type { ContratoDetailDto } from '@/../../backend/src/pp/contrato/entities/contrato.entity';
-import type { ListProjetoSeiDto } from '@/../../backend/src/pp/projeto/entities/projeto.entity';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
 import formatProcesso from '@/helpers/formatProcesso';
+import type { ContratoAditivoItemDto } from '@back/pp/contrato-aditivo/entities/contrato-aditivo.entity';
+import type { ContratoDetailDto } from '@back/pp/contrato/entities/contrato.entity';
+import type { ListProjetoSeiDto } from '@back/pp/projeto/entities/projeto.entity';
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;

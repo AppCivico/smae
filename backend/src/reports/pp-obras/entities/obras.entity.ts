@@ -47,6 +47,7 @@ export class RelObrasDto {
     secretario_colaborador: string | undefined;
     data_inauguracao_planejada: string | null;
     assessores: string | null;
+    etiquetas: string | null;
     orgao_origem: IdSiglaDescricao | null;
     orgao_executor: IdSiglaDescricao | null;
     orgao_gestor: IdSiglaDescricao;

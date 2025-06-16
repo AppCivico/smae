@@ -14,6 +14,7 @@ export class OrcamentoExecutadoParams {
     @IsEnum(TipoRelatorio, {
         message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(TipoRelatorio).join(', '),
     })
+    @Expose()
     tipo: TipoRelatorio;
 
     /**
@@ -21,6 +22,7 @@ export class OrcamentoExecutadoParams {
      */
     @IsOnlyDate()
     @Transform(DateTransform)
+    @Expose()
     inicio: Date;
 
     /**
@@ -28,6 +30,7 @@ export class OrcamentoExecutadoParams {
      */
     @IsOnlyDate()
     @Transform(DateTransform)
+    @Expose()
     fim: Date;
 
     /**
@@ -39,6 +42,7 @@ export class OrcamentoExecutadoParams {
     @ArrayMinSize(0, { message: '$property| tag(s): precisa ter pelo menos um item' })
     @ArrayMaxSize(100, { message: '$property| tag(s): precisa ter no máximo 100 items' })
     @IsString({ each: true, message: '$property| Cada item precisa ser um texto' })
+    @Expose()
     orgaos?: string[];
 }
 

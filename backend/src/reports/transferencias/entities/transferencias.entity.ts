@@ -7,46 +7,36 @@ export class RelTransferenciasDto {
     identificador: string;
     ano: number | null;
     objeto: string;
-    detalhamento: string | null;
+    detalhamento: string; // Changed from string | null
     clausula_suspensiva: string;
-    @IsDateYMD({ nullable: true })
-    clausula_suspensiva_vencimento: string | null;
-    normativa: string | null;
-    observacoes: string | null;
-    programa: string | null;
-    empenho: string | null;
+    @IsDateYMD({ nullable: true }) // Decorator kept as is, type changed
+    clausula_suspensiva_vencimento: string; // Changed from string | null
+    normativa: string; // Changed from string | null
+    observacoes: string; // Changed from string | null
+    programa: string; // Changed from string | null
+    empenho: string; // Changed from string | null
     pendente_preenchimento_valores: string;
     valor: number | null;
     valor_total: number | null;
     valor_contrapartida: number | null;
-    emenda: string | null;
-    dotacao: string | null;
-    demanda: string | null;
-    banco_fim: string | null;
-    conta_fim: string | null;
-    agencia_fim: string | null;
-    banco_aceite: string | null;
-    conta_aceite: string | null;
-    nome_programa: string | null;
-    agencia_aceite: string | null;
-    emenda_unitaria: string | null;
-    gestor_contrato: string | null;
-    ordenador_despesa: string | null;
-    numero_identificacao: string | null;
-    secretaria_concedente: string | null;
+    emenda: string; // Changed from string | null
+    dotacao: string; // Changed from string | null
+    demanda: string; // Changed from string | null
+    banco_fim: string; // Changed from string | null
+    conta_fim: string; // Changed from string | null
+    agencia_fim: string; // Changed from string | null
+    banco_aceite: string; // Changed from string | null
+    conta_aceite: string; // Changed from string | null
+    nome_programa: string; // Changed from string | null
+    agencia_aceite: string; // Changed from string | null
+    emenda_unitaria: string; // Changed from string | null
+    gestor_contrato: string; // Changed from string | null
+    ordenador_despesa: string; // Changed from string | null
+    numero_identificacao: string; // Changed from string | null
+    secretaria_concedente: string; // Changed from string | null
     interface: string;
     esfera: string;
-    cargo: string | null;
     orgao_concedente: IdSiglaDescricao;
-    partido: {
-        id: number | null;
-        sigla: string | null;
-    } | null;
-    parlamentar: {
-        id: number | null;
-        nome: string | null;
-        nome_popular: string | null;
-    } | null;
 
     distribuicao_recurso: {
         id: number;
@@ -57,22 +47,31 @@ export class RelTransferenciasDto {
         valor: number;
         valor_total: number;
         valor_contrapartida: number;
-        empenho: string;
-        programa_orcamentario_estadual: string | null;
-        programa_orcamentario_municipal: string | null;
-        dotacao: string | null;
-        proposta: string | null;
-        contrato: string | null;
-        convenio: string | null;
-        assinatura_termo_aceite: string | null;
-        assinatura_municipio: string | null;
-        assinatura_estado: string | null;
-        vigencia: string | null;
-        conclusao_suspensiva: string | null;
-        registro_sei: string | null;
+        empenho: string; // Changed from string | null
+        programa_orcamentario_estadual: string; // Changed from string | null
+        programa_orcamentario_municipal: string; // Changed from string | null
+        dotacao: string; // Changed from string | null
+        proposta: string; // Changed from string | null
+        contrato: string; // Changed from string | null
+        convenio: string; // Changed from string | null
+        assinatura_termo_aceite: string; // Changed from string | null
+        assinatura_municipio: string; // Changed from string | null
+        assinatura_estado: string; // Changed from string | null
+        vigencia: string; // Changed from string | null
+        conclusao_suspensiva: string; // Changed from string | null
+        registro_sei: string; // Changed from string | null
+        nome_responsavel: string; // Changed from string | null
+        status_nome_base: string; // Changed from string | null, non-optional
+        pct_custeio: string | null; // Changed from string | null, non-optional
+        pct_investimento: string | null; // Changed from string | null, non-optional
+        conta: string;
+        banco: string;
+        agencia: string;
+        gestor_conta: string;
     } | null;
     tipo_transferencia: string;
-    classificacao: string | null;
+    classificacao: string; // Changed from string | null
+    parlamentares_info: string | null;
 }
 
 export class TransferenciasRelatorioDto {

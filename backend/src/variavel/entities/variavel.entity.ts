@@ -11,7 +11,7 @@ import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
 import { IdNomeDto } from '../../common/dto/IdNome.dto';
 import { IdNomeExibicaoDto } from '../../common/dto/IdNomeExibicao.dto';
 import { IdTituloDto } from '../../common/dto/IdTitulo.dto';
-import { OrgaoResumo } from '../../orgao/entities/orgao.entity';
+import { OrgaoReduzidoDto } from '../../orgao/entities/orgao.entity';
 import { Regiao } from '../../regiao/entities/regiao.entity';
 import { UnidadeMedida } from '../../unidade-medida/entities/unidade-medida.entity';
 import { VariavelResumo } from '../dto/list-variavel.dto';
@@ -43,7 +43,7 @@ export class VariavelItemDto {
     valor_base: Decimal;
     @ApiProperty({ type: String })
     periodicidade: Periodicidade;
-    orgao: OrgaoResumo;
+    orgao: OrgaoReduzidoDto;
     regiao: Regiao | null;
     polaridade: Polaridade;
     indicador_variavel: IndicadorVariavelItemDto[];
@@ -81,7 +81,7 @@ export class VariavelGlobalItemDto extends PickType(VariavelItemDto, [
     'possui_variaveis_filhas',
     'supraregional',
 ]) {
-    orgao_proprietario: OrgaoResumo;
+    orgao_proprietario: OrgaoReduzidoDto;
     tipo: TipoVariavel;
     fonte: IdNomeDto | null;
     planos: IdNomeDto[];

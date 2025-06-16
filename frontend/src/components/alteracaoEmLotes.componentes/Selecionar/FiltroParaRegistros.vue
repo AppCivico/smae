@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
-import FiltroParaPagina, { Formulario } from '@/components/FiltroParaPagina.vue';
+import FiltroParaPagina from '@/components/FiltroParaPagina.vue';
+import { useObrasStore } from '@/stores/obras.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { useRegionsStore } from '@/stores/regions.store';
 import { useEquipamentosStore } from '@/stores/equipamentos.store';
@@ -16,9 +17,11 @@ import {
   alteracaoEmLoteNovoFiltro as schema,
   obras as obrasSchema,
 } from '@/consts/formSchemas';
+import type { Formulario } from '@/components/FiltroParaPagina.vue';
 
 const route = useRoute();
 
+const obrasStore = useObrasStore();
 const organsStore = useOrgansStore();
 const regionsStore = useRegionsStore();
 const equipamentosStore = useEquipamentosStore();
@@ -29,6 +32,7 @@ const portfolioMdoStore = usePortfolioObraStore();
 
 const edicoesEmLoteStore = useEdicoesEmLoteStore(route.meta.tipoDeAcoesEmLote as string);
 
+const { chamadasPendentes } = storeToRefs(obrasStore);
 const { lista: portfolioObrasLista } = storeToRefs(portfolioObraStore);
 const { órgãosComoLista: orgaosLista, organs } = storeToRefs(organsStore);
 
@@ -40,7 +44,11 @@ const { lista: listaDeTiposDeIntervencao } = storeToRefs(tiposDeIntervencaoStore
 
 const valoresIniciais = ({
   ipp: 30,
+  ordem_coluna: 'registrado_em',
+  ordem_direcao: 'desc',
 });
+
+const formularioSujo = ref<boolean>(false);
 
 const colunasParaOrdenacao = {
   orgao_origem_id: {
@@ -74,6 +82,10 @@ const colunasParaOrdenacao = {
   status: {
     id: 'status',
     label: obrasSchema.fields.status.spec.label,
+  },
+  registrado_em: {
+    id: 'registrado_em',
+    label: 'Data de registro',
   },
 };
 
@@ -166,10 +178,16 @@ onMounted(() => {
 <template>
   <section>
     <FiltroParaPagina
+      v-model:formulario-sujo="formularioSujo"
       :formulario="camposFiltro"
       :schema="schema"
       :valores-iniciais="valoresIniciais"
+      :carregando="chamadasPendentes.lista"
       @filtro="limparSelecao"
     />
+
+    <div :class="{ 'dependente-de-filtro-sujo': formularioSujo }">
+      <slot />
+    </div>
   </section>
 </template>

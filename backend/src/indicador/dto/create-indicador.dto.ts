@@ -30,7 +30,7 @@ export class CreateIndicadorDto {
      * título
      */
     @IsString({ message: '$property| Título: Precisa ser alfanumérico' })
-    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Título' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo 'Título' deve ter no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     titulo: string;
 
     /**

@@ -1,4 +1,9 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage, Field, useForm,
+} from 'vee-validate';
+import { useRoute, useRouter } from 'vue-router';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import { relatórioDeTransferênciasVoluntárias as schema } from '@/consts/formSchemas';
 import interfacesDeTransferências from '@/consts/interfacesDeTransferências';
@@ -8,11 +13,6 @@ import { useOrgansStore } from '@/stores/organs.store';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
 import { usePartidosStore } from '@/stores/partidos.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
-import { storeToRefs } from 'pinia';
-import {
-  ErrorMessage, Field, useForm, useIsFormDirty,
-} from 'vee-validate';
-import { useRoute, useRouter } from 'vue-router';
 
 const alertStore = useAlertStore();
 const ÓrgãosStore = useOrgansStore();
@@ -64,21 +64,21 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   }
 });
 
-const formularioSujo = useIsFormDirty();
-
 ÓrgãosStore.getAll();
 partidosStore.buscarTudo();
 ParlamentaresStore.buscarTudo({ ipp: 500, possui_mandatos: true });
 
 </script>
 <template>
-  <div class="flex spacebetween center mb2">
-    <TítuloDePágina />
-    <hr class="ml2 f1">
-    <CheckClose
-      :formulario-sujo="formularioSujo"
-    />
-  </div>
+  <CabecalhoDePagina :formulario-sujo="false" />
+
+  <p class="texto--explicativo">
+    Conjunto de dois arquivos: um com as transferências voluntárias e outro com
+    os respectivos cronogramas. No arquivo
+    <code class="destacar">cronograma</code>, a coluna
+    <var class="destacar">transferencia_id</var> serve como vínculo com o
+    arquivo <code class="destacar">transferencias</code>.
+  </p>
 
   <pre v-scrollLockDebug>values:{{ values }}</pre>
 

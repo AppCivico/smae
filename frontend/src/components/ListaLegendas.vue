@@ -1,18 +1,24 @@
 <script lang="ts" setup>
 import { computed } from 'vue';
 
-type ItemLegenda = { item: string, icon?: string };
+type ItemLegenda = { item: string, icon?: string, color?: string };
 type Props = {
   titulo?: string,
   legendas: {
     [key in string]: ItemLegenda[]
   },
+  borda?: boolean,
+  duasLinhas?: boolean,
+  align?: 'left' | 'right' | 'center',
   orientacao?: 'vertical' | 'horizontal'
 };
 
 const props = withDefaults(defineProps<Props>(), {
   titulo: 'Legenda',
   orientacao: 'vertical',
+  borda: false,
+  duasLinhas: false,
+  align: 'left',
 });
 
 const mostrarEmColunas = computed(() => props.orientacao === 'vertical');
@@ -20,10 +26,15 @@ const mostrarEmColunas = computed(() => props.orientacao === 'vertical');
 
 <template>
   <div
-    class="lista-legenda flex g2"
-    :class="{'column': mostrarEmColunas}"
+    class="lista-legenda"
+    :class="{
+      'column': mostrarEmColunas,
+      'lista-legenda--sem-borda': !$props.borda,
+      'lista-legenda--duas-linhas': $props.duasLinhas,
+      'lista-legenda--a-direita': $props.align === 'right',
+    }"
   >
-    <h4 class="lista-legenda__titulo t14 w500">
+    <h4 class="lista-legenda__titulo t14 w700">
       {{ $props.titulo }}
     </h4>
 
@@ -43,8 +54,12 @@ const mostrarEmColunas = computed(() => props.orientacao === 'vertical');
             :name="`padrao--${legendaIndex}`"
             :item="legendaItem"
           >
-            <dt class="legenda-item__icon">
-              <svg>
+            <dt
+              :style="{ backgroundColor: legendaItem.color }"
+              class="legenda-item__icon"
+              :class="{ 'legenda-item__icon--apenas-cor': !legendaItem.icon }"
+            >
+              <svg v-if="legendaItem.icon">
                 <use :xlink:href="`#${legendaItem.icon}`" />
               </svg>
             </dt>
@@ -59,6 +74,8 @@ const mostrarEmColunas = computed(() => props.orientacao === 'vertical');
 
 <style lang="less" scoped>
 .lista-legenda {
+  display: flex;
+  gap: 2rem;
   border: 1px solid #b8c0cc;
   padding: 10px;
   border-radius: 10px;
@@ -67,6 +84,21 @@ const mostrarEmColunas = computed(() => props.orientacao === 'vertical');
     flex-direction: column;
   }
 }
+
+.lista-legenda--sem-borda {
+  border: 0;
+}
+
+.lista-legenda--duas-linhas {
+  display: grid;
+  gap: 0;
+}
+
+.lista-legenda--a-direita {
+  justify-items: end;
+  text-align: end;
+}
+
 .lista-legenda__titulo {
   color: #333333;
 }
@@ -77,12 +109,17 @@ const mostrarEmColunas = computed(() => props.orientacao === 'vertical');
   gap: 4px;
   height: 20px;
   align-items: center;
-  font-size: 10px;
 }
 
-.legenda-item :deep(dt) {
+:where(.legenda-item) :deep(dt) {
   width: 20px;
   height: 100%;
+}
+
+.legenda-item__icon--apenas-cor {
+  width: 0.8rem;
+  height: 0.8rem;
+  border-radius: 50%;
 }
 
 .legenda-item__icon svg {

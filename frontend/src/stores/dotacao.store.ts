@@ -1,5 +1,4 @@
-/* eslint-disable import/no-extraneous-dependencies */
-import { SofEntidadeDto } from '@/../../backend/src/sof-entidade/entities/sof-entidade.entity';
+import type { SofEntidadeDto } from '@back/sof-entidade/entities/sof-entidade.entity';
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;

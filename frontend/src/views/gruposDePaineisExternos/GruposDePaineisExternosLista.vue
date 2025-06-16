@@ -49,12 +49,14 @@ if (!Array.isArray(organs) || !organs.length) {
   </div>
 
   <table class="tablemain">
-    <col>
-    <col>
-    <col class="col--number">
-    <col>
-    <col class="col--botão-de-ação">
-    <col class="col--botão-de-ação">
+    <colgroup>
+      <col>
+      <col>
+      <col class="col--number">
+      <col>
+      <col class="col--botão-de-ação">
+      <col class="col--botão-de-ação">
+    </colgroup>
     <thead>
       <tr>
         <th>

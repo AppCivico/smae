@@ -1,8 +1,7 @@
 <script lang="ts" setup>
-import { watch, nextTick } from 'vue';
+import { computed, toRaw, watch } from 'vue';
 import { storeToRefs } from 'pinia';
-import { useRoute, useRouter } from 'vue-router';
-import { cloneDeep } from 'lodash';
+import { useRoute } from 'vue-router';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import FiltroParaRegistros from '@/components/alteracaoEmLotes.componentes/Selecionar/FiltroParaRegistros.vue';
 import { useObrasStore } from '@/stores/obras.store';
@@ -11,31 +10,43 @@ import statusObras from '@/consts/statusObras';
 import { useEdicoesEmLoteStore } from '@/stores/edicoesEmLote.store';
 import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import SmaeFieldsetSubmit from '@/components/SmaeFieldsetSubmit.vue';
+import SelecionarTudo from '@/components/camposDeFormulario/SelecionarTudo/SelecionarTudo.vue';
 import ContadorItems from '@/components/alteracaoEmLotes.componentes/Selecionar/ContadorItems.vue';
 
 const route = useRoute();
-const router = useRouter();
 
 const obrasStore = useObrasStore();
 const edicoesEmLoteStore = useEdicoesEmLoteStore(route.meta.tipoDeAcoesEmLote as string);
 
 const { idsSelecionados } = storeToRefs(edicoesEmLoteStore);
-const { lista: listaDeObras, paginacao } = storeToRefs(obrasStore);
+const {
+  lista: listaDeObras, listaDeTodosIds, paginacao, chamadasPendentes,
+} = storeToRefs(obrasStore);
 
-function limparSelecionados() {
+const desabilitarBuscaDeTodosIds = computed(() => listaDeTodosIds.value
+  .length === idsSelecionados.value.length
+  && !!idsSelecionados.value.length);
+
+const desabilitarAvanco = computed<boolean>(() => (
+  chamadasPendentes.value.lista
+  || chamadasPendentes.value.listaDeTodosIds
+  || !idsSelecionados.value.length
+));
+
+const idsDaListaDeObras = computed(() => listaDeObras.value.map((obra) => obra.id));
+
+function limparSelecao() {
   edicoesEmLoteStore.limparIdsSelecionados();
 }
 
-async function handleSelecionarTodasObras() {
-  const idsObras = await obrasStore.buscarTodosIds(route.query);
+async function selecionarTodasObras() {
+  if (desabilitarBuscaDeTodosIds.value) return;
 
-  idsSelecionados.value = cloneDeep(idsObras);
+  if (!listaDeTodosIds.value.length) {
+    await obrasStore.buscarTodosIds(route.query);
+  }
 
-  nextTick(() => {
-    router.push({
-      name: 'edicoesEmLoteObrasNovoConstruir',
-    });
-  });
+  idsSelecionados.value = structuredClone(toRaw(listaDeTodosIds.value));
 }
 
 watch(
@@ -62,30 +73,37 @@ watch(
 </script>
 
 <template>
+  <MigalhasDePão class="mb1" />
   <CabecalhoDePagina />
 
-  <FiltroParaRegistros />
-
-  <section>
-    <ContadorItems />
+  <FiltroParaRegistros>
+    <ContadorItems class="mb1" />
 
     <MenuPaginacao
       v-bind="paginacao"
-      class="mt1"
+      class="mb2"
     />
 
     <SmaeTable
       v-selecionar-multiplas-opcoes
       titulo-rolagem-horizontal="Tabela: Edição em Lote"
-      class="mt2"
+      class="mb2"
       rolagem-horizontal
       :dados="listaDeObras"
       :colunas="[
-        { chave: 'selecionado', ehDadoComputado: true },
+        {
+          chave: 'selecionado',
+          atributosDaColuna: {
+            class: 'col--minimum',
+          },
+        },
         { chave: 'orgao_origem.sigla', label: obrasSchema.fields['orgao_origem_id'].spec.label },
         { chave: 'portfolio.titulo', label: obrasSchema.fields['portfolio_id'].spec.label },
         { chave: 'nome', label: obrasSchema.fields['nome'].spec.label },
-        { chave: 'grupo_tematico.nome', label: obrasSchema.fields['grupo_tematico_id'].spec.label },
+        {
+          chave: 'grupo_tematico.nome',
+          label: obrasSchema.fields['grupo_tematico_id'].spec.label
+        },
         {
           chave: 'tipo_intervencao.nome',
           label: obrasSchema.fields['tipo_intervencao_id'].spec.label
@@ -97,24 +115,26 @@ watch(
       replicar-cabecalho
     >
       <template #cabecalho:selecionado>
-        <button
-          class="btn outline bgnone tcprimary nowrap"
-          type="button"
-          @click="limparSelecionados"
-        >
-          Desmarcar todas
-        </button>
+        <SelecionarTudo
+          v-model="idsSelecionados"
+          :lista-de-opcoes="idsDaListaDeObras"
+        />
+      </template>
+
+      <template #rodape:selecionado>
+        <SelecionarTudo
+          v-model="idsSelecionados"
+          :lista-de-opcoes="idsDaListaDeObras"
+        />
       </template>
 
       <template #celula:selecionado="{ linha }">
-        <div class="flex justifycenter">
-          <input
-            v-model="idsSelecionados"
-            type="checkbox"
-            name="selecionado"
-            :value="linha.id"
-          >
-        </div>
+        <input
+          v-model="idsSelecionados"
+          type="checkbox"
+          name="selecionado"
+          :value="linha.id"
+        >
       </template>
 
       <template #celula:status="{ linha }">
@@ -124,30 +144,46 @@ watch(
 
     <MenuPaginacao
       v-bind="paginacao"
-      class="mt2"
+      class="mb2"
     />
 
-    <ContadorItems class="mt2" />
-
-    <SmaeFieldsetSubmit>
+    <div class="flex flexwrap g2 justifyright">
       <button
         class="btn big outline bgnone tcprimary"
-        @click="handleSelecionarTodasObras"
+        type="button"
+        :aria-disabled="!idsSelecionados.length"
+        @click="limparSelecao"
       >
-        selecionar todas obras ({{ paginacao.totalRegistros }})
+        desmarcar {{ idsSelecionados.length }} obras
       </button>
 
+      <button
+        class="btn big outline bgnone tcprimary"
+        type="button"
+        :aria-busy="chamadasPendentes.listaDeTodosIds"
+        :aria-disabled="desabilitarBuscaDeTodosIds"
+        @click="selecionarTodasObras"
+      >
+        marcar todas {{ paginacao.totalRegistros }} obras
+      </button>
+    </div>
+
+    <ContadorItems class="mb2" />
+
+    <SmaeFieldsetSubmit
+      as="div"
+    >
       <SmaeLink
         class="btn big"
-        :aria-disabled="idsSelecionados.length === 0"
-        :desabilitar="idsSelecionados.length === 0"
+        :aria-disabled="desabilitarAvanco"
+        :desabilitar="desabilitarAvanco"
         exibir-desabilitado
         :to="{
           name: 'edicoesEmLoteObrasNovoConstruir'
         }"
       >
-        finalizar seleção
+        finalizar marcação
       </SmaeLink>
     </SmaeFieldsetSubmit>
-  </section>
+  </FiltroParaRegistros>
 </template>

@@ -1,11 +1,4 @@
 <script setup>
-import SmallModal from '@/components/SmallModal.vue';
-import MapaExibir from '@/components/geo/MapaExibir.vue';
-import { geoLocalização as schema } from '@/consts/formSchemas';
-import tiposDeLogradouro from '@/consts/tiposDeLogradouro';
-import requestS from '@/helpers/requestS.ts';
-import { useAlertStore } from '@/stores/alert.store';
-import { useRegionsStore } from '@/stores/regions.store';
 import { cloneDeep, isArray, merge } from 'lodash';
 import { vMaska } from 'maska';
 import { storeToRefs } from 'pinia';
@@ -19,6 +12,13 @@ import {
 import {
   computed, defineModel, defineOptions, nextTick, ref, toRef,
 } from 'vue';
+import SmallModal from '@/components/SmallModal.vue';
+import MapaExibir from '@/components/geo/MapaExibir.vue';
+import { geoLocalização as schema } from '@/consts/formSchemas';
+import tiposDeLogradouro from '@/consts/tiposDeLogradouro';
+import requestS from '@/helpers/requestS.ts';
+import { useAlertStore } from '@/stores/alert.store';
+import { useRegionsStore } from '@/stores/regions.store';
 
 const RegionsStore = useRegionsStore();
 const { camadas, chamadasPendentes } = storeToRefs(RegionsStore);
@@ -50,6 +50,10 @@ const props = defineProps({
   name: {
     type: String,
     required: true,
+  },
+  disabled: {
+    type: Boolean,
+    default: false,
   },
 });
 
@@ -283,22 +287,26 @@ const formularioSujo = useIsFormDirty();
     v-bind="$attrs"
     class="tablemain"
   >
-    <col>
-    <col>
-    <col>
-    <col class="col--number">
-    <col class="col--botão-de-ação">
-    <col class="col--botão-de-ação">
+    <colgroup>
+      <col>
+      <col>
+      <col>
+      <col class="col--number">
+      <col class="col--botão-de-ação">
+      <col class="col--botão-de-ação">
+    </colgroup>
 
     <thead>
-      <th />
-      <th>Endereço</th>
-      <th>Bairro</th>
-      <th class="cell--nowrap">
-        <abbr title="Código de Endereçamento Postal">CEP</abbr>
-      </th>
-      <th />
-      <th />
+      <tr>
+        <th />
+        <th>Endereço</th>
+        <th>Bairro</th>
+        <th class="cell--nowrap">
+          <abbr title="Código de Endereçamento Postal">CEP</abbr>
+        </th>
+        <th />
+        <th />
+      </tr>
     </thead>
     <tbody>
       <tr
@@ -348,7 +356,7 @@ const formularioSujo = useIsFormDirty();
   </table>
 
   <button
-    :disabled="!(model.length < Number(props.max))"
+    :disabled="$props.disabled || !(model.length < Number(props.max))"
     class="block like-a__text addlink mb1 mt1"
     type="button"
     @click="adicionarItem"
@@ -525,17 +533,21 @@ const formularioSujo = useIsFormDirty();
           v-if="sugestõesDeEndereços.length > 1"
           class="mb1 tablemain"
         >
-          <col class="col--botão-de-ação">
-          <col>
-          <col>
-          <col>
+          <colgroup>
+            <col class="col--botão-de-ação">
+            <col>
+            <col>
+            <col>
+          </colgroup>
           <thead>
-            <th />
-            <th>Endereço</th>
-            <th>Bairro</th>
-            <th class="cell--nowrap">
-              <abbr title="Código de Endereçamento Postal">CEP</abbr>
-            </th>
+            <tr>
+              <th />
+              <th>Endereço</th>
+              <th>Bairro</th>
+              <th class="cell--nowrap">
+                <abbr title="Código de Endereçamento Postal">CEP</abbr>
+              </th>
+            </tr>
           </thead>
           <tr
             v-for="(item, j) in sugestõesDeEndereços"

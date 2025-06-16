@@ -1,28 +1,28 @@
 <template>
-  <component
-    :is="elementoEnvelope"
+  <th
     class="table-header-cell"
-    :class="classe"
+    v-bind="props.atributos"
   >
-    <slot
-      :name="normalizadorDeSlots(`cabecalho:${chave}`)"
-      v-bind="$props"
-    >
-      {{ label }}
+    <slot>
+      {{ conteudo }}
     </slot>
-  </component>
+  </th>
 </template>
 
 <script lang="ts" setup>
+import buscarDadosDoYup from '@/components/camposDeFormulario/helpers/buscarDadosDoYup';
 import { computed, defineProps } from 'vue';
+import type { AnyObjectSchema } from 'yup';
 import type { Coluna } from '../tipagem';
-import normalizadorDeSlots from '../utils/normalizadorDeSlots';
 
-type Props = Coluna;
+type Props = Coluna & {
+  schema?: AnyObjectSchema,
+  atributos?: Record<string, unknown>,
+};
 
-const props = withDefaults(defineProps<Props>(), {
-  cabecalho: true,
-});
+const props = defineProps<Props>();
 
-const elementoEnvelope = computed<'td' | 'th'>(() => (props.cabecalho ? 'th' : 'td'));
+const conteudo = computed(() => (!props.schema || !props.chave
+  ? props.label || props.chave
+  : buscarDadosDoYup(props.schema, props.chave)?.spec?.label) || props.label || props.chave);
 </script>

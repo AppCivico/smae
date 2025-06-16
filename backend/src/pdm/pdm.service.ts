@@ -1251,8 +1251,10 @@ export class PdmService {
             select: {
                 data_inicio: true,
                 data_fim: true,
+                monitoramento_orcamento: true,
             },
         });
+        if (!pdm.monitoramento_orcamento) return null;
 
         const defaultConfig: Record<
             TipoPdm,

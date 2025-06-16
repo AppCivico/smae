@@ -56,9 +56,9 @@
   </td>
 </template>
 <script setup lang="ts">
-import type { VariavelGlobalItemDto, VariavelItemDto } from '@/../../backend/src/variavel/entities/variavel.entity';
 import truncate from '@/helpers/texto/truncate';
 import { useAuthStore } from '@/stores/auth.store';
+import type { VariavelGlobalItemDto, VariavelItemDto } from '@back/variavel/entities/variavel.entity';
 import { storeToRefs } from 'pinia';
 import { defineProps } from 'vue';
 import { useRoute } from 'vue-router';

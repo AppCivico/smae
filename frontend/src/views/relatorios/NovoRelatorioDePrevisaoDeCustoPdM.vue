@@ -15,7 +15,6 @@ import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import CheckClose from '../../components/CheckClose.vue';
 
 const alertStore = useAlertStore();
 const PdMStore = usePdMStore();
@@ -111,11 +110,13 @@ iniciar();
 </script>
 
 <template>
-  <div class="flex spacebetween center mb2">
-    <h1>{{ $route.meta.título || $route.name }}</h1>
-    <hr class="ml2 f1">
-    <CheckClose />
-  </div>
+  <CabecalhoDePagina :formulario-sujo="false" />
+
+  <p class="texto--explicativo">
+    Será gerada uma planilha contendo os registros de previsão de custo
+    registrados nas metas
+  </p>
+
   <Form
     v-slot="{ errors, isSubmitting, resetField, setFieldValue, values }"
     :validation-schema="schema"

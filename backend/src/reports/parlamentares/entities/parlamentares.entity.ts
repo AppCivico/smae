@@ -15,6 +15,7 @@ export class RelParlamentaresDto {
     email: string | null;
     cargo: ParlamentarCargo | null;
     ano_eleicao: number | null; // aqui tbm
+    zona_atuacao: string | null;
 }
 
 export class ParlamentaresRelatorioDto {

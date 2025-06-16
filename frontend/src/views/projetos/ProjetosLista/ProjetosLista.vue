@@ -79,7 +79,7 @@ onBeforeMount(() => {
     </div>
 
     <ProjetosListaFiltro v-slot="{ formularioSujo }">
-      <div :class="{'filtro-sujo': formularioSujo}">
+      <div :class="{ 'dependente-de-filtro-sujo': formularioSujo }">
         <MenuPaginacao
           class="mt2 bgt"
           v-bind="paginacaoProjetos"
@@ -89,7 +89,7 @@ onBeforeMount(() => {
           class="mt2"
           :dados="listaDeProjetos"
           :colunas="[
-            { chave: 'nome', label: 'Nome do Projeto' },
+            { chave: 'nome', label: 'Nome do Projeto', ehCabecalho: true },
             { chave: 'portfolio.titulo', label: 'Portfólio' },
             { chave: 'orgao_responsavel.sigla', label: 'Órgão Responsável' },
             { chave: 'status', label: 'Status do projeto' },
@@ -120,12 +120,10 @@ onBeforeMount(() => {
             </button>
           </template>
 
-          <template #celula-fora:nome="{ linha }">
-            <th>
-              <SmaeLink :to="{ name: 'projetosResumo', params: { projetoId: linha.id }}">
-                {{ linha.nome }}
-              </SmaeLink>
-            </th>
+          <template #celula:nome="{ linha }">
+            <SmaeLink :to="{ name: 'projetosResumo', params: { projetoId: linha.id } }">
+              {{ linha.nome }}
+            </SmaeLink>
           </template>
 
           <template #celula:status="{ linha }">

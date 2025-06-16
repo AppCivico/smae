@@ -1,4 +1,19 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage,
+  Field,
+  FieldArray,
+  useForm,
+  useIsFormDirty,
+} from 'vee-validate';
+import {
+  computed,
+  nextTick,
+  ref,
+  watch,
+} from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
 import CampoDePlanosMetasRelacionados from '@/components/CampoDePlanosMetasRelacionados.vue';
@@ -22,21 +37,6 @@ import { useOrgansStore } from '@/stores/organs.store';
 import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store.ts';
 import { useProgramaHabitacionalStore } from '@/stores/programaHabitacional.store';
 import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
-import { storeToRefs } from 'pinia';
-import {
-  ErrorMessage,
-  Field,
-  FieldArray,
-  useForm,
-  useIsFormDirty,
-} from 'vee-validate';
-import {
-  computed,
-  nextTick,
-  ref,
-  watch,
-} from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -193,6 +193,12 @@ const {
   initialValues: itemParaEdicao,
   validationSchema: schema,
 });
+
+function alertarTrocaDeStatus() {
+  if (!!itemParaEdicao.value.status && itemParaEdicao.value.status !== values.status) {
+    alertStore.success('Lembre-se de atualizar a etapa do cronograma. Para isso acesse a página Cronograma e atualize a etapa por meio do botão "Mudar etapa".');
+  }
+}
 
 function BuscarDotaçãoParaAno(valorOuEvento) {
   const ano = valorOuEvento.target?.value || valorOuEvento;
@@ -397,6 +403,7 @@ watch(listaDeTiposDeIntervenção, () => {
     <hr class="f1">
     <!--
   <MenuDeMudançaDeStatusDeProjeto
+      class="ml2"
     v-if="obraId"
   />
 -->
@@ -507,9 +514,11 @@ watch(listaDeTiposDeIntervenção, () => {
           as="select"
           class="inputtext light mb1"
           :class="{ error: errors.status }"
+          @change.once="alertarTrocaDeStatus"
         >
           <option
             :value="null"
+            disabled
           >
             Selecionar
           </option>
@@ -573,6 +582,9 @@ watch(listaDeTiposDeIntervenção, () => {
             resetField('programa_id', { value: null });
             resetField('mdo_n_unidades_habitacionais', { value: null });
             resetField('mdo_n_familias_beneficiadas', { value: null });
+          }"
+          @update:model-value="($v) => {
+            setFieldValue('mdo_n_familias_beneficiadas', Number($v) || null);
           }"
         >
           <option value="">
@@ -925,9 +937,6 @@ watch(listaDeTiposDeIntervenção, () => {
           type="number"
           class="inputtext light mb1"
           :class="{ 'error': errors.mdo_n_familias_beneficiadas }"
-          @update:model-value="($v) => {
-            setFieldValue('mdo_n_familias_beneficiadas', Number($v) || null);
-          }"
         />
         <ErrorMessage
           name="mdo_n_familias_beneficiadas"
@@ -1535,8 +1544,10 @@ watch(listaDeTiposDeIntervenção, () => {
           :model-value="values.colaboradores_no_orgao"
           :valores-iniciais="itemParaEdicao.colaboradores_no_orgao"
           name="colaboradores_no_orgao"
-          orgao-label="Órgão Colaborador"
+          :orgao-label="schema.fields.colaboradores_no_orgao.spec.label"
+          :pessoas-label="schema.fields.ponto_focal_colaborador.spec.label"
           :pessoas="possíveisResponsáveisPorÓrgãoId[values.orgao_colaborador_id] || []"
+          :pessoa-informativo="schema.fields.colaboradores_no_orgao.meta().balaoInformativo"
         />
       </div>
     </fieldset>

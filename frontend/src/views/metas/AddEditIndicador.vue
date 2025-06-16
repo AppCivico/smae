@@ -1,4 +1,11 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { Field, Form } from 'vee-validate';
+import {
+  computed,
+  ref, unref, watch,
+} from 'vue';
+import { useRoute } from 'vue-router';
 import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
 import SmallModal from '@/components/SmallModal.vue';
 import EditorDeFormula from '@/components/metas/EditorDeFormula.vue';
@@ -9,8 +16,6 @@ import TabelaDeVariaveisCompostasEmUso from '@/components/metas/TabelaDeVariavei
 import TabelaDeVariaveisEmUso from '@/components/metas/TabelaDeVariaveisEmUso.vue';
 import AssociadorDeVariaveis from '@/components/variaveis/AssociadorDeVariaveis.vue';
 import { indicador as schema } from '@/consts/formSchemas';
-import fieldToDate from '@/helpers/fieldToDate';
-import maskMonth from '@/helpers/maskMonth';
 import { router } from '@/router';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAtividadesStore } from '@/stores/atividades.store';
@@ -25,13 +30,7 @@ import AddEditValoresComposta from '@/views/metas/AddEditValoresComposta.vue';
 import AddEditVariavel from '@/views/metas/AddEditVariavel.vue';
 import AddEditVariavelComposta from '@/views/metas/AddEditVariavelComposta.vue';
 import GerarVariaveisCompostas from '@/views/metas/GerarVariaveisCompostas.vue';
-import { storeToRefs } from 'pinia';
-import { Field, Form } from 'vee-validate';
-import {
-  computed,
-  ref, unref, watch,
-} from 'vue';
-import { useRoute } from 'vue-router';
+import SmaeMonth from '@/components/camposDeFormulario/SmaeMonth';
 
 defineOptions({
   inheritAttrs: false,
@@ -178,8 +177,6 @@ async function onSubmit(values) {
       values.formula_variaveis = unref(variaveisFormula);
     }
 
-    values.inicio_medicao = fieldToDate(values.inicio_medicao);
-    values.fim_medicao = fieldToDate(values.fim_medicao);
     values.regionalizavel = !!values.regionalizavel;
     values.variavel_categoria_id = values.variavel_categoria_id === '' ? null : values.variavel_categoria_id;
     values.nivel_regionalizacao = values.regionalizavel
@@ -546,14 +543,19 @@ watch(() => props.group, () => {
         <div class="f1">
           <label class="label">Início da Medição <span class="tvermelho">*</span></label>
           <Field
+            v-slot="{ value, handleChange }"
             name="inicio_medicao"
-            type="text"
             class="inputtext light mb1"
             :class="{ 'error': errors.inicio_medicao }"
-            maxlength="7"
             placeholder="mm/aaaa"
-            @keyup="maskMonth"
-          />
+          >
+            <SmaeMonth
+              dia-prefixo="1"
+              placeholder="MM/YYYY"
+              :model-value="value"
+              @change="handleChange"
+            />
+          </Field>
           <div class="error-msg">
             {{ errors.inicio_medicao }}
           </div>
@@ -561,14 +563,19 @@ watch(() => props.group, () => {
         <div class="f1">
           <label class="label">Fim da Medição <span class="tvermelho">*</span></label>
           <Field
+            v-slot="{ value, handleChange }"
             name="fim_medicao"
-            type="text"
             class="inputtext light mb1"
-            :class="{ 'error': errors.fim_medicao }"
-            maxlength="7"
+            :class="{ 'error': errors.inicio_medicao }"
             placeholder="mm/aaaa"
-            @keyup="maskMonth"
-          />
+          >
+            <SmaeMonth
+              dia-prefixo="1"
+              placeholder="MM/YYYY"
+              :model-value="value"
+              @change="handleChange"
+            />
+          </Field>
           <div class="error-msg">
             {{ errors.fim_medicao }}
           </div>

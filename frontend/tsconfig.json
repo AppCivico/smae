@@ -6,7 +6,8 @@
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
     "moduleResolution": "node",
-    "module": "es2020",
+    "target": "ESNext",
+    "module": "ESNext",
     "paths": {
       "@/*": [
         "src/*"
@@ -20,7 +21,6 @@
     "rootDirs": [
       "./src"
     ],
-    "target": "es2020",
     "typeRoots": [
       "./node_modules/@types",
       "./src/types"

@@ -13,15 +13,17 @@ import { DateTime } from 'luxon';
 import { uuidv7 } from 'uuidv7';
 import { BlocoNotaService } from '../bloco-nota/bloco-nota/bloco-nota.service';
 import { NotaService } from '../bloco-nota/nota/nota.service';
-import { CONST_BOT_USER_ID, CONST_TIPO_NOTA_TRANSF_GOV } from '../common/consts';
+import { CONST_BOT_USER_ID, CONST_PERFIL_CASA_CIVIL, CONST_TIPO_NOTA_TRANSF_GOV } from '../common/consts';
 import { Date2YMD, SYSTEM_TIMEZONE } from '../common/date2ymd';
 import { JOB_TRANSFERE_GOV_LOCK } from '../common/dto/locks';
 import { PaginatedDto, PAGINATION_TOKEN_TTL } from '../common/dto/paginated.dto';
 import { SmaeConfigService } from '../common/services/smae-config.service';
 import { PrismaService } from '../prisma/prisma.service';
 import {
+    PlanoAcaoDetalhado,
     TransfGovComunicado,
     TransfGovTransferencia,
+    TransfereGovApiOportunidadesApiService,
     TransfereGovApiService,
     TransfereGovApiTransferenciasService,
     TransfereGovError,
@@ -54,7 +56,8 @@ export class TransfereGovSyncService {
         private readonly blocosService: BlocoNotaService,
         private readonly notaService: NotaService,
         private readonly jwtService: JwtService,
-        private readonly smaeConfigService: SmaeConfigService
+        private readonly smaeConfigService: SmaeConfigService,
+        private readonly transfereGovApiEspeciais: TransfereGovApiOportunidadesApiService
     ) {
         const parsedUrl = new URL(process.env.URL_LOGIN_SMAE || 'http://smae-frontend/');
         this.baseUrl = `${parsedUrl.protocol}//${parsedUrl.hostname}:${parsedUrl.port}`;
@@ -319,8 +322,14 @@ export class TransfereGovSyncService {
         };
     }
 
+    async manualSyncOportunidadesEspeciais(): Promise<TransfereGovOportunidade[]> {
+        this.logger.log('Iniciando sync manual TransfereGOV Transferências Especiais');
+        const newItems = await this.syncAllEndpointsTransferencias(true);
+        return newItems;
+    }
+
     async manualSyncTransferencias(): Promise<TransfereGovOportunidade[]> {
-        this.logger.log('Iniciando sync manual TransfereGOV Transferências');
+        this.logger.log('Iniciando sync manual TransfereGOV Transferências Completo');
         const newItems = await this.syncAllEndpointsTransferencias();
         return newItems;
     }
@@ -380,7 +389,9 @@ export class TransfereGovSyncService {
 
                 if (!transferenciasExistentes.find((t) => t.hash === transformedOportunidade.hash)) {
                     newItems.push(result);
-                    novasTransferencias.push(result.nome_programa);
+                    novasTransferencias.push(
+                        (result.nome_programa || (result.finalidades ?? '')) + ' - ' + result.tipo
+                    );
                 }
             } catch (error) {
                 this.logger.error(`Erro ao atualizar oportunidades: ${error.message}`);
@@ -437,7 +448,7 @@ export class TransfereGovSyncService {
                 PessoaPerfil: {
                     some: {
                         perfil_acesso: {
-                            nome: 'Gestor Casa Civil',
+                            nome: CONST_PERFIL_CASA_CIVIL,
                         },
                     },
                 },
@@ -497,28 +508,123 @@ export class TransfereGovSyncService {
         }
     }
 
-    private async syncAllEndpointsTransferencias(): Promise<TransfereGovOportunidade[]> {
+    private async syncAllEndpointsTransferencias(
+        apenasEspeciais: boolean = false
+    ): Promise<TransfereGovOportunidade[]> {
         const newItems: TransfereGovOportunidade[] = [];
 
-        // Add oportunidades sync
+        if (apenasEspeciais == false) {
+            // Add oportunidades sync
+            newItems.push(
+                ...(await this.syncOportunidadesEndpoint(
+                    () => this.transfereGovApiTransferencias.getEspecificas(),
+                    'Especifica'
+                ))
+            );
+            newItems.push(
+                ...(await this.syncOportunidadesEndpoint(
+                    () => this.transfereGovApiTransferencias.getVoluntarias(),
+                    'Voluntaria'
+                ))
+            );
+            newItems.push(
+                ...(await this.syncOportunidadesEndpoint(
+                    () => this.transfereGovApiTransferencias.getEmendas(),
+                    'Emenda'
+                ))
+            );
+        }
+
         newItems.push(
-            ...(await this.syncOportunidadesEndpoint(
-                () => this.transfereGovApiTransferencias.getEspecificas(),
-                'Especifica'
-            ))
-        );
-        newItems.push(
-            ...(await this.syncOportunidadesEndpoint(
-                () => this.transfereGovApiTransferencias.getVoluntarias(),
-                'Voluntaria'
-            ))
-        );
-        newItems.push(
-            ...(await this.syncOportunidadesEndpoint(() => this.transfereGovApiTransferencias.getEmendas(), 'Emenda'))
+            ...(await this.syncOportunidadesEspeciais(await this.transfereGovApiEspeciais.getPlanosAcaoDetalhados()))
         );
 
         this.logger.log(`Sync TransfereGOV finalizado com sucesso. Novos items: ${newItems.length}`);
         return newItems;
+    }
+
+    private async syncOportunidadesEspeciais(planosAcao: PlanoAcaoDetalhado[]): Promise<TransfereGovOportunidade[]> {
+        const newItems: TransfereGovOportunidade[] = [];
+
+        const transferenciasExistentes = await this.prisma.transfereGovOportunidade.findMany({
+            where: {
+                tipo: 'Especial',
+            },
+            select: { hash: true },
+        });
+
+        const novasTransferencias: string[] = [];
+        const now = new Date();
+
+        for (const planoAcao of planosAcao) {
+            const transformedOportunidade = this.transformPlanoAcaoToOportunidade(planoAcao);
+
+            try {
+                const result = await this.prisma.transfereGovOportunidade.upsert({
+                    where: {
+                        hash: transformedOportunidade.hash,
+                    },
+                    update: transformedOportunidade,
+                    create: {
+                        ...transformedOportunidade,
+                        criado_em: now,
+                        atualizado_em: now,
+                    },
+                });
+
+                if (!transferenciasExistentes.find((t) => t.hash === transformedOportunidade.hash)) {
+                    newItems.push(result);
+                    novasTransferencias.push(result.nome_programa);
+                }
+            } catch (error) {
+                this.logger.error(`Erro ao atualizar oportunidades especiais: ${error.message}`);
+            }
+        }
+
+        if (novasTransferencias.length > 0) {
+            await this.criaNotificacoesOportunidades(novasTransferencias);
+        }
+
+        return newItems;
+    }
+
+    private transformPlanoAcaoToOportunidade(
+        planoAcao: PlanoAcaoDetalhado
+    ): Prisma.TransfereGovOportunidadeCreateInput {
+        const hash = 'id:' + planoAcao.id;
+
+        // Finalidades array 2 string: "codigo - descricao"
+        const finalidadesJoin = planoAcao.finalidades?.length
+            ? planoAcao.finalidades.map((f) => `${f.codigo} - ${f.descricao}`).join(', ')
+            : null;
+
+        // Parse codigo_do_programa as BigInt
+        let codPrograma: bigint;
+        try {
+            const parsed = parseInt(planoAcao.codigo_do_programa, 10);
+            codPrograma = isNaN(parsed) ? BigInt(0) : BigInt(parsed);
+        } catch {
+            codPrograma = BigInt(0);
+        }
+
+        return {
+            hash: hash,
+            tipo: 'Especial',
+            id_programa: BigInt(planoAcao.id),
+            natureza_juridica_programa: '',
+            cod_orgao_sup_programa: BigInt(0),
+            desc_orgao_sup_programa: planoAcao.orgao,
+            cod_programa: codPrograma,
+            nome_programa: '',
+            sit_programa: planoAcao.situacao,
+            ano_disponibilizacao: null,
+            data_disponibilizacao: null,
+            dt_ini_receb: planoAcao.dt_inicio_propostas,
+            dt_fim_receb: planoAcao.dt_fim_propostas,
+            finalidades: finalidadesJoin,
+            modalidade_programa: planoAcao.modalidade,
+            acao_orcamentaria: '',
+        };
     }
 
     async listaTransferencias(
@@ -578,12 +684,13 @@ export class TransfereGovSyncService {
                     nome_programa: item.nome_programa,
                     sit_programa: item.sit_programa,
                     ano_disponibilizacao: item.ano_disponibilizacao,
-                    data_disponibilizacao: Date2YMD.toString(item.data_disponibilizacao),
-                    dt_ini_receb: Date2YMD.toString(item.dt_ini_receb),
-                    dt_fim_receb: Date2YMD.toString(item.dt_fim_receb),
+                    data_disponibilizacao: Date2YMD.toStringOrNull(item.data_disponibilizacao),
+                    dt_ini_receb: Date2YMD.toStringOrNull(item.dt_ini_receb),
+                    dt_fim_receb: Date2YMD.toStringOrNull(item.dt_fim_receb),
                     modalidade_programa: item.modalidade_programa,
                     acao_orcamentaria: item.acao_orcamentaria,
                     natureza_juridica_programa: item.natureza_juridica_programa,
+                    finalidades: item.finalidades,
                 }) satisfies TransfereGovTransferenciasDto
         );
 

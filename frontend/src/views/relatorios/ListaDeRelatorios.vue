@@ -32,6 +32,18 @@ function carregarRelatorios() {
   }
 }
 
+function carregarMais() {
+  if (relatóriosStore.paginação.temMais && !relatóriosStore.loading) {
+    relatóriosStore.getAll(Object.assign(
+      structuredClone(route.query),
+      {
+        fonte: fonte.value,
+        token_proxima_pagina: relatóriosStore.paginação.tokenDaPróximaPágina,
+      },
+    ));
+  }
+}
+
 function excluirRelatório(id) {
   alertStore.confirmAction('Deseja remover o relatório?', () => {
     relatóriosStore.delete(id);
@@ -103,12 +115,19 @@ onBeforeRouteLeave(() => {
       <router-link
         v-if="temPermissãoPara('Reports.executar.')"
         :to="{ name: $route.meta.rotaNovoRelatorio }"
-        class="btn big ml2"
+        class="btn big"
       >
         Novo relatório
       </router-link>
     </template>
   </CabecalhoDePagina>
+
+  <p
+    v-if="$route.meta.descricao"
+    class="texto--explicativo"
+  >
+    {{ $route.meta.descricao }}
+  </p>
 
   <SmaeTable
     class="mt2"
@@ -204,13 +223,7 @@ onBeforeRouteLeave(() => {
     type="button"
     :disabled="relatóriosStore.loading || temAlgumRelatorioEmProcessamento"
     class="btn bgnone outline center mt2"
-    @click="relatóriosStore.getAll(Object.assign(
-      structuredClone($route.query),
-      {
-        fonte: fonte.value,
-        token_proxima_pagina: relatóriosStore.paginação.tokenDaPróximaPágina
-      }
-    ))"
+    @click="carregarMais"
   >
     carregar mais
   </button>

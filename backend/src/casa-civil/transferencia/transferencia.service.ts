@@ -35,6 +35,7 @@ import {
 import { PrismaHelpers } from '../../common/PrismaHelpers';
 import { WorkflowService } from '../workflow/configuracao/workflow.service';
 import { Date2YMD } from '../../common/date2ymd';
+import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 
 class NextPageTokenJwtBody {
     offset: number;
@@ -182,6 +183,24 @@ export class TransferenciaService {
         // Disparando update para validar topologia.
         if (workflowCriado) {
             await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
+                // Caso a transferência possua distribuição(es).
+                // Criamos as tarefas que não são responsabilidade própria.
+                const distribuicoes = await prismaTxn.distribuicaoRecurso.findMany({
+                    where: {
+                        transferencia_id: created.id,
+                        removido_em: null,
+                    },
+                    select: {
+                        id: true,
+                    },
+                });
+
+                for (const distribuicao of distribuicoes) {
+                    const distribuicaoId = distribuicao.id;
+
+                    await this.distribuicaoService._createTarefasOutroOrgao(prismaTxn, distribuicaoId, user);
+                }
+
                 const tarefas = await prismaTxn.tarefa.findMany({
                     where: {
                         tarefa_cronograma: {
@@ -319,6 +338,7 @@ export class TransferenciaService {
 
     async updateTransferencia(id: number, dto: UpdateTransferenciaDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const agora = new Date(Date.now());
+        let workflowCriado: boolean = false;
         const updated = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const self = await prismaTxn.transferencia.findFirst({
@@ -576,7 +596,10 @@ export class TransferenciaService {
                     });
                 }
 
-                if (workflow_id) await this.startWorkflow(id, workflow_id, prismaTxn, user);
+                if (workflow_id) {
+                    await this.startWorkflow(id, workflow_id, prismaTxn, user);
+                    workflowCriado = true;
+                }
 
                 // Tratando upsert de parlamentares.
                 const operations = [];
@@ -695,6 +718,28 @@ export class TransferenciaService {
                 return transferencia;
             }
         );
+
+        // Caso a transferência possua distribuição(es).
+        // Criamos as tarefas que não são responsabilidade própria.
+        const distribuicoes = await this.prisma.distribuicaoRecurso.findMany({
+            where: {
+                transferencia_id: id,
+                removido_em: null,
+            },
+            select: {
+                id: true,
+            },
+        });
+
+        if (distribuicoes.length && workflowCriado) {
+            await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
+                for (const distribuicao of distribuicoes) {
+                    const distribuicaoId = distribuicao.id;
+
+                    await this.distribuicaoService._createTarefasOutroOrgao(prismaTxn, distribuicaoId, user);
+                }
+            });
+        }
 
         return updated;
     }
@@ -820,6 +865,8 @@ export class TransferenciaService {
 
                     await this.distribuicaoService.create(
                         {
+                            // Para preencher o nome, extraimos os 100 primeiros caracteres do objeto.
+                            nome: self.objeto.substring(0, 100),
                             transferencia_id: transferencia.id,
                             dotacao: self.dotacao ? self.dotacao : undefined,
                             valor: self.valor!.toNumber(),
@@ -1235,7 +1282,17 @@ export class TransferenciaService {
                 fase_status: r.workflow_fase_atual && faseStatusAtual ? faseStatusAtual : null,
                 classificacao: r.classificacao,
                 orgao_gestor: r.distribuicao_recursos.length
-                    ? r.distribuicao_recursos.map((e) => e.orgao_gestor)
+                    ? r.distribuicao_recursos.reduce((acc: IdSiglaDescricao[], curr) => {
+                          // Se o órgão gestor já foi adicionado, não adiciona novamente.
+                          if (!acc.find((e) => e.id === curr.orgao_gestor.id)) {
+                              acc.push({
+                                  id: curr.orgao_gestor.id,
+                                  sigla: curr.orgao_gestor.sigla,
+                                  descricao: curr.orgao_gestor.descricao,
+                              });
+                          }
+                          return acc;
+                      }, [] as IdSiglaDescricao[])
                     : null,
             } satisfies TransferenciaDto;
         });

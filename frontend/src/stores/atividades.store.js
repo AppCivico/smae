@@ -14,8 +14,7 @@ function caminhoParaApi(rotaMeta) {
   }
 }
 
-export const useAtividadesStore = defineStore({
-  id: 'Atividades',
+export const useAtividadesStore = defineStore('Atividades', {
   state: () => ({
     Atividades: {},
     singleAtividade: {},

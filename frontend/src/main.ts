@@ -1,24 +1,26 @@
+import type { Store } from 'pinia';
+import { createPinia } from 'pinia';
+import {
+  createApp, markRaw,
+} from 'vue';
+import type { RouteLocationNormalizedLoaded, Router } from 'vue-router';
 import CheckClose from '@/components/CheckClose.vue';
 import ErrorComponent from '@/components/ErrorComponent.vue';
 import FormErrorsList from '@/components/FormErrorsList.vue';
-import LabelFromYup from '@/components/camposDeFormulario/LabelFromYup.vue';
+import SmaeLabel from '@/components/camposDeFormulario/SmaeLabel.vue';
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import MigalhasDePão from '@/components/MigalhasDePao.vue';
 import SmaeLink from '@/components/SmaeLink.vue';
 import SmaeFieldsetSubmit from '@/components/SmaeFieldsetSubmit.vue';
-import SmaeText from '@/components/camposDeFormulario/SmaeText.vue';
+import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
 import TítuloDePágina from '@/components/TituloDaPagina.vue';
+import alternarInformacoesDepuracao from '@/diretivas/alternarInformacoesDepuracao';
+import autofocus from '@/diretivas/autofocus';
 import detectarPosicaoCongelada from '@/diretivas/detectarPosicaoCongelada';
 import selecionarMultiplasOpcoes from '@/diretivas/selecionarMultiplasOpcoes';
 import type { RequestS } from '@/helpers/requestS';
 import requestS from '@/helpers/requestS';
 import consoleNaTemplate from '@/plugins/consoleNaTemplate';
-import type { Store } from 'pinia';
-import { createPinia } from 'pinia';
-import {
-  createApp, markRaw, nextTick,
-} from 'vue';
-import type { RouteLocationNormalizedLoaded, Router } from 'vue-router';
 import App from './App.vue';
 import CabecalhoDePagina from './components/CabecalhoDePagina.vue';
 import { router } from './router';
@@ -90,41 +92,7 @@ pinia.use(({ store }) => {
   };
 });
 
-app.directive('ScrollLockDebug', {
-  beforeMount: (el, binding) => {
-    const primária = 'Control';
-    const secundária = 'CapsLock';
-
-    el.classList.add('debug');
-    el.setAttribute('hidden', '');
-    let secundáriaPressionada = false;
-
-    if (binding.value) {
-      el.setAttribute('data-debug', binding.value);
-    }
-    window.addEventListener('keydown', (event) => {
-      if (event.getModifierState && event.getModifierState(primária)) {
-        if (event.key === secundária) {
-          if (secundáriaPressionada) {
-            if (el.hasAttribute('hidden')) {
-              el.removeAttribute('hidden');
-            } else {
-              el.setAttribute('hidden', '');
-            }
-            secundáriaPressionada = false;
-          } else {
-            secundáriaPressionada = true;
-            setTimeout(() => {
-              secundáriaPressionada = false;
-            }, 300);
-          }
-        } else if (secundáriaPressionada) {
-          secundáriaPressionada = false;
-        }
-      }
-    });
-  },
-});
+app.directive('ScrollLockDebug', alternarInformacoesDepuracao);
 
 app.directive('selecionar-multiplas-opcoes', {
   mounted: (el, binding) => selecionarMultiplasOpcoes(el, binding.value),
@@ -132,19 +100,7 @@ app.directive('selecionar-multiplas-opcoes', {
 
 app.directive('detectar-posicao-congelada', detectarPosicaoCongelada);
 
-app.directive('focus', {
-  mounted: async (el, binding) => {
-    const { modifiers, value } = binding;
-
-    if (!!value || value === undefined) {
-      await nextTick();
-      el.focus();
-      if (modifiers.select && el instanceof HTMLInputElement) {
-        el.select();
-      }
-    }
-  },
-});
+app.directive('focus', autofocus);
 
 app.use(consoleNaTemplate);
 
@@ -152,7 +108,8 @@ app.component('CheckClose', CheckClose);
 app.component('ErrorComponent', ErrorComponent);
 app.component('FormErrorsList', FormErrorsList);
 app.component('SmaeFieldsetSubmit', SmaeFieldsetSubmit);
-app.component('LabelFromYup', LabelFromYup);
+app.component('LabelFromYup', SmaeLabel);
+app.component('SmaeLabel', SmaeLabel);
 app.component('LoadingComponent', LoadingComponent);
 app.component('MigalhasDePão', MigalhasDePão);
 app.component('MigalhasDePao', MigalhasDePão);

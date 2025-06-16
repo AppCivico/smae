@@ -2,7 +2,7 @@ import { Transform } from 'class-transformer';
 import { IsInt, IsNumber, IsOptional, IsString, Max, MaxLength, Min, ValidateIf } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 import { DateTransform } from '../../../auth/transforms/date.transform';
-import { MAX_LENGTH_DEFAULT } from 'src/common/consts';
+import { MAX_LENGTH_DEFAULT, MAX_LENGTH_MEDIO } from 'src/common/consts';
 
 export class CreatePlanoAcaoDto {
     @IsInt()
@@ -19,8 +19,8 @@ export class CreatePlanoAcaoDto {
     responsavel?: string;
 
     @IsString()
-    @MaxLength(MAX_LENGTH_DEFAULT, {
-        message: `O campo 'Contramedida' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    @MaxLength(MAX_LENGTH_MEDIO, {
+        message: `O campo 'Contramedida' deve ter no máximo ${MAX_LENGTH_MEDIO} caracteres`,
     })
     contramedida: string;
 

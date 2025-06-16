@@ -13,7 +13,7 @@ import {
 } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 import { DateTransform } from '../../../auth/transforms/date.transform';
-import { MAX_LENGTH_DEFAULT, MAX_LENGTH_HTML } from 'src/common/consts';
+import { MAX_LENGTH_DEFAULT, MAX_LENGTH_MEDIO } from 'src/common/consts';
 
 export class CreateDistribuicaoRegistroSEIDto {
     @IsOptional()
@@ -42,13 +42,13 @@ export class CreateDistribuicaoRecursoDto {
 
     @IsString()
     @MinLength(1)
-    @MaxLength(MAX_LENGTH_HTML, { message: `O campo 'Objeto' deve ter no máximo ${MAX_LENGTH_HTML} caracteres` })
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo 'Objeto' deve ter no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     objeto: string;
 
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Nome' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo 'Nome' deve ter no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     nome?: string;
 
     @IsNumberString(
@@ -90,6 +90,40 @@ export class CreateDistribuicaoRecursoDto {
     )
     @ValidateIf((object, value) => value !== null)
     custeio: number;
+
+    @IsNumberString(
+        {},
+        {
+            message:
+                '$property| Precisa ser um número com até 35 dígitos antes do ponto, e até 2 dígitos após, enviado em formato string',
+        }
+    )
+    @ValidateIf((object, value) => value !== null)
+    @IsOptional()
+    valor_empenho?: number;
+
+    @IsNumberString(
+        {},
+        {
+            message:
+                '$property| Precisa ser um número com até 35 dígitos antes do ponto, e até 2 dígitos após, enviado em formato string',
+        }
+    )
+    @ValidateIf((object, value) => value !== null)
+    @IsOptional()
+    valor_liquidado?: number;
+
+    @IsOptional()
+    @IsString()
+    rubrica_de_receita?: string;
+
+    @IsOptional()
+    @IsString()
+    finalidade?: string;
+
+    @IsOptional()
+    @IsString()
+    gestor_contrato?: string;
 
     @IsOptional()
     @IsNumber(
@@ -159,19 +193,25 @@ export class CreateDistribuicaoRecursoDto {
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Proposta' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Proposta' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     proposta?: string;
 
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Contrato' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Contrato' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     contrato?: string;
 
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Convênio' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Convênio' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     convenio?: string;
 
     @IsOptional()
@@ -242,6 +282,30 @@ export class CreateDistribuicaoRecursoDto {
     @ValidateIf((object, value) => value !== null)
     @Type(() => CreateDistribuicaoParlamentarDto)
     parlamentares?: CreateDistribuicaoParlamentarDto[];
+
+    @IsOptional()
+    @IsString()
+    @MinLength(1)
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Banco aceite' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
+    distribuicao_banco?: string;
+
+    @IsOptional()
+    @IsString()
+    @MinLength(1)
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Agência aceite' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
+    distribuicao_agencia?: string;
+
+    @IsOptional()
+    @IsString()
+    @MinLength(1)
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Conta aceite' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
+    distribuicao_conta?: string;
 }
 
 export class CreateDistribuicaoParlamentarDto {
@@ -251,7 +315,7 @@ export class CreateDistribuicaoParlamentarDto {
     @IsOptional()
     @IsString()
     @MinLength(1)
-    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Objeto' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
+    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo 'Objeto' deve ter no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     objeto?: string;
 
     @IsOptional()

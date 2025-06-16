@@ -1,11 +1,8 @@
-/* eslint-disable import/no-extraneous-dependencies */
 import type {
   FilterNotaComunicadoDto,
   NotaComunicadoItemDto,
-} from '@/../../backend/src/bloco-nota/nota/dto/comunicados.dto';
-
-import type { PaginatedDto } from '@/../../backend/src/common/dto/paginated.dto';
-
+} from '@back/bloco-nota/nota/dto/comunicados.dto';
+import type { PaginatedDto } from '@back/common/dto/paginated.dto';
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}/nota-comunicados`;

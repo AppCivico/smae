@@ -39,6 +39,8 @@ export class AtualizacaoEmLoteResumoDto {
 
     @IsOptional()
     orgao: IdSiglaDescricao | null;
+
+    relatorio_arquivo: string | null;
 }
 
 export class ListAtualizacaoEmLoteDto extends PaginatedWithPagesDto<AtualizacaoEmLoteResumoDto> {}
@@ -54,6 +56,7 @@ export class AtualizacaoEmLoteDetalheDto extends AtualizacaoEmLoteResumoDto {
     results_log?: any;
 
     operacao_processada: OperacaoProcessadaDto | null;
+
 }
 
 export class FilterAtualizacaoEmLoteDto {
@@ -110,7 +113,7 @@ export class OperacaoProcessadaItemDto {
     col_label: string;
     tipo_operacao: string;
     valor: any;
-    valor_formatado?: string;
+    valor_formatado?: string | string[];
 }
 
 export class OperacaoProcessadaDto {

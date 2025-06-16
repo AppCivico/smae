@@ -356,7 +356,6 @@ const geolocalizaçãoPorToken = computed(() => (currentFase.value?.loading
 })();
 </script>
 <template>
-  <h1>EXCLUIR ARQUIVO</h1>
   <div class="minimodal">
     <div class="flex spacebetween center mb2">
       <h2>{{ title }}</h2>

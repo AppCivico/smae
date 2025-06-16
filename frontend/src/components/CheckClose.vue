@@ -4,6 +4,10 @@ import { useAlertStore } from '@/stores/alert.store';
 import { useEditModalStore } from '@/stores/editModal.store';
 import { useRoute, useRouter } from 'vue-router';
 
+defineOptions({
+  inheritAttrs: false,
+});
+
 const editModalStore = useEditModalStore();
 
 const props = defineProps({
@@ -83,6 +87,7 @@ async function checkClose() {
 
   <button
     class="btn round ml2 botao-de-fechamento"
+    v-bind="$attrs"
     @click="checkClose"
   >
     <svg

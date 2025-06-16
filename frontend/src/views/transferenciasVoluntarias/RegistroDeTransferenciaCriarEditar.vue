@@ -1,4 +1,11 @@
 <script setup>
+import Big from 'big.js';
+import { storeToRefs } from 'pinia';
+import { useRouter } from 'vue-router';
+import {
+  ErrorMessage, Field, FieldArray, useForm,
+} from 'vee-validate';
+import { computed, nextTick, watch } from 'vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import { registroDeTransferencia as schema } from '@/consts/formSchemas';
 import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
@@ -6,15 +13,6 @@ import { useAlertStore } from '@/stores/alert.store';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
 import { usePartidosStore } from '@/stores/partidos.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
-import Big from 'big.js';
-import { storeToRefs } from 'pinia';
-import {
-  ErrorMessage, Field, FieldArray, useForm,
-} from 'vee-validate';
-import {
-  computed, nextTick, watch,
-} from 'vue';
-import { useRouter } from 'vue-router';
 
 const TransferenciasVoluntarias = useTransferenciasVoluntariasStore();
 const {
@@ -77,51 +75,69 @@ const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
 });
 
 const isSomaCorreta = computed(() => {
-  const soma = parseFloat(values.valor || 0) + parseFloat(values.valor_contrapartida || 0);
-  return soma === parseFloat(values.valor_total);
+  const soma = Big(values.valor || 0).plus(values.valor_contrapartida || 0);
+  return soma.eq(Big(values.valor_total || 0));
 });
 
 const calcularValorCusteio = (fieldName) => {
-  const valor = parseFloat(values.valor) || 0;
-  const custeio = parseFloat(values.custeio) || 0;
-  const percentagemCusteio = parseFloat(values.percentagem_custeio) || 0;
-  if (fieldName === 'percentagem_custeio' || fieldName === 'valor') {
-    const valorArredondado = new Big(valor)
+  const valor = Big(values.valor || 0);
+  const custeio = Big(values.custeio || 0);
+  const percentagemCusteio = Big(values.pct_custeio || 0);
+
+  if (fieldName === 'pct_custeio' || fieldName === 'valor') {
+    const valorArredondado = valor
       .times(percentagemCusteio).div(100).round(2, Big.roundHalfUp);
     setFieldValue('custeio', valorArredondado.toString());
   } else if (fieldName === 'custeio') {
-    const porcentagemCusteio = ((custeio / valor) * 100);
-    setFieldValue('percentagem_custeio', porcentagemCusteio.toFixed(2));
-    setFieldValue('percentagem_investimento', (100 - porcentagemCusteio).toFixed(2));
+    const porcentagemCusteio = valor.eq(0)
+      ? Big(0)
+      : custeio.div(valor).times(100);
+    setFieldValue('pct_custeio', porcentagemCusteio.toFixed(2));
+    setFieldValue('pct_investimento', Big(100).minus(porcentagemCusteio).toFixed(2));
   }
 };
 
 const calcularValorInvestimento = (fieldName) => {
-  const valor = parseFloat(values.valor) || 0;
-  const investimento = parseFloat(values.investimento) || 0;
-  const custeio = parseFloat(values.custeio) || 0;
-  const percentagemInvestimento = parseFloat(values.percentagem_investimento) || 0;
-  if (fieldName === 'percentagem_investimento' || fieldName === 'valor') {
-    const valorArredondado = new Big(valor)
-      .times(percentagemInvestimento).div(100).round(2);
-    let valorArredondadoConvertido = parseFloat(valorArredondado.toString());
-    if (custeio > 0) {
-      valorArredondadoConvertido = valor - custeio;
-    }
-    const valorFinal = new Big(valorArredondadoConvertido).round(2, Big.roundHalfUp);
-    setFieldValue('investimento', valorFinal.toString());
+  const valor = Big(values.valor || 0);
+  const investimento = Big(values.investimento || 0);
+  const custeio = Big(values.custeio || 0);
+  const percentagemInvestimento = Big(values.pct_investimento || 0);
+
+  if (fieldName === 'pct_investimento' || fieldName === 'valor') {
+    const investimentoCalculado = custeio.gt(0)
+      ? valor.minus(custeio)
+      : valor.times(percentagemInvestimento).div(100);
+
+    const investimentoFinal = investimentoCalculado.round(2, Big.roundHalfUp);
+    setFieldValue('investimento', investimentoFinal.toString());
+
+    // manter coerência das porcentagens
+    const pct = valor.eq(0)
+      ? Big(0)
+      : investimentoFinal.div(valor).times(100);
+    setFieldValue('pct_investimento', pct.toFixed(2));
+    setFieldValue('pct_custeio', Big(100).minus(pct).toFixed(2));
   } else if (fieldName === 'investimento') {
-    const porcentagemInvestimento = ((investimento / valor) * 100);
-    setFieldValue('percentagem_investimento', porcentagemInvestimento.toFixed(2));
-    setFieldValue('percentagem_custeio', (100 - porcentagemInvestimento).toFixed(2));
+    const porcentagemInvestimento = valor.eq(0)
+      ? Big(0)
+      : investimento.div(valor).times(100);
+    setFieldValue('pct_investimento', porcentagemInvestimento.toFixed(2));
+    setFieldValue('pct_custeio', Big(100).minus(porcentagemInvestimento).toFixed(2));
   }
 };
 
 const updateValorTotal = (fieldName, newValue) => {
-  const valor = fieldName === 'valor' ? parseFloat(newValue) || 0 : parseFloat(values.valor) || 0;
-  const valorContraPartida = fieldName === 'valor_contrapartida' ? parseFloat(newValue) || 0 : parseFloat(values.valor_contrapartida) || 0;
-  const valorArredondado = new Big((valor + valorContraPartida)).round(2);
-  setFieldValue('valor_total', valorArredondado.toString());
+  const valor = fieldName === 'valor'
+    ? Big(newValue || 0)
+    : Big(values.valor || 0);
+
+  const valorContraPartida = fieldName === 'valor_contrapartida'
+    ? Big(newValue || 0)
+    : Big(values.valor_contrapartida || 0);
+
+  const valorArredondado = valor.plus(valorContraPartida);
+
+  setFieldValue('valor_total', valorArredondado.toFixed(2));
   calcularValorCusteio(fieldName);
   calcularValorInvestimento(fieldName);
 };
@@ -208,20 +224,20 @@ watch(itemParaEdicao, async (novosValores) => {
       <div class="flex f1 g2 center">
         <div class="fb20em">
           <LabelFromYup
-            name="percentagem_investimento"
+            name="pct_custeio"
             :schema="schema"
           />
           <MaskedFloatInput
-            name="percentagem_custeio"
+            name="pct_custeio"
             type="text"
             class="inputtext light"
-            :value="values.percentagem_custeio"
+            :value="values.pct_custeio"
             converter-para="string"
             :max="100"
             maxlength="6"
             @update:model-value="(newValue) => {
-              setFieldValue('percentagem_custeio', newValue);
-              calcularValorCusteio('percentagem_custeio');
+              setFieldValue('pct_custeio', newValue);
+              calcularValorCusteio('pct_custeio');
             }"
           />
         </div>
@@ -256,20 +272,20 @@ watch(itemParaEdicao, async (novosValores) => {
       <div class="flex f1 g2 center">
         <div class="fb20em">
           <LabelFromYup
-            name="percentagem_investimento"
+            name="pct_investimento"
             :schema="schema"
           />
           <MaskedFloatInput
-            name="percentagem_investimento"
+            name="pct_investimento"
             type="text"
             class="inputtext light"
-            :value="values.percentagem_investimento"
+            :value="values.pct_investimento"
             converter-para="string"
             :max="100"
             maxlength="6"
             @update:model-value="(newValue) => {
-              setFieldValue('percentagem_investimento', newValue);
-              calcularValorInvestimento('percentagem_investimento');
+              setFieldValue('pct_investimento', newValue);
+              calcularValorInvestimento('pct_investimento');
             }"
           />
         </div>
@@ -334,6 +350,7 @@ watch(itemParaEdicao, async (novosValores) => {
         />
       </div>
     </div>
+
     <div class="flex g2 mb1">
       <div class="f1">
         <LabelFromYup
@@ -434,11 +451,16 @@ watch(itemParaEdicao, async (novosValores) => {
             :schema="schema.fields.parlamentares.innerType"
             :for="`parlamentares[${idx}].objeto`"
           />
-          <Field
+          <SmaeText
+            :model-value="values.parlamentares[idx].objeto"
             :name="`parlamentares[${idx}].objeto`"
             class="inputtext light mb1"
             as="textarea"
             rows="10"
+            :schema="schema"
+            maxlength="1000"
+            anular-vazio
+            esconder-contador
           />
         </div>
       </div>

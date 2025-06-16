@@ -19,6 +19,7 @@ import { GrupoTematicoModule } from '../grupo-tematico/grupo-tematico.module';
 import { TipoIntervencaoModule } from '../tipo-intervencao/tipo-intervencao.module';
 import { PessoaPrivilegioModule } from '../../auth/pessoaPrivilegio.module';
 import { JwtModule } from '@nestjs/jwt';
+import { SmaeConfigModule } from 'src/common/services/smae-config.module';
 
 @Module({
     imports: [
@@ -33,6 +34,7 @@ import { JwtModule } from '@nestjs/jwt';
         GrupoTematicoModule,
         TipoIntervencaoModule,
         PessoaPrivilegioModule,
+        SmaeConfigModule,
         JwtModule.register({
             secret: process.env.SESSION_JWT_SECRET + ':pagination',
             signOptions: { expiresIn: '1d' },

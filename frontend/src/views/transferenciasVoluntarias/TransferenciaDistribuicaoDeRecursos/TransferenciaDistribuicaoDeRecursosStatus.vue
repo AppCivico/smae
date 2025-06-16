@@ -109,7 +109,8 @@ import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVolunt
 import { storeToRefs } from 'pinia';
 import { useIsFormDirty } from 'vee-validate';
 import {
-  computed, onMounted, onUnmounted, ref,
+  computed,
+  ref,
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import TransferenciasDistribuicaoStatusCriarEditar from './TransferenciasDistribuicaoStatusCriarEditar.vue';
@@ -170,12 +171,4 @@ function fecharModalStatus(carregar = false) {
     distribuicaoRecursos.buscarItem(distribuiçãoEmFoco.value.id);
   }
 }
-
-onMounted(async () => {
-  await TransferenciasVoluntarias.buscarItem(params.transferenciaId);
-});
-
-onUnmounted(() => {
-  distribuicaoRecursos.$reset();
-});
 </script>

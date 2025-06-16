@@ -68,7 +68,7 @@ watchEffect(() => {
     <template #acoes>
       <SmaeLink
         :to="{ name: 'variaveisCriar' }"
-        class="btn big ml1"
+        class="btn big"
       >
         Nova variável
       </SmaeLink>
@@ -78,8 +78,8 @@ watchEffect(() => {
   <FormularioQueryString
     v-slot="{ aplicarQueryStrings }"
     :valores-iniciais="{
-      ordem_coluna: 'codigo',
-      ordem_direcao: 'asc',
+      ordem_coluna: 'criado_em',
+      ordem_direcao: 'desc',
       ipp: gblIpp,
       pagina: 1,
       token_paginacao: undefined,

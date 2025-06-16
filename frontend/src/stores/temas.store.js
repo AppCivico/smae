@@ -15,8 +15,7 @@ function caminhoParaApi(rotaMeta) {
   }
 }
 
-export const useTemasStore = defineStore({
-  id: 'Temas',
+export const useTemasStore = defineStore('Temas', {
   state: () => ({
     Temas: {},
     tempTemas: {},

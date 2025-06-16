@@ -1,4 +1,12 @@
-import { BadRequestException, forwardRef, HttpException, Inject, Injectable, Logger } from '@nestjs/common';
+import {
+    BadRequestException,
+    forwardRef,
+    HttpException,
+    Inject,
+    Injectable,
+    InternalServerErrorException,
+    Logger,
+} from '@nestjs/common';
 import { Prisma, ProjetoFase, ProjetoOrigemTipo, ProjetoStatus, TipoProjeto } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { IdCodTituloDto } from 'src/common/dto/IdCodTitulo.dto';
@@ -47,6 +55,8 @@ import { GeoLocService, UpsertEnderecoDto } from '../../geo-loc/geo-loc.service'
 import { ArquivoBaseDto } from '../../upload/dto/create-upload.dto';
 import { UpdateTarefaDto } from '../tarefa/dto/update-tarefa.dto';
 import { TarefaService } from '../tarefa/tarefa.service';
+import { SmaeConfigService } from 'src/common/services/smae-config.service';
+import { CONST_PERFIL_COLAB_OBRA_NO_ORGAO, CONST_PERFIL_GESTOR_OBRA } from '../../common/consts';
 
 const FASES_PLANEJAMENTO_E_ANTERIORES: ProjetoStatus[] = ['Registrado', 'Selecionado', 'EmPlanejamento'];
 const StatusParaFase: Record<ProjetoStatus, ProjetoFase> = {
@@ -65,14 +75,14 @@ const StatusParaFase: Record<ProjetoStatus, ProjetoFase> = {
 } as const;
 
 export const ProjetoStatusParaExibicao: Record<ProjetoStatus, string> = {
-    Registrado: 'Registrado',
-    Selecionado: 'Selecionado',
-    EmPlanejamento: 'Em Planejamento',
-    Planejado: 'Planejado',
-    Validado: 'Validado',
-    EmAcompanhamento: 'Em Acompanhamento',
-    Suspenso: 'Suspenso',
-    Fechado: 'Concluído',
+    Registrado: '1. Registrado',
+    Selecionado: '2. Selecionado',
+    EmPlanejamento: '3. Em Planejamento',
+    Planejado: '4. Planejado',
+    Validado: '5. Validado',
+    EmAcompanhamento: '6. Em Acompanhamento',
+    Suspenso: '8. Suspenso',
+    Fechado: '7. Concluído',
     MDO_Concluida: 'Concluída',
     MDO_EmAndamento: 'Em Andamento',
     MDO_NaoIniciada: 'Não Iniciada',
@@ -356,7 +366,8 @@ export class ProjetoService {
         @Inject(forwardRef(() => TarefaService))
         private readonly tarefaService: TarefaService,
         private readonly pessoaPrivService: PessoaPrivilegioService,
-        private readonly jwtService: JwtService
+        private readonly jwtService: JwtService,
+        private readonly smaeConfig: SmaeConfigService
     ) {}
 
     private async processaOrigem(dto: CreateProjetoDto) {
@@ -469,29 +480,98 @@ export class ProjetoService {
         }
     }
 
-    private async processaOrgaoGestor(dto: CreateProjetoDto, portfolio: PortfolioDto, checkFk: boolean) {
-        if (!dto.orgao_gestor_id) return { orgao_gestor_id: undefined, responsaveis_no_orgao_gestor: undefined };
+    private async processaOrgaoGestor(dto: CreateProjetoDto, portfolio: PortfolioDto, tipo: TipoProjeto) {
+        if (!dto.orgao_gestor_id && !dto.responsaveis_no_orgao_gestor)
+            return { orgao_gestor_id: undefined, responsaveis_no_orgao_gestor: undefined };
+
+        // Tentando descobrir o orgao_gestor_id, olhando pelo órgão cadastrado nos responsaveis.
+        if (!dto.orgao_gestor_id && dto.responsaveis_no_orgao_gestor?.length) {
+            const responsaveis = await this.prisma.pessoaFisica.findMany({
+                where: {
+                    pessoa: {
+                        some: {
+                            id: { in: dto.responsaveis_no_orgao_gestor },
+                        },
+                    },
+                },
+                select: { orgao_id: true },
+            });
+
+            // Em teoria não será possível ter mais de um orgão, pois as pessoas são filtradas pelo órgão na tela. Mas se tiver, estoura um erro.
+            let orgaoGestor: (number | null)[] = [];
+            orgaoGestor = responsaveis.map((r): number | null => {
+                if (!orgaoGestor.includes(r.orgao_id)) return r.orgao_id;
+
+                return null;
+            });
+            if (orgaoGestor.length > 1)
+                throw new HttpException(`Mais de um órgão encontrado entre os responsáveis`, 400);
+
+            dto.orgao_gestor_id = responsaveis[0].orgao_id;
+        }
 
         const orgao_gestor_id: number = +dto.orgao_gestor_id;
         const responsaveis_no_orgao_gestor: number[] = dto.responsaveis_no_orgao_gestor
             ? dto.responsaveis_no_orgao_gestor
             : [];
 
+        const checkFkStr = await this.smaeConfig.getConfig('VALIDAR_ORGAO_PORTFOLIO');
+        // getConfig retorna uma string, então tem que converter pra bool
+        const checkFk = checkFkStr == 'true' ? true : false;
+
         if (checkFk) {
             //console.dir({ portfolio, orgao_gestor_id, responsaveis_no_orgao_gestor }, { depth: 44 });
             // se o banco ficou corrompido, não tem como o usuário arrumar
             if (portfolio.orgaos.map((r) => r.id).includes(orgao_gestor_id) == false)
                 throw new HttpException(
-                    `orgao_gestor_id| Órgão não faz parte do Portfolio (${portfolio.orgaos
-                        .map((r) => r.sigla)
-                        .join(', ')})`,
+                    `Órgão não faz parte do Portfolio (${portfolio.orgaos.map((r) => r.sigla).join(', ')})`,
                     400
                 );
+
+            // Caso seja um projeto do tipo MDO, o órgão deve ter ao menos um usuário com perfil "Gestor da Obra".
+            if (tipo == 'MDO') {
+                const pessoasGestoras = await this.prisma.pessoaPerfil.count({
+                    where: {
+                        pessoa: {
+                            pessoa_fisica: {
+                                orgao_id: orgao_gestor_id,
+                            },
+                        },
+                        perfil_acesso: {
+                            nome: CONST_PERFIL_GESTOR_OBRA,
+                        },
+                    },
+                });
+
+                if (pessoasGestoras == 0)
+                    throw new HttpException(`Órgão não possui usuários com o perfil ${CONST_PERFIL_GESTOR_OBRA}`, 400);
+            }
         }
 
         // esse TODO continua existindo
         // TODO verificar se cada [responsaveis_no_orgao_gestor] existe realmente
         // e se tem o privilegio gestor_de_projeto
+
+        // Verificando se cada responsavel existe no orgão gestor
+        if (responsaveis_no_orgao_gestor.length > 0) {
+            const pessoas = await this.prisma.pessoaFisica.findMany({
+                where: {
+                    pessoa: {
+                        some: {
+                            id: { in: responsaveis_no_orgao_gestor },
+                        },
+                    },
+                    orgao_id: orgao_gestor_id,
+                },
+                select: { id: true },
+            });
+            console.log({ pessoas, responsaveis_no_orgao_gestor });
+            if (pessoas.length !== responsaveis_no_orgao_gestor.length)
+                throw new HttpException(
+                    'responsaveis_no_orgao_gestor| Uma ou mais pessoas não foram encontradas no órgão gestor',
+                    400
+                );
+        }
 
         return {
             orgao_gestor_id,
@@ -525,13 +605,6 @@ export class ProjetoService {
         // pra criar, verifica se a pessoa pode realmente acessar o portfolio, então
         // começa listando todos os portfolios
         const portfolios = await this.portfolioService.findAll(tipo, user, true);
-        if (tipo == 'PP') {
-            if (!dto.orgaos_participantes || dto.orgaos_participantes.length == 0)
-                throw new HttpException('Campo órgão participantes obrigatório para projetos', 400);
-            if (!dto.orgao_responsavel_id)
-                throw new HttpException('Campo órgão responsável obrigatório para projetos', 400);
-            if (!dto.responsavel_id) throw new HttpException('Campo responsável obrigatório para projetos', 400);
-        }
 
         const portfolio = portfolios.filter((r) => r.id == dto.portfolio_id)[0];
         if (!portfolio)
@@ -541,7 +614,7 @@ export class ProjetoService {
             );
 
         const { origem_tipo, meta_id, atividade_id, iniciativa_id, origem_outro } = await this.processaOrigem(dto);
-        const { orgao_gestor_id, responsaveis_no_orgao_gestor } = await this.processaOrgaoGestor(dto, portfolio, true);
+        const { orgao_gestor_id, responsaveis_no_orgao_gestor } = await this.processaOrgaoGestor(dto, portfolio, tipo);
 
         if (!origem_tipo) throw new Error('origem_tipo deve estar definido no create de Projeto');
 
@@ -2100,6 +2173,7 @@ export class ProjetoService {
 
         // --- Aplica Lógica Específica por Tipo (PP vs MDO) ---
         if (projeto.tipo == 'PP') {
+            permissoes.apenas_leitura = !pessoaPodeEscreverGeral;
             // --- Cálculos Específicos para PP ---
             const ehAposPlanejamento = !FASES_PLANEJAMENTO_E_ANTERIORES.includes(projeto.status);
             const ehGerenteDeProjetoRole =
@@ -2107,7 +2181,7 @@ export class ProjetoService {
 
             // Determina se o estado especial "editar apenas responsabilidades" se aplica
             permissoes.pode_editar_apenas_responsaveis_pos_planejamento =
-                ehAposPlanejamento && ehGerenteDeProjetoRole && permissoes.sou_responsavel;
+                ehAposPlanejamento && ehGerenteDeProjetoRole && projeto.responsavel_id == user.id;
 
             if (permissoes.pode_editar_apenas_responsaveis_pos_planejamento) {
                 this.logger.verbose(
@@ -2241,12 +2315,22 @@ export class ProjetoService {
 
         // --- Verificações Finais de Validação ---
         // Estas verificações precisam considerar o status geral de apenas_leitura
-        if (user && readonly === 'ReadWrite' && permissoes.apenas_leitura) {
+        if (
+            user &&
+            readonly === 'ReadWrite' &&
+            permissoes.apenas_leitura &&
+            !permissoes.pode_editar_apenas_responsaveis_pos_planejamento
+        ) {
             // Lança exceção se endpoint ReadWrite for chamado, mas usuário NÃO tem acesso de escrita
             throw new HttpException('Você não tem permissão para editar este projeto.', 400);
         }
 
-        if (user && readonly === 'ReadWriteTeam' && (!permissoes.sou_responsavel || permissoes.apenas_leitura)) {
+        console.log('=========================\n\n\n\n\n\n\n');
+        console.log('permissoes', permissoes);
+        console.log('=========================\n\n\n\n\n\n\n');
+
+        // não precisa testar pelo pode_editar_apenas_responsaveis_pos_planejamento já que lá ele é sou_responsavel=true
+        if (user && readonly === 'ReadWriteTeam' && !permissoes.sou_responsavel && permissoes.apenas_leitura) {
             // Lança exceção se escrita específica da equipe for solicitada, mas usuário não está atribuído OU não tem capacidade de escrita
             // (Se eles têm escrita geral OU específica, apenas_leitura será falso)
             throw new HttpException('Você não faz parte da equipe ou não tem permissão para editar este projeto.', 400);
@@ -2438,11 +2522,7 @@ export class ProjetoService {
             const tmpDto: Partial<UpdateProjetoDto> = {};
 
             // Copia apenas os campos que podem ser editáveis
-            if ('responsaveis_no_orgao_gestor' in dto)
-                tmpDto.responsaveis_no_orgao_gestor = dto.responsaveis_no_orgao_gestor;
             if ('equipe' in dto) tmpDto.equipe = dto.equipe;
-            if ('orgao_responsavel_id' in dto) tmpDto.orgao_responsavel_id = dto.orgao_responsavel_id;
-            if ('responsavel_id' in dto) tmpDto.responsavel_id = dto.responsavel_id;
 
             // Testa se o DTO filtrado está vazio, se estiver, lança erro
             if (Object.keys(tmpDto).length === 0 && Object.keys(dto).length > 0) {
@@ -2508,15 +2588,23 @@ export class ProjetoService {
 
         const edit = dto.responsaveis_no_orgao_gestor
             ? {
-                  orgao_gestor_id: projeto.orgao_gestor.id,
+                  orgao_gestor_id: dto.orgao_gestor_id ?? projeto.orgao_gestor.id,
                   responsaveis_no_orgao_gestor: dto.responsaveis_no_orgao_gestor,
               }
             : {};
         const { orgao_gestor_id, responsaveis_no_orgao_gestor } = await this.processaOrgaoGestor(
             edit as any,
             portfolio,
-            false
+            tipo
         );
+
+        if (dto.responsavel_id && dto.responsavel_id != projeto.responsavel?.id) {
+            await this.checkOrgaoResponsavel(
+                tipo,
+                dto.orgao_responsavel_id || projeto.orgao_responsavel?.id,
+                dto.responsavel_id
+            );
+        }
 
         const now = new Date(Date.now());
 
@@ -3446,13 +3534,14 @@ export class ProjetoService {
                 projeto.status == ProjetoStatus.Suspenso ||
                 projeto.status == ProjetoStatus.Fechado
             )
-                throw new HttpException('Cronograma não pode ser clonado, pois está com status inválido.', 400);
+                throw new HttpException(
+                    `Cronograma não pode ser clonado, pois está com status ${projeto.status}.`,
+                    400
+                );
 
             // O true é para indicar que é clone de projeto e não de transferência.
             await prismaTx.$queryRaw`CALL clone_tarefas('true'::boolean, ${dto.projeto_fonte_id}::int, ${projetoId}::int);`;
-        });
 
-        await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             // Buscando tarefas criadas e disparando calc de topologia.
             const tarefas = await prismaTx.tarefa.findMany({
                 where: {
@@ -3464,10 +3553,9 @@ export class ProjetoService {
                 },
                 select: {
                     id: true,
+                    tarefa_cronograma_id: true,
                     dependencias: {
                         select: {
-                            id: true,
-                            tarefa_id: true,
                             dependencia_tarefa_id: true,
                             tipo: true,
                             latencia: true,
@@ -3489,8 +3577,15 @@ export class ProjetoService {
                             };
                         }),
                     };
+                    console.log(dto);
 
-                    await this.tarefaService.update({ projeto_id: projetoId }, tarefa.id, dto, user);
+                    await this.tarefaService.update(
+                        { tarefa_cronograma_id: tarefa.tarefa_cronograma_id },
+                        tarefa.id,
+                        dto,
+                        user,
+                        prismaTx
+                    );
                 }
             }
         });
@@ -3792,5 +3887,41 @@ export class ProjetoService {
             await prismaTx.projetoPessoaRevisao.deleteMany({ where: { pessoa_id: user.id, projeto: { tipo: tipo } } });
             return;
         });
+    }
+
+    async checkOrgaoResponsavel(
+        tipo: TipoProjeto,
+        orgao_responsavel_id: number | null | undefined,
+        reponsavel_id: number
+    ) {
+        if (!orgao_responsavel_id) {
+            throw new InternalServerErrorException('O órgão responsável não pode ser nulo.');
+        }
+
+        // A pessoa deve ser do órgão responsável e deve ter o perfil "Colaborador de obra no órgão"
+        if (tipo == TipoProjeto.MDO) {
+            const pessoa = await this.prisma.pessoa.findFirst({
+                where: {
+                    id: reponsavel_id,
+                    pessoa_fisica: {
+                        orgao_id: orgao_responsavel_id,
+                    },
+                    PessoaPerfil: {
+                        some: {
+                            perfil_acesso: {
+                                nome: CONST_PERFIL_COLAB_OBRA_NO_ORGAO,
+                            },
+                        },
+                    },
+                },
+            });
+
+            if (!pessoa) {
+                throw new HttpException(
+                    'A pessoa não é do órgão responsável ou não possui o perfil de colaborador de obra no órgão.',
+                    400
+                );
+            }
+        }
     }
 }

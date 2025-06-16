@@ -6,7 +6,7 @@
           :to="{
             name: 'obrasCriar'
           }"
-          class="btn big ml1"
+          class="btn big"
         >
           Nova obra
         </SmaeLink>
@@ -16,12 +16,11 @@
     <FormularioQueryString
       v-slot="{ aplicarQueryStrings, detectarMudancas, formularioSujo }"
       :valores-iniciais="{
-        ordem_direcao: 'asc',
         ipp: gblIpp,
         pagina: 1,
         token_paginacao: undefined,
-        ordem_coluna: 'codigo',
-        ordem_direcao: 'asc',
+        ordem_coluna: 'registrado_em',
+        ordem_direcao: 'desc',
       }"
     >
       <FiltroDeListagemDeObras

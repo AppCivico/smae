@@ -1,63 +1,6 @@
-import LoadingComponent from '@/components/LoadingComponent.vue';
 import RelatoriosRaiz from '@/views/relatorios/RelatoriosRaiz.vue';
-import { defineAsyncComponent } from 'vue';
 
-const ListaDeRelatorios = defineAsyncComponent({
-  loader: () => import('@/views/relatorios/ListaDeRelatorios.vue'),
-  loadingComponent: LoadingComponent,
-});
-const NovoMensal = defineAsyncComponent({
-  loader: () => import('@/views/relatorios/NovoMensal.vue'),
-  loadingComponent: LoadingComponent,
-});
-const NovoOrcamentarioPdM = defineAsyncComponent({
-  loader: () => import('@/views/relatorios/NovoOrcamentarioPdM.vue'),
-  loadingComponent: LoadingComponent,
-});
-const NovoOrçamentárioPortfolio = defineAsyncComponent({
-  loader: () => import('@/views/relatorios/NovoOrcamentarioPortfolio.vue'),
-  loadingComponent: LoadingComponent,
-});
-const NovoRelatórioDePortfolio = defineAsyncComponent({
-  loader: () => import('@/views/relatorios/NovoRelatorioDePortfolio.vue'),
-  loadingComponent: LoadingComponent,
-});
-const NovoRelatórioDePrevisãoDeCustoPdM = defineAsyncComponent({
-  loader: () => import('@/views/relatorios/NovoRelatorioDePrevisaoDeCustoPdM.vue'),
-  loadingComponent: LoadingComponent,
-});
-const NovoRelatórioDePrevisãoDeCustoPortfolio = defineAsyncComponent({
-  loader: () => import('@/views/relatorios/NovoRelatorioDePrevisaoDeCustoPortfolio.vue'),
-  loadingComponent: LoadingComponent,
-});
-const NovoRelatórioDeProjeto = defineAsyncComponent({
-  loader: () => import('@/views/relatorios/NovoRelatorioDeProjeto.vue'),
-  loadingComponent: LoadingComponent,
-});
-const NovoRelatórioDeStatus = defineAsyncComponent({
-  loader: () => import('@/views/relatorios/NovoRelatorioDeStatus.vue'),
-  loadingComponent: LoadingComponent,
-});
-const NovoSemestralOuAnual = defineAsyncComponent({
-  loader: () => import('@/views/relatorios/NovoSemestralOuAnual.vue'),
-  loadingComponent: LoadingComponent,
-});
-const NovoRelatórioDePortfolioObras = defineAsyncComponent({
-  loader: () => import('@/views/relatorios/NovoRelatorioDePortfolioObras.vue'),
-  loadingComponent: LoadingComponent,
-});
-const NovoRelatórioDeStatusObras = defineAsyncComponent({
-  loader: () => import('@/views/relatorios/NovoRelatorioDeStatusObras.vue'),
-  loadingComponent: LoadingComponent,
-});
-const NovoRelatórioDePrevisãoDeCustoPortfolioObras = defineAsyncComponent({
-  loader: () => import('@/views/relatorios/NovoRelatorioDePrevisaoDeCustoPortfolioObras.vue'),
-  loadingComponent: LoadingComponent,
-});
-const NovoRelatórioOrçamentárioPortfolioObras = defineAsyncComponent({
-  loader: () => import('@/views/relatorios/NovoRelatorioOrcamentarioPortfolioObras.vue'),
-  loadingComponent: LoadingComponent,
-});
+const ListaDeRelatorios = () => import('@/views/relatorios/ListaDeRelatorios.vue');
 
 export default {
   path: '/relatorios',
@@ -135,12 +78,16 @@ export default {
           },
         },
         {
-          component: NovoMensal,
+          component: () => import('@/views/relatorios/NovoMensal.vue'),
           path: 'novo',
           name: 'novoRelatórioMensal',
           meta: {
             título: 'Novo relatório mensal',
+            tituloParaMigalhaDePao: 'Novo relatório mensal',
             rotaDeEscape: 'RelatóriosMensais',
+            rotasParaMigalhasDePão: [
+              'RelatóriosMensais',
+            ],
           },
         },
       ],
@@ -165,12 +112,16 @@ export default {
           },
         },
         {
-          component: NovoSemestralOuAnual,
+          component: () => import('@/views/relatorios/NovoSemestralOuAnual.vue'),
           path: 'novo',
           name: 'pdm.novoRelatórioSemestralOuAnual',
           meta: {
             título: 'Novo relatório semestral ou anual',
+            tituloParaMigalhaDePao: 'Novo relatório semestral ou anual',
             rotaDeEscape: 'pdm.RelatóriosSemestraisOuAnuais',
+            rotasParaMigalhasDePão: [
+              'pdm.RelatóriosSemestraisOuAnuais',
+            ],
           },
         },
       ],
@@ -195,12 +146,16 @@ export default {
           },
         },
         {
-          component: NovoOrcamentarioPdM,
+          component: () => import('@/views/relatorios/NovoOrcamentarioPdM.vue'),
           path: 'novo',
           name: 'novoRelatórioOrçamentárioPdM',
           meta: {
             título: 'Novo relatório orçamentário de PdM',
+            tituloParaMigalhaDePao: 'Novo relatório orçamentário de PdM',
             rotaDeEscape: 'RelatóriosOrçamentáriosPdM',
+            rotasParaMigalhasDePão: [
+              'RelatóriosOrçamentáriosPdM',
+            ],
           },
         },
       ],
@@ -224,13 +179,16 @@ export default {
           },
         },
         {
-          component: NovoOrçamentárioPortfolio,
+          component: () => import('@/views/relatorios/NovoOrcamentarioPortfolio.vue'),
           path: 'novo',
           name: 'novoRelatórioOrçamentárioPortfolio',
           meta: {
             título: 'Novo relatório orçamentário de portfólio',
+            tituloParaMigalhaDePao: 'Novo relatório orçamentário de portfólio',
             rotaDeEscape: 'RelatóriosOrçamentáriosPortfolio',
-            rotasParaMigalhasDePão: ['RelatóriosOrçamentáriosPortfolio'],
+            rotasParaMigalhasDePão: [
+              'RelatóriosOrçamentáriosPortfolio',
+            ],
           },
         },
       ],
@@ -259,7 +217,11 @@ export default {
           name: 'novoRelatórioDeParlamentares',
           meta: {
             título: 'Novo relatório de parlamentares',
+            tituloParaMigalhaDePao: 'Novo relatório de parlamentares',
             rotaDeEscape: 'RelatóriosDeParlamentares',
+            rotasParaMigalhasDePão: [
+              'RelatóriosDeParlamentares',
+            ],
           },
         },
       ],
@@ -290,7 +252,11 @@ export default {
           name: 'novoRelatórioDeTransferênciasVoluntárias',
           meta: {
             título: 'Novo relatório de transferências voluntárias',
+            tituloParaMigalhaDePao: 'Novo relatório de transferências voluntárias',
             rotaDeEscape: 'RelatóriosDeTransferênciasVoluntárias',
+            rotasParaMigalhasDePão: [
+              'RelatóriosDeTransferênciasVoluntárias',
+            ],
           },
         },
       ],
@@ -319,7 +285,12 @@ export default {
           name: 'novoRelatórioDeTribunalDeContas',
           meta: {
             título: 'Novo relatório do tribunal de contas',
+            tituloParaMigalhaDePao: 'Novo relatório do tribunal de contas',
             rotaDeEscape: 'RelatóriosDeTribunalDeContas',
+            rotasParaMigalhasDePão: [
+              'RelatóriosDeTribunalDeContas',
+            ],
+            descricao: 'Relação das transferências para análise do Tribunal de Contas',
           },
         },
       ],
@@ -328,7 +299,7 @@ export default {
     {
       path: 'atividades-pendentes',
       meta: {
-        título: 'Novo Relatório de Atividades Pendentes',
+        título: 'Relatórios de Atividades Pendentes',
         títuloParaMenu: 'Atividades pendentes',
         limitarÀsPermissões: 'Reports.executar.CasaCivil',
       },
@@ -338,7 +309,7 @@ export default {
           name: 'RelatóriosDeAtividadesPendentes',
           component: ListaDeRelatorios,
           meta: {
-            fonteDoRelatorio: 'CasaCivilAtvPendentes',
+            fonteDoRelatorio: 'AtvPendentes',
             rotaNovoRelatorio: 'novoRelatórioDeAtividadePendente',
           },
         },
@@ -348,7 +319,11 @@ export default {
           name: 'novoRelatórioDeAtividadePendente',
           meta: {
             título: 'Nova atividade pendente',
+            tituloParaMigalhaDePao: 'Novo Relatório de Atividades Pendentes',
             rotaDeEscape: 'RelatóriosDeAtividadesPendentes',
+            rotasParaMigalhasDePão: [
+              'RelatóriosDeAtividadesPendentes',
+            ],
           },
         },
       ],
@@ -372,13 +347,16 @@ export default {
           },
         },
         {
-          component: NovoRelatórioDeProjeto,
+          component: () => import('@/views/relatorios/NovoRelatorioDeProjeto.vue'),
           path: 'novo',
           name: 'novoRelatórioDeProjeto',
           meta: {
             título: 'Novo relatório de projeto',
+            tituloParaMigalhaDePao: 'Novo relatório de projeto',
             rotaDeEscape: 'RelatóriosDeProjeto',
-            rotasParaMigalhasDePão: ['RelatóriosDeProjeto'],
+            rotasParaMigalhasDePão: [
+              'RelatóriosDeProjeto',
+            ],
           },
         },
       ],
@@ -405,10 +383,14 @@ export default {
         {
           path: 'novo',
           name: 'novoRelatórioDePrevisãoDeCustoPdM',
-          component: NovoRelatórioDePrevisãoDeCustoPdM,
+          component: () => import('@/views/relatorios/NovoRelatorioDePrevisaoDeCustoPdM.vue'),
           meta: {
             rotaDeEscape: 'RelatóriosDePrevisãoDeCustoPdM',
+            rotasParaMigalhasDePão: [
+              'RelatóriosDePrevisãoDeCustoPdM',
+            ],
             título: 'Novo relatório de previsão de custo de PdM',
+            tituloParaMigalhaDePao: 'Novo relatório de previsão de custo de PdM',
           },
         },
       ],
@@ -434,11 +416,14 @@ export default {
         {
           path: 'novo',
           name: 'novoRelatórioDePrevisãoDeCustoPortfolio',
-          component: NovoRelatórioDePrevisãoDeCustoPortfolio,
+          component: () => import('@/views/relatorios/NovoRelatorioDePrevisaoDeCustoPortfolio.vue'),
           meta: {
             título: 'Novo relatório de previsão de custo de portfólio',
+            tituloParaMigalhaDePao: 'Novo relatório de previsão de custo de portfólio',
             rotaDeEscape: 'RelatóriosDePrevisãoDeCustoPortfolio',
-            rotasParaMigalhasDePão: ['RelatóriosDePrevisãoDeCustoPortfolio'],
+            rotasParaMigalhasDePão: [
+              'RelatóriosDePrevisãoDeCustoPortfolio',
+            ],
           },
         },
       ],
@@ -462,13 +447,16 @@ export default {
           },
         },
         {
-          component: NovoRelatórioDePortfolio,
+          component: () => import('@/views/relatorios/NovoRelatorioDePortfolio.vue'),
           path: 'novo',
           name: 'novoRelatórioDePortfolio',
           meta: {
             título: 'Novo relatório de portfólio',
+            tituloParaMigalhaDePao: 'Novo relatório de portfólio',
             rotaDeEscape: 'RelatóriosDePortfolio',
-            rotasParaMigalhasDePão: ['RelatóriosDePortfolio'],
+            rotasParaMigalhasDePão: [
+              'RelatóriosDePortfolio',
+            ],
           },
         },
       ],
@@ -492,13 +480,16 @@ export default {
           },
         },
         {
-          component: NovoRelatórioDeStatus,
+          component: () => import('@/views/relatorios/NovoRelatorioDeStatus.vue'),
           path: 'novo',
           name: 'novoRelatórioDeStatus',
           meta: {
             título: 'Novo relatório de status',
+            tituloParaMigalhaDePao: 'Novo relatório de status',
             rotaDeEscape: 'RelatóriosDeStatus',
-            rotasParaMigalhasDePão: ['RelatóriosDeStatus'],
+            rotasParaMigalhasDePão: [
+              'RelatóriosDeStatus',
+            ],
           },
         },
       ],
@@ -522,12 +513,16 @@ export default {
           },
         },
         {
-          component: NovoRelatórioDePortfolioObras,
+          component: () => import('@/views/relatorios/NovoRelatorioDePortfolioObras.vue'),
           path: 'novo',
           name: 'novoRelatórioDePortfolioObras',
           meta: {
             título: 'Novo relatório de portfólio',
+            tituloParaMigalhaDePao: 'Novo relatório de portfólio',
             rotaDeEscape: 'RelatóriosDePortfolioObras',
+            rotasParaMigalhasDePão: [
+              'RelatóriosDePortfolioObras',
+            ],
           },
         },
       ],
@@ -551,12 +546,16 @@ export default {
           },
         },
         {
-          component: NovoRelatórioDeStatusObras,
+          component: () => import('@/views/relatorios/NovoRelatorioDeStatusObras.vue'),
           path: 'novo',
           name: 'NovoRelatórioDeStatusObras',
           meta: {
             título: 'Novo relatório de status',
+            tituloParaMigalhaDePao: 'Novo relatório de status',
             rotaDeEscape: 'RelatóriosDeStatusObras',
+            rotasParaMigalhasDePão: [
+              'RelatóriosDeStatusObras',
+            ],
           },
         },
       ],
@@ -582,10 +581,14 @@ export default {
         {
           path: 'novo',
           name: 'novoRelatórioDePrevisãoDeCustoPortfolioObras',
-          component: NovoRelatórioDePrevisãoDeCustoPortfolioObras,
+          component: () => import('@/views/relatorios/NovoRelatorioDePrevisaoDeCustoPortfolioObras.vue'),
           meta: {
             título: 'Novo relatório de previsão de custo de portfólio de obras',
+            tituloParaMigalhaDePao: 'Novo relatório de previsão de custo de portfólio de obras',
             rotaDeEscape: 'RelatóriosDePrevisãoDeCustoPortfolioObras',
+            rotasParaMigalhasDePão: [
+              'RelatóriosDePrevisãoDeCustoPortfolioObras',
+            ],
           },
         },
       ],
@@ -609,12 +612,16 @@ export default {
           },
         },
         {
-          component: NovoRelatórioOrçamentárioPortfolioObras,
+          component: () => import('@/views/relatorios/NovoRelatorioOrcamentarioPortfolioObras.vue'),
           path: 'novo',
           name: 'novoRelatórioOrçamentárioPortfolioObras',
           meta: {
             título: 'Novo relatório orçamentário de portfólio de obras',
+            tituloParaMigalhaDePao: 'Novo relatório orçamentário de portfólio de obras',
             rotaDeEscape: 'RelatóriosOrçamentáriosPortfolioObras',
+            rotasParaMigalhasDePão: [
+              'RelatóriosOrçamentáriosPortfolioObras',
+            ],
           },
         },
       ],

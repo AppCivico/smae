@@ -1,4 +1,6 @@
-import { HttpException, Injectable } from '@nestjs/common';
+// --- START OF FILE workflow-andamento-fase.service.ts ---
+
+import { forwardRef, HttpException, Inject, Injectable } from '@nestjs/common';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { Prisma, TransferenciaHistoricoAcao, WorkflowResponsabilidade } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
@@ -9,12 +11,16 @@ import {
     WorkflowReabrirFaseAnteriorDto,
 } from './dto/patch-workflow-andamento-fase.dto';
 import { WorkflowService } from '../../configuracao/workflow.service';
+import { WorkflowAndamentoService } from '../workflow-andamento.service';
 
 @Injectable()
 export class WorkflowAndamentoFaseService {
     constructor(
         private readonly prisma: PrismaService,
-        private readonly workflowService: WorkflowService
+        private readonly workflowService: WorkflowService,
+        // Use forwardRef to handle circular dependency between AndamentoService and FaseService
+        @Inject(forwardRef(() => WorkflowAndamentoService))
+        private readonly workflowAndamentoService: WorkflowAndamentoService
     ) {}
 
     async update(dto: UpdateWorkflowAndamentoFaseDto, user: PessoaFromJwt): Promise<RecordWithId> {
@@ -293,7 +299,7 @@ export class WorkflowAndamentoFaseService {
                         })
                     );
 
-                    const tarefaExistente = await prismaTxn.tarefa.findFirst({
+                    await prismaTxn.tarefa.findFirst({
                         where: { id: transferenciaAndamentoTarefaRow.tarefaEspelhada[0].id },
                         select: {
                             id: true,
@@ -301,9 +307,6 @@ export class WorkflowAndamentoFaseService {
                             termino_real: true,
                         },
                     });
-                    console.log('========================');
-                    console.log(tarefaExistente);
-                    console.log('========================');
 
                     operations.push(
                         prismaTxn.tarefa.update({
@@ -340,32 +343,13 @@ export class WorkflowAndamentoFaseService {
                     },
                     select: {
                         id: true,
-                        transferencia_id: true,
-                        orgao_responsavel_id: true,
-                        pessoa_responsavel_id: true,
                         workflow_fase_id: true,
                         workflow_etapa_id: true,
-                        data_termino: true,
-                        workflow_situacao: {
-                            select: {
-                                id: true,
-                                tipo_situacao: true,
-                            },
-                        },
-
-                        tarefas: {
-                            select: {
-                                id: true,
-                                feito: true,
-                            },
-                        },
-
                         transferencia: {
                             select: {
                                 workflow_id: true,
                             },
                         },
-
                         tarefaEspelhada: {
                             select: {
                                 id: true,
@@ -373,17 +357,14 @@ export class WorkflowAndamentoFaseService {
                         },
                     },
                 });
-                if (!self) throw new Error('Não foi encontrada um registro de andamento para esta fase');
+                if (!self)
+                    throw new Error('Não foi encontrada um registro de andamento para esta fase ou já foi finalizada');
 
                 if (!self.transferencia.workflow_id)
                     throw new Error('Transferência não possui configuração de Workflow.');
 
-                if (self.data_termino != null) {
-                    throw new HttpException('Fase já foi finalizada.', 400);
-                }
-
                 // Finalizando a fase.
-                await prismaTxn.transferenciaAndamento.update({
+                const finalizedFase = await prismaTxn.transferenciaAndamento.update({
                     where: { id: self.id },
                     data: {
                         data_termino: new Date(Date.now()),
@@ -401,7 +382,42 @@ export class WorkflowAndamentoFaseService {
                     },
                 });
 
-                return { id: self.id };
+                // Após finalizar a fase, verificar se a etapa inteira está concluída.
+                const configEtapa = await prismaTxn.fluxo.findFirst({
+                    where: {
+                        workflow_id: self.transferencia.workflow_id,
+                        fluxo_etapa_de_id: self.workflow_etapa_id,
+                        removido_em: null,
+                    },
+                    select: {
+                        fases: { where: { removido_em: null }, select: { fase_id: true } },
+                    },
+                });
+
+                if (!configEtapa) throw new Error('Configuração da etapa atual não encontrada.');
+
+                const todasAsFasesDaEtapaIds = configEtapa.fases.map((f) => f.fase_id);
+
+                const fasesConcluidasCount = await prismaTxn.transferenciaAndamento.count({
+                    where: {
+                        transferencia_id: dto.transferencia_id,
+                        workflow_etapa_id: self.workflow_etapa_id,
+                        workflow_fase_id: { in: todasAsFasesDaEtapaIds },
+                        data_termino: { not: null },
+                        removido_em: null,
+                    },
+                });
+
+                // Se todas as fases da etapa estiverem concluídas, inicie a próxima etapa.
+                if (fasesConcluidasCount === todasAsFasesDaEtapaIds.length) {
+                    await this.workflowAndamentoService.iniciarProximaEtapaInternal(
+                        { transferencia_id: dto.transferencia_id },
+                        user,
+                        prismaTxn
+                    );
+                }
+
+                return { id: finalizedFase.id };
             }
         );
 
@@ -409,6 +425,7 @@ export class WorkflowAndamentoFaseService {
     }
 
     async iniciarFase(dto: WorkflowFinalizarIniciarFaseDto, user: PessoaFromJwt): Promise<RecordWithId> {
+        // This function now only handles starting the next phase WITHIN the same stage.
         const updated = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const transferencia = await prismaTxn.transferencia.findFirstOrThrow({
@@ -426,133 +443,68 @@ export class WorkflowAndamentoFaseService {
                 const faseAtual = await prismaTxn.transferenciaAndamento.findFirst({
                     where: {
                         transferencia_id: dto.transferencia_id,
+                        workflow_fase_id: transferencia.workflow_fase_atual_id!,
+                        workflow_etapa_id: transferencia.workflow_etapa_atual_id!,
                         removido_em: null,
-                        data_inicio: { not: null },
-                        data_termino: { not: null },
-                        workflow_etapa_id: transferencia.workflow_etapa_atual_id
-                            ? transferencia.workflow_etapa_atual_id
-                            : undefined,
-                        workflow_fase_id: transferencia.workflow_fase_atual_id
-                            ? transferencia.workflow_fase_atual_id
-                            : undefined,
                     },
-                    orderBy: [{ data_termino: 'asc' }, { atualizado_em: 'desc' }],
+                    orderBy: { atualizado_em: 'desc' },
                     select: {
-                        id: true,
-                        workflow_fase_id: true,
-                        workflow_etapa_id: true,
                         data_termino: true,
+                        workflow_etapa_id: true,
                     },
                 });
-                if (!faseAtual) throw new HttpException('Não foi possível verificar conclusão da fase anterior', 400);
+
+                if (!faseAtual) throw new HttpException('Não foi possível verificar a fase atual.', 400);
                 if (!faseAtual.data_termino)
-                    throw new HttpException('Fase atual precisa ser finalizada antes de iniciar uma nova', 400);
+                    throw new HttpException('A fase atual precisa ser finalizada antes de iniciar uma nova.', 400);
 
                 // Procurando a próxima fase e iniciando-a.
-                const configFluxoFaseAtual = await prismaTxn.fluxoFase.findFirst({
-                    where: {
-                        removido_em: null,
-                        fase_id: faseAtual.workflow_fase_id,
-                        fluxo: {
-                            fluxo_etapa_de_id: faseAtual.workflow_etapa_id,
-                            removido_em: null,
-                        },
-                    },
-                    select: {
-                        fase_id: true,
-                        ordem: true,
-                    },
-                });
-                if (!configFluxoFaseAtual)
-                    throw new Error('Não foi encontrada configuração da Fase atual no Workflow.');
-
                 const configFluxoFaseSeguinte = await prismaTxn.fluxoFase.findFirst({
                     where: {
                         removido_em: null,
                         fase_id: dto.fase_id,
                         fluxo: {
-                            fluxo_etapa_de_id: faseAtual.workflow_etapa_id,
+                            fluxo_etapa_de_id: faseAtual.workflow_etapa_id, // Must be in the same stage
                             removido_em: null,
                         },
                     },
-                    orderBy: { ordem: 'asc' },
                     select: {
                         fase_id: true,
-                        ordem: true,
                         responsabilidade: true,
-                        tarefas: {
-                            select: {
-                                responsabilidade: true,
-                                workflow_tarefa: {
-                                    select: {
-                                        id: true,
-                                    },
-                                },
-                            },
-                        },
                     },
                 });
                 if (!configFluxoFaseSeguinte)
-                    throw new HttpException('Não foi possível encontrar configuração da próxima fase', 400);
+                    throw new HttpException(
+                        'Não foi possível encontrar configuração da próxima fase na etapa atual.',
+                        400
+                    );
 
-                if (configFluxoFaseAtual.fase_id == configFluxoFaseSeguinte.fase_id)
-                    throw new Error('Erro ao definir próxima fase.');
-
-                // Caso a fase seja de responsabilidade própria, pegando órgão da casa civil.
                 let orgao_id: number | null = null;
                 if (configFluxoFaseSeguinte.responsabilidade == WorkflowResponsabilidade.Propria) {
                     const orgaoCasaCivil = await prismaTxn.orgao.findFirst({
-                        where: {
-                            removido_em: null,
-                            sigla: 'SERI',
-                        },
-                        select: {
-                            id: true,
-                        },
+                        where: { removido_em: null, sigla: 'SERI' },
+                        select: { id: true },
                     });
-                    if (!orgaoCasaCivil)
-                        throw new HttpException(
-                            'Fase é de responsabilidade própria, mas não foi encontrado órgão da Casa Civil',
-                            400
-                        );
-
+                    if (!orgaoCasaCivil) throw new HttpException('Órgão da Casa Civil (SERI) não encontrado.', 400);
                     orgao_id = orgaoCasaCivil.id;
                 }
-                console.log('========================');
-                console.log(configFluxoFaseAtual);
-                console.log(configFluxoFaseSeguinte);
-                console.log(faseAtual.workflow_etapa_id);
-                console.log(configFluxoFaseSeguinte.fase_id);
-                console.log('========================');
+
                 const andamentoNovaFase = await prismaTxn.transferenciaAndamento.findFirst({
                     where: {
                         removido_em: null,
                         transferencia_id: dto.transferencia_id,
-                        workflow_etapa_id: faseAtual.workflow_etapa_id, // Aqui não tem problema reaproveitar o workflow_etapa_id, pois está na mesma etapa.
+                        workflow_etapa_id: faseAtual.workflow_etapa_id,
                         workflow_fase_id: configFluxoFaseSeguinte.fase_id,
                         data_inicio: null,
                     },
                     select: {
                         id: true,
                         workflow_fase_id: true,
-                        tarefaEspelhada: {
-                            select: {
-                                id: true,
-                            },
-                        },
-
-                        tarefas: {
-                            select: {
-                                tarefaEspelhada: {
-                                    select: {
-                                        id: true,
-                                    },
-                                },
-                            },
-                        },
+                        tarefas: { select: { tarefaEspelhada: { select: { id: true } } } },
                     },
                 });
-                if (!andamentoNovaFase) throw new HttpException('Erro interno, fase já deveria estar populada.', 400);
+                if (!andamentoNovaFase)
+                    throw new HttpException('Andamento da próxima fase não populado ou já iniciado.', 400);
 
                 await prismaTxn.transferenciaAndamento.update({
                     where: { id: andamentoNovaFase.id },
@@ -572,9 +524,32 @@ export class WorkflowAndamentoFaseService {
                     },
                 });
 
+                // Buscando ids de distribuições de recursos, pois elas podem ter tarefas.
+                const distribuicoes = await prismaTxn.distribuicaoRecurso.findMany({
+                    where: { transferencia_id: dto.transferencia_id, removido_em: null },
+                    select: { id: true },
+                });
+
                 for (const tarefa of andamentoNovaFase.tarefas) {
                     await prismaTxn.tarefa.update({
                         where: { id: tarefa.tarefaEspelhada[0].id },
+                        data: {
+                            inicio_real: new Date(Date.now()),
+                            atualizado_em: new Date(Date.now()),
+                        },
+                    });
+                }
+
+                if (distribuicoes.length > 0) {
+                    await prismaTxn.tarefa.updateMany({
+                        where: {
+                            tarefa_pai: {
+                                transferencia_fase_id: andamentoNovaFase.id,
+                                removido_em: null,
+                            },
+                            removido_em: null,
+                            distribuicao_recurso_id: { in: distribuicoes.map((d) => d.id) },
+                        },
                         data: {
                             inicio_real: new Date(Date.now()),
                             atualizado_em: new Date(Date.now()),
@@ -805,11 +780,6 @@ export class WorkflowAndamentoFaseService {
                         workflow_fase_atual_id: faseParaReabrir.workflow_fase_id,
                     },
                 });
-
-                console.log('==================================');
-                console.log(faseParaReabrir);
-                console.log(faseParaFechar);
-                console.log('==================================');
 
                 // Salvando dados de log
                 await prismaTxn.transferenciaHistorico.create({

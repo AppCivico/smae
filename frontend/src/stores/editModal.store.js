@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia';
 
-export const useEditModalStore = defineStore({
-  id: 'editModal',
+export const useEditModalStore = defineStore('editModal', {
   state: () => ({
     editModal: null,
   }),

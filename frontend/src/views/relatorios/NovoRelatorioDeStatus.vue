@@ -1,12 +1,10 @@
 <script setup>
-import MigalhasDePao from '@/components/MigalhasDePao.vue';
-import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import { relatórioDeStatus as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
-import { Field, Form, useIsFormDirty } from 'vee-validate';
+import { Field, Form } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
 
 const alertStore = useAlertStore();
@@ -15,8 +13,6 @@ const projetosStore = useProjetosStore();
 const relatoriosStore = useRelatoriosStore();
 const route = useRoute();
 const router = useRouter();
-
-const formularioSujo = useIsFormDirty();
 
 const initialValues = {
   fonte: 'ProjetoStatus',
@@ -50,15 +46,7 @@ projetosStore.buscarTudo();
 </script>
 
 <template>
-  <MigalhasDePao class="mb1" />
-
-  <header class="flex spacebetween center mb2">
-    <TituloDaPagina />
-
-    <hr class="ml2 f1">
-
-    <CheckClose :formulario-sujo="formularioSujo" />
-  </header>
+  <CabecalhoDePagina :formulario-sujo="false" />
 
   <Form
     v-slot="{ errors, isSubmitting, setFieldValue, values }"

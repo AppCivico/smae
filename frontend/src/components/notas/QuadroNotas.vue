@@ -17,7 +17,7 @@
           }"
           class="tprimary"
         >
-          {{ item.transferencia_identificador}}
+          {{ item.transferencia_identificador }}
         </router-link>
       </p>
       <div class="text">
@@ -59,13 +59,13 @@
 </template>
 
 <script setup>
-import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
-import removerHtml from '@/helpers/removerHtml';
-import truncate from '@/helpers/texto/truncate';
-import { useBlocoDeNotasStore } from '@/stores/blocoNotas.store';
 import { storeToRefs } from 'pinia';
 import { watch } from 'vue';
 import { useRoute } from 'vue-router';
+import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
+import removerHtml from '@/helpers/html/removerHtml';
+import truncate from '@/helpers/texto/truncate';
+import { useBlocoDeNotasStore } from '@/stores/blocoNotas.store';
 
 const blocoStore = useBlocoDeNotasStore();
 const {
@@ -98,12 +98,16 @@ watch([
   () => route.query.palavra_chave,
   () => route.query.atividade,
 ], () => {
-  let {
+  const {
     partido_ids: partidoFiltro,
     orgaos_ids: orgaoFiltro,
-    palavra_chave: palavraChaveParaBusca,
     atividade: atividadeFiltro,
   } = route.query;
+
+  let {
+    palavra_chave: palavraChaveParaBusca,
+  } = route.query;
+
   if (typeof palavraChaveParaBusca === 'string') {
     palavraChaveParaBusca = palavraChaveParaBusca.trim();
   }
@@ -121,7 +125,6 @@ watch([
   });
 }, { immediate: true });
 
-blocoStore.buscarTudoPanorama({ ipp: 15 });
 </script>
 
 <style scoped lang="less">

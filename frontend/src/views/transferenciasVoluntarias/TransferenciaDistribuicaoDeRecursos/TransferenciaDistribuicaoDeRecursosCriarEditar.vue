@@ -1,13 +1,4 @@
 <script setup>
-import FormErrorsList from '@/components/FormErrorsList.vue';
-import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
-import { transferenciaDistribuicaoDeRecursos as schema } from '@/consts/formSchemas';
-import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
-import truncate from '@/helpers/texto/truncate';
-import { useAlertStore } from '@/stores/alert.store';
-import { useOrgansStore } from '@/stores/organs.store';
-import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
-import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import Big from 'big.js';
 import { vMaska } from 'maska';
 import { storeToRefs } from 'pinia';
@@ -21,11 +12,19 @@ import {
 import {
   computed,
   onMounted,
-  onUnmounted,
   ref,
   watch,
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import FormErrorsList from '@/components/FormErrorsList.vue';
+import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
+import { transferenciaDistribuicaoDeRecursos as schema } from '@/consts/formSchemas';
+import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
+import truncate from '@/helpers/texto/truncate';
+import { useAlertStore } from '@/stores/alert.store';
+import { useOrgansStore } from '@/stores/organs.store';
+import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
+import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 
 const alertStore = useAlertStore();
 const ÓrgãosStore = useOrgansStore();
@@ -33,8 +32,7 @@ const distribuicaoRecursos = useDistribuicaoRecursosStore();
 const TransferenciasVoluntarias = useTransferenciasVoluntariasStore();
 
 const router = useRouter();
-const { params, meta } = useRoute();
-const formularioSujo = useIsFormDirty();
+const route = useRoute();
 
 const {
   itemParaEdicao: transferenciaAtual,
@@ -85,12 +83,12 @@ const {
   validationSchema: schema,
 });
 
+const formularioSujo = useIsFormDirty();
+
 function voltarTela() {
   router.push({
-    name: meta.rotaDeEscape,
-    params: {
-      ...params,
-    },
+    name: route.meta.rotaDeEscape,
+    params: structuredClone(route.params),
   });
 }
 
@@ -99,7 +97,9 @@ const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
   const cargaManipulada = nulificadorTotal(controlledValues);
 
   try {
-    cargaManipulada.transferencia_id = Number(params.transferenciaId);
+    cargaManipulada.pct_custeio = porcentagens.value.custeio;
+    cargaManipulada.pct_investimento = porcentagens.value.investimento;
+    cargaManipulada.transferencia_id = Number(route.params.transferenciaId);
 
     let r;
     const msg = itemParaEdicao.value.id
@@ -123,47 +123,59 @@ const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
 });
 
 const isSomaCorreta = computed(() => {
-  if (!params.transferenciaId || !camposModificados.value) return true;
+  if (!route.params.transferenciaId || !camposModificados.value) return true;
   const soma = (parseFloat(values.valor) || 0) + (parseFloat(values.valor_contrapartida) || 0);
 
   return soma === parseFloat(values.valor_total);
 });
 
 function calcularValorCusteio(fieldName) {
-  const valor = parseFloat(values.valor) || 0;
-  const custeio = parseFloat(values.custeio) || 0;
-  const percentagemCusteio = parseFloat(values.percentagem_custeio) || 0;
+  const valor = Big(values.valor || 0);
+  const custeio = Big(values.custeio || 0);
+  const percentagemCusteio = Big(values.percentagem_custeio || 0);
 
   if (fieldName === 'percentagem_custeio' || fieldName === 'valor') {
-    const valorArredondado = new Big(valor)
+    const valorArredondado = valor
       .times(percentagemCusteio).div(100).round(2, Big.roundHalfUp);
     setFieldValue('custeio', valorArredondado.toString());
   } else if (fieldName === 'custeio') {
-    const porcentagemCusteio = ((custeio / valor) * 100);
+    const porcentagemCusteio = valor.eq(0)
+      ? 0
+      : custeio
+        .div(valor)
+        .times(100);
     setFieldValue('percentagem_custeio', porcentagemCusteio.toFixed(2));
-    setFieldValue('percentagem_investimento', (100 - porcentagemCusteio).toFixed(2));
+    setFieldValue('percentagem_investimento', Big(100).minus(porcentagemCusteio).toFixed(2));
   }
 }
 
 function calcularValorInvestimento(fieldName) {
-  const valor = parseFloat(values.valor) || 0;
-  const investimento = parseFloat(values.investimento) || 0;
-  const custeio = parseFloat(values.custeio) || 0;
-  const percentagemInvestimento = parseFloat(values.percentagem_investimento) || 0;
+  const valor = Big(values.valor || 0);
+  const investimento = Big(values.investimento || 0);
+  const custeio = Big(values.custeio || 0);
+  const percentagemInvestimento = Big(values.percentagem_investimento || 0);
 
   if (fieldName === 'percentagem_investimento' || fieldName === 'valor') {
-    const valorArredondado = new Big(valor)
-      .times(percentagemInvestimento).div(100).round(2);
-    let valorArredondadoConvertido = parseFloat(valorArredondado.toString());
-    if (custeio > 0) {
-      valorArredondadoConvertido = valor - custeio;
+    let valorArredondado = valor
+      .times(percentagemInvestimento)
+      .div(100)
+      .round(2, Big.roundHalfUp);
+
+    if (custeio.gt(0)) {
+      valorArredondado = valor.minus(custeio);
     }
-    const valorFinal = new Big(valorArredondadoConvertido).round(2, Big.roundHalfUp);
+    const valorFinal = valorArredondado.round(2, Big.roundHalfUp);
     setFieldValue('investimento', valorFinal.toString());
   } else if (fieldName === 'investimento') {
-    const porcentagemInvestimento = ((investimento / valor) * 100);
+    const porcentagemInvestimento = valor.eq(0)
+      ? 0
+      : investimento
+        .div(valor)
+        .times(100);
     setFieldValue('percentagem_investimento', porcentagemInvestimento.toFixed(2));
-    setFieldValue('percentagem_custeio', (100 - porcentagemInvestimento).toFixed(2));
+    setFieldValue('percentagem_custeio', Big(100)
+      .minus(porcentagemInvestimento)
+      .toFixed(2));
   }
 }
 
@@ -179,28 +191,36 @@ function atualizarValorTotal(fieldName, newValue) {
 }
 
 function ajusteBruto(campoValorBruto) {
-  const valorPercentual = (100 / values.valor) * values[campoValorBruto];
+  const valor = Big(values.valor || 0);
 
-  if (valorPercentual >= 100) {
+  const valorPercentual = valor.eq(0)
+    ? Big(0)
+    : Big(values[campoValorBruto] || 0)
+      .div(valor)
+      .times(100);
+
+  if (valorPercentual.gte(100)) {
     setFieldValue(campoValorBruto, values.valor);
     porcentagens.value[campoValorBruto] = 100;
     return;
   }
 
-  porcentagens.value[campoValorBruto] = valorPercentual;
+  porcentagens.value[campoValorBruto] = valorPercentual.round(2, Big.roundHalfUp).toNumber();
 }
 
 function ajustePercentual(campoValorBruto) {
-  const valorBruto = (values.valor / 100) * porcentagens.value[campoValorBruto];
+  const valorBruto = Big(values.valor || 0)
+    .times(porcentagens.value[campoValorBruto] || 0)
+    .div(100);
 
-  if (valorBruto >= values.valor) {
+  if (valorBruto.gte(Big(values.valor || 0))) {
     setFieldValue(campoValorBruto, values.valor.toString());
     porcentagens.value[campoValorBruto] = 100;
 
     return;
   }
 
-  setFieldValue(campoValorBruto, Number(valorBruto).toFixed(2));
+  setFieldValue(campoValorBruto, valorBruto.toFixed(2));
 }
 
 watch(itemParaEdicao, async () => {
@@ -242,20 +262,10 @@ onMounted(async () => {
     ÓrgãosStore.getAll();
   }
 });
-
-onUnmounted(() => {
-  distribuicaoRecursos.$reset();
-});
 </script>
 
 <template>
-  <div class="flex spacebetween center mt2">
-    <TítuloDePágina />
-
-    <hr class="ml2 f1">
-
-    <CheckClose :formulario-sujo="formularioSujo" />
-  </div>
+  <CabecalhoDePagina :formulario-sujo="formularioSujo" />
 
   <span
     v-if="chamadasPendentes?.emFoco"
@@ -379,32 +389,6 @@ onUnmounted(() => {
         <div class="f1 fb15em">
           <div class="flex center g1">
             <div>
-              <LabelFromYup
-                name="custeio"
-                :schema="schema"
-              />
-
-              <MaskedFloatInput
-                name="custeio"
-                type="text"
-                class="inputtext light"
-                :value="values.custeio"
-                converter-para="string"
-                @update:model-value="(newValue) => {
-                  atualizarValorTotal('custeio', newValue);
-                }"
-                @input="ajusteBruto('custeio')"
-              />
-            </div>
-
-            <small
-              class="addlink text-center mt2"
-              style="cursor: default;"
-            >
-              OU
-            </small>
-
-            <div>
               <label
                 class="label"
                 for="custeio_porcentagem"
@@ -427,29 +411,6 @@ onUnmounted(() => {
                 @input="ajustePercentual('custeio')"
               />
             </div>
-          </div>
-        </div>
-
-        <div class="f1 fb15em">
-          <div class="flex center g1">
-            <div>
-              <LabelFromYup
-                name="investimento"
-                :schema="schema"
-              />
-
-              <MaskedFloatInput
-                name="investimento"
-                type="text"
-                class="inputtext light"
-                :value="values.investimento"
-                converter-para="string"
-                @update:model-value="(newValue) => {
-                  atualizarValorTotal('investimento', newValue);
-                }"
-                @input="ajusteBruto('investimento')"
-              />
-            </div>
 
             <small
               class="addlink text-center mt2"
@@ -458,6 +419,29 @@ onUnmounted(() => {
               OU
             </small>
 
+            <div>
+              <LabelFromYup
+                name="custeio"
+                :schema="schema"
+              />
+
+              <MaskedFloatInput
+                name="custeio"
+                type="text"
+                class="inputtext light"
+                :value="values.custeio"
+                converter-para="string"
+                @update:model-value="(newValue) => {
+                  atualizarValorTotal('custeio', newValue);
+                }"
+                @input="ajusteBruto('custeio')"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="f1 fb15em">
+          <div class="flex center g1">
             <div>
               <label
                 class="label"
@@ -479,6 +463,32 @@ onUnmounted(() => {
                   atualizarValorTotal('investimento_porcentagem', newValue);
                 }"
                 @input="ajustePercentual('investimento')"
+              />
+            </div>
+
+            <small
+              class="addlink text-center mt2"
+              style="cursor: default;"
+            >
+              OU
+            </small>
+
+            <div>
+              <LabelFromYup
+                name="investimento"
+                :schema="schema"
+              />
+
+              <MaskedFloatInput
+                name="investimento"
+                type="text"
+                class="inputtext light"
+                :value="values.investimento"
+                converter-para="string"
+                @update:model-value="(newValue) => {
+                  atualizarValorTotal('investimento', newValue);
+                }"
+                @input="ajusteBruto('investimento')"
               />
             </div>
           </div>
@@ -531,7 +541,7 @@ onUnmounted(() => {
           />
 
           <div
-            v-if="!params.transferenciaId || !isSomaCorreta"
+            v-if="!$route.params.transferenciaId || !isSomaCorreta"
             class="tamarelo"
           >
             A soma dos valores não corresponde ao valor total.
@@ -539,7 +549,10 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <div class="mb1">
+      <div
+        v-if="values.parlamentares?.length !== 0"
+        class="mb1"
+      >
         <LabelFromYup
           :schema="schema"
           name="parlamentares"
@@ -631,6 +644,132 @@ onUnmounted(() => {
       <div class="flex flexwrap g2 mb1">
         <div class="f1">
           <LabelFromYup
+            name="programa_orcamentario_municipal"
+            :schema="schema"
+          />
+
+          <Field
+            name="programa_orcamentario_municipal"
+            type="text"
+            class="inputtext light mb1"
+          />
+
+          <ErrorMessage
+            class="error-msg mb1"
+            name="programa_orcamentario_municipal"
+          />
+        </div>
+      </div>
+
+      <div class="flex flexwrap g2 mb1">
+        <div class="f1">
+          <LabelFromYup
+            name="programa_orcamentario_estadual"
+            :schema="schema"
+          />
+
+          <Field
+            name="programa_orcamentario_estadual"
+            type="text"
+            class="inputtext light mb1"
+          />
+
+          <ErrorMessage
+            class="error-msg mb1"
+            name="programa_orcamentario_estadual"
+          />
+        </div>
+      </div>
+
+      <div class="flex g2 mb1">
+        <div class="f1">
+          <LabelFromYup
+            name="distribuicao_banco"
+            :schema="schema"
+          />
+          <Field
+            name="distribuicao_banco"
+            type="text"
+            class="inputtext light mb1"
+          />
+          <ErrorMessage
+            class="error-msg mb1"
+            name="distribuicao_banco"
+          />
+        </div>
+        <div class="f1">
+          <LabelFromYup
+            name="distribuicao_agencia"
+            :schema="schema"
+          />
+          <Field
+            name="distribuicao_agencia"
+            type="text"
+            class="inputtext light mb1"
+          />
+          <ErrorMessage
+            class="error-msg mb1"
+            name="distribuicao_agencia"
+          />
+        </div>
+        <div class="f1">
+          <LabelFromYup
+            name="distribuicao_conta"
+            :schema="schema"
+          />
+          <Field
+            name="distribuicao_conta"
+            type="text"
+            class="inputtext light mb1"
+          />
+          <ErrorMessage
+            class="error-msg mb1"
+            name="distribuicao_conta"
+          />
+        </div>
+      </div>
+
+      <div class="flex g2 mb1">
+        <div class="f1">
+          <LabelFromYup
+            name="finalidade"
+            :schema="schema"
+          />
+
+          <Field
+            name="finalidade"
+            type="text"
+            class="inputtext light mb1"
+          />
+
+          <ErrorMessage
+            class="error-msg mb1"
+            name="finalidade"
+          />
+        </div>
+
+        <div class="f1">
+          <LabelFromYup
+            name="rubrica_de_receita"
+            :schema="schema"
+          />
+
+          <Field
+            name="rubrica_de_receita"
+            type="text"
+            class="inputtext light mb1"
+          />
+
+          <ErrorMessage
+            class="error-msg mb1"
+            name="rubrica_de_receita"
+          />
+        </div>
+      </div>
+
+      <div class="flex flexwrap g2 mb1">
+        <div class="f1">
+          <LabelFromYup
             name="empenho"
             :schema="schema"
           />
@@ -663,6 +802,7 @@ onUnmounted(() => {
             name="data_empenho"
             :schema="schema"
           />
+
           <Field
             name="data_empenho"
             type="date"
@@ -677,44 +817,63 @@ onUnmounted(() => {
             class="error-msg"
           />
         </div>
-      </div>
 
-      <div class="flex flexwrap g2 mb1">
         <div class="f1">
           <LabelFromYup
-            name="programa_orcamentario_municipal"
+            name="valor_empenho"
             :schema="schema"
           />
 
-          <Field
-            name="programa_orcamentario_municipal"
+          <MaskedFloatInput
+            name="valor_empenho"
             type="text"
-            class="inputtext light mb1"
+            class="inputtext light mb2"
+            :value="values.valor_empenho"
+            converter-para="string"
+            :disabled="!values.empenho"
           />
 
           <ErrorMessage
-            class="error-msg mb1"
-            name="programa_orcamentario_municipal"
+            name="valor_empenho"
+            class="error-msg"
           />
         </div>
       </div>
 
-      <div class="flex flexwrap g2 mb1">
+      <div class="flex g2 mb1">
         <div class="f1">
           <LabelFromYup
-            name="programa_orcamentario_estadual"
+            name="gestor_contrato"
             :schema="schema"
           />
 
           <Field
-            name="programa_orcamentario_estadual"
+            name="gestor_contrato"
             type="text"
             class="inputtext light mb1"
           />
 
           <ErrorMessage
             class="error-msg mb1"
-            name="programa_orcamentario_estadual"
+            name="gestor_contrato"
+          />
+        </div>
+
+        <div class="f1">
+          <LabelFromYup
+            name="valor_liquidado"
+            :schema="schema"
+          />
+          <MaskedFloatInput
+            name="valor_liquidado"
+            type="text"
+            class="inputtext light mb2"
+            :value="values.valor_liquidado"
+            converter-para="string"
+          />
+          <ErrorMessage
+            class="error-msg mb1"
+            name="valor_liquidado"
           />
         </div>
       </div>

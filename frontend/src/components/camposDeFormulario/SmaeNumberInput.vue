@@ -91,7 +91,7 @@ const typedValue = computed({
   <input
     v-model="typedValue"
     pattern="[0-9]*"
-    type="text"
+    type="number"
     inputmode="numeric"
     :name="name"
   >

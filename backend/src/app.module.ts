@@ -4,6 +4,7 @@ import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { AllExceptionsFilter } from './any-error.filter';
+import { ApiLogModule } from './api-logs/api-log.module';
 import { AppController } from './app.controller';
 import { AppModuleCommon } from './app.module.common';
 import { AppModulePdm } from './app.module.pdm';
@@ -16,6 +17,7 @@ import { PessoaPrivilegioModule } from './auth/pessoaPrivilegio.module';
 import { AvisoEmailModule } from './aviso-email/aviso-email.module';
 import { BancadaModule } from './bancada/bancada.module';
 import { BlocoNotasModule } from './bloco-nota/bloco-notas.module';
+import { BuscaGlobalModule } from './busca-global/busca-global.module';
 import { DashTransferenciaModule } from './casa-civil/dash/transferencia.module';
 import { DistribuicaoRecursoModule } from './casa-civil/distribuicao-recurso/distribuicao-recurso.module';
 import { TransferenciaModule } from './casa-civil/transferencia/transferencia.module';
@@ -30,6 +32,7 @@ import { WorkflowSituacaoModule } from './casa-civil/workflow/configuracao/situa
 import { WorkflowTarefaModule } from './casa-civil/workflow/configuracao/tarefa/workflow-tarefa.module';
 import { WorkflowModule } from './casa-civil/workflow/configuracao/workflow.module';
 import { CategoriaAssuntoVariavelModule } from './categoria-assunto-variavel/categoria-assunto-variavel.module';
+import { DuckDBModule } from './common/duckdb/duckdb.module';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
 import { TrimPipe } from './common/pipes/trim-pipe';
 import { CommonBaseModule } from './common/services/base.module';
@@ -38,6 +41,7 @@ import { CTPConfigModule } from './cronograma-termino-planejado-config/ctp-confi
 import { DashboardModule } from './dashboard/dashboard.module';
 import { DotacaoModule } from './dotacao/dotacao.module';
 import { EleicaoModule } from './eleicao/eleicao.module';
+import { GeoBuscaModule } from './geo-busca/geo-busca.module';
 import { PainelEstrategicoModule } from './gestao-projetos/painel-estrategico/painel-estrategico.module';
 import { PSMFDashboardModule } from './mf/ps-dash/ps-dash.module';
 import { MinhaContaModule } from './minha-conta/minha-conta.module';
@@ -53,8 +57,10 @@ import { OrcamentoModule } from './reports/orcamento/orcamento.module';
 import { ReportsModule } from './reports/relatorios/reports.module';
 import { UtilsService } from './reports/utils/utils.service';
 import { RequestLogModule } from './request_log/request_log.module';
+import { SyncCadastroBasicoModule } from './sync-cadastro-basico/sync-cadastro-basico.module';
 import { RunReportModule } from './task/run_report/run-report.module';
 import { TaskModule } from './task/task.module';
+import { TransfereGovApiModule } from './transfere-gov-api/transfere-gov-api.module';
 import { ClassificacaoModule } from './transferencias-voluntarias/classificacao/classificacao.module';
 import { WikiLinkModule } from './wiki-link/wiki-link.module';
 
@@ -84,7 +90,6 @@ import { WikiLinkModule } from './wiki-link/wiki-link.module';
         OrcamentoModule,
         OrcamentoPlanejadoModule,
         OrcamentoRealizadoModule,
-
         OrcamentoPrevistoModule,
         DashboardModule,
         BancadaModule,
@@ -114,7 +119,12 @@ import { WikiLinkModule } from './wiki-link/wiki-link.module';
         PainelEstrategicoModule,
         CategoriaAssuntoVariavelModule,
         PSMFDashboardModule,
+        SyncCadastroBasicoModule,
         RunReportModule,
+        DuckDBModule,
+        TransfereGovApiModule,
+        GeoBuscaModule,
+        BuscaGlobalModule,
         AtualizacaoEmLoteModule,
         WikiLinkModule,
     ],

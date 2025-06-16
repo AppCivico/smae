@@ -1,4 +1,4 @@
-import type { DadosCodTituloAtividadeDto, DadosCodTituloIniciativaDto } from '@/../../backend/src/meta/dto/create-meta.dto';
+import type { DadosCodTituloAtividadeDto, DadosCodTituloIniciativaDto } from '@back/meta/dto/create-meta.dto';
 
 export type AtividadesPorId = {
   [k: number]: DadosCodTituloAtividadeDto;

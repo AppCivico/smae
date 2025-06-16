@@ -2,8 +2,7 @@ import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
-export const useResourcesStore = defineStore({
-  id: 'resources',
+export const useResourcesStore = defineStore('resources', {
   state: () => ({
     resources: {},
     tempResources: {},

@@ -484,22 +484,15 @@ export class VariavelCicloService {
             // na serie_variavel, como na volta de pedido de complementação caso já tenha sido aprovado alguma vez
             // vai manter o ultimo valor aprovado
             if (conferida) {
-                await this.updateSerieVariavelConferida(
-                    cicloCorrente.variavel.id,
-                    dto.data_referencia,
-                    true,
-                    prismaTxn
-                );
-
-                const variaveisIds: number[] = [dto.variavel_id];
+                const variaveisIds: number[] = [];
                 for (const valor of dto.valores) {
-                    if (valor.variavel_id) variaveisIds.push(valor.variavel_id);
-
                     const variavelInfo = await this.variavelService.loadVariavelComCategorica(
                         'Global',
                         prismaTxn,
                         valor.variavel_id ?? dto.variavel_id
                     );
+
+                    variaveisIds.push(variavelInfo.id);
 
                     await this.atualizaSerieVariavel(
                         variavelInfo,
@@ -635,7 +628,7 @@ export class VariavelCicloService {
         valor: VariavelGlobalAnaliseItemDto,
         prismaTxn: Prisma.TransactionClient,
         now: Date,
-        user: PessoaFromJwt,
+        user: { id: number },
         dataReferencia: Date,
         conferida: boolean
     ) {
@@ -714,7 +707,7 @@ export class VariavelCicloService {
         variavelInfo: VariavelComCategorica,
         prismaTxn: Prisma.TransactionClient,
         now: Date,
-        user: PessoaFromJwt,
+        user: { id: number },
         dataReferencia: Date,
         valor_nominal: string,
         conferida: boolean
@@ -1180,21 +1173,6 @@ export class VariavelCicloService {
         });
     }
 
-    private async updateSerieVariavelConferida(
-        variavelId: number,
-        dataReferencia: Date,
-        conferida: boolean,
-        prismaTxn: Prisma.TransactionClient
-    ): Promise<void> {
-        await prismaTxn.serieVariavel.updateMany({
-            where: {
-                variavel_id: variavelId,
-                data_valor: dataReferencia,
-            },
-            data: { conferida: conferida },
-        });
-    }
-
     private formatarVariavelResumo(variavel: VariavelResumoInput): VariavelResumo {
         return {
             id: variavel.id,
@@ -1250,6 +1228,13 @@ export class VariavelCicloService {
                 for (const variavel of variaveis) {
                     await this.processVariavel(variavel.id, logger);
                 }
+
+                // Busca as variáveis marcadas para sincronização
+                let changes: number = 0;
+                do {
+                    const data = await this.sincronizaSerieVariavel(logger);
+                    changes = data.count;
+                } while (changes > 0);
             });
 
             logger.log('Processamento do ciclo de variáveis concluído');
@@ -1369,5 +1354,123 @@ export class VariavelCicloService {
                 },
             });
         }
+    }
+
+    async sincronizaSerieVariavel(logger: LoggerWithLog): Promise<{ message: string; count: number }> {
+        const analises = await this.prisma.variavelGlobalCicloAnalise.findMany({
+            where: {
+                sincronizar_serie_variavel: true,
+                removido_em: null, // vai que...
+                fase: 'Preenchimento',
+                ultima_revisao: true,
+            },
+            select: {
+                variavel_id: true,
+                referencia_data: true,
+                valores: true,
+            },
+            orderBy: {
+                variavel_id: 'asc',
+            },
+            take: 500,
+        });
+
+        let countChanges = 0;
+
+        if (analises.length === 0) {
+            logger.log('Nenhuma variável marcada para sincronização');
+            return { message: 'Nenhuma variável marcada para sincronização', count: 0 };
+        }
+
+        logger.log(`Processando ${analises.length} variáveis marcadas para sincronização`);
+
+        await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient): Promise<void> => {
+            const now = new Date(Date.now());
+            const botUser = { id: CONST_BOT_USER_ID } as PessoaFromJwt;
+            const variaveisIds: number[] = [];
+
+            for (const analise of analises) {
+                const valores = analise.valores?.valueOf() as IUltimaAnaliseValor[];
+
+                if (!Array.isArray(valores) || valores.length === 0) {
+                    // Atualiza o status mesmo se não houver valores, para evitar processamento infinito
+                    await this.finalizaStatusSincronizacao(analise.variavel_id, analise.referencia_data, prismaTxn);
+                    logger.log(`Nenhum valor encontrado para a variável ${analise.variavel_id}`);
+                    continue;
+                }
+
+                for (const valor of valores) {
+                    const variavelId = valor.variavel_id ?? analise.variavel_id;
+
+                    // Verifica se o ID da variável já foi processado neste lote
+                    if (!variaveisIds.includes(variavelId)) {
+                        variaveisIds.push(variavelId);
+                    }
+
+                    const variavelInfo = await this.variavelService.loadVariavelComCategorica(
+                        'Global',
+                        prismaTxn,
+                        variavelId
+                    );
+
+                    // Processa o valor
+                    await this.atualizaSerieVariavel(
+                        variavelInfo,
+                        {
+                            variavel_id: valor.variavel_id,
+                            valor_realizado: valor.valor_realizado || '',
+                            analise_qualitativa: valor.analise_qualitativa || '',
+                        },
+                        prismaTxn,
+                        now,
+                        botUser,
+                        analise.referencia_data,
+                        true // conferida = true
+                    );
+
+                    countChanges++;
+                }
+
+                await this.finalizaStatusSincronizacao(analise.variavel_id, analise.referencia_data, prismaTxn);
+            }
+
+            // Processa os recálculos apenas uma vez para todas as variáveis atualizadas
+            if (variaveisIds.length > 0) {
+                logger.log(`Recalculando ${variaveisIds.length} variáveis e indicadores dependentes`);
+                await this.variavelService.recalc_series_dependentes(variaveisIds, prismaTxn);
+                await this.variavelService.recalc_indicador_usando_variaveis(variaveisIds, prismaTxn);
+            }
+        });
+
+        const message =
+            countChanges > 0
+                ? `Sincronização concluída com sucesso. Foram processados ${countChanges} valores de variáveis.`
+                : 'Sincronização concluída sem alterações.';
+
+        logger.log(message);
+        return { message, count: countChanges };
+    }
+
+    /**
+     * Atualiza o status de sincronização da variável
+     */
+    private async finalizaStatusSincronizacao(
+        variavelId: number,
+        dataReferencia: Date,
+        prismaTxn: Prisma.TransactionClient
+    ): Promise<void> {
+        await prismaTxn.variavelGlobalCicloAnalise.updateMany({
+            where: {
+                variavel_id: variavelId,
+                referencia_data: dataReferencia,
+                sincronizar_serie_variavel: true,
+                fase: 'Preenchimento',
+                ultima_revisao: true,
+            },
+            data: {
+                sincronizar_serie_variavel: false,
+                sv_sincronizado_em: new Date(),
+            },
+        });
     }
 }

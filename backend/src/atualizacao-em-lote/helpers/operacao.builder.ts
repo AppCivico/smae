@@ -73,7 +73,7 @@ const COLUMN_LABELS: Record<string, string> = {
     // Arrays e referências
     tags: 'Tags',
     colaboradores_no_orgao: 'Colaboradores no Órgão',
-    responsaveis_no_orgao_gestor: 'Responsáveis no Órgão Gestor',
+    responsaveis_no_orgao_gestor: 'Assessores no Portfólio',
     orgaos_participantes: 'Órgãos Participantes',
 
     // Atributos de controle
@@ -90,8 +90,57 @@ async function formatValueForDisplay(
     colName: string,
     value: any,
     tipo: TipoAtualizacaoEmLote
-): Promise<string> {
+): Promise<string | string[]> {
     if (value === null || value === undefined) return 'Não definido';
+
+    // Lida com o caso da coluna de tarefas
+    if (colName === 'tarefas' && typeof value === 'object' && value !== null) {
+        const formattedTaskDetails: string[] = [];
+
+        // Nome/título da tarefa
+        if (value.tarefa) {
+            formattedTaskDetails.push(`Tarefa - ${value.tarefa}`);
+        }
+
+        // Converte YYYY-MM-DD -> DD/MM/YYYY
+        if (value.inicio_planejado) {
+            const dateParts = value.inicio_planejado.split('-');
+            if (dateParts.length === 3) {
+                const formattedDate = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+                formattedTaskDetails.push(`Início Planejado - ${formattedDate}`);
+            } else {
+                formattedTaskDetails.push(`Início Planejado - ${value.inicio_planejado}`);
+            }
+        }
+
+        if (value.duracao_planejado !== undefined) {
+            const dias = value.duracao_planejado === 1 ? 'dia' : 'dias';
+            formattedTaskDetails.push(`Duração Planejada - ${value.duracao_planejado} ${dias}`);
+        }
+
+        // Converte YYYY-MM-DD -> DD/MM/YYYY
+        if (value.termino_planejado) {
+            const dateParts = value.termino_planejado.split('-');
+            if (dateParts.length === 3) {
+                const formattedDate = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+                formattedTaskDetails.push(`Término Planejado - ${formattedDate}`);
+            } else {
+                formattedTaskDetails.push(`Término Planejado - ${value.termino_planejado}`);
+            }
+        }
+
+        // Outros campos extras se aparecerem
+        Object.entries(value).forEach(([key, val]) => {
+            if (
+                !['tarefa', 'inicio_planejado', 'duracao_planejado', 'termino_planejado'].includes(key) &&
+                val !== undefined
+            ) {
+                formattedTaskDetails.push(`${key} - ${val}`);
+            }
+        });
+
+        return formattedTaskDetails;
+    }
 
     // Formata datas
     if (colName.includes('data_') || (colName.includes('previsao_') && value instanceof Date)) {
@@ -99,8 +148,8 @@ async function formatValueForDisplay(
     }
 
     // Trata valores booleanos
-    if (typeof value === 'boolean') {
-        return value ? 'Sim' : 'Não';
+    if (typeof value === 'boolean' || value === 'true' || value === 'false') {
+        return value || value == 'true' ? 'Sim' : 'Não';
     }
 
     // Formata valores monetários

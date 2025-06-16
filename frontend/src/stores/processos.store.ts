@@ -1,6 +1,5 @@
-/* eslint-disable import/no-extraneous-dependencies */
-import { ListProjetoSeiDto, ProjetoDetailDto } from '@/../../backend/src/pp/projeto/entities/projeto.entity.ts';
 import formatProcesso from '@/helpers/formatProcesso';
+import type { ListProjetoSeiDto, ProjetoDetailDto } from '@back/pp/projeto/entities/projeto.entity';
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;

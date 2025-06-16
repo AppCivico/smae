@@ -20,7 +20,7 @@
           :type="model ? 'button' : null"
           :to="linkDeRetrocesso"
           data-test="link-paginacao-anterior"
-          @click="(ev) => model ? irParaPagina(paginaCorrente - 1) : null"
+          @click="(ev) => irParaPagina(paginaCorrente - 1)"
         >
           <svg
             aria-hidden="true"
@@ -54,7 +54,7 @@
           :type="model ? 'button' : null"
           :to="linkParaUltimaPagina"
           arial-label="Última página"
-          @click="(ev) => model ? irParaPagina(paginas) : null"
+          @click="(ev) => irParaPagina(paginas)"
         >
           {{ paginas }}
         </component>
@@ -72,7 +72,7 @@
           :type="model ? 'button' : null"
           :to="linkDeAvanco"
           data-test="link-paginacao-seguinte"
-          @click="(ev) => model ? irParaPagina(paginaCorrente + 1) : null"
+          @click="(ev) => irParaPagina(paginaCorrente + 1)"
         >
           <span class="menu-de-paginacao__texto">
             Seguinte
@@ -95,6 +95,8 @@ const route = useRoute();
 const router = useRouter();
 
 const model = defineModel();
+
+const emit = defineEmits(['trocaDePaginaSolicitada']);
 
 const props = defineProps({
   paginas: {
@@ -158,6 +160,10 @@ const linkParaUltimaPagina = computed(() => (model.value
   }));
 
 async function irParaPagina(numero) {
+  emit('trocaDePaginaSolicitada', { pagina: Number(numero) });
+  // Não faz nada pois o componente é um router-link
+  if (!model.value) return;
+
   if (model.value) {
     model.value = Number(numero);
   } else {

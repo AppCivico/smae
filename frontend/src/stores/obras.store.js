@@ -13,6 +13,7 @@ export const useObrasStore = defineStore('obrasStore', {
     totalRegistrosRevisados: 0,
     emFoco: null,
     arquivos: [],
+    listaDeTodosIds: [],
 
     pdmsSimplificados: [],
     metaSimplificada: [],
@@ -27,6 +28,7 @@ export const useObrasStore = defineStore('obrasStore', {
       mudarStatus: false,
       transferirDePortfolio: false,
       arquivos: false,
+      listaDeTodosIds: false,
     },
     erro: null,
     erros: {
@@ -143,12 +145,17 @@ export const useObrasStore = defineStore('obrasStore', {
       this.chamadasPendentes.lista = false;
     },
     async buscarTodosIds(params = {}) {
+      this.chamadasPendentes.listaDeTodosIds = true;
       try {
         const { ids } = await this.requestS.get(`${baseUrl}/projeto-mdo/ids`, params);
 
+        this.listaDeTodosIds = ids;
+
+        this.chamadasPendentes.listaDeTodosIds = false;
         return ids;
       } catch (erro) {
         this.erro = erro;
+        this.chamadasPendentes.listaDeTodosIds = false;
         throw erro;
       }
     },

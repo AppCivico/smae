@@ -1,6 +1,8 @@
+import type {
+  GrupoPortfolioItemDto,
+  ListGrupoPortfolioDto,
+} from '@back/pp/grupo-portfolio/entities/grupo-portfolio.entity';
 import { defineStore } from 'pinia';
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { GrupoPortfolioItemDto, ListGrupoPortfolioDto } from '@/../../backend/src/pp/grupo-portfolio/entities/grupo-portfolio.entity';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
