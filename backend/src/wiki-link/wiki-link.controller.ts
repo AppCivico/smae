@@ -77,9 +77,8 @@ export class WikiLinkController {
     @Delete(':id')
     @ApiBearerAuth('access-token')
     @ApiNoContentResponse()
-    @HttpCode(HttpStatus.ACCEPTED)
+    @HttpCode(HttpStatus.NO_CONTENT)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
         await this.wikiLinkService.remove(params.id, user);
-        return '';
     }
 }
