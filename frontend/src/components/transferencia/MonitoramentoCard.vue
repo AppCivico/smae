@@ -90,7 +90,7 @@ const classeDoStatus = computed(() => {
           Data
         </dt>
         <dd class="t20 w400">
-          {{ dateToShortDate(recurso.historico_status[0].data_troca) }}
+          {{ dateToShortDate(recurso.historico_status?.[0]?.data_troca) || '-' }}
         </dd>
       </div>
 
