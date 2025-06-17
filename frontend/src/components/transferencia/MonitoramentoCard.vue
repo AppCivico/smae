@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import dinheiro from '@/helpers/dinheiro';
 import { dateToShortDate } from '@/helpers/dateToDate';
+import combinadorDeListas from '@/helpers/combinadorDeListas';
 
 const props = defineProps({
   recurso: {
@@ -76,21 +77,24 @@ const classeDoStatus = computed(() => {
         </div>
       </template>
 
-      <div class="card-monitoramento__dl-group">
+      <template v-if="recurso.parlamentares.length">
+        <div class="card-monitoramento__dl-group">
+          <dt class="t13 w300">
+            Parlamentar(es)
+          </dt>
+          <dd class="t20 w400">
+            {{ combinadorDeListas(recurso.parlamentares, ', ', 'parlamentar.nome') }}
+          </dd>
+        </div>
+      </template>
+
+      <div class="card-monitoramento__dl-group card-monitoramento__dl-group--status">
         <dt class="t13 w300">
-          Status
+          Status - Em
         </dt>
         <dd class="t20 w400">
           {{ recurso.status_atual }}
-        </dd>
-      </div>
-
-      <div class="card-monitoramento__dl-group">
-        <dt class="t13 w300">
-          Data
-        </dt>
-        <dd class="t20 w400">
-          {{ dateToShortDate(recurso.historico_status?.[0]?.data_troca) || '-' }}
+          {{ '- ' + dateToShortDate(recurso.historico_status?.[0]?.data_troca) || '' }}
         </dd>
       </div>
 
@@ -156,6 +160,10 @@ const classeDoStatus = computed(() => {
 
 .card-monitoramento--cancelada {
   --cor-de-tema: #ee3b2b;
+}
+
+.card-monitoramento--cancelada .card-monitoramento__dl-group--status dd {
+  background-color: #EE3B2B80;
 }
 
 .card-monitoramento__dl-group {
