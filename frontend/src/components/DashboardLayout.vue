@@ -37,3 +37,52 @@ export default {
     <slot />
   </main>
 </template>
+
+<style lang="less">
+
+.botao-wiki {
+  background-color: #20A0B7;
+  border: none;
+  padding: 6px 15px;
+  border-radius: 999px;
+  font-size: 32px;
+  color: #fff;
+  position: fixed;
+  display: none;
+  z-index: 1005;
+}
+
+.botao-wiki--abaixo {
+  display: initial;
+  left: 80%;
+  bottom: 0;
+  transform: translateY(10px);
+}
+
+.botao-wiki--direito-cima {
+  display: initial;
+  right: 0;
+  padding: 15px 3px 24px;
+  top: 0;
+  border-radius: 0;
+  border-bottom-left-radius: 999px;
+}
+
+.botao-wiki--direito {
+  display: initial;
+  right: 0;
+  padding: 24px 3px ;
+  top: 80%;
+  border-radius: 0;
+  border-bottom-left-radius: 999px;
+  border-top-left-radius: 999px;
+}
+
+.botao-wiki--direito-cima, .botao-wiki--direito {
+  transition: padding 0.2s ease-in;
+  &:hover {
+    padding: 25px;
+    // border-radius: 999px;
+  }
+}
+</style>
