@@ -44,6 +44,24 @@ const classeDoStatus = computed(() => {
         </dd>
       </div>
 
+      <div class="card-monitoramento__dl-group">
+        <dt class="t13 w300">
+          Nome
+        </dt>
+        <dd class="t20 w400">
+          {{ recurso.nome }}
+        </dd>
+      </div>
+
+      <div class="card-monitoramento__dl-group">
+        <dt class="t13 w300">
+          Valor do repasse
+        </dt>
+        <dd class="t20 w400">
+          R$ {{ dinheiro(recurso.valor_total) }}
+        </dd>
+      </div>
+
       <template
         v-if="recurso.historico_status.length > 0
           && recurso.historico_status[0].nome_responsavel"
@@ -60,19 +78,10 @@ const classeDoStatus = computed(() => {
 
       <div class="card-monitoramento__dl-group">
         <dt class="t13 w300">
-          Nome
-        </dt>
-        <dd class="t20 w400 card-monitoramento__item-com-marcador">
-          {{ recurso.nome }}
-        </dd>
-      </div>
-
-      <div class="card-monitoramento__dl-group">
-        <dt class="t13 w300">
-          Valor do repasse
+          Status
         </dt>
         <dd class="t20 w400">
-          R$ {{ dinheiro(recurso.valor_total) }}
+          {{ recurso.status_atual }}
         </dd>
       </div>
 
@@ -82,15 +91,6 @@ const classeDoStatus = computed(() => {
         </dt>
         <dd class="t20 w400">
           {{ dateToShortDate(recurso.historico_status[0].data_troca) }}
-        </dd>
-      </div>
-
-      <div class="card-monitoramento__dl-group">
-        <dt class="t13 w300">
-          Status
-        </dt>
-        <dd class="t20 w400">
-          {{ recurso.status_atual }}
         </dd>
       </div>
 
