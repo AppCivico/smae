@@ -17,8 +17,8 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: params.transferenciaId });
 
 const legendas = {
   status: [
-    { item: 'Finalizada', color: '#00b300' },
     { item: 'Em curso', color: '#ffda00' },
+    { item: 'Finalizada', color: '#00b300' },
     { item: 'Registro histórico', color: '#ff0000' },
   ],
 };
