@@ -1,12 +1,12 @@
 <script setup>
-import { Alert, EditModal, SideBar } from '@/components';
-import { useAlertStore } from '@/stores/alert.store';
-import { useAuthStore } from '@/stores/auth.store';
 import {
   onErrorCaptured,
   provide,
   ref,
 } from 'vue';
+import { Alert, EditModal, SideBar } from '@/components';
+import { useAlertStore } from '@/stores/alert.store';
+import { useAuthStore } from '@/stores/auth.store';
 import BarraDePendência from './components/BarraDeChamadaPendente.vue';
 
 const gblLimiteDeSeleçãoSimultânea = Number.parseInt(
@@ -77,7 +77,9 @@ if (import.meta.env.VITE_COR_DA_FAIXA_DE_CONSTRUCAO || import.meta.env.DEV || ['
         <svg
           width="20"
           height="20"
-        ><use xlink:href="#i_remove" /></svg>
+        >
+          <use xlink:href="#i_remove" />
+        </svg>
       </button>
     </div>
   </ErrorComponent>
@@ -93,8 +95,20 @@ if (import.meta.env.VITE_COR_DA_FAIXA_DE_CONSTRUCAO || import.meta.env.DEV || ['
 
   <EditModal />
   <Alert />
-
   <div id="modais" />
+
+  <button class="botao-wiki botao-wiki--direito-cima">
+    {{ '?' }}
+  </button>
+  <button class="botao-wiki botao-wiki--direito">
+    {{ '?' }}
+  </button>
+  <button class="botao-wiki botao-wiki--abaixo">
+    {{ '?' }}
+  </button>
+  <button class="botao-wiki botao-wiki--esquerda">
+    {{ '?' }}
+  </button>
 </template>
 <style lang="less">
 @import url("@/_less/style.less");
