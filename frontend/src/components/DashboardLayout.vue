@@ -59,37 +59,19 @@ export default {
   z-index: 1005;
 }
 
-.botao-wiki--abaixo {
-  display: initial;
-  left: 80%;
-  bottom: 0;
-  transform: translateY(10px);
-}
-
 .botao-wiki--direito-cima {
   display: initial;
   right: 0;
   padding: 15px 3px 24px;
   top: 0;
-  border-radius: 0;
-  border-bottom-left-radius: 999px;
-}
-
-.botao-wiki--direito {
-  display: initial;
-  right: 0;
-  padding: 24px 3px ;
-  top: 80%;
-  border-radius: 0;
-  border-bottom-left-radius: 999px;
-  border-top-left-radius: 999px;
+  border-radius: 0 0 0 999px;
 }
 
 .botao-wiki--direito-cima, .botao-wiki--direito {
   transition: padding 0.2s ease-in;
+
   &:hover {
-    padding: 25px;
-    // border-radius: 999px;
+    padding: 25px 25px 40px 40px;
   }
 }
 </style>
