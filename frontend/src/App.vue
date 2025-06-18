@@ -3,14 +3,19 @@ import {
   onErrorCaptured,
   provide,
   ref,
+  watch,
 } from 'vue';
+import { storeToRefs } from 'pinia';
 import { Alert, EditModal, SideBar } from '@/components';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import BarraDePendência from './components/BarraDeChamadaPendente.vue';
 import useRotaAtual from './composables/useRotaAtual';
+import { useWikiStore } from './stores/wiki.store';
 
 const { rotaAtual } = useRotaAtual();
+const wikiStore = useWikiStore();
+const { temWiki, wikiAtual } = storeToRefs(wikiStore);
 
 const gblLimiteDeSeleçãoSimultânea = Number.parseInt(
   import.meta.env.VITE_LIMITE_SELECAO,
@@ -54,13 +59,18 @@ if (import.meta.env.VITE_COR_DA_FAIXA_DE_CONSTRUCAO || import.meta.env.DEV || ['
 
   window.document.documentElement.classList.add('dev-environment');
 }
+
+watch(rotaAtual, () => {
+  wikiStore.selecionarPaginaAtual(rotaAtual.value?.path);
+}, { immediate: true });
 </script>
+
 <template>
   <h4
     v-ScrollLockDebug
     class="tr mr2"
   >
-    {{ rotaAtual.path }}
+    {{ rotaAtual?.path }}
   </h4>
   <component
     :is="`style`"
@@ -106,18 +116,14 @@ if (import.meta.env.VITE_COR_DA_FAIXA_DE_CONSTRUCAO || import.meta.env.DEV || ['
   <Alert />
   <div id="modais" />
 
-  <button class="botao-wiki botao-wiki--direito-cima">
+  <a
+    v-if="temWiki"
+    class="botao-wiki botao-wiki--direito-cima"
+    target="_blank"
+    :href="wikiAtual"
+  >
     {{ '?' }}
-  </button>
-  <button class="botao-wiki botao-wiki--direito">
-    {{ '?' }}
-  </button>
-  <button class="botao-wiki botao-wiki--abaixo">
-    {{ '?' }}
-  </button>
-  <button class="botao-wiki botao-wiki--esquerda">
-    {{ '?' }}
-  </button>
+  </a>
 </template>
 <style lang="less">
 @import url("@/_less/style.less");
