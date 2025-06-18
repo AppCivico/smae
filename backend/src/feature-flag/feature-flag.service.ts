@@ -34,6 +34,7 @@ export class FeatureFlagService {
                 mf_v2: updated.mf_v2,
                 panorama: updated.panorama,
                 pp_pe: updated.pp_pe,
+                mostrar_pdm_antigo: updated.mostrar_pdm_antigo,
             };
         }
         process.env.INTERNAL_DISABLE_QUERY_LOG = '';
@@ -49,6 +50,7 @@ export class FeatureFlagService {
             mf_v2: true,
             panorama: true,
             pp_pe: false,
+            mostrar_pdm_antigo: false,
         };
     }
 }

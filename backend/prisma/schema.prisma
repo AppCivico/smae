@@ -5037,7 +5037,7 @@ model feature_flag {
     mf_v2    Boolean @default(false)
     pp_pe    Boolean @default(false) // liga ou desliga o Painel Estratégico de Projetos
 
-    // TODO? adicionar controle de sync de SEI aqui.
+    mostrar_pdm_antigo Boolean @default(false)
 }
 
 model MetaStatusConsolidadoCf {
