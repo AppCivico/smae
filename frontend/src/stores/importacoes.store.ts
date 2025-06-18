@@ -1,5 +1,7 @@
 import dateToDate from '@/helpers/dateToDate';
-import type { ListImportacaoOrcamentoDto } from '@back/importacao-orcamento/entities/importacao-orcamento.entity';
+import type { PaginatedDto } from '@back/common/dto/paginated.dto';
+import type { RecordWithId } from '@back/common/dto/record-with-id.dto';
+import type { ImportacaoOrcamentoDto, ListImportacaoOrcamentoDto } from '@back/importacao-orcamento/entities/importacao-orcamento.entity';
 import type { PortfolioDto } from '@back/pp/portfolio/entities/portfolio.entity';
 import { defineStore } from 'pinia';
 
@@ -19,8 +21,8 @@ interface Estado {
   chamadasPendentes: ChamadasPendentes;
   erro: null | unknown;
   paginação: {
-    temMais: Boolean;
-    tokenDaPróximaPágina: String;
+    temMais: boolean;
+    tokenDaPróximaPágina: string;
   };
 }
 
@@ -44,14 +46,14 @@ export const useImportaçõesStore = defineStore('importações', {
   }),
 
   actions: {
-    async buscarTudo(params: { token_proxima_pagina?: String } = {}): Promise<void> {
+    async buscarTudo(params: { token_proxima_pagina?: string } = {}): Promise<void> {
       this.chamadasPendentes.lista = true;
       try {
         const {
           linhas,
           tem_mais: temMais,
           token_proxima_pagina: tokenDaPróximaPágina,
-        } = await this.requestS.get(`${baseUrl}/importacao-orcamento`, params);
+        } = await this.requestS.get(`${baseUrl}/importacao-orcamento`, params) as PaginatedDto<ImportacaoOrcamentoDto>;
 
         if (Array.isArray(linhas)) {
           this.lista = params.token_proxima_pagina
@@ -82,11 +84,11 @@ export const useImportaçõesStore = defineStore('importações', {
       this.chamadasPendentes.portfoliosPermitidos = false;
     },
 
-    async associarArquivo(params = {}): Promise<boolean> {
+    async associarArquivo(params = {}): Promise<boolean | RecordWithId> {
       this.chamadasPendentes.arquivos = true;
 
       try {
-        const resposta = await this.requestS.post(`${baseUrl}/importacao-orcamento/`, params);
+        const resposta = await this.requestS.post(`${baseUrl}/importacao-orcamento/`, params) as RecordWithId;
         this.chamadasPendentes.arquivos = false;
         return resposta;
       } catch (erro) {
@@ -121,6 +123,5 @@ export const useImportaçõesStore = defineStore('importações', {
       criado_por: `${x.criado_por.nome_exibicao}`,
       criado_em: `${dateToDate(x.criado_em)}`,
     })) || [],
-
   },
 });
