@@ -1065,15 +1065,6 @@ const PerfilAcessoConfig: PerfilConfigArray = [
         ],
     },
     {
-        nome: atualizarNomePerfil('Analista de dados', []),
-        descricao: 'Tem acesso aos dashboards e painéis externos de metas e projetos',
-        privilegios: [
-            //'SMAE.loga_direto_na_analise', não é mais necessário no SMAE de 2024/10
-            'Reports.dashboard_pdm',
-            'Reports.dashboard_portfolios',
-        ],
-    },
-    {
         nome: atualizarNomePerfil('Observador(a) de projetos', [
             'Observador de projetos',
             'Espectador de projetos',
@@ -1277,7 +1268,8 @@ PerfilAcessoConfig.push(
     removerNomePerfil('Administrador de equipes'),
     removerNomePerfil('Administrador de Grupo de Variáveis no Órgão'),
     removerNomePerfil(CONST_PERFIL_PARTICIPANTE_EQUIPE_PDM),
-    removerNomePerfil('Orçamento - Metas Setorial')
+    removerNomePerfil('Orçamento - Metas Setorial'),
+    removerNomePerfil('Analista de dados'),
 );
 
 async function main() {
