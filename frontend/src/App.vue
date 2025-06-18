@@ -8,6 +8,9 @@ import { Alert, EditModal, SideBar } from '@/components';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import BarraDePendência from './components/BarraDeChamadaPendente.vue';
+import useRotaAtual from './composables/useRotaAtual';
+
+const { rotaAtual } = useRotaAtual();
 
 const gblLimiteDeSeleçãoSimultânea = Number.parseInt(
   import.meta.env.VITE_LIMITE_SELECAO,
@@ -53,6 +56,12 @@ if (import.meta.env.VITE_COR_DA_FAIXA_DE_CONSTRUCAO || import.meta.env.DEV || ['
 }
 </script>
 <template>
+  <h4
+    v-ScrollLockDebug
+    class="tr mr2"
+  >
+    {{ rotaAtual.path }}
+  </h4>
   <component
     :is="`style`"
     v-if="corDaFaixa"
