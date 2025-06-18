@@ -7,11 +7,15 @@ import { Date2YMD } from '../common/date2ymd';
 import { PessoaService } from '../pessoa/pessoa.service';
 import { MinhaContaDto, SessaoDto, TesteDataDto } from './models/minha-conta.dto';
 import { NovaSenhaDto } from './models/nova-senha.dto';
+import { FeatureFlagService } from '../feature-flag/feature-flag.service';
 
 @ApiTags('Minha Conta')
 @Controller('')
 export class MinhaContaController {
-    constructor(private readonly pessoaService: PessoaService) {}
+    constructor(
+        private readonly pessoaService: PessoaService,
+        private readonly featureFlagService: FeatureFlagService
+    ) {}
 
     @Post('teste-sistema')
     @ApiBearerAuth('access-token')
@@ -25,10 +29,11 @@ export class MinhaContaController {
 
     @Get('minha-conta')
     @ApiBearerAuth('access-token')
-    getMe(@CurrentUser() user: PessoaFromJwt): MinhaContaDto {
+    async getMe(@CurrentUser() user: PessoaFromJwt): Promise<MinhaContaDto> {
+        const ff = await this.featureFlagService.featureFlag();
         const sistemas_disponiveis: (ModuloSistema | undefined)[] = [
-            'PDM',
-            user.hasSomeRoles(['SMAE.liberar_pdm_as_ps']) ? 'ProgramaDeMetas' : undefined,
+            ff.mostrar_pdm_antigo ? 'PDM' : undefined,
+            'ProgramaDeMetas',
             'Projetos',
             'CasaCivil',
             'MDO',
