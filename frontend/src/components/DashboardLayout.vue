@@ -62,16 +62,21 @@ export default {
 .botao-wiki--direito-cima {
   display: initial;
   right: 0;
-  padding: 15px 3px 24px;
+  padding: 5px 3px 25px;
   top: 0;
   border-radius: 0 0 0 999px;
+}
+
+.botao-wiki--direito-cima svg {
+  width: 15px;
+  height: 20px;
 }
 
 .botao-wiki--direito-cima, .botao-wiki--direito {
   transition: padding 0.2s ease-in;
 
   &:hover {
-    padding: 25px 25px 40px 40px;
+    padding: 15px 25px 40px 40px;
   }
 }
 </style>

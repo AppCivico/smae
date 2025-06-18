@@ -122,7 +122,7 @@ watch(rotaAtual, () => {
     target="_blank"
     :href="wikiAtual"
   >
-    {{ '?' }}
+    <svg><use xlink:href="#wiki_?" /></svg>
   </a>
 </template>
 <style lang="less">
