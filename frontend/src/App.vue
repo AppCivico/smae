@@ -1,13 +1,21 @@
 <script setup>
-import { Alert, EditModal, SideBar } from '@/components';
-import { useAlertStore } from '@/stores/alert.store';
-import { useAuthStore } from '@/stores/auth.store';
 import {
   onErrorCaptured,
   provide,
   ref,
+  watch,
 } from 'vue';
+import { storeToRefs } from 'pinia';
+import { Alert, EditModal, SideBar } from '@/components';
+import { useAlertStore } from '@/stores/alert.store';
+import { useAuthStore } from '@/stores/auth.store';
 import BarraDePendência from './components/BarraDeChamadaPendente.vue';
+import useRotaAtual from './composables/useRotaAtual';
+import { useWikiStore } from './stores/wiki.store';
+
+const { rotaAtual } = useRotaAtual();
+const wikiStore = useWikiStore();
+const { temWiki, wikiAtual } = storeToRefs(wikiStore);
 
 const gblLimiteDeSeleçãoSimultânea = Number.parseInt(
   import.meta.env.VITE_LIMITE_SELECAO,
@@ -51,8 +59,19 @@ if (import.meta.env.VITE_COR_DA_FAIXA_DE_CONSTRUCAO || import.meta.env.DEV || ['
 
   window.document.documentElement.classList.add('dev-environment');
 }
+
+watch(rotaAtual, () => {
+  wikiStore.selecionarPaginaAtual(rotaAtual.value?.path);
+}, { immediate: true });
 </script>
+
 <template>
+  <h4
+    v-ScrollLockDebug
+    class="tr mr2"
+  >
+    {{ rotaAtual?.path }}
+  </h4>
   <component
     :is="`style`"
     v-if="corDaFaixa"
@@ -77,7 +96,9 @@ if (import.meta.env.VITE_COR_DA_FAIXA_DE_CONSTRUCAO || import.meta.env.DEV || ['
         <svg
           width="20"
           height="20"
-        ><use xlink:href="#i_remove" /></svg>
+        >
+          <use xlink:href="#i_remove" />
+        </svg>
       </button>
     </div>
   </ErrorComponent>
@@ -93,8 +114,16 @@ if (import.meta.env.VITE_COR_DA_FAIXA_DE_CONSTRUCAO || import.meta.env.DEV || ['
 
   <EditModal />
   <Alert />
-
   <div id="modais" />
+
+  <a
+    v-if="temWiki"
+    class="botao-wiki botao-wiki--direito-cima"
+    target="_blank"
+    :href="wikiAtual"
+  >
+    <svg><use xlink:href="#wiki_?" /></svg>
+  </a>
 </template>
 <style lang="less">
 @import url("@/_less/style.less");
