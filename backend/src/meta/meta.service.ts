@@ -1,5 +1,6 @@
 import { BadRequestException, HttpException, Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { plainToInstance } from 'class-transformer';
 import { CronogramaAtrasoGrau } from 'src/common/dto/CronogramaAtrasoGrau.dto';
 import { CronogramaEtapaService } from 'src/cronograma-etapas/cronograma-etapas.service';
 import { UploadService } from 'src/upload/upload.service';
@@ -36,7 +37,6 @@ import {
     RelacionadosDTO,
 } from './entities/meta.entity';
 import { upsertPSPerfisMetaIniAtv, validatePSEquipes } from './ps-perfil.util';
-import { plainToInstance } from 'class-transformer';
 
 type DadosMetaIniciativaAtividadesDto = {
     tipo: string;
@@ -61,8 +61,6 @@ interface MetaResponsavelChanges {
 export const MetasGetPermissionSet = async (
     tipo: TipoPdmType,
     user: PessoaFromJwt | undefined,
-    isBi: boolean,
-
     prisma: PrismaService
 ) => {
     const permissionsSet: Prisma.Enumerable<Prisma.MetaWhereInput> = [
@@ -72,7 +70,6 @@ export const MetasGetPermissionSet = async (
         },
     ];
     if (!user) return permissionsSet;
-    if (isBi && user.hasSomeRoles(['SMAE.acesso_bi'])) return permissionsSet;
 
     const orgaoId = user.orgao_id;
     if (!orgaoId) throw new HttpException('Usuário sem órgão', 400);
@@ -480,7 +477,7 @@ export class MetaService {
         user: PessoaFromJwt | undefined,
         pdm_id: number | undefined = undefined
     ): Promise<{ id: number }[]> {
-        const permissionsSet = await MetasGetPermissionSet(tipo, user, true, this.prisma);
+        const permissionsSet = await MetasGetPermissionSet(tipo, user, this.prisma);
 
         return await this.prisma.meta.findMany({
             where: {
@@ -499,7 +496,7 @@ export class MetaService {
     }
 
     async getMetaFilterSet(tipo: TipoPdmType, user: PessoaFromJwt) {
-        return await MetasGetPermissionSet(tipo, user, false, this.prisma);
+        return await MetasGetPermissionSet(tipo, user, this.prisma);
     }
 
     async assertMetaWriteOrThrow(
@@ -541,7 +538,7 @@ export class MetaService {
         user: PessoaFromJwt,
         skipObjects: boolean = false
     ): Promise<MetaItemDto[]> {
-        const permissionsSet = await MetasGetPermissionSet(tipo, user, false, this.prisma);
+        const permissionsSet = await MetasGetPermissionSet(tipo, user, this.prisma);
 
         const listActive = await this.prisma.meta.findMany({
             where: {

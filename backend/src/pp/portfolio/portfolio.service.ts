@@ -177,7 +177,7 @@ export class PortfolioService {
                     where: {
                         tipo: tipoProjeto,
                         removido_em: null,
-                        AND: await ProjetoGetPermissionSet(tipoProjeto, user, false),
+                        AND: await ProjetoGetPermissionSet(tipoProjeto, user),
                     },
                 });
                 andIds = projetoRows.map((r) => r.portfolio_id);

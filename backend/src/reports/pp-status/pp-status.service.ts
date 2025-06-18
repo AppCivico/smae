@@ -107,7 +107,7 @@ export class PPStatusService implements ReportableService {
             if (!sistema) throw new Error('Usuário sem sistema');
             if (!dto.tipo_pdm) throw new Error('Tipo de PDM não informado');
 
-            whereSet = await ProjetoGetPermissionSet(dto.tipo_pdm, user, false);
+            whereSet = await ProjetoGetPermissionSet(dto.tipo_pdm, user);
         }
 
         return await this.prisma.projeto.findMany({

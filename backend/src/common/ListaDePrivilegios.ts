@@ -204,7 +204,6 @@ export type ListaDePrivilegios =
     | 'ProjetoTagMDO.editar'
     | 'ProjetoTagMDO.remover'
     | 'PerfilAcesso.administrador'
-    | 'SMAE.acesso_bi'
     | 'SMAE.acesso_telefone'
     | 'CadastroPS.administrador'
     | 'CadastroPS.administrador_no_orgao'

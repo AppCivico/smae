@@ -32,7 +32,6 @@ import {
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
 
 const {
-    Parser,
     AsyncParser,
     transforms: { flatten },
 } = require('json2csv');
@@ -397,7 +396,7 @@ export class PPObrasService implements ReportableService {
                         FROM projeto_tag pt
                         WHERE pt.id = ANY(projeto.tags)
                         AND pt.removido_em IS NULL
-                    ) as etiquetas 
+                    ) as etiquetas
                 FROM projeto
                 LEFT JOIN meta ON meta.id = projeto.meta_id AND meta.removido_em IS NULL
                 LEFT JOIN pdm ON pdm.id = meta.pdm_id
@@ -731,7 +730,7 @@ export class PPObrasService implements ReportableService {
         let paramIndex = 1;
 
         if (user) {
-            const perms = await ProjetoGetPermissionSet(this.tipo, user, false);
+            const perms = await ProjetoGetPermissionSet(this.tipo, user);
 
             const allowed = await this.prisma.projeto.findMany({
                 where: {

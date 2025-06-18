@@ -249,7 +249,7 @@ export class PSMFDashboardService {
         filtros: PSMFFiltroDashboardMetasDto,
         user: PessoaFromJwt
     ): Promise<PSMFListaMetasDto> {
-        const permissionsSet = await MetasGetPermissionSet(tipo, user, false, this.prisma);
+        const permissionsSet = await MetasGetPermissionSet(tipo, user, this.prisma);
 
         // Validar token para paginação
         if (filtros.pagina && filtros.pagina > 1 && !filtros.token_paginacao) {
@@ -464,7 +464,7 @@ export class PSMFDashboardService {
         user: PessoaFromJwt
     ): Promise<PSMFQuadroMetasDto> {
         // Verificar permissões
-        const permissionsSet = await MetasGetPermissionSet(tipo, user, false, this.prisma);
+        const permissionsSet = await MetasGetPermissionSet(tipo, user, this.prisma);
 
         // Obter as equipes do usuário se estiver em visão pessoal
         const equipes_pessoa = filtros.visao_pessoal ? await user.getEquipesColaborador(this.prisma) : [];

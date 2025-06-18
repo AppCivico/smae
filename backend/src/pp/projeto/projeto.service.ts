@@ -130,8 +130,7 @@ type ProjetoResumoPermisao = {
 
 export const ProjetoGetPermissionSet = async (
     tipo: TipoProjeto,
-    user: PessoaFromJwt | undefined,
-    isBi: boolean
+    user: PessoaFromJwt | undefined
 ): Promise<Array<Prisma.ProjetoWhereInput>> => {
     const permissionsBaseSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = [
         {
@@ -141,8 +140,6 @@ export const ProjetoGetPermissionSet = async (
         },
     ];
     if (!user) return permissionsBaseSet;
-
-    if (isBi && user.hasSomeRoles(['SMAE.acesso_bi'])) return permissionsBaseSet;
 
     if (user.hasSomeRoles([tipo == 'PP' ? 'Projeto.administrador' : 'ProjetoMDO.administrador'])) {
         Logger.debug('roles Projeto.administrador, ver todos os projetos');
@@ -989,7 +986,7 @@ export class ProjetoService {
         orgao_responsavel_id: number | number[] | undefined = undefined,
         projeto_id: number | number[] | undefined = undefined
     ): Promise<{ id: number }[]> {
-        const permissionsSet = await ProjetoGetPermissionSet(tipo, user, true);
+        const permissionsSet = await ProjetoGetPermissionSet(tipo, user);
 
         const filtroPortfolio =
             typeof portfolio_id == 'number' ? [portfolio_id] : portfolio_id?.length ? portfolio_id : undefined;
@@ -1060,7 +1057,7 @@ export class ProjetoService {
 
     async findAll(tipo: TipoProjeto, filters: FilterProjetoDto, user: PessoaFromJwt): Promise<ProjetoDto[]> {
         const ret: ProjetoDto[] = [];
-        const permissionsSet = await ProjetoGetPermissionSet(tipo, user, false);
+        const permissionsSet = await ProjetoGetPermissionSet(tipo, user);
 
         const rows = await this.prisma.projeto.findMany({
             where: {
@@ -1193,7 +1190,7 @@ export class ProjetoService {
 
         // AVISO: os dois métodos abaixo alteram o número de rows!
         // getProjetoWhereSet e getProjetoMDOWhereSet
-        const permissionsSet = await ProjetoGetPermissionSet('MDO', user, false);
+        const permissionsSet = await ProjetoGetPermissionSet('MDO', user);
         const filterSet = this.getProjetoV2WhereSet(filters, palavrasChave, user.id);
 
         let projetoIds;
@@ -1311,7 +1308,7 @@ export class ProjetoService {
         user: PessoaFromJwt
     ): Promise<number[]> {
         const palavrasChave = await this.buscaIdsPalavraChave(filters.palavra_chave);
-        const permissionsSet = await ProjetoGetPermissionSet(tipo, user, false);
+        const permissionsSet = await ProjetoGetPermissionSet(tipo, user);
         const filterSet = this.getProjetoV2WhereSet(filters, palavrasChave, user.id);
 
         const projetoIds = await this.prisma.projeto.findMany({
@@ -1356,7 +1353,7 @@ export class ProjetoService {
 
         // AVISO: os dois métodos abaixo alteram o número de rows!
         // getProjetoWhereSet e getProjetoMDOWhereSet
-        const permissionsSet = await ProjetoGetPermissionSet(tipo, user, false);
+        const permissionsSet = await ProjetoGetPermissionSet(tipo, user);
         const filterSet = this.getProjetoV2WhereSet(filters, palavrasChave, user.id);
 
         let projetoIds;
@@ -1554,7 +1551,7 @@ export class ProjetoService {
             tipo = projeto.tipo;
         }
 
-        const permissionsSet = await ProjetoGetPermissionSet(tipo, user, false);
+        const permissionsSet = await ProjetoGetPermissionSet(tipo, user);
         const projeto = await this.prisma.projeto.findFirst({
             where: {
                 id: id,
@@ -3810,7 +3807,7 @@ export class ProjetoService {
         jwt: string;
         body: AnyPageTokenJwtBody;
     }> {
-        const permissionsSet = await ProjetoGetPermissionSet(tipo, user, false);
+        const permissionsSet = await ProjetoGetPermissionSet(tipo, user);
         const filterSet = this.getProjetoV2WhereSet(filters, ids, user.id);
         const total_rows = await this.prisma.projeto.count({
             where: {
