@@ -536,7 +536,6 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['Config.editar', 'Editar configuração de textos do sistema'],
         ['SMAE.superadmin', 'Faz parte do perfil de Administrador Geral'],
         ['SMAE.loga_direto_na_analise', 'Acesso direto à parte de análise ao fazer login'],
-        ['SMAE.acesso_bi', 'Acesso total aos Business Intelligence (BI) de projetos/metas'],
         ['PerfilAcesso.administrador', 'Gerenciar Perfil de Acesso'],
         ['SMAE.gestor_distribuicao_recurso', 'Visão limitada, para gestor de distribuição de recurso'],
         ['SMAE.GrupoVariavel.colaborador', 'Pode ser colaborador de grupos de variáveis'],
@@ -1070,7 +1069,6 @@ const PerfilAcessoConfig: PerfilConfigArray = [
         descricao: 'Tem acesso aos dashboards e painéis externos de metas e projetos',
         privilegios: [
             //'SMAE.loga_direto_na_analise', não é mais necessário no SMAE de 2024/10
-            'SMAE.acesso_bi',
             'Reports.dashboard_pdm',
             'Reports.dashboard_portfolios',
         ],

@@ -473,7 +473,7 @@ export class PPProjetosService implements ReportableService {
         let paramIndex = 1;
 
         if (user) {
-            const perms = await ProjetoGetPermissionSet(this.tipo, user, false);
+            const perms = await ProjetoGetPermissionSet(this.tipo, user);
 
             const allowed = await this.prisma.projeto.findMany({
                 where: {
