@@ -34,19 +34,20 @@ export const useWikiStore = defineStore('wiki', {
     },
   },
   getters: {
-    paginasMapeadas: ({ paginas }) => paginas.reduce((mapa, item) => ({
-      ...mapa,
-      [item.chave_smae]: item.url_wiki,
-    }), {} as Record<string, string>),
-    wikiAtual: ({ paginasMapeadas, paginaSmae }) => {
-      const paginaWiki = paginasMapeadas[paginaSmae];
+    paginasMapeadas: ({ paginas }) => paginas.reduce(
+      (mapa, item) => ({
+        ...mapa,
+        [item.chave_smae]: item.url_wiki,
+      }),
+      {} as Record<string, string>,
+    ),
+    wikiAtual: ({ paginasMapeadas, paginaSmae }): string | null => {
+      const paginaWiki: string | undefined = paginasMapeadas[paginaSmae];
       if (!paginaWiki) {
         return null;
       }
 
       return paginaWiki;
     },
-    temWiki: ({ wikiAtual }) => !!wikiAtual,
-
   },
 });

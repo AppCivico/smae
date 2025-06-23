@@ -44,39 +44,3 @@ export default {
     <slot />
   </main>
 </template>
-
-<style lang="less">
-
-.botao-wiki {
-  background-color: #20A0B7;
-  border: none;
-  padding: 6px 15px;
-  border-radius: 999px;
-  font-size: 32px;
-  color: #fff;
-  position: fixed;
-  display: none;
-  z-index: 1005;
-}
-
-.botao-wiki--direito-cima {
-  display: initial;
-  right: 0;
-  padding: 5px 3px 25px;
-  top: 0;
-  border-radius: 0 0 0 999px;
-}
-
-.botao-wiki--direito-cima svg {
-  width: 15px;
-  height: 20px;
-}
-
-.botao-wiki--direito-cima, .botao-wiki--direito {
-  transition: padding 0.2s ease-in;
-
-  &:hover {
-    padding: 15px 25px 40px 40px;
-  }
-}
-</style>
