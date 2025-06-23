@@ -2,8 +2,11 @@
 import SmallModal from '@/components/SmallModal.vue';
 import requestS from '@/helpers/requestS.ts';
 import { useAlertStore } from '@/stores/alert.store';
+import { useAuthStore } from '@/stores/auth.store';
 import { useImportaçõesStore } from '@/stores/importacoes.store.ts';
 import { usePdMStore } from '@/stores/pdm.store';
+import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
+import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, Form } from 'vee-validate';
 import { defineOptions, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -20,7 +23,14 @@ const route = useRoute();
 const router = useRouter();
 const importaçõesStore = useImportaçõesStore();
 const PdMStore = usePdMStore();
+const PlanosSetoriaisStore = usePlanosSetoriaisStore();
 const alertStore = useAlertStore();
+
+const authStore = useAuthStore();
+
+const {
+  sistemaCorrente,
+} = storeToRefs(authStore);
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 const curfile = reactive({});
@@ -62,10 +72,12 @@ function onSubmit(values) {
           if (route.meta.rotaDeEscape) {
             router.push({
               name: route.meta.rotaDeEscape,
-              query: {
-                ...route.query,
-                pdm_id: values.pdm_id || route.query.pdm_id || undefined,
-              },
+              query: Object.assign(
+                structuredClone(route.query),
+                {
+                  pdm_id: values.pdm_id || route.query.pdm_id || undefined,
+                },
+              ),
             });
           }
         } else {
@@ -89,7 +101,21 @@ function addFile(e) {
   [curfile.file] = files;
 }
 
-switch (route.meta.entidadeMãe) {
+switch (route.meta.entidadeMãe || sistemaCorrente.value) {
+  case 'programaDeMetas': // entidadeMãe
+  case 'ProgramaDeMetas': // sistemaCorrente
+  case 'planoSetorial': // entidadeMãe
+  case 'PlanoSetorial': // sistemaCorrente
+    schema = schema.shape({
+      pdm_id: number()
+        .label('PdM/Plano setorial')
+        .required(),
+    });
+    if (!PlanosSetoriaisStore.lista.length) {
+      PlanosSetoriaisStore.buscarTudo();
+    }
+    break;
+
   case 'pdm':
     schema = schema.shape({
       pdm_id: number()
@@ -138,7 +164,7 @@ switch (route.meta.entidadeMãe) {
           type="hidden"
         />
         <div
-          v-if="$route.meta.entidadeMãe === 'pdm'"
+          v-if="schema?.fields?.pdm_id"
           class="flex g2 mb1"
         >
           <div class="f1">
@@ -153,19 +179,35 @@ switch (route.meta.entidadeMãe) {
               as="select"
               class="inputtext light mb1"
               :class="{ 'error': errors['pdm_id'] }"
-              :disabled="PdMStore.PdM?.loading"
+              :aria-busy="PlanosSetoriaisStore.chamadasPendentes.lista"
+              :aria-disabled="PlanosSetoriaisStore.chamadasPendentes.lista"
+              :disabled="$route.meta.entidadeMãe === 'pdm' && PdMStore.PdM?.loading"
             >
               <option :value="null">
                 Selecionar
               </option>
-              <option
-                v-for="item in PdMStore.PdM"
-                :key="item.id"
-                :value="item.id"
-                :selected="item.id == $route.query.pdm_id"
-              >
-                {{ item.nome }}
-              </option>
+              <template v-if="$route.meta.entidadeMãe === 'pdm'">
+                <option
+                  v-for="item in PdMStore.PdM"
+                  :key="item.id"
+                  :value="item.id"
+                  :selected="item.id == $route.query.pdm_id"
+                  :disabled="!!item.ativo"
+                >
+                  {{ item.nome }}
+                </option>
+              </template>
+              <template v-else>
+                <option
+                  v-for="item in PlanosSetoriaisStore.lista"
+                  :key="item.id"
+                  :value="item.id"
+                  :selected="item.id == $route.query.pdm_id"
+                  :disabled="!!item.ativo"
+                >
+                  {{ item.nome }}
+                </option>
+              </template>
             </Field>
             <div class="error-msg">
               {{ errors['pdm_id'] }}
@@ -178,7 +220,7 @@ switch (route.meta.entidadeMãe) {
         </div>
 
         <div
-          v-if="['portfolio', 'mdo'].indexOf($route.meta.entidadeMãe) > -1"
+          v-if="schema?.fields?.portfolio_id"
           class="flex g2"
         >
           <div class="f1">
@@ -192,10 +234,8 @@ switch (route.meta.entidadeMãe) {
               name="portfolio_id"
               as="select"
               class="inputtext light mb1"
-              :class="{
-                loading: importaçõesStore.chamadasPendentes.portfoliosPermitidos
-              }"
-              :disabled="importaçõesStore.chamadasPendentes.portfoliosPermitidos"
+              :aria-busy="importaçõesStore.chamadasPendentes.portfoliosPermitidos"
+              :aria-disabled="importaçõesStore.chamadasPendentes.portfoliosPermitidos"
             >
               <option :value="null">
                 Selecionar

@@ -26,6 +26,8 @@ export default {
       'CadastroMeta.orcamento',
       'Projeto.orcamento',
       'ProjetoMDO.orcamento',
+      'ReferencialEm.Equipe.ProgramaDeMetas',
+      'ReferencialEm.Equipe.PS',
     ],
   },
   children: [
@@ -61,6 +63,37 @@ export default {
               component: EnviarArquivo,
               meta: {
                 rotaDeEscape: 'EnviosOrcamentosMetasPdm',
+              },
+            },
+          ],
+        },
+      ],
+    },
+    {
+      path: 'orcamentos/metas',
+      component: () => import('@/views/envios/EnviosMetas.vue'),
+      meta: {
+        título: 'Envio de orçamento para metas',
+        títuloParaMenu: 'Metas',
+        limitarÀsPermissões: [
+          'CadastroMeta.orcamento',
+          'ReferencialEm.Equipe.ProgramaDeMetas',
+          'ReferencialEm.Equipe.PS',
+        ],
+      },
+      children: [
+        {
+          path: '',
+          name: 'EnviosOrcamentosMetas',
+          component: EnviosLista,
+
+          children: [
+            {
+              path: 'enviar',
+              name: 'EnviosOrcamentosMetasNovo',
+              component: EnviarArquivo,
+              meta: {
+                rotaDeEscape: 'EnviosOrcamentosMetas',
               },
             },
           ],

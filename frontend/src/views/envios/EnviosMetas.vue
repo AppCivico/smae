@@ -1,22 +1,28 @@
 <script setup>
 import TransitionExpand from '@/components/TransitionExpand.vue';
-import { usePdMStore } from '@/stores/pdm.store';
+import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
 import { ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute();
 const router = useRouter();
-const PdMStore = usePdMStore();
+const PlanosSetoriaisStore = usePlanosSetoriaisStore();
 
 const exibirMensagemDeSucessoNoEnvio = ref(false);
 
-if (!PdMStore.PdM.length) {
-  PdMStore.getAll().then(() => {
-    const currentPdM = PdMStore.PdM.find((x) => !!x.ativo);
-    if (currentPdM?.id && !route.query.pdm_id) {
+if (!PlanosSetoriaisStore.lista.length) {
+  PlanosSetoriaisStore.buscarTudo().then(() => {
+    const planosAtivos = PlanosSetoriaisStore.lista.filter((x) => !!x.ativo);
+
+    if (planosAtivos.length === 1 && !route.query.pdm_id) {
       router.replace({
         name: route.name,
-        query: { pdm_id: currentPdM?.id },
+        query: Object.assign(
+          structuredClone(route.query),
+          {
+            pdm_id: planosAtivos[0].id,
+          },
+        ),
       });
     }
   });
@@ -35,7 +41,7 @@ if (!PdMStore.PdM.length) {
     <hr class="ml2 f1">
     <router-link
       :to="{
-        name: 'EnviosOrçamentosMetasNovo',
+        name: 'EnviosOrcamentosMetasNovo',
         query: $route.query
       }"
       class="btn big ml1"
@@ -56,7 +62,7 @@ if (!PdMStore.PdM.length) {
             for="pdm_id"
             class="label"
           >
-            <abbr title="Programa de metas">PdM</abbr>&nbsp;<span
+            PdM/Plano setorial<span
               class="tvermelho"
             >*</span>
           </label>
@@ -65,17 +71,15 @@ if (!PdMStore.PdM.length) {
             name="pdm_id"
             class="inputtext light mb1"
             :value="$route.query.pdm_id"
-            :class="{
-              loading: PdMStore.PdM?.loading
-            }"
-            :disabled="PdMStore.PdM?.loading"
+            :aria-busy="PlanosSetoriaisStore.chamadasPendentes.lista"
+            :aria-disabled="PlanosSetoriaisStore.chamadasPendentes.lista"
             @change="($event) => $router.push({
               name: $route.name,
               query: { pdm_id: $event.target.value || undefined }
             })"
           >
             <option
-              v-for="item in PdMStore.PdM"
+              v-for="item in PlanosSetoriaisStore.lista"
               :key="item.id"
               :value="item.id"
               :selected="item.id == $route.query.pdm_id"
