@@ -1,14 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString } from 'class-validator';
+import { PickType } from '@nestjs/swagger';
+import { CreateWikiLinkDto } from './create-wiki-link.dto';
 
-export class UpdateWikiLinkDto {
-    @ApiProperty({ example: '/projetos/atualizado' })
-    @IsString()
-    @IsOptional()
-    chave_smae?: string;
-
-    @ApiProperty({ example: 'https://wiki.fgv.br/smae/projetos-atualizado' })
-    @IsString()
-    @IsOptional()
-    url_wiki?: string;
-}
+// se quiser atualizar, todos os campos do CreateWikiLinkDto são obrigatórios, n faz sentido deixar não required o url_wiki
+export class UpdateWikiLinkDto extends PickType(CreateWikiLinkDto, ['url_wiki']) {}

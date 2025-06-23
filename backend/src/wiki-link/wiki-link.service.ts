@@ -12,7 +12,38 @@ import { WikiLinkDto } from './dto/wiki-link.dto';
 export class WikiLinkService {
     constructor(private readonly prisma: PrismaService) {}
 
+    private async getWikiPrefix(): Promise<string> {
+        const config = await this.prisma.smaeConfig.findUnique({
+            where: { key: 'WIKI_PREFIX' },
+            select: { value: true },
+        });
+        if (!config?.value) throw new HttpException('Wiki prefix not configured', 500);
+
+        return config.value;
+    }
+
+    private normalizeWikiUrl(url: string): string {
+        // Remove leading slash if present
+        return url.startsWith('/') ? url.substring(1) : url;
+    }
+
+    private async validateWikiUrl(url: string): Promise<void> {
+        const prefix = await this.getWikiPrefix();
+        const normalizedUrl = this.normalizeWikiUrl(url);
+        const fullUrl = `${prefix}${normalizedUrl}`;
+
+        try {
+            new URL(fullUrl);
+        } catch (error) {
+            throw new HttpException('URL da wiki inválida quando combinada com o prefixo configurado', 400);
+        }
+    }
+
     async create(dto: CreateWikiLinkDto, user?: PessoaFromJwt): Promise<RecordWithId> {
+        // Validate and normalize the URL
+        await this.validateWikiUrl(dto.url_wiki);
+        const normalizedUrl = this.normalizeWikiUrl(dto.url_wiki);
+
         const exists = await this.prisma.wikiLink.count({
             where: {
                 chave_smae: { equals: dto.chave_smae, mode: 'insensitive' },
@@ -27,7 +58,7 @@ export class WikiLinkService {
         return this.prisma.wikiLink.create({
             data: {
                 chave_smae: dto.chave_smae,
-                url_wiki: dto.url_wiki,
+                url_wiki: normalizedUrl,
                 criado_por: user ? user.id : undefined,
                 criado_em: new Date(Date.now()),
             },
@@ -50,14 +81,6 @@ export class WikiLinkService {
         });
     }
 
-    private async getWikiPrefix(): Promise<string> {
-        const config = await this.prisma.smaeConfig.findUnique({
-            where: { key: 'WIKI_PREFIX' },
-            select: { value: true },
-        });
-        return config?.value || '';
-    }
-
     async findAll(): Promise<ListWikiLinkDto[]> {
         const prefix = await this.getWikiPrefix();
 
@@ -77,10 +100,14 @@ export class WikiLinkService {
     }
 
     async update(id: number, dto: UpdateWikiLinkDto, user: PessoaFromJwt): Promise<RecordWithId> {
+        // Validate and normalize the URL
+        await this.validateWikiUrl(dto.url_wiki);
+        const normalizedUrl = this.normalizeWikiUrl(dto.url_wiki);
+
         await this.prisma.wikiLink.update({
             where: { id },
             data: {
-                ...dto,
+                url_wiki: normalizedUrl,
                 atualizado_por: user.id,
                 atualizado_em: new Date(),
             },
