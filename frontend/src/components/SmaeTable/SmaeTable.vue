@@ -48,7 +48,9 @@
               <slot
                 :name="(`cabecalho:${normalizadorDeSlots(coluna.chave)}` as keyof Slots)"
                 v-bind="coluna"
-              />
+              >
+                {{ coluna.label }}
+              </slot>
             </TableHeaderCell>
 
             <td v-if="hasActionButton">
@@ -151,7 +153,7 @@ import DeleteButton, { type DeleteButtonEvents, type DeleteButtonProps } from '.
 import EditButton, { type EditButtonProps } from './partials/EditButton.vue';
 import TableCell from './partials/TableCell.vue';
 import TableHeaderCell from './partials/TableHeaderCell.vue';
-import { Colunas, Linha, Linhas } from './tipagem';
+import type { Colunas, Linha, Linhas } from './tipagem';
 import normalizadorDeSlots from './utils/normalizadorDeSlots';
 
 type Slots = {
