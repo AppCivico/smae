@@ -8,6 +8,7 @@ import { CreateTagDto } from './dto/create-tag.dto';
 import { FilterTagDto } from './dto/filter-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
 import { TagDto } from './entities/tag.entity';
+import { PdmPermissionLevel } from '../pdm/dto/create-pdm.dto';
 
 @Injectable()
 export class TagService {
@@ -20,7 +21,7 @@ export class TagService {
     ) {}
 
     async create(tipo: TipoPdmType, createTagDto: CreateTagDto, user: PessoaFromJwt) {
-        await this.pdmService.getDetail(tipo, createTagDto.pdm_id, user, 'ReadWrite');
+        await this.pdmService.assertUserPermission(tipo, createTagDto.pdm_id, user, PdmPermissionLevel.CONFIG_WRITE);
 
         const similarExists = await this.prisma.tag.count({
             where: {
@@ -88,7 +89,7 @@ export class TagService {
             where: { id: id, removido_em: null, pdm: { tipo: PdmModoParaTipo(tipo) } },
         });
 
-        await this.pdmService.getDetail(tipo, self.pdm_id, user, 'ReadWrite');
+        await this.pdmService.assertUserPermission(tipo, self.pdm_id, user, PdmPermissionLevel.CONFIG_WRITE);
 
         let uploadId: number | null | undefined = undefined;
         if (updateTagDto.upload_icone === null || updateTagDto.upload_icone === '') {
@@ -134,7 +135,7 @@ export class TagService {
             where: { id, removido_em: null, pdm: { tipo: PdmModoParaTipo(tipo) } },
             select: { pdm_id: true },
         });
-        await this.pdmService.getDetail(tipo, self.pdm_id, user, 'ReadWrite');
+        await this.pdmService.assertUserPermission(tipo, self.pdm_id, user, PdmPermissionLevel.CONFIG_WRITE);
 
         const emUso = await this.prisma.meta.count({
             where: {

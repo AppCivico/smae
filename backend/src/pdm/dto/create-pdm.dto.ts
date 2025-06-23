@@ -22,6 +22,14 @@ import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
 import { IdTituloDto } from '../../common/dto/IdTitulo.dto';
 import { MAX_LENGTH_DEFAULT, MAX_LENGTH_MEDIO } from 'src/common/consts';
 
+export const PdmPermissionLevel = {
+    NONE: 0, // Nenhuma permissão
+    CONTENT_WRITE: 1, // Pode editar, Meta, Iniciativa, Atividade, etc.
+    CONFIG_WRITE: 2, // Pode editar PDM config, MacroTemas, etc.
+} as const;
+
+export type PdmPermissionLevel = (typeof PdmPermissionLevel)[keyof typeof PdmPermissionLevel];
+
 export class CreatePSEquipeAdminCPDto {
     /**
      * lista de equipes do PS.admin_cp? pode ficar vazio

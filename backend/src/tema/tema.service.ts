@@ -9,6 +9,7 @@ import { CreateObjetivoEstrategicoDto } from './dto/create-tema.dto';
 import { FilterObjetivoEstrategicoDto } from './dto/filter-tema.dto';
 import { UpdateObjetivoEstrategicoDto } from './dto/update-tema.dto';
 import { ObjetivoEstrategicoDto } from './entities/objetivo-estrategico.entity';
+import { PdmPermissionLevel } from '../pdm/dto/create-pdm.dto';
 
 @Injectable()
 export class TemaService {
@@ -20,7 +21,7 @@ export class TemaService {
     ) {}
 
     async create(tipo: TipoPdmType, dto: CreateObjetivoEstrategicoDto, user: PessoaFromJwt) {
-        await this.pdmService.getDetail(tipo, dto.pdm_id, user, 'ReadWrite');
+        await this.pdmService.assertUserPermission(tipo, dto.pdm_id, user, PdmPermissionLevel.CONFIG_WRITE);
 
         const created = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             const descricaoExists = await prismaTx.tema.count({
@@ -78,7 +79,7 @@ export class TemaService {
             select: { pdm_id: true },
         });
 
-        await this.pdmService.getDetail(tipo, self.pdm_id, user, 'ReadWrite');
+        await this.pdmService.assertUserPermission(tipo, self.pdm_id, user, PdmPermissionLevel.CONFIG_WRITE);
 
         const updated = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
@@ -122,7 +123,7 @@ export class TemaService {
             where: { id, pdm: { tipo: PdmModoParaTipo(tipo) } },
             select: { pdm_id: true },
         });
-        await this.pdmService.getDetail(tipo, self.pdm_id, user, 'ReadWrite');
+        await this.pdmService.assertUserPermission(tipo, self.pdm_id, user, PdmPermissionLevel.CONFIG_WRITE);
 
         const emUso = await this.prisma.meta.count({
             where: { tema_id: id, removido_em: null, pdm: { tipo: PdmModoParaTipo(tipo) } },
