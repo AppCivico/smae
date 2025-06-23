@@ -50,19 +50,30 @@ export class WikiLinkService {
         });
     }
 
+    private async getWikiPrefix(): Promise<string> {
+        const config = await this.prisma.smaeConfig.findUnique({
+            where: { key: 'WIKI_PREFIX' },
+            select: { value: true },
+        });
+        return config?.value || '';
+    }
+
     async findAll(): Promise<ListWikiLinkDto[]> {
+        const prefix = await this.getWikiPrefix();
+
         const results = await this.prisma.wikiLink.findMany({
             where: { removido_em: null },
             select: {
                 chave_smae: true,
                 url_wiki: true,
             },
-            orderBy: {
-                chave_smae: 'asc',
-            },
+            orderBy: { chave_smae: 'asc' },
         });
 
-        return results;
+        return results.map((item) => ({
+            chave_smae: item.chave_smae,
+            url_wiki: `${prefix}${item.url_wiki}`,
+        }));
     }
 
     async update(id: number, dto: UpdateWikiLinkDto, user: PessoaFromJwt): Promise<RecordWithId> {
