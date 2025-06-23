@@ -35,10 +35,12 @@ export const useWikiStore = defineStore('wiki', {
   },
   getters: {
     paginasMapeadas: ({ paginas }) => paginas.reduce(
-      (mapa, item) => ({
-        ...mapa,
-        [item.chave_smae]: item.url_wiki,
-      }),
+      (mapa, item) => {
+        // eslint-disable-next-line no-param-reassign
+        mapa[item.chave_smae] = item.url_wiki;
+
+        return mapa;
+      },
       {} as Record<string, string>,
     ),
     wikiAtual: ({ paginasMapeadas, paginaSmae }): string | null => {

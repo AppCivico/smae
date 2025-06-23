@@ -55,12 +55,12 @@ if (import.meta.env.VITE_COR_DA_FAIXA_DE_CONSTRUCAO || import.meta.env.DEV || ['
 </script>
 
 <template>
-  <h4
+  <span
     v-ScrollLockDebug
     class="tr mr2"
   >
     {{ rotaAtual?.path }}
-  </h4>
+  </span>
   <component
     :is="`style`"
     v-if="corDaFaixa"
