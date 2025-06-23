@@ -1077,14 +1077,17 @@ export class DistribuicaoRecursoService {
                     });
 
                     if (tarefaDist) {
+                        // Pegando nome anterior e substituindo pelo novo
+                        let nomeTarefaDist = tarefaDist.tarefa;
+                        nomeTarefaDist = nomeTarefaDist.replace(/ - .*/, ' - ' + dto.nome);
+
                         await prismaTx.tarefa.updateMany({
                             where: {
                                 distribuicao_recurso_id: id,
                                 removido_em: null,
                             },
                             data: {
-                                // Pegando nome anterior e substituindo pelo novo
-                                tarefa: tarefaDist.tarefa + ' - ' + dto.nome,
+                                tarefa: nomeTarefaDist,
                             },
                         });
                     }
