@@ -46,10 +46,14 @@ function onSubmit(values) {
     requestS.upload(`${baseUrl}/upload`, formData)
       .then(async ({ upload_token: uploadToken }) => {
         if (uploadToken) {
-          await importaçõesStore.associarArquivo({
+          const enviarArquivo = await importaçõesStore.associarArquivo({
             ...values,
             upload: uploadToken,
           });
+
+          if (!enviarArquivo) {
+            throw new Error('Erro ao associar o arquivo');
+          }
 
           emit('enviado');
 
