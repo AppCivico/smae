@@ -1,9 +1,11 @@
+import { PickType } from '@nestjs/swagger';
 import { ModuloSistema, TipoPdm } from '@prisma/client';
 import { IsBoolean, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
-import { IsDateYMD } from '../../auth/decorators/date.decorator';
 import { MAX_LENGTH_MEDIO } from 'src/common/consts';
+import { IsDateYMD } from '../../auth/decorators/date.decorator';
+import { PdmDto } from '../dto/pdm.dto';
 
-export class ListPdm {
+export class ListPdm extends PickType(PdmDto, ['pode_editar', 'perm_level']) {
     /**
      * Nome
      */
@@ -68,7 +70,6 @@ export class ListPdm {
     nivel_orcamento: string | null;
 
     id: number;
-    pode_editar: boolean;
 
     tipo: TipoPdm;
     sistema: ModuloSistema;

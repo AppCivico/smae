@@ -5037,6 +5037,9 @@ model feature_flag {
     mf_v2    Boolean @default(false)
     pp_pe    Boolean @default(false) // liga ou desliga o Painel Estratégico de Projetos
 
+    // Se true, o perfil CP (Técnico) em Planos Setoriais terá permissão de escrita apenas em Metas e abaixo (readonly na config do PDM/PS). Se false, ele tem permissões de admin.
+    ps_cp_readonly_pdm_config Boolean @default(false)
+
     mostrar_pdm_antigo Boolean @default(false)
 }
 

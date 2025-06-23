@@ -10,17 +10,19 @@ import {
 import { PdmPerfilTipo, PerfilResponsavelEquipe, Prisma, TipoPdm } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { EnsureString } from '../common/EnsureString';
 import { LoggerWithLog } from '../common/LoggerWithLog';
-import { ReadOnlyBooleanType } from '../common/TypeReadOnly';
 import { Date2YMD } from '../common/date2ymd';
 import { PdmModoParaTipo, TipoPdmType } from '../common/decorators/current-tipo-pdm';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { EquipeRespService } from '../equipe-resp/equipe-resp.service';
+import { FeatureFlagService } from '../feature-flag/feature-flag.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { ArquivoBaseDto } from '../upload/dto/create-upload.dto';
 import { UploadService } from '../upload/upload.service';
+import { AddTaskRecalcVariaveis } from '../variavel/variavel.service';
 import { CreatePdmDocumentDto, UpdatePdmDocumentDto } from './dto/create-pdm-document.dto';
-import { CreatePdmDto } from './dto/create-pdm.dto';
+import { CreatePdmDto, PdmPermissionLevel } from './dto/create-pdm.dto';
 import { FilterPdmDto } from './dto/filter-pdm.dto';
 import { OrcamentoConfig } from './dto/list-pdm.dto';
 import { PdmDto, PlanoSetorialDto } from './dto/pdm.dto';
@@ -29,8 +31,6 @@ import { UpdatePdmDto } from './dto/update-pdm.dto';
 import { ListPdm } from './entities/list-pdm.entity';
 import { PdmItemDocumentDto } from './entities/pdm-document.entity';
 import { PdmCicloService } from './pdm.ciclo.service';
-import { EnsureString } from '../common/EnsureString';
-import { AddTaskRecalcVariaveis } from '../variavel/variavel.service';
 
 const MAPA_PERFIL_PERMISSAO: Record<PdmPerfilTipo, PerfilResponsavelEquipe> = {
     ADMIN: 'AdminPS',
@@ -43,6 +43,15 @@ export class AdminCpDbItem {
     orgao_id: number;
     equipe_id: number;
 }
+
+const pdmForPermissionCheck = {
+    tipo: true,
+    ps_admin_cps: true,
+    orgao_admin_id: true,
+    sistema: true,
+} as const satisfies Prisma.PdmSelect;
+
+type PdmForPermissionCheck = Prisma.PdmGetPayload<{ select: typeof pdmForPermissionCheck }>;
 
 export const PDMGetPermissionSet = async (tipo: TipoPdmType, user: PessoaFromJwt, prisma: PrismaService) => {
     const orList: Prisma.Enumerable<Prisma.PdmWhereInput> = [];
@@ -171,7 +180,8 @@ export class PdmService {
         private readonly uploadService: UploadService,
         @Inject(forwardRef(() => EquipeRespService))
         private readonly equipeRespService: EquipeRespService,
-        private readonly pdmCicloService: PdmCicloService
+        private readonly pdmCicloService: PdmCicloService,
+        private readonly featureFlagService: FeatureFlagService
     ) {}
 
     async create(tipo: TipoPdmType, dto: CreatePdmDto, user: PessoaFromJwt) {
@@ -342,6 +352,7 @@ export class PdmService {
     async findAll(tipo: TipoPdmType, filters: FilterPdmDto, user: PessoaFromJwt): Promise<ListPdm[]> {
         const active = filters.ativo;
 
+        const pdmTypeMode = PdmModoParaTipo(tipo);
         const listActive = await this.prisma.pdm.findMany({
             where: {
                 removido_em: null,
@@ -393,7 +404,9 @@ export class PdmService {
                 if (pdm.arquivo_logo_id) {
                     logo = this.uploadService.getDownloadToken(pdm.arquivo_logo_id, '30d').download_token;
                 }
-                const pode_editar = await this.calcPodeEditar({ ...pdm, tipo: tipo }, user);
+
+                const perm_level = await this.calcPermissionLevel({ ...pdm, tipo: pdmTypeMode }, user);
+                const pode_editar = perm_level >= PdmPermissionLevel.CONFIG_WRITE;
 
                 return {
                     id: pdm.id,
@@ -419,6 +432,8 @@ export class PdmService {
                     tipo: pdm.tipo,
 
                     pode_editar: pode_editar,
+                    perm_level: perm_level,
+
                     logo: logo,
                     data_fim: Date2YMD.toStringOrNull(pdm.data_fim),
                     data_inicio: Date2YMD.toStringOrNull(pdm.data_inicio),
@@ -436,69 +451,95 @@ export class PdmService {
         return listActiveTmp;
     }
 
-    async calcPodeEditar(
-        pdm: { tipo: TipoPdmType; ps_admin_cps: Prisma.JsonValue | null; orgao_admin_id: number | null },
-        user: PessoaFromJwt
-    ): Promise<boolean> {
-        if (pdm.tipo == '_PS' || pdm.tipo == 'PDM_AS_PS') {
-            if (user.hasSomeRoles(['CadastroPS.administrador', 'CadastroPDM.administrador'])) {
-                this.logger.log('Usuário com permissão total em PS');
-                return true;
-            }
-            if (!user.orgao_id) throw new HttpException('Usuário sem órgão associado, necessário para PS', 400);
+    /**
+     * Método privado para calcular o nível de permissão do usuário em relação ao PDM/PS
+     */
+    private async calcPermissionLevel(pdm: PdmForPermissionCheck, user: PessoaFromJwt): Promise<PdmPermissionLevel> {
+        const tipo: TipoPdmType = pdm.sistema === 'ProgramaDeMetas' ? 'PDM_AS_PS' : pdm.tipo === 'PS' ? '_PS' : '_PDM';
 
-            // é pra ficar assim mesmo, não adicionar a equipe
+        if (tipo === '_PS' || tipo === 'PDM_AS_PS') {
+            if (user.hasSomeRoles(['CadastroPS.administrador', 'CadastroPDM.administrador'])) {
+                return PdmPermissionLevel.CONFIG_WRITE;
+            }
+            if (!user.orgao_id) return PdmPermissionLevel.NONE;
+
             if (
                 user.hasSomeRoles(['CadastroPS.administrador_no_orgao', 'CadastroPDM.administrador_no_orgao']) &&
-                pdm.orgao_admin_id
+                pdm.orgao_admin_id === user.orgao_id
             ) {
-                this.logger.log('Usuário com permissão total em PS no órgão');
-                return user.orgao_id == pdm.orgao_admin_id;
+                return PdmPermissionLevel.CONFIG_WRITE;
             }
 
             const dbValue = pdm.ps_admin_cps?.valueOf();
-            const collab = await user.getEquipesColaborador(this.prisma);
-            let podeEditar = false;
-
             if (Array.isArray(dbValue)) {
-                this.logger.log('Verificando permissão pelas equipes');
-
+                const collab = await user.getEquipesColaborador(this.prisma);
                 const parsed = plainToInstance(AdminCpDbItem, dbValue);
 
-                // se for ADMIN, pode editar o PDM/PS
-                podeEditar = parsed.some(
-                    (item) => item.tipo == 'ADMIN' && item.orgao_id == user.orgao_id && collab.includes(item.equipe_id)
+                const isAdmin = parsed.some(
+                    (p) => p.tipo === 'ADMIN' && p.orgao_id === user.orgao_id && collab.includes(p.equipe_id)
                 );
+                if (isAdmin) return PdmPermissionLevel.CONFIG_WRITE;
 
-                if (!podeEditar) {
-                    // e se for TEC todos os itens são do mesmo órgão
-                    podeEditar = parsed.some(
-                        (item) => item.tipo == 'CP' && item.orgao_id == user.orgao_id && collab.includes(item.equipe_id)
-                    );
+                const isCp = parsed.some(
+                    (p) => p.tipo === 'CP' && p.orgao_id === user.orgao_id && collab.includes(p.equipe_id)
+                );
+                if (isCp) {
+                    const flags = await this.featureFlagService.featureFlag();
+                    return flags.ps_cp_readonly_pdm_config
+                        ? PdmPermissionLevel.CONTENT_WRITE // Nova regra edita apenas metas, ini, atividades
+                        : PdmPermissionLevel.CONFIG_WRITE; // Pode editar o PS, macro-temas, etc
                 }
-
-                this.logger.verbose(`podeEditar: ${podeEditar}`);
-                return podeEditar;
             }
-
-            this.logger.verbose(`podeEditar: false`);
-            // ponto focal nunca pode editar
-
-            return false;
-        } else if (pdm.tipo == '_PDM') {
-            return user.hasSomeRoles(['CadastroPdm.editar']);
+            return PdmPermissionLevel.NONE;
+        } else if (tipo === '_PDM') {
+            return user.hasSomeRoles(['CadastroPdm.editar'])
+                ? PdmPermissionLevel.CONFIG_WRITE
+                : PdmPermissionLevel.NONE;
         }
-        return false;
+
+        return PdmPermissionLevel.NONE;
+    }
+
+    /**
+     * Centralizando aqui só pra ficar parecido com o assertMetaWriteOrThrow
+     * assim os outros serviços podem usar esse método no lugar do getDetail
+     */
+    public async assertUserPermission(
+        tipo: TipoPdmType,
+        pdmId: number,
+        user: PessoaFromJwt,
+        requiredLevel: PdmPermissionLevel
+    ): Promise<void> {
+        const pdm = await this.prisma.pdm.findFirst({
+            where: {
+                id: pdmId,
+                removido_em: null,
+                tipo: PdmModoParaTipo(tipo),
+                AND: await PDMGetPermissionSet(tipo, user, this.prisma),
+            },
+            select: pdmForPermissionCheck,
+        });
+
+        if (!pdm) throw new BadRequestException(`PDM com ID ${pdmId} não encontrado ou removido.`);
+
+        const userLevel = await this.calcPermissionLevel(pdm, user);
+
+        if (userLevel < requiredLevel) {
+            const itemType =
+                pdm.tipo === 'PDM' || pdm.sistema === 'ProgramaDeMetas' ? 'Programa de Metas' : 'Plano Setorial';
+            throw new ForbiddenException(
+                `Usuário não tem permissão suficiente para acessar o ${itemType} com ID ${pdmId}. Nível necessário: ${requiredLevel}, nível do usuário: ${userLevel}.`
+            );
+        }
     }
 
     async getDetail(
         tipo: TipoPdmType,
         id: number,
         user: PessoaFromJwt,
-        readonly: ReadOnlyBooleanType,
         exEquipe?: boolean
     ): Promise<PdmDto | PlanoSetorialDto> {
-        const pdm = await this.loadPdm(tipo, id, user, readonly);
+        const pdm = await this.loadPdm(tipo, id, user);
 
         if (pdm.arquivo_logo_id) {
             pdm.logo = this.uploadService.getDownloadToken(pdm.arquivo_logo_id, '30d').download_token;
@@ -511,6 +552,7 @@ export class PdmService {
             },
             select: { meses: true },
         });
+        const perm_level = await this.calcPermissionLevel(pdm, user);
 
         const pdmInfo: PdmDto = {
             id: pdm.id,
@@ -538,7 +580,8 @@ export class PdmService {
             tipo: pdm.tipo,
             sistema: pdm.sistema,
             meses: pdmConfig?.meses ?? [],
-            pode_editar: await this.calcPodeEditar({ ...pdm, tipo }, user),
+            perm_level: perm_level,
+            pode_editar: perm_level >= PdmPermissionLevel.CONFIG_WRITE,
             data_fim: Date2YMD.toStringOrNull(pdm.data_fim),
             data_inicio: Date2YMD.toStringOrNull(pdm.data_inicio),
             data_publicacao: Date2YMD.toStringOrNull(pdm.data_publicacao),
@@ -546,7 +589,6 @@ export class PdmService {
             periodo_do_ciclo_participativo_inicio: Date2YMD.toStringOrNull(pdm.periodo_do_ciclo_participativo_inicio),
             considerar_atraso_apos: Date2YMD.toStringOrNull(pdm.considerar_atraso_apos),
         };
-        console.log(pdmInfo.pode_editar);
 
         let merged: PdmDto | PlanoSetorialDto = pdmInfo;
         if (tipo == '_PS' || tipo == 'PDM_AS_PS') {
@@ -607,13 +649,7 @@ export class PdmService {
         return merged;
     }
 
-    private async loadPdm(
-        tipo: TipoPdmType,
-        id: number,
-        user: PessoaFromJwt,
-        readonly: ReadOnlyBooleanType,
-        prismaCtx?: Prisma.TransactionClient
-    ) {
+    private async loadPdm(tipo: TipoPdmType, id: number, user: PessoaFromJwt, prismaCtx?: Prisma.TransactionClient) {
         const prismaTx = prismaCtx || this.prisma;
         const pdm = await prismaTx.pdm.findFirst({
             where: {
@@ -627,54 +663,13 @@ export class PdmService {
                 },
             },
         });
-        if (!pdm) throw new HttpException('PDM não encontrado', 404);
-
-        const pode_editar = await this.calcPodeEditar({ ...pdm, tipo }, user);
-        if (!pode_editar && readonly == 'ReadWrite') {
-            throw new ForbiddenException(
-                `Você não tem permissão para editar este ${pdm.tipo == 'PDM' ? 'Programas de Metas' : 'Plano Setorial'}`
-            );
-        }
+        if (!pdm) throw new HttpException(`${tipo} ID ${id} não encontrado`, 404);
 
         return pdm;
     }
 
-    private async verificarPrivilegiosEdicao(
-        updatePdmDto: UpdatePdmDto | null,
-        user: PessoaFromJwt,
-        pdm: { ativo: boolean; tipo: TipoPdmType; orgao_admin_id: number | null; ps_admin_cps: Prisma.JsonValue | null }
-    ) {
-        if (
-            updatePdmDto &&
-            pdm.tipo == '_PDM' &&
-            updatePdmDto.ativo !== pdm.ativo &&
-            updatePdmDto.ativo === true &&
-            user.hasSomeRoles(['CadastroPdm.ativar']) === false
-        ) {
-            throw new ForbiddenException(`Você não pode ativar Programas de Metas`);
-        } else if (
-            updatePdmDto &&
-            pdm.tipo == '_PDM' &&
-            updatePdmDto.ativo !== pdm.ativo &&
-            updatePdmDto.ativo === false &&
-            user.hasSomeRoles(['CadastroPdm.inativar']) === false
-        ) {
-            throw new ForbiddenException(`Você não pode inativar Programas de Metas`);
-        }
-
-        const podeEditar = await this.calcPodeEditar(pdm, user);
-        if (!podeEditar)
-            throw new ForbiddenException(
-                `Você não tem permissão para ${
-                    updatePdmDto ? 'editar' : 'remover'
-                } este ${pdm.tipo == '_PDM' || pdm.tipo == 'PDM_AS_PS' ? 'Programas de Metas' : 'Plano Setorial'}`
-            );
-    }
-
     async delete(tipo: TipoPdmType, id: number, user: PessoaFromJwt): Promise<void> {
-        const pdm = await this.loadPdm(tipo, id, user, 'ReadWrite');
-
-        await this.verificarPrivilegiosEdicao({}, user, { ...pdm, tipo: tipo });
+        await this.assertUserPermission(tipo, id, user, PdmPermissionLevel.CONFIG_WRITE);
 
         const now = new Date(Date.now());
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
@@ -718,11 +713,23 @@ export class PdmService {
         prismaCtx?: Prisma.TransactionClient,
         loggerCtx?: LoggerWithLog
     ) {
-        const pdm = await this.loadPdm(tipo, id, user, 'ReadWrite', prismaCtx);
+        await this.assertUserPermission(tipo, id, user, PdmPermissionLevel.CONFIG_WRITE);
+
+        const pdm = await this.loadPdm(tipo, id, user, prismaCtx);
         const prismaTx = prismaCtx || this.prisma;
         const logger = loggerCtx || LoggerWithLog('PdmService.update');
+
+        // validações específicas para PDM antigo
+        if (tipo === '_PDM' && dto.ativo !== undefined && dto.ativo !== pdm.ativo) {
+            if (dto.ativo === true && !user.hasSomeRoles(['CadastroPdm.ativar'])) {
+                throw new ForbiddenException('Você não pode ativar Programas de Metas');
+            }
+            if (dto.ativo === false && !user.hasSomeRoles(['CadastroPdm.inativar'])) {
+                throw new ForbiddenException('Você não pode inativar Programas de Metas');
+            }
+        }
+
         logger.log(`updatePdmDto: ${JSON.stringify(dto)}`);
-        await this.verificarPrivilegiosEdicao(dto, user, { ...pdm, tipo: tipo });
         if (tipo == '_PDM') {
             if (dto.nivel_orcamento == null) throw new BadRequestException('Nível de Orçamento é obrigatório no PDM.');
 
@@ -1193,6 +1200,7 @@ export class PdmService {
 
         return documentosRet;
     }
+
     async updateDocumento(
         tipo: TipoPdmType,
         pdm_id: number,
@@ -1363,7 +1371,8 @@ export class PdmService {
         updatePdmOrcamentoConfigDto: UpdatePdmOrcamentoConfigDto,
         user: PessoaFromJwt
     ) {
-        const pdm = await this.loadPdm(tipo, pdm_id, user, 'ReadWrite');
+        await this.assertUserPermission(tipo, pdm_id, user, PdmPermissionLevel.CONFIG_WRITE);
+        const pdm = await this.loadPdm(tipo, pdm_id, user);
 
         return await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
             const operations = [];

@@ -8,6 +8,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateSubTemaDto } from './dto/create-subtema.dto';
 import { FilterSubTemaDto } from './dto/filter-subtema.dto';
 import { UpdateSubTemaDto } from './dto/update-subtema.dto';
+import { PdmPermissionLevel } from '../pdm/dto/create-pdm.dto';
 
 @Injectable()
 export class SubTemaService {
@@ -19,7 +20,7 @@ export class SubTemaService {
     ) {}
 
     async create(tipo: TipoPdmType, dto: CreateSubTemaDto, user: PessoaFromJwt) {
-        await this.pdmService.getDetail(tipo, dto.pdm_id, user, 'ReadWrite');
+        await this.pdmService.assertUserPermission(tipo, dto.pdm_id, user, PdmPermissionLevel.CONFIG_WRITE);
 
         const created = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             const pdm = await prismaTx.pdm.count({
@@ -86,7 +87,7 @@ export class SubTemaService {
             where: { id },
             select: { pdm_id: true },
         });
-        await this.pdmService.getDetail(tipo, self.pdm_id, user, 'ReadWrite');
+        await this.pdmService.assertUserPermission(tipo, self.pdm_id, user, PdmPermissionLevel.CONFIG_WRITE);
 
         const updated = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
@@ -131,7 +132,7 @@ export class SubTemaService {
             where: { id },
             select: { pdm_id: true },
         });
-        await this.pdmService.getDetail(tipo, self.pdm_id, user, 'ReadWrite');
+        await this.pdmService.assertUserPermission(tipo, self.pdm_id, user, PdmPermissionLevel.CONFIG_WRITE);
 
         const emUso = await this.prisma.meta.count({
             where: {

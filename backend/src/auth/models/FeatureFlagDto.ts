@@ -9,4 +9,9 @@ export class FeatureFlagDto {
     pp_pe: boolean;
     @ApiProperty({ description: 'Habilita o PDM antigo' })
     mostrar_pdm_antigo: boolean;
+    @ApiProperty({
+        description:
+            'Se true, o perfil CP (Técnico) em Planos Setoriais terá permissão de escrita apenas em Metas e abaixo (readonly na config do PDM/PS). Se false, ele tem permissões de admin.',
+    })
+    ps_cp_readonly_pdm_config: boolean;
 }

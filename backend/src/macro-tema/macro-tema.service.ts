@@ -8,6 +8,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateEixoDto } from './dto/create-macro-tema.dto';
 import { FilterEixoDto } from './dto/filter-macro-tema.dto';
 import { UpdateEixoDto } from './dto/update-macro-tema.dto';
+import { PdmPermissionLevel } from '../pdm/dto/create-pdm.dto';
 
 @Injectable()
 export class MacroTemaService {
@@ -19,7 +20,7 @@ export class MacroTemaService {
     ) {}
 
     async create(tipo: TipoPdmType, createEixoDto: CreateEixoDto, user: PessoaFromJwt) {
-        await this.pdmService.getDetail(tipo, createEixoDto.pdm_id, user, 'ReadWrite');
+        await this.pdmService.assertUserPermission(tipo, createEixoDto.pdm_id, user, PdmPermissionLevel.CONFIG_WRITE);
 
         const now = new Date(Date.now());
         const created = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
@@ -85,7 +86,7 @@ export class MacroTemaService {
             where: { id },
             select: { pdm_id: true },
         });
-        await this.pdmService.getDetail(tipo, self.pdm_id, user, 'ReadWrite');
+        await this.pdmService.assertUserPermission(tipo, self.pdm_id, user, PdmPermissionLevel.CONFIG_WRITE);
 
         const now = new Date(Date.now());
         const updated = await this.prisma.$transaction(
@@ -130,7 +131,7 @@ export class MacroTemaService {
             where: { id },
             select: { pdm_id: true },
         });
-        await this.pdmService.getDetail(tipo, self.pdm_id, user, 'ReadWrite');
+        await this.pdmService.assertUserPermission(tipo, self.pdm_id, user, PdmPermissionLevel.CONFIG_WRITE);
 
         const emUso = await this.prisma.meta.count({ where: { macro_tema_id: id, removido_em: null } });
         if (emUso > 0) throw new HttpException('Eixo em uso em Metas.', 400);

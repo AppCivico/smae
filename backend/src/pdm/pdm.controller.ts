@@ -25,7 +25,7 @@ import { SubTemaService } from '../subtema/subtema.service';
 import { TagService } from '../tag/tag.service';
 import { TemaService } from '../tema/tema.service';
 import { CreatePdmDocumentDto, UpdatePdmDocumentDto } from './dto/create-pdm-document.dto';
-import { CreatePdmDto, UpdatePdmCicloConfigDto } from './dto/create-pdm.dto';
+import { CreatePdmDto, PdmPermissionLevel, UpdatePdmCicloConfigDto } from './dto/create-pdm.dto';
 import { DetalhePSDto, DetalhePdmDto } from './dto/detalhe-pdm.dto';
 import { FilterPdmDetailDto, FilterPdmDto } from './dto/filter-pdm.dto';
 import { CicloFisicoDto, ListPdmDto, OrcamentoConfig } from './dto/list-pdm.dto';
@@ -105,7 +105,7 @@ export class PdmController {
         @CurrentUser() user: PessoaFromJwt,
         @Query() detail: FilterPdmDetailDto
     ): Promise<PdmDto | DetalhePdmDto> {
-        const pdm = await this.pdmService.getDetail(this.tipoPdm, +params.id, user, 'ReadOnly', false);
+        const pdm = await this.pdmService.getDetail(this.tipoPdm, +params.id, user, false);
 
         if (!detail.incluir_auxiliares) return pdm;
 
@@ -282,7 +282,7 @@ export class PlanoSetorialController {
         @CurrentUser() user: PessoaFromJwt,
         @TipoPDM() tipo: TipoPdmType
     ): Promise<PlanoSetorialDto | DetalhePSDto> {
-        const pdm = await this.pdmService.getDetail(tipo, +params.id, user, 'ReadOnly', detail.expandir_equipes);
+        const pdm = await this.pdmService.getDetail(tipo, +params.id, user, detail.expandir_equipes);
 
         if (!detail.incluir_auxiliares) return pdm as PlanoSetorialDto;
 
@@ -301,7 +301,7 @@ export class PlanoSetorialController {
         @CurrentUser() user: PessoaFromJwt,
         @TipoPDM() tipo: TipoPdmType
     ): Promise<RecordWithId> {
-        await this.pdmService.getDetail(tipo, +params.id, user, 'ReadWrite', false);
+        await this.pdmService.assertUserPermission(tipo, +params.id, user, PdmPermissionLevel.CONFIG_WRITE);
         return await this.pdmCicloService.updateCicloConfig(tipo, +params.id, dto, user);
     }
 
@@ -349,7 +349,7 @@ export class PlanoSetorialController {
         @CurrentUser() user: PessoaFromJwt,
         @TipoPDM() tipo: TipoPdmType
     ): Promise<RecordWithId> {
-        await this.pdmService.getDetail(tipo, +params.id, user, 'ReadWrite', false);
+        await this.pdmService.assertUserPermission(tipo, +params.id, user, PdmPermissionLevel.CONFIG_WRITE);
 
         return await this.pdmService.updateDocumento(tipo, params.id, params.id2, dto, user);
     }

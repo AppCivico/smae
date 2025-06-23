@@ -13,7 +13,7 @@ import { CompromissoOrigemHelper } from '../common/helpers/CompromissoOrigem';
 import { UniqueNumbers } from '../common/UniqueNumbers';
 import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../geo-loc/entities/geo-loc.entity';
 import { GeoLocService } from '../geo-loc/geo-loc.service';
-import { CreatePSEquipePontoFocalDto, CreatePSEquipeTecnicoCPDto } from '../pdm/dto/create-pdm.dto';
+import { CreatePSEquipePontoFocalDto, CreatePSEquipeTecnicoCPDto, PdmPermissionLevel } from '../pdm/dto/create-pdm.dto';
 import { AdminCpDbItem, PdmService } from '../pdm/pdm.service';
 import { IdDescRegiaoComParent } from '../pp/projeto/entities/projeto.entity';
 import { PrismaService } from '../prisma/prisma.service';
@@ -224,7 +224,7 @@ export class MetaService {
 
     async create(tipo: TipoPdmType, dto: CreateMetaDto, user: PessoaFromJwt) {
         const pdm = await this.loadPdmById(dto.pdm_id, tipo);
-        await this.pdmService.getDetail(tipo, pdm.id, user, 'ReadWrite');
+        await this.pdmService.assertUserPermission(tipo, pdm.id, user, PdmPermissionLevel.CONTENT_WRITE);
 
         // TODO: verificar se todos os membros de createMetaDto.coordenadores_cp estão ativos
         // e se tem o privilegios de CP
@@ -516,11 +516,11 @@ export class MetaService {
 
         // precisa de acesso no plano setorial tbm
         if (tipo == '_PS' || tipo == 'PDM_AS_PS')
-            await this.pdmService.getDetail(
+            await this.pdmService.assertUserPermission(
                 tipo,
                 meta[0].pdm_id,
                 user,
-                readonly == 'readonly' ? 'ReadOnly' : 'ReadWrite'
+                readonly == 'readonly' ? PdmPermissionLevel.NONE : PdmPermissionLevel.CONTENT_WRITE
             );
 
         if (readonly == 'readwrite' && !meta[0].pode_editar)

@@ -1,7 +1,8 @@
 import { ModuloSistema, TipoPdm } from '@prisma/client';
 import { IdSiglaDescricao } from '../../common/dto/IdSigla.dto';
-import { RetornoPSEquipeAdminCPDto, RetornoPSEquipePontoFocalDto, RetornoPSEquipeTecnicoCPDto } from './create-pdm.dto';
+import { PdmPermissionLevel, RetornoPSEquipeAdminCPDto, RetornoPSEquipePontoFocalDto, RetornoPSEquipeTecnicoCPDto } from './create-pdm.dto';
 import { IsDateYMD } from '../../auth/decorators/date.decorator';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class PdmDto {
     nome: string;
@@ -39,9 +40,16 @@ export class PdmDto {
     nivel_orcamento: string;
     id: number;
     pode_editar: boolean;
+    @ApiProperty({
+        description:
+            'CONFIG_WRITE = 2, CONTENT_WRITE = 1, CONFIG_NONE = 0; Respectivamente escreve nos níveis de: PDM, Metas, Nenhum',
+        enum: PdmPermissionLevel,
+        enumName: 'PdmPermissionLevel',
+    })
+    perm_level: number;
     tipo: TipoPdm;
     sistema: ModuloSistema;
-    meses: number[]
+    meses: number[];
 }
 
 export class PlanoSetorialAnteriorDto {
