@@ -1064,6 +1064,30 @@ export class DistribuicaoRecursoService {
                             'nome| Nome igual ou semelhante já existe em outro registro ativo',
                             400
                         );
+
+                    // Atualiza o nome da tarefa do cronograma, se existir.
+                    const tarefaDist = await prismaTx.tarefa.findFirst({
+                        where: {
+                            distribuicao_recurso_id: id,
+                            removido_em: null,
+                        },
+                        select: {
+                            tarefa: true,
+                        },
+                    });
+
+                    if (tarefaDist) {
+                        await prismaTx.tarefa.updateMany({
+                            where: {
+                                distribuicao_recurso_id: id,
+                                removido_em: null,
+                            },
+                            data: {
+                                // Pegando nome anterior e substituindo pelo novo
+                                tarefa: tarefaDist.tarefa + ' - ' + dto.nome,
+                            },
+                        });
+                    }
                 }
 
                 if (
