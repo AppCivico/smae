@@ -1,11 +1,15 @@
 import { computed } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 
 function useRotaAtual() {
-  const router = useRouter();
+  const route = useRoute();
 
   const rotaAtual = computed(() => {
-    const rotasEncontradas = router.currentRoute.value.matched;
+    const rotasEncontradas = route.matched;
+
+    if (!rotasEncontradas.length) {
+      return undefined;
+    }
 
     const rotaEncontrada = rotasEncontradas[rotasEncontradas.length - 1];
 
