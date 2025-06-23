@@ -18,6 +18,13 @@ switch (sistemaCorrente.value) {
     });
     break;
 
+  case 'ProgramaDeMetas':
+  case 'PlanoSetorial':
+    router.replace({
+      name: 'EnviosOrcamentosMetas',
+    });
+    break;
+
   case 'Projetos':
     router.replace({
       name: 'EnviosOrcamentosProjetos',
