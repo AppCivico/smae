@@ -1,10 +1,14 @@
 <script setup>
 import LocalFilter from '@/components/LocalFilter.vue';
-import TabelaGenérica from '@/components/TabelaGenerica.vue';
+import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import { useImportaçõesStore } from '@/stores/importacoes.store.ts';
 import { storeToRefs } from 'pinia';
 import { ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
+
+defineOptions({
+  inheritAttrs: false,
+});
 
 const importaçõesStore = useImportaçõesStore();
 const {
@@ -14,46 +18,47 @@ const route = useRoute();
 const emit = defineEmits(['enviado']);
 const colunas = [
   {
-    nomeDaPropriedade: 'arquivo',
-    etiqueta: 'Arquivo original',
-    classe: '',
+    chave: 'arquivo',
+    label: 'Arquivo original',
   },
   {
-    nomeDaPropriedade: 'saida_arquivo',
-    etiqueta: 'Arquivo processado',
-    classe: '',
+    chave: 'saida_arquivo',
+    label: 'Arquivo processado',
   },
   {
-    nomeDaPropriedade: 'status',
-    etiqueta: 'Status',
-    classe: '',
+    chave: 'status',
+    label: 'Status',
   },
 
   {
-    nomeDaPropriedade: 'criado_por',
-    etiqueta: 'enviado por',
-    classe: '',
+    chave: 'criado_por',
+    label: 'Enviado por',
   },
   {
-    nomeDaPropriedade: 'criado_em',
-    classe: 'col--minimum',
+    chave: 'criado_em',
+    atributosDaCelula: {
+      class: 'col--minimum',
+    },
+    atributosDaColuna: {
+      class: 'col--dataHora',
+    },
   },
 ];
 const listaFiltradaPorTermoDeBusca = ref([]);
 
-function carregar(parâmetros) {
-  if (!parâmetros.portfolio_id && !parâmetros.pdm_id && ['portfolio', 'mdo'].indexOf(route.meta.entidadeMãe) > -1) {
-    importaçõesStore.buscarTudo({ ...parâmetros, apenas_com_portfolio: true });
+function carregar(parametros) {
+  if (!parametros.portfolio_id && !parametros.pdm_id && ['portfolio', 'mdo'].indexOf(route.meta.entidadeMãe) > -1) {
+    importaçõesStore.buscarTudo({ ...parametros, apenas_com_portfolio: true });
   } else {
-    importaçõesStore.buscarTudo(parâmetros);
+    importaçõesStore.buscarTudo(parametros);
   }
 }
 
 if (['portfolio', 'mdo'].indexOf(route.meta.entidadeMãe) > -1 && !route.query.portfolio_id) {
   colunas
     .splice(2, 0, {
-      nome: 'nome_do_portfolio',
-      etiqueta: 'Portfolio',
+      chave: 'nome_do_portfolio',
+      label: 'Portfolio',
     });
 }
 
@@ -62,12 +67,6 @@ watch(() => route.query, () => {
 
   carregar(route.query);
 }, { immediate: true });
-</script>
-<script>
-// use normal <script> to declare options
-export default {
-  inheritAttrs: false,
-};
 </script>
 <template>
   <div class="flex center mb2 spacebetween">
@@ -88,14 +87,48 @@ export default {
     Carregando
   </div>
 
-  <TabelaGenérica
-    v-if="!chamadasPendentes.lista || lista.length"
-    :lista="listaFiltradaPorTermoDeBusca"
-    :colunas="colunas"
+  <ErrorComponent
+    v-if="erro"
     :erro="erro"
-    :chamadas-pendentes="chamadasPendentes"
     class="mb1"
   />
+
+  <SmaeTable
+    v-if="!chamadasPendentes.lista || lista.length"
+    :dados="listaFiltradaPorTermoDeBusca"
+    :colunas="colunas"
+    :aria-busy="chamadasPendentes.lista"
+    class="mb1"
+  >
+    <template #celula:arquivo="{ celula }">
+      <SmaeLink
+        v-if="celula"
+        :to="celula.href"
+        target="_blank"
+        :download="celula.download || celula.texto"
+        rel="noopener noreferrer"
+      >
+        {{ celula.texto }}
+      </SmaeLink>
+      <template v-else>
+        Arquivo não disponível
+      </template>
+    </template>
+    <template #celula:saida_arquivo="{ celula }">
+      <SmaeLink
+        v-if="celula"
+        :to="celula.href"
+        target="_blank"
+        :download="celula.download || celula.texto"
+        rel="noopener noreferrer"
+      >
+        {{ celula.texto }}
+      </SmaeLink>
+      <template v-else>
+        Arquivo não disponível
+      </template>
+    </template>
+  </SmaeTable>
 
   <button
     v-if="paginação.temMais && paginação.tokenDaPróximaPágina"
