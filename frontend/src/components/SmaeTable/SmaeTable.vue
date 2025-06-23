@@ -87,6 +87,7 @@
               <slot
                 :name="(`celula:${normalizadorDeSlots(coluna.chave)}` as keyof Slots)"
                 :linha="linha"
+                :celula="linha[coluna.chave]"
               />
             </TableCell>
 
