@@ -32,8 +32,8 @@ function alternarAbertura() {
   <component
     :is="$props.as"
     :aria-description="descricaoConteudo"
-    class="smae-tooltip"
-    :class="{ 'smae-tooltip--fixado': manterExibido }"
+    class="smae-tooltip-component"
+    :class="{ 'smae-tooltip-component--fixado': manterExibido }"
     tabindex="0"
     @click="alternarAbertura"
   >
@@ -46,7 +46,7 @@ function alternarAbertura() {
 
     <div
       ref="elementoConteudo"
-      class="smae-tooltip__content"
+      class="smae-tooltip-component__content"
       role="tooltip"
     >
       <slot>{{ $props.texto }}</slot>
@@ -55,7 +55,7 @@ function alternarAbertura() {
 </template>
 
 <style lang="less" scoped>
-.smae-tooltip {
+.smae-tooltip-component {
   display: inline-block;
   vertical-align: middle;
   color: @marrom;
@@ -80,11 +80,11 @@ function alternarAbertura() {
   }
 }
 
-.smae-tooltip--fixado {
+.smae-tooltip-component--fixado {
   color: #22222a;
 }
 
-.smae-tooltip__content {
+.smae-tooltip-component__content {
   display: none;
   width: max-content;
   max-width: 25em;
@@ -115,7 +115,7 @@ function alternarAbertura() {
     border-left-color: @primary;
   }
 
-  .smae-tooltip--fixado > &,
+  .smae-tooltip-component--fixado > &,
   :focus > &,
   :hover > &,
   :focus-within > & {
