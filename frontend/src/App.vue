@@ -7,8 +7,11 @@ import {
 import { Alert, EditModal, SideBar } from '@/components';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
+import useRotaAtual from './composables/useRotaAtual';
 import BarraDePendência from './components/BarraDeChamadaPendente.vue';
 import BotaoWiki from './components/BotaoWiki.vue';
+
+const { rotaAtual } = useRotaAtual();
 
 const gblLimiteDeSeleçãoSimultânea = Number.parseInt(
   import.meta.env.VITE_LIMITE_SELECAO,
