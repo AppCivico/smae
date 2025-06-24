@@ -184,40 +184,43 @@ watchEffect(() => {
     >
       <span class="btn">Nova etapa</span>
       <ul>
-        <li>
+        <li
+          v-if="temPermissãoPara([
+            'CadastroMeta.administrador_no_pdm',
+            'CadastroMetaPS.administrador_no_pdm',
+            'CadastroMetaPDM.administrador_no_pdm',
+            'SMAE.GrupoVariavel.participante',
+          ])"
+        >
           <SmaeLink
-            v-if="temPermissãoPara([
-              'CadastroMeta.administrador_no_pdm',
-              'CadastroMetaPS.administrador_no_pdm',
-              'CadastroMetaPDM.administrador_no_pdm',
-              'SMAE.GrupoVariavel.participante',
-            ])"
             :to="`${parentLink}/cronograma/${singleCronograma?.id}/etapas/novo`"
           >
             Etapa da {{ parentLabel }}
           </SmaeLink>
         </li>
-        <li>
+        <li
+          v-if="temPermissãoPara([
+            'CadastroMeta.administrador_no_pdm',
+            'CadastroMetaPS.administrador_no_pdm',
+            'CadastroMetaPDM.administrador_no_pdm'
+          ])
+            && activePdm.possui_iniciativa && metaId && !iniciativaId"
+        >
           <SmaeLink
-            v-if="temPermissãoPara([
-              'CadastroMeta.administrador_no_pdm',
-              'CadastroMetaPS.administrador_no_pdm',
-              'CadastroMetaPDM.administrador_no_pdm'
-            ])
-              && activePdm.possui_iniciativa && metaId && !iniciativaId"
             :to="`${parentLink}/cronograma/${singleCronograma?.id}/monitorar/iniciativa`"
           >
             A partir de {{ activePdm.rotulo_iniciativa }}
           </SmaeLink>
         </li>
-        <li>
+        <li
+          v-if="temPermissãoPara([
+            'CadastroMeta.administrador_no_pdm',
+            'CadastroMetaPS.administrador_no_pdm',
+            'CadastroMetaPDM.administrador_no_pdm'
+          ])
+            && activePdm.possui_atividade && metaId && !atividadeId"
+        >
           <SmaeLink
-            v-if="temPermissãoPara([
-              'CadastroMeta.administrador_no_pdm',
-              'CadastroMetaPS.administrador_no_pdm',
-              'CadastroMetaPDM.administrador_no_pdm'
-            ])
-              && activePdm.possui_atividade && metaId && !atividadeId"
             :to="`${parentLink}/cronograma/${singleCronograma?.id}/monitorar/atividade`"
           >
             A partir de {{ activePdm.rotulo_atividade }}
