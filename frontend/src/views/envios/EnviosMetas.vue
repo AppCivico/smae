@@ -84,7 +84,9 @@ if (!PlanosSetoriaisStore.lista.length) {
               :value="item.id"
               :selected="item.id == $route.query.pdm_id"
             >
-              {{ item.nome }}
+              {{ item.nome }} <template v-if="item.ativo">
+                (ativo)
+              </template>
             </option>
           </select>
         </div>
