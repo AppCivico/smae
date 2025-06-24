@@ -147,7 +147,8 @@
 </template>
 
 <script lang="ts" setup>
-import { type Component, computed, useSlots } from 'vue';
+import { computed, useAttrs, useSlots } from 'vue';
+import type { Component } from 'vue';
 import type { AnyObjectSchema } from 'yup';
 import RolagemHorizontal from '../rolagem/RolagemHorizontal.vue';
 import DeleteButton, { type DeleteButtonEvents, type DeleteButtonProps } from './partials/DeleteButton.vue';
@@ -171,7 +172,7 @@ type Props =
   & DeleteButtonProps
   & {
     titulo?: string
-    tituloRolagemHorizontal?: string
+    tituloParaRolagemHorizontal?: string
     schema?: AnyObjectSchema,
     colunas: Colunas,
     dados: Linhas
@@ -185,6 +186,8 @@ type Props =
   };
 
 type Emits = DeleteButtonEvents;
+
+const attributosDaRaiz = useAttrs();
 
 const props = withDefaults(defineProps<Props>(), {
   titulo: undefined,
@@ -214,8 +217,12 @@ const tituloParaRolagemHorizontal = computed<string | undefined>(() => {
     return undefined;
   }
 
-  if (props.tituloRolagemHorizontal) {
-    return props.tituloRolagemHorizontal;
+  if (attributosDaRaiz.ariaLabel) {
+    return attributosDaRaiz.ariaLabel;
+  }
+
+  if (props.tituloParaRolagemHorizontal) {
+    return props.tituloParaRolagemHorizontal;
   }
 
   if (props.titulo) {
