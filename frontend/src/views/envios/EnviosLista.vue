@@ -44,6 +44,15 @@ const colunas = [
     },
   },
 ];
+
+if (['portfolio', 'mdo'].indexOf(route.meta.entidadeMãe) > -1 && !route.query.portfolio_id) {
+  colunas
+    .splice(2, 0, {
+      chave: 'nome_do_portfolio',
+      label: 'Portfolio',
+    });
+}
+
 const listaFiltradaPorTermoDeBusca = ref([]);
 
 function carregar(parametros) {
@@ -52,14 +61,6 @@ function carregar(parametros) {
   } else {
     importaçõesStore.buscarTudo(parametros);
   }
-}
-
-if (['portfolio', 'mdo'].indexOf(route.meta.entidadeMãe) > -1 && !route.query.portfolio_id) {
-  colunas
-    .splice(2, 0, {
-      chave: 'nome_do_portfolio',
-      label: 'Portfolio',
-    });
 }
 
 watch(() => route.query, () => {
