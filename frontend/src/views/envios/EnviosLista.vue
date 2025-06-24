@@ -99,6 +99,8 @@ watch(() => route.query, () => {
     :colunas="colunas"
     :aria-busy="chamadasPendentes.lista"
     class="mb1"
+    titulo-para-rolagem-horizontal="Lista de arquivos enviados"
+    rolagem-horizontal
   >
     <template #celula:arquivo="{ celula }">
       <SmaeLink
