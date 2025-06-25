@@ -53,11 +53,11 @@ if (!importaçõesStore.portfoliosPermitidos.length) {
             @change="($event) => $router.push({
               name: $route.name,
               query: {
-                portfolio_id: $event.target.value == 0 ? undefined : $event.target.value
+                portfolio_id: $event.target.value || undefined
               }
             })"
           >
-            <option :value="0">
+            <option value="">
               Todos
             </option>
             <option

@@ -56,11 +56,7 @@ if (['portfolio', 'mdo'].indexOf(route.meta.entidadeMãe) > -1 && !route.query.p
 const listaFiltradaPorTermoDeBusca = ref([]);
 
 function carregar(parametros) {
-  if (!parametros.portfolio_id && !parametros.pdm_id && ['portfolio', 'mdo'].indexOf(route.meta.entidadeMãe) > -1) {
-    importaçõesStore.buscarTudo({ ...parametros, apenas_com_portfolio: true });
-  } else {
-    importaçõesStore.buscarTudo(parametros);
-  }
+  importaçõesStore.buscarTudo(parametros);
 }
 
 watch(() => route.query, () => {

@@ -78,6 +78,10 @@ if (!PlanosSetoriaisStore.lista.length) {
               query: { pdm_id: $event.target.value || undefined }
             })"
           >
+            <option value="">
+              Todos
+            </option>
+
             <option
               v-for="item in PlanosSetoriaisStore.lista"
               :key="item.id"
