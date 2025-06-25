@@ -18,7 +18,7 @@ import { MetaService } from 'src/meta/meta.service';
 import { CreateOrcamentoRealizadoItemDto } from 'src/orcamento-realizado/dto/create-orcamento-realizado.dto';
 import { OrcamentoRealizadoService as PdmOrcamentoRealizadoService } from 'src/orcamento-realizado/orcamento-realizado.service';
 import { OrcamentoRealizadoService as ProjetoOrcamentoRealizadoService } from 'src/pp/orcamento-realizado/orcamento-realizado.service';
-import { ProjetoService } from 'src/pp/projeto/projeto.service';
+import { ProjetoGetPermissionSet, ProjetoService } from 'src/pp/projeto/projeto.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UploadService } from 'src/upload/upload.service';
 import { read, utils, writeXLSX } from 'xlsx';
@@ -32,6 +32,7 @@ import { ExtraiComplementoDotacao, TrataDotacaoGrande } from '../sof-api/sof-api
 import { CreateImportacaoOrcamentoDto, FilterImportacaoOrcamentoDto } from './dto/create-importacao-orcamento.dto';
 import { ImportacaoOrcamentoDto, LinhaCsvInputDto } from './entities/importacao-orcamento.entity';
 import { ColunasNecessarias, OrcamentoImportacaoHelpers, OutrasColumns } from './importacao-orcamento.common';
+import { PDMGetPermissionSet } from '../pdm/pdm.service';
 const XLSX_ZAHL_PAYLOAD = require('xlsx/dist/xlsx.zahl');
 
 function Str2NumberOrNull(str: string | null): number | null {
@@ -308,137 +309,61 @@ export class ImportacaoOrcamentoService {
             ipp = decodedPageToken.ipp;
         }
 
-        const filtros: Prisma.Enumerable<Prisma.ImportacaoOrcamentoWhereInput> = [];
+        // 1. Vamos construir cláusulas de permissão específicas.
+        const permissionOrClauses: Prisma.Enumerable<Prisma.ImportacaoOrcamentoWhereInput> = [];
 
-        // a logica aqui em baixo é a seguinte
-        // se a pessoa tem permissão, então ela pode ver todos os registros onde
-        // ela tem acesso OU não é do tipo desse filtro (eg: se é filtro do projeto, esse OR vai trazer todos as linhas de metas)
-        // quando chegar no IF da meta, se ela não tiver a permissão, vai entrar outro filtro pra excluir os registros onde a meta é nulo
-        // e vice versa para o projeto/portfolio
+        // Permissões de Projeto/Portfolio
+        const podeVerPP = sistema == 'Projetos' && user.hasSomeRoles(['Projeto.orcamento']);
+        const podeVerMDO = sistema == 'MDO' && user.hasSomeRoles(['ProjetoMDO.orcamento']);
 
-        if (filters.apenas_com_portfolio) {
-            this.logger.debug(`filtrando apenas_com_portfolio=true`);
-            filtros.push({ portfolio_id: { not: null } });
+        if (podeVerPP || podeVerMDO) {
+            const tipoProjeto = podeVerPP ? 'PP' : 'MDO';
+
+            const projetos = await ProjetoGetPermissionSet(tipoProjeto, user);
+
+            permissionOrClauses.push({
+                portfolio: {
+                    tipo_projeto: tipoProjeto,
+                    Projeto: {
+                        some: {
+                            AND: projetos,
+                        },
+                    },
+                },
+            });
         }
 
-        let incNullFilter = 0;
-
-        if (
-            sistema == 'Projetos' &&
-            user.hasSomeRoles(['Projeto.orcamento']) &&
-            (filters.portfolio_id || filters.apenas_com_portfolio)
-        ) {
-            const projetos = await this.projetoService.findAllIds('PP', user);
-            this.logger.warn(`só pode ver os projetos ${projetos.map((r) => r.id).join(',')}`);
-
-            filtros.push({
-                OR: [
-                    { pdm_id: { not: null } },
-                    {
-                        portfolio: {
-                            tipo_projeto: 'PP',
-                            Projeto: {
-                                some: {
-                                    id: {
-                                        in: projetos.map((r) => r.id),
-                                    },
-                                },
-                            },
-                        },
-                    },
-                ],
-            });
-        } else if (
-            sistema == 'MDO' &&
-            user.hasSomeRoles(['ProjetoMDO.orcamento']) &&
-            (filters.portfolio_id || filters.apenas_com_portfolio)
-        ) {
-            const projetos = await this.projetoService.findAllIds('MDO', user);
-            this.logger.warn(`só pode ver os projetos ${projetos.map((r) => r.id).join(',')}`);
-
-            filtros.push({
-                OR: [
-                    { pdm_id: { not: null } },
-                    {
-                        portfolio: {
-                            tipo_projeto: 'MDO',
-                            Projeto: {
-                                some: {
-                                    id: {
-                                        in: projetos.map((r) => r.id),
-                                    },
-                                },
-                            },
-                        },
-                    },
-                ],
-            });
-        } else {
-            this.logger.warn('não pode ver os projetos');
-            filtros.push({ portfolio_id: null });
-            incNullFilter++;
-        }
-
-        if (sistema == 'PDM' && user.hasSomeRoles(['CadastroMeta.orcamento']) && filters.pdm_id) {
-            const metas = await this.metaService.findAllIds('_PDM', user);
-            this.logger.warn(`só pode as metas ${metas.map((r) => r.id)}`);
-
-            filtros.push({
-                OR: [
-                    { portfolio_id: { not: null } },
-                    {
-                        pdm: {
-                            tipo: 'PDM',
-                            Meta: {
-                                some: {
-                                    id: {
-                                        in: metas.map((r) => r.id),
-                                    },
-                                },
-                            },
-                        },
-                    },
-                ],
-            });
-        } else if (
+        // Permissões de Metas/PDM
+        const podeVerPDM = sistema == 'PDM' && user.hasSomeRoles(['CadastroMeta.orcamento']);
+        const podeVerPS =
             (sistema == 'PlanoSetorial' || sistema == 'ProgramaDeMetas') &&
-            user.hasSomeRoles(PlanoSetorialController.OrcamentoWritePerms) &&
-            filters.pdm_id
-        ) {
-            const metas = await this.metaService.findAllIds(sistema == 'PlanoSetorial' ? '_PS' : 'PDM_AS_PS', user);
-            this.logger.warn(`só pode as metas plano setorial ${metas.map((r) => r.id)}`);
+            user.hasSomeRoles(PlanoSetorialController.OrcamentoWritePerms);
 
-            filtros.push({
-                OR: [
-                    { portfolio_id: { not: null } },
-                    {
-                        pdm: {
-                            tipo: sistema == 'PlanoSetorial' ? 'PS' : 'PDM',
-                            Meta: {
-                                some: {
-                                    id: {
-                                        in: metas.map((r) => r.id),
-                                    },
-                                },
-                            },
-                        },
-                    },
-                ],
+        if (podeVerPDM || podeVerPS) {
+            const tipoMeta = podeVerPDM ? '_PDM' : sistema == 'PlanoSetorial' ? '_PS' : 'PDM_AS_PS';
+            const tipoPdm = tipoMeta === '_PS' ? 'PS' : 'PDM';
+
+            const pdm = await PDMGetPermissionSet(tipoMeta, user, this.prisma);
+            permissionOrClauses.push({
+                pdm: {
+                    tipo: tipoPdm,
+                    AND: pdm,
+                },
             });
-        } else {
-            this.logger.warn('não pode ver as metas');
-            filtros.push({ pdm_id: null });
-            incNullFilter++;
         }
 
-        if (incNullFilter == 2) throw new BadRequestException('Necessário informar portfolio_id ou pdm_id');
+        // Se o array de permissões está vazio, o usuário não tem acesso a nada.
+        // Prisma trata `OR: []` como "não encontre nada", o que é exatamente o que queremos.
+        if (permissionOrClauses.length === 0) {
+            this.logger.warn(`Usuário não possui permissão para ver importações de orçamento de Projetos ou Metas.`);
+        }
+
+        const where: Prisma.ImportacaoOrcamentoWhereInput = {
+            OR: permissionOrClauses,
+        };
 
         const registros = await this.prisma.importacaoOrcamento.findMany({
-            where: {
-                portfolio_id: filters.portfolio_id,
-                pdm_id: filters.pdm_id,
-                AND: [...filtros],
-            },
+            where,
             include: {
                 arquivo: {
                     select: { tamanho_bytes: true, nome_original: true },
