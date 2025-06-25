@@ -13,6 +13,12 @@ import { useAlertStore } from '@/stores/alert.store';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
 import { usePartidosStore } from '@/stores/partidos.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
+import SmaeTooltip from '@/components/SmaeTooltip/SmaeTooltip.vue';
+
+const tooltip = {
+  dadosBancariosAceite: 'Indica o código numérico dos dados bancários para execução da emenda parlamentar oriunda de Transferência Especial.',
+  dadosBancariosFim: 'Indica o código numérico dos dados bancários para execução da emenda parlamentar oriunda de Transferência Especial, aberto pela Secretaria Municipal responsável pela execução.',
+};
 
 const TransferenciasVoluntarias = useTransferenciasVoluntariasStore();
 const {
@@ -469,6 +475,8 @@ watch(itemParaEdicao, async (novosValores) => {
     <div class="flex spacebetween center mb1">
       <h3 class="title">
         Dados Bancários de Aceite
+
+        <SmaeTooltip :texto="tooltip.dadosBancariosAceite" />
       </h3>
       <hr class="ml2 f1">
     </div>
@@ -524,6 +532,8 @@ watch(itemParaEdicao, async (novosValores) => {
     <div class="flex spacebetween center mb1">
       <h3 class="title">
         Dados Bancários Secretaria Fim
+
+        <SmaeTooltip :texto="tooltip.dadosBancariosFim" />
       </h3>
       <hr class="ml2 f1">
     </div>

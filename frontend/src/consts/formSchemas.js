@@ -2293,6 +2293,12 @@ export const registroDeTransferencia = object({
   conta_aceite: string()
     .label('Número conta-corrente de aceite')
     .nullable(),
+  pct_custeio: number()
+    .label('Porcentagem')
+    .nullable()
+    .meta({
+      balaoInformativo: 'Indica o valor financeiro para despesas de custeio da Transferência Voluntária. O valor do custeio é sobre o valor do repasse.',
+    }),
   custeio: number()
     .label('Custeio')
     .min(0)
@@ -2301,28 +2307,52 @@ export const registroDeTransferencia = object({
     .min(0),
   dotacao: string()
     .label('Dotação')
-    .nullable(),
+    .nullable()
+    .meta({
+      balaoInformativo: 'Indica o código numérico da alocação dos recursos financeiros previstos no orçamento municipal para execução da Transferência Voluntária.',
+    }),
   empenho: boolean()
     .label('Empenho')
     .nullable(),
   valor: number()
     .label('Valor do Repasse')
     .nullable()
-    .required(),
+    .required()
+    .meta({
+      balaoInformativo: 'Indica o valor financeiro da Transferência Voluntária.',
+    }),
   valor_contrapartida: number()
     .label('Valor contrapartida')
     .nullable()
-    .required(),
+    .required()
+    .meta({
+      balaoInformativo: 'Indica o valor financeiro disponibilizado pela Prefeitura como contrapartida da Transferência Voluntária.',
+    }),
   ordenador_despesa: string()
     .label('Ordenador de despesas')
-    .nullable(),
+    .nullable()
+    .meta({
+      balaoInformativo: 'Nome da autoridade pública municipal responsável por autorizar a execução financeira do contrato.',
+    }),
   valor_total: number()
     .label('Valor total')
     .required()
-    .nullable(),
+    .nullable()
+    .meta({
+      balaoInformativo: 'Indica o valor financeiro global (soma do repasse e contrapartida) para execução da Transferência Voluntária.',
+    }),
   gestor_contrato: string()
     .label('Gestor do Contrato')
-    .nullable(),
+    .nullable()
+    .meta({
+      balaoInformativo: 'Nome do gestor municipal responsável por acompanhar e fiscalizar a execução da Transferência Voluntária.',
+    }),
+  pct_investimento: number()
+    .label('Porcentagem')
+    .nullable()
+    .meta({
+      balaoInformativo: 'Indica o valor financeiro para despesas de investimento da Transferência Voluntária. O valor do investimento é sobre o valor do repasse.',
+    }),
   investimento: number()
     .label('Valor')
     .min(0)
@@ -2337,7 +2367,10 @@ export const registroDeTransferencia = object({
       id: number()
         .nullable(),
       parlamentar_id: number()
-        .label('Parlamentar'),
+        .label('Parlamentar')
+        .meta({
+          balaoInformativo: 'Indica o nome do parlamentar. Advém das informações cadastradas sobre Parlamentares na aba Configurações.',
+        }),
       objeto: string()
         .label('Objeto/Empreendimento')
         .max(1000)
