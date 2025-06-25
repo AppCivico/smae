@@ -162,6 +162,20 @@ export class ImportacaoOrcamentoService {
 
         const created = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
+                if (dto.pdm_id && dto.tipo_pdm) {
+                    const pdm = await prismaTxn.pdm.findUnique({
+                        where: { id: dto.pdm_id },
+                        select: { ativo: true, tipo: true },
+                    });
+                    const tipo = dto.tipo_pdm == 'PDM' ? 'Programa de Metas' : 'Plano Setorial';
+                    if (!pdm) throw new BadRequestException(`${tipo} ID ${dto.pdm_id} não encontrado`);
+
+                    if (pdm.ativo === false)
+                        throw new BadRequestException(
+                            `${tipo} ID ${dto.pdm_id} não está ativo, não é possível importar orçamento`
+                        );
+                }
+
                 const importacao = await prismaTxn.importacaoOrcamento.create({
                     data: {
                         criado_por: user.id,
