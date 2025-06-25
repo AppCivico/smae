@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { TipoPdm, TipoProjeto } from '@prisma/client';
 import { Transform, TransformFnParams, Type } from 'class-transformer';
-import { IsBoolean, IsEnum, IsInt, IsOptional, IsString, Max, MaxLength, Min, Validate } from 'class-validator';
+import { IsEnum, IsInt, IsOptional, IsString, Max, MaxLength, Min, Validate } from 'class-validator';
 import { EitherPdmOrPortfolio } from 'src/common/dto/EitherPdmOrPortfolio';
 
 export class CreateImportacaoOrcamentoDto {
@@ -45,11 +45,6 @@ export class FilterImportacaoOrcamentoDto {
     @IsInt()
     @Type(() => Number)
     portfolio_id?: number;
-
-    @IsOptional()
-    @IsBoolean()
-    @Transform(({ value }: any) => value === 'true')
-    apenas_com_portfolio?: boolean;
 
     @IsOptional()
     @IsString()
