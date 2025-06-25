@@ -249,21 +249,23 @@ services:
         max-file: "2"
         max-size: 100MB
 #  # 150 MB RAM max
-#  smtp_web:
-#    container_name: "${EMAILDB_CONTAINER_NAME}_smtp_web"
-#    restart: unless-stopped
-#    image: rnwood/smtp4dev:latest
-#    ports:
-#      - "${BIND_INTERFACE}${SMTP_WEB_LISTEN}:80"
-#    networks:
-#      #- api
-#      #- smtp
-#      - smae_network
-#    logging:
-#      driver: "json-file"
-#      options:
-#        max-file: "2"
-#        max-size: 100MB
+  smtp_web:
+    container_name: "${EMAILDB_CONTAINER_NAME}_smtp_web"
+    restart: unless-stopped
+    image: rnwood/smtp4dev:latest
+    ports:
+      - "${BIND_INTERFACE}${SMTP_WEB_LISTEN}:80"
+    networks:
+      #- api
+      #- smtp
+      - smae_network
+    profiles:
+      - fullStack
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "2"
+        max-size: 100MB
 
   # 1500 MB RAM max
   minio:
@@ -290,28 +292,30 @@ services:
         max-size: 1m
 
   # 50 mb RAM max
-#  web:
-#    container_name: "${WEB_CONTAINER_NAME}"
-#    build:
-#      context: ./
-#      dockerfile: frontend/Dockerfile
-#    networks:
-#      #- api
-#      #- metadb_web
-#      - smae_network
-#    depends_on:
-#      - smae_api
-#      - metabase
-#    restart: unless-stopped
-#    environment:
-#      VITE_API_URL: "${VITE_API_URL}"
-#    ports:
-#      - "${BIND_INTERFACE}${SMAE_WEB_LISTEN}:80"
-#    logging:
-#      driver: "json-file"
-#      options:
-#        max-file: "2"
-#        max-size: 1MB
+  web:
+    container_name: "${WEB_CONTAINER_NAME}"
+    build:
+      context: ./
+      dockerfile: frontend/Dockerfile
+    networks:
+      #- api
+      #- metadb_web
+      - smae_network
+    depends_on:
+      - smae_api
+      - metabase
+    profiles:
+      - fullStack
+    restart: unless-stopped
+    environment:
+      VITE_API_URL: "${VITE_API_URL}"
+    ports:
+      - "${BIND_INTERFACE}${SMAE_WEB_LISTEN}:80"
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "2"
+        max-size: 1MB
 
   pgbackups:
     image: prodrigestivill/postgres-backup-local
