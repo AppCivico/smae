@@ -164,7 +164,7 @@ export class ImportacaoOrcamentoService {
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
 
                 if (dto.pdm_id && dto.tipo_pdm) {
-                    const pdm = await this.prisma.pdm.findUnique({
+                    const pdm = await prismaTxn.pdm.findUnique({
                         where: { id: dto.pdm_id },
                         select: { ativo: true },
                     });
