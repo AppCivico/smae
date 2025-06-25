@@ -169,7 +169,10 @@ export class ImportacaoOrcamentoService {
                         select: { ativo: true },
                     });
 
-                    if (pdm && pdm.ativo === false) {
+                    if (!pdm) {
+                        throw new BadRequestException('PdM não encontrado.');
+                    }
+                    if (pdm.ativo === false) {
                         throw new BadRequestException('Importação bloqueada: o PdM está inativo.');
                     }
                 }
