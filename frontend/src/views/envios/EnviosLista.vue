@@ -12,7 +12,7 @@ defineOptions({
 
 const importaçõesStore = useImportaçõesStore();
 const {
-  chamadasPendentes, erro, lista, listaPreparada, paginação,
+  chamadasPendentes, erros, lista, listaPreparada, paginação,
 } = storeToRefs(importaçõesStore);
 const route = useRoute();
 const emit = defineEmits(['enviado']);
@@ -89,8 +89,8 @@ watch(() => route.query, () => {
   </div>
 
   <ErrorComponent
-    v-if="erro"
-    :erro="erro"
+    v-if="erros.lista"
+    :erro="erros.lista"
     class="mb1"
   />
 
