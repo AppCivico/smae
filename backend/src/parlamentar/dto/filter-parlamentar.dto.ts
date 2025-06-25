@@ -35,7 +35,7 @@ export class FilterParlamentarDto {
     @IsOptional()
     @IsInt()
     @Max(500)
-    @Min(1)
+    @Min(-1)
     @Transform((a: TransformFnParams) => (a.value === '' ? undefined : +a.value))
     ipp?: number;
 

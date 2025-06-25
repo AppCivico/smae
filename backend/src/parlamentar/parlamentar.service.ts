@@ -1,8 +1,13 @@
 import { HttpException, Injectable } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { DadosEleicaoNivel, ParlamentarCargo, Prisma } from '@prisma/client';
+import { PaginatedDto, PAGINATION_TOKEN_TTL } from 'src/common/dto/paginated.dto';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { UploadService } from 'src/upload/upload.service';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { PrismaHelpers } from '../common/PrismaHelpers';
+import { Date2YMD } from '../common/date2ymd';
+import { MAX_DB_SAFE_INT32 } from '../common/dto/consts';
 import { HtmlSanitizer } from '../common/html-sanitizer';
 import { PrismaService } from '../prisma/prisma.service';
 import {
@@ -21,10 +26,6 @@ import {
     UpdateRepresentatividadeDto,
 } from './dto/update-parlamentar.dto';
 import { ParlamentarDetailDto, ParlamentarDto } from './entities/parlamentar.entity';
-import { PaginatedDto, PAGINATION_TOKEN_TTL } from 'src/common/dto/paginated.dto';
-import { JwtService } from '@nestjs/jwt';
-import { PrismaHelpers } from '../common/PrismaHelpers';
-import { Date2YMD } from '../common/date2ymd';
 
 class NextPageTokenJwtBody {
     offset: number;
@@ -135,6 +136,8 @@ export class ParlamentarService {
         let token_proxima_pagina: string | null = null;
 
         let ipp = filters.ipp ? filters.ipp : 50;
+        if (filters.ipp === -1) ipp = MAX_DB_SAFE_INT32;
+
         let offset = 0;
         const decodedPageToken = this.decodeNextPageToken(filters.token_proxima_pagina);
 
