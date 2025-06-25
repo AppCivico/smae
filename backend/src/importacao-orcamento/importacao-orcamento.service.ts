@@ -321,6 +321,8 @@ export class ImportacaoOrcamentoService {
             filtros.push({ portfolio_id: { not: null } });
         }
 
+        let incNullFilter = 0;
+
         if (
             sistema == 'Projetos' &&
             user.hasSomeRoles(['Projeto.orcamento']) &&
@@ -374,6 +376,7 @@ export class ImportacaoOrcamentoService {
         } else {
             this.logger.warn('não pode ver os projetos');
             filtros.push({ portfolio_id: null });
+            incNullFilter++;
         }
 
         if (sistema == 'PDM' && user.hasSomeRoles(['CadastroMeta.orcamento']) && filters.pdm_id) {
@@ -425,7 +428,10 @@ export class ImportacaoOrcamentoService {
         } else {
             this.logger.warn('não pode ver as metas');
             filtros.push({ pdm_id: null });
+            incNullFilter++;
         }
+
+        if (incNullFilter == 2) throw new BadRequestException('Necessário informar portfolio_id ou pdm_id');
 
         const registros = await this.prisma.importacaoOrcamento.findMany({
             where: {
