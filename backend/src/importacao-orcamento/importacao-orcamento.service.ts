@@ -162,6 +162,18 @@ export class ImportacaoOrcamentoService {
 
         const created = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
+
+                if (dto.pdm_id && dto.tipo_pdm) {
+                    const pdm = await this.prisma.pdm.findUnique({
+                        where: { id: dto.pdm_id },
+                        select: { ativo: true },
+                    });
+
+                    if (pdm && pdm.ativo === false) {
+                        throw new BadRequestException('Importação bloqueada: o PdM está inativo.');
+                    }
+                }
+
                 const importacao = await prismaTxn.importacaoOrcamento.create({
                     data: {
                         criado_por: user.id,
