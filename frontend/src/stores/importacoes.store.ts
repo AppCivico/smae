@@ -19,7 +19,11 @@ interface Estado {
   lista: Lista;
   portfoliosPermitidos: PortfolioDto[];
   chamadasPendentes: ChamadasPendentes;
-  erro: null | unknown;
+  erros: {
+    lista: null | unknown;
+    portfoliosPermitidos: null | unknown;
+    arquivos: null | unknown
+  };
   paginação: {
     temMais: boolean;
     tokenDaPróximaPágina: string;
@@ -42,12 +46,18 @@ export const useImportaçõesStore = defineStore('importações', {
       tokenDaPróximaPágina: '',
     },
 
-    erro: null,
+    erros: {
+      lista: null,
+      portfoliosPermitidos: null,
+      arquivos: null,
+    },
   }),
 
   actions: {
     async buscarTudo(params: { token_proxima_pagina?: string } = {}): Promise<void> {
       this.chamadasPendentes.lista = true;
+      this.erros.lista = null;
+
       try {
         const {
           linhas,
@@ -64,13 +74,15 @@ export const useImportaçõesStore = defineStore('importações', {
           this.paginação.tokenDaPróximaPágina = tokenDaPróximaPágina || '';
         }
       } catch (erro: unknown) {
-        this.erro = erro;
+        this.erros.lista = erro;
       }
       this.chamadasPendentes.lista = false;
     },
 
     async buscarPortfolios(params = {}): Promise<void> {
       this.chamadasPendentes.portfoliosPermitidos = true;
+      this.erros.portfoliosPermitidos = null;
+
       try {
         const resposta = await this.requestS.get(`${baseUrl}/importacao-orcamento/portfolio`, params);
         if (Array.isArray(resposta)) {
@@ -79,20 +91,21 @@ export const useImportaçõesStore = defineStore('importações', {
           throw new Error('Resposta fora do padrão esperado');
         }
       } catch (erro: unknown) {
-        this.erro = erro;
+        this.erros.portfoliosPermitidos = erro;
       }
       this.chamadasPendentes.portfoliosPermitidos = false;
     },
 
     async associarArquivo(params = {}): Promise<boolean | RecordWithId> {
       this.chamadasPendentes.arquivos = true;
+      this.erros.arquivos = null;
 
       try {
         const resposta = await this.requestS.post(`${baseUrl}/importacao-orcamento/`, params) as RecordWithId;
         this.chamadasPendentes.arquivos = false;
         return resposta;
       } catch (erro) {
-        this.erro = erro;
+        this.erros.arquivos = erro;
         this.chamadasPendentes.arquivos = false;
         return false;
       }
