@@ -778,7 +778,6 @@ export class VariavelCicloService {
                 id: variavel_id,
                 AND: whereFilter,
             },
-            orderBy: [{ supraregional: 'asc' }, { codigo: 'asc' }],
             select: {
                 id: true,
                 suspendida_em: true,
@@ -796,6 +795,7 @@ export class VariavelCicloService {
                 variavel_mae_id: true,
 
                 variaveis_filhas: {
+                    orderBy: [{ supraregional: 'asc' }, { codigo: 'asc' }],
                     where: { removido_em: null, tipo: 'Global' },
                     select: {
                         id: true,
