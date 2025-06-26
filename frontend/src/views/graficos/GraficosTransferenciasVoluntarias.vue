@@ -452,6 +452,10 @@
   </div>
 </template>
 <script setup>
+import isEqual from 'lodash/isEqual';
+import { storeToRefs } from 'pinia';
+import { computed, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
@@ -464,10 +468,6 @@ import requestS from '@/helpers/requestS.ts';
 import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
 import { usePartidosStore } from '@/stores/partidos.store';
-import isEqual from 'lodash/isEqual';
-import { storeToRefs } from 'pinia';
-import { computed, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 
 const localizeDate = (d) => dateToDate(d, { timeStyle: 'short', timeZone: 'America/Sao_Paulo' });
 const fluxosEtapasProjetos = useEtapasProjetosStore();
@@ -728,7 +728,7 @@ function scrollPaginaParaTabela() {
 
 async function iniciar() {
   fluxosEtapasProjetos.buscarTudo();
-  parlamentarStore.buscarTudo();
+  parlamentarStore.buscarTudo({ ipp: -1 });
   partidoStore.buscarTudo();
 
   atualizarQuery();
