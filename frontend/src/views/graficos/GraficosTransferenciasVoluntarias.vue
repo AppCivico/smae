@@ -418,7 +418,7 @@
     </h2>
     <div class="grid g2 relative">
       <SmaeTable
-        titulo-rolagem-horizontal="Tabela: Transferências"
+        titulo-para-rolagem-horizontal="Tabela: Transferências"
         class="mt2"
         rolagem-horizontal
         :colunas="colunas"
