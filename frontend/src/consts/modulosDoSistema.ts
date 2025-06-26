@@ -31,7 +31,7 @@ export type ModulosDoSistema = {
 
 const modulos: ModulosDoSistema = {
   PDM: {
-    nome: 'Programa de metas',
+    nome: 'OLD - Programa de metas',
     possiveisEntidadesMae: [
       'pdm',
     ],
@@ -46,7 +46,7 @@ const modulos: ModulosDoSistema = {
     ],
   },
   ProgramaDeMetas: {
-    nome: 'Programa de metas 😎',
+    nome: 'Programa de metas',
     possiveisEntidadesMae: [
       'programaDeMetas',
     ],
