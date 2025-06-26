@@ -22,6 +22,7 @@ import { ListWikiLinkDto } from './dto/list-wiki-link.dto';
 import { WikiUrlDto } from './dto/wiki-url.dto';
 import { UpdateWikiLinkDto } from './dto/update-wiki-link.dto';
 import { FindOneParams } from './dto/find-one-params.dto';
+import { IsPublic } from '../auth/decorators/is-public.decorator';
 
 @ApiTags('WikiLink')
 @Controller('wiki-link')
@@ -35,7 +36,7 @@ export class WikiLinkController {
     }
 
     @Get('chave_smae')
-    @ApiBearerAuth('access-token')
+    @IsPublic()
     @ApiOperation({ summary: 'Obter link da Wiki para a tela atual' })
     @ApiQuery({
         name: 'chave_smae',
