@@ -8,10 +8,13 @@ CMD ["/sbin/my_init"]
 RUN apt-get update && \
     apt-get install -y \
         python3-pip \
-        nginx \
+        nginx ca-certificates \
         curl && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Update CA certificates
+RUN update-ca-certificates
 
 # Create application directories
 RUN mkdir -p /app/transfere-gov /app/transfere-gov-especiais
