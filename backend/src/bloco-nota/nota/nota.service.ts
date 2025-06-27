@@ -23,6 +23,7 @@ import {
     TipoNotaItem,
     UpdateNotaDto,
 } from './dto/nota.dto';
+import { SmaeConfigService } from 'src/common/services/smae-config.service';
 
 class NextPageTokenJwtBody {
     offset: number;
@@ -48,9 +49,13 @@ export class NotaService {
         private readonly jwtService: JwtService,
         private readonly blocoService: BlocoNotaService,
         private readonly tipoService: TipoNotaService,
-        private readonly prisma: PrismaService
-    ) {
-        const parsedUrl = new URL(process.env.URL_LOGIN_SMAE || 'http://smae-frontend/');
+        private readonly prisma: PrismaService,
+        private readonly smaeConfigService: SmaeConfigService
+    ) {}
+
+    async onModuleInit() {
+        const rawUrl = await this.smaeConfigService.getConfigWithDefault('URL_LOGIN_SMAE', 'http://smae-frontend/');
+        const parsedUrl = new URL(rawUrl);
         this.baseUrl = `${parsedUrl.protocol}//${parsedUrl.hostname}:${parsedUrl.port}`;
     }
 

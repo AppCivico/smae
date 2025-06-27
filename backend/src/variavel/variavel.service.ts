@@ -69,6 +69,7 @@ import {
 import { SerieCompactToken } from './serie.token.encoder';
 import { VariavelUtilService } from './variavel.util.service';
 import { DateTime } from 'luxon';
+import { SmaeConfigService } from 'src/common/services/smae-config.service';
 
 const SUPRA_SUFIXO = ' - Supra';
 /**
@@ -255,7 +256,8 @@ export class VariavelService {
         private readonly metaService: MetaService,
         private readonly util: VariavelUtilService,
         private readonly vCatService: VariavelCategoricaService,
-        private readonly prisma: PrismaService
+        private readonly prisma: PrismaService,
+        private readonly smaeConfigService: SmaeConfigService
     ) {}
 
     private async loadVariaveisComCategorica(
@@ -2699,7 +2701,14 @@ export class VariavelService {
         const variavel = selfItem[0];
 
         const series: Serie[] = [...ORDEM_SERIES_RETORNO];
-        SeriesArrayShuffle(series); // garante que o consumidor não está usando os valores das series cegamente
+
+        const disableShuffle = await this.smaeConfigService.getConfigWithDefault<boolean>(
+            'DISABLE_SHUFFLE',
+            false,
+            (v) => v === 'true'
+        );
+        SeriesArrayShuffle(series, disableShuffle); // garante que o consumidor não está usando os valores das series cegamente 
+
         const cicloCorrente =
             filters.serie == 'Realizado' || filters.ate_ciclo_corrente
                 ? await this.prisma.variavelCicloCorrente.findUnique({

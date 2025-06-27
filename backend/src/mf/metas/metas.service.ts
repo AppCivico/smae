@@ -44,6 +44,7 @@ import {
     VariavelPedidoComplementacaoEmLoteDto,
     VariavelQtdeDto,
 } from './dto/mf-meta.dto';
+import { SmaeConfigService } from 'src/common/services/smae-config.service';
 
 type DadosCiclo = { variavelParticipa: boolean; id: number; ativo: boolean; meta_esta_na_coleta: boolean };
 
@@ -87,7 +88,8 @@ export class MetasService {
         private readonly variavelService: VariavelService,
         private readonly prisma: PrismaService,
         private readonly uploadService: UploadService,
-        private readonly mfService: MfService
+        private readonly mfService: MfService,
+        private readonly smaeConfigService: SmaeConfigService
     ) {}
 
     async metas(config: MfPessoaAcessoPdm, cicloAtivoId: number, params: FilterMfMetasDto): Promise<MfMetaDto[]> {
@@ -560,7 +562,12 @@ export class MetasService {
         }
 
         const ordem_series: Serie[] = ['Previsto', 'PrevistoAcumulado', 'Realizado', 'RealizadoAcumulado'];
-        SeriesArrayShuffle(ordem_series); // garante que o consumidor não está usando os valores das series cegamente
+        const disableShuffle = await this.smaeConfigService.getConfigWithDefault<boolean>(
+            'DISABLE_SHUFFLE',
+            false,
+            (v) => v === 'true'
+        );
+        SeriesArrayShuffle(ordem_series, disableShuffle); // garante que o consumidor não está usando os valores das series cegamente
 
         const seriesPorVariavel: Record<number, MfSeriesAgrupadas[]> = {};
         for (const r of seriesVariavel) {
@@ -1774,7 +1781,12 @@ export class MetasService {
         const linha = await this.processLinha(dto, !!dto.apenas_ultima_revisao, fastlane);
 
         const ordem_series: Serie[] = ['Previsto', 'PrevistoAcumulado', 'Realizado', 'RealizadoAcumulado'];
-        SeriesArrayShuffle(ordem_series); // garante que o consumidor não está usando os valores das series cegamente
+        const disableShuffle = await this.smaeConfigService.getConfigWithDefault<boolean>(
+            'DISABLE_SHUFFLE',
+            false,
+            (v) => v === 'true'
+        );
+        SeriesArrayShuffle(ordem_series, disableShuffle); // garante que o consumidor não está usando os valores das series cegamente
 
         const serieValores = await this.prisma.serieVariavel.findMany({
             where: {

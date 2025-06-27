@@ -7,8 +7,7 @@ export function ArrayShuffle(array: any[]) {
     }
 }
 
-export function SeriesArrayShuffle(array: any[]) {
-    if (process.env.DISABLE_SHUFFLE) return;
-
+export function SeriesArrayShuffle(array: any[], disableShuffle: boolean) {
+    if (disableShuffle) return;
     ArrayShuffle(array);
 }

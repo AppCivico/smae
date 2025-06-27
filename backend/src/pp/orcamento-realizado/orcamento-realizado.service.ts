@@ -19,10 +19,10 @@ import {
     FRASE_ERRO_EMPENHO,
     FRASE_ERRO_LIQUIDADO,
     LIBERAR_LIQUIDADO_VALORES_MAIORES_QUE_SOF,
-    MAX_BATCH_SIZE,
     verificaValorLiqEmpenhoMaiorEmp,
 } from '../../orcamento-realizado/orcamento-realizado.service';
 import { Decimal } from '@prisma/client/runtime/library';
+import { SmaeConfigService } from 'src/common/services/smae-config.service';
 
 type PartialOrcamentoRealizadoDto = {
     ano_referencia: number;
@@ -34,15 +34,27 @@ const fk_nota = (row: { dotacao: string; dotacao_processo: string; dotacao_proce
 
 @Injectable()
 export class OrcamentoRealizadoService {
+    private maxBatchSize = 10;
     liberarEmpenhoValoresMaioresQueSof: boolean;
     liberarLiquidadoValoresMaioresQueSof: boolean;
     constructor(
         private readonly prisma: PrismaService,
-        private readonly dotacaoService: DotacaoService
+        private readonly dotacaoService: DotacaoService,
+        private readonly smaeConfigService: SmaeConfigService
     ) {
         // deixar ligado a verificação
         this.liberarEmpenhoValoresMaioresQueSof = false;
         this.liberarLiquidadoValoresMaioresQueSof = LIBERAR_LIQUIDADO_VALORES_MAIORES_QUE_SOF;
+    }
+
+    async onModuleInit() {
+        const batchSize = await this.smaeConfigService.getConfigWithDefault<number>(
+            'MAX_LINHAS_REMOVIDAS_ORCAMENTO_EM_LOTE',
+            10,
+            (v) => parseInt(v, 10)
+        );
+
+        this.maxBatchSize = isNaN(batchSize) ? 10 : batchSize;
     }
 
     async create(
@@ -1033,8 +1045,8 @@ export class OrcamentoRealizadoService {
     async removeEmLote(tipo: TipoProjeto, params: BatchRecordWithId, user: PessoaFromJwt) {
         const now = new Date(Date.now());
 
-        if (params.ids.length > MAX_BATCH_SIZE)
-            throw new BadRequestException(`Máximo permitido é de ${MAX_BATCH_SIZE} remoções de uma vez`);
+        if (params.ids.length > this.maxBatchSize)
+            throw new BadRequestException(`Máximo permitido é de ${this.maxBatchSize} remoções de uma vez`);
 
         const checkPermissions = params.ids.map((linha) => this.verificaPermissaoDelete(tipo, linha.id));
 

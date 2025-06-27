@@ -63,7 +63,7 @@ import { TaskModule } from './task/task.module';
 import { TransfereGovApiModule } from './transfere-gov-api/transfere-gov-api.module';
 import { ClassificacaoModule } from './transferencias-voluntarias/classificacao/classificacao.module';
 import { WikiLinkModule } from './wiki-link/wiki-link.module';
-
+import { SmaeConfigModule } from './smae-config/smae-config.module';
 // Hacks pro JS
 /*
  * Convert all BigInt into strings just to be safe
@@ -127,6 +127,7 @@ import { WikiLinkModule } from './wiki-link/wiki-link.module';
         BuscaGlobalModule,
         AtualizacaoEmLoteModule,
         WikiLinkModule,
+        SmaeConfigModule,
     ],
     controllers: [AppController],
     providers: [

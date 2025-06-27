@@ -5,6 +5,7 @@ import got, { Got } from 'got';
 import { DateTransformDMY } from '../auth/transforms/date.transform';
 import { IsOnlyDate } from '../common/decorators/IsDateOnly';
 import { FormatValidationErrors } from '../common/helpers/FormatValidationErrors';
+import { SmaeConfigService } from 'src/common/services/smae-config.service';
 
 export class SeiError extends Error {
     constructor(msg: string) {
@@ -137,9 +138,20 @@ export class SeiApiService {
     private readonly logger = new Logger(SeiApiService.name);
     SEI_API_PREFIX: string;
 
-    constructor() {
-        this.SEI_API_PREFIX = process.env.SEI_API_PREFIX || 'http://smae_sei:80/';
-        this.got = got.extend({
+    constructor(private readonly smaeConfigService: SmaeConfigService) {
+        this.got = got;
+    }
+
+    async onModuleInit() {
+        const seiApiPrefix = await this.smaeConfigService.getConfigWithDefault<string>(
+            'SEI_API_PREFIX',
+            'http://smae_sei:80/'
+        );
+
+        this.SEI_API_PREFIX = seiApiPrefix;
+        console.log(this.SEI_API_PREFIX);
+
+        this.got = this.got.extend({
             prefixUrl: this.SEI_API_PREFIX,
             timeout: 18 * 1000,
             retry: {

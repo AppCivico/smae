@@ -58,8 +58,11 @@ export class TransfereGovSyncService {
         private readonly jwtService: JwtService,
         private readonly smaeConfigService: SmaeConfigService,
         private readonly transfereGovApiEspeciais: TransfereGovApiOportunidadesApiService
-    ) {
-        const parsedUrl = new URL(process.env.URL_LOGIN_SMAE || 'http://smae-frontend/');
+    ) {}
+
+    async onModuleInit() {
+        const rawUrl = await this.smaeConfigService.getConfigWithDefault('URL_LOGIN_SMAE', 'http://smae-frontend/');
+        const parsedUrl = new URL(rawUrl);
         this.baseUrl = `${parsedUrl.protocol}//${parsedUrl.hostname}:${parsedUrl.port}`;
     }
 

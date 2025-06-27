@@ -33,6 +33,7 @@ import { CreateImportacaoOrcamentoDto, FilterImportacaoOrcamentoDto } from './dt
 import { ImportacaoOrcamentoDto, LinhaCsvInputDto } from './entities/importacao-orcamento.entity';
 import { ColunasNecessarias, OrcamentoImportacaoHelpers, OutrasColumns } from './importacao-orcamento.common';
 import { PDMGetPermissionSet } from '../pdm/pdm.service';
+import { SmaeConfigService } from 'src/common/services/smae-config.service';
 const XLSX_ZAHL_PAYLOAD = require('xlsx/dist/xlsx.zahl');
 
 function Str2NumberOrNull(str: string | null): number | null {
@@ -92,6 +93,7 @@ export class ImportacaoOrcamentoService {
         private readonly dotacaoService: DotacaoService,
         private readonly dotacaoProcessoService: DotacaoProcessoService,
         private readonly dotacaoProcessoNotaService: DotacaoProcessoNotaService,
+        private readonly smaeConfigService: SmaeConfigService,
 
         @Inject(forwardRef(() => ProjetoService)) private readonly projetoService: ProjetoService,
         @Inject(forwardRef(() => AuthService)) private readonly authService: AuthService,
@@ -835,7 +837,12 @@ export class ImportacaoOrcamentoService {
         if (validations.length) {
             let response = 'Linha inválida: ' + FormatValidationErrors(validations);
 
-            if (process.env.INCLUDE_IMPORTACAO_ORCAMENTO_DEBUGGER) {
+            const includeImportacaoOrcamentoDebugger = await this.smaeConfigService.getConfigWithDefault<boolean>(
+                'INCLUDE_IMPORTACAO_ORCAMENTO_DEBUGGER',
+                false,
+                (v) => v === 'true'
+            );
+            if (includeImportacaoOrcamentoDebugger) {
                 response +=
                     ': DEBUGGER: ' +
                     JSON.stringify({

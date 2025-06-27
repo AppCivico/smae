@@ -27,6 +27,7 @@ import { ListaPrivilegiosModulos } from './entities/ListaPrivilegiosModulos';
 import { ListPessoa } from './entities/list-pessoa.entity';
 import { Pessoa as PessoaDto } from './entities/pessoa.entity';
 import { PessoaResponsabilidadesMetaService } from './pessoa.responsabilidades.metas.service';
+import { SmaeConfigService } from 'src/common/services/smae-config.service';
 
 const BCRYPT_ROUNDS = 10;
 
@@ -41,12 +42,35 @@ export class PessoaService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly pRespMetaService: PessoaResponsabilidadesMetaService,
-        private readonly equipeRespService: EquipeRespService
-    ) {
-        this.#maxQtdeSenhaInvalidaParaBlock = Number(process.env.MAX_QTDE_SENHA_INVALIDA_PARA_BLOCK) || 3;
-        this.#urlLoginSMAE = process.env.URL_LOGIN_SMAE || '#/login-smae';
-        this.#cpfObrigatorioSemRF = Number(process.env.CPF_OBRIGATORIO_SEM_RF) == 1;
-        this.#matchEmailRFObrigatorio = process.env.MATCH_EMAIL_RF_OBRIGATORIO || '';
+        private readonly equipeRespService: EquipeRespService,
+        private readonly smaeConfigService: SmaeConfigService
+    ) {}
+
+    async onModuleInit() {
+        this.#matchEmailRFObrigatorio = await this.smaeConfigService.getConfigWithDefault<string>(
+            'MATCH_EMAIL_RF_OBRIGATORIO',
+            '',
+            (v) => v
+        );
+
+        this.#cpfObrigatorioSemRF = await this.smaeConfigService.getConfigWithDefault<boolean>(
+            'CPF_OBRIGATORIO_SEM_RF',
+            true,
+            (v) => v === '1'
+        );
+
+        this.#urlLoginSMAE = await this.smaeConfigService.getConfigWithDefault<string>(
+            'URL_LOGIN_SMAE',
+            '#/login-smae',
+            (v) => v
+        );
+
+        const parsed = await this.smaeConfigService.getConfigWithDefault<number>(
+            'max_qtde_senha_invalida_para_block',
+            3,
+            (v) => Number(v)
+        );
+        this.#maxQtdeSenhaInvalidaParaBlock = isNaN(parsed) ? 3 : parsed;
     }
 
     pessoaAsHash(pessoa: PessoaDto) {

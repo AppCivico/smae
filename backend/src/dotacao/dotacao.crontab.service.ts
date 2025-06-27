@@ -10,6 +10,7 @@ import { DotacaoProcessoNotaService } from './dotacao-processo-nota.service';
 import { DotacaoProcessoService } from './dotacao-processo.service';
 import { DotacaoService } from './dotacao.service';
 import { RetryPromise } from 'src/common/retryPromise';
+import { SmaeConfigService } from 'src/common/services/smae-config.service';
 
 @Injectable()
 export class DotacaoCrontabService {
@@ -21,15 +22,23 @@ export class DotacaoCrontabService {
         private readonly sof: SofApiService,
         private readonly dotacao: DotacaoService,
         private readonly dotacaoProcessoService: DotacaoProcessoService,
-        private readonly dotacaoProcessoNotaService: DotacaoProcessoNotaService
-    ) {
-        this.simultaneidade = process.env.DOTACAO_SOF_SIMULTANEIDADE
-            ? Number(process.env.DOTACAO_SOF_SIMULTANEIDADE)
-            : 16;
-        if (isNaN(this.simultaneidade)) {
-            this.logger.error('valor inválido em DOTACAO_SOF_SIMULTANEIDADE, usando DOTACAO_SOF_SIMULTANEIDADE=1');
-            this.logger.error(process.env.DOTACAO_SOF_SIMULTANEIDADE);
+        private readonly dotacaoProcessoNotaService: DotacaoProcessoNotaService,
+        private readonly smaeConfigService: SmaeConfigService
+    ) {}
+
+    async onModuleInit() {
+        const rawSimult = await this.smaeConfigService.getConfigWithDefault<number>(
+            'DOTACAO_SOF_SIMULTANEIDADE',
+            16,
+            (v) => Number(v)
+        );
+
+        if (isNaN(rawSimult)) {
+            this.logger.error(`valor inválido em DOTACAO_SOF_SIMULTANEIDADE, usando DOTACAO_SOF_SIMULTANEIDADE=1`);
+            this.logger.error(`Valor recebido: ${rawSimult}`);
             this.simultaneidade = 1;
+        } else {
+            this.simultaneidade = rawSimult;
         }
     }
 

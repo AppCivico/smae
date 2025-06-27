@@ -26,8 +26,7 @@ import {
     UpdateOrcamentoRealizadoDto,
 } from './dto/create-orcamento-realizado.dto';
 import { OrcamentoRealizado } from './entities/orcamento-realizado.entity';
-
-export const MAX_BATCH_SIZE = parseInt(process.env.MAX_LINHAS_REMOVIDAS_ORCAMENTO_EM_LOTE || '', 10) || 10;
+import { SmaeConfigService } from 'src/common/services/smae-config.service';
 
 export const FRASE_ERRO_EMPENHO =
     'O total do empenho no SMAE excede o total do empenho no SOF, não é possível seguir com esse registro.';
@@ -45,6 +44,7 @@ const fk_nota = (row: { dotacao: string; dotacao_processo: string; dotacao_proce
 export const LIBERAR_LIQUIDADO_VALORES_MAIORES_QUE_SOF = true;
 @Injectable()
 export class OrcamentoRealizadoService {
+    private maxBatchSize = 10;
     private readonly logger = new Logger(OrcamentoRealizadoService.name);
 
     liberarEmpenhoValoresMaioresQueSof: boolean;
@@ -52,11 +52,22 @@ export class OrcamentoRealizadoService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly orcamentoPlanejado: OrcamentoPlanejadoService,
-        private readonly dotacaoService: DotacaoService
+        private readonly dotacaoService: DotacaoService,
+        private readonly smaeConfigService: SmaeConfigService
     ) {
         // deixar ligado a verificação
         this.liberarEmpenhoValoresMaioresQueSof = false;
         this.liberarLiquidadoValoresMaioresQueSof = LIBERAR_LIQUIDADO_VALORES_MAIORES_QUE_SOF;
+    }
+
+    async onModuleInit() {
+        const batchSize = await this.smaeConfigService.getConfigWithDefault<number>(
+            'MAX_LINHAS_REMOVIDAS_ORCAMENTO_EM_LOTE',
+            10,
+            (v) => parseInt(v, 10)
+        );
+
+        this.maxBatchSize = isNaN(batchSize) ? 10 : batchSize;
     }
 
     async create(tipo: TipoPdmType, dto: CreateOrcamentoRealizadoDto, user: PessoaFromJwt): Promise<RecordWithId> {
@@ -1228,8 +1239,8 @@ export class OrcamentoRealizadoService {
     async removeEmLote(tipo: TipoPdmType, params: BatchRecordWithId, user: PessoaFromJwt) {
         const now = new Date(Date.now());
 
-        if (params.ids.length > MAX_BATCH_SIZE)
-            throw new BadRequestException(`Máximo permitido é de ${MAX_BATCH_SIZE} remoções de uma vez`);
+        if (params.ids.length > this.maxBatchSize)
+            throw new BadRequestException(`Máximo permitido é de ${this.maxBatchSize} remoções de uma vez`);
 
         // pra executar em lote, precisa ser CP
         const checkPermissions = params.ids.map((linha) =>

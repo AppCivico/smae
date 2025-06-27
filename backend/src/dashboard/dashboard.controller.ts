@@ -8,17 +8,21 @@ import { DashboardLinhasDto } from './entities/dashboard.entity';
 import { Request, Response } from 'express';
 import { GetDomainFromUrl } from '../auth/models/GetDomainFromUrl';
 import { IsPublic } from '../auth/decorators/is-public.decorator';
+import { SmaeConfigService } from 'src/common/services/smae-config.service';
 
 @Controller('dashboard')
 @ApiTags('Dashboard')
 export class DashboardController {
-    constructor(private readonly dashboardService: DashboardService) {}
+    constructor(
+        private readonly dashboardService: DashboardService,
+        private readonly smaeConfigService: SmaeConfigService
+    ) {}
 
     @Get()
     @ApiBearerAuth('access-token')
     @Roles(['Reports.dashboard_pdm', 'Reports.dashboard_portfolios', 'SMAE.espectador_de_painel_externo'])
     async findAll(@CurrentUser() user: PessoaFromJwt, @Req() req: Request): Promise<DashboardLinhasDto> {
-        const hostname = process.env.API_HOST_NAME || req.hostname;
+        const hostname = await this.smaeConfigService.getConfigWithDefault('API_HOST_NAME', req.hostname);
         return {
             linhas: await this.dashboardService.findAll(user, hostname),
         };
