@@ -53,7 +53,11 @@ const pdmForPermissionCheck = {
 
 type PdmForPermissionCheck = Prisma.PdmGetPayload<{ select: typeof pdmForPermissionCheck }>;
 
-export const PDMGetPermissionSet = async (tipo: TipoPdmType, user: PessoaFromJwt, prisma: PrismaService) => {
+export const PDMGetPermissionSet = async (
+    tipo: TipoPdmType,
+    user: PessoaFromJwt,
+    prisma: PrismaService | Prisma.TransactionClient
+) => {
     const orList: Prisma.Enumerable<Prisma.PdmWhereInput> = [];
 
     const andList: Prisma.Enumerable<Prisma.PdmWhereInput> = [];
@@ -508,14 +512,16 @@ export class PdmService {
         tipo: TipoPdmType,
         pdmId: number,
         user: PessoaFromJwt,
-        requiredLevel: PdmPermissionLevel
+        requiredLevel: PdmPermissionLevel,
+        prismaCtx?: Prisma.TransactionClient
     ): Promise<void> {
-        const pdm = await this.prisma.pdm.findFirst({
+        const prisma = prismaCtx || this.prisma;
+        const pdm = await prisma.pdm.findFirst({
             where: {
                 id: pdmId,
                 removido_em: null,
                 tipo: PdmModoParaTipo(tipo),
-                AND: await PDMGetPermissionSet(tipo, user, this.prisma),
+                AND: await PDMGetPermissionSet(tipo, user, prisma),
             },
             select: pdmForPermissionCheck,
         });
@@ -713,7 +719,7 @@ export class PdmService {
         prismaCtx?: Prisma.TransactionClient,
         loggerCtx?: LoggerWithLog
     ) {
-        await this.assertUserPermission(tipo, id, user, PdmPermissionLevel.CONFIG_WRITE);
+        await this.assertUserPermission(tipo, id, user, PdmPermissionLevel.CONFIG_WRITE, prismaCtx);
 
         const pdm = await this.loadPdm(tipo, id, user, prismaCtx);
         const prismaTx = prismaCtx || this.prisma;
