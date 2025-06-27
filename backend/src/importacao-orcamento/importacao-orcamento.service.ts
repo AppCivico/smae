@@ -323,6 +323,7 @@ export class ImportacaoOrcamentoService {
 
             permissionOrClauses.push({
                 portfolio: {
+                    id: filters.portfolio_id,
                     tipo_projeto: tipoProjeto,
                     Projeto: {
                         some: {
@@ -346,6 +347,7 @@ export class ImportacaoOrcamentoService {
             const pdm = await PDMGetPermissionSet(tipoMeta, user, this.prisma);
             permissionOrClauses.push({
                 pdm: {
+                    id: filters.pdm_id,
                     tipo: tipoPdm,
                     AND: pdm,
                 },
