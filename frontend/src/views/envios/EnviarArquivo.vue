@@ -192,7 +192,7 @@ switch (route.meta.entidadeMãe || sistemaCorrente.value) {
                   :key="item.id"
                   :value="item.id"
                   :selected="item.id == $route.query.pdm_id"
-                  :disabled="!!item.ativo"
+                  :disabled="!item.ativo"
                 >
                   {{ item.nome }}
                 </option>
@@ -203,7 +203,7 @@ switch (route.meta.entidadeMãe || sistemaCorrente.value) {
                   :key="item.id"
                   :value="item.id"
                   :selected="item.id == $route.query.pdm_id"
-                  :disabled="!!item.ativo"
+                  :disabled="!item.ativo"
                 >
                   {{ item.nome }}
                 </option>
