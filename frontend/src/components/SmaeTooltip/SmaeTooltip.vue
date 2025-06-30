@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue';
+import { useResizeObserver } from '@vueuse/core';
 
 type Slots = {
   default(): [unknown]
@@ -19,8 +20,11 @@ withDefaults(defineProps<Props>(), {
   texto: undefined,
 });
 
+const alterandoTamanho = ref<boolean>(false);
+const intervaloAlterandoTamanho = ref();
 const elemento = ref<HTMLElement>();
 const elementoConteudo = ref<HTMLElement>();
+const posicaoTooltip = ref<'left' | 'right' | 'center'>('center');
 const manterExibido = ref<boolean>(false);
 
 const descricaoConteudo = computed<string>(() => elementoConteudo.value?.textContent || '');
@@ -29,7 +33,7 @@ function alternarAbertura() {
   manterExibido.value = !manterExibido.value;
 }
 
-const posicaoTooltip = computed(() => {
+function obterPosicaoAlinahmento() {
   if (!elemento.value) {
     return null;
   }
@@ -50,6 +54,23 @@ const posicaoTooltip = computed(() => {
   }
 
   return 'right';
+}
+
+useResizeObserver(document.documentElement, () => {
+  if (alterandoTamanho.value) {
+    clearTimeout(intervaloAlterandoTamanho.value);
+  }
+
+  alterandoTamanho.value = true;
+
+  intervaloAlterandoTamanho.value = setTimeout(() => {
+    alterandoTamanho.value = false;
+
+    const posicao = obterPosicaoAlinahmento();
+    if (posicao) {
+      posicaoTooltip.value = posicao;
+    }
+  }, 400);
 });
 </script>
 
@@ -143,9 +164,7 @@ const posicaoTooltip = computed(() => {
   }
 
   .smae-tooltip-component--fixado > &,
-  :focus > &,
-  :hover > &,
-  :focus-within > & {
+  :hover > & {
     display: block;
   }
 }
