@@ -1687,6 +1687,9 @@ export class TransferenciaService {
         prismaTxn: Prisma.TransactionClient,
         user: PessoaFromJwt
     ) {
+        // Garantindo que a transferência está com workflow e cronograma limpos
+        await this.limparWorkflowCronograma(transferencia_id, user, prismaTxn);
+
         const workflow = await this.workflowService.findOne(workflow_id, undefined);
 
         // Caso seja a primeira fase, já é iniciada.
@@ -1785,6 +1788,11 @@ export class TransferenciaService {
                 },
             },
         });
+
+        console.log('========================================');
+        console.log(andamentoPrimeiraFase);
+        console.log(workflow_id);
+        console.log('========================================');
 
         if (!andamentoPrimeiraFase.tarefaEspelhada.length)
             throw new HttpException(
