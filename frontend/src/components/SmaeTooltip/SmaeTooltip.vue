@@ -5,6 +5,7 @@ type Slots = {
   default(): [unknown]
   botao(): [unknown]
 };
+defineSlots<Slots>();
 
 type Props = {
   texto?: string
@@ -18,6 +19,7 @@ withDefaults(defineProps<Props>(), {
   texto: undefined,
 });
 
+const elemento = ref<HTMLElement>();
 const elementoConteudo = ref<HTMLElement>();
 const manterExibido = ref<boolean>(false);
 
@@ -26,11 +28,35 @@ const descricaoConteudo = computed<string>(() => elementoConteudo.value?.textCon
 function alternarAbertura() {
   manterExibido.value = !manterExibido.value;
 }
+
+const posicaoTooltip = computed(() => {
+  if (!elemento.value) {
+    return null;
+  }
+
+  const posicaoElemento = elemento.value?.getBoundingClientRect().left;
+
+  const widths = {
+    left: window.innerWidth * 0.40,
+    center: window.innerWidth * 0.66,
+  };
+
+  if (posicaoElemento > widths.center) {
+    return 'left';
+  }
+
+  if (posicaoElemento > widths.left) {
+    return 'center';
+  }
+
+  return 'right';
+});
 </script>
 
 <template>
   <component
     :is="$props.as"
+    ref="elemento"
     :aria-description="descricaoConteudo"
     class="smae-tooltip-component"
     :class="{ 'smae-tooltip-component--fixado': manterExibido }"
@@ -47,6 +73,7 @@ function alternarAbertura() {
     <div
       ref="elementoConteudo"
       class="smae-tooltip-component__content"
+      :class="`smae-tooltip-component__content--${posicaoTooltip}`"
       role="tooltip"
     >
       <slot>{{ $props.texto }}</slot>
@@ -103,7 +130,7 @@ function alternarAbertura() {
   animation: fadeIn .5s;
   transform: translate(calc(-50% + 10px), calc(-100% - 24px - 0.5rem));
 
-  &:before {
+  &::before {
     content: "";
     position: absolute;
     left: calc(50% - 0.5rem);
@@ -122,4 +149,21 @@ function alternarAbertura() {
     display: block;
   }
 }
+
+.smae-tooltip-component__content--left {
+  transform: translate(calc(-100% + 43px), calc(-100% - 24px - 0.5rem));
+
+  &::before {
+    left: calc(100% - 40px);
+  }
+}
+
+.smae-tooltip-component__content--right {
+  transform: translate(calc(-10% + 6px), calc(-100% - 24px - 0.5rem));
+
+  &::before {
+    left: 27px;
+  }
+}
+
 </style>
