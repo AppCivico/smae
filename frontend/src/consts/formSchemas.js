@@ -2490,7 +2490,7 @@ export const transferenciasVoluntarias = object({
     .label('Número da Demanda')
     .nullable()
     .meta({
-      balaoInformativo: 'Indica o código numérico da proposta de emenda parlamentar estadual, gerado no sistema do Governo do Estado.',
+      balaoInformativo: 'Indica o código numérico da demanda de emenda parlamentar estadual, gerado no sistema do Governo do Estado.',
     }),
   interface: string()
     .label('Interface')
