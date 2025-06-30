@@ -17,6 +17,7 @@ import { DateTime } from 'luxon';
 import { uuidv7 } from 'uuidv7';
 import { SmaeConfigService } from '../common/services/smae-config.service';
 import { CONST_PERFIL_CASA_CIVIL } from '../common/consts';
+import { resolveBaseUrl } from 'src/common/helpers/resolveBaseUrl';
 const convertToJsonString = require('fast-json-stable-stringify');
 
 class NextPageTokenJwtBody {
@@ -36,9 +37,7 @@ export class SeiIntegracaoService {
     ) {}
 
     async onModuleInit() {
-        const rawUrl = await this.smaeConfigService.getConfigWithDefault('URL_LOGIN_SMAE', 'http://smae-frontend/');
-        const parsedUrl = new URL(rawUrl);
-        this.baseUrl = `${parsedUrl.protocol}//${parsedUrl.hostname}:${parsedUrl.port}`;
+        this.baseUrl = await resolveBaseUrl(this.logger, this.smaeConfigService);
     }
 
     /**

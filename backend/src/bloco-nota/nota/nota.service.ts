@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException, OnModuleInit } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Nota, Prisma, TipoNota } from '@prisma/client';
 import { DateTime } from 'luxon';
@@ -24,6 +24,7 @@ import {
     UpdateNotaDto,
 } from './dto/nota.dto';
 import { SmaeConfigService } from 'src/common/services/smae-config.service';
+import { resolveBaseUrl } from 'src/common/helpers/resolveBaseUrl';
 
 class NextPageTokenJwtBody {
     offset: number;
@@ -43,7 +44,8 @@ type DadosEmailInfo = {
 };
 
 @Injectable()
-export class NotaService {
+export class NotaService implements OnModuleInit {
+    private readonly logger = new Logger(NotaService.name);
     baseUrl: string;
     constructor(
         private readonly jwtService: JwtService,
@@ -54,9 +56,7 @@ export class NotaService {
     ) {}
 
     async onModuleInit() {
-        const rawUrl = await this.smaeConfigService.getConfigWithDefault('URL_LOGIN_SMAE', 'http://smae-frontend/');
-        const parsedUrl = new URL(rawUrl);
-        this.baseUrl = `${parsedUrl.protocol}//${parsedUrl.hostname}:${parsedUrl.port}`;
+        this.baseUrl = await resolveBaseUrl(this.logger, this.smaeConfigService);
     }
 
     async getTipoNotaDistRecurso(prismaCtx: Prisma.TransactionClient = this.prisma): Promise<number> {

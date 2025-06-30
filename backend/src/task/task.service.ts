@@ -151,7 +151,7 @@ export class TaskService {
     private running_job_counter = 0;
     private is_running = false;
 
-    private max_concurrent_jobs: number;
+    private max_concurrent_jobs: number = 3;
     private current_concurrent_jobs = 0;
 
     constructor(

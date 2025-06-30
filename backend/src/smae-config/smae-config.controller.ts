@@ -1,4 +1,4 @@
-import { Body, Controller, Put } from '@nestjs/common';
+import { Body, Controller, HttpException, HttpStatus, Put } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { SmaeConfigService } from 'src/smae-config/smae-config.service';
@@ -13,7 +13,11 @@ export class SmaeConfigController {
     @ApiBearerAuth('access-token')
     @Roles(['SMAE.superadmin'])
     async upsert(@Body() dto: UpsertConfigDto) {
-        const result = await this.smaeConfigService.upsert(dto.key, dto.value);
-        return { data: result.key };
+        try {
+            const result = await this.smaeConfigService.upsert(dto.key, dto.value);
+            return { data: result.key };
+        } catch (error) {
+            throw new HttpException('Erro ao criar/atualizar configuração', HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }

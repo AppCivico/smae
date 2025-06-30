@@ -1,4 +1,4 @@
-import { BadRequestException, HttpException, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Prisma } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
@@ -43,7 +43,7 @@ const fk_nota = (row: { dotacao: string; dotacao_processo: string; dotacao_proce
 
 export const LIBERAR_LIQUIDADO_VALORES_MAIORES_QUE_SOF = true;
 @Injectable()
-export class OrcamentoRealizadoService {
+export class OrcamentoRealizadoService implements OnModuleInit {
     private maxBatchSize = 10;
     private readonly logger = new Logger(OrcamentoRealizadoService.name);
 
@@ -61,13 +61,17 @@ export class OrcamentoRealizadoService {
     }
 
     async onModuleInit() {
-        const batchSize = await this.smaeConfigService.getConfigWithDefault<number>(
-            'MAX_LINHAS_REMOVIDAS_ORCAMENTO_EM_LOTE',
-            10,
-            (v) => parseInt(v, 10)
-        );
-
-        this.maxBatchSize = isNaN(batchSize) ? 10 : batchSize;
+        try {
+            const batchSize = await this.smaeConfigService.getConfigWithDefault<number>(
+                'MAX_LINHAS_REMOVIDAS_ORCAMENTO_EM_LOTE',
+                10,
+                (v) => parseInt(v, 10)
+            );
+            this.maxBatchSize = isNaN(batchSize) ? 10 : batchSize;
+        } catch (error) {
+            console.warn(`Falha ao carregar a configuração do tamanho do lote, usando o valor padrão 10:, ${error}`);
+            this.maxBatchSize = 10;
+        }
     }
 
     async create(tipo: TipoPdmType, dto: CreateOrcamentoRealizadoDto, user: PessoaFromJwt): Promise<RecordWithId> {

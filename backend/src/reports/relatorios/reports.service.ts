@@ -47,6 +47,7 @@ import { FilterRelatorioDto } from './dto/filter-relatorio.dto';
 import { RelatorioDto, RelatorioProcessamentoDto } from './entities/report.entity';
 import { ReportContext } from './helpers/reports.contexto';
 import { BuildParametrosProcessados, ParseBffParamsProcessados } from './helpers/reports.params-processado';
+import { resolveBaseUrl } from 'src/common/helpers/resolveBaseUrl';
 
 export const GetTempFileName = function (prefix?: string, suffix?: string) {
     prefix = typeof prefix !== 'undefined' ? prefix : 'tmp.';
@@ -95,9 +96,7 @@ export class ReportsService {
     ) {}
 
     async onModuleInit() {
-        const rawUrl = await this.smaeConfigService.getConfigWithDefault('URL_LOGIN_SMAE', 'http://smae-frontend/');
-        const parsedUrl = new URL(rawUrl);
-        this.baseUrl = `${parsedUrl.protocol}//${parsedUrl.hostname}:${parsedUrl.port}`;
+        this.baseUrl = await resolveBaseUrl(this.logger, this.smaeConfigService);
     }
 
     private async runReport(dto: CreateReportDto, user: PessoaFromJwt | null, ctx: ReportContext): Promise<void> {

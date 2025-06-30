@@ -38,6 +38,7 @@ import {
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import * as crypto from 'crypto';
 import { PrismaHelpers } from 'src/common/PrismaHelpers';
+import { resolveBaseUrl } from 'src/common/helpers/resolveBaseUrl';
 const convertToJsonString = require('fast-json-stable-stringify');
 
 class NextPageTokenJwtBody {
@@ -61,9 +62,7 @@ export class TransfereGovSyncService {
     ) {}
 
     async onModuleInit() {
-        const rawUrl = await this.smaeConfigService.getConfigWithDefault('URL_LOGIN_SMAE', 'http://smae-frontend/');
-        const parsedUrl = new URL(rawUrl);
-        this.baseUrl = `${parsedUrl.protocol}//${parsedUrl.hostname}:${parsedUrl.port}`;
+        this.baseUrl = await resolveBaseUrl(this.logger, this.smaeConfigService);
     }
 
     private transformComunicado(

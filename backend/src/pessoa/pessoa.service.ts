@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, HttpException, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, HttpException, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ModuloSistema, PerfilResponsavelEquipe, Pessoa, Prisma } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { uuidv7 } from 'uuidv7';
@@ -32,7 +32,7 @@ import { SmaeConfigService } from 'src/common/services/smae-config.service';
 const BCRYPT_ROUNDS = 10;
 
 @Injectable()
-export class PessoaService {
+export class PessoaService implements OnModuleInit {
     private readonly logger = new Logger(PessoaService.name);
 
     #maxQtdeSenhaInvalidaParaBlock: number;
