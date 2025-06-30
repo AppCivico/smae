@@ -3,25 +3,36 @@ DECLARE
     v_transferencia_id INTEGER;
     v_tsvector_payload TSVECTOR;
 BEGIN
-    -- Step 1: Determine the target transferencia_id
+    -- Step 1: Determine the target transferencia_id based on which table fired the trigger
     IF TG_TABLE_NAME = 'transferencia' THEN
         v_transferencia_id := NEW.id;
+
     ELSIF TG_TABLE_NAME = 'distribuicao_recurso' THEN
         IF TG_OP = 'DELETE' THEN
             v_transferencia_id := OLD.transferencia_id;
         ELSE -- INSERT or UPDATE
             v_transferencia_id := NEW.transferencia_id;
         END IF;
-
-        -- If no associated transferencia_id, nothing to do for this trigger path
-        IF v_transferencia_id IS NULL THEN
-            IF TG_OP = 'DELETE' THEN RETURN OLD; ELSE RETURN NEW; END IF;
+    
+    ELSIF TG_TABLE_NAME = 'transferencia_parlamentar' THEN -- <<< THIS IS THE NEW PART
+        IF TG_OP = 'DELETE' THEN
+            v_transferencia_id := OLD.transferencia_id;
+        ELSE -- INSERT or UPDATE
+            v_transferencia_id := NEW.transferencia_id;
         END IF;
+    
     ELSE
         RAISE EXCEPTION 'f_transferencia_update_tsvector: Unhandled table %', TG_TABLE_NAME;
     END IF;
 
+    -- If no associated transferencia_id, there's nothing to do.
+    -- This can happen if, for example, a `transferencia_parlamentar` record is created without a parent.
+    IF v_transferencia_id IS NULL THEN
+        IF TG_OP = 'DELETE' THEN RETURN OLD; ELSE RETURN NEW; END IF;
+    END IF;
+
     -- Step 2: Build the tsvector payload by querying the target transferencia record
+    -- This query is generic and works for all cases because it relies on v_transferencia_id
     SELECT
         to_tsvector(
             'simple',
@@ -58,8 +69,6 @@ BEGIN
             COALESCE(
                 ( SELECT string_agg(CAST(tp.cargo AS TEXT), ' ')
                     FROM transferencia_parlamentar tp
-                    -- Note: JOIN partido p ON p.id = tp.partido_id was here,
-                    -- but seems unnecessary if only tp.cargo is selected.
                     WHERE tp.transferencia_id = t_main.id AND tp.removido_em IS NULL
                 ),
                 ' '
@@ -75,27 +84,28 @@ BEGIN
             )
         )
     INTO v_tsvector_payload
-    FROM transferencia t_main -- Explicitly select FROM the transferencia table
-    JOIN transferencia_tipo tt ON tt.id = t_main.tipo_id
+    FROM transferencia t_main
+    LEFT JOIN transferencia_tipo tt ON tt.id = t_main.tipo_id
     LEFT JOIN orgao o1 ON o1.id = t_main.orgao_concedente_id
     LEFT JOIN orgao o2 ON o2.id = t_main.secretaria_concedente_id
-    WHERE t_main.id = v_transferencia_id; -- Filter for the correct transferencia record
+    WHERE t_main.id = v_transferencia_id;
 
-    -- Step 3 & 4: Apply the tsvector
+    -- Step 3: Apply the tsvector
     IF TG_TABLE_NAME = 'transferencia' THEN
+        -- If the trigger is on transferencia, modify the row directly before it's saved.
         NEW.vetores_busca = v_tsvector_payload;
-    ELSIF TG_TABLE_NAME = 'distribuicao_recurso' THEN
-        -- Only update if a valid tsvector was generated (i.e., t_main was found)
-        IF FOUND AND v_tsvector_payload IS NOT NULL THEN
+    ELSE -- For distribuicao_recurso or transferencia_parlamentar
+        -- If the trigger is on a related table, perform a separate UPDATE on the parent.
+        IF FOUND THEN -- Check if the SELECT INTO query found the transferencia record
              UPDATE transferencia
              SET vetores_busca = v_tsvector_payload
              WHERE id = v_transferencia_id;
         ELSIF NOT FOUND THEN
-             RAISE WARNING 'f_transferencia_update_tsvector: Transferencia ID % not found when processing % trigger on distribuicao_recurso.', v_transferencia_id, TG_OP;
+             RAISE WARNING 'f_transferencia_update_tsvector: Transferencia ID % not found when processing % trigger on %.', v_transferencia_id, TG_OP, TG_TABLE_NAME;
         END IF;
     END IF;
 
-    -- Return appropriate record for BEFORE triggers
+    -- Step 4: Return appropriate record for the trigger
     IF TG_OP = 'DELETE' THEN
         RETURN OLD;
     ELSE
