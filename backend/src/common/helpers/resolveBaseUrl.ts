@@ -10,6 +10,6 @@ export async function resolveBaseUrl(logger: Logger, smaeConfigService: SmaeConf
         return baseUrl;
     } catch (error) {
         logger.error(`Falha ao inicializar a URL base: ${error.message}`);
-        return 'http://smae-frontend';
+        return 'http://smae-frontend/';
     }
 }
