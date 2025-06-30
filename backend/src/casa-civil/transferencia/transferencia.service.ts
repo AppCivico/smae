@@ -1786,6 +1786,12 @@ export class TransferenciaService {
             },
         });
 
+        if (!andamentoPrimeiraFase.tarefaEspelhada.length)
+            throw new HttpException(
+                'Erro Interno / Configuração? Não foi possível encontrar tarefa espelhada para o primeiro nível do cronograma.',
+                400
+            );
+
         await prismaTxn.tarefa.update({
             where: { id: andamentoPrimeiraFase.tarefaEspelhada[0].id },
             data: {
