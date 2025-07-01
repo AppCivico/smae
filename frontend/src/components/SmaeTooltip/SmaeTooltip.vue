@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { debounce } from 'lodash';
 import { computed, ref } from 'vue';
 import { useResizeObserver } from '@vueuse/core';
 
@@ -20,8 +21,6 @@ withDefaults(defineProps<Props>(), {
   texto: undefined,
 });
 
-const alterandoTamanho = ref<boolean>(false);
-const intervaloAlterandoTamanho = ref();
 const elemento = ref<HTMLElement>();
 const elementoConteudo = ref<HTMLElement>();
 const posicaoTooltip = ref<'left' | 'right' | 'center'>('center');
@@ -33,12 +32,19 @@ function alternarAbertura() {
   manterExibido.value = !manterExibido.value;
 }
 
-function obterPosicaoAlinahmento() {
+function obterPosicaoAlinhamento() {
   if (!elemento.value) {
     return null;
   }
 
-  const posicaoElemento = elemento.value?.getBoundingClientRect().left;
+  let posicaoElemento = 0;
+
+  try {
+    posicaoElemento = elemento.value.getBoundingClientRect().left;
+  } catch (error) {
+    console.warn('Error getting element position:', error);
+    return null;
+  }
 
   const widths = {
     left: window.innerWidth * 0.40,
@@ -56,22 +62,16 @@ function obterPosicaoAlinahmento() {
   return 'right';
 }
 
-useResizeObserver(document.documentElement, () => {
-  if (alterandoTamanho.value) {
-    clearTimeout(intervaloAlterandoTamanho.value);
-  }
+useResizeObserver(
+  document.documentElement,
+  debounce(() => {
+    const posicao = obterPosicaoAlinhamento();
 
-  alterandoTamanho.value = true;
-
-  intervaloAlterandoTamanho.value = setTimeout(() => {
-    alterandoTamanho.value = false;
-
-    const posicao = obterPosicaoAlinahmento();
     if (posicao) {
       posicaoTooltip.value = posicao;
     }
-  }, 400);
-});
+  }, 400),
+);
 </script>
 
 <template>
