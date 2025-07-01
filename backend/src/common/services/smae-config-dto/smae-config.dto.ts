@@ -1,7 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import {
+    IsNotEmpty,
+    IsString
+} from 'class-validator';
 
-export class UpsertConfigDto {
+export class SmaeConfigDto {
     @ApiProperty()
     @IsString()
     @IsNotEmpty()
@@ -11,4 +14,8 @@ export class UpsertConfigDto {
     @IsString()
     @IsNotEmpty()
     value: string;
+}
+
+export class ListSmaeConfigDto {
+    linhas: SmaeConfigDto[];
 }

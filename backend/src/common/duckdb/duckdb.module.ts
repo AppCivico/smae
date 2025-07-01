@@ -1,9 +1,8 @@
 import { Module } from '@nestjs/common';
 import { DuckDBProviderService } from './duckdb-provider.service';
-import { SmaeConfigModule } from '../services/smae-config.module';
 
 @Module({
-    imports: [SmaeConfigModule],
+    imports: [],
     providers: [DuckDBProviderService],
     exports: [DuckDBProviderService],
 })

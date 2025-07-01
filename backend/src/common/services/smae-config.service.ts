@@ -8,10 +8,38 @@ import {
     TransporterConfigDto,
     UpdateEmailConfigDto,
 } from './smae-config-dto/smae-config.email.dto';
+import { SmaeConfigDto } from './smae-config-dto/smae-config.dto';
 
 @Injectable()
 export class SmaeConfigService {
     constructor(private readonly prisma: PrismaService) {}
+
+    async findAll(): Promise<SmaeConfigDto[]> {
+        const configs = await this.prisma.smaeConfig.findMany({
+            orderBy: { key: 'asc' },
+            select: {
+                key: true,
+                value: true,
+            },
+        });
+
+        return configs.map((config) => ({
+            key: config.key,
+            value: config.value,
+        }));
+    }
+
+    async upsert(key: string, value: string): Promise<SmaeConfigDto> {
+        return this.prisma.smaeConfig.upsert({
+            where: { key },
+            update: { value },
+            create: { key, value },
+            select: {
+                key: true,
+                value: true,
+            },
+        });
+    }
 
     async getConfig(key: string): Promise<string | null> {
         const config = await this.prisma.smaeConfig.findFirst({

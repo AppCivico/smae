@@ -4,7 +4,6 @@ import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { AllExceptionsFilter } from './any-error.filter';
-import { ApiLogModule } from './api-logs/api-log.module';
 import { AppController } from './app.controller';
 import { AppModuleCommon } from './app.module.common';
 import { AppModulePdm } from './app.module.pdm';
@@ -63,7 +62,7 @@ import { TaskModule } from './task/task.module';
 import { TransfereGovApiModule } from './transfere-gov-api/transfere-gov-api.module';
 import { ClassificacaoModule } from './transferencias-voluntarias/classificacao/classificacao.module';
 import { WikiLinkModule } from './wiki-link/wiki-link.module';
-import { SmaeConfigModule } from './smae-config/smae-config.module';
+
 // Hacks pro JS
 /*
  * Convert all BigInt into strings just to be safe
@@ -127,7 +126,6 @@ import { SmaeConfigModule } from './smae-config/smae-config.module';
         BuscaGlobalModule,
         AtualizacaoEmLoteModule,
         WikiLinkModule,
-        SmaeConfigModule,
     ],
     controllers: [AppController],
     providers: [
