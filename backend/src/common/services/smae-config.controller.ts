@@ -1,7 +1,9 @@
 import { Body, Controller, Delete, Get, NotFoundException, Param, Patch, Post } from '@nestjs/common';
-import { ApiExtraModels, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiExtraModels, ApiTags } from '@nestjs/swagger';
 import { IsPublic } from '../../auth/decorators/is-public.decorator';
+import { Roles } from '../../auth/decorators/roles.decorator';
 import { FindOneParams } from '../decorators/find-params';
+import { ListSmaeConfigDto, SmaeConfigDto } from './smae-config-dto/smae-config.dto';
 import {
     CreateEmailConfigDto,
     EmailConfigResponseDto,
@@ -9,7 +11,29 @@ import {
     TransporterConfigDto,
     UpdateEmailConfigDto,
 } from './smae-config-dto/smae-config.email.dto';
-import { EmailConfigService } from './smae-config.service';
+import { EmailConfigService, SmaeConfigService } from './smae-config.service';
+
+@ApiTags('SMAE Configurações')
+@Controller('smae-config')
+export class SmaeConfigController {
+    constructor(private readonly smaeConfigService: SmaeConfigService) {}
+
+    @Get()
+    @ApiBearerAuth('access-token')
+    @Roles(['SMAE.sysadmin'])
+    async findAll(): Promise<ListSmaeConfigDto> {
+        return {
+            linhas: await this.smaeConfigService.findAll(),
+        };
+    }
+
+    @Patch()
+    @ApiBearerAuth('access-token')
+    @Roles(['SMAE.sysadmin'])
+    async upsert(@Body() dto: SmaeConfigDto): Promise<SmaeConfigDto> {
+        return await this.smaeConfigService.upsert(dto.key, dto.value);
+    }
+}
 
 @ApiTags('Configurações de e-mail')
 @Controller('smae-config/email')

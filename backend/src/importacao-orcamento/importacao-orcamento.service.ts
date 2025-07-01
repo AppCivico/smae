@@ -33,6 +33,7 @@ import { CreateImportacaoOrcamentoDto, FilterImportacaoOrcamentoDto } from './dt
 import { ImportacaoOrcamentoDto, LinhaCsvInputDto } from './entities/importacao-orcamento.entity';
 import { ColunasNecessarias, OrcamentoImportacaoHelpers, OutrasColumns } from './importacao-orcamento.common';
 import { PDMGetPermissionSet } from '../pdm/pdm.service';
+import { SmaeConfigService } from 'src/common/services/smae-config.service';
 const XLSX_ZAHL_PAYLOAD = require('xlsx/dist/xlsx.zahl');
 
 function Str2NumberOrNull(str: string | null): number | null {
@@ -84,6 +85,7 @@ function toFixed2ButString(n: number): string {
 export class ImportacaoOrcamentoService {
     private readonly logger = new Logger(ImportacaoOrcamentoService.name);
     private enabled = true;
+    private isDebugMode = false;
 
     constructor(
         private readonly jwtService: JwtService,
@@ -92,6 +94,7 @@ export class ImportacaoOrcamentoService {
         private readonly dotacaoService: DotacaoService,
         private readonly dotacaoProcessoService: DotacaoProcessoService,
         private readonly dotacaoProcessoNotaService: DotacaoProcessoNotaService,
+        private readonly smaeConfigService: SmaeConfigService,
 
         @Inject(forwardRef(() => ProjetoService)) private readonly projetoService: ProjetoService,
         @Inject(forwardRef(() => AuthService)) private readonly authService: AuthService,
@@ -584,6 +587,11 @@ export class ImportacaoOrcamentoService {
 
         let tipo_projeto: TipoProjeto | undefined = undefined;
 
+        this.isDebugMode = await this.smaeConfigService.getConfigBooleanWithDefault(
+            'INCLUDE_IMPORTACAO_ORCAMENTO_DEBUGGER',
+            false
+        );
+
         const tipo_pdm: TipoPdmType | undefined =
             job.modulo_sistema == 'ProgramaDeMetas'
                 ? 'PDM_AS_PS'
@@ -837,7 +845,7 @@ export class ImportacaoOrcamentoService {
         if (validations.length) {
             let response = 'Linha inválida: ' + FormatValidationErrors(validations);
 
-            if (process.env.INCLUDE_IMPORTACAO_ORCAMENTO_DEBUGGER) {
+            if (this.isDebugMode) {
                 response +=
                     ': DEBUGGER: ' +
                     JSON.stringify({

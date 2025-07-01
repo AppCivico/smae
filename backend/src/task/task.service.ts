@@ -27,6 +27,7 @@ import { ParseParams } from './task.parseParams';
 import { TaskContext } from './task.context';
 import { ApiLogBackupService } from 'src/api-logs/backup/api-log-backup.service';
 import { ApiLogRestoreService } from 'src/api-logs/restore/api-log-restore.service';
+import { SmaeConfigService } from 'src/common/services/smae-config.service';
 
 export class TaskRetryService {
     static calculateNextRetryTime(retryCount: number, retryConfig: RetryConfigDto): Date {
@@ -150,11 +151,12 @@ export class TaskService {
     private running_job_counter = 0;
     private is_running = false;
 
-    private max_concurrent_jobs = process.env.MAX_CONCURRENT_JOBS ? parseInt(process.env.MAX_CONCURRENT_JOBS) : 3;
+    private max_concurrent_jobs: number = 3;
     private current_concurrent_jobs = 0;
 
     constructor(
         private readonly prisma: PrismaService,
+        private readonly smaeConfigService: SmaeConfigService,
         //
         @Inject(forwardRef(() => EchoService))
         private readonly echoService: EchoService,
@@ -200,6 +202,10 @@ export class TaskService {
     ) {
         this.enabled = CrontabIsEnabled('task');
         this.logger.debug(`task crontab enabled? ${this.enabled}`);
+    }
+
+    async onModuleInit() {
+        this.max_concurrent_jobs = await this.smaeConfigService.getConfigNumberWithDefault('MAX_CONCURRENT_JOBS', 3);
     }
 
     // Método para lidar com o desligamento da aplicação
@@ -500,6 +506,8 @@ export class TaskService {
         this.logger.debug(`Running HandleActiveJobs`);
         const now = new Date();
         process.env.INTERNAL_DISABLE_QUERY_LOG = '1';
+
+        this.max_concurrent_jobs = await this.smaeConfigService.getConfigNumberWithDefault('MAX_CONCURRENT_JOBS', 3);
 
         // Atualiza trabalhou_em pra quem está rodando
         // da pra mover isso pra dentro do run-task.ts já que lá tem o app com o prisma todo,

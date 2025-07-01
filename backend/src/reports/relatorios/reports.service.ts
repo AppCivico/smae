@@ -65,7 +65,6 @@ class NextPageTokenJwtBody {
 @Injectable()
 export class ReportsService {
     private readonly logger = new Logger(ReportsService.name);
-    baseUrl: string;
 
     constructor(
         private readonly jwtService: JwtService,
@@ -92,10 +91,7 @@ export class ReportsService {
         @Inject(forwardRef(() => CasaCivilAtividadesPendentesService))
         private readonly casaCivilAtividadesPendentesService: CasaCivilAtividadesPendentesService,
         private readonly smaeConfigService: SmaeConfigService
-    ) {
-        const parsedUrl = new URL(process.env.URL_LOGIN_SMAE || 'http://smae-frontend/');
-        this.baseUrl = `${parsedUrl.protocol}//${parsedUrl.hostname}:${parsedUrl.port}`;
-    }
+    ) {}
 
     private async runReport(dto: CreateReportDto, user: PessoaFromJwt | null, ctx: ReportContext): Promise<void> {
         // TODO agora que existem vários sistemas, conferir se o privilégio faz sentido com o serviço
@@ -745,11 +741,13 @@ export class ReportsService {
         },
         prismaTx: Prisma.TransactionClient
     ) {
+        const baseUrl = await this.smaeConfigService.getBaseUrl('URL_LOGIN_SMAE');
+
         if (!relatorio.criador) return;
 
         // A fonte precisa ser em slug para construir a URL.
         const fonteSlug = relatorio.fonte.toLowerCase().replace(/ /g, '-');
-        const url = new URL([this.baseUrl, 'relatorios', fonteSlug].join('/')).toString();
+        const url = new URL([baseUrl, 'relatorios', fonteSlug].join('/')).toString();
 
         await prismaTx.emaildbQueue.create({
             data: {

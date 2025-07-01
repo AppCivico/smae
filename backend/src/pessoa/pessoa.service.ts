@@ -1,6 +1,14 @@
-import { BadRequestException, ForbiddenException, HttpException, Injectable, Logger } from '@nestjs/common';
+import {
+    BadRequestException,
+    ForbiddenException,
+    HttpException,
+    Injectable,
+    Logger,
+    OnModuleInit,
+} from '@nestjs/common';
 import { ModuloSistema, PerfilResponsavelEquipe, Pessoa, Prisma } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import { SmaeConfigService } from 'src/common/services/smae-config.service';
 import { uuidv7 } from 'uuidv7';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { ListaDePrivilegios } from '../common/ListaDePrivilegios';
@@ -31,22 +39,33 @@ import { PessoaResponsabilidadesMetaService } from './pessoa.responsabilidades.m
 const BCRYPT_ROUNDS = 10;
 
 @Injectable()
-export class PessoaService {
+export class PessoaService implements OnModuleInit {
     private readonly logger = new Logger(PessoaService.name);
 
-    #maxQtdeSenhaInvalidaParaBlock: number;
     #urlLoginSMAE: string;
     #cpfObrigatorioSemRF: boolean;
     #matchEmailRFObrigatorio: string;
     constructor(
         private readonly prisma: PrismaService,
         private readonly pRespMetaService: PessoaResponsabilidadesMetaService,
-        private readonly equipeRespService: EquipeRespService
-    ) {
-        this.#maxQtdeSenhaInvalidaParaBlock = Number(process.env.MAX_QTDE_SENHA_INVALIDA_PARA_BLOCK) || 3;
-        this.#urlLoginSMAE = process.env.URL_LOGIN_SMAE || '#/login-smae';
-        this.#cpfObrigatorioSemRF = Number(process.env.CPF_OBRIGATORIO_SEM_RF) == 1;
-        this.#matchEmailRFObrigatorio = process.env.MATCH_EMAIL_RF_OBRIGATORIO || '';
+        private readonly equipeRespService: EquipeRespService,
+        private readonly smaeConfigService: SmaeConfigService
+    ) {}
+
+    async onModuleInit() {
+        this.#matchEmailRFObrigatorio = await this.smaeConfigService.getConfigWithDefault<string>(
+            'MATCH_EMAIL_RF_OBRIGATORIO',
+            '',
+            (v) => v
+        );
+
+        this.#cpfObrigatorioSemRF = await this.smaeConfigService.getConfigWithDefault<boolean>(
+            'CPF_OBRIGATORIO_SEM_RF',
+            true,
+            (v) => v === '1'
+        );
+
+        this.#urlLoginSMAE = (await this.smaeConfigService.getBaseUrl('URL_LOGIN_SMAE')) + '#/login-smae';
     }
 
     pessoaAsHash(pessoa: PessoaDto) {
@@ -98,7 +117,12 @@ export class PessoaService {
             select: { qtde_senha_invalida: true },
         });
 
-        if (updatedPessoa.qtde_senha_invalida >= this.#maxQtdeSenhaInvalidaParaBlock) {
+        const maxInvalidAttempts = await this.smaeConfigService.getConfigNumberWithDefault(
+            'MAX_QTDE_SENHA_INVALIDA_PARA_BLOCK',
+            3
+        );
+
+        if (updatedPessoa.qtde_senha_invalida >= maxInvalidAttempts) {
             await this.criaNovaSenha(pessoa, false);
         }
     }
@@ -129,6 +153,11 @@ export class PessoaService {
         solicitadoPeloUsuario: boolean,
         prisma: Prisma.TransactionClient
     ) {
+        const maxInvalidAttempts = await this.smaeConfigService.getConfigNumberWithDefault(
+            'MAX_QTDE_SENHA_INVALIDA_PARA_BLOCK',
+            3
+        );
+
         await prisma.emaildbQueue.create({
             data: {
                 id: uuidv7(),
@@ -137,7 +166,7 @@ export class PessoaService {
                 template: 'nova-senha.html',
                 to: pessoa.email,
                 variables: {
-                    tentativas: this.#maxQtdeSenhaInvalidaParaBlock,
+                    tentativas: maxInvalidAttempts,
                     link: this.#urlLoginSMAE,
                     nova_senha: senha,
                     solicitadoPeloUsuario: solicitadoPeloUsuario,

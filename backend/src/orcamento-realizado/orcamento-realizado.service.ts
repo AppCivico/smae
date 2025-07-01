@@ -2,6 +2,7 @@ import { BadRequestException, HttpException, Injectable, Logger } from '@nestjs/
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Prisma } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
+import { SmaeConfigService } from 'src/common/services/smae-config.service';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { FormataNotaEmpenho } from '../common/FormataNotaEmpenho';
 import { TipoPdmType } from '../common/decorators/current-tipo-pdm';
@@ -27,8 +28,6 @@ import {
 } from './dto/create-orcamento-realizado.dto';
 import { OrcamentoRealizado } from './entities/orcamento-realizado.entity';
 
-export const MAX_BATCH_SIZE = parseInt(process.env.MAX_LINHAS_REMOVIDAS_ORCAMENTO_EM_LOTE || '', 10) || 10;
-
 export const FRASE_ERRO_EMPENHO =
     'O total do empenho no SMAE excede o total do empenho no SOF, não é possível seguir com esse registro.';
 export const FRASE_ERRO_LIQUIDADO =
@@ -52,7 +51,8 @@ export class OrcamentoRealizadoService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly orcamentoPlanejado: OrcamentoPlanejadoService,
-        private readonly dotacaoService: DotacaoService
+        private readonly dotacaoService: DotacaoService,
+        private readonly smaeConfigService: SmaeConfigService
     ) {
         // deixar ligado a verificação
         this.liberarEmpenhoValoresMaioresQueSof = false;
@@ -1228,8 +1228,13 @@ export class OrcamentoRealizadoService {
     async removeEmLote(tipo: TipoPdmType, params: BatchRecordWithId, user: PessoaFromJwt) {
         const now = new Date(Date.now());
 
-        if (params.ids.length > MAX_BATCH_SIZE)
-            throw new BadRequestException(`Máximo permitido é de ${MAX_BATCH_SIZE} remoções de uma vez`);
+        const maxBatchSize = await this.smaeConfigService.getConfigNumberWithDefault(
+            'MAX_LINHAS_REMOVIDAS_ORCAMENTO_EM_LOTE',
+            10
+        );
+
+        if (params.ids.length > maxBatchSize)
+            throw new BadRequestException(`Máximo permitido é de ${maxBatchSize} remoções de uma vez`);
 
         // pra executar em lote, precisa ser CP
         const checkPermissions = params.ids.map((linha) =>

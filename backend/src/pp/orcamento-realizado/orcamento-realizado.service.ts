@@ -19,10 +19,10 @@ import {
     FRASE_ERRO_EMPENHO,
     FRASE_ERRO_LIQUIDADO,
     LIBERAR_LIQUIDADO_VALORES_MAIORES_QUE_SOF,
-    MAX_BATCH_SIZE,
     verificaValorLiqEmpenhoMaiorEmp,
 } from '../../orcamento-realizado/orcamento-realizado.service';
 import { Decimal } from '@prisma/client/runtime/library';
+import { SmaeConfigService } from 'src/common/services/smae-config.service';
 
 type PartialOrcamentoRealizadoDto = {
     ano_referencia: number;
@@ -38,7 +38,8 @@ export class OrcamentoRealizadoService {
     liberarLiquidadoValoresMaioresQueSof: boolean;
     constructor(
         private readonly prisma: PrismaService,
-        private readonly dotacaoService: DotacaoService
+        private readonly dotacaoService: DotacaoService,
+        private readonly smaeConfigService: SmaeConfigService
     ) {
         // deixar ligado a verificação
         this.liberarEmpenhoValoresMaioresQueSof = false;
@@ -1033,8 +1034,12 @@ export class OrcamentoRealizadoService {
     async removeEmLote(tipo: TipoProjeto, params: BatchRecordWithId, user: PessoaFromJwt) {
         const now = new Date(Date.now());
 
-        if (params.ids.length > MAX_BATCH_SIZE)
-            throw new BadRequestException(`Máximo permitido é de ${MAX_BATCH_SIZE} remoções de uma vez`);
+        const maxBatchSize = await this.smaeConfigService.getConfigNumberWithDefault(
+            'MAX_LINHAS_REMOVIDAS_ORCAMENTO_EM_LOTE',
+            10
+        );
+        if (params.ids.length > maxBatchSize)
+            throw new BadRequestException(`Máximo permitido é de ${maxBatchSize} remoções de uma vez`);
 
         const checkPermissions = params.ids.map((linha) => this.verificaPermissaoDelete(tipo, linha.id));
 

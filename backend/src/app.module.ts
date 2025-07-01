@@ -4,7 +4,6 @@ import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { AllExceptionsFilter } from './any-error.filter';
-import { ApiLogModule } from './api-logs/api-log.module';
 import { AppController } from './app.controller';
 import { AppModuleCommon } from './app.module.common';
 import { AppModulePdm } from './app.module.pdm';

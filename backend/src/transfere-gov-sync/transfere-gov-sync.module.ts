@@ -6,7 +6,6 @@ import { PrismaModule } from '../prisma/prisma.module';
 import { TransfereGovApiModule } from '../transfere-gov-api/transfere-gov-api.module';
 import { TransfereGovController } from './transfere-gov-sync.controller';
 import { TransfereGovSyncService } from './transfere-gov-sync.service';
-import { SmaeConfigModule } from '../common/services/smae-config.module';
 
 @Module({
     imports: [
@@ -14,7 +13,6 @@ import { SmaeConfigModule } from '../common/services/smae-config.module';
         TransfereGovApiModule,
         BlocoNotaModule,
         NotaModule,
-        SmaeConfigModule,
         JwtModule.register({
             secret: process.env.SESSION_JWT_SECRET + ':pagination',
             signOptions: { expiresIn: '30d' },
