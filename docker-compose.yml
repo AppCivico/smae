@@ -353,7 +353,7 @@ services:
     profiles:
       - pgBackups
     depends_on:
-      - db
+      - metadb_postgres
     environment:
       - POSTGRES_HOST=metadb_postgres
       - POSTGRES_DB=metabase
