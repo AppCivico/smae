@@ -1,4 +1,7 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { useRoute } from 'vue-router';
+import { nextTick, computed } from 'vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import SimpleIndicador from '@/components/metas/SimpleIndicador.vue';
 import TagsDeMetas from '@/components/metas/TagsDeMetas.vue';
@@ -10,11 +13,7 @@ import { useAuthStore } from '@/stores/auth.store';
 import { useEquipesStore } from '@/stores/equipes.store';
 import { useIniciativasStore } from '@/stores/iniciativas.store';
 import { useMetasStore } from '@/stores/metas.store';
-import { storeToRefs } from 'pinia';
-import { nextTick } from 'vue';
-import { useRoute } from 'vue-router';
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
-import { computed } from 'vue'
 
 defineOptions({
   inheritAttrs: false,
@@ -41,10 +40,10 @@ const orgaosEquipeMeta = computed(() => {
   }
   const equipesSelecionadasMeta = EquipesStore.equipesPorIds(singleMeta.value?.ps_ponto_focal?.equipes);
   const orgaoMeta = equipesSelecionadasMeta.reduce((amount, item) => {
-    amount.push(item.orgao.sigla + " - " + item.orgao.descricao);
+    amount.push(`${item.orgao.sigla} - ${item.orgao.descricao}`);
     return amount;
   }, []);
-  return combinadorDeListas(orgaoMeta);
+  return combinadorDeListas(orgaoMeta, ',');
 });
 
 const orgaosEquipeMetaMonitoramento = computed(() => {
@@ -53,10 +52,10 @@ const orgaosEquipeMetaMonitoramento = computed(() => {
   }
   const equipesSelecionadasMetaMonitoramento = EquipesStore.equipesPorIds(singleMeta.value?.ps_tecnico_cp?.equipes);
   const orgaoMetaMonitoramento = equipesSelecionadasMetaMonitoramento.reduce((amount, item) => {
-    amount.push(item.orgao.sigla + " - " + item.orgao.descricao);
+    amount.push(`${item.orgao.sigla} - ${item.orgao.descricao}`);
     return amount;
   }, []);
-  return combinadorDeListas(orgaoMetaMonitoramento);
+  return combinadorDeListas(orgaoMetaMonitoramento, ',');
 });
 
 async function iniciar() {
@@ -217,16 +216,16 @@ iniciar();
               <div class="t12 uc w700 mb05 tamarelo">
                 Órgãos Responsáveis
               </div>
-              <div class="t13">            
-                {{orgaosEquipeMeta}}
+              <div class="t13">
+                {{ orgaosEquipeMeta }}
               </div>
             </div>
             <div class="mr2 f1">
               <div class="t12 uc w700 mb05 tamarelo">
                 Órgãos Monitoramento
               </div>
-              <div class="t13">            
-                {{orgaosEquipeMetaMonitoramento}}
+              <div class="t13">
+                {{ orgaosEquipeMetaMonitoramento }}
               </div>
             </div>
           </div>
@@ -241,7 +240,7 @@ iniciar();
               <div class="t13">
                 {{ combinadorDeListas(
                   EquipesStore.equipesPorIds(singleMeta.ps_ponto_focal.equipes),
-                  false,
+                  ',',
                   'titulo',
                 ) }}
               </div>
@@ -256,7 +255,7 @@ iniciar();
               <div class="t13">
                 {{ combinadorDeListas(
                   EquipesStore.equipesPorIds(singleMeta.ps_tecnico_cp.equipes),
-                  false,
+                  ',',
                   'titulo',
                 ) }}
               </div>
@@ -384,7 +383,7 @@ iniciar();
                     </button>
                   </div>
                 </div>
-                <div v-if="route.meta.entidadeMãe === 'pdm'">        
+                <div v-if="route.meta.entidadeMãe === 'pdm'">
                   <div class="flex g2 mb2">
                     <div class="mr1 f0">
                       <div class="t12 uc w700 mb05 tc300">
@@ -395,7 +394,7 @@ iniciar();
                           x.responsavel).map(x => x.orgao.descricao).join(', ') }}
                       </div>
                     </div>
-              
+
                     <div
                       v-if="ini.orgaos_participantes.filter(x => !x.responsavel).length"
                       class="f1"
@@ -435,8 +434,10 @@ iniciar();
                             orgaoIniciativa = EquipesStore.equipesPorIds(ini.ps_ponto_focal.equipes).reduce((amount, item) => {
                               amount.push(item.orgao.sigla + " - " + item.orgao.descricao);
                               return amount;
-                            }, []))
-                        }}     
+                            }, []),
+                            ','
+                          )
+                        }}
                       </div>
                     </div>
                     <div class="mr2 f1">
@@ -449,8 +450,10 @@ iniciar();
                             orgaoIniciativa = EquipesStore.equipesPorIds(ini.ps_tecnico_cp.equipes).reduce((amount, item) => {
                               amount.push(item.orgao.sigla + " - " + item.orgao.descricao);
                               return amount;
-                            }, []))
-                        }}     
+                            }, []),
+                            ','
+                          )
+                        }}
                       </div>
                     </div>
                   </div>
@@ -465,7 +468,7 @@ iniciar();
                             ? '-' :
                               combinadorDeListas(
                                 EquipesStore.equipesPorIds(ini.ps_ponto_focal.equipes),
-                                false,
+                                ',',
                                 'titulo',
                               ) }}
                       </div>
@@ -480,7 +483,7 @@ iniciar();
                             ? '-' :
                               combinadorDeListas(
                                 EquipesStore.equipesPorIds(ini.ps_tecnico_cp.equipes),
-                                false,
+                                ',',
                                 'titulo',
                               ) }}
                       </div>
