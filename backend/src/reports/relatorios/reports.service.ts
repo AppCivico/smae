@@ -47,7 +47,6 @@ import { FilterRelatorioDto } from './dto/filter-relatorio.dto';
 import { RelatorioDto, RelatorioProcessamentoDto } from './entities/report.entity';
 import { ReportContext } from './helpers/reports.contexto';
 import { BuildParametrosProcessados, ParseBffParamsProcessados } from './helpers/reports.params-processado';
-import { resolveBaseUrl } from 'src/common/helpers/resolveBaseUrl';
 
 export const GetTempFileName = function (prefix?: string, suffix?: string) {
     prefix = typeof prefix !== 'undefined' ? prefix : 'tmp.';
@@ -66,7 +65,6 @@ class NextPageTokenJwtBody {
 @Injectable()
 export class ReportsService {
     private readonly logger = new Logger(ReportsService.name);
-    baseUrl: string;
 
     constructor(
         private readonly jwtService: JwtService,
@@ -94,10 +92,6 @@ export class ReportsService {
         private readonly casaCivilAtividadesPendentesService: CasaCivilAtividadesPendentesService,
         private readonly smaeConfigService: SmaeConfigService
     ) {}
-
-    async onModuleInit() {
-        this.baseUrl = await resolveBaseUrl(this.logger, this.smaeConfigService);
-    }
 
     private async runReport(dto: CreateReportDto, user: PessoaFromJwt | null, ctx: ReportContext): Promise<void> {
         // TODO agora que existem vários sistemas, conferir se o privilégio faz sentido com o serviço
@@ -747,11 +741,13 @@ export class ReportsService {
         },
         prismaTx: Prisma.TransactionClient
     ) {
+        const baseUrl = await this.smaeConfigService.getBaseUrl('URL_LOGIN_SMAE');
+
         if (!relatorio.criador) return;
 
         // A fonte precisa ser em slug para construir a URL.
         const fonteSlug = relatorio.fonte.toLowerCase().replace(/ /g, '-');
-        const url = new URL([this.baseUrl, 'relatorios', fonteSlug].join('/')).toString();
+        const url = new URL([baseUrl, 'relatorios', fonteSlug].join('/')).toString();
 
         await prismaTx.emaildbQueue.create({
             data: {

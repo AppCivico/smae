@@ -1,6 +1,7 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import { SmaeConfigDto } from './smae-config-dto/smae-config.dto';
 import {
     CreateEmailConfigDto,
     EmailConfigResponseDto,
@@ -8,7 +9,6 @@ import {
     TransporterConfigDto,
     UpdateEmailConfigDto,
 } from './smae-config-dto/smae-config.email.dto';
-import { SmaeConfigDto } from './smae-config-dto/smae-config.dto';
 
 @Injectable()
 export class SmaeConfigService {
@@ -55,19 +55,68 @@ export class SmaeConfigService {
     }
 
     async getConfigWithDefault<T>(key: string, defaultValue: T, parser?: (value: string) => T): Promise<T> {
-        const value = await this.getConfig(key);
-        if (!value) return defaultValue;
+        try {
+            const value = await this.getConfig(key);
+            if (!value) return defaultValue;
 
-        if (parser) {
-            return parser(value);
+            if (parser) {
+                return parser(value);
+            }
+
+            try {
+                // Tenta fazer o parse do valor como JSON primeiro
+                return JSON.parse(value) as T;
+            } catch {
+                // Se não for JSON válido, retorna o valor como está
+                return value as unknown as T;
+            }
+        } catch (error) {
+            Logger.error(`Erro ao obter configuração para a chave "${key}": ${error?.message}`, error);
+            return defaultValue;
         }
+    }
+
+    /**
+     * Obtém o valor da configuração como número, com valor padrão e conversão segura.
+     */
+    async getConfigNumberWithDefault(key: string, defaultValue: number): Promise<number> {
+        return this.getConfigWithDefault<number>(key, defaultValue, (value) => {
+            const n = Number(value);
+            return isNaN(n) ? defaultValue : n;
+        });
+    }
+
+    /**
+     * Obtém o valor da configuração como booleano, com valor padrão e conversão segura.
+     * Trata strings como 'true' ou 'false' para conversão.
+     */
+    async getConfigBooleanWithDefault(key: string, defaultValue: boolean): Promise<boolean> {
+        return this.getConfigWithDefault<boolean>(key, defaultValue, (value) => {
+            // Converte o valor para booleano, tratando strings como 'true' ou 'false
+            if (typeof value === 'string') {
+                return value.toLowerCase() === 'true';
+            }
+            return Boolean(value);
+        });
+    }
+
+    /*
+     * Obtém a URL base configurada para o SMAE.
+     * Serve para que os serviços que precisam de uma URL base possam gerar novas URLs a partir dela.
+     * A URL base é obtida a partir da configuração 'URL_LOGIN_SMAE'.
+     *
+     */
+    async getBaseUrl(key: 'URL_LOGIN_SMAE'): Promise<string> {
+        const rawUrl = await this.getConfigWithDefault(key, 'http://smae-frontend');
 
         try {
-            // Tenta fazer o parse do valor como JSON primeiro
-            return JSON.parse(value) as T;
-        } catch {
-            // Se não for JSON válido, retorna o valor como está
-            return value as unknown as T;
+            const parsedUrl = new URL(rawUrl);
+            const baseUrl = `${parsedUrl.protocol}//${parsedUrl.hostname}${parsedUrl.port ? ':' + parsedUrl.port : ''}`;
+            Logger.log(`URL base inicializada: ${baseUrl}`);
+            return baseUrl;
+        } catch (error) {
+            Logger.error(`Erro ao analisar a 'URL_LOGIN_SMAE' configurada: ${rawUrl}: ${error?.message}`);
+            throw new InternalServerErrorException(`Erro ao analisar a URL base configurada: ${rawUrl}`);
         }
     }
 }

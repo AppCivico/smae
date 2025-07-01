@@ -1,7 +1,8 @@
-import { BadRequestException, Injectable, Logger, NotFoundException, OnModuleInit } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Nota, Prisma, TipoNota } from '@prisma/client';
 import { DateTime } from 'luxon';
+import { SmaeConfigService } from 'src/common/services/smae-config.service';
 import { uuidv7 } from 'uuidv7';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { CONST_TIPO_NOTA_DIST_RECURSO, CONST_TIPO_NOTA_TRANSF_GOV } from '../../common/consts';
@@ -23,8 +24,6 @@ import {
     TipoNotaItem,
     UpdateNotaDto,
 } from './dto/nota.dto';
-import { SmaeConfigService } from 'src/common/services/smae-config.service';
-import { resolveBaseUrl } from 'src/common/helpers/resolveBaseUrl';
 
 class NextPageTokenJwtBody {
     offset: number;
@@ -44,9 +43,7 @@ type DadosEmailInfo = {
 };
 
 @Injectable()
-export class NotaService implements OnModuleInit {
-    private readonly logger = new Logger(NotaService.name);
-    baseUrl: string;
+export class NotaService {
     constructor(
         private readonly jwtService: JwtService,
         private readonly blocoService: BlocoNotaService,
@@ -54,10 +51,6 @@ export class NotaService implements OnModuleInit {
         private readonly prisma: PrismaService,
         private readonly smaeConfigService: SmaeConfigService
     ) {}
-
-    async onModuleInit() {
-        this.baseUrl = await resolveBaseUrl(this.logger, this.smaeConfigService);
-    }
 
     async getTipoNotaDistRecurso(prismaCtx: Prisma.TransactionClient = this.prisma): Promise<number> {
         const nota = await prismaCtx.tipoNota.findFirstOrThrow({
@@ -664,6 +657,8 @@ export class NotaService implements OnModuleInit {
     }
 
     async geraDadosEmail(notaId: number, prismaTx: Prisma.TransactionClient): Promise<DadosEmailInfo> {
+        const baseUrl = await this.smaeConfigService.getBaseUrl('URL_LOGIN_SMAE');
+
         const bloco = await prismaTx.blocoNota.findFirstOrThrow({
             where: { Nota: { some: { id: notaId } } },
             select: {
@@ -689,14 +684,14 @@ export class NotaService implements OnModuleInit {
             });
 
             ret.objeto = `transferência ${transferencia.identificador}`;
-            url = new URL([this.baseUrl, 'transferencias-voluntarias', transferencia.id, 'notas'].join('/'));
+            url = new URL([baseUrl, 'transferencias-voluntarias', transferencia.id, 'notas'].join('/'));
         } else if (bloco.bloco.startsWith('Proj:')) {
             const projeto = await prismaTx.projeto.findFirstOrThrow({
                 where: { id: +bloco.bloco.split(':')[1] },
                 select: { id: true, codigo: true, nome: true },
             });
 
-            url = new URL([this.baseUrl, 'projetos', projeto.id, 'escopo'].join('/'));
+            url = new URL([baseUrl, 'projetos', projeto.id, 'escopo'].join('/'));
             ret.objeto = `projeto ${projeto.codigo ? projeto.codigo + ' -' : ''} ${projeto.nome}`;
         } else {
             throw new Error(`Bloco não identificado ${bloco.bloco}`);

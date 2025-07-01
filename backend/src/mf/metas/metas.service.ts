@@ -562,11 +562,7 @@ export class MetasService {
         }
 
         const ordem_series: Serie[] = ['Previsto', 'PrevistoAcumulado', 'Realizado', 'RealizadoAcumulado'];
-        const disableShuffle = await this.smaeConfigService.getConfigWithDefault<boolean>(
-            'DISABLE_SHUFFLE',
-            false,
-            (v) => v === 'true'
-        );
+        const disableShuffle = await this.smaeConfigService.getConfigBooleanWithDefault('DISABLE_SHUFFLE', false);
         SeriesArrayShuffle(ordem_series, disableShuffle); // garante que o consumidor não está usando os valores das series cegamente
 
         const seriesPorVariavel: Record<number, MfSeriesAgrupadas[]> = {};
@@ -1781,11 +1777,7 @@ export class MetasService {
         const linha = await this.processLinha(dto, !!dto.apenas_ultima_revisao, fastlane);
 
         const ordem_series: Serie[] = ['Previsto', 'PrevistoAcumulado', 'Realizado', 'RealizadoAcumulado'];
-        const disableShuffle = await this.smaeConfigService.getConfigWithDefault<boolean>(
-            'DISABLE_SHUFFLE',
-            false,
-            (v) => v === 'true'
-        );
+        const disableShuffle = await this.smaeConfigService.getConfigBooleanWithDefault('DISABLE_SHUFFLE', false);
         SeriesArrayShuffle(ordem_series, disableShuffle); // garante que o consumidor não está usando os valores das series cegamente
 
         const serieValores = await this.prisma.serieVariavel.findMany({

@@ -14,7 +14,6 @@ import { SmaeConfigService } from 'src/common/services/smae-config.service';
 
 @Injectable()
 export class DotacaoCrontabService {
-    private simultaneidade: number;
     private readonly logger = new Logger(DotacaoCrontabService.name);
 
     constructor(
@@ -25,22 +24,6 @@ export class DotacaoCrontabService {
         private readonly dotacaoProcessoNotaService: DotacaoProcessoNotaService,
         private readonly smaeConfigService: SmaeConfigService
     ) {}
-
-    async onModuleInit() {
-        const rawSimult = await this.smaeConfigService.getConfigWithDefault<number>(
-            'DOTACAO_SOF_SIMULTANEIDADE',
-            16,
-            (v) => Number(v)
-        );
-
-        if (isNaN(rawSimult)) {
-            this.logger.error(`valor inválido em DOTACAO_SOF_SIMULTANEIDADE, usando DOTACAO_SOF_SIMULTANEIDADE=1`);
-            this.logger.error(`Valor recebido: ${rawSimult}`);
-            this.simultaneidade = 1;
-        } else {
-            this.simultaneidade = rawSimult;
-        }
-    }
 
     // durante todos os minutos da madrugada, vai ficar tentando
     // buscar o lock e tbm a lista de dotações que faltam atualizar
@@ -73,6 +56,10 @@ export class DotacaoCrontabService {
     }
 
     async atualizaDotacoes(ano_corrente: number) {
+        const simultaneidade = await this.smaeConfigService.getConfigNumberWithDefault(
+            'DOTACAO_SOF_SIMULTANEIDADE',
+            16
+        );
         // como não tem usar o date-trunc no sincronizado_em, vou usar 20h no lugar de 24h
         const ontem = DateTime.now().minus({ hour: 20 }).toJSDate();
 
@@ -91,8 +78,8 @@ export class DotacaoCrontabService {
             const dotacaoRealizadoLength = dotacaoRealizadoAtualizar.length;
             if (dotacaoRealizadoLength > 0) this.logger.log(`Atualizando ${dotacaoRealizadoLength} dotações realizado`);
 
-            for (let i = 0; i < dotacaoRealizadoLength; i += this.simultaneidade) {
-                const promises = dotacaoRealizadoAtualizar.slice(i, i + this.simultaneidade).map((dotacao) => {
+            for (let i = 0; i < dotacaoRealizadoLength; i += simultaneidade) {
+                const promises = dotacaoRealizadoAtualizar.slice(i, i + simultaneidade).map((dotacao) => {
                     return RetryPromise(() =>
                         this.dotacao.sincronizarDotacaoRealizado(
                             {
@@ -125,8 +112,8 @@ export class DotacaoCrontabService {
             if (dotacaoProcessoLength > 0)
                 this.logger.log(`Atualizando ${dotacaoProcessoLength} dotações-processo realizado`);
 
-            for (let i = 0; i < dotacaoProcessoLength; i += this.simultaneidade) {
-                const promises = dotacaoProcessoAtualizar.slice(i, i + this.simultaneidade).map((dotacao) => {
+            for (let i = 0; i < dotacaoProcessoLength; i += simultaneidade) {
+                const promises = dotacaoProcessoAtualizar.slice(i, i + simultaneidade).map((dotacao) => {
                     return RetryPromise(() =>
                         this.dotacaoProcessoService.valorRealizadoProcesso({
                             ano: dotacao.ano_referencia,
@@ -155,8 +142,8 @@ export class DotacaoCrontabService {
             const dotacaoNotasLength = dotacaoNotasAtualizar.length;
             if (dotacaoNotasLength > 0) this.logger.log(`Atualizando ${dotacaoNotasLength} dotações-notas realizado`);
 
-            for (let i = 0; i < dotacaoNotasLength; i += this.simultaneidade) {
-                const promises = dotacaoNotasAtualizar.slice(i, i + this.simultaneidade).map((dotacao) => {
+            for (let i = 0; i < dotacaoNotasLength; i += simultaneidade) {
+                const promises = dotacaoNotasAtualizar.slice(i, i + simultaneidade).map((dotacao) => {
                     return RetryPromise(() =>
                         this.dotacaoProcessoNotaService.valorRealizadoNotaEmpenho({
                             ano: dotacao.ano_referencia,
@@ -186,8 +173,8 @@ export class DotacaoCrontabService {
             const dotacaoPlanLength = dotacaoPlanejadoAtualizar.length;
             if (dotacaoPlanLength > 0) this.logger.log(`Atualizando ${dotacaoPlanLength} dotações planejado`);
 
-            for (let i = 0; i < dotacaoPlanLength; i += this.simultaneidade) {
-                const promises = dotacaoPlanejadoAtualizar.slice(i, i + this.simultaneidade).map((dotacao) => {
+            for (let i = 0; i < dotacaoPlanLength; i += simultaneidade) {
+                const promises = dotacaoPlanejadoAtualizar.slice(i, i + simultaneidade).map((dotacao) => {
                     return RetryPromise(() =>
                         this.dotacao.sincronizarDotacaoPlanejado(
                             {

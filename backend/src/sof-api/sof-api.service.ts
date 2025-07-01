@@ -164,7 +164,6 @@ export class SofApiService {
         );
 
         this.SOF_API_PREFIX = sofApiPrefix;
-        console.log(this.SOF_API_PREFIX);
 
         this.got = got.extend({
             prefixUrl: this.SOF_API_PREFIX,

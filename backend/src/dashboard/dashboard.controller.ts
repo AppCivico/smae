@@ -22,9 +22,7 @@ export class DashboardController {
     @ApiBearerAuth('access-token')
     @Roles(['Reports.dashboard_pdm', 'Reports.dashboard_portfolios', 'SMAE.espectador_de_painel_externo'])
     async findAll(@CurrentUser() user: PessoaFromJwt, @Req() req: Request): Promise<DashboardLinhasDto> {
-        const hostname = await this.smaeConfigService
-            .getConfigWithDefault('API_HOST_NAME', req.hostname)
-            .catch(() => req.hostname);
+        const hostname = await this.smaeConfigService.getConfigWithDefault('API_HOST_NAME', req.hostname);
         return {
             linhas: await this.dashboardService.findAll(user, hostname),
         };

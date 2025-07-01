@@ -147,9 +147,7 @@ export class SeiApiService {
             'SEI_API_PREFIX',
             'http://smae_sei:80/'
         );
-
         this.SEI_API_PREFIX = seiApiPrefix;
-        console.log(this.SEI_API_PREFIX);
 
         this.got = this.got.extend({
             prefixUrl: this.SEI_API_PREFIX,

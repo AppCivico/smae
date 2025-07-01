@@ -2702,12 +2702,8 @@ export class VariavelService {
 
         const series: Serie[] = [...ORDEM_SERIES_RETORNO];
 
-        const disableShuffle = await this.smaeConfigService.getConfigWithDefault<boolean>(
-            'DISABLE_SHUFFLE',
-            false,
-            (v) => v === 'true'
-        );
-        SeriesArrayShuffle(series, disableShuffle); // garante que o consumidor não está usando os valores das series cegamente 
+        const disableShuffle = await this.smaeConfigService.getConfigBooleanWithDefault('DISABLE_SHUFFLE', false);
+        SeriesArrayShuffle(series, disableShuffle); // garante que o consumidor não está usando os valores das series cegamente
 
         const cicloCorrente =
             filters.serie == 'Realizado' || filters.ate_ciclo_corrente

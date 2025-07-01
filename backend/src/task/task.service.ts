@@ -205,10 +205,7 @@ export class TaskService {
     }
 
     async onModuleInit() {
-        const parsed = await this.smaeConfigService.getConfigWithDefault<number>('MAX_CONCURRENT_JOBS', 3, (v) =>
-            Number(v)
-        );
-        this.max_concurrent_jobs = isNaN(parsed) ? 3 : parsed;
+        this.max_concurrent_jobs = await this.smaeConfigService.getConfigNumberWithDefault('MAX_CONCURRENT_JOBS', 3);
     }
 
     // Método para lidar com o desligamento da aplicação
@@ -509,6 +506,8 @@ export class TaskService {
         this.logger.debug(`Running HandleActiveJobs`);
         const now = new Date();
         process.env.INTERNAL_DISABLE_QUERY_LOG = '1';
+
+        this.max_concurrent_jobs = await this.smaeConfigService.getConfigNumberWithDefault('MAX_CONCURRENT_JOBS', 3);
 
         // Atualiza trabalhou_em pra quem está rodando
         // da pra mover isso pra dentro do run-task.ts já que lá tem o app com o prisma todo,

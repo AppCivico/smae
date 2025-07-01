@@ -17,7 +17,6 @@ import { DateTime } from 'luxon';
 import { uuidv7 } from 'uuidv7';
 import { SmaeConfigService } from '../common/services/smae-config.service';
 import { CONST_PERFIL_CASA_CIVIL } from '../common/consts';
-import { resolveBaseUrl } from 'src/common/helpers/resolveBaseUrl';
 const convertToJsonString = require('fast-json-stable-stringify');
 
 class NextPageTokenJwtBody {
@@ -27,7 +26,6 @@ class NextPageTokenJwtBody {
 @Injectable()
 export class SeiIntegracaoService {
     private readonly logger = new Logger(SeiIntegracaoService.name);
-    baseUrl: string;
 
     constructor(
         private readonly prisma: PrismaService,
@@ -35,10 +33,6 @@ export class SeiIntegracaoService {
         private readonly jwtService: JwtService,
         private readonly smaeConfigService: SmaeConfigService
     ) {}
-
-    async onModuleInit() {
-        this.baseUrl = await resolveBaseUrl(this.logger, this.smaeConfigService);
-    }
 
     /**
      * Remove não dígitos de uma string.
@@ -595,6 +589,8 @@ export class SeiIntegracaoService {
     }
 
     private async enviarEmailNotificacaoSEI(processo: string, distribuicao_recurso_id: number) {
+        const baseUrl = await this.smaeConfigService.getBaseUrl('URL_LOGIN_SMAE');
+
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             const distribuicaoRecurso = await prismaTx.distribuicaoRecurso.findFirst({
                 where: {
@@ -649,7 +645,7 @@ export class SeiIntegracaoService {
                             numero_processo: processo,
                             link: new URL(
                                 [
-                                    this.baseUrl,
+                                    baseUrl,
                                     'transferencias-voluntarias',
                                     distribuicaoRecurso.transferencia.id,
                                     'detalhes',

@@ -9,7 +9,10 @@ import {
     TransfereGovOportunidadeAvaliacao,
     TransfereGovOportunidadeTipo,
 } from '@prisma/client';
+import * as crypto from 'crypto';
 import { DateTime } from 'luxon';
+import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
+import { PrismaHelpers } from 'src/common/PrismaHelpers';
 import { uuidv7 } from 'uuidv7';
 import { BlocoNotaService } from '../bloco-nota/bloco-nota/bloco-nota.service';
 import { NotaService } from '../bloco-nota/nota/nota.service';
@@ -21,12 +24,12 @@ import { SmaeConfigService } from '../common/services/smae-config.service';
 import { PrismaService } from '../prisma/prisma.service';
 import {
     PlanoAcaoDetalhado,
-    TransfGovComunicado,
-    TransfGovTransferencia,
     TransfereGovApiOportunidadesApiService,
     TransfereGovApiService,
     TransfereGovApiTransferenciasService,
     TransfereGovError,
+    TransfGovComunicado,
+    TransfGovTransferencia,
 } from '../transfere-gov-api/transfere-gov-api.service';
 import {
     FilterTransfereGovListDto,
@@ -35,10 +38,6 @@ import {
     TransfereGovTransferenciasDto,
     UpdateTransfereGovTransferenciaDto,
 } from './entities/transfere-gov-sync.entity';
-import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
-import * as crypto from 'crypto';
-import { PrismaHelpers } from 'src/common/PrismaHelpers';
-import { resolveBaseUrl } from 'src/common/helpers/resolveBaseUrl';
 const convertToJsonString = require('fast-json-stable-stringify');
 
 class NextPageTokenJwtBody {
@@ -49,7 +48,7 @@ class NextPageTokenJwtBody {
 @Injectable()
 export class TransfereGovSyncService {
     private readonly logger = new Logger(TransfereGovSyncService.name);
-    baseUrl: string;
+
     constructor(
         private readonly prisma: PrismaService,
         private readonly transfereGovApi: TransfereGovApiService,
@@ -60,10 +59,6 @@ export class TransfereGovSyncService {
         private readonly smaeConfigService: SmaeConfigService,
         private readonly transfereGovApiEspeciais: TransfereGovApiOportunidadesApiService
     ) {}
-
-    async onModuleInit() {
-        this.baseUrl = await resolveBaseUrl(this.logger, this.smaeConfigService);
-    }
 
     private transformComunicado(
         comunicado: TransfGovComunicado,
@@ -236,6 +231,7 @@ export class TransfereGovSyncService {
     private async criaNotificacoesEmailComunicados(prismaTx: Prisma.TransactionClient, item: ComunicadoTransfereGov) {
         const envioAtivo = await this.smaeConfigService.getConfig('COMUNICADO_EMAIL_ATIVO');
         if (!envioAtivo || envioAtivo !== 'true') return;
+        const baseUrl = await this.smaeConfigService.getBaseUrl('URL_LOGIN_SMAE');
 
         const orgaoConfig = await this.smaeConfigService.getConfig('COMUNICADO_EMAIL_ORGAO_ID');
         const subject = await this.smaeConfigService.getConfig('COMUNICADO_EMAIL_TITULO');
@@ -253,7 +249,7 @@ export class TransfereGovSyncService {
                         titulo: item.titulo,
                         data: Date2YMD.dbDateToDMY(item.publicado_em),
                         descricao: item.descricao,
-                        link: new URL([this.baseUrl, 'comunicados-gerais'].join('/')),
+                        link: new URL([baseUrl, 'comunicados-gerais'].join('/')),
                         tipo: item.tipo,
                     },
                     config_id: 1,
@@ -411,6 +407,8 @@ export class TransfereGovSyncService {
         const envioAtivo = await this.smaeConfigService.getConfig('COMUNICADO_EMAIL_ATIVO');
         if (!envioAtivo || envioAtivo !== 'true') return;
 
+        const baseUrl = await this.smaeConfigService.getBaseUrl('URL_LOGIN_SMAE');
+
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             // Quando forem adicionadas oportunidades novas de transferência
             // Deve ser enviado um email.
@@ -431,7 +429,7 @@ export class TransfereGovSyncService {
                             to: recipiente,
                             variables: {
                                 programa: oportunidadePrograma,
-                                link: new URL([this.baseUrl, 'oportunidades'].join('/')),
+                                link: new URL([baseUrl, 'oportunidades'].join('/')),
                             },
                         },
                     });

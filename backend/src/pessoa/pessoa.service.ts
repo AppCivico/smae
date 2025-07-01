@@ -1,6 +1,14 @@
-import { BadRequestException, ForbiddenException, HttpException, Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import {
+    BadRequestException,
+    ForbiddenException,
+    HttpException,
+    Injectable,
+    Logger,
+    OnModuleInit,
+} from '@nestjs/common';
 import { ModuloSistema, PerfilResponsavelEquipe, Pessoa, Prisma } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import { SmaeConfigService } from 'src/common/services/smae-config.service';
 import { uuidv7 } from 'uuidv7';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { ListaDePrivilegios } from '../common/ListaDePrivilegios';
@@ -27,7 +35,6 @@ import { ListaPrivilegiosModulos } from './entities/ListaPrivilegiosModulos';
 import { ListPessoa } from './entities/list-pessoa.entity';
 import { Pessoa as PessoaDto } from './entities/pessoa.entity';
 import { PessoaResponsabilidadesMetaService } from './pessoa.responsabilidades.metas.service';
-import { SmaeConfigService } from 'src/common/services/smae-config.service';
 
 const BCRYPT_ROUNDS = 10;
 
@@ -35,7 +42,6 @@ const BCRYPT_ROUNDS = 10;
 export class PessoaService implements OnModuleInit {
     private readonly logger = new Logger(PessoaService.name);
 
-    #maxQtdeSenhaInvalidaParaBlock: number;
     #urlLoginSMAE: string;
     #cpfObrigatorioSemRF: boolean;
     #matchEmailRFObrigatorio: string;
@@ -59,18 +65,7 @@ export class PessoaService implements OnModuleInit {
             (v) => v === '1'
         );
 
-        this.#urlLoginSMAE = await this.smaeConfigService.getConfigWithDefault<string>(
-            'URL_LOGIN_SMAE',
-            '#/login-smae',
-            (v) => v
-        );
-
-        const parsed = await this.smaeConfigService.getConfigWithDefault<number>(
-            'max_qtde_senha_invalida_para_block',
-            3,
-            (v) => Number(v)
-        );
-        this.#maxQtdeSenhaInvalidaParaBlock = isNaN(parsed) ? 3 : parsed;
+        this.#urlLoginSMAE = (await this.smaeConfigService.getBaseUrl('URL_LOGIN_SMAE')) + '#/login-smae';
     }
 
     pessoaAsHash(pessoa: PessoaDto) {
@@ -122,7 +117,12 @@ export class PessoaService implements OnModuleInit {
             select: { qtde_senha_invalida: true },
         });
 
-        if (updatedPessoa.qtde_senha_invalida >= this.#maxQtdeSenhaInvalidaParaBlock) {
+        const maxInvalidAttempts = await this.smaeConfigService.getConfigNumberWithDefault(
+            'MAX_QTDE_SENHA_INVALIDA_PARA_BLOCK',
+            3
+        );
+
+        if (updatedPessoa.qtde_senha_invalida >= maxInvalidAttempts) {
             await this.criaNovaSenha(pessoa, false);
         }
     }
@@ -153,6 +153,11 @@ export class PessoaService implements OnModuleInit {
         solicitadoPeloUsuario: boolean,
         prisma: Prisma.TransactionClient
     ) {
+        const maxInvalidAttempts = await this.smaeConfigService.getConfigNumberWithDefault(
+            'MAX_QTDE_SENHA_INVALIDA_PARA_BLOCK',
+            3
+        );
+
         await prisma.emaildbQueue.create({
             data: {
                 id: uuidv7(),
@@ -161,7 +166,7 @@ export class PessoaService implements OnModuleInit {
                 template: 'nova-senha.html',
                 to: pessoa.email,
                 variables: {
-                    tentativas: this.#maxQtdeSenhaInvalidaParaBlock,
+                    tentativas: maxInvalidAttempts,
                     link: this.#urlLoginSMAE,
                     nova_senha: senha,
                     solicitadoPeloUsuario: solicitadoPeloUsuario,

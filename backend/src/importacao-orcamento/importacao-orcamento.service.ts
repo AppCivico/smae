@@ -85,6 +85,7 @@ function toFixed2ButString(n: number): string {
 export class ImportacaoOrcamentoService {
     private readonly logger = new Logger(ImportacaoOrcamentoService.name);
     private enabled = true;
+    private isDebugMode = false;
 
     constructor(
         private readonly jwtService: JwtService,
@@ -584,6 +585,11 @@ export class ImportacaoOrcamentoService {
 
         let tipo_projeto: TipoProjeto | undefined = undefined;
 
+        this.isDebugMode = await this.smaeConfigService.getConfigBooleanWithDefault(
+            'INCLUDE_IMPORTACAO_ORCAMENTO_DEBUGGER',
+            false
+        );
+
         const tipo_pdm: TipoPdmType | undefined =
             job.modulo_sistema == 'ProgramaDeMetas'
                 ? 'PDM_AS_PS'
@@ -837,12 +843,7 @@ export class ImportacaoOrcamentoService {
         if (validations.length) {
             let response = 'Linha inválida: ' + FormatValidationErrors(validations);
 
-            const includeImportacaoOrcamentoDebugger = await this.smaeConfigService.getConfigWithDefault<boolean>(
-                'INCLUDE_IMPORTACAO_ORCAMENTO_DEBUGGER',
-                false,
-                (v) => v === 'true'
-            );
-            if (includeImportacaoOrcamentoDebugger) {
+            if (this.isDebugMode) {
                 response +=
                     ': DEBUGGER: ' +
                     JSON.stringify({

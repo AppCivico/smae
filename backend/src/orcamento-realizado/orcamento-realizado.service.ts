@@ -1,7 +1,8 @@
-import { BadRequestException, HttpException, Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Prisma } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
+import { SmaeConfigService } from 'src/common/services/smae-config.service';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { FormataNotaEmpenho } from '../common/FormataNotaEmpenho';
 import { TipoPdmType } from '../common/decorators/current-tipo-pdm';
@@ -26,7 +27,6 @@ import {
     UpdateOrcamentoRealizadoDto,
 } from './dto/create-orcamento-realizado.dto';
 import { OrcamentoRealizado } from './entities/orcamento-realizado.entity';
-import { SmaeConfigService } from 'src/common/services/smae-config.service';
 
 export const FRASE_ERRO_EMPENHO =
     'O total do empenho no SMAE excede o total do empenho no SOF, não é possível seguir com esse registro.';
@@ -43,8 +43,7 @@ const fk_nota = (row: { dotacao: string; dotacao_processo: string; dotacao_proce
 
 export const LIBERAR_LIQUIDADO_VALORES_MAIORES_QUE_SOF = true;
 @Injectable()
-export class OrcamentoRealizadoService implements OnModuleInit {
-    private maxBatchSize = 10;
+export class OrcamentoRealizadoService {
     private readonly logger = new Logger(OrcamentoRealizadoService.name);
 
     liberarEmpenhoValoresMaioresQueSof: boolean;
@@ -58,20 +57,6 @@ export class OrcamentoRealizadoService implements OnModuleInit {
         // deixar ligado a verificação
         this.liberarEmpenhoValoresMaioresQueSof = false;
         this.liberarLiquidadoValoresMaioresQueSof = LIBERAR_LIQUIDADO_VALORES_MAIORES_QUE_SOF;
-    }
-
-    async onModuleInit() {
-        try {
-            const batchSize = await this.smaeConfigService.getConfigWithDefault<number>(
-                'MAX_LINHAS_REMOVIDAS_ORCAMENTO_EM_LOTE',
-                10,
-                (v) => parseInt(v, 10)
-            );
-            this.maxBatchSize = isNaN(batchSize) ? 10 : batchSize;
-        } catch (error) {
-            console.warn(`Falha ao carregar a configuração do tamanho do lote, usando o valor padrão 10:, ${error}`);
-            this.maxBatchSize = 10;
-        }
     }
 
     async create(tipo: TipoPdmType, dto: CreateOrcamentoRealizadoDto, user: PessoaFromJwt): Promise<RecordWithId> {
@@ -1243,8 +1228,13 @@ export class OrcamentoRealizadoService implements OnModuleInit {
     async removeEmLote(tipo: TipoPdmType, params: BatchRecordWithId, user: PessoaFromJwt) {
         const now = new Date(Date.now());
 
-        if (params.ids.length > this.maxBatchSize)
-            throw new BadRequestException(`Máximo permitido é de ${this.maxBatchSize} remoções de uma vez`);
+        const maxBatchSize = await this.smaeConfigService.getConfigNumberWithDefault(
+            'MAX_LINHAS_REMOVIDAS_ORCAMENTO_EM_LOTE',
+            10
+        );
+
+        if (params.ids.length > maxBatchSize)
+            throw new BadRequestException(`Máximo permitido é de ${maxBatchSize} remoções de uma vez`);
 
         // pra executar em lote, precisa ser CP
         const checkPermissions = params.ids.map((linha) =>

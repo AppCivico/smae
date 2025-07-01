@@ -34,7 +34,6 @@ const fk_nota = (row: { dotacao: string; dotacao_processo: string; dotacao_proce
 
 @Injectable()
 export class OrcamentoRealizadoService {
-    private maxBatchSize = 10;
     liberarEmpenhoValoresMaioresQueSof: boolean;
     liberarLiquidadoValoresMaioresQueSof: boolean;
     constructor(
@@ -45,16 +44,6 @@ export class OrcamentoRealizadoService {
         // deixar ligado a verificação
         this.liberarEmpenhoValoresMaioresQueSof = false;
         this.liberarLiquidadoValoresMaioresQueSof = LIBERAR_LIQUIDADO_VALORES_MAIORES_QUE_SOF;
-    }
-
-    async onModuleInit() {
-        const batchSize = await this.smaeConfigService.getConfigWithDefault<number>(
-            'MAX_LINHAS_REMOVIDAS_ORCAMENTO_EM_LOTE',
-            10,
-            (v) => parseInt(v, 10)
-        );
-
-        this.maxBatchSize = isNaN(batchSize) ? 10 : batchSize;
     }
 
     async create(
@@ -1045,8 +1034,12 @@ export class OrcamentoRealizadoService {
     async removeEmLote(tipo: TipoProjeto, params: BatchRecordWithId, user: PessoaFromJwt) {
         const now = new Date(Date.now());
 
-        if (params.ids.length > this.maxBatchSize)
-            throw new BadRequestException(`Máximo permitido é de ${this.maxBatchSize} remoções de uma vez`);
+        const maxBatchSize = await this.smaeConfigService.getConfigNumberWithDefault(
+            'MAX_LINHAS_REMOVIDAS_ORCAMENTO_EM_LOTE',
+            10
+        );
+        if (params.ids.length > maxBatchSize)
+            throw new BadRequestException(`Máximo permitido é de ${maxBatchSize} remoções de uma vez`);
 
         const checkPermissions = params.ids.map((linha) => this.verificaPermissaoDelete(tipo, linha.id));
 
