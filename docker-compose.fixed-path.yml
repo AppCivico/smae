@@ -350,6 +350,8 @@ services:
     networks:
       #- postgres
       - smae_network
+    profiles:
+      - pgBackups
     depends_on:
       - db
     environment:
