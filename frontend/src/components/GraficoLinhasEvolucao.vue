@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="valores?.linhas?.length">
     <div class="flex justifycenter">
       <NumeroComLegenda
         v-if="posicaoAtual"
@@ -18,6 +18,7 @@
         </template>
       </NumeroComLegenda>
     </div>
+
     <GraficoDashboard :option="configuracaoGrafico" />
   </div>
 </template>
@@ -286,8 +287,8 @@ const configuracaoGrafico = computed(() => {
 </script>
 
 <style scoped>
-  small {
-    font-size: 70%;
-    opacity: 0.65;
-  }
+small {
+  font-size: 70%;
+  opacity: 0.65;
+}
 </style>
