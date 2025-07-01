@@ -241,7 +241,9 @@ O serviço de `smtp_web` é um servidor SMTP fake usado apenas para desenvolvime
 
 Caso deseje personalizar as configurações de backup do banco de dados, edite o docker-compose.yaml de acordo
 
-Para cada container com a imagem `postgres:14-bullseye`, existe um outro container com a imagem `prodrigestivill/postgres-backup-local`. Este é responsável por fazer backup do PostgreSQL local no sistema de arquivos.
+Necessário utilizar profile `pgBackups`
+
+Para cada container com a imagem do PostgreSQL, existe um outro container com a imagem `prodrigestivill/postgres-backup-local`. Este é responsável por fazer backup do PostgreSQL local no sistema de arquivos.
 
 Existem diversas variáveis que podem ser personalizadas:
 
