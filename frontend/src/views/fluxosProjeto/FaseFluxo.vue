@@ -1,14 +1,15 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { ErrorMessage, Field, useForm } from 'vee-validate';
+import { computed, ref } from 'vue';
 import SmallModal from '@/components/SmallModal.vue';
 import { etapasFluxo as schema } from '@/consts/formSchemas';
+import responsabilidadeEtapaFluxo from '@/consts/responsabilidadeEtapaFluxo';
 import { useAlertStore } from '@/stores/alert.store';
 import { useFasesProjetosStore } from '@/stores/fasesProjeto.store';
 import { useFluxosFasesProjetosStore } from '@/stores/fluxosFasesProjeto.store';
 import { useFluxosProjetosStore } from '@/stores/fluxosProjeto.store';
 import { useSituacaoStore } from '@/stores/situacao.store';
-import { storeToRefs } from 'pinia';
-import { ErrorMessage, Field, useForm } from 'vee-validate';
-import { computed, ref } from 'vue';
 
 const emits = defineEmits(['close', 'saved']);
 const props = defineProps({
@@ -64,7 +65,7 @@ const itemParaEdicao = computed(() => {
     ...fase,
     ordem: fase?.ordem || proximaOrdemDisponivel.value,
     fase_id: fase?.fase?.id,
-    responsabilidade: fase?.responsabilidade || '',
+    responsabilidade: fase?.responsabilidade || 'Propria',
     situacao: fase?.situacao?.map((x) => x.id) || null,
   };
 });
@@ -189,6 +190,29 @@ iniciar();
         </div>
       </div>
       <div class="flex flexwrap center g2">
+        <div class="mb1">
+          <LabelFromYup
+            name="responsabilidade"
+            :schema="schema"
+          />
+          <Field
+            name="responsabilidade"
+            class="inputtext light mb1"
+            as="select"
+          >
+            <option
+              v-for="item in Object.values(responsabilidadeEtapaFluxo)"
+              :key="item.valor"
+              :value="item.valor"
+            >
+              {{ item.nome }}
+            </option>
+          </Field>
+          <ErrorMessage
+            class="error-msg mb1"
+            name="responsabilidade"
+          />
+        </div>
         <div class="mb1">
           <LabelFromYup
             name="duracao"
