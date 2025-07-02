@@ -1,16 +1,21 @@
 <script setup>
-import AgrupadorDeAutocomplete from '@/components/AgrupadorDeAutocomplete.vue';
-import AutocompleteField from '@/components/AutocompleteField2.vue';
-import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
-import escaparDaRota from '@/helpers/escaparDaRota';
+import { storeToRefs } from 'pinia';
+import { useRoute, useRouter } from 'vue-router';
 import {
-  variavelGlobal as schemaCriacao,
-  variavelGlobalParaGeracao as schemaGeracao,
-} from '@/consts/formSchemas';
+  computed, onUnmounted, ref, watch,
+} from 'vue';
+import {
+  ErrorMessage, Field, useForm, useIsFormDirty,
+} from 'vee-validate';
+import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
+import SmaeMonth from '@/components/camposDeFormulario/SmaeMonth';
+import AutocompleteField from '@/components/AutocompleteField2.vue';
+import AgrupadorDeAutocomplete from '@/components/AgrupadorDeAutocomplete.vue';
+import escaparDaRota from '@/helpers/escaparDaRota';
+import { variavelGlobal as schemaCriacao, variavelGlobalParaGeracao as schemaGeracao } from '@/consts/formSchemas';
 import niveisRegionalizacao from '@/consts/niveisRegionalizacao';
 import periodicidades from '@/consts/periodicidades';
 import polaridadeDeVariaveis from '@/consts/polaridadeDeVariaveis';
-import dateToDate from '@/helpers/dateToDate';
 import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
 import truncate from '@/helpers/texto/truncate';
 import { useAlertStore } from '@/stores/alert.store';
@@ -24,19 +29,6 @@ import { useResourcesStore } from '@/stores/resources.store';
 import { useUsersStore } from '@/stores/users.store';
 import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store.ts';
 import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store.ts';
-import { storeToRefs } from 'pinia';
-import {
-  ErrorMessage,
-  Field,
-  useForm,
-  useIsFormDirty,
-} from 'vee-validate';
-import {
-  computed, onUnmounted, ref, watch,
-} from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-
-const formatarData = (data) => dateToDate(data, { dateStyle: undefined, month: '2-digit', year: 'numeric' });
 
 const alertStore = useAlertStore();
 
@@ -712,22 +704,18 @@ onUnmounted(() => {
             :schema="schema"
           />
           <Field
-            v-if="!variavelId"
+            v-slot="{ value, handleChange }"
             name="inicio_medicao"
-            type="date"
             class="inputtext light mb1"
             :class="{ error: errors.inicio_medicao }"
-            @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
-            @update:model-value="($v) => { setFieldValue('inicio_medicao', $v || null); }"
-          />
-
-          <input
-            v-else
-            readonly
-            aria-disabled="true"
-            :value="formatarData(emFoco?.inicio_medicao)"
-            class="inputtext light mb1"
           >
+            <SmaeMonth
+              dia-prefixo="1"
+              placeholder="MM/YYYY"
+              :model-value="value"
+              @change="handleChange"
+            />
+          </Field>
 
           <ErrorMessage
             class="error-msg"
@@ -740,14 +728,20 @@ onUnmounted(() => {
             name="fim_medicao"
             :schema="schema"
           />
+
           <Field
+            v-slot="{ value, handleChange }"
             name="fim_medicao"
-            type="date"
             class="inputtext light mb1"
             :class="{ error: errors.fim_medicao }"
-            @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
-            @update:model-value="($v) => { setFieldValue('fim_medicao', $v || null); }"
-          />
+          >
+            <SmaeMonth
+              dia-prefixo="1"
+              placeholder="MM/YYYY"
+              :model-value="value"
+              @change="handleChange"
+            />
+          </Field>
 
           <ErrorMessage
             class="error-msg"
