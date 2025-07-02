@@ -3651,6 +3651,9 @@ export const etapasFluxo = object({
     .required(),
   marco: boolean()
     .label('Marco?'),
+  responsabilidade: string()
+    .label('Responsabilidade')
+    .required(),
 });
 
 export const etapasProjeto = object({
