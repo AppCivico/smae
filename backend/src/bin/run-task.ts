@@ -17,7 +17,7 @@ process.on('unhandledRejection', async (reason: unknown) => {
 
 async function bootstrap() {
     // desliga os crontab do 'fork'
-    process.env.ENABLED_CRONTABS = '';
+    process.env.DISABLED_CRONTABS = 'all';
 
     const app = await NestFactory.createApplicationContext(AppModule, {
         logger: ['error', 'warn'],

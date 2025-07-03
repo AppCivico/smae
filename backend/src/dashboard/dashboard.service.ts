@@ -36,7 +36,13 @@ export class DashboardService {
             const config = r.configuracao && typeof r.configuracao == 'object' ? r.configuracao.valueOf() : false;
             if (config === false) continue;
 
-            if (user.hasSomeRoles(['Reports.dashboard_pdm'])) {
+            if (
+                user.hasSomeRoles([
+                    'Reports.dashboard_pdm',
+                    'Reports.dashboard_programademetas',
+                    'Reports.dashboard_ps',
+                ])
+            ) {
                 await this.reportPdm(config, memory, r, user, liberados);
             }
 

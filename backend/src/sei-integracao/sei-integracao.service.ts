@@ -17,6 +17,7 @@ import { DateTime } from 'luxon';
 import { uuidv7 } from 'uuidv7';
 import { SmaeConfigService } from '../common/services/smae-config.service';
 import { CONST_PERFIL_CASA_CIVIL } from '../common/consts';
+import { IsCrontabDisabled } from '../common/crontab-utils';
 const convertToJsonString = require('fast-json-stable-stringify');
 
 class NextPageTokenJwtBody {
@@ -393,7 +394,7 @@ export class SeiIntegracaoService {
 
     @Cron(process.env['SEI_CRONTAB_STRING'] || '*/5 * * * *')
     async handleListaSeiCron() {
-        if (process.env['DISABLE_SEI_CRONTAB'] || process.env['DISABLED_CRONTABS'] == 'all') return;
+        if (IsCrontabDisabled('sei')) return;
 
         this.logger.log('Iniciando Sync SEI');
 

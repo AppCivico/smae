@@ -4,13 +4,14 @@ import { Prisma } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { SYSTEM_TIMEZONE } from 'src/common/date2ymd';
 import { JOB_DOTACAO_SOF_LOCK } from 'src/common/dto/locks';
+import { RetryPromise } from 'src/common/retryPromise';
+import { SmaeConfigService } from 'src/common/services/smae-config.service';
 import { SofApiService } from 'src/sof-api/sof-api.service';
+import { IsCrontabDisabled } from '../common/crontab-utils';
 import { PrismaService } from '../prisma/prisma.service';
 import { DotacaoProcessoNotaService } from './dotacao-processo-nota.service';
 import { DotacaoProcessoService } from './dotacao-processo.service';
 import { DotacaoService } from './dotacao.service';
-import { RetryPromise } from 'src/common/retryPromise';
-import { SmaeConfigService } from 'src/common/services/smae-config.service';
 
 @Injectable()
 export class DotacaoCrontabService {
@@ -29,7 +30,7 @@ export class DotacaoCrontabService {
     // buscar o lock e tbm a lista de dotações que faltam atualizar
     @Cron('* 3-8 * * *')
     async handleDotacaoCron() {
-        if (process.env['DISABLE_DOTACAO_CRONTAB'] || process.env['DISABLED_CRONTABS'] == 'all') return;
+        if (IsCrontabDisabled('dotacao')) return;
 
         await this.prisma.$transaction(
             async (prisma: Prisma.TransactionClient) => {

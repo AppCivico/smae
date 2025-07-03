@@ -9,6 +9,7 @@ import { GraphvizService, GraphvizServiceFormat } from 'src/graphviz/graphviz.se
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { DateTransform } from '../../auth/transforms/date.transform';
 import { CalculaAtraso } from '../../common/CalculaAtraso';
+import { IsCrontabDisabled } from '../../common/crontab-utils';
 import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { JOB_PP_TAREFA_ATRASO_LOCK } from '../../common/dto/locks';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
@@ -1829,7 +1830,7 @@ export class TarefaService {
 
     @Cron('15 * * * *')
     async handleCron() {
-        if (process.env['DISABLE_TAREFA_CRONTAB']) return;
+        if (IsCrontabDisabled('tarefa')) return;
 
         await this.prisma.$transaction(
             async (prisma: Prisma.TransactionClient) => {

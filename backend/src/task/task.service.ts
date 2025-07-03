@@ -5,7 +5,7 @@ import { fork } from 'child_process';
 import { DateTime } from 'luxon';
 import { resolve as resolvePath } from 'path';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
-import { CrontabIsEnabled } from '../common/CrontabIsEnabled';
+import { IsCrontabEnabled } from '../common/crontab-utils';
 import { TASK_JOB_LOCK_NUMBER } from '../common/dto/locks';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -200,7 +200,7 @@ export class TaskService {
         @Inject(forwardRef(() => ApiLogRestoreService))
         private readonly apiLogRestoreService: ApiLogRestoreService
     ) {
-        this.enabled = CrontabIsEnabled('task');
+        this.enabled = IsCrontabEnabled('task');
         this.logger.debug(`task crontab enabled? ${this.enabled}`);
     }
 

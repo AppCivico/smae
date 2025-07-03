@@ -3,7 +3,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { PerfilResponsavelEquipe, Prisma, VariavelCicloCorrente, VariavelFase } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
-import { CrontabIsEnabled } from '../common/CrontabIsEnabled';
+import { IsCrontabEnabled } from '../common/crontab-utils';
 import { LoggerWithLog } from '../common/LoggerWithLog';
 import { CONST_BOT_USER_ID } from '../common/consts';
 import { Date2YMD, SYSTEM_TIMEZONE } from '../common/date2ymd';
@@ -227,7 +227,7 @@ export class VariavelCicloService {
     }
 
     async onModuleInit() {
-        if (CrontabIsEnabled('variavel_ciclo')) {
+        if (IsCrontabEnabled('variavel_ciclo')) {
             // irá ser necessário verificar uma vez por mes ativar as variaveis
             const botUser = await this.prisma.pessoa.findUnique({
                 where: { id: CONST_BOT_USER_ID },

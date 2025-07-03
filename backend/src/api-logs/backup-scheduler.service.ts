@@ -6,6 +6,7 @@ import { SmaeConfigService } from 'src/common/services/smae-config.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { TaskService } from 'src/task/task.service';
 import { JOB_LOG_BACKUP_JOB_LOCK_NUMBER } from '../common/dto/locks';
+import { IsCrontabDisabled } from '../common/crontab-utils';
 
 @Injectable()
 export class BackupSchedulerService {
@@ -20,7 +21,7 @@ export class BackupSchedulerService {
 
     @Cron(CronExpression.EVERY_HOUR)
     async handleApiLogBackupJob(): Promise<void> {
-        if (process.env['DISABLE_API_LOG_BACKUP_CRONTAB']) return;
+        if (IsCrontabDisabled('backup_scheduler')) return;
         if (this.is_running) return;
         this.is_running = true;
 
