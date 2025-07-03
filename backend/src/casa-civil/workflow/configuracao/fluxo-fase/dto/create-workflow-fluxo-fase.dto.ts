@@ -1,5 +1,7 @@
+import { ApiProperty } from '@nestjs/swagger';
+import { WorkflowResponsabilidade } from '@prisma/client';
 import { Type } from 'class-transformer';
-import { IsArray, IsBoolean, IsInt, IsOptional, Max, Min } from 'class-validator';
+import { IsArray, IsBoolean, IsEnum, IsInt, IsOptional, Max, Min } from 'class-validator';
 
 export class CreateWorkflowfluxoFaseDto {
     @IsInt({ message: '$property| fluxo_id precisa ser um número ou null' })
@@ -35,4 +37,11 @@ export class CreateWorkflowfluxoFaseDto {
     @IsInt()
     @Type(() => Number)
     duracao: number;
+
+    @ApiProperty({ enum: WorkflowResponsabilidade, enumName: 'WorkflowResponsabilidade' })
+    @IsEnum(WorkflowResponsabilidade, {
+        message:
+            '$property| Precisa ser um dos seguintes valores: ' + Object.values(WorkflowResponsabilidade).join(', '),
+    })
+    responsabilidade: WorkflowResponsabilidade;
 }

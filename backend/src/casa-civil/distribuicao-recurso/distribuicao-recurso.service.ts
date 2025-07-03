@@ -1,5 +1,5 @@
 import { forwardRef, HttpException, Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
-import { DistribuicaoStatusTipo, Prisma, WorkflowResponsabilidade } from '@prisma/client';
+import { DistribuicaoStatusTipo, Prisma, TarefaDependenteTipo, WorkflowResponsabilidade } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
@@ -31,6 +31,21 @@ type OperationsRegistroSEI = {
     nome?: string | null;
     processo_sei: string;
 }[];
+
+// Unified structure for items that will generate a new cronograma task
+type ItemParaCriarTarefa = {
+    nome_base: string; // Name of the phase or task from the workflow
+    tarefa_pai_id: number; // ID of the parent cronograma task (always nivel 2)
+    // Planning data inherited from the parent or a sibling for consistency
+    inicio_planejado: Date | null;
+    termino_planejado: Date | null;
+    duracao_planejado: number | null;
+    dependencias: {
+        dependencia_tarefa_id: number;
+        tipo: TarefaDependenteTipo;
+        latencia: number;
+    }[];
+};
 
 @Injectable()
 export class DistribuicaoRecursoService {
@@ -1766,24 +1781,57 @@ export class DistribuicaoRecursoService {
     }
 
     async _createTarefasOutroOrgao(prismaTx: Prisma.TransactionClient, distribuicao_id: number, user: PessoaFromJwt) {
-        const distribuicaoRecurso = await prismaTx.distribuicaoRecurso.findFirstOrThrow({
-            where: {
-                id: distribuicao_id,
-                removido_em: null,
-            },
+        const distribuicaoRecurso = await prismaTx.distribuicaoRecurso.findFirst({
+            where: { id: distribuicao_id, removido_em: null },
             select: {
                 id: true,
                 transferencia_id: true,
                 nome: true,
-                orgao_gestor: {
+                orgao_gestor: { select: { id: true, sigla: true } },
+                transferencia: { select: { workflow_id: true } },
+            },
+        });
+
+        if (!distribuicaoRecurso || !distribuicaoRecurso.transferencia.workflow_id) {
+            throw new InternalServerErrorException(
+                'Distribuição de recurso não encontrada ou sem workflow ao criar tarefas.'
+            );
+        }
+
+        const workflow_id = distribuicaoRecurso.transferencia.workflow_id;
+
+        // 1. Fetch workflow phases with 'OutroOrgao' responsibility
+        const andamentoFases = await prismaTx.transferenciaAndamento.findMany({
+            where: {
+                transferencia_id: distribuicaoRecurso.transferencia_id,
+                removido_em: null,
+                workflow_fase: {
+                    fluxos: {
+                        some: {
+                            responsabilidade: WorkflowResponsabilidade.OutroOrgao,
+                            removido_em: null,
+                            fluxo: { workflow_id },
+                        },
+                    },
+                },
+            },
+            select: {
+                workflow_fase: { select: { fase: true } },
+                // This is the nivel 2 task in the cronograma representing the phase. It will be the parent.
+                tarefaEspelhada: {
                     select: {
                         id: true,
-                        sigla: true,
+                        inicio_planejado: true,
+                        termino_planejado: true,
+                        duracao_planejado: true,
+                        tarefa_pai_id: true,
+                        dependencias: { select: { dependencia_tarefa_id: true, tipo: true, latencia: true } },
                     },
                 },
             },
         });
 
+        // 2. Fetch workflow tasks with 'OutroOrgao' responsibility
         const andamentoTarefas = await prismaTx.transferenciaAndamentoTarefa.findMany({
             where: {
                 transferencia_andamento: {
@@ -1795,12 +1843,14 @@ export class DistribuicaoRecursoService {
                         some: {
                             responsabilidade: WorkflowResponsabilidade.OutroOrgao,
                             removido_em: null,
+                            fluxo_fase: { fluxo: { workflow_id } },
                         },
                     },
                 },
             },
             select: {
-                id: true,
+                workflow_tarefa: { select: { tarefa_fluxo: true } },
+                // This is the nivel 2 task representing the phase, which is the parent.
                 transferencia_andamento: {
                     select: {
                         tarefaEspelhada: {
@@ -1809,26 +1859,7 @@ export class DistribuicaoRecursoService {
                                 inicio_planejado: true,
                                 termino_planejado: true,
                                 duracao_planejado: true,
-                            },
-                        },
-                    },
-                },
-                workflow_tarefa: {
-                    select: {
-                        tarefa_fluxo: true,
-                    },
-                },
-                tarefaEspelhada: {
-                    select: {
-                        id: true,
-                        inicio_planejado: true,
-                        termino_planejado: true,
-                        duracao_planejado: true,
-                        dependencias: {
-                            select: {
-                                dependencia_tarefa_id: true,
-                                tipo: true,
-                                latencia: true,
+                                dependencias: { select: { dependencia_tarefa_id: true, tipo: true, latencia: true } },
                             },
                         },
                     },
@@ -1836,91 +1867,100 @@ export class DistribuicaoRecursoService {
             },
         });
 
-        const operations = [];
-        if (andamentoTarefas.length) {
-            const tarefaCronograma = await prismaTx.tarefaCronograma.findFirstOrThrow({
-                where: {
-                    transferencia_id: distribuicaoRecurso.transferencia_id,
-                    removido_em: null,
-                },
+        const itensParaCriar: ItemParaCriarTarefa[] = [];
+
+        // 3. Unify phases into the creation list
+        andamentoFases.forEach((af) => {
+            const tarefaPai = af.tarefaEspelhada?.[0];
+            if (tarefaPai) {
+                itensParaCriar.push({
+                    nome_base: af.workflow_fase.fase,
+                    tarefa_pai_id: tarefaPai.tarefa_pai_id!,
+                    inicio_planejado: tarefaPai.inicio_planejado,
+                    termino_planejado: tarefaPai.termino_planejado,
+                    duracao_planejado: tarefaPai.duracao_planejado,
+                    dependencias: tarefaPai.dependencias,
+                });
+            }
+        });
+
+        // 4. Unify tasks into the creation list
+        andamentoTarefas.forEach((at) => {
+            const tarefaPai = at.transferencia_andamento.tarefaEspelhada?.[0];
+            if (tarefaPai) {
+                itensParaCriar.push({
+                    nome_base: at.workflow_tarefa.tarefa_fluxo,
+                    tarefa_pai_id: tarefaPai.id, // The parent is the nivel 2 task for the phase
+                    inicio_planejado: tarefaPai.inicio_planejado,
+                    termino_planejado: tarefaPai.termino_planejado,
+                    duracao_planejado: tarefaPai.duracao_planejado,
+                    dependencias: tarefaPai.dependencias,
+                });
+            }
+        });
+
+        // 5. Create the new cronograma tasks if any are found
+        if (itensParaCriar.length > 0) {
+            const tarefaCronograma = await prismaTx.tarefaCronograma.findFirst({
+                where: { transferencia_id: distribuicaoRecurso.transferencia_id, removido_em: null },
                 select: { id: true },
             });
+            if (!tarefaCronograma)
+                throw new InternalServerErrorException('Cronograma da transferência não encontrado.');
 
+            // Get existing nivel 3 tasks to calculate the next 'numero'
             const tarefasExistentes = await prismaTx.tarefa.findMany({
                 where: {
-                    removido_em: null,
                     tarefa_cronograma_id: tarefaCronograma.id,
                     nivel: 3,
+                    tarefa_pai_id: { in: itensParaCriar.map((i) => i.tarefa_pai_id) },
+                    removido_em: null,
                 },
-                orderBy: [{ tarefa_pai_id: 'asc' }, { numero: 'desc' }],
-                select: {
-                    tarefa_pai_id: true,
-                    numero: true,
-                },
+                orderBy: { numero: 'desc' },
+                select: { tarefa_pai_id: true, numero: true },
             });
-            if (tarefasExistentes.length == 0)
-                throw new InternalServerErrorException(
-                    'Erro na func _createTarefasOutroOrgao! Tarefas de acompanhamento não encontradas.'
-                );
 
-            let tarefa_pai_id: number | undefined;
-            let numero: number = 1;
-            for (const andamentoTarefa of andamentoTarefas) {
-                if (!andamentoTarefa.transferencia_andamento.tarefaEspelhada[0])
-                    throw new InternalServerErrorException('Erro interno! Tarefa espelhada não encontrada.');
-
-                if (tarefa_pai_id != andamentoTarefa.transferencia_andamento.tarefaEspelhada[0].id) {
-                    tarefa_pai_id = andamentoTarefa.transferencia_andamento.tarefaEspelhada[0].id;
-                    numero = tarefasExistentes.filter((t) => t.tarefa_pai_id == tarefa_pai_id)[0].numero + 1;
-                } else {
-                    numero++;
+            // Map the highest 'numero' for each parent for efficient lookup
+            const maxNumeroPorPai = new Map<number, number>();
+            for (const t of tarefasExistentes) {
+                if (t.tarefa_pai_id && !maxNumeroPorPai.has(t.tarefa_pai_id)) {
+                    maxNumeroPorPai.set(t.tarefa_pai_id, t.numero);
                 }
+            }
+
+            // Sort by parent to process siblings together
+            itensParaCriar.sort((a, b) => a.tarefa_pai_id - b.tarefa_pai_id);
+
+            const operations = [];
+            for (const item of itensParaCriar) {
+                const numeroAtual = maxNumeroPorPai.get(item.tarefa_pai_id) ?? 0;
+                const novoNumero = numeroAtual + 1;
+                maxNumeroPorPai.set(item.tarefa_pai_id, novoNumero); // Increment for the next sibling
 
                 operations.push(
                     prismaTx.tarefa.create({
                         data: {
                             tarefa_cronograma_id: tarefaCronograma.id,
-                            tarefa_pai_id: tarefa_pai_id,
+                            tarefa_pai_id: item.tarefa_pai_id,
                             nivel: 3,
-                            numero: numero,
-                            tarefa: andamentoTarefa.workflow_tarefa.tarefa_fluxo + ` - ${distribuicaoRecurso.nome}`,
-                            descricao: andamentoTarefa.workflow_tarefa.tarefa_fluxo + ` - ${distribuicaoRecurso.nome}`,
+                            numero: novoNumero,
+                            tarefa: `${item.nome_base} - ${distribuicaoRecurso.nome}`,
+                            descricao: `${item.nome_base} - ${distribuicaoRecurso.nome}`,
                             distribuicao_recurso_id: distribuicaoRecurso.id,
                             recursos: distribuicaoRecurso.orgao_gestor.sigla,
                             orgao_id: distribuicaoRecurso.orgao_gestor.id,
-                            inicio_planejado: andamentoTarefa.tarefaEspelhada[0].inicio_planejado,
-                            termino_planejado: andamentoTarefa.tarefaEspelhada[0].termino_planejado,
-                            duracao_planejado: andamentoTarefa.tarefaEspelhada[0].duracao_planejado,
-                            dependencias: {
-                                createMany: {
-                                    // As tarefas criadas devem ter a mesma regra de dependência da tarefa de acompanhamento.
-                                    data: andamentoTarefa.tarefaEspelhada[0].dependencias.map((d) => {
-                                        return {
-                                            dependencia_tarefa_id: d.dependencia_tarefa_id,
-                                            tipo: d.tipo,
-                                            latencia: d.latencia,
-                                        };
-                                    }),
-                                },
-                            },
+                            inicio_planejado: item.inicio_planejado,
+                            termino_planejado: item.termino_planejado,
+                            duracao_planejado: item.duracao_planejado,
+                            dependencias: { createMany: { data: item.dependencias } },
                         },
                     })
                 );
             }
+
+            await Promise.all(operations);
         }
 
-        const orgaoCasaCivil = await prismaTx.orgao.findFirst({
-            where: {
-                removido_em: null,
-                sigla: 'SERI',
-            },
-            select: {
-                id: true,
-            },
-        });
-        if (!orgaoCasaCivil) throw new HttpException('Órgão da casa civil não foi encontrado', 400);
-
-        await Promise.all(operations);
         await this._validarTopologia(prismaTx, distribuicao_id, user);
     }
 

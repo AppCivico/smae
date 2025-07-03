@@ -1,6 +1,6 @@
 import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
-import { Prisma, WorkflowResponsabilidade } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateWorkflowfluxoFaseDto } from './dto/create-workflow-fluxo-fase.dto';
@@ -71,8 +71,7 @@ export class WorkflowfluxoFaseService {
                         fluxo_id: dto.fluxo_id,
                         fase_id: dto.fase_id,
                         ordem: ordem,
-                        // Sprint 13: Agora fase sempre será de responsabilidade "Própria".
-                        responsabilidade: WorkflowResponsabilidade.Propria,
+                        responsabilidade: dto.responsabilidade,
                         marco: dto.marco,
                         duracao: dto.duracao,
                         criado_por: user.id,
