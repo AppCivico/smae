@@ -151,75 +151,60 @@ BEGIN
         JOIN transferencia_andamento taf ON taf.id = tf.transferencia_fase_id
         JOIN fluxo f ON f.id = tarefas.fluxo_id AND taf.workflow_etapa_id = f.fluxo_etapa_de_id;
 
-    -- Dependências de nível de fase.
+    -- Dependências de nível de fase (CORRIGIDO)
+    WITH dependencias_nivel_2 AS (
+        SELECT
+            t1.id as tarefa_id,
+            CASE
+                WHEN t2.id IS NOT NULL THEN t2.id -- Depende da tarefa anterior no mesmo grupo
+                ELSE ( -- Se for a primeira tarefa do grupo, depende da última tarefa do grupo anterior
+                    SELECT tx.id
+                    FROM tarefa tx
+                    JOIN tarefa tarefa_pai ON tarefa_pai.id = tx.tarefa_pai_id AND tarefa_pai.numero = ( SELECT numero FROM tarefa WHERE id = t1.tarefa_pai_id ) - 1
+                    WHERE tx.tarefa_cronograma_id = _tarefa_cronograma_id
+                        AND tx.nivel = t1.nivel
+                    ORDER BY tx.numero DESC
+                    LIMIT 1
+                )
+            END as dependencia_tarefa_id,
+            CASE
+                WHEN t1.numero = 1 THEN cast('inicia_pro_inicio' as "TarefaDependenteTipo")
+                ELSE cast('termina_pro_inicio' as "TarefaDependenteTipo")
+            END as tipo
+        FROM tarefa t1
+        LEFT JOIN tarefa t2 ON t2.nivel = t1.nivel AND t2.tarefa_pai_id = t1.tarefa_pai_id AND t2.numero = t1.numero - 1
+        WHERE t1.tarefa_cronograma_id = _tarefa_cronograma_id
+            AND t1.nivel = 2
+            AND NOT EXISTS (SELECT 1 FROM tarefa WHERE tarefa_pai_id = t1.id) -- Apenas para tarefas que são "folhas" neste nível
+    )
     INSERT INTO tarefa_dependente (tarefa_id, dependencia_tarefa_id, tipo, latencia)
     SELECT
-        t1.id,
-        CASE
-            WHEN t2.id IS NOT NULL THEN t2.id
-            ELSE (
-                SELECT tx.id
-                FROM tarefa tx
-                JOIN tarefa tarefa_pai ON tarefa_pai.id = tx.tarefa_pai_id AND tarefa_pai.numero = ( SELECT numero FROM tarefa WHERE id = t1.tarefa_pai_id ) - 1
-                WHERE tx.tarefa_cronograma_id = _tarefa_cronograma_id
-                    AND tx.nivel = t1.nivel
-                ORDER BY tx.numero DESC
-                LIMIT 1
-            )
-        END,
-        CASE
-            WHEN (
-                (EXISTS (SELECT 1 FROM tarefa WHERE id = t2.tarefa_pai_id AND nivel = 1 AND numero = 1) AND t2.numero = 1)
-                OR (t2.tarefa ILIKE '%Acompanhamento da etapa%')
-            )
-            THEN cast('inicia_pro_inicio' as "TarefaDependenteTipo")
-            ELSE cast('termina_pro_inicio' as "TarefaDependenteTipo")
-        END,
+        tarefa_id,
+        dependencia_tarefa_id,
+        tipo,
         0
-    FROM tarefa t1
-    LEFT JOIN tarefa t2 ON t2.nivel = t1.nivel AND t2.tarefa_pai_id = t1.tarefa_pai_id AND t2.numero = t1.numero - 1
-    WHERE t1.tarefa_cronograma_id = _tarefa_cronograma_id
-        AND t1.nivel = 2 AND (t1.numero != 1 OR (SELECT numero FROM tarefa WHERE id = t1.tarefa_pai_id) > 1 )
-        AND NOT EXISTS (SELECT 1 FROM tarefa WHERE tarefa_pai_id = t1.id);
+    FROM dependencias_nivel_2
+    WHERE dependencia_tarefa_id IS NOT NULL; -- AQUI ESTÁ A CORREÇÃO: Ignora qualquer dependência que tenha sido calculada como NULL
 
-    -- Dependências de nível de tarefa.
+    -- Dependências de nível de tarefa (CORRIGIDO)
+    WITH dependencias_nivel_3 AS (
+         SELECT
+            t1.id as tarefa_id,
+            t2.id as dependencia_tarefa_id, -- A dependência é sempre a tarefa anterior no mesmo grupo de fase
+            cast('termina_pro_inicio' as "TarefaDependenteTipo") as tipo
+        FROM tarefa t1
+        JOIN tarefa t2 ON t2.nivel = t1.nivel AND t2.tarefa_pai_id = t1.tarefa_pai_id AND t2.numero = t1.numero - 1
+        WHERE t1.tarefa_cronograma_id = _tarefa_cronograma_id AND t1.nivel = 3
+    )
     INSERT INTO tarefa_dependente (tarefa_id, dependencia_tarefa_id, tipo, latencia)
     SELECT
-        t1.id,
-        CASE
-            WHEN EXISTS ( SELECT 1 FROM tarefa WHERE id = t1.tarefa_pai_id AND nivel = 1 AND numero = 2 )
-            THEN (
-                SELECT id
-                FROM tarefa WHERE tarefa_cronograma_id = _tarefa_cronograma_id
-                  AND nivel = 2
-                ORDER BY numero DESC
-                LIMIT 1
-            )
-            WHEN EXISTS ( SELECT 1 FROM tarefa WHERE id = t1.tarefa_pai_id AND nivel = 2 )
-            THEN (
-                SELECT tarefa.id
-                FROM tarefa
-                JOIN tarefa tx ON tx.id = t1.tarefa_pai_id
-                WHERE tarefa.tarefa_cronograma_id = _tarefa_cronograma_id
-                    AND tarefa.numero < tx.numero
-                    AND tarefa.tarefa_pai_id = tx.tarefa_pai_id
-                ORDER BY tarefa.numero DESC
-                LIMIT 1
-            )
-            ELSE t2.id
-        END,
-        CASE
-            WHEN (
-                EXISTS (SELECT 1 FROM tarefa WHERE id = t2.tarefa_pai_id AND nivel = 2 AND numero = 1) OR
-                ( (SELECT numero FROM tarefa WHERE id = t1.tarefa_pai_id) - 1 = 1 )
-            )
-            THEN cast('inicia_pro_inicio' as "TarefaDependenteTipo")
-            ELSE cast('termina_pro_inicio' as "TarefaDependenteTipo")
-        END,
+        tarefa_id,
+        dependencia_tarefa_id,
+        tipo,
         0
-    FROM tarefa t1
-    LEFT JOIN tarefa t2 ON t2.nivel = t1.nivel AND t2.tarefa_pai_id = t1.tarefa_pai_id AND t2.numero = t1.numero - 1
-    WHERE t1.tarefa_cronograma_id = _tarefa_cronograma_id AND t1.nivel = 3;
+    FROM dependencias_nivel_3
+    WHERE dependencia_tarefa_id IS NOT NULL; -- Adicionado por segurança, embora o JOIN já deva garantir isso.
+
 
     -- Atualizando n_filhos_imediatos
     UPDATE tarefa t SET
