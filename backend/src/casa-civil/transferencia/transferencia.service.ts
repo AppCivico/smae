@@ -1688,7 +1688,16 @@ export class TransferenciaService {
         user: PessoaFromJwt
     ) {
         // Garantindo que a transferência está com workflow e cronograma limpos
-        await this.limparWorkflowCronograma(transferencia_id, user, prismaTxn);
+        const tarefasVelhas = await prismaTxn.tarefa.count({
+            where: {
+                removido_em: null,
+                tarefa_cronograma: {
+                    transferencia_id: transferencia_id,
+                    removido_em: null,
+                },
+            },
+        });
+        if (tarefasVelhas > 0) await this.limparWorkflowCronograma(transferencia_id, user, prismaTxn);
 
         const workflow = await this.workflowService.findOne(workflow_id, undefined);
 
