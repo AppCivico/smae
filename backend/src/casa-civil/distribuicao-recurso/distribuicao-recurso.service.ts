@@ -1875,7 +1875,7 @@ export class DistribuicaoRecursoService {
             if (tarefaPai) {
                 itensParaCriar.push({
                     nome_base: af.workflow_fase.fase,
-                    tarefa_pai_id: tarefaPai.tarefa_pai_id!,
+                    tarefa_pai_id: tarefaPai.id,
                     inicio_planejado: tarefaPai.inicio_planejado,
                     termino_planejado: tarefaPai.termino_planejado,
                     duracao_planejado: tarefaPai.duracao_planejado,
