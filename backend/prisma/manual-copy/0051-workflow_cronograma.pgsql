@@ -67,7 +67,7 @@ BEGIN
         RETURNING id, tarefa_pai_id, numero
     ), fases AS (
         SELECT
-            fluxo_fase.id,
+            fluxo_fase.id as fluxo_fase_id,
             f.fase,
             f.id as fase_id,
             e.etapa_de AS tarefa_pai,
@@ -92,7 +92,7 @@ BEGIN
         SELECT
             _tarefa_cronograma_id,
             fases.fase, fases.fase, '',
-            fases.ordem + 1, -- +1 Pois sempre há uma tarefa no "nível de fase", que é a de acompanhamento da Etapa. Olhar 'tarefa_de_acompanhamento_etapa' acima.
+            fases.ordem + 1,
             2,
             te.id,
             fases.data_inicio,
@@ -120,18 +120,18 @@ BEGIN
             fluxo_tarefa.marco,
             fluxo_tarefa.duracao,
             taf.id AS transferencia_tarefa_id,
-            f.id flux_fase_id,
+            f.fluxo_fase_id,
             f.fluxo_id,
             f.etapa_de_id
         FROM fluxo_tarefa
-        JOIN fases f ON fluxo_tarefa.fluxo_fase_id = f.id
+        JOIN fases f ON fluxo_tarefa.fluxo_fase_id = f.fluxo_fase_id
         JOIN workflow_tarefa t ON fluxo_tarefa.workflow_tarefa_id = t.id
         JOIN transferencia_andamento_tarefa taf ON taf.workflow_tarefa_fluxo_id = t.id AND taf.removido_em IS NULL
         JOIN transferencia_andamento ta ON ta.id = taf.transferencia_andamento_id
             AND ta.transferencia_id = _transferencia_id AND ta.workflow_fase_id = f.fase_id
             AND ta.removido_em IS NULL
         WHERE fluxo_tarefa.removido_em IS NULL
-        ORDER BY f.id ASC, fluxo_tarefa.ordem ASC
+        ORDER BY f.fluxo_fase_id ASC, fluxo_tarefa.ordem ASC
     )
         INSERT INTO tarefa (tarefa_cronograma_id, tarefa, descricao, recursos, numero, nivel, tarefa_pai_id, transferencia_tarefa_id, eh_marco, duracao_planejado, orgao_id)
         SELECT
@@ -151,7 +151,7 @@ BEGIN
         JOIN transferencia_andamento taf ON taf.id = tf.transferencia_fase_id
         JOIN fluxo f ON f.id = tarefas.fluxo_id AND taf.workflow_etapa_id = f.fluxo_etapa_de_id;
 
-    -- Dependências de nível de fase (CORRIGIDO)
+    -- Dependências de nível de fase (CORRIGIDO E FILTRADO POR RESPONSABILIDADE)
     WITH dependencias_nivel_2 AS (
         SELECT
             t1.id as tarefa_id,
@@ -172,10 +172,18 @@ BEGIN
                 ELSE cast('termina_pro_inicio' as "TarefaDependenteTipo")
             END as tipo
         FROM tarefa t1
+        -- AQUI ESTÁ A LÓGICA CORRETA PARA OBTER A RESPONSABILIDADE
+        JOIN transferencia_andamento ta ON ta.id = t1.transferencia_fase_id
+        JOIN fluxo_fase ff ON ff.fase_id = ta.workflow_fase_id AND ff.fluxo_id = (
+             SELECT fluxo.id FROM fluxo WHERE fluxo.fluxo_etapa_de_id = ta.workflow_etapa_id and fluxo.workflow_id = _workflow_id AND fluxo.removido_em IS NULL limit 1
+        )
+        -- Fim da lógica
         LEFT JOIN tarefa t2 ON t2.nivel = t1.nivel AND t2.tarefa_pai_id = t1.tarefa_pai_id AND t2.numero = t1.numero - 1
         WHERE t1.tarefa_cronograma_id = _tarefa_cronograma_id
             AND t1.nivel = 2
-            AND NOT EXISTS (SELECT 1 FROM tarefa WHERE tarefa_pai_id = t1.id) -- Apenas para tarefas que são "folhas" neste nível
+            AND t1.transferencia_fase_id IS NOT NULL -- Garante que estamos lidando com uma tarefa que representa uma fase
+            AND ff.responsabilidade = 'Propria' -- Filtra para criar dependências apenas para responsabilidade 'Propria'
+            AND NOT EXISTS (SELECT 1 FROM tarefa WHERE tarefa_pai_id = t1.id)
     )
     INSERT INTO tarefa_dependente (tarefa_id, dependencia_tarefa_id, tipo, latencia)
     SELECT
@@ -184,13 +192,13 @@ BEGIN
         tipo,
         0
     FROM dependencias_nivel_2
-    WHERE dependencia_tarefa_id IS NOT NULL; -- AQUI ESTÁ A CORREÇÃO: Ignora qualquer dependência que tenha sido calculada como NULL
+    WHERE dependencia_tarefa_id IS NOT NULL;
 
-    -- Dependências de nível de tarefa (CORRIGIDO)
+    -- Dependências de nível de tarefa
     WITH dependencias_nivel_3 AS (
          SELECT
             t1.id as tarefa_id,
-            t2.id as dependencia_tarefa_id, -- A dependência é sempre a tarefa anterior no mesmo grupo de fase
+            t2.id as dependencia_tarefa_id,
             cast('termina_pro_inicio' as "TarefaDependenteTipo") as tipo
         FROM tarefa t1
         JOIN tarefa t2 ON t2.nivel = t1.nivel AND t2.tarefa_pai_id = t1.tarefa_pai_id AND t2.numero = t1.numero - 1
@@ -203,7 +211,7 @@ BEGIN
         tipo,
         0
     FROM dependencias_nivel_3
-    WHERE dependencia_tarefa_id IS NOT NULL; -- Adicionado por segurança, embora o JOIN já deva garantir isso.
+    WHERE dependencia_tarefa_id IS NOT NULL;
 
 
     -- Atualizando n_filhos_imediatos
