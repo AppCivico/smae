@@ -2151,21 +2151,10 @@ export class ProjetoService {
 
             return permissoes; // Retorna cedo, tudo o mais é somente leitura
         } else {
-            // Verifica se o usuário tem permissão para arquivar (assumindo Admin/Escritório)
-            if (
-                (
-                    [
-                        'Fechado',
-                        'MDO_Concluida',
-                        'MDO_EmAndamento',
-                        'MDO_NaoIniciada',
-                        'MDO_Paralisada',
-                    ] as ProjetoStatus[]
-                ).includes(projeto.status)
-            ) {
-                // Ajuste a verificação de função se necessário
-                permissoes.acao_arquivar = pessoaPodeEscreverGeral;
-            }
+
+            // Ajuste a verificação de função se necessário
+            permissoes.acao_arquivar = pessoaPodeEscreverGeral;
+
         }
 
         // --- Aplica Lógica Específica por Tipo (PP vs MDO) ---
@@ -2279,6 +2268,7 @@ export class ProjetoService {
                     permissoes.status_permitidos.push('Selecionado');
                     permissoes.status_permitidos.push('Registrado');
                     permissoes.acao_arquivar = true;
+                    permissoes.acao_reiniciar = true;
                     break;
                 case 'MDO_Concluida':
                     permissoes.status_permitidos.push('MDO_EmAndamento');
