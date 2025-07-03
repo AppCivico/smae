@@ -50,7 +50,7 @@ BEGIN
         FROM
             variavel v
             JOIN indicador_variavel iv ON v.id = iv.variavel_id
-            JOIN indicador i ON iv.indicador_id = i.id
+            JOIN indicador i ON iv.indicador_id = i.id AND i.removido_em IS NULL
             JOIN view_metas_arvore_pdm pi ON
                 (pi.tipo = 'meta' AND i.meta_id = pi.id) OR
                 (pi.tipo = 'iniciativa' AND i.iniciativa_id = pi.id) OR
@@ -108,7 +108,7 @@ BEGIN
         -- Verifica atrasos com base nas informações de ciclo da família (prazo, atrasos do vcc)
         (vcc.atrasos IS NOT NULL AND vcc.atrasos <> '{}') OR (vcc.prazo IS NOT NULL AND vcc.prazo < (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::date)
     FROM variavel_ciclo_corrente vcc
-    JOIN variavel v ON vcc.variavel_id = v.id
+    JOIN variavel v ON vcc.variavel_id = v.id AND v.removido_em IS NULL
     LEFT JOIN planos_data pd ON vcc.variavel_id = pd.family_id
     LEFT JOIN equipes_data ed ON vcc.variavel_id = ed.family_id
     LEFT JOIN variavel_categorica vc ON v.variavel_categorica_id = vc.id
