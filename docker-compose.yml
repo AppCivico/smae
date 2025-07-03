@@ -368,7 +368,8 @@ services:
 
 networks:
   smae_network:
-
+  driver_opts:
+    com.docker.network.driver.mtu: ${DOCKER_MTU:-1500}
 
 volumes:
   pgdata:
