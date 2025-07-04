@@ -226,6 +226,8 @@ export class WorkflowAndamentoService {
                                 const tarefasConfiguradas = await Promise.all(
                                     fase.tarefas
                                         .filter((t) => {
+                                            // TODO?: as tarefas do cronograma, poderiam ter entradas na tabela de andamento de tarefa do workflow, assim eliminaríamos a necessidade de filtrar aqui.
+                                            // Filtrando para não "duplicar" tarefas.
                                             if (tarefasVindasDoCronograma.length > 0) {
                                                 return t.responsabilidade !== WorkflowResponsabilidade.OutroOrgao;
                                             }

@@ -76,6 +76,25 @@ export class WorkflowAndamentoFaseService {
                         );
                 }
 
+                const configFluxoFase = await prismaTxn.fluxoFase.findFirst({
+                    where: {
+                        removido_em: null,
+                        fase_id: self.workflow_fase_id,
+                        fluxo: {
+                            workflow_id: self.transferencia.workflow_id!,
+                            fluxo_etapa_de_id: self.workflow_etapa_id,
+                            removido_em: null,
+                        },
+                    },
+                    select: {
+                        responsabilidade: true,
+                    },
+                });
+                if (!configFluxoFase)
+                    throw new Error(
+                        'Não foi possível encontrar configuração de Fluxo Fase para editar órgão responsável.'
+                    );
+
                 if (
                     (dto.orgao_responsavel_id != undefined || dto.pessoa_responsavel_id != undefined) &&
                     (self.orgao_responsavel_id != dto.orgao_responsavel_id ||
@@ -91,25 +110,6 @@ export class WorkflowAndamentoFaseService {
                         },
                     });
 
-                    const configFluxoFase = await prismaTxn.fluxoFase.findFirst({
-                        where: {
-                            removido_em: null,
-                            fase_id: self.workflow_fase_id,
-                            fluxo: {
-                                workflow_id: self.transferencia.workflow_id!,
-                                fluxo_etapa_de_id: self.workflow_etapa_id,
-                                removido_em: null,
-                            },
-                        },
-                        select: {
-                            responsabilidade: true,
-                        },
-                    });
-                    if (!configFluxoFase)
-                        throw new Error(
-                            'Não foi possível encontrar configuração de Fluxo Fase para editar órgão responsável.'
-                        );
-
                     // Caso seja modificado o órgão responsável, é necessário verificar o tipo de responsabilidade da fase.
                     if (
                         dto.orgao_responsavel_id != undefined &&
@@ -121,6 +121,17 @@ export class WorkflowAndamentoFaseService {
                             400
                         );
                     }
+                }
+
+                // TODO!: Remover isso aqui
+                // Pendurando aqui um tratamento paliativo.
+                // Para tarefas de "OutroOrgao". Sempre setando o user da req como a pessoa responsável.
+                if (
+                    dto.situacao_id != undefined &&
+                    self.workflow_situacao_id != dto.situacao_id &&
+                    configFluxoFase.responsabilidade === WorkflowResponsabilidade.OutroOrgao
+                ) {
+                    dto.pessoa_responsavel_id = user.id;
                 }
 
                 const updated = await prismaTxn.transferenciaAndamento.update({
