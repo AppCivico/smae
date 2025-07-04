@@ -15,7 +15,31 @@ module.exports = {
     tsconfigRootDir: __dirname,
     parser: '@typescript-eslint/parser',
   },
+  plugins: ['import'],
   rules: {
+    'import/order': [
+      'error',
+      {
+        groups: [
+          'builtin', // ex: fs, path
+          'external', // ex: vue, lodash
+          'internal', // ex: src/utils
+          ['parent', 'sibling', 'index'], // relativos
+        ],
+        pathGroups: [
+          {
+            pattern: '@/**', // se você usa aliases como @/components
+            group: 'internal',
+          },
+        ],
+        pathGroupsExcludedImportTypes: ['builtin'],
+        alphabetize: {
+          order: 'asc',
+          caseInsensitive: true,
+        },
+        'newlines-between': 'always',
+      },
+    ],
     'import/extensions': [
       'error', {
         ts: 'warn', // TO-DO: voltar e resolver esse valor falso
