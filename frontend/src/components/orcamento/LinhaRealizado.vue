@@ -1,6 +1,8 @@
 <script setup>
-import formataValor from '@/helpers/formataValor';
 import { computed } from 'vue';
+
+import formataValor from '@/helpers/formataValor';
+
 import mêsDoÚltimoItem from './helpers/mesDoUltimoItem';
 
 const props = defineProps({
@@ -71,7 +73,7 @@ const linhasEscolhidas = computed({
       style="white-space: nowrap; text-align: right"
     >
       <SmaeLink
-        v-if="permissao && ($route.meta?.rotaParaEdição || parentlink)"
+        v-if="item.pode_editar && ($route.meta?.rotaParaEdição || parentlink)"
         :to="$route.meta?.rotaParaEdição
           ? {
             name: $route.meta.rotaParaEdição,
