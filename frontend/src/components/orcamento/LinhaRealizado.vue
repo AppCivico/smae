@@ -73,7 +73,7 @@ const linhasEscolhidas = computed({
       style="white-space: nowrap; text-align: right"
     >
       <SmaeLink
-        v-if="item.pode_editar && ($route.meta?.rotaParaEdição || parentlink)"
+        v-if="permissao && ($route.meta?.rotaParaEdição || parentlink)"
         :to="$route.meta?.rotaParaEdição
           ? {
             name: $route.meta.rotaParaEdição,
