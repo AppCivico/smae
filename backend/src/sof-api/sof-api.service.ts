@@ -167,9 +167,9 @@ export class SofApiService {
 
         this.got = got.extend({
             prefixUrl: this.SOF_API_PREFIX,
-            timeout: 18 * 1000,
+            timeout: 60 * 1000,
             retry: {
-                limit: 2,
+                limit: 1,
                 methods: ['GET', 'PUT', 'HEAD', 'DELETE', 'OPTIONS', 'TRACE', 'POST'],
                 statusCodes: [408, 413, 429, 500, 502, 503, 521, 522, 524],
             },
@@ -205,7 +205,11 @@ export class SofApiService {
     private async doGetEntidadeRequest(endpoint: string): Promise<SuccessEntidadesResponse> {
         this.logger.debug(`chamando GET ${endpoint}`);
         try {
-            const response: ApiResponse = await this.got.get<ApiResponse>(endpoint).json();
+            const response: ApiResponse = await this.got
+                .get<ApiResponse>(endpoint, {
+                    timeout: 120 * 1000,
+                })
+                .json();
             this.logger.debug(`resposta: ${JSON.stringify(response)}`);
             if ('metadados' in response && response.metadados.sucess && endpoint.includes('v1/itens_dotacao/')) {
                 return response as SuccessEntidadesResponse;
