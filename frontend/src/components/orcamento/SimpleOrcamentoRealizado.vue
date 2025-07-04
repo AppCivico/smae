@@ -1,4 +1,9 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import {
+  computed, inject, ref, watch,
+} from 'vue';
+import { useRoute } from 'vue-router';
 import LinhaRealizado from '@/components/orcamento/LinhaRealizado.vue';
 import formataValor from '@/helpers/formataValor';
 import { useAlertStore } from '@/stores/alert.store';
@@ -6,11 +11,6 @@ import { useObrasStore } from '@/stores/obras.store';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
 import { usePdMStore } from '@/stores/pdm.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
-import { storeToRefs } from 'pinia';
-import {
-  computed, inject, ref, watch,
-} from 'vue';
-import { useRoute } from 'vue-router';
 import FiltroPorOrgaoEUnidade from './FiltroPorOrgaoEUnidade.vue';
 import agrupaFilhos from './helpers/agrupaFilhos';
 import somaItems from './helpers/somaItems';
@@ -156,10 +156,16 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
 
         <div
           v-if="activePdm?.pode_editar
-            || !permissoesDoItemEmFoco?.apenas_leitura"
+            || !permissoesDoItemEmFoco?.apenas_leitura
+            || permissoesDoItemEmFoco.sou_responsavel
+          "
         >
           <div
-            v-if="config.execucao_disponivel || Array.isArray($route.meta?.rotasParaAdição)"
+            v-if="
+              config.execucao_disponivel
+                || Array.isArray($route.meta?.rotasParaAdição)
+                || permissoesDoItemEmFoco.sou_responsavel
+            "
             class="dropbtn"
           >
             <span class="addlink"><svg
@@ -352,7 +358,11 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
               :órgão-e-unidade-selecionados="órgãoEUnidadeSelecionados"
               :group="groups"
               :permissao="config.execucao_disponivel
-                && !permissoesDoItemEmFoco?.apenas_leitura"
+                && (
+                  !permissoesDoItemEmFoco?.apenas_leitura
+                  || permissoesDoItemEmFoco?.sou_responsavel
+                )
+              "
               :exibir-checkbox-de-seleção="podeExcluirEmLote && config?.execucao_disponivel"
               :parentlink="parentlink"
             />
@@ -390,7 +400,11 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
                 :órgão-e-unidade-selecionados="órgãoEUnidadeSelecionados"
                 :group="g"
                 :permissao="config.execucao_disponivel
-                  && !permissoesDoItemEmFoco?.apenas_leitura"
+                  && (
+                    !permissoesDoItemEmFoco?.apenas_leitura
+                    || permissoesDoItemEmFoco?.sou_responsavel
+                  )
+                "
                 :exibir-checkbox-de-seleção="podeExcluirEmLote && config?.execucao_disponivel"
                 :parentlink="parentlink"
               />
@@ -431,7 +445,11 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
                   :órgão-e-unidade-selecionados="órgãoEUnidadeSelecionados"
                   :group="gg"
                   :permissao="config.execucao_disponivel
-                    && !permissoesDoItemEmFoco?.apenas_leitura"
+                    && (
+                      !permissoesDoItemEmFoco?.apenas_leitura
+                      || permissoesDoItemEmFoco?.sou_responsavel
+                    )
+                  "
                   :exibir-checkbox-de-seleção="podeExcluirEmLote && config?.execucao_disponivel"
                   :parentlink="parentlink"
                 />
