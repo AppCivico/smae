@@ -226,9 +226,10 @@ export class WorkflowAndamentoService {
                                 const tarefasConfiguradas = await Promise.all(
                                     fase.tarefas
                                         .filter((t) => {
-                                            // removendo tarefas que são de responsabilidade "Outro Órgão".
-                                            // pois elas irão vir do cronograma.
-                                            return t.responsabilidade != WorkflowResponsabilidade.OutroOrgao;
+                                            if (tarefasVindasDoCronograma.length > 0) {
+                                                return t.responsabilidade !== WorkflowResponsabilidade.OutroOrgao;
+                                            }
+                                            return true;
                                         })
                                         .map(async (tarefa) => {
                                             return {
