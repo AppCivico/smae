@@ -53,7 +53,7 @@
       "eslint --quiet --fix"
     ]
   },
-  "name": "SMAE - Frontend",
+  "name": "smae-frontend",
   "scripts": {
     "build": "vite build",
     "dev": "vite",
