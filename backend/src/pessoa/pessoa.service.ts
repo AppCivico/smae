@@ -61,7 +61,7 @@ export class PessoaService implements OnModuleInit {
 
         this.#cpfObrigatorioSemRF = await this.smaeConfigService.getConfigWithDefault<boolean>(
             'CPF_OBRIGATORIO_SEM_RF',
-            true,
+            false,
             (v) => v === '1'
         );
 
