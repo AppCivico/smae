@@ -37,6 +37,7 @@ export type VaralDeItemProps = {
   podeConcluir?: boolean,
   bloqueado?: boolean,
   tipo: FaseTipo
+  faseResponsabilidade?: 'OutroOrgao' | number
 };
 
 type Props = VaralDeItemProps & {
@@ -60,6 +61,7 @@ function handleEditar() {
     situacoes: props.situacoes,
     tipo: props.tipo,
     dadosTarefa: props.dadosTarefa,
+    faseResponsabilidade: props.faseResponsabilidade,
   });
 }
 
@@ -162,6 +164,7 @@ function handleEditar() {
         <VaralDeFaseItem
           :id="tarefa.tarefa_cronograma_id || tarefa.workflow_tarefa.id"
           secundario
+          :fase-responsabilidade="$props.responsavel.id"
           :titulo="tarefa.workflow_tarefa?.descricao"
           :situacao="
             tarefa.andamento.concluida

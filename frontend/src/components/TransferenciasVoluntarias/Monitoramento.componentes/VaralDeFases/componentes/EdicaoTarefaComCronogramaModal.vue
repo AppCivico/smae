@@ -27,6 +27,7 @@ const carregando = ref<boolean>(false);
 const exibirModalFase = ref<boolean>(false);
 const tipoFase = ref<FaseTipo | undefined>(undefined);
 const situacoes = ref<any[]>([]);
+const fasePertenceOutroOrgao = ref<boolean>(false);
 
 const schema = computed(() => {
   if (tipoFase.value === 'fase') {
@@ -62,12 +63,16 @@ type EdicaoDados = {
   situacoes?: any[]
   tipo: FaseTipo,
   dadosTarefa?: DadosTarefa,
+  faseResponsabilidade?: 'OutroOrgao' | number
 };
 function abrirModalFase(dadosEdicao: EdicaoDados) {
   exibirModalFase.value = true;
 
   tipoFase.value = dadosEdicao.tipo;
   situacoes.value = dadosEdicao.situacoes || [];
+  if (dadosEdicao.faseResponsabilidade) {
+    fasePertenceOutroOrgao.value = dadosEdicao.faseResponsabilidade === 'OutroOrgao';
+  }
 
   resetForm({
     values: {
@@ -153,7 +158,8 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
       await workflowAndamentoStore.editarFase({
         transferencia_id: route.params.transferenciaId,
         fase_id: valoresControlados.fase_mae_id,
-        orgao_responsavel_id: valoresControlados.orgao_id,
+        orgao_responsavel_id: !fasePertenceOutroOrgao.value
+          ? valoresControlados.orgao_id : undefined,
         tarefas: [{
           id: values.id,
           orgao_responsavel_id: valoresControlados.orgao_id,
