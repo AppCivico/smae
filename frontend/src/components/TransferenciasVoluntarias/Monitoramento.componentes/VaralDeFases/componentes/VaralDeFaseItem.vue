@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import EdicaoTarefaComCronogramaModal, { type EdicaoTarefaComCronogramaModalExposed } from './EdicaoTarefaComCronogramaModal.vue';
 
 export type FaseTipo = 'fase' | 'tarefa-cronograma' | 'tarefa-workflow';
@@ -48,6 +48,8 @@ const props = defineProps<Props>();
 
 const edicaoModal = ref<EdicaoTarefaComCronogramaModalExposed | undefined>();
 
+const ehOutroOrgao = computed(() => props.responsavel?.id === 'OutroOrgao');
+
 function handleEditar() {
   edicaoModal.value?.abrirModalFase({
     id: props.id,
@@ -66,7 +68,7 @@ function handleEditar() {
 <template>
   <article
     :class="[
-      'varal-de-fase-item__raiz'
+      !secundario ? 'varal-de-fase-item__raiz' : 'varal-de-fase-item__secundario'
     ]"
   >
     <section
@@ -76,6 +78,7 @@ function handleEditar() {
         { 'varal-de-fase-item--secundario': $props.secundario },
         { 'varal-de-fase-item--atual': $props.atual },
         { 'varal-de-fase-item--bloqueado': $props.bloqueado },
+        { 'varal-de-fase-item--outro-orgao': ehOutroOrgao },
       ]"
     >
       <dt
@@ -224,6 +227,23 @@ function handleEditar() {
   }
 }
 
+.varal-de-fase-item--outro-orgao {
+  .varal-de-fase-item__conteudo {
+    background-color: #e0e0ff;
+    border-color: #3636f7;
+  }
+
+  &.varal-de-fase-item--secundario {
+    .varal-de-fase-item__conteudo {
+      background-color: #e0e0ff;
+    }
+
+    .varal-de-fase-item__titulo-situacao {
+      background-color: #3636f7;
+    }
+  }
+}
+
 .varal-de-fase-item--bloqueado {
   &, &.varal-de-fase-item--secundario {
     .varal-de-fase-item__conteudo {
@@ -331,6 +351,11 @@ function handleEditar() {
   font-weight: 500;
 }
 
+.varal-de-fase-item__tarefas {
+  width: 100%;
+  margin-top: 2rem;
+}
+
 .varal-de-fase-item--largo {
   .varal-de-fase-item__titulo {
     font-size: 1.43rem;
@@ -384,23 +409,23 @@ function handleEditar() {
   }
 }
 
-.varal-de-fase-item__tarefas {
-  width: 100%;
-  margin-top: 2rem;
-}
+.varal-de-fase-item__raiz:has(.varal-de-fase-item__secundario),
+.varal-de-fase-item__secundario + .varal-de-fase-item__secundario {
+  .varal-de-fase-item--largo {
+    display: flex;
+    margin-top: 2rem;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
 
-article:has(+ article), article + article {
-  display: flex;
-  justify-content: center;
-  margin-top: 2rem;
-
-  &::before {
-    content: '';
-    position: absolute;
-    height: calc(100% + 2rem);
-    border: 1px dashed #B8C0CC;
-    z-index: -1;
-    bottom: 0;
+    &::before {
+      content: '';
+      position: absolute;
+      height: calc(100% + 2rem);
+      border: 1px dashed #B8C0CC;
+      z-index: -1;
+      bottom: 0;
+    }
   }
 }
 </style>

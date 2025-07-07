@@ -29,10 +29,6 @@ const tipoFase = ref<FaseTipo | undefined>(undefined);
 const situacoes = ref<any[]>([]);
 
 const schema = computed(() => {
-  if (!tipoFase.value) {
-    return undefined;
-  }
-
   if (tipoFase.value === 'fase') {
     return EdicaoTransferenciaFase;
   }
@@ -43,7 +39,7 @@ const schema = computed(() => {
 const {
   handleSubmit, resetForm, values, controlledValues, errors, validate,
 } = useForm({
-  validationSchema: () => schema.value,
+  validationSchema: schema,
 });
 
 type EdicaoDados = {

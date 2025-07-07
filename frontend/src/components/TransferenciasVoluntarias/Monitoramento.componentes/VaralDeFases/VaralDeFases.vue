@@ -43,6 +43,21 @@ async function iniciarFase() {
   workflowAndamentoStore.buscar();
 }
 
+function obterResponsavel({ andamento, responsabilidade }) {
+  if (andamento?.orgao_responsavel) {
+    return andamento?.orgao_responsavel;
+  }
+
+  const traducaoReponsabilidade = {
+    OutroOrgao: 'Outro Órgão',
+  };
+
+  return {
+    id: responsabilidade,
+    sigla: traducaoReponsabilidade[responsabilidade] || responsabilidade,
+  };
+}
+
 onMounted(() => {
   workflowAndamentoStore.buscar();
 });
@@ -114,7 +129,7 @@ onMounted(() => {
           :titulo="faseObjeto.fase.fase"
           :duracao="faseObjeto.duracao"
           :situacao="faseObjeto.andamento?.situacao"
-          :responsavel="faseObjeto.andamento?.orgao_responsavel"
+          :responsavel="obterResponsavel(faseObjeto)"
           :pessoa-responsavel="faseObjeto.andamento?.pessoa_responsavel"
           :tarefas="faseObjeto.tarefas"
           :situacoes="faseObjeto.situacoes"

@@ -4434,8 +4434,10 @@ export const alteracaoEmLoteNovoFiltro = object().shape({
 });
 
 export const EdicaoTransferenciaFase = object().shape({
-  orgao_id: number().label('Órgão responsável'),
-  pessoa_responsavel_id: number().label('Pessoa Responsável').required(),
+  orgao_id: string().label('Órgão responsável'),
+  pessoa_responsavel_id: number()
+    .label('Pessoa Responsável')
+    .when('orgao_id', (orgaoId, field) => (orgaoId === 'OutroOrgao' ? field.nullable() : field.required())),
   situacao_id: number().label('Situação').required(),
 });
 
