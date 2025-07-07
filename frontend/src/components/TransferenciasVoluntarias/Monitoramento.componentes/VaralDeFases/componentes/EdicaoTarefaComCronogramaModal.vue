@@ -107,6 +107,10 @@ async function salvarEFinaliarFase() {
   }
 
   try {
+    if (controlledValues.value.orgao_id === 'OutroOrgao') {
+      controlledValues.value.orgao_id = null;
+    }
+
     carregando.value = true;
 
     await workflowAndamentoStore.editarFase({
