@@ -121,6 +121,17 @@ export class WorkflowAndamentoFaseService {
                             400
                         );
                     }
+
+                    // Verificando também a situação de responsabilidade de outro órgão.
+                    if (
+                        dto.orgao_responsavel_id != undefined &&
+                        dto.orgao_responsavel_id == orgaoCasaCivil.id &&
+                        configFluxoFase.responsabilidade === WorkflowResponsabilidade.OutroOrgao
+                    )
+                        throw new HttpException(
+                            'orgao_responsavel_id| Fase é de responsabilidade de outro órgão e portanto não deve ser atribuida ao órgão da Casa Civil.',
+                            400
+                        );
                 }
 
                 // TODO!: Remover isso aqui
