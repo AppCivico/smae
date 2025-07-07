@@ -36,7 +36,7 @@ BEGIN
         coalesce(v.inicio_medicao),
         coalesce(v.fim_medicao,
             CASE WHEN
-                tipo='Global' THEN
+                tipo IN ('Global', 'Composta') THEN
                 ultimo_periodo_valido( v.periodicidade::"Periodicidade" , v.atraso_meses, v.inicio_medicao)
             ELSE
                 NULL
