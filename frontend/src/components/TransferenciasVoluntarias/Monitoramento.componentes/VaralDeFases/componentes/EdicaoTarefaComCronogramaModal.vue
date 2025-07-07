@@ -132,6 +132,10 @@ async function salvarEFinaliarFase() {
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   carregando.value = true;
 
+  if (valoresControlados.orgao_id === 'OutroOrgao') {
+    valoresControlados.orgao_id = null;
+  }
+
   try {
     if (tipoFase.value === 'fase') {
       await workflowAndamentoStore.editarFase({
@@ -255,6 +259,7 @@ onMounted(() => {
         </div>
 
         <div
+          v-if="values.orgao_id !== 'OutroOrgao'"
           class="f1 mb1"
         >
           <LabelFromYup
