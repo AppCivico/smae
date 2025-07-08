@@ -435,13 +435,17 @@ const geolocalizaçãoPorToken = computed(() => (currentFase.value?.loading
         </div>
         <div>
           <label class="label">Descrição</label>
-          <Field
+
+          <SmaeText
             name="descricao"
             as="textarea"
-            rows="3"
+            anular-vazio
+            :rows="3"
+            :maxlength="1000"
             class="inputtext light mb1"
-            :class="{ 'error': errors.descricao }"
+            :class="{ error: errors.descricao }"
           />
+
           <div class="error-msg">
             {{ errors.descricao }}
           </div>
