@@ -1976,85 +1976,13 @@ export class TransferenciaService {
      */
     async updateVetoresBusca(transferenciaId: number): Promise<void> {
         try {
-            // Step 1: Fetch all the necessary data in one go.
-            const dataForVector = await this.prisma.transferencia.findUnique({
-                where: { id: transferenciaId },
-                select: {
-                    esfera: true,
-                    interface: true,
-                    ano: true,
-                    gestor_contrato: true,
-                    secretaria_concedente_str: true,
-                    emenda: true,
-                    nome_programa: true,
-                    objeto: true,
-                    demanda: true,
-                    tipo: { select: { nome: true } },
-                    orgao_concedente: { select: { sigla: true, descricao: true } },
-                    secretaria_concedente: { select: { sigla: true, descricao: true } },
-                    parlamentar: {
-                        where: { removido_em: null },
-                        select: {
-                            cargo: true,
-                            parlamentar: { select: { nome_popular: true } },
-                            partido: { select: { sigla: true } },
-                        },
-                    },
-                    distribuicao_recursos: {
-                        where: { removido_em: null },
-                        select: {
-                            nome: true,
-                            objeto: true,
-                            orgao_gestor: { select: { sigla: true, descricao: true } },
-                        },
-                    },
-                },
-            });
-
-            if (!dataForVector) {
-                console.warn(`[updateVetoresBusca] Transferencia ID ${transferenciaId} not found.`);
-                return;
-            }
-
-            // Step 2: Build the text payload, matching the SQL logic.
-            const textPayload: string[] = [
-                dataForVector.esfera ?? '',
-                dataForVector.interface ?? '',
-                dataForVector.ano?.toString() ?? '',
-                dataForVector.gestor_contrato ?? '',
-                dataForVector.secretaria_concedente_str ?? '',
-                dataForVector.emenda ?? '',
-                dataForVector.nome_programa ?? '',
-                dataForVector.objeto ?? '',
-                dataForVector.demanda ?? '',
-                dataForVector.tipo?.nome ?? '',
-                dataForVector.orgao_concedente?.sigla ?? '',
-                dataForVector.orgao_concedente?.descricao ?? '',
-                dataForVector.secretaria_concedente?.sigla ?? '',
-                dataForVector.secretaria_concedente?.descricao ?? '',
-                ...dataForVector.parlamentar.map((p) => p.parlamentar?.nome_popular ?? ''),
-                ...dataForVector.parlamentar.map((p) => p.partido?.sigla ?? ''),
-                ...dataForVector.parlamentar.map((p) => p.cargo ?? ''),
-                ...dataForVector.distribuicao_recursos.flatMap((dr) => [
-                    dr.orgao_gestor?.sigla ?? '',
-                    dr.orgao_gestor?.descricao ?? '',
-                    dr.nome ?? '',
-                    dr.objeto ?? '',
-                ]),
-            ];
-
-            // Filter out null/undefined values and join into a single string.
-            const fullText = textPayload.filter(Boolean).join(' ');
-
-            // Step 3: Use a raw query to apply the to_tsvector function and update the record.
             await this.prisma.$executeRaw`
                 UPDATE transferencia
-                SET vetores_busca = to_tsvector('simple', ${fullText})
+                SET vetores_busca = f_rebuild_transferencia_tsvector(${transferenciaId}::integer)
                 WHERE id = ${transferenciaId};
             `;
         } catch (error) {
             // Log the error but don't let it crash the main flow.
-            // This is a background/non-critical update.
             console.error(
                 `[updateVetoresBusca] Failed to update tsvector for transferencia ${transferenciaId}:`,
                 error
