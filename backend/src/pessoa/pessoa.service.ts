@@ -13,7 +13,7 @@ import { uuidv7 } from 'uuidv7';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { ListaDePrivilegios } from '../common/ListaDePrivilegios';
 import { LoggerWithLog } from '../common/LoggerWithLog';
-import { CONST_PERFIL_PARTICIPANTE_EQUIPE, LISTA_PRIV_ADMIN } from '../common/consts';
+import { CalcSistemasDisponiveis, CONST_PERFIL_PARTICIPANTE_EQUIPE, LISTA_PRIV_ADMIN } from '../common/consts';
 import { IdCodTituloDto } from '../common/dto/IdCodTitulo.dto';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { MathRandom } from '../common/math-random';
@@ -36,8 +36,6 @@ import { ListPessoa } from './entities/list-pessoa.entity';
 import { Pessoa as PessoaDto } from './entities/pessoa.entity';
 import { PessoaResponsabilidadesMetaService } from './pessoa.responsabilidades.metas.service';
 import { FeatureFlagService } from '../feature-flag/feature-flag.service';
-import { CalcSistemasDisponiveis } from '../minha-conta/minha-conta.controller';
-
 const BCRYPT_ROUNDS = 10;
 
 @Injectable()

@@ -8,14 +8,7 @@ import { PessoaService } from '../pessoa/pessoa.service';
 import { MinhaContaDto, SessaoDto, TesteDataDto } from './models/minha-conta.dto';
 import { NovaSenhaDto } from './models/nova-senha.dto';
 import { FeatureFlagService } from '../feature-flag/feature-flag.service';
-export const CalcSistemasDisponiveis = (mostrar_pdm_antigo: boolean): (ModuloSistema | undefined)[] => [
-    mostrar_pdm_antigo ? 'PDM' : undefined,
-    'ProgramaDeMetas',
-    'Projetos',
-    'CasaCivil',
-    'MDO',
-    'PlanoSetorial',
-];
+import { CalcSistemasDisponiveis } from '../common/consts';
 
 @ApiTags('Minha Conta')
 @Controller('')
