@@ -1,4 +1,12 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage, Field, useForm, useIsFormDirty,
+} from 'vee-validate';
+import {
+  computed, reactive, watch,
+} from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import SmallModal from '@/components/SmallModal.vue';
 import { arquivo as schemaDoFormulário } from '@/consts/formSchemas';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
@@ -8,14 +16,6 @@ import {
   useDocumentTypesStore,
 } from '@/stores';
 import { useObrasStore } from '@/stores/obras.store';
-import { storeToRefs } from 'pinia';
-import {
-    ErrorMessage, Field, useForm, useIsFormDirty,
-} from 'vee-validate';
-import {
-    computed, reactive, watch,
-} from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -130,11 +130,13 @@ watch(arquivoParaEdição, (novosValores) => {
             name="descricao"
             :schema="schema"
           />
-          <Field
+          <SmaeText
             name="descricao"
             as="textarea"
             class="inputtext light mb1"
             :class="{ error: errors.descricao }"
+            rows="5"
+            maxlength="500"
           />
           <ErrorMessage
             class="error-msg mb1"
