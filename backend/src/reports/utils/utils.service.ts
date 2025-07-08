@@ -126,11 +126,11 @@ export function ParseParametrosDaFonte(fonte: FonteRelatorio, value: any): any {
             theClass = CreateRelMonitoramentoMensalDto;
             break;
         case 'PrevisaoCusto':
+        case 'PSPrevisaoCusto':
             theClass = CreateRelPdmPrevisaoCustoDto;
             break;
         case 'ProjetoPrevisaoCusto':
         case 'ObrasPrevisaoCusto':
-        case 'PSPrevisaoCusto':
             theClass = CreateRelProjetoPrevisaoCustoDto;
             break;
         case 'Projeto':
