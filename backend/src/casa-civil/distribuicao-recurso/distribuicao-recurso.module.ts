@@ -10,6 +10,7 @@ import { DistribuicaoRecursoStatusController } from './distribuicao-recurso-stat
 import { TarefaModule } from 'src/pp/tarefa/tarefa.module';
 import { SeiIntegracaoModule } from '../../sei-integracao/sei-integracao.module';
 import { WorkflowModule } from '../workflow/configuracao/workflow.module';
+import { TransferenciaModule } from '../transferencia/transferencia.module';
 
 @Module({
     imports: [
@@ -20,6 +21,7 @@ import { WorkflowModule } from '../workflow/configuracao/workflow.module';
         forwardRef(() => TarefaModule),
         SeiIntegracaoModule,
         WorkflowModule,
+        forwardRef(() => TransferenciaModule),
     ],
     controllers: [DistribuicaoRecursoController, DistribuicaoRecursoStatusController],
     providers: [DistribuicaoRecursoService, DistribuicaoRecursoStatusService],

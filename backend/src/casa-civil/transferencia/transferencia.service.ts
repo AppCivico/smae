@@ -265,7 +265,6 @@ export class TransferenciaService {
 
                 const updates = [];
                 for (const row of tarefaEtapasAcompanhamentos) {
-                    console.log(row);
                     if (row.nivel == 1 && row.tarefa_pai_id == null) {
                         // Tarefa referente à própia etapa.
 
@@ -1056,6 +1055,11 @@ export class TransferenciaService {
             }
         );
 
+        this.updateVetoresBusca(updated.id).catch((err) => {
+            // Optional: log if the background task fails for some reason
+            console.error(`Background task updateVetoresBusca failed for transferencia ${updated.id}`, err);
+        });
+
         return updated;
     }
 
@@ -1246,7 +1250,7 @@ export class TransferenciaService {
                 ? r.andamentoWorkflow.find((e) => e.workflow_fase_id == r.workflow_fase_atual!.id)?.workflow_situacao
                       ?.situacao
                 : null;
-            console.log(faseStatusAtual);
+
             return {
                 id: r.id,
                 ano: r.ano,
@@ -1799,11 +1803,6 @@ export class TransferenciaService {
             },
         });
 
-        console.log('========================================');
-        console.log(andamentoPrimeiraFase);
-        console.log(workflow_id);
-        console.log('========================================');
-
         if (!andamentoPrimeiraFase.tarefaEspelhada.length)
             throw new HttpException(
                 'Erro Interno / Configuração? Não foi possível encontrar tarefa espelhada para o primeiro nível do cronograma.',
@@ -1968,5 +1967,98 @@ export class TransferenciaService {
                 criador: r.criador,
             } satisfies TransferenciaHistoricoDto;
         });
+    }
+
+    /**
+     * Rebuilds the full-text search vector for a given transferencia.
+     * This should be called outside of any transaction that modifies its child records.
+     * @param transferenciaId The ID of the transferencia to update.
+     */
+    async updateVetoresBusca(transferenciaId: number): Promise<void> {
+        try {
+            // Step 1: Fetch all the necessary data in one go.
+            const dataForVector = await this.prisma.transferencia.findUnique({
+                where: { id: transferenciaId },
+                select: {
+                    esfera: true,
+                    interface: true,
+                    ano: true,
+                    gestor_contrato: true,
+                    secretaria_concedente_str: true,
+                    emenda: true,
+                    nome_programa: true,
+                    objeto: true,
+                    demanda: true,
+                    tipo: { select: { nome: true } },
+                    orgao_concedente: { select: { sigla: true, descricao: true } },
+                    secretaria_concedente: { select: { sigla: true, descricao: true } },
+                    parlamentar: {
+                        where: { removido_em: null },
+                        select: {
+                            cargo: true,
+                            parlamentar: { select: { nome_popular: true } },
+                            partido: { select: { sigla: true } },
+                        },
+                    },
+                    distribuicao_recursos: {
+                        where: { removido_em: null },
+                        select: {
+                            nome: true,
+                            objeto: true,
+                            orgao_gestor: { select: { sigla: true, descricao: true } },
+                        },
+                    },
+                },
+            });
+
+            if (!dataForVector) {
+                console.warn(`[updateVetoresBusca] Transferencia ID ${transferenciaId} not found.`);
+                return;
+            }
+
+            // Step 2: Build the text payload, matching the SQL logic.
+            const textPayload: string[] = [
+                dataForVector.esfera ?? '',
+                dataForVector.interface ?? '',
+                dataForVector.ano?.toString() ?? '',
+                dataForVector.gestor_contrato ?? '',
+                dataForVector.secretaria_concedente_str ?? '',
+                dataForVector.emenda ?? '',
+                dataForVector.nome_programa ?? '',
+                dataForVector.objeto ?? '',
+                dataForVector.demanda ?? '',
+                dataForVector.tipo?.nome ?? '',
+                dataForVector.orgao_concedente?.sigla ?? '',
+                dataForVector.orgao_concedente?.descricao ?? '',
+                dataForVector.secretaria_concedente?.sigla ?? '',
+                dataForVector.secretaria_concedente?.descricao ?? '',
+                ...dataForVector.parlamentar.map((p) => p.parlamentar?.nome_popular ?? ''),
+                ...dataForVector.parlamentar.map((p) => p.partido?.sigla ?? ''),
+                ...dataForVector.parlamentar.map((p) => p.cargo ?? ''),
+                ...dataForVector.distribuicao_recursos.flatMap((dr) => [
+                    dr.orgao_gestor?.sigla ?? '',
+                    dr.orgao_gestor?.descricao ?? '',
+                    dr.nome ?? '',
+                    dr.objeto ?? '',
+                ]),
+            ];
+
+            // Filter out null/undefined values and join into a single string.
+            const fullText = textPayload.filter(Boolean).join(' ');
+
+            // Step 3: Use a raw query to apply the to_tsvector function and update the record.
+            await this.prisma.$executeRaw`
+                UPDATE transferencia
+                SET vetores_busca = to_tsvector('simple', ${fullText})
+                WHERE id = ${transferenciaId};
+            `;
+        } catch (error) {
+            // Log the error but don't let it crash the main flow.
+            // This is a background/non-critical update.
+            console.error(
+                `[updateVetoresBusca] Failed to update tsvector for transferencia ${transferenciaId}:`,
+                error
+            );
+        }
     }
 }

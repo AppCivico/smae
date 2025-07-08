@@ -154,25 +154,26 @@ BEFORE INSERT ON transferencia
 FOR EACH ROW
 EXECUTE PROCEDURE f_transferencia_update_tsvector();
 
--- DROP TRIGGER trigger_distribuicao_update_tsvector_insert;
-CREATE TRIGGER trigger_distribuicao_update_tsvector_insert
-AFTER INSERT ON distribuicao_recurso
-FOR EACH ROW
-EXECUTE PROCEDURE f_transferencia_update_tsvector();
+DROP TRIGGER IF EXISTS trigger_distribuicao_update_tsvector_insert ON distribuicao_recurso;
+--CREATE TRIGGER trigger_distribuicao_update_tsvector_insert
+-- AFTER INSERT ON distribuicao_recurso
+-- FOR EACH ROW
+-- EXECUTE PROCEDURE f_transferencia_update_tsvector();
 
-CREATE TRIGGER trigger_distribuicao_update_tsvector_update
-AFTER UPDATE ON distribuicao_recurso
-FOR EACH ROW
-WHEN ( OLD.nome IS DISTINCT FROM NEW.nome OR
-       OLD.objeto IS DISTINCT FROM NEW.objeto OR
-       OLD.orgao_gestor_id IS DISTINCT FROM NEW.orgao_gestor_id OR
-       OLD.removido_em IS DISTINCT FROM NEW.removido_em
-)
-EXECUTE PROCEDURE f_transferencia_update_tsvector();
-EXCEPTION
-   WHEN duplicate_object THEN
-      NULL;
-END;$$;
+DROP TRIGGER trigger_distribuicao_update_tsvector_update ON distribuicao_recurso;
+-- CREATE TRIGGER trigger_distribuicao_update_tsvector_update
+-- AFTER UPDATE ON distribuicao_recurso
+-- FOR EACH ROW
+-- WHEN ( OLD.nome IS DISTINCT FROM NEW.nome OR
+--        OLD.objeto IS DISTINCT FROM NEW.objeto OR
+--        OLD.orgao_gestor_id IS DISTINCT FROM NEW.orgao_gestor_id OR
+--        OLD.removido_em IS DISTINCT FROM NEW.removido_em
+-- )
+-- EXECUTE PROCEDURE f_transferencia_update_tsvector();
+-- EXCEPTION
+--    WHEN duplicate_object THEN
+--       NULL;
+-- END;$$;
 
 CREATE OR REPLACE FUNCTION f_transferencia_parlamentar_update_tsvector() RETURNS TRIGGER AS $$
 BEGIN

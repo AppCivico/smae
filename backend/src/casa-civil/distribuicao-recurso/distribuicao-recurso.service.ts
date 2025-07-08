@@ -25,6 +25,7 @@ import {
 } from './entities/distribuicao-recurso.entity';
 import { WorkflowService } from '../workflow/configuracao/workflow.service';
 import { Date2YMD } from '../../common/date2ymd';
+import { TransferenciaService } from '../transferencia/transferencia.service';
 
 type OperationsRegistroSEI = {
     id?: number;
@@ -57,7 +58,9 @@ export class DistribuicaoRecursoService {
         @Inject(forwardRef(() => TarefaService))
         private readonly tarefaService: TarefaService,
         private readonly seiService: SeiIntegracaoService,
-        private readonly workflowService: WorkflowService
+        private readonly workflowService: WorkflowService,
+        @Inject(forwardRef(() => TransferenciaService))
+        private readonly transferenciaService: TransferenciaService
     ) {}
 
     async create(
@@ -445,6 +448,12 @@ export class DistribuicaoRecursoService {
                 timeout: 50000,
             });
         }
+
+        // Atualizando vetores da transferência.
+        this.transferenciaService.updateVetoresBusca(dto.transferencia_id).catch((err) => {
+            // Optional: log if the background task fails for some reason
+            console.error(`Background task updateVetoresBusca failed for transferencia ${dto.transferencia_id}`, err);
+        });
 
         return { id: created.id };
     }
@@ -1525,6 +1534,12 @@ export class DistribuicaoRecursoService {
                 isolationLevel: 'Serializable',
             }
         );
+
+        // Atualizando vetores da transferência.
+        this.transferenciaService.updateVetoresBusca(self.transferencia_id).catch((err) => {
+            // Optional: log if the background task fails for some reason
+            console.error(`Background task updateVetoresBusca failed for transferencia ${self.transferencia_id}`, err);
+        });
 
         return { id };
     }
