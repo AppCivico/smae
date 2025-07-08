@@ -51,11 +51,14 @@
               :schema="schema"
             />
 
-            <Field
+            <SmaeText
               class="inputtext light f1"
               as="textarea"
               name="analise_qualitativa_liberador"
               :disabled="!forumlariosAExibir.liberacao.liberado"
+              anular-vazio
+              rows="3"
+              maxlength="1000"
             />
 
             <ErrorMessage
@@ -73,11 +76,15 @@
               name="analise_qualitativa_aprovador"
               :schema="schema"
             />
-            <Field
+
+            <SmaeText
               class="inputtext light f1"
               as="textarea"
               name="analise_qualitativa_aprovador"
               :disabled="!forumlariosAExibir.aprovacao.liberado || fase === 'liberacao'"
+              anular-vazio
+              rows="3"
+              maxlength="1000"
             />
 
             <ErrorMessage
@@ -112,11 +119,14 @@
               :schema="schema"
             />
 
-            <Field
+            <SmaeText
               class="inputtext light f1"
               as="textarea"
               name="pedido_complementacao"
               :disabled="!values.solicitar_complementacao"
+              anular-vazio
+              rows="3"
+              maxlength="1000"
             />
 
             <ErrorMessage
@@ -199,13 +209,16 @@
               :schema="schema"
             />
 
-            <Field
+            <SmaeText
               class="inputtext light f1"
               as="textarea"
               name="analise_qualitativa"
               :disabled="!forumlariosAExibir.cadastro.liberado
                 || fase === 'aprovacao'
                 || fase === 'liberacao'"
+              anular-vazio
+              rows="3"
+              maxlength="1000"
             />
 
             <ErrorMessage
@@ -253,12 +266,12 @@
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, useForm } from 'vee-validate';
 import { computed, ref } from 'vue';
+import { useRoute } from 'vue-router';
 import UploadArquivos, { ArquivoAdicionado } from '@/components/UploadArquivos.vue';
 import { useCicloAtualizacaoStore } from '@/stores/cicloAtualizacao.store';
 import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
 import { cicloAtualizacaoModalAdicionarSchema } from '@/consts/formSchemas';
 import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store';
-import { useRoute } from 'vue-router';
 import useCicloAtualizacao from './composables/useCicloAtualizacao';
 
 type VariavelConfiguracaoItem = {
@@ -482,9 +495,4 @@ function removerArquivo(arquivoIndex: number) {
   opacity: 0.2;
 }
 
-.formulario__item {
-  textarea {
-    height: 124px;
-  }
-}
 </style>
