@@ -1,4 +1,4 @@
-FROM node:20-bookworm AS smae_api
+FROM node:24-bookworm AS smae_api
 
 # Instala o graphviz (dot) para gerar EAP do tarefas do lado do server-side
 RUN apt-get update && apt-get install -y --no-install-recommends graphviz
@@ -16,7 +16,7 @@ RUN fc-cache -f -v
 
 WORKDIR /usr/src/app
 
-RUN npm --loglevel=error install -g npm@11.4.0
+RUN npm --loglevel=error install -g npm@11.4.2
 
 COPY package.json ./
 COPY package-lock.json ./
