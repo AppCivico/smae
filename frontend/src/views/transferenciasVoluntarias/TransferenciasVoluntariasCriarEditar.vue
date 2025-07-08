@@ -680,13 +680,16 @@ watch(itemParaEdicao, (novosValores) => {
         name="detalhamento"
         :schema="schema"
       />
-      <Field
+
+      <SmaeText
         name="detalhamento"
         as="textarea"
         class="inputtext light mb1"
+        anular-vazio
         rows="5"
         maxlength="2048"
       />
+
       <ErrorMessage
         class="error-msg mb1"
         name="detalhamento"
@@ -765,13 +768,16 @@ watch(itemParaEdicao, (novosValores) => {
         name="observacoes"
         :schema="schema"
       />
-      <Field
+
+      <SmaeText
         name="observacoes"
         as="textarea"
         maxlength="2048"
         class="inputtext light mb1"
+        anular-vazio
         rows="5"
       />
+
       <ErrorMessage
         class="error-msg mb1"
         name="observacoes"

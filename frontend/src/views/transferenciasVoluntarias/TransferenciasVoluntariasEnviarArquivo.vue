@@ -1,11 +1,4 @@
 <script setup>
-import TituloDaPagina from '@/components/TituloDaPagina.vue';
-import { arquivo as schemaDoFormulário } from '@/consts/formSchemas';
-import dateTimeToDate from '@/helpers/dateTimeToDate';
-import requestS from '@/helpers/requestS.ts';
-import { useAlertStore } from '@/stores/alert.store';
-import { useDocumentTypesStore } from '@/stores/documentTypes.store';
-import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage, Field, useForm, useIsFormDirty,
@@ -16,6 +9,13 @@ import {
   watch,
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
+import { arquivo as schemaDoFormulário } from '@/consts/formSchemas';
+import requestS from '@/helpers/requestS.ts';
+import dateTimeToDate from '@/helpers/dateTimeToDate';
+import { useAlertStore } from '@/stores/alert.store';
+import { useDocumentTypesStore } from '@/stores/documentTypes.store';
+import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -127,12 +127,17 @@ watch(arquivoParaEdição, (novosValores) => {
           name="descricao"
           :schema="schema"
         />
-        <Field
+
+        <SmaeText
           name="descricao"
           as="textarea"
           class="inputtext light mb1"
+          anular-vazio
+          rows="3"
+          maxlength="1000"
           :class="{ 'error': errors.descricao }"
         />
+
         <ErrorMessage
           class="error-msg mb1"
           name="descricao"
