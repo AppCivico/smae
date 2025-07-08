@@ -708,13 +708,17 @@ watch(() => props.group, () => {
       <hr class="mt2 mb2">
       <div class="f1">
         <label class="label">Contexto</label>
-        <Field
-          name="contexto"
+
+        <SmaeText
+          anular-vazio
           as="textarea"
-          rows="3"
+          name="contexto"
+          :rows="3"
+          :maxlength="1000"
           class="inputtext light mb1"
-          :class="{ 'error': errors.contexto }"
+          :class="{ error: errors.contexto }"
         />
+
         <div class="error-msg">
           {{ errors.contexto }}
         </div>
@@ -723,13 +727,17 @@ watch(() => props.group, () => {
         <label class="label">
           {{ activePdm.rotulo_complementacao_meta || 'Informações Complementares' }}
         </label>
-        <Field
-          name="complemento"
+
+        <SmaeText
+          anular-vazio
           as="textarea"
-          rows="3"
+          name="complemento"
+          :rows="3"
+          :maxlength="1000"
           class="inputtext light mb1"
-          :class="{ 'error': errors.complemento }"
+          :class="{ error: errors.complemento }"
         />
+
         <div class="error-msg">
           {{ errors.complemento }}
         </div>

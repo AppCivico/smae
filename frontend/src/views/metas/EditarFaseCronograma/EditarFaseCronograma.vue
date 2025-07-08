@@ -441,12 +441,14 @@ iniciar();
               name="descricao"
             />
 
-            <Field
+            <SmaeText
               name="descricao"
               as="textarea"
-              rows="3"
+              anular-vazio
+              :rows="3"
+              :maxlength="1000"
               class="inputtext light mb1"
-              :class="{ 'error': errors.descricao }"
+              :class="{ error: errors.descricao }"
             />
 
             <ErrorMessage name="descricao" />
