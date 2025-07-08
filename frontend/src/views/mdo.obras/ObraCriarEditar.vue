@@ -1183,7 +1183,7 @@ watch(listaDeTiposDeIntervenção, () => {
             Descrição&nbsp;<span class="tvermelho">*</span>
           </LabelFromYup>
 
-          <Field
+          <SmaeText
             name="origem_outro"
             as="textarea"
             rows="5"
