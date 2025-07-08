@@ -173,7 +173,7 @@ DROP TRIGGER trigger_distribuicao_update_tsvector_update ON distribuicao_recurso
 -- EXCEPTION
 --    WHEN duplicate_object THEN
 --       NULL;
--- END;$$;
+END;$$;
 
 CREATE OR REPLACE FUNCTION f_transferencia_parlamentar_update_tsvector() RETURNS TRIGGER AS $$
 BEGIN
