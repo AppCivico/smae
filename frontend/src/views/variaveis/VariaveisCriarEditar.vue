@@ -382,14 +382,17 @@ onUnmounted(() => {
               name="descricao"
               :schema="schema"
             />
-            <Field
+
+            <SmaeText
               name="descricao"
               as="textarea"
               rows="5"
+              anular-vazio
               class="inputtext light mb1"
               maxlength="500"
-              :class="{ 'error': errors.descricao }"
+              :class="{ error: errors.descricao }"
             />
+
             <ErrorMessage
               name="descricao"
               class="error-msg"
@@ -405,14 +408,17 @@ onUnmounted(() => {
               name="metodologia"
               :schema="schema"
             />
-            <Field
+
+            <SmaeText
               name="metodologia"
               as="textarea"
               rows="5"
+              anular-vazio
               class="inputtext light mb1"
               maxlength="500"
-              :class="{ 'error': errors.metodologia }"
+              :class="{ error: errors.metodologia }"
             />
+
             <ErrorMessage
               name="metodologia"
               class="error-msg"
