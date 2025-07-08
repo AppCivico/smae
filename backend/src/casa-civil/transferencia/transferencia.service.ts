@@ -879,7 +879,8 @@ export class TransferenciaService {
                             orgao_gestor_id: orgaoCasaCivil.id,
                         },
                         user,
-                        true
+                        true,
+                        prismaTxn
                     );
                 }
 
