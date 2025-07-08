@@ -22,12 +22,12 @@ export class WorkflowAndamentoFluxoDto extends DetailWorkflowFluxoDto {
     atual: boolean;
     concluida: boolean;
     @ApiProperty({ type: () => [WorkflowAndamentoFasesDto] })
-    fases: WorkflowAndamentoFasesDto[];
+    declare fases: WorkflowAndamentoFasesDto[];
 }
 
 export class WorkflowAndamentoFasesDto extends DetailWorkflowFluxoFaseDto {
     @ApiProperty({ type: () => [WorkflowAndamentoTarefasDto] })
-    tarefas: WorkflowAndamentoTarefasDto[];
+    declare tarefas: WorkflowAndamentoTarefasDto[];
     andamento: AndamentoFaseDto | null;
 }
 

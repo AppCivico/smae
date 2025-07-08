@@ -12,12 +12,15 @@ import { AuthService } from './../auth.service';
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
     constructor(private authService: AuthService) {
+        const secret = process.env.SESSION_JWT_SECRET;
+        if (!secret) throw new Error('SESSION_JWT_SECRET environment variable is required');
+
         super({
-            passReqToCallback: true,
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
             ignoreExpiration: false,
-            secretOrKey: process.env.SESSION_JWT_SECRET,
+            secretOrKey: secret,
             audience: 'l',
+            passReqToCallback: true,
         });
     }
 

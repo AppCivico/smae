@@ -20,7 +20,7 @@ import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { CreateProjetoTagDto } from './dto/create-tag.dto';
 import { FilterProjetoTagDto } from './dto/filter-tag.dto';
 import { ListProjetoTagDto } from './dto/list-tag.dto';
-import { UpdateTagDto } from './dto/update-tag.dto';
+import { ProjetoUpdateTagDto } from './dto/update-tag.dto';
 import { ProjetoTagService } from './tag.service';
 import { TipoProjeto } from '@prisma/client';
 import { ProjetoTagDto } from './entities/tag.entity';
@@ -57,7 +57,7 @@ export class ProjetoTagController {
     @Roles(['ProjetoTag.editar'])
     async update(
         @Param() params: FindOneParams,
-        @Body() updateTagDto: UpdateTagDto,
+        @Body() updateTagDto: ProjetoUpdateTagDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
         return await this.tagService.update(this.tipo, +params.id, updateTagDto, user);
@@ -106,7 +106,7 @@ export class ProjetoTagMDOController {
     @Roles(['ProjetoTagMDO.editar'])
     async update(
         @Param() params: FindOneParams,
-        @Body() updateTagDto: UpdateTagDto,
+        @Body() updateTagDto: ProjetoUpdateTagDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
         return await this.tagService.update(this.tipo, +params.id, updateTagDto, user);

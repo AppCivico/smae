@@ -19,7 +19,7 @@ export class GeoInfoBaseDto {
     @ApiProperty({ enum: GeoReferenciaTipo })
     tipo_referencia: GeoReferenciaTipo;
 
-    @ApiProperty({ type: 'object', description: 'GeoJSON original da localização' })
+    @ApiProperty({ type: 'object', description: 'GeoJSON original da localização', additionalProperties: true })
     geom_geojson: GeoJSON;
 
     @ApiPropertyOptional({ description: 'Distância em metros até o ponto de busca (apenas se busca por lat/lon)' })

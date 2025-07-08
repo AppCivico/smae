@@ -16,18 +16,18 @@ export class TarefaItemDto {
     tarefa_pai_id: number | null;
     tarefa: string;
 
-    @IsDateYMD({nullable: true})
+    @IsDateYMD({ nullable: true })
     inicio_planejado: string | null;
 
-    @IsDateYMD({nullable: true})
+    @IsDateYMD({ nullable: true })
     termino_planejado: string | null;
 
     duracao_planejado: number | null;
 
-    @IsDateYMD({nullable: true})
+    @IsDateYMD({ nullable: true })
     inicio_real: string | null;
 
-    @IsDateYMD({nullable: true})
+    @IsDateYMD({ nullable: true })
     termino_real: string | null;
 
     duracao_real: number | null;
@@ -73,9 +73,7 @@ export class TarefaDetailDto extends TarefaItemDto {
     duracao_planejado_calculado: boolean;
 
     descricao: string;
-    recursos: string;
 
-    dependencias: TarefaDependenciaDto[];
     projeto: ProjetoDetailDto | null;
 }
 

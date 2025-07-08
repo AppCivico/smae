@@ -98,7 +98,9 @@ export class FilterVariavelDto {
 
     @IsOptional()
     @IsString()
-    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Palavra Chave' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Palavra Chave' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     palavra_chave?: string;
 
     @IsOptional()
@@ -162,7 +164,9 @@ export class VariavelOrderByDto {
 
     @IsEnum(VariavelOrderEnum)
     @ApiProperty({ enum: VariavelOrderEnum, enumName: 'VariavelOrderEnum', default: 'codigo' })
-    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Ordem Coluna' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Ordem Coluna' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     ordem_coluna: string = 'codigo';
 }
 
@@ -190,9 +194,4 @@ export class FilterVariavelGlobalDto extends IntersectionType(FilterVariavelDto,
     @IsInt()
     @Transform(NumberTransform)
     not_indicador_id?: number;
-
-    @IsOptional()
-    @IsInt()
-    @Transform(NumberTransform)
-    variavel_mae_id?: number;
 }

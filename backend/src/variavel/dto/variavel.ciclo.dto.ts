@@ -10,18 +10,17 @@ import {
     IsOptional,
     IsString,
     MaxLength,
-    MinLength,
     ValidateIf,
-    ValidateNested,
+    ValidateNested
 } from 'class-validator';
-import { IsDateYMD } from '../../auth/decorators/date.decorator';
-import { NumberTransform } from '../../auth/transforms/number.transform';
-import { ArquivoBaseDto } from '../../upload/dto/create-upload.dto';
-import { VariavelResumo } from './list-variavel.dto';
-import { NumberArrayTransformOrEmpty } from '../../auth/transforms/number-array.transform';
-import { IdTituloDto } from '../../common/dto/IdTitulo.dto';
-import { FilterVariavelDto } from './filter-variavel.dto';
 import { MAX_LENGTH_DEFAULT, MAX_LENGTH_MEDIO } from 'src/common/consts';
+import { IsDateYMD } from '../../auth/decorators/date.decorator';
+import { NumberArrayTransformOrEmpty } from '../../auth/transforms/number-array.transform';
+import { NumberTransform } from '../../auth/transforms/number.transform';
+import { IdTituloDto } from '../../common/dto/IdTitulo.dto';
+import { ArquivoBaseDto } from '../../upload/dto/create-upload.dto';
+import { FilterVariavelDto } from './filter-variavel.dto';
+import { VariavelResumo } from './list-variavel.dto';
 
 export class ListVariavelGlobalCicloDto {
     linhas: VariavelGlobalCicloDto[];
@@ -56,7 +55,7 @@ export class FilterVariavelGlobalCicloDto extends FilterVariavelDto {
     @IsOptional()
     @IsInt()
     @Transform(NumberTransform)
-    meta_id?: number;
+    declare meta_id?: number;
 
     @ApiProperty({
         description: 'ID do pdm/ps, prioridade 4, usado apenas no filtro de GET plano-setorial-variavel-ciclo',
@@ -72,7 +71,7 @@ export class FilterVariavelGlobalCicloDto extends FilterVariavelDto {
     @IsOptional()
     @IsInt()
     @Transform(NumberTransform)
-    iniciativa_id?: number;
+    declare iniciativa_id?: number;
 
     @ApiProperty({
         description: 'ID da atividade, prioridade 1, usado apenas no filtro de GET plano-setorial-variavel-ciclo',
@@ -80,7 +79,7 @@ export class FilterVariavelGlobalCicloDto extends FilterVariavelDto {
     @IsOptional()
     @IsInt()
     @Transform(NumberTransform)
-    atividade_id?: number;
+    declare atividade_id?: number;
 
     @IsOptional()
     @IsDateYMD()

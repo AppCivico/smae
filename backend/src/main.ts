@@ -147,7 +147,16 @@ function createSwaggerConfig(title: string, description: string) {
             name: 'smae-sistemas',
             in: 'header',
             required: false,
-            example: 'SMAE,ProgramaDeMetas,PDM,CasaCivil,Projetos,PlanoSetorial,MDO',
+
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'string',
+                        example: 'SMAE,ProgramaDeMetas,PDM,CasaCivil,Projetos,PlanoSetorial,MDO',
+                        description: `Lista de sistemas separados por vírgula, ex: "sistema1,sistema2"`,
+                    },
+                },
+            },
         });
 }
 

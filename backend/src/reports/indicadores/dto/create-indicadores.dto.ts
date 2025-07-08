@@ -82,7 +82,7 @@ export class CreateRelIndicadorDto extends IntersectionType(FiltroMetasIniAtivid
 
     @IsNumber()
     @Type(() => Number)
-    pdm_id?: number;
+    declare pdm_id?: number; // reaplicado pra tirar o required do campo
 }
 
 export class CreateRelIndicadorRegioesDto extends CreateRelIndicadorDto {

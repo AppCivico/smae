@@ -16,7 +16,7 @@ import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import {
     CreateCategoriaAssuntoVariavelDto,
     FilterCategoriaAssuntoVariavelDto,
-    ListAssuntoVariavelDto,
+    ListCategoriaAssuntoVariavelDto,
     CategoriaAssuntoVariavelDto,
     UpdateCategoriaAssuntoVariavelDto,
 } from './dto/categoria-assunto-variavel.dto';
@@ -41,7 +41,7 @@ export class CategoriaAssuntoVariavelController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    async findAll(@Query() filters: FilterCategoriaAssuntoVariavelDto): Promise<ListAssuntoVariavelDto> {
+    async findAll(@Query() filters: FilterCategoriaAssuntoVariavelDto): Promise<ListCategoriaAssuntoVariavelDto> {
         return { linhas: await this.assuntoService.findAll(filters) };
     }
 

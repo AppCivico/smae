@@ -25,6 +25,6 @@ export class CategoriaAssuntoVariavelDto {
     id: number;
 }
 
-export class ListAssuntoVariavelDto {
+export class ListCategoriaAssuntoVariavelDto {
     linhas: CategoriaAssuntoVariavelDto[];
 }
