@@ -106,14 +106,17 @@ observadoresStore.buscarTudo();
           name="descricao"
           :schema="schema"
         />
-        <Field
+
+        <SmaeText
           name="descricao"
           as="textarea"
+          anular-vazio
           rows="5"
           class="inputtext light mb1"
           maxlength="500"
-          :class="{ 'error': errors.descricao }"
+          :class="{ error: errors.descricao }"
         />
+
         <ErrorMessage
           name="descricao"
           class="error-msg"
