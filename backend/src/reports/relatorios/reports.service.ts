@@ -781,7 +781,7 @@ export class ReportsService {
     private async getRelatorioFonteString(fonte: FonteRelatorio): Promise<string> {
         switch (fonte) {
             case FonteRelatorio.AtvPendentes:
-                return 'Casa Civil - Atividades Pendentes';
+                return 'SERI - Atividades Pendentes';
             case FonteRelatorio.Indicadores:
                 return 'Indicadores';
             case FonteRelatorio.MonitoramentoMensal:

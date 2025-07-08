@@ -129,7 +129,7 @@ export class WorkflowAndamentoFaseService {
                         configFluxoFase.responsabilidade === WorkflowResponsabilidade.OutroOrgao
                     )
                         throw new HttpException(
-                            'orgao_responsavel_id| Fase é de responsabilidade de outro órgão e portanto não deve ser atribuida ao órgão da Casa Civil.',
+                            'orgao_responsavel_id| Fase é de responsabilidade de outro órgão e portanto não deve ser atribuida ao órgão da SERI.',
                             400
                         );
                 }
@@ -507,7 +507,7 @@ export class WorkflowAndamentoFaseService {
                         where: { removido_em: null, sigla: 'SERI' },
                         select: { id: true },
                     });
-                    if (!orgaoCasaCivil) throw new HttpException('Órgão da Casa Civil (SERI) não encontrado.', 400);
+                    if (!orgaoCasaCivil) throw new HttpException('Órgão da SERI não encontrado.', 400);
                     orgao_id = orgaoCasaCivil.id;
                 }
 

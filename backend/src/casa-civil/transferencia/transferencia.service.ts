@@ -860,7 +860,7 @@ export class TransferenciaService {
                             id: true,
                         },
                     });
-                    if (!orgaoCasaCivil) throw new HttpException('Órgão da casa civil não foi encontrado', 400);
+                    if (!orgaoCasaCivil) throw new HttpException('Órgão da SERI não foi encontrado', 400);
 
                     await this.distribuicaoService.create(
                         {
@@ -1727,7 +1727,7 @@ export class TransferenciaService {
                     });
                     if (!orgaoCasaCivil)
                         throw new HttpException(
-                            'Fase é de responsabilidade própria, mas não foi encontrado órgão da Casa Civil',
+                            'Fase é de responsabilidade própria, mas não foi encontrado órgão da SERI.',
                             400
                         );
 

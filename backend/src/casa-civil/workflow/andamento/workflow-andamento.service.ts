@@ -593,7 +593,7 @@ export class WorkflowAndamentoService {
                     });
                     if (!orgaoCasaCivil)
                         throw new HttpException(
-                            'Fase é de responsabilidade própria, mas não foi encontrado órgão da Casa Civil',
+                            'Fase é de responsabilidade própria, mas não foi encontrado órgão da SERI',
                             400
                         );
 
