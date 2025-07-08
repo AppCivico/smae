@@ -8,6 +8,14 @@ import { PessoaService } from '../pessoa/pessoa.service';
 import { MinhaContaDto, SessaoDto, TesteDataDto } from './models/minha-conta.dto';
 import { NovaSenhaDto } from './models/nova-senha.dto';
 import { FeatureFlagService } from '../feature-flag/feature-flag.service';
+export const CalcSistemasDisponiveis = (mostrar_pdm_antigo: boolean): (ModuloSistema | undefined)[] => [
+    mostrar_pdm_antigo ? 'PDM' : undefined,
+    'ProgramaDeMetas',
+    'Projetos',
+    'CasaCivil',
+    'MDO',
+    'PlanoSetorial',
+];
 
 @ApiTags('Minha Conta')
 @Controller('')
@@ -31,14 +39,7 @@ export class MinhaContaController {
     @ApiBearerAuth('access-token')
     async getMe(@CurrentUser() user: PessoaFromJwt): Promise<MinhaContaDto> {
         const ff = await this.featureFlagService.featureFlag();
-        const sistemas_disponiveis: (ModuloSistema | undefined)[] = [
-            ff.mostrar_pdm_antigo ? 'PDM' : undefined,
-            'ProgramaDeMetas',
-            'Projetos',
-            'CasaCivil',
-            'MDO',
-            'PlanoSetorial',
-        ];
+        const sistemas_disponiveis = CalcSistemasDisponiveis(ff.mostrar_pdm_antigo);
 
         let sistemas: ModuloSistema[] = user.sistemas;
         let modulos_sobrescritos = false;

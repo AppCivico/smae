@@ -35,6 +35,8 @@ import { ListaPrivilegiosModulos } from './entities/ListaPrivilegiosModulos';
 import { ListPessoa } from './entities/list-pessoa.entity';
 import { Pessoa as PessoaDto } from './entities/pessoa.entity';
 import { PessoaResponsabilidadesMetaService } from './pessoa.responsabilidades.metas.service';
+import { FeatureFlagService } from '../feature-flag/feature-flag.service';
+import { CalcSistemasDisponiveis } from '../minha-conta/minha-conta.controller';
 
 const BCRYPT_ROUNDS = 10;
 
@@ -49,6 +51,7 @@ export class PessoaService implements OnModuleInit {
         private readonly prisma: PrismaService,
         private readonly pRespMetaService: PessoaResponsabilidadesMetaService,
         private readonly equipeRespService: EquipeRespService,
+        private readonly featureFlagService: FeatureFlagService,
         private readonly smaeConfigService: SmaeConfigService
     ) {}
 
@@ -457,11 +460,19 @@ export class PessoaService implements OnModuleInit {
             permissoes: {
                 posso_editar_modulos: ehAdmin,
             },
+            sistemas_disponiveis: [],
         };
         if (listFixed.sobreescrever_modulos == false) {
             // libera tudo exceto o modulo de metas novo
             listFixed.modulos_permitidos = ['CasaCivil', 'MDO', 'PDM', 'PlanoSetorial', 'Projetos'];
         }
+        const ff = await this.featureFlagService.featureFlag();
+        if (!ff.mostrar_pdm_antigo) {
+            listFixed.modulos_permitidos = listFixed.modulos_permitidos.filter((m) => m !== 'PDM');
+        }
+        listFixed.sistemas_disponiveis = CalcSistemasDisponiveis(ff.mostrar_pdm_antigo).filter(
+            (sistema) => sistema !== undefined
+        );
 
         return listFixed;
     }
