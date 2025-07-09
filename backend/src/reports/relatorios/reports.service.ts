@@ -8,7 +8,7 @@ import {
     Logger,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { FonteRelatorio, ModuloSistema, Prisma, RelatorioVisibilidade, TipoRelatorio } from '@prisma/client';
+import { FonteRelatorio, ModuloSistema, Prisma, RelatorioVisibilidade, TipoRelatorio } from 'src/generated/prisma/client';
 import { fork } from 'child_process';
 import * as crypto from 'crypto';
 import * as fs from 'fs';

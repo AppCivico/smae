@@ -1,5 +1,5 @@
 import { ApiProperty, PickType } from '@nestjs/swagger';
-import { ModuloSistema } from '@prisma/client';
+import { ModuloSistema } from 'src/generated/prisma/client';
 import { PessoaFromJwtBase } from '../../auth/models/PessoaFromJwtBase';
 import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
 import { Transform } from 'class-transformer';

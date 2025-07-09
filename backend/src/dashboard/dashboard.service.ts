@@ -5,7 +5,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { MetaService } from '../meta/meta.service';
 import { ProjetoService } from '../pp/projeto/projeto.service';
 import { DashboardOptionDto, RetornoLinhasDashboardLinhasDto } from './entities/dashboard.entity';
-import { MetabasePermissao } from '@prisma/client';
+import { MetabasePermissao } from 'src/generated/prisma/client';
 
 @Injectable()
 export class DashboardService {

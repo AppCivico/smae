@@ -5,7 +5,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { CreateTipoAcompanhamentoDto } from './dto/create-acompanhamento-tipo.dto';
 import { UpdateAcompanhamentoTipoDto } from './dto/update-acompanhamento-tipo.dto';
 import { AcompanhamentoTipo } from './entities/acompanhament-tipo.entities.dto';
-import { TipoProjeto } from '@prisma/client';
+import { TipoProjeto } from 'src/generated/prisma/client';
 
 @Injectable()
 export class AcompanhamentoTipoService {

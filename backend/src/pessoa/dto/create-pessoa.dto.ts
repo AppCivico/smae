@@ -13,7 +13,7 @@ import {
     ValidateIf,
 } from 'class-validator';
 import { IsValidCPF } from '../../common/decorators/IsValidCPF';
-import { ModuloSistema } from '@prisma/client';
+import { ModuloSistema } from 'src/generated/prisma/client';
 import { ApiProperty } from '@nestjs/swagger';
 import { MAX_LENGTH_DEFAULT } from 'src/common/consts';
 

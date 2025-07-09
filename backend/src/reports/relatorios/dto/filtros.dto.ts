@@ -1,7 +1,7 @@
 import { Expose, Transform, Type } from 'class-transformer';
 import { ArrayMaxSize, ArrayMinSize, IsArray, IsEnum, IsInt, IsNumber, IsOptional } from 'class-validator';
 import { NumberArrayTransformOrUndef } from '../../../auth/transforms/number-array.transform';
-import { TipoPdm } from '@prisma/client';
+import { TipoPdm } from 'src/generated/prisma/client';
 import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 
 export class FiltroMetasIniAtividadeDto {

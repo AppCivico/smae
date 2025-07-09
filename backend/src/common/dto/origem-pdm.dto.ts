@@ -1,5 +1,5 @@
 import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
-import { ProjetoOrigemTipo } from '@prisma/client';
+import { ProjetoOrigemTipo } from 'src/generated/prisma/client';
 import { Transform, TransformFnParams } from 'class-transformer';
 import { IsEnum, IsInt, IsOptional, IsString, MaxLength, ValidateIf } from 'class-validator';
 import { ProjetoMetaDetailDto } from '../../pp/projeto/entities/projeto.entity';

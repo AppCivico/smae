@@ -21,7 +21,7 @@ import {
     ListMfDashTransferenciasDto,
     MfDashTransferenciasDto,
 } from './dto/transferencia.dto';
-import { TransferenciaTipoEsfera } from '@prisma/client';
+import { TransferenciaTipoEsfera } from 'src/generated/prisma/client';
 import { UploadService } from 'src/upload/upload.service';
 import { Decimal } from '@prisma/client/runtime/library';
 import { Date2YMD } from '../../common/date2ymd';

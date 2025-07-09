@@ -1,5 +1,5 @@
 import { ApiProperty, IntersectionType } from '@nestjs/swagger';
-import { Periodicidade } from '@prisma/client';
+import { Periodicidade } from 'src/generated/prisma/client';
 import { Transform } from 'class-transformer';
 import { ArrayMaxSize, IsArray, IsBoolean, IsEnum, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
 import { NumberArrayTransformOrUndef } from '../../auth/transforms/number-array.transform';

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ContratoPrazoUnidade, StatusContrato } from '@prisma/client';
+import { ContratoPrazoUnidade, StatusContrato } from 'src/generated/prisma/client';
 import {
     IsString,
     MinLength,

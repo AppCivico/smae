@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { Prisma } from '@prisma/client';
+import { Prisma } from 'src/generated/prisma/client';
 import { DateTime } from 'luxon';
 import { SYSTEM_TIMEZONE } from 'src/common/date2ymd';
 import { JOB_DOTACAO_SOF_LOCK } from 'src/common/dto/locks';

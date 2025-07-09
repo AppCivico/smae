@@ -1,4 +1,4 @@
-import { Periodicidade, Periodo, Prisma, Serie } from '@prisma/client';
+import { Periodicidade, Periodo, Prisma, Serie } from 'src/generated/prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 
 export class DetailPainelVisualizacaoDto {

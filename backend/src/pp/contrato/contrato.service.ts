@@ -1,5 +1,5 @@
 import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma } from 'src/generated/prisma/client';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';

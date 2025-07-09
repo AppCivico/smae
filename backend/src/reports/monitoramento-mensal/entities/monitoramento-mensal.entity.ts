@@ -1,5 +1,5 @@
 import { IntersectionType, OmitType } from '@nestjs/swagger';
-import { Periodicidade, Serie } from '@prisma/client';
+import { Periodicidade, Serie } from 'src/generated/prisma/client';
 import { IdCodTituloDto } from '../../../common/dto/IdCodTitulo.dto';
 import { IdNomeExibicaoDto } from '../../../common/dto/IdNomeExibicao.dto';
 import { MfAnaliseQualitativaDto } from '../../../mf/metas/dto/mf-meta-analise-quali.dto';

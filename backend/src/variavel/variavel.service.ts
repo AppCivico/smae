@@ -16,7 +16,7 @@ import {
     TipoVariavel,
     TipoVariavelCategorica,
     VariavelCategoricaValor,
-} from '@prisma/client';
+} from 'src/generated/prisma/client';
 import { PrismaClient } from '@prisma/client/extension';
 import { Regiao } from 'src/regiao/entities/regiao.entity';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';

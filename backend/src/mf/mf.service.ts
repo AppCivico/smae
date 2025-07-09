@@ -1,5 +1,5 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
-import { PessoaAcessoPdm, Prisma } from '@prisma/client';
+import { PessoaAcessoPdm, Prisma } from 'src/generated/prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { Date2YMD } from '../common/date2ymd';
 import { PrismaService } from '../prisma/prisma.service';

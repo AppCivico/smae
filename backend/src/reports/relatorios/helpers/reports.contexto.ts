@@ -3,7 +3,7 @@ import { ListaDePrivilegios } from '../../../common/ListaDePrivilegios';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { FileOutput } from '../../utils/utils.service';
 import { GetTempFileName } from '../reports.service';
-import { ModuloSistema } from '@prisma/client';
+import { ModuloSistema } from 'src/generated/prisma/client';
 
 export type RestricaoAcesso = {
     portfolio_orgao_ids?: number[];

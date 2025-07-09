@@ -1,5 +1,5 @@
 import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
-import { TipoVariavelCategorica } from '@prisma/client';
+import { TipoVariavelCategorica } from 'src/generated/prisma/client';
 import {
     ArrayMaxSize,
     ArrayMinSize,

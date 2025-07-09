@@ -6,7 +6,7 @@ import {
     Prisma,
     PrismaClient,
     Privilegio,
-} from '@prisma/client';
+} from 'src/generated/prisma/client';
 import { ListaDePrivilegios } from '../src/common/ListaDePrivilegios';
 import {
     CONST_COD_NOTA_DIST_RECURSO,

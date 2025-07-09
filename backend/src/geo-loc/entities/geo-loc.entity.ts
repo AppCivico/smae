@@ -1,6 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
-import { GeoReferenciaTipo } from '@prisma/client';
 import { Transform } from 'class-transformer';
 import { IsArray, IsBoolean, IsEnum, IsInt, IsNumber, IsOptional, IsString, MaxLength } from 'class-validator';
 import { GeoJSON } from 'geojson';
@@ -8,6 +7,7 @@ import { IsGeoJSON } from '../../auth/decorators/is-geojson.decorator';
 import { NumberArrayTransformOrUndef } from '../../auth/transforms/number-array.transform';
 import { NumberTransform, PositiveNumberTransform } from '../../auth/transforms/number.transform';
 import { MAX_LENGTH_DEFAULT } from 'src/common/consts';
+import { GeoReferenciaTipo } from '../../generated/prisma/enums';
 
 export class GeoLocDto {
     @IsString()
@@ -15,7 +15,7 @@ export class GeoLocDto {
     busca_endereco: string;
 
     @ApiProperty({ enum: GeoReferenciaTipo, enumName: 'GeoReferenciaTipo' })
-    @IsEnum(GeoReferenciaTipo)
+    // @IsEnum(GeoReferenciaTipo)
     tipo: string;
 }
 
@@ -106,7 +106,7 @@ export class CreateEnderecoDto {
     camadas: number[];
 
     @ApiProperty({ enum: GeoReferenciaTipo, enumName: 'GeoReferenciaTipo' })
-    @IsEnum(GeoReferenciaTipo)
+    // @IsEnum(GeoReferenciaTipo)
     tipo: GeoReferenciaTipo;
 
     @IsGeoJSON()
@@ -166,7 +166,7 @@ export class CreateGeoEnderecoReferenciaDto extends ReferenciasValidasBase {
     tokens: string[] | undefined;
 
     @ApiProperty({ enum: GeoReferenciaTipo, enumName: 'GeoReferenciaTipo' })
-    @IsEnum(GeoReferenciaTipo)
+    // @IsEnum(GeoReferenciaTipo)
     tipo: GeoReferenciaTipo;
 }
 

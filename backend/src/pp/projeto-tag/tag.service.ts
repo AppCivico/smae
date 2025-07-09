@@ -1,5 +1,5 @@
 import { HttpException, Injectable } from '@nestjs/common';
-import { TipoProjeto } from '@prisma/client';
+import { TipoProjeto } from 'src/generated/prisma/client';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateProjetoTagDto } from './dto/create-tag.dto';

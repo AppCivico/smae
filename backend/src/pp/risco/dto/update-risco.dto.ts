@@ -1,5 +1,5 @@
 import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
-import { StatusRisco } from '@prisma/client';
+import { StatusRisco } from 'src/generated/prisma/client';
 import { IsEnum, IsNumber, IsOptional } from 'class-validator';
 import { CreateRiscoDto } from './create-risco.dto';
 

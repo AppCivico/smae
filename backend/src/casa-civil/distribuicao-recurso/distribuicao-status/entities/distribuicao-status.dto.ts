@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { DistribuicaoStatusTipo } from '@prisma/client';
+import { DistribuicaoStatusTipo } from 'src/generated/prisma/client';
 
 export class DistribuicaoStatusDto {
     id?: number;

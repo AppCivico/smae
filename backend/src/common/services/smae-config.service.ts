@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma } from 'src/generated/prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { SmaeConfigDto } from './smae-config-dto/smae-config.dto';
 import {

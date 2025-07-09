@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { TransferenciaTipoEsfera } from '@prisma/client';
+import { TransferenciaTipoEsfera } from 'src/generated/prisma/client';
 import { IsEnum, IsNumber, IsOptional } from 'class-validator';
 import { Expose } from 'class-transformer';
 

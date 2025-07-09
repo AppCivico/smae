@@ -1,4 +1,4 @@
-import { IndicadorTipo, Periodicidade, Polaridade } from '@prisma/client';
+import { IndicadorTipo, Periodicidade, Polaridade } from 'src/generated/prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { FormulaVariaveis } from '../dto/update-indicador.dto';
 import { IsDateYMD } from '../../auth/decorators/date.decorator';

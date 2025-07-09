@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { WorkflowSituacaoTipo } from '@prisma/client';
+import { WorkflowSituacaoTipo } from 'src/generated/prisma/client';
 import { IsEnum, IsString, MaxLength, MinLength } from 'class-validator';
 import { MAX_LENGTH_DEFAULT } from 'src/common/consts';
 

@@ -1,5 +1,5 @@
 import { OmitType, PartialType } from '@nestjs/swagger';
-import { Periodicidade } from '@prisma/client';
+import { Periodicidade } from 'src/generated/prisma/client';
 import { Transform } from 'class-transformer';
 import { IsBoolean, IsEnum, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
 import { DateTransform } from '../../auth/transforms/date.transform';

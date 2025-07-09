@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Serie } from '@prisma/client';
+import { Serie } from 'src/generated/prisma/client';
 import { IdCodTituloDto } from '../../../common/dto/IdCodTitulo.dto';
 import { RegiaoBasica as RegiaoDto } from '../../../regiao/entities/regiao.entity';
 

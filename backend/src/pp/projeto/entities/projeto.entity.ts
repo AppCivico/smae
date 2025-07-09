@@ -1,5 +1,5 @@
 import { ApiProperty, IntersectionType, PickType } from '@nestjs/swagger';
-import { CategoriaProcessoSei, ProjetoFase, ProjetoOrigemTipo, ProjetoStatus } from '@prisma/client';
+import { CategoriaProcessoSei, ProjetoFase, ProjetoOrigemTipo, ProjetoStatus } from 'src/generated/prisma/client';
 import { IdDesc } from 'src/atividade/entities/atividade.entity';
 import { IdCodTituloDto } from 'src/common/dto/IdCodTitulo.dto';
 import { IdNomeExibicaoDto, IdNomeExibicaoOrgaoDto } from 'src/common/dto/IdNomeExibicao.dto';

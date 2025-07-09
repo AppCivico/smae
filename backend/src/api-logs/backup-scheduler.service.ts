@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { task_type } from '@prisma/client';
+import { task_type } from 'src/generated/prisma/client';
 import { DateTime } from 'luxon';
 import { SmaeConfigService } from 'src/common/services/smae-config.service';
 import { PrismaService } from 'src/prisma/prisma.service';

@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional, OmitType } from '@nestjs/swagger';
-import { ModuloSistema, StatusAtualizacaoEmLote, TipoAtualizacaoEmLote } from '@prisma/client';
+import { ModuloSistema, StatusAtualizacaoEmLote, TipoAtualizacaoEmLote } from 'src/generated/prisma/client';
 import { Transform } from 'class-transformer';
 import { IsDateString, IsEnum, IsInt, IsOptional, Max, Min } from 'class-validator';
 import { NumberTransformOrUndef } from '../../auth/transforms/number.transform';

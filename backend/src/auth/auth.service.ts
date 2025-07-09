@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { ModuloSistema } from '@prisma/client';
+import { ModuloSistema } from 'src/generated/prisma/client';
 import { FeatureFlagService } from '../feature-flag/feature-flag.service';
 import { Pessoa } from '../pessoa/entities/pessoa.entity';
 import { PessoaService } from '../pessoa/pessoa.service';
@@ -75,6 +75,7 @@ export class AuthService {
     }
 
     async pessoaJwtFromId(pessoa_id: number): Promise<PessoaFromJwt> {
+        console.log(`pessoaJwtFromId: ${pessoa_id}`);
         const pessoa = await this.pessoaPeloId(pessoa_id);
 
         const modPriv = await this.listaPrivilegiosPessoa(pessoa.id as number, undefined);

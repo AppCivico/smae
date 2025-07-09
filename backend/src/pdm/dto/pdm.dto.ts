@@ -1,4 +1,4 @@
-import { ModuloSistema, TipoPdm } from '@prisma/client';
+import { ModuloSistema, TipoPdm } from 'src/generated/prisma/client';
 import { IdSiglaDescricao } from '../../common/dto/IdSigla.dto';
 import { PdmPermissionLevel, RetornoPSEquipeAdminCPDto, RetornoPSEquipePontoFocalDto, RetornoPSEquipeTecnicoCPDto } from './create-pdm.dto';
 import { IsDateYMD } from '../../auth/decorators/date.decorator';

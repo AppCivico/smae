@@ -1,5 +1,5 @@
 import { BadRequestException, HttpException } from '@nestjs/common';
-import { ModuloSistema, PdmPerfilTipo, Prisma } from '@prisma/client';
+import { ModuloSistema, PdmPerfilTipo, Prisma } from 'src/generated/prisma/client';
 import { plainToInstance } from 'class-transformer';
 import { TipoPdmType } from '../../common/decorators/current-tipo-pdm';
 import { ListaDePrivilegios } from '../../common/ListaDePrivilegios';

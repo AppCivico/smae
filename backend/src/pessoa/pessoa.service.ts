@@ -6,7 +6,7 @@ import {
     Logger,
     OnModuleInit,
 } from '@nestjs/common';
-import { ModuloSistema, PerfilResponsavelEquipe, Pessoa, Prisma } from '@prisma/client';
+import { ModuloSistema, PerfilResponsavelEquipe, Pessoa, Prisma } from 'src/generated/prisma/client';
 import * as bcrypt from 'bcrypt';
 import { SmaeConfigService } from 'src/common/services/smae-config.service';
 import { uuidv7 } from 'uuidv7';
@@ -1701,6 +1701,7 @@ export class PessoaService implements OnModuleInit {
             throw new BadRequestException(`Seu usuário não tem mais permissões. Entre em contato com o administrador.`);
         }
         const ret = dados[0];
+        console.log(ret);
         const comSistemaDefinido = filterModulos.length == 2;
         if (comSistemaDefinido) {
             const sistema = filterModulos.filter((v) => v != 'SMAE')[0];

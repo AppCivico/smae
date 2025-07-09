@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ContratoPrazoUnidade, ProjetoStatus, StatusContrato } from '@prisma/client';
+import { ContratoPrazoUnidade, ProjetoStatus, StatusContrato } from 'src/generated/prisma/client';
 import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 import { ProjetoPremissa, ProjetoRecursos, ProjetoRestricoes } from 'src/pp/projeto/entities/projeto.entity';
 import { IdNomeExibicaoDto } from '../../../common/dto/IdNomeExibicao.dto';

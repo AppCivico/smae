@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { CicloFisico, Pdm, Prisma } from '@prisma/client';
+import { CicloFisico, Pdm, Prisma } from 'src/generated/prisma/client';
 import { SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { MetasAnaliseQualiService } from '../../mf/metas/metas-analise-quali.service';
 import { MetasFechamentoService } from '../../mf/metas/metas-fechamento.service';

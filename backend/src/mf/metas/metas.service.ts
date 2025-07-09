@@ -1,5 +1,5 @@
 import { BadRequestException, HttpException, Injectable, Logger } from '@nestjs/common';
-import { CicloFase, Prisma, Serie } from '@prisma/client';
+import { CicloFase, Prisma, Serie } from 'src/generated/prisma/client';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { Date2YMD, DateYMD } from '../../common/date2ymd';
 import { IdTituloDto } from '../../common/dto/IdTitulo.dto';

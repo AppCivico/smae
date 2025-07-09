@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { GeoCamadaConfig, Prisma } from '@prisma/client';
+import { GeoCamadaConfig, Prisma } from 'src/generated/prisma/client';
 import * as turf from '@turf/simplify';
 import { Feature, GeoJSON, GeoJsonObject } from 'geojson';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';

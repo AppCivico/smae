@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { AvisoPeriodo, TipoAviso } from '@prisma/client';
-import { IsArray, IsBoolean, IsEmail, IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsArray, IsBoolean, IsEmail, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+import { AvisoPeriodo, TipoAviso } from 'src/generated/prisma/client';
 
 export class CreateAvisoEmailDto {
     @IsInt()
@@ -13,7 +13,7 @@ export class CreateAvisoEmailDto {
         enum: AvisoPeriodo,
         enumName: 'AvisoPeriodo',
     })
-    @IsEnum(AvisoPeriodo)
+    //@IsEnum(AvisoPeriodo)
     numero_periodo: AvisoPeriodo;
 
     @ApiProperty({
@@ -21,7 +21,7 @@ export class CreateAvisoEmailDto {
         enum: TipoAviso,
         enumName: 'TipoAviso',
     })
-    @IsEnum(TipoAviso)
+    //@IsEnum(TipoAviso)
     tipo: TipoAviso;
 
     @IsBoolean()

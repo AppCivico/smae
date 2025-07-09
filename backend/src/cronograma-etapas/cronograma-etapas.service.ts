@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger, NotFoundException, forwardRef } from '@nestjs/common';
-import { CronogramaEtapaNivel, PdmPerfilTipo, Prisma } from '@prisma/client';
+import { CronogramaEtapaNivel, PdmPerfilTipo, Prisma } from 'src/generated/prisma/client';
 import { DateTime } from 'luxon';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { SYSTEM_TIMEZONE } from '../common/date2ymd';

@@ -1,5 +1,5 @@
 import { ApiProperty, refs } from '@nestjs/swagger';
-import { task_type } from '@prisma/client';
+import { task_type } from 'src/generated/prisma/client';
 import { IsEnum } from 'class-validator';
 import { CreateEchoDto } from '../echo/dto/create-echo.dto';
 import { TaskValidatorOf } from '../task.validator';

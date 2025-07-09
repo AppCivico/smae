@@ -3,7 +3,7 @@ import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateProjetoEtapaDto } from './dto/create-projeto-etapa.dto';
 import { UpdateProjetoEtapaDto } from './dto/update-projeto-etapa.dto';
-import { TipoProjeto } from '@prisma/client';
+import { TipoProjeto } from 'src/generated/prisma/client';
 
 @Injectable()
 export class ProjetoEtapaService {

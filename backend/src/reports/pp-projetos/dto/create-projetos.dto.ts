@@ -1,5 +1,5 @@
 import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
-import { ProjetoStatus } from '@prisma/client';
+import { ProjetoStatus } from 'src/generated/prisma/client';
 import { Transform, Expose } from 'class-transformer';
 import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
 import { FilterProjetoDto } from 'src/pp/projeto/dto/filter-projeto.dto';

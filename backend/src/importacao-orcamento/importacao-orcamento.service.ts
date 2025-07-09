@@ -1,7 +1,7 @@
 import { BadRequestException, forwardRef, HttpException, Inject, Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Cron } from '@nestjs/schedule';
-import { Prisma, TipoProjeto } from '@prisma/client';
+import { Prisma, TipoProjeto } from 'src/generated/prisma/client';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { DateTime } from 'luxon';

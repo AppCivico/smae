@@ -1,5 +1,5 @@
 import { HttpException, Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
-import { Prisma, TipoPdm } from '@prisma/client';
+import { Prisma, TipoPdm } from 'src/generated/prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { BatchRecordWithId, RecordWithId } from '../common/dto/record-with-id.dto';
 import { PrismaService } from '../prisma/prisma.service';

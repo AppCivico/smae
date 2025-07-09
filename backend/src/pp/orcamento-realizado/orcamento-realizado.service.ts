@@ -1,5 +1,5 @@
 import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
-import { Prisma, TipoProjeto } from '@prisma/client';
+import { Prisma, TipoProjeto } from 'src/generated/prisma/client';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { FormataNotaEmpenho } from '../../common/FormataNotaEmpenho';
 import { BatchRecordWithId, RecordWithId } from '../../common/dto/record-with-id.dto';

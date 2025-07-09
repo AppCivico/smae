@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { TransferenciaTipoCategoria, TransferenciaTipoEsfera } from '@prisma/client';
+import { TransferenciaTipoCategoria, TransferenciaTipoEsfera } from 'src/generated/prisma/client';
 
 export class TransferenciaTipoDto {
     id: number;

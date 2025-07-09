@@ -1,5 +1,5 @@
 import { ApiProperty, PickType } from '@nestjs/swagger';
-import { Periodicidade, VariavelFase } from '@prisma/client';
+import { Periodicidade, VariavelFase,   } from 'src/generated/prisma/client';
 import { Transform, Type } from 'class-transformer';
 import {
     IsArray,

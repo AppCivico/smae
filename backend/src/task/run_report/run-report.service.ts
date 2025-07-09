@@ -2,7 +2,7 @@ import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { ReportsService } from '../../reports/relatorios/reports.service';
 import { TaskableService } from '../entities/task.entity';
 import { CreateRunReportDto } from './dto/create-run-report.dto';
-import { Prisma } from '@prisma/client';
+import { Prisma } from 'src/generated/prisma/client';
 
 @Injectable()
 export class RunReportTaskService implements TaskableService {

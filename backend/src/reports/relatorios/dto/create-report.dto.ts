@@ -1,5 +1,5 @@
 import { ApiProperty, refs } from '@nestjs/swagger';
-import { FonteRelatorio } from '@prisma/client';
+import { FonteRelatorio } from 'src/generated/prisma/client';
 import { IsBoolean, IsEnum, IsOptional } from 'class-validator';
 import { CreateRelObrasDto } from 'src/reports/pp-obras/dto/create-obras.dto';
 import { CreateRelProjetosDto } from 'src/reports/pp-projetos/dto/create-projetos.dto';

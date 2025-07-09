@@ -1,5 +1,5 @@
 import { HttpException, Injectable } from '@nestjs/common';
-import { ModuloSistema, Prisma } from '@prisma/client';
+import { ModuloSistema, Prisma } from 'src/generated/prisma/client';
 import { GetDomainFromUrl } from '../auth/models/GetDomainFromUrl';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../common/dto/record-with-id.dto';

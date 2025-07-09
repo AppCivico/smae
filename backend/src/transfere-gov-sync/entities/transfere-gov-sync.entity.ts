@@ -1,4 +1,4 @@
-import { ComunicadoTipo, TransfereGovOportunidadeAvaliacao, TransfereGovOportunidadeTipo } from '@prisma/client';
+import { ComunicadoTipo, TransfereGovOportunidadeAvaliacao, TransfereGovOportunidadeTipo } from 'src/generated/prisma/client';
 import { Transform, Type } from 'class-transformer';
 import { IsEnum, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
 import { DateTransform } from '../../auth/transforms/date.transform';

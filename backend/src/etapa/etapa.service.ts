@@ -1,5 +1,5 @@
 import { BadRequestException, HttpException, Injectable, Logger } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma } from 'src/generated/prisma/client';
 import { CronogramaEtapaService, podeEditarEtapa } from 'src/cronograma-etapas/cronograma-etapas.service';
 import { UpdateCronogramaEtapaDto } from 'src/cronograma-etapas/dto/update-cronograma-etapa.dto';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';

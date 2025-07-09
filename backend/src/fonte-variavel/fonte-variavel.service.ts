@@ -3,7 +3,7 @@ import { CreateFonteVariavelDto, FilterFonteVariavelDto, UpdateFonteVariavelDto 
 import { PrismaService } from '../prisma/prisma.service';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { LoggerWithLog } from '../common/LoggerWithLog';
-import { Prisma } from '@prisma/client';
+import { Prisma } from 'src/generated/prisma/client';
 
 @Injectable()
 export class FonteVariavelService {

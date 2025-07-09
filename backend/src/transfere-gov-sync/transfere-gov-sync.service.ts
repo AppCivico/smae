@@ -8,7 +8,7 @@ import {
     TransfereGovOportunidade,
     TransfereGovOportunidadeAvaliacao,
     TransfereGovOportunidadeTipo,
-} from '@prisma/client';
+} from 'src/generated/prisma/client';
 import * as crypto from 'crypto';
 import { DateTime } from 'luxon';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';

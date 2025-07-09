@@ -4,7 +4,7 @@ import {
     TransferenciaHistoricoAcao,
     TransferenciaInterface,
     TransferenciaTipoEsfera,
-} from '@prisma/client';
+} from 'src/generated/prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { IdNomeDto } from 'src/common/dto/IdNome.dto';
 import { IdSigla, IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';

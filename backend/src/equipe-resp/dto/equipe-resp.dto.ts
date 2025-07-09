@@ -1,5 +1,5 @@
 import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
-import { PerfilResponsavelEquipe } from '@prisma/client';
+import { PerfilResponsavelEquipe } from 'src/generated/prisma/client';
 import { ArrayMaxSize, IsArray, IsEnum, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
 import { MAX_LENGTH_DEFAULT } from 'src/common/consts';
 

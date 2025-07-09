@@ -1,5 +1,5 @@
 import { forwardRef, HttpException, Inject, Injectable } from '@nestjs/common';
-import { Prisma, ProjetoStatus, TipoProjeto } from '@prisma/client';
+import { Prisma, ProjetoStatus, TipoProjeto } from 'src/generated/prisma/client';
 import { PessoaFromJwt } from '../../../auth/models/PessoaFromJwt';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { ReportsService } from '../../../reports/relatorios/reports.service';

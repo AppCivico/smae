@@ -1,4 +1,4 @@
-import { WorkflowResponsabilidade } from '@prisma/client';
+import { WorkflowResponsabilidade } from 'src/generated/prisma/client';
 import { IsEnum } from 'class-validator';
 import { WorkflowTarefaDto } from '../../tarefa/entities/workflow-tarefa.entity';
 

@@ -1,4 +1,4 @@
-import { task_type } from '@prisma/client';
+import { task_type } from 'src/generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
 export class TaskContext {

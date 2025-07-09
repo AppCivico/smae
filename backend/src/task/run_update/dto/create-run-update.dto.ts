@@ -17,7 +17,7 @@ import { NumberArrayTransformOrUndef } from 'src/auth/transforms/number-array.tr
 import { Transform, Type, plainToInstance } from 'class-transformer';
 import { UpdateProjetoDto } from 'src/pp/projeto/dto/update-projeto.dto';
 import { validate } from 'class-validator';
-import { TipoAtualizacaoEmLote } from '@prisma/client';
+import { TipoAtualizacaoEmLote } from 'src/generated/prisma/client';
 
 export enum TipoOperacao {
     Set = 'Set',

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Periodicidade } from '@prisma/client';
+import { Periodicidade } from 'src/generated/prisma/client';
 import {
     ArrayMaxSize,
     ArrayMinSize,

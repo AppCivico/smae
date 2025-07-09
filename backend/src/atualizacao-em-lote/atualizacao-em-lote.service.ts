@@ -1,6 +1,6 @@
 import { BadRequestException, forwardRef, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Prisma, TipoAtualizacaoEmLote } from '@prisma/client';
+import { Prisma, TipoAtualizacaoEmLote } from 'src/generated/prisma/client';
 import { DateTime } from 'luxon';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { SYSTEM_TIMEZONE } from 'src/common/date2ymd';

@@ -7,7 +7,7 @@ import {
     InternalServerErrorException,
     Logger,
 } from '@nestjs/common';
-import { Prisma, ProjetoFase, ProjetoOrigemTipo, ProjetoStatus, TipoProjeto } from '@prisma/client';
+import { Prisma, ProjetoFase, ProjetoOrigemTipo, ProjetoStatus, TipoProjeto } from 'src/generated/prisma/client';
 import { DateTime } from 'luxon';
 import { IdCodTituloDto } from 'src/common/dto/IdCodTitulo.dto';
 import { FormatCurrency } from 'src/common/format-currency';

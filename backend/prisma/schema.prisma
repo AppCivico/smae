@@ -1,6 +1,8 @@
 generator client {
-    provider        = "prisma-client-js"
-    previewFeatures = ["views", "relationJoins"]
+    provider        = "prisma-client"
+    output          = "../src/generated/prisma" // `output` is required
+    moduleFormat    = "cjs" // or `"cjs"` for CommonJS
+    previewFeatures = ["views", "relationJoins", "driverAdapters", "queryCompiler"]
 }
 
 datasource db {

@@ -1,5 +1,5 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
-import { Prisma, ProjetoStatus, StatusRisco } from '@prisma/client';
+import { Prisma, ProjetoStatus, StatusRisco } from 'src/generated/prisma/client';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 
 import { RiscoCalc } from 'src/common/RiscoCalc';

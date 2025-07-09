@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { FonteRelatorio, ParlamentarCargo, TipoRelatorio } from '@prisma/client';
+import { FonteRelatorio, ParlamentarCargo, TipoRelatorio } from 'src/generated/prisma/client';
 import { plainToInstance } from 'class-transformer';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { MetasGetPermissionSet } from '../../meta/meta.service';

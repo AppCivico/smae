@@ -6,7 +6,7 @@ import {
     ParlamentarEquipeTipo,
     ParlamentarSuplente,
     ParlamentarUF,
-} from '@prisma/client';
+} from 'src/generated/prisma/client';
 import { Transform, TransformFnParams } from 'class-transformer';
 import { IsBoolean, IsEnum, IsNumber, IsOptional, IsString, MaxLength, MinLength, ValidateIf } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';

@@ -9,7 +9,7 @@ import { CreateProjetoEtapaDto } from './dto/create-projeto-etapa.dto';
 import { ListProjetoEtapaDto } from './dto/list-projeto-etapa.dto';
 import { UpdateProjetoEtapaDto } from './dto/update-projeto-etapa.dto';
 import { ProjetoEtapaService } from './projeto-etapa.service';
-import { TipoProjeto } from '@prisma/client';
+import { TipoProjeto } from 'src/generated/prisma/client';
 
 @ApiTags('Projeto Etapa')
 @Controller('projeto-etapa')

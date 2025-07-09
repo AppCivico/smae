@@ -1,4 +1,4 @@
-import { StatusRisco } from '@prisma/client';
+import { StatusRisco } from 'src/generated/prisma/client';
 import { PlanoAcao } from 'src/pp/plano-de-acao/entities/plano-acao.entity';
 
 export const ProjetoRiscoStatus: Record<StatusRisco | string, string> = {

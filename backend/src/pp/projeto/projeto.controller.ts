@@ -13,7 +13,7 @@ import {
     Res,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiExtraModels, ApiNoContentResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { TipoProjeto } from '@prisma/client';
+import { TipoProjeto } from 'src/generated/prisma/client';
 import { Response } from 'express';
 import { ListaDePrivilegios } from 'src/common/ListaDePrivilegios';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';

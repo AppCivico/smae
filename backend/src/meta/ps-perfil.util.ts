@@ -1,5 +1,5 @@
 import { HttpException } from '@nestjs/common';
-import { PdmPerfilRelacionamento, Prisma } from '@prisma/client';
+import { PdmPerfilRelacionamento, Prisma } from 'src/generated/prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { CreatePSEquipePontoFocalDto, CreatePSEquipeTecnicoCPDto } from '../pdm/dto/create-pdm.dto';
 

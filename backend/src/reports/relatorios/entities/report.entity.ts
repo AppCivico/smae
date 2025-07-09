@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { RelatorioVisibilidade } from '@prisma/client';
+import { RelatorioVisibilidade } from 'src/generated/prisma/client';
 import { IsEnum } from 'class-validator';
 
 export class RelatorioParamDto {

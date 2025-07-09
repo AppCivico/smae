@@ -1,5 +1,5 @@
 import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
-import { TipoProjeto } from '@prisma/client';
+import { TipoProjeto } from 'src/generated/prisma/client';
 import { Transform } from 'class-transformer';
 import { Expose } from 'class-transformer';
 import { IsEnum, IsInt, IsOptional } from 'class-validator';

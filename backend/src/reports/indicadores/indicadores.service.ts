@@ -1,5 +1,5 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
-import { Prisma, Regiao } from '@prisma/client';
+import { Prisma, Regiao } from 'src/generated/prisma/client';
 import { DateTime } from 'luxon';
 import { Readable } from 'stream';
 import { createWriteStream } from 'fs';
@@ -698,25 +698,25 @@ export class IndicadoresService implements ReportableService {
                 ),
                 i.casas_decimais
             )::text as valor
-        FROM 
+        FROM
             generate_series($1::date, $2::date, $3::interval) dt
-        CROSS JOIN 
+        CROSS JOIN
             (select 'Realizado'::"Serie" as serie UNION ALL select 'RealizadoAcumulado'::"Serie" as serie ) series
-        JOIN 
+        JOIN
             indicador i ON i.id IN (${indicadores.length ? indicadores.map((r) => r.id).join(',') : 0})
-        LEFT JOIN 
+        LEFT JOIN
             meta ON meta.id = i.meta_id
-        LEFT JOIN 
+        LEFT JOIN
             iniciativa ON iniciativa.id = i.iniciativa_id
-        LEFT JOIN 
+        LEFT JOIN
             atividade ON atividade.id = i.atividade_id
-        LEFT JOIN 
+        LEFT JOIN
             iniciativa i2 ON i2.id = atividade.iniciativa_id
-        LEFT JOIN 
+        LEFT JOIN
             meta m2 ON m2.id = iniciativa.meta_id OR m2.id = i2.meta_id
-        LEFT JOIN 
+        LEFT JOIN
             pdm ON pdm.id = meta.pdm_id OR pdm.id = m2.pdm_id
-        WHERE 
+        WHERE
             dt.dt >= i.inicio_medicao AND dt.dt < i.fim_medicao + (select periodicidade_intervalo(i.periodicidade))
         `;
 
@@ -905,31 +905,31 @@ export class IndicadoresService implements ReportableService {
                 dt.dt::date,
                 ${this.getJanelaExpression(params)}
             ) AS valor_json
-        FROM 
+        FROM
             generate_series($1::date, $2::date, $3::interval) dt
-        CROSS JOIN 
+        CROSS JOIN
             (select 'Realizado'::"Serie" as serie UNION ALL select 'RealizadoAcumulado'::"Serie" as serie) series
-        JOIN 
+        JOIN
             indicador i ON i.id IN (${indicadores.length ? indicadores.map((r) => r.id).join(',') : 0})
-        JOIN 
+        JOIN
             indicador_variavel iv ON iv.indicador_id = i.id
-        JOIN 
+        JOIN
             variavel v ON v.id = iv.variavel_id
-        JOIN 
+        JOIN
             orgao ON v.orgao_id = orgao.id
-        LEFT JOIN 
+        LEFT JOIN
             meta ON meta.id = i.meta_id
-        LEFT JOIN 
+        LEFT JOIN
             iniciativa ON iniciativa.id = i.iniciativa_id
-        LEFT JOIN 
+        LEFT JOIN
             atividade ON atividade.id = i.atividade_id
-        LEFT JOIN 
+        LEFT JOIN
             iniciativa i2 ON i2.id = atividade.iniciativa_id
-        LEFT JOIN 
+        LEFT JOIN
             meta m2 ON m2.id = iniciativa.meta_id OR m2.id = i2.meta_id
-        LEFT JOIN 
+        LEFT JOIN
             pdm ON pdm.id = meta.pdm_id OR pdm.id = m2.pdm_id
-        WHERE 
+        WHERE
             v.regiao_id is not null
             ${regionWhere}
             AND dt.dt >= i.inicio_medicao AND dt.dt < i.fim_medicao + (select periodicidade_intervalo(i.periodicidade))

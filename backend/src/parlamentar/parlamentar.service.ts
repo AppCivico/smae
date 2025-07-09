@@ -1,6 +1,6 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { DadosEleicaoNivel, ParlamentarCargo, Prisma } from '@prisma/client';
+import { DadosEleicaoNivel, ParlamentarCargo, Prisma } from 'src/generated/prisma/client';
 import { PaginatedDto, PAGINATION_TOKEN_TTL } from 'src/common/dto/paginated.dto';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { UploadService } from 'src/upload/upload.service';

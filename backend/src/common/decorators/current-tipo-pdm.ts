@@ -1,5 +1,5 @@
 import { BadRequestException, createParamDecorator, ExecutionContext } from '@nestjs/common';
-import { TipoPdm } from '@prisma/client';
+import { TipoPdm } from 'src/generated/prisma/client';
 import { Request } from 'express';
 import { ExtractValidSistemas } from '../../auth/strategies/jwt.strategy';
 

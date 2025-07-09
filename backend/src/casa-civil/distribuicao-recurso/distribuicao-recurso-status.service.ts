@@ -1,5 +1,5 @@
 import { HttpException, Injectable } from '@nestjs/common';
-import { DistribuicaoStatusTipo, Prisma } from '@prisma/client';
+import { DistribuicaoStatusTipo, Prisma } from 'src/generated/prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';

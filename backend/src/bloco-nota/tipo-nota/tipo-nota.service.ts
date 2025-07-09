@@ -1,5 +1,5 @@
 import { BadRequestException, HttpException, Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma, TipoNota } from '@prisma/client';
+import { Prisma, TipoNota } from 'src/generated/prisma/client';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateTipoNotaDto, FilterTipoNota, TipoNotaItem, UpdateTipoNotaDto } from './dto/tipo-nota.dto';

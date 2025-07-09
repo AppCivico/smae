@@ -1,5 +1,5 @@
 import { Logger } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma } from 'src/generated/prisma/client';
 import { LogOpt } from '../auth/models/PessoaFromJwt';
 
 export type LoggerWithLog = {

@@ -3,7 +3,7 @@ import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { ProjetoGetPermissionSet, ProjetoService, ProjetoStatusParaExibicao } from '../../pp/projeto/projeto.service';
 import { PrismaService } from '../../prisma/prisma.service';
 
-import { ContratoPrazoUnidade, ProjetoStatus, StatusContrato, StatusRisco, TipoProjeto } from '@prisma/client';
+import { ContratoPrazoUnidade, ProjetoStatus, StatusContrato, StatusRisco, TipoProjeto } from 'src/generated/prisma/client';
 import { DateTime } from 'luxon';
 import { RiscoCalc } from 'src/common/RiscoCalc';
 import { TarefaService } from 'src/pp/tarefa/tarefa.service';

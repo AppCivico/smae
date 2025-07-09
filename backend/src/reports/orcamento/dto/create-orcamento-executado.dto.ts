@@ -1,5 +1,5 @@
 import { ApiHideProperty, ApiProperty, IntersectionType, OmitType } from '@nestjs/swagger';
-import { TipoProjeto, TipoRelatorio } from '@prisma/client';
+import { TipoProjeto, TipoRelatorio } from 'src/generated/prisma/client';
 import { Transform, Expose } from 'class-transformer';
 import { ArrayMaxSize, ArrayMinSize, IsArray, IsEnum, IsInt, IsOptional, IsString } from 'class-validator';
 import { DateTransform } from '../../../auth/transforms/date.transform';

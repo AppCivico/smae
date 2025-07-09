@@ -1,4 +1,4 @@
-import { WorkflowSituacaoTipo } from '@prisma/client';
+import { WorkflowSituacaoTipo } from 'src/generated/prisma/client';
 import { IsEnum } from 'class-validator';
 
 export class WorkflowSituacaoDto {

@@ -1,4 +1,4 @@
-import { ModuloSistema, PerfilResponsavelEquipe } from '@prisma/client';
+import { ModuloSistema, PerfilResponsavelEquipe } from 'src/generated/prisma/client';
 import { ListaDePrivilegios } from '../../common/ListaDePrivilegios';
 
 export class ListaPrivilegiosModulos {

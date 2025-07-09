@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma } from 'src/generated/prisma/client';
 import { CronogramaEtapaService } from 'src/cronograma-etapas/cronograma-etapas.service';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { PdmModoParaTipo, TipoPdmType } from '../common/decorators/current-tipo-pdm';

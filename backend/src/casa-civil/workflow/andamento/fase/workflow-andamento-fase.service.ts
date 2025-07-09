@@ -2,7 +2,7 @@
 
 import { forwardRef, HttpException, Inject, Injectable } from '@nestjs/common';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
-import { Prisma, TransferenciaHistoricoAcao, WorkflowResponsabilidade } from '@prisma/client';
+import { Prisma, TransferenciaHistoricoAcao, WorkflowResponsabilidade } from 'src/generated/prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {

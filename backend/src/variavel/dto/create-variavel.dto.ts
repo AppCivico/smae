@@ -1,5 +1,5 @@
 import { ApiHideProperty, ApiProperty, IntersectionType, PickType } from '@nestjs/swagger';
-import { Periodicidade, Polaridade } from '@prisma/client';
+import { Periodicidade, Polaridade } from 'src/generated/prisma/client';
 import { Transform, TransformFnParams, Type } from 'class-transformer';
 import {
     ArrayMaxSize,

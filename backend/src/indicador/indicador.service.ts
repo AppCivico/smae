@@ -1,5 +1,5 @@
 import { BadRequestException, HttpException, Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
-import { Periodicidade, Prisma, Serie } from '@prisma/client';
+import { Periodicidade, Prisma, Serie } from 'src/generated/prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { CONST_CRONO_VAR_CATEGORICA_ID } from '../common/consts';
 import { Date2YMD, DateYMD } from '../common/date2ymd';

@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiExtraModels, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
-import { TipoVariavel } from '@prisma/client';
+import { TipoVariavel } from 'src/generated/prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { ApiPaginatedWithPagesResponse } from '../auth/decorators/paginated.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';

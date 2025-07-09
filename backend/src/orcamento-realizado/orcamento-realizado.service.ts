@@ -1,6 +1,6 @@
 import { BadRequestException, HttpException, Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { Prisma } from '@prisma/client';
+import { Prisma } from 'src/generated/prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { SmaeConfigService } from 'src/common/services/smae-config.service';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
