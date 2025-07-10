@@ -94,7 +94,7 @@ export const useWorkflowAndamentoStore = defineStore('workflowAndamento', {
       } catch (erro) {
         this.erro = erro;
         this.chamadasPendentes.fase = false;
-        return false;
+        throw new Error('Erro ao tentar editar fase');
       }
     },
 
@@ -162,7 +162,7 @@ export const useWorkflowAndamentoStore = defineStore('workflowAndamento', {
       } catch (erro) {
         this.erro = erro;
         this.chamadasPendentes.fase = false;
-        return false;
+        throw new Error('Erro ao tentar encerrar fase');
       }
     },
 
