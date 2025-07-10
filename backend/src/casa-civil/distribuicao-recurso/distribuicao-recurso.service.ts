@@ -1836,7 +1836,7 @@ export class DistribuicaoRecursoService {
                         termino_planejado: true,
                         duracao_planejado: true,
                         tarefa_pai_id: true,
-                        dependencias: { select: { dependencia_tarefa_id: true, tipo: true, latencia: true } },
+                        dependencias: { select: { id: true, dependencia_tarefa_id: true, tipo: true, latencia: true } },
                     },
                 },
             },
@@ -1879,7 +1879,9 @@ export class DistribuicaoRecursoService {
                                 inicio_planejado: true,
                                 termino_planejado: true,
                                 duracao_planejado: true,
-                                dependencias: { select: { dependencia_tarefa_id: true, tipo: true, latencia: true } },
+                                dependencias: {
+                                    select: { id: true, dependencia_tarefa_id: true, tipo: true, latencia: true },
+                                },
                             },
                         },
                     },
@@ -1922,130 +1924,144 @@ export class DistribuicaoRecursoService {
             }
         });
 
-        // 5. Create the new cronograma tasks if any are found
-        if (itensParaCriar.length > 0) {
-            const tarefaCronograma = await prismaTx.tarefaCronograma.findFirst({
-                where: { transferencia_id: distribuicaoRecurso.transferencia_id, removido_em: null },
-                select: { id: true },
-            });
-            if (!tarefaCronograma)
-                throw new InternalServerErrorException('Cronograma da transferência não encontrado.');
+        if (itensParaCriar.length === 0) {
+            await this._validarTopologia(prismaTx, distribuicao_id, user);
+            return;
+        }
 
-            // Identify which of these parent tasks are about to get their FIRST child.
-            const transitioningParents = await prismaTx.tarefa.findMany({
-                where: {
-                    id: { in: Array.from(parentTaskIdsToClean) },
-                    n_filhos_imediatos: 0, // It's currently a leaf node
-                    removido_em: null,
+        const tarefaCronograma = await prismaTx.tarefaCronograma.findFirst({
+            where: { transferencia_id: distribuicaoRecurso.transferencia_id, removido_em: null },
+            select: { id: true },
+        });
+        if (!tarefaCronograma) throw new InternalServerErrorException('Cronograma da transferência não encontrado.');
+
+        const transitioningParents = await prismaTx.tarefa.findMany({
+            where: {
+                id: { in: Array.from(parentTaskIdsToClean) },
+                n_filhos_imediatos: 0,
+                removido_em: null,
+            },
+            select: {
+                id: true,
+                dependencias: {
+                    select: { dependencia_tarefa_id: true, tipo: true, latencia: true },
                 },
-                select: {
-                    id: true,
-                    dependencias: {
-                        select: {
-                            dependencia_tarefa_id: true,
-                            tipo: true,
-                            latencia: true,
+            },
+        });
+
+        const movedDependencies = new Map<number, any[]>();
+        const parentIdsToProcess = new Set<number>();
+
+        if (transitioningParents.length > 0) {
+            for (const parent of transitioningParents) {
+                parentIdsToProcess.add(parent.id);
+                if (parent.dependencias.length > 0) {
+                    movedDependencies.set(parent.id, parent.dependencias);
+                }
+            }
+
+            if (parentIdsToProcess.size > 0) {
+                await prismaTx.tarefaDependente.deleteMany({
+                    where: { tarefa_id: { in: Array.from(parentIdsToProcess) } },
+                });
+                await prismaTx.tarefa.updateMany({
+                    where: { id: { in: Array.from(parentIdsToProcess) } },
+                    data: {
+                        inicio_planejado: null,
+                        termino_planejado: null,
+                        duracao_planejado: null,
+                        custo_estimado: null,
+                        duracao_planejado_calculado: false,
+                        inicio_planejado_calculado: false,
+                        termino_planejado_calculado: false,
+                    },
+                });
+            }
+        }
+
+        const tarefasExistentes = await prismaTx.tarefa.findMany({
+            where: {
+                tarefa_cronograma_id: tarefaCronograma.id,
+                nivel: 3,
+                tarefa_pai_id: { in: itensParaCriar.map((i) => i.tarefa_pai_id) },
+                removido_em: null,
+            },
+            orderBy: { numero: 'desc' },
+            select: { tarefa_pai_id: true, numero: true },
+        });
+
+        const maxNumeroPorPai = new Map<number, number>();
+        for (const t of tarefasExistentes) {
+            if (t.tarefa_pai_id && !maxNumeroPorPai.has(t.tarefa_pai_id)) {
+                maxNumeroPorPai.set(t.tarefa_pai_id, t.numero);
+            }
+        }
+
+        itensParaCriar.sort((a, b) => a.tarefa_pai_id - b.tarefa_pai_id);
+
+        const newChildTaskIds = new Map<number, number>();
+        const creationPromises = [];
+
+        for (const item of itensParaCriar) {
+            const numeroAtual = maxNumeroPorPai.get(item.tarefa_pai_id) ?? 0;
+            const novoNumero = numeroAtual + 1;
+            maxNumeroPorPai.set(item.tarefa_pai_id, novoNumero);
+
+            const inheritedDependencies = movedDependencies.get(item.tarefa_pai_id);
+            const finalDependencies = inheritedDependencies ? inheritedDependencies : item.dependencias;
+
+            const createAndGetId = async () => {
+                const new_task = await prismaTx.tarefa.create({
+                    data: {
+                        tarefa_cronograma_id: tarefaCronograma.id,
+                        tarefa_pai_id: item.tarefa_pai_id,
+                        nivel: 3,
+                        numero: novoNumero,
+                        tarefa: `${item.nome_base} - ${distribuicaoRecurso.nome}`,
+                        descricao: `${item.nome_base} - ${distribuicaoRecurso.nome}`,
+                        distribuicao_recurso_id: distribuicaoRecurso.id,
+                        recursos: distribuicaoRecurso.orgao_gestor.sigla,
+                        orgao_id: distribuicaoRecurso.orgao_gestor.id,
+                        inicio_planejado: item.inicio_planejado,
+                        termino_planejado: item.termino_planejado,
+                        duracao_planejado: item.duracao_planejado,
+                        dependencias: {
+                            createMany: { data: finalDependencies.map((d) => ({ ...d, latencia: d.latencia ?? 0 })) },
                         },
                     },
-                },
-            });
+                    select: { id: true },
+                });
+                newChildTaskIds.set(item.tarefa_pai_id, new_task.id);
+            };
+            creationPromises.push(createAndGetId());
+        }
 
-            // A map to hold the dependencies that need to be moved.
-            const movedDependencies = new Map<number, any[]>();
+        await Promise.all(creationPromises);
 
-            if (transitioningParents.length > 0) {
-                const parentIdsWithDeps = transitioningParents.map((p) => p.id);
-
-                for (const parent of transitioningParents) {
-                    // Store the dependencies that we are about to move.
-                    if (parent.dependencias.length > 0) {
-                        movedDependencies.set(parent.id, parent.dependencias);
-                    }
-                }
-
-                if (parentIdsWithDeps.length > 0) {
-                    // Delete the dependencies from the parent tasks that are transitioning.
-                    await prismaTx.tarefaDependente.deleteMany({
-                        where: { tarefa_id: { in: parentIdsWithDeps } },
-                    });
-
-                    // Nullify the dates and costs on these parent tasks, as they will now be calculated from their children.
-                    await prismaTx.tarefa.updateMany({
-                        where: { id: { in: parentIdsWithDeps } },
-                        data: {
-                            inicio_planejado: null,
-                            termino_planejado: null,
-                            duracao_planejado: null,
-                            custo_estimado: null,
-                            // We also clear the "calculado" flags
-                            duracao_planejado_calculado: false,
-                            inicio_planejado_calculado: false,
-                            termino_planejado_calculado: false,
-                        },
-                    });
-                }
-            }
-
-            // Get existing nivel 3 tasks to calculate the next 'numero'
-            const tarefasExistentes = await prismaTx.tarefa.findMany({
+        if (parentIdsToProcess.size > 0) {
+            const externalDependenciesToRemap = await prismaTx.tarefaDependente.findMany({
                 where: {
-                    tarefa_cronograma_id: tarefaCronograma.id,
-                    nivel: 3,
-                    tarefa_pai_id: { in: itensParaCriar.map((i) => i.tarefa_pai_id) },
-                    removido_em: null,
+                    dependencia_tarefa_id: { in: Array.from(parentIdsToProcess) },
                 },
-                orderBy: { numero: 'desc' },
-                select: { tarefa_pai_id: true, numero: true },
             });
 
-            // Map the highest 'numero' for each parent for efficient lookup
-            const maxNumeroPorPai = new Map<number, number>();
-            for (const t of tarefasExistentes) {
-                if (t.tarefa_pai_id && !maxNumeroPorPai.has(t.tarefa_pai_id)) {
-                    maxNumeroPorPai.set(t.tarefa_pai_id, t.numero);
+            const remapPromises = [];
+            for (const dep of externalDependenciesToRemap) {
+                const oldPredecessorId = dep.dependencia_tarefa_id;
+                const newPredecessorId = newChildTaskIds.get(oldPredecessorId);
+
+                if (newPredecessorId) {
+                    remapPromises.push(
+                        prismaTx.tarefaDependente.update({
+                            where: { id: dep.id },
+                            data: {
+                                dependencia_tarefa_id: newPredecessorId,
+                            },
+                        })
+                    );
                 }
             }
-
-            // Sort by parent to process siblings together
-            itensParaCriar.sort((a, b) => a.tarefa_pai_id - b.tarefa_pai_id);
-
-            const operations = [];
-            for (const item of itensParaCriar) {
-                const numeroAtual = maxNumeroPorPai.get(item.tarefa_pai_id) ?? 0;
-                const novoNumero = numeroAtual + 1;
-                maxNumeroPorPai.set(item.tarefa_pai_id, novoNumero); // Increment for the next sibling
-
-                // Check if this new task's parent had its dependencies moved.
-                const inheritedDependencies = movedDependencies.get(item.tarefa_pai_id);
-                const finalDependencies = inheritedDependencies ? inheritedDependencies : item.dependencias;
-
-                operations.push(
-                    prismaTx.tarefa.create({
-                        data: {
-                            tarefa_cronograma_id: tarefaCronograma.id,
-                            tarefa_pai_id: item.tarefa_pai_id,
-                            nivel: 3,
-                            numero: novoNumero,
-                            tarefa: `${item.nome_base} - ${distribuicaoRecurso.nome}`,
-                            descricao: `${item.nome_base} - ${distribuicaoRecurso.nome}`,
-                            distribuicao_recurso_id: distribuicaoRecurso.id,
-                            recursos: distribuicaoRecurso.orgao_gestor.sigla,
-                            orgao_id: distribuicaoRecurso.orgao_gestor.id,
-                            inicio_planejado: item.inicio_planejado,
-                            termino_planejado: item.termino_planejado,
-                            duracao_planejado: item.duracao_planejado,
-                            // Use the inherited dependencies if they exist.
-                            dependencias: {
-                                createMany: {
-                                    data: finalDependencies.map((d) => ({ ...d, latencia: d.latencia ?? 0 })),
-                                },
-                            },
-                        },
-                    })
-                );
-            }
-
-            await Promise.all(operations);
+            await Promise.all(remapPromises);
         }
 
         await this._validarTopologia(prismaTx, distribuicao_id, user);
