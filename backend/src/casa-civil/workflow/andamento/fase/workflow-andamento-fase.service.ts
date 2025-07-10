@@ -12,6 +12,7 @@ import {
 } from './dto/patch-workflow-andamento-fase.dto';
 import { WorkflowService } from '../../configuracao/workflow.service';
 import { WorkflowAndamentoService } from '../workflow-andamento.service';
+import { config } from 'yargs';
 
 @Injectable()
 export class WorkflowAndamentoFaseService {
@@ -503,12 +504,16 @@ export class WorkflowAndamentoFaseService {
 
                 let orgao_id: number | null = null;
                 if (configFluxoFaseSeguinte.responsabilidade == WorkflowResponsabilidade.Propria) {
+                    console.log('=======================================\n');
+                    console.log(configFluxoFaseSeguinte);
+                    console.log(faseAtual);
                     const orgaoCasaCivil = await prismaTxn.orgao.findFirst({
                         where: { removido_em: null, sigla: 'SERI' },
                         select: { id: true },
                     });
                     if (!orgaoCasaCivil) throw new HttpException('Órgão da SERI não encontrado.', 400);
                     orgao_id = orgaoCasaCivil.id;
+                    console.log('=======================================\n');
                 }
 
                 const andamentoNovaFase = await prismaTxn.transferenciaAndamento.findFirst({
