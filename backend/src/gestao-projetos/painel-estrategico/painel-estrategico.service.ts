@@ -174,11 +174,12 @@ export class PainelEstrategicoService {
             ),
             all_stages AS (
                 SELECT
+                    DISTINCT
                     descricao as etapa,
                     ordem_painel as ordem,
                     0 as quantidade
                 FROM projeto_etapa
-                WHERE ordem_painel IS NOT NULL
+                WHERE ordem_painel IS NOT NULL AND tipo_projeto = 'PP'
 
                 UNION ALL
 
