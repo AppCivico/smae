@@ -1818,7 +1818,16 @@ export class DistribuicaoRecursoService {
                 },
             },
             select: {
-                workflow_fase: { select: { fase: true } },
+                workflow_fase: {
+                    select: {
+                        fase: true,
+                        fluxos: {
+                            select: {
+                                duracao: true,
+                            },
+                        },
+                    },
+                },
                 // This is the nivel 2 task in the cronograma representing the phase. It will be the parent.
                 tarefaEspelhada: {
                     select: {
@@ -1851,7 +1860,16 @@ export class DistribuicaoRecursoService {
                 },
             },
             select: {
-                workflow_tarefa: { select: { tarefa_fluxo: true } },
+                workflow_tarefa: {
+                    select: {
+                        tarefa_fluxo: true,
+                        fluxoTarefas: {
+                            select: {
+                                duracao: true,
+                            },
+                        },
+                    },
+                },
                 // This is the nivel 2 task representing the phase, which is the parent.
                 transferencia_andamento: {
                     select: {
@@ -1880,7 +1898,7 @@ export class DistribuicaoRecursoService {
                     tarefa_pai_id: tarefaPai.id,
                     inicio_planejado: tarefaPai.inicio_planejado,
                     termino_planejado: tarefaPai.termino_planejado,
-                    duracao_planejado: tarefaPai.duracao_planejado,
+                    duracao_planejado: af.workflow_fase.fluxos[0].duracao,
                     dependencias: tarefaPai.dependencias,
                 });
             }
@@ -1895,7 +1913,7 @@ export class DistribuicaoRecursoService {
                     tarefa_pai_id: tarefaPai.id, // The parent is the nivel 2 task for the phase
                     inicio_planejado: tarefaPai.inicio_planejado,
                     termino_planejado: tarefaPai.termino_planejado,
-                    duracao_planejado: tarefaPai.duracao_planejado,
+                    duracao_planejado: at.workflow_tarefa.fluxoTarefas[0].duracao,
                     dependencias: tarefaPai.dependencias,
                 });
             }
