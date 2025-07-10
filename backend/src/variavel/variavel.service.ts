@@ -4412,15 +4412,55 @@ export class VariavelService {
             let pdm: PdmSimplesComTipoDto | null = null;
 
             if (fc.tipo_pdm === 'PDM') {
-                const ref = indicadoresReferenciando.find((i) => i.pdm !== null);
-                if (ref?.pdm) {
-                    pdm = ref.pdm;
+                const ref = indicadoresReferenciando.find(
+                    (i) => i.meta?.id !== null || i.iniciativa?.id !== null || i.atividade?.id !== null
+                );
+
+                if (ref) {
+                    const clauses: string[] = [];
+
+                    if (ref.meta?.id) clauses.push(`meta_id = ${ref.meta.id}`);
+                    if (ref.iniciativa?.id) clauses.push(`iniciativa_id = ${ref.iniciativa.id}`);
+                    if (ref.atividade?.id) clauses.push(`atividade_id = ${ref.atividade.id}`);
+
+                    const raw = await this.prisma.$queryRawUnsafe<{ pdm_id: number }[]>(
+                        `SELECT pdm_id FROM view_metas_arvore_pdm WHERE ${clauses.join(' OR ')} LIMIT 1`
+                    );
+
+                    if (raw.length > 0) {
+                        const pdmFromDb = await this.prisma.pdm.findUnique({
+                            where: { id: raw[0].pdm_id },
+                            select: { id: true, nome: true },
+                        });
+
+                        if (pdmFromDb) {
+                            pdm = {
+                                id: pdmFromDb.id,
+                                nome: pdmFromDb.nome,
+                                tipo: 'PDM',
+                            };
+                        }
+                    }
                 }
             } else if (fc.tipo_pdm === 'PS' && fc.variavel_calc_id) {
-                const pdmFromDb = await this.prisma.pdm.findUnique({
-                    where: { id: fc.variavel_calc_id },
-                    select: { id: true, nome: true },
+                const formulaRel = await this.prisma.formulaCompostaRelVariavel.findFirst({
+                    where: { variavel_id: fc.variavel_calc_id },
+                    select: { formula_composta_id: true },
                 });
+
+                const formula = formulaRel?.formula_composta_id
+                    ? await this.prisma.formulaComposta.findUnique({
+                          where: { id: formulaRel.formula_composta_id },
+                          select: { id: true },
+                      })
+                    : null;
+
+                const pdmFromDb = formula?.id
+                    ? await this.prisma.pdm.findFirst({
+                          where: { id: formula.id },
+                          select: { id: true, nome: true },
+                      })
+                    : null;
 
                 if (pdmFromDb) {
                     pdm = {
