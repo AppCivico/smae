@@ -531,19 +531,24 @@ export class TarefaService {
                 return;
             }
 
-            // se não tem filhos (é folha, mesmo se for no nivel 1) OU
-            // se a tarefa tem dependência, mas já iniciou, ela entra no algorítimo normal (soma da duração planejada)
-            //if (tarefa.n_filhos_imediatos == 0 && (tarefa.dependencias.length == 0 || tarefa.inicio_real)) {
-            if (tarefa.dependencias.length == 0 || tarefa.inicio_real) {
-                // se não tem inicio real preenchido, considera que começou hj
+            // se a tarefa não tem filhos e
+            // se não tem tem dependência ou já começou já iniciou, ela entra no algorítimo normal (soma da duração planejada)
+            if (tarefa.n_filhos_imediatos == 0 && (tarefa.dependencias.length == 0 || tarefa.inicio_real)) {
+                // se não tem inicio real preenchido, considera que começou hoje
                 tarefa.projecao_inicio = tarefa.inicio_real ? Date2YMD.FromISOOrNull(tarefa.inicio_real)! : hoje;
 
                 tarefa.projecao_termino = tarefa.projecao_inicio.plus({ days: tarefa.duracao_planejado - 1 });
                 this.logger.debug(
-                    `tarefa ${tarefa.id} não tem dependência, projecao_inicio=${Date2YMD.toString(
+                    `tarefa ${tarefa.id} (folha) não tem dependência, projecao_inicio=${Date2YMD.toString(
                         tarefa.projecao_inicio.toJSDate()
                     )}, projecao_termino=${Date2YMD.toString(tarefa.projecao_termino.toJSDate())}`
                 );
+                return;
+            }
+
+            // Tarefas com filhos, com ou sem deps, vai calcular baseado nos filhos anyway
+            if (tarefa.n_filhos_imediatos > 0) {
+                this.logger.debug(`tarefa ${tarefa.id} tem filho, sera caclulado baseado nas projeções dos filhos`);
                 return;
             }
 
