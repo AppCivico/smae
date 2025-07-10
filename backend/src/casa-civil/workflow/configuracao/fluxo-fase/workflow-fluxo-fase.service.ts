@@ -19,31 +19,6 @@ export class WorkflowfluxoFaseService {
     async create(dto: CreateWorkflowfluxoFaseDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const created = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
-                // Tratando ordem
-                let ordem: number;
-                if (dto.ordem != undefined) {
-                    const ordemEmUso = await prismaTxn.fluxoFase.count({
-                        where: {
-                            fluxo_id: dto.fluxo_id,
-                            ordem: dto.ordem,
-                            removido_em: null,
-                        },
-                    });
-                    if (ordemEmUso) throw new HttpException('ordem| Ordem já em uso para este Workflow.', 400);
-
-                    ordem = dto.ordem;
-                } else {
-                    const ultimaOrdem = await prismaTxn.fluxoFase.findFirst({
-                        where: {
-                            fluxo_id: dto.fluxo_id,
-                            removido_em: null,
-                        },
-                        select: { ordem: true },
-                    });
-
-                    ordem = ultimaOrdem?.ordem ?? 1;
-                }
-
                 // Verificando se já tem transferência.
                 const fluxo = await prismaTxn.fluxo.findFirst({
                     where: {
@@ -63,6 +38,37 @@ export class WorkflowfluxoFaseService {
                     },
                 });
                 if (emUso) throw new HttpException('Fase não pode ser criada, pois workflow já está em uso', 400);
+
+                // Tratando ordem para garantir que não haja lacunas
+                let ordem: number;
+                if (dto.ordem != undefined) {
+                    // Se uma ordem foi especificada, abre espaço para o novo item, incrementando a ordem dos itens subsequentes.
+                    await prismaTxn.fluxoFase.updateMany({
+                        where: {
+                            fluxo_id: dto.fluxo_id,
+                            ordem: { gte: dto.ordem },
+                            removido_em: null,
+                        },
+                        data: {
+                            ordem: {
+                                increment: 1,
+                            },
+                        },
+                    });
+                    ordem = dto.ordem;
+                } else {
+                    // Se nenhuma ordem foi especificada, adiciona no final da lista.
+                    const maxOrdem = await prismaTxn.fluxoFase.aggregate({
+                        _max: {
+                            ordem: true,
+                        },
+                        where: {
+                            fluxo_id: dto.fluxo_id,
+                            removido_em: null,
+                        },
+                    });
+                    ordem = (maxOrdem._max.ordem ?? 0) + 1;
+                }
 
                 // TODO: tratar fluxoFase circular
 
@@ -135,19 +141,46 @@ export class WorkflowfluxoFaseService {
                     if (saidaJaExiste) throw new HttpException('fase_id| Fase já em uso para este fluxo.', 400);
                 }
 
-                // Tratando ordem
-                let ordem: number | undefined;
+                // Tratando ordem para reordenar as outras fases se necessário
                 if (dto.ordem != undefined && dto.ordem != self.ordem) {
-                    const ordemEmUso = await prismaTxn.fluxoFase.count({
-                        where: {
-                            fluxo_id: self.fluxo_id,
-                            ordem: dto.ordem,
-                            removido_em: null,
-                        },
-                    });
-                    if (ordemEmUso) throw new HttpException('ordem| Ordem já em uso para este Workflow.', 400);
+                    const oldOrdem = self.ordem;
+                    const newOrdem = dto.ordem;
 
-                    ordem = dto.ordem;
+                    if (newOrdem > oldOrdem) {
+                        // Movendo para baixo na lista: decrementa a ordem dos itens entre a posição antiga e a nova.
+                        await prismaTxn.fluxoFase.updateMany({
+                            where: {
+                                fluxo_id: self.fluxo_id,
+                                removido_em: null,
+                                ordem: {
+                                    gt: oldOrdem,
+                                    lte: newOrdem,
+                                },
+                            },
+                            data: {
+                                ordem: {
+                                    decrement: 1,
+                                },
+                            },
+                        });
+                    } else {
+                        // Movendo para cima na lista: incrementa a ordem dos itens entre a posição nova e a antiga.
+                        await prismaTxn.fluxoFase.updateMany({
+                            where: {
+                                fluxo_id: self.fluxo_id,
+                                removido_em: null,
+                                ordem: {
+                                    gte: newOrdem,
+                                    lt: oldOrdem,
+                                },
+                            },
+                            data: {
+                                ordem: {
+                                    increment: 1,
+                                },
+                            },
+                        });
+                    }
                 }
 
                 if (dto.situacao != undefined) {
@@ -158,7 +191,7 @@ export class WorkflowfluxoFaseService {
                     where: { id },
                     data: {
                         fase_id: dto.fase_id,
-                        ordem: ordem,
+                        ordem: dto.ordem,
                         marco: dto.marco,
                         duracao: dto.duracao,
                         atualizado_por: user.id,
@@ -241,6 +274,8 @@ export class WorkflowfluxoFaseService {
                     removido_em: null,
                 },
                 select: {
+                    ordem: true,
+                    fluxo_id: true,
                     fluxo: {
                         select: {
                             workflow_id: true,
@@ -253,11 +288,26 @@ export class WorkflowfluxoFaseService {
             // Caso o Workflow já possua uma transferência ativa, não pode ser removido.
             await this.workflowService.verificaEdicao(self.fluxo.workflow_id, prismaTxn);
 
-            await this.prisma.fluxoFase.update({
+            // Realiza o soft-delete da fase
+            await prismaTxn.fluxoFase.update({
                 where: { id },
                 data: {
                     removido_por: user.id,
                     removido_em: new Date(Date.now()),
+                },
+            });
+
+            // Reordena as fases subsequentes para preencher a lacuna deixada pela fase removida.
+            await prismaTxn.fluxoFase.updateMany({
+                where: {
+                    fluxo_id: self.fluxo_id,
+                    ordem: { gt: self.ordem },
+                    removido_em: null,
+                },
+                data: {
+                    ordem: {
+                        decrement: 1,
+                    },
                 },
             });
         });

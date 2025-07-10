@@ -34,13 +34,7 @@ export class WorkflowFluxoTarefaService {
                 });
                 if (!fluxoFase) throw new HttpException('fluxo_fase_id| Fluxo fase não encontrado', 400);
 
-                const emUso = await prismaTxn.transferencia.count({
-                    where: {
-                        workflow_id: fluxoFase.fluxo.workflow_id,
-                        removido_em: null,
-                    },
-                });
-                if (emUso) throw new HttpException('Tarefa não pode ser criada, pois workflow já está em uso', 400);
+                await this.workflowService.verificaEdicao(fluxoFase.fluxo.workflow_id, prismaTxn);
 
                 const jaExiste = await prismaTxn.fluxoTarefa.count({
                     where: {
@@ -52,29 +46,35 @@ export class WorkflowFluxoTarefaService {
                 if (jaExiste)
                     throw new HttpException('fluxo_fase_id| Já existe uma configuração com estes parâmetros.', 400);
 
-                // Tratando ordem
+                // Tratando ordem para garantir que não haja lacunas
                 let ordem: number;
                 if (dto.ordem != undefined) {
-                    const ordemEmUso = await prismaTxn.fluxoTarefa.count({
+                    // Se uma ordem foi especificada, abre espaço para o novo item.
+                    await prismaTxn.fluxoTarefa.updateMany({
                         where: {
                             fluxo_fase_id: dto.fluxo_fase_id,
-                            ordem: dto.ordem,
+                            ordem: { gte: dto.ordem },
                             removido_em: null,
                         },
+                        data: {
+                            ordem: {
+                                increment: 1,
+                            },
+                        },
                     });
-                    if (ordemEmUso) throw new HttpException('ordem| Ordem já em uso para este para este Fluxo.', 400);
-
                     ordem = dto.ordem;
                 } else {
-                    const ultimaOrdem = await prismaTxn.fluxoTarefa.findFirst({
+                    // Se nenhuma ordem foi especificada, adiciona no final da lista.
+                    const maxOrdem = await prismaTxn.fluxoTarefa.aggregate({
+                        _max: {
+                            ordem: true,
+                        },
                         where: {
-                            workflow_tarefa_id: dto.workflow_tarefa_id,
+                            fluxo_fase_id: dto.fluxo_fase_id,
                             removido_em: null,
                         },
-                        select: { ordem: true },
                     });
-
-                    ordem = ultimaOrdem?.ordem ?? 1;
+                    ordem = (maxOrdem._max.ordem ?? 0) + 1;
                 }
 
                 const workflowFluxoTarefa = await prismaTxn.fluxoTarefa.create({
@@ -110,7 +110,6 @@ export class WorkflowFluxoTarefaService {
                         workflow_tarefa_id: true,
                         fluxo_fase_id: true,
                         ordem: true,
-
                         fluxo_fase: {
                             select: {
                                 fluxo: {
@@ -127,26 +126,53 @@ export class WorkflowFluxoTarefaService {
                 // Caso o Workflow já possua uma transferência ativa, não pode ser editado.
                 await this.workflowService.verificaEdicao(self.fluxo_fase.fluxo.workflow_id, prismaTxn);
 
-                // Tratando ordem
-                let ordem: number | undefined;
+                // Tratando ordem para reordenar as outras tarefas se necessário
                 if (dto.ordem != undefined && dto.ordem != self.ordem) {
-                    const ordemEmUso = await prismaTxn.fluxoTarefa.count({
-                        where: {
-                            workflow_tarefa_id: self.workflow_tarefa_id,
-                            ordem: dto.ordem,
-                            removido_em: null,
-                        },
-                    });
-                    if (ordemEmUso) throw new HttpException('ordem| Ordem já em uso para este Workflow.', 400);
+                    const oldOrdem = self.ordem;
+                    const newOrdem = dto.ordem;
 
-                    ordem = dto.ordem;
+                    if (newOrdem > oldOrdem) {
+                        // Movendo para baixo na lista
+                        await prismaTxn.fluxoTarefa.updateMany({
+                            where: {
+                                fluxo_fase_id: self.fluxo_fase_id,
+                                removido_em: null,
+                                ordem: {
+                                    gt: oldOrdem,
+                                    lte: newOrdem,
+                                },
+                            },
+                            data: {
+                                ordem: {
+                                    decrement: 1,
+                                },
+                            },
+                        });
+                    } else {
+                        // Movendo para cima na lista
+                        await prismaTxn.fluxoTarefa.updateMany({
+                            where: {
+                                fluxo_fase_id: self.fluxo_fase_id,
+                                removido_em: null,
+                                ordem: {
+                                    gte: newOrdem,
+                                    lt: oldOrdem,
+                                },
+                            },
+                            data: {
+                                ordem: {
+                                    increment: 1,
+                                },
+                            },
+                        });
+                    }
                 }
 
                 const workflowFluxoTarefa = await prismaTxn.fluxoTarefa.update({
                     where: { id },
                     data: {
                         workflow_tarefa_id: dto.workflow_tarefa_id,
-                        ordem: ordem,
+                        ordem: dto.ordem,
                         marco: dto.marco,
                         duracao: dto.duracao,
                         responsabilidade: dto.responsabilidade,
@@ -187,8 +213,12 @@ export class WorkflowFluxoTarefaService {
 
         return rows.map((r) => {
             return {
-                ...r,
-
+                id: r.id,
+                fluxo_fase_id: r.fluxo_fase_id,
+                ordem: r.ordem,
+                responsabilidade: r.responsabilidade,
+                marco: r.marco,
+                duracao: r.duracao,
                 workflow_tarefa: {
                     id: r.workflow_tarefa.id,
                     descricao: r.workflow_tarefa.tarefa_fluxo,
@@ -205,6 +235,8 @@ export class WorkflowFluxoTarefaService {
                     removido_em: null,
                 },
                 select: {
+                    ordem: true,
+                    fluxo_fase_id: true,
                     fluxo_fase: {
                         select: {
                             fluxo: {
@@ -221,11 +253,26 @@ export class WorkflowFluxoTarefaService {
             // Caso o Workflow já possua uma transferência ativa, não pode ser removido.
             await this.workflowService.verificaEdicao(self.fluxo_fase.fluxo.workflow_id, prismaTxn);
 
-            await this.prisma.fluxoTarefa.update({
+            // Realiza o soft-delete da tarefa
+            await prismaTxn.fluxoTarefa.update({
                 where: { id },
                 data: {
                     removido_por: user.id,
                     removido_em: new Date(Date.now()),
+                },
+            });
+
+            // Reordena as tarefas subsequentes para preencher a lacuna
+            await prismaTxn.fluxoTarefa.updateMany({
+                where: {
+                    fluxo_fase_id: self.fluxo_fase_id,
+                    ordem: { gt: self.ordem },
+                    removido_em: null,
+                },
+                data: {
+                    ordem: {
+                        decrement: 1,
+                    },
                 },
             });
         });
