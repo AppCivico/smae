@@ -457,6 +457,7 @@ export class WorkflowAndamentoFaseService {
                         removido_em: null,
                     },
                     select: {
+                        workflow_id: true,
                         workflow_etapa_atual_id: true,
                         workflow_fase_atual_id: true,
                     },
@@ -472,6 +473,7 @@ export class WorkflowAndamentoFaseService {
                     },
                     orderBy: { atualizado_em: 'desc' },
                     select: {
+                        id: true,
                         data_termino: true,
                         workflow_etapa_id: true,
                     },
@@ -487,6 +489,7 @@ export class WorkflowAndamentoFaseService {
                         removido_em: null,
                         fase_id: dto.fase_id,
                         fluxo: {
+                            workflow_id: transferencia.workflow_id!,
                             fluxo_etapa_de_id: faseAtual.workflow_etapa_id, // Must be in the same stage
                             removido_em: null,
                         },
