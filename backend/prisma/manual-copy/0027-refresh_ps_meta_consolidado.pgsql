@@ -268,8 +268,14 @@ BEGIN
                     ELSE 0
                 END AS status,
                 CASE
+                    -- Considera preenchido se ambas as datas foram realmente preenchidas
+                    -- OU se não há atrasos (está no cronograma)
                     WHEN e.inicio_real IS NOT NULL AND e.termino_real IS NOT NULL THEN 1
-                    ELSE 0
+                    WHEN e.inicio_previsto < (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::date AND e.inicio_real IS NULL THEN 0  -- início atrasado
+                    WHEN e.termino_previsto < (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::date
+                         AND e.inicio_real IS NOT NULL
+                         AND e.termino_real IS NULL THEN 0  -- término atrasado
+                    ELSE 1  -- no cronograma
                 END AS preenchido
             FROM etapa e
             JOIN leaf_etapas le ON e.id = le.id
