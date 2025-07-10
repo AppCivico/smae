@@ -259,8 +259,12 @@ BEGIN
             SELECT
                 e.id,
                 CASE
+                    -- Início tardio: o início planejado passou, mas na verdade não começou
                     WHEN e.inicio_previsto < (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::date AND e.inicio_real IS NULL THEN 1
-                    WHEN e.termino_previsto < (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::date AND e.termino_real IS NULL THEN 2
+                    -- Término tardio: término planejado já passou, começou mas não terminou
+                    WHEN e.termino_previsto < (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::date
+                         AND e.inicio_real IS NOT NULL
+                         AND e.termino_real IS NULL THEN 2
                     ELSE 0
                 END AS status,
                 CASE
