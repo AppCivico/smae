@@ -1888,18 +1888,20 @@ export class DistribuicaoRecursoService {
         });
 
         const itensParaCriar: ItemParaCriarTarefa[] = [];
+        const parentTaskIdsToClean = new Set<number>();
 
         // 3. Unify phases into the creation list
         andamentoFases.forEach((af) => {
             const tarefaPai = af.tarefaEspelhada?.[0];
             if (tarefaPai) {
+                parentTaskIdsToClean.add(tarefaPai.id);
                 itensParaCriar.push({
                     nome_base: af.workflow_fase.fase,
                     tarefa_pai_id: tarefaPai.id,
                     inicio_planejado: tarefaPai.inicio_planejado,
                     termino_planejado: tarefaPai.termino_planejado,
                     duracao_planejado: af.workflow_fase.fluxos[0].duracao,
-                    dependencias: tarefaPai.dependencias,
+                    dependencias: tarefaPai.dependencias.map((d) => ({ ...d, latencia: d.latencia ?? 0 })),
                 });
             }
         });
@@ -1908,13 +1910,14 @@ export class DistribuicaoRecursoService {
         andamentoTarefas.forEach((at) => {
             const tarefaPai = at.transferencia_andamento.tarefaEspelhada?.[0];
             if (tarefaPai) {
+                parentTaskIdsToClean.add(tarefaPai.id);
                 itensParaCriar.push({
                     nome_base: at.workflow_tarefa.tarefa_fluxo,
                     tarefa_pai_id: tarefaPai.id, // The parent is the nivel 2 task for the phase
                     inicio_planejado: tarefaPai.inicio_planejado,
                     termino_planejado: tarefaPai.termino_planejado,
                     duracao_planejado: at.workflow_tarefa.fluxoTarefas[0].duracao,
-                    dependencias: tarefaPai.dependencias,
+                    dependencias: tarefaPai.dependencias.map((d) => ({ ...d, latencia: d.latencia ?? 0 })),
                 });
             }
         });
@@ -1927,6 +1930,61 @@ export class DistribuicaoRecursoService {
             });
             if (!tarefaCronograma)
                 throw new InternalServerErrorException('Cronograma da transferência não encontrado.');
+
+            // Identify which of these parent tasks are about to get their FIRST child.
+            const transitioningParents = await prismaTx.tarefa.findMany({
+                where: {
+                    id: { in: Array.from(parentTaskIdsToClean) },
+                    n_filhos_imediatos: 0, // It's currently a leaf node
+                    removido_em: null,
+                },
+                select: {
+                    id: true,
+                    dependencias: {
+                        select: {
+                            dependencia_tarefa_id: true,
+                            tipo: true,
+                            latencia: true,
+                        },
+                    },
+                },
+            });
+
+            // A map to hold the dependencies that need to be moved.
+            const movedDependencies = new Map<number, any[]>();
+
+            if (transitioningParents.length > 0) {
+                const parentIdsWithDeps = transitioningParents.map((p) => p.id);
+
+                for (const parent of transitioningParents) {
+                    // Store the dependencies that we are about to move.
+                    if (parent.dependencias.length > 0) {
+                        movedDependencies.set(parent.id, parent.dependencias);
+                    }
+                }
+
+                if (parentIdsWithDeps.length > 0) {
+                    // Delete the dependencies from the parent tasks that are transitioning.
+                    await prismaTx.tarefaDependente.deleteMany({
+                        where: { tarefa_id: { in: parentIdsWithDeps } },
+                    });
+
+                    // Nullify the dates and costs on these parent tasks, as they will now be calculated from their children.
+                    await prismaTx.tarefa.updateMany({
+                        where: { id: { in: parentIdsWithDeps } },
+                        data: {
+                            inicio_planejado: null,
+                            termino_planejado: null,
+                            duracao_planejado: null,
+                            custo_estimado: null,
+                            // We also clear the "calculado" flags
+                            duracao_planejado_calculado: false,
+                            inicio_planejado_calculado: false,
+                            termino_planejado_calculado: false,
+                        },
+                    });
+                }
+            }
 
             // Get existing nivel 3 tasks to calculate the next 'numero'
             const tarefasExistentes = await prismaTx.tarefa.findMany({
@@ -1957,6 +2015,10 @@ export class DistribuicaoRecursoService {
                 const novoNumero = numeroAtual + 1;
                 maxNumeroPorPai.set(item.tarefa_pai_id, novoNumero); // Increment for the next sibling
 
+                // Check if this new task's parent had its dependencies moved.
+                const inheritedDependencies = movedDependencies.get(item.tarefa_pai_id);
+                const finalDependencies = inheritedDependencies ? inheritedDependencies : item.dependencias;
+
                 operations.push(
                     prismaTx.tarefa.create({
                         data: {
@@ -1972,7 +2034,12 @@ export class DistribuicaoRecursoService {
                             inicio_planejado: item.inicio_planejado,
                             termino_planejado: item.termino_planejado,
                             duracao_planejado: item.duracao_planejado,
-                            dependencias: { createMany: { data: item.dependencias } },
+                            // Use the inherited dependencies if they exist.
+                            dependencias: {
+                                createMany: {
+                                    data: finalDependencies.map((d) => ({ ...d, latencia: d.latencia ?? 0 })),
+                                },
+                            },
                         },
                     })
                 );

@@ -1119,6 +1119,9 @@ export class TarefaService {
                 }
             }
 
+            console.log('========================\n');
+            console.log(tarefa);
+            console.log('========================\n');
             if (tarefa.n_filhos_imediatos !== 0) {
                 if (dto.percentual_concluido !== undefined)
                     throw new HttpException(
