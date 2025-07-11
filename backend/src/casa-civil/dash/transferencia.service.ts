@@ -240,62 +240,6 @@ export class DashTransferenciaService {
         const uniqueTransferencias = rows.filter((elem, index, self) => {
             return index === self.findIndex((t) => t.transferencia_id === elem.transferencia_id);
         });
-        //console.dir(['uniqueTransferencias', JSON.parse(JSON.stringify(uniqueTransferencias))], { depth: 7 });
-
-        const dadosPorPartidoDistribuicao = (() => {
-            const partidoData = new Map<
-                string,
-                {
-                    sigla: string;
-                    fases: Map<string, number>;
-                    total: number;
-                }
-            >();
-
-            uniqueTransferencias.forEach((transferencia) => {
-                const fase = transferencia.transferencia.workflow_fase_atual?.fase || 'Workflow Não Iniciado';
-                transferencia.transferencia.parlamentar.forEach((parlamentar) => {
-                    if (parlamentar.valor && Number(parlamentar.valor) > 0) {
-                        let partidoSigla = 'N/A';
-                        if (parlamentar.partido_id) {
-                            const partido = partidosRows.find((p) => p.id === parlamentar.partido_id);
-                            partidoSigla = partido?.sigla || 'N/A';
-                        }
-
-                        if (!partidoData.has(partidoSigla)) {
-                            partidoData.set(partidoSigla, {
-                                sigla: partidoSigla,
-                                fases: new Map<string, number>(),
-                                total: 0,
-                            });
-                        }
-
-                        const partido = partidoData.get(partidoSigla)!;
-                        const valor = Number(parlamentar.valor);
-
-                        // Adiciona o valor à fase correspondente
-                        const currentPhaseValue = partido.fases.get(fase) || 0;
-                        partido.fases.set(fase, currentPhaseValue + valor);
-
-                        // soma o valor total do partido
-                        partido.total += valor;
-                    }
-                });
-            });
-
-            return Array.from(partidoData.values());
-        })();
-
-        // Pega todas as fases únicas de todas as transferências
-        const fasesUnicas = Array.from(
-            new Set(
-                uniqueTransferencias.flatMap((t) =>
-                    t.transferencia.workflow_fase_atual?.fase
-                        ? [t.transferencia.workflow_fase_atual.fase]
-                        : ['Workflow Não Iniciado']
-                )
-            )
-        );
 
         const dadosPorPartidoDistribuicao = (() => {
             const partidoData = new Map<
@@ -491,7 +435,6 @@ export class DashTransferenciaService {
                 valor_etapas: etapasSoma.reduce((acc, curr) => acc + curr.sum, 0),
             };
         });
-        //console.dir(['dadosPorPartido', dadosPorPartido], { depth: 4 });
 
         // Adicionando item de "partido indefinido" para transferências sem partido
         dadosPorPartido.push({
@@ -728,7 +671,6 @@ export class DashTransferenciaService {
               })
             : [];
 
-        //console.dir(['dadosPorOrgao', dadosPorOrgao], { depth: null });
         const chartValPorOrgao: DashTransferenciaBasicChartDto = {
             title: {
                 id: 'chart__ValOrgao',
