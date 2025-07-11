@@ -1,7 +1,7 @@
 CREATE OR REPLACE FUNCTION f_rebuild_transferencia_tsvector(p_transferencia_id INTEGER)
 RETURNS TSVECTOR
 LANGUAGE 'plpgsql'
-STABLE -- Indicates the function doesn't modify the database and returns same results for same inputs within a transaction.
+STABLE
 AS $$
 DECLARE
     v_tsvector_payload TSVECTOR;
@@ -130,14 +130,21 @@ END;$$;
 
 DO
 $$BEGIN
-CREATE TRIGGER trigger_transferencia_parlamentar_update_tsvector
-AFTER INSERT OR UPDATE ON transferencia_parlamentar
-FOR EACH ROW
-WHEN (NEW.removido_em IS NULL)
-EXECUTE PROCEDURE f_rebuild_transferencia_tsvector();
-EXCEPTION
-   WHEN duplicate_object THEN
-      NULL;
+    BEGIN
+        DROP TRIGGER trigger_transferencia_parlamentar_update_tsvector ON transferencia_parlamentar;
+    EXCEPTION
+        WHEN undefined_object THEN
+            NULL;
+    END;
+
+    CREATE TRIGGER trigger_transferencia_parlamentar_update_tsvector
+    AFTER INSERT OR UPDATE ON transferencia_parlamentar
+    FOR EACH ROW
+    WHEN (NEW.removido_em IS NULL)
+    EXECUTE PROCEDURE f_rebuild_transferencia_tsvector();
+    EXCEPTION
+    WHEN duplicate_object THEN
+        NULL;
 END;$$;
 
 CREATE OR REPLACE FUNCTION f_transfere_gov_oportunidade_update_tsvector() RETURNS TRIGGER AS $$
