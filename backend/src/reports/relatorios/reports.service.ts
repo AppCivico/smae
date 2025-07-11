@@ -143,14 +143,7 @@ export class ReportsService {
                 throw new BadRequestException('pdm_id precisa ser um número');
             }
 
-            const pdmInfo = await this.prisma.pdm.findUnique({
-                where: { id: pdm_id },
-                select: { sistema: true },
-            });
-
-            // se foi criado pelo sistema antigo (pdm 11)
-            // Usa o tipo_pdm=PDM assim o relatório irá agir como se fosse PDM
-            sistema = pdmInfo?.sistema == 'PDM' ? 'PDM' : 'PS';
+            sistema = 'PDM';
         }
         return sistema;
     }
