@@ -36,6 +36,15 @@ EXCEPTION
       NULL;
 END;$$;
 
+DO
+$$BEGIN
+    BEGIN
+        DROP FUNCTION f_atualiza_transferencia_vetores();
+    EXCEPTION
+        WHEN undefined_object THEN
+            NULL;
+END;$$;
+
 CREATE OR REPLACE FUNCTION f_rebuild_transferencia_tsvector(p_transferencia_id INTEGER)
 RETURNS TSVECTOR
 LANGUAGE 'plpgsql'
