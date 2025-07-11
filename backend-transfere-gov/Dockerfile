@@ -32,22 +32,22 @@ COPY vendor/backend-transfere-gov-especiais/api/ /app/transfere-gov-especiais/
 
 # Create runit service for transfere-gov (port 8001)
 RUN mkdir /etc/service/transfere-gov
-COPY backend-transfere-gov/services/transfere-gov/run /etc/service/transfere-gov/run
+COPY services/transfere-gov/run /etc/service/transfere-gov/run
 RUN chmod +x /etc/service/transfere-gov/run
 
 # Create runit service for transfere-gov-especiais (port 8002)
 RUN mkdir /etc/service/transfere-gov-especiais
-COPY backend-transfere-gov/services/transfere-gov-especiais/run /etc/service/transfere-gov-especiais/run
+COPY services/transfere-gov-especiais/run /etc/service/transfere-gov-especiais/run
 RUN chmod +x /etc/service/transfere-gov-especiais/run
 
 # Create runit service for nginx
 RUN mkdir /etc/service/nginx
-COPY backend-transfere-gov/services/nginx/run /etc/service/nginx/run
+COPY services/nginx/run /etc/service/nginx/run
 RUN chmod +x /etc/service/nginx/run
 
 # Copy nginx configuration
-COPY backend-transfere-gov/nginx/nginx.conf /etc/nginx/nginx.conf
-COPY backend-transfere-gov/nginx/sites-available/default /etc/nginx/sites-available/default
+COPY nginx/nginx.conf /etc/nginx/nginx.conf
+COPY nginx/sites-available/default /etc/nginx/sites-available/default
 
 # Remove default nginx site and enable our configuration
 RUN rm -f /etc/nginx/sites-enabled/default && \
