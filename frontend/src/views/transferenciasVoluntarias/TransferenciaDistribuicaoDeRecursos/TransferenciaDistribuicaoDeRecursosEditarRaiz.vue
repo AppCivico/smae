@@ -13,7 +13,6 @@ const route = useRoute();
 const distribuicaoRecursosStore = useDistribuicaoRecursosStore();
 const transferenciasVoluntariasStore = useTransferenciasVoluntariasStore();
 
-const { emFoco: distribuicaoEmFoco } = storeToRefs(distribuicaoRecursosStore);
 const { emFoco: transferenciaEmFoco } = storeToRefs(transferenciasVoluntariasStore);
 
 watch(() => route.params.transferenciaId, (novoTransferenciaId) => {
@@ -23,7 +22,7 @@ watch(() => route.params.transferenciaId, (novoTransferenciaId) => {
 }, { immediate: true });
 
 watch(() => route.params.recursoId, (novoRecursoId) => {
-  if (novoRecursoId !== distribuicaoEmFoco.value?.id) {
+  if (novoRecursoId) {
     distribuicaoRecursosStore.buscarItem(novoRecursoId);
   }
 }, { immediate: true });
