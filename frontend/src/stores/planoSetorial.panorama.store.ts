@@ -36,6 +36,7 @@ export type Parametros = {
   visao_pessoal?: boolean;
   apenas_pendentes?: boolean;
   pagina?: number;
+  token_paginacao?: string;
   ipp?: number;
 };
 
@@ -114,7 +115,10 @@ export const usePanoramaPlanoSetorialStore = (prefixo = '') => defineStore(prefi
           tem_mais: temMais,
           token_paginacao: tokenPaginacao,
           total_registros: totalRegistros,
-        } = await this.requestS.get(`${baseUrl}/plano-setorial/panorama/metas`, params) as PSMFListaMetasDto;
+        } = await this.requestS.get(
+          `${baseUrl}/plano-setorial/panorama/metas`,
+          params,
+        ) as PSMFListaMetasDto;
 
         this.listaMetas = listaMetas;
         this.cicloAtual = cicloAtual;
