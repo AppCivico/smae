@@ -58,7 +58,7 @@ class ItensDotacao:
             },
             'funcoes': {
                 'code_key': 'codFuncao',
-                'desc_key': 'txtDescricaoFuncao'
+                'desc_key': 'textDescricaoFuncao' # Note: typo in original ...
             },
             'subfuncoes': {
                 'code_key': 'codSubFuncao',
