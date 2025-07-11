@@ -1,50 +1,3 @@
-CREATE OR REPLACE FUNCTION f_transfere_gov_oportunidade_update_tsvector() RETURNS TRIGGER AS $$
-BEGIN
-    NEW.vetores_busca = (
-        SELECT to_tsvector('simple',
-            COALESCE(CAST(NEW.tipo AS TEXT), '') || ' ' ||
-            COALESCE(CAST(NEW.avaliacao AS TEXT), '') || ' ' ||
-            COALESCE(CAST(NEW.id_programa AS TEXT), '') || ' ' ||
-            COALESCE(NEW.natureza_juridica_programa, '') || ' ' ||
-            COALESCE(CAST(NEW.transferencia_incorporada AS TEXT), '') || ' ' ||
-            COALESCE(CAST(NEW.cod_orgao_sup_programa AS TEXT), '') || ' ' ||
-            COALESCE(NEW.desc_orgao_sup_programa, '') || ' ' ||
-            COALESCE(CAST(NEW.cod_programa AS TEXT), '') || ' ' ||
-            COALESCE(NEW.nome_programa, '') || ' ' ||
-            COALESCE(NEW.sit_programa, '') || ' ' ||
-            COALESCE(CAST(NEW.ano_disponibilizacao AS TEXT), '') || ' ' ||
-            COALESCE(CAST(NEW.data_disponibilizacao AS TEXT), '') || ' ' ||
-            COALESCE(CAST(NEW.dt_ini_receb AS TEXT), '') || ' ' ||
-            COALESCE(CAST(NEW.dt_fim_receb AS TEXT), '') || ' ' ||
-            COALESCE(NEW.modalidade_programa, '') || ' ' ||
-            COALESCE(NEW.acao_orcamentaria, '')
-        )
-    );
-    RETURN NEW;
-END
-$$ LANGUAGE plpgsql;
-
-DO
-$$BEGIN
--- Trigger to call the function
-CREATE TRIGGER trigger_transfere_gov_oportunidade_update_tsvector
-BEFORE INSERT OR UPDATE ON transfere_gov_oportunidade
-FOR EACH ROW
-EXECUTE FUNCTION f_transfere_gov_oportunidade_update_tsvector();
-EXCEPTION
-   WHEN duplicate_object THEN
-      NULL;
-END;$$;
-
-DO
-$$BEGIN
-    BEGIN
-        DROP FUNCTION f_atualiza_transferencia_vetores();
-    EXCEPTION
-        WHEN undefined_object THEN
-            NULL;
-END;$$;
-
 CREATE OR REPLACE FUNCTION f_rebuild_transferencia_tsvector(p_transferencia_id INTEGER)
 RETURNS TSVECTOR
 LANGUAGE 'plpgsql'
@@ -117,13 +70,6 @@ $$;
 DO
 $$BEGIN
 
-    BEGIN
-        DROP TRIGGER trigger_transferencia_update_tsvector_update ON transferencia;
-    EXCEPTION
-        WHEN undefined_object THEN
-            NULL;
-    END;
-
     CREATE TRIGGER trigger_transferencia_update_tsvector_update
     BEFORE UPDATE ON transferencia
     FOR EACH ROW
@@ -159,31 +105,6 @@ $$BEGIN
     FOR EACH ROW
     EXECUTE PROCEDURE f_rebuild_transferencia_tsvector();
 
-    BEGIN
-        DROP TRIGGER trigger_distribuicao_update_tsvector_insert ON distribuicao_recurso;
-    EXCEPTION
-        WHEN undefined_object THEN
-            NULL;
-    END;
-
-    BEGIN
-        DROP TRIGGER trigger_distribuicao_update_tsvector_update ON distribuicao_recurso;
-    EXCEPTION
-        WHEN undefined_object THEN
-            NULL;
-    END;
-
-END;$$;
-
-DO
-$$BEGIN
-    BEGIN
-        DROP TRIGGER trigger_transferencia_parlamentar_update_tsvector ON transferencia_parlamentar;
-    EXCEPTION
-        WHEN undefined_object THEN
-            NULL;
-    END;
-
     CREATE TRIGGER trigger_transferencia_parlamentar_update_tsvector
     AFTER INSERT OR UPDATE ON transferencia_parlamentar
     FOR EACH ROW
@@ -192,4 +113,5 @@ $$BEGIN
     EXCEPTION
     WHEN duplicate_object THEN
         NULL;
+
 END;$$;
