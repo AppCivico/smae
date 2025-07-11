@@ -1,0 +1,6 @@
+DROP FUNCTION IF EXISTS f_atualiza_transferencia_vetores();
+DROP TRIGGER IF EXISTS trigger_distribuicao_update_tsvector_insert ON distribuicao_recurso;
+DROP TRIGGER IF EXISTS trigger_distribuicao_update_tsvector_update ON distribuicao_recurso;
+DROP TRIGGER IF EXISTS trigger_transferencia_update_tsvector_update ON transferencia;
+DROP TRIGGER IF EXISTS trigger_transferencia_update_tsvector_insert ON transferencia;
+DROP TRIGGER IF EXISTS trigger_transferencia_parlamentar_update_tsvector ON transferencia_parlamentar;
