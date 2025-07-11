@@ -359,7 +359,7 @@ LANGUAGE plpgsql;
 
 DELETE FROM pessoa_acesso_pdm_valido;
 DELETE FROM pessoa_acesso_pdm;
-select pessoa_acesso_pdm(1);
+--select pessoa_acesso_pdm(1);
 
 -- as funcoes estao muito abertas, calculando todo mundo
 -- mais pra frente vamos colocar isso apenas durante as alterações respectivas, onde for possivel.
