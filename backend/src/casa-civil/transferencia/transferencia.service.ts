@@ -332,6 +332,12 @@ export class TransferenciaService {
             });
         }
 
+        // Atualizando vetores da transferência.
+        this.updateVetoresBusca(created.id).catch((err) => {
+            // Optional: log if the background task fails for some reason
+            console.error(`Background task updateVetoresBusca failed for transferencia ${created.id}`, err);
+        });
+
         return created;
     }
 
@@ -739,6 +745,12 @@ export class TransferenciaService {
                 }
             });
         }
+
+        // Atualizando vetores da transferência.
+        this.updateVetoresBusca(id).catch((err) => {
+            // Optional: log if the background task fails for some reason
+            console.error(`Background task updateVetoresBusca failed for transferencia ${id}`, err);
+        });
 
         return updated;
     }

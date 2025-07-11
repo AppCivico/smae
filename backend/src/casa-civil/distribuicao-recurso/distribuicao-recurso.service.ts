@@ -1667,6 +1667,17 @@ export class DistribuicaoRecursoService {
 
     async remove(id: number, user: PessoaFromJwt) {
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+            const self = await prismaTx.distribuicaoRecurso.findFirstOrThrow({
+                where: {
+                    id,
+                    removido_em: null,
+                },
+                select: {
+                    id: true,
+                    transferencia_id: true,
+                },
+            });
+
             await prismaTx.distribuicaoRecurso.updateMany({
                 where: {
                     id,
@@ -1686,6 +1697,15 @@ export class DistribuicaoRecursoService {
                     removido_em: new Date(Date.now()),
                     removido_por: user.id,
                 },
+            });
+
+            // Atualizando vetores da transferência.
+            this.transferenciaService.updateVetoresBusca(self.transferencia_id).catch((err) => {
+                // Optional: log if the background task fails for some reason
+                console.error(
+                    `Background task updateVetoresBusca failed for transferencia ${self.transferencia_id}`,
+                    err
+                );
             });
         });
 
