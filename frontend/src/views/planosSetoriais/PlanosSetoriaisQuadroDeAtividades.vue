@@ -3,6 +3,7 @@ import { storeToRefs } from 'pinia';
 import { computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import * as CardEnvelope from '@/components/cardEnvelope';
+import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
 import ListaLegendas from '@/components/ListaLegendas.vue';
 import FiltroDoQuadroDeAtividades from '@/components/planoSetorialProgramaMetas.componentes/FiltroDoQuadroDeAtividades.vue';
@@ -20,13 +21,15 @@ import {
 import GraficoDeSituacoesDasVariaveis from '@/components/quadroDeAtividades/GraficoDeSituacoesDasVariaveis.vue';
 import GrandesNumerosDeMetas from '@/components/quadroDeAtividades/GrandesNumerosDeMetas.vue';
 import dateToTitle from '@/helpers/dateToTitle';
-import { useAuthStore } from '@/stores';
+import { useAuthStore } from '@/stores/auth.store';
 import { usePanoramaPlanoSetorialStore } from '@/stores/planoSetorial.panorama.store';
 import type { Parametros, ParametrosComPdmIdObrigatorio } from '@/stores/planoSetorial.panorama.store.ts';
 
 defineOptions({
   inheritAttrs: false,
 });
+
+const METAS_IPP = 10;
 
 const route = useRoute();
 const authStore = useAuthStore();
@@ -81,13 +84,17 @@ const temPermissaoMetas = computed(() => authStore.temPermissãoPara([
   'ReferencialEm.Equipe.PS',
 ]));
 
-watch([
-  () => route.query.orgao_id,
-  () => route.query.equipes,
-  () => route.query.visao_pessoal,
-  () => route.query.pdm_id,
-  () => route.query.apenas_pendentes,
-], async ([orgaoId, equipes, visaoPessoal, pdmId, apenasPendentes]) => {
+function obterParametros(): Parametros {
+  const {
+    orgao_id: orgaoId,
+    equipes,
+    visao_pessoal: visaoPessoal,
+    pdm_id: pdmId,
+    apenas_pendentes: apenasPendentes,
+    token_paginacao: tokenPaginacao,
+    pagina,
+  } = route.query;
+
   const params: Parametros = {
     pdm_id: pdmId as unknown as number || undefined,
     orgao_id: orgaoId && !Array.isArray(orgaoId)
@@ -100,7 +107,22 @@ watch([
       || undefined,
     visao_pessoal: visaoPessoal as unknown as boolean,
     apenas_pendentes: apenasPendentes as unknown as boolean,
+    pagina: pagina as unknown as number,
+    token_paginacao: tokenPaginacao as unknown as string,
+    ipp: METAS_IPP,
   };
+
+  return params;
+}
+
+watch([
+  () => route.query.orgao_id,
+  () => route.query.equipes,
+  () => route.query.visao_pessoal,
+  () => route.query.pdm_id,
+  () => route.query.apenas_pendentes,
+], async () => {
+  const params = obterParametros();
 
   // Quando visao pessoal for true, PdM_id é facultativo para buscar as
   // variáveis
@@ -113,6 +135,15 @@ watch([
     panoramaStore.buscarListaMetas(params as ParametrosComPdmIdObrigatorio);
   }
 }, { immediate: true });
+
+watch([
+  () => route.query.pagina,
+  () => route.query.token_paginacao,
+], () => {
+  const params = obterParametros();
+
+  panoramaStore.buscarListaMetas(params as ParametrosComPdmIdObrigatorio);
+});
 </script>
 
 <template>
@@ -217,6 +248,11 @@ watch([
         v-for="(item, itemIndex) in listaDeMetasPreparado"
         :key="itemIndex"
         v-bind="item"
+      />
+
+      <MenuPaginacao
+        class="mt2"
+        v-bind="paginacaoDeMetas"
       />
     </section>
   </section>
