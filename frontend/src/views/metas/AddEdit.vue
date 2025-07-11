@@ -467,13 +467,17 @@ watch(() => activePdm.value.id, async (novoValor) => {
           <label class="label">
             {{ activePdm.rotulo_contexto_meta }} <span class="tvermelho">*</span>
           </label>
-          <Field
+
+          <SmaeText
             name="contexto"
             as="textarea"
-            rows="3"
+            anular-vazio
+            :rows="3"
+            :maxlength="1000"
             class="inputtext light mb1"
-            :class="{ erro: errors.contexto }"
+            :class="{ error: errors.contexto }"
           />
+
           <div class="error-msg">
             {{ errors.contexto }}
           </div>
@@ -485,13 +489,17 @@ watch(() => activePdm.value.id, async (novoValor) => {
       >
         <div class="f1">
           <label class="label">{{ activePdm.rotulo_complementacao_meta }}</label>
-          <Field
-            name="complemento"
+
+          <SmaeText
+            anular-vazio
             as="textarea"
-            rows="3"
+            name="complemento"
+            :rows="3"
+            :maxlength="1000"
             class="inputtext light mb1"
-            :class="{ erro: errors.complemento }"
+            :class="{ error: errors.complemento }"
           />
+
           <div class="error-msg">
             {{ errors.complemento }}
           </div>
