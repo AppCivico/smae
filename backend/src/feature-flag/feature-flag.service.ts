@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { UpsertFeatureFlagDto } from './dto/feature-flag.dto';
-import { PrismaService } from '../prisma/prisma.service';
 import { Interval } from '@nestjs/schedule';
 import { FeatureFlagDto } from '../auth/models/FeatureFlagDto';
+import { IsCrontabDisabled } from '../common/crontab-utils';
+import { PrismaService } from '../prisma/prisma.service';
+import { UpsertFeatureFlagDto } from './dto/feature-flag.dto';
 
 @Injectable()
 export class FeatureFlagService {
@@ -22,7 +23,7 @@ export class FeatureFlagService {
 
     @Interval(60 * 1000)
     private async handleCron() {
-        if (this.data && process.env['DISABLED_CRONTABS'] == 'all') return;
+        if (this.data && IsCrontabDisabled('feature_flag')) return;
         process.env.INTERNAL_DISABLE_QUERY_LOG = '1';
 
         this.dbAsked = true;

@@ -8,7 +8,7 @@ import {
     Logger,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { FonteRelatorio, ModuloSistema, Prisma, RelatorioVisibilidade, TipoRelatorio } from '@prisma/client';
+import { FonteRelatorio, ModuloSistema, Prisma, RelatorioVisibilidade, TipoPdm, TipoRelatorio } from '@prisma/client';
 import { fork } from 'child_process';
 import * as crypto from 'crypto';
 import * as fs from 'fs';
@@ -65,7 +65,6 @@ class NextPageTokenJwtBody {
 @Injectable()
 export class ReportsService {
     private readonly logger = new Logger(ReportsService.name);
-    baseUrl: string;
 
     constructor(
         private readonly jwtService: JwtService,
@@ -92,10 +91,7 @@ export class ReportsService {
         @Inject(forwardRef(() => CasaCivilAtividadesPendentesService))
         private readonly casaCivilAtividadesPendentesService: CasaCivilAtividadesPendentesService,
         private readonly smaeConfigService: SmaeConfigService
-    ) {
-        const parsedUrl = new URL(process.env.URL_LOGIN_SMAE || 'http://smae-frontend/');
-        this.baseUrl = `${parsedUrl.protocol}//${parsedUrl.hostname}:${parsedUrl.port}`;
-    }
+    ) {}
 
     private async runReport(dto: CreateReportDto, user: PessoaFromJwt | null, ctx: ReportContext): Promise<void> {
         // TODO agora que existem vários sistemas, conferir se o privilégio faz sentido com o serviço
@@ -122,29 +118,9 @@ export class ReportsService {
         } else if (dto.fonte === 'Orcamento' || dto.fonte === 'PrevisaoCusto') {
             parametros.tipo_pdm = 'PDM';
         } else if (dto.fonte === 'PSOrcamento' || dto.fonte === 'PSPrevisaoCusto') {
-            parametros.tipo_pdm = 'PS';
+            parametros.tipo_pdm = await this.calcTipoPdm(ctx, parametros);
         } else if (dto.fonte === 'PSIndicadores' || dto.fonte === 'PSMonitoramentoMensal') {
-            // legado sempre assume que é PS
-            if (ctx.sistema == 'SMAE' || ctx.sistema == 'PlanoSetorial') {
-                parametros.tipo_pdm = 'PS';
-            } else {
-                if (ctx.sistema !== 'ProgramaDeMetas')
-                    throw new BadRequestException('Sistema não suportado no relatório');
-                const pdm_id = +parametros.pdm_id;
-
-                if (isNaN(pdm_id)) {
-                    throw new BadRequestException('pdm_id precisa ser um número');
-                }
-
-                const pdmInfo = await this.prisma.pdm.findUnique({
-                    where: { id: pdm_id },
-                    select: { sistema: true },
-                });
-
-                // se foi criado pelo sistema antigo (pdm 11)
-                // Usa o tipo_pdm=PDM assim o relatório irá agir como se fosse PDM
-                parametros.tipo_pdm = pdmInfo?.sistema == 'PDM' ? 'PDM' : 'PS';
-            }
+            parametros.tipo_pdm = await this.calcTipoPdm(ctx, parametros);
         } else if (dto.fonte === 'Indicadores') {
             parametros.tipo_pdm = 'PDM';
         }
@@ -153,6 +129,23 @@ export class ReportsService {
         for (const file of files) {
             ctx.addFile(file);
         }
+    }
+
+    private async calcTipoPdm(ctx: ReportContext, parametros: any) {
+        let sistema: TipoPdm = 'PS';
+        if (ctx.sistema == 'SMAE' || ctx.sistema == 'PlanoSetorial') {
+            return 'PS';
+        } else {
+            if (ctx.sistema !== 'ProgramaDeMetas') throw new BadRequestException('Sistema não suportado no relatório');
+            const pdm_id = +parametros.pdm_id;
+
+            if (isNaN(pdm_id)) {
+                throw new BadRequestException('pdm_id precisa ser um número');
+            }
+
+            sistema = 'PDM';
+        }
+        return sistema;
     }
 
     private async convertCsvToXlsx(csvContent: string | Buffer): Promise<Buffer> {
@@ -745,11 +738,13 @@ export class ReportsService {
         },
         prismaTx: Prisma.TransactionClient
     ) {
+        const baseUrl = await this.smaeConfigService.getBaseUrl('URL_LOGIN_SMAE');
+
         if (!relatorio.criador) return;
 
         // A fonte precisa ser em slug para construir a URL.
         const fonteSlug = relatorio.fonte.toLowerCase().replace(/ /g, '-');
-        const url = new URL([this.baseUrl, 'relatorios', fonteSlug].join('/')).toString();
+        const url = new URL([baseUrl, 'relatorios', fonteSlug].join('/')).toString();
 
         await prismaTx.emaildbQueue.create({
             data: {
@@ -783,7 +778,7 @@ export class ReportsService {
     private async getRelatorioFonteString(fonte: FonteRelatorio): Promise<string> {
         switch (fonte) {
             case FonteRelatorio.AtvPendentes:
-                return 'Casa Civil - Atividades Pendentes';
+                return 'SERI - Atividades Pendentes';
             case FonteRelatorio.Indicadores:
                 return 'Indicadores';
             case FonteRelatorio.MonitoramentoMensal:

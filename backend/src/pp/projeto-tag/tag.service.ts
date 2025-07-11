@@ -4,7 +4,7 @@ import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateProjetoTagDto } from './dto/create-tag.dto';
 import { FilterProjetoTagDto } from './dto/filter-tag.dto';
-import { UpdateTagDto } from './dto/update-tag.dto';
+import { ProjetoUpdateTagDto } from './dto/update-tag.dto';
 
 @Injectable()
 export class ProjetoTagService {
@@ -52,7 +52,7 @@ export class ProjetoTagService {
         return listActive;
     }
 
-    async update(tipo: TipoProjeto, id: number, updateTagDto: UpdateTagDto, user: PessoaFromJwt) {
+    async update(tipo: TipoProjeto, id: number, updateTagDto: ProjetoUpdateTagDto, user: PessoaFromJwt) {
         const self = await this.prisma.projetoTag.findFirstOrThrow({
             where: { id: id, tipo_projeto: tipo },
             select: { id: true },

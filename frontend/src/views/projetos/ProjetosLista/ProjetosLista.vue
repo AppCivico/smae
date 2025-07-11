@@ -79,7 +79,7 @@ onBeforeMount(() => {
     </div>
 
     <ProjetosListaFiltro v-slot="{ formularioSujo }">
-      <div :class="{'filtro-sujo': formularioSujo}">
+      <div :class="{ 'dependente-de-filtro-sujo': formularioSujo }">
         <MenuPaginacao
           class="mt2 bgt"
           v-bind="paginacaoProjetos"

@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import * as MinioJS from 'minio';
+import { UploadedObjectInfo } from 'minio/dist/main/internal/type';
 
 function headerEscape(str: string) {
     return str.replace(/[^\x20-\x7E]/g, '').replace(/([\s;"\\])/g, '\\$1');
@@ -36,10 +37,10 @@ export class StorageService {
         key: string,
         blob: Buffer,
         metadata: MinioJS.ItemBucketMetadata
-    ): Promise<MinioJS.UploadedObjectInfo> {
+    ): Promise<UploadedObjectInfo> {
         console.log(`putBlob ${key} with ${blob.length} bytes`);
         try {
-            return await this.S3.putObject(this.BUCKET, key, blob, metadata);
+            return await this.S3.putObject(this.BUCKET, key, blob, undefined, metadata);
         } catch (error) {
             console.log(error);
             throw error;
@@ -52,29 +53,16 @@ export class StorageService {
     }
 
     async getSignedUrlForDownload(key: string, ttl_secs: number, response_content_disposition = ''): Promise<string> {
-        return new Promise((resolve, reject) => {
-            this.S3.presignedGetObject(
-                this.BUCKET,
-                key,
-                ttl_secs,
-                {
-                    ...(response_content_disposition
-                        ? {
-                              'response-content-disposition': `attachment; filename="${headerEscape(
-                                  response_content_disposition
-                              )}"`,
-                          }
-                        : {}),
-                },
-                (err, url) => {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve(url);
-                    }
-                }
-            );
+        const presignedUrl = await this.S3.presignedGetObject(this.BUCKET, key, ttl_secs, {
+            ...(response_content_disposition
+                ? {
+                      'response-content-disposition': `attachment; filename="${headerEscape(
+                          response_content_disposition
+                      )}"`,
+                  }
+                : {}),
         });
+        return presignedUrl;
     }
 
     /**

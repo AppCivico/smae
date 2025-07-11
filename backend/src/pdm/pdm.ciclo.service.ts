@@ -5,6 +5,7 @@ import { DateTime } from 'luxon';
 import { VariavelService } from 'src/variavel/variavel.service';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { CONST_BOT_USER_ID } from '../common/consts';
+import { IsCrontabDisabled } from '../common/crontab-utils';
 import { Date2YMD, DateYMD, SYSTEM_TIMEZONE } from '../common/date2ymd';
 import { TipoPdmType } from '../common/decorators/current-tipo-pdm';
 import { JOB_PDM_CICLO_LOCK } from '../common/dto/locks';
@@ -71,7 +72,7 @@ export class PdmCicloService {
 
     @Cron('0 * * * *')
     async handleCron() {
-        if (process.env['DISABLE_PDM_CRONTAB']) return;
+        if (IsCrontabDisabled('ciclo_pdm')) return;
 
         await this.processTransactionForCycles();
     }

@@ -303,11 +303,11 @@ input ~ span[role='alert'],
 }
 
 .clearfix {
-  .clearfix;
+  .clearfix();
 }
 
 .block {
-  display: block;
+  display: block !important;
 }
 
 .ib {
@@ -1783,7 +1783,8 @@ p {
   }
 }
 
-.filtro-sujo {
+.filtro-sujo ~ *,
+.dependente-de-filtro-sujo {
   .dados-defasados();
 }
 

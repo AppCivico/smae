@@ -1,6 +1,15 @@
 #
 FROM python:3.12
 
+# Update package list and install ca-certificates
+RUN apt-get update && \
+    apt-get install -y ca-certificates && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Update CA certificates
+RUN update-ca-certificates
+
 #
 WORKDIR /code
 

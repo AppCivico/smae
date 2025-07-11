@@ -22,9 +22,9 @@ export class DistribuicaoRecursoDto {
     finalidade: string | null;
     gestor_contrato: string | null;
     custeio: Decimal;
-    pct_custeio: number | null;
+    pct_custeio: Decimal | null;
     investimento: Decimal;
-    pct_investimento: number | null;
+    pct_investimento: Decimal | null;
     empenho: Boolean | null;
     @IsDateYMD({ nullable: true })
     data_empenho: string | null;
@@ -69,13 +69,7 @@ export class ParlamentarDistribuicaoDto {
     valor: Decimal | null;
 }
 
-export class DistribuicaoRecursoDetailDto extends DistribuicaoRecursoDto {
-    pode_registrar_status: boolean;
-    historico_status: DistribuicaoHistoricoStatusDto[];
-    distribuicao_agencia: string | null;
-    distribuicao_conta: string | null;
-    distribuicao_banco: string | null;
-}
+export class DistribuicaoRecursoDetailDto extends DistribuicaoRecursoDto {}
 
 export class AditamentosDto {
     @IsDateYMD()

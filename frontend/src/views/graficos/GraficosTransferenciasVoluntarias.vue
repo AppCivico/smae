@@ -1,6 +1,6 @@
 <template>
   <div class="flex spacebetween fixed">
-    <h5>ANÁLISE GERADA EM {{ localizeDate(data) }}</h5>
+    <h5>ANÁLISE GERADA EM {{ localizeDate(dataCorrente) }}</h5>
     <button
       class="like-a__text margintop"
       @click="exibirFiltros = !exibirFiltros"
@@ -146,6 +146,7 @@
       {{ parlamentaresPorId[parlamentar]?.nome_popular || parlamentar }}
     </span>
   </div>
+
   <div
     v-if="graficos?.values?.valor_total"
     class="flex flexwrap gap50 center mt4 mb2"
@@ -154,6 +155,7 @@
       class="f1"
       :valor="graficos?.values?.valor_total"
     />
+
     <div
       v-if="graficos?.values?.numero_por_esfera && graficos?.values?.valor_total"
       class="bgb br20 p15 f1"
@@ -161,9 +163,35 @@
       <h2 class="t36">
         {{ graficos?.values?.numero_por_esfera.title.text }}
       </h2>
-      <Grafico :option="removeTitleProperty(graficos?.values?.numero_por_esfera)" />
+      <Grafico
+        :option="removeTitleProperty(graficos?.values?.numero_por_esfera)"
+      >
+        <template #painel-flutuante="data">
+          <dl
+            v-if="data?.length"
+          >
+            <div
+              v-for="(serie) in data"
+              :key="serie.seriesIndex"
+            >
+              <dt>
+                {{ serie.name }}
+              </dt>
+              <dd
+                class="painel-flutuante__item-com-legenda"
+                :style="{
+                  '--cor-da-legenda': serie.color,
+                }"
+              >
+                {{ serie.value }}%
+              </dd>
+            </div>
+          </dl>
+        </template>
+      </Grafico>
     </div>
   </div>
+
   <div
     v-if="graficos?.values?.numero_por_status && graficos?.values?.valor_total"
     class="w100 bgb mt4 p15"
@@ -171,35 +199,190 @@
     <h2 class="t36">
       {{ graficos.values.numero_por_status.title.text }}
     </h2>
-    <Grafico :option="removeTitleProperty(graficos.values.numero_por_status)" />
+    <Grafico :option="removeTitleProperty(graficos.values.numero_por_status)">
+      <template #painel-flutuante="data">
+        <dl
+          v-if="data?.length"
+        >
+          <div
+            v-for="(serie) in data"
+            :key="serie.seriesIndex"
+          >
+            <dt>
+              {{ serie.name }}
+            </dt>
+            <dd
+              class="painel-flutuante__item-com-legenda"
+              :style="{
+                '--cor-da-legenda': serie.color,
+              }"
+            >
+              {{ serie.value }}
+            </dd>
+          </div>
+        </dl>
+      </template>
+    </Grafico>
   </div>
+
   <div
-    v-if="graficos?.values?.numero_por_partido && graficos?.values?.valor_total"
+    v-if="graficosDeNumeroPorPartido && graficos?.values?.valor_total"
     class="w100 bgb mt4 p15"
   >
     <h2 class="t36">
-      {{ graficos.values.numero_por_partido.title.text }}
+      {{ graficosDeNumeroPorPartido.title.text }}
     </h2>
-    <Grafico :option="removeTitleProperty(graficos.values.numero_por_partido)" />
+    <Grafico :option="removeTitleProperty(graficosDeNumeroPorPartido)">
+      <template #painel-flutuante="data">
+        <p
+          v-if="data[0].name"
+          class="painel-flutuante__titulo"
+        >
+          {{ data[0].name }}
+        </p>
+
+        <dl
+          v-if="data?.length"
+        >
+          <div
+            v-for="(serie) in data"
+            :key="serie.seriesIndex"
+          >
+            <dt>
+              {{ serie.seriesName }}
+            </dt>
+            <dd
+              class="painel-flutuante__item-com-legenda"
+              :style="{
+                '--cor-da-legenda': serie.color,
+              }"
+            >
+              {{ serie.value }}
+            </dd>
+          </div>
+        </dl>
+      </template>
+    </Grafico>
   </div>
+
   <div
-    v-if="graficos?.values?.valor_por_partido && graficos?.values?.valor_total"
+    v-if="graficoDeValorPorPartido && graficos?.values?.valor_total"
     class="w100 bgb mt4 p15"
   >
     <h2 class="t36">
-      {{ graficos.values.valor_por_partido.title.text }}
+      {{ graficoDeValorPorPartido.title.text }}
     </h2>
-    <Grafico :option="removeTitleProperty(graficos.values.valor_por_partido)" />
+
+    <label class="mb1">
+      <input
+        v-model="numeroCompactado.porPartidos"
+        type="checkbox"
+        class="inputcheckbox interruptor"
+        aria-label="Exibir valores em formato compactado"
+      >
+      valores compactados
+    </label>
+
+    <Grafico
+      :key="`graficos--valor-por-partido__${String(numeroCompactado.porPartidos)}`"
+      :option="removeTitleProperty(graficoDeValorPorPartido)"
+    >
+      <template #painel-flutuante="data">
+        <p
+          v-if="data[0].name"
+          class="painel-flutuante__titulo"
+        >
+          {{ data[0].name }}
+        </p>
+
+        <dl
+          v-if="data?.length"
+        >
+          <div
+            v-for="(serie) in data"
+            :key="serie.seriesIndex"
+          >
+            <dt>
+              {{ serie.seriesName }}
+            </dt>
+            <dd
+              class="painel-flutuante__item-com-legenda"
+              :style="{
+                '--cor-da-legenda': serie.color,
+              }"
+            >
+              {{ dinheiro(serie.value, {
+                style: 'currency',
+                semDecimais: numeroCompactado.porPartidos,
+                compactado: numeroCompactado.porPartidos,
+                maximumFractionDigits: 3,
+              }) }}
+            </dd>
+          </div>
+        </dl>
+      </template>
+    </Grafico>
   </div>
+
   <div
-    v-if="graficos?.values?.valor_por_orgao && graficos?.values?.valor_total"
+    v-if="graficoDeValorPorOrgao && graficos?.values?.valor_total"
     class="w100 bgb mt4 p15"
   >
     <h2 class="t36">
-      {{ graficos.values.valor_por_orgao.title.text }}
+      {{ graficoDeValorPorOrgao.title.text }}
     </h2>
-    <Grafico :option="removeTitleProperty(graficos.values.valor_por_orgao)" />
+
+    <label class="mb1">
+      <input
+        v-model="numeroCompactado.porOrgaos"
+        type="checkbox"
+        class="inputcheckbox interruptor"
+        aria-label="Exibir valores em formato compactado"
+      >
+      valores compactados
+    </label>
+
+    <Grafico
+      :key="`graficos--valor-por-orgao__${String(numeroCompactado.porOrgaos)}`"
+      :option="removeTitleProperty(graficoDeValorPorOrgao)"
+    >
+      <template #painel-flutuante="data">
+        <p
+          v-if="data[0].name"
+          class="painel-flutuante__titulo"
+        >
+          {{ data[0].name }}
+        </p>
+
+        <dl
+          v-if="data?.length"
+        >
+          <div
+            v-for="(serie) in data"
+            :key="serie.seriesIndex"
+          >
+            <dt>
+              {{ serie.seriesName }}
+            </dt>
+            <dd
+              class="painel-flutuante__item-com-legenda"
+              :style="{
+                '--cor-da-legenda': serie.color,
+              }"
+            >
+              {{ dinheiro(serie.value, {
+                style: 'currency',
+                semDecimais: numeroCompactado.porOrgaos,
+                compactado: numeroCompactado.porOrgaos,
+                maximumFractionDigits: 3,
+              }) }}
+            </dd>
+          </div>
+        </dl>
+      </template>
+    </Grafico>
   </div>
+
   <div
     v-if=" graficos?.values?.valor_por_parlamentar.length && graficos?.values?.valor_total"
     class="w100 bgb mt4 p15 "
@@ -220,7 +403,9 @@
           >
         </div>
         <p>{{ parlamentar.parlamentar.nome_popular }}</p>
-        <p>R${{ dinheiro(parlamentar.valor, true) }}</p>
+        <p class="nowrap">
+          R$ {{ dinheiro(parlamentar.valor, { semDecimais: true }) }}
+        </p>
       </div>
     </div>
   </div>
@@ -233,7 +418,7 @@
     </h2>
     <div class="grid g2 relative">
       <SmaeTable
-        titulo-rolagem-horizontal="Tabela: Transferências"
+        titulo-para-rolagem-horizontal="Tabela: Transferências"
         class="mt2"
         rolagem-horizontal
         :colunas="colunas"
@@ -267,29 +452,28 @@
   </div>
 </template>
 <script setup>
-import requestS from '@/helpers/requestS.ts';
-import dateToDate from '@/helpers/dateToDate';
-import AutocompleteField from '@/components/AutocompleteField2.vue';
-import Grafico from '@/components/graficos/GraficoDashboard.vue';
-import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
-import { usePartidosStore } from '@/stores/partidos.store';
-import { useParlamentaresStore } from '@/stores/parlamentares.store';
-import { ref, watch } from 'vue';
+import isEqual from 'lodash/isEqual';
 import { storeToRefs } from 'pinia';
+import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import dinheiro from '@/helpers/dinheiro';
+import AutocompleteField from '@/components/AutocompleteField2.vue';
+import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
+import Grafico from '@/components/graficos/GraficoDashboard.vue';
 import ValorTransferencia from '@/components/graficos/ValorTransferencia.vue';
 import combinadorDeListas from '@/helpers/combinadorDeListas';
-import MenuPaginacao from '@/components/MenuPaginacao.vue';
-import isEqual from 'lodash/isEqual';
+import dateToDate from '@/helpers/dateToDate';
+import dinheiro from '@/helpers/dinheiro';
+import requestS from '@/helpers/requestS.ts';
+import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
+import { useParlamentaresStore } from '@/stores/parlamentares.store';
+import { usePartidosStore } from '@/stores/partidos.store';
 
 const localizeDate = (d) => dateToDate(d, { timeStyle: 'short', timeZone: 'America/Sao_Paulo' });
 const fluxosEtapasProjetos = useEtapasProjetosStore();
 const partidoStore = usePartidosStore();
 const parlamentarStore = useParlamentaresStore();
 
-// eslint-disable-next-line max-len
 const {
   lista: listaEtapas,
   chamadasPendentes: chamadasPendentesEtapas,
@@ -297,8 +481,11 @@ const {
   erro: erroNaListaDeEtapas,
 } = storeToRefs(fluxosEtapasProjetos);
 
-// eslint-disable-next-line max-len
-const { lista: listaPartidos, chamadasPendentes: chamadasPendentesPartidos, partidosPorId } = storeToRefs(partidoStore);
+const {
+  lista: listaPartidos,
+  chamadasPendentes: chamadasPendentesPartidos,
+  partidosPorId,
+} = storeToRefs(partidoStore);
 
 const {
   lista: listaParlamentares,
@@ -306,26 +493,11 @@ const {
   parlamentaresPorId,
 } = storeToRefs(parlamentarStore);
 
-// eslint-disable-next-line prefer-const
-let exibirFiltros = ref(false);
-const tabelaTransferencias = ref(null);
-
 const route = useRoute();
 const router = useRouter();
 
-let data = new Date();
+let dataCorrente = new Date();
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
-const graficos = ref({});
-let graficosPendentes = false;
-const filtrosEscolhidos = ref({
-  etapa_ids: route.query.etapa_ids?.map((id) => Number(id)) || [],
-  anos: route.query.anos?.map((ano) => Number(ano)) || [],
-  partido_ids: route.query.partido_ids?.map((id) => Number(id)) || [],
-  parlamentar_ids: route.query.parlamentar_ids?.map((id) => Number(id)) || [],
-});
-const carregandoTransferencias = ref(false);
-const transferencias = ref([]);
-const paginacaoTransferencias = ref({});
 const colunas = [
   { chave: 'identificador', label: 'Identificador' },
   { chave: 'esfera', label: 'Esfera' },
@@ -357,14 +529,114 @@ const colunas = [
     formatador: (valor) => listaEtapas.value.find((etapa) => etapa.id === valor)?.descricao || 'Workflow não iniciado',
   },
 ];
+const anos = (() => {
+  const listaDeAnos = [];
+  for (let ano = new Date().getFullYear(); ano >= 2004; ano -= 1) {
+    listaDeAnos.push({ ano: ano.toString(), id: ano });
+  }
+  return listaDeAnos;
+})();
 
-const anoAtual = new Date().getFullYear();
+const graficosPendentes = ref(false);
+const exibirFiltros = ref(false);
+const tabelaTransferencias = ref(null);
+const graficos = ref({});
+const filtrosEscolhidos = ref({
+  etapa_ids: route.query.etapa_ids?.map((id) => Number(id)) || [],
+  anos: route.query.anos?.map((ano) => Number(ano)) || [],
+  partido_ids: route.query.partido_ids?.map((id) => Number(id)) || [],
+  parlamentar_ids: route.query.parlamentar_ids?.map((id) => Number(id)) || [],
+});
+const carregandoTransferencias = ref(false);
+const transferencias = ref([]);
+const paginacaoTransferencias = ref({});
 
-const anos = [];
+const numeroCompactado = ref({
+  porPartidos: true,
+  porOrgaos: true,
+});
 
-for (let ano = anoAtual; ano >= 2004; ano -= 1) {
-  anos.push({ ano: ano.toString(), id: ano });
-}
+const graficosDeNumeroPorPartido = computed(() => (!Array.isArray(
+  graficos.value?.values?.numero_por_partido?.series,
+)
+  ? null
+  : {
+    ...graficos.value.values.numero_por_partido,
+    xAxis: {
+      ...graficos.value.values.numero_por_partido.xAxis,
+      axisLabel: {
+        ...graficos.value.values.numero_por_partido.xAxis.axisLabel,
+        rotate: 45,
+        align: 'right',
+      },
+    },
+    series: graficos.value.values.numero_por_partido.series.map((serie) => ({
+      ...serie,
+      stack: undefined,
+      barWidth: '40%',
+      label: serie.value ? serie.label : undefined,
+    })),
+  }));
+
+const graficoDeValorPorPartido = computed(() => (!Array.isArray(
+  graficos.value?.values?.valor_por_partido?.series,
+)
+  ? null
+  : {
+    ...graficos.value.values.valor_por_partido,
+    xAxis: {
+      ...graficos.value.values.valor_por_partido.xAxis,
+      axisLabel: {
+        ...graficos.value.values.valor_por_partido.xAxis.axisLabel,
+        rotate: 45,
+        align: 'right',
+      },
+    },
+    yAxis: {
+      ...graficos.value.values.valor_por_partido.yAxis,
+      name: undefined,
+      axisLabel: {
+        formatter: (value) => `R$ ${dinheiro(value, { compactado: numeroCompactado.value.porPartidos, minimumFractionDigits: 0 })}`,
+      },
+    },
+    series: graficos.value.values.valor_por_partido.series.map((serie) => ({
+      ...serie,
+      stack: 'total',
+      barWidth: '80%',
+      label: undefined,
+    })),
+  }));
+
+const graficoDeValorPorOrgao = computed(() => (!Array.isArray(
+  graficos.value?.values?.valor_por_orgao?.series,
+)
+  ? null
+  : {
+    ...graficos.value.values.valor_por_orgao,
+    xAxis: {
+      ...graficos.value.values.valor_por_orgao.xAxis,
+      axisLabel: {
+        ...graficos.value.values.valor_por_orgao.xAxis.axisLabel,
+        rotate: 45,
+        align: 'right',
+      },
+    },
+
+    yAxis: {
+      ...graficos.value.values.valor_por_orgao.yAxis,
+      name: undefined,
+      axisLabel: {
+        formatter: (value) => `R$ ${dinheiro(value, { compactado: numeroCompactado.value.porOrgaos, minimumFractionDigits: 0 })}`,
+      },
+    },
+
+    series: graficos.value.values.valor_por_orgao.series.map((serie) => ({
+      ...serie,
+      stack: 'total',
+      barWidth: '80%',
+      label: undefined,
+    })),
+  }));
 
 function atualizarQuery() {
   const filtrosLimpos = Object.keys(filtrosEscolhidos.value).reduce(
@@ -389,7 +661,7 @@ function atualizarQuery() {
 
 function onSubmit() {
   atualizarQuery();
-  data = new Date();
+  dataCorrente = new Date();
   exibirFiltros.value = false;
 }
 
@@ -399,16 +671,16 @@ function removeTitleProperty(obj) {
 }
 
 async function buscarGraficos() {
-  graficosPendentes = true;
+  graficosPendentes.value = true;
   try {
     const retorno = await requestS.get(
       `${baseUrl}/panorama/analise-transferencias`,
       route.query,
     );
     graficos.value.values = retorno;
-    graficosPendentes = false;
+    graficosPendentes.value = false;
   } catch (error) {
-    graficosPendentes = false;
+    graficosPendentes.value = false;
     console.log('error:', error);
   }
 }
@@ -456,7 +728,7 @@ function scrollPaginaParaTabela() {
 
 async function iniciar() {
   fluxosEtapasProjetos.buscarTudo();
-  parlamentarStore.buscarTudo();
+  parlamentarStore.buscarTudo({ ipp: -1 });
   partidoStore.buscarTudo();
 
   atualizarQuery();
@@ -464,7 +736,7 @@ async function iniciar() {
     await router.replace({
       query: {
         ...route.query,
-        anos: [data.getFullYear()],
+        anos: [dataCorrente.getFullYear()],
       },
     });
   }
@@ -570,6 +842,7 @@ watch(
   margin-right: -50px;
   box-shadow: 0px 8px 16px 0px #1527411a;
 }
+
 .parlamentar {
   box-shadow: 0px 8px 16px 0px #1527411a;
   padding: 10px 40px;

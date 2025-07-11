@@ -175,19 +175,18 @@ resetForm();
     </div>
 
     <div class="flex g2">
-
       <div class="f1 mb1">
         <LabelFromYup
           name="descricao"
           :schema="schema"
         />
         <SmaeText
+          :schema="schema"
           name="descricao"
           as="textarea"
           rows="5"
           class="inputtext light mb1"
-          maxlength="2048"
-          v-model="carga.descricao"
+          :model-value="carga.descricao"
           anular-vazio
         />
         <ErrorMessage
@@ -203,11 +202,11 @@ resetForm();
           :schema="schema"
         />
         <SmaeText
+          :schema="schema"
           name="comentarios"
           as="textarea"
           rows="5"
           class="inputtext light mb1"
-          maxlength="2048"
           :model-value="carga.comentarios"
           anular-vazio
         />
@@ -224,11 +223,11 @@ resetForm();
           :schema="schema"
         />
         <SmaeText
+          :schema="schema"
           name="observacoes"
           as="textarea"
           rows="5"
           class="inputtext light mb1"
-          maxlength="2048"
           :model-value="carga.observacoes"
           anular-vazio
         />

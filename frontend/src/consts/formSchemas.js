@@ -34,16 +34,16 @@ import tiposDeMunicípio from '@/consts/tiposDeMunicipio';
 import tiposDeOrigens from '@/consts/tiposDeOrigens';
 import tiposNaEquipeDeParlamentar from '@/consts/tiposNaEquipeDeParlamentar';
 import tiposSituacaoSchema from '@/consts/tiposSituacaoSchema';
+import tiposStatusDistribuicao from '@/consts/tiposStatusDistribuicao';
 import fieldToDate from '@/helpers/fieldToDate';
 import haDuplicatasNaLista from '@/helpers/haDuplicatasNaLista';
-import tiposStatusDistribuicao from './tiposStatusDistribuicao';
-
-const dataMin = import.meta.env.VITE_DATA_MIN ? new Date(`${import.meta.env.VITE_DATA_MIN}`) : new Date('1900-01-01T00:00:00Z');
-const dataMax = import.meta.env.VITE_DATA_MAX ? new Date(`${import.meta.env.VITE_DATA_MAX}`) : new Date('2100-12-31T23:59:59Z');
-
-// Carrega os anos possíveis - começa em 2003 e termina no corrente mais cinco
-const endYear = new Date().getFullYear() + 5;
-const startYear = 2003;
+import {
+  dataMax,
+  dataMin,
+  endYear,
+  startYear,
+} from './formSchemas/config/datas';
+import i18n from './formSchemas/config/i18n';
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 addMethod(string, 'fieldUntilToday', function _(errorMessage = 'Valor de ${path} futuro') {
@@ -129,46 +129,7 @@ addMethod(mixed, 'semDuplicatas', function semDuplicatas(message = '${path} não
   });
 });
 
-setLocale({
-  array: {
-    min: ({ label, min }) => (label
-      ? `${label}: escolha ao menos ${min}`
-      : 'Escolha ao menos ${min}'
-    ),
-    max: ({ label, max }) => (label
-      ? `${label}: escolha no máximo ${max}`
-      : 'Escolha no máximo ${max}'
-    ),
-  },
-  date: {
-    max: ({ label }) => (label ? `${label} está muito no futuro` : 'Essa data é muito no futuro'),
-    min: ({ label }) => (label ? `${label} está muito no passado` : 'Essa data é muito no passado'),
-    required: ({ label }) => (label ? `${label} não é opcional` : 'Data obrigatória'),
-  },
-  mixed: {
-    default: 'Valor de ${label} não é válido',
-    oneOf: 'Opção inválida para ${label}',
-    notType: ({ label }) => (label ? `Valor de ${label} inválido` : 'Valor inválido'),
-    required: ({ label }) => (label ? `${label} não é opcional` : 'Campo obrigatório'),
-  },
-  number: {
-    integer: ({ label }) => (label ? `${label} deve ser um número inteiro` : 'Deve ser um número inteiro'),
-    max: ({ label, max }) => (label ? `${label} deve ser no máximo ${max}` : 'Deve ser no máximo ${max}'),
-    min: ({ label, min }) => (label ? `${label} deve ser no mínimo ${min}` : 'Deve ser no mínimo ${min}'),
-    positive: ({ label }) => (label ? `${label} deve ser maior do que zero` : 'Deve ser maior do que zero'),
-  },
-  string: {
-    email: ({ label }) => (label ? `${label} não é e-mail válido` : 'E-mail inválido'),
-    min: ({ label, min }) => (label
-      ? `${label} está menor que ${min} caracteres`
-      : 'Esse texto é menor que ${min} caracteres'),
-    matches: ({ label }) => (label ? `${label} está fora do formato` : 'Formato inválido'),
-    max: ({ label, max }) => (label
-      ? `${label} está maior que ${max} caracteres`
-      : 'Esse texto é maior que ${max} caracteres'),
-    required: ({ label }) => (label ? `${label} não é opcional` : 'Campo obrigatório'),
-  },
-});
+setLocale(i18n);
 
 // https://github.com/jquense/yup/issues/384#issuecomment-442958997
 
@@ -1326,7 +1287,10 @@ export const obras = object({
   mdo_n_familias_beneficiadas: number()
     .label('Número de famílias beneficiadas')
     .nullable()
-    .min(0),
+    .min(0)
+    .meta({
+      serialize: (valor) => (valor ? Number(valor) : null),
+    }),
   mdo_n_unidades_habitacionais: number()
     .label('Número de unidades')
     .min(0)
@@ -2193,11 +2157,17 @@ export const transferenciaDistribuicaoDeRecursos = object({
   custeio: number()
     .label('Custeio (R$)')
     .min(0)
-    .required(),
+    .required()
+    .meta({
+      balaoInformativo: 'Indica o valor financeiro para despesas de custeio da Transferência Voluntária. O valor do custeio é sobre o valor do repasse.',
+    }),
   investimento: number()
     .label('Investimento (R$)')
     .min(0)
-    .required(),
+    .required()
+    .meta({
+      balaoInformativo: 'Indica o valor financeiro para despesas de investimento da Transferência Voluntária. O valor do investimento é sobre o valor do repasse.',
+    }),
   data_empenho: date()
     .label('Data do empenho')
     .max(dataMax)
@@ -2214,7 +2184,10 @@ export const transferenciaDistribuicaoDeRecursos = object({
     .nullable(),
   dotacao: string()
     .label('Dotacao')
-    .nullable(),
+    .nullable()
+    .meta({
+      balaoInformativo: 'Indica o código numérico da alocação dos recursos financeiros previstos no orçamento municipal para execução da Transferência Voluntária.',
+    }),
   empenho: boolean()
     .label('Empenho')
     .nullable(),
@@ -2228,15 +2201,24 @@ export const transferenciaDistribuicaoDeRecursos = object({
     .label('Justificativa para aditamento')
     .max(250)
     .min(1, 'Justificativa para aditamento é obrigatório após editar a data de vigência')
-    .nullable(),
+    .nullable()
+    .meta({
+      balaoInformativo: 'Indica os motivos que justificam aditamento do contrato relacionado à Transferência Voluntária.',
+    }),
   valor_liquidado: string()
     .label('Liquidação/Pagamento')
-    .nullable(),
+    .nullable()
+    .meta({
+      balaoInformativo: 'Indica o valor financeiro liquidado ou pago na Transferência Voluntária.',
+    }),
   nome: string()
     .label('Nome')
     .min(1)
     .max(1024)
-    .required(),
+    .required()
+    .meta({
+      balaoInformativo: 'Indica o apelido da Transferência Voluntária.',
+    }),
   objeto: string()
     .label('Objeto/Empreendimento')
     .max(1000)
@@ -2244,18 +2226,30 @@ export const transferenciaDistribuicaoDeRecursos = object({
   orgao_gestor_id: number()
     .label('Gestor Municipal')
     .min(1, 'Selecione um gestor municipal')
-    .required(),
+    .required()
+    .meta({
+      balaoInformativo: 'Indica o nome do ponto focal responsável por acompanhar a execução da Transferência Voluntária e reportar para a Secretaria-Executiva de Relações Institucionais (SERI).',
+    }),
   programa_orcamentario_estadual: string()
     .label('Programa orçamentário estadual')
-    .nullable(),
+    .nullable()
+    .meta({
+      balaoInformativo: 'Indica o Programa Orçamentário do Concedente vinculado à Transferência Voluntária, de acordo com distribuição dos recursos da Transferência Especial.',
+    }),
   programa_orcamentario_municipal: string()
     .label('Programa orçamentário municipal')
-    .nullable(),
+    .nullable()
+    .meta({
+      balaoInformativo: 'Indica o Programa Orçamentário Municipal vinculado à Transferência Voluntária, de acordo com distribuição dos recursos da Transferência Especial.',
+    }),
   proposta: string()
     .label('Proposta')
     .nullable(),
   registros_sei: array()
     .label('Número SEI')
+    .meta({
+      balaoInformativo: 'Indica o código numérico referente ao processo administrativo instruído no Sistema Eletrônico de Informações - SEI! relacionado à Transferência Voluntária.',
+    })
     .of(object({
       id: number()
         .nullable(),
@@ -2273,22 +2267,34 @@ export const transferenciaDistribuicaoDeRecursos = object({
     .strict(),
   rubrica_de_receita: string()
     .label('Rubrica de receita')
-    .nullable(),
+    .nullable()
+    .meta({
+      balaoInformativo: 'Indica o código numérico do detalhamento da espécie de receita. Informação deve ser solicitada pela Secretaria Municipal da Fazenda.',
+    }),
   valor: number()
     .label('Valor do Repasse')
     .required()
-    .nullable(),
+    .nullable()
+    .meta({
+      balaoInformativo: 'Indica o valor financeiro da Transferência Voluntária.',
+    }),
   valor_contrapartida: number()
     .label('Valor contrapartida')
     .required()
-    .nullable(),
+    .nullable()
+    .meta({
+      balaoInformativo: 'Indica o valor financeiro disponibilizado pela Prefeitura como contrapartida da Transferência Voluntária.',
+    }),
   valor_empenho: number()
     .label('Valor empenho')
     .nullable(),
   valor_total: number()
     .label('Valor total')
     .required()
-    .nullable(),
+    .nullable()
+    .meta({
+      balaoInformativo: 'Indica o valor financeiro global (soma do repasse e contrapartida) para execução da Transferência Voluntária.',
+    }),
   vigencia: date()
     .label('Data de vigência')
     .max(dataMax)
@@ -2303,7 +2309,10 @@ export const transferenciaDistribuicaoDeRecursos = object({
         .nullable(),
       nome: string()
         .label('Parlamentar')
-        .nullable(),
+        .nullable()
+        .meta({
+          balaoInformativo: 'Indica o nome do parlamentar. Advém das informações cadastradas sobre Parlamentares na aba Configurações.',
+        }),
       valor: number()
         .label('Valor do repasse do parlamentar')
         .nullable(),
@@ -2329,6 +2338,12 @@ export const registroDeTransferencia = object({
   conta_aceite: string()
     .label('Número conta-corrente de aceite')
     .nullable(),
+  pct_custeio: number()
+    .label('Porcentagem')
+    .nullable()
+    .meta({
+      balaoInformativo: 'Indica o valor financeiro para despesas de custeio da Transferência Voluntária. O valor do custeio é sobre o valor do repasse.',
+    }),
   custeio: number()
     .label('Custeio')
     .min(0)
@@ -2337,28 +2352,52 @@ export const registroDeTransferencia = object({
     .min(0),
   dotacao: string()
     .label('Dotação')
-    .nullable(),
+    .nullable()
+    .meta({
+      balaoInformativo: 'Indica o código numérico da alocação dos recursos financeiros previstos no orçamento municipal para execução da Transferência Voluntária.',
+    }),
   empenho: boolean()
     .label('Empenho')
     .nullable(),
   valor: number()
     .label('Valor do Repasse')
     .nullable()
-    .required(),
+    .required()
+    .meta({
+      balaoInformativo: 'Indica o valor financeiro da Transferência Voluntária.',
+    }),
   valor_contrapartida: number()
     .label('Valor contrapartida')
     .nullable()
-    .required(),
+    .required()
+    .meta({
+      balaoInformativo: 'Indica o valor financeiro disponibilizado pela Prefeitura como contrapartida da Transferência Voluntária.',
+    }),
   ordenador_despesa: string()
     .label('Ordenador de despesas')
-    .nullable(),
+    .nullable()
+    .meta({
+      balaoInformativo: 'Nome da autoridade pública municipal responsável por autorizar a execução financeira do contrato.',
+    }),
   valor_total: number()
     .label('Valor total')
     .required()
-    .nullable(),
+    .nullable()
+    .meta({
+      balaoInformativo: 'Indica o valor financeiro global (soma do repasse e contrapartida) para execução da Transferência Voluntária.',
+    }),
   gestor_contrato: string()
     .label('Gestor do Contrato')
-    .nullable(),
+    .nullable()
+    .meta({
+      balaoInformativo: 'Nome do gestor municipal responsável por acompanhar e fiscalizar a execução da Transferência Voluntária.',
+    }),
+  pct_investimento: number()
+    .label('Porcentagem')
+    .nullable()
+    .meta({
+      balaoInformativo: 'Indica o valor financeiro para despesas de investimento da Transferência Voluntária. O valor do investimento é sobre o valor do repasse.',
+    }),
   investimento: number()
     .label('Valor')
     .min(0)
@@ -2373,7 +2412,10 @@ export const registroDeTransferencia = object({
       id: number()
         .nullable(),
       parlamentar_id: number()
-        .label('Parlamentar'),
+        .label('Parlamentar')
+        .meta({
+          balaoInformativo: 'Indica o nome do parlamentar. Advém das informações cadastradas sobre Parlamentares na aba Configurações.',
+        }),
       objeto: string()
         .label('Objeto/Empreendimento')
         .max(1000)
@@ -2394,19 +2436,31 @@ export const transferenciasVoluntarias = object({
     .max(dataMax)
     .min(new Date(2003, 0, 1))
     .transform((v) => (!v ? null : v))
+    .meta({
+      balaoInformativo: 'Indica a data de vencimento para atendimento das pendências contratuais que permitem o início da Transferência Voluntária.',
+    })
     .when('clausula_suspensiva', (clausulaSuspensiva, field) => (clausulaSuspensiva
       ? field.required()
       : field.nullable())),
   tipo_id: number()
     .label('Tipo')
     .nullable()
-    .required(),
+    .required()
+    .meta({
+      balaoInformativo: 'Indica a origem da Transferência Voluntária, determinando o fluxo correspondente para monitoramento.',
+    }),
   classificacao_id: string()
     .label('Classificação')
-    .nullable(),
+    .nullable()
+    .meta({
+      balaoInformativo: 'Indica a obrigatoriedade ou discricionariedade da Transferência Voluntária. Está diretamente relacionada ao Tipo e à Esfera.',
+    }),
   clausula_suspensiva: boolean()
     .label('Cláusula suspensiva')
-    .nullable(),
+    .nullable()
+    .meta({
+      balaoInformativo: 'Indica se a Transferência Voluntária possui pendências contratuais para iniciar sua execução.',
+    }),
   detalhamento: string()
     .label('Detalhamento')
     .max(50000)
@@ -2415,12 +2469,18 @@ export const transferenciasVoluntarias = object({
     .label('Emenda')
     .max(250)
     .min(1)
-    .nullable(),
+    .nullable()
+    .meta({
+      balaoInformativo: 'Indica o código numérico da emenda parlamentar, gerado nos respectivos sistemas do Governo Federal ou Estadual.',
+    }),
   emenda_unitaria: string()
     .label('Emenda unitária')
     .max(250)
     .min(1)
-    .nullable(),
+    .nullable()
+    .meta({
+      balaoInformativo: 'Indica o código numérico da emenda parlamentar oriunda de Transferência Especial, em nos casos de distribuição de recursos. É gerado pelos respectivos sistemas do Governo Federal ou Estadual.',
+    }),
   esfera: mixed()
     .label('Esfera')
     .nullable()
@@ -2428,17 +2488,26 @@ export const transferenciasVoluntarias = object({
     .oneOf([...Object.keys(esferasDeTransferencia), null]),
   demanda: string()
     .label('Número da Demanda')
-    .nullable(),
+    .nullable()
+    .meta({
+      balaoInformativo: 'Indica o código numérico da demanda de emenda parlamentar estadual, gerado no sistema do Governo do Estado.',
+    }),
   interface: string()
     .label('Interface')
     .nullable(),
   nome_programa: string()
     .label('Nome do programa')
-    .nullable(),
+    .nullable()
+    .meta({
+      balaoInformativo: 'Indica o nome do Programa Orçamentário vinculado à Transferência Voluntária. Código gerado pelos respectivos sistemas do Governo Federal e Estadual.',
+    }),
   normativa: string()
     .label('normativa')
     .nullable()
-    .max(50000),
+    .max(50000)
+    .meta({
+      balaoInformativo: 'Indica a(s) norma(s) que regulamentam a Transferência Voluntária.',
+    }),
   observacoes: string()
     .label('Observação')
     .max(50000)
@@ -2455,7 +2524,10 @@ export const transferenciasVoluntarias = object({
     .required(),
   programa: string()
     .label('Código do programa')
-    .nullable(),
+    .nullable()
+    .meta({
+      balaoInformativo: 'Indica o código numérico do Programa Orçamentário vinculado à Transferência Voluntária. Código gerado pelos respectivos sistemas do Governo Federal e Estadual.',
+    }),
   parlamentares: array()
     .label('Parlamentar')
     .nullable()
@@ -2464,7 +2536,10 @@ export const transferenciasVoluntarias = object({
         .nullable(),
       parlamentar_id: number()
         .label('Parlamentar')
-        .required(),
+        .required()
+        .meta({
+          balaoInformativo: 'Indica o nome do parlamentar. Advém das informações cadastradas sobre Parlamentares na aba Configurações.',
+        }),
       cargo: mixed()
         .label('Cargo')
         // feio, mas... Algo parece bugado no Yup e não posso atualizá-lo agora
@@ -2486,18 +2561,21 @@ export const transferenciasVoluntarias = object({
     })),
   secretaria_concedente: string()
     .label('Gestor do órgão concedente')
-    .nullable(),
+    .nullable()
+    .meta({
+      balaoInformativo: 'Indica o nome do órgão Federal ou Estadual ao qual a origem da Transferência Voluntária está atrelada.',
+    }),
 });
 
 export const processo = object()
   .shape({
     comentarios: string()
       .label('Comentários')
-      .max(1024)
+      .max(2048)
       .nullable(),
     descricao: string()
       .label('Descrição')
-      .max(2000)
+      .max(2048)
       .nullable(),
     link: string()
       .label('Link')
@@ -2506,7 +2584,7 @@ export const processo = object()
       .url(),
     observacoes: string()
       .label('Observações')
-      .max(1024)
+      .max(2048)
       .nullable(),
     processo_sei: string()
       .label('Processo SEI')
@@ -3573,6 +3651,9 @@ export const etapasFluxo = object({
     .required(),
   marco: boolean()
     .label('Marco?'),
+  responsabilidade: string()
+    .label('Responsabilidade')
+    .required(),
 });
 
 export const etapasProjeto = object({
@@ -3690,112 +3771,6 @@ export const tag = object()
     pdm_id: string(),
     upload_icone: string()
       .label('Ícone')
-      .nullable(),
-  });
-
-export const tarefa = object()
-  .shape({
-    atualizacao_do_realizado: boolean(),
-    custo_estimado: number()
-      .label('Previsão de custo')
-      .min(0)
-      .nullable(),
-    custo_real: number()
-      .label('Custo real')
-      .min(0)
-      .nullable()
-      .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
-    dependencias: array()
-      .label('Dependências')
-      .of(
-        object()
-          .shape({
-            dependencia_tarefa_id: number()
-              .label('Tarefa relacionada')
-              .min(1, 'Campo obrigatório')
-              .required(),
-            latencia: number()
-              .label('Dias de latência')
-              .integer()
-              .required()
-              .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
-            tipo: mixed()
-              .label('Tipo de relação')
-              .required()
-              .oneOf(['termina_pro_inicio', 'inicia_pro_inicio', 'inicia_pro_termino', 'termina_pro_termino']),
-          }),
-      )
-      .strict(),
-    descricao: string()
-      .label('Descrição')
-      .min(0)
-      .max(2048)
-      .nullable(),
-    duracao_planejado: number()
-      .label('Duração prevista')
-      .min(0)
-      .nullable(),
-    duracao_real: number()
-      .label('Duração real')
-      .min(0)
-      .nullable(),
-    eh_marco: boolean()
-      .label('Marco do projeto?')
-      .nullable(),
-    inicio_planejado: date()
-      .label('Previsão de início')
-      .max(dataMax)
-      .min(dataMin)
-      .nullable(),
-    inicio_real: date()
-      .label('Data de início real')
-      .max(dataMax)
-      .min(dataMin)
-      .nullable(),
-    nivel: number()
-      .min(1)
-      .nullable(),
-    numero: number()
-      .label('Ordem')
-      .min(1)
-      .when('atualizacao_do_realizado', (atualizacaoDoRealizado, field) => (!atualizacaoDoRealizado
-        ? field.required()
-        : field.nullable())),
-    orgao_id: number()
-      .label('Órgão responsável')
-      .min(1, 'Selecione um órgão responsável')
-      .required('Escolha um órgão responsável pela tarefa'),
-    percentual_concluido: number()
-      .label('Percentual concluído')
-      .min(0)
-      .max(100)
-      .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
-      .when('atualizacao_do_realizado', (atualizacaoDoRealizado, field) => (atualizacaoDoRealizado
-        ? field.required()
-        : field.nullable())),
-    recursos: string()
-      .label('Responsável pela atividade')
-      .min(0)
-      .max(2048),
-    tarefa: string()
-      .label('Tarefa')
-      .min(1)
-      .max(60)
-      .required(),
-    tarefa_pai_id: number()
-      .label('Tarefa-mãe')
-      .min(0)
-      .nullable()
-      .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
-    termino_planejado: date()
-      .label('Previsão de término')
-      .max(dataMax)
-      .min(ref('inicio_planejado'), 'Precisa ser posterior à data de início')
-      .nullable(),
-    termino_real: date()
-      .label('Data de término real')
-      .max(dataMax)
-      .min(ref('inicio_real'), 'Precisa ser posterior à data de início')
       .nullable(),
   });
 
@@ -4456,4 +4431,18 @@ export const alteracaoEmLoteNovoFiltro = object().shape({
   status: number().label('Status da obra').nullableOuVazio(),
   regioes: number().label('Subprefeitura').nullableOuVazio(),
   tipo_intervencao_id: number().label('Tipo de obra').nullableOuVazio(),
+});
+
+export const EdicaoTransferenciaFase = object().shape({
+  orgao_id: string().label('Órgão responsável'),
+  pessoa_responsavel_id: number()
+    .label('Pessoa Responsável')
+    .when('orgao_id', (orgaoId, field) => (orgaoId === 'OutroOrgao' ? field.nullable() : field.required())),
+  situacao_id: number().label('Situação').required(),
+});
+
+export const EdicaoTransferenciaFaseTarefa = object().shape({
+  concluido: boolean().label('Concluído'),
+  orgao_id: number().label('Órgão responsável'),
+  pessoa_responsavel: string().label('Pessoa responsável'),
 });

@@ -1,0 +1,152 @@
+.painel-flutuante {
+  font-size: 0.857143rem;
+
+  max-width: 90vw;
+  width: max-content;
+
+  padding: 0.5em !important;
+  box-shadow: 0px 6px 4.5px 0px #00000080 !important;
+  border-radius: 12px !important;
+  background-color: @branco;
+  border: 2px solid @c400 !important;
+  font-weight: 500;
+  opacity: 0.95;
+
+  @media screen and (min-width: 480px) {
+    max-width: min(90vw, 10em);
+    min-width: min-content;
+  }
+
+  @media screen and (min-width: 640px) {
+    font-size: 1rem;
+    max-width: min(90vw, 15em);
+  }
+
+  @media screen and (min-width: 960px) {
+    max-width: min(90vw, 25em);
+    padding: 0.75em 0.5em;
+  }
+
+  @media screen and (min-width: 1280px) {
+    font-size: 1.285714rem;
+  }
+
+  &::before {
+    content: none;
+  }
+
+  // contornar erro de exibição de painel flutuante obsoleto
+  &:empty {
+    display: none;
+  }
+}
+
+.painel-flutuante__conteudo {
+  white-space: normal;
+
+  :last-child {
+    margin-bottom: 0;
+  }
+
+  :only-child {
+    margin-bottom: 0;
+
+    @media screen and (max-width: 1024px) {
+      padding-bottom: 0;
+      border: 0;
+    }
+  }
+}
+
+.painel-flutuante__titulo {
+  font-weight: 700;
+  font-size: 1em;
+  margin-bottom: 0.75em;
+  border-bottom: 1px solid @c300;
+  padding-bottom: calc(0.375em - 1px);
+
+  @media screen and (min-width: 1980px) {
+    font-size: 1.111111rem;
+  }
+}
+
+.painel-flutuante dl {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1em 1.25em;
+  min-width: min-content;
+  font-size: 100%;
+
+  @media screen and (min-width: 800px) {
+    grid-template-columns: calc(50% - 1.25em / 2) calc(50% - 1.25em / 2);
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 1px;
+      height: 100%;
+      background-color: @c300;
+    }
+  }
+
+  &:has(> :only-child) {
+    grid-template-columns: 1fr;
+
+    &::before {
+      content: none;
+    }
+  }
+
+  div {
+    display: grid;
+    grid-template-rows: subgrid;
+    grid-row-start: span 2;
+    grid-row-end: auto;
+    gap: 0;
+  }
+
+  dt {
+    font-weight: 400;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    color: @cinza-medio;
+    margin-bottom: 0.25em;
+    font-size: 100%;
+    align-self: end;
+    min-width: min-content;
+  }
+
+  dd {
+    font-weight: 600;
+    font-size: 100%;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    align-self: start;
+    min-width: min-content;
+  }
+}
+
+.painel-flutuante__item-com-legenda {
+  border-radius: 4px 8px 8px 4px;
+  position: relative;
+  background-color: color-mix(in srgb, var(--cor-da-legenda, @cinza-medio) 15%, transparent);
+  padding-left: calc(0.25em + 8px);
+  padding-right: 0.25em;
+
+  &::before {
+    color: var(--cor-da-legenda, @cinza-medio);
+    content: '';
+    min-width: 8px;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    position: absolute;
+    background-color: currentColor;
+    display: block;
+    border-radius: 8px;
+  }
+}

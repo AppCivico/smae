@@ -31,5 +31,6 @@ export class DetalhePessoaDto {
     responsavel_pelos_projetos: ProjetosResponsavelDto[];
     sobreescrever_modulos: boolean;
     modulos_permitidos: ModuloSistema[];
+    sistemas_disponiveis: ModuloSistema[];
     permissoes: PessoaMetaPermissoesDto;
 }

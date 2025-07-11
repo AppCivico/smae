@@ -1,4 +1,13 @@
 export function formataSEI(input: string): string {
+    // Check if the input contains the pipe character
+    if (input.includes('|')) {
+        // Split the input by pipe and recursively call formataSEI on each part
+        return input.split('|')
+            .map(part => formataSEI(part.trim()))
+            .filter(Boolean)  // Remove empty results
+            .join(' | ');     // Join the formatted parts with pipes
+    }
+
     const numero = input.replace(/\D/g, '');
 
     // TODO: validação de tamanhos

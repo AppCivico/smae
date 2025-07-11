@@ -1,5 +1,5 @@
 import { forwardRef, HttpException, Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
-import { DistribuicaoStatusTipo, Prisma, WorkflowResponsabilidade } from '@prisma/client';
+import { DistribuicaoStatusTipo, Prisma, TarefaDependenteTipo, WorkflowResponsabilidade } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
@@ -25,12 +25,28 @@ import {
 } from './entities/distribuicao-recurso.entity';
 import { WorkflowService } from '../workflow/configuracao/workflow.service';
 import { Date2YMD } from '../../common/date2ymd';
+import { TransferenciaService } from '../transferencia/transferencia.service';
 
 type OperationsRegistroSEI = {
     id?: number;
     nome?: string | null;
     processo_sei: string;
 }[];
+
+// Unified structure for items that will generate a new cronograma task
+type ItemParaCriarTarefa = {
+    nome_base: string; // Name of the phase or task from the workflow
+    tarefa_pai_id: number; // ID of the parent cronograma task (always nivel 2)
+    // Planning data inherited from the parent or a sibling for consistency
+    inicio_planejado: Date | null;
+    termino_planejado: Date | null;
+    duracao_planejado: number | null;
+    dependencias: {
+        dependencia_tarefa_id: number;
+        tipo: TarefaDependenteTipo;
+        latencia: number;
+    }[];
+};
 
 @Injectable()
 export class DistribuicaoRecursoService {
@@ -42,13 +58,16 @@ export class DistribuicaoRecursoService {
         @Inject(forwardRef(() => TarefaService))
         private readonly tarefaService: TarefaService,
         private readonly seiService: SeiIntegracaoService,
-        private readonly workflowService: WorkflowService
+        private readonly workflowService: WorkflowService,
+        @Inject(forwardRef(() => TransferenciaService))
+        private readonly transferenciaService: TransferenciaService
     ) {}
 
     async create(
         dto: CreateDistribuicaoRecursoDto,
         user: PessoaFromJwt,
-        distribuicao_automatica?: boolean
+        distribuicao_automatica?: boolean,
+        prismaTx?: Prisma.TransactionClient | undefined
     ): Promise<RecordWithId> {
         const orgaoGestorExiste = await this.prisma.orgao.count({
             where: {
@@ -75,368 +94,366 @@ export class DistribuicaoRecursoService {
         if (!transferencia) throw new HttpException('transferencia_id| Transferência não encontrada.', 400);
 
         const agora = new Date(Date.now());
-        const created = await this.prisma.$transaction(
-            async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
-                if (dto.nome) {
-                    const similarExists = await prismaTx.distribuicaoRecurso.count({
-                        where: {
-                            nome: { endsWith: dto.nome, mode: 'insensitive' },
-                            transferencia_id: dto.transferencia_id,
-                            removido_em: null,
-                        },
-                    });
-                    if (similarExists > 0)
-                        throw new HttpException(
-                            'nome| Nome de distribuição, igual ou semelhante já existe em outro registro ativo',
-                            400
-                        );
-                }
-
-                // “VALOR DO REPASSE”  é a soma de “Custeio” + Investimento”
-                if (Number(dto.valor).toFixed(2) != (+dto.custeio + +dto.investimento).toFixed(2))
-                    throw new HttpException(
-                        'valor| Valor do repasse deve ser a soma dos valores de custeio e investimento.',
-                        400
-                    );
-
-                // “VALOR TOTAL”  é a soma de “Custeio” + Investimento” + “Contrapartida”
-                if (Number(dto.valor_total).toFixed(2) != (+dto.valor + +dto.valor_contrapartida).toFixed(2))
-                    throw new HttpException(
-                        'valor| Valor total deve ser a soma dos valores de repasse e contrapartida.',
-                        400
-                    );
-
-                // A soma de custeio, investimento, contrapartida e total de todas as distribuições não pode ser superior aos valores da transferência.
-                const outrasDistribuicoes = await prismaTx.distribuicaoRecurso.findMany({
+        const create = async (prismaTx: Prisma.TransactionClient) => {
+            if (dto.nome) {
+                const similarExists = await prismaTx.distribuicaoRecurso.count({
                     where: {
+                        nome: { endsWith: dto.nome, mode: 'insensitive' },
+                        transferencia_id: dto.transferencia_id,
+                        removido_em: null,
+                    },
+                });
+                if (similarExists > 0)
+                    throw new HttpException(
+                        'nome| Nome de distribuição, igual ou semelhante já existe em outro registro ativo',
+                        400
+                    );
+            }
+
+            // “VALOR DO REPASSE”  é a soma de “Custeio” + Investimento”
+            if (Number(dto.valor).toFixed(2) != (+dto.custeio + +dto.investimento).toFixed(2))
+                throw new HttpException(
+                    'valor| Valor do repasse deve ser a soma dos valores de custeio e investimento.',
+                    400
+                );
+
+            // “VALOR TOTAL”  é a soma de “Custeio” + Investimento” + “Contrapartida”
+            if (Number(dto.valor_total).toFixed(2) != (+dto.valor + +dto.valor_contrapartida).toFixed(2))
+                throw new HttpException(
+                    'valor| Valor total deve ser a soma dos valores de repasse e contrapartida.',
+                    400
+                );
+
+            // A soma de custeio, investimento, contrapartida e total de todas as distribuições não pode ser superior aos valores da transferência.
+            const outrasDistribuicoes = await prismaTx.distribuicaoRecurso.findMany({
+                where: {
+                    transferencia_id: dto.transferencia_id,
+                    removido_em: null,
+                },
+                select: {
+                    id: true,
+                    custeio: true,
+                    investimento: true,
+                    valor_contrapartida: true,
+                    valor_total: true,
+                    status: {
+                        orderBy: [{ data_troca: 'desc' }, { id: 'desc' }],
+                        where: { removido_em: null },
+                        take: 1,
+                        select: {
+                            id: true,
+                            status_base: {
+                                select: {
+                                    tipo: true,
+                                    valor_distribuicao_contabilizado: true,
+                                },
+                            },
+                            status: {
+                                select: {
+                                    tipo: true,
+                                    valor_distribuicao_contabilizado: true,
+                                },
+                            },
+                        },
+                    },
+                },
+            });
+
+            const outrasDistribuicoesFiltradas = outrasDistribuicoes.filter((distribuicao) => {
+                const statusAtual = distribuicao.status.length ? distribuicao.status[0] : null;
+
+                if (statusAtual) {
+                    const statusConfig = statusAtual.status_base ?? statusAtual.status;
+
+                    return statusConfig?.valor_distribuicao_contabilizado == true;
+                }
+                return true;
+            });
+
+            const transferencia_custeio = distribuicao_automatica == true ? dto.custeio : +transferencia.custeio!;
+            const transferencia_investimento =
+                distribuicao_automatica == true ? dto.investimento : +transferencia.investimento!;
+            const transferencia_contrapartida =
+                distribuicao_automatica == true ? dto.valor_contrapartida : +transferencia.valor_contrapartida!;
+            const transferencia_valor_total =
+                distribuicao_automatica == true ? dto.valor_total : +transferencia.valor_total!;
+
+            let sumCusteio: number = +dto.custeio || 0;
+            let sumInvestimento: number = +dto.investimento || 0;
+            let sumContrapartida: number = +dto.valor_contrapartida || 0;
+            let sumTotal: number = +dto.valor_total || 0;
+
+            for (const distRow of outrasDistribuicoesFiltradas) {
+                sumCusteio += +distRow.custeio;
+                sumContrapartida += +distRow.valor_contrapartida;
+                sumInvestimento += +distRow.investimento;
+                sumTotal = sumTotal + +distRow.valor_total;
+            }
+
+            if (transferencia.custeio && sumCusteio && sumCusteio > transferencia_custeio)
+                throw new HttpException(
+                    'Soma de custeio de todas as distribuições não pode ser superior ao valor de custeio da transferência.',
+                    400
+                );
+
+            if (transferencia.valor_contrapartida && sumContrapartida && sumContrapartida > transferencia_contrapartida)
+                throw new HttpException(
+                    'Soma de contrapartida de todas as distribuições não pode ser superior ao valor de contrapartida da transferência.',
+                    400
+                );
+
+            if (transferencia.investimento && sumInvestimento && sumInvestimento > transferencia_investimento)
+                throw new HttpException(
+                    'Soma de investimento de todas as distribuições não pode ser superior ao valor de investimento da transferência.',
+                    400
+                );
+
+            if (transferencia.valor_total && sumTotal && sumTotal > transferencia_valor_total)
+                throw new HttpException(
+                    'Soma do total de todas as distribuições não pode ser superior ao valor total da transferência.',
+                    400
+                );
+
+            const parlamentaresTratadosParaCreate = [];
+            if (dto.parlamentares?.length) {
+                const parlamentaresNaTransf = await prismaTx.transferenciaParlamentar.findMany({
+                    where: {
+                        parlamentar_id: { in: dto.parlamentares.map((p) => p.parlamentar_id) },
                         transferencia_id: dto.transferencia_id,
                         removido_em: null,
                     },
                     select: {
-                        id: true,
-                        custeio: true,
-                        investimento: true,
-                        valor_contrapartida: true,
-                        valor_total: true,
-                        status: {
-                            orderBy: [{ data_troca: 'desc' }, { id: 'desc' }],
-                            where: { removido_em: null },
-                            take: 1,
-                            select: {
-                                id: true,
-                                status_base: {
-                                    select: {
-                                        tipo: true,
-                                        valor_distribuicao_contabilizado: true,
-                                    },
-                                },
-                                status: {
-                                    select: {
-                                        tipo: true,
-                                        valor_distribuicao_contabilizado: true,
-                                    },
-                                },
-                            },
-                        },
+                        parlamentar_id: true,
+                        partido_id: true,
+                        cargo: true,
+                        valor: true,
                     },
                 });
 
-                const outrasDistribuicoesFiltradas = outrasDistribuicoes.filter((distribuicao) => {
-                    const statusAtual = distribuicao.status.length ? distribuicao.status[0] : null;
+                if (parlamentaresNaTransf.length != dto.parlamentares.length)
+                    throw new HttpException('parlamentares| Parlamentar(es) não encontrado(s) na transferência.', 400);
 
-                    if (statusAtual) {
-                        const statusConfig = statusAtual.status_base ?? statusAtual.status;
-
-                        return statusConfig?.valor_distribuicao_contabilizado == true;
-                    }
-                    return true;
-                });
-
-                const transferencia_custeio = distribuicao_automatica == true ? dto.custeio : +transferencia.custeio!;
-                const transferencia_investimento =
-                    distribuicao_automatica == true ? dto.investimento : +transferencia.investimento!;
-                const transferencia_contrapartida =
-                    distribuicao_automatica == true ? dto.valor_contrapartida : +transferencia.valor_contrapartida!;
-                const transferencia_valor_total =
-                    distribuicao_automatica == true ? dto.valor_total : +transferencia.valor_total!;
-
-                let sumCusteio: number = +dto.custeio || 0;
-                let sumInvestimento: number = +dto.investimento || 0;
-                let sumContrapartida: number = +dto.valor_contrapartida || 0;
-                let sumTotal: number = +dto.valor_total || 0;
-
-                for (const distRow of outrasDistribuicoesFiltradas) {
-                    sumCusteio += +distRow.custeio;
-                    sumContrapartida += +distRow.valor_contrapartida;
-                    sumInvestimento += +distRow.investimento;
-                    sumTotal = sumTotal + +distRow.valor_total;
-                }
-
-                if (transferencia.custeio && sumCusteio && sumCusteio > transferencia_custeio)
+                const sumValor = dto.parlamentares.filter((e) => e.valor).reduce((acc, curr) => acc + +curr.valor!, 0);
+                if (+sumValor > +dto.valor)
                     throw new HttpException(
-                        'Soma de custeio de todas as distribuições não pode ser superior ao valor de custeio da transferência.',
+                        'parlamentares| A soma dos valores dos parlamentares não pode superar o valor de repasse da distribuição.',
                         400
                     );
 
-                if (
-                    transferencia.valor_contrapartida &&
-                    sumContrapartida &&
-                    sumContrapartida > transferencia_contrapartida
-                )
-                    throw new HttpException(
-                        'Soma de contrapartida de todas as distribuições não pode ser superior ao valor de contrapartida da transferência.',
-                        400
-                    );
-
-                if (transferencia.investimento && sumInvestimento && sumInvestimento > transferencia_investimento)
-                    throw new HttpException(
-                        'Soma de investimento de todas as distribuições não pode ser superior ao valor de investimento da transferência.',
-                        400
-                    );
-
-                if (transferencia.valor_total && sumTotal && sumTotal > transferencia_valor_total)
-                    throw new HttpException(
-                        'Soma do total de todas as distribuições não pode ser superior ao valor total da transferência.',
-                        400
-                    );
-
-                const parlamentaresTratadosParaCreate = [];
-                if (dto.parlamentares?.length) {
-                    const parlamentaresNaTransf = await prismaTx.transferenciaParlamentar.findMany({
+                for (const novaRow of dto.parlamentares) {
+                    const rowsParlamentarDist = await prismaTx.distribuicaoParlamentar.findMany({
                         where: {
-                            parlamentar_id: { in: dto.parlamentares.map((p) => p.parlamentar_id) },
-                            transferencia_id: dto.transferencia_id,
+                            parlamentar_id: novaRow.parlamentar_id,
                             removido_em: null,
-                        },
-                        select: {
-                            parlamentar_id: true,
-                            partido_id: true,
-                            cargo: true,
-                            valor: true,
-                        },
-                    });
-
-                    if (parlamentaresNaTransf.length != dto.parlamentares.length)
-                        throw new HttpException(
-                            'parlamentares| Parlamentar(es) não encontrado(s) na transferência.',
-                            400
-                        );
-
-                    const sumValor = dto.parlamentares
-                        .filter((e) => e.valor)
-                        .reduce((acc, curr) => acc + +curr.valor!, 0);
-                    if (+sumValor > +dto.valor)
-                        throw new HttpException(
-                            'parlamentares| A soma dos valores dos parlamentares não pode superar o valor de repasse da distribuição.',
-                            400
-                        );
-
-                    for (const novaRow of dto.parlamentares) {
-                        const rowsParlamentarDist = await prismaTx.distribuicaoParlamentar.findMany({
-                            where: {
-                                parlamentar_id: novaRow.parlamentar_id,
+                            distribuicao_recurso: {
+                                transferencia_id: dto.transferencia_id,
                                 removido_em: null,
-                                distribuicao_recurso: {
-                                    transferencia_id: dto.transferencia_id,
-                                    removido_em: null,
-                                    status: {
-                                        some: {
-                                            OR: [
-                                                {
-                                                    status_base: {
-                                                        valor_distribuicao_contabilizado: true,
-                                                    },
+                                status: {
+                                    some: {
+                                        OR: [
+                                            {
+                                                status_base: {
+                                                    valor_distribuicao_contabilizado: true,
                                                 },
-                                                {
-                                                    status: {
-                                                        valor_distribuicao_contabilizado: true,
-                                                    },
+                                            },
+                                            {
+                                                status: {
+                                                    valor_distribuicao_contabilizado: true,
                                                 },
-                                            ],
-                                        },
+                                            },
+                                        ],
                                     },
                                 },
                             },
-                            select: {
-                                id: true,
-                                distribuicao_recurso_id: true,
-                                valor: true,
+                        },
+                        select: {
+                            id: true,
+                            distribuicao_recurso_id: true,
+                            valor: true,
 
-                                distribuicao_recurso: {
-                                    select: {
-                                        status: {
-                                            take: 1,
-                                            orderBy: [{ data_troca: 'desc' }, { id: 'desc' }],
-                                            where: { removido_em: null },
-                                            select: {
-                                                status_base: {
-                                                    select: {
-                                                        tipo: true,
-                                                        valor_distribuicao_contabilizado: true,
-                                                    },
+                            distribuicao_recurso: {
+                                select: {
+                                    status: {
+                                        take: 1,
+                                        orderBy: [{ data_troca: 'desc' }, { id: 'desc' }],
+                                        where: { removido_em: null },
+                                        select: {
+                                            status_base: {
+                                                select: {
+                                                    tipo: true,
+                                                    valor_distribuicao_contabilizado: true,
                                                 },
-                                                status: {
-                                                    select: {
-                                                        tipo: true,
-                                                        valor_distribuicao_contabilizado: true,
-                                                    },
+                                            },
+                                            status: {
+                                                select: {
+                                                    tipo: true,
+                                                    valor_distribuicao_contabilizado: true,
                                                 },
                                             },
                                         },
                                     },
                                 },
                             },
-                        });
-
-                        const rowParlamentarTransf = parlamentaresNaTransf.find(
-                            (e) => e.parlamentar_id == novaRow.parlamentar_id
-                        );
-                        if (!rowParlamentarTransf)
-                            throw new InternalServerErrorException('Erro em verificar valores na transferência.');
-                        const valorNaTransf = rowParlamentarTransf.valor ?? 0;
-
-                        let sumValor = rowsParlamentarDist
-                            .filter((e) => e.valor != null)
-                            .filter((e) => {
-                                const statusUltimaRow = e.distribuicao_recurso.status[0];
-                                if (!statusUltimaRow) return true;
-                                console.log(statusUltimaRow);
-
-                                const statusConfig = statusUltimaRow.status_base ?? statusUltimaRow.status;
-                                console.log(statusConfig);
-
-                                return statusConfig!.valor_distribuicao_contabilizado == true;
-                            })
-                            .reduce((acc, curr) => acc + +curr.valor!, 0);
-                        sumValor += novaRow.valor ? +novaRow.valor : 0;
-                        console.log('\n==========================');
-                        console.log(rowsParlamentarDist);
-                        console.log(+sumValor);
-                        console.log(+valorNaTransf);
-                        console.log('\n==========================');
-
-                        if (+sumValor > +valorNaTransf)
-                            throw new HttpException(
-                                'parlamentares|A soma dos valores do parlamentar em todas as distruições não pode superar o valor de repasse, do parlamentar, na transferência.',
-                                400
-                            );
-
-                        parlamentaresTratadosParaCreate.push({
-                            parlamentar_id: novaRow.parlamentar_id,
-                            cargo: rowParlamentarTransf.cargo,
-                            partido_id: rowParlamentarTransf.partido_id,
-                            valor: novaRow.valor,
-                        });
-                    }
-                }
-
-                const statusBaseRegistrada = await prismaTx.distribuicaoStatusBase.findFirstOrThrow({
-                    where: {
-                        tipo: DistribuicaoStatusTipo.NaoIniciado,
-                    },
-                    select: {
-                        id: true,
-                    },
-                });
-
-                const distribuicaoRecurso = await prismaTx.distribuicaoRecurso.create({
-                    data: {
-                        transferencia_id: dto.transferencia_id,
-                        orgao_gestor_id: dto.orgao_gestor_id,
-                        nome: dto.nome,
-                        objeto: dto.objeto,
-                        valor: dto.valor,
-                        valor_total: dto.valor_total,
-                        valor_contrapartida: dto.valor_contrapartida,
-                        custeio: dto.custeio,
-                        investimento: dto.investimento,
-                        empenho: dto.empenho,
-                        data_empenho: dto.data_empenho,
-                        programa_orcamentario_estadual: dto.programa_orcamentario_estadual,
-                        programa_orcamentario_municipal: dto.programa_orcamentario_municipal,
-                        dotacao: dto.dotacao,
-                        proposta: dto.proposta,
-                        contrato: dto.contrato,
-                        convenio: dto.convenio,
-                        assinatura_termo_aceite: dto.assinatura_termo_aceite,
-                        assinatura_municipio: dto.assinatura_municipio,
-                        assinatura_estado: dto.assinatura_estado,
-                        vigencia: dto.vigencia,
-                        conclusao_suspensiva: dto.conclusao_suspensiva,
-                        criado_em: agora,
-                        criado_por: user.id,
-                        pct_custeio: dto.pct_custeio,
-                        pct_investimento: dto.pct_investimento,
-                        registros_sei: {
-                            createMany: {
-                                data:
-                                    dto.registros_sei != undefined && dto.registros_sei.length > 0
-                                        ? dto.registros_sei!.map((r) => {
-                                              return {
-                                                  processo_sei: r.processo_sei.replace(/\D/g, ''),
-                                                  nome: r.nome,
-                                                  criado_em: agora,
-                                                  criado_por: user.id,
-                                              } satisfies Prisma.DistribuicaoRecursoSeiWhereInput;
-                                          })
-                                        : [],
-                            },
                         },
-                        parlamentares: {
-                            createMany: {
-                                data: parlamentaresTratadosParaCreate.map((e) => {
-                                    return {
-                                        parlamentar_id: e.parlamentar_id,
-                                        cargo: e.cargo,
-                                        valor: e.valor,
-                                        partido_id: e.partido_id,
-                                        criado_em: agora,
-                                        criado_por: user.id,
-                                    } satisfies Prisma.DistribuicaoParlamentarWhereInput;
-                                }),
-                            },
-                        },
-                        status: {
-                            create: {
-                                status_base_id: statusBaseRegistrada.id,
-                                data_troca: agora,
-                                nome_responsavel: '',
-                                motivo: '',
-                                criado_por: user.id,
-                            } satisfies Prisma.DistribuicaoRecursoStatusWhereInput,
-                        },
-                    },
-                    select: {
-                        id: true,
-                        transferencia: {
-                            select: {
-                                workflow_id: true,
-                            },
-                        },
-                        orgao_gestor: {
-                            select: {
-                                sigla: true,
-                            },
-                        },
-                    },
-                });
+                    });
 
-                // Sprint 13: Quando uma distribuição é criada.
-                // Devem ser criadas tarefas no cronograma
-                // Para cada linha de tarefa do workflow que é de responsabilidade de outro órgão.
-                if (distribuicao_automatica != true && distribuicaoRecurso.transferencia.workflow_id) {
-                    const workflowConfigValida = await this.workflowService.configValida(
-                        distribuicaoRecurso.transferencia.workflow_id,
-                        prismaTx
+                    const rowParlamentarTransf = parlamentaresNaTransf.find(
+                        (e) => e.parlamentar_id == novaRow.parlamentar_id
                     );
+                    if (!rowParlamentarTransf)
+                        throw new InternalServerErrorException('Erro em verificar valores na transferência.');
+                    const valorNaTransf = rowParlamentarTransf.valor ?? 0;
 
-                    if (workflowConfigValida)
-                        await this._createTarefasOutroOrgao(prismaTx, distribuicaoRecurso.id, user);
+                    let sumValor = rowsParlamentarDist
+                        .filter((e) => e.valor != null)
+                        .filter((e) => {
+                            const statusUltimaRow = e.distribuicao_recurso.status[0];
+                            if (!statusUltimaRow) return true;
+
+                            const statusConfig = statusUltimaRow.status_base ?? statusUltimaRow.status;
+
+                            return statusConfig!.valor_distribuicao_contabilizado == true;
+                        })
+                        .reduce((acc, curr) => acc + +curr.valor!, 0);
+                    sumValor += novaRow.valor ? +novaRow.valor : 0;
+
+                    if (+sumValor > +valorNaTransf)
+                        throw new HttpException(
+                            'parlamentares|A soma dos valores do parlamentar em todas as distruições não pode superar o valor de repasse, do parlamentar, na transferência.',
+                            400
+                        );
+
+                    parlamentaresTratadosParaCreate.push({
+                        parlamentar_id: novaRow.parlamentar_id,
+                        cargo: rowParlamentarTransf.cargo,
+                        partido_id: rowParlamentarTransf.partido_id,
+                        valor: novaRow.valor,
+                    });
                 }
-
-                return { id: distribuicaoRecurso.id };
             }
-        );
+
+            const statusBaseRegistrada = await prismaTx.distribuicaoStatusBase.findFirstOrThrow({
+                where: {
+                    tipo: DistribuicaoStatusTipo.NaoIniciado,
+                },
+                select: {
+                    id: true,
+                },
+            });
+
+            const distribuicaoRecurso = await prismaTx.distribuicaoRecurso.create({
+                data: {
+                    transferencia_id: dto.transferencia_id,
+                    orgao_gestor_id: dto.orgao_gestor_id,
+                    nome: dto.nome,
+                    objeto: dto.objeto,
+                    valor: dto.valor,
+                    valor_total: dto.valor_total,
+                    valor_contrapartida: dto.valor_contrapartida,
+                    custeio: dto.custeio,
+                    investimento: dto.investimento,
+                    empenho: dto.empenho,
+                    data_empenho: dto.data_empenho,
+                    programa_orcamentario_estadual: dto.programa_orcamentario_estadual,
+                    programa_orcamentario_municipal: dto.programa_orcamentario_municipal,
+                    dotacao: dto.dotacao,
+                    proposta: dto.proposta,
+                    contrato: dto.contrato,
+                    convenio: dto.convenio,
+                    assinatura_termo_aceite: dto.assinatura_termo_aceite,
+                    assinatura_municipio: dto.assinatura_municipio,
+                    assinatura_estado: dto.assinatura_estado,
+                    vigencia: dto.vigencia,
+                    conclusao_suspensiva: dto.conclusao_suspensiva,
+                    criado_em: agora,
+                    criado_por: user.id,
+                    pct_custeio: dto.pct_custeio,
+                    pct_investimento: dto.pct_investimento,
+                    registros_sei: {
+                        createMany: {
+                            data:
+                                dto.registros_sei != undefined && dto.registros_sei.length > 0
+                                    ? dto.registros_sei!.map((r) => {
+                                          return {
+                                              processo_sei: r.processo_sei.replace(/\D/g, ''),
+                                              nome: r.nome,
+                                              criado_em: agora,
+                                              criado_por: user.id,
+                                          } satisfies Prisma.DistribuicaoRecursoSeiWhereInput;
+                                      })
+                                    : [],
+                        },
+                    },
+                    parlamentares: {
+                        createMany: {
+                            data: parlamentaresTratadosParaCreate.map((e) => {
+                                return {
+                                    parlamentar_id: e.parlamentar_id,
+                                    cargo: e.cargo,
+                                    valor: e.valor,
+                                    partido_id: e.partido_id,
+                                    criado_em: agora,
+                                    criado_por: user.id,
+                                } satisfies Prisma.DistribuicaoParlamentarWhereInput;
+                            }),
+                        },
+                    },
+                    status: {
+                        create: {
+                            status_base_id: statusBaseRegistrada.id,
+                            data_troca: agora,
+                            nome_responsavel: '',
+                            motivo: '',
+                            criado_por: user.id,
+                        } satisfies Prisma.DistribuicaoRecursoStatusWhereInput,
+                    },
+                },
+                select: {
+                    id: true,
+                    transferencia: {
+                        select: {
+                            workflow_id: true,
+                        },
+                    },
+                    orgao_gestor: {
+                        select: {
+                            sigla: true,
+                        },
+                    },
+                },
+            });
+
+            // Sprint 13: Quando uma distribuição é criada.
+            // Devem ser criadas tarefas no cronograma
+            // Para cada linha de tarefa do workflow que é de responsabilidade de outro órgão.
+            if (distribuicao_automatica != true && distribuicaoRecurso.transferencia.workflow_id) {
+                const workflowConfigValida = await this.workflowService.configValida(
+                    distribuicaoRecurso.transferencia.workflow_id,
+                    prismaTx
+                );
+
+                if (workflowConfigValida) await this._createTarefasOutroOrgao(prismaTx, distribuicaoRecurso.id, user);
+            }
+
+            return { id: distribuicaoRecurso.id };
+        };
+
+        let created: RecordWithId;
+        if (prismaTx) {
+            created = await create(prismaTx);
+        } else {
+            created = await this.prisma.$transaction(create, {
+                isolationLevel: 'Serializable',
+                maxWait: 20000,
+                timeout: 50000,
+            });
+        }
+
+        // Atualizando vetores da transferência.
+        this.transferenciaService.updateVetoresBusca(dto.transferencia_id).catch((err) => {
+            // Optional: log if the background task fails for some reason
+            console.error(`Background task updateVetoresBusca failed for transferencia ${dto.transferencia_id}`, err);
+        });
 
         return { id: created.id };
     }
@@ -545,7 +562,7 @@ export class DistribuicaoRecursoService {
                     },
                 },
                 status: {
-                    orderBy: { data_troca: 'desc' },
+                    orderBy: [{ data_troca: 'desc' }, { id: 'desc' }],
                     where: { removido_em: null },
                     select: {
                         id: true,
@@ -784,7 +801,7 @@ export class DistribuicaoRecursoService {
                 },
 
                 status: {
-                    orderBy: { data_troca: 'desc' },
+                    orderBy: [{ data_troca: 'desc' }, { id: 'desc' }],
                     where: { removido_em: null },
                     select: {
                         id: true,
@@ -1064,6 +1081,33 @@ export class DistribuicaoRecursoService {
                             'nome| Nome igual ou semelhante já existe em outro registro ativo',
                             400
                         );
+
+                    // Atualiza o nome da tarefa do cronograma, se existir.
+                    const tarefaDist = await prismaTx.tarefa.findFirst({
+                        where: {
+                            distribuicao_recurso_id: id,
+                            removido_em: null,
+                        },
+                        select: {
+                            tarefa: true,
+                        },
+                    });
+
+                    if (tarefaDist) {
+                        // Pegando nome anterior e substituindo pelo novo
+                        let nomeTarefaDist = tarefaDist.tarefa;
+                        nomeTarefaDist = nomeTarefaDist.replace(/ - .*/, ' - ' + dto.nome);
+
+                        await prismaTx.tarefa.updateMany({
+                            where: {
+                                distribuicao_recurso_id: id,
+                                removido_em: null,
+                            },
+                            data: {
+                                tarefa: nomeTarefaDist,
+                            },
+                        });
+                    }
                 }
 
                 if (
@@ -1398,7 +1442,6 @@ export class DistribuicaoRecursoService {
                                 },
                             },
                         });
-                        console.log('\n==========================');
 
                         let sumValor = rowsParlamentarDist
                             .filter((e) => e.valor != null)
@@ -1412,11 +1455,6 @@ export class DistribuicaoRecursoService {
                             .reduce((acc, curr) => acc + +curr.valor!, 0);
                         sumValor += +relParlamentar.valor!;
 
-                        console.log(relParlamentar);
-                        console.dir(rowsParlamentarDist, { depth: 2 });
-                        console.log(+sumValor);
-                        console.log(+valorNaTransf);
-                        console.log('\n==========================');
                         if (+sumValor > +valorNaTransf)
                             throw new HttpException(
                                 'parlamentares| A soma dos valores do parlamentar em todas as distruições não pode superar o valor de repasse, do parlamentar, na transferência.',
@@ -1496,6 +1534,12 @@ export class DistribuicaoRecursoService {
                 isolationLevel: 'Serializable',
             }
         );
+
+        // Atualizando vetores da transferência.
+        this.transferenciaService.updateVetoresBusca(self.transferencia_id).catch((err) => {
+            // Optional: log if the background task fails for some reason
+            console.error(`Background task updateVetoresBusca failed for transferencia ${self.transferencia_id}`, err);
+        });
 
         return { id };
     }
@@ -1623,6 +1667,17 @@ export class DistribuicaoRecursoService {
 
     async remove(id: number, user: PessoaFromJwt) {
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+            const self = await prismaTx.distribuicaoRecurso.findFirstOrThrow({
+                where: {
+                    id,
+                    removido_em: null,
+                },
+                select: {
+                    id: true,
+                    transferencia_id: true,
+                },
+            });
+
             await prismaTx.distribuicaoRecurso.updateMany({
                 where: {
                     id,
@@ -1642,6 +1697,15 @@ export class DistribuicaoRecursoService {
                     removido_em: new Date(Date.now()),
                     removido_por: user.id,
                 },
+            });
+
+            // Atualizando vetores da transferência.
+            this.transferenciaService.updateVetoresBusca(self.transferencia_id).catch((err) => {
+                // Optional: log if the background task fails for some reason
+                console.error(
+                    `Background task updateVetoresBusca failed for transferencia ${self.transferencia_id}`,
+                    err
+                );
             });
         });
 
@@ -1739,24 +1803,66 @@ export class DistribuicaoRecursoService {
     }
 
     async _createTarefasOutroOrgao(prismaTx: Prisma.TransactionClient, distribuicao_id: number, user: PessoaFromJwt) {
-        const distribuicaoRecurso = await prismaTx.distribuicaoRecurso.findFirstOrThrow({
-            where: {
-                id: distribuicao_id,
-                removido_em: null,
-            },
+        const distribuicaoRecurso = await prismaTx.distribuicaoRecurso.findFirst({
+            where: { id: distribuicao_id, removido_em: null },
             select: {
                 id: true,
                 transferencia_id: true,
                 nome: true,
-                orgao_gestor: {
+                orgao_gestor: { select: { id: true, sigla: true } },
+                transferencia: { select: { workflow_id: true } },
+            },
+        });
+
+        if (!distribuicaoRecurso || !distribuicaoRecurso.transferencia.workflow_id) {
+            throw new InternalServerErrorException(
+                'Distribuição de recurso não encontrada ou sem workflow ao criar tarefas.'
+            );
+        }
+
+        const workflow_id = distribuicaoRecurso.transferencia.workflow_id;
+
+        // 1. Fetch workflow phases with 'OutroOrgao' responsibility
+        const andamentoFases = await prismaTx.transferenciaAndamento.findMany({
+            where: {
+                transferencia_id: distribuicaoRecurso.transferencia_id,
+                removido_em: null,
+                workflow_fase: {
+                    fluxos: {
+                        some: {
+                            responsabilidade: WorkflowResponsabilidade.OutroOrgao,
+                            removido_em: null,
+                            fluxo: { workflow_id },
+                        },
+                    },
+                },
+            },
+            select: {
+                workflow_fase: {
+                    select: {
+                        fase: true,
+                        fluxos: {
+                            select: {
+                                duracao: true,
+                            },
+                        },
+                    },
+                },
+                // This is the nivel 2 task in the cronograma representing the phase. It will be the parent.
+                tarefaEspelhada: {
                     select: {
                         id: true,
-                        sigla: true,
+                        inicio_planejado: true,
+                        termino_planejado: true,
+                        duracao_planejado: true,
+                        tarefa_pai_id: true,
+                        dependencias: { select: { id: true, dependencia_tarefa_id: true, tipo: true, latencia: true } },
                     },
                 },
             },
         });
 
+        // 2. Fetch workflow tasks with 'OutroOrgao' responsibility
         const andamentoTarefas = await prismaTx.transferenciaAndamentoTarefa.findMany({
             where: {
                 transferencia_andamento: {
@@ -1768,12 +1874,23 @@ export class DistribuicaoRecursoService {
                         some: {
                             responsabilidade: WorkflowResponsabilidade.OutroOrgao,
                             removido_em: null,
+                            fluxo_fase: { fluxo: { workflow_id } },
                         },
                     },
                 },
             },
             select: {
-                id: true,
+                workflow_tarefa: {
+                    select: {
+                        tarefa_fluxo: true,
+                        fluxoTarefas: {
+                            select: {
+                                duracao: true,
+                            },
+                        },
+                    },
+                },
+                // This is the nivel 2 task representing the phase, which is the parent.
                 transferencia_andamento: {
                     select: {
                         tarefaEspelhada: {
@@ -1782,118 +1899,191 @@ export class DistribuicaoRecursoService {
                                 inicio_planejado: true,
                                 termino_planejado: true,
                                 duracao_planejado: true,
-                            },
-                        },
-                    },
-                },
-                workflow_tarefa: {
-                    select: {
-                        tarefa_fluxo: true,
-                    },
-                },
-                tarefaEspelhada: {
-                    select: {
-                        id: true,
-                        inicio_planejado: true,
-                        termino_planejado: true,
-                        duracao_planejado: true,
-                        dependencias: {
-                            select: {
-                                dependencia_tarefa_id: true,
-                                tipo: true,
-                                latencia: true,
-                            },
-                        },
-                    },
-                },
-            },
-        });
-
-        const operations = [];
-        if (andamentoTarefas.length) {
-            const tarefaCronograma = await prismaTx.tarefaCronograma.findFirstOrThrow({
-                where: {
-                    transferencia_id: distribuicaoRecurso.transferencia_id,
-                    removido_em: null,
-                },
-                select: { id: true },
-            });
-
-            const tarefasExistentes = await prismaTx.tarefa.findMany({
-                where: {
-                    removido_em: null,
-                    tarefa_cronograma_id: tarefaCronograma.id,
-                    nivel: 3,
-                },
-                orderBy: [{ tarefa_pai_id: 'asc' }, { numero: 'desc' }],
-                select: {
-                    tarefa_pai_id: true,
-                    numero: true,
-                },
-            });
-            if (tarefasExistentes.length == 0)
-                throw new InternalServerErrorException(
-                    'Erro na func _createTarefasOutroOrgao! Tarefas de acompanhamento não encontradas.'
-                );
-
-            let tarefa_pai_id: number | undefined;
-            let numero: number = 1;
-            for (const andamentoTarefa of andamentoTarefas) {
-                if (!andamentoTarefa.transferencia_andamento.tarefaEspelhada[0])
-                    throw new InternalServerErrorException('Erro interno! Tarefa espelhada não encontrada.');
-
-                if (tarefa_pai_id != andamentoTarefa.transferencia_andamento.tarefaEspelhada[0].id) {
-                    tarefa_pai_id = andamentoTarefa.transferencia_andamento.tarefaEspelhada[0].id;
-                    numero = tarefasExistentes.filter((t) => t.tarefa_pai_id == tarefa_pai_id)[0].numero + 1;
-                } else {
-                    numero++;
-                }
-
-                operations.push(
-                    prismaTx.tarefa.create({
-                        data: {
-                            tarefa_cronograma_id: tarefaCronograma.id,
-                            tarefa_pai_id: tarefa_pai_id,
-                            nivel: 3,
-                            numero: numero,
-                            tarefa: andamentoTarefa.workflow_tarefa.tarefa_fluxo + ` - ${distribuicaoRecurso.nome}`,
-                            descricao: andamentoTarefa.workflow_tarefa.tarefa_fluxo + ` - ${distribuicaoRecurso.nome}`,
-                            distribuicao_recurso_id: distribuicaoRecurso.id,
-                            recursos: distribuicaoRecurso.orgao_gestor.sigla,
-                            orgao_id: distribuicaoRecurso.orgao_gestor.id,
-                            inicio_planejado: andamentoTarefa.tarefaEspelhada[0].inicio_planejado,
-                            termino_planejado: andamentoTarefa.tarefaEspelhada[0].termino_planejado,
-                            duracao_planejado: andamentoTarefa.tarefaEspelhada[0].duracao_planejado,
-                            dependencias: {
-                                createMany: {
-                                    // As tarefas criadas devem ter a mesma regra de dependência da tarefa de acompanhamento.
-                                    data: andamentoTarefa.tarefaEspelhada[0].dependencias.map((d) => {
-                                        return {
-                                            dependencia_tarefa_id: d.dependencia_tarefa_id,
-                                            tipo: d.tipo,
-                                            latencia: d.latencia,
-                                        };
-                                    }),
+                                dependencias: {
+                                    select: { id: true, dependencia_tarefa_id: true, tipo: true, latencia: true },
                                 },
                             },
                         },
-                    })
-                );
+                    },
+                },
+            },
+        });
+
+        const itensParaCriar: ItemParaCriarTarefa[] = [];
+        const parentTaskIdsToClean = new Set<number>();
+
+        // 3. Unify phases into the creation list
+        andamentoFases.forEach((af) => {
+            const tarefaPai = af.tarefaEspelhada?.[0];
+            if (tarefaPai) {
+                parentTaskIdsToClean.add(tarefaPai.id);
+                itensParaCriar.push({
+                    nome_base: af.workflow_fase.fase,
+                    tarefa_pai_id: tarefaPai.id,
+                    inicio_planejado: tarefaPai.inicio_planejado,
+                    termino_planejado: tarefaPai.termino_planejado,
+                    duracao_planejado: af.workflow_fase.fluxos[0].duracao,
+                    dependencias: tarefaPai.dependencias.map((d) => ({ ...d, latencia: d.latencia ?? 0 })),
+                });
             }
+        });
+
+        // 4. Unify tasks into the creation list
+        andamentoTarefas.forEach((at) => {
+            const tarefaPai = at.transferencia_andamento.tarefaEspelhada?.[0];
+            if (tarefaPai) {
+                parentTaskIdsToClean.add(tarefaPai.id);
+                itensParaCriar.push({
+                    nome_base: at.workflow_tarefa.tarefa_fluxo,
+                    tarefa_pai_id: tarefaPai.id, // The parent is the nivel 2 task for the phase
+                    inicio_planejado: tarefaPai.inicio_planejado,
+                    termino_planejado: tarefaPai.termino_planejado,
+                    duracao_planejado: at.workflow_tarefa.fluxoTarefas[0].duracao,
+                    dependencias: tarefaPai.dependencias.map((d) => ({ ...d, latencia: d.latencia ?? 0 })),
+                });
+            }
+        });
+
+        if (itensParaCriar.length === 0) {
+            await this._validarTopologia(prismaTx, distribuicao_id, user);
+            return;
         }
 
-        const orgaoCasaCivil = await prismaTx.orgao.findFirst({
+        const tarefaCronograma = await prismaTx.tarefaCronograma.findFirst({
+            where: { transferencia_id: distribuicaoRecurso.transferencia_id, removido_em: null },
+            select: { id: true },
+        });
+        if (!tarefaCronograma) throw new InternalServerErrorException('Cronograma da transferência não encontrado.');
+
+        const transitioningParents = await prismaTx.tarefa.findMany({
             where: {
+                id: { in: Array.from(parentTaskIdsToClean) },
+                n_filhos_imediatos: 0,
                 removido_em: null,
-                sigla: 'SERI',
             },
             select: {
                 id: true,
+                dependencias: {
+                    select: { dependencia_tarefa_id: true, tipo: true, latencia: true },
+                },
             },
         });
-        if (!orgaoCasaCivil) throw new HttpException('Órgão da casa civil não foi encontrado', 400);
 
-        await Promise.all(operations);
+        const movedDependencies = new Map<number, any[]>();
+        const parentIdsToProcess = new Set<number>();
+
+        if (transitioningParents.length > 0) {
+            for (const parent of transitioningParents) {
+                parentIdsToProcess.add(parent.id);
+                if (parent.dependencias.length > 0) {
+                    movedDependencies.set(parent.id, parent.dependencias);
+                }
+            }
+
+            if (parentIdsToProcess.size > 0) {
+                await prismaTx.tarefaDependente.deleteMany({
+                    where: { tarefa_id: { in: Array.from(parentIdsToProcess) } },
+                });
+                await prismaTx.tarefa.updateMany({
+                    where: { id: { in: Array.from(parentIdsToProcess) } },
+                    data: {
+                        inicio_planejado: null,
+                        termino_planejado: null,
+                        duracao_planejado: null,
+                        custo_estimado: null,
+                        duracao_planejado_calculado: false,
+                        inicio_planejado_calculado: false,
+                        termino_planejado_calculado: false,
+                    },
+                });
+            }
+        }
+
+        const tarefasExistentes = await prismaTx.tarefa.findMany({
+            where: {
+                tarefa_cronograma_id: tarefaCronograma.id,
+                nivel: 3,
+                tarefa_pai_id: { in: itensParaCriar.map((i) => i.tarefa_pai_id) },
+                removido_em: null,
+            },
+            orderBy: { numero: 'desc' },
+            select: { tarefa_pai_id: true, numero: true },
+        });
+
+        const maxNumeroPorPai = new Map<number, number>();
+        for (const t of tarefasExistentes) {
+            if (t.tarefa_pai_id && !maxNumeroPorPai.has(t.tarefa_pai_id)) {
+                maxNumeroPorPai.set(t.tarefa_pai_id, t.numero);
+            }
+        }
+
+        itensParaCriar.sort((a, b) => a.tarefa_pai_id - b.tarefa_pai_id);
+
+        const newChildTaskIds = new Map<number, number>();
+        const creationPromises = [];
+
+        for (const item of itensParaCriar) {
+            const numeroAtual = maxNumeroPorPai.get(item.tarefa_pai_id) ?? 0;
+            const novoNumero = numeroAtual + 1;
+            maxNumeroPorPai.set(item.tarefa_pai_id, novoNumero);
+
+            const inheritedDependencies = movedDependencies.get(item.tarefa_pai_id);
+            const finalDependencies = inheritedDependencies ? inheritedDependencies : item.dependencias;
+
+            const createAndGetId = async () => {
+                const new_task = await prismaTx.tarefa.create({
+                    data: {
+                        tarefa_cronograma_id: tarefaCronograma.id,
+                        tarefa_pai_id: item.tarefa_pai_id,
+                        nivel: 3,
+                        numero: novoNumero,
+                        tarefa: `${item.nome_base} - ${distribuicaoRecurso.nome}`,
+                        descricao: `${item.nome_base} - ${distribuicaoRecurso.nome}`,
+                        distribuicao_recurso_id: distribuicaoRecurso.id,
+                        recursos: distribuicaoRecurso.orgao_gestor.sigla,
+                        orgao_id: distribuicaoRecurso.orgao_gestor.id,
+                        inicio_planejado: item.inicio_planejado,
+                        termino_planejado: item.termino_planejado,
+                        duracao_planejado: item.duracao_planejado,
+                        dependencias: {
+                            createMany: { data: finalDependencies.map((d) => ({ ...d, latencia: d.latencia ?? 0 })) },
+                        },
+                    },
+                    select: { id: true },
+                });
+                newChildTaskIds.set(item.tarefa_pai_id, new_task.id);
+            };
+            creationPromises.push(createAndGetId());
+        }
+
+        await Promise.all(creationPromises);
+
+        if (parentIdsToProcess.size > 0) {
+            const externalDependenciesToRemap = await prismaTx.tarefaDependente.findMany({
+                where: {
+                    dependencia_tarefa_id: { in: Array.from(parentIdsToProcess) },
+                },
+            });
+
+            const remapPromises = [];
+            for (const dep of externalDependenciesToRemap) {
+                const oldPredecessorId = dep.dependencia_tarefa_id;
+                const newPredecessorId = newChildTaskIds.get(oldPredecessorId);
+
+                if (newPredecessorId) {
+                    remapPromises.push(
+                        prismaTx.tarefaDependente.update({
+                            where: { id: dep.id },
+                            data: {
+                                dependencia_tarefa_id: newPredecessorId,
+                            },
+                        })
+                    );
+                }
+            }
+            await Promise.all(remapPromises);
+        }
+
         await this._validarTopologia(prismaTx, distribuicao_id, user);
     }
 

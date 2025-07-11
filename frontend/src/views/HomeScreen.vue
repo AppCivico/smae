@@ -8,6 +8,7 @@ import { useMacrotemasStore } from '@/stores/macrotemas.store';
 import { useMacrotemasPsStore } from '@/stores/macrotemasPs.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
+import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
 import { useProcessosStore } from '@/stores/processos.store';
 import { useRegionsStore } from '@/stores/regions.store';
 import { useTarefasStore } from '@/stores/tarefas.store';
@@ -66,6 +67,7 @@ async function escolher(opção: keyof ModulosDoSistema) {
       useTarefasStore().$reset();
       useOrcamentosStore().$reset();
       useMetasStore().$reset();
+      usePlanosSetoriaisStore().$reset();
       useProcessosStore().$reset();
       useAcompanhamentosStore().$reset();
       useMacrotemasStore().$reset();

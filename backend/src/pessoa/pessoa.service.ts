@@ -1,11 +1,19 @@
-import { BadRequestException, ForbiddenException, HttpException, Injectable, Logger } from '@nestjs/common';
+import {
+    BadRequestException,
+    ForbiddenException,
+    HttpException,
+    Injectable,
+    Logger,
+    OnModuleInit,
+} from '@nestjs/common';
 import { ModuloSistema, PerfilResponsavelEquipe, Pessoa, Prisma } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import { SmaeConfigService } from 'src/common/services/smae-config.service';
 import { uuidv7 } from 'uuidv7';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { ListaDePrivilegios } from '../common/ListaDePrivilegios';
 import { LoggerWithLog } from '../common/LoggerWithLog';
-import { CONST_PERFIL_PARTICIPANTE_EQUIPE, LISTA_PRIV_ADMIN } from '../common/consts';
+import { CalcSistemasDisponiveis, CONST_PERFIL_PARTICIPANTE_EQUIPE, LISTA_PRIV_ADMIN } from '../common/consts';
 import { IdCodTituloDto } from '../common/dto/IdCodTitulo.dto';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { MathRandom } from '../common/math-random';
@@ -27,26 +35,38 @@ import { ListaPrivilegiosModulos } from './entities/ListaPrivilegiosModulos';
 import { ListPessoa } from './entities/list-pessoa.entity';
 import { Pessoa as PessoaDto } from './entities/pessoa.entity';
 import { PessoaResponsabilidadesMetaService } from './pessoa.responsabilidades.metas.service';
-
+import { FeatureFlagService } from '../feature-flag/feature-flag.service';
 const BCRYPT_ROUNDS = 10;
 
 @Injectable()
-export class PessoaService {
+export class PessoaService implements OnModuleInit {
     private readonly logger = new Logger(PessoaService.name);
 
-    #maxQtdeSenhaInvalidaParaBlock: number;
     #urlLoginSMAE: string;
     #cpfObrigatorioSemRF: boolean;
     #matchEmailRFObrigatorio: string;
     constructor(
         private readonly prisma: PrismaService,
         private readonly pRespMetaService: PessoaResponsabilidadesMetaService,
-        private readonly equipeRespService: EquipeRespService
-    ) {
-        this.#maxQtdeSenhaInvalidaParaBlock = Number(process.env.MAX_QTDE_SENHA_INVALIDA_PARA_BLOCK) || 3;
-        this.#urlLoginSMAE = process.env.URL_LOGIN_SMAE || '#/login-smae';
-        this.#cpfObrigatorioSemRF = Number(process.env.CPF_OBRIGATORIO_SEM_RF) == 1;
-        this.#matchEmailRFObrigatorio = process.env.MATCH_EMAIL_RF_OBRIGATORIO || '';
+        private readonly equipeRespService: EquipeRespService,
+        private readonly featureFlagService: FeatureFlagService,
+        private readonly smaeConfigService: SmaeConfigService
+    ) {}
+
+    async onModuleInit() {
+        this.#matchEmailRFObrigatorio = await this.smaeConfigService.getConfigWithDefault<string>(
+            'MATCH_EMAIL_RF_OBRIGATORIO',
+            '',
+            (v) => v
+        );
+
+        this.#cpfObrigatorioSemRF = await this.smaeConfigService.getConfigWithDefault<boolean>(
+            'CPF_OBRIGATORIO_SEM_RF',
+            false,
+            (v) => v === '1'
+        );
+
+        this.#urlLoginSMAE = (await this.smaeConfigService.getBaseUrl('URL_LOGIN_SMAE')) + '#/login-smae';
     }
 
     pessoaAsHash(pessoa: PessoaDto) {
@@ -98,7 +118,12 @@ export class PessoaService {
             select: { qtde_senha_invalida: true },
         });
 
-        if (updatedPessoa.qtde_senha_invalida >= this.#maxQtdeSenhaInvalidaParaBlock) {
+        const maxInvalidAttempts = await this.smaeConfigService.getConfigNumberWithDefault(
+            'MAX_QTDE_SENHA_INVALIDA_PARA_BLOCK',
+            3
+        );
+
+        if (updatedPessoa.qtde_senha_invalida >= maxInvalidAttempts) {
             await this.criaNovaSenha(pessoa, false);
         }
     }
@@ -129,6 +154,11 @@ export class PessoaService {
         solicitadoPeloUsuario: boolean,
         prisma: Prisma.TransactionClient
     ) {
+        const maxInvalidAttempts = await this.smaeConfigService.getConfigNumberWithDefault(
+            'MAX_QTDE_SENHA_INVALIDA_PARA_BLOCK',
+            3
+        );
+
         await prisma.emaildbQueue.create({
             data: {
                 id: uuidv7(),
@@ -137,7 +167,7 @@ export class PessoaService {
                 template: 'nova-senha.html',
                 to: pessoa.email,
                 variables: {
-                    tentativas: this.#maxQtdeSenhaInvalidaParaBlock,
+                    tentativas: maxInvalidAttempts,
                     link: this.#urlLoginSMAE,
                     nova_senha: senha,
                     solicitadoPeloUsuario: solicitadoPeloUsuario,
@@ -428,11 +458,19 @@ export class PessoaService {
             permissoes: {
                 posso_editar_modulos: ehAdmin,
             },
+            sistemas_disponiveis: [],
         };
         if (listFixed.sobreescrever_modulos == false) {
             // libera tudo exceto o modulo de metas novo
             listFixed.modulos_permitidos = ['CasaCivil', 'MDO', 'PDM', 'PlanoSetorial', 'Projetos'];
         }
+        const ff = await this.featureFlagService.featureFlag();
+        if (!ff.mostrar_pdm_antigo) {
+            listFixed.modulos_permitidos = listFixed.modulos_permitidos.filter((m) => m !== 'PDM');
+        }
+        listFixed.sistemas_disponiveis = CalcSistemasDisponiveis(ff.mostrar_pdm_antigo).filter(
+            (sistema) => sistema !== undefined
+        );
 
         return listFixed;
     }

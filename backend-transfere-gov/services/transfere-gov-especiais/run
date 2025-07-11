@@ -1,0 +1,4 @@
+#!/bin/bash
+exec 2>&1
+cd /app/transfere-gov-especiais
+exec /sbin/setuser www-data python3.12 -m uvicorn app:app --proxy-headers --host 0.0.0.0 --port 8002 --access-log --log-level info

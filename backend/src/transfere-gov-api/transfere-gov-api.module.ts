@@ -1,8 +1,12 @@
 import { Module } from '@nestjs/common';
-import { TransfereGovApiService, TransfereGovApiTransferenciasService } from './transfere-gov-api.service';
+import {
+    TransfereGovApiOportunidadesApiService,
+    TransfereGovApiService,
+    TransfereGovApiTransferenciasService,
+} from './transfere-gov-api.service';
 
 @Module({
-    providers: [TransfereGovApiService, TransfereGovApiTransferenciasService],
-    exports: [TransfereGovApiService, TransfereGovApiTransferenciasService],
+    providers: [TransfereGovApiService, TransfereGovApiTransferenciasService, TransfereGovApiOportunidadesApiService],
+    exports: [TransfereGovApiService, TransfereGovApiTransferenciasService, TransfereGovApiOportunidadesApiService],
 })
 export class TransfereGovApiModule {}

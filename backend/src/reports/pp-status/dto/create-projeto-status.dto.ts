@@ -42,5 +42,5 @@ export class CreateRelObraStatusDto extends CreateRelProjetoStatusDto {
     @IsOptional()
     @Transform(({ value }: any) => +value)
     @ApiProperty({ description: 'Id da obra' })
-    projeto_id?: number;
+    declare projeto_id?: number; // reaplicado só pra falar que é o id da obra
 }

@@ -1,4 +1,37 @@
 <script lang="ts" setup>
+/**
+ * SmaeText.vue
+ * Componente de entrada de texto com contador de caracteres.
+ * Permite personalização através de props e integração com VeeValidate.
+ *
+ * Não usar `v-model` com o VeeValidate, pois o componente já está integrado com o `useField`.
+ *
+ * @example
+ * ```vue
+ * <SmaeText
+ *  name="mdo_observacoes"
+ *  as="textarea"
+ *  rows="5"
+ *  class="inputtext light mb1"
+ *  v-model="mdo_observacoes"
+ *  anular-vazio
+ * />
+ * ```
+ *
+ * @example
+ * ```vue
+ * <SmaeText
+ *  name="mdo_observacoes"
+ *  as="textarea"
+ *  rows="5"
+ *  class="inputtext light mb1"
+ *  :schema="schema"
+ *  :model-value="values.mdo_observacoes"
+ *  anular-vazio
+ *  :class="{ 'error': errors.mdo_observacoes }"
+ * />
+ * ```
+ */
 import { useField } from 'vee-validate';
 import { computed, toRef } from 'vue';
 import type { Test } from 'yup/lib/util/createValidation.d.ts';

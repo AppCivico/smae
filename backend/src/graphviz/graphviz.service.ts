@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { toStream } from 'ts-graphviz/adapter';
+import { toStream } from '@ts-graphviz/adapter';
 
 export const GraphvizServiceFormat = {
     'png': 'png',

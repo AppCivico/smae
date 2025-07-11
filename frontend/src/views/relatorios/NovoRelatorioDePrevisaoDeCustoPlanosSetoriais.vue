@@ -1,12 +1,12 @@
 <script setup>
-import AutocompleteField from '@/components/AutocompleteField2.vue';
-import { relatórioDePrevisãoDeCustoPlanosSetoriais as schema } from '@/consts/formSchemas';
-import truncate from '@/helpers/texto/truncate';
-import { useAlertStore } from '@/stores/alert.store';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import AutocompleteField from '@/components/AutocompleteField2.vue';
+import { relatórioDePrevisãoDeCustoPlanosSetoriais as schema } from '@/consts/formSchemas';
+import truncate from '@/helpers/texto/truncate';
+import { useAlertStore } from '@/stores/alert.store';
 // Mantendo comportamento legado
 // eslint-disable-next-line import/no-cycle
 import { usePdMStore } from '@/stores/pdm.store';
@@ -47,7 +47,6 @@ const initialValues = computed(() => ({
     iniciativa_id: null,
     atividade_id: null,
     pdm_id: null,
-    portfolio_id: 0,
     meta_id: null,
     tags: [],
   },
@@ -112,7 +111,6 @@ iniciar();
 </script>
 
 <template>
-  <MigalhasDePão class="mb1" />
   <CabecalhoDePagina :formulario-sujo="false" />
 
   <p class="texto--explicativo">

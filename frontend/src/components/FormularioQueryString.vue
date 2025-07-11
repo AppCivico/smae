@@ -3,6 +3,7 @@
     :aplicar-query-strings="aplicarFiltros"
     :detectar-mudancas="detectarMudancas"
     :formulario-sujo="!!camposSujos.length"
+    :pendente="pendente"
   />
 </template>
 <script setup lang="ts">
@@ -26,6 +27,7 @@ const props = defineProps({
 });
 
 const camposSujos = ref<string[]>([]);
+const pendente = ref(false);
 
 function comparadorSimples(campo: unknown, parametro: unknown) {
   // eslint-disable-next-line eqeqeq
@@ -73,6 +75,8 @@ function detectarMudancas(eventoOuObjeto: Event | Record<string, unknown>): void
 
 function aplicarFiltros(eventoOuObjeto: SubmitEvent | Record<string, unknown>): Promise<void> {
   let parametros: UrlParams = {};
+
+  pendente.value = true;
 
   if (eventoOuObjeto instanceof SubmitEvent) {
     const campos = EnvioParaObjeto(eventoOuObjeto);
@@ -126,8 +130,14 @@ function aplicarFiltros(eventoOuObjeto: SubmitEvent | Record<string, unknown>): 
     query: parametros,
   }).then(() => {
     emit('aplicado', parametros);
-
     detectarMudancas(eventoOuObjeto);
+    pendente.value = false;
+  }).catch((erro) => {
+    console.error('Erro ao aplicar filtros:', erro);
+    pendente.value = false;
+    throw erro;
+  }).finally(() => {
+    pendente.value = false;
   });
 }
 

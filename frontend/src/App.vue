@@ -1,13 +1,17 @@
 <script setup>
-import { Alert, EditModal, SideBar } from '@/components';
-import { useAlertStore } from '@/stores/alert.store';
-import { useAuthStore } from '@/stores/auth.store';
 import {
   onErrorCaptured,
   provide,
   ref,
 } from 'vue';
+import { Alert, EditModal, SideBar } from '@/components';
+import { useAlertStore } from '@/stores/alert.store';
+import { useAuthStore } from '@/stores/auth.store';
+import useRotaAtual from './composables/useRotaAtual';
 import BarraDePendência from './components/BarraDeChamadaPendente.vue';
+import BotaoWiki from './components/BotaoWiki.vue';
+
+const { rotaAtual } = useRotaAtual();
 
 const gblLimiteDeSeleçãoSimultânea = Number.parseInt(
   import.meta.env.VITE_LIMITE_SELECAO,
@@ -52,7 +56,14 @@ if (import.meta.env.VITE_COR_DA_FAIXA_DE_CONSTRUCAO || import.meta.env.DEV || ['
   window.document.documentElement.classList.add('dev-environment');
 }
 </script>
+
 <template>
+  <span
+    v-ScrollLockDebug
+    class="tr mr2"
+  >
+    {{ rotaAtual?.path }}
+  </span>
   <component
     :is="`style`"
     v-if="corDaFaixa"
@@ -77,7 +88,9 @@ if (import.meta.env.VITE_COR_DA_FAIXA_DE_CONSTRUCAO || import.meta.env.DEV || ['
         <svg
           width="20"
           height="20"
-        ><use xlink:href="#i_remove" /></svg>
+        >
+          <use xlink:href="#i_remove" />
+        </svg>
       </button>
     </div>
   </ErrorComponent>
@@ -93,8 +106,9 @@ if (import.meta.env.VITE_COR_DA_FAIXA_DE_CONSTRUCAO || import.meta.env.DEV || ['
 
   <EditModal />
   <Alert />
-
   <div id="modais" />
+
+  <BotaoWiki />
 </template>
 <style lang="less">
 @import url("@/_less/style.less");

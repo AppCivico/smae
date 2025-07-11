@@ -1,15 +1,22 @@
 <script setup>
+import { onMounted } from 'vue';
 import { storeToRefs } from 'pinia';
 import MenuSecundario from '@/components/MenuSecundario.vue';
 import { Nav } from '@/components';
 import { useAuthStore } from '@/stores/auth.store';
 import { useEditModalStore } from '@/stores/editModal.store';
+import { useWikiStore } from '@/stores/wiki.store';
 
+const wikiStore = useWikiStore();
 const editModalStore = useEditModalStore();
 const { editModal } = storeToRefs(editModalStore);
 const props = defineProps(['submenu', 'parentPage']);
 const authStore = useAuthStore();
 const { user } = storeToRefs(authStore);
+
+onMounted(() => {
+  wikiStore.buscar();
+});
 </script>
 <script>
 // use normal <script> to declare options

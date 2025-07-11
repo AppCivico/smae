@@ -21,6 +21,7 @@ interface Estado {
   workflow: WorkflowAndamentoDto | null;
   chamadasPendentes: ChamadasPendentes;
   historico: TransferenciaHistoricoDto | null;
+  etapaEmFoco: WorkflowAndamentoDto | null;
   erro: null | unknown;
 }
 
@@ -28,6 +29,7 @@ export const useWorkflowAndamentoStore = defineStore('workflowAndamento', {
   state: (): Estado => ({
     workflow: null,
     historico: null,
+    etapaEmFoco: null,
     chamadasPendentes: {
       workflow: false,
       fase: false,
@@ -48,11 +50,16 @@ export const useWorkflowAndamentoStore = defineStore('workflowAndamento', {
 
         if (typeof resposta === 'object') {
           this.workflow = resposta;
+          this.etapaEmFoco = this.workflow.fluxo.find((etapa) => etapa.atual) || null;
         }
       } catch (erro: unknown) {
         this.erro = erro;
       }
       this.chamadasPendentes.workflow = false;
+    },
+
+    setEtapaEmFoco(id: number): void {
+      this.etapaEmFoco = this.workflow?.fluxo.find((etapa) => etapa.id === id) || null;
     },
 
     async buscarHistorico(transferênciaId?: number): Promise<void> {
@@ -87,7 +94,7 @@ export const useWorkflowAndamentoStore = defineStore('workflowAndamento', {
       } catch (erro) {
         this.erro = erro;
         this.chamadasPendentes.fase = false;
-        return false;
+        throw new Error('Erro ao tentar editar fase');
       }
     },
 
@@ -107,7 +114,7 @@ export const useWorkflowAndamentoStore = defineStore('workflowAndamento', {
       }
     },
 
-    async deletarWorklow(transferênciaId?: number): Promise<boolean> {
+    async deletarWorkflow(transferênciaId?: number): Promise<boolean> {
       const id = transferênciaId || Number(this.route.params.transferenciaId);
       try {
         const resposta = await this.requestS.patch(`${baseUrl}/transferencia/${id}/limpar-workflow`, {
@@ -155,7 +162,7 @@ export const useWorkflowAndamentoStore = defineStore('workflowAndamento', {
       } catch (erro) {
         this.erro = erro;
         this.chamadasPendentes.fase = false;
-        return false;
+        throw new Error('Erro ao tentar encerrar fase');
       }
     },
 
@@ -180,9 +187,27 @@ export const useWorkflowAndamentoStore = defineStore('workflowAndamento', {
 
   getters: {
     etapaCorrente: ({ workflow }): WorkflowAndamentoFluxoDto | null => workflow?.fluxo?.[0] || null,
+    faseAtual: ({ etapaEmFoco }) => {
+      const faseAtual = etapaEmFoco?.fases.find((fase) => fase.andamento.atual);
 
-    inícioDeFasePermitido() {
-      return this.etapaCorrente?.fases?.some((
+      if (!faseAtual) {
+        return null;
+      }
+
+      return faseAtual;
+    },
+    proximaFase: ({ etapaEmFoco }) => {
+      const proximaFase = etapaEmFoco?.fases.find((fase) => !fase.andamento.concluida);
+
+      if (!proximaFase) {
+        return null;
+      }
+
+      return proximaFase;
+    },
+
+    inícioDeFasePermitido({ etapaEmFoco }) {
+      return etapaEmFoco?.fases?.some((
         x: WorkflowAndamentoFasesDto,
         i: number,
         lista: WorkflowAndamentoFasesDto[],

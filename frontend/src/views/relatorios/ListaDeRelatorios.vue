@@ -32,6 +32,18 @@ function carregarRelatorios() {
   }
 }
 
+function carregarMais() {
+  if (relatóriosStore.paginação.temMais && !relatóriosStore.loading) {
+    relatóriosStore.getAll(Object.assign(
+      structuredClone(route.query),
+      {
+        fonte: fonte.value,
+        token_proxima_pagina: relatóriosStore.paginação.tokenDaPróximaPágina,
+      },
+    ));
+  }
+}
+
 function excluirRelatório(id) {
   alertStore.confirmAction('Deseja remover o relatório?', () => {
     relatóriosStore.delete(id);
@@ -98,7 +110,6 @@ onBeforeRouteLeave(() => {
 </script>
 
 <template>
-  <MigalhasDePão class="mb1" />
   <CabecalhoDePagina class="mb2">
     <template #acoes>
       <router-link
@@ -212,13 +223,7 @@ onBeforeRouteLeave(() => {
     type="button"
     :disabled="relatóriosStore.loading || temAlgumRelatorioEmProcessamento"
     class="btn bgnone outline center mt2"
-    @click="relatóriosStore.getAll(Object.assign(
-      structuredClone($route.query),
-      {
-        fonte: fonte.value,
-        token_proxima_pagina: relatóriosStore.paginação.tokenDaPróximaPágina
-      }
-    ))"
+    @click="carregarMais"
   >
     carregar mais
   </button>

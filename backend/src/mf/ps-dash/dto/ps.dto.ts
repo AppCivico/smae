@@ -243,6 +243,4 @@ export class PSMFItemMetaDto {
 export class PSMFListaMetasDto extends PaginatedWithPagesDto<PSMFItemMetaDto> {
     @ApiProperty({ description: 'Informações do ciclo atual' })
     ciclo_atual: PSMFCicloDto | null;
-
-    linhas: PSMFItemMetaDto[];
 }

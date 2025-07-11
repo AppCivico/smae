@@ -1,5 +1,7 @@
 import dateToDate from '@/helpers/dateToDate';
-import type { ListImportacaoOrcamentoDto } from '@back/importacao-orcamento/entities/importacao-orcamento.entity';
+import type { PaginatedDto } from '@back/common/dto/paginated.dto';
+import type { RecordWithId } from '@back/common/dto/record-with-id.dto';
+import type { ImportacaoOrcamentoDto, ListImportacaoOrcamentoDto } from '@back/importacao-orcamento/entities/importacao-orcamento.entity';
 import type { PortfolioDto } from '@back/pp/portfolio/entities/portfolio.entity';
 import { defineStore } from 'pinia';
 
@@ -17,10 +19,14 @@ interface Estado {
   lista: Lista;
   portfoliosPermitidos: PortfolioDto[];
   chamadasPendentes: ChamadasPendentes;
-  erro: null | unknown;
+  erros: {
+    lista: null | unknown;
+    portfoliosPermitidos: null | unknown;
+    arquivos: null | unknown
+  };
   paginação: {
-    temMais: Boolean;
-    tokenDaPróximaPágina: String;
+    temMais: boolean;
+    tokenDaPróximaPágina: string;
   };
 }
 
@@ -40,18 +46,24 @@ export const useImportaçõesStore = defineStore('importações', {
       tokenDaPróximaPágina: '',
     },
 
-    erro: null,
+    erros: {
+      lista: null,
+      portfoliosPermitidos: null,
+      arquivos: null,
+    },
   }),
 
   actions: {
-    async buscarTudo(params: { token_proxima_pagina?: String } = {}): Promise<void> {
+    async buscarTudo(params: { token_proxima_pagina?: string } = {}): Promise<void> {
       this.chamadasPendentes.lista = true;
+      this.erros.lista = null;
+
       try {
         const {
           linhas,
           tem_mais: temMais,
           token_proxima_pagina: tokenDaPróximaPágina,
-        } = await this.requestS.get(`${baseUrl}/importacao-orcamento`, params);
+        } = await this.requestS.get(`${baseUrl}/importacao-orcamento`, params) as PaginatedDto<ImportacaoOrcamentoDto>;
 
         if (Array.isArray(linhas)) {
           this.lista = params.token_proxima_pagina
@@ -62,13 +74,15 @@ export const useImportaçõesStore = defineStore('importações', {
           this.paginação.tokenDaPróximaPágina = tokenDaPróximaPágina || '';
         }
       } catch (erro: unknown) {
-        this.erro = erro;
+        this.erros.lista = erro;
       }
       this.chamadasPendentes.lista = false;
     },
 
     async buscarPortfolios(params = {}): Promise<void> {
       this.chamadasPendentes.portfoliosPermitidos = true;
+      this.erros.portfoliosPermitidos = null;
+
       try {
         const resposta = await this.requestS.get(`${baseUrl}/importacao-orcamento/portfolio`, params);
         if (Array.isArray(resposta)) {
@@ -77,20 +91,21 @@ export const useImportaçõesStore = defineStore('importações', {
           throw new Error('Resposta fora do padrão esperado');
         }
       } catch (erro: unknown) {
-        this.erro = erro;
+        this.erros.portfoliosPermitidos = erro;
       }
       this.chamadasPendentes.portfoliosPermitidos = false;
     },
 
-    async associarArquivo(params = {}): Promise<boolean> {
+    async associarArquivo(params = {}): Promise<boolean | RecordWithId> {
       this.chamadasPendentes.arquivos = true;
+      this.erros.arquivos = null;
 
       try {
-        const resposta = await this.requestS.post(`${baseUrl}/importacao-orcamento/`, params);
+        const resposta = await this.requestS.post(`${baseUrl}/importacao-orcamento/`, params) as RecordWithId;
         this.chamadasPendentes.arquivos = false;
         return resposta;
       } catch (erro) {
-        this.erro = erro;
+        this.erros.arquivos = erro;
         this.chamadasPendentes.arquivos = false;
         return false;
       }
@@ -121,6 +136,5 @@ export const useImportaçõesStore = defineStore('importações', {
       criado_por: `${x.criado_por.nome_exibicao}`,
       criado_em: `${dateToDate(x.criado_em)}`,
     })) || [],
-
   },
 });

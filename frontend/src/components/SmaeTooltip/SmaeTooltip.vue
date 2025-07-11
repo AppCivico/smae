@@ -1,10 +1,13 @@
 <script lang="ts" setup>
+import { debounce } from 'lodash';
 import { computed, ref } from 'vue';
+import { useResizeObserver } from '@vueuse/core';
 
 type Slots = {
   default(): [unknown]
   botao(): [unknown]
 };
+defineSlots<Slots>();
 
 type Props = {
   texto?: string
@@ -18,7 +21,9 @@ withDefaults(defineProps<Props>(), {
   texto: undefined,
 });
 
+const elemento = ref<HTMLElement>();
 const elementoConteudo = ref<HTMLElement>();
+const posicaoTooltip = ref<'left' | 'right' | 'center'>('center');
 const manterExibido = ref<boolean>(false);
 
 const descricaoConteudo = computed<string>(() => elementoConteudo.value?.textContent || '');
@@ -26,14 +31,56 @@ const descricaoConteudo = computed<string>(() => elementoConteudo.value?.textCon
 function alternarAbertura() {
   manterExibido.value = !manterExibido.value;
 }
+
+function obterPosicaoAlinhamento() {
+  if (!elemento.value) {
+    return null;
+  }
+
+  let posicaoElemento = 0;
+
+  try {
+    posicaoElemento = elemento.value.getBoundingClientRect().left;
+  } catch (error) {
+    console.warn('Error getting element position:', error);
+    return null;
+  }
+
+  const widths = {
+    left: window.innerWidth * 0.40,
+    center: window.innerWidth * 0.66,
+  };
+
+  if (posicaoElemento > widths.center) {
+    return 'left';
+  }
+
+  if (posicaoElemento > widths.left) {
+    return 'center';
+  }
+
+  return 'right';
+}
+
+useResizeObserver(
+  document.documentElement,
+  debounce(() => {
+    const posicao = obterPosicaoAlinhamento();
+
+    if (posicao) {
+      posicaoTooltip.value = posicao;
+    }
+  }, 400),
+);
 </script>
 
 <template>
   <component
     :is="$props.as"
+    ref="elemento"
     :aria-description="descricaoConteudo"
-    class="smae-tooltip"
-    :class="{ 'smae-tooltip--fixado': manterExibido }"
+    class="smae-tooltip-component"
+    :class="{ 'smae-tooltip-component--fixado': manterExibido }"
     tabindex="0"
     @click="alternarAbertura"
   >
@@ -46,7 +93,8 @@ function alternarAbertura() {
 
     <div
       ref="elementoConteudo"
-      class="smae-tooltip__content"
+      class="smae-tooltip-component__content"
+      :class="`smae-tooltip-component__content--${posicaoTooltip}`"
       role="tooltip"
     >
       <slot>{{ $props.texto }}</slot>
@@ -55,7 +103,7 @@ function alternarAbertura() {
 </template>
 
 <style lang="less" scoped>
-.smae-tooltip {
+.smae-tooltip-component {
   display: inline-block;
   vertical-align: middle;
   color: @marrom;
@@ -80,11 +128,11 @@ function alternarAbertura() {
   }
 }
 
-.smae-tooltip--fixado {
+.smae-tooltip-component--fixado {
   color: #22222a;
 }
 
-.smae-tooltip__content {
+.smae-tooltip-component__content {
   display: none;
   width: max-content;
   max-width: 25em;
@@ -103,7 +151,7 @@ function alternarAbertura() {
   animation: fadeIn .5s;
   transform: translate(calc(-50% + 10px), calc(-100% - 24px - 0.5rem));
 
-  &:before {
+  &::before {
     content: "";
     position: absolute;
     left: calc(50% - 0.5rem);
@@ -115,11 +163,26 @@ function alternarAbertura() {
     border-left-color: @primary;
   }
 
-  .smae-tooltip--fixado > &,
-  :focus > &,
-  :hover > &,
-  :focus-within > & {
+  .smae-tooltip-component--fixado > &,
+  :hover > & {
     display: block;
   }
 }
+
+.smae-tooltip-component__content--left {
+  transform: translate(calc(-100% + 43px), calc(-100% - 24px - 0.5rem));
+
+  &::before {
+    left: calc(100% - 40px);
+  }
+}
+
+.smae-tooltip-component__content--right {
+  transform: translate(calc(-10% + 6px), calc(-100% - 24px - 0.5rem));
+
+  &::before {
+    left: 27px;
+  }
+}
+
 </style>

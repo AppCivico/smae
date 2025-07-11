@@ -13,21 +13,22 @@ import TarefasLista from '@/views/tarefas/TarefasLista.vue';
 import TarefasProgresso from '@/views/tarefas/TarefasProgresso.vue';
 import TarefasRaiz from '@/views/tarefas/TarefasRaiz.vue';
 import RegistroDeTransferenciaCriarEditar from '@/views/transferenciasVoluntarias/RegistroDeTransferenciaCriarEditar.vue';
+import TransferenciaDistribuicaoDeRecursosCriarEditar from '@/views/transferenciasVoluntarias/TransferenciaDistribuicaoDeRecursos/TransferenciaDistribuicaoDeRecursosCriarEditar.vue';
+import TransferenciaDistribuicaoDeRecursosEditarRaiz from '@/views/transferenciasVoluntarias/TransferenciaDistribuicaoDeRecursos/TransferenciaDistribuicaoDeRecursosEditarRaiz.vue';
+import TransferenciaDistribuicaoDeRecursosLista from '@/views/transferenciasVoluntarias/TransferenciaDistribuicaoDeRecursos/TransferenciaDistribuicaoDeRecursosLista.vue';
+import TransferenciaDistribuicaoDeRecursosStatus from '@/views/transferenciasVoluntarias/TransferenciaDistribuicaoDeRecursos/TransferenciaDistribuicaoDeRecursosStatus.vue';
 import TransferenciasVoluntariasCriarEditar from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasCriarEditar.vue';
-import TransferenciasVoluntariasDetalhes from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasDetalhes.vue';
 import TransferenciasVoluntariasDocumentos from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasDocumentos.vue';
 import TransferenciasVoluntariasEnviarArquivo from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasEnviarArquivo.vue';
 import TransferenciasVoluntariasLista from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasLista.vue';
 import TransferenciasVoluntariasRaiz from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasRaiz.vue';
-import TransferenciaDistribuicaoDeRecursosLista from '@/views/transferenciasVoluntarias/TransferenciaDistribuicaoDeRecursos/TransferenciaDistribuicaoDeRecursosLista.vue';
-import TransferenciaDistribuicaoDeRecursosCriarEditar from '@/views/transferenciasVoluntarias/TransferenciaDistribuicaoDeRecursos/TransferenciaDistribuicaoDeRecursosCriarEditar.vue';
-import TransferenciaDistribuicaoDeRecursosStatus from '@/views/transferenciasVoluntarias/TransferenciaDistribuicaoDeRecursos/TransferenciaDistribuicaoDeRecursosStatus.vue';
-import TransferenciaDistribuicaoDeRecursosEditarRaiz from '@/views/transferenciasVoluntarias/TransferenciaDistribuicaoDeRecursos/TransferenciaDistribuicaoDeRecursosEditarRaiz.vue';
+import tiparPropsDeRota from './helpers/tiparPropsDeRota';
 
 const rotasParaMenuSecundário = [
   {
     rotas: [
       'TransferenciasVoluntariasDetalhes',
+      'TransferenciasVoluntarias.Monitoramento',
       'TransferenciasVoluntariasNotas',
       'TransferenciasVoluntariasDocumentos',
       'TransferenciaCronograma',
@@ -84,13 +85,7 @@ export default {
           'TransferenciasVoluntariasDetalhes',
         ],
       },
-      props: ({ params }) => ({
-        ...params,
-        ...{
-          transferenciaId:
-            Number.parseInt(params.transferenciaId, 10) || undefined,
-        },
-      }),
+      props: tiparPropsDeRota,
       children: [
         {
           name: 'TransferenciaDistribuicaoDeRecursos.Lista',
@@ -180,27 +175,6 @@ export default {
           'TransferenciasVoluntariasListar',
           'TransferenciasVoluntariasDetalhes',
         ],
-      },
-    },
-    {
-      name: 'TransferenciasVoluntariasDetalhes',
-      path: ':transferenciaId/detalhes',
-      component: TransferenciasVoluntariasDetalhes,
-      props: ({ params }) => ({
-        ...params,
-        ...{
-          transferenciaId:
-            Number.parseInt(params.transferenciaId, 10) || undefined,
-        },
-      }),
-      meta: {
-        título: () => (useTransferenciasVoluntariasStore()?.emFoco?.identificador
-          ? `Resumo da transferência ${
-            useTransferenciasVoluntariasStore()?.emFoco?.identificador
-          }`
-          : 'Resumo de transferência'),
-        rotasParaMenuSecundário,
-        rotasParaMigalhasDePão: ['TransferenciasVoluntariasListar'],
       },
     },
     /* NOTAS */
@@ -296,18 +270,10 @@ export default {
       ],
     },
     /* FIM DE NOTAS */
-    /* TRANSFERÊNCIA - IDENTIFICAÇÃO */
     {
       path: ':transferenciaId',
-      name: 'TransferenciasVoluntariaEditar',
-      component: TransferenciasVoluntariasCriarEditar,
-      props: ({ params }) => ({
-        ...params,
-        ...{
-          transferenciaId:
-            Number.parseInt(params.transferenciaId, 10) || undefined,
-        },
-      }),
+      component: () => import('@/views/transferenciasVoluntarias/TransferenciasVoluntariasItem.vue'),
+      props: tiparPropsDeRota,
       meta: {
         título: 'Identificação',
         rotasParaMenuSecundário,
@@ -317,8 +283,43 @@ export default {
           'TransferenciasVoluntariasDetalhes',
         ],
       },
+      children: [
+        {
+          name: 'TransferenciasVoluntariaEditar',
+          component: TransferenciasVoluntariasCriarEditar,
+          path: '',
+          props: tiparPropsDeRota,
+        },
+        {
+          name: 'TransferenciasVoluntariasDetalhes',
+          path: 'resumo',
+          component: () => import('@/views/transferenciasVoluntarias/TransferenciasVoluntariasDetalhes.vue'),
+          props: tiparPropsDeRota,
+          meta: {
+            título: () => (useTransferenciasVoluntariasStore()?.emFoco?.identificador
+              ? `Resumo da transferência ${useTransferenciasVoluntariasStore()?.emFoco?.identificador
+              }`
+              : 'Resumo de transferência'),
+            rotasParaMenuSecundário,
+            rotasParaMigalhasDePão: ['TransferenciasVoluntariasListar'],
+          },
+        },
+        {
+          name: 'TransferenciasVoluntarias.Monitoramento',
+          component: () => import('@/views/transferenciasVoluntarias/TransferenciasVoluntarias.Monitoramento.vue'),
+          path: 'monitoramento',
+          props: tiparPropsDeRota,
+          meta: {
+            título: () => (useTransferenciasVoluntariasStore()?.emFoco?.identificador
+              ? `Monitoramento da transferência ${useTransferenciasVoluntariasStore()?.emFoco?.identificador
+              }`
+              : 'Monitoramento de transferência'),
+            títuloParaMenu: 'Monitoramento',
+            rotaDeEscape: 'TransferenciasVoluntariasDetalhes',
+          },
+        },
+      ],
     },
-    /* FIM DE TRANSFERÊNCIA - IDENTIFICAÇÃO */
     /* DOCUMENTOS */
     {
       path: ':transferenciaId/documentos',

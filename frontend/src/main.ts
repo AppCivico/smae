@@ -14,6 +14,7 @@ import SmaeLink from '@/components/SmaeLink.vue';
 import SmaeFieldsetSubmit from '@/components/SmaeFieldsetSubmit.vue';
 import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
 import TítuloDePágina from '@/components/TituloDaPagina.vue';
+import alternarInformacoesDepuracao from '@/diretivas/alternarInformacoesDepuracao';
 import autofocus from '@/diretivas/autofocus';
 import detectarPosicaoCongelada from '@/diretivas/detectarPosicaoCongelada';
 import selecionarMultiplasOpcoes from '@/diretivas/selecionarMultiplasOpcoes';
@@ -91,41 +92,7 @@ pinia.use(({ store }) => {
   };
 });
 
-app.directive('ScrollLockDebug', {
-  beforeMount: (el, binding) => {
-    const primária = 'Control';
-    const secundária = 'CapsLock';
-
-    el.classList.add('debug');
-    el.setAttribute('hidden', '');
-    let secundáriaPressionada = false;
-
-    if (binding.value) {
-      el.setAttribute('data-debug', binding.value);
-    }
-    window.addEventListener('keydown', (event) => {
-      if (event.getModifierState && event.getModifierState(primária)) {
-        if (event.key === secundária) {
-          if (secundáriaPressionada) {
-            if (el.hasAttribute('hidden')) {
-              el.removeAttribute('hidden');
-            } else {
-              el.setAttribute('hidden', '');
-            }
-            secundáriaPressionada = false;
-          } else {
-            secundáriaPressionada = true;
-            setTimeout(() => {
-              secundáriaPressionada = false;
-            }, 300);
-          }
-        } else if (secundáriaPressionada) {
-          secundáriaPressionada = false;
-        }
-      }
-    });
-  },
-});
+app.directive('ScrollLockDebug', alternarInformacoesDepuracao);
 
 app.directive('selecionar-multiplas-opcoes', {
   mounted: (el, binding) => selecionarMultiplasOpcoes(el, binding.value),

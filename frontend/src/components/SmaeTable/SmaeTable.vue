@@ -48,7 +48,9 @@
               <slot
                 :name="(`cabecalho:${normalizadorDeSlots(coluna.chave)}` as keyof Slots)"
                 v-bind="coluna"
-              />
+              >
+                {{ coluna.label }}
+              </slot>
             </TableHeaderCell>
 
             <td v-if="hasActionButton">
@@ -85,6 +87,7 @@
               <slot
                 :name="(`celula:${normalizadorDeSlots(coluna.chave)}` as keyof Slots)"
                 :linha="linha"
+                :celula="linha[coluna.chave]"
               />
             </TableCell>
 
@@ -144,14 +147,15 @@
 </template>
 
 <script lang="ts" setup>
-import { type Component, computed, useSlots } from 'vue';
+import { computed, useAttrs, useSlots } from 'vue';
+import type { Component } from 'vue';
 import type { AnyObjectSchema } from 'yup';
 import RolagemHorizontal from '../rolagem/RolagemHorizontal.vue';
 import DeleteButton, { type DeleteButtonEvents, type DeleteButtonProps } from './partials/DeleteButton.vue';
 import EditButton, { type EditButtonProps } from './partials/EditButton.vue';
 import TableCell from './partials/TableCell.vue';
 import TableHeaderCell from './partials/TableHeaderCell.vue';
-import { Colunas, Linha, Linhas } from './tipagem';
+import type { Colunas, Linha, Linhas } from './tipagem';
 import normalizadorDeSlots from './utils/normalizadorDeSlots';
 
 type Slots = {
@@ -168,7 +172,7 @@ type Props =
   & DeleteButtonProps
   & {
     titulo?: string
-    tituloRolagemHorizontal?: string
+    tituloParaRolagemHorizontal?: string
     schema?: AnyObjectSchema,
     colunas: Colunas,
     dados: Linhas
@@ -182,6 +186,8 @@ type Props =
   };
 
 type Emits = DeleteButtonEvents;
+
+const attributosDaRaiz = useAttrs();
 
 const props = withDefaults(defineProps<Props>(), {
   titulo: undefined,
@@ -211,8 +217,12 @@ const tituloParaRolagemHorizontal = computed<string | undefined>(() => {
     return undefined;
   }
 
-  if (props.tituloRolagemHorizontal) {
-    return props.tituloRolagemHorizontal;
+  if (attributosDaRaiz.ariaLabel) {
+    return attributosDaRaiz.ariaLabel;
+  }
+
+  if (props.tituloParaRolagemHorizontal) {
+    return props.tituloParaRolagemHorizontal;
   }
 
   if (props.titulo) {

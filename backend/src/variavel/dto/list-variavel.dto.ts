@@ -4,7 +4,7 @@ import { Decimal } from '@prisma/client/runtime/library';
 import { IdNomeDto } from '../../common/dto/IdNome.dto';
 import { IdSigla, IdSiglaDescricao } from '../../common/dto/IdSigla.dto';
 import { IdTituloDto } from '../../common/dto/IdTitulo.dto';
-import { OrgaoResumo } from '../../orgao/entities/orgao.entity';
+import { OrgaoReduzidoDto } from '../../orgao/entities/orgao.entity';
 import { SeriesAgrupadas, VariavelItemDto } from '../../variavel/entities/variavel.entity';
 import { VariaveisPeriodosDto } from './create-variavel.dto';
 
@@ -36,7 +36,7 @@ export class VariavelDetailComAuxiliaresDto extends VariavelDetailDto {
 }
 
 export class VariavelGlobalDetailDto extends OmitType(VariavelDetailDto, ['responsaveis']) {
-    orgao_proprietario: OrgaoResumo | null;
+    orgao_proprietario: OrgaoReduzidoDto | null;
     medicao_grupo_ids: number[] | null;
     validacao_grupo_ids: number[] | null;
     liberacao_grupo_ids: number[] | null;

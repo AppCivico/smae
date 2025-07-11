@@ -1,11 +1,11 @@
 <script setup>
-import GraficoHeatmapVariavelCategorica from '@/components/GraficoHeatmapVariavelCategorica.vue';
 import { storeToRefs } from 'pinia';
 import { computed, nextTick, ref } from 'vue';
 import { useRoute } from 'vue-router';
 // eslint-disable-next-line import/no-named-default
 import OverlayIndisponivel from '@/components/OverlayIndisponivel.vue';
 import GraficoLinhasEvolucao from '@/components/GraficoLinhasEvolucao.vue';
+import GraficoHeatmapVariavelCategorica from '@/components/GraficoHeatmapVariavelCategorica.vue';
 import rolarTelaPara from '@/helpers/rolarTelaPara.ts';
 import { useAuthStore } from '@/stores/auth.store';
 import { useIndicadoresStore } from '@/stores/indicadores.store';
@@ -87,7 +87,9 @@ iniciar();
               viewBox="0 0 28 28"
               color="#F2890D"
               xmlns="http://www.w3.org/2000/svg"
-            ><use xlink:href="#i_indicador" /></svg>
+            >
+              <use xlink:href="#i_indicador" />
+            </svg>
             <h2 class="mt1 mb1">
               {{ ind.titulo }}
             </h2>
@@ -105,7 +107,9 @@ iniciar();
             <svg
               width="20"
               height="20"
-            ><use xlink:href="#i_edit" /></svg>
+            >
+              <use xlink:href="#i_edit" />
+            </svg>
           </SmaeLink>
         </div>
         <div class="relative">
@@ -115,7 +119,7 @@ iniciar();
             :texto-descritivo="ind.recalculo_erro"
             :tentar-novamente-em="contagemDeRecarregamentos >= numeroMaximoDeRecarregamentos
               ? null
-              : ind.recalculo_tempo "
+              : ind.recalculo_tempo"
             @recarregar-dados="iniciar(true)"
           />
           <GraficoHeatmapVariavelCategorica

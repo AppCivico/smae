@@ -19,13 +19,15 @@ export class WorkflowAndamentoDto extends PartialType(OmitType(WorkflowDetailDto
 }
 
 export class WorkflowAndamentoFluxoDto extends DetailWorkflowFluxoDto {
+    atual: boolean;
+    concluida: boolean;
     @ApiProperty({ type: () => [WorkflowAndamentoFasesDto] })
-    fases: WorkflowAndamentoFasesDto[];
+    declare fases: WorkflowAndamentoFasesDto[];
 }
 
 export class WorkflowAndamentoFasesDto extends DetailWorkflowFluxoFaseDto {
     @ApiProperty({ type: () => [WorkflowAndamentoTarefasDto] })
-    tarefas: WorkflowAndamentoTarefasDto[];
+    declare tarefas: WorkflowAndamentoTarefasDto[];
     andamento: AndamentoFaseDto | null;
 }
 
@@ -34,6 +36,7 @@ export class WorkflowAndamentoTarefasDto extends DetailWorkflowFluxoFaseTarefaDt
 }
 
 export class AndamentoFaseDto {
+    atual: boolean;
     situacao: WorkflowSituacaoDto | null;
     orgao_responsavel: IdSiglaDescricao | null;
     pessoa_responsavel: IdNomeExibicao | null;
@@ -46,10 +49,11 @@ export class AndamentoFaseDto {
     necessita_preencher_orgao: boolean;
     necessita_preencher_pessoa: boolean;
     dias_na_fase: number;
+    tarefa_espelhada_id: number | null;
 }
 
 export class AndamentoTarefaDto {
-    id: number;
+    id: number | null;
     orgao_responsavel: IdSiglaDescricao | null;
     necessita_preencher_orgao: boolean;
     concluida: boolean;

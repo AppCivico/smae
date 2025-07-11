@@ -1,7 +1,6 @@
 import MenuSecundário from '@/components/MenuSecundario.vue';
 import EnviarArquivo from '@/views/envios/EnviarArquivo.vue';
 import EnviosLista from '@/views/envios/EnviosLista.vue';
-import EnviosMetas from '@/views/envios/EnviosMetas.vue';
 import EnviosProjetos from '@/views/envios/EnviosProjetos.vue';
 import EnviosRaiz from '@/views/envios/EnviosRaiz.vue';
 
@@ -27,6 +26,8 @@ export default {
       'CadastroMeta.orcamento',
       'Projeto.orcamento',
       'ProjetoMDO.orcamento',
+      'ReferencialEm.Equipe.ProgramaDeMetas',
+      'ReferencialEm.Equipe.PS',
     ],
   },
   children: [
@@ -39,8 +40,8 @@ export default {
       },
     },
     {
-      path: 'orcamentos/metas',
-      component: EnviosMetas,
+      path: 'orcamentos/metas-pdm',
+      component: () => import('@/views/envios/EnviosMetas.pdm.vue'),
       meta: {
         título: 'Envio de orçamento para metas',
         títuloParaMenu: 'Metas',
@@ -52,16 +53,47 @@ export default {
       children: [
         {
           path: '',
-          name: 'EnviosOrçamentosMetas',
+          name: 'EnviosOrcamentosMetasPdm',
           component: EnviosLista,
 
           children: [
             {
               path: 'enviar',
-              name: 'EnviosOrçamentosMetasNovo',
+              name: 'EnviosOrcamentosMetasPdmNovo',
               component: EnviarArquivo,
               meta: {
-                rotaDeEscape: 'EnviosOrçamentosMetas',
+                rotaDeEscape: 'EnviosOrcamentosMetasPdm',
+              },
+            },
+          ],
+        },
+      ],
+    },
+    {
+      path: 'orcamentos/metas',
+      component: () => import('@/views/envios/EnviosMetas.vue'),
+      meta: {
+        título: 'Envio de orçamento para metas',
+        títuloParaMenu: 'Metas',
+        limitarÀsPermissões: [
+          'CadastroMeta.orcamento',
+          'ReferencialEm.Equipe.ProgramaDeMetas',
+          'ReferencialEm.Equipe.PS',
+        ],
+      },
+      children: [
+        {
+          path: '',
+          name: 'EnviosOrcamentosMetas',
+          component: EnviosLista,
+
+          children: [
+            {
+              path: 'enviar',
+              name: 'EnviosOrcamentosMetasNovo',
+              component: EnviarArquivo,
+              meta: {
+                rotaDeEscape: 'EnviosOrcamentosMetas',
               },
             },
           ],
@@ -82,7 +114,7 @@ export default {
       children: [
         {
           path: '',
-          name: 'EnviosOrçamentosObras',
+          name: 'EnviosOrcamentosObras',
           component: EnviosLista,
           children: [
             {
@@ -90,7 +122,7 @@ export default {
               name: 'EnviosOrçamentosObrasNovo',
               component: EnviarArquivo,
               meta: {
-                rotaDeEscape: 'EnviosOrçamentosObras',
+                rotaDeEscape: 'EnviosOrcamentosObras',
               },
             },
           ],
@@ -111,7 +143,7 @@ export default {
       children: [
         {
           path: '',
-          name: 'EnviosOrçamentosProjetos',
+          name: 'EnviosOrcamentosProjetos',
           component: EnviosLista,
           children: [
             {
@@ -119,7 +151,7 @@ export default {
               name: 'EnviosOrçamentosProjetosNovo',
               component: EnviarArquivo,
               meta: {
-                rotaDeEscape: 'EnviosOrçamentosProjetos',
+                rotaDeEscape: 'EnviosOrcamentosProjetos',
               },
             },
           ],

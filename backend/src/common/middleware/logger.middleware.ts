@@ -4,6 +4,7 @@ import { NextFunction, Request, Response } from 'express';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { extractIpAddress } from '../decorators/current-ip';
+import { SmaeConfigService } from '../services/smae-config.service';
 
 let request_num = 1;
 @Injectable()
@@ -12,13 +13,21 @@ export class LoggerMiddleware implements NestMiddleware {
     private logOnDb = false;
     private logSkipUrl: string[] = ['/ping'];
 
-    constructor(private readonly prisma: PrismaService) {
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly smaeConfigService: SmaeConfigService
+    ) {
         this.logOnDb = process.env.LOG_REQ_ON_DB === 'true';
         if (this.logOnDb) this.logger.debug('Database request audit is enabled');
+    }
 
-        if (process.env.LOG_DB_SKIP_URL_LIST) {
-            this.logger.warn('Ignoring save on database on more urls: ' + process.env.LOG_DB_SKIP_URL_LIST);
-            this.logSkipUrl.push(...process.env.LOG_DB_SKIP_URL_LIST.split('|'));
+    async onModuleInit() {
+        const skipUrl = await this.smaeConfigService.getConfigWithDefault('LOG_DB_SKIP_URL_LIST', '');
+
+        const skipList = skipUrl.split('|').filter(Boolean);
+        if (skipList.length) {
+            this.logger.warn('Ignoring save on database on more urls: ' + skipList.join('|'));
+            this.logSkipUrl.push(...skipList);
         }
     }
 

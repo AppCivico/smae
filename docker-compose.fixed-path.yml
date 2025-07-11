@@ -5,9 +5,9 @@ services:
     # will change to postgres:12.16-bullseye
     image: timescale/timescaledb:latest-pg14
     environment:
-      POSTGRES_PASSWORD: "smae"
-      POSTGRES_USER: "smae"
-      POSTGRES_DB: smae_dev_persistent
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-smae}
+      POSTGRES_USER: ${POSTGRES_USER:-smae}
+      POSTGRES_DB: ${POSTGRES_DB:-smae_dev_persistent}
     networks:
       #- postgres
       - smae_network
@@ -34,11 +34,11 @@ services:
       - "${BIND_INTERFACE}${METADB_LISTEN}:3000"
     environment:
       MB_DB_TYPE: postgres
-      MB_DB_DBNAME: metabase
+      MB_DB_DBNAME: ${MB_DB_DBNAME:-metabase}
       MB_DB_PORT: 5432
-      MB_DB_USER: postgres
-      MB_DB_PASS: password
-      MB_DB_HOST: metadb_postgres
+      MB_DB_USER: ${MB_DB_USER:-postgres}
+      MB_DB_PASS: ${MB_DB_PASS:-password}
+      MB_DB_HOST: ${MB_DB_HOST:-metadb_postgres}
       MB_SITE_URL: "${MB_SITE_URL}"
     networks:
       #- postgres
@@ -57,9 +57,9 @@ services:
     container_name: "${API_CONTAINER_NAME}_metadb_postgres"
     hostname: postgres
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_DB: metabase
-      POSTGRES_PASSWORD: password
+      POSTGRES_USER: ${MB_DB_USER:-postgres}
+      POSTGRES_DB: ${MB_DB_DBNAME:-metabase}
+      POSTGRES_PASSWORD: ${MB_DB_PASS:-password}
     volumes:
       - ${DATA_PATH}/smae_pg_metabase_data:/var/lib/postgresql/data
     networks:
@@ -109,8 +109,8 @@ services:
     depends_on:
       - db
       - minio
-      #- smae_orcamento
-      #- smae_geoloc
+    #- smae_orcamento
+    #- smae_geoloc
     logging:
       driver: "json-file"
       options:
@@ -171,8 +171,8 @@ services:
   smae_transferegov:
     container_name: "${API_CONTAINER_NAME}_transferegov"
     build:
-      context: ./backend-transfere-gov/
-      dockerfile: Dockerfile
+      context: ./
+      dockerfile: ./backend-transfere-gov/Dockerfile
     restart: unless-stopped
     networks:
       - smae_network
@@ -229,9 +229,9 @@ services:
     environment:
       VARIABLES_JSON_IS_UTF8: "1"
       EMAILDB_DB_HOST: "db"
-      EMAILDB_DB_PASS: "smae"
-      EMAILDB_DB_NAME: "smae_dev_persistent"
-      EMAILDB_DB_USER: "smae"
+      EMAILDB_DB_PASS: ${POSTGRES_PASSWORD:-smae}
+      EMAILDB_DB_NAME: ${POSTGRES_DB:-smae_dev_persistent}
+      EMAILDB_DB_USER: ${POSTGRES_USER:-smae}
       EMAILDB_DB_PORT: "5432"
       EMAILDB_MAX_WORKERS: "1"
       EMAILDB_FETCH_ROWS: "100"
@@ -248,22 +248,24 @@ services:
       options:
         max-file: "2"
         max-size: 100MB
-#  # 150 MB RAM max
-#  smtp_web:
-#    container_name: "${EMAILDB_CONTAINER_NAME}_smtp_web"
-#    restart: unless-stopped
-#    image: rnwood/smtp4dev:latest
-#    ports:
-#      - "${BIND_INTERFACE}${SMTP_WEB_LISTEN}:80"
-#    networks:
-#      #- api
-#      #- smtp
-#      - smae_network
-#    logging:
-#      driver: "json-file"
-#      options:
-#        max-file: "2"
-#        max-size: 100MB
+  # 150 MB RAM max
+  smtp_web:
+    container_name: "${EMAILDB_CONTAINER_NAME}_smtp_web"
+    restart: unless-stopped
+    image: rnwood/smtp4dev:latest
+    ports:
+      - "${BIND_INTERFACE}${SMTP_WEB_LISTEN}:80"
+    networks:
+      #- api
+      #- smtp
+      - smae_network
+    profiles:
+      - fullStack
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "2"
+        max-size: 100MB
 
   # 1500 MB RAM max
   minio:
@@ -290,28 +292,30 @@ services:
         max-size: 1m
 
   # 50 mb RAM max
-#  web:
-#    container_name: "${WEB_CONTAINER_NAME}"
-#    build:
-#      context: ./
-#      dockerfile: frontend/Dockerfile
-#    networks:
-#      #- api
-#      #- metadb_web
-#      - smae_network
-#    depends_on:
-#      - smae_api
-#      - metabase
-#    restart: unless-stopped
-#    environment:
-#      VITE_API_URL: "${VITE_API_URL}"
-#    ports:
-#      - "${BIND_INTERFACE}${SMAE_WEB_LISTEN}:80"
-#    logging:
-#      driver: "json-file"
-#      options:
-#        max-file: "2"
-#        max-size: 1MB
+  web:
+    container_name: "${WEB_CONTAINER_NAME}"
+    build:
+      context: ./
+      dockerfile: frontend/Dockerfile
+    networks:
+      #- api
+      #- metadb_web
+      - smae_network
+    depends_on:
+      - smae_api
+      - metabase
+    profiles:
+      - fullStack
+    restart: unless-stopped
+    environment:
+      VITE_API_URL: "${VITE_API_URL}"
+    ports:
+      - "${BIND_INTERFACE}${SMAE_WEB_LISTEN}:80"
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "2"
+        max-size: 1MB
 
   pgbackups:
     image: prodrigestivill/postgres-backup-local
@@ -324,9 +328,11 @@ services:
       - smae_network
     depends_on:
       - db
+    profiles:
+      - pgBackups
     environment:
       - POSTGRES_HOST=db
-      - POSTGRES_DB=smae_dev_persistent
+      - POSTGRES_DB=${POSTGRES_DB:-smae_dev_persistent}
       - POSTGRES_USER=smae
       - POSTGRES_PASSWORD=smae
       - POSTGRES_EXTRA_OPTS=-Z6 --schema=public --blobs
@@ -346,13 +352,15 @@ services:
     networks:
       #- postgres
       - smae_network
+    profiles:
+      - pgBackups
     depends_on:
-      - db
+      - metadb_postgres
     environment:
-      - POSTGRES_HOST=metadb_postgres
-      - POSTGRES_DB=metabase
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=password
+      - POSTGRES_HOST=${MB_DB_HOST:-metadb_postgres}
+      - POSTGRES_DB=${MB_DB_DBNAME:-metabase}
+      - POSTGRES_USER=${MB_DB_USER:-postgres}
+      - POSTGRES_PASSWORD=${MB_DB_PASS:-password}
       - POSTGRES_EXTRA_OPTS=-Z6 --schema=public --blobs
       - SCHEDULE=@daily
       - BACKUP_KEEP_DAYS=7
@@ -362,4 +370,6 @@ services:
 
 networks:
   smae_network:
+    driver_opts:
+      com.docker.network.driver.mtu: ${DOCKER_MTU:-1500}
 

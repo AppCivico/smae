@@ -265,7 +265,6 @@ export class TransferenciaService {
 
                 const updates = [];
                 for (const row of tarefaEtapasAcompanhamentos) {
-                    console.log(row);
                     if (row.nivel == 1 && row.tarefa_pai_id == null) {
                         // Tarefa referente à própia etapa.
 
@@ -332,6 +331,12 @@ export class TransferenciaService {
                 await Promise.all(updates);
             });
         }
+
+        // Atualizando vetores da transferência.
+        this.updateVetoresBusca(created.id).catch((err) => {
+            // Optional: log if the background task fails for some reason
+            console.error(`Background task updateVetoresBusca failed for transferencia ${created.id}`, err);
+        });
 
         return created;
     }
@@ -741,6 +746,12 @@ export class TransferenciaService {
             });
         }
 
+        // Atualizando vetores da transferência.
+        this.updateVetoresBusca(id).catch((err) => {
+            // Optional: log if the background task fails for some reason
+            console.error(`Background task updateVetoresBusca failed for transferencia ${id}`, err);
+        });
+
         return updated;
     }
 
@@ -861,7 +872,7 @@ export class TransferenciaService {
                             id: true,
                         },
                     });
-                    if (!orgaoCasaCivil) throw new HttpException('Órgão da casa civil não foi encontrado', 400);
+                    if (!orgaoCasaCivil) throw new HttpException('Órgão da SERI não foi encontrado', 400);
 
                     await this.distribuicaoService.create(
                         {
@@ -879,7 +890,8 @@ export class TransferenciaService {
                             orgao_gestor_id: orgaoCasaCivil.id,
                         },
                         user,
-                        true
+                        true,
+                        prismaTxn
                     );
                 }
 
@@ -1054,6 +1066,11 @@ export class TransferenciaService {
                 return transferencia;
             }
         );
+
+        this.updateVetoresBusca(updated.id).catch((err) => {
+            // Optional: log if the background task fails for some reason
+            console.error(`Background task updateVetoresBusca failed for transferencia ${updated.id}`, err);
+        });
 
         return updated;
     }
@@ -1245,7 +1262,7 @@ export class TransferenciaService {
                 ? r.andamentoWorkflow.find((e) => e.workflow_fase_id == r.workflow_fase_atual!.id)?.workflow_situacao
                       ?.situacao
                 : null;
-            console.log(faseStatusAtual);
+
             return {
                 id: r.id,
                 ano: r.ano,
@@ -1687,6 +1704,18 @@ export class TransferenciaService {
         prismaTxn: Prisma.TransactionClient,
         user: PessoaFromJwt
     ) {
+        // Garantindo que a transferência está com workflow e cronograma limpos
+        const tarefasVelhas = await prismaTxn.tarefa.count({
+            where: {
+                removido_em: null,
+                tarefa_cronograma: {
+                    transferencia_id: transferencia_id,
+                    removido_em: null,
+                },
+            },
+        });
+        if (tarefasVelhas > 0) await this.limparWorkflowCronograma(transferencia_id, user, prismaTxn);
+
         const workflow = await this.workflowService.findOne(workflow_id, undefined);
 
         // Caso seja a primeira fase, já é iniciada.
@@ -1710,7 +1739,7 @@ export class TransferenciaService {
                     });
                     if (!orgaoCasaCivil)
                         throw new HttpException(
-                            'Fase é de responsabilidade própria, mas não foi encontrado órgão da Casa Civil',
+                            'Fase é de responsabilidade própria, mas não foi encontrado órgão da SERI.',
                             400
                         );
 
@@ -1950,5 +1979,26 @@ export class TransferenciaService {
                 criador: r.criador,
             } satisfies TransferenciaHistoricoDto;
         });
+    }
+
+    /**
+     * Rebuilds the full-text search vector for a given transferencia.
+     * This should be called outside of any transaction that modifies its child records.
+     * @param transferenciaId The ID of the transferencia to update.
+     */
+    async updateVetoresBusca(transferenciaId: number): Promise<void> {
+        try {
+            await this.prisma.$executeRaw`
+                UPDATE transferencia
+                SET vetores_busca = f_rebuild_transferencia_tsvector(${transferenciaId}::integer)
+                WHERE id = ${transferenciaId};
+            `;
+        } catch (error) {
+            // Log the error but don't let it crash the main flow.
+            console.error(
+                `[updateVetoresBusca] Failed to update tsvector for transferencia ${transferenciaId}:`,
+                error
+            );
+        }
     }
 }

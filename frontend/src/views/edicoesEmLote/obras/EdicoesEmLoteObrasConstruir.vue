@@ -230,7 +230,7 @@ const onSubmit = handleSubmit(async (valores) => {
   };
 
   try {
-    if (await edicoesEmLoteStore.salvarItem(payload)) {
+    if (await edicoesEmLoteStore.salvarItem(payload, schemaObras)) {
       alertStore.success('Solicitação realizada com sucesso.');
 
       const rotaDeEscape = route.meta?.rotaDeEscape;
@@ -355,18 +355,18 @@ async function handlePropertyChange(event, idx) {
 
           <div
             :hidden="!campoConfig(idx)?.meta?.operacoes_permitidas?.length > 0"
-            class="f1"
+            class="f1 flex flexwrap g2"
           >
             <LabelFromYup
               :name="`edicoes[${idx}].operacao`"
-              class="tc300"
+              class="tc300 fb100"
             >
               Operação
             </LabelFromYup>
             <Field
               :name="`edicoes[${idx}].operacao`"
               as="select"
-              class="inputtext light"
+              class="inputtext light fb100"
               :aria-readonly="modoRevisao"
               :class="{ error: errors?.[`edicoes[${idx}].operacao`] }"
               @mousedown="modoRevisao && $event.preventDefault()"
@@ -384,7 +384,7 @@ async function handlePropertyChange(event, idx) {
             <!-- jesus -->
             <small
               v-if="campoConfig(idx)?.meta?.explicacoes?.operacao?.[values.edicoes[idx].operacao]"
-              class="explicacao"
+              class="explicacao fb100"
             >
               {{ campoConfig(idx).meta.explicacoes.operacao[values.edicoes[idx].operacao] }}
             </small>

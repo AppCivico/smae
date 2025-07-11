@@ -7,7 +7,7 @@ import { CreateAvisoEmailDto } from './dto/create-aviso-email.dto';
 import { UpdateAvisoEmailDto } from './dto/update-aviso-email.dto';
 import { AvisoEmailItemDto, FilterAvisoEamilDto } from './entities/aviso-email.entity';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { CrontabIsEnabled } from '../common/CrontabIsEnabled';
+import { IsCrontabEnabled } from '../common/crontab-utils';
 import { JOB_AVISO_EMAIL } from '../common/dto/locks';
 import { DateYMD, SYSTEM_TIMEZONE } from '../common/date2ymd';
 import { DateTime } from 'luxon';
@@ -24,7 +24,7 @@ export class AvisoEmailService {
         @Inject(forwardRef(() => TaskService))
         private readonly taskService: TaskService
     ) {
-        this.enabled = CrontabIsEnabled('aviso_email');
+        this.enabled = IsCrontabEnabled('aviso_email');
     }
 
     async create(

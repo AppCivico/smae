@@ -2,6 +2,7 @@ import { HttpException, Injectable, Logger } from '@nestjs/common';
 import got, { Got } from 'got';
 import { DateTime } from 'luxon';
 import { SYSTEM_TIMEZONE } from '../common/date2ymd';
+import { SmaeConfigService } from 'src/common/services/smae-config.service';
 
 export class SofError extends Error {
     constructor(msg: string) {
@@ -132,8 +133,8 @@ export class SofApiService {
     private readonly logger = new Logger(SofApiService.name);
     SOF_API_PREFIX: string;
 
-    constructor() {
-        this.SOF_API_PREFIX = process.env.SOF_API_PREFIX || 'http://smae_orcamento:80/';
+    constructor(private readonly smaeConfigService: SmaeConfigService) {
+        this.got = got;
     }
 
     /**
@@ -156,7 +157,14 @@ export class SofApiService {
         return 12; // mes mais recente do ano pesquisado
     }
 
-    onModuleInit() {
+    async onModuleInit() {
+        const sofApiPrefix = await this.smaeConfigService.getConfigWithDefault<string>(
+            'SOF_API_PREFIX',
+            'http://smae_orcamento:80/'
+        );
+
+        this.SOF_API_PREFIX = sofApiPrefix;
+
         this.got = got.extend({
             prefixUrl: this.SOF_API_PREFIX,
             timeout: 60 * 1000,

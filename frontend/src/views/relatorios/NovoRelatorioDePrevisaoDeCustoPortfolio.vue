@@ -59,7 +59,6 @@ function iniciar() {
 iniciar();
 </script>
 <template>
-  <MigalhasDePão class="mb1" />
   <CabecalhoDePagina :formulario-sujo="false" />
 
   <Form

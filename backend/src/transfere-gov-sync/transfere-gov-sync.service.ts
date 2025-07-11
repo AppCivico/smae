@@ -9,7 +9,10 @@ import {
     TransfereGovOportunidadeAvaliacao,
     TransfereGovOportunidadeTipo,
 } from '@prisma/client';
+import * as crypto from 'crypto';
 import { DateTime } from 'luxon';
+import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
+import { PrismaHelpers } from 'src/common/PrismaHelpers';
 import { uuidv7 } from 'uuidv7';
 import { BlocoNotaService } from '../bloco-nota/bloco-nota/bloco-nota.service';
 import { NotaService } from '../bloco-nota/nota/nota.service';
@@ -20,11 +23,13 @@ import { PaginatedDto, PAGINATION_TOKEN_TTL } from '../common/dto/paginated.dto'
 import { SmaeConfigService } from '../common/services/smae-config.service';
 import { PrismaService } from '../prisma/prisma.service';
 import {
-    TransfGovComunicado,
-    TransfGovTransferencia,
+    PlanoAcaoDetalhado,
+    TransfereGovApiOportunidadesApiService,
     TransfereGovApiService,
     TransfereGovApiTransferenciasService,
     TransfereGovError,
+    TransfGovComunicado,
+    TransfGovTransferencia,
 } from '../transfere-gov-api/transfere-gov-api.service';
 import {
     FilterTransfereGovListDto,
@@ -33,9 +38,6 @@ import {
     TransfereGovTransferenciasDto,
     UpdateTransfereGovTransferenciaDto,
 } from './entities/transfere-gov-sync.entity';
-import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
-import * as crypto from 'crypto';
-import { PrismaHelpers } from 'src/common/PrismaHelpers';
 const convertToJsonString = require('fast-json-stable-stringify');
 
 class NextPageTokenJwtBody {
@@ -46,7 +48,7 @@ class NextPageTokenJwtBody {
 @Injectable()
 export class TransfereGovSyncService {
     private readonly logger = new Logger(TransfereGovSyncService.name);
-    baseUrl: string;
+
     constructor(
         private readonly prisma: PrismaService,
         private readonly transfereGovApi: TransfereGovApiService,
@@ -54,11 +56,9 @@ export class TransfereGovSyncService {
         private readonly blocosService: BlocoNotaService,
         private readonly notaService: NotaService,
         private readonly jwtService: JwtService,
-        private readonly smaeConfigService: SmaeConfigService
-    ) {
-        const parsedUrl = new URL(process.env.URL_LOGIN_SMAE || 'http://smae-frontend/');
-        this.baseUrl = `${parsedUrl.protocol}//${parsedUrl.hostname}:${parsedUrl.port}`;
-    }
+        private readonly smaeConfigService: SmaeConfigService,
+        private readonly transfereGovApiEspeciais: TransfereGovApiOportunidadesApiService
+    ) {}
 
     private transformComunicado(
         comunicado: TransfGovComunicado,
@@ -231,6 +231,7 @@ export class TransfereGovSyncService {
     private async criaNotificacoesEmailComunicados(prismaTx: Prisma.TransactionClient, item: ComunicadoTransfereGov) {
         const envioAtivo = await this.smaeConfigService.getConfig('COMUNICADO_EMAIL_ATIVO');
         if (!envioAtivo || envioAtivo !== 'true') return;
+        const baseUrl = await this.smaeConfigService.getBaseUrl('URL_LOGIN_SMAE');
 
         const orgaoConfig = await this.smaeConfigService.getConfig('COMUNICADO_EMAIL_ORGAO_ID');
         const subject = await this.smaeConfigService.getConfig('COMUNICADO_EMAIL_TITULO');
@@ -248,7 +249,7 @@ export class TransfereGovSyncService {
                         titulo: item.titulo,
                         data: Date2YMD.dbDateToDMY(item.publicado_em),
                         descricao: item.descricao,
-                        link: new URL([this.baseUrl, 'comunicados-gerais'].join('/')),
+                        link: new URL([baseUrl, 'comunicados-gerais'].join('/')),
                         tipo: item.tipo,
                     },
                     config_id: 1,
@@ -319,8 +320,14 @@ export class TransfereGovSyncService {
         };
     }
 
+    async manualSyncOportunidadesEspeciais(): Promise<TransfereGovOportunidade[]> {
+        this.logger.log('Iniciando sync manual TransfereGOV Transferências Especiais');
+        const newItems = await this.syncAllEndpointsTransferencias(true);
+        return newItems;
+    }
+
     async manualSyncTransferencias(): Promise<TransfereGovOportunidade[]> {
-        this.logger.log('Iniciando sync manual TransfereGOV Transferências');
+        this.logger.log('Iniciando sync manual TransfereGOV Transferências Completo');
         const newItems = await this.syncAllEndpointsTransferencias();
         return newItems;
     }
@@ -380,7 +387,9 @@ export class TransfereGovSyncService {
 
                 if (!transferenciasExistentes.find((t) => t.hash === transformedOportunidade.hash)) {
                     newItems.push(result);
-                    novasTransferencias.push(result.nome_programa);
+                    novasTransferencias.push(
+                        (result.nome_programa || (result.finalidades ?? '')) + ' - ' + result.tipo
+                    );
                 }
             } catch (error) {
                 this.logger.error(`Erro ao atualizar oportunidades: ${error.message}`);
@@ -397,6 +406,8 @@ export class TransfereGovSyncService {
     private async criaNotificacoesOportunidades(novasTransferencias: string[]) {
         const envioAtivo = await this.smaeConfigService.getConfig('COMUNICADO_EMAIL_ATIVO');
         if (!envioAtivo || envioAtivo !== 'true') return;
+
+        const baseUrl = await this.smaeConfigService.getBaseUrl('URL_LOGIN_SMAE');
 
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             // Quando forem adicionadas oportunidades novas de transferência
@@ -418,7 +429,7 @@ export class TransfereGovSyncService {
                             to: recipiente,
                             variables: {
                                 programa: oportunidadePrograma,
-                                link: new URL([this.baseUrl, 'oportunidades'].join('/')),
+                                link: new URL([baseUrl, 'oportunidades'].join('/')),
                             },
                         },
                     });
@@ -497,28 +508,123 @@ export class TransfereGovSyncService {
         }
     }
 
-    private async syncAllEndpointsTransferencias(): Promise<TransfereGovOportunidade[]> {
+    private async syncAllEndpointsTransferencias(
+        apenasEspeciais: boolean = false
+    ): Promise<TransfereGovOportunidade[]> {
         const newItems: TransfereGovOportunidade[] = [];
 
-        // Add oportunidades sync
+        if (apenasEspeciais == false) {
+            // Add oportunidades sync
+            newItems.push(
+                ...(await this.syncOportunidadesEndpoint(
+                    () => this.transfereGovApiTransferencias.getEspecificas(),
+                    'Especifica'
+                ))
+            );
+            newItems.push(
+                ...(await this.syncOportunidadesEndpoint(
+                    () => this.transfereGovApiTransferencias.getVoluntarias(),
+                    'Voluntaria'
+                ))
+            );
+            newItems.push(
+                ...(await this.syncOportunidadesEndpoint(
+                    () => this.transfereGovApiTransferencias.getEmendas(),
+                    'Emenda'
+                ))
+            );
+        }
+
         newItems.push(
-            ...(await this.syncOportunidadesEndpoint(
-                () => this.transfereGovApiTransferencias.getEspecificas(),
-                'Especifica'
-            ))
-        );
-        newItems.push(
-            ...(await this.syncOportunidadesEndpoint(
-                () => this.transfereGovApiTransferencias.getVoluntarias(),
-                'Voluntaria'
-            ))
-        );
-        newItems.push(
-            ...(await this.syncOportunidadesEndpoint(() => this.transfereGovApiTransferencias.getEmendas(), 'Emenda'))
+            ...(await this.syncOportunidadesEspeciais(await this.transfereGovApiEspeciais.getPlanosAcaoDetalhados()))
         );
 
         this.logger.log(`Sync TransfereGOV finalizado com sucesso. Novos items: ${newItems.length}`);
         return newItems;
+    }
+
+    private async syncOportunidadesEspeciais(planosAcao: PlanoAcaoDetalhado[]): Promise<TransfereGovOportunidade[]> {
+        const newItems: TransfereGovOportunidade[] = [];
+
+        const transferenciasExistentes = await this.prisma.transfereGovOportunidade.findMany({
+            where: {
+                tipo: 'Especial',
+            },
+            select: { hash: true },
+        });
+
+        const novasTransferencias: string[] = [];
+        const now = new Date();
+
+        for (const planoAcao of planosAcao) {
+            const transformedOportunidade = this.transformPlanoAcaoToOportunidade(planoAcao);
+
+            try {
+                const result = await this.prisma.transfereGovOportunidade.upsert({
+                    where: {
+                        hash: transformedOportunidade.hash,
+                    },
+                    update: transformedOportunidade,
+                    create: {
+                        ...transformedOportunidade,
+                        criado_em: now,
+                        atualizado_em: now,
+                    },
+                });
+
+                if (!transferenciasExistentes.find((t) => t.hash === transformedOportunidade.hash)) {
+                    newItems.push(result);
+                    novasTransferencias.push(result.nome_programa);
+                }
+            } catch (error) {
+                this.logger.error(`Erro ao atualizar oportunidades especiais: ${error.message}`);
+            }
+        }
+
+        if (novasTransferencias.length > 0) {
+            await this.criaNotificacoesOportunidades(novasTransferencias);
+        }
+
+        return newItems;
+    }
+
+    private transformPlanoAcaoToOportunidade(
+        planoAcao: PlanoAcaoDetalhado
+    ): Prisma.TransfereGovOportunidadeCreateInput {
+        const hash = 'id:' + planoAcao.id;
+
+        // Finalidades array 2 string: "codigo - descricao"
+        const finalidadesJoin = planoAcao.finalidades?.length
+            ? planoAcao.finalidades.map((f) => `${f.codigo} - ${f.descricao}`).join(', ')
+            : null;
+
+        // Parse codigo_do_programa as BigInt
+        let codPrograma: bigint;
+        try {
+            const parsed = parseInt(planoAcao.codigo_do_programa, 10);
+            codPrograma = isNaN(parsed) ? BigInt(0) : BigInt(parsed);
+        } catch {
+            codPrograma = BigInt(0);
+        }
+
+        return {
+            hash: hash,
+            tipo: 'Especial',
+            id_programa: BigInt(planoAcao.id),
+            natureza_juridica_programa: '',
+            cod_orgao_sup_programa: BigInt(0),
+            desc_orgao_sup_programa: planoAcao.orgao,
+            cod_programa: codPrograma,
+            nome_programa: '',
+            sit_programa: planoAcao.situacao,
+            ano_disponibilizacao: null,
+            data_disponibilizacao: null,
+            dt_ini_receb: planoAcao.dt_inicio_propostas,
+            dt_fim_receb: planoAcao.dt_fim_propostas,
+            finalidades: finalidadesJoin,
+            modalidade_programa: planoAcao.modalidade,
+            acao_orcamentaria: '',
+        };
     }
 
     async listaTransferencias(
@@ -578,12 +684,13 @@ export class TransfereGovSyncService {
                     nome_programa: item.nome_programa,
                     sit_programa: item.sit_programa,
                     ano_disponibilizacao: item.ano_disponibilizacao,
-                    data_disponibilizacao: Date2YMD.toString(item.data_disponibilizacao),
-                    dt_ini_receb: Date2YMD.toString(item.dt_ini_receb),
-                    dt_fim_receb: Date2YMD.toString(item.dt_fim_receb),
+                    data_disponibilizacao: Date2YMD.toStringOrNull(item.data_disponibilizacao),
+                    dt_ini_receb: Date2YMD.toStringOrNull(item.dt_ini_receb),
+                    dt_fim_receb: Date2YMD.toStringOrNull(item.dt_fim_receb),
                     modalidade_programa: item.modalidade_programa,
                     acao_orcamentaria: item.acao_orcamentaria,
                     natureza_juridica_programa: item.natureza_juridica_programa,
+                    finalidades: item.finalidades,
                 }) satisfies TransfereGovTransferenciasDto
         );
 

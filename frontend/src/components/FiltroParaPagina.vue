@@ -1,8 +1,15 @@
 <script setup lang="ts">
-import { nextTick, watch } from 'vue';
+import {
+  computed,
+  nextTick,
+  watch,
+} from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import {
-  Field, useForm, ErrorMessage, useIsFormDirty,
+  ErrorMessage,
+  Field,
+  useForm,
+  useIsFormDirty,
 } from 'vee-validate';
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
 import AutocompleteField2 from './AutocompleteField2.vue';
@@ -34,8 +41,8 @@ export type Formulario = Linha[];
 
 type Props = {
   formulario: Linha[]
-  schema: Record<string, any>
-  valoresIniciais?: Record<string, any>
+  schema: Record<string, unknown>
+  valoresIniciais?: Record<string, unknown>
   autoSubmit?: boolean
   carregando?: boolean
 };
@@ -51,13 +58,15 @@ const route = useRoute();
 const router = useRouter();
 
 const {
-  handleSubmit, isSubmitting, resetForm, setValues, meta,
+  errors, handleSubmit, isSubmitting, resetForm, setValues, meta,
 } = useForm({
   validationSchema: props.schema,
   initialValues: route.query,
 });
 
 const formularioSujo = useIsFormDirty();
+
+const idsDasMensagensDeErro = computed(() => Object.keys(errors.value).reduce((acc, key) => `${acc}err__${key} `, ''));
 
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   const query = {
@@ -122,9 +131,20 @@ if (props.autoSubmit) {
 </script>
 
 <template>
-  <div class="filtro-para-pagina">
-    <FormularioQueryString :valores-iniciais="valoresIniciais">
-      <form @submit="onSubmit">
+  <div
+    class="filtro-para-pagina"
+    :class="formularioSujo ? 'filtro-sujo' : ''"
+  >
+    <FormularioQueryString
+      v-slot="{
+        pendente,
+      }"
+      :valores-iniciais="valoresIniciais"
+    >
+      <form
+        :aria-busy="pendente"
+        @submit.prevent="!carregando && !pendente && onSubmit()"
+      >
         <div
           v-for="(linha, linhaIndex) in formulario"
           :key="`linha--${linhaIndex}`"
@@ -148,13 +168,16 @@ if (props.autoSubmit) {
               <LabelFromYup
                 :name="campoNome"
                 :schema="schema"
+                class="tc300"
               />
 
               <Field
                 v-if="campo.tipo === 'checkbox'"
                 v-slot="{ field: { value }, handleInput }"
                 :name="campoNome"
-                :disabled="$props.carregando"
+                :aria-busy="$props.carregando"
+                :aria-invalid="!!errors[campoNome]"
+                :aria-errormessage="errors[campoNome] ? `err__${campoNome}` : undefined"
               >
                 <div
                   class="flex itemscenter"
@@ -164,7 +187,7 @@ if (props.autoSubmit) {
                     type="checkbox"
                     class="interruptor"
                     :checked="value"
-                    :disabled="$props.carregando"
+                    :aria-busy="$props.carregando"
                     @input="(ev) => handleInput(ev.target.checked)"
                   >
                 </div>
@@ -175,7 +198,9 @@ if (props.autoSubmit) {
                 class="inputtext light mb1"
                 :name="campoNome"
                 as="select"
-                :disabled="$props.carregando"
+                :aria-busy="$props.carregando"
+                :aria-invalid="!!errors[campoNome]"
+                :aria-errormessage="errors[campoNome] ? `err__${campoNome}` : undefined"
               >
                 <option :value="null">
                   -
@@ -196,6 +221,8 @@ if (props.autoSubmit) {
                 v-slot="{ value, handleChange }"
                 class="inputtext light mb1"
                 :name="campoNome"
+                :aria-invalid="!!errors[campoNome]"
+                :aria-errormessage="errors[campoNome] ? `err__${campoNome}` : undefined"
               >
                 <AutocompleteField2
                   class="f1 mb1"
@@ -213,10 +240,13 @@ if (props.autoSubmit) {
                 class="inputtext light mb1"
                 :name="campoNome"
                 :type="campo.tipo"
-                :disabled="$props.carregando"
+                :aria-busy="$props.carregando"
+                :aria-invalid="!!errors[campoNome]"
+                :aria-errormessage="errors[campoNome] ? `err__${campoNome}` : undefined"
               />
 
               <ErrorMessage
+                :id="`err__${campoNome}`"
                 class="error-msg mb1"
                 :name="campoNome"
               />
@@ -230,11 +260,14 @@ if (props.autoSubmit) {
         >
           <button
             type="submit"
-            class="btn"
+            class="btn outline bgnone tcprimary mtauto mb1"
             :class="[{ loading: carregando }]"
-            :disabled="isSubmitting || carregando"
+            :aria-busy="isSubmitting || carregando"
+            :aria-disabled="!!Object.keys(errors)?.length"
+            :aria-invalid="!!Object.keys(errors)?.length"
+            :aria-errormessage="idsDasMensagensDeErro"
           >
-            Filtrar
+            Pesquisar
           </button>
         </div>
       </form>

@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { FilterWorkflowAndamentoDto } from './dto/filter-andamento.dto';
@@ -33,14 +33,13 @@ export class WorkflowAndamentoService {
                 andamentoWorkflow: {
                     where: {
                         removido_em: null,
-                        data_inicio: { not: null },
                     },
-                    take: 1,
                     orderBy: [{ id: 'desc' }, { criado_em: 'desc' }],
                     select: {
                         id: true,
                         workflow_etapa_id: true,
                         data_termino: true,
+                        data_inicio: true,
                     },
                 },
             },
@@ -51,16 +50,24 @@ export class WorkflowAndamentoService {
             return;
         }
 
-        if (transferencia.andamentoWorkflow.length > 1)
-            throw new Error('Erro interno ao definir etapa relevante para acompanhamento');
-
         const workflow = await this.workflowService.findOne(transferencia.workflow_id, user);
 
         // Processando booleans de controle de etapa.
         let possui_proxima_etapa: boolean;
 
+        // Descobrindo a fase atual para buscar a etapa atual.
+        const faseAtualAndamento = transferencia.andamentoWorkflow
+            .filter((e) => e.data_inicio != null)
+            .find((e) => {
+                return (e.data_inicio && !e.data_termino) || (e.data_inicio && e.data_termino);
+            });
+
+        if (!faseAtualAndamento) {
+            throw new InternalServerErrorException('Não foi possível encontrar fase atual do workflow.');
+        }
+
         const etapaAtual = workflow.fluxo.find((e) => {
-            return e.workflow_etapa_de!.id == transferencia.andamentoWorkflow[0].workflow_etapa_id;
+            return e.workflow_etapa_de!.id == faseAtualAndamento.workflow_etapa_id;
         });
         const proxEtapa = etapaAtual!.workflow_etapa_para;
 
@@ -119,48 +126,139 @@ export class WorkflowAndamentoService {
         const pode_passar_para_proxima_etapa: boolean = fasesNaoConcluidas == 0 && possui_proxima_etapa ? true : false;
         const pode_reabrir_fase: boolean = fasesConcluidas ? true : false;
 
+        // Buscando tarefas que são do cronograma.
+        const tarefasCronograma = await this.prisma.tarefa.findMany({
+            where: {
+                tarefa_cronograma: {
+                    transferencia_id: transferencia.id,
+                    removido_em: null,
+                },
+                distribuicao_recurso: {
+                    removido_em: null,
+                    transferencia_id: transferencia.id,
+                },
+                removido_em: null,
+                nivel: 3,
+            },
+            orderBy: [{ tarefa_pai_id: 'asc' }, { numero: 'asc' }],
+            select: {
+                id: true,
+                tarefa_pai_id: true,
+                tarefa: true,
+                numero: true,
+                inicio_real: true,
+                termino_real: true,
+                eh_marco: true,
+                orgao: {
+                    select: {
+                        id: true,
+                        sigla: true,
+                        descricao: true,
+                    },
+                },
+            },
+        });
+
         return {
             ...workflow,
             possui_proxima_etapa: possui_proxima_etapa,
             pode_passar_para_proxima_etapa: pode_passar_para_proxima_etapa,
             pode_reabrir_fase: pode_reabrir_fase,
             fluxo: await Promise.all(
-                workflow.fluxo
-                    .filter((e) => e.workflow_etapa_de!.id == transferencia.andamentoWorkflow[0].workflow_etapa_id)
-                    .map(async (fluxo) => {
-                        return {
-                            ...fluxo,
+                workflow.fluxo.map(async (fluxo) => {
+                    const ehEtapaAtual = fluxo.workflow_etapa_de!.id == faseAtualAndamento!.workflow_etapa_id;
+                    const faseIds = fluxo.fases.map((fase) => fase.fase!.id);
+                    const concluida = await this.isEtapaConcluida(
+                        transferencia.id,
+                        fluxo.workflow_etapa_de!.id,
+                        faseIds
+                    );
 
-                            fases: await Promise.all(
-                                fluxo.fases.map(async (fase) => {
-                                    return {
-                                        ...fase,
-                                        andamento: await this.getAndamentoFaseRet(
-                                            transferencia.id,
-                                            fase.fase!.id,
-                                            transferencia.workflow_id!,
-                                            fluxo.workflow_etapa_de!.id
-                                        ),
+                    return {
+                        ...fluxo,
+                        atual: ehEtapaAtual,
+                        concluida: concluida,
+                        fases: await Promise.all(
+                            fluxo.fases.map(async (fase) => {
+                                const tarefasVindasDoCronograma = [];
 
-                                        tarefas: await Promise.all(
-                                            fase.tarefas.map(async (tarefa) => {
+                                // Buscando o andamento da fase.
+                                const andamentoFase = await this.getAndamentoFaseRet(
+                                    transferencia.id,
+                                    fase.fase!.id,
+                                    transferencia.workflow_id!,
+                                    fluxo.workflow_etapa_de!.id
+                                );
+
+                                // Verificando se a fase possui tarefas de cronograma que precisam ser inseridas no retorno.
+                                if (andamentoFase && andamentoFase.tarefa_espelhada_id) {
+                                    const tarefasCronogramaFase = tarefasCronograma.filter(
+                                        (tarefa) => tarefa.tarefa_pai_id == andamentoFase.tarefa_espelhada_id
+                                    );
+
+                                    if (tarefasCronogramaFase.length) {
+                                        tarefasVindasDoCronograma.push(
+                                            ...tarefasCronogramaFase.map((tarefa) => {
                                                 return {
-                                                    ...tarefa,
-
-                                                    andamento: await this.getAndamentoTarefaRet(
-                                                        fase.fase!.id,
-                                                        transferencia.id,
-                                                        tarefa.workflow_tarefa!.id,
-                                                        transferencia.workflow_id!
-                                                    ),
+                                                    tarefa_cronograma_id: tarefa.id,
+                                                    workflow_tarefa: {
+                                                        id: 0,
+                                                        descricao: tarefa.tarefa,
+                                                    },
+                                                    ordem: tarefa.numero,
+                                                    marco: tarefa.eh_marco,
+                                                    responsabilidade: WorkflowResponsabilidade.OutroOrgao,
+                                                    andamento: {
+                                                        id: null,
+                                                        orgao_responsavel: tarefa.orgao,
+                                                        necessita_preencher_orgao: false,
+                                                        concluida: tarefa.termino_real ? true : false,
+                                                        atual: false,
+                                                        termino_real: Date2YMD.toStringOrNull(tarefa.termino_real),
+                                                        inicio_real: Date2YMD.toStringOrNull(tarefa.inicio_real),
+                                                    },
                                                 };
                                             })
-                                        ),
-                                    };
-                                })
-                            ),
-                        };
-                    })
+                                        );
+                                    }
+                                }
+
+                                const tarefasConfiguradas = await Promise.all(
+                                    fase.tarefas
+                                        .filter((t) => {
+                                            // TODO?: as tarefas do cronograma, poderiam ter entradas na tabela de andamento de tarefa do workflow, assim eliminaríamos a necessidade de filtrar aqui.
+                                            // Filtrando para não "duplicar" tarefas.
+                                            if (tarefasVindasDoCronograma.length > 0) {
+                                                return t.responsabilidade !== WorkflowResponsabilidade.OutroOrgao;
+                                            }
+                                            return true;
+                                        })
+                                        .map(async (tarefa) => {
+                                            return {
+                                                ...tarefa,
+                                                andamento: await this.getAndamentoTarefaRet(
+                                                    fase.fase!.id,
+                                                    transferencia.id,
+                                                    tarefa.workflow_tarefa!.id,
+                                                    transferencia.workflow_id!
+                                                ),
+                                            };
+                                        })
+                                );
+
+                                // Adicionando tarefas vindas do cronograma e ordenando.
+                                const tarefasDaFase = [...tarefasConfiguradas, ...tarefasVindasDoCronograma];
+                                tarefasDaFase.sort((a, b) => a.ordem! - b.ordem!);
+
+                                return {
+                                    ...fase,
+                                    andamento: andamentoFase,
+                                    tarefas: tarefasDaFase,
+                                };
+                            })
+                        ),
+                    };
+                })
             ),
         };
     }
@@ -181,6 +279,12 @@ export class WorkflowAndamentoService {
             select: {
                 data_inicio: true,
                 data_termino: true,
+
+                tarefaEspelhada: {
+                    select: {
+                        id: true,
+                    },
+                },
 
                 workflow_situacao: {
                     select: {
@@ -253,7 +357,11 @@ export class WorkflowAndamentoService {
                     : Math.trunc(now.diff(DateTime.fromJSDate(row.data_inicio, { zone: 'utc' })).as('days'));
         }
 
+        // Descobrindo se a fase é a atual.
+        const faseAtual = row.data_inicio && !row.data_termino ? true : false;
+
         return {
+            atual: faseAtual,
             data_inicio: Date2YMD.toStringOrNull(row.data_inicio),
             data_termino: Date2YMD.toStringOrNull(row.data_termino),
             dias_na_fase: dias_na_fase,
@@ -286,6 +394,8 @@ export class WorkflowAndamentoService {
                       nome_exibicao: row.pessoa_responsavel.nome_exibicao,
                   }
                 : null,
+
+            tarefa_espelhada_id: row.tarefaEspelhada ? row.tarefaEspelhada[0].id : null,
         };
     }
 
@@ -354,240 +464,265 @@ export class WorkflowAndamentoService {
     }
 
     async iniciarProximaEtapa(dto: WorkflowIniciarProxEtapaDto, user: PessoaFromJwt) {
-        await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId | void> => {
-            // Verificando se a etapa atual está concluída e se a configuração para a prox etapa existe.
-            const transferencia = await prismaTxn.transferencia.findFirst({
+        return await this.prisma.$transaction(
+            async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId | void> => {
+                return await this.iniciarProximaEtapaInternal(dto, user, prismaTxn);
+            }
+        );
+    }
+
+    public async iniciarProximaEtapaInternal(
+        dto: WorkflowIniciarProxEtapaDto,
+        user: PessoaFromJwt,
+        prismaTxn: Prisma.TransactionClient
+    ): Promise<RecordWithId | void> {
+        // Verificando se a etapa atual está concluída e se a configuração para a prox etapa existe.
+        const transferencia = await prismaTxn.transferencia.findFirst({
+            where: {
+                id: dto.transferencia_id,
+                removido_em: null,
+                workflow_id: { not: null },
+            },
+            select: {
+                id: true,
+                workflow_id: true,
+
+                andamentoWorkflow: {
+                    orderBy: { id: 'desc' },
+                    where: {
+                        data_termino: { not: null },
+                    },
+                    select: {
+                        workflow_etapa_id: true,
+                        data_termino: true,
+                    },
+                },
+
+                TarefaCronograma: {
+                    select: {
+                        id: true,
+                    },
+                },
+            },
+        });
+        if (!transferencia)
+            throw new HttpException('transferencia_id| Transferência com workflow, não encontrada.', 400);
+
+        if (!transferencia.andamentoWorkflow.length)
+            throw new HttpException('Transferência sem linhas de andamento', 400);
+
+        const etapaAtual = await prismaTxn.fluxo.findFirst({
+            where: {
+                workflow_id: transferencia.workflow_id!,
+                removido_em: null,
+                fluxo_etapa_de_id: transferencia.andamentoWorkflow[0].workflow_etapa_id,
+            },
+            select: {
+                fluxo_etapa_de: {
+                    select: {
+                        etapa_fluxo: true,
+                    },
+                },
+                fluxo_etapa_para_id: true,
+            },
+        });
+        if (!etapaAtual) throw new Error('Erro ao encontrar etapa atual');
+
+        if (etapaAtual.fluxo_etapa_para_id) {
+            // Buscando config da próxima etapa.
+            const configProxEtapa = await prismaTxn.fluxo.findFirst({
                 where: {
-                    id: dto.transferencia_id,
+                    fluxo_etapa_de_id: etapaAtual.fluxo_etapa_para_id,
+                    workflow_id: transferencia.workflow_id!,
                     removido_em: null,
-                    workflow_id: { not: null },
                 },
                 select: {
-                    id: true,
-                    workflow_id: true,
-
-                    andamentoWorkflow: {
-                        orderBy: { id: 'desc' },
-                        where: {
-                            data_termino: { not: null },
-                        },
+                    fluxo_etapa_de_id: true,
+                    fases: {
+                        where: { removido_em: null },
+                        orderBy: { ordem: 'asc' },
+                        take: 1,
                         select: {
-                            workflow_etapa_id: true,
-                            data_termino: true,
+                            id: true,
+                            ordem: true,
+                            responsabilidade: true,
+                            fase: {
+                                select: {
+                                    id: true,
+                                    fase: true, // Nome da fase
+                                },
+                            },
+
+                            tarefas: {
+                                where: { removido_em: null },
+                                orderBy: { ordem: 'asc' },
+                                select: {
+                                    responsabilidade: true,
+                                    workflow_tarefa: {
+                                        select: {
+                                            id: true,
+                                            tarefa_fluxo: true,
+                                        },
+                                    },
+                                },
+                            },
                         },
                     },
+                },
+            });
 
-                    TarefaCronograma: {
+            if (!configProxEtapa)
+                throw new HttpException('Não foi possível encontrar configuração da próxima Etapa', 400);
+
+            // Caso a próx. Etapa não possua fases.
+            // É o fim do workflow
+            if (configProxEtapa.fases.length) {
+                const primeiraFase = configProxEtapa.fases[0];
+
+                // Caso a fase seja de responsabilidade própria, pegando órgão da casa civil.
+                let orgao_id: number | null = null;
+                if (primeiraFase.responsabilidade == WorkflowResponsabilidade.Propria) {
+                    const orgaoCasaCivil = await prismaTxn.orgao.findFirst({
+                        where: {
+                            removido_em: null,
+                            sigla: 'SERI',
+                        },
                         select: {
                             id: true,
                         },
-                    },
-                },
-            });
-            if (!transferencia)
-                throw new HttpException('transferencia_id| Transferência com workflow, não encontrada.', 400);
+                    });
+                    if (!orgaoCasaCivil)
+                        throw new HttpException(
+                            'Fase é de responsabilidade própria, mas não foi encontrado órgão da SERI',
+                            400
+                        );
 
-            if (!transferencia.andamentoWorkflow.length)
-                throw new HttpException('Transferência sem linhas de andamento', 400);
+                    orgao_id = orgaoCasaCivil.id;
+                }
 
-            const etapaAtual = await prismaTxn.fluxo.findFirst({
-                where: {
-                    workflow_id: transferencia.workflow_id!,
-                    removido_em: null,
-                    fluxo_etapa_de_id: transferencia.andamentoWorkflow[0].workflow_etapa_id,
-                },
-                select: {
-                    fluxo_etapa_de: {
-                        select: {
-                            etapa_fluxo: true,
-                        },
-                    },
-                    fluxo_etapa_para_id: true,
-                },
-            });
-            if (!etapaAtual) throw new Error('Erro ao encontrar etapa atual');
-
-            if (etapaAtual.fluxo_etapa_para_id) {
-                // Buscando config da próxima etapa.
-                const configProxEtapa = await prismaTxn.fluxo.findFirst({
+                const andamentoProxEtapa = await prismaTxn.transferenciaAndamento.findFirst({
                     where: {
-                        fluxo_etapa_de_id: etapaAtual.fluxo_etapa_para_id,
-                        workflow_id: transferencia.workflow_id!,
+                        transferencia_id: transferencia.id,
+                        workflow_etapa_id: configProxEtapa.fluxo_etapa_de_id,
+                        workflow_fase_id: primeiraFase.fase.id,
+                        data_inicio: null,
                         removido_em: null,
                     },
                     select: {
-                        fluxo_etapa_de_id: true,
-                        fases: {
-                            where: { removido_em: null },
-                            orderBy: { ordem: 'asc' },
-                            take: 1,
+                        id: true,
+                        workflow_etapa_id: true,
+                        workflow_fase_id: true,
+                        tarefaEspelhada: {
                             select: {
                                 id: true,
-                                ordem: true,
-                                responsabilidade: true,
-                                fase: {
+                            },
+                        },
+
+                        tarefas: {
+                            select: {
+                                id: true,
+                                tarefaEspelhada: {
                                     select: {
                                         id: true,
-                                        fase: true, // Nome da fase
-                                    },
-                                },
-
-                                tarefas: {
-                                    where: { removido_em: null },
-                                    orderBy: { ordem: 'asc' },
-                                    select: {
-                                        responsabilidade: true,
-                                        workflow_tarefa: {
-                                            select: {
-                                                id: true,
-                                                tarefa_fluxo: true,
-                                            },
-                                        },
                                     },
                                 },
                             },
                         },
                     },
                 });
+                if (!andamentoProxEtapa) throw new Error('Próxima fase já deveria estar populada.');
 
-                if (!configProxEtapa)
-                    throw new HttpException('Não foi possível encontrar configuração da próxima Etapa', 400);
+                // Tarefa referente à etapa.
+                await prismaTxn.tarefa.update({
+                    where: { id: andamentoProxEtapa.tarefaEspelhada[0].id },
+                    data: {
+                        inicio_real: new Date(Date.now()),
+                        atualizado_em: new Date(Date.now()),
+                    },
+                });
 
-                // Caso a próx. Etapa não possua fases.
-                // É o fim do workflow
-                if (configProxEtapa.fases.length) {
-                    const primeiraFase = configProxEtapa.fases[0];
-
-                    // Caso a fase seja de responsabilidade própria, pegando órgão da casa civil.
-                    let orgao_id: number | null = null;
-                    if (primeiraFase.responsabilidade == WorkflowResponsabilidade.Propria) {
-                        const orgaoCasaCivil = await prismaTxn.orgao.findFirst({
-                            where: {
-                                removido_em: null,
-                                sigla: 'SERI',
-                            },
-                            select: {
-                                id: true,
-                            },
-                        });
-                        if (!orgaoCasaCivil)
-                            throw new HttpException(
-                                'Fase é de responsabilidade própria, mas não foi encontrado órgão da Casa Civil',
-                                400
-                            );
-
-                        orgao_id = orgaoCasaCivil.id;
-                    }
-
-                    const andamentoProxEtapa = await prismaTxn.transferenciaAndamento.findFirst({
-                        where: {
-                            transferencia_id: transferencia.id,
-                            workflow_etapa_id: configProxEtapa.fluxo_etapa_de_id,
-                            workflow_fase_id: primeiraFase.fase.id,
-                            data_inicio: null,
-                            removido_em: null,
-                        },
-                        select: {
-                            id: true,
-                            workflow_etapa_id: true,
-                            workflow_fase_id: true,
-                            tarefaEspelhada: {
-                                select: {
-                                    id: true,
-                                },
-                            },
-
-                            tarefas: {
-                                select: {
-                                    id: true,
-                                    tarefaEspelhada: {
-                                        select: {
-                                            id: true,
-                                        },
-                                    },
-                                },
-                            },
-                        },
-                    });
-                    if (!andamentoProxEtapa) throw new Error('Próxima fase já deveria estar populada.');
-
-                    // Tarefa referente à etapa.
-                    await prismaTxn.tarefa.update({
-                        where: { id: andamentoProxEtapa.tarefaEspelhada[0].id },
+                // Tarefa(s) referente ao nível de tarefas.
+                for (const tarefa of andamentoProxEtapa.tarefas) {
+                    await prismaTxn.tarefa.updateMany({
+                        where: { id: tarefa.tarefaEspelhada[0].id },
                         data: {
                             inicio_real: new Date(Date.now()),
                             atualizado_em: new Date(Date.now()),
                         },
                     });
-
-                    // Tarefa(s) referente ao nível de tarefas.
-                    for (const tarefa of andamentoProxEtapa.tarefas) {
-                        await prismaTxn.tarefa.updateMany({
-                            where: { id: tarefa.tarefaEspelhada[0].id },
-                            data: {
-                                inicio_real: new Date(Date.now()),
-                                atualizado_em: new Date(Date.now()),
-                            },
-                        });
-                    }
-
-                    // Tarefa do cronograma referente à fase anterior e acompanhamento.
-                    await prismaTxn.tarefa.updateMany({
-                        where: {
-                            tarefa_cronograma_id: transferencia.TarefaCronograma[0].id!,
-                            OR: [
-                                {
-                                    tarefa: etapaAtual.fluxo_etapa_de.etapa_fluxo,
-                                    nivel: 1,
-                                },
-                                {
-                                    tarefa_pai: {
-                                        tarefa: etapaAtual.fluxo_etapa_de.etapa_fluxo,
-                                    },
-                                    nivel: 2,
-                                },
-                            ],
-                        },
-                        data: {
-                            termino_real: new Date(Date.now()),
-                            atualizado_em: new Date(Date.now()),
-                        },
-                    });
-
-                    await prismaTxn.transferencia.update({
-                        where: { id: dto.transferencia_id },
-                        data: {
-                            workflow_etapa_atual_id: andamentoProxEtapa.workflow_etapa_id,
-                            workflow_fase_atual_id: andamentoProxEtapa.workflow_fase_id,
-                        },
-                    });
-
-                    return await prismaTxn.transferenciaAndamento.update({
-                        where: { id: andamentoProxEtapa.id },
-                        data: {
-                            orgao_responsavel_id: orgao_id,
-                            data_inicio: new Date(Date.now()),
-                            atualizado_por: user.id,
-                            atualizado_em: new Date(Date.now()),
-                        },
-                        select: {
-                            id: true,
-                        },
-                    });
-                } else {
-                    await prismaTxn.transferencia.update({
-                        where: { id: dto.transferencia_id },
-                        data: {
-                            workflow_finalizado: true,
-                        },
-                    });
-                    return;
                 }
+
+                // Tarefa do cronograma referente à fase anterior e acompanhamento.
+                await prismaTxn.tarefa.updateMany({
+                    where: {
+                        tarefa_cronograma_id: transferencia.TarefaCronograma[0].id!,
+                        OR: [
+                            {
+                                tarefa: etapaAtual.fluxo_etapa_de.etapa_fluxo,
+                                nivel: 1,
+                            },
+                            {
+                                tarefa_pai: {
+                                    tarefa: etapaAtual.fluxo_etapa_de.etapa_fluxo,
+                                },
+                                nivel: 2,
+                            },
+                        ],
+                    },
+                    data: {
+                        termino_real: new Date(Date.now()),
+                        atualizado_em: new Date(Date.now()),
+                    },
+                });
+
+                await prismaTxn.transferencia.update({
+                    where: { id: dto.transferencia_id },
+                    data: {
+                        workflow_etapa_atual_id: andamentoProxEtapa.workflow_etapa_id,
+                        workflow_fase_atual_id: andamentoProxEtapa.workflow_fase_id,
+                    },
+                });
+
+                return await prismaTxn.transferenciaAndamento.update({
+                    where: { id: andamentoProxEtapa.id },
+                    data: {
+                        orgao_responsavel_id: orgao_id,
+                        data_inicio: new Date(Date.now()),
+                        atualizado_por: user.id,
+                        atualizado_em: new Date(Date.now()),
+                    },
+                    select: {
+                        id: true,
+                    },
+                });
             } else {
-                throw new Error(
-                    'Não foi possível encontrar configurações de fluxo para este workflow seguindo estes parâmetros'
-                );
+                await prismaTxn.transferencia.update({
+                    where: { id: dto.transferencia_id },
+                    data: {
+                        workflow_finalizado: true,
+                    },
+                });
+                return;
             }
+        } else {
+            throw new Error(
+                'Não foi possível encontrar configurações de fluxo para este workflow seguindo estes parâmetros'
+            );
+        }
+    }
+
+    private async isEtapaConcluida(transferencia_id: number, etapa_id: number, faseIds: number[]): Promise<boolean> {
+        const count = await this.prisma.transferenciaAndamento.count({
+            where: {
+                transferencia_id: transferencia_id,
+                workflow_etapa_id: etapa_id,
+                workflow_fase_id: { in: faseIds },
+                removido_em: null,
+                data_termino: { not: null }, // Only completed phases
+            },
         });
+
+        // Stage is complete if all its phases are completed
+        return count === faseIds.length;
     }
 }

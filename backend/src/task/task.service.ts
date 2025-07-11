@@ -5,7 +5,7 @@ import { fork } from 'child_process';
 import { DateTime } from 'luxon';
 import { resolve as resolvePath } from 'path';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
-import { CrontabIsEnabled } from '../common/CrontabIsEnabled';
+import { IsCrontabEnabled } from '../common/crontab-utils';
 import { TASK_JOB_LOCK_NUMBER } from '../common/dto/locks';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -25,6 +25,9 @@ import { RunReportTaskService } from './run_report/run-report.service';
 import { RunUpdateTaskService } from './run_update/run-update.service';
 import { ParseParams } from './task.parseParams';
 import { TaskContext } from './task.context';
+import { ApiLogBackupService } from 'src/api-logs/backup/api-log-backup.service';
+import { ApiLogRestoreService } from 'src/api-logs/restore/api-log-restore.service';
+import { SmaeConfigService } from 'src/common/services/smae-config.service';
 
 export class TaskRetryService {
     static calculateNextRetryTime(retryCount: number, retryConfig: RetryConfigDto): Date {
@@ -148,11 +151,12 @@ export class TaskService {
     private running_job_counter = 0;
     private is_running = false;
 
-    private max_concurrent_jobs = process.env.MAX_CONCURRENT_JOBS ? parseInt(process.env.MAX_CONCURRENT_JOBS) : 3;
+    private max_concurrent_jobs: number = 3;
     private current_concurrent_jobs = 0;
 
     constructor(
         private readonly prisma: PrismaService,
+        private readonly smaeConfigService: SmaeConfigService,
         //
         @Inject(forwardRef(() => EchoService))
         private readonly echoService: EchoService,
@@ -188,10 +192,20 @@ export class TaskService {
         private readonly importacaoParlamentarService: ImportacaoParlamentarService,
         //
         @Inject(forwardRef(() => RunUpdateTaskService))
-        private readonly runUpdateTaskService: RunUpdateTaskService
+        private readonly runUpdateTaskService: RunUpdateTaskService,
+        //
+        @Inject(forwardRef(() => ApiLogBackupService))
+        private readonly apiLogBackupService: ApiLogBackupService,
+        //
+        @Inject(forwardRef(() => ApiLogRestoreService))
+        private readonly apiLogRestoreService: ApiLogRestoreService
     ) {
-        this.enabled = CrontabIsEnabled('task');
+        this.enabled = IsCrontabEnabled('task');
         this.logger.debug(`task crontab enabled? ${this.enabled}`);
+    }
+
+    async onModuleInit() {
+        this.max_concurrent_jobs = await this.smaeConfigService.getConfigNumberWithDefault('MAX_CONCURRENT_JOBS', 3);
     }
 
     // Método para lidar com o desligamento da aplicação
@@ -493,6 +507,8 @@ export class TaskService {
         const now = new Date();
         process.env.INTERNAL_DISABLE_QUERY_LOG = '1';
 
+        this.max_concurrent_jobs = await this.smaeConfigService.getConfigNumberWithDefault('MAX_CONCURRENT_JOBS', 3);
+
         // Atualiza trabalhou_em pra quem está rodando
         // da pra mover isso pra dentro do run-task.ts já que lá tem o app com o prisma todo,
         // dai a proxima linha faria mais sentindo, mas ao mesmo tempo o gerenciador do daemon aqui deveria ser
@@ -622,12 +638,12 @@ export class TaskService {
                     status: 'pending',
                     n_retry: retryCount,
                     esperar_ate: nextRetryTime,
-                    erro_mensagem: `Retry ${retryCount}/${retryConfig.maxRetries}: ${lastError.message}`,
-                    erro_em: new Date(),
                 },
             });
 
-            throw new Error(`Task terá nova tentativa em ${nextRetryTime.toISOString()}`);
+            throw new Error(
+                `Retry ${retryCount}/${retryConfig.maxRetries}: ${lastError.message} Task terá nova tentativa em ${nextRetryTime.toISOString()}`
+            );
         }
     }
 
@@ -739,6 +755,12 @@ export class TaskService {
                 break;
             case 'run_update':
                 service = this.runUpdateTaskService;
+                break;
+            case 'backup_api_log_day':
+                service = this.apiLogBackupService;
+                break;
+            case 'restore_api_log_day':
+                service = this.apiLogRestoreService;
                 break;
             default:
                 task_type satisfies never;

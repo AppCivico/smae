@@ -232,7 +232,9 @@ export class PessoaFromJwt extends PessoaFromJwtBase {
     public assertOneModuloSistema(tipo: 'buscar' | 'criar' | 'editar' | 'remover', label: string): ModuloSistema {
         if (this.modulo_sistema.length != 1)
             throw new BadRequestException(
-                `Apenas um smae-sistema pode enviado por vez para tipo=${tipo} label=${label}.`
+                `Não é possível ${tipo} ${label} nesta requisição, foi enviando mais de um sistema: ${this.modulo_sistema
+                    .map((r) => r)
+                    .join(', ')}.\n\nRetorne ao menu principal, escolha um dos sistemas de navegação.`
             );
         return this.modulo_sistema[0];
     }

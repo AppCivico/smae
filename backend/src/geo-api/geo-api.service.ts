@@ -5,6 +5,7 @@ import { GeoJSON } from 'geojson';
 import got, { Got } from 'got';
 import { IsGeoJSONMap } from '../auth/decorators/is-geojson-map.decorator';
 import { IsGeoJSON } from '../auth/decorators/is-geojson.decorator';
+import { SmaeConfigService } from 'src/common/services/smae-config.service';
 
 export class GeoError extends Error {
     constructor(msg: string) {
@@ -91,13 +92,20 @@ export class GeoApiService {
     private readonly logger = new Logger(GeoApiService.name);
     GEO_API_PREFIX: string;
 
-    constructor() {
-        this.GEO_API_PREFIX = process.env.GEO_API_PREFIX || 'http://smae_geoloc:80/';
-        console.log(this.GEO_API_PREFIX);
+    constructor(private readonly smaeConfigService: SmaeConfigService) {
+        this.got = got;
     }
 
-    onModuleInit() {
-        this.got = got.extend({
+    async onModuleInit() {
+        const geoPrefix = await this.smaeConfigService.getConfigWithDefault<string>(
+            'GEO_API_PREFIX',
+            'http://smae_geoloc:80/'
+        );
+
+        this.GEO_API_PREFIX = geoPrefix;
+        console.log(this.GEO_API_PREFIX);
+
+        this.got = this.got.extend({
             prefixUrl: this.GEO_API_PREFIX,
             timeout: 18 * 1000,
             retry: {
@@ -106,6 +114,7 @@ export class GeoApiService {
                 statusCodes: [408, 413, 429, 500, 502, 503, 521, 522, 524],
             },
         });
+
         this.logger.debug(`GEO SOF configurada para usar endereço ${this.GEO_API_PREFIX}`);
     }
 

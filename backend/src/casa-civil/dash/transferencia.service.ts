@@ -297,6 +297,61 @@ export class DashTransferenciaService {
             )
         );
 
+        const dadosPorPartidoDistribuicao = (() => {
+            const partidoData = new Map<
+                string,
+                {
+                    sigla: string;
+                    fases: Map<string, number>;
+                    total: number;
+                }
+            >();
+
+            uniqueTransferencias.forEach((transferencia) => {
+                const fase = transferencia.transferencia.workflow_fase_atual?.fase || 'Workflow Não Iniciado';
+                transferencia.transferencia.parlamentar.forEach((parlamentar) => {
+                    if (parlamentar.valor && Number(parlamentar.valor) > 0) {
+                        let partidoSigla = 'N/A';
+                        if (parlamentar.partido_id) {
+                            const partido = partidosRows.find((p) => p.id === parlamentar.partido_id);
+                            partidoSigla = partido?.sigla || 'N/A';
+                        }
+
+                        if (!partidoData.has(partidoSigla)) {
+                            partidoData.set(partidoSigla, {
+                                sigla: partidoSigla,
+                                fases: new Map<string, number>(),
+                                total: 0,
+                            });
+                        }
+
+                        const partido = partidoData.get(partidoSigla)!;
+                        const valor = Number(parlamentar.valor);
+
+                        // Adiciona o valor à fase correspondente
+                        const currentPhaseValue = partido.fases.get(fase) || 0;
+                        partido.fases.set(fase, currentPhaseValue + valor);
+
+                        // soma o valor total do partido
+                        partido.total += valor;
+                    }
+                });
+            });
+
+            return Array.from(partidoData.values());
+        })();
+
+        // Pega todas as fases únicas de todas as transferências
+        const fasesUnicas = Array.from(
+            new Set(
+                uniqueTransferencias.flatMap((t) =>
+                    t.transferencia.workflow_fase_atual?.fase
+                        ? [t.transferencia.workflow_fase_atual.fase]
+                        : ['Workflow Não Iniciado']
+                )
+            )
+        );
+
         const valorTotal: number = uniqueTransferencias.reduce((sum, current) => sum + +current.valor_total, 0);
 
         const countAll: number = uniqueTransferencias.length;
@@ -398,12 +453,11 @@ export class DashTransferenciaService {
                         const etapaId = curr.workflow_etapa_atual_id!;
 
                         // Distribuição pode ter múltiplos parlamentares, e com partidos diferentes ou iguais.
-                        const valor = Number(
-                            curr.transferencia.parlamentar
-                                .filter((p) => p.partido?.id == partido.id)
-                                .reduce((sum, current) => sum + (Number(current.valor) ?? 0), 0)
-                        );
-                        if (!valor)
+                        const valor = curr.transferencia.parlamentar
+                            .filter((p) => p.partido?.id == partido.id)
+                            .reduce((sum, current) => sum.add(current.valor ?? Decimal(0)), Decimal(0));
+
+                        if (Number.isNaN(valor) || valor === undefined || valor === null)
                             throw new InternalServerErrorException(
                                 'Valor não encontrado para o partido: ' + partido.sigla
                             );
@@ -411,9 +465,9 @@ export class DashTransferenciaService {
                         const existingObjIndex = acc.findIndex((obj) => obj.workflow_etapa_atual_id === etapaId);
 
                         if (existingObjIndex !== -1) {
-                            acc[existingObjIndex].sum += valor;
+                            acc[existingObjIndex].sum += Number(valor);
                         } else {
-                            acc.push({ workflow_etapa_atual_id: etapaId, sum: valor });
+                            acc.push({ workflow_etapa_atual_id: etapaId, sum: Number(valor) });
                         }
                         return acc;
                     },
@@ -503,7 +557,6 @@ export class DashTransferenciaService {
 
             return Array.from(transferenciasAgrupadas.values());
         })();
-        console.log(dadosPorPartidoAgrupado);
 
         const chartNroPorPartido: DashTransferenciaBasicChartDto = {
             title: {
@@ -754,41 +807,43 @@ export class DashTransferenciaService {
             parlamentar_foto_id: number | null;
             count: number;
             valor: Decimal;
-        }[] = await this.prisma.$queryRaw`WITH ranked_parlamentares AS (
-        SELECT
-            t.parlamentar_id,
-            p.nome_popular,
-            COUNT(1) AS count,
-            SUM(tp.valor) AS valor,
-            p.foto_upload_id AS parlamentar_foto_id,
-            DENSE_RANK() OVER (ORDER BY SUM(tp.valor) DESC) AS rank
-        FROM (
-            SELECT DISTINCT ON (transferencia_id) * FROM view_transferencia_analise
-        ) AS t
-        JOIN transferencia_parlamentar tp
-            ON tp.transferencia_id = t.transferencia_id
-            AND tp.removido_em IS NULL
-        JOIN parlamentar p
-            ON tp.parlamentar_id = p.id
-            AND p.removido_em IS NULL
-        WHERE
-            t.parlamentar_id IS NOT NULL
-            AND tp.valor IS NOT NULL
-            AND t.transferencia_id = ANY (${transferenciaIds})
-        GROUP BY
-            t.parlamentar_id,
-            p.foto_upload_id,
-            p.nome_popular
-    )
-    SELECT
-        parlamentar_id,
-        nome_popular,
-        parlamentar_foto_id,
-        count,
-        valor
-    FROM ranked_parlamentares
-    WHERE rank <= 3
-    ORDER BY valor DESC`;
+        }[] = await this.prisma.$queryRaw`
+            WITH parlamentar_totals AS (
+                SELECT
+                    tp.parlamentar_id,
+                    p.nome_popular,
+                    p.foto_upload_id AS parlamentar_foto_id,
+                    COUNT(DISTINCT tp.transferencia_id) AS count,
+                    SUM(tp.valor) AS valor
+                FROM transferencia_parlamentar tp
+                JOIN parlamentar p
+                    ON tp.parlamentar_id = p.id
+                    AND p.removido_em IS NULL
+                WHERE tp.transferencia_id = ANY (${transferenciaIds})
+                 AND tp.removido_em IS NULL AND tp.valor IS NOT NULL
+                GROUP BY
+                    tp.parlamentar_id,
+                    p.nome_popular,
+                    p.foto_upload_id
+            ), ranked_parlamentares AS (
+                SELECT
+                    parlamentar_id,
+                    nome_popular,
+                    parlamentar_foto_id,
+                    count,
+                    valor,
+                    DENSE_RANK() OVER (ORDER BY valor DESC) AS rank
+                FROM parlamentar_totals
+            )
+            SELECT
+                parlamentar_id,
+                nome_popular,
+                parlamentar_foto_id,
+                count,
+                valor
+            FROM ranked_parlamentares
+            WHERE rank <= 3
+            ORDER BY valor DESC, parlamentar_id ASC`;
 
         return {
             valor_total: valorTotal,

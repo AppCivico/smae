@@ -289,6 +289,8 @@ export class CreateGeradorVariavelPDMDto extends IntersectionType(CreateGeradorV
      * prefixo que será adicionado em vários
      */
     @IsString()
-    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Código' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
-    codigo: string;
+    @MaxLength(MAX_LENGTH_DEFAULT - 100, {
+        message: `O campo 'Código' deve ter no máximo ${MAX_LENGTH_DEFAULT - 100} caracteres`,
+    })
+    declare codigo: string;
 }

@@ -172,18 +172,20 @@ watch([
   </form>
 
   <table class="tablemain mb1">
-    <col class="col--botão-de-ação">
-    <col>
-    <col>
-    <col>
-    <col>
-    <col>
-    <col>
-    <col>
-    <col>
-    <col>
-    <col class="col--botão-de-ação">
-    <col class="col--botão-de-ação">
+    <colgroup>
+      <col class="col--botão-de-ação">
+      <col>
+      <col>
+      <col>
+      <col>
+      <col>
+      <col>
+      <col>
+      <col>
+      <col>
+      <col class="col--botão-de-ação">
+      <col class="col--botão-de-ação">
+    </colgroup>
     <thead>
       <tr>
         <th />
@@ -279,13 +281,13 @@ watch([
         <td>
           {{ item.fase_status? item.fase_status : '-' }}
         </td>
-        <td>
-          <span
-            :title="
-              item.objeto.length > 35 ?
-                item.objeto : undefined
-            "
-          >{{ truncate(item.objeto, 35) }}</span>
+        <td
+          :title="
+            item.objeto.length > 35 ?
+              item.objeto : undefined
+          "
+        >
+          {{ truncate(item.objeto, 35) }}
         </td>
         <td class="cell--number">
           {{ item.valor ? `R$${dinheiro(item.valor)}` : '-' }}

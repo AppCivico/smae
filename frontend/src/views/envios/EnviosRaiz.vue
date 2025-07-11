@@ -14,19 +14,26 @@ const {
 switch (sistemaCorrente.value) {
   case 'PDM':
     router.replace({
-      name: 'EnviosOrçamentosMetas',
+      name: 'EnviosOrcamentosMetasPdm',
+    });
+    break;
+
+  case 'ProgramaDeMetas':
+  case 'PlanoSetorial':
+    router.replace({
+      name: 'EnviosOrcamentosMetas',
     });
     break;
 
   case 'Projetos':
     router.replace({
-      name: 'EnviosOrçamentosProjetos',
+      name: 'EnviosOrcamentosProjetos',
     });
     break;
 
   case 'MDO':
     router.replace({
-      name: 'EnviosOrçamentosObras',
+      name: 'EnviosOrcamentosObras',
     });
     break;
 

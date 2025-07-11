@@ -3,7 +3,7 @@ import { Interval } from '@nestjs/schedule';
 import { Prisma, Variavel } from '@prisma/client';
 
 import { CONST_BOT_USER_ID } from '../common/consts';
-import { CrontabIsEnabled } from '../common/CrontabIsEnabled';
+import { IsCrontabEnabled } from '../common/crontab-utils';
 import { JOB_CALC_LOCK } from '../common/dto/locks';
 import { LoggerWithLog } from '../common/LoggerWithLog';
 import { PrismaService } from '../prisma/prisma.service';
@@ -17,7 +17,7 @@ export class VariavelCalculadaService {
     }
 
     async onModuleInit() {
-        if (CrontabIsEnabled('variavel_calculada')) {
+        if (IsCrontabEnabled('variavel_calculada')) {
             // Verifica se o bot existe para habilitar o serviço
             const botUser = await this.prisma.pessoa.findUnique({
                 where: { id: CONST_BOT_USER_ID },

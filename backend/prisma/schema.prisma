@@ -4976,6 +4976,8 @@ enum task_type {
     importacao_parlamentar
     run_report
     run_update
+    backup_api_log_day
+    restore_api_log_day
 }
 
 enum task_status {
@@ -5011,8 +5013,9 @@ model task_queue {
     n_retry     Int       @default(0)
     esperar_ate DateTime?
 
-    AtualizacaoEmLote AtualizacaoEmLote[]
-    task_buffer       task_buffer?
+    AtualizacaoEmLote    AtualizacaoEmLote[]
+    task_buffer          task_buffer?
+    ApiRequestLogControl ApiRequestLogControl[]
 
     @@index([status])
     @@index([criado_em])
@@ -5783,9 +5786,9 @@ model Transferencia {
     valor_total                    Decimal? @default(0) @db.Decimal(15, 2)
     valor_contrapartida            Decimal? @default(0) @db.Decimal(15, 2)
     custeio                        Decimal? @default(0) @db.Decimal(15, 2)
-    pct_custeio                    Float?   @db.DoublePrecision
+    pct_custeio                    Decimal? @default(0) @db.Decimal(5, 2)
     investimento                   Decimal? @default(0) @db.Decimal(15, 2)
-    pct_investimento               Float?   @db.DoublePrecision
+    pct_investimento               Decimal? @default(0) @db.Decimal(5, 2)
 
     ano                  Int?
     emenda               String?
@@ -5949,11 +5952,11 @@ model DistribuicaoRecurso {
     valor_total                     Decimal   @default(0) @db.Decimal(15, 2)
     valor_contrapartida             Decimal   @default(0) @db.Decimal(15, 2)
     custeio                         Decimal   @default(0) @db.Decimal(15, 2)
-    pct_custeio                     Float?    @db.DoublePrecision
+    pct_custeio                     Decimal?  @db.Decimal(5, 2)
     investimento                    Decimal   @default(0) @db.Decimal(15, 2)
     valor_empenho                   Decimal?  @default(0) @db.Decimal(15, 2)
     valor_liquidado                 Decimal   @default(0) @db.Decimal(15, 2)
-    pct_investimento                Float?    @db.DoublePrecision
+    pct_investimento                Decimal?  @db.Decimal(5, 2)
     empenho                         Boolean?
     data_empenho                    DateTime? @db.Date()
     programa_orcamentario_estadual  String?
@@ -7401,6 +7404,7 @@ enum TransfereGovOportunidadeTipo {
     Voluntaria
     Especifica
     Emenda
+    Especial
 }
 
 enum TransfereGovOportunidadeAvaliacao {
@@ -7417,15 +7421,16 @@ model TransfereGovOportunidade {
     id_programa                BigInt
     natureza_juridica_programa String
     transferencia_incorporada  Boolean                            @default(false)
-    cod_orgao_sup_programa     BigInt
-    desc_orgao_sup_programa    String
+    cod_orgao_sup_programa     BigInt?
+    desc_orgao_sup_programa    String?
     cod_programa               BigInt
     nome_programa              String
     sit_programa               String
-    ano_disponibilizacao       Int
-    data_disponibilizacao      DateTime                           @db.Date()
-    dt_ini_receb               DateTime                           @db.Date()
-    dt_fim_receb               DateTime                           @db.Date()
+    ano_disponibilizacao       Int?
+    data_disponibilizacao      DateTime?                          @db.Date()
+    dt_ini_receb               DateTime?                          @db.Date()
+    dt_fim_receb               DateTime?                          @db.Date()
+    finalidades                String?
     modalidade_programa        String
     acao_orcamentaria          String
     vetores_busca              Unsupported("tsvector")?           @default(dbgenerated())
@@ -7772,4 +7777,45 @@ model AtualizacaoEmLote {
 
     @@index([criado_em, tipo])
     @@map("atualizacao_em_lote")
+}
+
+model WikiLink {
+    id         Int    @id @default(autoincrement())
+    chave_smae String @unique
+    url_wiki   String
+
+    criado_por Int?
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+
+    atualizado_por Int?
+    atualizado_em  DateTime @default(now()) @db.Timestamptz(6)
+
+    removido_por Int?
+    removido_em  DateTime? @db.Timestamptz(6)
+
+    @@map("wiki_link")
+}
+
+model ApiRequestLogControl {
+    log_date        DateTime                   @id @db.Date
+    status          ApiRequestLogControlStatus
+    task_id         Int?
+    backup_location String?
+    last_error      String?
+    created_at      DateTime                   @default(now())
+    updated_at      DateTime                   @updatedAt
+
+    task task_queue? @relation(fields: [task_id], references: [id])
+
+    @@map("api_request_log_control")
+}
+
+enum ApiRequestLogControlStatus {
+    AWAITING_BACKUP
+    BACKING_UP
+    BACKED_UP
+    RESTORING
+    RESTORED
+    FAILED_BACKUP
+    FAILED_RESTORE
 }

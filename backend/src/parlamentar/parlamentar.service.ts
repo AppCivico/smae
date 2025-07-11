@@ -135,7 +135,8 @@ export class ParlamentarService {
         let tem_mais = false;
         let token_proxima_pagina: string | null = null;
 
-        let ipp = filters.ipp ? filters.ipp : MAX_DB_SAFE_INT32;
+        let ipp = filters.ipp ? filters.ipp : 50;
+        if (filters.ipp === -1) ipp = MAX_DB_SAFE_INT32;
 
         let offset = 0;
         const decodedPageToken = this.decodeNextPageToken(filters.token_proxima_pagina);

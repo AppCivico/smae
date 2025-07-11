@@ -226,7 +226,6 @@ export class TransferenciasService implements ReportableService {
             ) drst ON true
             LEFT JOIN distribuicao_status_base dsb ON dsb.id = drst.status_base_id
             LEFT JOIN distribuicao_status ds ON drst.status_id = ds.id AND ds.removido_em IS NULL
-            LEFT JOIN distribuicao_recurso_sei drs ON drs.distribuicao_recurso_id = dr.id AND drs.removido_em IS NULL
             LEFT JOIN classificacao cl on t.classificacao_id = cl.id and tt.id = cl.transferencia_tipo_id
             LEFT JOIN orgao o2 ON dr.orgao_gestor_id = o2.id
             ${whereCond.whereString}
@@ -486,10 +485,9 @@ export class TransferenciasService implements ReportableService {
                               (db.distribuicao_recurso_sei ? formataSEI(db.distribuicao_recurso_sei) : null) ?? '',
                           nome_responsavel: this.formatExcelString(db.distribuicao_recurso_status_nome_responsavel),
                           status_nome_base: db.distribuicao_recurso_status_nome_base ?? '',
-                          pct_custeio:
-                              this.formatExcelString(db.distribuicao_recurso_pct_custeio?.toPrecision(2)) ?? null, // Corrected source and default
+                          pct_custeio: this.formatExcelString(db.distribuicao_recurso_pct_custeio?.toString()) ?? '  ',
                           pct_investimento:
-                              this.formatExcelString(db.distribuicao_recurso_pct_investimento?.toPrecision(2)) ?? null, // Corrected source and default
+                              this.formatExcelString(db.distribuicao_recurso_pct_investimento?.toString()) ?? '  ',
                           conta: this.formatExcelString(db.distribuicao_recurso_conta),
                           banco: this.formatExcelString(db.distribuicao_recurso_banco),
                           agencia: this.formatExcelString(db.distribuicao_recurso_agencia),
@@ -613,14 +611,8 @@ export class TransferenciasService implements ReportableService {
                 },
                 { value: 'distribuicao_recurso.registro_sei', label: 'Nº SEI' },
                 { value: 'distribuicao_recurso.status_nome_base', label: 'Status da Demanda' },
-                {
-                    value: (row) => `${row.distribuicao_recurso?.pct_custeio ?? ''}`,
-                    label: 'Custeio/Corrente (%)',
-                },
-                {
-                    value: (row) => `${row.distribuicao_recurso?.pct_investimento ?? ''}`,
-                    label: 'Investimento/Capital (%)',
-                },
+                { value: 'distribuicao_recurso.pct_custeio', label: 'Custeio/Corrente (%)' },
+                { value: 'distribuicao_recurso.pct_investimento', label: 'Investimento/Capital (%)' },
                 { value: 'distribuicao_recurso.banco', label: 'Distribuição - Banco' },
                 { value: 'distribuicao_recurso.agencia', label: 'Distribuição - Agência' },
                 { value: 'distribuicao_recurso.conta', label: 'Distribuição - Conta Corrente' },

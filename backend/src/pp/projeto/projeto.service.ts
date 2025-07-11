@@ -3887,7 +3887,7 @@ export class ProjetoService {
 
         // A pessoa deve ser do órgão responsável e deve ter o perfil "Colaborador de obra no órgão"
         if (tipo == TipoProjeto.MDO) {
-            const pessoa = await this.prisma.pessoa.findFirstOrThrow({
+            const pessoa = await this.prisma.pessoa.findFirst({
                 where: {
                     id: reponsavel_id,
                     pessoa_fisica: {
