@@ -44,6 +44,56 @@ class ItensDotacao:
             fonte_recursos = 'lstFontesRecursos'
         )
 
+    @property
+    def _endpoint_field_mapping(self):
+        """Define specific field mappings for each endpoint based on API documentation"""
+        return {
+            'orgaos': {
+                'code_key': 'codOrgao',
+                'desc_key': 'txtDescricaoOrgao'
+            },
+            'unidades': {
+                'code_key': 'codUnidade',
+                'desc_key': 'txtDescricaoUnidade'
+            },
+            'funcoes': {
+                'code_key': 'codFuncao',
+                'desc_key': 'txtDescricaoFuncao'
+            },
+            'subfuncoes': {
+                'code_key': 'codSubFuncao',
+                'desc_key': 'txtDescricaoSubFuncao'
+            },
+            'programas': {
+                'code_key': 'codPrograma',
+                'desc_key': 'txtDescricaoPrograma'
+            },
+            'projetos_atividades': {
+                'code_key': 'codProjetoAtividade',
+                'desc_key': 'txtDescricaoProjetoAtividade'
+            },
+            'categorias': {
+                'code_key': 'codCategoria',
+                'desc_key': 'txtDescricaoCategoria'
+            },
+            'grupos': {
+                'code_key': 'codGrupo',
+                'desc_key': 'txtDescricaoGrupo'
+            },
+            'modalidades': {
+                'code_key': 'codModalidade',
+                'desc_key': 'txtDescricaoModalidade'
+            },
+            'elementos': {
+                'code_key': 'codElemento',
+                'desc_key': 'txtDescricaoElemento'
+            },
+            'fonte_recursos': {
+                'code_key': 'codFonteRecurso',
+                'desc_key': 'txtDescricaoFonteRecurso'
+            }
+        }
+
     def __get_unique_keys(self, data:list)->set:
 
         unique_keys = set()
@@ -75,10 +125,28 @@ class ItensDotacao:
         else:
             return False
 
-    def __solve_data_keys(self, data:list, check_func_code_key:Optional[Callable]=None,
-                          check_func_desc_key:Optional[Callable]=None)->dict:
+    def __solve_data_keys(self, data:list, endpoint_name:str,
+                         check_func_code_key:Optional[Callable]=None,
+                         check_func_desc_key:Optional[Callable]=None)->dict:
 
+        # First try to use specific field mapping for this endpoint
+        field_mapping = self._endpoint_field_mapping.get(endpoint_name)
+        if field_mapping:
+            unique_keys = self.__get_unique_keys(data)
+            expected_code = field_mapping['code_key']
+            expected_desc = field_mapping['desc_key']
 
+            # Check if expected keys exist in the data
+            if expected_code in unique_keys and expected_desc in unique_keys:
+                return {
+                    'cod': expected_code,
+                    'desc': expected_desc
+                }
+            else:
+                print(f"Warning: Expected keys {expected_code}, {expected_desc} not found for {endpoint_name}")
+                print(f"Available keys: {unique_keys}")
+
+        # Fallback to the original logic if specific mapping doesn't work
         unique_keys = self.__get_unique_keys(data)
 
         final_keys = {}
@@ -88,24 +156,27 @@ class ItensDotacao:
             elif self.__is_desc_key(key, check_func_desc_key):
                 final_keys['desc'] = key
             else:
-                print(f'Unexpected key: {key}')
+                print(f'Unexpected key for {endpoint_name}: {key}')
 
         return final_keys
 
-    def __parse_data(self, resp:list, check_func_code_key:Optional[Callable]=None,
-                          check_func_desc_key:Optional[Callable]=None)->list[dict]:
-
+    def __parse_data(self, resp:list, endpoint_name:str,
+                    check_func_code_key:Optional[Callable]=None,
+                    check_func_desc_key:Optional[Callable]=None)->list[dict]:
 
         if resp is None:
             return []
 
-        keys = self.__solve_data_keys(resp, check_func_code_key,
+        keys = self.__solve_data_keys(resp, endpoint_name, check_func_code_key,
                                       check_func_desc_key)
 
-        print(resp)
+        if 'cod' not in keys or 'desc' not in keys:
+            raise ValueError(f"Could not determine code and description keys for endpoint {endpoint_name}. Available keys: {self.__get_unique_keys(resp)}")
+
+        print(f"Using keys for {endpoint_name}: {keys}")
         parsed = [
-                    {'codigo' : item[keys['cod']],
-                    'descricao' : item[keys['desc']]}
+                    {'codigo' : str(item[keys['cod']]),
+                    'descricao' : str(item[keys['desc']])}
                 for item in resp
                 ]
 
@@ -121,31 +192,36 @@ class ItensDotacao:
                         endpoint_name=endpoint_name, ano=ano,
                         **kwargs)
 
-        return self.__parse_data(resp, check_func_code_key, check_func_desc_key)
+        return self.__parse_data(resp, endpoint_name, check_func_code_key, check_func_desc_key)
 
 
-    def __is_code_orgao(self, key:str)->bool:
+    def __create_specific_check_functions(self, endpoint_name:str):
+        """Create specific check functions for an endpoint if needed"""
+        field_mapping = self._endpoint_field_mapping.get(endpoint_name)
+        if not field_mapping:
+            return None, None
 
-        return key=='codOrgao'
+        expected_code = field_mapping['code_key']
+        expected_desc = field_mapping['desc_key']
 
-    def __is_desc_orgao(self, key:str)->bool:
+        def is_code_key(key: str) -> bool:
+            return key == expected_code
 
-        return key=='txtDescricaoOrgao'
+        def is_desc_key(key: str) -> bool:
+            return key == expected_desc
+
+        return is_code_key, is_desc_key
 
 
     def __build_methods(self)->None:
 
         for endpoint in self._keys_valores.keys():
+            # Create specific check functions for each endpoint
+            check_func_code_key, check_func_desc_key = self.__create_specific_check_functions(endpoint)
 
-            if endpoint == 'orgaos':
-                # usa colunas especificas pro endpoint de orgao
-                method = partial(self.__get_data, endpoint_name=endpoint,
-                                check_func_code_key=self.__is_code_orgao,
-                                check_func_desc_key=self.__is_desc_orgao)
-            else:
-                method = partial(self.__get_data, endpoint_name=endpoint,
-                                check_func_code_key=None,
-                                check_func_desc_key=None)
+            method = partial(self.__get_data, endpoint_name=endpoint,
+                            check_func_code_key=check_func_code_key,
+                            check_func_desc_key=check_func_desc_key)
 
             setattr(self, endpoint, method)
 
@@ -170,7 +246,7 @@ class ItensDotacao:
 
         data = {}
         for method_name in self._keys_valores.keys():
-            print(method_name)
+            print(f"Processing {method_name}")
             if method_name == 'unidades':
                 self.__solve_unidades(ano, data)
                 continue
