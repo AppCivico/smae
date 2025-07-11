@@ -49,15 +49,15 @@ class ItensDotacao:
         unique_keys = set()
         for item in data:
             unique_keys.update(tuple(item.keys()))
-        
+
         return unique_keys
-    
+
     def __is_code_key(self, key:str, check_func:Optional[Callable]=None)->bool:
 
         key_lower = key.lower()
         if check_func is None:
             return key_lower.startswith('cod')
-        
+
         return check_func(key)
 
 
@@ -78,7 +78,7 @@ class ItensDotacao:
     def __solve_data_keys(self, data:list, check_func_code_key:Optional[Callable]=None,
                           check_func_desc_key:Optional[Callable]=None)->dict:
 
-        
+
         unique_keys = self.__get_unique_keys(data)
 
         final_keys = {}
@@ -91,7 +91,7 @@ class ItensDotacao:
                 print(f'Unexpected key: {key}')
 
         return final_keys
-    
+
     def __parse_data(self, resp:list, check_func_code_key:Optional[Callable]=None,
                           check_func_desc_key:Optional[Callable]=None)->list[dict]:
 
@@ -99,9 +99,9 @@ class ItensDotacao:
         if resp is None:
             return []
 
-        keys = self.__solve_data_keys(resp, check_func_code_key, 
+        keys = self.__solve_data_keys(resp, check_func_code_key,
                                       check_func_desc_key)
-        
+
         print(resp)
         parsed = [
                     {'codigo' : item[keys['cod']],
@@ -120,34 +120,33 @@ class ItensDotacao:
         resp = self.sof(data_key=data_key, attr_keys=None,
                         endpoint_name=endpoint_name, ano=ano,
                         **kwargs)
-        
+
         return self.__parse_data(resp, check_func_code_key, check_func_desc_key)
-    
+
 
     def __is_code_orgao(self, key:str)->bool:
 
         return key=='codOrgao'
-    
+
     def __is_desc_orgao(self, key:str)->bool:
 
         return key=='txtDescricaoOrgao'
 
 
-    def __build_methods(self, check_func_code_key:Optional[Callable]=None,
-                        check_func_desc_key:Optional[Callable]=None)->None:
+    def __build_methods(self)->None:
 
         for endpoint in self._keys_valores.keys():
 
             if endpoint == 'orgaos':
-                method = partial(self.__get_data, endpoint_name=endpoint, 
-                                check_func_code_key=check_func_code_key,
-                                check_func_desc_key=check_func_desc_key)
+                # usa colunas especificas pro endpoint de orgao
+                method = partial(self.__get_data, endpoint_name=endpoint,
+                                check_func_code_key=self.__is_code_orgao,
+                                check_func_desc_key=self.__is_desc_orgao)
             else:
+                method = partial(self.__get_data, endpoint_name=endpoint,
+                                check_func_code_key=None,
+                                check_func_desc_key=None)
 
-                method = partial(self.__get_data, endpoint_name=endpoint, 
-                                check_func_code_key=check_func_code_key,
-                                check_func_desc_key=check_func_desc_key)
-                
             setattr(self, endpoint, method)
 
     def __solve_unidades(self, ano:int, data:dict)->None:
@@ -162,9 +161,9 @@ class ItensDotacao:
                 continue
             for unid in unid_org:
                 unid['cod_orgao'] = cod_orgao
-            
+
             unidades.extend(unid_org)
-            
+
         data['unidades'] = unidades
 
     def __call__(self, ano:int)->dict:
@@ -184,6 +183,6 @@ class ItensDotacao:
                 with open('fontes_cache.json') as f:
                     hardcode_data = json.load(f)['fonte_recursos']
                 data['fonte_recursos'] = hardcode_data
-            
-        
+
+
         return data
