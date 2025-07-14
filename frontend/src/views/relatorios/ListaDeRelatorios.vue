@@ -12,6 +12,7 @@ import { localizarDataHorario } from '@/helpers/dateToDate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
+import SmaeTooltip from '@/components/SmaeTooltip/SmaeTooltip.vue';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 const { temPermissãoPara } = storeToRefs(useAuthStore());
@@ -190,12 +191,10 @@ onBeforeRouteLeave(() => {
           v-if="linha.processamento.err_msg"
           :title="linha.processamento.err_msg"
         >
-          <svg
-            width="20"
-            height="20"
-          >
-            <use xlink:href="#i_alert" />
-          </svg>
+          <SmaeTooltip
+            icone="alert"
+            :texto="linha.processamento.err_msg"
+          />
         </span>
         <template v-else-if="!linha.arquivo">
           <LoadingComponent
