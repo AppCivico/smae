@@ -212,6 +212,7 @@ export class WorkflowService {
                         ativo: dto.ativo,
                         inicio: dto.inicio,
                         termino: dto.termino,
+                        nome: dto.nome,
                         atualizado_por: user.id,
                         atualizado_em: new Date(Date.now()),
                     },
