@@ -1,4 +1,4 @@
-import { HttpException, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { HttpException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { FilterWorkflowAndamentoDto } from './dto/filter-andamento.dto';
@@ -44,9 +44,9 @@ export class WorkflowAndamentoService {
                 },
             },
         });
-        if (!transferencia || !transferencia.workflow_id) throw new Error('Transferência inválida ou não configurada');
+        if (!transferencia) throw new NotFoundException('Transferência não configurada');
 
-        if (!transferencia.andamentoWorkflow.length) {
+        if (!transferencia.andamentoWorkflow.length || !transferencia.workflow_id) {
             return;
         }
 
