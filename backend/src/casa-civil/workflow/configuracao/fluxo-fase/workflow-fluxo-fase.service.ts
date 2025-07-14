@@ -194,6 +194,7 @@ export class WorkflowfluxoFaseService {
                         ordem: dto.ordem,
                         marco: dto.marco,
                         duracao: dto.duracao,
+                        responsabilidade: dto.responsabilidade,
                         atualizado_por: user.id,
                         atualizado_em: new Date(Date.now()),
                     },
