@@ -26,6 +26,7 @@ export class PrevisaoCustoParams {
             '$property| Precisa ser um dos seguintes valores: ' +
             Object.values(PeriodoRelatorioPrevisaoCustoDto).join(', '),
     })
+    @Expose()
     periodo_ano?: PeriodoRelatorioPrevisaoCustoDto;
 
     /**
@@ -34,6 +35,7 @@ export class PrevisaoCustoParams {
     @IsInt()
     @Transform(({ value }: any) => +value)
     @IsOptional()
+    @Expose()
     ano?: number;
 }
 
