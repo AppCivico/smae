@@ -2,6 +2,7 @@ import { ApiProperty, IntersectionType, OmitType } from '@nestjs/swagger';
 import { Transform, Expose } from 'class-transformer';
 import { IsEnum, IsInt, IsOptional } from 'class-validator';
 import { FiltroMetasIniAtividadeDto } from '../../relatorios/dto/filtros.dto';
+import { NumberTransformOrUndef } from '../../../auth/transforms/number.transform';
 
 export const PeriodoRelatorioPrevisaoCustoDto = {
     Corrente: 'Corrente',
@@ -33,7 +34,7 @@ export class PrevisaoCustoParams {
      * @example "2022"
      */
     @IsInt()
-    @Transform(({ value }: any) => +value)
+    @Transform(NumberTransformOrUndef)
     @IsOptional()
     @Expose()
     ano?: number;
@@ -45,7 +46,7 @@ export class SuperCreateRelPrevisaoCustoDto extends IntersectionType(FiltroMetas
      * @example "21"
      */
     @IsInt()
-    @Transform(({ value }: any) => +value)
+    @Transform(NumberTransformOrUndef)
     @IsOptional()
     @Expose()
     projeto_id?: number;
@@ -54,7 +55,7 @@ export class SuperCreateRelPrevisaoCustoDto extends IntersectionType(FiltroMetas
      * @example "21"
      */
     @IsInt()
-    @Transform(({ value }: any) => +value)
+    @Transform(NumberTransformOrUndef)
     @IsOptional()
     @Expose()
     portfolio_id?: number;
