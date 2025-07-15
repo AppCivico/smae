@@ -47,10 +47,10 @@ export class PrismaErrorFilter implements ExceptionFilter {
                     location: appStackLine.trim(),
                 })
             );
-        } else if (exception.code == 'P2034') {
+        } else if (exception.code == 'P2034' || exception.code == 'P2002') {
             response.status(423).json(
                 this.convertLog(ehAdmin, {
-                    message: 'Impasse durante execução das transações no banco de dados',
+                    message: 'Impasse durante execução das transações no banco de dados ' + exception.code,
                     detail: 'Por favor, repita a operação',
                     location: appStackLine.trim(),
                 })
@@ -58,7 +58,7 @@ export class PrismaErrorFilter implements ExceptionFilter {
         } else {
             response.status(500).json(
                 this.convertLog(ehAdmin, {
-                    message: 'Erro interno durante execução no banco de dados',
+                    message: 'Erro interno durante execução no banco de dados ' + exception.code,
                     code: exception.code,
                     model: model,
                     location: appStackLine.trim(),
