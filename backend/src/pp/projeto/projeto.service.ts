@@ -2885,8 +2885,8 @@ export class ProjetoService {
         projeto: ProjetoDetailDto | ProjetoDetailMdoDto | null
     ) {
         if (
-            (dto.previsao_termino && dto.previsao_termino.toISOString() != projeto?.previsao_termino) ||
-            (dto.previsao_inicio && dto.previsao_inicio.toISOString() != projeto?.previsao_inicio)
+            (dto.previsao_termino && Date2YMD.toStringOrNull(dto.previsao_termino) != projeto?.previsao_termino) ||
+            (dto.previsao_inicio && Date2YMD.toStringOrNull(dto.previsao_inicio) != projeto?.previsao_inicio)
         ) {
             let previsaoInicio = dto.previsao_inicio ? dto.previsao_inicio : projeto?.previsao_inicio;
             let previsaoTermino = dto.previsao_termino ? dto.previsao_termino : projeto?.previsao_termino;
