@@ -155,9 +155,11 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
         </h3>
 
         <div
-          v-if="activePdm?.pode_editar
-            || !permissoesDoItemEmFoco?.apenas_leitura
-            || permissoesDoItemEmFoco.sou_responsavel
+          v-if="
+            OrcamentoRealizadoPermissões[ano]?.pode_editar
+              && (activePdm?.pode_editar
+                || !permissoesDoItemEmFoco?.apenas_leitura
+                || permissoesDoItemEmFoco.sou_responsavel)
           "
         >
           <div

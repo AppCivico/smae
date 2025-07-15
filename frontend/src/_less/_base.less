@@ -1912,7 +1912,14 @@ input[type='checkbox'] {
     }
 
     &:disabled {
+      cursor: not-allowed;
       background-image: none;
+      background-color: @c100;
+
+      &::before {
+        border-color: #fbe29d;
+      }
+
     }
 
     &[aria-busy="true"] {
