@@ -610,7 +610,8 @@ export class ProjetoService {
                 400
             );
 
-        const { origem_tipo, meta_id, atividade_id, iniciativa_id, origem_outro } = await this.processaOrigem(dto);
+        const { origem_tipo, meta_id, iniciativa_id, atividade_id, origem_outro, meta_codigo } =
+            await this.processaOrigem(dto);
         const { orgao_gestor_id, responsaveis_no_orgao_gestor } = await this.processaOrgaoGestor(dto, portfolio, tipo);
 
         if (!origem_tipo) throw new Error('origem_tipo deve estar definido no create de Projeto');
@@ -698,6 +699,7 @@ export class ProjetoService {
                         origem_tipo: origem_tipo,
                         origem_outro: origem_outro,
                         meta_id: meta_id,
+                        meta_codigo: meta_codigo,
                         iniciativa_id: iniciativa_id,
                         atividade_id: atividade_id,
 
