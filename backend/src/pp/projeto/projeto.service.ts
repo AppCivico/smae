@@ -2151,10 +2151,8 @@ export class ProjetoService {
 
             return permissoes; // Retorna cedo, tudo o mais é somente leitura
         } else {
-
             // Ajuste a verificação de função se necessário
             permissoes.acao_arquivar = pessoaPodeEscreverGeral;
-
         }
 
         // --- Aplica Lógica Específica por Tipo (PP vs MDO) ---
@@ -2732,18 +2730,18 @@ export class ProjetoService {
                 (dto.previsao_inicio && dto.previsao_inicio.toISOString() != projeto.previsao_inicio)
             ) {
                 let previsaoInicio = dto.previsao_inicio ? dto.previsao_inicio : projeto.previsao_inicio;
-                if (!previsaoInicio) throw new Error('Erro interno ao verificar data de previsão de início');
-                previsaoInicio = new Date(previsaoInicio);
-
                 let previsaoTermino = dto.previsao_termino ? dto.previsao_termino : projeto.previsao_termino;
-                if (!previsaoTermino) throw new Error('Erro interno ao verificar data de previsão de término');
-                previsaoTermino = new Date(previsaoTermino);
 
-                if (previsaoTermino < previsaoInicio)
-                    throw new HttpException(
-                        'previsao_inicio| A previsão de término não pode ser menor que a previsão de início.',
-                        400
-                    );
+                if (previsaoInicio && previsaoTermino) {
+                    previsaoInicio = new Date(previsaoInicio);
+                    previsaoTermino = new Date(previsaoTermino);
+
+                    if (previsaoTermino < previsaoInicio) {
+                        throw new BadRequestException(
+                            'previsao_inicio| A previsão de término não pode ser menor que a previsão de início.'
+                        );
+                    }
+                }
             }
 
             const self = await prismaTx.projeto.update({
