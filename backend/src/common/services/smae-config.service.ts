@@ -119,6 +119,21 @@ export class SmaeConfigService {
             throw new InternalServerErrorException(`Erro ao analisar a URL base configurada: ${rawUrl}`);
         }
     }
+
+    async getNormalizedUrl(key: string, defaultValue: string): Promise<string> {
+        const rawUrl = await this.getConfigWithDefault(key, defaultValue);
+
+        // Verifica se a URL termina com uma barra e remove-a, se necessário as URLs não devem ter barra final
+        if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://')) {
+            return this.ensureTrailingSlash(rawUrl);
+        } else {
+            throw new BadRequestException(`A URL '${rawUrl}' não é válida. Deve começar com 'http://' ou 'https://'`);
+        }
+    }
+
+    private ensureTrailingSlash(url: string): string {
+        return url.endsWith('/') ? url : `${url}/`;
+    }
 }
 
 @Injectable()
