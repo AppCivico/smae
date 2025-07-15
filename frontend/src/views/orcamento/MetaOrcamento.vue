@@ -1,4 +1,9 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import {
+  computed, defineOptions, ref, watch,
+} from 'vue';
+import { useRoute } from 'vue-router';
 import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
 import ConcluirPorOrgao from '@/components/orcamento/ConcluirPorOrgao.vue';
 import SimpleOrcamentoCusteio from '@/components/orcamento/SimpleOrcamentoCusteio.vue';
@@ -7,11 +12,6 @@ import SimpleOrcamentoRealizado from '@/components/orcamento/SimpleOrcamentoReal
 import { useAlertStore } from '@/stores/alert.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
-import { storeToRefs } from 'pinia';
-import {
-  computed, defineOptions, ref, watch,
-} from 'vue';
-import { useRoute } from 'vue-router';
 
 defineOptions({ inheritAttrs: false });
 
@@ -147,6 +147,10 @@ function buscarDadosParaAno(ano) {
 }
 
 async function concluirOrçamento(evento, meta, ano) {
+  if (conclusãoPendente.value) {
+    return;
+  }
+
   const valor = !OrcamentoRealizadoConclusao.value[ano].concluido;
 
   alertStore.confirmAction('Somente a coordenadoria poderá desfazer essa ação. Tem certeza?', async () => {
@@ -215,11 +219,11 @@ watch(() => route.query.aba, (novoValor) => {
         @apagar="start"
       >
         <template
-          v-if="orc.execucao_disponivel && activePdm?.pode_editar"
+          v-if="orc.execucao_disponivel && activePdm"
           #cabeçalho="{ ano }"
         >
           <label
-            v-if="!!OrcamentoRealizadoConclusao[ano]?.pode_editar"
+            v-if="OrcamentoRealizadoConclusao[ano]"
             class="conclusão-de-plano__label ml2"
             :class="{ loading: conclusãoPendente }"
           >
@@ -228,6 +232,8 @@ watch(() => route.query.aba, (novoValor) => {
               type="checkbox"
               name="plano-concluído"
               class="interruptor"
+              :disabled="!OrcamentoRealizadoConclusao[ano]?.pode_editar"
+              :aria-disabled="!OrcamentoRealizadoConclusao[ano]?.pode_editar"
               :checked="OrcamentoRealizadoConclusao[ano]?.concluido"
               @click.prevent="($event) => {
                 concluirOrçamento(
@@ -238,7 +244,7 @@ watch(() => route.query.aba, (novoValor) => {
             <template
               v-if="OrcamentoRealizadoConclusao[ano]?.concluido"
             >
-              Concluído
+              Concluído - {{ conclusãoPendente.value }}
             </template>
             <template v-else>
               Concluir
