@@ -3,11 +3,12 @@ import { ParlamentarCargo } from '@prisma/client';
 import { Transform } from 'class-transformer';
 import { Expose } from 'class-transformer';
 import { IsEnum, IsNumber, IsOptional } from 'class-validator';
+import { NumberTransformOrUndef } from '../../../auth/transforms/number.transform';
 
 export class CreateRelParlamentaresDto {
     @IsOptional()
     @IsNumber()
-    @Transform(({ value }: any) => +value)
+    @Transform(NumberTransformOrUndef)
     @Expose()
     partido_id?: number;
 
@@ -19,7 +20,7 @@ export class CreateRelParlamentaresDto {
 
     @IsOptional()
     @IsNumber()
-    @Transform(({ value }: any) => +value)
+    @Transform(NumberTransformOrUndef)
     @Expose()
     eleicao_id?: number;
 }

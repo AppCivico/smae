@@ -5,6 +5,7 @@ import { Expose } from 'class-transformer';
 import { IsEnum, IsInt, IsOptional } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 import { DateTransform } from '../../../auth/transforms/date.transform';
+import { NumberTransformOrUndef } from '../../../auth/transforms/number.transform';
 
 export class CreateRelProjetoStatusDto {
     @IsOptional()
@@ -14,13 +15,13 @@ export class CreateRelProjetoStatusDto {
     tipo_pdm?: TipoProjeto = 'PP';
 
     @IsInt()
-    @Transform(({ value }: any) => +value)
+    @Transform(NumberTransformOrUndef)
     @Expose()
     portfolio_id: number;
 
     @IsInt()
     @IsOptional()
-    @Transform(({ value }: any) => +value)
+    @Transform(NumberTransformOrUndef)
     @Expose()
     projeto_id?: number;
 

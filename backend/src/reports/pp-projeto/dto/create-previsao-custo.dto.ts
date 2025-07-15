@@ -1,6 +1,7 @@
 import { Transform } from 'class-transformer';
 import { IsInt } from 'class-validator';
 import { Expose } from 'class-transformer';
+import { NumberTransformOrUndef } from '../../../auth/transforms/number.transform';
 
 export class CreateRelProjetoDto {
     /**
@@ -8,7 +9,7 @@ export class CreateRelProjetoDto {
      * @example ""
      */
     @IsInt()
-    @Transform(({ value }: any) => +value)
+    @Transform(NumberTransformOrUndef)
     @Expose()
     projeto_id: number;
 }
