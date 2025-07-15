@@ -787,6 +787,8 @@ export class ProjetoService {
                     },
                 });
 
+                this.validaDataProjeto(dto, null);
+
                 const geoDto = new CreateGeoEnderecoReferenciaDto();
                 geoDto.projeto_id = row.id;
                 geoDto.tokens = dto.geolocalizacao;
@@ -2725,24 +2727,7 @@ export class ProjetoService {
             }
 
             // Caso a previsão de término seja enviada/modificada (e for diferente do que está salvo). Garantir que não seja menor que a previsão de início.
-            if (
-                (dto.previsao_termino && dto.previsao_termino.toISOString() != projeto.previsao_termino) ||
-                (dto.previsao_inicio && dto.previsao_inicio.toISOString() != projeto.previsao_inicio)
-            ) {
-                let previsaoInicio = dto.previsao_inicio ? dto.previsao_inicio : projeto.previsao_inicio;
-                let previsaoTermino = dto.previsao_termino ? dto.previsao_termino : projeto.previsao_termino;
-
-                if (previsaoInicio && previsaoTermino) {
-                    previsaoInicio = new Date(previsaoInicio);
-                    previsaoTermino = new Date(previsaoTermino);
-
-                    if (previsaoTermino < previsaoInicio) {
-                        throw new BadRequestException(
-                            'previsao_inicio| A previsão de término não pode ser menor que a previsão de início.'
-                        );
-                    }
-                }
-            }
+            this.validaDataProjeto(dto, projeto);
 
             const self = await prismaTx.projeto.update({
                 where: { id: projetoId },
@@ -2893,6 +2878,28 @@ export class ProjetoService {
         }
 
         return { id: projetoId };
+    }
+
+    private validaDataProjeto(
+        dto: CreateProjetoDto | UpdateProjetoDto,
+        projeto: ProjetoDetailDto | ProjetoDetailMdoDto | null
+    ) {
+        if (
+            (dto.previsao_termino && dto.previsao_termino.toISOString() != projeto?.previsao_termino) ||
+            (dto.previsao_inicio && dto.previsao_inicio.toISOString() != projeto?.previsao_inicio)
+        ) {
+            let previsaoInicio = dto.previsao_inicio ? dto.previsao_inicio : projeto?.previsao_inicio;
+            let previsaoTermino = dto.previsao_termino ? dto.previsao_termino : projeto?.previsao_termino;
+
+            if (previsaoInicio && previsaoTermino) {
+                previsaoInicio = new Date(previsaoInicio);
+                previsaoTermino = new Date(previsaoTermino);
+
+                if (previsaoTermino < previsaoInicio) {
+                    throw new BadRequestException('A previsão de término não pode ser menor que a previsão de início.');
+                }
+            }
+        }
     }
 
     private async appendRegioesByGeoLoc(
