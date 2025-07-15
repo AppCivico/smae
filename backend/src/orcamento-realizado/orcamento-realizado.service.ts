@@ -78,6 +78,15 @@ export class OrcamentoRealizadoService {
         if (!anoCount)
             throw new HttpException('Ano de referencia não encontrado ou não está com a execução liberada', 400);
 
+        const { permissoes, concluidoStatus } = await this.buscaPermissoesStatus(tipo, user, {
+            ano_referencia: dto.ano_referencia,
+            meta_id: meta_id,
+        });
+        if (permissoes.pode_editar === false)
+            throw new BadRequestException(
+                `Sem permissão para criar o item. ${this.textoErroAnoConcluido(concluidoStatus)}`
+            );
+
         const { dotacao, processo, nota_empenho } = await this.validaDotProcNota(dto);
 
         let soma_valor_empenho = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_empenho;
