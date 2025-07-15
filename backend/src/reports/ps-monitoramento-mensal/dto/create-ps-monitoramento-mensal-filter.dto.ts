@@ -2,6 +2,7 @@ import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsEnum, IsInt, IsOption
 import { Expose, Transform } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { TipoPdm } from '@prisma/client';
+import { NumberTransformOrUndef } from '../../../auth/transforms/number.transform';
 
 export class CreatePsMonitoramentoMensalFilterDto {
     @IsOptional()
@@ -21,14 +22,14 @@ export class CreatePsMonitoramentoMensalFilterDto {
     tipo_pdm?: TipoPdm;
 
     @IsInt()
-    @Transform(({ value }: any) => +value)
+    @Transform(NumberTransformOrUndef)
     @Max(12)
     @Min(1)
     @Expose()
     mes: number;
 
     @IsInt()
-    @Transform(({ value }: any) => +value)
+    @Transform(NumberTransformOrUndef)
     @Min(1500)
     @Max(9999)
     @Expose()

@@ -5,6 +5,7 @@ import { ArrayMaxSize, ArrayMinSize, IsArray, IsEnum, IsInt, IsOptional, IsStrin
 import { DateTransform } from '../../../auth/transforms/date.transform';
 import { IsOnlyDate } from '../../../common/decorators/IsDateOnly';
 import { FiltroMetasIniAtividadeDto } from '../../relatorios/dto/filtros.dto';
+import { NumberTransformOrUndef } from '../../../auth/transforms/number.transform';
 
 export class OrcamentoExecutadoParams {
     /**
@@ -56,7 +57,7 @@ export class SuperCreateOrcamentoExecutadoDto extends IntersectionType(
      * @example "21"
      */
     @IsInt()
-    @Transform(({ value }: any) => +value)
+    @Transform(NumberTransformOrUndef)
     @IsOptional()
     @Expose()
     projeto_id?: number;
@@ -65,7 +66,7 @@ export class SuperCreateOrcamentoExecutadoDto extends IntersectionType(
      * @example "21"
      */
     @IsInt()
-    @Transform(({ value }: any) => +value)
+    @Transform(NumberTransformOrUndef)
     @IsOptional()
     @Expose()
     portfolio_id?: number;

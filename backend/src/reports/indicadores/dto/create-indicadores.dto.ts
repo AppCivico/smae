@@ -4,6 +4,7 @@ import { Transform, Expose, Type } from 'class-transformer';
 import { IsBoolean, IsEnum, IsInt, IsNumber, IsOptional, ValidateIf } from 'class-validator';
 import { FiltroMetasIniAtividadeDto } from '../../relatorios/dto/filtros.dto';
 import { NumberArrayTransformOrUndef } from '../../../auth/transforms/number-array.transform';
+import { NumberTransformOrUndef } from '../../../auth/transforms/number.transform';
 
 export const SemestreDto = {
     Primeiro: 'Primeiro',
@@ -57,7 +58,7 @@ export class IndicadorParams {
      * @example "2022"
      */
     @IsInt()
-    @Transform(({ value }: any) => +value)
+    @Transform(NumberTransformOrUndef)
     @Expose()
     ano: number;
 
