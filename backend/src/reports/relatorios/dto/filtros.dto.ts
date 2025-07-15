@@ -1,19 +1,20 @@
-import { Expose, Transform, Type } from 'class-transformer';
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsEnum, IsInt, IsNumber, IsOptional } from 'class-validator';
-import { NumberArrayTransformOrUndef } from '../../../auth/transforms/number-array.transform';
-import { TipoPdm } from '@prisma/client';
 import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
+import { TipoPdm } from '@prisma/client';
+import { Expose, Transform } from 'class-transformer';
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsEnum, IsInt, IsOptional } from 'class-validator';
+import { NumberArrayTransformOrUndef } from '../../../auth/transforms/number-array.transform';
+import { NumberTransformOrUndef } from '../../../auth/transforms/number.transform';
 
 export class FiltroMetasIniAtividadeDto {
     @IsOptional()
-    @IsNumber()
-    @Type(() => Number)
+    @IsInt()
+    @Transform(NumberTransformOrUndef)
     @Expose()
     pdm_id?: number;
 
     @IsOptional()
-    @IsNumber()
-    @Type(() => Number)
+    @IsInt()
+    @Transform(NumberTransformOrUndef)
     @Expose()
     meta_id?: number;
 
@@ -32,8 +33,8 @@ export class FiltroMetasIniAtividadeDto {
     metas?: number[];
 
     @IsOptional()
-    @IsNumber()
-    @Type(() => Number)
+    @IsInt()
+    @Transform(NumberTransformOrUndef)
     @Expose()
     iniciativa_id?: number;
 
@@ -41,8 +42,8 @@ export class FiltroMetasIniAtividadeDto {
      * @example ""
      */
     @IsOptional()
-    @IsNumber()
-    @Type(() => Number)
+    @IsInt()
+    @Transform(NumberTransformOrUndef)
     @Expose()
     atividade_id?: number;
 
