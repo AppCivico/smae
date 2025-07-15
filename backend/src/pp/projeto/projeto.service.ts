@@ -2890,8 +2890,8 @@ export class ProjetoService {
             (dto.previsao_termino && Date2YMD.toStringOrNull(dto.previsao_termino) != projeto?.previsao_termino) ||
             (dto.previsao_inicio && Date2YMD.toStringOrNull(dto.previsao_inicio) != projeto?.previsao_inicio)
         ) {
-            let previsaoInicio = dto.previsao_inicio ? dto.previsao_inicio : projeto?.previsao_inicio;
-            let previsaoTermino = dto.previsao_termino ? dto.previsao_termino : projeto?.previsao_termino;
+            let previsaoInicio = dto.previsao_inicio !== undefined ? dto.previsao_inicio : projeto?.previsao_inicio;
+            let previsaoTermino = dto.previsao_termino !== undefined ? dto.previsao_termino : projeto?.previsao_termino;
 
             if (previsaoInicio && previsaoTermino) {
                 previsaoInicio = new Date(previsaoInicio);
