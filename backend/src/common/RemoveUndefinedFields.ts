@@ -1,4 +1,4 @@
-function RemoveUndefinedFields<T>(dto: T): T {
+export function RemoveUndefinedFields<T>(dto: T): T {
     const cleaned: any = {};
     for (const key in dto) {
         if (dto[key] !== undefined) {
