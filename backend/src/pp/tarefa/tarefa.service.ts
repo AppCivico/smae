@@ -33,6 +33,7 @@ import {
 } from './entities/tarefa.entity';
 import { TarefaDotTemplate } from './tarefa.dot.template';
 import { TarefaUtilsService } from './tarefa.service.utils';
+import { RemoveUndefinedFields } from '../../common/RemoveUndefinedFields';
 
 // e temos um fork mais atualizado por esse projeto, @dagrejs
 const graphlib = require('@dagrejs/graphlib');
