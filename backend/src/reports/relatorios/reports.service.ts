@@ -683,9 +683,11 @@ export class ReportsService {
             );
 
             const contentType = 'application/zip';
-            const filename = [relatorio.fonte.toString(), DateTime.local({ zone: SYSTEM_TIMEZONE }).toISO() + '.zip']
+            let filename = [relatorio.fonte.toString(), DateTime.local({ zone: SYSTEM_TIMEZONE }).toISO() + '.zip']
                 .filter((r) => r)
                 .join('-');
+
+            filename = filename.replace('CasaCivil', 'TransfVoluntarias'); // Ajuste para o nome correto do arquivo
 
             const zipBuffer = await this.zipFiles(contexto.getFiles());
 
