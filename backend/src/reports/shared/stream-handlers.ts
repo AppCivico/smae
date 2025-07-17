@@ -6,7 +6,7 @@ export interface StreamBatchHandler<T> {
 export class ArrayCollectorHandler<T> implements StreamBatchHandler<T> {
     private collected: T[] = [];
 
-    async onBatch(batch: T[]): Promise<void> {
+    async onBatch(batch: T[], _batchIndex: number, _totalBatches: number): Promise<void> {
         this.collected.push(...batch);
     }
 
