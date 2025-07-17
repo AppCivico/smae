@@ -448,7 +448,7 @@ export class PPProjetosService implements ReportableService {
             'projeto_id',
             'projeto_codigo',
             'tarefa_id',
-            'hirearquia',
+            'hierarquia',
             'numero',
             'nivel',
             'tarefa',
@@ -529,7 +529,7 @@ export class PPProjetosService implements ReportableService {
             'Resposta',
             'Tarefas Afetadas',
         ];
-        await this.gerarCsv('riscos', riscosFields, riscosFieldNames, whereCond, out, ctx, 60);
+        await this.gerarCsv('riscos', riscosFields, riscosFieldNames, whereCond, out, ctx, 50);
 
         // 4. Processar Plano de Ação
         const planosAcaoFields = [
@@ -558,7 +558,7 @@ export class PPProjetosService implements ReportableService {
             'Responsável',
             'Data de Término',
         ];
-        await this.gerarCsv('planos_acao', planosAcaoFields, planosAcaoFieldNames, whereCond, out, ctx, 70);
+        await this.gerarCsv('planos_acao', planosAcaoFields, planosAcaoFieldNames, whereCond, out, ctx, 55);
 
         // 5. Processar Plano de Ação Monitoramentos
         const planosMonitorFields = [
@@ -584,7 +584,7 @@ export class PPProjetosService implements ReportableService {
             whereCond,
             out,
             ctx,
-            85
+            60
         );
 
         // 6. Processar Licoes de Aprendidas
@@ -610,7 +610,7 @@ export class PPProjetosService implements ReportableService {
             'Contexto',
             'Resultado',
         ];
-        await this.gerarCsv('licoes_aprendidas', licoesFields, licoesFieldNames, whereCond, out, ctx, 75);
+        await this.gerarCsv('licoes_aprendidas', licoesFields, licoesFieldNames, whereCond, out, ctx, 65);
 
         // 7. Processar acompanhamentos
         const acompFields = [
@@ -645,7 +645,7 @@ export class PPProjetosService implements ReportableService {
             'Pontos de Atenção',
             'Códigos dos Riscos',
         ];
-        await this.gerarCsv('acompanhamentos', acompFields, acompFieldNames, whereCond, out, ctx, 80);
+        await this.gerarCsv('acompanhamentos', acompFields, acompFieldNames, whereCond, out, ctx, 70);
 
         // 8. Processar contratos
         const contratosFields = [
@@ -699,7 +699,7 @@ export class PPProjetosService implements ReportableService {
             '% Execução',
             'Observações',
         ];
-        await this.gerarCsv('contratos', contratosFields, contratosFieldNames, whereCond, out, ctx, 85);
+        await this.gerarCsv('contratos', contratosFields, contratosFieldNames, whereCond, out, ctx, 75);
 
         // 9. Processar Aditivos
         const aditivosFields = [
@@ -720,7 +720,7 @@ export class PPProjetosService implements ReportableService {
             '% Execução',
             'Data Término Atual',
         ];
-        await this.gerarCsv('aditivos', aditivosFields, aditivosFieldNames, whereCond, out, ctx, 90);
+        await this.gerarCsv('aditivos', aditivosFields, aditivosFieldNames, whereCond, out, ctx, 80);
 
         // 10. Processar Origens
         const origensFields = [
@@ -745,7 +745,7 @@ export class PPProjetosService implements ReportableService {
             'ID Atividade',
             'Título da Atividade',
         ];
-        await this.gerarCsv('origens', origensFields, origensFieldNames, whereCond, out, ctx, 95);
+        await this.gerarCsv('origens', origensFields, origensFieldNames, whereCond, out, ctx, 90);
 
         // 11. Processar Geolocalização
         const geolocFields = ['projeto_id', 'endereco_exibicao', 'geom_geojson'];
@@ -1669,7 +1669,7 @@ export class PPProjetosService implements ReportableService {
         const totalBatches = Math.ceil(projectIds.length / batchSize);
 
         for (let i = 0; i < projectIds.length; i += batchSize) {
-            
+
             const batchIds = projectIds.slice(i, i + batchSize);
 
             // 3. Executar a query específica para o lote de projetos atual
