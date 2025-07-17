@@ -1,13 +1,17 @@
 <script>
+import { useRoute } from 'vue-router';
 import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
 import { useAlertStore } from '@/stores/alert.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
-import { useRoute } from 'vue-router';
+import SmaeTooltip from '@/components/SmaeTooltip/SmaeTooltip.vue';
 
 export default {
   name: 'LinhaDeCronograma',
+  components: {
+    SmaeTooltip,
+  },
   props: {
     class: {
       type: [Object, String],
@@ -95,9 +99,11 @@ export default {
           stroke="none"
         /></svg>
       <SmaeLink
-        v-if="!apenasLeitura
+        v-if="linha.orgao && (
+          !apenasLeitura
           || souResponsável
-          || $route.meta.entidadeMãe === 'TransferenciasVoluntarias'"
+          || $route.meta.entidadeMãe === 'TransferenciasVoluntarias'
+        )"
         exibir-desabilitado
         :to="{
           name: '.TarefasProgresso',
@@ -109,6 +115,7 @@ export default {
       >
         {{ linha.tarefa }}
       </SmaeLink>
+
       <template v-else>
         {{ linha.tarefa }}
       </template>
@@ -163,8 +170,16 @@ export default {
         title="Último dia"
       >!</i>
     </td>
-    <td>
-      {{ linha.orgao?.sigla }} {{ linha.recursos ? ' - ' + linha.recursos : '' }}
+    <td class="tc">
+      <SmaeTooltip
+        v-if="!linha.orgao"
+        icone="alert"
+        texto="Tarefa não tem Órgão cadastradao"
+      />
+
+      <span v-else>
+        {{ linha.orgao.sigla }} {{ linha.recursos ? ' - ' + linha.recursos : '' }}
+      </span>
     </td>
     <td
       class="center"
