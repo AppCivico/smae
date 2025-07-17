@@ -27,6 +27,7 @@ const posicaoTooltip = ref<'left' | 'right' | 'center'>('center');
 const manterExibido = ref<boolean>(false);
 
 const descricaoConteudo = computed<string>(() => elementoConteudo.value?.textContent || '');
+const tamanhoIcone = computed(() => `${(elemento.value?.clientWidth || 0 / 2) + 5}px`);
 
 function alternarAbertura() {
   manterExibido.value = !manterExibido.value;
@@ -181,7 +182,7 @@ useResizeObserver(
   transform: translate(calc(-10% + 6px), calc(-100% - 24px - 0.5rem));
 
   &::before {
-    left: 27px;
+    left: v-bind(tamanhoIcone);
   }
 }
 
