@@ -119,6 +119,7 @@ export class TarefaService {
         user: PessoaFromJwt,
         prismaTx?: Prisma.TransactionClient
     ): Promise<RecordWithId> {
+        dto = RemoveUndefinedFields(dto);
         const tarefaCronoId = await this.loadOrCreateByInput(tarefaCronoInput, user);
 
         // no create, podemos assumir que é nulo se não receber
@@ -972,6 +973,7 @@ export class TarefaService {
         user: PessoaFromJwt,
         prismaTx?: Prisma.TransactionClient
     ): Promise<RecordWithId> {
+        dto = RemoveUndefinedFields(dto);
         const tarefaCronoId = await this.loadOrCreateByInput(tarefaCronoInput, user);
 
         const update = async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
