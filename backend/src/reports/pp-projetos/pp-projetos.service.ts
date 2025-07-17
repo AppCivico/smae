@@ -1,6 +1,6 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
-import { ProjetoGetPermissionSet, ProjetoService, ProjetoStatusParaExibicao } from '../../pp/projeto/projeto.service';
+import { ProjetoGetPermissionSet, ProjetoService } from '../../pp/projeto/projeto.service';
 import { PrismaService } from '../../prisma/prisma.service';
 
 import { ContratoPrazoUnidade, ProjetoStatus, StatusContrato, StatusRisco, TipoProjeto } from '@prisma/client';
@@ -11,7 +11,9 @@ import { TarefaUtilsService } from 'src/pp/tarefa/tarefa.service.utils';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { ProjetoRiscoStatus } from '../../pp/risco/entities/risco.entity';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
-import { DefaultCsvOptions, FileOutput, ReportableService } from '../utils/utils.service';
+import { CsvFileHandler } from '../shared/csv-file-handler';
+import { StreamBatchHandler } from '../shared/stream-handlers';
+import { FileOutput, ReportableService } from '../utils/utils.service';
 import { CreateRelProjetosDto } from './dto/create-projetos.dto';
 import {
     PPProjetosRelatorioDto,
@@ -27,18 +29,12 @@ import {
     RelProjetosPlanoAcaoMonitoramentosDto,
     RelProjetosRiscosDto,
 } from './entities/projetos.entity';
-
-const {
-    Parser,
-    transforms: { flatten },
-} = require('json2csv');
+import { Logger } from '@nestjs/common';
 
 type WhereCond = {
     whereString: string;
     queryParams: any[];
 };
-
-const defaultTransform = [flatten({ paths: [] })];
 
 class RetornoDbProjeto {
     id: number;
@@ -254,6 +250,7 @@ class RetornoDbLoc {
 @Injectable()
 export class PPProjetosService implements ReportableService {
     private tipo: TipoProjeto = 'PP';
+    private logger: Logger = new Logger(PPProjetosService.name);
 
     constructor(
         private readonly prisma: PrismaService,
@@ -305,151 +302,458 @@ export class PPProjetosService implements ReportableService {
         };
     }
 
+    private async gerarCsv<T>(
+        tipo: string,
+        fields: string[],
+        fieldNames: string[],
+        whereCond: WhereCond,
+        out: FileOutput[],
+        ctx: ReportContext,
+        progress: number
+    ) {
+        const handler = new CsvFileHandler(fields, fieldNames);
+        try {
+            const tmpFile = await this.processDataInBatches(tipo, whereCond, handler, 100);
+            if (tmpFile) {
+                out.push({ name: `${tipo}.csv`, localFile: tmpFile });
+                console.log("tipotipotipotipotipotipotipotipotipotipotipotipotipotipotipotipotipotipotipotipo")
+                console.log(tipo)
+                console.log("tipotipotipotipotipotipotipotipotipotipotipotipotipotipotipotipotipotipotipotipo")
+            } else {
+                this.logger.warn(`Nenhum dado encontrado para "${tipo}", CSV não gerado.`);
+            }
+        } catch (error) {
+            this.logger.error(`Erro ao gerar CSV de projetos:`, error);
+        }
+        await ctx.progress(progress);
+    }
+
     async toFileOutput(
         params: CreateRelProjetosDto,
         ctx: ReportContext,
         user: PessoaFromJwt | null
     ): Promise<FileOutput[]> {
-        const dados = await this.asJSON(params, user);
-        await ctx.progress(50);
-
+        const whereCond = await this.buildFilteredWhereStr(params, user);
         const out: FileOutput[] = [];
+        const BATCH_SIZE = 100; // Definir um tamanho de lote razoável
 
-        if (dados.linhas.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-            });
+        // 1. Processar Projetos
+        const projetosFields = [
+            'id',
+            'portfolio_id',
+            'portfolio_titulo',
+            'meta_id',
+            'iniciativa_id',
+            'atividade_id',
+            'nome',
+            'codigo',
+            'objeto',
+            'objetivo',
+            'publico_alvo',
+            'previsao_inicio',
+            'previsao_termino',
+            'previsao_duracao',
+            'previsao_custo',
+            'escopo',
+            'nao_escopo',
+            'secretario_responsavel',
+            'secretario_executivo',
+            'coordenador_ue',
+            'data_aprovacao',
+            'data_revisao',
+            'versao',
+            'status',
+            'orgao_participante.id',
+            'orgao_participante.sigla',
+            'orgao_participante.descricao',
+            'orgao_responsavel.id',
+            'orgao_responsavel.sigla',
+            'orgao_responsavel.descricao',
+            'orgao_gestor.id',
+            'orgao_gestor.sigla',
+            'orgao_gestor.descricao',
+            'gestores',
+            'responsavel.id',
+            'responsavel.nome_exibicao',
+            'premissa',
+            'restricao',
+            'fonte_recurso',
+            'status-traduzido',
+            'premissa.id',
+            'premissa.premissa',
+            'restricao.id',
+            'restricao.restricao',
+            'responsavel',
+            'fonte_recurso.id',
+            'fonte_recurso.nome',
+            'fonte_recurso.fonte_recurso_cod_sof',
+            'fonte_recurso.fonte_recurso_ano',
+            'fonte_recurso.valor_percentual',
+            'fonte_recurso.valor_nominal',
+        ];
+        const projetosFieldNames = [
+            'ID',
+            'ID Portfólio',
+            'Título do Portfólio',
+            'ID Meta',
+            'ID Iniciativa',
+            'ID Atividade',
+            'Nome do Projeto',
+            'Código',
+            'Objeto',
+            'Objetivo',
+            'Público-Alvo',
+            'Previsão de Início',
+            'Previsão de Término',
+            'Previsão de Duração',
+            'Previsão de Custo',
+            'Escopo',
+            'Não Escopo',
+            'Secretário Responsável',
+            'Secretário Executivo',
+            'Coordenador UE',
+            'Data de Aprovação',
+            'Data de Revisão',
+            'Versão',
+            'Status',
+            'ID Órgão Participante',
+            'Sigla Órgão Participante',
+            'Descrição Órgão Participante',
+            'ID Órgão Responsável',
+            'Sigla Órgão Responsável',
+            'Descrição Órgão Responsável',
+            'ID Órgão Gestor',
+            'Sigla Órgão Gestor',
+            'Descrição Órgão Gestor',
+            'Gestores do Projeto',
+            'ID Responsável',
+            'Nome do Responsável',
+            'Premissa',
+            'Restrição',
+            'Fonte de Recurso',
+            'Status (traduzido)',
+            'ID Premissa',
+            'Descrição da Premissa',
+            'ID Restrição',
+            'Descrição da Restrição',
+            'Responsável',
+            'ID Fonte de Recurso',
+            'Nome da Fonte de Recurso',
+            'Código SOF da Fonte',
+            'Ano da Fonte',
+            'Valor Percentual da Fonte',
+            'Valor Nominal da Fonte',
+        ];
+        await this.gerarCsv('projetos', projetosFields, projetosFieldNames, whereCond, out, ctx, 20);
 
-            for (const r of dados.linhas) {
-                if (r.status) (r as any)['status-traduzido'] = ProjetoStatusParaExibicao[r.status];
-            }
-            const linhas = json2csvParser.parse(dados.linhas);
-            out.push({
-                name: 'projetos.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
-            });
-        }
+        // 2. Processar Cronograma
+        const cronogramaFields = [
+            'projeto_id',
+            'projeto_codigo',
+            'tarefa_id',
+            'hirearquia',
+            'numero',
+            'nivel',
+            'tarefa',
+            'inicio_planejado',
+            'termino_planejado',
+            'custo_estimado',
+            'inicio_real',
+            'termino_real',
+            'duracao_real',
+            'percentual_concluido',
+            'custo_real',
+            'dependencias',
+            'atraso',
+            'responsavel.id',
+            'responsavel.nome_exibicao',
+        ];
+        const cronogramaFieldNames = [
+            'ID Projeto',
+            'Código do Projeto',
+            'ID da Tarefa',
+            'Hierarquia',
+            'Número',
+            'Nível',
+            'Tarefa',
+            'Início Planejado',
+            'Término Planejado',
+            'Custo Estimado',
+            'Início Real',
+            'Término Real',
+            'Duração Real (dias)',
+            '% Concluído',
+            'Custo Real',
+            'Dependências',
+            'Atraso (dias)',
+            'ID do Responsável',
+            'Nome do Responsável',
+        ];
+        await this.gerarCsv('cronograma', cronogramaFields, cronogramaFieldNames, whereCond, out, ctx, 40);
 
-        if (dados.cronograma.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-            });
-            const linhas = json2csvParser.parse(dados.cronograma);
-            out.push({
-                name: 'cronograma.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
-            });
-        }
+        // 3. Processar Riscos
+        const riscosFields = [
+            'projeto_id',
+            'projeto_codigo',
+            'codigo',
+            'titulo',
+            'data_registro',
+            'status_risco',
+            'descricao',
+            'causa',
+            'consequencia',
+            'probabilidade',
+            'probabilidade_descricao',
+            'impacto',
+            'impacto_descricao',
+            'nivel',
+            'grau',
+            'grau_descricao',
+            'resposta',
+            'tarefas_afetadas',
+        ];
+        const riscosFieldNames = [
+            'ID Projeto',
+            'Código do Projeto',
+            'Código',
+            'Título',
+            'Data de Registro',
+            'Status do Risco',
+            'Descrição',
+            'Causa',
+            'Consequência',
+            'Probabilidade',
+            'Descrição da Probabilidade',
+            'Impacto',
+            'Descrição do Impacto',
+            'Nível',
+            'Grau',
+            'Descrição do Grau',
+            'Resposta',
+            'Tarefas Afetadas',
+        ];
+        await this.gerarCsv('riscos', riscosFields, riscosFieldNames, whereCond, out, ctx, 60);
 
-        if (dados.riscos.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-            });
-            const linhas = json2csvParser.parse(dados.riscos);
-            out.push({
-                name: 'riscos.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
-            });
-        }
+        // 4. Processar Plano de Ação
+        const planosAcaoFields = [
+            'projeto_id',
+            'projeto_codigo',
+            'plano_acao_id',
+            'risco_codigo',
+            'contramedida',
+            'medidas_de_contingencia',
+            'prazo_contramedida',
+            'custo',
+            'custo_percentual',
+            'responsavel',
+            'data_termino',
+        ];
+        const planosAcaoFieldNames = [
+            'ID Projeto',
+            'Código do Projeto',
+            'ID do Plano de Ação',
+            'Código do Risco',
+            'Contramedida',
+            'Medidas de Contingência',
+            'Prazo da Contramedida',
+            'Custo (R$)',
+            'Custo (%)',
+            'Responsável',
+            'Data de Término',
+        ];
+        await this.gerarCsv('planos_acao', planosAcaoFields, planosAcaoFieldNames, whereCond, out, ctx, 70);
 
-        if (dados.planos_de_acao.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-            });
-            const linhas = json2csvParser.parse(dados.planos_de_acao);
-            out.push({
-                name: 'planos_de_acao.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
-            });
-        }
+        // 5. Processar Plano de Ação Monitoramentos
+        const planosMonitorFields = [
+            'projeto_id',
+            'projeto_codigo',
+            'risco_codigo',
+            'plano_acao_id',
+            'data_afericao',
+            'descricao',
+        ];
+        const planosMonitorFieldNames = [
+            'ID Projeto',
+            'Código Projeto',
+            'Código Risco',
+            'ID Plano de Ação',
+            'Data de aferição',
+            'Descrição',
+        ];
+        await this.gerarCsv(
+            'plano_acao_monitoramento',
+            planosMonitorFields,
+            planosMonitorFieldNames,
+            whereCond,
+            out,
+            ctx,
+            85
+        );
 
-        if (dados.monitoramento_planos_de_acao.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-            });
-            const linhas = json2csvParser.parse(dados.monitoramento_planos_de_acao);
-            out.push({
-                name: 'monitoramento_planos_de_acao.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
-            });
-        }
+        // 6. Processar Licoes de Aprendidas
+        const licoesFields = [
+            'projeto_id',
+            'projeto_codigo',
+            'sequencial',
+            'data_registro',
+            'responsavel',
+            'descricao',
+            'observacao',
+            'contexto',
+            'resultado',
+        ];
+        const licoesFieldNames = [
+            'ID Projeto',
+            'Código do Projeto',
+            'Sequencial',
+            'Data de Registro',
+            'Responsável',
+            'Descrição',
+            'Observação',
+            'Contexto',
+            'Resultado',
+        ];
+        await this.gerarCsv('licoes_aprendidas', licoesFields, licoesFieldNames, whereCond, out, ctx, 75);
 
-        if (dados.licoes_aprendidas.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-            });
-            const linhas = json2csvParser.parse(dados.licoes_aprendidas);
-            out.push({
-                name: 'licoes_aprendidas.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
-            });
-        }
+        // 7. Processar acompanhamentos
+        const acompFields = [
+            'projeto_id',
+            'projeto_codigo',
+            'data_registro',
+            'participantes',
+            'cronograma_paralisado',
+            'prazo_encaminhamento',
+            'pauta',
+            'prazo_realizado',
+            'encaminhamento',
+            'responsavel',
+            'observacao',
+            'detalhamento_status',
+            'pontos_atencao',
+            'riscos',
+        ];
+        const acompFieldNames = [
+            'ID Projeto',
+            'Código do Projeto',
+            'Data do Registro',
+            'Participantes',
+            'Cronograma Paralisado',
+            'Prazo de Encaminhamento',
+            'Pauta',
+            'Prazo Realizado',
+            'Encaminhamento',
+            'Responsável',
+            'Observação',
+            'Status Detalhado',
+            'Pontos de Atenção',
+            'Códigos dos Riscos',
+        ];
+        await this.gerarCsv('acompanhamentos', acompFields, acompFieldNames, whereCond, out, ctx, 80);
 
-        if (dados.acompanhamentos.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-            });
-            const linhas = json2csvParser.parse(dados.acompanhamentos);
-            out.push({
-                name: 'acompanhamentos.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
-            });
-        }
+        // 8. Processar contratos
+        const contratosFields = [
+            'id',
+            'projeto_id',
+            'numero',
+            'exclusivo',
+            'processos_SEI',
+            'status',
+            'modalidade_licitacao',
+            'fontes_recurso',
+            'area_gestora',
+            'objeto',
+            'descricao_detalhada',
+            'contratante',
+            'empresa_contratada',
+            'prazo',
+            'unidade_prazo',
+            'data_base',
+            'data_inicio',
+            'data_termino',
+            'data_termino_atualizada',
+            'valor',
+            'valor_reajustado',
+            'percentual_medido',
+            'observacoes',
+        ];
 
-        if (dados.contratos.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-            });
-            const linhas = json2csvParser.parse(dados.contratos);
-            out.push({
-                name: 'contratos.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
-            });
-        }
+        const contratosFieldNames = [
+            'ID Contrato',
+            'ID Projeto',
+            'Número',
+            'Exclusivo',
+            'Processos SEI',
+            'Status',
+            'Modalidade de Licitação',
+            'Fontes de Recurso',
+            'Área Gestora',
+            'Objeto',
+            'Descrição Detalhada',
+            'Contratante',
+            'Empresa Contratada',
+            'Prazo',
+            'Unidade Prazo',
+            'Data-base',
+            'Data Início',
+            'Data Término',
+            'Data Término Atualizada',
+            'Valor',
+            'Valor Reajustado',
+            '% Execução',
+            'Observações',
+        ];
+        await this.gerarCsv('contratos', contratosFields, contratosFieldNames, whereCond, out, ctx, 85);
 
-        if (dados.aditivos.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-            });
-            const linhas = json2csvParser.parse(dados.aditivos);
-            out.push({
-                name: 'aditivos.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
-            });
-        }
+        // 9. Processar Aditivos
+        const aditivosFields = [
+            'id',
+            'contrato_id',
+            'tipo',
+            'data',
+            'valor_com_reajuste',
+            'percentual_medido',
+            'data_termino_atual',
+        ];
+        const aditivosFieldNames = [
+            'ID Aditivo',
+            'ID Contrato',
+            'Tipo Aditivo',
+            'Data',
+            'Valor com Reajuste',
+            '% Execução',
+            'Data Término Atual',
+        ];
+        await this.gerarCsv('aditivos', aditivosFields, aditivosFieldNames, whereCond, out, ctx, 90);
 
-        if (dados.origens.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-            });
-            const linhas = json2csvParser.parse(dados.origens);
-            out.push({
-                name: 'origens.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
-            });
-        }
+        // 10. Processar Origens
+        const origensFields = [
+            'projeto_id',
+            'pdm_id',
+            'pdm_titulo',
+            'meta_id',
+            'meta_titulo',
+            'iniciativa_id',
+            'iniciativa_titulo',
+            'atividade_id',
+            'atividade_titulo',
+        ];
+        const origensFieldNames = [
+            'ID Projeto',
+            'ID PDM',
+            'Título do PDM',
+            'ID Meta',
+            'Título da Meta',
+            'ID Iniciativa',
+            'Título da Iniciativa',
+            'ID Atividade',
+            'Título da Atividade',
+        ];
+        await this.gerarCsv('origens', origensFields, origensFieldNames, whereCond, out, ctx, 95);
 
-        if (dados.enderecos.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-            });
-            const linhas = json2csvParser.parse(dados.enderecos);
-            out.push({
-                name: 'enderecos.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
-            });
-        }
+        // 11. Processar Geolocalização
+        const geolocFields = ['projeto_id', 'endereco_exibicao', 'geom_geojson'];
+        const geolocFieldNames = ['ID Projeto', 'Endereço', 'GeoJSON'];
+        await this.gerarCsv('geoloc', geolocFields, geolocFieldNames, whereCond, out, ctx, 100);
 
         return [
             {
@@ -457,7 +761,7 @@ export class PPProjetosService implements ReportableService {
                 buffer: Buffer.from(
                     JSON.stringify({
                         params: params,
-                        horario: Date2YMD.tzSp2UTC(new Date()),
+                        horario: new Date().toISOString(),
                     }),
                     'utf8'
                 ),
@@ -1340,5 +1644,102 @@ export class PPProjetosService implements ReportableService {
                 cep: geojson.properties.cep,
             };
         });
+    }
+
+    private async processDataInBatches<T>(
+        tableName: string, // 'projetos', 'cronograma', 'riscos', etc.
+        whereCond: WhereCond,
+        handler: StreamBatchHandler<T>,
+        batchSize = 100 // Vamos descobrir o batch idela depois
+    ): Promise<any> {
+        // 1. Obter apenas os IDs dos projetos que correspondem ao filtro inicial
+        const projectIdsQuery = `
+            SELECT DISTINCT projeto.id
+            FROM projeto
+            JOIN portfolio ON projeto.portfolio_id = portfolio.id
+            ${whereCond.whereString}
+            ORDER BY projeto.id
+        `;
+
+        const projectIdsResult = await this.prisma.$queryRawUnsafe(projectIdsQuery, ...whereCond.queryParams);
+        const projectIds: number[] = (projectIdsResult as any[]).map((row: any) => row.id);
+
+        console.log('=========================================================================');
+        console.log(`[processDataInBatches] Tabela: ${tableName}`);
+        console.log(`[processDataInBatches] WHERE: ${whereCond.whereString}`);
+        console.log(`[processDataInBatches] Params:`, whereCond.queryParams);
+        console.log(`[processDataInBatches] IDs de projetos encontrados:`, projectIds);
+        console.log('=========================================================================');
+
+        if (projectIds.length === 0) {
+            return handler.onComplete();
+        }
+
+        // 2. Processar os projetos em lotes de IDs
+        const totalBatches = Math.ceil(projectIds.length / batchSize);
+
+        for (let i = 0; i < projectIds.length; i += batchSize) {
+            const batchIds = projectIds.slice(i, i + batchSize);
+
+            // 3. Executar a query específica para o lote de projetos atual
+            const batchData = await this.querySpecificDataByTable(tableName, batchIds);
+            console.log('=========================================================================');
+            console.log(`[processDataInBatches] Dados retornados para "${tableName}":`, batchData);
+            console.log('=========================================================================');
+
+            // 4. Enviar o lote para o handler processar (ex: escrever em arquivo)
+            await handler.onBatch(batchData, Math.floor(i / batchSize), totalBatches);
+        }
+
+        // 5. Finalizar o processo
+        return handler.onComplete();
+    }
+
+    // Método auxiliar que reutiliza as queries existentes, filtrando por IDs
+    private async querySpecificDataByTable(tableName: string, projectIds: number[]): Promise<any[]> {
+        const whereCondForBatch = {
+            whereString: 'WHERE projeto.id = ANY($1::int[])',
+            queryParams: [projectIds],
+        };
+
+        const result: any[] = [];
+
+        // O switch reutiliza os métodos de query existentes, garantindo que a lógica de negócio não seja alterada
+        switch (tableName) {
+            case 'projetos':
+                await this.queryDataProjetos(whereCondForBatch, result);
+                break;
+            case 'cronograma':
+                await this.queryDataCronograma(whereCondForBatch, result);
+                break;
+            case 'riscos':
+                await this.queryDataRiscos(whereCondForBatch, result);
+                break;
+            case 'planos_acao':
+                await this.queryDataPlanosAcao(whereCondForBatch, result);
+                break;
+            case 'plano_acao_monitoramento':
+                await this.queryDataPlanosAcaoMonitoramento(whereCondForBatch, result);
+                break;
+            case 'licoes_aprendidas':
+                await this.queryDataLicoesAprendidas(whereCondForBatch, result);
+                break;
+            case 'acompanhamentos':
+                await this.queryDataAcompanhamentos(whereCondForBatch, result);
+                break;
+            case 'contratos':
+                await this.queryDataContratos(whereCondForBatch, result);
+                break;
+            case 'aditivos':
+                await this.queryDataAditivos(whereCondForBatch, result);
+                break;
+            case 'origens':
+                await this.queryDataOrigens(whereCondForBatch, result);
+                break;
+            case 'geoloc':
+                await this.queryDataProjetosGeoloc(whereCondForBatch, result);
+                break;
+        }
+        return result;
     }
 }
