@@ -284,7 +284,7 @@ BEGIN
                     p_variavel_id,
                     'Validacao',
                     v_ultimo_periodo_valido,
-                    'Aprovação automática de Validação por decurso de prazo',
+                    'Aprovação automática de Conferência por decurso de prazo',
                     true,
                     true,
                     -1,
