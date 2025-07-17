@@ -189,8 +189,10 @@ watch(accessProfiles, () => {
 });
 
 onMounted(async () => {
-  await usersStore.getProfiles();
-  await PaineisGruposStore.getAll();
+  await Promise.all([
+    usersStore.getProfiles(),
+    PaineisGruposStore.getAll(),
+  ]);
 
   if (!id) {
     setFieldValue('modulos_permitidos', [sistemaCorrente.value]);
@@ -382,8 +384,7 @@ onMounted(async () => {
             as="select"
             class="inputtext light mb1"
             :class="{ 'error': errors.orgao_id }"
-            :disabled="bloquearCampoOrgao"
-            :aria-disabled="bloquearCampoOrgao"
+            :readonly="bloquearCampoOrgao"
             @change="resetField('equipes', { value: [] })"
           >
             <option value="">
