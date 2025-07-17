@@ -384,7 +384,8 @@ onMounted(async () => {
             as="select"
             class="inputtext light mb1"
             :class="{ 'error': errors.orgao_id }"
-            :readonly="bloquearCampoOrgao"
+            :disabled="bloquearCampoOrgao"
+            :aria-disabled="bloquearCampoOrgao"
             @change="resetField('equipes', { value: [] })"
           >
             <option value="">
