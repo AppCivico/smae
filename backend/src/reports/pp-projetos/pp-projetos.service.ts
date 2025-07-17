@@ -251,6 +251,7 @@ class RetornoDbLoc {
 export class PPProjetosService implements ReportableService {
     private tipo: TipoProjeto = 'PP';
     private logger: Logger = new Logger(PPProjetosService.name);
+    private static readonly BATCH_SIZE = 100;
 
     constructor(
         private readonly prisma: PrismaService,
@@ -313,12 +314,9 @@ export class PPProjetosService implements ReportableService {
     ) {
         const handler = new CsvFileHandler(fields, fieldNames);
         try {
-            const tmpFile = await this.processDataInBatches(tipo, whereCond, handler, 100);
+            const tmpFile = await this.processDataInBatches(tipo, whereCond, handler, PPProjetosService.BATCH_SIZE);
             if (tmpFile) {
                 out.push({ name: `${tipo}.csv`, localFile: tmpFile });
-                console.log("tipotipotipotipotipotipotipotipotipotipotipotipotipotipotipotipotipotipotipotipo")
-                console.log(tipo)
-                console.log("tipotipotipotipotipotipotipotipotipotipotipotipotipotipotipotipotipotipotipotipo")
             } else {
                 this.logger.warn(`Nenhum dado encontrado para "${tipo}", CSV não gerado.`);
             }
@@ -335,7 +333,6 @@ export class PPProjetosService implements ReportableService {
     ): Promise<FileOutput[]> {
         const whereCond = await this.buildFilteredWhereStr(params, user);
         const out: FileOutput[] = [];
-        const BATCH_SIZE = 100; // Definir um tamanho de lote razoável
 
         // 1. Processar Projetos
         const projetosFields = [
@@ -1647,10 +1644,10 @@ export class PPProjetosService implements ReportableService {
     }
 
     private async processDataInBatches<T>(
-        tableName: string, // 'projetos', 'cronograma', 'riscos', etc.
+        tableName: string,
         whereCond: WhereCond,
         handler: StreamBatchHandler<T>,
-        batchSize = 100 // Vamos descobrir o batch idela depois
+        batchSize = PPProjetosService.BATCH_SIZE
     ): Promise<any> {
         // 1. Obter apenas os IDs dos projetos que correspondem ao filtro inicial
         const projectIdsQuery = `
@@ -1664,13 +1661,6 @@ export class PPProjetosService implements ReportableService {
         const projectIdsResult = await this.prisma.$queryRawUnsafe(projectIdsQuery, ...whereCond.queryParams);
         const projectIds: number[] = (projectIdsResult as any[]).map((row: any) => row.id);
 
-        console.log('=========================================================================');
-        console.log(`[processDataInBatches] Tabela: ${tableName}`);
-        console.log(`[processDataInBatches] WHERE: ${whereCond.whereString}`);
-        console.log(`[processDataInBatches] Params:`, whereCond.queryParams);
-        console.log(`[processDataInBatches] IDs de projetos encontrados:`, projectIds);
-        console.log('=========================================================================');
-
         if (projectIds.length === 0) {
             return handler.onComplete();
         }
@@ -1679,13 +1669,11 @@ export class PPProjetosService implements ReportableService {
         const totalBatches = Math.ceil(projectIds.length / batchSize);
 
         for (let i = 0; i < projectIds.length; i += batchSize) {
+            
             const batchIds = projectIds.slice(i, i + batchSize);
 
             // 3. Executar a query específica para o lote de projetos atual
             const batchData = await this.querySpecificDataByTable(tableName, batchIds);
-            console.log('=========================================================================');
-            console.log(`[processDataInBatches] Dados retornados para "${tableName}":`, batchData);
-            console.log('=========================================================================');
 
             // 4. Enviar o lote para o handler processar (ex: escrever em arquivo)
             await handler.onBatch(batchData, Math.floor(i / batchSize), totalBatches);
