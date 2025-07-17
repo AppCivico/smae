@@ -1102,7 +1102,7 @@ const PerfilAcessoConfig: PerfilConfigArray = [
     },
     {
         nome: atualizarNomePerfil(CONST_PERFIL_CASA_CIVIL, ['Gestor Transferências Voluntárias', 'Gestor Casa Civil']),
-        descricao: 'Pode gerir entidades em Casa Civil',
+        descricao: 'Pode gerir entidades do módulo Transferências Voluntárias',
         privilegios: [
             //            'CadastroBancada.editar',
             //            'CadastroBancada.inserir',
