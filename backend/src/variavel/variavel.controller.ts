@@ -37,6 +37,7 @@ import {
     VariavelGlobalItemDto,
 } from './entities/variavel.entity';
 import { VariavelService } from './variavel.service';
+import { VariavelRelacionamentosResponseDto } from './dto/variavel-relacionamentos-response.dto';
 
 export const ROLES_ACESSO_VARIAVEL_PDM: ListaDePrivilegios[] = [...MetaController.ReadPerm, 'CadastroMeta.listar'];
 
@@ -146,6 +147,11 @@ export class VariavelGlobalController {
         'CadastroVariavelGlobal.administrador',
         // NOTA: 2025-01-23: continuo achanando errado a escrita para participante
         'SMAE.GrupoVariavel.participante', // ʕ•ᴥ•ʔ
+    ];
+    public static ReadPerm: ListaDePrivilegios[] = [
+        'CadastroVariavelGlobal.administrador_no_orgao',
+        'CadastroVariavelGlobal.administrador',
+        'SMAE.GrupoVariavel.participante',
     ];
 
     constructor(private readonly variavelService: VariavelService) {}
@@ -277,5 +283,15 @@ export class VariavelGlobalController {
     @Roles([...VariavelGlobalController.WritePerm])
     async processaVariaveisSuspensas(): Promise<number[]> {
         return await this.variavelService.processVariaveisSuspensasController();
+    }
+
+    @Get(':id/relacionados')
+    @ApiBearerAuth('access-token')
+    @Roles([...VariavelGlobalController.ReadPerm])
+    async getRelacionamentos(
+        @Param() params: FindOneParams,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<VariavelRelacionamentosResponseDto> {
+        return this.variavelService.getRelacionamentos(params.id, user);
     }
 }
