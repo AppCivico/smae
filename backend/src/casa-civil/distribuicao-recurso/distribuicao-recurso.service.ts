@@ -46,8 +46,6 @@ type ItemParaCriarTarefa = {
         tipo: TarefaDependenteTipo;
         latencia: number;
     }[];
-    transferencia_fase_id?: number;
-    transferencia_tarefa_id?: number;
 };
 
 @Injectable()
@@ -1840,7 +1838,6 @@ export class DistribuicaoRecursoService {
                 },
             },
             select: {
-                id: true,
                 workflow_fase: {
                     select: {
                         fase: true,
@@ -1883,7 +1880,6 @@ export class DistribuicaoRecursoService {
                 },
             },
             select: {
-                id: true,
                 workflow_tarefa: {
                     select: {
                         tarefa_fluxo: true,
@@ -1928,7 +1924,6 @@ export class DistribuicaoRecursoService {
                     termino_planejado: tarefaPai.termino_planejado,
                     duracao_planejado: af.workflow_fase.fluxos[0].duracao,
                     dependencias: tarefaPai.dependencias.map((d) => ({ ...d, latencia: d.latencia ?? 0 })),
-                    transferencia_fase_id: af.id,
                 });
             }
         });
@@ -1945,7 +1940,6 @@ export class DistribuicaoRecursoService {
                     termino_planejado: tarefaPai.termino_planejado,
                     duracao_planejado: at.workflow_tarefa.fluxoTarefas[0].duracao,
                     dependencias: tarefaPai.dependencias.map((d) => ({ ...d, latencia: d.latencia ?? 0 })),
-                    transferencia_tarefa_id: at.id,
                 });
             }
         });
@@ -2054,8 +2048,6 @@ export class DistribuicaoRecursoService {
                         dependencias: {
                             createMany: { data: finalDependencies.map((d) => ({ ...d, latencia: d.latencia ?? 0 })) },
                         },
-                        transferencia_fase_id: item.transferencia_fase_id,
-                        transferencia_tarefa_id: item.transferencia_tarefa_id,
                     },
                     select: { id: true },
                 });
