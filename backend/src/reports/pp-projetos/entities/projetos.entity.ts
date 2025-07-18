@@ -211,4 +211,13 @@ export class PPProjetosRelatorioDto {
     aditivos: RelProjetosAditivosDto[];
     origens: RelProjetosOrigemDto[];
     enderecos: RelProjetosGeolocDto[];
+    incoerentes_gdp: RelProjetosStatusIncoerenteDto[];
+}
+
+export class RelProjetosStatusIncoerenteDto {
+    nome_do_portfolio: string;
+    nome_obra_intervencao: string;
+    projeto_codigo: string;
+    projeto_status: string;
+    projeto_etapa_atual: string;
 }
