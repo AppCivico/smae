@@ -32,7 +32,7 @@ DECLARE
 BEGIN
 
     IF p_recursion_depth > 10 THEN
-        RAISE EXCEPTION 'recursion loop em f_atualiza_variavel_ciclo_corrente';
+        RAISE EXCEPTION 'loop de recursão em f_atualiza_variavel_ciclo_corrente';
     END IF;
 
     -- Busca o registro da variável com o nome da coluna atualizado
@@ -67,7 +67,7 @@ BEGIN
             --RAISE NOTICE 'Variável com ID % não encontrada ou != global/mae', p_variavel_id;
             RETURN;
         WHEN TOO_MANY_ROWS THEN
-            RAISE EXCEPTION 'apenas uma linha esperada para a variavel: %', p_variavel_id;
+            RAISE EXCEPTION 'apenas uma linha esperada para a variável: %', p_variavel_id;
     END;
 
     IF v_registro.inicio_medicao IS NULL THEN
@@ -81,6 +81,38 @@ BEGIN
     WHERE variavel_id = p_variavel_id;
     IF (v_fase_corrente IS NULL) THEN
         v_fase_corrente := 'Preenchimento';
+    END IF;
+
+
+    -- BLOCO DE AUTO-CORREÇÃO: Verifica se o status atual é consistente com as fases esperadas.
+    IF v_fase_corrente = 'Validacao' THEN
+        IF NOT EXISTS (
+            SELECT 1 FROM variavel_global_ciclo_analise
+            WHERE variavel_id = p_variavel_id
+              AND referencia_data = v_ultimo_p_valido_corrente
+              AND fase = 'Preenchimento'
+              AND ultima_revisao = true
+              AND removido_em IS NULL
+        ) THEN
+            -- O ESTADO ESTÁ INCONSISTENTE. Revertendo para o início do ciclo.
+            RAISE NOTICE '[AUTO-CORREÇÃO] Var: %. Estado inconsistente (Validacao sem Preenchimento para o ciclo %). Revertendo para Preenchimento.', p_variavel_id, v_ultimo_p_valido_corrente;
+
+            -- Esta é uma correção não destrutiva. Atualizamos SOMENTE a tabela de status.
+            -- NÃO excluímos o registro órfão de 'Validacao'.
+            UPDATE variavel_ciclo_corrente
+            SET
+                fase = 'Preenchimento',
+                liberacao_enviada = false,
+                prazo = NULL,
+                atualizado_em = now()
+            WHERE variavel_id = p_variavel_id;
+
+            -- Crucialmente, atualizamos as variáveis locais para refletir a mudança que acabamos de fazer,
+            -- para que o restante da execução desta função prossiga com o estado corrigido.
+            v_fase_corrente := 'Preenchimento';
+            v_liberacao_enviada := false;
+
+        END IF;
     END IF;
 
     -- Busca os ciclos e analisa os atrasos
@@ -113,7 +145,7 @@ BEGIN
             END IF;
         END IF;
 
-        -- fase desejada pra não ser um atraso, exceto se for o ciclo corrente
+        -- fase desejada para não ser um atraso, exceto se for o ciclo corrente
         IF v_ciclo.fases[1] IS NULL OR NOT ('Liberacao' = ANY(v_ciclo.fases)) THEN
 
             IF (v_ciclo.ciclo_data != v_ultimo_periodo_valido) THEN
@@ -128,7 +160,7 @@ BEGIN
     --raise notice 'v_ultimo_periodo_valido x -> %', v_ultimo_periodo_valido;
 
     IF (v_ultimo_periodo_valido IS NULL) THEN
-        --RAISE NOTICE 'Nenhum periodo encontrado, removendo variavel_ciclo_corrente para variável ID %', p_variavel_id;
+        --RAISE NOTICE 'Nenhum período encontrado, removendo variavel_ciclo_corrente para variável ID %', p_variavel_id;
         DELETE FROM variavel_ciclo_corrente WHERE variavel_id = p_variavel_id;
         RETURN;
     END IF;
@@ -184,12 +216,17 @@ BEGIN
             v_ultimo_p_valido_corrente := v_primeiro_registro.ciclo_data;
         END IF;
 
-        -- caso o atraso tenha sido resolvido pelo banco de variáveis [v_eh_liberacao_auto=true]
-        -- então façamos a correção aqui do status para liberacao caso esteja sem atraso
-        IF (v_eh_liberacao_auto AND v_atrasos[1] IS NULL) THEN
-            v_liberacao_enviada := true;
+        -- This logic corrects the status if the database already contains a 'Liberacao' record
+        -- for the current cycle, but the status table (`variavel_ciclo_corrente`) is still on a previous phase.
+        -- This prevents the function from incorrectly *creating* the 'Liberacao' state out of thin air.
+        IF v_fase_corrente != 'Liberacao' AND v_atrasos[1] IS NULL AND 'Liberacao' = ANY(v_primeiro_registro.fases) THEN
+            --RAISE NOTICE 'Corrigindo status para Liberacao pois já existe um registro para o ciclo corrente: %', v_primeiro_registro.ciclo_data;
             v_fase_corrente := 'Liberacao';
             v_ultimo_p_valido_corrente := v_primeiro_registro.ciclo_data;
+            -- Se o registro de liberação foi automático, marcamos como enviada.
+            IF v_primeiro_registro.eh_liberacao_auto[1] = true THEN
+                 v_liberacao_enviada := true;
+            END IF;
         END IF;
         --raise notice 'calculando prazo v_ultimo_p_valido_corrente -> %', v_ultimo_p_valido_corrente;
         v_ultimo_periodo_valido := coalesce(v_atrasos[1], v_ultimo_p_valido_corrente, v_ultimo_periodo_valido);
@@ -465,7 +502,7 @@ BEGIN
 
             EXCEPTION
                 WHEN OTHERS THEN
-                    -- só faz o log do erro e continua o loop
+                    -- apenas registra o erro e continua o loop
                     --RAISE NOTICE 'Erro ID %: %', v_record.id, SQLERRM;
 
             END;
