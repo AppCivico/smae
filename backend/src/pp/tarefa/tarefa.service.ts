@@ -644,97 +644,100 @@ export class TarefaService {
             }
         };
 
-        // Calculate projections for all tasks
-        for (const tarefa of tarefas) {
-            calculaProjecoes(tarefa);
-        }
-
-        // calculando projeção de quem tem filhos
-        for (const tarefa of tarefas) {
-            // filha quem não tem filho
-            if (tarefa.n_filhos_imediatos == 0) continue;
-
-            // a tarefa tem que ter todas as datas de planejamento para funcionar
-            if (!tarefa.inicio_planejado || !tarefa.duracao_planejado || !tarefa.termino_planejado) {
-                console.warn(
-                    `tarefa ${tarefa.id} sem inicio_planejado|duracao_planejado|termino_planejado, não será calculado projeção pelos filhos`
-                );
-                continue;
+        try {
+            // Calculate projections for all tasks
+            for (const tarefa of tarefas) {
+                calculaProjecoes(tarefa);
             }
 
-            const filhos = tarefas.filter((r) => {
-                return r.tarefa_pai_id == tarefa.id;
-            });
+            // calculando projeção de quem tem filhos
+            for (const tarefa of tarefas) {
+                // filha quem não tem filho
+                if (tarefa.n_filhos_imediatos == 0) continue;
 
-            let projecao_inicio_min: DateTime | undefined = undefined;
-            let atraso_max = -1;
-            for (const filho of filhos) {
-                if (!filho.projecao_termino) {
-                    console.debug(`tarefa ${tarefa.id}.filho.${filho.id}: projecao_termino vazia, pulando...`);
+                // a tarefa tem que ter todas as datas de planejamento para funcionar
+                if (!tarefa.inicio_planejado || !tarefa.duracao_planejado || !tarefa.termino_planejado) {
+                    console.warn(
+                        `tarefa ${tarefa.id} sem inicio_planejado|duracao_planejado|termino_planejado, não será calculado projeção pelos filhos`
+                    );
                     continue;
                 }
 
-                if (
-                    filho.projecao_inicio &&
-                    (!projecao_inicio_min ||
-                        (projecao_inicio_min && filho.projecao_inicio.valueOf() < projecao_inicio_min.valueOf()))
-                )
-                    projecao_inicio_min = filho.projecao_inicio;
+                const filhos = tarefas.filter((r) => {
+                    return r.tarefa_pai_id == tarefa.id;
+                });
 
-                // pula quem terminou na hr de fazer projecao do atraso
-                // mas tem que ficar calculado a projecao do inicio
-                if (filho.termino_real) continue;
+                let projecao_inicio_min: DateTime | undefined = undefined;
+                let atraso_max = -1;
+                for (const filho of filhos) {
+                    if (!filho.projecao_termino) {
+                        console.debug(`tarefa ${tarefa.id}.filho.${filho.id}: projecao_termino vazia, pulando...`);
+                        continue;
+                    }
 
-                // vai setando a projeção de termino do parent de acordo com o max do filhos
-                if (
-                    !tarefa.projecao_termino ||
-                    (tarefa.projecao_termino && filho.projecao_termino.valueOf() > tarefa.projecao_termino.valueOf())
-                )
-                    tarefa.projecao_termino = filho.projecao_termino;
+                    if (
+                        filho.projecao_inicio &&
+                        (!projecao_inicio_min ||
+                            (projecao_inicio_min && filho.projecao_inicio.valueOf() < projecao_inicio_min.valueOf()))
+                    )
+                        projecao_inicio_min = filho.projecao_inicio;
 
-                const d = filho.projecao_termino
-                    .diff(DateTime.fromSQL(tarefa.termino_planejado, { zone: 'UTC' }))
-                    .as('days');
+                    // pula quem terminou na hr de fazer projecao do atraso
+                    // mas tem que ficar calculado a projecao do inicio
+                    if (filho.termino_real) continue;
 
-                if (d > 0) {
-                    console.debug(
-                        `tarefa ${tarefa.id}.filho.${filho.id}: projecao_termino: ${Date2YMD.toString(
-                            filho.projecao_termino.toJSDate()
-                        )}, tarefa(pai).termino_planejado: ${tarefa.termino_planejado} => ${d} dias de atraso`
-                    );
-                    filho.projecao_atraso = d;
+                    // vai setando a projeção de termino do parent de acordo com o max do filhos
+                    if (
+                        !tarefa.projecao_termino ||
+                        (tarefa.projecao_termino &&
+                            filho.projecao_termino.valueOf() > tarefa.projecao_termino.valueOf())
+                    )
+                        tarefa.projecao_termino = filho.projecao_termino;
 
-                    if (atraso_max < d) atraso_max = d;
-                } else {
-                    console.debug(
-                        `tarefa ${tarefa.id}.filho.${filho.id}: projecao_termino: ${Date2YMD.toString(
-                            filho.projecao_termino.toJSDate()
-                        )}, tarefa(pai).termino_planejado: ${tarefa.termino_planejado} => sem atraso`
-                    );
+                    const d = filho.projecao_termino
+                        .diff(DateTime.fromSQL(tarefa.termino_planejado, { zone: 'UTC' }))
+                        .as('days');
+
+                    if (d > 0) {
+                        console.debug(
+                            `tarefa ${tarefa.id}.filho.${filho.id}: projecao_termino: ${Date2YMD.toEasyString(
+                                filho.projecao_termino
+                            )}, tarefa(pai).termino_planejado: ${tarefa.termino_planejado} => ${d} dias de atraso`
+                        );
+                        filho.projecao_atraso = d;
+
+                        if (atraso_max < d) atraso_max = d;
+                    } else {
+                        console.debug(
+                            `tarefa ${tarefa.id}.filho.${filho.id}: projecao_termino: ${Date2YMD.toEasyString(
+                                filho.projecao_termino
+                            )}, tarefa(pai).termino_planejado: ${tarefa.termino_planejado} => sem atraso`
+                        );
+                    }
                 }
+
+                if (atraso_max > 0) {
+                    console.debug(`tarefa ${tarefa.id} - atraso estimado: ${atraso_max}`);
+
+                    tarefa.projecao_atraso = atraso_max;
+                } else {
+                    console.debug(`tarefa ${tarefa.id} - sem atraso`);
+                    tarefa.projecao_atraso = 0;
+                }
+
+                if (projecao_inicio_min) {
+                    tarefa.projecao_inicio = projecao_inicio_min;
+                } else {
+                    console.warn(`tarefa ${tarefa.id} - faltando projeção de inicio`);
+                }
+
+                if (tarefa.projecao_termino)
+                    console.debug(
+                        `tarefa ${tarefa.id} - max projeção termino: ${Date2YMD.toEasyString(tarefa.projecao_termino)}`
+                    );
             }
-
-            if (atraso_max > 0) {
-                console.debug(`tarefa ${tarefa.id} - atraso estimado: ${atraso_max}`);
-
-                tarefa.projecao_atraso = atraso_max;
-            } else {
-                console.debug(`tarefa ${tarefa.id} - sem atraso`);
-                tarefa.projecao_atraso = 0;
-            }
-
-            if (projecao_inicio_min) {
-                tarefa.projecao_inicio = projecao_inicio_min;
-            } else {
-                console.warn(`tarefa ${tarefa.id} - faltando projeção de inicio`);
-            }
-
-            if (tarefa.projecao_termino)
-                console.debug(
-                    `tarefa ${tarefa.id} - max projeção termino: ${Date2YMD.toString(
-                        tarefa.projecao_termino.toJSDate()
-                    )}`
-                );
+        } catch (error) {
+            this.logger.error(`Erro ao calcular projeções: ${error}`);
         }
 
         // mais um loop, agora pra pegar o max da projeção do nivel 1
@@ -863,9 +866,9 @@ export class TarefaService {
         if (max_term_planjeado && max_term_proj) {
             const d = max_term_proj.diff(DateTime.fromJSDate(max_term_planjeado, { zone: 'UTC' })).as('days');
             this.logger.debug(
-                `projeto max projecao_termino: ${Date2YMD.toString(
-                    max_term_proj.toJSDate()
-                )}, max termino_planejado: ${Date2YMD.toString(max_term_planjeado)} => ${d} dias de atraso`
+                `projeto max projecao_termino: ${Date2YMD.toEasyString(
+                    max_term_proj
+                )}, max termino_planejado: ${Date2YMD.toEasyString(max_term_planjeado)} => ${d} dias de atraso`
             );
 
             if (d > 0) atraso_projeto = d;

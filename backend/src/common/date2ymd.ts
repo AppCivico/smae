@@ -21,6 +21,17 @@ export class Date2YMD {
         return Date2YMD.toString(d);
     }
 
+    static toEasyString(d: Date | null | undefined | DateTime): string {
+        if (d === null) return 'null';
+        if (d === undefined) return 'undefined';
+        if (d instanceof DateTime) {
+            return d.toFormat('yyyy-MM-dd');
+        }
+        if (!(d instanceof Date)) return 'called toEasyString on non-date object';
+
+        return Date2YMD.toString(d);
+    }
+
     static fromString(data: string) {
         const year = Number(data.substring(0, 4));
         const month = Number(data.substring(5, 7));
