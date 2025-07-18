@@ -57,6 +57,7 @@ import { UpdateTarefaDto } from '../tarefa/dto/update-tarefa.dto';
 import { TarefaService } from '../tarefa/tarefa.service';
 import { SmaeConfigService } from 'src/common/services/smae-config.service';
 import { CONST_PERFIL_COLAB_OBRA_NO_ORGAO, CONST_PERFIL_GESTOR_OBRA } from '../../common/consts';
+import { RemoveUndefinedFields } from '../../common/RemoveUndefinedFields';
 
 const FASES_PLANEJAMENTO_E_ANTERIORES: ProjetoStatus[] = ['Registrado', 'Selecionado', 'EmPlanejamento'];
 const StatusParaFase: Record<ProjetoStatus, ProjetoFase> = {
@@ -599,6 +600,7 @@ export class ProjetoService {
      * *: essa pessoa tem acesso de escrita até a hora que o status do projeto passar de "EmPlanejamento", depois disso vira read-only
      * */
     async create(tipo: TipoProjeto, dto: CreateProjetoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+        dto = RemoveUndefinedFields(dto);
         // pra criar, verifica se a pessoa pode realmente acessar o portfolio, então
         // começa listando todos os portfolios
         const portfolios = await this.portfolioService.findAll(tipo, user, true);
@@ -2499,6 +2501,7 @@ export class ProjetoService {
         user: PessoaFromJwt,
         prismaTx?: Prisma.TransactionClient
     ): Promise<RecordWithId> {
+        dto = RemoveUndefinedFields(dto);
         // aqui é feito a verificação se esse usuário pode realmente acessar esse recurso
         const projeto = await this.findOne(tipo, projetoId, user, 'ReadWrite');
         const hasOnlyResponsibilityEdit =
@@ -2547,6 +2550,7 @@ export class ProjetoService {
             dto.mdo_n_familias_beneficiadas = undefined;
             dto.mdo_n_unidades_habitacionais = undefined;
             dto.mdo_programa_habitacional = undefined;
+            dto.mdo_n_unidades_atendidas = undefined;
         }
 
         // TODO? se estiver arquivado, retorna 400 (estava só o comentario, sem o texto de TODO)
