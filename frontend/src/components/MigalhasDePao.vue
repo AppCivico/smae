@@ -1,8 +1,8 @@
 <script setup>
-import { useAuthStore } from '@/stores/auth.store';
 import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/auth.store';
 
 const authStore = useAuthStore();
 const { temPermissãoPara } = storeToRefs(authStore);
@@ -55,21 +55,24 @@ const rotasParaMigalhasDePão = computed(() => {
           class="migalhas-de-pão__link"
           :to="item.href"
         >
-          {{ item.meta?.tituloParaMigalhaDePao
-            || item.meta?.títuloParaMenu
-            || (typeof item.meta?.título === 'function'
-              ? item.meta?.título()
-              : item.meta?.título || item.name) }}
+          {{
+            item.meta?.tituloParaMigalhaDePao
+              || (typeof item.meta?.título === 'function'
+                ? item.meta?.título()
+                : item.meta?.título || item.name)
+              || item.meta?.títuloParaMenu }}
         </router-link>
       </li>
       <li
         class="migalhas-de-pão__item"
       >
-        {{ $route.meta?.tituloParaMigalhaDePao
-          || $route.meta?.títuloParaMenu
-          || (typeof $route.meta?.título === 'function'
-            ? $route.meta?.título()
-            : $route.meta?.título || $route.name) }}
+        {{
+          $route.meta?.tituloParaMigalhaDePao
+            || (typeof $route.meta?.título === 'function'
+              ? $route.meta?.título()
+              : $route.meta?.título || $route.name)
+            || $route.meta?.títuloParaMenu
+        }}
       </li>
     </ul>
   </nav>
