@@ -650,7 +650,7 @@ export class ProjetoService {
             if (!dto.tipo_intervencao_id)
                 throw new HttpException('tipo_intervencao_id| Campo obrigatório para obras', 400);
 
-            //await this.verificaGrupoTematico(dto);
+            await this.verificaGrupoTematico(dto);
         }
 
         const statusPadrao = tipo == 'PP' ? 'Registrado' : 'MDO_NaoIniciada';
@@ -3923,7 +3923,14 @@ export class ProjetoService {
     }
 
     private async verificaGrupoTematico(dto: UpdateProjetoDto) {
-        if (!dto.grupo_tematico_id) return;
+        if (dto.grupo_tematico_id === undefined) return;
+        if (dto.grupo_tematico_id === null) {
+            dto.mdo_n_unidades_atendidas = null;
+            dto.mdo_n_unidades_habitacionais = null;
+            dto.mdo_programa_habitacional = null;
+            dto.mdo_n_familias_beneficiadas = null;
+            return;
+        }
 
         const grupoTematico = await this.prisma.grupoTematico.findUnique({
             where: { id: dto.grupo_tematico_id },
@@ -3935,7 +3942,8 @@ export class ProjetoService {
             },
         });
 
-        if (!grupoTematico) return;
+        if (!grupoTematico) throw new BadRequestException('Grupo temático não encontrado.');
+
         if (!grupoTematico.unidades_atendidas) dto.mdo_n_unidades_atendidas = null;
         if (!grupoTematico.unidades_habitacionais) dto.mdo_n_unidades_habitacionais = null;
         if (!grupoTematico.programa_habitacional) dto.mdo_programa_habitacional = null;
