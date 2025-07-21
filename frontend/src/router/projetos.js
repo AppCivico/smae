@@ -1,4 +1,5 @@
 import { defineAsyncComponent } from 'vue';
+import { useRoute } from 'vue-router';
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import ProjetosRaiz from '@/views/projetos/ProjetosRaiz.vue';
@@ -192,6 +193,7 @@ export default {
 
         rotasParaMigalhasDePão: [
           'projetosListar',
+          'projetosResumo',
         ],
       },
 
@@ -205,7 +207,7 @@ export default {
             projetoId: Number.parseInt(params.projetoId, 10) || undefined,
           }),
           meta: {
-            título: () => useProjetosStore()?.emFoco?.nome || 'Editar projeto',
+            título: 'Editar projeto',
             títuloParaMenu: 'Editar projeto',
             rotaDeEscape: 'projetosResumo',
             limitarÀsPermissões: [
@@ -242,9 +244,22 @@ export default {
             projetoId: Number.parseInt(params.projetoId, 10) || undefined,
           }),
           meta: {
-            título: () => (useProjetosStore()?.emFoco?.nome
-              ? `Escopo do projeto ${useProjetosStore()?.emFoco?.nome}`
-              : 'Escopo de projeto'),
+            rotasParaMigalhasDePão: [
+              'projetosListar',
+            ],
+            título: () => {
+              const { name: routeName } = useRoute();
+              const projetoStoreEmFoco = useProjetosStore()?.emFoco?.nome;
+              if (!projetoStoreEmFoco) {
+                return 'Escopo';
+              }
+
+              if (routeName === 'projetosResumo') {
+                return `Escopo: ${projetoStoreEmFoco}`;
+              }
+
+              return `Projeto ${projetoStoreEmFoco}`;
+            },
             títuloParaMenu: 'Escopo',
           },
         },
@@ -258,7 +273,7 @@ export default {
             projetoId: Number.parseInt(params.projetoId, 10) || undefined,
           }),
           meta: {
-            título: () => useProjetosStore()?.emFoco?.nome || 'Estrutura Analítica',
+            título: 'Estrutura Analítica',
             títuloParaMenu: 'Estrutura Analítica',
           },
         },
@@ -272,7 +287,7 @@ export default {
             projetoId: Number.parseInt(params.projetoId, 10) || undefined,
           }),
           meta: {
-            título: () => useProjetosStore()?.emFoco?.nome || 'Gantt',
+            título: 'Gantt',
             títuloParaMenu: 'Gráfico de Gantt',
           },
         },
@@ -291,7 +306,7 @@ export default {
             projetoId: Number.parseInt(params.projetoId, 10) || undefined,
           }),
           meta: {
-            título: 'Documentos do projeto',
+            título: 'Documentos',
             títuloParaMenu: 'Documentos',
           },
 

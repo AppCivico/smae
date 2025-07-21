@@ -1,3 +1,4 @@
+import { defineAsyncComponent } from 'vue';
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import formatProcesso from '@/helpers/formatProcesso';
 import { useProcessosStore } from '@/stores/processos.store.ts';
@@ -5,7 +6,6 @@ import ProcessosCriarEditar from '@/views/processos/ProcessosCriarEditar.vue';
 import ProcessosItem from '@/views/processos/ProcessosItem.vue';
 import ProcessosLista from '@/views/processos/ProcessosLista.vue';
 import ProcessosRaiz from '@/views/processos/ProcessosRaiz.vue';
-import { defineAsyncComponent } from 'vue';
 
 const processosResumo = defineAsyncComponent({
   loader: () => import('@/views/processos/ProcessosResumo.vue'),
@@ -29,7 +29,7 @@ export default {
       path: '',
       component: ProcessosLista,
       meta: {
-        título: 'Processos SEI do projeto',
+        título: 'Processos SEI',
         títuloParaMenu: 'Processos SEI',
 
         rotasParaMigalhasDePão: [
