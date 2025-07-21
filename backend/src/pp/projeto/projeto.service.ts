@@ -2543,8 +2543,7 @@ export class ProjetoService {
         }
 
         if ('grupo_tematico_id' in dto) {
-            // Desativando essa verificação por agora.
-            // await this.verificaGrupoTematico(dto);
+            await this.verificaGrupoTematico(dto);
         } else {
             // bloqueia a mudança dos campos se não informar o grupo temático
             dto.mdo_n_familias_beneficiadas = undefined;
@@ -3921,5 +3920,25 @@ export class ProjetoService {
                 );
             }
         }
+    }
+
+    private async verificaGrupoTematico(dto: UpdateProjetoDto) {
+        if (!dto.grupo_tematico_id) return;
+
+        const grupoTematico = await this.prisma.grupoTematico.findUnique({
+            where: { id: dto.grupo_tematico_id },
+            select: {
+                unidades_atendidas: true,
+                unidades_habitacionais: true,
+                programa_habitacional: true,
+                familias_beneficiadas: true,
+            },
+        });
+
+        if (!grupoTematico) return;
+        if (!grupoTematico.unidades_atendidas) dto.mdo_n_unidades_atendidas = null;
+        if (!grupoTematico.unidades_habitacionais) dto.mdo_n_unidades_habitacionais = null;
+        if (!grupoTematico.programa_habitacional) dto.mdo_programa_habitacional = null;
+        if (!grupoTematico.familias_beneficiadas) dto.mdo_n_familias_beneficiadas = null;
     }
 }
