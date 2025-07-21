@@ -21,8 +21,6 @@ RUN npm --loglevel=error install -g npm@11.4.2
 COPY package.json ./
 COPY package-lock.json ./
 
-COPY vendor/* ./vendor/
-
 RUN npm ci
 
 COPY tools/install-duckdb-extensions.js ./tools/

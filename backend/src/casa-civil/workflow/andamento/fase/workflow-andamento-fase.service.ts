@@ -169,13 +169,15 @@ export class WorkflowAndamentoFaseService {
                     recursos = pessoa.nome_exibicao;
                 }
 
-                await prismaTxn.tarefa.update({
-                    where: { id: self.tarefaEspelhada[0].id },
-                    data: {
-                        orgao_id: dto.orgao_responsavel_id,
-                        recursos: recursos,
-                    },
-                });
+                if (self.tarefaEspelhada.length !== 0) {
+                    await prismaTxn.tarefa.update({
+                        where: { id: self.tarefaEspelhada[0].id },
+                        data: {
+                            orgao_id: dto.orgao_responsavel_id,
+                            recursos: recursos,
+                        },
+                    });
+                }
 
                 if (dto.tarefas != undefined && dto.tarefas.length > 0) {
                     await this.atualizarTarefas(dto, user, prismaTxn);
@@ -322,14 +324,16 @@ export class WorkflowAndamentoFaseService {
                         })
                     );
 
-                    await prismaTxn.tarefa.findFirst({
-                        where: { id: transferenciaAndamentoTarefaRow.tarefaEspelhada[0].id },
-                        select: {
-                            id: true,
-                            inicio_real: true,
-                            termino_real: true,
-                        },
-                    });
+                    if (transferenciaAndamentoTarefaRow.tarefaEspelhada.length !== 0) {
+                        await prismaTxn.tarefa.findFirst({
+                            where: { id: transferenciaAndamentoTarefaRow.tarefaEspelhada[0].id },
+                            select: {
+                                id: true,
+                                inicio_real: true,
+                                termino_real: true,
+                            },
+                        });
+                    }
 
                     operations.push(
                         prismaTxn.tarefa.update({
@@ -396,14 +400,16 @@ export class WorkflowAndamentoFaseService {
                     },
                 });
 
-                await prismaTxn.tarefa.update({
-                    where: { id: self.tarefaEspelhada[0].id },
-                    data: {
-                        percentual_concluido: 100,
-                        termino_real: new Date(Date.now()),
-                        atualizado_em: new Date(Date.now()),
-                    },
-                });
+                if (self.tarefaEspelhada.length !== 0) {
+                    await prismaTxn.tarefa.update({
+                        where: { id: self.tarefaEspelhada[0].id },
+                        data: {
+                            percentual_concluido: 100,
+                            termino_real: new Date(Date.now()),
+                            atualizado_em: new Date(Date.now()),
+                        },
+                    });
+                }
 
                 // Após finalizar a fase, verificar se a etapa inteira está concluída.
                 const configEtapa = await prismaTxn.fluxo.findFirst({
@@ -507,16 +513,12 @@ export class WorkflowAndamentoFaseService {
 
                 let orgao_id: number | null = null;
                 if (configFluxoFaseSeguinte.responsabilidade == WorkflowResponsabilidade.Propria) {
-                    console.log('=======================================\n');
-                    console.log(configFluxoFaseSeguinte);
-                    console.log(faseAtual);
                     const orgaoCasaCivil = await prismaTxn.orgao.findFirst({
                         where: { removido_em: null, sigla: 'SERI' },
                         select: { id: true },
                     });
                     if (!orgaoCasaCivil) throw new HttpException('Órgão da SERI não encontrado.', 400);
                     orgao_id = orgaoCasaCivil.id;
-                    console.log('=======================================\n');
                 }
 
                 const andamentoNovaFase = await prismaTxn.transferenciaAndamento.findFirst({
@@ -561,6 +563,7 @@ export class WorkflowAndamentoFaseService {
                 });
 
                 for (const tarefa of andamentoNovaFase.tarefas) {
+                    if (tarefa.tarefaEspelhada.length === 0) continue;
                     await prismaTxn.tarefa.update({
                         where: { id: tarefa.tarefaEspelhada[0].id },
                         data: {
@@ -749,14 +752,16 @@ export class WorkflowAndamentoFaseService {
                 });
 
                 // Atualizando tarefa espelhada da fase reaberta
-                await prismaTxn.tarefa.update({
-                    where: { id: faseParaReabrir.tarefaEspelhada[0].id },
-                    data: {
-                        percentual_concluido: 0,
-                        termino_real: null,
-                        atualizado_em: new Date(Date.now()),
-                    },
-                });
+                if (faseParaReabrir.tarefaEspelhada.length !== 0) {
+                    await prismaTxn.tarefa.update({
+                        where: { id: faseParaReabrir.tarefaEspelhada[0].id },
+                        data: {
+                            percentual_concluido: 0,
+                            termino_real: null,
+                            atualizado_em: new Date(Date.now()),
+                        },
+                    });
+                }
 
                 // Reabrindo tarefas da fase
                 for (const tarefa of faseParaReabrir.tarefas) {
@@ -769,6 +774,8 @@ export class WorkflowAndamentoFaseService {
                         },
                     });
 
+                    if (tarefa.tarefaEspelhada.length === 0) continue;
+                    // Atualizando tarefa espelhada da tarefa reaberta
                     await prismaTxn.tarefa.update({
                         where: { id: tarefa.tarefaEspelhada[0].id },
                         data: {
@@ -792,14 +799,16 @@ export class WorkflowAndamentoFaseService {
                         },
                     });
 
-                    await prismaTxn.tarefa.update({
-                        where: { id: faseParaFechar.tarefaEspelhada[0].id },
-                        data: {
-                            inicio_real: null,
-                            percentual_concluido: 0,
-                            atualizado_em: new Date(Date.now()),
-                        },
-                    });
+                    if (faseParaFechar.tarefaEspelhada.length !== 0) {
+                        await prismaTxn.tarefa.update({
+                            where: { id: faseParaFechar.tarefaEspelhada[0].id },
+                            data: {
+                                inicio_real: null,
+                                percentual_concluido: 0,
+                                atualizado_em: new Date(Date.now()),
+                            },
+                        });
+                    }
                 }
 
                 // Atualizando a fase atual na transferência

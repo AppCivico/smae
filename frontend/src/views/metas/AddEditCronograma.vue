@@ -1,17 +1,17 @@
 <script setup>
-import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
-import { router } from '@/router';
+import { ref } from 'vue';
+import * as Yup from 'yup';
+import { storeToRefs } from 'pinia';
+import { useRoute } from 'vue-router';
+import { Field, Form } from 'vee-validate';
 import {
   useAlertStore,
   useAtividadesStore, useCronogramasStore,
   useIniciativasStore,
   useMetasStore,
 } from '@/stores';
-import { storeToRefs } from 'pinia';
-import { Field, Form } from 'vee-validate';
-import { ref } from 'vue';
-import { useRoute } from 'vue-router';
-import * as Yup from 'yup';
+import { router } from '@/router';
+import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 
 const alertStore = useAlertStore();
 const route = useRoute();
@@ -108,7 +108,6 @@ async function onSubmit(values) {
         throw new Error(`Falta configurar uma rota de escape para: "${route.path}"`);
       }
       alertStore.success(msg);
-      return;
     }
   } catch (error) {
     alertStore.error(error);
@@ -155,222 +154,230 @@ async function checkClose() {
 </script>
 
 <template>
-    <MigalhasDeMetas class="mb1" />
+  <MigalhasDeMetas class="mb1" />
 
-    <div class="flex spacebetween center">
-      <TítuloDePágina
-        :ícone="activePdm?.logo"
-      >
-        {{ title }}
-      </TítuloDePágina>
-      <hr class="ml2 f1">
-      <button
-        class="btn round ml2"
-        @click="checkClose"
-      >
-        <svg
-          width="12"
-          height="12"
-        ><use xlink:href="#i_x" /></svg>
-      </button>
-    </div>
-    <div
-      v-if="parentItem"
-      class="t24 mb2"
+  <div class="flex spacebetween center">
+    <TítuloDePágina
+      :ícone="activePdm?.logo"
     >
-      {{ parentLabel }} {{ parentItem.codigo }} {{ parentItem.titulo }}
-    </div>
+      {{ title }}
+    </TítuloDePágina>
+    <hr class="ml2 f1">
+    <button
+      class="btn round ml2"
+      @click="checkClose"
+    >
+      <svg
+        width="12"
+        height="12"
+      ><use xlink:href="#i_x" /></svg>
+    </button>
+  </div>
+  <div
+    v-if="parentItem"
+    class="t24 mb2"
+  >
+    {{ parentLabel }} {{ parentItem.codigo }} {{ parentItem.titulo }}
+  </div>
 
-    <template v-if="!(singleCronograma?.loading || singleCronograma?.error)">
-      <Form
-        v-slot="{ errors, isSubmitting }"
-        :validation-schema="schema"
-        :initial-values="cronograma_id ? singleCronograma : {}"
-        @submit="onSubmit"
-      >
-        <div class="f1">
-          <label class="label">Descrição <span class="tvermelho">*</span></label>
-          <Field
-            name="descricao"
-            as="textarea"
-            rows="3"
-            class="inputtext light mb1"
-            :class="{ 'error': errors.descricao }"
-          />
-          <div class="error-msg">
-            {{ errors.descricao }}
-          </div>
-        </div>
-        <div class="f2">
-          <label class="label">Observação</label>
-          <Field
-            name="observacao"
-            as="textarea"
-            rows="3"
-            class="inputtext light mb1"
-            :class="{ 'error': errors.observacao }"
-          />
-          <div class="error-msg">
-            {{ errors.observacao }}
-          </div>
-        </div>
+  <template v-if="!(singleCronograma?.loading || singleCronograma?.error)">
+    <Form
+      v-slot="{ errors, isSubmitting }"
+      :validation-schema="schema"
+      :initial-values="cronograma_id ? singleCronograma : {}"
+      @submit="onSubmit"
+    >
+      <div class="f1">
+        <label class="label">Descrição <span class="tvermelho">*</span></label>
 
-        <hr class="mt2 mb2">
+        <SmaeText
+          name="descricao"
+          as="textarea"
+          anular-vazio
+          :rows="3"
+          :maxlength="1000"
+          class="inputtext light mb1"
+          :class="{ error: errors.descricao }"
+        />
 
-        <div
-          v-if="!cronograma_id"
-          class=""
-        >
-          <div class="mb1">
-            <label class="block">
-              <Field
-                v-model="regionalizavel"
-                name="regionalizavel"
-                type="checkbox"
-                value="1"
-                class="inputcheckbox"
-              /><span :class="{ 'error': errors.regionalizavel }">Cronograma regionalizável</span>
-            </label>
-            <div class="error-msg">
-              {{ errors.regionalizavel }}
-            </div>
-          </div>
-          <div
-            v-if="regionalizavel"
-            class=""
-          >
-            <label class="label">Nível de regionalização <span class="tvermelho">*</span></label>
-            <Field
-              v-model="nivel_regionalizacao"
-              name="nivel_regionalizacao"
-              as="select"
-              class="inputtext light mb1"
-              :class="{ 'error': errors.nivel_regionalizacao }"
-            >
-              <option value="">
-                Selecione
-              </option>
-              <option value="2">
-                Região
-              </option>
-              <option value="3">
-                Subprefeitura
-              </option>
-              <option value="4">
-                Distrito
-              </option>
-            </Field>
-            <div class="error-msg">
-              {{ errors.nivel_regionalizacao }}
-            </div>
-          </div>
-        </div>
-        <div
-          v-else
-          class=""
-        >
-          <div class="mb1">
-            <label class="flex center">
-              <Field
-                v-slot="{ field }"
-                name="regionalizavel"
-                type="checkbox"
-                :value="true"
-              >
-                <input
-                  type="checkbox"
-                  name="regionalizavel"
-                  v-bind="field"
-                  :value="true"
-                  class="inputcheckbox"
-                  disabled
-                >
-                <span>Cronograma regionalizável</span>
-              </Field>
-              <div class="tipinfo ml1"><svg
-                width="20"
-                height="20"
-              ><use xlink:href="#i_i" /></svg><div>Não é permitida a troca da regionalização</div></div>
-            </label>
-            <div class="error-msg">
-              {{ errors.regionalizavel }}
-            </div>
-          </div>
-
-          <div v-if="singleCronograma.nivel_regionalizacao">
-            <label class="label">Nível de regionalização <span class="tvermelho">*</span></label>
-            <Field
-              v-model="nivel_regionalizacao"
-              name="nivel_regionalizacao"
-              disabled
-              as="select"
-              class="inputtext light mb1"
-              :class="{ 'error': errors.nivel_regionalizacao }"
-            >
-              <option value="">
-                Selecione
-              </option>
-              <option value="2">
-                Região
-              </option>
-              <option value="3">
-                Subprefeitura
-              </option>
-              <option value="4">
-                Distrito
-              </option>
-            </Field>
-            <div class="error-msg">
-              {{ errors.nivel_regionalizacao }}
-            </div>
-          </div>
-        </div>
-
-        <div class="flex spacebetween center mb2">
-          <hr class="mr2 f1">
-          <button
-            class="btn big"
-            :disabled="isSubmitting"
-          >
-            Salvar
-          </button>
-          <hr class="ml2 f1">
-        </div>
-      </Form>
-    </template>
-    <template v-if="singleCronograma?.loading">
-      <span class="spinner">Carregando</span>
-    </template>
-    <template v-if="singleCronograma?.error">
-      <div class="error p1">
         <div class="error-msg">
-          {{ singleCronograma.error }}
+          {{ errors.descricao }}
         </div>
       </div>
-    </template>
-    <template v-if="(!cronograma_id && singleCronograma.length)">
-      <div class="error p1">
-        <div class="error-msg">
-          Somente um indicador por meta
-        </div>
-      </div>
-      <div class="tc">
-        <SmaeLink
-          :to="`${parentlink}`"
-          class="btn big mt1 mb1"
-        >
-          <span>Voltar</span>
-        </SmaeLink>
-      </div>
-    </template>
+      <div class="f2">
+        <label class="label">Observação</label>
 
-    <template v-if="cronograma_id && singleCronograma.id && cronograma_id == singleCronograma.id">
+        <SmaeText
+          name="observacao"
+          as="textarea"
+          anular-vazio
+          :rows="3"
+          :maxlength="1000"
+          class="inputtext light mb1"
+          :class="{ error: errors.observacao }"
+        />
+
+        <div class="error-msg">
+          {{ errors.observacao }}
+        </div>
+      </div>
+
       <hr class="mt2 mb2">
-      <button
-        class="btn amarelo big"
-        @click="checkDelete(singleCronograma.id)"
+
+      <div
+        v-if="!cronograma_id"
+        class=""
       >
-        Remover item
-      </button>
-    </template>
+        <div class="mb1">
+          <label class="block">
+            <Field
+              v-model="regionalizavel"
+              name="regionalizavel"
+              type="checkbox"
+              value="1"
+              class="inputcheckbox"
+            /><span :class="{ 'error': errors.regionalizavel }">Cronograma regionalizável</span>
+          </label>
+          <div class="error-msg">
+            {{ errors.regionalizavel }}
+          </div>
+        </div>
+        <div
+          v-if="regionalizavel"
+          class=""
+        >
+          <label class="label">Nível de regionalização <span class="tvermelho">*</span></label>
+          <Field
+            v-model="nivel_regionalizacao"
+            name="nivel_regionalizacao"
+            as="select"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.nivel_regionalizacao }"
+          >
+            <option value="">
+              Selecione
+            </option>
+            <option value="2">
+              Região
+            </option>
+            <option value="3">
+              Subprefeitura
+            </option>
+            <option value="4">
+              Distrito
+            </option>
+          </Field>
+          <div class="error-msg">
+            {{ errors.nivel_regionalizacao }}
+          </div>
+        </div>
+      </div>
+      <div
+        v-else
+        class=""
+      >
+        <div class="mb1">
+          <label class="flex center">
+            <Field
+              v-slot="{ field }"
+              name="regionalizavel"
+              type="checkbox"
+              :value="true"
+            >
+              <input
+                type="checkbox"
+                name="regionalizavel"
+                v-bind="field"
+                :value="true"
+                class="inputcheckbox"
+                disabled
+              >
+              <span>Cronograma regionalizável</span>
+            </Field>
+            <div class="tipinfo ml1"><svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_i" /></svg><div>Não é permitida a troca da regionalização</div></div>
+          </label>
+          <div class="error-msg">
+            {{ errors.regionalizavel }}
+          </div>
+        </div>
+
+        <div v-if="singleCronograma.nivel_regionalizacao">
+          <label class="label">Nível de regionalização <span class="tvermelho">*</span></label>
+          <Field
+            v-model="nivel_regionalizacao"
+            name="nivel_regionalizacao"
+            disabled
+            as="select"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.nivel_regionalizacao }"
+          >
+            <option value="">
+              Selecione
+            </option>
+            <option value="2">
+              Região
+            </option>
+            <option value="3">
+              Subprefeitura
+            </option>
+            <option value="4">
+              Distrito
+            </option>
+          </Field>
+          <div class="error-msg">
+            {{ errors.nivel_regionalizacao }}
+          </div>
+        </div>
+      </div>
+
+      <div class="flex spacebetween center mb2">
+        <hr class="mr2 f1">
+        <button
+          class="btn big"
+          :disabled="isSubmitting"
+        >
+          Salvar
+        </button>
+        <hr class="ml2 f1">
+      </div>
+    </Form>
+  </template>
+  <template v-if="singleCronograma?.loading">
+    <span class="spinner">Carregando</span>
+  </template>
+  <template v-if="singleCronograma?.error">
+    <div class="error p1">
+      <div class="error-msg">
+        {{ singleCronograma.error }}
+      </div>
+    </div>
+  </template>
+  <template v-if="(!cronograma_id && singleCronograma.length)">
+    <div class="error p1">
+      <div class="error-msg">
+        Somente um indicador por meta
+      </div>
+    </div>
+    <div class="tc">
+      <SmaeLink
+        :to="`${parentlink}`"
+        class="btn big mt1 mb1"
+      >
+        <span>Voltar</span>
+      </SmaeLink>
+    </div>
+  </template>
+
+  <template v-if="cronograma_id && singleCronograma.id && cronograma_id == singleCronograma.id">
+    <hr class="mt2 mb2">
+    <button
+      class="btn amarelo big"
+      @click="checkDelete(singleCronograma.id)"
+    >
+      Remover item
+    </button>
+  </template>
 </template>

@@ -1848,7 +1848,6 @@ export class DistribuicaoRecursoService {
                         },
                     },
                 },
-                // This is the nivel 2 task in the cronograma representing the phase. It will be the parent.
                 tarefaEspelhada: {
                     select: {
                         id: true,
@@ -1890,7 +1889,6 @@ export class DistribuicaoRecursoService {
                         },
                     },
                 },
-                // This is the nivel 2 task representing the phase, which is the parent.
                 transferencia_andamento: {
                     select: {
                         tarefaEspelhada: {
@@ -1910,13 +1908,13 @@ export class DistribuicaoRecursoService {
         });
 
         const itensParaCriar: ItemParaCriarTarefa[] = [];
-        const parentTaskIdsToClean = new Set<number>();
+        const parentTaskIds = new Set<number>();
 
         // 3. Unify phases into the creation list
         andamentoFases.forEach((af) => {
             const tarefaPai = af.tarefaEspelhada?.[0];
             if (tarefaPai) {
-                parentTaskIdsToClean.add(tarefaPai.id);
+                parentTaskIds.add(tarefaPai.id);
                 itensParaCriar.push({
                     nome_base: af.workflow_fase.fase,
                     tarefa_pai_id: tarefaPai.id,
@@ -1932,10 +1930,10 @@ export class DistribuicaoRecursoService {
         andamentoTarefas.forEach((at) => {
             const tarefaPai = at.transferencia_andamento.tarefaEspelhada?.[0];
             if (tarefaPai) {
-                parentTaskIdsToClean.add(tarefaPai.id);
+                parentTaskIds.add(tarefaPai.id);
                 itensParaCriar.push({
                     nome_base: at.workflow_tarefa.tarefa_fluxo,
-                    tarefa_pai_id: tarefaPai.id, // The parent is the nivel 2 task for the phase
+                    tarefa_pai_id: tarefaPai.id,
                     inicio_planejado: tarefaPai.inicio_planejado,
                     termino_planejado: tarefaPai.termino_planejado,
                     duracao_planejado: at.workflow_tarefa.fluxoTarefas[0].duracao,
@@ -1955,9 +1953,10 @@ export class DistribuicaoRecursoService {
         });
         if (!tarefaCronograma) throw new InternalServerErrorException('Cronograma da transferência não encontrado.');
 
+        // --- Dependency Transfer Logic (for first child creation) ---
         const transitioningParents = await prismaTx.tarefa.findMany({
             where: {
-                id: { in: Array.from(parentTaskIdsToClean) },
+                id: { in: Array.from(parentTaskIds) },
                 n_filhos_imediatos: 0,
                 removido_em: null,
             },
@@ -1998,6 +1997,42 @@ export class DistribuicaoRecursoService {
                 });
             }
         }
+        // --- End of Dependency Transfer ---
+
+        // --- NEW LOGIC: Inherit Dependencies from Sibling ---
+        const parentTasksWithExistingChildren = await prismaTx.tarefa.findMany({
+            where: {
+                id: { in: Array.from(parentTaskIds) },
+                n_filhos_imediatos: { gt: 0 },
+                removido_em: null,
+            },
+            select: { id: true },
+        });
+
+        const siblingDependencies = new Map<number, any[]>();
+        if (parentTasksWithExistingChildren.length > 0) {
+            const firstChildren = await prismaTx.tarefa.findMany({
+                where: {
+                    tarefa_pai_id: { in: parentTasksWithExistingChildren.map((p) => p.id) },
+                    // Use numero 1 OR the lowest numero if 1 doesn't exist for some reason
+                    numero: 1,
+                    removido_em: null,
+                },
+                select: {
+                    tarefa_pai_id: true,
+                    dependencias: {
+                        select: { dependencia_tarefa_id: true, tipo: true, latencia: true },
+                    },
+                },
+            });
+
+            for (const child of firstChildren) {
+                if (child.tarefa_pai_id) {
+                    siblingDependencies.set(child.tarefa_pai_id, child.dependencias);
+                }
+            }
+        }
+        // --- END OF Sibling Dependency Logic ---
 
         const tarefasExistentes = await prismaTx.tarefa.findMany({
             where: {
@@ -2027,8 +2062,17 @@ export class DistribuicaoRecursoService {
             const novoNumero = numeroAtual + 1;
             maxNumeroPorPai.set(item.tarefa_pai_id, novoNumero);
 
-            const inheritedDependencies = movedDependencies.get(item.tarefa_pai_id);
-            const finalDependencies = inheritedDependencies ? inheritedDependencies : item.dependencias;
+            let finalDependencies: any[];
+            const inheritedFromParent = movedDependencies.get(item.tarefa_pai_id);
+            const inheritedFromSibling = siblingDependencies.get(item.tarefa_pai_id);
+
+            if (inheritedFromParent) {
+                finalDependencies = inheritedFromParent;
+            } else if (inheritedFromSibling) {
+                finalDependencies = inheritedFromSibling;
+            } else {
+                finalDependencies = item.dependencias;
+            }
 
             const createAndGetId = async () => {
                 const new_task = await prismaTx.tarefa.create({

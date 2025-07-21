@@ -273,6 +273,24 @@ inner join orgao on meta_orgao.orgao_id = orgao.id
 group by 1,2,3,4,5,6,7,8,9,11;
 update projeto set tarefas_proximo_recalculo=now();
 
+/*
+SELECT
+    dep.deptype,
+    cl.relkind,
+    cl.relname AS dependent_object,
+    cl2.relname AS referenced_object
+FROM
+    pg_depend dep
+JOIN
+    pg_class cl ON dep.objid = cl.oid
+JOIN
+    pg_class cl2 ON dep.refobjid = cl2.oid
+WHERE
+    cl2.relname = 'sof_entidades_linhas';
+
+
+*/
+
 DROP MATERIALIZED VIEW sof_entidades_linhas;
 CREATE MATERIALIZED VIEW sof_entidades_linhas AS
 WITH dict AS (
@@ -325,7 +343,7 @@ SELECT
     col,
     coalesce(codigo, '') AS codigo,
     coalesce(cod_orgao, '') AS cod_orgao,
-    string_agg(descricao, ' / ' ORDER BY descricao) AS descricao
+    string_agg(distinct descricao, ' / ' ORDER BY descricao) AS descricao
 FROM
     lines
 GROUP BY

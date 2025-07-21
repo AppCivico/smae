@@ -36,11 +36,14 @@
               :schema="schema"
             />
 
-            <Field
+            <SmaeText
               class="inputtext light f1"
               as="textarea"
               name="analise_qualitativa_liberador"
               :disabled="!forumlariosAExibir.liberacao.liberado"
+              anular-vazio
+              rows="3"
+              maxlength="1000"
             />
 
             <ErrorMessage
@@ -59,11 +62,14 @@
               :schema="schema"
             />
 
-            <Field
+            <SmaeText
               class="inputtext light f1"
               as="textarea"
               name="analise_qualitativa_aprovador"
               :disabled="!forumlariosAExibir.aprovacao.liberado || fase === 'liberacao'"
+              anular-vazio
+              rows="3"
+              maxlength="1000"
             />
 
             <ErrorMessage
@@ -98,11 +104,14 @@
               :schema="schema"
             />
 
-            <Field
+            <SmaeText
               class="inputtext light f1"
               as="textarea"
               name="pedido_complementacao"
               :disabled="!values.solicitar_complementacao"
+              anular-vazio
+              rows="3"
+              maxlength="1000"
             />
 
             <ErrorMessage
@@ -121,13 +130,16 @@
               :schema="schema"
             />
 
-            <Field
+            <SmaeText
               class="inputtext light f1"
               as="textarea"
               name="analise_qualitativa"
               :disabled="!forumlariosAExibir.cadastro.liberado
                 || fase === 'aprovacao'
                 || fase === 'liberacao'"
+              anular-vazio
+              rows="3"
+              maxlength="1000"
             />
           </div>
         </article>
@@ -359,6 +371,7 @@
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 import { ErrorMessage, Field, useForm } from 'vee-validate';
+import { useRoute } from 'vue-router';
 import { useCicloAtualizacaoStore } from '@/stores/cicloAtualizacao.store';
 import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store';
 import truncate from '@/helpers/texto/truncate';
@@ -366,7 +379,6 @@ import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
 import { cicloAtualizacaoModalEditarSchema } from '@/consts/formSchemas';
 import UploadArquivos, { ArquivoAdicionado } from '@/components/UploadArquivos.vue';
 import AuxiliarDePreenchimento from '@/components/AuxiliarDePreenchimento.vue';
-import { useRoute } from 'vue-router';
 import useCicloAtualizacao from './composables/useCicloAtualizacao';
 
 type VariaveisDados = {
@@ -667,12 +679,6 @@ function restaurarFormulario() {
 }
 .formulario--cadastro {
   grid-area: cadastro;
-}
-
-.formulario__item {
-  textarea {
-    height: 124px;
-  }
 }
 
 .valores-variaveis__titulo {

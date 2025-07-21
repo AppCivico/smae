@@ -1,4 +1,9 @@
 <script setup>
+import * as Yup from 'yup';
+import { storeToRefs } from 'pinia';
+import { useRoute } from 'vue-router';
+import { computed, ref, unref } from 'vue';
+import { ErrorMessage, Field, Form } from 'vee-validate';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CampoDeEquipesComBuscaPorOrgao from '@/components/CampoDeEquipesComBuscaPorOrgao.vue';
 import CampoDePlanosMetasRelacionados from '@/components/CampoDePlanosMetasRelacionados.vue';
@@ -12,11 +17,6 @@ import { useAtividadesStore } from '@/stores/atividades.store';
 import { useEquipesStore } from '@/stores/equipes.store';
 import { useIniciativasStore } from '@/stores/iniciativas.store';
 import { useMetasStore } from '@/stores/metas.store';
-import { storeToRefs } from 'pinia';
-import { ErrorMessage, Field, Form } from 'vee-validate';
-import { computed, ref, unref } from 'vue';
-import { useRoute } from 'vue-router';
-import * as Yup from 'yup';
 
 const alertStore = useAlertStore();
 const route = useRoute();
@@ -268,13 +268,17 @@ function filterResponsible(orgao_id) {
       <div class="flex g2">
         <div class="f1">
           <label class="label">Contexto</label>
-          <Field
+
+          <SmaeText
             name="contexto"
             as="textarea"
-            rows="3"
+            anular-vazio
+            :rows="3"
+            :maxlength="1000"
             class="inputtext light mb1"
             :class="{ error: errors.contexto }"
           />
+
           <div class="error-msg">
             {{ errors.contexto }}
           </div>
@@ -285,13 +289,17 @@ function filterResponsible(orgao_id) {
           <label class="label">
             {{ activePdm.rotulo_complementacao_meta || 'Informações Complementares' }}
           </label>
-          <Field
+
+          <SmaeText
             name="complemento"
             as="textarea"
-            rows="3"
+            anular-vazio
+            :rows="3"
+            :maxlength="1000"
             class="inputtext light mb1"
             :class="{ error: errors.complemento }"
           />
+
           <div class="error-msg">
             {{ errors.complemento }}
           </div>

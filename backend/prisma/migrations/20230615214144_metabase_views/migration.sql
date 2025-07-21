@@ -237,7 +237,7 @@ SELECT
     col,
     coalesce(codigo, '') AS codigo,
     coalesce(cod_orgao, '') AS cod_orgao,
-    string_agg(descricao, ' / ' ORDER BY descricao) AS descricao
+    string_agg(distinct descricao, ' / ' ORDER BY descricao) AS descricao
 FROM
     lines
 GROUP BY

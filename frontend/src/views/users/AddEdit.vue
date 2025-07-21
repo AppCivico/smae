@@ -1,7 +1,16 @@
 <script setup>
+import { CONST_PERFIL_PARTICIPANTE_EQUIPE, LISTA_PRIV_ADMIN } from '@back/common/consts';
+import { kebabCase } from 'lodash';
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage, Field, useForm, useIsFormDirty,
+} from 'vee-validate';
+import {
+  computed, onMounted, ref, watch,
+} from 'vue';
+import { useRoute } from 'vue-router';
 import tipoDePerfil from '@/consts/tipoDePerfil';
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { CONST_PERFIL_PARTICIPANTE_EQUIPE, LISTA_PRIV_ADMIN } from '@back/common/consts';
 // Em 2024-10-28, o desenvolvedor responsável pelo back end orientou a usar essa variável
 import { Dashboard } from '@/components';
 import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
@@ -16,39 +25,32 @@ import { useEquipesStore } from '@/stores/equipes.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePaineisGruposStore } from '@/stores/paineisGrupos.store';
 import { useUsersStore } from '@/stores/users.store';
-import { kebabCase } from 'lodash';
-import { storeToRefs } from 'pinia';
-import {
-  ErrorMessage, Field, useForm, useIsFormDirty,
-} from 'vee-validate';
-import { computed, ref, watch } from 'vue';
-import { useRoute } from 'vue-router';
 
-const usersStore = useUsersStore();
-usersStore.clear();
-const alertStore = useAlertStore();
 const route = useRoute();
 const { id } = route.params;
 
+const authStore = useAuthStore();
+const alertStore = useAlertStore();
+const usersStore = useUsersStore();
+const organsStore = useOrgansStore();
 const equipesStore = useEquipesStore();
+const PaineisGruposStore = usePaineisGruposStore();
+
+usersStore.clear();
+
+let title = 'Cadastro de Usuário';
+const perfilParaDetalhar = ref(0);
+const bloquearCampoOrgao = ref(false);
+const personalizarNomeParaExibição = ref(false);
+
+const { organs } = storeToRefs(organsStore);
+const { PaineisGrupos } = storeToRefs(PaineisGruposStore);
+const { sistemaCorrente, permissions, user: usuarioLogado } = storeToRefs(authStore);
 const {
   equipesPorOrgaoIdPorPerfil,
   chamadasPendentes: chamadasPendentesDeEquipes,
   erro: erroDeEquipes,
 } = storeToRefs(equipesStore);
-
-const organsStore = useOrgansStore();
-const { organs } = storeToRefs(organsStore);
-
-const PaineisGruposStore = usePaineisGruposStore();
-const { PaineisGrupos } = storeToRefs(PaineisGruposStore);
-PaineisGruposStore.getAll();
-
-const authStore = useAuthStore();
-const { sistemaCorrente, permissions } = storeToRefs(authStore);
-
-let title = 'Cadastro de Usuário';
-const personalizarNomeParaExibição = ref(false);
 const {
   user, accessProfiles, erros, chamadasPendentes,
 } = storeToRefs(usersStore);
@@ -61,8 +63,6 @@ const {
 });
 
 const formularioSujo = useIsFormDirty();
-
-const perfilParaDetalhar = ref(0);
 
 const perfisPorModulo = computed(() => (Array.isArray(accessProfiles.value)
   ? accessProfiles.value.reduce((acc, cur) => {
@@ -136,17 +136,6 @@ const podeEditarMódulos = computed(() => Object.entries(permissions.value || {}
   .flatMap(([modulo, permissoes]) => Object.keys(permissoes).map((permissao) => `${modulo}.${permissao}`))
   .some((permission) => LISTA_PRIV_ADMIN.includes(permission)));
 
-usersStore.getProfiles();
-
-if (id) {
-  title = 'Editar Usuário';
-  usersStore.getById(id).then(() => {
-    if (user.value?.nome_completo !== user.value?.nome_exibicao) {
-      personalizarNomeParaExibição.value = true;
-    }
-  });
-}
-
 const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
   const carga = controlledValues;
 
@@ -198,7 +187,34 @@ watch(user, (novoValor) => {
 watch(accessProfiles, () => {
   resetForm();
 });
+
+onMounted(async () => {
+  await Promise.all([
+    usersStore.getProfiles(),
+    PaineisGruposStore.getAll(),
+  ]);
+
+  if (!id) {
+    setFieldValue('modulos_permitidos', [sistemaCorrente.value]);
+
+    if (permissions.value.CadastroPessoa.inserir) {
+      bloquearCampoOrgao.value = true;
+
+      setFieldValue('orgao_id', usuarioLogado.value.orgao_id);
+    }
+
+    return;
+  }
+
+  title = 'Editar Usuário';
+  usersStore.getById(id).then(() => {
+    if (user.value?.nome_completo !== user.value?.nome_exibicao) {
+      personalizarNomeParaExibição.value = true;
+    }
+  });
+});
 </script>
+
 <template>
   <Dashboard>
     <header class="flex flexwrap spacebetween center mb2">
@@ -368,6 +384,7 @@ watch(accessProfiles, () => {
             as="select"
             class="inputtext light mb1"
             :class="{ 'error': errors.orgao_id }"
+            :disabled="bloquearCampoOrgao"
             @change="resetField('equipes', { value: [] })"
           >
             <option value="">
@@ -443,6 +460,7 @@ watch(accessProfiles, () => {
           nome-da-chave-de-abas="modulo"
           class="mb2"
           :atributos-de-cada-aba="abasOcultas"
+          alinhamento="esquerda"
         >
           <template
             v-for="(modulo) in modulosOrdenados"
