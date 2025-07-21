@@ -23,7 +23,8 @@ BEGIN
             fluxo.id,
             e1.etapa_fluxo AS etapa_de,
             e1.id AS etapa_de_id,
-            row_number() OVER( ORDER BY fluxo.id ) AS numero
+            -- THE FIX IS HERE: Order by the logical order from the workflow, not the table ID.
+            row_number() OVER( ORDER BY fluxo.ordem ) AS numero
         FROM fluxo
         JOIN workflow_etapa e1 ON fluxo.fluxo_etapa_de_id = e1.id
         WHERE fluxo.workflow_id = _workflow_id AND fluxo.removido_em IS NULL
@@ -107,7 +108,8 @@ BEGIN
     SELECT
         _tarefa_cronograma_id,
         CASE WHEN tsf.responsabilidade = 'Propria' THEN tsf.tarefa_fluxo || ' - SERI' ELSE 'Acompanhamento da tarefa: ' || tsf.tarefa_fluxo END,
-        '', '',
+        CASE WHEN tsf.responsabilidade = 'Propria' THEN tsf.tarefa_fluxo || ' - SERI' ELSE 'Acompanhamento da tarefa: ' || tsf.tarefa_fluxo END,
+        '',
         tsf.ordem,
         3,
         tsf.tarefa_pai_id,
@@ -121,25 +123,18 @@ BEGIN
    WITH dependencias_nivel_2 AS (
         SELECT
             t1.id as tarefa_id,
-            -- Find the predecessor task. It's either the previous sibling (t_sibling) OR the last task of the previous parent stage (t_cousin).
             COALESCE(
                 t_sibling.id,
                 t_cousin.id
             ) as dependencia_tarefa_id,
-            -- Determine the dependency type based on the PREDECESSOR task (t_sibling or t_cousin)
             CASE
-                -- If the dependency is an "Acompanhamento" task, this phase should start WITH it.
                 WHEN COALESCE(t_sibling.tarefa, t_cousin.tarefa) ILIKE 'Acompanhamento da etapa%'
                 THEN cast('inicia_pro_inicio' as "TarefaDependenteTipo")
-                -- Otherwise, it's a standard finish-to-start dependency.
                 ELSE cast('termina_pro_inicio' as "TarefaDependenteTipo")
             END as tipo
         FROM tarefa t1
-        -- Find previous sibling (if one exists)
         LEFT JOIN tarefa t_sibling ON t_sibling.tarefa_pai_id = t1.tarefa_pai_id AND t_sibling.numero = t1.numero - 1 AND t_sibling.tarefa_cronograma_id = _tarefa_cronograma_id
-        -- Find parent's previous sibling
         LEFT JOIN tarefa t_parent_prev_sibling ON t_parent_prev_sibling.nivel = 1 AND t_parent_prev_sibling.numero = (SELECT numero FROM tarefa WHERE id = t1.tarefa_pai_id) - 1 AND t_parent_prev_sibling.tarefa_cronograma_id = _tarefa_cronograma_id
-        -- Find the last child of that previous parent sibling (the "cousin" task)
         LEFT JOIN tarefa t_cousin ON t_cousin.tarefa_pai_id = t_parent_prev_sibling.id AND t_cousin.numero = (SELECT MAX(numero) FROM tarefa WHERE tarefa_pai_id = t_parent_prev_sibling.id) AND t_cousin.tarefa_cronograma_id = _tarefa_cronograma_id
         WHERE t1.tarefa_cronograma_id = _tarefa_cronograma_id AND t1.nivel = 2
     )
@@ -151,19 +146,17 @@ BEGIN
 
     -- Dependências para Nivel 3 (Sub-Fases/Tarefas)
     WITH dependencias_nivel_3 AS (
-        SELECT
+         SELECT
             t1.id as tarefa_id,
-            -- This logic remains simple as it's the most common case
             t_sibling.id as dependencia_tarefa_id,
             cast('termina_pro_inicio' as "TarefaDependenteTipo") as tipo
         FROM tarefa t1
-        -- The dependency is ALWAYS the previous sibling. This covers 99% of cases for level 3.
         JOIN tarefa t_sibling ON t_sibling.tarefa_pai_id = t1.tarefa_pai_id AND t_sibling.numero = t1.numero - 1 AND t_sibling.nivel = 3
         WHERE t1.tarefa_cronograma_id = _tarefa_cronograma_id AND t1.nivel = 3
     )
     INSERT INTO tarefa_dependente (tarefa_id, dependencia_tarefa_id, tipo, latencia)
     SELECT tarefa_id, dependencia_tarefa_id, tipo, 0
-    FROM dependencias_nivel_3; -- No need for WHERE NULL check as JOIN guarantees a result.
+    FROM dependencias_nivel_3;
 
 
     -- Atualizando n_filhos_imediatos
