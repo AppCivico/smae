@@ -57,10 +57,14 @@ const rotasParaMigalhasDePão = computed(() => {
         >
           {{
             item.meta?.tituloParaMigalhaDePao
-              || (typeof item.meta?.título === 'function'
-                ? item.meta?.título()
-                : item.meta?.título || item.name)
-              || item.meta?.títuloParaMenu }}
+              || item.meta.título && (
+                typeof item.meta.título === 'function' ?
+                  item.meta.título()
+                  : item.meta.título
+              )
+              || item.meta?.títuloParaMenu
+              || item.name
+          }}
         </router-link>
       </li>
       <li
@@ -68,10 +72,13 @@ const rotasParaMigalhasDePão = computed(() => {
       >
         {{
           $route.meta?.tituloParaMigalhaDePao
-            || (typeof $route.meta?.título === 'function'
-              ? $route.meta?.título()
-              : $route.meta?.título || $route.name)
+            || $route.meta?.título && (
+              typeof $route.meta?.título === 'function' ?
+                $route.meta?.título()
+                : $route.meta?.título
+            )
             || $route.meta?.títuloParaMenu
+            || $route.name
         }}
       </li>
     </ul>
