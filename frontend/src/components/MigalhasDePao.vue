@@ -56,13 +56,17 @@ const rotasParaMigalhasDePão = computed(() => {
           :to="item.href"
         >
           {{
-            item.meta?.tituloParaMigalhaDePao
+            item.meta?.tituloParaMigalhaDePao && (
+              typeof item.meta.tituloParaMigalhaDePao === 'function' ?
+                item.meta.tituloParaMigalhaDePao()
+                : item.meta.tituloParaMigalhaDePao
+            )
+              || item.meta?.títuloParaMenu
               || item.meta.título && (
                 typeof item.meta.título === 'function' ?
                   item.meta.título()
                   : item.meta.título
               )
-              || item.meta?.títuloParaMenu
               || item.name
           }}
         </router-link>
@@ -71,13 +75,17 @@ const rotasParaMigalhasDePão = computed(() => {
         class="migalhas-de-pão__item"
       >
         {{
-          $route.meta?.tituloParaMigalhaDePao
+          $route.meta?.tituloParaMigalhaDePao && (
+            typeof $route.meta.tituloParaMigalhaDePao === 'function' ?
+              $route.meta.tituloParaMigalhaDePao()
+              : $route.meta.tituloParaMigalhaDePao
+          )
+            || $route.meta?.títuloParaMenu
             || $route.meta?.título && (
               typeof $route.meta?.título === 'function' ?
                 $route.meta?.título()
                 : $route.meta?.título
             )
-            || $route.meta?.títuloParaMenu
             || $route.name
         }}
       </li>

@@ -248,6 +248,14 @@ export default {
               'projetosListar',
             ],
             título: () => {
+              const projetoStoreEmFoco = useProjetosStore()?.emFoco?.nome;
+              if (!projetoStoreEmFoco) {
+                return 'Escopo';
+              }
+
+              return `Projeto ${projetoStoreEmFoco}`;
+            },
+            tituloParaMigalhaDePao: () => {
               const { name: routeName } = useRoute();
               const projetoStoreEmFoco = useProjetosStore()?.emFoco?.nome;
               if (!projetoStoreEmFoco) {
@@ -288,6 +296,7 @@ export default {
           }),
           meta: {
             título: 'Gantt',
+            tituloParaMigalhaDePao: 'Gantt',
             títuloParaMenu: 'Gráfico de Gantt',
           },
         },
