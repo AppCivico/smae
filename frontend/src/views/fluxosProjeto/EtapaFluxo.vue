@@ -1,14 +1,14 @@
 <!-- não finalizado -->
 <script setup>
+import { storeToRefs } from 'pinia';
+import { ErrorMessage, Field, useForm } from 'vee-validate';
+import { computed, ref, watch } from 'vue';
 import SmallModal from '@/components/SmallModal.vue';
 import { fasesFluxo as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
 import { useFluxosEtapasProjetosStore } from '@/stores/fluxosEtapasProjeto.store';
 import { useFluxosProjetosStore } from '@/stores/fluxosProjeto.store';
-import { storeToRefs } from 'pinia';
-import { ErrorMessage, Field, useForm } from 'vee-validate';
-import { computed, ref, watch } from 'vue';
 
 const props = defineProps({
   etapaId: {
@@ -143,10 +143,6 @@ watch(itemParaEdicao, (novoValor) => {
       @submit.prevent="onSubmit"
     >
       <div>
-        <LabelFromYup
-          :name="emFoco.id"
-          :schema="schema"
-        />
         <Field
           name="workflow_id"
           type="hidden"

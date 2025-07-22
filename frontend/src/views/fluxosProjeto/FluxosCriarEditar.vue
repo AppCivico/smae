@@ -1,5 +1,11 @@
 <script setup>
 // Não finalizado
+import { storeToRefs } from 'pinia';
+import { ErrorMessage, Field, useForm } from 'vee-validate';
+import {
+  computed, onUnmounted, ref, watch, watchEffect,
+} from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import { workflow as schema } from '@/consts/formSchemas';
 import responsabilidadeEtapaFluxo from '@/consts/responsabilidadeEtapaFluxo';
@@ -13,12 +19,6 @@ import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store'
 import EtapaFluxo from '@/views/fluxosProjeto/EtapaFluxo.vue';
 import FaseFluxo from '@/views/fluxosProjeto/FaseFluxo.vue';
 import TarefaFluxo from '@/views/fluxosProjeto/TarefaFluxo.vue';
-import { storeToRefs } from 'pinia';
-import { ErrorMessage, Field, useForm } from 'vee-validate';
-import {
-  computed, onUnmounted, ref, watch, watchEffect,
-} from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 
 const fluxosEtapasProjetos = useFluxosEtapasProjetosStore();
 const tipoDeTransferenciaStore = useTipoDeTransferenciaStore();
@@ -31,7 +31,10 @@ const router = useRouter();
 const route = useRoute();
 
 const { lista: tipoTransferenciaComoLista } = storeToRefs(tipoDeTransferenciaStore);
-const { lista: statusesDistribuicaoComoLista } = storeToRefs(statusDistribuicaoWorflowStore);
+const {
+  lista: statusesDistribuicaoComoLista,
+  listaBase: statusListaBase,
+} = storeToRefs(statusDistribuicaoWorflowStore);
 const {
   chamadasPendentes, erro, itemParaEdicao, emFoco,
 } = storeToRefs(fluxosProjetoStore);
@@ -120,12 +123,21 @@ const onSubmit = handleSubmit(async (values) => {
 });
 
 function markCheckboxesWithSavedValues() {
-  if (emFoco?.value.statuses_distribuicao && emFoco?.value.statuses_distribuicao.length > 0) {
-    statusesDistribuicaoSelecionados.value = emFoco?.value.statuses_distribuicao.map((status) => ({
+  console.log(emFoco.value?.statuses_distribuicao);
+
+  if (!emFoco.value) {
+    statusesDistribuicaoSelecionados.value = statusListaBase.value.map((status) => ({
       id: status.id,
       status_base: status.status_base,
     }));
+
+    return;
   }
+
+  statusesDistribuicaoSelecionados.value = emFoco.value?.statuses_distribuicao.map((status) => ({
+    id: status.id,
+    status_base: status.status_base,
+  }));
 }
 
 async function carregarFluxo() {
@@ -136,8 +148,12 @@ async function carregarFluxo() {
 }
 
 async function iniciar() {
-  await tipoDeTransferenciaStore.buscarTudo();
-  await carregarFluxo();
+  await Promise.all([
+    tipoDeTransferenciaStore.buscarTudo(),
+    statusDistribuicaoWorflowStore.buscarTudo(),
+    carregarFluxo(),
+  ]);
+
   markCheckboxesWithSavedValues();
 }
 
@@ -176,7 +192,6 @@ onUnmounted(() => {
 watch(itemParaEdicao, (novoValor) => {
   if (novoValor.transferencia_tipo?.id) {
     tipoTransferenciaSelecionado.value = novoValor.transferencia_tipo.id;
-    statusDistribuicaoWorflowStore.buscarTudo();
     esferaSelecionada.value = tipoTransferenciaComoLista.value
       .find((x) => x.id === novoValor.transferencia_tipo.id)?.esfera || '';
   }
@@ -193,6 +208,7 @@ watch(statusesDistribuicaoSelecionados, (newValue) => {
     <h1>{{ route?.meta?.título || 'Cadastro de Fluxo' }}</h1>
     <hr class="ml2 f1">
   </div>
+
   <EtapaFluxo
     v-if="idDaEtapaEmFoco > -1"
     :ordem="item?.ordem || null"
