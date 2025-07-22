@@ -14,6 +14,7 @@ import { PdmModule } from '../pdm/pdm.module';
 import { UploadModule } from '../upload/upload.module';
 import { VariavelUtilService } from './variavel.util.service';
 import { VariavelCategoricaModule } from '../variavel-categorica/variavel-categorica.module';
+import { VariavelRelacionamentoService } from './relacionados/variavel.relacionamento.service';
 
 @Module({
     imports: [
@@ -41,6 +42,7 @@ import { VariavelCategoricaModule } from '../variavel-categorica/variavel-catego
         VariavelCalculadaService,
         VariavelCicloService,
         VariavelUtilService,
+        VariavelRelacionamentoService
     ],
     exports: [VariavelService],
 })

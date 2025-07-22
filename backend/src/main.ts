@@ -119,7 +119,10 @@ Usar o link do do swagger + "-json"
         });
     }
 
-    await app.listen(process.env.PORT || 3001, '0.0.0.0');
+    await app.listen(process.env.PORT || 3001, '0.0.0.0').then(() => {
+        console.log(`SMAE API running on port ${process.env.PORT || 3001}`);
+        console.log(`Swagger UI available at: http://localhost:${process.env.PORT || 3001}/api`);
+    });
 }
 bootstrap();
 process.on('unhandledRejection', (reason, promise) => {
