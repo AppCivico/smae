@@ -13,12 +13,13 @@ import {
     Periodicidade,
     Prisma,
     Serie,
-    TipoPdm,
     TipoVariavel,
     TipoVariavelCategorica,
     VariavelCategoricaValor,
 } from '@prisma/client';
 import { PrismaClient } from '@prisma/client/extension';
+import { DateTime } from 'luxon';
+import { SmaeConfigService } from 'src/common/services/smae-config.service';
 import { Regiao } from 'src/regiao/entities/regiao.entity';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { LoggerWithLog } from '../common/LoggerWithLog';
@@ -50,9 +51,9 @@ import {
     VariavelDetailComAuxiliaresDto,
     VariavelDetailDto,
     VariavelGlobalDetailDto,
-    VariavelResumoInput,
 } from './dto/list-variavel.dto';
 import { UpdateVariavelDto } from './dto/update-variavel.dto';
+
 import {
     FilterPeriodoDto,
     FilterSVNPeriodoDto,
@@ -70,13 +71,6 @@ import {
 } from './entities/variavel.entity';
 import { SerieCompactToken } from './serie.token.encoder';
 import { VariavelUtilService } from './variavel.util.service';
-import { DateTime } from 'luxon';
-import { SmaeConfigService } from 'src/common/services/smae-config.service';
-import { VariavelRelacionamentosResponseDto } from './dto/variavel-relacionamentos-response.dto';
-import { VariavelSimplesDto } from './dto/variavel-simples.dto';
-import { FormulaCompostaReferenciandoItemDto } from './dto/formula-composta-referenciando-item.dto';
-import { PdmSimplesComTipoDto } from './dto/pdm-simples-com-tipo.dto';
-import { IndicadorReferenciandoItemDto } from './dto/indicador-referenciando-item.dto';
 
 const SUPRA_SUFIXO = ' - Supra';
 /**
@@ -110,16 +104,6 @@ interface CicloAnalise {
 interface CicloDocumento {
     referencia_data: Date;
     _count: number;
-}
-
-interface MetaArvorePdmRow {
-    meta_id?: number;
-    iniciativa_id?: number;
-    atividade_id?: number;
-    pdm_id?: number;
-    codigo?: string;
-    titulo?: string;
-    nome?: string;
 }
 
 export type VariavelComCategorica = {
@@ -4208,330 +4192,6 @@ export class VariavelService {
             },
         });
         return rows;
-    }
-
-    private async buscarVariavelComPermissao(variavelId: number, user: PessoaFromJwt) {
-        const filters: FilterVariavelDto = { id: variavelId };
-        const whereSet = this.getVariavelWhereSet(filters);
-
-        const variavel = await this.prisma.variavel.findFirst({
-            where: { AND: whereSet },
-            select: {
-                id: true,
-                tipo: true,
-                suspendida_em: true,
-                variavel_categorica_id: true,
-                unidade_medida: { select: { id: true, sigla: true, descricao: true } },
-                casas_decimais: true,
-                periodicidade: true,
-                acumulativa: true,
-                codigo: true,
-                titulo: true,
-                valor_base: true,
-                recalculando: true,
-                recalculo_erro: true,
-                recalculo_tempo: true,
-                variavel_mae_id: true,
-            },
-        });
-
-        if (!variavel) throw new NotFoundException('Variável não encontrada');
-        if (variavel.tipo !== 'Global')
-            throw new BadRequestException('Este endpoint é exclusivo para variáveis do tipo Global');
-
-        return variavel;
-    }
-
-    private async buscarMaeFilhas(variavelId: number) {
-        const variavel = await this.prisma.variavel.findUnique({
-            where: { id: variavelId },
-            select: { variavel_mae_id: true },
-        });
-
-        const mae = variavel?.variavel_mae_id
-            ? await this.prisma.variavel.findUnique({
-                  where: { id: variavel.variavel_mae_id },
-                  select: { id: true, codigo: true, titulo: true },
-              })
-            : null;
-
-        const filhas = await this.prisma.variavel.findMany({
-            where: {
-                variavel_mae_id: variavelId,
-                removido_em: null,
-            },
-            select: {
-                id: true,
-                codigo: true,
-                titulo: true,
-            },
-        });
-
-        return { mae, filhas };
-    }
-
-    private async buscarIndicadoresReferentes(variavelId: number): Promise<IndicadorReferenciandoItemDto[]> {
-        const indicadorVariavelRelacionamento = await this.prisma.indicadorVariavel.findMany({
-            where: {
-                variavel_id: variavelId,
-                indicador: {
-                    removido_em: null,
-                },
-            },
-            select: {
-                indicador: {
-                    select: {
-                        id: true,
-                        codigo: true,
-                        titulo: true,
-                        indicador_tipo: true,
-                        meta_id: true,
-                        iniciativa_id: true,
-                        atividade_id: true,
-                    },
-                },
-            },
-        });
-
-        const metaIds: number[] = [];
-        const iniciativaIds: number[] = [];
-        const atividadeIds: number[] = [];
-        const indicadores = [];
-
-        for (const rel of indicadorVariavelRelacionamento) {
-            const ind = rel.indicador;
-            indicadores.push(ind);
-
-            if (ind.meta_id) metaIds.push(ind.meta_id);
-            if (ind.iniciativa_id) iniciativaIds.push(ind.iniciativa_id);
-            if (ind.atividade_id) atividadeIds.push(ind.atividade_id);
-        }
-
-        let metas: MetaArvorePdmRow[] = [];
-
-        const queryPdm = metaIds.length > 0 || iniciativaIds.length > 0 || atividadeIds.length > 0;
-
-        const metaIdsFiltered = metaIds.filter((id): id is number => typeof id === 'number');
-        const iniciativaIdsFiltered = iniciativaIds.filter((id): id is number => typeof id === 'number');
-        const atividadeIdsFiltered = atividadeIds.filter((id): id is number => typeof id === 'number');
-
-        if (queryPdm) {
-            const clauses = [];
-
-            if (metaIdsFiltered.length > 0) {
-                clauses.push(Prisma.sql`meta_id IN (${Prisma.join(metaIdsFiltered)})`);
-            }
-
-            if (iniciativaIdsFiltered.length > 0) {
-                clauses.push(Prisma.sql`iniciativa_id IN (${Prisma.join(iniciativaIdsFiltered)})`);
-            }
-
-            if (atividadeIdsFiltered.length > 0) {
-                clauses.push(Prisma.sql`atividade_id IN (${Prisma.join(atividadeIdsFiltered)})`);
-            }
-
-            if (clauses.length === 0) {
-                metas = [];
-            } else {
-                const query = Prisma.sql`
-                    SELECT * FROM view_metas_arvore_pdm
-                    WHERE ${Prisma.join(clauses, ' OR ')}
-                `;
-                metas = await this.prisma.$queryRaw<MetaArvorePdmRow[]>(query);
-            }
-        }
-
-        const metasMap = new Map<number, MetaArvorePdmRow>();
-        metas.forEach((m) => {
-            if (m.meta_id) metasMap.set(m.meta_id, m);
-            if (m.iniciativa_id) metasMap.set(m.iniciativa_id, m);
-            if (m.atividade_id) metasMap.set(m.atividade_id, m);
-            if (m.pdm_id) metasMap.set(m.pdm_id, m);
-        });
-
-        const indicadoresReferenciando = indicadores.map((ind) => {
-            const meta = ind.meta_id ? (metasMap.get(ind.meta_id) ?? null) : null;
-            const iniciativa = ind.iniciativa_id ? (metasMap.get(ind.iniciativa_id) ?? null) : null;
-            const atividade = ind.atividade_id ? (metasMap.get(ind.atividade_id) ?? null) : null;
-
-            const pdm =
-                (meta?.pdm_id && metasMap.get(meta.pdm_id)) ??
-                (iniciativa?.pdm_id && metasMap.get(iniciativa.pdm_id)) ??
-                (atividade?.pdm_id && metasMap.get(atividade.pdm_id)) ??
-                null;
-
-            return {
-                id: ind.id,
-                codigo: ind.codigo,
-                titulo: ind.titulo,
-                tipo_indicador: ind.indicador_tipo,
-                meta: meta ? { id: meta.meta_id!, codigo: meta.codigo!, titulo: meta.titulo! } : null,
-                iniciativa: iniciativa
-                    ? { id: iniciativa.iniciativa_id!, codigo: iniciativa.codigo!, titulo: iniciativa.titulo! }
-                    : null,
-                atividade: atividade
-                    ? { id: atividade.atividade_id!, codigo: atividade.codigo!, titulo: atividade.titulo! }
-                    : null,
-                pdm: pdm ? { id: pdm.pdm_id!, nome: pdm.nome!, tipo: TipoPdm.PDM } : null,
-            };
-        });
-
-        return indicadoresReferenciando;
-    }
-
-    private async buscarFormulasReferentes(
-        variavelId: number,
-        indicadoresReferenciando: IndicadorReferenciandoItemDto[]
-    ): Promise<FormulaCompostaReferenciandoItemDto[]> {
-        const formulasRel = await this.prisma.formulaCompostaRelVariavel.findMany({
-            where: {
-                variavel_id: variavelId,
-                formula_composta: {
-                    removido_em: null,
-                    autogerenciavel: false,
-                },
-            },
-            select: {
-                formula_composta: {
-                    select: {
-                        id: true,
-                        titulo: true,
-                        tipo_pdm: true,
-                        autogerenciavel: true,
-                        variavel_calc_id: true,
-                    },
-                },
-            },
-        });
-
-        const formulasMap = new Map<number, FormulaCompostaReferenciandoItemDto>();
-
-        for (const rel of formulasRel) {
-            const fc = rel.formula_composta;
-
-            let pdm: PdmSimplesComTipoDto | null = null;
-
-            if (fc.tipo_pdm === 'PDM') {
-                const ref = indicadoresReferenciando.find(
-                    (i) => i.meta?.id !== null || i.iniciativa?.id !== null || i.atividade?.id !== null
-                );
-
-                if (ref) {
-                    const clauses: string[] = [];
-
-                    if (ref.meta?.id) clauses.push(`meta_id = ${ref.meta.id}`);
-                    if (ref.iniciativa?.id) clauses.push(`iniciativa_id = ${ref.iniciativa.id}`);
-                    if (ref.atividade?.id) clauses.push(`atividade_id = ${ref.atividade.id}`);
-
-                    const raw = await this.prisma.$queryRawUnsafe<{ pdm_id: number }[]>(
-                        `SELECT pdm_id FROM view_metas_arvore_pdm WHERE ${clauses.join(' OR ')} LIMIT 1`
-                    );
-
-                    if (raw.length > 0) {
-                        const pdmFromDb = await this.prisma.pdm.findUnique({
-                            where: { id: raw[0].pdm_id },
-                            select: { id: true, nome: true },
-                        });
-
-                        if (pdmFromDb) {
-                            pdm = {
-                                id: pdmFromDb.id,
-                                nome: pdmFromDb.nome,
-                                tipo: 'PDM',
-                            };
-                        }
-                    }
-                }
-            } else if (fc.tipo_pdm === 'PS' && fc.variavel_calc_id) {
-                const formulaRel = await this.prisma.formulaCompostaRelVariavel.findFirst({
-                    where: { variavel_id: fc.variavel_calc_id },
-                    select: { formula_composta_id: true },
-                });
-
-                const formula = formulaRel?.formula_composta_id
-                    ? await this.prisma.formulaComposta.findUnique({
-                          where: { id: formulaRel.formula_composta_id },
-                          select: { id: true },
-                      })
-                    : null;
-
-                const pdmFromDb = formula?.id
-                    ? await this.prisma.pdm.findFirst({
-                          where: { id: formula.id },
-                          select: { id: true, nome: true },
-                      })
-                    : null;
-
-                if (pdmFromDb) {
-                    pdm = {
-                        id: pdmFromDb.id,
-                        nome: pdmFromDb.nome,
-                        tipo: 'PS',
-                    };
-                }
-            }
-
-            formulasMap.set(fc.id, {
-                id: fc.id,
-                titulo: fc.titulo,
-                tipo_pdm: fc.tipo_pdm,
-                autogerenciavel: fc.autogerenciavel,
-                pdm,
-            });
-        }
-
-        return Array.from(formulasMap.values()).sort((a, b) => a.titulo.localeCompare(b.titulo));
-    }
-
-    private mapearRespostaFinal(data: {
-        variavel: VariavelResumoInput;
-        variavelMae: VariavelSimplesDto | null;
-        variaveisFilhas: VariavelSimplesDto[];
-        indicadoresReferenciando: IndicadorReferenciandoItemDto[];
-        formulasCompostasReferenciando: FormulaCompostaReferenciandoItemDto[];
-    }): VariavelRelacionamentosResponseDto {
-        return {
-            variavel: {
-                id: data.variavel.id,
-                suspendida: data.variavel.suspendida_em !== null,
-                variavel_categorica_id: data.variavel.variavel_categorica_id,
-                unidade_medida: data.variavel.unidade_medida ?? null,
-                casas_decimais: data.variavel.casas_decimais,
-                periodicidade: data.variavel.periodicidade,
-                acumulativa: data.variavel.acumulativa,
-                codigo: data.variavel.codigo,
-                titulo: data.variavel.titulo,
-                valor_base: data.variavel.valor_base?.toString() ?? '',
-                recalculando: data.variavel.recalculando,
-                recalculo_erro: data.variavel.recalculo_erro,
-                recalculo_tempo: data.variavel.recalculo_tempo,
-                variavel_mae_id: data.variavel.variavel_mae_id,
-            },
-            variavel_mae: data.variavelMae,
-            variaveis_filhas: data.variaveisFilhas.sort((a, b) => a.codigo.localeCompare(b.codigo)),
-            indicadores_referenciando: data.indicadoresReferenciando.sort((a, b) => a.codigo.localeCompare(b.codigo)),
-            formulas_compostas_referenciando: data.formulasCompostasReferenciando.sort((a, b) =>
-                a.titulo.localeCompare(b.titulo)
-            ),
-        };
-    }
-
-    async getRelacionamentos(variavelId: number, user: PessoaFromJwt): Promise<VariavelRelacionamentosResponseDto> {
-        const variavel = await this.buscarVariavelComPermissao(variavelId, user);
-        const { mae: variavelMae, filhas: variaveisFilhas } = await this.buscarMaeFilhas(variavel.id);
-        const indicadoresReferenciando = await this.buscarIndicadoresReferentes(variavel.id);
-        const formulasCompostasReferenciando = await this.buscarFormulasReferentes(
-            variavel.id,
-            indicadoresReferenciando
-        );
-
-        return this.mapearRespostaFinal({
-            variavel,
-            variavelMae,
-            variaveisFilhas,
-            indicadoresReferenciando,
-            formulasCompostasReferenciando,
-        });
     }
 }
 

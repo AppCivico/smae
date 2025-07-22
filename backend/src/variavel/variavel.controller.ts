@@ -17,7 +17,7 @@ import {
     CreateVariavelBaseDto,
     CreateVariavelPDMDto,
 } from './dto/create-variavel.dto';
-import { FilterVariavelDto, FilterVariavelGlobalDto } from './dto/filter-variavel.dto';
+import { FilterVariavelDto, FilterVariavelGlobalDto, FilterVariavelRelacionamentosDto } from './dto/filter-variavel.dto';
 import {
     ListPdmSimplesDto,
     ListSeriesAgrupadas,
@@ -28,6 +28,9 @@ import {
 } from './dto/list-variavel.dto';
 import { UpdateVariavelDto } from './dto/update-variavel.dto';
 import {
+    VariavelGlobalRelacionamentoDto,
+} from './relacionados/dto/variavel.relacionamento.dto';
+import {
     FilterSVNPeriodoDto,
     FilterVariavelDetalheDto,
     SerieIndicadorValorNominal,
@@ -37,7 +40,7 @@ import {
     VariavelGlobalItemDto,
 } from './entities/variavel.entity';
 import { VariavelService } from './variavel.service';
-import { VariavelRelacionamentosResponseDto } from './dto/variavel-relacionamentos-response.dto';
+import { VariavelRelacionamentoService } from './relacionados/variavel.relacionamento.service';
 
 export const ROLES_ACESSO_VARIAVEL_PDM: ListaDePrivilegios[] = [...MetaController.ReadPerm, 'CadastroMeta.listar'];
 
@@ -154,7 +157,10 @@ export class VariavelGlobalController {
         'SMAE.GrupoVariavel.participante',
     ];
 
-    constructor(private readonly variavelService: VariavelService) {}
+    constructor(
+        private readonly variavelService: VariavelService,
+        private readonly variavelRelacionamentoService: VariavelRelacionamentoService
+    ) {}
 
     @Get('proxy/pdm-e-planos-setoriais')
     @ApiBearerAuth('access-token')
@@ -246,6 +252,17 @@ export class VariavelGlobalController {
         return { ids: await this.variavelService.create_region_generated(this.tipo, dto, user) };
     }
 
+    @Get('variavel/:id/relacionados')
+    @ApiBearerAuth('access-token')
+    @Roles([...VariavelGlobalController.ReadPerm])
+    async getRelacionamentos(
+        @Param() params: FindOneParams,
+        @Query() filter: FilterVariavelRelacionamentosDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<VariavelGlobalRelacionamentoDto> {
+        return this.variavelRelacionamentoService.getRelacionamentos(params.id, user, filter);
+    }
+
     // Manter em sync o getSeriePrevistoRealizadoCopia
     @ApiExtraModels(
         SerieValorNomimal,
@@ -283,15 +300,5 @@ export class VariavelGlobalController {
     @Roles([...VariavelGlobalController.WritePerm])
     async processaVariaveisSuspensas(): Promise<number[]> {
         return await this.variavelService.processVariaveisSuspensasController();
-    }
-
-    @Get(':id/relacionados')
-    @ApiBearerAuth('access-token')
-    @Roles([...VariavelGlobalController.ReadPerm])
-    async getRelacionamentos(
-        @Param() params: FindOneParams,
-        @CurrentUser() user: PessoaFromJwt
-    ): Promise<VariavelRelacionamentosResponseDto> {
-        return this.variavelService.getRelacionamentos(params.id, user);
     }
 }
