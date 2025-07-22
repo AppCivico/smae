@@ -1999,7 +1999,7 @@ export class DistribuicaoRecursoService {
         }
         // --- End of Dependency Transfer ---
 
-        // --- NEW LOGIC: Inherit Dependencies from Sibling ---
+        // --- Inherit Dependencies from Sibling ---
         const parentTasksWithExistingChildren = await prismaTx.tarefa.findMany({
             where: {
                 id: { in: Array.from(parentTaskIds) },

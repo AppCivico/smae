@@ -35,10 +35,20 @@ export class WorkflowService {
                 if (similarExists > 0)
                     throw new HttpException('nome| Nome igual ou semelhante já existe em outro registro ativo', 400);
 
-                // Populando com todos statuses base de distribuição.
-                const statuses_base = await prismaTxn.distribuicaoStatusBase.findMany({
-                    select: { id: true },
-                });
+                // Preparing distribution statuses from the DTO.
+                const statusesToCreateData: { status_base_id?: number; status_id?: number }[] = [];
+
+                if (dto.distribuicao_statuses_base?.length) {
+                    dto.distribuicao_statuses_base.forEach((status_base_id) => {
+                        statusesToCreateData.push({ status_base_id });
+                    });
+                }
+
+                if (dto.distribuicao_statuses_customizados?.length) {
+                    dto.distribuicao_statuses_customizados.forEach((status_id) => {
+                        statusesToCreateData.push({ status_id });
+                    });
+                }
 
                 const workflow = await prismaTxn.workflow.create({
                     data: {
@@ -51,11 +61,7 @@ export class WorkflowService {
                         criado_em: new Date(Date.now()),
                         statusesDistribuicao: {
                             createMany: {
-                                data: statuses_base.map((s) => {
-                                    return {
-                                        status_base_id: s.id,
-                                    };
-                                }),
+                                data: statusesToCreateData,
                             },
                         },
                     },
