@@ -52,7 +52,7 @@ export class RelProjetosCronogramaDto {
     projeto_id: number;
     projeto_codigo: string;
     tarefa_id: number;
-    hirearquia: string;
+    hierarquia: string;
     numero: number;
     nivel: number;
     tarefa: string;

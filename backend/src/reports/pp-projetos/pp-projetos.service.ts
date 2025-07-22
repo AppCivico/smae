@@ -1,6 +1,6 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
-import { ProjetoGetPermissionSet, ProjetoService } from '../../pp/projeto/projeto.service';
+import { ProjetoGetPermissionSet, ProjetoService, ProjetoStatusParaExibicao } from '../../pp/projeto/projeto.service';
 import { PrismaService } from '../../prisma/prisma.service';
 
 import { ContratoPrazoUnidade, ProjetoStatus, StatusContrato, StatusRisco, TipoProjeto } from '@prisma/client';
@@ -303,7 +303,7 @@ export class PPProjetosService implements ReportableService {
         };
     }
 
-    private async gerarCsv<T>(
+    private async gerarCsv(
         tipo: string,
         fields: string[],
         fieldNames: string[],
@@ -318,10 +318,11 @@ export class PPProjetosService implements ReportableService {
             if (tmpFile) {
                 out.push({ name: `${tipo}.csv`, localFile: tmpFile });
             } else {
-                this.logger.warn(`Nenhum dado encontrado para "${tipo}", CSV não gerado.`);
+                Logger.warn(`Nenhum dado encontrado para "${tipo}", CSV não gerado.`);
             }
         } catch (error) {
-            this.logger.error(`Erro ao gerar CSV de projetos:`, error);
+            Logger.error(`Erro ao gerar CSV de projetos:`, error);
+            throw new Error(`Erro ao gerar CSV de projetos: ${error.message}`);
         }
         await ctx.progress(progress);
     }
@@ -655,9 +656,11 @@ export class PPProjetosService implements ReportableService {
             'exclusivo',
             'processos_SEI',
             'status',
-            'modalidade_licitacao',
+            'modalidade_licitacao.id',
+            'modalidade_licitacao.nome',
             'fontes_recurso',
-            'area_gestora',
+            'area_gestora.id',
+            'area_gestora.nome',
             'objeto',
             'descricao_detalhada',
             'contratante',
@@ -681,9 +684,11 @@ export class PPProjetosService implements ReportableService {
             'Exclusivo',
             'Processos SEI',
             'Status',
-            'Modalidade de Licitação',
+            'Modalidade de Licitação - ID',
+            'Modalidade de Licitação - Nome',
             'Fontes de Recurso',
-            'Área Gestora',
+            'Área Gestora - ID',
+            'Área Gestora - Nome',
             'Objeto',
             'Descrição Detalhada',
             'Contratante',
@@ -1158,7 +1163,7 @@ export class PPProjetosService implements ReportableService {
                 projeto_id: db.projeto_id,
                 projeto_codigo: db.projeto_codigo,
                 tarefa_id: db.id,
-                hirearquia: tarefasHierarquia[db.id],
+                hierarquia: tarefasHierarquia[db.id],
                 numero: db.nivel,
                 nivel: db.nivel,
                 tarefa: db.tarefa,
@@ -1669,11 +1674,17 @@ export class PPProjetosService implements ReportableService {
         const totalBatches = Math.ceil(projectIds.length / batchSize);
 
         for (let i = 0; i < projectIds.length; i += batchSize) {
-
             const batchIds = projectIds.slice(i, i + batchSize);
 
             // 3. Executar a query específica para o lote de projetos atual
             const batchData = await this.querySpecificDataByTable(tableName, batchIds);
+
+            if (tableName == 'projetos') {
+                batchData.forEach((row) => {
+                    if (row.status)
+                        (row as any)['status-traduzido'] = ProjetoStatusParaExibicao[row.status as ProjetoStatus];
+                });
+            }
 
             // 4. Enviar o lote para o handler processar (ex: escrever em arquivo)
             await handler.onBatch(batchData, Math.floor(i / batchSize), totalBatches);
