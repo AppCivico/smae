@@ -276,6 +276,7 @@ export class PPProjetosService implements ReportableService {
         const whereCond = await this.buildFilteredWhereStr(dto, user);
 
         await this.queryDataProjetos(whereCond, out_projetos);
+        console.log(whereCond);
         await this.queryDataRiscos(whereCond, out_riscos);
         await this.queryDataPlanosAcao(whereCond, out_planos_acao);
         await this.queryDataPlanosAcaoMonitoramento(whereCond, out_monitoramento_planos_acao);
@@ -619,7 +620,7 @@ export class PPProjetosService implements ReportableService {
             'projeto_codigo',
             'data_registro',
             'participantes',
-            'cronograma_paralisado',
+            'cronograma_paralizado',
             'prazo_encaminhamento',
             'pauta',
             'prazo_realizado',
@@ -1387,7 +1388,7 @@ export class PPProjetosService implements ReportableService {
             projeto.codigo AS projeto_codigo,
             projeto_acompanhamento.data_registro,
             projeto_acompanhamento.participantes,
-            projeto_acompanhamento.cronograma_paralisado,
+            projeto_acompanhamento.cronograma_paralizado,
             projeto_acompanhamento_item.prazo_encaminhamento,
             projeto_acompanhamento.pauta,
             projeto_acompanhamento_item.prazo_realizado,
