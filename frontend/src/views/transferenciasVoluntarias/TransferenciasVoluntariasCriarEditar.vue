@@ -667,7 +667,6 @@ watch(itemParaEdicao, (novosValores) => {
         class="inputtext light mb1"
         rows="5"
         maxlength="1000"
-        esconder-contador
       />
       <ErrorMessage
         class="error-msg mb1"
@@ -683,6 +682,8 @@ watch(itemParaEdicao, (novosValores) => {
 
       <SmaeText
         name="detalhamento"
+        :model-value="values.detalhamento"
+        :schema="schema"
         as="textarea"
         class="inputtext light mb1"
         anular-vazio
@@ -771,6 +772,8 @@ watch(itemParaEdicao, (novosValores) => {
 
       <SmaeText
         name="observacoes"
+        :model-value="values.observacoes"
+        :schema="schema"
         as="textarea"
         maxlength="2048"
         class="inputtext light mb1"

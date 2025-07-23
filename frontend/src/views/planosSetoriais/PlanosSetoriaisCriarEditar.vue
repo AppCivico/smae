@@ -189,8 +189,9 @@ watch(itemParaEdicao, (novoValor) => {
             name="descricao"
             :schema="schema"
           />
-          <Field
+          <SmaeText
             name="descricao"
+            :model-value="carga.descricao"
             as="textarea"
             rows="3"
             class="inputtext light mb1"
@@ -328,12 +329,14 @@ watch(itemParaEdicao, (novoValor) => {
             name="equipe_tecnica"
             :schema="schema"
           />
-          <Field
+          <SmaeText
             name="equipe_tecnica"
+            :model-value="carga.equipe_tecnica"
             as="textarea"
             rows="3"
             class="inputtext light mb1"
             :class="{ 'error': errors.equipe_tecnica }"
+            maxlength="500"
           />
           <p class="t13 tc500">
             Separe os membros por vírgula ou ponto-e-vírgula
@@ -804,8 +807,9 @@ watch(itemParaEdicao, (novoValor) => {
             name="legislacao_de_instituicao"
             :schema="schema"
           />
-          <Field
+          <SmaeText
             name="legislacao_de_instituicao"
+            :model-value="carga.legislacao_de_instituicao"
             as="textarea"
             rows="3"
             class="inputtext light mb1"
