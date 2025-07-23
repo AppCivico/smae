@@ -308,14 +308,14 @@ export class PPProjetosService implements ReportableService {
         tipo: string,
         fields: string[],
         fieldNames: string[],
-        whereCond: WhereCond,
+        projectIds: number[],
         out: FileOutput[],
         ctx: ReportContext,
         progress: number
     ) {
         const handler = new CsvFileHandler(fields, fieldNames);
         try {
-            const tmpFile = await this.processDataInBatches(tipo, whereCond, handler, PPProjetosService.BATCH_SIZE);
+            const tmpFile = await this.processDataInBatches(tipo, projectIds, handler, PPProjetosService.BATCH_SIZE);
             if (tmpFile) {
                 out.push({ name: `${tipo}.csv`, localFile: tmpFile });
             } else {
@@ -334,6 +334,7 @@ export class PPProjetosService implements ReportableService {
         user: PessoaFromJwt | null
     ): Promise<FileOutput[]> {
         const whereCond = await this.buildFilteredWhereStr(params, user);
+        const projetosIds = await this.getProjetosIds(whereCond);
         const out: FileOutput[] = [];
 
         // 1. Processar Projetos
@@ -443,7 +444,7 @@ export class PPProjetosService implements ReportableService {
             'Valor Percentual da Fonte',
             'Valor Nominal da Fonte',
         ];
-        await this.gerarCsv('projetos', projetosFields, projetosFieldNames, whereCond, out, ctx, 20);
+        await this.gerarCsv('projetos', projetosFields, projetosFieldNames, projetosIds, out, ctx, 20);
 
         // 2. Processar Cronograma
         const cronogramaFields = [
@@ -488,7 +489,7 @@ export class PPProjetosService implements ReportableService {
             'ID do Responsável',
             'Nome do Responsável',
         ];
-        await this.gerarCsv('cronograma', cronogramaFields, cronogramaFieldNames, whereCond, out, ctx, 40);
+        await this.gerarCsv('cronograma', cronogramaFields, cronogramaFieldNames, projetosIds, out, ctx, 40);
 
         // 3. Processar Riscos
         const riscosFields = [
@@ -531,7 +532,7 @@ export class PPProjetosService implements ReportableService {
             'Resposta',
             'Tarefas Afetadas',
         ];
-        await this.gerarCsv('riscos', riscosFields, riscosFieldNames, whereCond, out, ctx, 50);
+        await this.gerarCsv('riscos', riscosFields, riscosFieldNames, projetosIds, out, ctx, 50);
 
         // 4. Processar Plano de Ação
         const planosAcaoFields = [
@@ -560,7 +561,7 @@ export class PPProjetosService implements ReportableService {
             'Responsável',
             'Data de Término',
         ];
-        await this.gerarCsv('planos_acao', planosAcaoFields, planosAcaoFieldNames, whereCond, out, ctx, 55);
+        await this.gerarCsv('planos_de_acao', planosAcaoFields, planosAcaoFieldNames, projetosIds, out, ctx, 55);
 
         // 5. Processar Plano de Ação Monitoramentos
         const planosMonitorFields = [
@@ -580,10 +581,9 @@ export class PPProjetosService implements ReportableService {
             'Descrição',
         ];
         await this.gerarCsv(
-            'plano_acao_monitoramento',
+            'monitoramento_planos_de_acao',
             planosMonitorFields,
-            planosMonitorFieldNames,
-            whereCond,
+            planosMonitorFieldNames, projetosIds,
             out,
             ctx,
             60
@@ -612,7 +612,7 @@ export class PPProjetosService implements ReportableService {
             'Contexto',
             'Resultado',
         ];
-        await this.gerarCsv('licoes_aprendidas', licoesFields, licoesFieldNames, whereCond, out, ctx, 65);
+        await this.gerarCsv('licoes_aprendidas', licoesFields, licoesFieldNames, projetosIds, out, ctx, 65);
 
         // 7. Processar acompanhamentos
         const acompFields = [
@@ -624,6 +624,7 @@ export class PPProjetosService implements ReportableService {
             'prazo_encaminhamento',
             'pauta',
             'prazo_realizado',
+            'detalhamento',
             'encaminhamento',
             'responsavel',
             'observacao',
@@ -640,6 +641,7 @@ export class PPProjetosService implements ReportableService {
             'Prazo de Encaminhamento',
             'Pauta',
             'Prazo Realizado',
+            'Detalhamento',
             'Encaminhamento',
             'Responsável',
             'Observação',
@@ -647,7 +649,7 @@ export class PPProjetosService implements ReportableService {
             'Pontos de Atenção',
             'Códigos dos Riscos',
         ];
-        await this.gerarCsv('acompanhamentos', acompFields, acompFieldNames, whereCond, out, ctx, 70);
+        await this.gerarCsv('acompanhamentos', acompFields, acompFieldNames, projetosIds, out, ctx, 70);
 
         // 8. Processar contratos
         const contratosFields = [
@@ -661,7 +663,8 @@ export class PPProjetosService implements ReportableService {
             'modalidade_licitacao.nome',
             'fontes_recurso',
             'area_gestora.id',
-            'area_gestora.nome',
+            'area_gestora.sigla',
+            'area_gestora.descricao',
             'objeto',
             'descricao_detalhada',
             'contratante',
@@ -689,7 +692,8 @@ export class PPProjetosService implements ReportableService {
             'Modalidade de Licitação - Nome',
             'Fontes de Recurso',
             'Área Gestora - ID',
-            'Área Gestora - Nome',
+            'Área Gestora - Sigla',
+            'Área Gestora - Descrição',
             'Objeto',
             'Descrição Detalhada',
             'Contratante',
@@ -705,13 +709,13 @@ export class PPProjetosService implements ReportableService {
             '% Execução',
             'Observações',
         ];
-        await this.gerarCsv('contratos', contratosFields, contratosFieldNames, whereCond, out, ctx, 75);
+        await this.gerarCsv('contratos', contratosFields, contratosFieldNames, projetosIds, out, ctx, 75);
 
         // 9. Processar Aditivos
         const aditivosFields = [
             'id',
             'contrato_id',
-            'tipo',
+            'tipo.nome',
             'data',
             'valor_com_reajuste',
             'percentual_medido',
@@ -726,7 +730,7 @@ export class PPProjetosService implements ReportableService {
             '% Execução',
             'Data Término Atual',
         ];
-        await this.gerarCsv('aditivos', aditivosFields, aditivosFieldNames, whereCond, out, ctx, 80);
+        await this.gerarCsv('aditivos', aditivosFields, aditivosFieldNames, projetosIds, out, ctx, 80);
 
         // 10. Processar Origens
         const origensFields = [
@@ -751,12 +755,12 @@ export class PPProjetosService implements ReportableService {
             'ID Atividade',
             'Título da Atividade',
         ];
-        await this.gerarCsv('origens', origensFields, origensFieldNames, whereCond, out, ctx, 90);
+        await this.gerarCsv('origens', origensFields, origensFieldNames, projetosIds, out, ctx, 90);
 
         // 11. Processar Geolocalização
         const geolocFields = ['projeto_id', 'endereco_exibicao', 'geom_geojson'];
         const geolocFieldNames = ['ID Projeto', 'Endereço', 'GeoJSON'];
-        await this.gerarCsv('geoloc', geolocFields, geolocFieldNames, whereCond, out, ctx, 100);
+        await this.gerarCsv('geoloc', geolocFields, geolocFieldNames, projetosIds, out, ctx, 100);
 
         return [
             {
@@ -1388,7 +1392,7 @@ export class PPProjetosService implements ReportableService {
             projeto.codigo AS projeto_codigo,
             projeto_acompanhamento.data_registro,
             projeto_acompanhamento.participantes,
-            projeto_acompanhamento.cronograma_paralizado,
+            projeto_acompanhamento.cronograma_paralisado,
             projeto_acompanhamento_item.prazo_encaminhamento,
             projeto_acompanhamento.pauta,
             projeto_acompanhamento_item.prazo_realizado,
@@ -1651,33 +1655,19 @@ export class PPProjetosService implements ReportableService {
 
     private async processDataInBatches<T>(
         tableName: string,
-        whereCond: WhereCond,
+        projectIds: number[],
         handler: StreamBatchHandler<T>,
         batchSize = PPProjetosService.BATCH_SIZE
     ): Promise<any> {
-        // 1. Obter apenas os IDs dos projetos que correspondem ao filtro inicial
-        const projectIdsQuery = `
-            SELECT DISTINCT projeto.id
-            FROM projeto
-            JOIN portfolio ON projeto.portfolio_id = portfolio.id
-            ${whereCond.whereString}
-            ORDER BY projeto.id
-        `;
-
-        const projectIdsResult = await this.prisma.$queryRawUnsafe(projectIdsQuery, ...whereCond.queryParams);
-        const projectIds: number[] = (projectIdsResult as any[]).map((row: any) => row.id);
-
         if (projectIds.length === 0) {
             return handler.onComplete();
         }
 
-        // 2. Processar os projetos em lotes de IDs
         const totalBatches = Math.ceil(projectIds.length / batchSize);
 
         for (let i = 0; i < projectIds.length; i += batchSize) {
             const batchIds = projectIds.slice(i, i + batchSize);
 
-            // 3. Executar a query específica para o lote de projetos atual
             const batchData = await this.querySpecificDataByTable(tableName, batchIds);
 
             if (tableName == 'projetos') {
@@ -1686,12 +1676,8 @@ export class PPProjetosService implements ReportableService {
                         (row as any)['status-traduzido'] = ProjetoStatusParaExibicao[row.status as ProjetoStatus];
                 });
             }
-
-            // 4. Enviar o lote para o handler processar (ex: escrever em arquivo)
             await handler.onBatch(batchData, Math.floor(i / batchSize), totalBatches);
         }
-
-        // 5. Finalizar o processo
         return handler.onComplete();
     }
 
@@ -1715,10 +1701,10 @@ export class PPProjetosService implements ReportableService {
             case 'riscos':
                 await this.queryDataRiscos(whereCondForBatch, result);
                 break;
-            case 'planos_acao':
+            case 'planos_de_acao':
                 await this.queryDataPlanosAcao(whereCondForBatch, result);
                 break;
-            case 'plano_acao_monitoramento':
+            case 'monitoramento_planos_de_acao':
                 await this.queryDataPlanosAcaoMonitoramento(whereCondForBatch, result);
                 break;
             case 'licoes_aprendidas':
@@ -1741,5 +1727,26 @@ export class PPProjetosService implements ReportableService {
                 break;
         }
         return result;
+    }
+
+    private async getProjetosIds(whereCond: WhereCond): Promise<number[]> {
+        const projectIdsQuery = `
+            SELECT DISTINCT id
+            FROM (
+                SELECT p.id
+                FROM projeto p
+                    JOIN portfolio ON p.portfolio_id = portfolio.id
+                        ${whereCond.whereString.replace(/projeto\./g, 'p.')}
+                UNION ALL
+                SELECT ppc.projeto_id AS id
+                FROM portfolio_projeto_compartilhado ppc
+                    JOIN portfolio ON ppc.portfolio_id = portfolio.id
+                    ${whereCond.whereString.replace(/projeto\./g, 'ppc.')}
+                    AND ppc.removido_em IS NULL
+            ) sub
+            ORDER BY id
+            `;
+        const result = await this.prisma.$queryRawUnsafe(projectIdsQuery, ...whereCond.queryParams);
+        return (result as any[]).map((row) => row.id);
     }
 }
