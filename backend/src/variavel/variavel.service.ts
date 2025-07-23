@@ -2800,14 +2800,7 @@ export class VariavelService {
 
         for (const periodoYMD of todosPeriodos) {
             const isCurrentCycle = ultimoPeriodoValidoStr === periodoYMD;
-
-            if (isCurrentCycle && !prazoPassou) {
-                if (!filters.suporta_ciclo_info) {
-                    this.logger.debug(`Prazo não passou para ${periodoYMD} e frontend não suporta info. Pulando.`);
-                    continue;
-                }
-                this.logger.debug(`Prazo não passou para ${periodoYMD}, mas frontend suporta info. Processando.`);
-            }
+            let canSkip = true;
 
             const seriesExistentes = this.populaSeriesExistentes(
                 porPeriodo,
@@ -2818,6 +2811,20 @@ export class VariavelService {
                 user
             );
             let ciclo_fisico: SACicloFisicoDto | undefined = undefined;
+
+            if (seriesExistentes[ORDEM_SERIES_RETORNO.indexOf('Realizado')]) {
+                if (isCurrentCycle)
+                    this.logger.debug(`Ciclo corrente ${periodoYMD} já tem 'Realizado', desabilitando ciclo info.`);
+                canSkip = false;
+            }
+
+            if (isCurrentCycle && !prazoPassou && canSkip) {
+                if (!filters.suporta_ciclo_info) {
+                    this.logger.debug(`Prazo não passou para ${periodoYMD} e frontend não suporta info. Pulando.`);
+                    continue;
+                }
+                this.logger.debug(`Prazo não passou para ${periodoYMD}, mas frontend suporta info. Processando.`);
+            }
 
             const analiseCiclo = mapAnalisesCiclo[periodoYMD];
             const docCiclo = mapDocumentoCiclo[periodoYMD];
