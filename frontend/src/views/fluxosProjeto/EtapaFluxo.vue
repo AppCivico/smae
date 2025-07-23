@@ -142,14 +142,13 @@ watch(itemParaEdicao, (novoValor) => {
       :disabled="isSubmitting"
       @submit.prevent="onSubmit"
     >
-      <div>
-        <Field
-          name="workflow_id"
-          type="hidden"
-          class="inputtext light mb1"
-          :value="emFoco.id"
-        />
-      </div>
+      <Field
+        name="workflow_id"
+        type="hidden"
+        class="inputtext light mb1"
+        :value="emFoco.id"
+      />
+      
       <div class="flex flexwrap g2 mb1">
         <div class="f1">
           <LabelFromYup
