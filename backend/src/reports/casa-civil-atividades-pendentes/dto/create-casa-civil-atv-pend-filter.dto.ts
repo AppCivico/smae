@@ -26,6 +26,7 @@ export class CreateCasaCivilAtividadesPendentesFilterDto {
     @Expose()
     data_termino?: Date;
 
+    @Expose()
     @IsOptional()
     @ApiProperty({ enum: TransferenciaTipoEsfera, enumName: 'TransferenciaTipoEsfera' })
     @IsEnum(TransferenciaTipoEsfera, { message: '$property| esfera: valor inválido.' })
