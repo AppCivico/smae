@@ -53,6 +53,7 @@
 
             <SmaeText
               class="inputtext light f1"
+              :model-value="values.analise_qualitativa_liberador"
               as="textarea"
               name="analise_qualitativa_liberador"
               :disabled="!forumlariosAExibir.liberacao.liberado"
@@ -79,6 +80,7 @@
 
             <SmaeText
               class="inputtext light f1"
+              :model-value="values.analise_qualitativa_aprovador"
               as="textarea"
               name="analise_qualitativa_aprovador"
               :disabled="!forumlariosAExibir.aprovacao.liberado || fase === 'liberacao'"
@@ -121,6 +123,7 @@
 
             <SmaeText
               class="inputtext light f1"
+              :model-value="values?.pedido_complementacao"
               as="textarea"
               name="pedido_complementacao"
               :disabled="!values.solicitar_complementacao"
@@ -211,6 +214,7 @@
 
             <SmaeText
               class="inputtext light f1"
+              :model-value="values.analise_qualitativa"
               as="textarea"
               name="analise_qualitativa"
               :disabled="!forumlariosAExibir.cadastro.liberado

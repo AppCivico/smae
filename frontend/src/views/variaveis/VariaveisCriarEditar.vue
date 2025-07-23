@@ -385,6 +385,7 @@ onUnmounted(() => {
 
             <SmaeText
               name="descricao"
+              :model-value="values.descricao"
               as="textarea"
               rows="5"
               anular-vazio
@@ -411,6 +412,7 @@ onUnmounted(() => {
 
             <SmaeText
               name="metodologia"
+              :model-value="values.metodologia"
               as="textarea"
               rows="5"
               anular-vazio
@@ -942,7 +944,7 @@ onUnmounted(() => {
     <fieldset>
       <div class="flex flexwrap g2 mb1">
         <div class="f1 fb15em mb1">
-          <label class="block">
+          <label class="flex flexcenter">
             <Field
               name="acumulativa"
               type="checkbox"
@@ -951,6 +953,7 @@ onUnmounted(() => {
               :disabled="!ehNumerica"
             />
             <LabelFromYup
+              class="mb0"
               name="acumulativa"
               as="span"
               :schema="schema"
@@ -963,7 +966,7 @@ onUnmounted(() => {
           />
         </div>
         <div class="f1 fb15em mb1">
-          <label class="block">
+          <label class="flex flexcenter">
             <Field
               name="dado_aberto"
               type="checkbox"
@@ -971,6 +974,7 @@ onUnmounted(() => {
               :unchecked-value="false"
             />
             <LabelFromYup
+              class="mb0"
               name="dado_aberto"
               as="span"
               :schema="schema"
