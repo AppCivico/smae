@@ -5,6 +5,7 @@ import { ReportContext } from '../relatorios/helpers/reports.contexto';
 import { DefaultCsvOptions, FileOutput, ReportableService } from '../utils/utils.service';
 import { CreateCasaCivilAtividadesPendentesFilterDto } from './dto/create-casa-civil-atv-pend-filter.dto';
 import { RelCasaCivilAtividadesPendentes } from './entities/casa-civil-atividaes-pendentes.entity';
+import { Prisma } from '@prisma/client';
 
 const {
     Parser,
@@ -15,49 +16,58 @@ const defaultTransform = [flatten({ paths: [] })];
 @Injectable()
 export class CasaCivilAtividadesPendentesService implements ReportableService {
     constructor(private readonly prisma: PrismaService) {}
+
     async asJSON(params: CreateCasaCivilAtividadesPendentesFilterDto): Promise<RelCasaCivilAtividadesPendentes[]> {
-        let sql = ` select
-                        t.identificador,
-                        (
-                            select string_agg(p.nome::text, ', ')
-                            from parlamentar p
-                            inner join transferencia_parlamentar tp on p.id = tp.parlamentar_id and tp.transferencia_id = t.id
-                        ) as parlamentares,
-                        t.valor AS valor,
-                        tf.tarefa as atividade,
-                        tf.inicio_planejado AS inicio_planejado,
-                        tf.termino_planejado AS termino_planejado,
-                        tf.inicio_real AS inicio_real,
-                        o.sigla as orgao_responsavel,
-                        tf.recursos as responsavel_atividade
-                        from tarefa_cronograma tc
-                        inner join tarefa tf on tf.tarefa_cronograma_id = tc.id
-                        inner join transferencia t on t.id = tc.transferencia_id
-                        inner join transferencia_tipo tt on tt.id = t.tipo_id
-                        left join orgao o on o.id = tf.orgao_id
-                        where
-                        tc.removido_em is null
-                        and t.removido_em is null
-                        and tf.removido_em is null
-                        and tf.termino_real is null
-                        and tf.termino_planejado < now()::date
-                        `;
-        if (params.tipo_id && params.tipo_id.length > 0) {
-            sql += ' and tt.id in (' + params.tipo_id.toString() + ')';
-        }
+        // Build dynamic WHERE conditions using Prisma.sql template
+        let whereConditions = Prisma.sql`
+        tc.removido_em is null
+        AND t.removido_em is null
+        AND tf.removido_em is null
+        AND tf.termino_real is null
+        AND tf.termino_planejado < now()::date
+    `;
+
+        if (params.tipo_id && params.tipo_id.length > 0)
+            whereConditions = Prisma.sql`${whereConditions} AND tt.id = ANY(${params.tipo_id})`;
+
         if (params.data_inicio) {
-            sql += " and tf.inicio_planejado >= '" + Date2YMD.toString(params.data_inicio) + "'";
+            const dataInicio = Date2YMD.toString(params.data_inicio);
+            whereConditions = Prisma.sql`${whereConditions} AND tf.inicio_planejado >= ${dataInicio}`;
         }
+
         if (params.data_termino) {
-            sql += " and tf.termino_planejado <= '" + Date2YMD.toString(params.data_termino) + "'";
+            const dataTermino = Date2YMD.toString(params.data_termino);
+            whereConditions = Prisma.sql`${whereConditions} AND tf.termino_planejado <= ${dataTermino}`;
         }
-        if (params.esfera) {
-            sql += " and t.esfera <= '" + params.esfera + "'";
-        }
-        if (params.orgao_id && params.orgao_id.length > 0) {
-            sql += ' and tf.orgao_id in(' + params.orgao_id.toString() + ')';
-        }
-        const linhas = await this.prisma.$queryRawUnsafe(sql);
+
+        if (params.esfera) whereConditions = Prisma.sql`${whereConditions} AND t.esfera = ${params.esfera}::"TransferenciaTipoEsfera"`;
+
+        if (params.orgao_id && params.orgao_id.length > 0)
+            whereConditions = Prisma.sql`${whereConditions} AND tf.orgao_id = ANY(${params.orgao_id})`;
+
+        const linhas = await this.prisma.$queryRaw`
+        SELECT
+            t.identificador,
+            (
+                SELECT string_agg(p.nome::text, ', ')
+                FROM parlamentar p
+                INNER JOIN transferencia_parlamentar tp ON p.id = tp.parlamentar_id AND tp.transferencia_id = t.id
+            ) as parlamentares,
+            t.valor AS valor,
+            tf.tarefa as atividade,
+            tf.inicio_planejado AS inicio_planejado,
+            tf.termino_planejado AS termino_planejado,
+            tf.inicio_real AS inicio_real,
+            o.sigla as orgao_responsavel,
+            tf.recursos as responsavel_atividade
+        FROM tarefa_cronograma tc
+        INNER JOIN tarefa tf ON tf.tarefa_cronograma_id = tc.id
+        INNER JOIN transferencia t ON t.id = tc.transferencia_id
+        INNER JOIN transferencia_tipo tt ON tt.id = t.tipo_id
+        LEFT JOIN orgao o ON o.id = tf.orgao_id
+        WHERE ${whereConditions}
+    `;
+
         return linhas as RelCasaCivilAtividadesPendentes[];
     }
 

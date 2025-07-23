@@ -1,4 +1,4 @@
-import { IsArray, IsOptional, ValidateIf } from 'class-validator';
+import { IsArray, IsEnum, IsOptional, ValidateIf } from 'class-validator';
 import { IsOnlyDate } from '../../../common/decorators/IsDateOnly';
 import { Transform } from 'class-transformer';
 import { DateTransform } from '../../../auth/transforms/date.transform';
@@ -28,7 +28,8 @@ export class CreateCasaCivilAtividadesPendentesFilterDto {
 
     @IsOptional()
     @ApiProperty({ enum: TransferenciaTipoEsfera, enumName: 'TransferenciaTipoEsfera' })
-    esfera: TransferenciaTipoEsfera;
+    @IsEnum(TransferenciaTipoEsfera, { message: '$property| esfera: valor inválido.' })
+    esfera?: TransferenciaTipoEsfera;
 
     @IsOptional()
     @IsArray({ message: '$property| orgao_id: precisa ser uma array.' })
