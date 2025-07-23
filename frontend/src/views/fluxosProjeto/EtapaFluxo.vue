@@ -149,10 +149,6 @@ watch(itemParaEdicao, (novoValor) => {
           class="inputtext light mb1"
           :value="emFoco.id"
         />
-        <ErrorMessage
-          class="error-msg mb1"
-          name="nome"
-        />
       </div>
       <div class="flex flexwrap g2 mb1">
         <div class="f1">
