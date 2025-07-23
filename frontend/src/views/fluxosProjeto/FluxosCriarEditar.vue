@@ -123,8 +123,6 @@ const onSubmit = handleSubmit(async (values) => {
 });
 
 function markCheckboxesWithSavedValues() {
-  console.log(emFoco.value?.statuses_distribuicao);
-
   if (!emFoco.value) {
     statusesDistribuicaoSelecionados.value = statusListaBase.value.map((status) => ({
       id: status.id,
