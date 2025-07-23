@@ -51,6 +51,9 @@ export class CasaCivilAtividadesPendentesService implements ReportableService {
         if (params.data_termino) {
             sql += " and tf.termino_planejado <= '" + Date2YMD.toString(params.data_termino) + "'";
         }
+        if (params.esfera) {
+            sql += " and t.esfera <= '" + params.esfera + "'";
+        }
         if (params.orgao_id && params.orgao_id.length > 0) {
             sql += ' and tf.orgao_id in(' + params.orgao_id.toString() + ')';
         }
