@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Cron } from '@nestjs/schedule';
 import { Prisma } from '@prisma/client';
@@ -28,6 +28,7 @@ import {
     PainelEstrategicoResponseDto,
     PainelEstrategicoResumoOrcamentario,
 } from './entities/painel-estrategico-responses.dto';
+import { IsCrontabDisabled } from '../../common/crontab-utils';
 
 @Injectable()
 export class PainelEstrategicoService {
@@ -1109,10 +1110,12 @@ export class PainelEstrategicoService {
 
     @Cron('*/2 * * * *')
     async refreshMaterializedView() {
+        if (IsCrontabDisabled('task')) return;
         try {
+            Logger.log('Atualizando view painel estrategico projeto');
             await this.prisma.$queryRaw`refresh materialized view view_painel_estrategico_projeto;`;
         } catch (error) {
-            console.log(error);
+            Logger.error(error);
         }
     }
 }

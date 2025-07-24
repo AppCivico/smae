@@ -650,7 +650,7 @@ export class ProjetoService {
             if (!dto.tipo_intervencao_id)
                 throw new HttpException('tipo_intervencao_id| Campo obrigatório para obras', 400);
 
-            //await this.verificaGrupoTematico(dto);
+            await this.verificaGrupoTematico(dto);
         }
 
         const statusPadrao = tipo == 'PP' ? 'Registrado' : 'MDO_NaoIniciada';
@@ -2543,8 +2543,7 @@ export class ProjetoService {
         }
 
         if ('grupo_tematico_id' in dto) {
-            // Desativando essa verificação por agora.
-            // await this.verificaGrupoTematico(dto);
+            await this.verificaGrupoTematico(dto);
         } else {
             // bloqueia a mudança dos campos se não informar o grupo temático
             dto.mdo_n_familias_beneficiadas = undefined;
@@ -3921,5 +3920,33 @@ export class ProjetoService {
                 );
             }
         }
+    }
+
+    private async verificaGrupoTematico(dto: UpdateProjetoDto) {
+        if (dto.grupo_tematico_id === undefined) return;
+        if (dto.grupo_tematico_id === null) {
+            dto.mdo_n_unidades_atendidas = null;
+            dto.mdo_n_unidades_habitacionais = null;
+            dto.mdo_programa_habitacional = null;
+            dto.mdo_n_familias_beneficiadas = null;
+            return;
+        }
+
+        const grupoTematico = await this.prisma.grupoTematico.findUnique({
+            where: { id: dto.grupo_tematico_id },
+            select: {
+                unidades_atendidas: true,
+                unidades_habitacionais: true,
+                programa_habitacional: true,
+                familias_beneficiadas: true,
+            },
+        });
+
+        if (!grupoTematico) throw new BadRequestException('Grupo temático não encontrado.');
+
+        if (!grupoTematico.unidades_atendidas) dto.mdo_n_unidades_atendidas = null;
+        if (!grupoTematico.unidades_habitacionais) dto.mdo_n_unidades_habitacionais = null;
+        if (!grupoTematico.programa_habitacional) dto.mdo_programa_habitacional = null;
+        if (!grupoTematico.familias_beneficiadas) dto.mdo_n_familias_beneficiadas = null;
     }
 }

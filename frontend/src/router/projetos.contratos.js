@@ -15,7 +15,7 @@ export default {
       path: '',
       component: () => import('@/views/mdo.contratos/ContratosLista.vue'),
       meta: {
-        título: 'Contratos de projeto',
+        título: 'Contratos',
         títuloParaMenu: 'Contratos',
       },
       props: true,

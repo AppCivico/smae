@@ -17,7 +17,7 @@ import {
     CreateVariavelBaseDto,
     CreateVariavelPDMDto,
 } from './dto/create-variavel.dto';
-import { FilterVariavelDto, FilterVariavelGlobalDto } from './dto/filter-variavel.dto';
+import { FilterVariavelDto, FilterVariavelGlobalDto, FilterVariavelRelacionamentosDto } from './dto/filter-variavel.dto';
 import {
     ListPdmSimplesDto,
     ListSeriesAgrupadas,
@@ -28,6 +28,9 @@ import {
 } from './dto/list-variavel.dto';
 import { UpdateVariavelDto } from './dto/update-variavel.dto';
 import {
+    VariavelGlobalRelacionamentoDto,
+} from './relacionados/dto/variavel.relacionamento.dto';
+import {
     FilterSVNPeriodoDto,
     FilterVariavelDetalheDto,
     SerieIndicadorValorNominal,
@@ -37,6 +40,7 @@ import {
     VariavelGlobalItemDto,
 } from './entities/variavel.entity';
 import { VariavelService } from './variavel.service';
+import { VariavelRelacionamentoService } from './relacionados/variavel.relacionamento.service';
 
 export const ROLES_ACESSO_VARIAVEL_PDM: ListaDePrivilegios[] = [...MetaController.ReadPerm, 'CadastroMeta.listar'];
 
@@ -147,8 +151,16 @@ export class VariavelGlobalController {
         // NOTA: 2025-01-23: continuo achanando errado a escrita para participante
         'SMAE.GrupoVariavel.participante', // ʕ•ᴥ•ʔ
     ];
+    public static ReadPerm: ListaDePrivilegios[] = [
+        'CadastroVariavelGlobal.administrador_no_orgao',
+        'CadastroVariavelGlobal.administrador',
+        'SMAE.GrupoVariavel.participante',
+    ];
 
-    constructor(private readonly variavelService: VariavelService) {}
+    constructor(
+        private readonly variavelService: VariavelService,
+        private readonly variavelRelacionamentoService: VariavelRelacionamentoService
+    ) {}
 
     @Get('proxy/pdm-e-planos-setoriais')
     @ApiBearerAuth('access-token')
@@ -238,6 +250,17 @@ export class VariavelGlobalController {
         @CurrentUser() user: PessoaFromJwt
     ): Promise<BatchRecordWithId> {
         return { ids: await this.variavelService.create_region_generated(this.tipo, dto, user) };
+    }
+
+    @Get('variavel/:id/relacionados')
+    @ApiBearerAuth('access-token')
+    @Roles([...VariavelGlobalController.ReadPerm])
+    async getRelacionamentos(
+        @Param() params: FindOneParams,
+        @Query() filter: FilterVariavelRelacionamentosDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<VariavelGlobalRelacionamentoDto> {
+        return this.variavelRelacionamentoService.getRelacionamentos(params.id, user, filter);
     }
 
     // Manter em sync o getSeriePrevistoRealizadoCopia

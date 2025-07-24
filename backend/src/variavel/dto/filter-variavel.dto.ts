@@ -195,3 +195,15 @@ export class FilterVariavelGlobalDto extends IntersectionType(FilterVariavelDto,
     @Transform(NumberTransform)
     not_indicador_id?: number;
 }
+
+export class FilterVariavelRelacionamentosDto {
+    @IsOptional()
+    @IsBoolean()
+    @Transform(({ value }) => value === 'true')
+    @ApiProperty({
+        description:
+            'Caso true, busca incluirá as variáveis filhas e a mãe da variável informada, caso seja informada uma filha, a mãe é encontrada automaticamente.',
+        default: true,
+    })
+    buscar_familia_completa?: boolean;
+}

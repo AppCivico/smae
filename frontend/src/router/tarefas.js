@@ -27,7 +27,7 @@ export default {
       path: '',
       component: TarefasLista,
       meta: {
-        título: 'Cronograma de projeto',
+        título: 'Cronograma',
         títuloParaMenu: 'Cronograma',
         rotasParaMigalhasDePão: [
           'projetosListar',

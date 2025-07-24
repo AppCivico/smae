@@ -2,7 +2,7 @@ import { ModuloSistema, TipoPdm } from '@prisma/client';
 import { IdSiglaDescricao } from '../../common/dto/IdSigla.dto';
 import { PdmPermissionLevel, RetornoPSEquipeAdminCPDto, RetornoPSEquipePontoFocalDto, RetornoPSEquipeTecnicoCPDto } from './create-pdm.dto';
 import { IsDateYMD } from '../../auth/decorators/date.decorator';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, PickType } from '@nestjs/swagger';
 
 export class PdmDto {
     nome: string;
@@ -51,6 +51,16 @@ export class PdmDto {
     sistema: ModuloSistema;
     meses: number[];
 }
+
+export class PdmRotuloInfoDto extends PickType(PdmDto, [
+    'rotulo_macro_tema',
+    'rotulo_tema',
+    'rotulo_sub_tema',
+    'rotulo_contexto_meta',
+    'rotulo_complementacao_meta',
+    'rotulo_iniciativa',
+    'rotulo_atividade',
+]) {}
 
 export class PlanoSetorialAnteriorDto {
     id: number;

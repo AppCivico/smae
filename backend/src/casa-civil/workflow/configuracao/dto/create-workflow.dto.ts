@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsNumber, IsOptional, IsString, MaxLength, MinLength, ValidateIf } from 'class-validator';
+import { IsArray, IsInt, IsNumber, IsOptional, IsString, MaxLength, MinLength, ValidateIf } from 'class-validator';
 import { DateTransform } from 'src/auth/transforms/date.transform';
 import { MAX_LENGTH_DEFAULT } from 'src/common/consts';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
@@ -31,4 +31,22 @@ export class CreateWorkflowDto {
     @Transform(DateTransform)
     @ValidateIf((object, value) => value !== null)
     termino?: Date;
+
+    /**
+     * IDs de statuses base de distruibuição.
+     * @example "[1, 2, 3]"
+     */
+    @IsOptional()
+    @IsArray()
+    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
+    distribuicao_statuses_base?: number[];
+
+    /**
+     * IDs de statuses customizados de distruibuição.
+     * @example "[1, 2, 3]"
+     */
+    @IsOptional()
+    @IsArray()
+    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
+    distribuicao_statuses_customizados?: number[];
 }

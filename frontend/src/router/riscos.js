@@ -24,7 +24,7 @@ export default {
       path: '',
       component: RiscosLista,
       meta: {
-        título: 'Riscos sobre o projeto',
+        título: 'Gestão de riscos',
 
         rotasParaMigalhasDePão: [
           'projetosListar',
@@ -48,7 +48,6 @@ export default {
           'projetosListar',
           'projetosResumo',
           'riscosListar',
-          'riscosCriar',
         ],
       },
     },
@@ -89,7 +88,6 @@ export default {
               'projetosListar',
               'projetosResumo',
               'riscosListar',
-              'riscosEditar',
             ],
           },
         },
