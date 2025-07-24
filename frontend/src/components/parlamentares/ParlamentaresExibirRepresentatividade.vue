@@ -77,7 +77,7 @@ function formatarNumero(numero) {
           },
           {
             chave: 'regiao.descricao',
-            label: 'Regiã'
+            label: 'Região'
           },
           {
             chave: 'numero_votos',
@@ -183,11 +183,11 @@ function formatarNumero(numero) {
           },
           {
             chave: 'municipio_tipo',
-            label: 'Município/Subprefeitur'
+            label: 'Município/Subprefeitura'
           },
           {
             chave: 'regiao.descricao',
-            label: 'Regiã'
+            label: 'Região'
           },
           {
             chave: 'numero_votos',
@@ -196,7 +196,7 @@ function formatarNumero(numero) {
           },
           {
             chave: 'regiao.comparecimento.valor',
-            label: 'Quantidade de Comparecimento',
+            label: 'Quantidade de comparecimento',
             atributosDaCelula: { class: 'col--number'},
             formatador: v => v ? v.valor : '-'
           },
