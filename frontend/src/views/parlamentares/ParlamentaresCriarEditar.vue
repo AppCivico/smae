@@ -1,12 +1,4 @@
 <script setup>
-import InputImageProfile from '@/components/InputImageProfile.vue';
-import ParlamentaresExibirRepresentatividade from '@/components/parlamentares/ParlamentaresExibirRepresentatividade.vue';
-import { parlamentar as schema } from '@/consts/formSchemas';
-import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
-import requestS from '@/helpers/requestS.ts';
-import { useAlertStore } from '@/stores/alert.store';
-import { useAuthStore } from '@/stores/auth.store';
-import { useParlamentaresStore } from '@/stores/parlamentares.store';
 import { vMaska } from 'maska';
 import { storeToRefs } from 'pinia';
 import {
@@ -16,6 +8,15 @@ import {
 } from 'vee-validate';
 import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
+import InputImageProfile from '@/components/InputImageProfile.vue';
+import ParlamentaresExibirRepresentatividade from '@/components/parlamentares/ParlamentaresExibirRepresentatividade.vue';
+import { parlamentar as schema } from '@/consts/formSchemas';
+import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
+import requestS from '@/helpers/requestS.ts';
+import { useAlertStore } from '@/stores/alert.store';
+import { useAuthStore } from '@/stores/auth.store';
+import { useParlamentaresStore } from '@/stores/parlamentares.store';
 
 defineOptions({
   inheritAttrs: false,
@@ -70,7 +71,7 @@ function iniciar() {
 }
 
 function excluirItem(tipo, id, nome) {
-  useAlertStore().confirmAction(`Deseja mesmo remover ${nome || 'esse item'}?`, async () => {
+  alertStore.confirmAction(`Deseja mesmo remover ${nome || 'esse item'}?`, async () => {
     let tentativa;
     let mensagem;
 
@@ -78,22 +79,22 @@ function excluirItem(tipo, id, nome) {
       case 'assessor':
       case 'contato':
       case 'pessoa':
-        tentativa = await useParlamentaresStore().excluirPessoa(id);
+        tentativa = await parlamentaresStore.excluirPessoa(id);
         mensagem = 'Remoção bem sucedida';
         break;
 
       case 'mandato':
-        tentativa = await useParlamentaresStore().excluirMandato(id);
+        tentativa = await parlamentaresStore.excluirMandato(id);
         mensagem = 'Mandato removido.';
         break;
 
       default:
-        useAlertStore().error('Tipo fornecido para remoção inválido');
+        alertStore.error('Tipo fornecido para remoção inválido');
         throw new Error('Tipo fornecido para remoção inválido');
     }
 
     if (tentativa) {
-      useAlertStore().success(mensagem);
+      alertStore.success(mensagem);
       iniciar();
     }
   }, 'Remover');
@@ -239,26 +240,9 @@ iniciar();
             />
           </div>
         </div>
-
-        <label class="block mt2 mb2">
-          <Field
-            name="em_atividade"
-            type="checkbox"
-            :value="true"
-            :unchecked-value="false"
-            class="inputcheckbox"
-          />
-          <LabelFromYup
-            name="em_atividade"
-            :schema="schema"
-            as="span"
-          />
-        </label>
       </div>
-      <Field
-        v-slot="{ value }"
-        name="avatar"
-      >
+
+      <Field name="avatar">
         <InputImageProfile
           :model-value="imageUrl"
           @update:model-value="event => handleImage(event)"
@@ -271,78 +255,72 @@ iniciar();
       class="mb3"
     >
       <div class="flex spacebetween center mb1">
-        <span class="label tc300">Assessores / Contatos</span>
+        <span class="mb0 mr1 label tc300">Assessores / Contatos</span>
         <hr class="mr2 f1">
       </div>
 
-      <table
+      <SmaeTable
         v-if="equipe.assessores.length || equipe.contatos.length"
-        class="tablemain mb1"
+        class="parlamentar-formulario__tabela mb1"
+        titulo-rolagem-horizontal="Tabela: mandatos"
+        :dados="equipeOrdenada"
+        :colunas="[
+          {
+            chave: 'nome',
+            label: 'Nome'
+          },
+          {
+            chave: 'tipo',
+            label: 'Tipo'
+          },
+          { chave: 'editar', atributosDaCelula: { class: 'col--number'} },
+          { chave: 'excluir', atributosDaCelula: { class: 'col--number'} },
+        ]"
       >
-        <colgroup>
-          <col>
-          <col>
-          <col class="col--botão-de-ação">
-          <col class="col--botão-de-ação">
-        </colgroup>
-        <thead>
-          <tr>
-            <th>Nome</th>
-            <th>Tipo</th>
-            <th />
-            <th />
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="item in equipeOrdenada"
-            :key="item.id"
+        <template #celula:editar="{ linha }">
+          <SmaeLink
+            :to="{
+              name: 'parlamentaresEditarEquipe',
+              params: { parlamentarId: props.parlamentarId, pessoaId: linha.id }
+            }"
+            class="tprimary"
+            aria-label="Editar {{ linha.tipo }}"
           >
-            <td>{{ item.nome }}</td>
-            <td>{{ item.tipo }}</td>
-            <td>
-              <router-link
-                :to="{
-                  name: 'parlamentaresEditarEquipe',
-                  params: { parlamentarId: props.parlamentarId, pessoaId: item.id }
-                }"
-                class="tprimary"
-                aria-label="Editar {{ item.tipo }}"
-              >
-                <svg
-                  width="20"
-                  height="20"
-                ><use xlink:href="#i_edit" /></svg>
-              </router-link>
-            </td>
-            <td>
-              <button
-                class="like-a__text"
-                arial-label="excluir"
-                title="excluir"
-                type="button"
-                @click="excluirItem(item.tipo === 'Assessor' ? 'assessor' : 'contato', item.id, item.nome)"
-              >
-                <svg
-                  width="20"
-                  height="20"
-                ><use xlink:href="#i_remove" /></svg>
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_edit" /></svg>
+          </SmaeLink>
+        </template>
+
+        <template #celula:excluir="{ linha }">
+          <button
+            class="like-a__text"
+            arial-label="excluir"
+            title="excluir"
+            type="button"
+            @click="excluirItem(
+              linha.tipo === 'Assessor' ? 'assessor' : 'contato',
+              linha.id,
+              linha.nome
+            )"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_remove" /></svg>
+          </button>
+        </template>
+      </SmaeTable>
+
       <p v-else>
         Nenhum assessor ou contato encontrado
       </p>
 
-      <router-link
+      <SmaeLink
         :to="{
           name: 'parlamentaresEditarEquipe',
-          params: {
-            parlamentarId:
-              props.parlamentarId
-          },
+          params: { parlamentarId: props.parlamentarId },
           query: { tipo: 'assessor' }
         }"
         class="like-a__text addlink"
@@ -350,94 +328,84 @@ iniciar();
         <svg
           width="20"
           height="20"
-        ><use xlink:href="#i_+" /></svg>Registrar novo assessor/contato
-      </router-link>
+        ><use xlink:href="#i_+" /></svg>
+        Registrar novo assessor/contato
+      </SmaeLink>
     </div>
 
     <FormErrorsList :errors="errors" />
 
     <div v-if="itemParaEdicao?.mandatos">
       <div class="flex spacebetween center mb1">
-        <span class="label tc300">Mandato</span>
+        <span class="mb0 mr1 label tc300">Mandato</span>
         <hr class="mr2 f1">
       </div>
 
-      <table class="tablemain mb1">
-        <colgroup>
-          <col>
-          <col>
-          <col>
-          <col class="col--botão-de-ação">
-          <col class="col--botão-de-ação">
-        </colgroup>
-        <thead>
-          <tr>
-            <th>
-              Eleição
-            </th>
-            <th>
-              Cargo
-            </th>
-            <th>
-              Votos
-            </th>
-            <th />
-            <th />
-          </tr>
-        </thead>
-        <tbody v-if="itemParaEdicao?.mandatos?.length > 0">
-          <tr
-            v-for="item in itemParaEdicao.mandatos"
-            :key="item.id"
+      <SmaeTable
+        v-if="itemParaEdicao?.mandatos?.length"
+        class="parlamentar-formulario__tabela mb1"
+        titulo-rolagem-horizontal="Tabela: mandatos"
+        :dados="itemParaEdicao.mandatos"
+        :colunas="[
+          {
+            chave: 'eleicao.ano',
+            label: 'Eleição',
+          },
+          {
+            chave: 'cargo',
+            label: 'Cargo'
+          },
+          {
+            chave: 'votos_estado',
+            label: 'Votos'
+          },
+          { chave: 'editar', atributosDaCelula: { class: 'col--number'} },
+          { chave: 'excluir', atributosDaCelula: { class: 'col--number'} },
+        ]"
+      >
+        <template #celula:editar="{ linha }">
+          <SmaeLink
+            :to="{
+              name: 'parlamentaresEditarMandato',
+              params: { parlamentarId: props.parlamentarId, mandatoId: linha.id }
+            }"
+            class="tprimary"
           >
-            <td>{{ item.eleicao.ano }}</td>
-            <td>{{ item.cargo }}</td>
-            <td>{{ item.votos_estado }}</td>
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_edit" /></svg>
+          </SmaeLink>
+        </template>
 
-            <td>
-              <router-link
-                :to="{ name: 'parlamentaresEditarMandato', params: { parlamentarId: props.parlamentarId, mandatoId: item.id } }"
-                class="tprimary"
-              >
-                <svg
-                  width="20"
-                  height="20"
-                ><use xlink:href="#i_edit" /></svg>
-              </router-link>
-            </td>
-            <td>
-              <button
-                class="like-a__text"
-                arial-label="excluir"
-                title="excluir"
-                type="button"
-                @click="excluirItem('mandato', item.id)"
-              >
-                <svg
-                  width="20"
-                  height="20"
-                ><use xlink:href="#i_remove" /></svg>
-              </button>
-            </td>
-          </tr>
-        </tbody>
-        <tbody v-else>
-          <tr>
-            <td colspan="5">
-              Nenhum mandato encontrado.
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <router-link
-        :to="{ name: 'parlamentaresEditarMandato', params: { parlamentarId: props.parlamentarId } }"
+        <template #celula:excluir="{ linha }">
+          <button
+            class="like-a__text"
+            arial-label="excluir"
+            title="excluir"
+            type="button"
+            @click="excluirItem('mandato', linha.id)"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_remove" /></svg>
+          </button>
+        </template>
+      </SmaeTable>
+
+      <SmaeLink
+        :to="{
+          name: 'parlamentaresEditarMandato',
+          params: { parlamentarId: props.parlamentarId }
+        }"
         class="like-a__text addlink mb4"
       >
         <svg
           width="20"
           height="20"
         ><use xlink:href="#i_+" /></svg>Registrar novo mandato
-      </router-link>
+      </SmaeLink>
     </div>
 
     <ParlamentaresExibirRepresentatividade
@@ -459,6 +427,7 @@ iniciar();
       <hr class="ml2 f1">
     </div>
   </Form>
+
   <span
     v-if="chamadasPendentes?.emFoco"
     class="spinner"
@@ -490,6 +459,10 @@ iniciar();
   }
 }
 
+.parlamentar-formulario__tabela {
+  width: 80%;
+}
+
 .tipinfo > div {
   max-width: 100%;
   left: 200px;
@@ -499,7 +472,7 @@ iniciar();
   max-width: 300px;
 }
 
-table{
+table {
   max-width: 1000px;
 }
 </style>
