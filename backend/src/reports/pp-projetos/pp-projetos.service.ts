@@ -1392,7 +1392,7 @@ export class PPProjetosService implements ReportableService {
             projeto.codigo AS projeto_codigo,
             projeto_acompanhamento.data_registro,
             projeto_acompanhamento.participantes,
-            projeto_acompanhamento.cronograma_paralisado,
+            projeto_acompanhamento.cronograma_paralisado AS cronograma_paralizado,
             projeto_acompanhamento_item.prazo_encaminhamento,
             projeto_acompanhamento.pauta,
             projeto_acompanhamento_item.prazo_realizado,
