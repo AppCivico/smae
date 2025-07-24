@@ -1,8 +1,9 @@
 <script setup>
-import { useAlertStore } from '@/stores/alert.store';
-import { useParlamentaresStore } from '@/stores/parlamentares.store';
 import { storeToRefs } from 'pinia';
 import { computed, defineProps } from 'vue';
+import { useAlertStore } from '@/stores/alert.store';
+import { useParlamentaresStore } from '@/stores/parlamentares.store';
+import SmaeTable from '../SmaeTable/SmaeTable.vue';
 
 const alertStore = useAlertStore();
 const parlamentaresStore = useParlamentaresStore();
@@ -58,97 +59,79 @@ function formatarNumero(numero) {
         </h3>
         <hr class="ml2 f1">
       </div>
-      <table
-        v-if="representatividade.capital.length"
-        class="tablemain mb1"
+
+      <SmaeTable
+        v-if="representatividade?.capital?.length"
+        class="mb1"
+        titulo-rolagem-horizontal="Tabela representatividade - capital"
+        :dados="representatividade.capital"
+        :colunas="[
+          {
+            chave: 'ranking',
+            label: 'Ranking na Capital',
+            atributosDaCelula: { class: 'col--number'}
+          },
+          {
+            chave: 'municipio_tipo',
+            label: 'Município/Subprefeitur'
+          },
+          {
+            chave: 'regiao.descricao',
+            label: 'Regiã'
+          },
+          {
+            chave: 'numero_votos',
+            label: 'Votos nominais do candidato',
+            atributosDaCelula: { class: 'col--number'}
+          },
+          {
+            chave: 'regiao.comparecimento',
+            label: 'Quantidade de Comparecimento',
+            atributosDaCelula: { class: 'col--number'},
+            formatador: v => v ? v.valor : '-'
+          },
+          {
+            chave: 'pct_participacao',
+            label: 'Porcentagem do candidato',
+            atributosDaCelula: { class: 'col--number'},
+            formatador: v => v ? `${v}%` : '-'
+          },
+          exibirEdição && { chave: 'editar', atributosDaCelula: { class: 'col--number'} },
+          exibirEdição && { chave: 'excluir', atributosDaCelula: { class: 'col--number'} },
+        ]"
       >
-        <colgroup>
-          <col class="col--number">
-          <col>
-          <col>
-          <col class="col--number">
-          <col class="col--number">
-          <col class="col--number">
-          <col
-            v-if="exibirEdição"
-            class="col--botão-de-ação"
+        <template #celula:editar="{ linha }">
+          <SmaeLink
+            :to="{
+              name: 'parlamentaresEditarRepresentatividade',
+              params: { parlamentarId: emFoco?.id, representatividadeId: linha.id }
+            }"
+            class="tprimary"
+            aria-label="Editar representatividade"
           >
-          <col
-            v-if="exibirEdição"
-            class="col--botão-de-ação"
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_edit" /></svg>
+          </SmaeLink>
+        </template>
+
+        <template #celula:excluir="{ linha }">
+          <button
+            class="like-a__text"
+            arial-label="excluir"
+            title="excluir"
+            type="button"
+            @click="excluirRepresentatividade(linha.id, emFoco.id)"
           >
-        </colgroup>
-        <thead>
-          <tr>
-            <th class="cell--number">
-              Ranking na Capital
-            </th>
-            <th>Município/Subprefeitura</th>
-            <th>Região</th>
-            <th class="cell--number">
-              Votos nominais do candidato
-            </th>
-            <th class="cell--number">
-              Quantidade de Comparecimento
-            </th>
-            <th class="cell--number">
-              Porcentagem do candidato
-            </th>
-            <th v-if="exibirEdição" />
-            <th v-if="exibirEdição" />
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="item in representatividade.capital"
-            :key="item.id"
-          >
-            <td class="cell--number">
-              {{ item.ranking }}
-            </td>
-            <td>{{ item.municipio_tipo }}</td>
-            <td>{{ item.regiao.descricao }}</td>
-            <td class="cell--number">
-              {{ formatarNumero(item.numero_votos) }}
-            </td>
-            <td class="cell--number">
-              {{ formatarNumero(item.regiao.comparecimento.valor) }}
-            </td>
-            <td class="cell--number">
-              {{ item.pct_participacao }}%
-            </td>
-            <td v-if="exibirEdição">
-              <router-link
-                :to="{
-                  name: 'parlamentaresEditarRepresentatividade',
-                  params: { parlamentarId: emFoco?.id, representatividadeId: item.id }
-                }"
-                class="tprimary"
-                aria-label="Editar representatividade"
-              >
-                <svg
-                  width="20"
-                  height="20"
-                ><use xlink:href="#i_edit" /></svg>
-              </router-link>
-            </td>
-            <td v-if="exibirEdição">
-              <button
-                class="like-a__text"
-                arial-label="excluir"
-                title="excluir"
-                type="button"
-                @click="excluirRepresentatividade(suplente.id, emFoco?.id)"
-              >
-                <svg
-                  width="20"
-                  height="20"
-                ><use xlink:href="#i_remove" /></svg>
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_remove" /></svg>
+          </button>
+        </template>
+      </SmaeTable>
+
       <p v-else>
         <template v-if="!temMandato">
           É necessário ao menos um mandato para cadastrar representatividade na capital
@@ -162,7 +145,7 @@ function formatarNumero(numero) {
       </p>
 
       <component
-        :is="!habilitarBotaoDeRepresentatividade ? 'span' : 'routerLink'"
+        :is="!habilitarBotaoDeRepresentatividade ? 'span' : 'SmaeLink'"
         v-if="exibirEdição && emFoco?.id"
         :class="{ disabled: !habilitarBotaoDeRepresentatividade }"
         :to="{
@@ -186,97 +169,79 @@ function formatarNumero(numero) {
         </h3>
         <hr class="ml2 f1">
       </div>
-      <table
+
+      <SmaeTable
         v-if="representatividade.interior.length"
-        class="tablemain mb1"
+        class="mb1"
+        titulo-rolagem-horizontal="Tabela representatividade - capital"
+        :dados="representatividade.interior"
+        :colunas="[
+          {
+            chave: 'ranking',
+            label: 'Ranking no Interior',
+            atributosDaCelula: { class: 'col--number'}
+          },
+          {
+            chave: 'municipio_tipo',
+            label: 'Município/Subprefeitur'
+          },
+          {
+            chave: 'regiao.descricao',
+            label: 'Regiã'
+          },
+          {
+            chave: 'numero_votos',
+            label: 'Votos nominais do candidato',
+            atributosDaCelula: { class: 'col--number'}
+          },
+          {
+            chave: 'regiao.comparecimento.valor',
+            label: 'Quantidade de Comparecimento',
+            atributosDaCelula: { class: 'col--number'},
+            formatador: v => v ? v.valor : '-'
+          },
+          {
+            chave: 'pct_participacao',
+            label: 'Porcentagem do candidato',
+            atributosDaCelula: { class: 'col--number'},
+            formatador: v => v ? `${v}%` : '-'
+          },
+          exibirEdição && { chave: 'editar', atributosDaCelula: { class: 'col--number'} },
+          exibirEdição && { chave: 'excluir', atributosDaCelula: { class: 'col--number'} },
+        ]"
       >
-        <colgroup>
-          <col class="col--number">
-          <col>
-          <col>
-          <col class="col--number">
-          <col class="col--number">
-          <col class="col--number">
-          <col
-            v-if="exibirEdição"
-            class="col--botão-de-ação"
+        <template #celula:editar="{ linha }">
+          <SmaeLink
+            :to="{
+              name: 'parlamentaresEditarRepresentatividade',
+              params: { parlamentarId: emFoco?.id, representatividadeId: linha.id }
+            }"
+            class="tprimary"
+            aria-label="Editar representatividade"
           >
-          <col
-            v-if="exibirEdição"
-            class="col--botão-de-ação"
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_edit" /></svg>
+          </SmaeLink>
+        </template>
+
+        <template #celula:excluir="{ linha }">
+          <button
+            class="like-a__text"
+            arial-label="excluir"
+            title="excluir"
+            type="button"
+            @click="excluirRepresentatividade(linha.id, emFoco.id)"
           >
-        </colgroup>
-        <thead>
-          <tr>
-            <th class="cell--number">
-              Ranking no Interior
-            </th>
-            <th>Município/Subprefeitura</th>
-            <th>Região</th>
-            <th class="cell--number">
-              Votos nominais do candidato
-            </th>
-            <th class="cell--number">
-              Quantidade de Comparecimento
-            </th>
-            <th class="cell--number">
-              Porcentagem do candidato
-            </th>
-            <th v-if="exibirEdição" />
-            <th v-if="exibirEdição" />
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="item in representatividade.interior"
-            :key="item.id"
-          >
-            <td class="cell--number">
-              {{ item.ranking }}
-            </td>
-            <td>{{ item.municipio_tipo }}</td>
-            <td>{{ item.regiao.descricao }}</td>
-            <td class="cell--number">
-              {{ formatarNumero(item.numero_votos) }}
-            </td>
-            <td class="cell--number">
-              {{ formatarNumero(item.regiao.comparecimento.valor) }}
-            </td>
-            <td class="cell--number">
-              {{ item.pct_participacao }}%
-            </td>
-            <td v-if="exibirEdição">
-              <router-link
-                :to="{
-                  name: 'parlamentaresEditarRepresentatividade',
-                  params: { parlamentarId: emFoco?.id, representatividadeId: item.id }
-                }"
-                class="tprimary"
-                aria-label="Editar representatividade"
-              >
-                <svg
-                  width="20"
-                  height="20"
-                ><use xlink:href="#i_edit" /></svg>
-              </router-link>
-            </td>
-            <td v-if="exibirEdição">
-              <button
-                class="like-a__text"
-                arial-label="excluir"
-                title="excluir"
-                type="button"
-                @click="excluirRepresentatividade(suplente.id, emFoco?.id)"
-              >
-                <svg
-                  width="20"
-                  height="20"
-                ><use xlink:href="#i_remove" /></svg>
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_remove" /></svg>
+          </button>
+        </template>
+      </SmaeTable>
+
       <p v-else>
         <template v-if="!temMandato">
           É necessário ao menos um mandato para cadastrar representatividade na capital
@@ -288,8 +253,9 @@ function formatarNumero(numero) {
           Sem representatividade cadastrada no Interior
         </template>
       </p>
+
       <component
-        :is="!habilitarBotaoDeRepresentatividade ? 'span' : 'routerLink'"
+        :is="!habilitarBotaoDeRepresentatividade ? 'span' : 'SmaeLink'"
         v-if="exibirEdição && emFoco?.id"
         :class="{ disabled: !habilitarBotaoDeRepresentatividade }"
         :to="{
