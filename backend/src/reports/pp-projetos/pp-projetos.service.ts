@@ -338,6 +338,7 @@ export class PPProjetosService implements ReportableService {
         const out: FileOutput[] = [];
 
         // 1. Processar Projetos
+        // 1. Processar Projetos
         const projetosFields = [
             'id',
             'portfolio_id',
@@ -362,7 +363,8 @@ export class PPProjetosService implements ReportableService {
             'data_aprovacao',
             'data_revisao',
             'versao',
-            'status',
+            'status-traduzido',
+            'projeto_etapa',
             'orgao_participante.id',
             'orgao_participante.sigla',
             'orgao_participante.descricao',
@@ -375,22 +377,19 @@ export class PPProjetosService implements ReportableService {
             'gestores',
             'responsavel.id',
             'responsavel.nome_exibicao',
-            'premissa',
-            'restricao',
-            'fonte_recurso',
-            'status-traduzido',
             'premissa.id',
             'premissa.premissa',
             'restricao.id',
             'restricao.restricao',
-            'responsavel',
             'fonte_recurso.id',
             'fonte_recurso.nome',
             'fonte_recurso.fonte_recurso_cod_sof',
             'fonte_recurso.fonte_recurso_ano',
             'fonte_recurso.valor_percentual',
             'fonte_recurso.valor_nominal',
+            'status',
         ];
+
         const projetosFieldNames = [
             'ID',
             'ID Portfólio',
@@ -398,7 +397,7 @@ export class PPProjetosService implements ReportableService {
             'ID Meta',
             'ID Iniciativa',
             'ID Atividade',
-            'Nome do Projeto',
+            ctx.sistema == 'MDO' ? 'Nome da Obra' : 'Nome do Projeto',
             'Código',
             'Objeto',
             'Objetivo',
@@ -416,6 +415,7 @@ export class PPProjetosService implements ReportableService {
             'Data de Revisão',
             'Versão',
             'Status',
+            ctx.sistema == 'MDO' ? 'Etapa da Obra' : 'Projeto Etapa',
             'ID Órgão Participante',
             'Sigla Órgão Participante',
             'Descrição Órgão Participante',
@@ -425,24 +425,20 @@ export class PPProjetosService implements ReportableService {
             'ID Órgão Gestor',
             'Sigla Órgão Gestor',
             'Descrição Órgão Gestor',
-            'Gestores do Projeto',
+            ctx.sistema == 'MDO' ? 'Gestores da Obra' : 'Gestores do Projeto',
             'ID Responsável',
             'Nome do Responsável',
-            'Premissa',
-            'Restrição',
-            'Fonte de Recurso',
-            'Status (traduzido)',
             'ID Premissa',
             'Descrição da Premissa',
             'ID Restrição',
             'Descrição da Restrição',
-            'Responsável',
             'ID Fonte de Recurso',
             'Nome da Fonte de Recurso',
             'Código SOF da Fonte',
             'Ano da Fonte',
             'Valor Percentual da Fonte',
             'Valor Nominal da Fonte',
+            'Status (Banco)',
         ];
         await this.gerarCsv('projetos', projetosFields, projetosFieldNames, projetosIds, out, ctx, 20);
 
@@ -583,7 +579,8 @@ export class PPProjetosService implements ReportableService {
         await this.gerarCsv(
             'monitoramento_planos_de_acao',
             planosMonitorFields,
-            planosMonitorFieldNames, projetosIds,
+            planosMonitorFieldNames,
+            projetosIds,
             out,
             ctx,
             60
