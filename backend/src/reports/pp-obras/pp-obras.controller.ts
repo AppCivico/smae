@@ -1,11 +1,11 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
+import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { CreateRelObrasDto } from './dto/create-obras.dto';
 import { PPObrasRelatorioDto } from './entities/obras.entity';
 import { PPObrasService } from './pp-obras.service';
-import { CurrentUser } from '../../auth/decorators/current-user.decorator';
-import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 
 @ApiTags('Relatórios - API')
 @Controller('relatorio/projetos')

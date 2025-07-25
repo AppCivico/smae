@@ -748,7 +748,7 @@ export class PPObrasService implements ReportableService {
                     AND: perms,
                     // reduz o número de linhas pra não virar um "IN" gigante
                     portfolio_id: filters.portfolio_id,
-                    tipo: filters.tipo_projeto,
+                    tipo: this.tipo,
                     orgao_responsavel_id: filters.orgao_responsavel_id ? filters.orgao_responsavel_id : undefined,
                     grupo_tematico_id: filters.grupo_tematico_id ? filters.grupo_tematico_id : undefined,
                     removido_em: null,
@@ -781,13 +781,6 @@ export class PPObrasService implements ReportableService {
 
             whereConditions.push(`projeto.id = ANY($${paramIndex}::int[])`);
             queryParams.push(allowed.map((n) => n.id));
-            paramIndex++;
-        }
-
-        // na teoria isso aqui é hardcoded pra obras, mas fica aqui por higiene
-        if (filters.tipo_projeto) {
-            whereConditions.push(`projeto.tipo::varchar = $${paramIndex}::varchar`);
-            queryParams.push(filters.tipo_projeto);
             paramIndex++;
         }
 

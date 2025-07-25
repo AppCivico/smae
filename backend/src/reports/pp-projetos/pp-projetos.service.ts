@@ -397,7 +397,7 @@ export class PPProjetosService implements ReportableService {
             'ID Meta',
             'ID Iniciativa',
             'ID Atividade',
-            ctx.sistema == 'MDO' ? 'Nome da Obra' : 'Nome do Projeto',
+            'Nome do Projeto',
             'Código',
             'Objeto',
             'Objetivo',
@@ -415,7 +415,7 @@ export class PPProjetosService implements ReportableService {
             'Data de Revisão',
             'Versão',
             'Status',
-            ctx.sistema == 'MDO' ? 'Etapa da Obra' : 'Projeto Etapa',
+            'Projeto Etapa',
             'ID Órgão Participante',
             'Sigla Órgão Participante',
             'Descrição Órgão Participante',
@@ -425,7 +425,7 @@ export class PPProjetosService implements ReportableService {
             'ID Órgão Gestor',
             'Sigla Órgão Gestor',
             'Descrição Órgão Gestor',
-            ctx.sistema == 'MDO' ? 'Gestores da Obra' : 'Gestores do Projeto',
+            'Gestores do Projeto',
             'ID Responsável',
             'Nome do Responsável',
             'ID Premissa',
@@ -788,12 +788,33 @@ export class PPProjetosService implements ReportableService {
                     AND: perms,
                     // reduz o número de linhas pra não virar um "IN" gigante
                     portfolio_id: filters.portfolio_id,
+                    tipo: this.tipo,
+                    id: filters.projeto_id ? { in: filters.projeto_id } : undefined,
                     codigo: filters.codigo ?? undefined,
                     status: filters.status ?? undefined,
                     removido_em: null,
                 },
                 select: { id: true },
             });
+
+            const allowed_shared = await this.prisma.portfolioProjetoCompartilhado.findMany({
+                where: {
+                    projeto: {
+                        AND: perms,
+                    },
+                    removido_em: null,
+                    portfolio_id: filters.portfolio_id,
+                },
+                select: { projeto_id: true },
+            });
+
+            // Adicionando projetos compartilhados.
+            // Deve ser adicionado apenas projetos que não sejam originalmente do portfolio utilizado no filtro.
+            allowed.push(
+                ...allowed_shared
+                    .filter((n) => !allowed.find((m) => m.id === n.projeto_id))
+                    .map((n) => ({ id: n.projeto_id }))
+            );
 
             if (allowed.length === 0) {
                 return { whereString: 'WHERE false', queryParams: [] };
