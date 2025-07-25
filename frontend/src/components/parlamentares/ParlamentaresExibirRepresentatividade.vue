@@ -3,7 +3,7 @@ import { storeToRefs } from 'pinia';
 import { computed, defineProps } from 'vue';
 import { useAlertStore } from '@/stores/alert.store';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
-import SmaeTable from '../SmaeTable/SmaeTable.vue';
+import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 
 const alertStore = useAlertStore();
 const parlamentaresStore = useParlamentaresStore();
@@ -127,7 +127,7 @@ function formatarNumero(numero) {
             <svg
               width="20"
               height="20"
-            ><use xlink:href="#i_remove" /></svg>
+            ><use xlink:href="#i_waste" /></svg>
           </button>
         </template>
       </SmaeTable>
@@ -171,9 +171,9 @@ function formatarNumero(numero) {
       </div>
 
       <SmaeTable
-        v-if="representatividade.interior.length"
+        v-if="representatividade?.interior?.length"
         class="mb1"
-        titulo-rolagem-horizontal="Tabela representatividade - capital"
+        titulo-rolagem-horizontal="Tabela representatividade - interior"
         :dados="representatividade.interior"
         :colunas="[
           {
@@ -237,7 +237,7 @@ function formatarNumero(numero) {
             <svg
               width="20"
               height="20"
-            ><use xlink:href="#i_remove" /></svg>
+            ><use xlink:href="#i_waste" /></svg>
           </button>
         </template>
       </SmaeTable>

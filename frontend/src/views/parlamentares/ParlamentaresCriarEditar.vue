@@ -71,7 +71,7 @@ function iniciar() {
 }
 
 function excluirItem(tipo, id, nome) {
-  alertStore.confirmAction(`Deseja mesmo remover ${nome || 'esse item'}?`, async () => {
+  alertStore.confirmAction(`Deseja mesmo remover "${nome || 'esse item'}"?`, async () => {
     let tentativa;
     let mensagem;
 
@@ -308,7 +308,7 @@ iniciar();
             <svg
               width="20"
               height="20"
-            ><use xlink:href="#i_remove" /></svg>
+            ><use xlink:href="#i_waste" /></svg>
           </button>
         </template>
       </SmaeTable>
@@ -389,7 +389,7 @@ iniciar();
             <svg
               width="20"
               height="20"
-            ><use xlink:href="#i_remove" /></svg>
+            ><use xlink:href="#i_waste" /></svg>
           </button>
         </template>
       </SmaeTable>
