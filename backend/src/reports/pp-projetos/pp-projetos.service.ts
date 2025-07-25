@@ -1748,22 +1748,15 @@ export class PPProjetosService implements ReportableService {
 
     private async getProjetosIds(whereCond: WhereCond): Promise<number[]> {
         const projectIdsQuery = `
-            SELECT DISTINCT id
-            FROM (
-                SELECT p.id
-                FROM projeto p
-                    JOIN portfolio ON p.portfolio_id = portfolio.id
-                        ${whereCond.whereString.replace(/projeto\./g, 'p.')}
-                UNION ALL
-                SELECT ppc.projeto_id AS id
-                FROM portfolio_projeto_compartilhado ppc
-                    JOIN portfolio ON ppc.portfolio_id = portfolio.id
-                    ${whereCond.whereString.replace(/projeto\./g, 'ppc.')}
-                    AND ppc.removido_em IS NULL
-            ) sub
-            ORDER BY id
-            `;
+        SELECT DISTINCT projeto.id
+        FROM projeto
+        JOIN portfolio ON projeto.portfolio_id = portfolio.id
+        ${whereCond.whereString}
+        ORDER BY projeto.codigo
+    `;
+
         const result = await this.prisma.$queryRawUnsafe(projectIdsQuery, ...whereCond.queryParams);
         return (result as any[]).map((row) => row.id);
     }
+
 }
