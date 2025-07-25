@@ -867,7 +867,7 @@ export class ParlamentarService {
                 const representatividade = await prismaTxn.mandatoRepresentatividade.create({
                     data: {
                         regiao_id: dto.regiao_id,
-                        pct_participacao: pct_participacao,
+                        pct_participacao: dto.pct_participacao,
                         mandato_id: dto.mandato_id,
                         nivel: dto.nivel,
                         municipio_tipo: dto.municipio_tipo,
