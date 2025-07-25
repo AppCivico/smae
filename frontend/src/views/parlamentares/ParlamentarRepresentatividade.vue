@@ -143,6 +143,14 @@ function iniciar() {
 iniciar();
 
 watch(representatividadeParaEdição, (novoValor) => {
+  if (
+    props.representatividadeId
+    && representatividadeParaEdição.value?.regiao?.comparecimento?.valor
+  ) {
+    novoValor.numero_comparecimento = representatividadeParaEdição.value
+      .regiao.comparecimento.valor;
+  }
+
   resetForm({ values: novoValor });
 
   if (!values.municipio_tipo && tipoSugerido) {
@@ -326,9 +334,9 @@ watch(representatividadeParaEdição, (novoValor) => {
             :schema="schema"
           />
           <Field
-            v-if="!props.representatividadeId"
             name="numero_comparecimento"
             type="number"
+            :disabled="props.representatividadeId"
             class="inputtext light mb1"
             :class="{ error: errors.numero_comparecimento, loading: chamadasPendentes.emFoco }"
             min="0"
@@ -339,13 +347,6 @@ watch(representatividadeParaEdição, (novoValor) => {
                 $event.target.value ? Number($event.target.value) : null
               )"
           />
-          <input
-            v-else
-            class="inputtext light mb1 disabled"
-            :value="representatividadeParaEdição?.regiao?.comparecimento?.valor"
-            disabled
-            :class="{ loading: chamadasPendentes.emFoco }"
-          >
           <ErrorMessage
             class="error-msg"
             name="numero_comparecimento"
