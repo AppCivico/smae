@@ -35,7 +35,7 @@ const representatividade = computed(() => (Array.isArray(emFoco?.value?.ultimo_m
   : { capital: [], interior: [] }));
 
 function excluirRepresentatividade(representatividadeId, parlamentarId = emFoco.value.id) {
-  alertStore.confirmAction('Deseja mesmo remover a pessoa nessa suplência?', async () => {
+  alertStore.confirmAction('Deseja excluir essa representividade?', async () => {
     if (await parlamentaresStore.excluirRepresentatividade(representatividadeId, parlamentarId)) {
       alertStore.success('Representatividade removida.');
       parlamentaresStore.buscarItem(parlamentarId);
