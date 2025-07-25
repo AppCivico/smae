@@ -276,7 +276,6 @@ export class PPProjetosService implements ReportableService {
         const whereCond = await this.buildFilteredWhereStr(dto, user);
 
         await this.queryDataProjetos(whereCond, out_projetos);
-        console.log(whereCond);
         await this.queryDataRiscos(whereCond, out_riscos);
         await this.queryDataPlanosAcao(whereCond, out_planos_acao);
         await this.queryDataPlanosAcaoMonitoramento(whereCond, out_monitoramento_planos_acao);
@@ -1128,14 +1127,14 @@ export class PPProjetosService implements ReportableService {
                 SELECT
                   string_agg(json_build_object('id', td.dependencia_tarefa_id, 'tipo', td.tipo, 'latencia', td.latencia) #>> '{}', '/')
                 FROM tarefa_dependente td
-                JOIN tarefa t2 ON t2.id = td.dependencia_tarefa_id
+                JOIN tarefa t2 ON t2.id = td.dependencia_tarefa_id AND t2.removido_em IS NULL
                 WHERE td.tarefa_id = t.id
             ) as dependencias
             FROM projeto
             LEFT JOIN tarefa_cronograma tc ON tc.projeto_id = projeto.id AND tc.removido_em IS NULL
             LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
-            JOIN tarefa t ON t.tarefa_cronograma_id = tc.id
-            JOIN portfolio ON projeto.portfolio_id = portfolio.id
+            JOIN tarefa t ON t.tarefa_cronograma_id = tc.id AND t.removido_em IS NULL
+            JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
             ${whereCond.whereString}
         `;
 

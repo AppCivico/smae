@@ -403,7 +403,6 @@ export class PPObrasService implements ReportableService {
                     (
                         SELECT
                             string_agg(pt.descricao, '|')
-
                         FROM projeto_tag pt
                         WHERE pt.id = ANY(projeto.tags)
                         AND pt.removido_em IS NULL
@@ -433,7 +432,7 @@ export class PPObrasService implements ReportableService {
                 LEFT JOIN orgao orgao_colaborador On orgao_colaborador.id = projeto.orgao_colaborador_id
                 LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
                 LEFT JOIN projeto_etapa pe ON pe.id = projeto.projeto_etapa_id
-                LEFT JOIN empreendimento ON empreendimento.id = projeto.empreendimento_id
+                LEFT JOIN empreendimento ON empreendimento.id = projeto.empreendimento_id AND empreendimento.removido_em IS NULL
                 ${whereCond.whereString.replace('projeto.portfolio_id', 'port_array.portfolio_id')}
                 `,
                 whereCond.queryParams,
@@ -466,14 +465,14 @@ export class PPObrasService implements ReportableService {
                         SELECT
                         string_agg(json_build_object('id', td.dependencia_tarefa_id, 'tipo', td.tipo, 'latencia', td.latencia) #>> '{}', '/')
                         FROM tarefa_dependente td
-                        JOIN tarefa t2 ON t2.id = td.dependencia_tarefa_id
+                        JOIN tarefa t2 ON t2.id = td.dependencia_tarefa_id AND t2.removido_em IS NULL
                         WHERE td.tarefa_id = t.id
                     ) as dependencias
                 FROM projeto
-                JOIN portfolio ON projeto.portfolio_id = portfolio.id
+                JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
                 LEFT JOIN tarefa_cronograma tc ON tc.projeto_id = projeto.id AND tc.removido_em IS NULL
                 LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
-                JOIN tarefa t ON t.tarefa_cronograma_id = tc.id
+                JOIN tarefa t ON t.tarefa_cronograma_id = tc.id AND t.removido_em IS NULL
                 ${whereCond.whereString}
                 `,
                 whereCond.queryParams,
@@ -489,7 +488,7 @@ export class PPObrasService implements ReportableService {
                     regiao.pdm_codigo_sufixo AS sigla,
                     regiao.nivel AS nivel
                 FROM projeto
-                JOIN portfolio ON projeto.portfolio_id = portfolio.id
+                JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
                 JOIN projeto_regiao ON projeto_regiao.projeto_id = projeto.id AND projeto_regiao.removido_em IS NULL
                 JOIN regiao ON regiao.id = projeto_regiao.regiao_id AND regiao.removido_em IS NULL
                 ${whereCond.whereString}
@@ -519,13 +518,13 @@ export class PPObrasService implements ReportableService {
                     (
                         SELECT string_agg(r.codigo::text, '|')
                         FROM projeto_acompanhamento_risco ar
-                        JOIN projeto_risco r ON ar.projeto_risco_id = r.id
+                        JOIN projeto_risco r ON ar.projeto_risco_id = r.id AND r.removido_em IS NULL
                         WHERE ar.projeto_acompanhamento_id = projeto_acompanhamento.id
                     ) AS riscos
                 FROM projeto
                 JOIN projeto_acompanhamento ON projeto_acompanhamento.projeto_id = projeto.id
                 JOIN projeto_acompanhamento_item ON projeto_acompanhamento_item.projeto_acompanhamento_id = projeto_acompanhamento.id
-                JOIN portfolio ON projeto.portfolio_id = portfolio.id
+                JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
                 ${whereCond.whereString}
                 `,
                 whereCond.queryParams,
@@ -542,7 +541,7 @@ export class PPObrasService implements ReportableService {
                     projeto_fonte_recurso.fonte_recurso_ano,
                     projeto_fonte_recurso.fonte_recurso_cod_sof
                 FROM projeto
-                JOIN portfolio ON projeto.portfolio_id = portfolio.id
+                JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
                 JOIN projeto_fonte_recurso ON projeto_fonte_recurso.projeto_id = projeto.id
                 ${whereCond.whereString}
                 `,
@@ -578,7 +577,7 @@ export class PPObrasService implements ReportableService {
                     (
                         SELECT max(valor)
                         FROM contrato_aditivo
-                        JOIN tipo_aditivo ON tipo_aditivo.id = contrato_aditivo.tipo_aditivo_id
+                        JOIN tipo_aditivo ON tipo_aditivo.id = contrato_aditivo.tipo_aditivo_id AND tipo_aditivo.removido_em IS NULL
                         WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL AND tipo_aditivo.habilita_valor = true GROUP BY contrato_aditivo.data ORDER BY contrato_aditivo.data DESC LIMIT 1
                     ) AS valor_reajustado,
                     (
@@ -601,7 +600,7 @@ export class PPObrasService implements ReportableService {
                         WHERE contrato_id = contrato.id
                     ) AS fontes_recurso
                 FROM projeto
-                JOIN portfolio ON projeto.portfolio_id = portfolio.id
+                JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
                 JOIN contrato ON contrato.projeto_id = projeto.id AND contrato.removido_em IS NULL
                 LEFT JOIN orgao ON orgao.id = contrato.orgao_id AND orgao.removido_em IS NULL
                 LEFT JOIN modalidade_contratacao ON contrato.modalidade_contratacao_id = modalidade_contratacao.id AND modalidade_contratacao.removido_em IS NULL
@@ -625,7 +624,7 @@ export class PPObrasService implements ReportableService {
                     contrato_aditivo.valor AS valor_com_reajuste,
                     contrato_aditivo.percentual_medido
                 FROM projeto
-                JOIN portfolio ON projeto.portfolio_id = portfolio.id
+                JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
                 JOIN contrato ON contrato.projeto_id = projeto.id AND contrato.removido_em IS NULL
                 JOIN contrato_aditivo ON contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL
                 JOIN tipo_aditivo ON tipo_aditivo.id = contrato_aditivo.tipo_aditivo_id AND tipo_aditivo.removido_em IS NULL
@@ -649,7 +648,7 @@ export class PPObrasService implements ReportableService {
                     atividade.id atividade_id,
                     atividade.titulo as atividade_titulo
                 FROM projeto
-                JOIN portfolio ON projeto.portfolio_id = portfolio.id
+                JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
                 JOIN projeto_origem ON projeto_origem.projeto_id = projeto.id AND projeto_origem.removido_em IS NULL
                 LEFT JOIN meta ON meta.id = projeto_origem.meta_id AND meta.removido_em IS NULL
                 LEFT JOIN iniciativa ON iniciativa.id = projeto_origem.iniciativa_id AND iniciativa.removido_em IS NULL
@@ -673,7 +672,7 @@ export class PPObrasService implements ReportableService {
                     projeto_registro_sei.comentarios,
                     projeto_registro_sei.observacoes
                 FROM projeto
-                JOIN portfolio ON projeto.portfolio_id = portfolio.id
+                JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
                 JOIN projeto_registro_sei ON projeto_registro_sei.projeto_id = projeto.id AND projeto_registro_sei.removido_em IS NULL
                 ${whereCond.whereString}
                 `,
@@ -689,7 +688,7 @@ export class PPObrasService implements ReportableService {
                     geo.endereco_exibicao AS endereco,
                     geo.geom_geojson AS geojson
                 FROM projeto
-                JOIN portfolio ON projeto.portfolio_id = portfolio.id
+                JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
                 JOIN geo_localizacao_referencia geo_r ON geo_r.projeto_id = projeto.id AND geo_r.removido_em IS NULL
                 JOIN geo_localizacao geo ON geo.id = geo_r.geo_localizacao_id
                 ${whereCond.whereString}
@@ -945,7 +944,7 @@ export class PPObrasService implements ReportableService {
                 FROM portfolio_projeto_compartilhado ppc
                 WHERE ppc.projeto_id = projeto.id AND ppc.removido_em IS NULL
             ) AS port_array ON true
-          LEFT JOIN portfolio ON portfolio.id = port_array.portfolio_id
+          LEFT JOIN portfolio ON portfolio.id = port_array.portfolio_id AND portfolio.removido_em IS NULL
           LEFT JOIN projeto_fonte_recurso r ON r.projeto_id = projeto.id
           LEFT JOIN projeto_orgao_participante po ON po.projeto_id = projeto.id
           LEFT JOIN orgao o ON po.orgao_id = o.id
@@ -953,10 +952,10 @@ export class PPObrasService implements ReportableService {
           LEFT JOIN orgao orgao_gestor ON orgao_gestor.id = projeto.orgao_gestor_id
           LEFT JOIN orgao orgao_executor ON orgao_executor.id = projeto.orgao_executor_id
           LEFT JOIN orgao orgao_origem ON orgao_origem.id = projeto.orgao_origem_id
-          LEFT JOIN orgao orgao_colaborador On orgao_colaborador.id = projeto.orgao_colaborador_id
+          LEFT JOIN orgao orgao_colaborador ON orgao_colaborador.id = projeto.orgao_colaborador_id
           LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
           LEFT JOIN projeto_etapa pe ON pe.id = projeto.projeto_etapa_id
-          LEFT JOIN empreendimento ON empreendimento.id = projeto.empreendimento_id
+          LEFT JOIN empreendimento ON empreendimento.id = projeto.empreendimento_id AND empreendimento.removido_em IS NULL
         ${whereCond.whereString} `;
 
         const data: RetornoDbProjeto[] = await this.prisma.$queryRawUnsafe(sql, ...whereCond.queryParams);
@@ -1079,14 +1078,14 @@ export class PPObrasService implements ReportableService {
                 SELECT
                   string_agg(json_build_object('id', td.dependencia_tarefa_id, 'tipo', td.tipo, 'latencia', td.latencia) #>> '{}', '/')
                 FROM tarefa_dependente td
-                JOIN tarefa t2 ON t2.id = td.dependencia_tarefa_id
+                JOIN tarefa t2 ON t2.id = td.dependencia_tarefa_id AND t2.removido_em IS NULL
                 WHERE td.tarefa_id = t.id
             ) as dependencias
             FROM projeto
-            JOIN portfolio ON projeto.portfolio_id = portfolio.id
+            JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
             LEFT JOIN tarefa_cronograma tc ON tc.projeto_id = projeto.id AND tc.removido_em IS NULL
             LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
-            JOIN tarefa t ON t.tarefa_cronograma_id = tc.id
+            JOIN tarefa t ON t.tarefa_cronograma_id = tc.id AND t.removido_em IS NULL
             ${whereCond.whereString}
         `;
 
@@ -1253,7 +1252,7 @@ export class PPObrasService implements ReportableService {
             (
                 SELECT max(valor)
                 FROM contrato_aditivo
-                JOIN tipo_aditivo ON tipo_aditivo.id = contrato_aditivo.tipo_aditivo_id
+                JOIN tipo_aditivo ON tipo_aditivo.id = contrato_aditivo.tipo_aditivo_id AND tipo_aditivo.removido_em IS NULL
                 WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL AND tipo_aditivo.habilita_valor = true GROUP BY contrato_aditivo.data ORDER BY contrato_aditivo.data DESC LIMIT 1
             ) AS valor_reajustado,
             (
@@ -1389,13 +1388,13 @@ export class PPObrasService implements ReportableService {
             (
                 SELECT string_agg(r.codigo::text, '|')
                 FROM projeto_acompanhamento_risco ar
-                JOIN projeto_risco r ON ar.projeto_risco_id = r.id
+                JOIN projeto_risco r ON ar.projeto_risco_id = r.id AND r.removido_em IS NULL
                 WHERE ar.projeto_acompanhamento_id = projeto_acompanhamento.id
             ) AS riscos
         FROM projeto
           JOIN projeto_acompanhamento ON projeto_acompanhamento.projeto_id = projeto.id AND projeto_acompanhamento.removido_em IS NULL
           LEFT JOIN projeto_acompanhamento_item ON projeto_acompanhamento_item.projeto_acompanhamento_id = projeto_acompanhamento.id AND projeto_acompanhamento_item.removido_em IS NULL
-          JOIN portfolio ON projeto.portfolio_id = portfolio.id
+          JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
         ${whereCond.whereString}
         `;
 
