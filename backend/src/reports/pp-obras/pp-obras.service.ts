@@ -265,7 +265,7 @@ export class PPObrasService implements ReportableService {
 
         const whereCond = await this.buildFilteredWhereStr(dto, user);
 
-        await this.queryDataProjetos(whereCond, out_obras);
+        await this.queryDataProjetos(whereCond, out_obras, dto.portfolio_id);
         await this.queryDataCronograma(whereCond, out_cronogramas);
         await this.queryDataAcompanhamentos(whereCond, out_acompanhamentos);
         await this.queryDataRegioes(whereCond, out_regioes);
@@ -433,9 +433,10 @@ export class PPObrasService implements ReportableService {
                 LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
                 LEFT JOIN projeto_etapa pe ON pe.id = projeto.projeto_etapa_id
                 LEFT JOIN empreendimento ON empreendimento.id = projeto.empreendimento_id AND empreendimento.removido_em IS NULL
-                ${whereCond.whereString.replace('projeto.portfolio_id', 'port_array.portfolio_id')}
+                ${whereCond.whereString}
+                AND port_array.portfolio_id = $${whereCond.queryParams.length + 1}
                 `,
-                whereCond.queryParams,
+                [...whereCond.queryParams, dto.portfolio_id.toString()],
                 'obras.csv'
             )
         );
@@ -819,7 +820,7 @@ export class PPObrasService implements ReportableService {
         return { whereString, queryParams };
     }
 
-    private async queryDataProjetos(whereCond: WhereCond, out: RelObrasDto[]) {
+    private async queryDataProjetos(whereCond: WhereCond, out: RelObrasDto[], portfolio_id: number) {
         const sql = `SELECT
             projeto.id,
             projeto.portfolio_id,
@@ -937,9 +938,14 @@ export class PPObrasService implements ReportableService {
           LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
           LEFT JOIN projeto_etapa pe ON pe.id = projeto.projeto_etapa_id
           LEFT JOIN empreendimento ON empreendimento.id = projeto.empreendimento_id AND empreendimento.removido_em IS NULL
-        ${whereCond.whereString.replace('projeto.portfolio_id', 'port_array.portfolio_id')} `;
+          ${whereCond.whereString}
+          AND port_array.portfolio_id = $${whereCond.queryParams.length + 1}`;
 
-        const data: RetornoDbProjeto[] = await this.prisma.$queryRawUnsafe(sql, ...whereCond.queryParams);
+        const data: RetornoDbProjeto[] = await this.prisma.$queryRawUnsafe(
+            sql,
+            ...whereCond.queryParams,
+            portfolio_id.toString()
+        );
 
         this.convertRowsProjetosInto(data, out);
     }
