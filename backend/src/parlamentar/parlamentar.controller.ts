@@ -20,7 +20,6 @@ import {
     UpdateParlamentarDto,
     UpdateRepresentatividadeDto,
 } from './dto/update-parlamentar.dto';
-import { RemoveMandatoDepsDto } from './dto/remove-mandato-deps.dto';
 import { FilterParlamentarDto } from './dto/filter-parlamentar.dto';
 import { PaginatedDto } from 'src/common/dto/paginated.dto';
 import { ApiPaginatedResponse } from 'src/auth/decorators/paginated.decorator';
@@ -170,12 +169,8 @@ export class ParlamentarController {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     @Roles(['CadastroParlamentar.remover'])
-    async removeRepresentatividade(
-        @Param() params: FindTwoParams,
-        @Body() dto: RemoveMandatoDepsDto,
-        @CurrentUser() user: PessoaFromJwt
-    ) {
-        await this.parlamentarService.removeMandatoRepresentatividade(+params.id2, dto, user);
+    async removeRepresentatividade(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
+        await this.parlamentarService.removeMandatoRepresentatividade(+params.id2, user);
         return '';
     }
 

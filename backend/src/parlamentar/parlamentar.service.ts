@@ -18,7 +18,6 @@ import {
     CreateParlamentarDto,
 } from './dto/create-parlamentar.dto';
 import { FilterParlamentarDto } from './dto/filter-parlamentar.dto';
-import { RemoveMandatoDepsDto } from './dto/remove-mandato-deps.dto';
 import {
     UpdateEquipeDto,
     UpdateMandatoDto,
@@ -912,15 +911,10 @@ export class ParlamentarService {
         return updated;
     }
 
-    async removeMandatoRepresentatividade(
-        representatividadeId: number,
-        dto: RemoveMandatoDepsDto,
-        user: PessoaFromJwt
-    ) {
+    async removeMandatoRepresentatividade(representatividadeId: number, user: PessoaFromJwt) {
         return await this.prisma.mandatoRepresentatividade.updateMany({
             where: {
                 id: representatividadeId,
-                mandato_id: dto.mandato_id,
             },
             data: {
                 removido_por: user.id,
