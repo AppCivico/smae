@@ -2,6 +2,7 @@ import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { ProjetoGetPermissionSet, ProjetoService, ProjetoStatusParaExibicao } from '../../pp/projeto/projeto.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { Readable } from 'stream';
 
 import { ContratoPrazoUnidade, ProjetoStatus, StatusContrato, StatusRisco, TipoProjeto } from '@prisma/client';
 import { DateTime } from 'luxon';
@@ -15,6 +16,7 @@ import { CsvFileHandler } from '../shared/csv-file-handler';
 import { StreamBatchHandler } from '../shared/stream-handlers';
 import { FileOutput, ReportableService } from '../utils/utils.service';
 import { CreateRelProjetosDto } from './dto/create-projetos.dto';
+import { PPProjetosStreamingDto } from './dto/streaming-projetos.dto';
 import {
     PPProjetosRelatorioDto,
     RelProjetosAcompanhamentosDto,
@@ -301,6 +303,184 @@ export class PPProjetosService implements ReportableService {
             origens: out_origens,
             enderecos: out_enderecos,
         };
+    }
+
+    streamProjetos(dto: CreateRelProjetosDto, user: PessoaFromJwt | null): Readable {
+        const stream = new Readable({ objectMode: true, read() {} });
+
+        this.processProjectsStream(dto, user, stream).catch((error) => {
+            this.logger.error('Error in streamProjetos:', error);
+            if (!stream.destroyed) {
+                stream.emit('error', error);
+            }
+        });
+
+        return stream;
+    }
+
+    private async processProjectsStream(dto: CreateRelProjetosDto, user: PessoaFromJwt | null, stream: Readable) {
+        try {
+            // Get the where condition and project IDs
+            const whereCond = await this.buildFilteredWhereStr(dto, user);
+            const projectIds = await this.getProjetosIds(whereCond);
+
+            this.logger.log(`Starting stream processing for ${projectIds.length} projects`);
+
+            // Process each project individually
+            for (let i = 0; i < projectIds.length; i++) {
+                const projectId = projectIds[i];
+
+                try {
+                    // Create a where condition for just this project
+                    const singleProjectWhereCond: WhereCond = {
+                        whereString:
+                            'WHERE projeto.id = $1 AND projeto.removido_em IS NULL AND portfolio.modelo_clonagem = false',
+                        queryParams: [projectId],
+                    };
+
+                    // Query all data for this single project
+                    const projectData = await this.queryDataForSingleProject(singleProjectWhereCond);
+
+                    // Create the streaming response object
+                    const streamingResponse: PPProjetosStreamingDto = {
+                        projeto_id: projectId,
+                        dados: projectData,
+                    };
+
+                    // Push to stream
+                    if (!stream.destroyed) {
+                        stream.push(streamingResponse);
+                    }
+
+                    // Log progress every 10 projects
+                    if ((i + 1) % 10 === 0) {
+                        this.logger.log(`Processed ${i + 1}/${projectIds.length} projects`);
+                    }
+                } catch (projectError) {
+                    this.logger.error(`Error processing project ${projectId}:`, projectError);
+                    // Continue with next project instead of stopping the entire stream
+                    continue;
+                }
+            }
+
+            // End the stream
+            if (!stream.destroyed) {
+                stream.push(null);
+            }
+
+            this.logger.log(`Completed streaming ${projectIds.length} projects`);
+        } catch (error) {
+            this.logger.error('Error in processProjectsStream:', error);
+            throw error;
+        }
+    }
+
+    private async queryDataForSingleProject(whereCond: WhereCond): Promise<PPProjetosRelatorioDto> {
+        const out_projetos: RelProjetosDto[] = [];
+        const out_cronogramas: RelProjetosCronogramaDto[] = [];
+        const out_riscos: RelProjetosRiscosDto[] = [];
+        const out_planos_acao: RelProjetosPlanoAcaoDto[] = [];
+        const out_monitoramento_planos_acao: RelProjetosPlanoAcaoMonitoramentosDto[] = [];
+        const out_licoes_aprendidas: RelProjetosLicoesAprendidasDto[] = [];
+        const out_acompanhamentos: RelProjetosAcompanhamentosDto[] = [];
+        const out_contratos: RelProjetosContratosDto[] = [];
+        const out_aditivos: RelProjetosAditivosDto[] = [];
+        const out_origens: RelProjetosOrigemDto[] = [];
+        const out_enderecos: RelProjetosGeolocDto[] = [];
+
+        // Execute all queries in parallel for better performance
+        await Promise.all([
+            this.queryDataProjetos(whereCond, out_projetos),
+            this.queryDataCronograma(whereCond, out_cronogramas),
+            this.queryDataRiscos(whereCond, out_riscos),
+            this.queryDataPlanosAcao(whereCond, out_planos_acao),
+            this.queryDataPlanosAcaoMonitoramento(whereCond, out_monitoramento_planos_acao),
+            this.queryDataLicoesAprendidas(whereCond, out_licoes_aprendidas),
+            this.queryDataAcompanhamentos(whereCond, out_acompanhamentos),
+            this.queryDataContratos(whereCond, out_contratos),
+            this.queryDataAditivos(whereCond, out_aditivos),
+            this.queryDataOrigens(whereCond, out_origens),
+            this.queryDataProjetosGeoloc(whereCond, out_enderecos),
+        ]);
+
+        return {
+            linhas: out_projetos,
+            cronograma: out_cronogramas,
+            riscos: out_riscos,
+            planos_de_acao: out_planos_acao,
+            monitoramento_planos_de_acao: out_monitoramento_planos_acao,
+            licoes_aprendidas: out_licoes_aprendidas,
+            acompanhamentos: out_acompanhamentos,
+            contratos: out_contratos,
+            aditivos: out_aditivos,
+            origens: out_origens,
+            enderecos: out_enderecos,
+        };
+    }
+
+    // Alternative implementation: if you want to batch multiple projects together for better DB performance
+    private async processProjectsStreamBatched(
+        dto: CreateRelProjetosDto,
+        user: PessoaFromJwt | null,
+        stream: Readable
+    ) {
+        try {
+            const whereCond = await this.buildFilteredWhereStr(dto, user);
+            const projectIds = await this.getProjetosIds(whereCond);
+
+            this.logger.log(`Starting batched stream processing for ${projectIds.length} projects`);
+
+            const batchSize = 5; // Process 5 projects at a time
+
+            for (let i = 0; i < projectIds.length; i += batchSize) {
+                const batchIds = projectIds.slice(i, i + batchSize);
+
+                // Process each project in the batch
+                const batchPromises = batchIds.map(async (projectId) => {
+                    try {
+                        const singleProjectWhereCond: WhereCond = {
+                            whereString:
+                                'WHERE projeto.id = $1 AND projeto.removido_em IS NULL AND portfolio.modelo_clonagem = false',
+                            queryParams: [projectId],
+                        };
+
+                        const projectData = await this.queryDataForSingleProject(singleProjectWhereCond);
+
+                        return {
+                            projeto_id: projectId,
+                            dados: projectData,
+                        };
+                    } catch (error) {
+                        this.logger.error(`Error processing project ${projectId}:`, error);
+                        return null;
+                    }
+                });
+
+                // Wait for all projects in this batch to complete
+                const batchResults = await Promise.all(batchPromises);
+
+                // Stream the completed projects
+                for (const result of batchResults) {
+                    if (result && !stream.destroyed) {
+                        stream.push(result);
+                    }
+                }
+
+                this.logger.log(
+                    `Processed batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(projectIds.length / batchSize)}`
+                );
+            }
+
+            // End the stream
+            if (!stream.destroyed) {
+                stream.push(null);
+            }
+
+            this.logger.log(`Completed batched streaming ${projectIds.length} projects`);
+        } catch (error) {
+            this.logger.error('Error in processProjectsStreamBatched:', error);
+            throw error;
+        }
     }
 
     private async gerarCsv(
@@ -1748,7 +1928,7 @@ export class PPProjetosService implements ReportableService {
 
     private async getProjetosIds(whereCond: WhereCond): Promise<number[]> {
         const projectIdsQuery = `
-        SELECT DISTINCT projeto.id
+        SELECT DISTINCT projeto.id, projeto.codigo
         FROM projeto
         JOIN portfolio ON projeto.portfolio_id = portfolio.id
         ${whereCond.whereString}
@@ -1758,5 +1938,4 @@ export class PPProjetosService implements ReportableService {
         const result = await this.prisma.$queryRawUnsafe(projectIdsQuery, ...whereCond.queryParams);
         return (result as any[]).map((row) => row.id);
     }
-
 }
