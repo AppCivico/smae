@@ -119,7 +119,7 @@ function formatarNumero(numero) {
         <template #celula:excluir="{ linha }">
           <button
             class="like-a__text"
-            arial-label="excluir"
+            aria-label="excluir"
             title="excluir"
             type="button"
             @click="excluirRepresentatividade(linha.id, emFoco.id)"
@@ -229,7 +229,7 @@ function formatarNumero(numero) {
         <template #celula:excluir="{ linha }">
           <button
             class="like-a__text"
-            arial-label="excluir"
+            aria-label="excluir"
             title="excluir"
             type="button"
             @click="excluirRepresentatividade(linha.id, emFoco.id)"
