@@ -73,7 +73,7 @@ function formatarNumero(numero) {
           },
           {
             chave: 'municipio_tipo',
-            label: 'Município/Subprefeitur'
+            label: 'Município/Subprefeitura'
           },
           {
             chave: 'regiao.descricao',
