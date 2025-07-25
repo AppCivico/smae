@@ -296,7 +296,7 @@ iniciar();
         <template #celula:excluir="{ linha }">
           <button
             class="like-a__text"
-            arial-label="excluir"
+            aria-label="excluir"
             title="excluir"
             type="button"
             @click="excluirItem(
@@ -381,7 +381,7 @@ iniciar();
         <template #celula:excluir="{ linha }">
           <button
             class="like-a__text"
-            arial-label="excluir"
+            aria-label="excluir"
             title="excluir"
             type="button"
             @click="excluirItem('mandato', linha.id)"
