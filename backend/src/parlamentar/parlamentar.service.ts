@@ -778,7 +778,7 @@ export class ParlamentarService {
                 });
             }
 
-            await this.prisma.parlamentarMandato.update({
+            await prismaTxn.parlamentarMandato.update({
                 where: { id },
                 data: {
                     removido_por: user.id,
