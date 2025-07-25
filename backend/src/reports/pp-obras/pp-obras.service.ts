@@ -739,55 +739,53 @@ export class PPObrasService implements ReportableService {
 
         let paramIndex = 1;
 
-        if (user) {
-            const perms = await ProjetoGetPermissionSet(this.tipo, user);
+        const perms = await ProjetoGetPermissionSet(this.tipo, user ? user : undefined);
 
-            const allowed = await this.prisma.projeto.findMany({
-                where: {
+        const allowed = await this.prisma.projeto.findMany({
+            where: {
+                AND: perms,
+                // importante manter o portfolio_id aqui, pois é utilizado no filtro de compartilhamento
+                // e aqui também
+                portfolio_id: filters.portfolio_id,
+                portfolio: { modelo_clonagem: false }, // não traz portfólios que são modelos para clonagem
+                // reduz o número de linhas pra não virar um "IN" gigante
+                tipo: this.tipo,
+                orgao_responsavel_id: filters.orgao_responsavel_id ? filters.orgao_responsavel_id : undefined,
+                grupo_tematico_id: filters.grupo_tematico_id ? filters.grupo_tematico_id : undefined,
+                removido_em: null,
+            },
+            select: { id: true },
+        });
+
+        const allowed_shared = await this.prisma.portfolioProjetoCompartilhado.findMany({
+            where: {
+                projeto: {
                     AND: perms,
-                    // reduz o número de linhas pra não virar um "IN" gigante
-                    portfolio_id: filters.portfolio_id,
-                    tipo: this.tipo,
-                    orgao_responsavel_id: filters.orgao_responsavel_id ? filters.orgao_responsavel_id : undefined,
-                    grupo_tematico_id: filters.grupo_tematico_id ? filters.grupo_tematico_id : undefined,
-                    removido_em: null,
+                    portfolio: { modelo_clonagem: false }, // não traz portfólios que são modelos para clonagem
                 },
-                select: { id: true },
-            });
+                removido_em: null,
+                portfolio_id: filters.portfolio_id,
+            },
+            select: { projeto_id: true },
+        });
 
-            const allowed_shared = await this.prisma.portfolioProjetoCompartilhado.findMany({
-                where: {
-                    projeto: {
-                        AND: perms,
-                    },
-                    removido_em: null,
-                    portfolio_id: filters.portfolio_id,
-                },
-                select: { projeto_id: true },
-            });
+        // Adicionando projetos compartilhados.
+        // Deve ser adicionado apenas projetos que não sejam originalmente do portfolio utilizado no filtro.
+        allowed.push(
+            ...allowed_shared
+                .filter((n) => !allowed.find((m) => m.id === n.projeto_id))
+                .map((n) => ({ id: n.projeto_id }))
+        );
 
-            // Adicionando projetos compartilhados.
-            // Deve ser adicionado apenas projetos que não sejam originalmente do portfolio utilizado no filtro.
-            allowed.push(
-                ...allowed_shared
-                    .filter((n) => !allowed.find((m) => m.id === n.projeto_id))
-                    .map((n) => ({ id: n.projeto_id }))
-            );
-
-            if (allowed.length === 0) {
-                return { whereString: 'WHERE false', queryParams: [] };
-            }
-
-            whereConditions.push(`projeto.id = ANY($${paramIndex}::int[])`);
-            queryParams.push(allowed.map((n) => n.id));
-            paramIndex++;
+        if (allowed.length === 0) {
+            return { whereString: 'WHERE false', queryParams: [] };
         }
 
-        if (filters.portfolio_id) {
-            whereConditions.push(`projeto.portfolio_id = $${paramIndex}`);
-            queryParams.push(filters.portfolio_id);
-            paramIndex++;
-        }
+        whereConditions.push(`projeto.id = ANY($${paramIndex}::int[])`);
+        queryParams.push(allowed.map((n) => n.id));
+        paramIndex++;
+
+        // não usa o filtro do portfolio_id, pois já foi aplicado no filtro de permissões
 
         if (filters.orgao_responsavel_id) {
             whereConditions.push(`projeto.orgao_responsavel_id = $${paramIndex}`);
@@ -816,29 +814,12 @@ export class PPObrasService implements ReportableService {
         }
 
         whereConditions.push(`projeto.removido_em IS NULL`);
-        whereConditions.push(`portfolio.modelo_clonagem = false`);
 
         const whereString = whereConditions.length > 0 ? 'WHERE ' + whereConditions.join(' AND ') : '';
         return { whereString, queryParams };
     }
 
     private async queryDataProjetos(whereCond: WhereCond, out: RelObrasDto[]) {
-        let portfolioParamIdx;
-
-        // Fazendo uma cópia pois aqui, possivelmente, é utilizada uma regex de replace.
-        let filterStr = whereCond.whereString;
-
-        if (filterStr.match(/portfolio_id = \$([0-9]+)/)) {
-            const match = filterStr.match(/portfolio_id = \$([0-9]+)/);
-            portfolioParamIdx = match ? parseInt(match[1], 10) : null;
-
-            if (!portfolioParamIdx) throw new Error('Erro interno ao extrair relatório');
-
-            // Nesta query o filtro de report deve ser aplicado na subquery port_array.
-            // Para que seja retornados todas as obras do portfolio, até as compartilhadas.
-            filterStr = filterStr.replace('projeto.portfolio_id', 'port_array.portfolio_id');
-        }
-
         const sql = `SELECT
             projeto.id,
             projeto.portfolio_id,
@@ -956,7 +937,7 @@ export class PPObrasService implements ReportableService {
           LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
           LEFT JOIN projeto_etapa pe ON pe.id = projeto.projeto_etapa_id
           LEFT JOIN empreendimento ON empreendimento.id = projeto.empreendimento_id AND empreendimento.removido_em IS NULL
-        ${whereCond.whereString} `;
+        ${whereCond.whereString.replace('projeto.portfolio_id', 'port_array.portfolio_id')} `;
 
         const data: RetornoDbProjeto[] = await this.prisma.$queryRawUnsafe(sql, ...whereCond.queryParams);
 
