@@ -3944,9 +3944,15 @@ export class ProjetoService {
 
         if (!grupoTematico) throw new BadRequestException('Grupo temático não encontrado.');
 
-        if (!grupoTematico.unidades_atendidas) dto.mdo_n_unidades_atendidas = null;
-        if (!grupoTematico.unidades_habitacionais) dto.mdo_n_unidades_habitacionais = null;
+        if (!grupoTematico.unidades_atendidas || dto.mdo_n_unidades_atendidas === 0)
+            dto.mdo_n_unidades_atendidas = null;
+
+        if (!grupoTematico.unidades_habitacionais || dto.mdo_n_unidades_habitacionais === 0)
+            dto.mdo_n_unidades_habitacionais = null;
+
         if (!grupoTematico.programa_habitacional) dto.mdo_programa_habitacional = null;
-        if (!grupoTematico.familias_beneficiadas) dto.mdo_n_familias_beneficiadas = null;
+
+        if (!grupoTematico.familias_beneficiadas || dto.mdo_n_familias_beneficiadas === 0)
+            dto.mdo_n_familias_beneficiadas = null;
     }
 }
