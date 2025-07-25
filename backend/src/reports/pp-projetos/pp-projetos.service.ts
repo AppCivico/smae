@@ -1,4 +1,4 @@
-import { Inject, Injectable, forwardRef } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, forwardRef } from '@nestjs/common';
 import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { ProjetoGetPermissionSet, ProjetoService, ProjetoStatusParaExibicao } from '../../pp/projeto/projeto.service';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -32,10 +32,12 @@ import {
     RelProjetosRiscosDto,
 } from './entities/projetos.entity';
 import { Logger } from '@nestjs/common';
+import { SmaeConfigService } from '../../common/services/smae-config.service';
 
 type WhereCond = {
     whereString: string;
     queryParams: any[];
+    count: number;
 };
 
 class RetornoDbProjeto {
@@ -259,7 +261,8 @@ export class PPProjetosService implements ReportableService {
         private readonly prisma: PrismaService,
         @Inject(forwardRef(() => ProjetoService)) private readonly projetoService: ProjetoService,
         @Inject(forwardRef(() => TarefaService)) private readonly tarefasService: TarefaService,
-        @Inject(forwardRef(() => TarefaUtilsService)) private readonly tarefasUtilsService: TarefaUtilsService
+        @Inject(forwardRef(() => TarefaUtilsService)) private readonly tarefasUtilsService: TarefaUtilsService,
+        private readonly smaeConfigService: SmaeConfigService
     ) {}
 
     async asJSON(dto: CreateRelProjetosDto, user: PessoaFromJwt | null): Promise<PPProjetosRelatorioDto> {
@@ -276,6 +279,13 @@ export class PPProjetosService implements ReportableService {
         const out_enderecos: RelProjetosGeolocDto[] = [];
 
         const whereCond = await this.buildFilteredWhereStr(dto, user);
+
+        const maxReports = await this.smaeConfigService.getConfigNumberWithDefault('PP_PROJETOS_MAX_ROWS', 200);
+        if (whereCond.count > maxReports) {
+            throw new BadRequestException(
+                `Mais de ${maxReports} projetos encontrados. Por favor, refine sua busca ou utilize o serviço de streaming/exportação.`
+            );
+        }
 
         await this.queryDataProjetos(whereCond, out_projetos);
         await this.queryDataRiscos(whereCond, out_riscos);
@@ -336,6 +346,7 @@ export class PPProjetosService implements ReportableService {
                         whereString:
                             'WHERE projeto.id = $1 AND projeto.removido_em IS NULL AND portfolio.modelo_clonagem = false',
                         queryParams: [projectId],
+                        count: 1,
                     };
 
                     // Query all data for this single project
@@ -442,6 +453,7 @@ export class PPProjetosService implements ReportableService {
                             whereString:
                                 'WHERE projeto.id = $1 AND projeto.removido_em IS NULL AND portfolio.modelo_clonagem = false',
                             queryParams: [projectId],
+                            count: 5,
                         };
 
                         const projectData = await this.queryDataForSingleProject(singleProjectWhereCond);
@@ -958,6 +970,7 @@ export class PPProjetosService implements ReportableService {
         const queryParams: any[] = [];
 
         let paramIndex = 1;
+        let count = 0;
 
         if (user) {
             const perms = await ProjetoGetPermissionSet(this.tipo, user);
@@ -996,9 +1009,10 @@ export class PPProjetosService implements ReportableService {
             );
 
             if (allowed.length === 0) {
-                return { whereString: 'WHERE false', queryParams: [] };
+                return { whereString: 'WHERE false', queryParams: [], count: 0 };
             }
 
+            count = allowed.length;
             whereConditions.push(`projeto.id = ANY($${paramIndex}::int[])`);
             queryParams.push(allowed.map((n) => n.id));
             paramIndex++;
@@ -1032,7 +1046,7 @@ export class PPProjetosService implements ReportableService {
         whereConditions.push(`portfolio.modelo_clonagem = false`);
 
         const whereString = whereConditions.length > 0 ? 'WHERE ' + whereConditions.join(' AND ') : '';
-        return { whereString, queryParams };
+        return { whereString, queryParams, count: count };
     }
 
     private async queryDataProjetos(whereCond: WhereCond, out: RelProjetosDto[]) {
@@ -1883,6 +1897,7 @@ export class PPProjetosService implements ReportableService {
         const whereCondForBatch = {
             whereString: 'WHERE projeto.id = ANY($1::int[])',
             queryParams: [projectIds],
+            count: 1,
         };
 
         const result: any[] = [];
