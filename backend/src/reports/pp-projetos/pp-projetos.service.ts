@@ -1241,7 +1241,7 @@ export class PPProjetosService implements ReportableService {
             (
                 SELECT string_agg(t.tarefa, '|')
                 FROM risco_tarefa rt
-                JOIN tarefa t ON rt.tarefa_id = t.id
+                JOIN tarefa t ON rt.tarefa_id = t.id AND t.removido_em IS NULL
                 WHERE rt.projeto_risco_id = projeto_risco.id
             ) as tarefas_afetadas
         FROM projeto
