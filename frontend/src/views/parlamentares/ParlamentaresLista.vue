@@ -130,6 +130,17 @@ watch(
         <td>
           {{ cargosDeParlamentar[item.cargo]?.nome || item.cargo }}
         </td>
+        <td v-if="authStore.temPermissãoPara('CadastroParlamentar.editar')">
+          <router-link
+            :to="{ name: 'parlamentaresEditar', params: { parlamentarId: item.id } }"
+            class="tprimary"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_edit" /></svg>
+          </router-link>
+        </td>
         <td v-if="authStore.temPermissãoPara('CadastroParlamentar.remover')">
           <button
             class="like-a__text"
@@ -142,17 +153,6 @@ watch(
               height="20"
             ><use xlink:href="#i_waste" /></svg>
           </button>
-        </td>
-        <td v-if="authStore.temPermissãoPara('CadastroParlamentar.editar')">
-          <router-link
-            :to="{ name: 'parlamentaresEditar', params: { parlamentarId: item.id } }"
-            class="tprimary"
-          >
-            <svg
-              width="20"
-              height="20"
-            ><use xlink:href="#i_edit" /></svg>
-          </router-link>
         </td>
       </tr>
       <tr v-if="chamadasPendentes.lista">
