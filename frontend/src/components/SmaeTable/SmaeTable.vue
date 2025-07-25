@@ -15,11 +15,11 @@
 
       <slot
         name="colunas"
-        :colunas="colunas"
+        :colunas="colunasFiltradas"
       >
         <colgroup>
           <col
-            v-for="coluna in colunas"
+            v-for="coluna in colunasFiltradas"
             :key="`colunas--${coluna.chave}`"
             class="smae-table__coluna"
             :class="`smae-table__coluna--${coluna.chave}`"
@@ -35,11 +35,11 @@
       <thead>
         <slot
           name="cabecalho"
-          :colunas="colunas"
+          :colunas="colunasFiltradas"
         >
           <tr>
             <TableHeaderCell
-              v-for="coluna in colunas"
+              v-for="coluna in colunasFiltradas"
               :key="`header--${coluna.chave}`"
               v-bind="coluna"
               :schema="props.schema"
@@ -75,7 +75,7 @@
             ]"
           >
             <TableCell
-              v-for="coluna in colunas"
+              v-for="coluna in colunasFiltradas"
               :key="`linha--${linhaIndex}-${coluna.chave}`"
               class="smae-table__cell"
               :eh-cabecalho="!!coluna.ehCabecalho"
@@ -113,7 +113,7 @@
           </tr>
 
           <tr v-if="dados.length === 0">
-            <td :colspan="colunas.length">
+            <td :colspan="colunasFiltradas.length">
               Sem dados para exibir
             </td>
           </tr>
@@ -124,12 +124,12 @@
         <slot
           v-if="slots.rodape"
           name="rodape"
-          :colunas="colunas"
+          :colunas="colunasFiltradas"
         />
 
         <tr v-else>
           <TableHeaderCell
-            v-for="coluna in colunas"
+            v-for="coluna in colunasFiltradas"
             :key="`footer--${coluna.chave}`"
             v-bind="coluna"
             :schema="props.schema"
@@ -235,6 +235,8 @@ const tituloParaRolagemHorizontal = computed<string | undefined>(() => {
 const exibirRodape = computed<boolean>(() => props.replicarCabecalho
   || !!slots.rodape
   || Object.keys(slots).some((slot) => slot.includes('cabecalho:')));
+
+const colunasFiltradas = computed(() => props.colunas.filter((v) => v));
 
 function obterDestaqueDaLinha(linha: Linha): string | null {
   if (!props.personalizarLinhas) {

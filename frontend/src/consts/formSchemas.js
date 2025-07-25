@@ -3550,7 +3550,7 @@ export const representatividade = object()
       .label('Comparecimento')
       .min(0)
       .max(2147483647)
-      .nullable(),
+      .required(),
     numero_votos: number()
       .label('Votos')
       .min(0)
@@ -3560,7 +3560,7 @@ export const representatividade = object()
       .label('Percentual')
       .min(0)
       .max(100)
-      .nullable(),
+      .nullableOuVazio(),
     ranking: number()
       .label('Ranking')
       .min(0)

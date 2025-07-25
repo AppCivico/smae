@@ -1,10 +1,4 @@
 <script setup>
-import SmallModal from '@/components/SmallModal.vue';
-import { representatividade as schema } from '@/consts/formSchemas';
-import tiposDeMunicípio from '@/consts/tiposDeMunicipio';
-import { useAlertStore } from '@/stores/alert.store';
-import { useParlamentaresStore } from '@/stores/parlamentares.store';
-import { useRegionsStore } from '@/stores/regions.store';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
@@ -14,6 +8,12 @@ import {
 } from 'vee-validate';
 import { computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import SmallModal from '@/components/SmallModal.vue';
+import { representatividade as schema } from '@/consts/formSchemas';
+import { useAlertStore } from '@/stores/alert.store';
+import { useRegionsStore } from '@/stores/regions.store';
+import tiposDeMunicípio from '@/consts/tiposDeMunicipio';
+import { useParlamentaresStore } from '@/stores/parlamentares.store';
 
 const emit = defineEmits(['close']);
 const props = defineProps({
@@ -143,6 +143,14 @@ function iniciar() {
 iniciar();
 
 watch(representatividadeParaEdição, (novoValor) => {
+  if (
+    props.representatividadeId
+    && representatividadeParaEdição.value?.regiao?.comparecimento?.valor
+  ) {
+    novoValor.numero_comparecimento = representatividadeParaEdição.value
+      .regiao.comparecimento.valor;
+  }
+
   resetForm({ values: novoValor });
 
   if (!values.municipio_tipo && tipoSugerido) {
@@ -282,7 +290,10 @@ watch(representatividadeParaEdição, (novoValor) => {
           <input
             v-else
             class="inputtext light mb1 disabled"
-            :value="representatividadeParaEdição?.mandato?.tipo + ' - ' + representatividadeParaEdição?.mandato?.ano"
+            :value="[
+              representatividadeParaEdição?.mandato?.tipo,
+              representatividadeParaEdição?.mandato?.ano
+            ].join(' - ')"
             disabled
             :class="{ loading: chamadasPendentes.emFoco }"
           >
@@ -306,7 +317,11 @@ watch(representatividadeParaEdição, (novoValor) => {
             :class="{ error: errors.numero_votos, loading: chamadasPendentes.emFoco }"
             min="0"
             step="1"
-            @change="setFieldValue('numero_votos', $event.target.value ? Number($event.target.value) : null)"
+            @change="
+              setFieldValue(
+                'numero_votos',
+                $event.target.value ? Number($event.target.value) : null
+              )"
           />
           <ErrorMessage
             class="error-msg"
@@ -319,22 +334,19 @@ watch(representatividadeParaEdição, (novoValor) => {
             :schema="schema"
           />
           <Field
-            v-if="!props.representatividadeId"
             name="numero_comparecimento"
             type="number"
+            :disabled="props.representatividadeId"
             class="inputtext light mb1"
             :class="{ error: errors.numero_comparecimento, loading: chamadasPendentes.emFoco }"
             min="0"
             step="1"
-            @change="setFieldValue('numero_comparecimento', $event.target.value ? Number($event.target.value) : null)"
+            @change="
+              setFieldValue(
+                'numero_comparecimento',
+                $event.target.value ? Number($event.target.value) : null
+              )"
           />
-          <input
-            v-else
-            class="inputtext light mb1 disabled"
-            :value="representatividadeParaEdição?.regiao?.comparecimento?.valor"
-            disabled
-            :class="{ loading: chamadasPendentes.emFoco }"
-          >
           <ErrorMessage
             class="error-msg"
             name="numero_comparecimento"
@@ -352,7 +364,11 @@ watch(representatividadeParaEdição, (novoValor) => {
             :class="{ error: errors.pct_participacao, loading: chamadasPendentes.emFoco }"
             min="0"
             step="0.01"
-            @change="setFieldValue('pct_participacao', $event.target.value ? Number($event.target.value) : null)"
+            @change="
+              setFieldValue(
+                'pct_participacao',
+                $event.target.value ? Number($event.target.value) : null
+              )"
           />
           <ErrorMessage
             class="error-msg"
@@ -372,7 +388,11 @@ watch(representatividadeParaEdição, (novoValor) => {
             max="1000"
             min="0"
             step="1"
-            @change="setFieldValue('ranking', $event.target.value ? Number($event.target.value) : null)"
+            @change="
+              setFieldValue(
+                'ranking',
+                $event.target.value ? Number($event.target.value) : null
+              )"
           />
           <ErrorMessage
             class="error-msg"
