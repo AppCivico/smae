@@ -195,7 +195,7 @@ function formatarNumero(numero) {
             atributosDaCelula: { class: 'col--number'}
           },
           {
-            chave: 'regiao.comparecimento.valor',
+            chave: 'regiao.comparecimento',
             label: 'Quantidade de comparecimento',
             atributosDaCelula: { class: 'col--number'},
             formatador: v => v ? v.valor : '-'
