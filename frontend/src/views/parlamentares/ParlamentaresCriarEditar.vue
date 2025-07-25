@@ -74,7 +74,7 @@ function iniciar() {
 function excluirItem({
   tipo, id, nome, ...dados
 }) {
-  const nomeItem = nome ? `"${nome}""` : 'este item';
+  const nomeItem = nome ? `"${nome}"` : 'este item';
   let mensagemAlerta = `Deseja mesmo remover ${nomeItem}?`;
 
   if (tipo === 'mandato') {
@@ -311,8 +311,8 @@ iniciar();
             title="excluir"
             type="button"
             @click="excluirItem({
+              ...linha,
               tipo: linha.tipo === 'Assessor' ? 'assessor' : 'contato',
-              ...linha
             })"
           >
             <svg
@@ -396,7 +396,8 @@ iniciar();
             title="excluir"
             type="button"
             @click="excluirItem({
-              tipo: 'mandato', ...linha
+              ...linha,
+              tipo: 'mandato'
             })"
           >
             <svg
