@@ -434,7 +434,7 @@ export class PPObrasService implements ReportableService {
                 LEFT JOIN projeto_etapa pe ON pe.id = projeto.projeto_etapa_id
                 LEFT JOIN empreendimento ON empreendimento.id = projeto.empreendimento_id AND empreendimento.removido_em IS NULL
                 ${whereCond.whereString}
-                AND port_array.portfolio_id = $${whereCond.queryParams.length + 1}
+                AND port_array.portfolio_id = $${whereCond.queryParams.length + 1}::integer
                 `,
                 [...whereCond.queryParams, dto.portfolio_id.toString()],
                 'obras.csv'
@@ -745,6 +745,7 @@ export class PPObrasService implements ReportableService {
         const allowed = await this.prisma.projeto.findMany({
             where: {
                 AND: perms,
+                removido_em: null,
                 // importante manter o portfolio_id aqui, pois é utilizado no filtro de compartilhamento
                 // e aqui também
                 portfolio_id: filters.portfolio_id,
@@ -753,7 +754,6 @@ export class PPObrasService implements ReportableService {
                 tipo: this.tipo,
                 orgao_responsavel_id: filters.orgao_responsavel_id ? filters.orgao_responsavel_id : undefined,
                 grupo_tematico_id: filters.grupo_tematico_id ? filters.grupo_tematico_id : undefined,
-                removido_em: null,
             },
             select: { id: true },
         });
@@ -816,7 +816,7 @@ export class PPObrasService implements ReportableService {
 
         whereConditions.push(`projeto.removido_em IS NULL`);
 
-        const whereString = whereConditions.length > 0 ? 'WHERE ' + whereConditions.join(' AND ') : '';
+        const whereString = whereConditions.length > 0 ? 'WHERE ' + whereConditions.join(' AND ') : 'WHERE TRUE';
         return { whereString, queryParams };
     }
 
@@ -939,7 +939,7 @@ export class PPObrasService implements ReportableService {
           LEFT JOIN projeto_etapa pe ON pe.id = projeto.projeto_etapa_id
           LEFT JOIN empreendimento ON empreendimento.id = projeto.empreendimento_id AND empreendimento.removido_em IS NULL
           ${whereCond.whereString}
-          AND port_array.portfolio_id = $${whereCond.queryParams.length + 1}`;
+          AND port_array.portfolio_id = $${whereCond.queryParams.length + 1}::integer`;
 
         const data: RetornoDbProjeto[] = await this.prisma.$queryRawUnsafe(
             sql,

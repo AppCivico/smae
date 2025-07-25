@@ -972,57 +972,54 @@ export class PPProjetosService implements ReportableService {
         let paramIndex = 1;
         let count = 0;
 
-        if (user) {
-            const perms = await ProjetoGetPermissionSet(this.tipo, user);
+        const perms = await ProjetoGetPermissionSet(this.tipo, user ? user : undefined);
 
-            const allowed = await this.prisma.projeto.findMany({
-                where: {
+        const allowed = await this.prisma.projeto.findMany({
+            where: {
+                AND: perms,
+                removido_em: null,
+                // importante manter o portfolio_id aqui, pois é utilizado no filtro de compartilhamento
+                // e aqui também
+                portfolio_id: filters.portfolio_id,
+                portfolio: { modelo_clonagem: false }, // não traz portfólios que são modelos para clonagem
+                // reduz o número de linhas pra não virar um "IN" gigante
+                tipo: this.tipo,
+                id: filters.projeto_id ? { in: filters.projeto_id } : undefined,
+                codigo: filters.codigo ?? undefined,
+                orgao_responsavel_id: filters.orgao_responsavel_id ?? undefined,
+                status: filters.status ?? undefined,
+            },
+            select: { id: true },
+        });
+
+        const allowed_shared = await this.prisma.portfolioProjetoCompartilhado.findMany({
+            where: {
+                projeto: {
                     AND: perms,
-                    // reduz o número de linhas pra não virar um "IN" gigante
-                    portfolio_id: filters.portfolio_id,
-                    tipo: this.tipo,
-                    id: filters.projeto_id ? { in: filters.projeto_id } : undefined,
-                    codigo: filters.codigo ?? undefined,
-                    status: filters.status ?? undefined,
-                    removido_em: null,
+                    portfolio: { modelo_clonagem: false }, // não traz portfólios que são modelos para clonagem
                 },
-                select: { id: true },
-            });
+                removido_em: null,
+                portfolio_id: filters.portfolio_id,
+            },
+            select: { projeto_id: true },
+        });
 
-            const allowed_shared = await this.prisma.portfolioProjetoCompartilhado.findMany({
-                where: {
-                    projeto: {
-                        AND: perms,
-                    },
-                    removido_em: null,
-                    portfolio_id: filters.portfolio_id,
-                },
-                select: { projeto_id: true },
-            });
+        // Adicionando projetos compartilhados.
+        // Deve ser adicionado apenas projetos que não sejam originalmente do portfolio utilizado no filtro.
+        allowed.push(
+            ...allowed_shared
+                .filter((n) => !allowed.find((m) => m.id === n.projeto_id))
+                .map((n) => ({ id: n.projeto_id }))
+        );
 
-            // Adicionando projetos compartilhados.
-            // Deve ser adicionado apenas projetos que não sejam originalmente do portfolio utilizado no filtro.
-            allowed.push(
-                ...allowed_shared
-                    .filter((n) => !allowed.find((m) => m.id === n.projeto_id))
-                    .map((n) => ({ id: n.projeto_id }))
-            );
-
-            if (allowed.length === 0) {
-                return { whereString: 'WHERE false', queryParams: [], count: 0 };
-            }
-
-            count = allowed.length;
-            whereConditions.push(`projeto.id = ANY($${paramIndex}::int[])`);
-            queryParams.push(allowed.map((n) => n.id));
-            paramIndex++;
+        if (allowed.length === 0) {
+            return { whereString: 'WHERE false', queryParams: [], count: 0 };
         }
 
-        if (filters.portfolio_id) {
-            whereConditions.push(`projeto.portfolio_id = $${paramIndex}`);
-            queryParams.push(filters.portfolio_id);
-            paramIndex++;
-        }
+        count = allowed.length;
+        whereConditions.push(`projeto.id = ANY($${paramIndex}::int[])`);
+        queryParams.push(allowed.map((n) => n.id));
+        paramIndex++;
 
         if (filters.orgao_responsavel_id) {
             whereConditions.push(`projeto.orgao_responsavel_id = $${paramIndex}`);
@@ -1042,10 +1039,7 @@ export class PPProjetosService implements ReportableService {
             paramIndex++;
         }
 
-        whereConditions.push(`projeto.removido_em IS NULL`);
-        whereConditions.push(`portfolio.modelo_clonagem = false`);
-
-        const whereString = whereConditions.length > 0 ? 'WHERE ' + whereConditions.join(' AND ') : '';
+        const whereString = whereConditions.length > 0 ? 'WHERE ' + whereConditions.join(' AND ') : 'WHERE TRUE';
         return { whereString, queryParams, count: count };
     }
 
