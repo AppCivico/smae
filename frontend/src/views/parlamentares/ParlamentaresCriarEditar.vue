@@ -8,6 +8,7 @@ import {
 } from 'vee-validate';
 import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import CargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import InputImageProfile from '@/components/InputImageProfile.vue';
 import ParlamentaresExibirRepresentatividade from '@/components/parlamentares/ParlamentaresExibirRepresentatividade.vue';
@@ -70,8 +71,18 @@ function iniciar() {
   }
 }
 
-function excluirItem(tipo, id, nome) {
-  alertStore.confirmAction(`Deseja mesmo remover "${nome || 'esse item'}"?`, async () => {
+function excluirItem({
+  tipo, id, nome, ...dados
+}) {
+  const nomeItem = nome ? `"${nome}""` : 'este item';
+  let mensagemAlerta = `Deseja mesmo remover ${nomeItem}?`;
+
+  if (tipo === 'mandato') {
+    const cargo = CargosDeParlamentar[dados.cargo].nome || dados.cargo;
+    mensagemAlerta = `Deseja remover o mandato de ${cargo} de ${dados.eleicao.ano}?`;
+  }
+
+  alertStore.confirmAction(mensagemAlerta, async () => {
     let tentativa;
     let mensagem;
 
@@ -299,11 +310,10 @@ iniciar();
             aria-label="excluir"
             title="excluir"
             type="button"
-            @click="excluirItem(
-              linha.tipo === 'Assessor' ? 'assessor' : 'contato',
-              linha.id,
-              linha.nome
-            )"
+            @click="excluirItem({
+              tipo: linha.tipo === 'Assessor' ? 'assessor' : 'contato',
+              ...linha
+            })"
           >
             <svg
               width="20"
@@ -353,7 +363,8 @@ iniciar();
           },
           {
             chave: 'cargo',
-            label: 'Cargo'
+            label: 'Cargo',
+            formatador: v => CargosDeParlamentar[v].nome || v
           },
           {
             chave: 'votos_estado',
@@ -384,7 +395,9 @@ iniciar();
             aria-label="excluir"
             title="excluir"
             type="button"
-            @click="excluirItem('mandato', linha.id)"
+            @click="excluirItem({
+              tipo: 'mandato', ...linha
+            })"
           >
             <svg
               width="20"
