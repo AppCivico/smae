@@ -246,8 +246,7 @@ async function buscarPossíveisColaboradores() {
 
 // PRA-FAZER: não usando o `controlledValues` devido à algum erro no campo de
 // mapa. Trazer de volta.
-const onSubmit = handleSubmit(async () => {
-  const carga = values;
+const onSubmit = handleSubmit.withControlled(async (carga) => {
   const cargaManipulada = nulificadorTotal(carga);
 
   switch (true) {
