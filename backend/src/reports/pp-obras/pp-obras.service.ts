@@ -441,6 +441,12 @@ export class PPObrasService implements ReportableService {
             )
         );
 
+        // TODO: a query ta direto pela pro arquivo, então não temos o count correto
+        // o jeito mais simples sem mudar a query ou refactor do serviço, e sem ler o CSV de novo, é lendo o
+        // alterando o metodo que monta o whereCond pra ter o count, igual eu fiz no projetos
+        // await ctx.resumoSaida('Obras', <count correto>);
+
+
         out.push(
             await this.streamQueryToCSV(
                 `SELECT

@@ -3502,6 +3502,8 @@ model Relatorio {
 
     sistema ModuloSistema @default(SMAE)
 
+    resumo_saida Json @db.Json @default("{}")
+
     // Coluna espelhada da RelatorioFilha, para facilitar a busca.
     processado_em DateTime? @db.Timestamptz(6)
 

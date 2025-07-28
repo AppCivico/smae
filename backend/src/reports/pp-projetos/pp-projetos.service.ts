@@ -632,6 +632,7 @@ export class PPProjetosService implements ReportableService {
             'Status (Banco)',
         ];
         await this.gerarCsv('projetos', projetosFields, projetosFieldNames, projetosIds, out, ctx, 20);
+        await ctx.resumoSaida('Projetos', projetosIds.length);
 
         // 2. Processar Cronograma
         const cronogramaFields = [

@@ -16,6 +16,7 @@ export class ReportContext {
     private restricaoAcesso: RestricaoAcesso | null = null;
     private prisma: PrismaService;
     private relatorio_id: number | null;
+    private resumoSaidaData: Record<string, any> = {};
 
     public readonly sistema: ModuloSistema;
 
@@ -70,5 +71,29 @@ export class ReportContext {
 
     getRestricaoAcesso(): RestricaoAcesso | null {
         return this.restricaoAcesso;
+    }
+
+    /**
+     * Adiciona ou atualiza um campo no resumo_saida do relatório.
+     */
+    async resumoSaida(chave: string, valor: any): Promise<void> {
+        this.resumoSaidaData[chave] = valor;
+
+        if (this.relatorio_id) {
+            try {
+                await this.prisma.relatorio.update({
+                    where: { id: this.relatorio_id },
+                    data: {
+                        resumo_saida: this.resumoSaidaData,
+                    },
+                });
+            } catch (error) {
+                console.error('Erro ao atualizar resumo_saida do relatório', error);
+            }
+        }
+    }
+
+    getResumoSaida(): Record<string, any> {
+        return this.resumoSaidaData;
     }
 }
