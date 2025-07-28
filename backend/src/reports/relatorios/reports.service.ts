@@ -475,6 +475,7 @@ export class ReportsService {
                 err_msg: true,
                 iniciado_em: true,
                 processado_em: true,
+                resumo_saida: true,
             },
             orderBy: {
                 criado_em: 'desc',
@@ -510,6 +511,7 @@ export class ReportsService {
                         executado_em: r.processado_em,
                         err_msg: r.err_msg,
                     } satisfies RelatorioProcessamentoDto,
+                    resumo_saida: r.resumo_saida?.valueOf() as object[] | null,
                 } satisfies RelatorioDto;
             }),
             tem_mais: tem_mais,
