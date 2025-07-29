@@ -1,3 +1,5 @@
+import { defineAsyncComponent } from 'vue';
+import { useRoute } from 'vue-router';
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import dateToField from '@/helpers/dateToField';
 import { useAcompanhamentosStore } from '@/stores/acompanhamentos.store.ts';
@@ -5,7 +7,6 @@ import AcompanhamentosCriarEditar from '@/views/acompanhamentos/AcompanhamentosC
 import AcompanhamentosItem from '@/views/acompanhamentos/AcompanhamentosItem.vue';
 import AcompanhamentosLista from '@/views/acompanhamentos/AcompanhamentosLista.vue';
 import AcompanhamentosRaiz from '@/views/acompanhamentos/AcompanhamentosRaiz.vue';
-import { defineAsyncComponent } from 'vue';
 
 const AcompanhamentosResumo = defineAsyncComponent({
   loader: () => import('@/views/acompanhamentos/AcompanhamentosResumo.vue'),
@@ -91,6 +92,7 @@ export default {
               'projetosListar',
               'projetosResumo',
               'acompanhamentosListar',
+              'acompanhamentosResumo',
             ],
           },
         },
@@ -105,13 +107,30 @@ export default {
             acompanhamentoId: Number.parseInt(params.acompanhamentoId, 10) || undefined,
           }),
           meta: {
-            título: 'Resumo do acompanhamento',
             títuloParaMenu: 'Resumo',
+            título: 'Resumo do acompanhamento',
+            tituloParaMigalhaDePao: () => {
+              const route = useRoute();
+              const { emFoco } = useAcompanhamentosStore();
+
+              if (!emFoco) {
+                return 'Resumo do acompanhamento';
+              }
+
+              const dataRegistro = dateToField(emFoco.data_registro);
+
+              if (route.name === 'acompanhamentosResumo') {
+                return `Resumo: Acompanhamento ${dataRegistro}`;
+              }
+
+              return `Acompanhamento ${dataRegistro}`;
+            },
             rotasParaMigalhasDePão: [
               'projetosListar',
               'projetosResumo',
               'acompanhamentosListar',
             ],
+            títuloParaMigalhasDePao: () => 'aqui',
           },
         },
       ],
