@@ -32,12 +32,12 @@ export class CasaCivilAtividadesPendentesService implements ReportableService {
 
         if (params.data_inicio) {
             const dataInicio = Date2YMD.toString(params.data_inicio);
-            whereConditions = Prisma.sql`${whereConditions} AND tf.inicio_planejado >= ${dataInicio}`;
+            whereConditions = Prisma.sql`${whereConditions} AND tf.inicio_planejado >= ${dataInicio}::date`;
         }
 
         if (params.data_termino) {
             const dataTermino = Date2YMD.toString(params.data_termino);
-            whereConditions = Prisma.sql`${whereConditions} AND tf.termino_planejado <= ${dataTermino}`;
+            whereConditions = Prisma.sql`${whereConditions} AND tf.termino_planejado <= ${dataTermino}::date`;
         }
 
         if (params.esfera) whereConditions = Prisma.sql`${whereConditions} AND t.esfera = ${params.esfera}::"TransferenciaTipoEsfera"`;
@@ -123,6 +123,7 @@ export class CasaCivilAtividadesPendentesService implements ReportableService {
                 name: 'atividades-pendentes.csv',
                 buffer: Buffer.from(linhas, 'utf8'),
             });
+            await ctx.resumoSaida('Atividades Pendentes', rows.length);
         }
         return out;
     }

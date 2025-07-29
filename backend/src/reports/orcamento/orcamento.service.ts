@@ -665,12 +665,14 @@ export class OrcamentoService implements ReportableService {
             for (const r of resultadosRealizado) {
                 retExecutado.push(this.convertRealizadoRow(r));
             }
+            await ctx.resumoSaida('Orçamento Executado', retExecutado.length);
         } else if (params.tipo == 'Consolidado' && orcExec.length > 0) {
             const resultados: RetornoRealizadoDb[] = await this.queryConsolidadoExecutado(orcExec);
 
             for (const r of resultados) {
                 retExecutado.push(this.convertRealizadoRow(r));
             }
+            await ctx.resumoSaida('Orçamento Executado', retExecutado.length);
         }
 
         await ctx.progress(30);
@@ -768,11 +770,13 @@ export class OrcamentoService implements ReportableService {
             for (const r of resultadosPlanejados) {
                 retPlanejado.push(this.convertPlanejadoRow(r));
             }
+            await ctx.resumoSaida('Orçamento Planejado', retPlanejado.length);
         } else if (params.tipo == 'Consolidado' && orcExec.length > 0) {
             const resultadosPlanejados = await this.queryConsolidadoPlanejado(anoIni, anoFim, orcPlan);
             for (const r of resultadosPlanejados) {
                 retPlanejado.push(this.convertPlanejadoRow(r));
             }
+            await ctx.resumoSaida('Orçamento Planejado', retPlanejado.length);
         }
 
         await ctx.progress(70);

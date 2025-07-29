@@ -306,6 +306,7 @@ export class PPObrasService implements ReportableService {
         ctx.progress(50);
 
         const whereCond = await this.buildFilteredWhereStr(dto, user);
+        await ctx.resumoSaida('Obras', whereCond.count);
 
         out.push(
             await this.streamQueryToCSV(
@@ -740,7 +741,10 @@ export class PPObrasService implements ReportableService {
         return { name: filename, buffer: Buffer.concat(chunks) };
     }
 
-    private async buildFilteredWhereStr(filters: CreateRelObrasDto, user: PessoaFromJwt | null): Promise<WhereCond> {
+    private async buildFilteredWhereStr(
+        filters: CreateRelObrasDto,
+        user: PessoaFromJwt | null
+    ): Promise<WhereCond & { count: number }> {
         const whereConditions: string[] = [];
         const queryParams: any[] = [];
 
@@ -785,7 +789,7 @@ export class PPObrasService implements ReportableService {
         );
 
         if (allowed.length === 0) {
-            return { whereString: 'WHERE false', queryParams: [] };
+            return { whereString: 'WHERE false', queryParams: [], count: allowed.length };
         }
 
         whereConditions.push(`projeto.id = ANY($${paramIndex}::int[])`);
@@ -823,7 +827,7 @@ export class PPObrasService implements ReportableService {
         whereConditions.push(`projeto.removido_em IS NULL`);
 
         const whereString = whereConditions.length > 0 ? 'WHERE ' + whereConditions.join(' AND ') : 'WHERE TRUE';
-        return { whereString, queryParams };
+        return { whereString, queryParams, count: allowed.length };
     }
 
     private async queryDataProjetos(whereCond: WhereCond, out: RelObrasDto[], portfolio_id: number) {

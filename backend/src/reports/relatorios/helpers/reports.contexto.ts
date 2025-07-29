@@ -84,7 +84,7 @@ export class ReportContext {
                 await this.prisma.relatorio.update({
                     where: { id: this.relatorio_id },
                     data: {
-                        resumo_saida: this.resumoSaidaData,
+                        resumo_saida: JSON.parse(JSON.stringify(this.resumoSaidaData)),
                     },
                 });
             } catch (error) {

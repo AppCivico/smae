@@ -111,6 +111,7 @@ export class MonitoramentoMensalService implements ReportableService {
         await ctx.progress(1);
 
         let monitoramento_fisico = await this.mmMf.create_mf(params, metasArr);
+        ctx.resumoSaida('Séries Variáveis', monitoramento_fisico?.seriesVariaveis.length);
 
         const out: FileOutput[] = [];
 
