@@ -718,8 +718,7 @@ export class PPObrasService implements ReportableService {
             JOIN regiao r ON r.id = pr.regiao_id
             WHERE pr.removido_em IS NULL AND r.removido_em IS NULL
             GROUP BY pr.projeto_id
-        )
-        }`;
+        )`;
 
         const selectFields = `
         SELECT
