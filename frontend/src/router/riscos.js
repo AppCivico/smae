@@ -88,6 +88,7 @@ export default {
               'projetosListar',
               'projetosResumo',
               'riscosListar',
+              'planosDeAçãoListar',
             ],
           },
         },

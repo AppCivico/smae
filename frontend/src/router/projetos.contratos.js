@@ -1,5 +1,5 @@
-import formatProcesso from '@/helpers/formatProcesso';
-import { useProcessosStore } from '@/stores/processos.store.ts';
+import { useRoute } from 'vue-router';
+import { useContratosStore } from '@/stores/contratos.store';
 import ContratosCriarEditar from '@/views/mdo.contratos/ContratosCriarEditar.vue';
 
 export default {
@@ -28,10 +28,11 @@ export default {
       meta: {
         título: 'Novo contrato',
         títuloParaMenu: 'Novo contrato',
-
+        tituloParaMigalhaDePao: 'Novo',
         rotaDeEscape: 'contratosDoProjetoListar',
-
         rotasParaMigalhasDePão: [
+          'projetosListar',
+          'projetosResumo',
           'contratosDoProjetoListar',
         ],
       },
@@ -51,10 +52,12 @@ export default {
 
           meta: {
             títuloParaMenu: 'Editar',
-
+            título: 'Editar contrato',
+            tituloParaMigalhaDePao: 'Editar contrato',
             rotaDeEscape: 'contratosDoProjetoListar',
-
             rotasParaMigalhasDePão: [
+              'projetosListar',
+              'projetosResumo',
               'contratosDoProjetoListar',
               'contratosDoProjetoResumo',
             ],
@@ -67,16 +70,26 @@ export default {
           component: () => import('@/views/mdo.contratos/ContratosResumo.vue'),
           props: true,
           meta: {
-            título: () => {
-              const daApi = useProcessosStore()?.emFoco?.processo_sei;
+            título: 'Resumo de contrato',
+            tituloParaMigalhaDePao: () => {
+              const route = useRoute();
+              const { emFoco } = useContratosStore(route.meta.entidadeMãe);
 
-              return daApi ? `Resumo do contrato ${formatProcesso(daApi)}` : 'Resumo de contrato';
+              if (!emFoco) {
+                return 'Resumo de contrato';
+              }
+
+              if (route.name === 'contratosDoProjetoResumo') {
+                return `Resumo: Contrato ${emFoco.numero}`;
+              }
+
+              return `Contrato ${emFoco.numero}`;
             },
-            títuloParaMenu: 'Resumo',
 
+            títuloParaMenu: 'Resumo',
             rotasParaMigalhasDePão: [
-              'contratosDoProjetoListar',
-              'contratosDoProjetoResumo',
+              'projetosListar',
+              'projetosResumo',
               'contratosDoProjetoListar',
             ],
           },

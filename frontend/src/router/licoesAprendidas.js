@@ -1,3 +1,5 @@
+import { defineAsyncComponent } from 'vue';
+import { useRoute } from 'vue-router';
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import dateToField from '@/helpers/dateToField';
 import { useLiçõesAprendidasStore } from '@/stores/licoesAprendidas.store.ts';
@@ -6,7 +8,6 @@ import liçõesAprendidasCriarEditar from '@/views/licoesAprendidas/LicoesAprend
 import liçõesAprendidasItem from '@/views/licoesAprendidas/LicoesAprendidasItem.vue';
 import liçõesAprendidasLista from '@/views/licoesAprendidas/LicoesAprendidasLista.vue';
 import liçõesAprendidasRaiz from '@/views/licoesAprendidas/LicoesAprendidasRaiz.vue';
-import { defineAsyncComponent } from 'vue';
 
 const licoesAprendidasResumo = defineAsyncComponent({
   loader: () => import('@/views/licoesAprendidas/LicoesAprendidasResumo.vue'),
@@ -46,6 +47,7 @@ export default {
       component: liçõesAprendidasCriarEditar,
       meta: {
         título: 'Nova lição',
+        tituloParaMigalhaDePao: 'Novo',
         títuloParaMenu: 'Nova lição',
 
         rotaDeEscape: 'liçõesAprendidasListar',
@@ -80,11 +82,14 @@ export default {
 
           meta: {
             títuloParaMenu: 'Editar lição',
-            // título: ' ',
+            título: 'Editar Lição',
+            tituloParaMigalhaDePao: 'Editar',
             rotaDeEscape: 'liçõesAprendidasListar',
             rotasParaMigalhasDePão: [
               'projetosListar',
               'projetosResumo',
+              'liçõesAprendidasListar',
+              'liçõesAprendidasResumo',
             ],
           },
         },
@@ -99,16 +104,20 @@ export default {
             licaoAprendidaId: Number.parseInt(params.licaoAprendidaId, 10) || undefined,
           }),
           meta: {
-            título: () => {
-              let título = useLiçõesAprendidasStore()?.emFoco?.data_registro
-                ? `Acompanhamento ${dateToField(useLiçõesAprendidasStore()?.emFoco?.data_registro)}`
-                : 'Resumo de lição aprendida';
+            título: 'Lição aprendida',
+            tituloParaMigalhaDePao: () => {
+              const { name: routeName } = useRoute();
+              const { emFoco } = useLiçõesAprendidasStore();
 
-              if (useProjetosStore()?.emFoco?.nome) {
-                título = `${título} do projeto ${useProjetosStore()?.emFoco?.nome}`;
+              if (!emFoco) {
+                return 'Lição aprendida';
               }
 
-              return título;
+              if (routeName === 'liçõesAprendidasResumo') {
+                return `Resumo: Lição ${emFoco.descricao}`;
+              }
+
+              return `Lição ${emFoco.descricao}`;
             },
             títuloParaMenu: 'Resumo',
             rotasParaMigalhasDePão: [
