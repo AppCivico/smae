@@ -46,6 +46,7 @@ export class RelProjetosDto {
     versao: string | null;
 
     projeto_etapa: string | null;
+    portfolios_compartilhados_titulos: string | null;
 }
 
 export class RelProjetosCronogramaDto {

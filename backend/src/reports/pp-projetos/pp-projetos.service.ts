@@ -94,6 +94,8 @@ class RetornoDbProjeto {
     orgao_descricao: string;
 
     projeto_etapa: string | null;
+
+    portfolios_compartilhados_titulos: string | null;
 }
 
 class RetornoDbCronograma {
@@ -529,15 +531,14 @@ export class PPProjetosService implements ReportableService {
         const out: FileOutput[] = [];
 
         // 1. Processar Projetos
-        // 1. Processar Projetos
         const projetosFields = [
             'id',
+            'nome',
             'portfolio_id',
             'portfolio_titulo',
             'meta_id',
             'iniciativa_id',
             'atividade_id',
-            'nome',
             'codigo',
             'objeto',
             'objetivo',
@@ -579,16 +580,17 @@ export class PPProjetosService implements ReportableService {
             'fonte_recurso.valor_percentual',
             'fonte_recurso.valor_nominal',
             'status',
+            'portfolios_compartilhados_titulos',
         ];
 
         const projetosFieldNames = [
-            'ID',
+            'ID do Projeto',
+            'Nome do Projeto',
             'ID Portfólio',
             'Título do Portfólio',
             'ID Meta',
             'ID Iniciativa',
             'ID Atividade',
-            'Nome do Projeto',
             'Código',
             'Objeto',
             'Objetivo',
@@ -630,6 +632,7 @@ export class PPProjetosService implements ReportableService {
             'Valor Percentual da Fonte',
             'Valor Nominal da Fonte',
             'Status (Banco)',
+            'Portfólios Compartilhados',
         ];
         await this.gerarCsv('projetos', projetosFields, projetosFieldNames, projetosIds, out, ctx, 20);
         await ctx.resumoSaida('Projetos', projetosIds.length);
@@ -1022,6 +1025,9 @@ export class PPProjetosService implements ReportableService {
         queryParams.push(allowed.map((n) => n.id));
         paramIndex++;
 
+        // não usa o filtro do portfolio_id, pois já foi aplicado no filtro de permissões
+        delete (filters as any).portfolio_id;
+
         if (filters.orgao_responsavel_id) {
             whereConditions.push(`projeto.orgao_responsavel_id = $${paramIndex}`);
             queryParams.push(filters.orgao_responsavel_id);
@@ -1047,19 +1053,17 @@ export class PPProjetosService implements ReportableService {
     private async queryDataProjetos(whereCond: WhereCond, out: RelProjetosDto[]) {
         const anoCorrente = DateTime.local({ locale: SYSTEM_TIMEZONE }).year;
 
-        // TODO: melhorar essa query
-        // Esse idx é utilizado no union, e em teoria o portfolio_id sempre é enviado.
-        // No entanto, lá na definição de filtros, caso o usuário não tenha permissão/a query não retorne nada (ver buildFilteredWhereStr),
-        // esse if irá ser pulado, portanto definindo o
-        let portfolioParamIdx;
-        if (whereCond.whereString.match(/portfolio_id = \$([0-9]+)/)) {
-            const match = whereCond.whereString.match(/portfolio_id = \$([0-9]+)/);
-            portfolioParamIdx = match ? parseInt(match[1], 10) : null;
-
-            if (!portfolioParamIdx) throw new Error('Erro interno ao extrair relatório');
-        }
-
-        const sql = `SELECT
+        const sql = `
+            WITH shared_portfolios AS (
+                SELECT
+                    ppc.projeto_id,
+                    string_agg(p.titulo, ' | ') AS titulos
+                FROM portfolio_projeto_compartilhado ppc
+                JOIN portfolio p ON p.id = ppc.portfolio_id AND p.removido_em IS NULL
+                WHERE ppc.removido_em IS NULL
+                GROUP BY ppc.projeto_id
+            )
+            SELECT
             projeto.id,
             projeto.portfolio_id,
             portfolio.titulo as portfolio_titulo,
@@ -1111,9 +1115,11 @@ export class PPProjetosService implements ReportableService {
             o.id AS orgao_id,
             o.sigla AS orgao_sigla,
             o.descricao AS orgao_descricao,
-            pe.descricao AS projeto_etapa
+            pe.descricao AS projeto_etapa,
+            sp.titulos AS portfolios_compartilhados_titulos
         FROM projeto
           LEFT JOIN tarefa_cronograma tc ON tc.projeto_id = projeto.id AND tc.removido_em IS NULL
+          LEFT JOIN shared_portfolios sp ON sp.projeto_id = projeto.id
           LEFT JOIN portfolio ON portfolio.id = projeto.portfolio_id
           LEFT JOIN projeto_fonte_recurso r ON r.projeto_id = projeto.id
           LEFT JOIN sof_entidades_linhas sof ON sof.codigo = r.fonte_recurso_cod_sof
@@ -1128,79 +1134,6 @@ export class PPProjetosService implements ReportableService {
           LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
           LEFT JOIN projeto_etapa pe ON pe.id = projeto.projeto_etapa_id
         ${whereCond.whereString}
-
-        UNION
-
-        SELECT
-            projeto.id,
-            portfolio.id as portfolio_id,
-            portfolio.titulo as portfolio_titulo,
-            projeto.meta_id,
-            projeto.iniciativa_id,
-            projeto.atividade_id,
-            projeto.nome,
-            projeto.codigo,
-            projeto.objeto,
-            projeto.objetivo,
-            projeto.publico_alvo,
-            coalesce(tc.previsao_inicio, projeto.previsao_inicio) AS previsao_inicio,
-            coalesce(tc.previsao_termino, projeto.previsao_termino) AS previsao_termino,
-            coalesce(tc.previsao_duracao, projeto.previsao_duracao) AS previsao_duracao,
-            coalesce(tc.previsao_custo, projeto.previsao_custo) AS previsao_custo,
-            projeto.escopo,
-            projeto.nao_escopo,
-            projeto.secretario_responsavel,
-            projeto.secretario_executivo,
-            projeto.coordenador_ue,
-            projeto.data_aprovacao,
-            projeto.data_revisao,
-            projeto.versao,
-            projeto.status,
-            orgao_responsavel.id AS orgao_responsavel_id,
-            orgao_responsavel.sigla AS orgao_responsavel_sigla,
-            orgao_responsavel.descricao AS orgao_responsavel_descricao,
-            resp.id AS responsavel_id,
-            resp.nome_exibicao AS responsavel_nome_exibicao,
-            orgao_gestor.id as orgao_gestor_id,
-            orgao_gestor.sigla as orgao_gestor_sigla,
-            orgao_gestor.descricao as orgao_gestor_descricao,
-            (
-                SELECT
-                    string_agg(nome_exibicao, '/')
-                FROM pessoa
-                WHERE id = ANY(projeto.responsaveis_no_orgao_gestor)
-            ) as gestores,
-            r.id AS fonte_recurso_id,
-            sof.descricao AS fonte_recurso_nome,
-            r.fonte_recurso_cod_sof AS fonte_recurso_cod_sof,
-            r.fonte_recurso_ano AS fonte_recurso_ano,
-            r.valor_percentual AS fonte_recurso_valor_pct,
-            r.valor_nominal AS fonte_recurso_valor_nominal,
-            pp.id AS premisa_id,
-            pp.premissa,
-            pr.id AS restricao_id,
-            pr.restricao,
-            o.id AS orgao_id,
-            o.sigla AS orgao_sigla,
-            o.descricao AS orgao_descricao,
-            pe.descricao AS projeto_etapa
-        FROM projeto
-        LEFT JOIN tarefa_cronograma tc ON tc.projeto_id = projeto.id AND tc.removido_em IS NULL
-          JOIN portfolio_projeto_compartilhado ppc ON ppc.projeto_id = projeto.id
-          LEFT JOIN portfolio ON portfolio.id = ppc.portfolio_id
-          LEFT JOIN projeto_fonte_recurso r ON r.projeto_id = projeto.id
-          LEFT JOIN sof_entidades_linhas sof ON sof.codigo = r.fonte_recurso_cod_sof
-            AND sof.ano = ( case when r.fonte_recurso_ano > ${anoCorrente}::int then ${anoCorrente}::int else r.fonte_recurso_ano end )
-            AND sof.col = 'fonte_recursos'
-          LEFT JOIN projeto_premissa pp ON pp.projeto_id = projeto.id
-          LEFT JOIN projeto_restricao pr ON pr.projeto_id = projeto.id
-          LEFT JOIN projeto_orgao_participante po ON po.projeto_id = projeto.id
-          LEFT JOIN orgao o ON po.orgao_id = o.id
-          LEFT JOIN orgao orgao_responsavel ON orgao_responsavel.id = projeto.orgao_responsavel_id
-          LEFT JOIN orgao orgao_gestor ON orgao_gestor.id = projeto.orgao_gestor_id
-          LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
-          LEFT JOIN projeto_etapa pe ON pe.id = projeto.projeto_etapa_id
-          WHERE ppc.removido_em IS NULL AND projeto.removido_em IS NULL AND ppc.portfolio_id = ${portfolioParamIdx !== undefined ? `$${portfolioParamIdx}` : '0'}
         `;
 
         const data: RetornoDbProjeto[] = await this.prisma.$queryRawUnsafe(sql, ...whereCond.queryParams);
@@ -1288,6 +1221,7 @@ export class PPProjetosService implements ReportableService {
                           valor_nominal: db.fonte_recurso_valor_nominal,
                       }
                     : null,
+                portfolios_compartilhados_titulos: db.portfolios_compartilhados_titulos,
             });
         }
     }

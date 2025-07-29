@@ -647,6 +647,7 @@ export class PPObrasService implements ReportableService {
             select: { projeto_id: true },
         });
 
+
         // Adicionando projetos compartilhados.
         // Deve ser adicionado apenas projetos que não sejam originalmente do portfolio utilizado no filtro.
         allowed.push(
@@ -664,6 +665,7 @@ export class PPObrasService implements ReportableService {
         paramIndex++;
 
         // não usa o filtro do portfolio_id, pois já foi aplicado no filtro de permissões
+        delete (filters as any).portfolio_id;
 
         if (filters.orgao_responsavel_id) {
             whereConditions.push(`projeto.orgao_responsavel_id = $${paramIndex}`);
