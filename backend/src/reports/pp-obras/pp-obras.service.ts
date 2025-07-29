@@ -310,7 +310,7 @@ export class PPObrasService implements ReportableService {
         const whereCond = await this.buildFilteredWhereStr(dto, user);
         await ctx.resumoSaida('Obras', whereCond.count);
 
-        const baseQuery = this.buildObrasBaseQuery(true);
+        const baseQuery = this.buildObrasBaseQuery();
         const obrasQuery = `${baseQuery} ${whereCond.whereString}`;
 
         out.push(await this.streamQueryToCSV(obrasQuery, whereCond.queryParams, 'obras.csv'));
@@ -699,7 +699,7 @@ export class PPObrasService implements ReportableService {
         return { whereString, queryParams, count: allowed.length };
     }
 
-    private buildObrasBaseQuery(includeEtiquetas: boolean): string {
+    private buildObrasBaseQuery(): string {
         const ctes = `
         WITH shared_portfolios AS (
             SELECT
@@ -719,19 +719,6 @@ export class PPObrasService implements ReportableService {
             WHERE pr.removido_em IS NULL AND r.removido_em IS NULL
             GROUP BY pr.projeto_id
         )
-        ${
-            includeEtiquetas
-                ? `,
-        projeto_etiquetas AS (
-            SELECT
-                projeto_id,
-                string_agg(pt.descricao, '|') AS etiquetas
-            FROM projeto_tag pt
-            JOIN projeto p ON pt.id = ANY(p.tags) AND p.removido_em IS NULL
-            WHERE pt.removido_em IS NULL
-            GROUP BY projeto_id
-        )`
-                : ''
         }`;
 
         const selectFields = `
@@ -808,8 +795,14 @@ export class PPObrasService implements ReportableService {
             empreendimento.id AS empreendimento_id,
             empreendimento.identificador AS empreendimento_identificador,
             projeto.mdo_observacoes,
-            sp.titulos AS portfolios_compartilhados_titulos
-            ${includeEtiquetas ? ', et.etiquetas' : ''}
+            sp.titulos AS portfolios_compartilhados_titulos,
+            (
+                SELECT
+                    string_agg(pt.descricao, '|')
+                FROM projeto_tag pt
+                WHERE pt.id = ANY(projeto.tags)
+                AND pt.removido_em IS NULL
+            ) as etiquetas
         `;
 
         const fromAndJoins = `
@@ -817,7 +810,6 @@ export class PPObrasService implements ReportableService {
           LEFT JOIN portfolio ON portfolio.id = projeto.portfolio_id AND portfolio.removido_em IS NULL
           LEFT JOIN shared_portfolios sp ON sp.projeto_id = projeto.id
           LEFT JOIN projeto_regioes pr ON pr.projeto_id = projeto.id
-          ${includeEtiquetas ? 'LEFT JOIN projeto_etiquetas et ON et.projeto_id = projeto.id' : ''}
           LEFT JOIN meta ON meta.id = projeto.meta_id AND meta.removido_em IS NULL
           LEFT JOIN pdm ON pdm.id = meta.pdm_id
           LEFT JOIN grupo_tematico ON grupo_tematico.id = projeto.grupo_tematico_id AND grupo_tematico.removido_em IS NULL
@@ -842,7 +834,7 @@ export class PPObrasService implements ReportableService {
 
     private async queryDataObras(whereCond: WhereCond, out: RelObrasDto[]) {
         // Usa o mesmo SQL base para todas as consultas de obras, com a possibilidade de incluir etiquetas
-        const baseQuery = this.buildObrasBaseQuery(false);
+        const baseQuery = this.buildObrasBaseQuery();
 
         // Combine the base query with the dynamic WHERE clause
         const sql = `${baseQuery} ${whereCond.whereString}`;
