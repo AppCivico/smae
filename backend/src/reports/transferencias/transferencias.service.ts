@@ -506,6 +506,8 @@ export class TransferenciasService implements ReportableService {
 
     async toFileOutput(params: CreateRelTransferenciasDto, _ctx: ReportContext): Promise<FileOutput[]> {
         const dados = await this.asJSON(params);
+        await _ctx.resumoSaida('Transferências', dados.linhas.length);
+        await _ctx.resumoSaida('Cronograma de Transferências', dados.linhas_cronograma.length);
 
         const out: FileOutput[] = [];
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

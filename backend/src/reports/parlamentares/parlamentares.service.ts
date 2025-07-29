@@ -118,6 +118,7 @@ export class ParlamentaresService implements ReportableService {
                 localFile: file.path,
             });
         }
+        await ctx.resumoSaida('Parlamentares', linhas.length);
         await ctx.progress(99);
 
         return [

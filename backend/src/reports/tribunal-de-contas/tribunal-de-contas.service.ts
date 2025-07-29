@@ -4,6 +4,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { DefaultCsvOptions, FileOutput, ReportableService } from '../utils/utils.service';
 import { CreateRelTribunalDeContasDto } from './dto/create-tribunal-de-contas.dto';
 import { RelatorioTribunalDeContasDto, RelTribunalDeContasDto } from './entities/tribunal-de-contas.entity';
+import { ReportContext } from '../relatorios/helpers/reports.contexto';
 
 const {
     Parser,
@@ -111,7 +112,7 @@ export class TribunalDeContasService implements ReportableService {
         };
     }
 
-    async toFileOutput(params: any): Promise<FileOutput[]> {
+    async toFileOutput(params: any, ctx: ReportContext): Promise<FileOutput[]> {
         const dados = await this.asJSON(params);
 
         const out: FileOutput[] = [];
@@ -178,6 +179,7 @@ export class TribunalDeContasService implements ReportableService {
                 name: 'tribunal-de-contas.csv',
                 buffer: Buffer.from(linhas, 'utf8'),
             });
+            await ctx.resumoSaida('Tribunal de Contas', dados.linhas.length);
         }
 
         return [

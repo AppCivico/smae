@@ -278,6 +278,7 @@ export class PSMonitoramentoMensal implements ReportableService {
         const out: FileOutput[] = [];
         if (params.tipo_pdm == 'PS') {
             const rows = await this.fetchPsMonitoramentoMensalData(params, user);
+            ctx.resumoSaida('Monitoramento Mensal Variáveis PS', rows.length);
             await ctx.progress(40);
             //Cabeçalho Arquivo
             const fieldsCSV = [
@@ -320,6 +321,8 @@ export class PSMonitoramentoMensal implements ReportableService {
             }
 
             const cicloMetasRows = await this.buscaMetasCiclo(params, user);
+            ctx.resumoSaida('Monitoramento Mensal Metas Ciclo PS', cicloMetasRows.length);
+            
             if (cicloMetasRows.length) {
                 const json2csvParser = new Parser({
                     ...DefaultCsvOptions,

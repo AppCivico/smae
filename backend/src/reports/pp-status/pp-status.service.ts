@@ -189,6 +189,7 @@ export class PPStatusService implements ReportableService {
         // mais um relatório relativamente simples, se tiver problema de memória, pode ser que seja necessário
         // fazer paginação na busca dos projetos, mas a princípio não deve ser necessário
         const dados = await this.asJSON(params, user);
+        await ctx.resumoSaida(params.tipo_pdm === 'PP' ? 'Projeto Status' : 'Obra Status', dados.linhas.length);
         await ctx.progress(50);
 
         const out: FileOutput[] = [];

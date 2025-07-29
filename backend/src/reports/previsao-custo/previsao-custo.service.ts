@@ -118,6 +118,7 @@ export class PrevisaoCustoService implements ReportableService {
     ): Promise<FileOutput[]> {
         // em teoria custo previsto pode ficar pesado, mas por enquanto não temos muitos registros
         const dados = await this.asJSON(params, user);
+        await ctx.resumoSaida('Previsão de Custo', dados.linhas.length);
         await ctx.progress(50);
 
         const pdm = params.pdm_id ? await this.prisma.pdm.findUnique({ where: { id: params.pdm_id } }) : undefined;

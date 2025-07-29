@@ -529,6 +529,7 @@ export class PPProjetoService implements ReportableService {
             name: 'detalhes-do-projeto.csv',
             buffer: Buffer.from(linhas, 'utf8'),
         });
+        await ctx.resumoSaida(`Detalhes do Projeto - ${dados.detail.nome}`, 1);
         await ctx.progress(50);
 
         if (dados.cronograma.length) {
