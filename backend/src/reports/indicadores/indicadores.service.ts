@@ -1,11 +1,11 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { Prisma, Regiao } from '@prisma/client';
-import { DateTime } from 'luxon';
-import { Readable } from 'stream';
-import { createWriteStream } from 'fs';
 import * as fs from 'fs';
-import * as path from 'path';
+import { createWriteStream } from 'fs';
+import { DateTime } from 'luxon';
 import * as os from 'os';
+import * as path from 'path';
+import { Readable } from 'stream';
 
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { Date2YMD } from '../../common/date2ymd';
@@ -13,7 +13,7 @@ import { EmitErrorAndDestroyStream, Stream2PromiseIntoArray } from '../../common
 import { PrismaService } from '../../prisma/prisma.service';
 import { RegiaoBasica as RegiaoDto } from '../../regiao/entities/regiao.entity';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
-import { DefaultCsvOptions, FileOutput, ReportableService, UtilsService } from '../utils/utils.service';
+import { FileOutput, ReportableService, UtilsService } from '../utils/utils.service';
 import { CreateRelIndicadorDto, CreateRelIndicadorRegioesDto } from './dto/create-indicadores.dto';
 import { ListIndicadoresDto, RelIndicadoresDto, RelIndicadoresVariaveisDto } from './entities/indicadores.entity';
 
@@ -860,7 +860,7 @@ export class IndicadoresService implements ReportableService {
             }
 
             // Build the anoInicial query first
-            let queryFromWhere = `indicador i ON i.id IN (${indicadores.length ? indicadores.map((r) => r.id).join(',') : 0})
+            const queryFromWhere = `indicador i ON i.id IN (${indicadores.length ? indicadores.map((r) => r.id).join(',') : 0})
         join indicador_variavel iv ON iv.indicador_id = i.id
         join variavel v ON v.id = iv.variavel_id
         join orgao ON v.orgao_id = orgao.id
@@ -1069,7 +1069,7 @@ export class IndicadoresService implements ReportableService {
         fields: any[],
         params: any[],
         isRegioes: boolean = false
-    ): Promise<Number> {
+    ): Promise<number> {
         let rowCount = 0;
         let batchCount = 0;
 

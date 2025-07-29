@@ -111,6 +111,8 @@ class RetornoDbProjeto {
     empreendimento_id?: number;
     empreendimento_identificador?: string;
     etiquetas: string;
+
+    portfolios_compartilhados_titulos: string | null;
 }
 
 class RetornoDbCronograma {
@@ -265,7 +267,7 @@ export class PPObrasService implements ReportableService {
 
         const whereCond = await this.buildFilteredWhereStr(dto, user);
 
-        await this.queryDataProjetos(whereCond, out_obras, dto.portfolio_id);
+        await this.queryDataObras(whereCond, out_obras);
         await this.queryDataCronograma(whereCond, out_cronogramas);
         await this.queryDataAcompanhamentos(whereCond, out_acompanhamentos);
         await this.queryDataRegioes(whereCond, out_regioes);
@@ -308,145 +310,10 @@ export class PPObrasService implements ReportableService {
         const whereCond = await this.buildFilteredWhereStr(dto, user);
         await ctx.resumoSaida('Obras', whereCond.count);
 
-        out.push(
-            await this.streamQueryToCSV(
-                `SELECT
-                    projeto.id,
-                    projeto.portfolio_id,
-                    portfolio.titulo as portfolio_titulo,
-                    projeto.meta_id,
-                    meta.titulo as meta_nome,
-                    pdm.id as pdm_id,
-                    pdm.nome as pdm_nome,
-                    projeto.nome,
-                    projeto.codigo,
-                    projeto.objeto,
-                    projeto.objetivo,
-                    tc.previsao_inicio AS inicio_planejado,
-                    tc.previsao_termino AS termino_planejado,
-                    projeto.previsao_inicio AS previsao_inicio,
-                    projeto.previsao_termino AS previsao_termino,
-                    coalesce(tc.previsao_duracao, projeto.previsao_duracao) AS previsao_duracao,
-                    projeto.previsao_custo AS previsao_custo,
-                    tc.previsao_custo AS custo_planejado,
-                    projeto.escopo,
-                    projeto.nao_escopo,
-                    projeto.secretario_responsavel,
-                    projeto.secretario_executivo,
-                    projeto.coordenador_ue,
-                    projeto.data_aprovacao,
-                    projeto.data_revisao,
-                    projeto.versao,
-                    projeto.status,
-                    orgao_responsavel.id AS orgao_responsavel_id,
-                    orgao_responsavel.sigla AS orgao_responsavel_sigla,
-                    orgao_responsavel.descricao AS orgao_responsavel_descricao,
-                    resp.id AS responsavel_id,
-                    resp.nome_exibicao AS responsavel_nome_exibicao,
-                    orgao_gestor.id as orgao_gestor_id,
-                    orgao_gestor.sigla as orgao_gestor_sigla,
-                    orgao_gestor.descricao as orgao_gestor_descricao,
-                    (
-                        SELECT
-                            string_agg(nome_exibicao, '|')
-                        FROM pessoa
-                        WHERE id = ANY(projeto.responsaveis_no_orgao_gestor)
-                    ) as assessores,
-                    (
-                        SELECT
-                            string_agg(nome_exibicao, '|')
-                        FROM pessoa
-                        WHERE id = ANY(projeto.colaboradores_no_orgao)
-                    ) as pontos_focais_colaboradores,
-                    r.valor_percentual AS fonte_recurso_valor_pct,
-                    r.valor_nominal AS fonte_recurso_valor_nominal,
-                    o.id AS orgao_id,
-                    o.sigla AS orgao_sigla,
-                    o.descricao AS orgao_descricao,
-                    orgao_executor.id AS orgao_executor_id,
-                    orgao_executor.sigla AS orgao_executor_sigla,
-                    orgao_executor.descricao AS orgao_executor_descricao,
-                    orgao_origem.id AS orgao_origem_id,
-                    orgao_origem.sigla AS orgao_origem_sigla,
-                    orgao_origem.descricao AS orgao_origem_descricao,
-                    orgao_colaborador.id AS orgao_colaborador_id,
-                    orgao_colaborador.sigla AS orgao_colaborador_sigla,
-                    orgao_colaborador.descricao AS orgao_colaborador_descricao,
-                    pe.descricao AS projeto_etapa,
-                    grupo_tematico.id AS grupo_tematico_id,
-                    grupo_tematico.nome AS grupo_tematico_nome,
-                    tipo_intervencao.id AS tipo_intervencao_id,
-                    tipo_intervencao.nome AS tipo_intervencao_nome,
-                    tipo_intervencao.conceito AS tipo_intervencao_conceito,
-                    equipamento.id AS equipamento_id,
-                    equipamento.nome AS equipamento_nome,
-                    mdo_detalhamento AS detalhamento,
-                    origem_tipo,
-                    origem_outro as descricao,
-                    secretario_colaborador,
-                    mdo_previsao_inauguracao as data_inauguracao_planejada,
-                    (
-                        SELECT
-                            string_agg(regiao.descricao, '|')
-                        FROM projeto_regiao
-                        JOIN regiao ON regiao.id = projeto_regiao.regiao_id
-                        WHERE projeto_regiao.projeto_id = projeto.id
-                        AND projeto_regiao.removido_em IS NULL
-                        AND regiao.removido_em IS NULL
-                    ) AS subprefeituras,
-                    projeto.mdo_programa_habitacional as programa_habitacional,
-                    projeto.mdo_n_unidades_habitacionais AS n_unidades_habitacionais,
-                    projeto.mdo_n_familias_beneficiadas AS n_familias_beneficiadas,
-                    projeto.mdo_n_unidades_atendidas AS n_unidades_atendidas,
-                    empreendimento.id AS empreendimento_id,
-                    empreendimento.identificador AS empreendimento_identificador,
-                    projeto.mdo_observacoes,
-                    (
-                        SELECT
-                            string_agg(pt.descricao, '|')
-                        FROM projeto_tag pt
-                        WHERE pt.id = ANY(projeto.tags)
-                        AND pt.removido_em IS NULL
-                    ) as etiquetas
-                FROM projeto
-                LEFT JOIN meta ON meta.id = projeto.meta_id AND meta.removido_em IS NULL
-                LEFT JOIN pdm ON pdm.id = meta.pdm_id
-                LEFT JOIN grupo_tematico ON grupo_tematico.id = projeto.grupo_tematico_id AND grupo_tematico.removido_em IS NULL
-                LEFT JOIN tipo_intervencao ON tipo_intervencao.id = projeto.tipo_intervencao_id AND tipo_intervencao.removido_em IS NULL
-                LEFT JOIN equipamento ON equipamento.id = projeto.equipamento_id AND equipamento.removido_em IS NULL
-                LEFT JOIN tarefa_cronograma tc ON tc.projeto_id = projeto.id AND tc.removido_em IS NULL
-                LEFT JOIN LATERAL (
-                        SELECT projeto.portfolio_id AS portfolio_id
-                        UNION ALL
-                        SELECT ppc.portfolio_id
-                        FROM portfolio_projeto_compartilhado ppc
-                        WHERE ppc.projeto_id = projeto.id AND ppc.removido_em IS NULL
-                    ) AS port_array ON true
-                LEFT JOIN portfolio ON portfolio.id = port_array.portfolio_id
-                LEFT JOIN projeto_fonte_recurso r ON r.projeto_id = projeto.id
-                LEFT JOIN projeto_orgao_participante po ON po.projeto_id = projeto.id
-                LEFT JOIN orgao o ON po.orgao_id = o.id
-                LEFT JOIN orgao orgao_responsavel ON orgao_responsavel.id = projeto.orgao_responsavel_id
-                LEFT JOIN orgao orgao_gestor ON orgao_gestor.id = projeto.orgao_gestor_id
-                LEFT JOIN orgao orgao_executor ON orgao_executor.id = projeto.orgao_executor_id
-                LEFT JOIN orgao orgao_origem ON orgao_origem.id = projeto.orgao_origem_id
-                LEFT JOIN orgao orgao_colaborador On orgao_colaborador.id = projeto.orgao_colaborador_id
-                LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
-                LEFT JOIN projeto_etapa pe ON pe.id = projeto.projeto_etapa_id
-                LEFT JOIN empreendimento ON empreendimento.id = projeto.empreendimento_id AND empreendimento.removido_em IS NULL
-                ${whereCond.whereString}
-                AND port_array.portfolio_id = $${whereCond.queryParams.length + 1}::integer
-                `,
-                [...whereCond.queryParams, dto.portfolio_id.toString()],
-                'obras.csv'
-            )
-        );
+        const baseQuery = this.buildObrasBaseQuery(true);
+        const obrasQuery = `${baseQuery} ${whereCond.whereString}`;
 
-        // TODO: a query ta direto pela pro arquivo, então não temos o count correto
-        // o jeito mais simples sem mudar a query ou refactor do serviço, e sem ler o CSV de novo, é lendo o
-        // alterando o metodo que monta o whereCond pra ter o count, igual eu fiz no projetos
-        // await ctx.resumoSaida('Obras', <count correto>);
-
+        out.push(await this.streamQueryToCSV(obrasQuery, whereCond.queryParams, 'obras.csv'));
 
         out.push(
             await this.streamQueryToCSV(
@@ -830,8 +697,43 @@ export class PPObrasService implements ReportableService {
         return { whereString, queryParams, count: allowed.length };
     }
 
-    private async queryDataProjetos(whereCond: WhereCond, out: RelObrasDto[], portfolio_id: number) {
-        const sql = `SELECT
+    private buildObrasBaseQuery(includeEtiquetas: boolean): string {
+        const ctes = `
+        WITH shared_portfolios AS (
+            SELECT
+                ppc.projeto_id,
+                string_agg(p.titulo, ' | ') AS titulos
+            FROM portfolio_projeto_compartilhado ppc
+            JOIN portfolio p ON p.id = ppc.portfolio_id AND p.removido_em IS NULL
+            WHERE ppc.removido_em IS NULL
+            GROUP BY ppc.projeto_id
+        ),
+        projeto_regioes AS (
+            SELECT
+                pr.projeto_id,
+                string_agg(r.descricao, '|') AS subprefeituras
+            FROM projeto_regiao pr
+            JOIN regiao r ON r.id = pr.regiao_id
+            WHERE pr.removido_em IS NULL AND r.removido_em IS NULL
+            GROUP BY pr.projeto_id
+        )
+        ${
+            includeEtiquetas
+                ? `,
+        projeto_etiquetas AS (
+            SELECT
+                projeto_id,
+                string_agg(pt.descricao, '|') AS etiquetas
+            FROM projeto_tag pt
+            JOIN projeto p ON pt.id = ANY(p.tags) AND p.removido_em IS NULL
+            WHERE pt.removido_em IS NULL
+            GROUP BY projeto_id
+        )`
+                : ''
+        }`;
+
+        const selectFields = `
+        SELECT
             projeto.id,
             projeto.portfolio_id,
             portfolio.titulo as portfolio_titulo,
@@ -867,18 +769,8 @@ export class PPObrasService implements ReportableService {
             orgao_gestor.id as orgao_gestor_id,
             orgao_gestor.sigla as orgao_gestor_sigla,
             orgao_gestor.descricao as orgao_gestor_descricao,
-            (
-                SELECT
-                    string_agg(nome_exibicao, '|')
-                FROM pessoa
-                WHERE id = ANY(projeto.responsaveis_no_orgao_gestor)
-            ) as assessores,
-            (
-                SELECT
-                    string_agg(nome_exibicao, '|')
-                FROM pessoa
-                WHERE id = ANY(projeto.colaboradores_no_orgao)
-            ) as pontos_focais_colaboradores,
+            (SELECT string_agg(nome_exibicao, '|') FROM pessoa WHERE id = ANY(projeto.responsaveis_no_orgao_gestor)) as assessores,
+            (SELECT string_agg(nome_exibicao, '|') FROM pessoa WHERE id = ANY(projeto.colaboradores_no_orgao)) as pontos_focais_colaboradores,
             r.valor_percentual AS fonte_recurso_valor_pct,
             r.valor_nominal AS fonte_recurso_valor_nominal,
             o.id AS orgao_id,
@@ -906,37 +798,30 @@ export class PPObrasService implements ReportableService {
             origem_outro as descricao,
             secretario_colaborador,
             mdo_previsao_inauguracao as data_inauguracao_planejada,
-            (
-                SELECT
-                    string_agg(regiao.descricao, '|')
-                FROM projeto_regiao
-                JOIN regiao ON regiao.id = projeto_regiao.regiao_id
-                WHERE projeto_regiao.projeto_id = projeto.id
-                AND projeto_regiao.removido_em IS NULL
-                AND regiao.removido_em IS NULL
-            ) AS subprefeituras,
+            pr.subprefeituras,
             projeto.mdo_programa_habitacional as programa_habitacional,
             projeto.mdo_n_unidades_habitacionais AS n_unidades_habitacionais,
             projeto.mdo_n_familias_beneficiadas AS n_familias_beneficiadas,
             projeto.mdo_n_unidades_atendidas AS n_unidades_atendidas,
             empreendimento.id AS empreendimento_id,
             empreendimento.identificador AS empreendimento_identificador,
-            projeto.mdo_observacoes
+            projeto.mdo_observacoes,
+            sp.titulos AS portfolios_compartilhados_titulos
+            ${includeEtiquetas ? ', et.etiquetas' : ''}
+        `;
+
+        const fromAndJoins = `
         FROM projeto
+          LEFT JOIN portfolio ON portfolio.id = projeto.portfolio_id AND portfolio.removido_em IS NULL
+          LEFT JOIN shared_portfolios sp ON sp.projeto_id = projeto.id
+          LEFT JOIN projeto_regioes pr ON pr.projeto_id = projeto.id
+          ${includeEtiquetas ? 'LEFT JOIN projeto_etiquetas et ON et.projeto_id = projeto.id' : ''}
           LEFT JOIN meta ON meta.id = projeto.meta_id AND meta.removido_em IS NULL
           LEFT JOIN pdm ON pdm.id = meta.pdm_id
           LEFT JOIN grupo_tematico ON grupo_tematico.id = projeto.grupo_tematico_id AND grupo_tematico.removido_em IS NULL
           LEFT JOIN tipo_intervencao ON tipo_intervencao.id = projeto.tipo_intervencao_id AND tipo_intervencao.removido_em IS NULL
           LEFT JOIN equipamento ON equipamento.id = projeto.equipamento_id AND equipamento.removido_em IS NULL
           LEFT JOIN tarefa_cronograma tc ON tc.projeto_id = projeto.id AND tc.removido_em IS NULL
-          LEFT JOIN LATERAL (
-                SELECT projeto.portfolio_id AS portfolio_id
-                UNION ALL
-                SELECT ppc.portfolio_id
-                FROM portfolio_projeto_compartilhado ppc
-                WHERE ppc.projeto_id = projeto.id AND ppc.removido_em IS NULL
-            ) AS port_array ON true
-          LEFT JOIN portfolio ON portfolio.id = port_array.portfolio_id AND portfolio.removido_em IS NULL
           LEFT JOIN projeto_fonte_recurso r ON r.projeto_id = projeto.id
           LEFT JOIN projeto_orgao_participante po ON po.projeto_id = projeto.id
           LEFT JOIN orgao o ON po.orgao_id = o.id
@@ -948,19 +833,24 @@ export class PPObrasService implements ReportableService {
           LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
           LEFT JOIN projeto_etapa pe ON pe.id = projeto.projeto_etapa_id
           LEFT JOIN empreendimento ON empreendimento.id = projeto.empreendimento_id AND empreendimento.removido_em IS NULL
-          ${whereCond.whereString}
-          AND port_array.portfolio_id = $${whereCond.queryParams.length + 1}::integer`;
+        `;
 
-        const data: RetornoDbProjeto[] = await this.prisma.$queryRawUnsafe(
-            sql,
-            ...whereCond.queryParams,
-            portfolio_id.toString()
-        );
-
-        this.convertRowsProjetosInto(data, out);
+        return `${ctes} ${selectFields} ${fromAndJoins}`;
     }
 
-    private convertRowsProjetosInto(input: RetornoDbProjeto[], out: RelObrasDto[]) {
+    private async queryDataObras(whereCond: WhereCond, out: RelObrasDto[]) {
+        // Usa o mesmo SQL base para todas as consultas de obras, com a possibilidade de incluir etiquetas
+        const baseQuery = this.buildObrasBaseQuery(false);
+
+        // Combine the base query with the dynamic WHERE clause
+        const sql = `${baseQuery} ${whereCond.whereString}`;
+
+        const data: RetornoDbProjeto[] = await this.prisma.$queryRawUnsafe(sql, ...whereCond.queryParams);
+
+        this.convertRowsObrasInto(data, out);
+    }
+
+    private convertRowsObrasInto(input: RetornoDbProjeto[], out: RelObrasDto[]) {
         for (const db of input) {
             out.push({
                 id: db.id,
@@ -1047,6 +937,7 @@ export class PPObrasService implements ReportableService {
                           nome_exibicao: db.responsavel_nome_exibicao,
                       }
                     : null,
+                portfolios_compartilhados: db.portfolios_compartilhados_titulos,
             });
         }
     }
