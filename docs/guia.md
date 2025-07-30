@@ -12,8 +12,8 @@ Antes de começar, garanta que você tenha:
 
 1.  **Servidor:** Um servidor Ubuntu 24.04 limpo, com acesso root ou `sudo`.
 2.  **DNS:** Registros DNS do tipo `A` apontando seus domínios para o IP público do servidor. Neste guia, usamos:
-    *   `teste-smae-prefeitura-sp-gov-br.appcivico.com` (Aplicação Principal)
-    *   `teste-smtp-prefeitura-sp-gov-br.appcivico.com` (Visualizador de E-mails)
+    *   `teste-smae-prefeitura-sp-gov-br.example.com` (Aplicação Principal)
+    *   `teste-smtp-prefeitura-sp-gov-br.example.com` (Visualizador de E-mails)
 3.  **Arquivos de Backup:** Os seguintes arquivos devem estar no diretório `/home/smae/` do servidor:
     *   `dump.sql` (Backup do banco de dados principal do SMAE)
     *   `metadb.sql` (Backup do banco de dados do Metabase)
@@ -153,7 +153,7 @@ Cole a configuração abaixo. Ela cria um reverse proxy para a aplicação princ
 # /etc/nginx/sites-enabled/default
 
 server {
-    server_name teste-smae-prefeitura-sp-gov-br.appcivico.com;
+    server_name teste-smae-prefeitura-sp-gov-br.example.com;
 
     location / {
         proxy_pass http://172.17.0.1:45909; # Porta do SMAE_WEB_LISTEN
@@ -165,7 +165,7 @@ server {
 }
 
 server {
-    server_name teste-smtp-prefeitura-sp-gov-br.appcivico.com;
+    server_name teste-smtp-prefeitura-sp-gov-br.example.com;
 
     location / {
         proxy_pass http://172.17.0.1:32768; # Porta do SMTP_WEB_LISTEN
@@ -183,7 +183,7 @@ O Certbot automatiza a criação dos certificados SSL e a configuração do Ngin
 
 ```bash
 # Solicite os certificados para ambos os domínios
-sudo certbot --nginx -d teste-smae-prefeitura-sp-gov-br.appcivico.com -d teste-smtp-prefeitura-sp-gov-br.appcivico.com
+sudo certbot --nginx -d teste-smae-prefeitura-sp-gov-br.example.com -d teste-smtp-prefeitura-sp-gov-br.example.com
 
 # Siga as instruções na tela. O Certbot irá editar seu arquivo do Nginx
 # automaticamente, adicionando as configurações de SSL e o redirecionamento de HTTP para HTTPS.
@@ -204,7 +204,7 @@ Um detalhe importante: por padrão, a configuração do Nginx dentro do contêin
 
 2.  Encontre a linha `server_name my-custom-host;` e troque pelo seu domínio:
     ```nginx
-    server_name teste-smae-prefeitura-sp-gov-br.appcivico.com;
+    server_name teste-smae-prefeitura-sp-gov-br.example.com;
     ```
 
 3.  **Reconstrua e reinicie os contêineres** para aplicar a mudança. A flag `--build` é essencial.
@@ -212,7 +212,7 @@ Um detalhe importante: por padrão, a configuração do Nginx dentro do contêin
     cd /home/smae/smae
     sudo docker compose -f docker-compose.fixed-path.yml --profile fullStack up -d --build
     ```
-    Após isso, a aplicação em `https://teste-smae-prefeitura-sp-gov-br.appcivico.com` deve carregar corretamente.
+    Após isso, a aplicação em `https://teste-smae-prefeitura-sp-gov-br.example.com` deve carregar corretamente.
 
 #### **Passo 10: Configurações Essenciais do Banco de Dados no Novo Ambiente**
 
@@ -262,10 +262,10 @@ Como o banco de dados foi restaurado de um backup de produção, duas mudanças 
     sudo nano /etc/nginx/sites-enabled/default
     ```
 
-4.  Adicione as duas linhas de `auth_basic` ao bloco `server` do `teste-smtp-prefeitura-sp-gov-br.appcivico.com`:
+4.  Adicione as duas linhas de `auth_basic` ao bloco `server` do `teste-smtp-prefeitura-sp-gov-br.example.com`:
     ```nginx
     server {
-        server_name teste-smtp-prefeitura-sp-gov-br.appcivico.com;
+        server_name teste-smtp-prefeitura-sp-gov-br.example.com;
 
         # Adicione estas duas linhas para proteção por senha
         auth_basic "Acesso Restrito";
