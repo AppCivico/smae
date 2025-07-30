@@ -857,10 +857,10 @@ export class ParlamentarService {
                     }
                 }
 
-                let pct_participacao: number | null = dto.pct_participacao ? dto.pct_participacao : null;
-                if (dadosEleicao && !dto.pct_participacao) {
-                    pct_participacao = (dto.numero_votos / dadosEleicao.valor) * 100;
-                }
+                //let pct_participacao: number | null = dto.pct_participacao ? dto.pct_participacao : null;
+                //if (dadosEleicao && !dto.pct_participacao) {
+                //  pct_participacao = (dto.numero_votos / dadosEleicao.valor) * 100;
+                //}
 
                 if (dto.ranking == undefined) throw new HttpException('Ranking deve ser enviado.', 400);
 
