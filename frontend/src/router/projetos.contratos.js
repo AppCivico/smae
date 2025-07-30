@@ -72,14 +72,14 @@ export default {
           meta: {
             título: 'Resumo de contrato',
             tituloParaMigalhaDePao: () => {
-              const route = useRoute();
-              const { emFoco } = useContratosStore(route.meta.entidadeMãe);
+              const rotaAtual = useRoute();
+              const { emFoco } = useContratosStore(rotaAtual.meta.entidadeMãe);
 
               if (!emFoco) {
                 return 'Resumo de contrato';
               }
 
-              if (route.name === 'contratosDoProjetoResumo') {
+              if (rotaAtual.name === 'contratosDoProjetoResumo') {
                 return `Resumo: Contrato ${emFoco.numero}`;
               }
 

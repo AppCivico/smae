@@ -110,7 +110,7 @@ export default {
             títuloParaMenu: 'Resumo',
             título: 'Resumo do acompanhamento',
             tituloParaMigalhaDePao: () => {
-              const route = useRoute();
+              const { name: nomeRotaAtual } = useRoute();
               const { emFoco } = useAcompanhamentosStore();
 
               if (!emFoco) {
@@ -119,7 +119,7 @@ export default {
 
               const dataRegistro = dateToField(emFoco.data_registro);
 
-              if (route.name === 'acompanhamentosResumo') {
+              if (nomeRotaAtual.name === 'acompanhamentosResumo') {
                 return `Resumo: Acompanhamento ${dataRegistro}`;
               }
 
