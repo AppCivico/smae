@@ -256,13 +256,13 @@ export default {
               return `Projeto ${projetoStoreEmFoco}`;
             },
             tituloParaMigalhaDePao: () => {
-              const { name: routeName } = useRoute();
+              const { name: nomeRotaAtual } = useRoute();
               const projetoStoreEmFoco = useProjetosStore()?.emFoco?.nome;
               if (!projetoStoreEmFoco) {
                 return 'Escopo';
               }
 
-              if (routeName === 'projetosResumo') {
+              if (nomeRotaAtual === 'projetosResumo') {
                 return `Escopo: ${projetoStoreEmFoco}`;
               }
 

@@ -106,14 +106,14 @@ export default {
           meta: {
             título: 'Lição aprendida',
             tituloParaMigalhaDePao: () => {
-              const { name: routeName } = useRoute();
+              const { name: nomeRotaAtual } = useRoute();
               const { emFoco } = useLiçõesAprendidasStore();
 
               if (!emFoco) {
                 return 'Lição aprendida';
               }
 
-              if (routeName === 'liçõesAprendidasResumo') {
+              if (nomeRotaAtual === 'liçõesAprendidasResumo') {
                 return `Resumo: Lição ${emFoco.descricao}`;
               }
 

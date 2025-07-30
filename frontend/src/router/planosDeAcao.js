@@ -33,14 +33,14 @@ export default {
       }),
       meta: {
         tituloParaMigalhaDePao: () => {
-          const { name: routeName } = useRoute();
+          const { name: nomeRotaAtual } = useRoute();
           const { emFoco } = useRiscosStore();
 
           if (!emFoco) {
             return 'Resumo de riscos';
           }
 
-          if (routeName === 'planosDeAçãoListar') {
+          if (nomeRotaAtual === 'planosDeAçãoListar') {
             return `Resumo: Risco ${emFoco.titulo}`;
           }
 
@@ -147,14 +147,14 @@ export default {
             título: 'Resumo do Plano de ação',
             títuloParaMenu: 'Resumo',
             tituloParaMigalhaDePao: () => {
-              const { name: routeName } = useRoute();
+              const { name: nomeRotaAtual } = useRoute();
               const { emFoco } = usePlanosDeAçãoStore();
 
               if (!emFoco) {
                 return 'Resumo plano de ação';
               }
 
-              if (routeName === 'detalhes') {
+              if (nomeRotaAtual === 'detalhes') {
                 return `Resumo: ${emFoco.contramedida}`;
               }
 
