@@ -77,7 +77,7 @@
                 Selecionar
               </option>
               <option
-                v-for="órgão in órgãosComoLista"
+                v-for="órgão in orgaosComoListaOrdenados"
                 :key="órgão.id"
                 :value="órgão.id"
               >
@@ -142,6 +142,11 @@
 </template>
 
 <script setup>
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage, Field, useForm, useIsFormDirty,
+} from 'vee-validate';
+import { computed, ref, watch } from 'vue';
 import SmallModal from '@/components/SmallModal.vue';
 import { statusDistribuicao as schema } from '@/consts/formSchemas';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
@@ -150,11 +155,6 @@ import { useFluxosProjetosStore } from '@/stores/fluxosProjeto.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { useStatusDistribuicaoStore } from '@/stores/statusDistribuicao.store';
 import { useStatusDistribuicaoWorflowStore } from '@/stores/statusDistribuicaoWorkflow.store';
-import { storeToRefs } from 'pinia';
-import {
-  ErrorMessage, Field, useForm, useIsFormDirty,
-} from 'vee-validate';
-import { computed, ref, watch } from 'vue';
 
 const formularioSujo = useIsFormDirty();
 
@@ -206,9 +206,19 @@ const itemParaEdicao = computed(() => ({
   orgao_responsavel_id: props.statusEmFoco?.orgao_responsavel?.id,
 }));
 
-const statusesDisponiveis = computed(() => (props.transferenciaWorkflowId
-  ? fluxoProjetoEmFoco.value?.statuses_distribuicao
-  : statusBase.value));
+const statusesDisponiveis = computed(() => {
+  if (props.transferenciaWorkflowId) {
+    return fluxoProjetoEmFoco.value?.statuses_distribuicao.sort(
+      (a, b) => a.nome.localeCompare(b.nome),
+    );
+  }
+
+  return statusBase.value;
+});
+
+const orgaosComoListaOrdenados = computed(() => órgãosComoLista.value.sort(
+  (a, b) => a.descricao.localeCompare(b.descricao),
+));
 
 const {
   errors, handleSubmit, isSubmitting, resetForm, setFieldValue,

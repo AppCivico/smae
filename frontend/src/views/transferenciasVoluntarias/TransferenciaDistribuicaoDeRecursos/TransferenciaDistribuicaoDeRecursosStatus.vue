@@ -12,70 +12,43 @@
       />
     </div>
 
-    <table class="tablemain mb2">
-      <thead>
-        <tr>
-          <th>Data</th>
-          <th>Status</th>
-          <th>Órgão</th>
-          <th>Responsável</th>
-          <th>Motivo</th>
-          <th>Total de dias no status</th>
-          <th />
-        </tr>
-      </thead>
+    <SmaeTable
+      class="mb2"
+      :dados="historicoStatus"
+      :colunas="[
+        { chave: 'data_troca', label: 'Data', formatador: dateToDate },
+        { chave: 'status', label: 'Status', },
+        { chave: 'orgao_responsavel.sigla', label: 'Órgão', },
+        { chave: 'nome_responsavel', label: 'Responsável', },
+        { chave: 'motivo', label: 'Motivo', },
+        { chave: 'dias_no_status', label: 'Total de dias no status', },
+        { chave: 'editar' },
+      ]"
+    >
+      <template #celula:status="{ linha }">
+        {{ (linha.status_base || linha.status_customizado).nome }}
+      </template>
 
-      <tbody :aria-busy="chamadasPendentes.emFoco">
-        <tr
-          v-for="item in historicoStatus"
-          :key="item.id"
+      <template #celula:editar="{ linha }">
+        <button
+          v-if="linha.id === registroMaisRecente?.id"
+          class="like-a__text"
+          arial-label="editar"
+          title="editar"
+          type="button"
+          @click="abrirModalStatus(linha)"
         >
-          <td>
-            {{ item.data_troca ? dateToDate(item.data_troca) : '' }}
-          </td>
-          <td>{{ item.status_base?.nome || item.status_customizado?.nome }}</td>
-          <td>{{ item.orgao_responsavel?.sigla }}</td>
-          <td>{{ item.nome_responsavel }}</td>
-          <td>{{ item.motivo }}</td>
-          <td>{{ item.dias_no_status }}</td>
-          <td>
-            <button
-              v-if="item.id === registroMaisRecente?.id"
-              class="like-a__text"
-              arial-label="editar"
-              title="editar"
-              type="button"
-              @click="abrirModalStatus(item)"
-            >
-              <svg
-                width="20"
-                height="20"
-              >
-                <use xlink:href="#i_edit" />
-              </svg>
-            </button>
-          </td>
-        </tr>
+          <svg
+            width="20"
+            height="20"
+          >
+            <use xlink:href="#i_edit" />
+          </svg>
+        </button>
 
-        <tr v-if="chamadasPendentes.emFoco">
-          <td
-            colspan="999"
-          >
-            <LoadingComponent class="horizontal">
-              Carregando histórico de status
-            </LoadingComponent>
-          </td>
-        </tr>
-        <tr v-else-if="historicoStatus.length === 0">
-          <td
-            class="text-center"
-            colspan="6"
-          >
-            Sem histórico de status para exibir
-          </td>
-        </tr>
-      </tbody>
-    </table>
+        <span v-else />
+      </template>
+    </SmaeTable>
 
     <button
       v-if="distribuiçãoEmFoco"
@@ -103,9 +76,6 @@
 </template>
 
 <script setup>
-import dateToDate from '@/helpers/dateToDate';
-import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
-import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import { storeToRefs } from 'pinia';
 import { useIsFormDirty } from 'vee-validate';
 import {
@@ -113,7 +83,11 @@ import {
   ref,
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
+import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
+import dateToDate from '@/helpers/dateToDate';
 import TransferenciasDistribuicaoStatusCriarEditar from './TransferenciasDistribuicaoStatusCriarEditar.vue';
+import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 
 const distribuicaoRecursos = useDistribuicaoRecursosStore();
 const TransferenciasVoluntarias = useTransferenciasVoluntariasStore();
@@ -133,7 +107,14 @@ const historicoStatus = computed(() => {
     return [];
   }
 
-  return distribuiçãoEmFoco.value?.historico_status;
+  const status = [...distribuiçãoEmFoco.value.historico_status];
+
+  return status.sort((a, b) => {
+    const statusA = a.status_base || b.status_customizado;
+    const statusB = a.status_base || b.status_customizado;
+
+    return statusA?.nome.localeCompare(statusB?.nome);
+  });
 });
 
 const registroMaisRecente = computed(() => historicoStatus.value
