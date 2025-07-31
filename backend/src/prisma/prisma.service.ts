@@ -1,130 +1,130 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { Prisma, PrismaClient } from 'src/generated/prisma/client';
 import { UnwrapTuple } from '@prisma/client/runtime/library';
-import { fieldEncryptionMiddleware } from 'prisma-field-encryption';
+//import { fieldEncryptionMiddleware } from 'prisma-field-encryption';
 import { RetryPromise } from '../common/retryPromise';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { DMMFDocument } from 'prisma-field-encryption/dist/types';
+//import { DMMFDocument } from 'prisma-field-encryption/dist/types';
 
-const dmmf: DMMFDocument = {
-    datamodel: {
-        models: [
-            {
-                name: 'api_request_log',
-                fields: [
-                    {
-                        name: 'created_at',
-                        type: 'DateTime',
-                        isId: false,
-                        isList: false,
-                        isUnique: false,
-                    },
-                    {
-                        name: 'cf_ray',
-                        type: 'String',
-                        isId: false,
-                        isList: false,
-                        isUnique: false,
-                    },
-                    {
-                        name: 'request_num',
-                        type: 'Int',
-                        isId: false,
-                        isList: false,
-                        isUnique: false,
-                    },
-                    {
-                        name: 'ip',
-                        type: 'String',
-                        isId: false,
-                        isList: false,
-                        isUnique: false,
-                    },
-                    {
-                        name: 'response_time',
-                        type: 'Int',
-                        isId: false,
-                        isList: false,
-                        isUnique: false,
-                    },
-                    {
-                        name: 'response_size',
-                        type: 'Int',
-                        isId: false,
-                        isList: false,
-                        isUnique: false,
-                    },
-                    {
-                        name: 'req_method',
-                        type: 'String',
-                        isId: false,
-                        isList: false,
-                        isUnique: false,
-                    },
-                    {
-                        name: 'req_path',
-                        type: 'String',
-                        isId: false,
-                        isList: false,
-                        isUnique: false,
-                    },
-                    {
-                        name: 'req_host',
-                        type: 'String',
-                        isId: false,
-                        isList: false,
-                        isUnique: false,
-                    },
-                    {
-                        name: 'req_headers',
-                        type: 'String',
-                        isId: false,
-                        isList: false,
-                        isUnique: false,
-                        documentation: '@encrypted?mode=strict',
-                    },
-                    {
-                        name: 'req_query',
-                        type: 'String',
-                        isId: false,
-                        isList: false,
-                        isUnique: false,
-                        documentation: '@encrypted?mode=strict',
-                    },
-                    {
-                        name: 'req_body',
-                        type: 'String',
-                        isId: false,
-                        isList: false,
-                        isUnique: false,
-                        documentation: '@encrypted?mode=strict',
-                    },
-                    {
-                        name: 'req_body_size',
-                        type: 'Int',
-                        isId: false,
-                        isList: false,
-                        isUnique: false,
-                    },
-                    {
-                        name: 'res_code',
-                        type: 'Int',
-                        isId: false,
-                        isList: false,
-                        isUnique: false,
-                    },
-                    {
-                        name: 'created_pessoa_id',
-                        type: 'Int',
-                        isId: false,
-                        isList: false,
-                        isUnique: false,
-                    },
-                ],
-            },
-        ],
-    },
-};
+//const dmmf: DMMFDocument = {
+//    datamodel: {
+//        models: [
+//            {
+//                name: 'api_request_log',
+//                fields: [
+//                    {
+//                        name: 'created_at',
+//                        type: 'DateTime',
+//                        isId: false,
+//                        isList: false,
+//                        isUnique: false,
+//                    },
+//                    {
+//                        name: 'cf_ray',
+//                        type: 'String',
+//                        isId: false,
+//                        isList: false,
+//                        isUnique: false,
+//                    },
+//                    {
+//                        name: 'request_num',
+//                        type: 'Int',
+//                        isId: false,
+//                        isList: false,
+//                        isUnique: false,
+//                    },
+//                    {
+//                        name: 'ip',
+//                        type: 'String',
+//                        isId: false,
+//                        isList: false,
+//                        isUnique: false,
+//                    },
+//                    {
+//                        name: 'response_time',
+//                        type: 'Int',
+//                        isId: false,
+//                        isList: false,
+//                        isUnique: false,
+//                    },
+//                    {
+//                        name: 'response_size',
+//                        type: 'Int',
+//                        isId: false,
+//                        isList: false,
+//                        isUnique: false,
+//                    },
+//                    {
+//                        name: 'req_method',
+//                        type: 'String',
+//                        isId: false,
+//                        isList: false,
+//                        isUnique: false,
+//                    },
+//                    {
+//                        name: 'req_path',
+//                        type: 'String',
+//                        isId: false,
+//                        isList: false,
+//                        isUnique: false,
+//                    },
+//                    {
+//                        name: 'req_host',
+//                        type: 'String',
+//                        isId: false,
+//                        isList: false,
+//                        isUnique: false,
+//                    },
+//                    {
+//                        name: 'req_headers',
+//                        type: 'String',
+//                        isId: false,
+//                        isList: false,
+//                        isUnique: false,
+//                        documentation: '@encrypted?mode=strict',
+//                    },
+//                    {
+//                        name: 'req_query',
+//                        type: 'String',
+//                        isId: false,
+//                        isList: false,
+//                        isUnique: false,
+//                        documentation: '@encrypted?mode=strict',
+//                    },
+//                    {
+//                        name: 'req_body',
+//                        type: 'String',
+//                        isId: false,
+//                        isList: false,
+//                        isUnique: false,
+//                        documentation: '@encrypted?mode=strict',
+//                    },
+//                    {
+//                        name: 'req_body_size',
+//                        type: 'Int',
+//                        isId: false,
+//                        isList: false,
+//                        isUnique: false,
+//                    },
+//                    {
+//                        name: 'res_code',
+//                        type: 'Int',
+//                        isId: false,
+//                        isList: false,
+//                        isUnique: false,
+//                    },
+//                    {
+//                        name: 'created_pessoa_id',
+//                        type: 'Int',
+//                        isId: false,
+//                        isList: false,
+//                        isUnique: false,
+//                    },
+//                ],
+//            },
+//        ],
+//    },
+//};
 
 class PrismaServiceBase extends PrismaClient implements OnModuleInit {
     constructor() {
@@ -151,7 +151,6 @@ class PrismaServiceBase extends PrismaClient implements OnModuleInit {
                 },
             ],
         });
-
     }
 
     async onModuleInit() {
