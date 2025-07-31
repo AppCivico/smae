@@ -119,7 +119,7 @@ export default {
 
               const dataRegistro = dateToField(emFoco.data_registro);
 
-              if (nomeRotaAtual.name === 'acompanhamentosResumo') {
+              if (nomeRotaAtual === 'acompanhamentosResumo') {
                 return `Resumo: Acompanhamento ${dataRegistro}`;
               }
 
