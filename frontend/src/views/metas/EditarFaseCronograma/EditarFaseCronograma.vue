@@ -1,7 +1,7 @@
 <script setup>
 import { storeToRefs } from 'pinia';
-import { ErrorMessage, Field, Form } from 'vee-validate';
-import { computed, ref } from 'vue';
+import { ErrorMessage, Field, useForm } from 'vee-validate';
+import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import MapaCampo from '@/components/geo/MapaCampo.vue';
@@ -138,80 +138,6 @@ async function getRegionByParent(r_id, cur) {
   lastlevel();
 }
 
-async function onSubmit(values) {
-  try {
-    let msg;
-    let r;
-
-    const concluirEnvio = async () => {
-      values.regiao_id = singleCronograma.value.regionalizavel && Number(values.regiao_id)
-        ? Number(values.regiao_id)
-        : null;
-      values.ordem = Number(values.ordem) ?? null;
-      values.peso = Number(values.peso) ?? null;
-      values.percentual_execucao = Number(values.percentual_execucao) ?? null;
-      values.etapa_pai_id = currentParent;
-      values.ps_ponto_focal = { equipes: values.equipes };
-      delete values.equipes;
-
-      let rota = false;
-      // mantendo comportamento legado
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      let etapa_id_gen = null;
-      if (currentId) {
-        // mantendo comportamento legado
-        // eslint-disable-next-line eqeqeq
-        if (currentFase.value.id == currentId) {
-          r = await EtapasStore.update(currentId, values);
-          msg = 'Dados salvos com sucesso!';
-          rota = currentEdit;
-          etapa_id_gen = currentId;
-
-          // mantendo comportamento legado
-          // eslint-disable-next-line eqeqeq
-          if (values.ordem != currentFase.value.ordem) {
-            await EtapasStore.monitorar({
-              cronograma_id: Number(cronograma_id),
-              etapa_id: Number(etapa_id_gen),
-              inativo: false,
-              ordem: Number(values.ordem) ?? null,
-            });
-          }
-        }
-      } else {
-        r = await EtapasStore.insert(Number(cronograma_id), values);
-        msg = 'Item adicionado com sucesso!';
-        rota = currentEdit;
-        etapa_id_gen = r;
-      }
-
-      if (r) {
-        EtapasStore.clear();
-        CronogramasStore.clear();
-        (async () => {
-          await EtapasStore.getAll(cronograma_id);
-          await CronogramasStore.getById(parentVar, parentField, cronograma_id);
-          router.push(rota);
-        })();
-        alertStore.success(msg);
-        editModalStore.clear();
-      }
-    };
-
-    if (currentFase.value?.variavel?.id && !values.variavel) {
-      alertStore.confirmAction(
-        alertaDeExclusãoDeVariável,
-        concluirEnvio,
-        'Prosseguir',
-      );
-    } else {
-      concluirEnvio();
-    }
-  } catch (error) {
-    alertStore.error(error);
-  }
-}
-
 function lastlevel() {
   let r;
   if (level1.value) {
@@ -283,6 +209,90 @@ const valoresIniciais = computed(() => (currentFase.value?.loading
     geolocalizacao: currentFase.value?.geolocalizacao?.map((x) => x.token) || [],
     equipes: currentFase.value?.ps_ponto_focal?.equipes || [],
   }));
+
+const {
+  errors, isSubmitting, setFieldValue, values, handleSubmit, resetForm,
+} = useForm({
+  validationSchema: schema,
+  initialValues: valoresIniciais.value,
+});
+
+const onSubmit = handleSubmit.withControlled(() => {
+  try {
+    let msg;
+    let r;
+
+    const concluirEnvio = async () => {
+      values.regiao_id = singleCronograma.value.regionalizavel
+        && Number(values.regiao_id)
+        ? Number(values.regiao_id)
+        : null;
+      values.ordem = Number(values.ordem) ?? null;
+      values.peso = Number(values.peso) ?? null;
+      values.percentual_execucao = Number(values.percentual_execucao) ?? null;
+      values.etapa_pai_id = currentParent;
+      values.ps_ponto_focal = { equipes: values.equipes };
+      delete values.equipes;
+
+      let rota = false;
+      // mantendo comportamento legado
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      let etapa_id_gen = null;
+      if (currentId) {
+        // mantendo comportamento legado
+        // eslint-disable-next-line eqeqeq
+        if (currentFase.value.id == currentId) {
+          console.log('fase', { ...values });
+
+          r = await EtapasStore.update(currentId, values);
+          msg = 'Dados salvos com sucesso!';
+          rota = currentEdit;
+          etapa_id_gen = currentId;
+
+          // mantendo comportamento legado
+          // eslint-disable-next-line eqeqeq
+          if (values.ordem != currentFase.value.ordem) {
+            await EtapasStore.monitorar({
+              cronograma_id: Number(cronograma_id),
+              etapa_id: Number(etapa_id_gen),
+              inativo: false,
+              ordem: Number(values.ordem) ?? null,
+            });
+          }
+        }
+      } else {
+        r = await EtapasStore.insert(Number(cronograma_id), values);
+        msg = 'Item adicionado com sucesso!';
+        rota = currentEdit;
+        etapa_id_gen = r;
+      }
+
+      if (r) {
+        EtapasStore.clear();
+        CronogramasStore.clear();
+        (async () => {
+          await EtapasStore.getAll(cronograma_id);
+          await CronogramasStore.getById(parentVar, parentField, cronograma_id);
+          router.push(rota);
+        })();
+        alertStore.success(msg);
+        editModalStore.clear();
+      }
+    };
+
+    if (currentFase.value?.variavel?.id && !values.variavel) {
+      alertStore.confirmAction(
+        alertaDeExclusãoDeVariável,
+        concluirEnvio,
+        'Prosseguir',
+      );
+    } else {
+      concluirEnvio();
+    }
+  } catch (error) {
+    alertStore.error(error);
+  }
+});
 
 const geolocalizaçãoPorToken = computed(() => (currentFase.value?.loading
   || currentFase.value?.error
@@ -356,7 +366,28 @@ async function iniciar() {
   }
 }
 
+function redefinirVariavel(habilitar = false) {
+  const valorInicial = route.meta.entidadeMãe === 'planoSetorial'
+    || route.meta.entidadeMãe === 'programaDeMetas'
+    ? {
+      codigo: singleEtapa.value?.variavel?.codigo || 'GERAR_CODIGO',
+      titulo: singleEtapa.value?.variavel?.titulo || '',
+    }
+    : {
+      codigo: singleEtapa.value?.variavel?.codigo || '',
+      titulo: singleEtapa.value?.variavel?.titulo || '',
+    };
+
+  setFieldValue('variavel', habilitar ? valorInicial : null);
+}
+
 iniciar();
+
+watch(valoresIniciais, (novoValor) => {
+  resetForm({ values: novoValor });
+  // rodando mesmo sem uma mudança inicial porque... Bem, não sei. As
+  // modificações não são detectadas.
+}, { immediate: true });
 </script>
 
 <template>
@@ -372,12 +403,7 @@ iniciar();
     </div>
 
     <template v-if="!(currentFase?.loading || currentFase?.error) && oktogo">
-      <Form
-        v-slot="{ errors, isSubmitting, setFieldValue, values }"
-        :validation-schema="schema"
-        :initial-values="valoresIniciais"
-        @submit="onSubmit"
-      >
+      <form @submit="onSubmit">
         <fieldset>
           <div>
             <LabelFromYup
@@ -650,14 +676,7 @@ iniciar();
                 :value="{}"
                 :unchecked-value="null"
                 class="inputcheckbox"
-                @change="ev =>
-                  setFieldValue('variavel', ev.target.checked ?
-                    {
-                      codigo: valoresIniciais?.variavel?.codigo || '',
-                      titulo: valoresIniciais?.variavel?.titulo || '',
-                    } : null
-                  )
-                "
+                @change="ev => redefinirVariavel(ev.target.checked)"
               >
 
               <label for="associar-variavel">
@@ -669,14 +688,29 @@ iniciar();
               v-if="!!values.variavel"
               class="fb100 flex g2"
             >
-              <div class="f1">
+              <div
+                class="f1"
+                :hidden="
+                  ['planoSetorial', 'programaDeMetas'].includes($route.meta.entidadeMãe)
+                    && !singleEtapa.value?.variavel
+                "
+              >
                 <LabelFromYup
                   :schema="schema.fields.variavel"
                   :required="true"
                   name="codigo"
                 />
+                <input
+                  v-if="!!singleEtapa.value?.variavel"
+                  :value="singleEtapa.value?.variavel.codigo"
+                  type="text"
+                  class="inputtext light mb1"
+                  aria-readonly="true"
+                  readonly
+                >
 
                 <Field
+                  v-else
                   name="variavel.codigo"
                   type="text"
                   class="inputtext light mb1"
