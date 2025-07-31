@@ -81,7 +81,7 @@
                 :key="órgão.id"
                 :value="órgão.id"
               >
-                {{ órgão.descricao }}
+                {{ órgão.sigla }} - {{ órgão.descricao }}
               </option>
             </Field>
             <div class="error-msg">
@@ -217,7 +217,7 @@ const statusesDisponiveis = computed(() => {
 });
 
 const orgaosComoListaOrdenados = computed(() => órgãosComoLista.value.sort(
-  (a, b) => a.descricao.localeCompare(b.descricao),
+  (a, b) => a.sigla.localeCompare(b.sigla),
 ));
 
 const {
