@@ -2503,7 +2503,7 @@ export class ProjetoService {
     ): Promise<RecordWithId> {
         dto = RemoveUndefinedFields(dto);
         // aqui é feito a verificação se esse usuário pode realmente acessar esse recurso
-        const projeto = await this.findOne(tipo, projetoId, user, 'ReadWrite');
+        const projeto = (await this.findOne(tipo, projetoId, user, 'ReadWrite')) as ProjetoDetailMdoDto;
         const hasOnlyResponsibilityEdit =
             projeto.permissoes.pode_editar_apenas_responsaveis_pos_planejamento && projeto.permissoes.apenas_leitura;
 
@@ -2543,7 +2543,7 @@ export class ProjetoService {
         }
 
         if ('grupo_tematico_id' in dto) {
-            await this.verificaGrupoTematico(dto);
+            await this.verificaGrupoTematico(dto, projeto.grupo_tematico?.id);
         } else {
             // bloqueia a mudança dos campos se não informar o grupo temático
             dto.mdo_n_familias_beneficiadas = undefined;
@@ -3922,7 +3922,7 @@ export class ProjetoService {
         }
     }
 
-    private async verificaGrupoTematico(dto: UpdateProjetoDto) {
+    private async verificaGrupoTematico(dto: UpdateProjetoDto, antigo_grupo_tematico_id?: number) {
         if (dto.grupo_tematico_id === undefined) return;
         if (dto.grupo_tematico_id === null) {
             dto.mdo_n_unidades_atendidas = null;
@@ -3935,6 +3935,7 @@ export class ProjetoService {
         const grupoTematico = await this.prisma.grupoTematico.findUnique({
             where: { id: dto.grupo_tematico_id },
             select: {
+                id: true,
                 unidades_atendidas: true,
                 unidades_habitacionais: true,
                 programa_habitacional: true,
@@ -3948,5 +3949,13 @@ export class ProjetoService {
         if (!grupoTematico.unidades_habitacionais) dto.mdo_n_unidades_habitacionais = null;
         if (!grupoTematico.programa_habitacional) dto.mdo_programa_habitacional = null;
         if (!grupoTematico.familias_beneficiadas) dto.mdo_n_familias_beneficiadas = null;
+
+        if (grupoTematico && grupoTematico.id !== antigo_grupo_tematico_id) {
+            // Se o grupo temático foi alterado, deve-se zerar os campos relacionados se não foi enviado um novo valor
+            if (dto.mdo_n_unidades_atendidas !== undefined) dto.mdo_n_unidades_atendidas = null;
+            if (dto.mdo_n_unidades_habitacionais !== undefined) dto.mdo_n_unidades_habitacionais = null;
+            if (dto.mdo_programa_habitacional !== undefined) dto.mdo_programa_habitacional = null;
+            if (dto.mdo_n_familias_beneficiadas !== undefined) dto.mdo_n_familias_beneficiadas = null;
+        }
     }
 }
