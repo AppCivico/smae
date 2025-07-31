@@ -1422,7 +1422,7 @@ export const obras = object({
     .label('Programa Habitacional')
     .positive()
     .integer()
-    .nullable(),
+    .nullableOuVazio(),
   projeto_etapa_id: number()
     .label('Etapa')
     .nullable(),

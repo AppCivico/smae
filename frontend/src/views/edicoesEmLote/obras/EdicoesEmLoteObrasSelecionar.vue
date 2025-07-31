@@ -86,7 +86,7 @@ watch(
 
     <SmaeTable
       v-selecionar-multiplas-opcoes
-      titulo-rolagem-horizontal="Tabela: Edição em Lote"
+      titulo-para-rolagem-horizontal="Tabela: Edição em Lote"
       class="mb2"
       rolagem-horizontal
       :dados="listaDeObras"
