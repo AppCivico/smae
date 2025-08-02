@@ -15,6 +15,7 @@ import { PrivController } from './priv.controller';
 import { PrivService } from './priv.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
     imports: [
@@ -22,14 +23,24 @@ import { LocalStrategy } from './strategies/local.strategy';
         PessoaModule,
         PassportModule,
         FeatureFlagModule,
-        JwtModule.register({
-            secret: process.env.SESSION_JWT_SECRET,
-            signOptions: { expiresIn: '30d' },
+
+        ConfigModule.forRoot({
+            isGlobal: true,
+        }),
+
+        JwtModule.registerAsync({
+            imports: [ConfigModule],
+            inject: [ConfigService],
+            useFactory: (configService: ConfigService) => ({
+                // Agora, o secret é carregado de forma segura
+                secret: configService.get<string>('SESSION_JWT_SECRET'),
+                signOptions: { expiresIn: '30d' },
+            }),
         }),
     ],
     controllers: [AuthController, PrivController, PerfilAcessoController],
     providers: [AuthService, LocalStrategy, JwtStrategy, PrivService, PerfilAcessoService],
-    exports: [AuthService],
+    exports: [AuthService, JwtModule],
 })
 export class AuthModule implements NestModule {
     configure(consumer: MiddlewareConsumer) {

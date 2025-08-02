@@ -2,26 +2,30 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ModuloSistema } from 'src/generated/prisma/client';
 import { Request } from 'express';
-import { ExtractJwt, Strategy } from 'passport-jwt';
+import { ExtractJwt, Strategy, StrategyOptionsWithRequest } from 'passport-jwt';
 import { extractIpAddress } from '../../common/decorators/current-ip';
 import { JwtPessoaPayload } from '../models/JwtPessoaPayload';
 import { PessoaFromJwt } from '../models/PessoaFromJwt';
 import { ValidateModuloSistema } from '../models/Privilegios.dto';
 import { AuthService } from './../auth.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-    constructor(private authService: AuthService) {
+    constructor(
+        private authService: AuthService,
+        configService: ConfigService
+    ) {
         const secret = process.env.SESSION_JWT_SECRET;
         if (!secret) throw new Error('SESSION_JWT_SECRET environment variable is required');
 
         super({
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
             ignoreExpiration: false,
-            secretOrKey: secret,
+            secretOrKey: configService.get<string>('SESSION_JWT_SECRET'),
             audience: 'l',
             passReqToCallback: true,
-        });
+        } as StrategyOptionsWithRequest);
     }
 
     async validate(req: Request, payload: JwtPessoaPayload): Promise<PessoaFromJwt> {

@@ -12,7 +12,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         const ctx = host.switchToHttp();
         const request = ctx.getRequest<AuthRequest>();
         let ehAdmin: boolean = false;
-        if (request.user && request.user.hasSomeRoles(['SMAE.superadmin'])) ehAdmin = true;
+        if (request.user && typeof request.user.hasSomeRoles === 'function' && request.user.hasSomeRoles(['SMAE.superadmin'])) ehAdmin = true;
 
         const httpStatusCode =
             exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
