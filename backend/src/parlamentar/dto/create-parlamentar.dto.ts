@@ -206,9 +206,8 @@ export class CreateMandatoRepresentatividadeDto {
     @ValidateIf((object, value) => value !== null)
     pct_participacao?: number;
 
-    @IsOptional()
     @IsNumber()
-    ranking?: number;
+    ranking: number;
 }
 
 export class CreateMandatoBancadaDto {

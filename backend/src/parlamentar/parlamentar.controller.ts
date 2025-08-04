@@ -23,6 +23,11 @@ import {
 import { FilterParlamentarDto } from './dto/filter-parlamentar.dto';
 import { PaginatedDto } from 'src/common/dto/paginated.dto';
 import { ApiPaginatedResponse } from 'src/auth/decorators/paginated.decorator';
+import {
+    EleicaoComparecimentoDto,
+    GetEleicaoComparecimentoDto,
+    ComparecimentoConflictResponseDto,
+} from './dto/eleicao-comparecimento.dto';
 
 @ApiTags('Parlamentar')
 @Controller('parlamentar')
@@ -141,6 +146,16 @@ export class ParlamentarController {
         return '';
     }
 
+    @Get('/eleicao-comparecimento')
+    @ApiBearerAuth('access-token')
+    @Roles(['CadastroParlamentar.inserir'])
+    async getEleicaoComparecimento(
+        @Query() query: GetEleicaoComparecimentoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<EleicaoComparecimentoDto> {
+        return await this.parlamentarService.getEleicaoComparecimento(query, user);
+    }
+
     // Mandato - Representatividade
     @Post(':id/representatividade')
     @ApiBearerAuth('access-token')
@@ -160,7 +175,7 @@ export class ParlamentarController {
         @Param() params: FindTwoParams,
         @Body() dto: UpdateRepresentatividadeDto,
         @CurrentUser() user: PessoaFromJwt
-    ): Promise<RecordWithId> {
+    ): Promise<RecordWithId | ComparecimentoConflictResponseDto> {
         return await this.parlamentarService.updateMandatoRepresentatividade(+params.id2, dto, user);
     }
 
