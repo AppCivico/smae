@@ -7,7 +7,7 @@ import {
     Logger,
     forwardRef,
 } from '@nestjs/common';
-import { PdmPerfilTipo, PerfilResponsavelEquipe, Prisma, TipoPdm } from '@prisma/client';
+import { PdmPerfilTipo, PerfilResponsavelEquipe, Prisma, TipoPdm } from 'src/generated/prisma/client';
 import { plainToInstance } from 'class-transformer';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { EnsureString } from '../common/EnsureString';

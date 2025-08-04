@@ -1,6 +1,8 @@
 generator client {
-    provider        = "prisma-client-js"
-    previewFeatures = ["views", "relationJoins"]
+    provider        = "prisma-client"
+    output          = "../src/generated/prisma" // `output` is required
+    moduleFormat    = "cjs" // or `"cjs"` for CommonJS
+    previewFeatures = ["views", "relationJoins", "driverAdapters", "queryCompiler", "typedSql"]
 }
 
 datasource db {
@@ -3502,7 +3504,7 @@ model Relatorio {
 
     sistema ModuloSistema @default(SMAE)
 
-    resumo_saida Json @db.Json @default("{}")
+    resumo_saida Json @default("{}") @db.Json
 
     // Coluna espelhada da RelatorioFilha, para facilitar a busca.
     processado_em DateTime? @db.Timestamptz(6)

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { TarefaDependenteTipo } from '@prisma/client';
+import { TarefaDependenteTipo } from 'src/generated/prisma/client';
 import { Transform, Type } from 'class-transformer';
 import {
     IsArray,

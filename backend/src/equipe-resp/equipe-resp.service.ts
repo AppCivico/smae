@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { PerfilResponsavelEquipe, Prisma } from '@prisma/client';
+import { PerfilResponsavelEquipe, Prisma } from 'src/generated/prisma/client';
 import { CONST_PERFIL_PARTICIPANTE_EQUIPE } from 'src/common/consts';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { PessoaPrivilegioService } from '../auth/pessoaPrivilegio.service';

@@ -1,6 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { ApiProperty, IntersectionType, PartialType, PickType } from '@nestjs/swagger';
-import { StatusNota } from '@prisma/client';
+import { StatusNota } from 'src/generated/prisma/client';
 import { Transform, TransformFnParams, Type } from 'class-transformer';
 import {
     IsArray,

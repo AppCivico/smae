@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IndicadorTipo, Periodicidade, Polaridade } from '@prisma/client';
+import { IndicadorTipo, Periodicidade, Polaridade } from 'src/generated/prisma/client';
 import { Transform, TransformFnParams, Type } from 'class-transformer';
 import {
     IsArray,

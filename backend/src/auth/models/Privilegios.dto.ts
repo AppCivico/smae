@@ -1,6 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
-import { ModuloSistema } from '@prisma/client';
+import { ModuloSistema } from 'src/generated/prisma/client';
 import { Transform, TransformFnParams } from 'class-transformer';
 import { IsArray, IsOptional } from 'class-validator';
 

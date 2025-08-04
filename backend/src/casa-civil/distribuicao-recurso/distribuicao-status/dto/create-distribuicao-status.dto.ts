@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { DistribuicaoStatusTipo } from '@prisma/client';
+import { DistribuicaoStatusTipo } from 'src/generated/prisma/client';
 import { IsBoolean, IsEnum, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 import { MAX_LENGTH_DEFAULT } from 'src/common/consts';
 

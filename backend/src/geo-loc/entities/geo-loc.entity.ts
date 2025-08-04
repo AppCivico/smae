@@ -1,6 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
-import { GeoReferenciaTipo } from '@prisma/client';
+import { GeoReferenciaTipo } from 'src/generated/prisma/client';
 import { Transform } from 'class-transformer';
 import { IsArray, IsBoolean, IsEnum, IsInt, IsNumber, IsOptional, IsString, MaxLength } from 'class-validator';
 import { GeoJSON } from 'geojson';

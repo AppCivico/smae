@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
-import { AvisoEmail, Nota, Prisma, Tarefa, TarefaCronograma } from '@prisma/client';
+import { AvisoEmail, Nota, Prisma, Tarefa, TarefaCronograma } from 'src/generated/prisma/client';
 import { DateTime } from 'luxon';
 import { PrismaService } from '../../prisma/prisma.service';
 import { TaskableService } from '../entities/task.entity';

@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { Serie } from '@prisma/client';
+import { Serie } from 'src/generated/prisma/client';
 import * as crypto from 'crypto';
 
 // Tipos de série compactados

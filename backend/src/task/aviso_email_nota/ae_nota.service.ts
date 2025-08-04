@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma } from 'src/generated/prisma/client';
 import { plainToClass } from 'class-transformer';
 import { validate } from 'class-validator';
 import { uuidv7 } from 'uuidv7';

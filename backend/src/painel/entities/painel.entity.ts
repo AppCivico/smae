@@ -1,4 +1,4 @@
-import { Periodicidade } from '@prisma/client';
+import { Periodicidade } from 'src/generated/prisma/client';
 import { PainelConteudo } from './painel-conteudo.entity';
 
 export class PainelDto {

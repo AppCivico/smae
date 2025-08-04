@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ModuloSistema, PerfilResponsavelEquipe } from '@prisma/client';
+import { ModuloSistema, PerfilResponsavelEquipe } from 'src/generated/prisma/client';
 import { ListaDePrivilegios } from '../../common/ListaDePrivilegios';
 import { FeatureFlagDto } from './FeatureFlagDto';
 

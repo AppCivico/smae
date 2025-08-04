@@ -5,7 +5,7 @@ import { ReportContext } from '../relatorios/helpers/reports.contexto';
 import { DefaultCsvOptions, FileOutput, ReportableService } from '../utils/utils.service';
 import { CreateCasaCivilAtividadesPendentesFilterDto } from './dto/create-casa-civil-atv-pend-filter.dto';
 import { RelCasaCivilAtividadesPendentes } from './entities/casa-civil-atividaes-pendentes.entity';
-import { Prisma } from '@prisma/client';
+import { Prisma } from 'src/generated/prisma/client';
 
 const {
     Parser,

@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from 'src/generated/prisma/client';
 
 export class PrismaHelpers {
     static async prismaCodigo2IdMap(

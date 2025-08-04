@@ -1,6 +1,6 @@
 import { HttpException, Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { Interval } from '@nestjs/schedule';
-import { Prisma, task_queue, task_type } from '@prisma/client';
+import { Prisma, task_queue, task_type } from 'src/generated/prisma/client';
 import { fork } from 'child_process';
 import { DateTime } from 'luxon';
 import { resolve as resolvePath } from 'path';

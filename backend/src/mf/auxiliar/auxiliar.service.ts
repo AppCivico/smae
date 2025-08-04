@@ -1,5 +1,5 @@
 import { HttpException, Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
-import { Serie } from '@prisma/client';
+import { Serie } from 'src/generated/prisma/client';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { Date2YMD } from '../../common/date2ymd';
 import { MfSerieValorNomimal, VariavelAnaliseQualitativaDto } from '../metas/dto/mf-meta.dto';

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { task_status, task_type } from '@prisma/client';
+import { task_status, task_type } from 'src/generated/prisma/client';
 import { IsEnum } from 'class-validator';
 import { TaskContext } from '../task.context';
 

@@ -2,7 +2,7 @@ import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePerfilAcessoDto, PerfilAcessoSimplesDto, UpdatePerfilAcessoDto } from './models/PerfilAcesso.dto';
-import { Prisma } from '@prisma/client';
+import { Prisma } from 'src/generated/prisma/client';
 
 @Injectable()
 export class PerfilAcessoService {

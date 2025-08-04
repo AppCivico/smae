@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { AvisoPeriodo, TipoAviso } from '@prisma/client';
+import { AvisoPeriodo, TipoAviso } from 'src/generated/prisma/client';
 import { IsArray, IsBoolean, IsEmail, IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 
 export class CreateAvisoEmailDto {

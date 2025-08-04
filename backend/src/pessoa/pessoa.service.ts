@@ -6,7 +6,7 @@ import {
     Logger,
     OnModuleInit,
 } from '@nestjs/common';
-import { ModuloSistema, PerfilResponsavelEquipe, Pessoa, Prisma } from '@prisma/client';
+import { ModuloSistema, PerfilResponsavelEquipe, Pessoa, Prisma } from 'src/generated/prisma/client';
 import * as bcrypt from 'bcrypt';
 import { SmaeConfigService } from 'src/common/services/smae-config.service';
 import { uuidv7 } from 'uuidv7';
@@ -1518,6 +1518,7 @@ export class PessoaService implements OnModuleInit {
             include: { pessoa_fisica: true },
         });
         if (!pessoa) return null;
+        console.log(pessoa);
 
         return pessoa satisfies PessoaDto;
     }
@@ -1651,15 +1652,16 @@ export class PessoaService implements OnModuleInit {
 
     async listaPrivilegiosModulos(
         pessoaId: number,
-        filterModulos: ModuloSistema[] | undefined
+        filterModulos: string[] | undefined
     ): Promise<ListaPrivilegiosModulos> {
-        if (!filterModulos) filterModulos = Object.keys(ModuloSistema) as ModuloSistema[];
+        if (!filterModulos) filterModulos = Array.from(Object.keys(ModuloSistema)) ;
 
         const filterModulosJson = filterModulos;
+        console.log('filterModulosJson', filterModulosJson);
 
         const dados: ListaPrivilegiosModulos[] = await this.prisma.$queryRaw`
             WITH filter_modulos AS (
-                SELECT ARRAY[${filterModulosJson}]::"ModuloSistema"[] AS modulos
+                SELECT  ${filterModulosJson}::"ModuloSistema"[] AS modulos
             ),
             filtered_pessoa_perfil AS (
                 SELECT pp.perfil_acesso_id
@@ -1697,6 +1699,7 @@ export class PessoaService implements OnModuleInit {
                 (SELECT perfis_equipe_ps FROM _pessoa) as perfis_equipe_ps
             FROM perms;
         `;
+            console.log(dados);
         if (!dados[0] || dados[0].sistemas === null || !Array.isArray(dados[0].sistemas)) {
             throw new BadRequestException(`Seu usuário não tem mais permissões. Entre em contato com o administrador.`);
         }
@@ -1704,7 +1707,7 @@ export class PessoaService implements OnModuleInit {
         const comSistemaDefinido = filterModulos.length == 2;
         if (comSistemaDefinido) {
             const sistema = filterModulos.filter((v) => v != 'SMAE')[0];
-            this.filtraPrivilegiosSMAE(sistema, ret);
+            this.filtraPrivilegiosSMAE(sistema as ModuloSistema, ret);
         }
         if (!ret.sistemas.includes('SMAE')) ret.sistemas.push('SMAE');
 

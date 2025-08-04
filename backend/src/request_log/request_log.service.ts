@@ -4,7 +4,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { RequestLogDto, RequestSummaryRow } from './entities/request_log.entity';
 import { PaginatedDto, PAGINATION_TOKEN_TTL } from '../common/dto/paginated.dto';
 import { JwtService } from '@nestjs/jwt';
-import { Prisma } from '@prisma/client';
+import { Prisma } from 'src/generated/prisma/client';
 
 class NextPageTokenJwtBody {
     offset: number;

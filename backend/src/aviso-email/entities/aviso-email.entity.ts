@@ -1,4 +1,4 @@
-import { AvisoPeriodo, TipoAviso } from '@prisma/client';
+import { AvisoPeriodo, TipoAviso } from 'src/generated/prisma/client';
 import { Transform } from 'class-transformer';
 import { IsInt, IsOptional, IsString } from 'class-validator';
 import { IdDesc } from '../../atividade/entities/atividade.entity';

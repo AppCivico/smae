@@ -8,7 +8,7 @@ import { AvisoEmailService } from './aviso-email.service';
 import { CreateAvisoEmailDto } from './dto/create-aviso-email.dto';
 import { UpdateAvisoEmailDto } from './dto/update-aviso-email.dto';
 import { FilterAvisoEamilDto, ListAvisoEmailDto } from './entities/aviso-email.entity';
-import { Prisma } from '@prisma/client';
+import { Prisma } from 'src/generated/prisma/client';
 
 //const roles: ListaDePrivilegios[] = [];
 

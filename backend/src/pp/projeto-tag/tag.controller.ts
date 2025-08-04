@@ -22,7 +22,7 @@ import { FilterProjetoTagDto } from './dto/filter-tag.dto';
 import { ListProjetoTagDto } from './dto/list-tag.dto';
 import { ProjetoUpdateTagDto } from './dto/update-tag.dto';
 import { ProjetoTagService } from './tag.service';
-import { TipoProjeto } from '@prisma/client';
+import { TipoProjeto } from 'src/generated/prisma/client';
 import { ProjetoTagDto } from './entities/tag.entity';
 
 @ApiTags('Projeto Tag')

@@ -1,4 +1,4 @@
-import { CicloFase } from '@prisma/client';
+import { CicloFase } from 'src/generated/prisma/client';
 import { DateYMD } from '../../common/date2ymd';
 import { ListPdm } from '../entities/list-pdm.entity';
 

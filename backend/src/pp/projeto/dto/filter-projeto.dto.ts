@@ -1,5 +1,5 @@
 import { ApiHideProperty, ApiProperty, IntersectionType } from '@nestjs/swagger';
-import { ProjetoStatus, TipoProjeto } from '@prisma/client';
+import { ProjetoStatus, TipoProjeto } from 'src/generated/prisma/client';
 import { Expose, Transform, TransformFnParams } from 'class-transformer';
 import {
     ArrayMaxSize,

@@ -1,5 +1,5 @@
 import { BadRequestException, HttpException } from '@nestjs/common';
-import { CompromissoOrigemRelacionamento, Prisma, ProjetoOrigemTipo } from '@prisma/client';
+import { CompromissoOrigemRelacionamento, Prisma, ProjetoOrigemTipo } from 'src/generated/prisma/client';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { DetalheOrigensDto, ResumoOrigensMetasItemDto, UpsertOrigemDto } from '../dto/origem-pdm.dto';

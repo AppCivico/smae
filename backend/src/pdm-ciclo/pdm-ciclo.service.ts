@@ -1,5 +1,5 @@
 import { HttpException, Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma } from 'src/generated/prisma/client';
 import { Date2YMD } from '../common/date2ymd';
 import { CicloFisicoDto } from '../pdm/dto/list-pdm.dto';
 import { PrismaService } from '../prisma/prisma.service';

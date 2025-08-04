@@ -1,6 +1,7 @@
 import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus } from '@nestjs/common';
 import { HttpAdapterHost } from '@nestjs/core';
 import { AuthRequest } from './auth/models/AuthRequest';
+import { PessoaFromJwt } from './auth/models/PessoaFromJwt';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -12,7 +13,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
         const ctx = host.switchToHttp();
         const request = ctx.getRequest<AuthRequest>();
         let ehAdmin: boolean = false;
-        if (request.user && request.user.hasSomeRoles(['SMAE.superadmin'])) ehAdmin = true;
+        console.log(request.user, exception);
+        if (request.user && request.user instanceof PessoaFromJwt && request.user.hasSomeRoles(['SMAE.superadmin']))
+            ehAdmin = true;
 
         const httpStatusCode =
             exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;

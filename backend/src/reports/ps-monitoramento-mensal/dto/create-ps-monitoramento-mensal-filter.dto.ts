@@ -1,7 +1,7 @@
 import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsEnum, IsInt, IsOptional, Max, Min } from 'class-validator';
 import { Expose, Transform } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
-import { TipoPdm } from '@prisma/client';
+import { TipoPdm } from 'src/generated/prisma/client';
 import { NumberTransformOrUndef } from '../../../auth/transforms/number.transform';
 
 export class CreatePsMonitoramentoMensalFilterDto {

@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { Prisma, TipoPdm } from '@prisma/client';
+import { Prisma, TipoPdm } from 'src/generated/prisma/client';
 
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { IdCodTituloDto } from '../../common/dto/IdCodTitulo.dto';

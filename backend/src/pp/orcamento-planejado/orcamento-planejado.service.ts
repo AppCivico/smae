@@ -1,5 +1,5 @@
 import { HttpException, Injectable } from '@nestjs/common';
-import { Prisma, TipoProjeto } from '@prisma/client';
+import { Prisma, TipoProjeto } from 'src/generated/prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { DotacaoService } from '../../dotacao/dotacao.service';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';

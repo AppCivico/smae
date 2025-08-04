@@ -1,4 +1,4 @@
-import { TipoPdm } from '@prisma/client';
+import { TipoPdm } from 'src/generated/prisma/client';
 import { IdCodTituloDto } from 'src/common/dto/IdCodTitulo.dto';
 
 export class ProjetoProxyPdmMetaDto {

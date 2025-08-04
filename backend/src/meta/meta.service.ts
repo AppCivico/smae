@@ -1,5 +1,5 @@
 import { BadRequestException, HttpException, Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma } from 'src/generated/prisma/client';
 import { plainToInstance } from 'class-transformer';
 import { CronogramaAtrasoGrau } from 'src/common/dto/CronogramaAtrasoGrau.dto';
 import { CronogramaEtapaService } from 'src/cronograma-etapas/cronograma-etapas.service';

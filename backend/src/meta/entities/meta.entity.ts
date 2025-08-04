@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ProjetoStatus, TipoPdm } from '@prisma/client';
+import { ProjetoStatus, TipoPdm } from 'src/generated/prisma/client';
 import { IsEnum } from 'class-validator';
 import { CronogramaAtrasoGrau } from 'src/common/dto/CronogramaAtrasoGrau.dto';
 import { IdSigla, IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';

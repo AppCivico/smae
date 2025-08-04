@@ -4,7 +4,7 @@ import { Transform } from 'class-transformer';
 import { DateTransform } from '../../../auth/transforms/date.transform';
 import { Expose } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
-import { TransferenciaTipoEsfera } from '@prisma/client';
+import { TransferenciaTipoEsfera } from 'src/generated/prisma/client';
 
 export class CreateCasaCivilAtividadesPendentesFilterDto {
     @IsOptional()

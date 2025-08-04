@@ -1,4 +1,4 @@
-import { ModuloSistema, PerfilResponsavelEquipe, PessoaFisica } from '@prisma/client';
+import { ModuloSistema, PerfilResponsavelEquipe, PessoaFisica } from 'src/generated/prisma/client';
 
 export class Pessoa {
     id?: number;

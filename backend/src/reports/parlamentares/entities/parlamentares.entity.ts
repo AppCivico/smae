@@ -1,4 +1,4 @@
-import { ParlamentarCargo } from '@prisma/client';
+import { ParlamentarCargo } from 'src/generated/prisma/client';
 
 export class RelParlamentaresDto {
     id: number;

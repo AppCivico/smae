@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { CicloFase } from '@prisma/client';
+import { CicloFase } from 'src/generated/prisma/client';
 import { Transform, TransformFnParams } from 'class-transformer';
 import { IsArray, IsBoolean, IsInt, IsOptional } from 'class-validator';
 import { IsDateYMD } from '../../../../auth/decorators/date.decorator';

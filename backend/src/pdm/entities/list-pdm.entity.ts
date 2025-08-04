@@ -1,5 +1,5 @@
 import { PickType } from '@nestjs/swagger';
-import { ModuloSistema, TipoPdm } from '@prisma/client';
+import { ModuloSistema, TipoPdm } from 'src/generated/prisma/client';
 import { IsBoolean, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 import { MAX_LENGTH_MEDIO } from 'src/common/consts';
 import { IsDateYMD } from '../../auth/decorators/date.decorator';

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ParlamentarCargo, TransferenciaInterface, TransferenciaTipoEsfera } from '@prisma/client';
+import { ParlamentarCargo, TransferenciaInterface, TransferenciaTipoEsfera } from 'src/generated/prisma/client';
 import { Transform, Type } from 'class-transformer';
 import {
     IsArray,

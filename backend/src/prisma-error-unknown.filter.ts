@@ -1,5 +1,5 @@
 import { ArgumentsHost, Catch, ExceptionFilter } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma } from 'src/generated/prisma/client';
 import { Response } from 'express';
 import { AllExceptionsFilter } from './any-error.filter';
 import { HttpAdapterHost } from '@nestjs/core';

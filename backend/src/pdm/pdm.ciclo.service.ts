@@ -1,6 +1,6 @@
 import { BadRequestException, Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { CicloFisicoFase, PdmPerfilTipo, Prisma } from '@prisma/client';
+import { CicloFisicoFase, PdmPerfilTipo, Prisma } from 'src/generated/prisma/client';
 import { DateTime } from 'luxon';
 import { VariavelService } from 'src/variavel/variavel.service';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';

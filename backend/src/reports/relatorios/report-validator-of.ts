@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { FonteRelatorio } from '@prisma/client';
+import { FonteRelatorio } from 'src/generated/prisma/client';
 import { registerDecorator, validate, ValidationArguments, ValidationOptions } from 'class-validator';
 import { ParseParametrosDaFonte } from '../utils/utils.service';
 import { FormatValidationErrors } from '../../common/helpers/FormatValidationErrors';

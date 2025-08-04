@@ -1,6 +1,6 @@
 import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
-import { Prisma } from '@prisma/client';
+import { Prisma } from 'src/generated/prisma/client';
 import { CreateWorkflowEtapaDto } from './dto/create-workflow-etapa.dto';
 import { UpdateWorkflowEtapaDto } from './dto/update-workflow-etapa.dto';
 import { WorkflowEtapaDto } from './entities/workflow-etapa.entity';

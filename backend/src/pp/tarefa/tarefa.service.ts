@@ -1,6 +1,6 @@
 import { BadRequestException, HttpException, Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { Prisma, TarefaCronograma, TarefaDependente, TarefaDependenteTipo } from '@prisma/client';
+import { Prisma, TarefaCronograma, TarefaDependente, TarefaDependenteTipo } from 'src/generated/prisma/client';
 import { Transform, Type, plainToInstance } from 'class-transformer';
 import { Graph } from 'graphlib'; // ta os types de da lib "graphlib" que é por enquanto pure-js
 import { DateTime } from 'luxon';

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Interval } from '@nestjs/schedule';
-import { Prisma, Variavel } from '@prisma/client';
+import { Prisma, Variavel } from 'src/generated/prisma/client';
 
 import { CONST_BOT_USER_ID } from '../common/consts';
 import { IsCrontabEnabled } from '../common/crontab-utils';

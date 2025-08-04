@@ -1,5 +1,5 @@
 import { ApiProperty, PickType } from '@nestjs/swagger';
-import { ModuloSistema } from '@prisma/client';
+import { ModuloSistema } from 'src/generated/prisma/client';
 import { IsEmail, IsEnum, IsString, MaxLength, MinLength } from 'class-validator';
 import { MAX_LENGTH_DEFAULT, MAX_LENGTH_HTML } from 'src/common/consts';
 

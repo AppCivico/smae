@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { CicloFase, Prisma } from '@prisma/client';
+import { CicloFase, Prisma } from 'src/generated/prisma/client';
 import { getVariavelPermissionsWhere } from 'src/variavel/variavel.ciclo.service';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { Date2YMD } from '../../common/date2ymd';

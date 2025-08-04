@@ -2,7 +2,7 @@ import { InputJsonValue } from '@prisma/client/runtime/library';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { CreateReportDto } from '../dto/create-report.dto';
 import { RelatorioParamDto } from '../entities/report.entity';
-import { FonteRelatorio, ParlamentarCargo, TipoRelatorio } from '@prisma/client';
+import { FonteRelatorio, ParlamentarCargo, TipoRelatorio } from 'src/generated/prisma/client';
 import { EnumHumano } from 'src/reports/utils/utils.service';
 import { InternalServerErrorException } from '@nestjs/common';
 type RelatorioProcesado = Record<string, string | Array<string>>;

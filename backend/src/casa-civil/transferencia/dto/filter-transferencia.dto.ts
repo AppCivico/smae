@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { TransferenciaHistoricoAcao, TransferenciaTipoEsfera } from '@prisma/client';
+import { TransferenciaHistoricoAcao, TransferenciaTipoEsfera } from 'src/generated/prisma/client';
 import { Transform, TransformFnParams, Type } from 'class-transformer';
 import { IsOptional, IsString, MaxLength, IsInt, Max, Min, IsEnum, IsBoolean } from 'class-validator';
 import { MAX_LENGTH_DEFAULT } from 'src/common/consts';

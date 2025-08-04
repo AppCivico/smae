@@ -15,16 +15,26 @@ import { PrivController } from './priv.controller';
 import { PrivService } from './priv.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
+console.log('process.env.SESSION_JWT_SECRET', process.env.SESSION_JWT_SECRET);
 @Module({
     imports: [
         PrismaModule,
         PessoaModule,
         PassportModule,
         FeatureFlagModule,
-        JwtModule.register({
-            secret: process.env.SESSION_JWT_SECRET,
-            signOptions: { expiresIn: '30d' },
+        ConfigModule.forRoot({
+            isGlobal: true,
+        }),
+        JwtModule.registerAsync({
+            imports: [ConfigModule],
+            inject: [ConfigService],
+            useFactory: (configService: ConfigService) => ({
+                // Agora, o secret é carregado de forma segura
+                secret: configService.get<string>('SESSION_JWT_SECRET'),
+                signOptions: { expiresIn: '30d' },
+            }),
         }),
     ],
     controllers: [AuthController, PrivController, PerfilAcessoController],

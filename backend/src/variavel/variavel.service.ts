@@ -16,7 +16,7 @@ import {
     TipoVariavel,
     TipoVariavelCategorica,
     VariavelCategoricaValor,
-} from '@prisma/client';
+} from 'src/generated/prisma/client';
 import { PrismaClient } from '@prisma/client/extension';
 import { DateTime } from 'luxon';
 import { SmaeConfigService } from 'src/common/services/smae-config.service';

@@ -1,5 +1,5 @@
 import { forwardRef, HttpException, Inject, Injectable, Logger } from '@nestjs/common';
-import { Prisma, TipoAtualizacaoEmLote, TipoProjeto } from '@prisma/client';
+import { Prisma, TipoAtualizacaoEmLote, TipoProjeto } from 'src/generated/prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { ReadOnlyBooleanType } from 'src/common/TypeReadOnly';

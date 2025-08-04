@@ -1,6 +1,6 @@
 import { HttpException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
-import { Prisma } from '@prisma/client';
+import { Prisma } from 'src/generated/prisma/client';
 import { CreateWorkflowDto } from './dto/create-workflow.dto';
 import { DateTime } from 'luxon';
 import { UpdateWorkflowDto } from './dto/update-workflow.dto';

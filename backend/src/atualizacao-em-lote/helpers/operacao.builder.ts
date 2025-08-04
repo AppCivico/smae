@@ -2,7 +2,7 @@ import { DateTime } from 'luxon';
 import { UpdateOperacaoDto } from '../../task/run_update/dto/create-run-update.dto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { OperacaoProcessadaDto, OperacaoProcessadaItemDto } from '../dto/atualizacao-em-lote.dto';
-import { ProjetoStatus, TipoAtualizacaoEmLote } from '@prisma/client';
+import { ProjetoStatus, TipoAtualizacaoEmLote } from 'src/generated/prisma/client';
 import { FormatCurrency } from '../../common/format-currency';
 
 // Mapeia nomes de colunas para rótulos legíveis por humanos com cobertura abrangente de todos os campos

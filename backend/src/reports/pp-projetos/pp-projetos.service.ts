@@ -4,7 +4,7 @@ import { ProjetoGetPermissionSet, ProjetoService, ProjetoStatusParaExibicao } fr
 import { PrismaService } from '../../prisma/prisma.service';
 import { Readable } from 'stream';
 
-import { ContratoPrazoUnidade, ProjetoStatus, StatusContrato, StatusRisco, TipoProjeto } from '@prisma/client';
+import { ContratoPrazoUnidade, ProjetoStatus, StatusContrato, StatusRisco, TipoProjeto } from 'src/generated/prisma/client';
 import { DateTime } from 'luxon';
 import { RiscoCalc } from 'src/common/RiscoCalc';
 import { TarefaService } from 'src/pp/tarefa/tarefa.service';

@@ -1,4 +1,4 @@
-import { IndicadorTipo, TipoPdm } from '@prisma/client';
+import { IndicadorTipo, TipoPdm } from 'src/generated/prisma/client';
 import { IdCodTituloDto } from '../../../common/dto/IdCodTitulo.dto';
 import { ApiProperty } from '@nestjs/swagger';
 import { PdmRotuloInfoDto } from '../../../pdm/dto/pdm.dto';

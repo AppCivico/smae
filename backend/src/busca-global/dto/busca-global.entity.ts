@@ -1,6 +1,6 @@
 // dto/unified-search.dto.ts
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { ModuloSistema } from '@prisma/client';
+import { ModuloSistema } from 'src/generated/prisma/client';
 
 export class UnifiedTableMetadadoDto {
     @ApiProperty()

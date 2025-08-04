@@ -1,6 +1,6 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { Prisma } from '@prisma/client';
+import { Prisma } from 'src/generated/prisma/client';
 import * as crypto from 'crypto';
 import { JOB_LISTA_SEI_LOCK } from '../common/dto/locks';
 import { PaginatedDto, PAGINATION_TOKEN_TTL } from '../common/dto/paginated.dto';

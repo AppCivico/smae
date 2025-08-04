@@ -1,4 +1,4 @@
-import { ModuloSistema } from '@prisma/client';
+import { ModuloSistema } from 'src/generated/prisma/client';
 import { IdNomeDto } from '../../common/dto/IdNome.dto';
 
 export class ProjetosResponsavelDto {

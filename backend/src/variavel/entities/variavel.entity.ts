@@ -1,5 +1,5 @@
 import { ApiHideProperty, ApiProperty, getSchemaPath, OmitType, PickType, refs } from '@nestjs/swagger';
-import { Periodicidade, Polaridade, Prisma, Serie, TipoVariavel } from '@prisma/client';
+import { Periodicidade, Polaridade, Prisma, Serie, TipoVariavel } from 'src/generated/prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { Transform } from 'class-transformer';
 import { IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';

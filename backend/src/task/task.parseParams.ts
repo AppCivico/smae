@@ -1,4 +1,4 @@
-import { task_type } from '@prisma/client';
+import { task_type } from 'src/generated/prisma/client';
 import { plainToInstance } from 'class-transformer';
 import { CreateApiLogDayDto } from 'src/api-logs/dto/create-api-log-day.dto';
 import { CreateAvisoEmailJobDto } from './aviso_email/dto/create-aviso_email.dto';

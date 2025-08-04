@@ -1,4 +1,4 @@
-import { ModuloSistema } from '@prisma/client';
+import { ModuloSistema } from 'src/generated/prisma/client';
 import { ListaDePrivilegios } from './ListaDePrivilegios';
 
 export const CONST_BOT_USER_ID = -1;

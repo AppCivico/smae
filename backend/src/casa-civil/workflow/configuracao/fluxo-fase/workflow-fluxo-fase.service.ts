@@ -1,6 +1,6 @@
 import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
-import { Prisma } from '@prisma/client';
+import { Prisma } from 'src/generated/prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateWorkflowfluxoFaseDto } from './dto/create-workflow-fluxo-fase.dto';

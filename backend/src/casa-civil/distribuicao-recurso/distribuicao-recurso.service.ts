@@ -1,5 +1,5 @@
 import { forwardRef, HttpException, Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
-import { DistribuicaoStatusTipo, Prisma, TarefaDependenteTipo, WorkflowResponsabilidade } from '@prisma/client';
+import { DistribuicaoStatusTipo, Prisma, TarefaDependenteTipo, WorkflowResponsabilidade } from 'src/generated/prisma/client';
 import { DateTime } from 'luxon';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';

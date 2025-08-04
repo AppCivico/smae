@@ -5,7 +5,7 @@ import {
     ProjetoOrigemTipo,
     ProjetoStatus,
     StatusContrato,
-} from '@prisma/client';
+} from 'src/generated/prisma/client';
 import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 import { IdNomeExibicaoDto } from '../../../common/dto/IdNomeExibicao.dto';
 import { IdNomeDto } from 'src/common/dto/IdNome.dto';

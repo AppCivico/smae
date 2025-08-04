@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Nota, Prisma, TipoNota } from '@prisma/client';
+import { Nota, Prisma, TipoNota } from 'src/generated/prisma/client';
 import { DateTime } from 'luxon';
 import { SmaeConfigService } from 'src/common/services/smae-config.service';
 import { uuidv7 } from 'uuidv7';

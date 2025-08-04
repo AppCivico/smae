@@ -1,5 +1,5 @@
 import { BadRequestException, HttpException, Injectable, Logger } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma } from 'src/generated/prisma/client';
 import { CronogramaAtrasoGrau } from 'src/common/dto/CronogramaAtrasoGrau.dto';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { UniqueNumbers } from '../common/UniqueNumbers';

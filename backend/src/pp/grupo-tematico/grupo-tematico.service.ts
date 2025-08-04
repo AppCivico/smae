@@ -1,5 +1,5 @@
 import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma } from 'src/generated/prisma/client';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateGrupoTematicoDto } from './dto/create-grupo-tematico.dto';

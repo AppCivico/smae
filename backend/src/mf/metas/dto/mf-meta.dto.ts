@@ -1,5 +1,5 @@
 import { ApiProperty, OmitType, PickType } from '@nestjs/swagger';
-import { CicloFase, Periodicidade, Serie } from '@prisma/client';
+import { CicloFase, Periodicidade, Serie } from 'src/generated/prisma/client';
 import { Transform, Type } from 'class-transformer';
 import {
     IsArray,

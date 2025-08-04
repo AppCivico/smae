@@ -1,5 +1,5 @@
 import { HttpException, Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma } from 'src/generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { DiretorioDto, DiretorioItemDto, FilterDiretorioDto } from './dto/diretorio.dto';
 import { SmaeConfigService } from '../common/services/smae-config.service';

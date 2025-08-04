@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { task_type } from '@prisma/client';
+import { task_type } from 'src/generated/prisma/client';
 import { registerDecorator, validate, ValidationArguments, ValidationOptions } from 'class-validator';
 import { ParseParams } from './task.parseParams';
 import { FormatValidationErrors } from '../common/helpers/FormatValidationErrors';

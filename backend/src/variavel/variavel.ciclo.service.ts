@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { PerfilResponsavelEquipe, Prisma, VariavelCicloCorrente, VariavelFase } from '@prisma/client';
+import { PerfilResponsavelEquipe, Prisma, VariavelCicloCorrente, VariavelFase } from 'src/generated/prisma/client';
 import { DateTime } from 'luxon';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { IsCrontabEnabled } from '../common/crontab-utils';

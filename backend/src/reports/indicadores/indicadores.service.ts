@@ -1,5 +1,5 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
-import { Prisma, Regiao } from '@prisma/client';
+import { Prisma, Regiao } from 'src/generated/prisma/client';
 import * as fs from 'fs';
 import { createWriteStream } from 'fs';
 import { DateTime } from 'luxon';

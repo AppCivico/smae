@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { ModuloSistema } from '@prisma/client';
+import { ModuloSistema } from 'src/generated/prisma/client';
 import { FeatureFlagService } from '../feature-flag/feature-flag.service';
 import { Pessoa } from '../pessoa/entities/pessoa.entity';
 import { PessoaService } from '../pessoa/pessoa.service';

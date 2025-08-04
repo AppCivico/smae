@@ -1,5 +1,5 @@
 import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
-import { TipoPdm } from '@prisma/client';
+import { TipoPdm } from 'src/generated/prisma/client';
 import { Expose, Transform } from 'class-transformer';
 import { ArrayMaxSize, ArrayMinSize, IsArray, IsEnum, IsInt, IsOptional } from 'class-validator';
 import { NumberArrayTransformOrUndef } from '../../../auth/transforms/number-array.transform';

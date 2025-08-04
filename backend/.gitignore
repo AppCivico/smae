@@ -38,3 +38,6 @@ lerna-debug.log*
 # ignore the .env
 .env
 .vstags
+
+# prisma
+src/generated/

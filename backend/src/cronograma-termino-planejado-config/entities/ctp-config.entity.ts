@@ -1,4 +1,4 @@
-import { ModuloSistema } from '@prisma/client';
+import { ModuloSistema } from 'src/generated/prisma/client';
 
 export class CTPConfigDto {
     modulo_sistema: ModuloSistema;

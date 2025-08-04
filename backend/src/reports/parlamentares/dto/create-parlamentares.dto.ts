@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ParlamentarCargo } from '@prisma/client';
+import { ParlamentarCargo } from 'src/generated/prisma/client';
 import { Transform } from 'class-transformer';
 import { Expose } from 'class-transformer';
 import { IsEnum, IsNumber, IsOptional } from 'class-validator';

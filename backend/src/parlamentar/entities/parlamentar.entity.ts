@@ -5,7 +5,7 @@ import {
     ParlamentarEquipeTipo,
     ParlamentarSuplente,
     ParlamentarUF,
-} from '@prisma/client';
+} from 'src/generated/prisma/client';
 import { IsEnum } from 'class-validator';
 import { EleicaoDto } from 'src/eleicao/entity/eleicao.entity';
 import { PartidoDto } from 'src/partido/entities/partido.entity';

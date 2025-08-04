@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { MetaStatusConsolidadoCf } from '@prisma/client';
+import { MetaStatusConsolidadoCf } from 'src/generated/prisma/client';
 import { IdCodTituloDto } from '../../../common/dto/IdCodTitulo.dto';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { MfPessoaAcessoPdm } from '../../mf.service';

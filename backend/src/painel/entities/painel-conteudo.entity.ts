@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { PainelConteudoTipoDetalhe, Periodicidade, Periodo } from '@prisma/client';
+import { PainelConteudoTipoDetalhe, Periodicidade, Periodo } from 'src/generated/prisma/client';
 import { IsDateYMD } from '../../auth/decorators/date.decorator';
 
 export class PainelConteudo {

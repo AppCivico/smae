@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ProjetoOrigemTipo, ProjetoStatus } from '@prisma/client';
+import { ProjetoOrigemTipo, ProjetoStatus } from 'src/generated/prisma/client';
 import { Transform, TransformFnParams, Type } from 'class-transformer';
 import {
     ArrayMaxSize,

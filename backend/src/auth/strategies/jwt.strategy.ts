@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { ModuloSistema } from '@prisma/client';
+import { ModuloSistema } from 'src/generated/prisma/client';
 import { Request } from 'express';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { extractIpAddress } from '../../common/decorators/current-ip';
@@ -26,8 +26,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     async validate(req: Request, payload: JwtPessoaPayload): Promise<PessoaFromJwt> {
         const validSistemas = ExtractValidSistemas(req);
+        //console.log('JwtStrategy', req);
 
         const user = await this.authService.pessoaJwtFromSessionId(payload.sid, validSistemas);
+        console.log('pessoaJwtFromSessionId' ,user);
         user.ip = extractIpAddress(req);
         return user;
     }

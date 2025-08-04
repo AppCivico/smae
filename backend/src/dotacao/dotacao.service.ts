@@ -1,5 +1,5 @@
 import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
-import { DotacaoRealizado, Prisma } from '@prisma/client';
+import { DotacaoRealizado, Prisma } from 'src/generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { SofApiService, SofError, TrataDotacaoGrande } from '../sof-api/sof-api.service';
 import { AnoDotacaoDto } from './dto/dotacao.dto';

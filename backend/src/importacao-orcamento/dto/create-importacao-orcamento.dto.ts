@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { TipoPdm, TipoProjeto } from '@prisma/client';
+import { TipoPdm, TipoProjeto } from 'src/generated/prisma/client';
 import { Transform, TransformFnParams, Type } from 'class-transformer';
 import { IsEnum, IsInt, IsOptional, IsString, Max, MaxLength, Min, Validate } from 'class-validator';
 import { EitherPdmOrPortfolio } from 'src/common/dto/EitherPdmOrPortfolio';

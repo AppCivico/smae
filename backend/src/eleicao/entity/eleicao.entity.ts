@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { EleicaoTipo } from '@prisma/client';
+import { EleicaoTipo } from 'src/generated/prisma/client';
 import { IsEnum } from 'class-validator';
 
 export class EleicaoDto {

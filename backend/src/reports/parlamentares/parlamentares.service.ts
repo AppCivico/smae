@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma } from 'src/generated/prisma/client';
 import { ParlamentarService } from 'src/parlamentar/parlamentar.service';
 import { Date2YMD } from '../../common/date2ymd';
 import { CsvWriterOptions, WriteCsvToFile } from '../../common/helpers/CsvWriter';

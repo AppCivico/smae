@@ -8,7 +8,7 @@ import { TarefaService } from '../../pp/tarefa/tarefa.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { TaskableService } from '../entities/task.entity';
 import { CreateAeCronogramaTpJobDto } from './dto/ae_cronograma_tp.dto';
-import { Prisma } from '@prisma/client';
+import { Prisma } from 'src/generated/prisma/client';
 
 // t=tarefa, i=intro
 // c=conteúdo

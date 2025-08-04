@@ -22,7 +22,7 @@ import {
     RelProjetoRiscoDto,
 } from './entities/previsao-custo.entity';
 import { Stream2Buffer } from '../../common/helpers/Streaming';
-import { StatusContrato, ContratoPrazoUnidade } from '@prisma/client';
+import { StatusContrato, ContratoPrazoUnidade } from 'src/generated/prisma/client';
 import { RelProjetosAditivosDto, RelProjetosContratosDto } from '../pp-projetos/entities/projetos.entity';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';

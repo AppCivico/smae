@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma, TipoProjeto } from '@prisma/client'; // Added Prisma
+import { Prisma, TipoProjeto } from 'src/generated/prisma/client'; // Added Prisma
 import { GeoJSON } from 'geojson';
 
 import { PrismaService } from '../prisma/prisma.service';

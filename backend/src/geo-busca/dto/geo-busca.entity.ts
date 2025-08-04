@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { GeoReferenciaTipo, ModuloSistema, ProjetoStatus, TipoProjeto } from '@prisma/client';
+import { GeoReferenciaTipo, ModuloSistema, ProjetoStatus, TipoProjeto } from 'src/generated/prisma/client';
 import { IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
 import { GeoJSON } from 'geojson';
 

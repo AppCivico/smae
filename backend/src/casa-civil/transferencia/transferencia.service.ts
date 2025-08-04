@@ -7,7 +7,7 @@ import {
     InternalServerErrorException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Prisma, TransferenciaHistoricoAcao, WorkflowResponsabilidade } from '@prisma/client';
+import { Prisma, TransferenciaHistoricoAcao, WorkflowResponsabilidade } from 'src/generated/prisma/client';
 import { TarefaCronogramaDto } from 'src/common/dto/TarefaCronograma.dto';
 import { PaginatedDto, PAGINATION_TOKEN_TTL } from 'src/common/dto/paginated.dto';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
