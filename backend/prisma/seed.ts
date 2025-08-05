@@ -1269,7 +1269,7 @@ PerfilAcessoConfig.push(
     removerNomePerfil('Administrador de Grupo de Variáveis no Órgão'),
     removerNomePerfil(CONST_PERFIL_PARTICIPANTE_EQUIPE_PDM),
     removerNomePerfil('Orçamento - Metas Setorial'),
-    removerNomePerfil('Analista de dados'),
+    removerNomePerfil('Analista de dados')
 );
 
 async function main() {
@@ -1687,13 +1687,13 @@ async function criaPrivComPerfilDeAcesso(
             }
             const idPriv = priv.id;
 
-            const match = await prisma.perfilPrivilegio.findFirst({
+            const match = await prisma.perfilPrivilegio.findMany({
                 where: {
                     perfil_acesso_id: perfilAcesso.id,
                     privilegio_id: idPriv,
                 },
             });
-            if (!match) {
+            if (match.length === 0) {
                 await prisma.perfilPrivilegio.upsert({
                     where: {
                         perfil_acesso_id_privilegio_id: {
@@ -1706,6 +1706,14 @@ async function criaPrivComPerfilDeAcesso(
                         privilegio_id: idPriv,
                     },
                     update: {},
+                });
+            } else if (match.length > 1) {
+                // Keep the first record and delete the extra duplicates
+                const idsToDelete = match.slice(1).map((record) => record.id);
+                await prisma.perfilPrivilegio.deleteMany({
+                    where: {
+                        id: { in: idsToDelete },
+                    },
                 });
             }
 
