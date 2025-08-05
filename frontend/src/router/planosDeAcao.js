@@ -1,4 +1,3 @@
-import { useRoute } from 'vue-router';
 import { useRiscosStore } from '@/stores/riscos.store.ts';
 import PlanosDeAçãoCriarEditar from '@/views/planosDeAcao/PlanosDeAcaoCriarEditar.vue';
 import PlanosDeAçãoItem from '@/views/planosDeAcao/PlanosDeAcaoItem.vue';

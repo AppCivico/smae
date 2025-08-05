@@ -87,6 +87,7 @@ export default {
               'projetosListar',
               'projetosResumo',
               'contratosDoProjetoListar',
+              'contratosDoProjetoResumo',
             ],
           },
         },
