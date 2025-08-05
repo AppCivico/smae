@@ -12,6 +12,9 @@ import { CreateReportDto } from './dto/create-report.dto';
 import { FilterRelatorioDto } from './dto/filter-relatorio.dto';
 import { RelatorioDto } from './entities/report.entity';
 import { ReportsService } from './reports.service';
+import { PaginatedWithPagesDto } from '../../common/dto/paginated.dto';
+import { ApiPaginatedWithPagesResponse } from '../../auth/decorators/paginated.decorator';
+import { FilterRelatorioV2Dto } from './dto/filter-relatorio-v2.dto';
 
 @ApiTags('Relatórios')
 @Controller('relatorios')
@@ -81,5 +84,23 @@ export class ReportsController {
     async syncParametros(@CurrentUser() user: PessoaFromJwt) {
         await this.reportsService.syncRelatoriosParametros();
         return '';
+    }
+
+    @ApiBearerAuth('access-token')
+    @Get('v2')
+    @Roles([
+        'Reports.executar.CasaCivil',
+        'Reports.executar.PDM',
+        'Reports.executar.Projetos',
+        'Reports.executar.MDO',
+        'Reports.executar.PlanoSetorial',
+        'Reports.executar.ProgramaDeMetas',
+    ])
+    @ApiPaginatedWithPagesResponse(RelatorioDto) // New decorator for counted pagination
+    async findAllV2(
+        @Query() filters: FilterRelatorioV2Dto, // Use the new DTO
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<PaginatedWithPagesDto<RelatorioDto>> { // Use the new response type
+        return await this.reportsService.findAllV2(filters, user);
     }
 }
