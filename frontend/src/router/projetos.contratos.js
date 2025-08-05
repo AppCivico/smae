@@ -79,10 +79,6 @@ export default {
                 return 'Resumo de contrato';
               }
 
-              if (rotaAtual.name === 'contratosDoProjetoResumo') {
-                return `Resumo: Contrato ${emFoco.numero}`;
-              }
-
               return `Contrato ${emFoco.numero}`;
             },
 
@@ -91,6 +87,7 @@ export default {
               'projetosListar',
               'projetosResumo',
               'contratosDoProjetoListar',
+              'contratosDoProjetoResumo',
             ],
           },
         },

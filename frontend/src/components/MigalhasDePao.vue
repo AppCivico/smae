@@ -39,6 +39,13 @@ const rotasParaMigalhasDePão = computed(() => {
     ? limparRotas(listaDeRotas)
     : [];
 });
+
+const rotaComDetalhe = computed(() => {
+  const ultimaRota = rotasParaMigalhasDePão.value[rotasParaMigalhasDePão.value.length - 1];
+
+  return ultimaRota.name === route.name;
+});
+
 </script>
 <template>
   <nav
@@ -51,8 +58,12 @@ const rotasParaMigalhasDePão = computed(() => {
         :key="k"
         class="migalhas-de-pão__item"
       >
-        <router-link
-          class="migalhas-de-pão__link"
+        <component
+          :is="item.name === $route.name ? 'span' : 'RouterLink'"
+          :class="[
+            {'migalhas-de-pão__link': item.name !== $route.name},
+            {'migalhas-de-pão__item': item.name === $route.name}
+          ]"
           :to="item.href"
         >
           {{
@@ -69,25 +80,31 @@ const rotasParaMigalhasDePão = computed(() => {
               )
               || item.name
           }}
-        </router-link>
+        </component>
       </li>
       <li
         class="migalhas-de-pão__item"
       >
-        {{
-          $route.meta?.tituloParaMigalhaDePao && (
-            typeof $route.meta.tituloParaMigalhaDePao === 'function' ?
-              $route.meta.tituloParaMigalhaDePao()
-              : $route.meta.tituloParaMigalhaDePao
-          )
-            || $route.meta?.títuloParaMenu
-            || $route.meta?.título && (
-              typeof $route.meta?.título === 'function' ?
-                $route.meta?.título()
-                : $route.meta?.título
+        <template v-if="rotaComDetalhe">
+          {{ $route.meta?.títuloParaMenu || $route.name }}
+        </template>
+
+        <template v-else>
+          {{
+            $route.meta?.tituloParaMigalhaDePao && (
+              typeof $route.meta.tituloParaMigalhaDePao === 'function' ?
+                $route.meta.tituloParaMigalhaDePao()
+                : $route.meta.tituloParaMigalhaDePao
             )
-            || $route.name
-        }}
+              || $route.meta?.títuloParaMenu
+              || $route.meta?.título && (
+                typeof $route.meta?.título === 'function' ?
+                  $route.meta?.título()
+                  : $route.meta?.título
+              )
+              || $route.name
+          }}
+        </template>
       </li>
     </ul>
   </nav>

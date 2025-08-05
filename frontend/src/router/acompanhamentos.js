@@ -1,5 +1,4 @@
 import { defineAsyncComponent } from 'vue';
-import { useRoute } from 'vue-router';
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import dateToField from '@/helpers/dateToField';
 import { useAcompanhamentosStore } from '@/stores/acompanhamentos.store.ts';
@@ -110,7 +109,6 @@ export default {
             títuloParaMenu: 'Resumo',
             título: 'Resumo do acompanhamento',
             tituloParaMigalhaDePao: () => {
-              const { name: nomeRotaAtual } = useRoute();
               const { emFoco } = useAcompanhamentosStore();
 
               if (!emFoco) {
@@ -119,16 +117,13 @@ export default {
 
               const dataRegistro = dateToField(emFoco.data_registro);
 
-              if (nomeRotaAtual === 'acompanhamentosResumo') {
-                return `Resumo: Acompanhamento ${dataRegistro}`;
-              }
-
               return `Acompanhamento ${dataRegistro}`;
             },
             rotasParaMigalhasDePão: [
               'projetosListar',
               'projetosResumo',
               'acompanhamentosListar',
+              'acompanhamentosResumo',
             ],
             títuloParaMigalhasDePao: () => 'aqui',
           },
