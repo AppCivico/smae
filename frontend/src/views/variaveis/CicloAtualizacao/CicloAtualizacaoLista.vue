@@ -82,19 +82,27 @@
                   :height="cicloAtualizacao.icone.tamanho"
                 ><use :xlink:href="`#${cicloAtualizacao.icone.icone}`" /></svg>
               </div>
-              <!-- Falar com o Gustavo sobre isso -->
+
               <h5 class="listagem-item__conteudo f1">
-                <!-- TODO: Falar com o Gustavo sobre isso! -->
-                <strong
-                  :class="{ 'tvermelho tipinfo like-a__text': cicloAtualizacao.temAtraso }"
-                >
-                  {{ cicloAtualizacao.codigo }}
-                  <div v-if="cicloAtualizacao.temAtraso">
-                    Atualização com atraso: {{
-                      obterPrimeiroEUlticoAtraso(cicloAtualizacao.atrasos)
-                    }}
-                  </div>
-                </strong> -
+                <strong>
+                  <template v-if="!cicloAtualizacao.temAtraso">
+                    {{ cicloAtualizacao.codigo }}
+                  </template>
+
+                  <SmaeTooltip
+                    v-else
+                  >
+                    <template #default>
+                      Atualização com atraso: <br>
+                      {{ obterPrimeiroEUlticoAtraso(cicloAtualizacao.atrasos) }}
+                    </template>
+
+                    <template #botao>
+                      <span class="tvermelho like-a__text">{{ cicloAtualizacao.codigo }}</span>
+                    </template>
+                  </SmaeTooltip> -
+                </strong>
+
                 {{ truncate(cicloAtualizacao.titulo, 60) }}
               </h5>
             </th>
@@ -171,6 +179,7 @@ import SmaeLink from '@/components/SmaeLink.vue';
 import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
 import truncate from '@/helpers/texto/truncate';
 import { useCicloAtualizacaoStore, VariavelCiclo } from '@/stores/cicloAtualizacao.store';
+import SmaeTooltip from '@/components/SmaeTooltip/SmaeTooltip.vue';
 import CicloAtualizacaoListaFiltro from './partials/CicloAtualizacaoLista/CicloAtualizacaoListaFiltro.vue';
 
 export type AbasDisponiveis = 'Preenchimento' | 'Validacao' | 'Liberacao';
