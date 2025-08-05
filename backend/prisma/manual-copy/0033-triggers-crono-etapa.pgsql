@@ -116,7 +116,7 @@ BEGIN
             SELECT 1
             FROM etapa ef2
             WHERE ef2.etapa_pai_id = NEW.etapa_pai_id
-              AND ef2.termino_previsto IS NULL
+              AND ef2.inicio_previsto IS NULL
               AND ef2.removido_em IS NULL
         );
 
