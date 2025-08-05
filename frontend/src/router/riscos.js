@@ -78,6 +78,7 @@ export default {
                 const { codigo, titulo } = useRiscosStore().emFoco;
                 return `${codigo} - ${titulo}`;
               }
+
               return 'Editar risco';
             },
             títuloParaMenu: 'Editar risco',

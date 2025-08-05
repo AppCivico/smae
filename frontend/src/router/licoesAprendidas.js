@@ -1,5 +1,4 @@
 import { defineAsyncComponent } from 'vue';
-import { useRoute } from 'vue-router';
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import dateToField from '@/helpers/dateToField';
 import { useLiçõesAprendidasStore } from '@/stores/licoesAprendidas.store.ts';
@@ -106,15 +105,10 @@ export default {
           meta: {
             título: 'Lição aprendida',
             tituloParaMigalhaDePao: () => {
-              const { name: nomeRotaAtual } = useRoute();
               const { emFoco } = useLiçõesAprendidasStore();
 
               if (!emFoco) {
                 return 'Lição aprendida';
-              }
-
-              if (nomeRotaAtual === 'liçõesAprendidasResumo') {
-                return `Resumo: Lição ${emFoco.descricao}`;
               }
 
               return `Lição ${emFoco.descricao}`;
@@ -124,6 +118,7 @@ export default {
               'projetosListar',
               'projetosResumo',
               'liçõesAprendidasListar',
+              'liçõesAprendidasResumo',
             ],
           },
         },

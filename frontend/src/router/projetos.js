@@ -1,5 +1,4 @@
 import { defineAsyncComponent } from 'vue';
-import { useRoute } from 'vue-router';
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import ProjetosRaiz from '@/views/projetos/ProjetosRaiz.vue';
@@ -246,6 +245,7 @@ export default {
           meta: {
             rotasParaMigalhasDePão: [
               'projetosListar',
+              'projetosResumo',
             ],
             título: () => {
               const projetoStoreEmFoco = useProjetosStore()?.emFoco?.nome;
@@ -256,14 +256,9 @@ export default {
               return `Projeto ${projetoStoreEmFoco}`;
             },
             tituloParaMigalhaDePao: () => {
-              const { name: nomeRotaAtual } = useRoute();
               const projetoStoreEmFoco = useProjetosStore()?.emFoco?.nome;
               if (!projetoStoreEmFoco) {
                 return 'Escopo';
-              }
-
-              if (nomeRotaAtual === 'projetosResumo') {
-                return `Escopo: ${projetoStoreEmFoco}`;
               }
 
               return `Projeto ${projetoStoreEmFoco}`;

@@ -1,4 +1,3 @@
-import { useRoute } from 'vue-router';
 import { useRiscosStore } from '@/stores/riscos.store.ts';
 import PlanosDeAçãoCriarEditar from '@/views/planosDeAcao/PlanosDeAcaoCriarEditar.vue';
 import PlanosDeAçãoItem from '@/views/planosDeAcao/PlanosDeAcaoItem.vue';
@@ -33,24 +32,21 @@ export default {
       }),
       meta: {
         tituloParaMigalhaDePao: () => {
-          const { name: nomeRotaAtual } = useRoute();
           const { emFoco } = useRiscosStore();
 
           if (!emFoco) {
             return 'Resumo de riscos';
           }
 
-          if (nomeRotaAtual === 'planosDeAçãoListar') {
-            return `Resumo: Risco ${emFoco.titulo}`;
-          }
-
           return `Risco ${emFoco.titulo}`;
         },
         título: 'Resumo de risco',
+        títuloParaMenu: 'Resumo de risco',
         rotasParaMigalhasDePão: [
           'projetosListar',
           'projetosResumo',
           'riscosListar',
+          'planosDeAçãoListar',
         ],
       },
     },
@@ -147,15 +143,10 @@ export default {
             título: 'Resumo do Plano de ação',
             títuloParaMenu: 'Resumo',
             tituloParaMigalhaDePao: () => {
-              const { name: nomeRotaAtual } = useRoute();
               const { emFoco } = usePlanosDeAçãoStore();
 
               if (!emFoco) {
                 return 'Resumo plano de ação';
-              }
-
-              if (nomeRotaAtual === 'detalhes') {
-                return `Resumo: ${emFoco.contramedida}`;
               }
 
               return `${emFoco.contramedida}`;
@@ -165,6 +156,7 @@ export default {
               'projetosResumo',
               'riscosListar',
               'planosDeAçãoListar',
+              'detalhes',
             ],
           },
         },
