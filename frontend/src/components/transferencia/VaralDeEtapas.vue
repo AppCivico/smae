@@ -115,7 +115,7 @@ function formatarTexto(texto) {
       </template>
       <template #botao>
         <button
-          v-if="temPermissãoPara('CadastroWorkflows.editar')"
+          v-if="workflow && temPermissãoPara('CadastroWorkflows.editar')"
           type="button"
           class="btn bgnone outline tcprimary"
           @click="abrirConfigurarWorkflow"
