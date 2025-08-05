@@ -282,6 +282,7 @@ export default {
           'TransferenciasVoluntariasListar',
           'TransferenciasVoluntariasDetalhes',
         ],
+        rotaDeEscape: 'TransferenciasVoluntariasListar',
       },
       children: [
         {
