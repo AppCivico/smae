@@ -500,13 +500,16 @@ export class TarefaService {
         let max_term_planjeado: string | undefined = undefined;
         let max_term_proj: DateTime | undefined = undefined;
 
-        // Recursive function to calculate projections
+        // Função recursiva para calcular as projeções de início e término das tarefas
+        // Utiliza um conjunto para evitar processamento duplicado e ciclos infinitos
         const jaPassou = new Set<number>();
         const calculaProjecoes = (tarefa: TarefaItemProjetadoDto) => {
+            // Evita reprocessar a mesma tarefa (proteção contra ciclos)
             if (jaPassou.has(tarefa.id)) return;
             jaPassou.add(tarefa.id);
 
-            // a tarefa tem que ter todas as datas de planejamento para funcionar
+            // Validação inicial: tarefa deve ter todas as datas de planejamento preenchidas
+            // para que seja possível calcular as projeções corretamente
             if (!tarefa.inicio_planejado || !tarefa.duracao_planejado || !tarefa.termino_planejado) {
                 console.warn(
                     `tarefa ${tarefa.id} sem inicio_planejado|duracao_planejado|termino_planejado, não será calculado projeção`
@@ -514,18 +517,21 @@ export class TarefaService {
                 return;
             }
 
+            // Para tarefas de nível 1 (raiz), mantém o controle da data de término planejado máxima
+            // Isso será usado posteriormente para calcular o atraso geral do projeto
             if (tarefa.nivel == 1) {
                 if (!max_term_planjeado || (max_term_planjeado && tarefa.termino_planejado > max_term_planjeado))
                     max_term_planjeado = tarefa.termino_planejado;
             }
 
-            // se já tem uma data de termino, vamos colocar ela na projeção,
-            // pra mais tarde saber se essa tarefa vai ter um atraso no parent ou não
+            // CASO 1: Tarefa já finalizada (tem data de término real)
+            // Usa as datas reais como projeção, pois não há mais o que projetar
             if (tarefa.termino_real) {
                 if (!tarefa.inicio_real)
                     this.logger.error(
                         `tarefa.inicio_real da tarefa ID ${tarefa.id} está nulo mas deveria existir (pois há data de termino), assumindo data corrente.`
                     );
+                // Define as projeções baseadas nas datas reais de execução
                 tarefa.projecao_inicio = tarefa.inicio_real ? Date2YMD.FromISOOrNull(tarefa.inicio_real)! : hoje;
                 tarefa.projecao_termino = Date2YMD.FromISOOrNull(tarefa.termino_real)!;
 
@@ -533,74 +539,106 @@ export class TarefaService {
                 return;
             }
 
-            // se a tarefa não tem filhos e
-            // se não tem tem dependência ou já começou já iniciou, ela entra no algorítimo normal (soma da duração planejada)
-            if (tarefa.n_filhos_imediatos == 0 && (tarefa.dependencias.length == 0 || tarefa.inicio_real)) {
-                // se não tem inicio real preenchido, considera que começou hoje
-                tarefa.projecao_inicio = tarefa.inicio_real ? Date2YMD.FromISOOrNull(tarefa.inicio_real)! : hoje;
-
-                tarefa.projecao_termino = tarefa.projecao_inicio.plus({ days: tarefa.duracao_planejado - 1 });
-                this.logger.debug(
-                    `tarefa ${tarefa.id} (folha) não tem dependência, projecao_inicio=${Date2YMD.toString(
-                        tarefa.projecao_inicio.toJSDate()
-                    )}, projecao_termino=${Date2YMD.toString(tarefa.projecao_termino.toJSDate())}`
-                );
-                return;
-            }
-
-            // Tarefas com filhos, com ou sem deps, vai calcular baseado nos filhos anyway
+            // CASO 2: Tarefa com filhos (tarefa resumo/agregadora)
+            // Suas projeções serão calculadas posteriormente baseadas nas projeções dos filhos
+            // Por isso, não calculamos nada aqui
             if (tarefa.n_filhos_imediatos > 0) {
-                this.logger.debug(`tarefa ${tarefa.id} tem filho, sera caclulado baseado nas projeções dos filhos`);
+                this.logger.debug(`tarefa ${tarefa.id} tem filho, sera calculado baseado nas projeções dos filhos`);
                 return;
             }
 
-            // If the task has dependencies, recursively calculate the projections of its dependencies
+            // CASO 3: Tarefa folha (sem filhos) SEM dependências
+            // A partir deste ponto, todas as tarefas são folhas (n_filhos_imediatos == 0)
+            if (tarefa.dependencias.length == 0) {
+                // Sub-caso 3a: Tarefa já iniciada
+                if (tarefa.inicio_real) {
+                    // Usa a data real de início e calcula o término baseado na duração planejada
+                    tarefa.projecao_inicio = Date2YMD.FromISOOrNull(tarefa.inicio_real)!;
+                    tarefa.projecao_termino = tarefa.projecao_inicio.plus({ days: tarefa.duracao_planejado - 1 });
+                    this.logger.debug(
+                        `tarefa ${tarefa.id} (folha) sem dependência, já iniciada, projecao_inicio=${Date2YMD.toString(
+                            tarefa.projecao_inicio.toJSDate()
+                        )}, projecao_termino=${Date2YMD.toString(tarefa.projecao_termino.toJSDate())}`
+                    );
+                } else {
+                    // Sub-caso 3b: Tarefa não iniciada
+                    // Verifica se a tarefa pai já foi iniciada para usar como referência
+                    let parentStartDate: DateTime | undefined;
+                    if (tarefa.tarefa_pai_id) {
+                        const parentTask = tarefas_por_id[tarefa.tarefa_pai_id];
+                        if (parentTask && parentTask.inicio_real) {
+                            parentStartDate = Date2YMD.FromISOOrNull(parentTask.inicio_real)!;
+                        }
+                    }
+
+                    // Usa a data de início do pai se disponível e posterior a hoje, caso contrário usa hoje
+                    const startDate =
+                        parentStartDate && parentStartDate.valueOf() > hoje.valueOf() ? parentStartDate : hoje;
+
+                    tarefa.projecao_inicio = startDate;
+                    tarefa.projecao_termino = tarefa.projecao_inicio.plus({ days: tarefa.duracao_planejado - 1 });
+                    this.logger.debug(
+                        `tarefa ${tarefa.id} (folha) sem dependência, não iniciada, projecao_inicio=${Date2YMD.toString(
+                            tarefa.projecao_inicio.toJSDate()
+                        )}, projecao_termino=${Date2YMD.toString(tarefa.projecao_termino.toJSDate())}`
+                    );
+                }
+                return;
+            }
+
+            // CASO 4: Tarefa folha (sem filhos) COM dependências
+            // Primeiro, calcula recursivamente as projeções de todas as tarefas dependentes
             for (const dependencia of tarefa.dependencias) {
                 const depTarefa = tarefas_por_id[dependencia.dependencia_tarefa_id];
                 if (!depTarefa) continue;
-
                 calculaProjecoes(depTarefa);
             }
 
-            // After calculating the projections of the dependencies, calculate the projections of the current task
-            let dataInicioMax: DateTime | undefined;
-            let dataTerminoMax: DateTime | undefined;
+            // Após calcular as projeções das dependências, calcula as projeções da tarefa atual
+            // Variáveis para armazenar as datas máximas calculadas pelas dependências
+            let dataInicioMax: DateTime | undefined; // Data mais tarde que a tarefa pode iniciar
+            let dataTerminoMax: DateTime | undefined; // Data mais tarde que a tarefa deve terminar
 
+            // Processa cada dependência para determinar as restrições de data
             for (const dependencia of tarefa.dependencias) {
                 const depTarefa = tarefas_por_id[dependencia.dependencia_tarefa_id];
                 if (!depTarefa) continue;
 
-                let depDateInicio: DateTime | undefined;
-                let depDateTermino: DateTime | undefined;
+                let depDateInicio: DateTime | undefined; // Data que afeta o início desta tarefa
+                let depDateTermino: DateTime | undefined; // Data que afeta o término desta tarefa
 
+                // Determina qual data da tarefa dependente usar baseado no tipo de dependência
                 switch (dependencia.tipo) {
                     case TarefaDependenteTipo.termina_pro_inicio:
+                        // Esta tarefa só pode iniciar após a dependente terminar
                         depDateInicio = depTarefa.termino_real
-                            ? DateTime.fromSQL(depTarefa.termino_real, { zone: 'UTC' })
+                            ? DateTime.fromISO(depTarefa.termino_real, { zone: 'UTC' })
                             : depTarefa.projecao_termino;
                         break;
                     case TarefaDependenteTipo.inicia_pro_inicio:
+                        // Esta tarefa só pode iniciar após a dependente iniciar
                         depDateInicio = depTarefa.inicio_real
-                            ? DateTime.fromSQL(depTarefa.inicio_real, { zone: 'UTC' })
+                            ? DateTime.fromISO(depTarefa.inicio_real, { zone: 'UTC' })
                             : depTarefa.projecao_inicio;
                         break;
                     case TarefaDependenteTipo.inicia_pro_termino:
+                        // Esta tarefa só pode terminar após a dependente iniciar
                         depDateTermino = depTarefa.inicio_real
-                            ? DateTime.fromSQL(depTarefa.inicio_real, { zone: 'UTC' })
+                            ? DateTime.fromISO(depTarefa.inicio_real, { zone: 'UTC' })
                             : depTarefa.projecao_inicio;
                         break;
                     case TarefaDependenteTipo.termina_pro_termino:
+                        // Esta tarefa só pode terminar após a dependente terminar
                         depDateTermino = depTarefa.termino_real
-                            ? DateTime.fromSQL(depTarefa.termino_real, { zone: 'UTC' })
+                            ? DateTime.fromISO(depTarefa.termino_real, { zone: 'UTC' })
                             : depTarefa.projecao_termino;
                         break;
                 }
 
-                // então vamos setar o inicio estimado, usando o máximo (pois o inicio é após o termino de todas as deps)
-                // se a data de termino ficar menor que hoje, usar hoje
+                // Aplica a latência (atraso adicional) configurada na dependência
                 if (depDateInicio) {
                     depDateInicio = depDateInicio.plus({ days: dependencia.latencia });
-
+                    // Mantém a data de início mais restritiva (mais tarde)
                     if (!dataInicioMax || (dataInicioMax && depDateInicio.valueOf() > dataInicioMax.valueOf())) {
                         dataInicioMax = depDateInicio;
                     }
@@ -608,34 +646,61 @@ export class TarefaService {
 
                 if (depDateTermino) {
                     depDateTermino = depDateTermino.plus({ days: dependencia.latencia });
-
-                    if (!dataTerminoMax || (dataTerminoMax && dataTerminoMax.valueOf() > depDateTermino.valueOf())) {
+                    // Mantém a data de término mais restritiva (mais tarde)
+                    if (!dataTerminoMax || (dataTerminoMax && depDateTermino.valueOf() > dataTerminoMax.valueOf())) {
                         dataTerminoMax = depDateTermino;
                     }
                 }
             }
 
-            // se deu pra chegar numa data de termino, usa ela
-            // de preferencia com a data de inicio calculada tbm
-            if (dataTerminoMax) {
-                // só pode usar a data de inicio, se for maior que a data corrente
+            // Calcula as projeções finais baseadas nas restrições das dependências
+            if (tarefa.inicio_real) {
+                // Sub-caso 4a: Tarefa com dependências que já foi iniciada
+                const actualStart = DateTime.fromISO(tarefa.inicio_real, { zone: 'UTC' });
+
+                // Usa a data mais tarde entre: início real ou início calculado pelas dependências
                 tarefa.projecao_inicio =
-                    dataInicioMax && dataInicioMax.valueOf() > hoje.valueOf() ? dataInicioMax : hoje;
-                tarefa.projecao_termino = dataTerminoMax;
+                    dataInicioMax && dataInicioMax.valueOf() > actualStart.valueOf() ? dataInicioMax : actualStart;
+
+                // Calcula o término projetado baseado na duração a partir do início projetado
+                const durationBasedEnd = tarefa.duracao_planejado
+                    ? tarefa.projecao_inicio.plus({ days: tarefa.duracao_planejado - 1 })
+                    : undefined;
+
+                // Usa a data de término mais restritiva entre: dependências ou duração
+                if (dataTerminoMax && durationBasedEnd) {
+                    tarefa.projecao_termino =
+                        dataTerminoMax.valueOf() > durationBasedEnd.valueOf() ? dataTerminoMax : durationBasedEnd;
+                } else if (dataTerminoMax) {
+                    tarefa.projecao_termino = dataTerminoMax;
+                } else if (durationBasedEnd) {
+                    tarefa.projecao_termino = durationBasedEnd;
+                } else {
+                    this.logger.warn(`tarefa ${tarefa.id} já iniciada mas sem duração ou dependências de término`);
+                }
+
                 this.logger.debug(
-                    `tarefa ${tarefa.id} calculado com base nas dependências, usando término=data de término máxima das dependências`
+                    `tarefa ${tarefa.id} com dependências, já iniciada, projecao_inicio=${Date2YMD.toString(
+                        tarefa.projecao_inicio.toJSDate()
+                    )}, projecao_termino=${tarefa.projecao_termino ? Date2YMD.toString(tarefa.projecao_termino.toJSDate()) : 'undefined'}`
                 );
             } else {
-                // se não encontrou de termino, mas tem data de inicio, usa o inicio projetado com a duração, se tiver disponível
-
-                if (tarefa.duracao_planejado) {
+                // Sub-caso 4b: Tarefa com dependências que ainda não foi iniciada
+                if (dataTerminoMax) {
+                    // Se há restrição de término pelas dependências, usa ela
+                    tarefa.projecao_inicio =
+                        dataInicioMax && dataInicioMax.valueOf() > hoje.valueOf() ? dataInicioMax : hoje;
+                    tarefa.projecao_termino = dataTerminoMax;
+                    this.logger.debug(
+                        `tarefa ${tarefa.id} calculado com base nas dependências, usando término=data de término máxima das dependências`
+                    );
+                } else if (dataInicioMax && tarefa.duracao_planejado) {
+                    // Se há apenas restrição de início, calcula o término baseado na duração
+                    tarefa.projecao_inicio = dataInicioMax.valueOf() > hoje.valueOf() ? dataInicioMax : hoje;
+                    tarefa.projecao_termino = tarefa.projecao_inicio.plus({ days: tarefa.duracao_planejado - 1 });
                     this.logger.debug(
                         `tarefa ${tarefa.id} calculado com base nas dependências, usando término=data projeção de inicio + soma da duração planejada`
                     );
-                    // só pode usar a data de inicio, se for maior que a data corrente
-                    tarefa.projecao_inicio =
-                        dataInicioMax && dataInicioMax.valueOf() > hoje.valueOf() ? dataInicioMax : hoje;
-                    tarefa.projecao_termino = tarefa.projecao_inicio.plus({ days: tarefa.duracao_planejado - 1 });
                 } else {
                     this.logger.warn(
                         `tarefa ${tarefa.id} não tem duração planejada e não foi possível projeção a duração pelas dependências`
