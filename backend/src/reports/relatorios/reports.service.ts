@@ -856,62 +856,68 @@ export class ReportsService {
             removido_em: null,
             sistema: { in: [sistema, 'SMAE'] },
             ...criadoEmFilter,
-            AND: [
+            AND: this._getPermissionClause(user),
+        };
+    }
+
+    private _getPermissionClause(user: PessoaFromJwt): Prisma.RelatorioWhereInput {
+        return {
+            OR: [
                 {
+                    visibilidade: 'Privado',
+                    criado_por: user.id,
+                },
+                {
+                    visibilidade: 'Publico',
+                },
+                {
+                    visibilidade: 'Restrito',
                     OR: [
+                        // If there's no restriction at all
                         {
-                            visibilidade: 'Privado',
-                            criado_por: user.id,
+                            restrito_para: {
+                                equals: Prisma.AnyNull,
+                            },
                         },
+                        // Check for role-based access
                         {
-                            visibilidade: 'Publico',
-                        },
-                        {
-                            visibilidade: 'Restrito',
-                            OR: [
-                                // Se não há restrição definida
+                            AND: [
                                 {
-                                    restrito_para: {
-                                        equals: Prisma.AnyNull,
-                                    },
+                                    OR: [
+                                        // Either roles doesn't exist in the JSON
+                                        {
+                                            restrito_para: {
+                                                path: ['$.roles'],
+                                                equals: Prisma.AnyNull,
+                                            },
+                                        },
+                                        // Or user has one of the required roles
+                                        {
+                                            restrito_para: {
+                                                path: ['$.roles'],
+                                                array_contains: user.privilegios as string[],
+                                            },
+                                        },
+                                    ],
                                 },
-                                // Ou se o usuário atende às restrições de cargo e/ou órgão
                                 {
-                                    AND: [
+                                    OR: [
+                                        // Either portfolio_orgao_ids doesn't exist in the JSON
                                         {
-                                            OR: [
-                                                {
-                                                    restrito_para: {
-                                                        path: ['$.roles'],
-                                                        equals: Prisma.AnyNull,
-                                                    },
-                                                },
-                                                {
-                                                    restrito_para: {
-                                                        path: ['$.roles'],
-                                                        array_contains: user.privilegios as string[],
-                                                    },
-                                                },
-                                            ],
+                                            restrito_para: {
+                                                path: ['$.portfolio_orgao_ids'],
+                                                equals: Prisma.AnyNull,
+                                            },
                                         },
-                                        {
-                                            OR: [
-                                                {
-                                                    restrito_para: {
-                                                        path: ['$.portfolio_orgao_ids'],
-                                                        equals: Prisma.AnyNull,
-                                                    },
-                                                },
-                                                user.orgao_id
-                                                    ? {
-                                                          restrito_para: {
-                                                              path: ['$.portfolio_orgao_ids'],
-                                                              array_contains: [user.orgao_id],
-                                                          },
-                                                      }
-                                                    : {},
-                                            ],
-                                        },
+                                        // Or user belongs to one of the required orgs
+                                        user.orgao_id
+                                            ? {
+                                                  restrito_para: {
+                                                      path: ['$.portfolio_orgao_ids'],
+                                                      array_contains: [user.orgao_id],
+                                                  },
+                                              }
+                                            : {},
                                     ],
                                 },
                             ],
