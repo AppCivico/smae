@@ -9,7 +9,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { Prisma, TransferenciaHistoricoAcao, WorkflowResponsabilidade } from '@prisma/client';
 import { TarefaCronogramaDto } from 'src/common/dto/TarefaCronograma.dto';
-import { PaginatedDto, PAGINATION_TOKEN_TTL } from 'src/common/dto/paginated.dto';
+import { PaginatedDto, PaginatedWithPagesDto, PAGINATION_TOKEN_TTL } from 'src/common/dto/paginated.dto';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { DistribuicaoRecursoService } from 'src/casa-civil/distribuicao-recurso/distribuicao-recurso.service';
 import { UpdateTarefaDto } from 'src/pp/tarefa/dto/update-tarefa.dto';
@@ -36,10 +36,19 @@ import { PrismaHelpers } from '../../common/PrismaHelpers';
 import { WorkflowService } from '../workflow/configuracao/workflow.service';
 import { Date2YMD } from '../../common/date2ymd';
 import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
+import { FilterTransferenciaV2Dto } from './dto/filter-transferencia-v2.dto';
+import { Object2Hash } from 'src/common/object2hash';
 
 class NextPageTokenJwtBody {
     offset: number;
     ipp: number;
+}
+
+class TransferenciaPageTokenJwtBody {
+    search_hash: string;
+    ipp: number;
+    issued_at: number;
+    total_rows: number;
 }
 
 @Injectable()
@@ -1124,131 +1133,14 @@ export class TransferenciaService {
             ipp = decodedPageToken.ipp;
         }
 
-        const palavrasChave = await this.buscaIdsPalavraChave(filters.palavra_chave);
+        const where = await this._getWhereClauseForFindAll(filters, user);
 
         const rows = await this.prisma.transferencia.findMany({
-            where: {
-                removido_em: null,
-                AND: this.permissionSet(user),
-                esfera: filters.esfera,
-                pendente_preenchimento_valores:
-                    filters.preenchimento_completo != undefined ? !filters.preenchimento_completo : undefined,
-                ano: filters.ano,
-
-                // Filtro por palavras-chave com tsvector
-                id: {
-                    in: palavrasChave != undefined ? palavrasChave : undefined,
-                },
-            },
+            where: where,
             orderBy: [{ ano: 'desc' }, { identificador_nro: 'desc' }],
             skip: offset,
             take: ipp + 1,
-            select: {
-                id: true,
-                identificador: true,
-                ano: true,
-                objeto: true,
-                esfera: true,
-                detalhamento: true,
-                clausula_suspensiva: true,
-                clausula_suspensiva_vencimento: true,
-                normativa: true,
-                observacoes: true,
-                programa: true,
-                pendente_preenchimento_valores: true,
-                valor: true,
-                secretaria_concedente_str: true,
-                workflow_etapa_atual: {
-                    select: {
-                        etapa_fluxo: true,
-                    },
-                },
-                workflow_fase_atual: {
-                    where: { removido_em: null },
-                    select: {
-                        id: true,
-                        fase: true,
-                    },
-                },
-                andamentoWorkflow: {
-                    where: { removido_em: null },
-                    select: {
-                        id: true,
-                        workflow_etapa_id: true,
-                        workflow_fase_id: true,
-                        workflow_situacao: {
-                            select: {
-                                situacao: true,
-                            },
-                        },
-                    },
-                },
-                tipo: {
-                    select: {
-                        id: true,
-                        nome: true,
-                    },
-                },
-
-                orgao_concedente: {
-                    select: {
-                        id: true,
-                        descricao: true,
-                        sigla: true,
-                    },
-                },
-
-                parlamentar: {
-                    where: { removido_em: null },
-                    select: {
-                        id: true,
-                        cargo: true,
-                        valor: true,
-                        objeto: true,
-                        partido: {
-                            select: {
-                                id: true,
-                                sigla: true,
-                                nome: true,
-                            },
-                        },
-                        parlamentar: {
-                            select: {
-                                id: true,
-                                nome_popular: true,
-                                nome: true,
-                            },
-                        },
-                    },
-                },
-                classificacao_id: true,
-                classificacao: {
-                    select: {
-                        id: true,
-                        nome: true,
-                        transferencia_tipo: {
-                            select: {
-                                id: true,
-                                nome: true,
-                                esfera: true,
-                                categoria: true,
-                            },
-                        },
-                    },
-                },
-                distribuicao_recursos: {
-                    where: { removido_em: null },
-                    select: {
-                        orgao_gestor: {
-                            select: {
-                                id: true,
-                                sigla: true,
-                                descricao: true,
-                            },
-                        },
-                    },
-                },
-            },
+            select: this._getTransferenciaSelectClause(),
         });
 
         if (rows.length > ipp) {
@@ -1257,62 +1149,7 @@ export class TransferenciaService {
             token_proxima_pagina = this.encodeNextPageToken({ ipp: ipp, offset: offset + ipp });
         }
 
-        const linhas = rows.map((r) => {
-            const faseStatusAtual = r.workflow_fase_atual
-                ? r.andamentoWorkflow.find((e) => e.workflow_fase_id == r.workflow_fase_atual!.id)?.workflow_situacao
-                      ?.situacao
-                : null;
-
-            return {
-                id: r.id,
-                ano: r.ano,
-                identificador: r.identificador,
-                valor: r.valor,
-                partido: r.parlamentar
-                    .filter((e) => e.partido)
-                    .map((e) => {
-                        return { id: e.partido!.id, sigla: e.partido!.sigla };
-                    }),
-                parlamentar: r.parlamentar.length
-                    ? r.parlamentar.map((e) => {
-                          return {
-                              id: e.parlamentar.id,
-                              nome: e.parlamentar.nome,
-                              nome_popular: e.parlamentar.nome_popular,
-                          };
-                      })
-                    : null,
-                tipo: r.tipo,
-                objeto: r.objeto,
-                detalhamento: r.detalhamento,
-                clausula_suspensiva: r.clausula_suspensiva,
-                clausula_suspensiva_vencimento: Date2YMD.toStringOrNull(r.clausula_suspensiva_vencimento),
-                normativa: r.normativa,
-                observacoes: r.observacoes,
-                programa: r.programa,
-                pendente_preenchimento_valores: r.pendente_preenchimento_valores,
-                esfera: r.esfera,
-                orgao_concedente: r.orgao_concedente,
-                secretaria_concedente: r.secretaria_concedente_str,
-                andamento_etapa: r.workflow_etapa_atual ? r.workflow_etapa_atual.etapa_fluxo : null,
-                andamento_fase: r.workflow_fase_atual ? r.workflow_fase_atual.fase : null,
-                fase_status: r.workflow_fase_atual && faseStatusAtual ? faseStatusAtual : null,
-                classificacao: r.classificacao,
-                orgao_gestor: r.distribuicao_recursos.length
-                    ? r.distribuicao_recursos.reduce((acc: IdSiglaDescricao[], curr) => {
-                          // Se o órgão gestor já foi adicionado, não adiciona novamente.
-                          if (!acc.find((e) => e.id === curr.orgao_gestor.id)) {
-                              acc.push({
-                                  id: curr.orgao_gestor.id,
-                                  sigla: curr.orgao_gestor.sigla,
-                                  descricao: curr.orgao_gestor.descricao,
-                              });
-                          }
-                          return acc;
-                      }, [] as IdSiglaDescricao[])
-                    : null,
-            } satisfies TransferenciaDto;
-        });
+        const linhas = rows.map((r) => this._mapTransferenciaToDto(r));
 
         return {
             linhas: linhas,
@@ -2000,5 +1837,255 @@ export class TransferenciaService {
                 error
             );
         }
+    }
+
+    private async _getWhereClauseForFindAll(
+        filters: FilterTransferenciaDto | FilterTransferenciaV2Dto,
+        user: PessoaFromJwt
+    ): Promise<Prisma.TransferenciaWhereInput> {
+        const palavrasChave = await this.buscaIdsPalavraChave(filters.palavra_chave);
+
+        return {
+            removido_em: null,
+            AND: this.permissionSet(user),
+            esfera: filters.esfera,
+            pendente_preenchimento_valores:
+                filters.preenchimento_completo !== undefined ? !filters.preenchimento_completo : undefined,
+            ano: filters.ano,
+            id: {
+                in: palavrasChave !== undefined ? palavrasChave : undefined,
+            },
+        };
+    }
+
+    private _mapTransferenciaToDto(r: any): TransferenciaDto {
+        const faseStatusAtual = r.workflow_fase_atual
+            ? r.andamentoWorkflow.find((e: any) => e.workflow_fase_id == r.workflow_fase_atual!.id)?.workflow_situacao
+                  ?.situacao
+            : null;
+
+        return {
+            id: r.id,
+            ano: r.ano,
+            identificador: r.identificador,
+            valor: r.valor,
+            partido: r.parlamentar
+                .filter((e: any) => e.partido)
+                .map((e: any) => {
+                    return { id: e.partido!.id, sigla: e.partido!.sigla };
+                }),
+            parlamentar: r.parlamentar.length
+                ? r.parlamentar.map((e: any) => {
+                      return {
+                          id: e.parlamentar.id,
+                          nome: e.parlamentar.nome,
+                          nome_popular: e.parlamentar.nome_popular,
+                      };
+                  })
+                : null,
+            tipo: r.tipo,
+            objeto: r.objeto,
+            detalhamento: r.detalhamento,
+            clausula_suspensiva: r.clausula_suspensiva,
+            clausula_suspensiva_vencimento: Date2YMD.toStringOrNull(r.clausula_suspensiva_vencimento),
+            normativa: r.normativa,
+            observacoes: r.observacoes,
+            programa: r.programa,
+            pendente_preenchimento_valores: r.pendente_preenchimento_valores,
+            esfera: r.esfera,
+            orgao_concedente: r.orgao_concedente,
+            secretaria_concedente: r.secretaria_concedente_str,
+            andamento_etapa: r.workflow_etapa_atual ? r.workflow_etapa_atual.etapa_fluxo : null,
+            andamento_fase: r.workflow_fase_atual ? r.workflow_fase_atual.fase : null,
+            fase_status: r.workflow_fase_atual && faseStatusAtual ? faseStatusAtual : null,
+            classificacao: r.classificacao,
+            orgao_gestor: r.distribuicao_recursos.length
+                ? r.distribuicao_recursos.reduce((acc: IdSiglaDescricao[], curr: any) => {
+                      if (!acc.find((e) => e.id === curr.orgao_gestor.id)) {
+                          acc.push({
+                              id: curr.orgao_gestor.id,
+                              sigla: curr.orgao_gestor.sigla,
+                              descricao: curr.orgao_gestor.descricao,
+                          });
+                      }
+                      return acc;
+                  }, [] as IdSiglaDescricao[])
+                : null,
+        } satisfies TransferenciaDto;
+    }
+
+    async findAllTransferenciaV2(
+        filters: FilterTransferenciaV2Dto,
+        user: PessoaFromJwt
+    ): Promise<PaginatedWithPagesDto<TransferenciaDto>> {
+        const ipp = filters.ipp ?? 25;
+        const page = filters.pagina ?? 1;
+        const skip = (page - 1) * ipp;
+        let total_registros = 0;
+        let token_paginacao = filters.token_paginacao;
+        const filtersForHash = { ...filters };
+        delete filtersForHash.pagina;
+        delete filtersForHash.token_paginacao;
+        if (token_paginacao) {
+            const decoded = this.decodePageToken(token_paginacao, filtersForHash);
+            total_registros = decoded.total_rows;
+        } else {
+            const where = await this._getWhereClauseForFindAll(filters, user);
+            total_registros = await this.prisma.transferencia.count({ where });
+            token_paginacao = this.encodePageToken(filtersForHash, total_registros);
+        }
+        const where = await this._getWhereClauseForFindAll(filters, user);
+        const rows = await this.prisma.transferencia.findMany({
+            where,
+            orderBy: [{ ano: 'desc' }, { identificador_nro: 'desc' }],
+            skip: skip,
+            take: ipp,
+            select: this._getTransferenciaSelectClause(),
+        });
+
+        const total_paginas = Math.ceil(total_registros / ipp);
+
+        const linhas = rows.map((r) => this._mapTransferenciaToDto(r));
+
+        return {
+            total_registros: total_registros,
+            paginas: total_paginas,
+            pagina_corrente: page,
+            token_paginacao: token_paginacao,
+            tem_mais: page < total_paginas,
+            token_ttl: PAGINATION_TOKEN_TTL,
+            linhas: linhas,
+        };
+    }
+
+    private _getTransferenciaSelectClause(): Prisma.TransferenciaSelect {
+        return {
+            id: true,
+            identificador: true,
+            ano: true,
+            objeto: true,
+            esfera: true,
+            detalhamento: true,
+            clausula_suspensiva: true,
+            clausula_suspensiva_vencimento: true,
+            normativa: true,
+            observacoes: true,
+            programa: true,
+            pendente_preenchimento_valores: true,
+            valor: true,
+            secretaria_concedente_str: true,
+            workflow_etapa_atual: {
+                select: {
+                    etapa_fluxo: true,
+                },
+            },
+            workflow_fase_atual: {
+                where: { removido_em: null },
+                select: {
+                    id: true,
+                    fase: true,
+                },
+            },
+            andamentoWorkflow: {
+                where: { removido_em: null },
+                select: {
+                    id: true,
+                    workflow_etapa_id: true,
+                    workflow_fase_id: true,
+                    workflow_situacao: {
+                        select: {
+                            situacao: true,
+                        },
+                    },
+                },
+            },
+            tipo: {
+                select: {
+                    id: true,
+                    nome: true,
+                },
+            },
+
+            orgao_concedente: {
+                select: {
+                    id: true,
+                    descricao: true,
+                    sigla: true,
+                },
+            },
+
+            parlamentar: {
+                where: { removido_em: null },
+                select: {
+                    id: true,
+                    cargo: true,
+                    valor: true,
+                    objeto: true,
+                    partido: {
+                        select: {
+                            id: true,
+                            sigla: true,
+                            nome: true,
+                        },
+                    },
+                    parlamentar: {
+                        select: {
+                            id: true,
+                            nome_popular: true,
+                            nome: true,
+                        },
+                    },
+                },
+            },
+            classificacao_id: true,
+            classificacao: {
+                select: {
+                    id: true,
+                    nome: true,
+                    transferencia_tipo: {
+                        select: {
+                            id: true,
+                            nome: true,
+                            esfera: true,
+                            categoria: true,
+                        },
+                    },
+                },
+            },
+            distribuicao_recursos: {
+                where: { removido_em: null },
+                select: {
+                    orgao_gestor: {
+                        select: {
+                            id: true,
+                            sigla: true,
+                            descricao: true,
+                        },
+                    },
+                },
+            },
+        };
+    }
+
+    private decodePageToken(jwt: string, filters: object): TransferenciaPageTokenJwtBody {
+        try {
+            const decoded = this.jwtService.verify(jwt) as TransferenciaPageTokenJwtBody;
+            if (decoded.search_hash !== Object2Hash(filters)) {
+                throw new Error('Filter criteria changed during pagination.');
+            }
+            return decoded;
+        } catch (error) {
+            throw new HttpException(`Token de paginação inválido ou expirado. ${error.message}`, 400);
+        }
+    }
+
+    private encodePageToken(filters: object, total_rows: number): string {
+        const body: TransferenciaPageTokenJwtBody = {
+            search_hash: Object2Hash(filters),
+            ipp: (filters as FilterTransferenciaV2Dto).ipp ?? 25,
+            issued_at: Date.now(),
+            total_rows,
+        };
+        return this.jwtService.sign(body, { expiresIn: PAGINATION_TOKEN_TTL });
     }
 }

@@ -19,8 +19,9 @@ import {
 import { FindOneParams, FindTwoParams } from 'src/common/decorators/find-params';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { ApiPaginatedResponse } from 'src/auth/decorators/paginated.decorator';
-import { PaginatedDto } from 'src/common/dto/paginated.dto';
+import { PaginatedDto, PaginatedWithPagesDto } from 'src/common/dto/paginated.dto';
 import { FilterTransferenciaDto, FilterTransferenciaHistoricoDto } from './dto/filter-transferencia.dto';
+import { FilterTransferenciaV2Dto } from './dto/filter-transferencia-v2.dto';
 
 @ApiTags('Transferência')
 @Controller('transferencia')
@@ -32,6 +33,17 @@ export class TransferenciaController {
     @Roles(['CadastroTransferencia.inserir'])
     async create(@Body() dto: CreateTransferenciaDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.transferenciaService.createTransferencia(dto, user);
+    }
+
+    @ApiBearerAuth('access-token')
+    @Roles(['CadastroTransferencia.listar'])
+    @ApiPaginatedResponse(TransferenciaDto)
+    @Get('v2')
+    async findAllV2(
+        @Query() filters: FilterTransferenciaV2Dto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<PaginatedWithPagesDto<TransferenciaDto>> {
+        return await this.transferenciaService.findAllTransferenciaV2(filters, user);
     }
 
     @ApiBearerAuth('access-token')
