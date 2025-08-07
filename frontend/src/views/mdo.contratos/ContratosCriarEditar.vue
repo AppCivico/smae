@@ -1,13 +1,4 @@
 <script setup>
-import AutocompleteField from '@/components/AutocompleteField2.vue';
-import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
-import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
-import { contratoDeObras } from '@/consts/formSchemas';
-import truncate from '@/helpers/texto/truncate';
-import { useAlertStore } from '@/stores/alert.store';
-import { useContratosStore } from '@/stores/contratos.store.ts';
-import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
-import { useTarefasStore } from '@/stores/tarefas.store.ts';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
@@ -23,6 +14,16 @@ import {
   watch,
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import AutocompleteField from '@/components/AutocompleteField2.vue';
+import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
+import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
+import { contratoDeObras } from '@/consts/formSchemas';
+import truncate from '@/helpers/texto/truncate';
+import { useAlertStore } from '@/stores/alert.store';
+import { useContratosStore } from '@/stores/contratos.store.ts';
+import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
+import { useTarefasStore } from '@/stores/tarefas.store.ts';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -57,17 +58,6 @@ const {
   tarefasComHierarquia,
 } = storeToRefs(tarefasStore);
 
-const props = defineProps({
-  obraId: {
-    type: Number,
-    default: 0,
-  },
-  contratoId: {
-    type: Number,
-    default: 0,
-  },
-});
-
 const {
   errors, handleSubmit, isSubmitting, setFieldValue, resetForm, values: carga,
 } = useForm({
@@ -77,12 +67,12 @@ const {
 
 const onSubmit = handleSubmit.withControlled(async () => {
   try {
-    const msg = props.contratoId
+    const msg = route.params.contratoId
       ? 'Dados salvos com sucesso!'
       : 'Item adicionado com sucesso!';
 
-    const resposta = props.contratoId
-      ? await contratosStore.salvarItem(carga, props.contratoId)
+    const resposta = route.params?.contratoId
+      ? await contratosStore.salvarItem(carga, route.params.contratoId)
       : await contratosStore.salvarItem(carga);
 
     if (resposta) {
@@ -98,20 +88,6 @@ const onSubmit = handleSubmit.withControlled(async () => {
     alertStore.error(error);
   }
 });
-
-function excluirProcesso(id) {
-  useAlertStore().confirmAction('Deseja mesmo remover esse item?', async () => {
-    if (await contratosStore.excluirItem(id)) {
-      useAlertStore().success('Processo removido.');
-
-      const rotaDeEscape = route.meta?.rotaDeEscape;
-
-      if (rotaDeEscape) {
-        router.push({ name: rotaDeEscape });
-      }
-    }
-  }, 'Remover');
-}
 
 function iniciar() {
   if (!tarefasComHierarquia.value.length) {
@@ -129,7 +105,8 @@ watch(itemParaEdicao, (novosValores) => {
 
 onMounted(async () => {
   await contratosStore.buscarDependencias();
-  if (props.contratoId) {
+
+  if (emFoco.value?.id) {
     fontesRecurso.value.participantes = carga.fontes_recurso.map((fonteRecurso) => fonteRecurso.id);
   }
   if (!carga.contrato_exclusivo) {
@@ -142,15 +119,7 @@ onMounted(async () => {
 </script>
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>
-      <div
-        v-if="contratoId"
-        class="t12 uc w700 tamarelo"
-      >
-        {{ 'Editar contrato' }}
-      </div>
-      {{ emFoco?.descricao || (contratoId ? 'Edição de Contrato' : 'Cadastro de Contrato') }}
-    </h1>
+    <TituloDaPagina />
 
     <hr class="ml2 f1">
 
@@ -436,12 +405,12 @@ onMounted(async () => {
           :schema="schema"
         />
         <SmaeText
+          v-model="carga.objeto_resumo"
           name="objeto_resumo"
           as="textarea"
           rows="10"
           class="inputtext light mb1"
           maxlength="2048"
-          v-model="carga.objeto_resumo"
           anular-vazio
           :class="{
             error: errors.objeto_resumo,
@@ -462,12 +431,12 @@ onMounted(async () => {
           :schema="schema"
         />
         <SmaeText
+          v-model="carga.objeto_detalhado"
           name="objeto_detalhado"
           as="textarea"
           rows="20"
           class="inputtext light mb1"
           maxlength="2048"
-          v-model="carga.objeto_detalhado"
           anular-vazio
           :class="{
             error: errors.v,
@@ -720,12 +689,12 @@ onMounted(async () => {
           :schema="schema"
         />
         <SmaeText
+          v-model="carga.observacoes"
           name="observacoes"
           as="textarea"
           rows="15"
           class="inputtext light mb1"
           maxlength="2048"
-          v-model="carga.observacoes"
           anular-vazio
           :class="{
             error: errors.observacoes,
@@ -762,14 +731,6 @@ onMounted(async () => {
   >
     Carregando
   </div>
-
-  <button
-    v-if="emFoco?.id"
-    class="btn amarelo big mb1"
-    @click="excluirProcesso(emFoco.id)"
-  >
-    Remover item
-  </button>
 
   <div
     v-if="erro"

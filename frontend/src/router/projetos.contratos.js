@@ -5,18 +5,19 @@ import ContratosCriarEditar from '@/views/mdo.contratos/ContratosCriarEditar.vue
 export default {
   path: 'contratos',
   component: () => import('@/views/mdo.contratos/ContratosRaiz.vue'),
-
   props: true,
-
   children: [
     {
-
       name: 'contratosDoProjetoListar',
       path: '',
       component: () => import('@/views/mdo.contratos/ContratosLista.vue'),
       meta: {
         título: 'Contratos',
         títuloParaMenu: 'Contratos',
+        rotasParaMigalhasDePão: [
+          'projetosListar',
+          'projetosResumo',
+        ],
       },
       props: true,
     },
@@ -81,7 +82,6 @@ export default {
 
               return `Contrato ${emFoco.numero}`;
             },
-
             títuloParaMenu: 'Resumo',
             rotasParaMigalhasDePão: [
               'projetosListar',
