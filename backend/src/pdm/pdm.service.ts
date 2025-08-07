@@ -1384,6 +1384,9 @@ export class PdmService {
             const operations = [];
 
             for (const orcamentoConfig of Object.values(updatePdmOrcamentoConfigDto.orcamento_config)) {
+                if (orcamentoConfig.execucao_disponivel_meses) {
+                    orcamentoConfig.execucao_disponivel_meses.sort((a, b) => a - b);
+                }
                 const pdmOrcamentoConfig = await prisma.pdmOrcamentoConfig.findFirst({
                     where: {
                         pdm_id: pdm.id,
