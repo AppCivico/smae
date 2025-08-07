@@ -565,6 +565,10 @@ export class PdmCicloService {
                 },
             });
 
+            if (dto.meses) {
+                dto.meses.sort((a, b) => a - b);
+            }
+
             // Create new configuration
             const config = await prismaTx.pdmCicloConfig.create({
                 data: {
