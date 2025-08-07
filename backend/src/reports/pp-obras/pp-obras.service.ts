@@ -681,7 +681,7 @@ export class PPObrasService implements ReportableService {
 
         if (filters.regiao_id) {
             whereConditions.push(
-                `EXISTS (SELECT 1 FROM projeto_regioes WHERE projeto_id = projeto.id AND regiao_id = $${paramIndex})`
+                `EXISTS (SELECT 1 FROM projeto_regiao me WHERE me.projeto_id = projeto.id AND me.regiao_id = $${paramIndex} and me.removido_em IS NULL)`
             );
             queryParams.push(filters.regiao_id);
             paramIndex++;
