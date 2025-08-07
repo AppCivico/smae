@@ -2542,6 +2542,8 @@ export class ProjetoService {
             dto.status = undefined;
         }
 
+        // ges
+
         if ('grupo_tematico_id' in dto) {
             await this.verificaGrupoTematico(dto, projeto.grupo_tematico?.id);
         } else {
@@ -2729,6 +2731,18 @@ export class ProjetoService {
                 // Pois a tela chama um outro endpoint, logo chamo o delete do portfolio_id após utilizar.
                 await this.transferPortfolio(tipo, projetoId, { portfolio_id: dto.portfolio_id }, user, prismaTx);
                 delete dto.portfolio_id;
+            }
+
+            if (
+                tipo == 'PP' &&
+                projeto.em_planejamento_em !== null &&
+                projeto.orgao_responsavel?.id &&
+                projeto.orgao_responsavel?.id != dto.orgao_responsavel_id
+            ) {
+                throw new HttpException(
+                    'Não é possível alterar o órgão responsável após o início do planejamento.',
+                    400
+                );
             }
 
             // Caso a previsão de término seja enviada/modificada (e for diferente do que está salvo). Garantir que não seja menor que a previsão de início.
