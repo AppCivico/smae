@@ -41,6 +41,8 @@ export class PortfolioService {
         }
         if (tipoProjeto == 'MDO') dto.nivel_regionalizacao = 3;
 
+        dto.orcamento_execucao_disponivel_meses?.sort((a, b) => a - b);
+
         const now = new Date(Date.now());
         const created = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
@@ -258,6 +260,8 @@ export class PortfolioService {
 
         if (tipoProjeto == 'MDO' && dto.nivel_regionalizacao && dto.nivel_regionalizacao != 3)
             throw new BadRequestException('Nível de regionalização inválido para MDO');
+
+        dto.orcamento_execucao_disponivel_meses?.sort((a, b) => a - b);
 
         if (dto.titulo !== undefined) {
             const similarExists = await this.prisma.portfolio.count({
