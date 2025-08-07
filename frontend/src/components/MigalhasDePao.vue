@@ -62,7 +62,6 @@ const rotaComDetalhe = computed(() => {
           :is="item.name === $route.name ? 'span' : 'RouterLink'"
           :class="[
             {'migalhas-de-pão__link': item.name !== $route.name},
-            {'migalhas-de-pão__item': item.name === $route.name}
           ]"
           :to="item.href"
         >
@@ -85,6 +84,37 @@ const rotaComDetalhe = computed(() => {
       <li
         class="migalhas-de-pão__item"
       >
+        <!--
+        /**
+        * @doc
+        *
+        * As telas com permissão mais aberta estão na rota mais interna na hierarquia.
+        * Então, é possível que alguém tenha permissão para ver a rota `/:ID/resumo`,
+        * mas não a rota `/:ID`.
+        *
+        * Exemplo:
+        * [...] / Projeto ABC [rota de resumo] / Escopo [rota de resumo]
+        *
+        * Essa estrutura também causa uma inversão nos últimos items da migalhas de pão:
+        * o nível de cima vindo à direita do que deveria ser o nível de baixo,
+        * mas não é.
+        *
+        * Esta abordagem resolve o desafio fazendo os 2 itens finais apontarem para a
+        * mesma rota. Para isso, adicionamos o "routeName" atual à lista de migalhasDePao.
+        *
+        * Quando a rotaAtual for igual ao último item da lista, o componente
+        * desabilita essa etapa, gerando um resultado como:
+        *
+        * Rota de resumo:
+        * /projeto/[ID]/resumo
+        * [...] / Projeto ABC [resumo/desabilitado] / Escopo [resumo/desabilitado]
+        *
+        * Rota de edição:
+        * /projeto/[ID]
+        * [...] / Projeto ABC [resumo/habilitado] / Editar [editar/desabilitado]
+        */
+        -->
+
         <template v-if="rotaComDetalhe">
           {{ $route.meta?.títuloParaMenu || $route.name }}
         </template>
