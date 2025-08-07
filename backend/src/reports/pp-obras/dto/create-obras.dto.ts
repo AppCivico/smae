@@ -1,10 +1,11 @@
 import { OmitType, PartialType } from '@nestjs/swagger';
-import { Expose, Transform } from 'class-transformer';
-import { ArrayMaxSize, IsArray, IsInt, IsNumber, IsOptional, ValidateIf } from 'class-validator';
-import { DateTransform } from 'src/auth/transforms/date.transform';
-import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
+import { Transform } from 'class-transformer';
+import { Expose } from 'class-transformer';
+import { IsNumber, IsOptional, ValidateIf } from 'class-validator';
 import { FilterProjetoDto } from 'src/pp/projeto/dto/filter-projeto.dto';
-import { NumberArrayTransformOrEmpty } from '../../../auth/transforms/number-array.transform';
+import { NumberTransform } from '../../../auth/transforms/number.transform';
+import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
+import { DateTransform } from 'src/auth/transforms/date.transform';
 
 export class CreateRelObrasDto extends OmitType(PartialType(FilterProjetoDto), [
     'eh_prioritario',
@@ -37,12 +38,4 @@ export class CreateRelObrasDto extends OmitType(PartialType(FilterProjetoDto), [
     @Transform(DateTransform)
     @Expose()
     periodo?: Date;
-
-    @Expose()
-    @IsOptional()
-    @Transform(NumberArrayTransformOrEmpty)
-    @IsArray({ message: '$property| precisa ser uma array.' })
-    @ArrayMaxSize(100, { message: '$property| precisa ter no máximo 100 items' })
-    @IsInt({ each: true, message: '$property| precisa ser um número inteiro.' })
-    regiao_id?: number[];
 }

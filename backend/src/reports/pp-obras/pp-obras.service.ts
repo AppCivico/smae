@@ -740,58 +740,49 @@ export class PPObrasService implements ReportableService {
 
         let paramIndex = 1;
 
-        const perms = await ProjetoGetPermissionSet(this.tipo, user ? user : undefined);
+        if (user) {
+            const perms = await ProjetoGetPermissionSet(this.tipo, user);
 
-        const allowed = await this.prisma.projeto.findMany({
-            where: {
-                AND: perms,
-                removido_em: null,
-                // importante manter o portfolio_id aqui, pois é utilizado no filtro de compartilhamento
-                // e aqui também
-                portfolio_id: filters.portfolio_id,
-                portfolio: { modelo_clonagem: false }, // não traz portfólios que são modelos para clonagem
-                // reduz o número de linhas pra não virar um "IN" gigante
-                tipo: this.tipo,
-                orgao_responsavel_id: filters.orgao_responsavel_id ? filters.orgao_responsavel_id : undefined,
-                grupo_tematico_id: filters.grupo_tematico_id ? filters.grupo_tematico_id : undefined,
-                regiao:
-                    filters.regiao_id && filters.regiao_id.length > 0
-                        ? {
-                              ProjetoRegiao: {
-                                  some: { regiao_id: { in: filters.regiao_id }, removido_em: null },
-                              },
-                          }
-                        : undefined,
-            },
-            select: { id: true },
-        });
-
-        const allowed_shared = await this.prisma.portfolioProjetoCompartilhado.findMany({
-            where: {
-                projeto: {
+            const allowed = await this.prisma.projeto.findMany({
+                where: {
                     AND: perms,
+                    // reduz o número de linhas pra não virar um "IN" gigante
+                    portfolio_id: filters.portfolio_id,
+                    tipo: filters.tipo_projeto,
+                    orgao_responsavel_id: filters.orgao_responsavel_id ? filters.orgao_responsavel_id : undefined,
+                    grupo_tematico_id: filters.grupo_tematico_id ? filters.grupo_tematico_id : undefined,
+                    removido_em: null,
                 },
-                removido_em: null,
-                portfolio_id: filters.portfolio_id,
-            },
-            select: { projeto_id: true },
-        });
+                select: { id: true },
+            });
 
-        // Adicionando projetos compartilhados.
-        // Deve ser adicionado apenas projetos que não sejam originalmente do portfolio utilizado no filtro.
-        allowed.push(
-            ...allowed_shared
-                .filter((n) => !allowed.find((m) => m.id === n.projeto_id))
-                .map((n) => ({ id: n.projeto_id }))
-        );
+            const allowed_shared = await this.prisma.portfolioProjetoCompartilhado.findMany({
+                where: {
+                    projeto: {
+                        AND: perms,
+                    },
+                    removido_em: null,
+                    portfolio_id: filters.portfolio_id,
+                },
+                select: { projeto_id: true },
+            });
 
-        if (allowed.length === 0) {
-            return { whereString: 'WHERE false', queryParams: [] };
+            // Adicionando projetos compartilhados.
+            // Deve ser adicionado apenas projetos que não sejam originalmente do portfolio utilizado no filtro.
+            allowed.push(
+                ...allowed_shared
+                    .filter((n) => !allowed.find((m) => m.id === n.projeto_id))
+                    .map((n) => ({ id: n.projeto_id }))
+            );
+
+            if (allowed.length === 0) {
+                return { whereString: 'WHERE false', queryParams: [] };
+            }
+
+            whereConditions.push(`projeto.id = ANY($${paramIndex}::int[])`);
+            queryParams.push(allowed.map((n) => n.id));
+            paramIndex++;
         }
-
-        whereConditions.push(`projeto.id = ANY($${paramIndex}::int[])`);
-        queryParams.push(allowed.map((n) => n.id));
-        paramIndex++;
 
         // na teoria isso aqui é hardcoded pra obras, mas fica aqui por higiene
         if (filters.tipo_projeto) {
