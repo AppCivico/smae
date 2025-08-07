@@ -32,8 +32,10 @@ async function iniciar() {
   await licoesaprendidasStore.buscarTudo();
 }
 
-function deletarItem({ id }) {
+async function deletarItem({ id }) {
+  await licoesaprendidasStore.excluirItem(id);
 
+  iniciar();
 }
 
 const listaFiltrada = computed(() => (!statusVisível.value && !grauVisível.value
@@ -85,6 +87,12 @@ export default {
     :dados="listaFiltrada"
     :schema="schema"
     :colunas="[
+      {
+        chave: 'sequencial',
+        atributosDaColuna: {
+          class: 'col--number'
+        },
+      },
       { chave: 'data_registro' },
       { chave: 'contexto', ehCabecalho: true },
       { chave: 'responsavel' },
@@ -99,6 +107,22 @@ export default {
     })"
     @deletar="deletarItem"
   >
+    <template #cabecalho:sequencial />
+
+    <template #celula:sequencial="{ linha }">
+      <SmaeLink
+        :to="{
+          name: 'liçõesAprendidasResumo',
+          params: {
+            projetoId: projetoId,
+            licaoAprendidaId: linha.id,
+          }
+        }"
+      >
+        {{ linha.sequencial }}
+      </SmaeLink>
+    </template>
+
     <template #celula:data_registro="{ linha }">
       <SmaeLink
         :to="{
@@ -109,7 +133,7 @@ export default {
           }
         }"
       >
-        {{ linha.sequencial }} {{ dateToField(linha.data_registro) }}
+        {{ dateToField(linha.data_registro) }}
       </SmaeLink>
     </template>
 
@@ -127,76 +151,6 @@ export default {
       </SmaeLink>
     </template>
   </SmaeTable>
-
-  <table
-    v-if="listaFiltrada.length"
-    class="tabela-de-etapas"
-  >
-    <colgroup>
-      <col class="col--minimum">
-      <col class="col--data">
-      <col>
-      <col>
-      <col>
-      <col
-        v-if="!permissõesDoProjetoEmFoco.apenas_leitura
-          || permissõesDoProjetoEmFoco.sou_responsavel"
-        class="col--botão-de-ação"
-      >
-    </colgroup>
-
-    <thead>
-      <tr class="pl3 center mb05 tc300 w700 t12 uc">
-        <th />
-        <th class="tl">
-          {{ schema.fields['data_registro'].spec.label }}
-        </th>
-        <th class="tl">
-          {{ schema.fields['contexto'].spec.label }}
-        </th>
-        <th class="tl">
-          {{ schema.fields['responsavel'].spec.label }}
-        </th>
-        <th class="tl">
-          {{ schema.fields['observacao'].spec.label }}
-        </th>
-        <th
-          v-if="!permissõesDoProjetoEmFoco.apenas_leitura
-            || permissõesDoProjetoEmFoco.sou_responsavel"
-        />
-      </tr>
-    </thead>
-
-    <tbody
-      v-for="linha in listaFiltrada"
-      :key="linha.id"
-      class="tablemain"
-    >
-      <tr>
-        <td
-          v-if="!permissõesDoProjetoEmFoco.apenas_leitura
-            || permissõesDoProjetoEmFoco.sou_responsavel"
-          class="center"
-        >
-          <router-link
-            :to="{
-              name: 'liçõesAprendidasEditar',
-              params: {
-                projetoId: projetoId,
-                licaoAprendidaId: linha.id,
-              }
-            }"
-            title="Editar licoesaprendida"
-          >
-            <svg
-              width="20"
-              height="20"
-            ><use xlink:href="#i_edit" /></svg>
-          </router-link>
-        </td>
-      </tr>
-    </tbody>
-  </table>
 
   <span
     v-if="chamadasPendentes?.lista"

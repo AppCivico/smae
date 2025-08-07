@@ -1,10 +1,4 @@
 <script setup>
-import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
-import { liçãoAprendida as schema } from '@/consts/formSchemas';
-import truncate from '@/helpers/texto/truncate';
-import { useAlertStore } from '@/stores/alert.store';
-import { useLiçõesAprendidasStore } from '@/stores/licoesAprendidas.store.ts';
-import { useTarefasStore } from '@/stores/tarefas.store.ts';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
@@ -12,6 +6,12 @@ import {
   Form,
 } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
+import { liçãoAprendida as schema } from '@/consts/formSchemas';
+import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
+import truncate from '@/helpers/texto/truncate';
+import { useAlertStore } from '@/stores/alert.store';
+import { useTarefasStore } from '@/stores/tarefas.store.ts';
+import { useLiçõesAprendidasStore } from '@/stores/licoesAprendidas.store.ts';
 
 const alertStore = useAlertStore();
 const liçõesAprendidasStore = useLiçõesAprendidasStore();
@@ -43,12 +43,12 @@ const props = defineProps({
 
 async function onSubmit(_, { controlledValues: carga }) {
   try {
-    const msg = props.licaoAprendidaId
+    const msg = route.params.licaoAprendidaId
       ? 'Dados salvos com sucesso!'
       : 'Item adicionado com sucesso!';
 
-    const resposta = props.licaoAprendidaId
-      ? await liçõesAprendidasStore.salvarItem(carga, props.licaoAprendidaId)
+    const resposta = route.params.licaoAprendidaId
+      ? await liçõesAprendidasStore.salvarItem(carga, route.params.licaoAprendidaId)
       : await liçõesAprendidasStore.salvarItem(carga);
 
     if (resposta) {
@@ -59,22 +59,6 @@ async function onSubmit(_, { controlledValues: carga }) {
   } catch (error) {
     alertStore.error(error);
   }
-}
-
-function excluirLiçãoAprendida(id) {
-  useAlertStore().confirmAction('Deseja mesmo remover esse item?', async () => {
-    if (await useLiçõesAprendidasStore().excluirItem(id)) {
-      useLiçõesAprendidasStore().$reset();
-      useLiçõesAprendidasStore().buscarTudo();
-      useAlertStore().success('LicoesAprendida removido.');
-
-      const rotaDeEscape = route.meta?.rotaDeEscape;
-
-      if (rotaDeEscape) {
-        router.push(typeof rotaDeEscape === 'string' ? { name: rotaDeEscape } : rotaDeEscape);
-      }
-    }
-  }, 'Remover');
 }
 
 function iniciar() {
@@ -272,14 +256,6 @@ iniciar();
   >
     Carregando
   </div>
-
-  <button
-    v-if="emFoco?.id"
-    class="btn amarelo big"
-    @click="excluirLiçãoAprendida(emFoco.id)"
-  >
-    Remover item
-  </button>
 
   <div
     v-if="erro"

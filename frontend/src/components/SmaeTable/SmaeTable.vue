@@ -138,9 +138,12 @@
             :atributos="coluna.atributosDoRodapeDeColuna"
           >
             <slot
-              :name="(`rodape:${normalizadorDeSlots(coluna.chave)}` as keyof Slots)"
+              v-if="listaSlots.cabecalho.includes(coluna.slots?.coluna)"
+              :name="coluna.slots.coluna"
               v-bind="coluna"
-            />
+            >
+              {{ coluna.label }}
+            </slot>
           </TableHeaderCell>
         </tr>
       </tfoot>
@@ -235,8 +238,7 @@ const tituloParaRolagemHorizontal = computed<string | undefined>(() => {
 });
 
 const exibirRodape = computed<boolean>(() => props.replicarCabecalho
-  || !!slots.rodape
-  || Object.keys(slots).some((slot) => slot.includes('cabecalho:')));
+  || !!slots.rodape);
 
 const colunasFiltradas = computed(() => {
   const colunas = props.colunas.filter((v) => v);
