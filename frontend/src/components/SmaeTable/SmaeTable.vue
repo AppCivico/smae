@@ -46,7 +46,7 @@
               :atributos="coluna.atributosDoCabecalhoDeColuna"
             >
               <slot
-                v-if="listaSlots.cabecalho.includes(coluna.slots?.coluna)"
+                v-if="listaSlotsUsados.cabecalho[coluna.slots?.coluna]"
                 :name="coluna.slots.coluna"
                 v-bind="coluna"
               >
@@ -86,7 +86,7 @@
               v-bind="coluna.atributosDaCelula"
             >
               <slot
-                v-if="listaSlots.celula.includes(coluna.slots?.celula)"
+                v-if="listaSlotsUsados.celula[coluna.slots?.celula]"
                 :name="coluna.slots?.celula"
                 :linha="linha"
                 :celula="linha[coluna.chave]"
@@ -138,7 +138,7 @@
             :atributos="coluna.atributosDoRodapeDeColuna"
           >
             <slot
-              v-if="listaSlots.cabecalho.includes(coluna.slots?.coluna)"
+              v-if="listaSlotsUsados.cabecalho[coluna.slots?.coluna]"
               :name="coluna.slots.coluna"
               v-bind="coluna"
             >
@@ -240,19 +240,14 @@ const tituloParaRolagemHorizontal = computed<string | undefined>(() => {
 const exibirRodape = computed<boolean>(() => props.replicarCabecalho
   || !!slots.rodape);
 
-const colunasFiltradas = computed(() => {
-  const colunas = props.colunas.filter((v) => v);
-
-  const colunasPreparadas = colunas.map((item) => ({
+const colunasFiltradas = computed(() => props.colunas.filter((v) => v)
+  .map((item) => ({
     ...item,
     slots: {
       coluna: `cabecalho:${normalizadorDeSlots(item.chave)}` as keyof Slots,
       celula: `celula:${normalizadorDeSlots(item.chave)}` as keyof Slots,
     },
-  }));
-
-  return colunasPreparadas;
-});
+  })));
 
 function obterDestaqueDaLinha(linha: Linha): string | null {
   if (!props.personalizarLinhas) {
@@ -266,19 +261,19 @@ function obterDestaqueDaLinha(linha: Linha): string | null {
   return null;
 }
 
-const listaSlots = computed(() => Object.keys(slots).reduce((agrupador, item) => {
+const listaSlotsUsados = computed(() => Object.keys(slots).reduce((agrupador, item) => {
   if (item.includes('cabecalho:')) {
-    agrupador.cabecalho.push(item);
+    agrupador.cabecalho[item] = true;
   }
 
   if (item.includes('celula:')) {
-    agrupador.celula.push(item);
+    agrupador.celula[item] = true;
   }
 
   return agrupador;
 }, {
-  cabecalho: [] as string[],
-  celula: [] as string[],
+  cabecalho: {} as Record<string, true>,
+  celula: {} as Record<string, true>,
 }));
 
 </script>
