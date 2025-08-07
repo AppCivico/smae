@@ -631,14 +631,6 @@ export class PPObrasService implements ReportableService {
                 tipo: this.tipo,
                 orgao_responsavel_id: filters.orgao_responsavel_id ? filters.orgao_responsavel_id : undefined,
                 grupo_tematico_id: filters.grupo_tematico_id ? filters.grupo_tematico_id : undefined,
-                regiao:
-                    filters.regiao_id && filters.regiao_id.length > 0
-                        ? {
-                              ProjetoRegiao: {
-                                  some: { regiao_id: { in: filters.regiao_id }, removido_em: null },
-                              },
-                          }
-                        : undefined,
             },
             select: { id: true },
         });
@@ -654,6 +646,7 @@ export class PPObrasService implements ReportableService {
             },
             select: { projeto_id: true },
         });
+
 
         // Adicionando projetos compartilhados.
         // Deve ser adicionado apenas projetos que não sejam originalmente do portfolio utilizado no filtro.
