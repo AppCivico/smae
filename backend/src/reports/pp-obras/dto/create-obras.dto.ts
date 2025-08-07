@@ -23,7 +23,7 @@ export class CreateRelObrasDto extends PickType(FilterProjetoDto, ['orgao_respon
     @IsOptional()
     @IsNumber()
     @Expose()
-    projeto_regiao_id?: number;
+    regiao_id?: number;
 
     @IsOptional()
     @IsOnlyDate()

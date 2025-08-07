@@ -679,11 +679,11 @@ export class PPObrasService implements ReportableService {
             paramIndex++;
         }
 
-        if (filters.projeto_regiao_id) {
+        if (filters.regiao_id) {
             whereConditions.push(
                 `EXISTS (SELECT 1 FROM projeto_regioes WHERE projeto_id = projeto.id AND regiao_id = $${paramIndex})`
             );
-            queryParams.push(filters.projeto_regiao_id);
+            queryParams.push(filters.regiao_id);
             paramIndex++;
         }
 
