@@ -40,7 +40,7 @@ const rotasParaMigalhasDePão = computed(() => {
     : [];
 });
 
-const rotaComDetalhe = computed(() => {
+const rotaTemDetalhe = computed(() => {
   const ultimaRota = rotasParaMigalhasDePão.value[rotasParaMigalhasDePão.value.length - 1];
 
   return ultimaRota.name === route.name;
@@ -115,7 +115,7 @@ const rotaComDetalhe = computed(() => {
         */
         -->
 
-        <template v-if="rotaComDetalhe">
+        <template v-if="rotaTemDetalhe">
           {{ $route.meta?.títuloParaMenu || $route.name }}
         </template>
 
