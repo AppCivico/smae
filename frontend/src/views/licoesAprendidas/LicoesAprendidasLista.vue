@@ -1,12 +1,13 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { computed, ref } from 'vue';
+import { useRoute } from 'vue-router';
 import LocalFilter from '@/components/LocalFilter.vue';
+import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import { liçãoAprendida as schema } from '@/consts/formSchemas';
 import dateToField from '@/helpers/dateToField';
 import { useLiçõesAprendidasStore } from '@/stores/licoesAprendidas.store.ts';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
-import { storeToRefs } from 'pinia';
-import { computed, ref } from 'vue';
-import { useRoute } from 'vue-router';
 
 const licoesaprendidasStore = useLiçõesAprendidasStore();
 const {
@@ -29,6 +30,10 @@ async function iniciar() {
   licoesaprendidasStore.$reset();
 
   await licoesaprendidasStore.buscarTudo();
+}
+
+function deletarItem({ id }) {
+
 }
 
 const listaFiltrada = computed(() => (!statusVisível.value && !grauVisível.value
@@ -76,6 +81,53 @@ export default {
     />
   </div>
 
+  <SmaeTable
+    :dados="listaFiltrada"
+    :schema="schema"
+    :colunas="[
+      { chave: 'data_registro' },
+      { chave: 'contexto', ehCabecalho: true },
+      { chave: 'responsavel' },
+      { chave: 'observacao' },
+    ]"
+    :rota-editar="(linha) => ({
+      name: 'liçõesAprendidasEditar',
+      params: {
+        projetoId: projetoId,
+        licaoAprendidaId: linha.id,
+      }
+    })"
+    @deletar="deletarItem"
+  >
+    <template #celula:data_registro="{ linha }">
+      <SmaeLink
+        :to="{
+          name: 'liçõesAprendidasResumo',
+          params: {
+            projetoId: projetoId,
+            licaoAprendidaId: linha.id,
+          }
+        }"
+      >
+        {{ linha.sequencial }} {{ dateToField(linha.data_registro) }}
+      </SmaeLink>
+    </template>
+
+    <template #celula:contexto="{ linha }">
+      <SmaeLink
+        :to="{
+          name: 'liçõesAprendidasResumo',
+          params: {
+            projetoId: projetoId,
+            licaoAprendidaId: linha.id,
+          }
+        }"
+      >
+        {{ linha.contexto }}
+      </SmaeLink>
+    </template>
+  </SmaeTable>
+
   <table
     v-if="listaFiltrada.length"
     class="tabela-de-etapas"
@@ -121,51 +173,6 @@ export default {
       class="tablemain"
     >
       <tr>
-        <td class="cell--number">
-          <router-link
-            :to="{
-              name: 'liçõesAprendidasResumo',
-              params: {
-                projetoId: projetoId,
-                licaoAprendidaId: linha.id,
-              }
-            }"
-          >
-            {{ linha.sequencial }}
-          </router-link>
-        </td>
-        <td class="cell--data">
-          <router-link
-            :to="{
-              name: 'liçõesAprendidasResumo',
-              params: {
-                projetoId: projetoId,
-                licaoAprendidaId: linha.id,
-              }
-            }"
-          >
-            {{ dateToField(linha.data_registro) }}
-          </router-link>
-        </td>
-        <th>
-          <router-link
-            :to="{
-              name: 'liçõesAprendidasResumo',
-              params: {
-                projetoId: projetoId,
-                licaoAprendidaId: linha.id,
-              }
-            }"
-          >
-            {{ linha.contexto }}
-          </router-link>
-        </th>
-        <td>
-          {{ linha.responsavel }}
-        </td>
-        <td>
-          {{ linha.observacao }}
-        </td>
         <td
           v-if="!permissõesDoProjetoEmFoco.apenas_leitura
             || permissõesDoProjetoEmFoco.sou_responsavel"

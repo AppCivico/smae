@@ -46,7 +46,8 @@
               :atributos="coluna.atributosDoCabecalhoDeColuna"
             >
               <slot
-                :name="(`cabecalho:${normalizadorDeSlots(coluna.chave)}` as keyof Slots)"
+                v-if="listaSlots.cabecalho.includes(coluna.slots?.coluna)"
+                :name="coluna.slots.coluna"
                 v-bind="coluna"
               >
                 {{ coluna.label }}
@@ -85,7 +86,8 @@
               v-bind="coluna.atributosDaCelula"
             >
               <slot
-                :name="(`celula:${normalizadorDeSlots(coluna.chave)}` as keyof Slots)"
+                v-if="listaSlots.celula.includes(coluna.slots?.celula)"
+                :name="coluna.slots?.celula"
                 :linha="linha"
                 :celula="linha[coluna.chave]"
               />
@@ -236,7 +238,19 @@ const exibirRodape = computed<boolean>(() => props.replicarCabecalho
   || !!slots.rodape
   || Object.keys(slots).some((slot) => slot.includes('cabecalho:')));
 
-const colunasFiltradas = computed(() => props.colunas.filter((v) => v));
+const colunasFiltradas = computed(() => {
+  const colunas = props.colunas.filter((v) => v);
+
+  const colunasPreparadas = colunas.map((item) => ({
+    ...item,
+    slots: {
+      coluna: `cabecalho:${normalizadorDeSlots(item.chave)}` as keyof Slots,
+      celula: `celula:${normalizadorDeSlots(item.chave)}` as keyof Slots,
+    },
+  }));
+
+  return colunasPreparadas;
+});
 
 function obterDestaqueDaLinha(linha: Linha): string | null {
   if (!props.personalizarLinhas) {
@@ -249,4 +263,20 @@ function obterDestaqueDaLinha(linha: Linha): string | null {
 
   return null;
 }
+
+const listaSlots = computed(() => Object.keys(slots).reduce((agrupador, item) => {
+  if (item.includes('cabecalho:')) {
+    agrupador.cabecalho.push(item);
+  }
+
+  if (item.includes('celula:')) {
+    agrupador.celula.push(item);
+  }
+
+  return agrupador;
+}, {
+  cabecalho: [] as string[],
+  celula: [] as string[],
+}));
+
 </script>
