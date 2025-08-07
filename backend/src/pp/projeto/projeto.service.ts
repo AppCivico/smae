@@ -3701,13 +3701,16 @@ export class ProjetoService {
             if (novo.length !== velho.length) {
                 return false;
             }
-
-            for (let i = 0; i < novo.length; i++) {
-                if (novo[i] !== velho[i]) {
+            const setNovo = new Set(novo);
+            const setVelho = new Set(velho);
+            if (setNovo.size !== setVelho.size) {
+                return false;
+            }
+            for (const v of setNovo) {
+                if (!setVelho.has(v)) {
                     return false;
                 }
             }
-
             return true;
         }
     }
