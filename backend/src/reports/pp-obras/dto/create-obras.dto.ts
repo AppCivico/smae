@@ -30,7 +30,7 @@ export class CreateRelObrasDto extends OmitType(PartialType(FilterProjetoDto), [
     @IsOptional()
     @IsNumber()
     @Expose()
-    projeto_regiao_id?: number;
+    regiao_id?: number;
 
     @IsOptional()
     @IsOnlyDate()
