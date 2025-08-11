@@ -1,8 +1,8 @@
 <script setup>
+import { storeToRefs } from 'pinia';
 import Gantt from '@/components/projetos/Gantt.vue';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
-import { storeToRefs } from 'pinia';
 
 const projetosStore = useProjetosStore();
 const tarefasStore = useTarefasStore();
@@ -10,15 +10,8 @@ const {
   chamadasPendentes, emFoco, erro,
 } = storeToRefs(projetosStore);
 const {
-  tarefasOrdenadas,
+  chamadasPendentes: tarefaChamapadaPendente, tarefasOrdenadas,
 } = storeToRefs(tarefasStore);
-
-defineProps({
-  projetoId: {
-    type: Number,
-    default: 0,
-  },
-});
 
 function iniciar() {
   if (!tarefasStore.lista.length || !tarefasStore.lista[0]?.dependencias) {
@@ -35,7 +28,7 @@ iniciar();
   </div>
 
   <Gantt
-    v-if="tarefasOrdenadas.length"
+    v-if="!tarefaChamapadaPendente?.emFoco && tarefasOrdenadas?.length"
     :data="tarefasOrdenadas"
   />
 
