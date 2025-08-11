@@ -75,6 +75,11 @@ export default {
         título: 'Nova tarefa',
         títuloParaMenu: 'Nova tarefa',
         rotaDeEscape: 'projetoTarefasListar',
+        rotasParaMigalhasDePão: [
+          'projetosListar',
+          'projetosResumo',
+          'projetoTarefasListar',
+        ],
       },
     },
 

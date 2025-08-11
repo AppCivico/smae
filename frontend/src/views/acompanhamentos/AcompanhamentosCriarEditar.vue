@@ -1,12 +1,4 @@
 <script setup>
-import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
-import { acompanhamento as schema } from '@/consts/formSchemas';
-import dateToField from '@/helpers/dateToField';
-import truncate from '@/helpers/texto/truncate';
-import { useAcompanhamentosStore } from '@/stores/acompanhamentos.store.ts';
-import { useAlertStore } from '@/stores/alert.store';
-import { useRiscosStore } from '@/stores/riscos.store.ts';
-import { useTiposDeAcompanhamentoStore } from '@/stores/tiposDeAcompanhamento.store.ts';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
@@ -15,6 +7,14 @@ import {
   Form,
 } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
+import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
+import { acompanhamento as schema } from '@/consts/formSchemas';
+import dateToField from '@/helpers/dateToField';
+import truncate from '@/helpers/texto/truncate';
+import { useAcompanhamentosStore } from '@/stores/acompanhamentos.store.ts';
+import { useAlertStore } from '@/stores/alert.store';
+import { useRiscosStore } from '@/stores/riscos.store.ts';
+import { useTiposDeAcompanhamentoStore } from '@/stores/tiposDeAcompanhamento.store.ts';
 
 const acompanhamentosStore = useAcompanhamentosStore();
 const alertStore = useAlertStore();
@@ -31,17 +31,6 @@ const {
   itemParaEdicao,
 } = storeToRefs(acompanhamentosStore);
 
-const props = defineProps({
-  projetoId: {
-    type: Number,
-    default: 0,
-  },
-  acompanhamentoId: {
-    type: Number,
-    default: 0,
-  },
-});
-
 async function onSubmit(_, { controlledValues }) {
   const carga = controlledValues;
 
@@ -54,12 +43,12 @@ async function onSubmit(_, { controlledValues }) {
   }
 
   try {
-    const msg = props.acompanhamentoId
+    const msg = route.params.acompanhamentoId
       ? 'Dados salvos com sucesso!'
       : 'Item adicionado com sucesso!';
 
-    const resposta = props.acompanhamentoId
-      ? await acompanhamentosStore.salvarItem(carga, props.acompanhamentoId)
+    const resposta = route.params.acompanhamentoId
+      ? await acompanhamentosStore.salvarItem(carga, route.params.acompanhamentoId)
       : await acompanhamentosStore.salvarItem(carga);
 
     if (resposta) {
@@ -235,12 +224,12 @@ if (!riscosStore?.lista?.length) {
           :schema="schema"
         />
         <SmaeText
+          v-model="values.pauta"
           name="pauta"
           as="textarea"
           rows="5"
           class="inputtext light mb1"
           maxlength="2048"
-          v-model="values.pauta"
           anular-vazio
           :class="{ 'error': errors.pauta }"
         />
@@ -258,12 +247,12 @@ if (!riscosStore?.lista?.length) {
           :schema="schema"
         />
         <SmaeText
+          v-model="values.detalhamento"
           name="detalhamento"
           as="textarea"
           rows="5"
           class="inputtext light mb1"
           maxlength="2048"
-          v-model="values.detalhamento"
           anular-vazio
           :class="{ 'error': errors.detalhamento }"
         />
@@ -287,12 +276,12 @@ if (!riscosStore?.lista?.length) {
           :schema="schema"
         />
         <SmaeText
+          v-model="values.observacao"
           name="observacao"
           as="textarea"
           rows="5"
           class="inputtext light mb1"
           maxlength="2048"
-          v-model="values.observacao"
           anular-vazio
           :class="{ 'error': errors.observacao }"
         />
@@ -338,12 +327,12 @@ if (!riscosStore?.lista?.length) {
           :schema="schema"
         />
         <SmaeText
+          v-model="values.pontos_atencao"
           name="pontos_atencao"
           as="textarea"
           rows="5"
           class="inputtext light mb1"
           maxlength="2048"
-          v-model="values.pontos_atencao"
           anular-vazio
           :class="{ 'error': errors.pontos_atencao }"
         />
