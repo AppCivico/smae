@@ -1,4 +1,14 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage,
+  Field,
+  FieldArray,
+  useForm,
+  useIsFormDirty,
+} from 'vee-validate';
+import { computed, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
 import CampoDePlanosMetasRelacionados from '@/components/CampoDePlanosMetasRelacionados.vue';
@@ -16,16 +26,6 @@ import { useObservadoresStore } from '@/stores/observadores.store.ts';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
-import { storeToRefs } from 'pinia';
-import {
-  ErrorMessage,
-  Field,
-  FieldArray,
-  useForm,
-  useIsFormDirty,
-} from 'vee-validate';
-import { computed, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -1364,8 +1364,7 @@ watch(itemParaEdicao, (novoValor) => {
               error: errors.orgao_gestor_id,
               loading: ÓrgãosStore.organs.loading,
             }"
-            :disabled="desabilitarTodosCampos.camposComuns
-              || !orgaosDisponiveisPorPortfolio[values.portfolio_id]?.length"
+            :disabled="desabilitarTodosCampos.camposComuns"
             :aria-busy="buscaDePossiveisGestoresPendente"
             @change="setFieldValue('responsaveis_no_orgao_gestor', [])"
           >
@@ -1482,8 +1481,7 @@ watch(itemParaEdicao, (novoValor) => {
               error: errors.responsavel_id,
               loading: portfolioStore.chamadasPendentes.lista
             }"
-            :disabled="desabilitarTodosCampos.camposComuns
-              || !possiveisGerentesPorOrgaoId[values.orgao_responsavel_id]?.length"
+            :disabled="desabilitarTodosCampos.camposComuns"
             :aria-busy="buscaDePossiveisGerentesPendente"
             @update:model-value="values.responsavel_id = Number(values.responsavel_id)
               || null"
