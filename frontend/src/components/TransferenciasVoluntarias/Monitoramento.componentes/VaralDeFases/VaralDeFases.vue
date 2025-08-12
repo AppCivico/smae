@@ -67,7 +67,7 @@ onMounted(() => {
   <section
     v-if="etapaEmFoco"
     ref="varalDeFasesEl"
-    class="varal-de-fases mt2 container-inline"
+    class="varal-de-fases container-inline"
   >
     <TextoComBotao>
       <template #texto>
@@ -146,7 +146,7 @@ onMounted(() => {
 </template>
 
 <style lang="less" scoped>
-@gap-items: 50px;
+@gap-items: 25px;
 @tamanho-largo: 600px;
 
 .varal-de-fases__lista {
@@ -204,7 +204,7 @@ onMounted(() => {
   .varal-de-fases__lista {
     flex-direction: row;
     overflow: auto;
-    padding: 90px 0 20px;
+    padding: 40px 0 20px;
   }
 
   .fase-item {
@@ -223,7 +223,7 @@ onMounted(() => {
   .item-contador {
     justify-content: center;
     align-items: center;
-    font-size: 1.71rem;
+    font-size: 1.2rem;
     line-height: 1;
     padding: 12px;
 
