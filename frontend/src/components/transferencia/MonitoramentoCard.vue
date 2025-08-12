@@ -81,7 +81,7 @@ const recursoItem = computed(() => {
         <dt class="t13 w300">
           {{ item.label }}
         </dt>
-        <dd class="t20 w300">
+        <dd class="t3 w300">
           {{ item.valor }}
         </dd>
       </div>
@@ -163,7 +163,7 @@ const recursoItem = computed(() => {
   }
 
   @container (width > 900px) {
-    min-width: 120px;
+    min-width: 0;
     max-width: 230px;
 
     border-bottom: initial;

@@ -198,12 +198,10 @@ function handleEditar() {
 .varal-de-fase-item__raiz {
   position: relative;
   width: 100%;
-  min-width: 235px;
 }
 
 .varal-de-fase-item {
   width: 100%;
-  min-width: 235px;
 }
 
 .varal-de-fase-item--secundario {
@@ -360,8 +358,10 @@ function handleEditar() {
 }
 
 .varal-de-fase-item--largo {
+  width: 200px;
+
   .varal-de-fase-item__titulo {
-    font-size: 1.43rem;
+    font-size: 1rem;
     line-height: 1.43rem;
     margin-bottom: 12px;
   }
@@ -379,18 +379,15 @@ function handleEditar() {
 
     flex-direction: column;
     align-items: flex-start;
-    padding: 12px 8px;
+    padding: 6px 2px;
 
     dt, dd {
-      line-height: 1.71rem;
-    }
-
-    dt {
-      font-size: 1.14rem;
+      line-height: 1.2rem;
+      font-size: 1rem;
     }
 
     dd {
-      font-size: 1.43rem;
+      font-size: 1rem;
       font-weight: 400;
     }
   }
