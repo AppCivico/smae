@@ -96,16 +96,19 @@ const temInformacao = computed<boolean>(() => {
 
         {{ temInformacao ? '&nbsp;' : undefined }}
 
-        <SmaeTooltip
-          v-if="temInformacao"
-          as="small"
-          :texto="
-            $props.balaoInformativo
-              || caminhoNoSchema.spec.meta?.balaoInformativo
-          "
-        >
-          <slot name="balaoInformativo" />
-        </SmaeTooltip>
+        <div class="relative flex center">
+          <SmaeTooltip
+            v-if="temInformacao"
+            class="smae-label__tooltip"
+            as="small"
+            :texto="
+              $props.balaoInformativo
+                || caminhoNoSchema.spec.meta?.balaoInformativo
+            "
+          >
+            <slot name="balaoInformativo" />
+          </SmaeTooltip>
+        </div>
       </template>
     </slot>
     <slot name="append" />
@@ -122,4 +125,9 @@ const temInformacao = computed<boolean>(() => {
   }
 }
 
+.smae-label__tooltip {
+  width: fit-content;
+  height: fit-content;
+  position: fixed;
+}
 </style>
