@@ -1,4 +1,4 @@
-<script setup>
+<script lang="ts" setup>
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
@@ -15,36 +15,31 @@ import { useRegionsStore } from '@/stores/regions.store';
 import tiposDeMunicípio from '@/consts/tiposDeMunicipio';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
 
-const emit = defineEmits(['close']);
-const props = defineProps({
-  apenasEmitir: {
-    type: Boolean,
-    default: false,
-  },
-  parlamentarId: {
-    type: [
-      Number,
-      String,
-    ],
-    default: 0,
-  },
-  representatividadeId: {
-    type: [
-      Number,
-      String,
-    ],
-    default: 0,
-  },
-  tipo: {
-    type: String,
-    default: '',
-  },
+type Props = {
+  apenasEmitir?: boolean,
+  parlamentarId?: number | string
+  representatividadeId?: number | string
+  tipo: 'capital' | 'interior'
+};
+
+const props = withDefaults(defineProps<Props>(), {
+  apenasEmitir: false,
+  parlamentarId: 0,
+  representatividadeId: 0,
 });
 
-const tipoSugerido = props.tipo
-  ? tiposDeMunicípio
-    .find((x) => x.toLowerCase() === props.tipo.toLocaleLowerCase())
-  : '';
+const emit = defineEmits(['close']);
+
+const mapaMunicipioTipo = {
+  capital: 'Capital',
+  interior: 'Interior',
+};
+
+const mapaNivel = {
+  padrao: 'Estado',
+  interior: 'Municipio',
+  capital: 'Subprefeitura',
+};
 
 const route = useRoute();
 const router = useRouter();
@@ -53,78 +48,81 @@ const parlamentaresStore = useParlamentaresStore();
 const regionsStore = useRegionsStore();
 
 const {
-  emFoco, chamadasPendentes, erro, representatividadeParaEdição,
+  emFoco, chamadasPendentes, representatividadeParaEdicao,
 } = storeToRefs(parlamentaresStore);
 
 const { regions: regiões, regiõesPorNível } = storeToRefs(regionsStore);
 
 const {
-  errors, handleSubmit, isSubmitting, resetField, resetForm, setFieldValue, values,
+  handleSubmit, resetForm, values,
 } = useForm({
-  initialValues: representatividadeParaEdição.value,
+  initialValues: representatividadeParaEdicao.value,
   validationSchema: schema,
 });
 
-const éCapital = computed(() => values.municipio_tipo === 'Capital');
-
+const isCapital = computed(() => props.tipo === 'capital');
 const mandatosEmSp = computed(() => {
+  if (!emFoco.value || !emFoco.value.mandatos) {
+    return [];
+  }
+
   const { mandatos } = emFoco.value;
-  return mandatos ? mandatos.filter((mandato) => mandato.uf === 'SP') : [];
+
+  return mandatos.filter((mandato) => mandato.uf === 'SP');
 });
 
-const regiõesFiltradas = computed(() => {
-  switch (values.municipio_tipo) {
-    case 'Capital':
-      return regiõesPorNível.value[3]?.slice()
-        .sort((a, b) => a.descricao.localeCompare(b.descricao));
-    case 'Interior':
-      return regiõesPorNível.value[1]?.slice()
-        .sort((a, b) => a.descricao.localeCompare(b.descricao));
-    default:
-      return [];
+const regioesFiltradas = computed(() => {
+  if (Object.keys(regiõesPorNível.value).length === 0) {
+    return [];
   }
+
+  const regioes = {
+    capital: () => regiõesPorNível.value[3]?.slice().sort(
+      (a, b) => a.descricao.localeCompare(b.descricao),
+    ),
+    interior: () => regiõesPorNível.value[1]?.slice().sort(
+      (a, b) => a.descricao.localeCompare(b.descricao),
+    ),
+  };
+
+  return regioes[props.tipo]();
 });
 
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
+  const dados = {
+    ...valoresControlados,
+    municipio_tipo: mapaMunicipioTipo[props.tipo],
+    nivel: mapaNivel[props.tipo] || mapaNivel.padrao,
+  };
+
   try {
-    if (await parlamentaresStore.salvarRepresentatividade(
-      valoresControlados,
+    await parlamentaresStore.salvarRepresentatividade(
+      dados,
       props.representatividadeId,
       props.parlamentarId,
-    )) {
-      parlamentaresStore.buscarItem(props.parlamentarId);
+    );
 
-      alertStore.success('Representatividade atualizada!');
-      if (props.apenasEmitir) {
-        emit('close');
-      } else if (route.meta.rotaDeEscape) {
-        router.push({
-          name: route.meta.rotaDeEscape,
-          params: route.params,
-          query: route.query,
-        });
-      }
-    }
+    await parlamentaresStore.buscarItem(props.parlamentarId);
+
+    alertStore.success('Representatividade atualizada!');
   } catch (error) {
     alertStore.error(error);
+  } finally {
+    if (props.apenasEmitir) {
+      emit('close');
+    }
+
+    if (route.meta.rotaDeEscape) {
+      router.push({
+        name: route.meta.rotaDeEscape,
+        params: route.params,
+        query: route.query,
+      });
+    }
   }
 });
 
 const formularioSujo = useIsFormDirty();
-
-function definirCampoNível(valor) {
-  switch (valor) {
-    case 'Capital':
-      setFieldValue('nivel', 'Subprefeitura');
-      break;
-    case 'Interior':
-      setFieldValue('nivel', 'Municipio');
-      break;
-    default:
-      setFieldValue('nivel', '');
-      break;
-  }
-}
 
 function iniciar() {
   if (!regiões.value.length) {
@@ -142,23 +140,16 @@ function iniciar() {
 
 iniciar();
 
-watch(representatividadeParaEdição, (novoValor) => {
+watch(representatividadeParaEdicao, (novoValor) => {
   if (
     props.representatividadeId
-    && representatividadeParaEdição.value?.regiao?.comparecimento?.valor
+    && representatividadeParaEdicao.value?.regiao?.comparecimento?.valor
   ) {
-    novoValor.numero_comparecimento = representatividadeParaEdição.value
+    novoValor.numero_comparecimento = representatividadeParaEdicao.value
       .regiao.comparecimento.valor;
   }
 
   resetForm({ values: novoValor });
-
-  if (!values.municipio_tipo && tipoSugerido) {
-    resetField('municipio_tipo', { value: tipoSugerido });
-    definirCampoNível(tipoSugerido);
-  }
-
-  // rodar imediatamente apenas por causa do tipo sugerido
 }, { immediate: true });
 </script>
 
@@ -178,90 +169,10 @@ watch(representatividadeParaEdição, (novoValor) => {
       />
     </div>
 
-    <form
-      :disabled="isSubmitting"
-      @submit.prevent="onSubmit"
-    >
-      <div class="flex flexwrap g2 mb1">
-        <Field
-          v-if="!props.representatividadeId"
-          name="nivel"
-          type="hidden"
-        />
+    <LoadingComponent v-if="chamadasPendentes.equipe" />
 
-        <div
-          v-if="!props.representatividadeId"
-          class="f1"
-          :hidden="!!tipoSugerido"
-        >
-          <LabelFromYup
-            name="municipio_tipo"
-            :schema="schema"
-          />
-          <Field
-
-            name="municipio_tipo"
-            as="select"
-            class="inputtext light mb1"
-            :class="{ 'error': errors.municipio_tipo, loading: chamadasPendentes.emFoco }"
-            @change="(e) => definirCampoNível(e.target.value) "
-          >
-            <option value="">
-              Selecionar
-            </option>
-            <option
-              v-for="tipo in tiposDeMunicípio"
-              :key="tipo"
-              :value="tipo"
-            >
-              {{ tipo }}
-            </option>
-          </Field>
-          <ErrorMessage
-            class="error-msg"
-            name="municipio_tipo"
-          />
-        </div>
-
-        <div class="f1">
-          <LabelFromYup
-            name="regiao_id"
-            :schema="schema"
-          >
-            {{ éCapital ? 'Região' : 'Município' }}
-          </LabelFromYup>
-          <Field
-            v-if="!props.representatividadeId"
-            name="regiao_id"
-            as="select"
-            class="inputtext light mb1"
-            :class="{ error: errors.regiao_id, loading: chamadasPendentes.emFoco }"
-          >
-            <option value="">
-              Selecionar
-            </option>
-            <option
-              v-for="região in regiõesFiltradas"
-              :key="região.id"
-              :value="região.id"
-            >
-              {{ região.descricao }}
-            </option>
-          </Field>
-          <input
-            v-else
-            type="text"
-            disabled
-            class="inputtext light mb1"
-            :value="representatividadeParaEdição?.regiao?.descricao"
-            :class="{ loading: chamadasPendentes.emFoco }"
-          >
-          <ErrorMessage
-            class="error-msg"
-            name="regiao_id"
-          />
-        </div>
-
+    <form @submit="onSubmit">
+      <div class="flex flexwrap g2">
         <div class="f1">
           <LabelFromYup
             name="mandato_id"
@@ -269,17 +180,16 @@ watch(representatividadeParaEdição, (novoValor) => {
           />
 
           <Field
-            v-if="!props.representatividadeId"
             name="mandato_id"
             as="select"
-            class="inputtext light mb1"
-            :class="{ error: errors.mandato_id, loading: chamadasPendentes.emFoco }"
+            class="inputtext light"
           >
-            <option :value="0">
+            <option value="">
               Selecionar
             </option>
+
             <option
-              v-for="mandato in mandatosEmSp || []"
+              v-for="mandato in mandatosEmSp"
               :key="mandato.id"
               :value="mandato.id"
             >
@@ -287,113 +197,134 @@ watch(representatividadeParaEdição, (novoValor) => {
               {{ mandato.eleicao?.ano || mandato.id }}
             </option>
           </Field>
-          <input
-            v-else
-            class="inputtext light mb1 disabled"
-            :value="[
-              representatividadeParaEdição?.mandato?.tipo,
-              representatividadeParaEdição?.mandato?.ano
-            ].join(' - ')"
-            disabled
-            :class="{ loading: chamadasPendentes.emFoco }"
-          >
+
           <ErrorMessage
             class="error-msg"
             name="mandato_id"
           />
         </div>
+
+        <div class="f1">
+          <SmaeLabel
+            name="regiao_id"
+            :schema="schema"
+          >
+            {{ isCapital ? 'Região' : 'Município' }}
+          </SmaeLabel>
+
+          <Field
+            v-if="!props.representatividadeId"
+            name="regiao_id"
+            as="select"
+            class="inputtext light"
+            :disabled="regioesFiltradas.length === 0"
+          >
+            <option value="">
+              Selecionar
+            </option>
+            <option
+              v-for="região in regioesFiltradas"
+              :key="região.id"
+              :value="região.id"
+            >
+              {{ região.descricao }}
+            </option>
+          </Field>
+
+          <input
+            v-else
+            type="text"
+            disabled
+            class="inputtext light"
+            :value="representatividadeParaEdicao?.regiao?.descricao"
+            :class="{ loading: chamadasPendentes.emFoco }"
+          >
+
+          <ErrorMessage
+            class="error-msg"
+            name="regiao_id"
+          />
+        </div>
       </div>
 
-      <div class="flex g2 mb1">
+      <div class="flex flexwrap g2 mt1">
         <div class="f1">
-          <LabelFromYup
+          <SmaeLabel
             name="numero_votos"
             :schema="schema"
           />
+
           <Field
+            v-model.number="values.numero_votos"
             name="numero_votos"
             type="number"
-            class="inputtext light mb1"
-            :class="{ error: errors.numero_votos, loading: chamadasPendentes.emFoco }"
+            class="inputtext light"
             min="0"
             step="1"
-            @change="
-              setFieldValue(
-                'numero_votos',
-                $event.target.value ? Number($event.target.value) : null
-              )"
           />
+
           <ErrorMessage
             class="error-msg"
             name="numero_votos"
           />
         </div>
+
         <div class="f1">
           <LabelFromYup
             name="numero_comparecimento"
             :schema="schema"
           />
+
           <Field
+            v-model.number="values.numero_comparecimento"
             name="numero_comparecimento"
             type="number"
-            :disabled="props.representatividadeId"
-            class="inputtext light mb1"
-            :class="{ error: errors.numero_comparecimento, loading: chamadasPendentes.emFoco }"
+            class="inputtext light"
             min="0"
             step="1"
-            @change="
-              setFieldValue(
-                'numero_comparecimento',
-                $event.target.value ? Number($event.target.value) : null
-              )"
           />
+
           <ErrorMessage
             class="error-msg"
             name="numero_comparecimento"
           />
         </div>
+
         <div class="f1">
           <LabelFromYup
             name="pct_participacao"
             :schema="schema"
           />
+
+          -{{ values.pct_participacao }}-
           <Field
+            v-model.number="values.pct_participacao"
             name="pct_participacao"
             type="number"
-            class="inputtext light mb1"
-            :class="{ error: errors.pct_participacao, loading: chamadasPendentes.emFoco }"
-            min="0"
+            class="inputtext light"
             step="0.01"
-            @change="
-              setFieldValue(
-                'pct_participacao',
-                $event.target.value ? Number($event.target.value) : null
-              )"
           />
+
           <ErrorMessage
             class="error-msg"
             name="pct_participacao"
           />
         </div>
+
         <div class="f1">
           <LabelFromYup
             name="ranking"
             :schema="schema"
           />
+
           <Field
+            v-model.number="values.ranking"
             name="ranking"
             type="number"
             class="inputtext light mb1"
-            :class="{ error: errors.ranking, loading: chamadasPendentes.emFoco }"
-            max="1000"
-            min="0"
             step="1"
-            @change="
-              setFieldValue(
-                'ranking',
-                $event.target.value ? Number($event.target.value) : null
-              )"
           />
+
           <ErrorMessage
             class="error-msg"
             name="ranking"
@@ -401,32 +332,14 @@ watch(representatividadeParaEdição, (novoValor) => {
         </div>
       </div>
 
-      <FormErrorsList :errors="errors" />
-
-      <div class="flex spacebetween center mb2">
-        <hr class="mr2 f1">
+      <div class="flex justifycenter center mt2">
         <button
+          type="submit"
           class="btn big"
-          :disabled="isSubmitting || Object.keys(errors)?.length"
-          :title="Object.keys(errors)?.length
-            ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
-            : null"
         >
           Salvar
         </button>
-        <hr class="ml2 f1">
       </div>
     </form>
-
-    <LoadingComponent v-if="chamadasPendentes.equipe" />
-
-    <div
-      v-if="erro"
-      class="error p1"
-    >
-      <div class="error-msg">
-        {{ erro }}
-      </div>
-    </div>
   </SmallModal>
 </template>
