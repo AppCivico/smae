@@ -3555,7 +3555,27 @@ export const representatividade = object()
       .label('Votos')
       .min(0)
       .max(2147483647)
-      .required(),
+      .required()
+      .test(
+        'verificar-votacao',
+        (numeroVotos, { resolve, createError, options }) => {
+          const [{ schema }] = options.from;
+
+          const {
+            numero_votos: numeroVotosSchema,
+            numero_comparecimento: numeroComparecimentoSchema,
+          } = schema.fields;
+          const numeroComparecimento = resolve(ref('numero_comparecimento'));
+
+          if (numeroVotos > numeroComparecimento) {
+            return createError({
+              message: `${numeroVotosSchema.spec.label} não pode ser maior que ${numeroComparecimentoSchema.spec.label}`,
+            });
+          }
+
+          return true;
+        },
+      ),
     pct_participacao: number()
       .label('Percentual')
       .min(0)
