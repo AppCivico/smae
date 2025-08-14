@@ -312,7 +312,7 @@ export const useParlamentaresStore = defineStore('parlamentaresStore', {
         ? { ...emFoco.equipe.find((x) => Number(pessoaId) === x.id) }
         : {};
     },
-    representatividadeParaEdição({ emFoco }) {
+    representatividadeParaEdicao({ emFoco }) {
       const { representatividadeId } = this.route.params;
 
       let representatividade;
