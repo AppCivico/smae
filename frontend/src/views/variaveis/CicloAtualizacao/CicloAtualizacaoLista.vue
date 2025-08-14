@@ -129,7 +129,7 @@
               <!-- TO-DO: passar a essa conferência para o Backend e usar apenas
   `.pode_editar` -->
               <SmaeLink
-
+                v-if="cicloAtualizacao.pode_editar && cicloAtualizacao.prazo"
                 type="button"
                 class="tipinfo tprimary like-a__text"
                 exibir-desabilitado
