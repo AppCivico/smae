@@ -290,19 +290,22 @@ watch(representatividadeParaEdicao, (novoValor) => {
           />
         </div>
 
-        <div class="f1">
+        <div
+          v-if="props.representatividadeId"
+          class="f1"
+        >
           <LabelFromYup
             name="pct_participacao"
             :schema="schema"
           />
 
-          -{{ values.pct_participacao }}-
           <Field
             v-model.number="values.pct_participacao"
             name="pct_participacao"
             type="number"
             class="inputtext light"
             step="0.01"
+            disabled
           />
 
           <ErrorMessage
