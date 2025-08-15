@@ -52,6 +52,16 @@ export class ParlamentarController {
         return await this.parlamentarService.findAll(filters, user);
     }
 
+    @Get('/eleicao-comparecimento')
+    @ApiBearerAuth('access-token')
+    @Roles(['CadastroParlamentar.inserir'])
+    async getEleicaoComparecimento(
+        @Query() query: GetEleicaoComparecimentoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<EleicaoComparecimentoDto> {
+        return await this.parlamentarService.getEleicaoComparecimento(query, user);
+    }
+
     @Get(':id')
     @ApiBearerAuth('access-token')
     @Roles(['CadastroParlamentar.inserir'])
@@ -144,16 +154,6 @@ export class ParlamentarController {
     async removeMandatoo(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
         await this.parlamentarService.removeMandato(+params.id2, user);
         return '';
-    }
-
-    @Get('/eleicao-comparecimento')
-    @ApiBearerAuth('access-token')
-    @Roles(['CadastroParlamentar.inserir'])
-    async getEleicaoComparecimento(
-        @Query() query: GetEleicaoComparecimentoDto,
-        @CurrentUser() user: PessoaFromJwt
-    ): Promise<EleicaoComparecimentoDto> {
-        return await this.parlamentarService.getEleicaoComparecimento(query, user);
     }
 
     // Mandato - Representatividade
