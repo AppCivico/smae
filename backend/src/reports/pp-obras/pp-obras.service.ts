@@ -310,46 +310,17 @@ export class PPObrasService implements ReportableService {
         const whereCond = await this.buildFilteredWhereStr(dto, user);
         await ctx.resumoSaida('Obras', whereCond.count);
 
-        const baseQuery = this.buildObrasBaseQuery();
-        const obrasQuery = `${baseQuery} ${whereCond.whereString}`;
-
-        out.push(await this.streamQueryToCSV(obrasQuery, whereCond.queryParams, 'obras.csv'));
+        out.push(
+            await this.streamQueryToCSV(
+                `${this.buildObrasBaseQuery()} ${whereCond.whereString}`,
+                whereCond.queryParams,
+                'obras.csv'
+            )
+        );
 
         out.push(
             await this.streamQueryToCSV(
-                `SELECT
-                    tc.projeto_id AS projeto_id,
-                    projeto.codigo AS projeto_codigo,
-                    tc.atraso,
-                    resp.id AS responsavel_id,
-                    resp.nome_exibicao AS responsavel_nome_exibicao,
-                    t.id,
-                    t.numero,
-                    t.nivel,
-                    '' AS hierarquia,
-                    t.tarefa,
-                    t.inicio_planejado,
-                    t.termino_planejado,
-                    t.custo_estimado,
-                    t.inicio_real,
-                    t.termino_real,
-                    t.duracao_real,
-                    t.percentual_concluido,
-                    t.custo_real,
-                    (
-                        SELECT
-                        string_agg(json_build_object('id', td.dependencia_tarefa_id, 'tipo', td.tipo, 'latencia', td.latencia) #>> '{}', '/')
-                        FROM tarefa_dependente td
-                        JOIN tarefa t2 ON t2.id = td.dependencia_tarefa_id AND t2.removido_em IS NULL
-                        WHERE td.tarefa_id = t.id
-                    ) as dependencias
-                FROM projeto
-                JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
-                LEFT JOIN tarefa_cronograma tc ON tc.projeto_id = projeto.id AND tc.removido_em IS NULL
-                LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
-                JOIN tarefa t ON t.tarefa_cronograma_id = tc.id AND t.removido_em IS NULL
-                ${whereCond.whereString}
-                `,
+                `${this._queryDataCronograma()} ${whereCond.whereString}`,
                 whereCond.queryParams,
                 'cronograma.csv'
             )
@@ -357,17 +328,7 @@ export class PPObrasService implements ReportableService {
 
         out.push(
             await this.streamQueryToCSV(
-                `SELECT
-                    projeto.id AS projeto_id,
-                    regiao.descricao AS descricao,
-                    regiao.pdm_codigo_sufixo AS sigla,
-                    regiao.nivel AS nivel
-                FROM projeto
-                JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
-                JOIN projeto_regiao ON projeto_regiao.projeto_id = projeto.id AND projeto_regiao.removido_em IS NULL
-                JOIN regiao ON regiao.id = projeto_regiao.regiao_id AND regiao.removido_em IS NULL
-                ${whereCond.whereString}
-                `,
+                `${this._queryDataRegioes()} ${whereCond.whereString}`,
                 whereCond.queryParams,
                 'regioes.csv'
             )
@@ -375,31 +336,7 @@ export class PPObrasService implements ReportableService {
 
         out.push(
             await this.streamQueryToCSV(
-                `SELECT
-                    projeto.id AS projeto_id,
-                    projeto.codigo AS projeto_codigo,
-                    projeto_acompanhamento.data_registro,
-                    projeto_acompanhamento.participantes,
-                    projeto_acompanhamento.cronograma_paralisado,
-                    projeto_acompanhamento_item.prazo_encaminhamento,
-                    projeto_acompanhamento.pauta,
-                    projeto_acompanhamento_item.prazo_realizado,
-                    projeto_acompanhamento.detalhamento,
-                    projeto_acompanhamento_item.encaminhamento,
-                    projeto_acompanhamento_item.responsavel,
-                    projeto_acompanhamento.observacao,
-                    projeto_acompanhamento.detalhamento_status,
-                    projeto_acompanhamento.pontos_atencao,
-                    (
-                        SELECT string_agg(r.codigo::text, '|')
-                        FROM projeto_acompanhamento_risco ar
-                        JOIN projeto_risco r ON ar.projeto_risco_id = r.id AND r.removido_em IS NULL
-                        WHERE ar.projeto_acompanhamento_id = projeto_acompanhamento.id
-                    ) AS riscos
-                FROM projeto
-                JOIN projeto_acompanhamento ON projeto_acompanhamento.projeto_id = projeto.id
-                JOIN projeto_acompanhamento_item ON projeto_acompanhamento_item.projeto_acompanhamento_id = projeto_acompanhamento.id
-                JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
+                `${this._queryDataAcompanhamentos()}
                 ${whereCond.whereString}
                 `,
                 whereCond.queryParams,
@@ -409,17 +346,7 @@ export class PPObrasService implements ReportableService {
 
         out.push(
             await this.streamQueryToCSV(
-                `SELECT
-                    projeto.id AS projeto_id,
-                    projeto_fonte_recurso.valor_percentual,
-                    projeto_fonte_recurso.valor_nominal,
-                    projeto_fonte_recurso.fonte_recurso_ano,
-                    projeto_fonte_recurso.fonte_recurso_cod_sof
-                FROM projeto
-                JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
-                JOIN projeto_fonte_recurso ON projeto_fonte_recurso.projeto_id = projeto.id
-                ${whereCond.whereString}
-                `,
+                `${this._queryDataFontesRecurso()} ${whereCond.whereString}`,
                 whereCond.queryParams,
                 'fontes_recurso.csv'
             )
@@ -427,60 +354,7 @@ export class PPObrasService implements ReportableService {
 
         out.push(
             await this.streamQueryToCSV(
-                `SELECT
-                    contrato.id AS id,
-                    projeto.id AS obra_id,
-                    contrato.numero AS numero,
-                    contrato.contrato_exclusivo AS exclusivo,
-                    contrato.status AS status,
-                    contrato.objeto_resumo AS objeto,
-                    contrato.objeto_detalhado AS descricao_detalhada,
-                    contrato.contratante AS contratante,
-                    contrato.empresa_contratada AS empresa_contratada,
-                    contrato.prazo_numero AS prazo,
-                    contrato.prazo_unidade AS unidade_prazo,
-                    contrato.data_inicio AS data_inicio,
-                    contrato.data_termino AS data_termino,
-                    contrato.observacoes AS observacoes,
-                    contrato.data_base_mes::text || '/' ||  contrato.data_base_ano::text AS data_base,
-                    modalidade_contratacao.id AS modalidade_contratacao_id,
-                    modalidade_contratacao.nome AS modalidade_contratacao_nome,
-                    orgao.id AS orgao_id,
-                    orgao.sigla AS orgao_sigla,
-                    orgao.descricao AS orgao_descricao,
-                    contrato.valor AS valor,
-                    (
-                        SELECT max(valor)
-                        FROM contrato_aditivo
-                        JOIN tipo_aditivo ON tipo_aditivo.id = contrato_aditivo.tipo_aditivo_id AND tipo_aditivo.removido_em IS NULL
-                        WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL AND tipo_aditivo.habilita_valor = true GROUP BY contrato_aditivo.data ORDER BY contrato_aditivo.data DESC LIMIT 1
-                    ) AS valor_reajustado,
-                    (
-                        SELECT valor FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL ORDER BY contrato_aditivo.data DESC LIMIT 1
-                    ) AS valor_com_reajuste,
-                    (
-                        SELECT max(data_termino_atualizada) FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL
-                    ) AS data_termino_atualizada,
-                    (
-                        SELECT max(percentual_medido) FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL
-                    ) AS percentual_medido,
-                    (
-                        SELECT string_agg(contrato_sei.numero_sei::text, '|')
-                        FROM contrato_sei
-                        WHERE contrato_sei.contrato_id = contrato.id
-                    ) AS processos_sei,
-                    (
-                        SELECT string_agg(cod_sof::text, '|')
-                        FROM contrato_fonte_recurso
-                        WHERE contrato_id = contrato.id
-                    ) AS fontes_recurso
-                FROM projeto
-                JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
-                JOIN contrato ON contrato.projeto_id = projeto.id AND contrato.removido_em IS NULL
-                LEFT JOIN orgao ON orgao.id = contrato.orgao_id AND orgao.removido_em IS NULL
-                LEFT JOIN modalidade_contratacao ON contrato.modalidade_contratacao_id = modalidade_contratacao.id AND modalidade_contratacao.removido_em IS NULL
-                ${whereCond.whereString}
-                `,
+                `${this._queryDataContratos()} ${whereCond.whereString}`,
                 whereCond.queryParams,
                 'contratos.csv'
             )
@@ -488,23 +362,7 @@ export class PPObrasService implements ReportableService {
 
         out.push(
             await this.streamQueryToCSV(
-                `SELECT
-                    contrato_aditivo.id AS aditivo_id,
-                    contrato.id AS contrato_id,
-                    contrato_aditivo.numero AS numero,
-                    tipo_aditivo.id AS tipo_aditivo_id,
-                    tipo_aditivo.nome AS tipo_aditivo_nome,
-                    contrato_aditivo.data,
-                    contrato_aditivo.data_termino_atualizada AS data_termino_atual,
-                    contrato_aditivo.valor AS valor_com_reajuste,
-                    contrato_aditivo.percentual_medido
-                FROM projeto
-                JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
-                JOIN contrato ON contrato.projeto_id = projeto.id AND contrato.removido_em IS NULL
-                JOIN contrato_aditivo ON contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL
-                JOIN tipo_aditivo ON tipo_aditivo.id = contrato_aditivo.tipo_aditivo_id AND tipo_aditivo.removido_em IS NULL
-                ${whereCond.whereString}
-                `,
+                `${this._queryDataAditivos()} ${whereCond.whereString}`,
                 whereCond.queryParams,
                 'aditivos.csv'
             )
@@ -512,24 +370,7 @@ export class PPObrasService implements ReportableService {
 
         out.push(
             await this.streamQueryToCSV(
-                `SELECT
-                    projeto.id AS projeto_id,
-                    meta.pdm_id,
-                    pdm.nome AS pdm_titulo,
-                    meta.id as meta_id,
-                    meta.titulo as meta_titulo,
-                    iniciativa.id iniciativa_id,
-                    iniciativa.titulo as iniciativa_titulo,
-                    atividade.id atividade_id,
-                    atividade.titulo as atividade_titulo
-                FROM projeto
-                JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
-                JOIN projeto_origem ON projeto_origem.projeto_id = projeto.id AND projeto_origem.removido_em IS NULL
-                LEFT JOIN meta ON meta.id = projeto_origem.meta_id AND meta.removido_em IS NULL
-                LEFT JOIN iniciativa ON iniciativa.id = projeto_origem.iniciativa_id AND iniciativa.removido_em IS NULL
-                LEFT JOIN atividade ON atividade.id = projeto_origem.atividade_id AND atividade.removido_em IS NULL
-                LEFT JOIN pdm ON pdm.id = meta.pdm_id
-                ${whereCond.whereString}
+                `${this._queryDataOrigens()} ${whereCond.whereString}
                 `,
                 whereCond.queryParams,
                 'origens.csv'
@@ -538,19 +379,7 @@ export class PPObrasService implements ReportableService {
 
         out.push(
             await this.streamQueryToCSV(
-                `SELECT
-                    projeto.id AS obra_id,
-                    projeto_registro_sei.categoria,
-                    projeto_registro_sei.processo_sei,
-                    projeto_registro_sei.descricao,
-                    projeto_registro_sei.link,
-                    projeto_registro_sei.comentarios,
-                    projeto_registro_sei.observacoes
-                FROM projeto
-                JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
-                JOIN projeto_registro_sei ON projeto_registro_sei.projeto_id = projeto.id AND projeto_registro_sei.removido_em IS NULL
-                ${whereCond.whereString}
-                `,
+                `${this._queryDataObrasSei()} ${whereCond.whereString}`,
                 whereCond.queryParams,
                 'processos_sei.csv'
             )
@@ -558,16 +387,7 @@ export class PPObrasService implements ReportableService {
 
         out.push(
             await this.streamQueryToCSV(
-                `SELECT
-                    projeto.id AS projeto_id,
-                    geo.endereco_exibicao AS endereco,
-                    geo.geom_geojson AS geojson
-                FROM projeto
-                JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
-                JOIN geo_localizacao_referencia geo_r ON geo_r.projeto_id = projeto.id AND geo_r.removido_em IS NULL
-                JOIN geo_localizacao geo ON geo.id = geo_r.geo_localizacao_id
-                ${whereCond.whereString}
-                `,
+                ` ${this._queryDataObrasGeoLoc()} ${whereCond.whereString}`,
                 whereCond.queryParams,
                 'enderecos.csv'
             )
@@ -646,7 +466,6 @@ export class PPObrasService implements ReportableService {
             },
             select: { projeto_id: true },
         });
-
 
         // Adicionando projetos compartilhados.
         // Deve ser adicionado apenas projetos que não sejam originalmente do portfolio utilizado no filtro.
@@ -935,40 +754,43 @@ export class PPObrasService implements ReportableService {
         }
     }
 
+    private _queryDataCronograma() {
+        return `
+            SELECT
+                tc.projeto_id AS projeto_id,
+                projeto.codigo AS projeto_codigo,
+                tc.atraso,
+                resp.id AS responsavel_id,
+                resp.nome_exibicao AS responsavel_nome_exibicao,
+                t.id,
+                t.numero,
+                t.nivel,
+                '' AS hierarquia,
+                t.tarefa,
+                t.inicio_planejado,
+                t.termino_planejado,
+                t.custo_estimado,
+                t.inicio_real,
+                t.termino_real,
+                t.duracao_real,
+                t.percentual_concluido,
+                t.custo_real,
+                (
+                    SELECT
+                      string_agg(json_build_object('id', td.dependencia_tarefa_id, 'tipo', td.tipo, 'latencia', td.latencia) #>> '{}', '/')
+                    FROM tarefa_dependente td
+                    JOIN tarefa t2 ON t2.id = td.dependencia_tarefa_id AND t2.removido_em IS NULL
+                    WHERE td.tarefa_id = t.id
+                ) as dependencias
+                FROM projeto
+                JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
+                LEFT JOIN tarefa_cronograma tc ON tc.projeto_id = projeto.id AND tc.removido_em IS NULL
+                LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
+                JOIN tarefa t ON t.tarefa_cronograma_id = tc.id AND t.removido_em IS NULL`;
+    }
+
     private async queryDataCronograma(whereCond: WhereCond, out: RelObrasCronogramaDto[]) {
-        const sql = `SELECT
-            tc.projeto_id AS projeto_id,
-            projeto.codigo AS projeto_codigo,
-            tc.atraso,
-            resp.id AS responsavel_id,
-            resp.nome_exibicao AS responsavel_nome_exibicao,
-            t.id,
-            t.numero,
-            t.nivel,
-            '' AS hierarquia,
-            t.tarefa,
-            t.inicio_planejado,
-            t.termino_planejado,
-            t.custo_estimado,
-            t.inicio_real,
-            t.termino_real,
-            t.duracao_real,
-            t.percentual_concluido,
-            t.custo_real,
-            (
-                SELECT
-                  string_agg(json_build_object('id', td.dependencia_tarefa_id, 'tipo', td.tipo, 'latencia', td.latencia) #>> '{}', '/')
-                FROM tarefa_dependente td
-                JOIN tarefa t2 ON t2.id = td.dependencia_tarefa_id AND t2.removido_em IS NULL
-                WHERE td.tarefa_id = t.id
-            ) as dependencias
-            FROM projeto
-            JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
-            LEFT JOIN tarefa_cronograma tc ON tc.projeto_id = projeto.id AND tc.removido_em IS NULL
-            LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
-            JOIN tarefa t ON t.tarefa_cronograma_id = tc.id AND t.removido_em IS NULL
-            ${whereCond.whereString}
-        `;
+        const sql = `${this._queryDataCronograma()} ${whereCond.whereString}`;
 
         const data: RetornoDbCronograma[] = await this.prisma.$queryRawUnsafe(sql, ...whereCond.queryParams);
 
@@ -1037,18 +859,21 @@ export class PPObrasService implements ReportableService {
         }
     }
 
-    private async queryDataRegioes(whereCond: WhereCond, out: RelObrasRegioesDto[]) {
-        const sql = `SELECT
-            projeto.id AS projeto_id,
-            regiao.descricao AS descricao,
-            regiao.pdm_codigo_sufixo AS sigla,
-            regiao.nivel AS nivel
-        FROM projeto
-          JOIN portfolio ON projeto.portfolio_id = portfolio.id
-          JOIN projeto_regiao ON projeto_regiao.projeto_id = projeto.id AND projeto_regiao.removido_em IS NULL
-          JOIN regiao ON regiao.id = projeto_regiao.regiao_id AND regiao.removido_em IS NULL
-        ${whereCond.whereString}
+    private _queryDataRegioes() {
+        return `
+            SELECT
+                projeto.id AS projeto_id,
+                regiao.descricao AS descricao,
+                regiao.pdm_codigo_sufixo AS sigla,
+                regiao.nivel AS nivel
+            FROM projeto
+            JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
+            JOIN projeto_regiao ON projeto_regiao.projeto_id = projeto.id AND projeto_regiao.removido_em IS NULL
+            JOIN regiao ON regiao.id = projeto_regiao.regiao_id AND regiao.removido_em IS NULL
         `;
+    }
+    private async queryDataRegioes(whereCond: WhereCond, out: RelObrasRegioesDto[]) {
+        const sql = `${this._queryDataRegioes()} ${whereCond.whereString}`;
 
         const data: RetornoDbRegioes[] = await this.prisma.$queryRawUnsafe(sql, ...whereCond.queryParams);
 
@@ -1077,18 +902,21 @@ export class PPObrasService implements ReportableService {
         });
     }
 
-    private async queryDataFontesRecurso(whereCond: WhereCond, out: RelObrasFontesRecursoDto[]) {
-        const sql = `SELECT
-            projeto.id AS projeto_id,
-            projeto_fonte_recurso.valor_percentual,
-            projeto_fonte_recurso.valor_nominal,
-            projeto_fonte_recurso.fonte_recurso_ano,
-            projeto_fonte_recurso.fonte_recurso_cod_sof
-        FROM projeto
-           JOIN portfolio ON projeto.portfolio_id = portfolio.id
-           JOIN projeto_fonte_recurso ON projeto_fonte_recurso.projeto_id = projeto.id
-        ${whereCond.whereString}
+    private _queryDataFontesRecurso() {
+        return `SELECT
+                projeto.id AS projeto_id,
+                projeto_fonte_recurso.valor_percentual,
+                projeto_fonte_recurso.valor_nominal,
+                projeto_fonte_recurso.fonte_recurso_ano,
+                projeto_fonte_recurso.fonte_recurso_cod_sof
+            FROM projeto
+            JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
+            JOIN projeto_fonte_recurso ON projeto_fonte_recurso.projeto_id = projeto.id
         `;
+    }
+
+    private async queryDataFontesRecurso(whereCond: WhereCond, out: RelObrasFontesRecursoDto[]) {
+        const sql = `${this._queryDataFontesRecurso()} ${whereCond.whereString}`;
 
         const data: RetornoDbFontesRecurso[] = await this.prisma.$queryRawUnsafe(sql, ...whereCond.queryParams);
 
@@ -1107,8 +935,8 @@ export class PPObrasService implements ReportableService {
         });
     }
 
-    private async queryDataContratos(whereCond: WhereCond, out: RelObrasContratosDto[]) {
-        const sql = `SELECT
+    private _queryDataContratos() {
+        return `SELECT
             contrato.id AS id,
             projeto.id AS obra_id,
             contrato.numero AS numero,
@@ -1156,12 +984,15 @@ export class PPObrasService implements ReportableService {
                 WHERE contrato_id = contrato.id
             ) AS fontes_recurso
         FROM projeto
-          JOIN portfolio ON projeto.portfolio_id = portfolio.id
+          JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
           JOIN contrato ON contrato.projeto_id = projeto.id AND contrato.removido_em IS NULL
           LEFT JOIN orgao ON orgao.id = contrato.orgao_id AND orgao.removido_em IS NULL
           LEFT JOIN modalidade_contratacao ON contrato.modalidade_contratacao_id = modalidade_contratacao.id AND modalidade_contratacao.removido_em IS NULL
-        ${whereCond.whereString}
         `;
+    }
+
+    private async queryDataContratos(whereCond: WhereCond, out: RelObrasContratosDto[]) {
+        const sql = `${this._queryDataContratos()} ${whereCond.whereString}`;
 
         const data: RetornoDbContratos[] = await this.prisma.$queryRawUnsafe(sql, ...whereCond.queryParams);
 
@@ -1212,8 +1043,8 @@ export class PPObrasService implements ReportableService {
         });
     }
 
-    private async queryDataAditivos(whereCond: WhereCond, out: RelObrasAditivosDto[]) {
-        const sql = `SELECT
+    private _queryDataAditivos() {
+        return `SELECT
             contrato_aditivo.id AS aditivo_id,
             contrato.id AS contrato_id,
             contrato_aditivo.numero AS numero,
@@ -1224,12 +1055,15 @@ export class PPObrasService implements ReportableService {
             contrato_aditivo.valor AS valor_com_reajuste,
             contrato_aditivo.percentual_medido
         FROM projeto
-          JOIN portfolio ON projeto.portfolio_id = portfolio.id
+          JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
           JOIN contrato ON contrato.projeto_id = projeto.id AND contrato.removido_em IS NULL
           JOIN contrato_aditivo ON contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL
           JOIN tipo_aditivo ON tipo_aditivo.id = contrato_aditivo.tipo_aditivo_id AND tipo_aditivo.removido_em IS NULL
-        ${whereCond.whereString}
         `;
+    }
+
+    private async queryDataAditivos(whereCond: WhereCond, out: RelObrasAditivosDto[]) {
+        const sql = `${this._queryDataAditivos()} ${whereCond.whereString}`;
 
         const data: RetornoDbAditivos[] = await this.prisma.$queryRawUnsafe(sql, ...whereCond.queryParams);
 
@@ -1250,34 +1084,40 @@ export class PPObrasService implements ReportableService {
         });
     }
 
-    private async queryDataAcompanhamentos(whereCond: WhereCond, out: RelObrasAcompanhamentosDto[]) {
-        const sql = `SELECT
-            projeto.id AS projeto_id,
-            projeto.codigo AS projeto_codigo,
-            projeto_acompanhamento.data_registro,
-            projeto_acompanhamento.participantes,
-            projeto_acompanhamento.cronograma_paralisado,
-            projeto_acompanhamento_item.prazo_encaminhamento,
-            projeto_acompanhamento.pauta,
-            projeto_acompanhamento_item.prazo_realizado,
-            projeto_acompanhamento.detalhamento,
-            projeto_acompanhamento_item.encaminhamento,
-            projeto_acompanhamento_item.responsavel,
-            projeto_acompanhamento.observacao,
-            projeto_acompanhamento.detalhamento_status,
-            projeto_acompanhamento.pontos_atencao,
-            (
-                SELECT string_agg(r.codigo::text, '|')
-                FROM projeto_acompanhamento_risco ar
-                JOIN projeto_risco r ON ar.projeto_risco_id = r.id AND r.removido_em IS NULL
-                WHERE ar.projeto_acompanhamento_id = projeto_acompanhamento.id
-            ) AS riscos
-        FROM projeto
-          JOIN projeto_acompanhamento ON projeto_acompanhamento.projeto_id = projeto.id AND projeto_acompanhamento.removido_em IS NULL
-          LEFT JOIN projeto_acompanhamento_item ON projeto_acompanhamento_item.projeto_acompanhamento_id = projeto_acompanhamento.id AND projeto_acompanhamento_item.removido_em IS NULL
-          JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
-        ${whereCond.whereString}
+    private _queryDataAcompanhamentos() {
+        return `
+            SELECT
+                projeto.id AS projeto_id,
+                projeto.codigo AS projeto_codigo,
+                projeto_acompanhamento.data_registro,
+                projeto_acompanhamento.participantes,
+                projeto_acompanhamento.cronograma_paralisado,
+                projeto_acompanhamento_item.prazo_encaminhamento,
+                projeto_acompanhamento.pauta,
+                projeto_acompanhamento_item.prazo_realizado,
+                projeto_acompanhamento.detalhamento,
+                projeto_acompanhamento_item.encaminhamento,
+                projeto_acompanhamento_item.responsavel,
+                projeto_acompanhamento.observacao,
+                projeto_acompanhamento.detalhamento_status,
+                projeto_acompanhamento.pontos_atencao,
+                (
+                    SELECT string_agg(r.codigo::text, '|')
+                    FROM projeto_acompanhamento_risco ar
+                    JOIN projeto_risco r ON ar.projeto_risco_id = r.id AND r.removido_em IS NULL
+                    WHERE ar.projeto_acompanhamento_id = projeto_acompanhamento.id
+                ) AS riscos
+            FROM projeto
+            JOIN projeto_acompanhamento ON projeto_acompanhamento.projeto_id = projeto.id
+                AND projeto_acompanhamento.removido_em IS NULL
+            LEFT JOIN projeto_acompanhamento_item ON projeto_acompanhamento_item.projeto_acompanhamento_id = projeto_acompanhamento.id
+                AND projeto_acompanhamento_item.removido_em IS NULL
+            JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
         `;
+    }
+
+    private async queryDataAcompanhamentos(whereCond: WhereCond, out: RelObrasAcompanhamentosDto[]) {
+        const sql = `${this._queryDataAcompanhamentos()} ${whereCond.whereString}`;
 
         const data: RetornoDbAcompanhamentos[] = await this.prisma.$queryRawUnsafe(sql, ...whereCond.queryParams);
 
@@ -1306,8 +1146,8 @@ export class PPObrasService implements ReportableService {
         });
     }
 
-    private async queryDataOrigens(whereCond: WhereCond, out: RelObrasOrigemDto[]) {
-        const sql = `SELECT
+    private _queryDataOrigens() {
+        return `SELECT
             projeto.id AS projeto_id,
             meta.pdm_id,
             pdm.nome AS pdm_titulo,
@@ -1318,14 +1158,17 @@ export class PPObrasService implements ReportableService {
             atividade.id atividade_id,
             atividade.titulo as atividade_titulo
         FROM projeto
-          JOIN portfolio ON projeto.portfolio_id = portfolio.id
+          JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
           JOIN projeto_origem ON projeto_origem.projeto_id = projeto.id AND projeto_origem.removido_em IS NULL
           LEFT JOIN meta ON meta.id = projeto_origem.meta_id AND meta.removido_em IS NULL
           LEFT JOIN iniciativa ON iniciativa.id = projeto_origem.iniciativa_id AND iniciativa.removido_em IS NULL
           LEFT JOIN atividade ON atividade.id = projeto_origem.atividade_id AND atividade.removido_em IS NULL
           LEFT JOIN pdm ON pdm.id = meta.pdm_id
-        ${whereCond.whereString}
         `;
+    }
+
+    private async queryDataOrigens(whereCond: WhereCond, out: RelObrasOrigemDto[]) {
+        const sql = `${this._queryDataOrigens()} ${whereCond.whereString}`;
 
         const data: RetornoDbOrigens[] = await this.prisma.$queryRawUnsafe(sql, ...whereCond.queryParams);
 
@@ -1348,8 +1191,8 @@ export class PPObrasService implements ReportableService {
         });
     }
 
-    private async queryDataObrasSei(whereCond: WhereCond, out: RelObrasSeiDto[]) {
-        const sql = `SELECT
+    private _queryDataObrasSei() {
+        return `SELECT
             projeto.id AS obra_id,
             projeto_registro_sei.categoria,
             projeto_registro_sei.processo_sei,
@@ -1358,10 +1201,13 @@ export class PPObrasService implements ReportableService {
             projeto_registro_sei.comentarios,
             projeto_registro_sei.observacoes
         FROM projeto
-          JOIN portfolio ON projeto.portfolio_id = portfolio.id
+          JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
           JOIN projeto_registro_sei ON projeto_registro_sei.projeto_id = projeto.id AND projeto_registro_sei.removido_em IS NULL
-        ${whereCond.whereString}
         `;
+    }
+
+    private async queryDataObrasSei(whereCond: WhereCond, out: RelObrasSeiDto[]) {
+        const sql = `${this._queryDataObrasSei()} ${whereCond.whereString}`;
 
         const data: RetornoDbObrasSEI[] = await this.prisma.$queryRawUnsafe(sql, ...whereCond.queryParams);
 
@@ -1382,18 +1228,20 @@ export class PPObrasService implements ReportableService {
         });
     }
 
+    private _queryDataObrasGeoLoc() {
+        return `SELECT
+                projeto.id AS projeto_id,
+                geo.endereco_exibicao AS endereco,
+                geo.geom_geojson AS geojson
+            FROM projeto
+            JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
+            JOIN geo_localizacao_referencia geo_r ON geo_r.projeto_id = projeto.id AND geo_r.removido_em IS NULL
+            JOIN geo_localizacao geo ON geo.id = geo_r.geo_localizacao_id
+        `;
+    }
+
     private async queryDataObrasGeoloc(whereCond: WhereCond, out: RelObrasGeolocDto[]) {
-        const sql = `
-                SELECT
-                    projeto.id AS projeto_id,
-                    geo.endereco_exibicao AS endereco,
-                    geo.geom_geojson AS geojson
-                FROM projeto
-                JOIN portfolio ON projeto.portfolio_id = portfolio.id
-                JOIN geo_localizacao_referencia geo_r ON geo_r.projeto_id = projeto.id AND geo_r.removido_em IS NULL
-                JOIN geo_localizacao geo ON geo.id = geo_r.geo_localizacao_id
-                ${whereCond.whereString}
-            `;
+        const sql = `${this._queryDataObrasGeoLoc()} ${whereCond.whereString}`;
 
         const data: RetornoDbLoc[] = await this.prisma.$queryRawUnsafe(sql, ...whereCond.queryParams);
 
