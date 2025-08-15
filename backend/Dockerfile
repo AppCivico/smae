@@ -1,4 +1,4 @@
-FROM node:24-bookworm AS smae_api
+FROM node:24.3.0-bookworm-slim AS smae_api
 
 # Instala o graphviz (dot) para gerar EAP do tarefas do lado do server-side
 RUN apt-get update && apt-get install -y --no-install-recommends graphviz
