@@ -5,8 +5,9 @@ import { IsDateString, IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'cla
 
 export class FilterRelatorioV2Dto {
     @IsOptional()
+    @ApiProperty({ description: 'ID do PDM para filtrar relatórios', required: false })
     @IsInt()
-    @Transform(({ value }: any) => (value ? +value : undefined))
+    @Transform(({ value }: TransformFnParams) => (value === '' || value == null ? undefined : +value))
     pdm_id?: number;
 
     @IsOptional()
