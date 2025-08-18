@@ -918,6 +918,19 @@ export class ParlamentarService {
             throw new HttpException('ranking| Ranking é obrigatório', 400);
         }
 
+        // Busca representatividade existente
+        const existingMandato = await this.prisma.mandatoRepresentatividade.findFirst({
+            where: {
+                mandato_id: mandato.id,
+                regiao_id: dto.regiao_id,
+                removido_em: null,
+            },
+        });
+
+        if (existingMandato) {
+            throw new HttpException('Já existe um mandato para esta região.', 400);
+        }
+
         const created = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
                 // Gerencia criação/atualização do comparecimento
@@ -1096,6 +1109,7 @@ export class ParlamentarService {
         return comparecimento?.valor || null;
     }
 
+    // São os mesmos comparecimentos para todos os cargos: apenas eleição (ano) + região
     private async updateOrCreateComparecimento(
         prismaTxn: Prisma.TransactionClient,
         eleicaoId: number,
