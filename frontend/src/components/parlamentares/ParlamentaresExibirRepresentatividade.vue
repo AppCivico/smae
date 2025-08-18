@@ -25,7 +25,7 @@ const habilitarBotaoDeRepresentatividade = computed(() => temMandato.value && te
 const representatividade = computed(() => {
   const representatividades = { capital: [], interior: [] };
 
-  if (!emFoco.value?.mandato || !Array.isArray(emFoco.value?.mandato)) {
+  if (!emFoco.value?.mandatos || !Array.isArray(emFoco.value?.mandatos)) {
     return representatividades;
   }
 
