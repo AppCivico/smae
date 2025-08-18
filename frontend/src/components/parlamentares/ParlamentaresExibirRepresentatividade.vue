@@ -4,6 +4,7 @@ import { computed, defineProps } from 'vue';
 import { useAlertStore } from '@/stores/alert.store';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
+import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 
 const alertStore = useAlertStore();
 const parlamentaresStore = useParlamentaresStore();
@@ -21,18 +22,37 @@ const temMandato = computed(() => emFoco?.value?.mandatos?.length);
 const temMandatoSP = computed(() => emFoco?.value?.mandatos?.some((mandato) => mandato.uf === 'SP'));
 const habilitarBotaoDeRepresentatividade = computed(() => temMandato.value && temMandatoSP.value);
 
-// eslint-disable-next-line max-len
-const representatividade = computed(() => (Array.isArray(emFoco?.value?.ultimo_mandato?.representatividade)
-  ? emFoco.value.ultimo_mandato.representatividade.reduce((acc, cur) => {
-    if (cur.municipio_tipo === 'Capital') {
-      acc.capital.push(cur);
-    }
-    if (cur.municipio_tipo === 'Interior') {
-      acc.interior.push(cur);
-    }
-    return acc;
-  }, { capital: [], interior: [] })
-  : { capital: [], interior: [] }));
+const representatividade = computed(() => {
+  const representatividades = { capital: [], interior: [] };
+
+  if (!emFoco.value?.mandatos) {
+    return representatividades;
+  }
+
+  const mandatos = emFoco.value?.mandatos.reduce((agrupado, mandato) => {
+    mandato.representatividade.forEach((item) => {
+      item.eleicao = {
+        cargo: cargosDeParlamentar[mandato.cargo].nome || mandato.cargo,
+        ano: mandato.eleicao.ano,
+      };
+
+      if (item.municipio_tipo === 'Capital') {
+        agrupado.capital.push(item);
+      }
+
+      if (item.municipio_tipo === 'Interior') {
+        agrupado.interior.push(item);
+      }
+    });
+
+    return agrupado;
+  }, representatividades);
+
+  mandatos.interior.sort((a, b) => a.ranking - b.ranking);
+  mandatos.capital.sort((a, b) => a.ranking - b.ranking);
+
+  return mandatos;
+});
 
 function excluirRepresentatividade(representatividadeId, parlamentarId = emFoco.value.id) {
   alertStore.confirmAction('Deseja excluir essa representividade?', async () => {
@@ -43,12 +63,6 @@ function excluirRepresentatividade(representatividadeId, parlamentarId = emFoco.
   }, 'Remover');
 }
 
-function formatarNumero(numero) {
-  if (!numero) {
-    return '';
-  }
-  return numero.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-}
 </script>
 <template>
   <div>
@@ -76,6 +90,13 @@ function formatarNumero(numero) {
             label: 'Município/Subprefeitura'
           },
           {
+            chave: 'eleicao',
+            label: 'Cargo/Eleição',
+            formatador: (val) => {
+              return `${val.cargo} - ${val.ano}`
+            }
+          },
+          {
             chave: 'regiao.descricao',
             label: 'Região'
           },
@@ -94,7 +115,7 @@ function formatarNumero(numero) {
             chave: 'pct_participacao',
             label: 'Porcentagem do candidato',
             atributosDaCelula: { class: 'col--number'},
-            formatador: v => v ? `${v}%` : '-'
+            formatador: v => v ? `${Number(v).toFixed(1)}%` : '-'
           },
           exibirEdição && { chave: 'editar', atributosDaCelula: { class: 'col--number'} },
           exibirEdição && { chave: 'excluir', atributosDaCelula: { class: 'col--number'} },
@@ -104,7 +125,8 @@ function formatarNumero(numero) {
           <SmaeLink
             :to="{
               name: 'parlamentaresEditarRepresentatividade',
-              params: { parlamentarId: emFoco?.id, representatividadeId: linha.id }
+              params: { parlamentarId: emFoco?.id, representatividadeId: linha.id },
+              query: { tipo: 'capital' }
             }"
             class="tprimary"
             aria-label="Editar representatividade"
@@ -186,6 +208,13 @@ function formatarNumero(numero) {
             label: 'Município/Subprefeitura'
           },
           {
+            chave: 'eleicao',
+            label: 'Cargo/Eleição',
+            formatador: (val) => {
+              return `${val.cargo} - ${val.ano}`
+            }
+          },
+          {
             chave: 'regiao.descricao',
             label: 'Região'
           },
@@ -204,7 +233,7 @@ function formatarNumero(numero) {
             chave: 'pct_participacao',
             label: 'Porcentagem do candidato',
             atributosDaCelula: { class: 'col--number'},
-            formatador: v => v ? `${v}%` : '-'
+            formatador: v => v ? `${Number(v).toFixed(1)}%` : '-'
           },
           exibirEdição && { chave: 'editar', atributosDaCelula: { class: 'col--number'} },
           exibirEdição && { chave: 'excluir', atributosDaCelula: { class: 'col--number'} },
@@ -214,7 +243,8 @@ function formatarNumero(numero) {
           <SmaeLink
             :to="{
               name: 'parlamentaresEditarRepresentatividade',
-              params: { parlamentarId: emFoco?.id, representatividadeId: linha.id }
+              params: { parlamentarId: emFoco?.id, representatividadeId: linha.id },
+              query: { tipo: 'interior' }
             }"
             class="tprimary"
             aria-label="Editar representatividade"
@@ -268,7 +298,8 @@ function formatarNumero(numero) {
         <svg
           width="20"
           height="20"
-        ><use xlink:href="#i_+" /></svg>Registrar representatividade
+        ><use xlink:href="#i_+" /></svg>
+        Registrar representatividade
       </component>
     </div>
   </div>
