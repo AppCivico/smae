@@ -101,11 +101,6 @@ async function handleEnviarDados(
     confirma_alteracao_comparecimento: forcarEditar,
   };
 
-  if (props.representatividadeId) {
-    delete dados.pct_participacao;
-    delete dados.regiao_id;
-  }
-
   try {
     await parlamentaresStore.salvarRepresentatividade(
       dados,
@@ -116,8 +111,6 @@ async function handleEnviarDados(
     await parlamentaresStore.buscarItem(props.parlamentarId);
 
     alertStore.success('Representatividade atualizada!');
-  } catch (error) {
-    alertStore.error(error);
   } finally {
     if (props.apenasEmitir) {
       emit('close');
@@ -198,6 +191,10 @@ watch(representatividadeParaEdicao, (novoValor) => {
   ) {
     novoValor.numero_comparecimento = representatividadeParaEdicao.value
       .regiao.comparecimento.valor;
+  }
+
+  if (!novoValor) {
+    return;
   }
 
   resetForm({

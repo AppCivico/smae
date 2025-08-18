@@ -268,12 +268,12 @@ export const useParlamentaresStore = defineStore('parlamentaresStore', {
           await this.requestS.post(`${baseUrl}/parlamentar/${parlamentarId}/representatividade`, params);
         }
 
-        this.chamadasPendentes.representatividade = false;
         return true;
       } catch (erro) {
         this.erro = erro;
+        throw erro;
+      } finally {
         this.chamadasPendentes.representatividade = false;
-        return false;
       }
     },
 
