@@ -87,7 +87,7 @@ const regioesFiltradas = computed(() => {
     ),
   };
 
-  return regioes[props.tipo]();
+  return regioes[props.tipo]?.() ?? [];
 });
 
 async function handleEnviarDados(
