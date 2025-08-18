@@ -222,7 +222,7 @@ watch(representatividadeParaEdicao, (novoValor) => {
       />
     </div>
 
-    <LoadingComponent v-if="chamadasPendentes.equipe" />
+    <LoadingComponent v-if="chamadasPendentes.emFoco || chamadasPendentes.representatividade" />
 
     <form @submit="onSubmit">
       <div class="flex flexwrap g2">
