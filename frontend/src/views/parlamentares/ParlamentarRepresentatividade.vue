@@ -111,7 +111,6 @@ async function handleEnviarDados(
     await parlamentaresStore.buscarItem(props.parlamentarId);
 
     alertStore.success('Representatividade atualizada!');
-  } finally {
     if (props.apenasEmitir) {
       emit('close');
     }
@@ -123,6 +122,8 @@ async function handleEnviarDados(
         query: route.query,
       });
     }
+  } catch (erro) {
+    console.error(erro);
   }
 }
 
