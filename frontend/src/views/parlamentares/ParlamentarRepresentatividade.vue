@@ -56,7 +56,7 @@ const { regions: regiões, regiõesPorNível } = storeToRefs(regionsStore);
 const {
   handleSubmit, resetForm, values, setFieldValue, validateField,
 } = useForm({
-  initialValues: representatividadeParaEdicao.value,
+  initialValues: representatividadeParaEdicao.value || {},
   validationSchema: schema,
 });
 

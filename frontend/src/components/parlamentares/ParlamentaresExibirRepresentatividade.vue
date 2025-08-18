@@ -25,23 +25,26 @@ const habilitarBotaoDeRepresentatividade = computed(() => temMandato.value && te
 const representatividade = computed(() => {
   const representatividades = { capital: [], interior: [] };
 
-  if (!emFoco.value?.mandatos) {
+  if (!emFoco.value?.mandato || !Array.isArray(emFoco.value?.mandato)) {
     return representatividades;
   }
 
   const mandatos = emFoco.value?.mandatos.reduce((agrupado, mandato) => {
     mandato.representatividade.forEach((item) => {
-      item.eleicao = {
-        cargo: cargosDeParlamentar[mandato.cargo].nome || mandato.cargo,
-        ano: mandato.eleicao.ano,
+      const itemComEleicao = {
+        ...item,
+        eleicao: {
+          cargo: cargosDeParlamentar[mandato.cargo].nome || mandato.cargo,
+          ano: mandato.eleicao.ano,
+        },
       };
 
-      if (item.municipio_tipo === 'Capital') {
-        agrupado.capital.push(item);
+      if (itemComEleicao.municipio_tipo === 'Capital') {
+        agrupado.capital.push(itemComEleicao);
       }
 
-      if (item.municipio_tipo === 'Interior') {
-        agrupado.interior.push(item);
+      if (itemComEleicao.municipio_tipo === 'Interior') {
+        agrupado.interior.push(itemComEleicao);
       }
     });
 
