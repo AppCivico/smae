@@ -30,6 +30,7 @@ import {
     GetEleicaoComparecimentoDto,
     ComparecimentoConflictResponseDto,
 } from './dto/eleicao-comparecimento.dto';
+import { UniqueNumbers } from '../common/UniqueNumbers';
 
 class NextPageTokenJwtBody {
     offset: number;
@@ -320,6 +321,11 @@ export class ParlamentarService {
                             select: {
                                 id: true,
                                 nivel: true,
+                                mandato: {
+                                    select: {
+                                        eleicao_id: true,
+                                    },
+                                },
                                 municipio_tipo: true,
                                 numero_votos: true,
                                 pct_participacao: true,
@@ -335,14 +341,6 @@ export class ParlamentarService {
                                                 descricao: true,
                                             },
                                         },
-                                        eleicoesComparecimento: {
-                                            where: { removido_em: null },
-                                            take: 1,
-                                            select: {
-                                                id: true,
-                                                valor: true,
-                                            },
-                                        },
                                     },
                                 },
                             },
@@ -351,7 +349,27 @@ export class ParlamentarService {
                 },
             },
         });
-
+        const comparecimentos = await this.prisma.eleicaoComparecimento.findMany({
+            where: {
+                eleicao_id: {
+                    in: UniqueNumbers(parlamentar.mandatos.map((m) => m.eleicao.id)),
+                },
+                removido_em: null,
+            },
+            select: {
+                regiao_id: true,
+                valor: true,
+                eleicao_id: true,
+                id: true,
+            },
+        });
+        const comparecimentosMap = new Map<number, typeof comparecimentos>();
+        comparecimentos.forEach((c) => {
+            if (!comparecimentosMap.has(c.eleicao_id)) {
+                comparecimentosMap.set(c.eleicao_id, []);
+            }
+            comparecimentosMap.get(c.eleicao_id)!.push(c);
+        });
         let mandatoCorrente = parlamentar.mandatos
             .sort((a, b) => b.eleicao.ano - a.eleicao.ano)
             .find((m) => m.eleicao.atual_para_mandatos == true);
@@ -385,6 +403,11 @@ export class ParlamentarService {
                       }),
 
                       representatividade: mandatoCorrente.representatividade.map((r) => {
+                          const comparecimentos = comparecimentosMap.get(r.mandato.eleicao_id) || null;
+                          const comparecimentoOk = comparecimentos
+                              ? comparecimentos.find((c) => c.regiao_id === r.regiao.id)
+                              : null;
+
                           return {
                               ...r,
 
@@ -393,7 +416,10 @@ export class ParlamentarService {
                                   nivel: r.regiao.nivel,
                                   descricao: r.regiao.descricao,
                                   zona: r.regiao.nivel === 3 ? r.regiao.RegiaoAcima!.descricao : null,
-                                  comparecimento: { ...r.regiao.eleicoesComparecimento[0] },
+                                  comparecimento: {
+                                      id: comparecimentoOk?.id ?? 0,
+                                      valor: comparecimentoOk?.valor ?? 0,
+                                  },
                               },
                           };
                       }),
@@ -418,6 +444,10 @@ export class ParlamentarService {
                     }),
 
                     representatividade: m.representatividade.map((r) => {
+                        const comparecimentos = comparecimentosMap.get(r.mandato.eleicao_id) || null;
+                        const comparecimentoOk = comparecimentos
+                            ? comparecimentos.find((c) => c.regiao_id === r.regiao.id)
+                            : null;
                         return {
                             ...r,
 
@@ -426,7 +456,10 @@ export class ParlamentarService {
                                 nivel: r.regiao.nivel,
                                 descricao: r.regiao.descricao,
                                 zona: r.regiao.nivel === 3 ? r.regiao.RegiaoAcima!.descricao : null,
-                                comparecimento: { ...r.regiao.eleicoesComparecimento[0] },
+                                comparecimento: {
+                                    id: comparecimentoOk?.id ?? 0,
+                                    valor: comparecimentoOk?.valor ?? 0,
+                                },
                             },
                         };
                     }),
@@ -800,6 +833,7 @@ export class ParlamentarService {
         if (query.mandato_id) {
             const mandato = await this.prisma.parlamentarMandato.findFirst({
                 where: { id: query.mandato_id, removido_em: null },
+                orderBy: [{}],
                 select: { eleicao_id: true },
             });
             if (!mandato) throw new NotFoundException('Não foi possível encontrar este mandato');
@@ -888,6 +922,7 @@ export class ParlamentarService {
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
                 // Gerencia criação/atualização do comparecimento
                 let finalComparecimento: number;
+
                 if (dto.numero_comparecimento !== undefined) {
                     await this.updateOrCreateComparecimento(
                         prismaTxn,
@@ -1007,6 +1042,28 @@ export class ParlamentarService {
         }
 
         return await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
+            // Calcula a nova percentagem para essa representatividade
+            let pct_participacao: number | undefined;
+            if (dto.numero_votos !== undefined || dto.numero_comparecimento !== undefined) {
+                const votos = dto.numero_votos || currentRep.numero_votos;
+                const comparecimento = dto.numero_comparecimento || finalComparecimento;
+
+                if (comparecimento) {
+                    pct_participacao = (votos / comparecimento) * 100;
+                }
+            }
+
+            await prismaTxn.mandatoRepresentatividade.updateMany({
+                where: { id: representatividadeId },
+                data: {
+                    numero_votos: dto.numero_votos,
+                    ranking: dto.ranking,
+                    pct_participacao: pct_participacao,
+                    atualizado_por: user.id,
+                    atualizado_em: new Date(Date.now()),
+                },
+            });
+
             // Atualiza eleicao_comparecimento se necessário
             if (dto.numero_comparecimento !== undefined) {
                 await this.updateOrCreateComparecimento(
@@ -1024,30 +1081,7 @@ export class ParlamentarService {
                 );
             }
 
-            // Calcula a nova percentagem para essa representatividade
-            let pct_participacao: number | undefined;
-            if (dto.numero_votos !== undefined || dto.numero_comparecimento !== undefined) {
-                const votos = dto.numero_votos || currentRep.numero_votos;
-                const comparecimento = dto.numero_comparecimento || finalComparecimento;
-
-                if (comparecimento) {
-                    pct_participacao = (votos / comparecimento) * 100;
-                }
-            }
-
-            const updated = await prismaTxn.mandatoRepresentatividade.update({
-                where: { id: representatividadeId },
-                data: {
-                    numero_votos: dto.numero_votos,
-                    ranking: dto.ranking,
-                    pct_participacao: pct_participacao,
-                    atualizado_por: user.id,
-                    atualizado_em: new Date(Date.now()),
-                },
-                select: { id: true },
-            });
-
-            return updated;
+            return { id: representatividadeId };
         });
     }
 
@@ -1068,17 +1102,25 @@ export class ParlamentarService {
         regiaoId: number,
         novoValor: number
     ) {
-        const existing = await prismaTxn.eleicaoComparecimento.findFirst({
+        const existing = await prismaTxn.eleicaoComparecimento.findMany({
             where: {
                 eleicao_id: eleicaoId,
                 regiao_id: regiaoId,
                 removido_em: null,
             },
+            select: { id: true },
         });
 
+        if (existing.length > 1) {
+            await prismaTxn.eleicaoComparecimento.updateMany({
+                where: { id: { in: existing.slice(1).map((e) => e.id) } },
+                data: { removido_em: new Date() },
+            });
+        }
+
         if (existing) {
-            await prismaTxn.eleicaoComparecimento.update({
-                where: { id: existing.id },
+            const x = await prismaTxn.eleicaoComparecimento.updateMany({
+                where: { id: existing[0].id },
                 data: {
                     valor: novoValor,
                     atualizado_em: new Date(),
@@ -1135,11 +1177,10 @@ export class ParlamentarService {
         // Recalcula percentuais usando Promise.all para atualizações concorrentes
         const updatePromises = representatividades.map((rep) => {
             const novoPct = (rep.numero_votos / novoComparecimento) * 100;
-
-            return prismaTxn.mandatoRepresentatividade.update({
+            return prismaTxn.mandatoRepresentatividade.updateMany({
                 where: { id: rep.id },
                 data: {
-                    pct_participacao: novoPct,
+                    pct_participacao: +novoPct.toPrecision(2),
                     atualizado_em: new Date(),
                 },
             });
