@@ -9,10 +9,10 @@ import {
 import { computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import SmallModal from '@/components/SmallModal.vue';
+import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import { representatividade as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useRegionsStore } from '@/stores/regions.store';
-import tiposDeMunicípio from '@/consts/tiposDeMunicipio';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
 
 type Props = {
@@ -36,9 +36,9 @@ const mapaMunicipioTipo = {
 };
 
 const mapaNivel = {
-  padrao: 'Estado',
-  interior: 'Municipio',
   capital: 'Subprefeitura',
+  interior: 'Municipio',
+  padrao: 'Estado',
 };
 
 const route = useRoute();
@@ -54,21 +54,23 @@ const {
 const { regions: regiões, regiõesPorNível } = storeToRefs(regionsStore);
 
 const {
-  handleSubmit, resetForm, values,
+  handleSubmit, resetForm, values, setFieldValue, validateField,
 } = useForm({
   initialValues: representatividadeParaEdicao.value,
   validationSchema: schema,
 });
 
 const isCapital = computed(() => props.tipo === 'capital');
-const mandatosEmSp = computed(() => {
+const mandatosPreparados = computed(() => {
   if (!emFoco.value || !emFoco.value.mandatos) {
     return [];
   }
 
-  const { mandatos } = emFoco.value;
-
-  return mandatos.filter((mandato) => mandato.uf === 'SP');
+  return emFoco.value.mandatos.map((item) => ({
+    id: item.id,
+    eleicao: item.eleicao.ano,
+    cargo: cargosDeParlamentar[item.cargo].nome || item.cargo,
+  }));
 });
 
 const regioesFiltradas = computed(() => {
@@ -88,12 +90,21 @@ const regioesFiltradas = computed(() => {
   return regioes[props.tipo]();
 });
 
-const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
+async function handleEnviarDados(
+  valoresControlados,
+  { forcarEditar } = { forcarEditar: false },
+) {
   const dados = {
     ...valoresControlados,
     municipio_tipo: mapaMunicipioTipo[props.tipo],
     nivel: mapaNivel[props.tipo] || mapaNivel.padrao,
+    confirma_alteracao_comparecimento: forcarEditar,
   };
+
+  if (props.representatividadeId) {
+    delete dados.pct_participacao;
+    delete dados.regiao_id;
+  }
 
   try {
     await parlamentaresStore.salvarRepresentatividade(
@@ -120,6 +131,24 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
       });
     }
   }
+}
+
+const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
+  if (
+    representatividadeParaEdicao.value
+    && representatividadeParaEdicao.value.numero_comparecimento !== values.numero_comparecimento
+  ) {
+    alertStore.confirmAction(
+      'Atenção: ha um valor de comparecimento para essa eleição / cargo / região diferente do informado. A alteração deste valor implicará no recalculo dos percentuais de todos os parlamentares desta  eleição / cargo / região. Confirma alteração ?',
+      () => {
+        handleEnviarDados(valoresControlados, { forcarEditar: true });
+      },
+    );
+
+    return;
+  }
+
+  handleEnviarDados(valoresControlados);
 });
 
 const formularioSujo = useIsFormDirty();
@@ -140,6 +169,28 @@ function iniciar() {
 
 iniciar();
 
+async function handleMudarMandatoOuRegiao() {
+  const {
+    mandato_id: mandatoId,
+    regiao_id: regiaoId,
+  } = values;
+
+  if (!mandatoId || !regiaoId) {
+    return;
+  }
+
+  const { comparecimentos } = await parlamentaresStore.buscarComparecimento(mandatoId);
+
+  const regiao = comparecimentos.find((item) => item.regiao_id === regiaoId);
+  if (!regiao) {
+    setFieldValue('numero_comparecimento', null);
+  } else {
+    setFieldValue('numero_comparecimento', regiao.valor);
+  }
+
+  validateField('numero_comparecimento');
+}
+
 watch(representatividadeParaEdicao, (novoValor) => {
   if (
     props.representatividadeId
@@ -149,7 +200,12 @@ watch(representatividadeParaEdicao, (novoValor) => {
       .regiao.comparecimento.valor;
   }
 
-  resetForm({ values: novoValor });
+  resetForm({
+    values: {
+      ...novoValor,
+      pct_participacao: novoValor.pct_participacao.toFixed(1),
+    },
+  });
 }, { immediate: true });
 </script>
 
@@ -183,18 +239,19 @@ watch(representatividadeParaEdicao, (novoValor) => {
             name="mandato_id"
             as="select"
             class="inputtext light"
+            @change="handleMudarMandatoOuRegiao"
           >
             <option value="">
               Selecionar
             </option>
 
             <option
-              v-for="mandato in mandatosEmSp"
+              v-for="mandato in mandatosPreparados"
               :key="mandato.id"
               :value="mandato.id"
             >
-              {{ mandato.eleicao?.tipo }} -
-              {{ mandato.eleicao?.ano || mandato.id }}
+              {{ mandato.cargo }} -
+              {{ mandato.eleicao || mandato.id }}
             </option>
           </Field>
 
@@ -218,6 +275,7 @@ watch(representatividadeParaEdicao, (novoValor) => {
             as="select"
             class="inputtext light"
             :disabled="regioesFiltradas.length === 0"
+            @change="handleMudarMandatoOuRegiao"
           >
             <option value="">
               Selecionar

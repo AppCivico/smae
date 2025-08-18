@@ -294,6 +294,19 @@ export const useParlamentaresStore = defineStore('parlamentaresStore', {
         return false;
       }
     },
+    async buscarComparecimento(mandatoId) {
+      try {
+        const resposta = await this.requestS.get(`${baseUrl}/parlamentar/eleicao-comparecimento`, {
+          mandato_id: mandatoId,
+        });
+
+        return resposta;
+      } catch (erro) {
+        this.erro = erro;
+
+        throw new Error(erro);
+      }
+    },
   },
 
   getters: {
@@ -336,6 +349,10 @@ export const useParlamentaresStore = defineStore('parlamentaresStore', {
             }
           }
         }
+      }
+
+      if (!representatividade) {
+        return null;
       }
 
       return {
