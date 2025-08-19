@@ -14,9 +14,9 @@ import {
     RetMonitoramentoFisico,
     RetMonitoramentoMensal,
 } from './entities/monitoramento-mensal.entity';
-import { CsvWriterOptions, WriteCsvToBuffer } from 'src/common/helpers/CsvWriter';
+import { CsvWriterOptions, WriteCsvToBuffer, WriteCsvToFile } from 'src/common/helpers/CsvWriter';
 import { flatten } from '@json2csv/transforms';
-
+import { ReportContext } from '../relatorios/helpers/reports.contexto';
 
 class QualiCsv {
     informacoes_complementares: string;
@@ -209,7 +209,7 @@ export class MonitoramentoMensalMfService {
         return serieVariaveis as RelSerieVariavelDto[];
     }
 
-    async getFiles(myInput: RetMonitoramentoMensal, pdm: Pdm): Promise<FileOutput[]> {
+    async getFiles(myInput: RetMonitoramentoMensal, pdm: Pdm, ctx: ReportContext): Promise<FileOutput[]> {
         const out: FileOutput[] = [];
         if (!myInput.monitoramento_fisico || myInput.monitoramento_fisico.metas.length == 0) return [];
 
@@ -261,15 +261,18 @@ export class MonitoramentoMensalMfService {
             const opts: CsvWriterOptions<QualiCsv> = { csvOptions: DefaultCsvOptions, transforms: DefaultTransforms };
             out.push({
                 name: 'analises-qualitativas.csv',
-                buffer: WriteCsvToBuffer(qualiRows, opts)
+                buffer: WriteCsvToBuffer(qualiRows, opts),
             });
         }
 
         if (fechamentoRows.length) {
-            const opts: CsvWriterOptions<FechamentoCsv> = { csvOptions: DefaultCsvOptions, transforms: DefaultTransforms };
+            const opts: CsvWriterOptions<FechamentoCsv> = {
+                csvOptions: DefaultCsvOptions,
+                transforms: DefaultTransforms,
+            };
             out.push({
                 name: 'fechamentos.csv',
-                buffer: WriteCsvToBuffer(fechamentoRows, opts)
+                buffer: WriteCsvToBuffer(fechamentoRows, opts),
             });
         }
 
@@ -277,7 +280,7 @@ export class MonitoramentoMensalMfService {
             const opts: CsvWriterOptions<RiscoCsv> = { csvOptions: DefaultCsvOptions, transforms: DefaultTransforms };
             out.push({
                 name: 'analises-de-risco.csv',
-                buffer: WriteCsvToBuffer(riscoRows, opts)
+                buffer: WriteCsvToBuffer(riscoRows, opts),
             });
         }
 
@@ -294,7 +297,7 @@ export class MonitoramentoMensalMfService {
                 { value: 'valor_nominal', label: 'Valor Nominal' },
                 { value: 'conferida_por.nome_exibicao', label: 'Conferida Por' },
                 { value: 'conferida_em', label: 'Conferida Em' },
-                 {
+                {
                     value: (row: RelSerieVariavelDto) => {
                         return row.conferida ? 'Sim' : 'Não';
                     },
@@ -323,14 +326,17 @@ export class MonitoramentoMensalMfService {
                 { value: 'titulo_atividade', label: 'Título da ' + pdm.rotulo_atividade },
                 { value: 'analise_qualitativa', label: 'Analise Qualitativa' },
             ];
+            const tmp = ctx.getTmpFile('serie-variavel');
             const opts: CsvWriterOptions<RelSerieVariavelDto> = {
                 csvOptions: DefaultCsvOptions,
                 transforms: DefaultTransforms,
                 fields: campos,
             };
+
+            await WriteCsvToFile(seriesVariaveis, tmp.stream, opts);
             out.push({
                 name: 'serie-variaveis.csv',
-                buffer: WriteCsvToBuffer(seriesVariaveis, opts)
+                localFile: tmp.path,
             });
         } else {
             out.push({

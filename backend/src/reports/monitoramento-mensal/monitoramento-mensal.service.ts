@@ -4,7 +4,13 @@ import { Date2YMD } from '../../common/date2ymd';
 import { PainelService } from '../../painel/painel.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
-import { DefaultCsvOptions, DefaultTransforms, FileOutput, ReportableService, UtilsService } from '../utils/utils.service';
+import {
+    DefaultCsvOptions,
+    DefaultTransforms,
+    FileOutput,
+    ReportableService,
+    UtilsService,
+} from '../utils/utils.service';
 import { CreateRelMonitoramentoMensalDto } from './dto/create-monitoramento-mensal.dto';
 import {
     RelPainelDetalhe,
@@ -14,7 +20,6 @@ import {
 import { MonitoramentoMensalMfService } from './monitoramento-mensal-mf.service';
 import { CsvWriterOptions, WriteCsvToFile } from 'src/common/helpers/CsvWriter';
 import { flatten } from '@json2csv/transforms';
-
 
 @Injectable()
 export class MonitoramentoMensalService implements ReportableService {
@@ -112,7 +117,7 @@ export class MonitoramentoMensalService implements ReportableService {
 
         const out: FileOutput[] = [];
 
-        out.push(...(await this.mmMf.getFiles({ monitoramento_fisico, paineis: [] }, pdm)));
+        out.push(...(await this.mmMf.getFiles({ monitoramento_fisico, paineis: [] }, pdm, ctx)));
         monitoramento_fisico = null; // libera memória
 
         const fieldsCSV = [
@@ -155,7 +160,8 @@ export class MonitoramentoMensalService implements ReportableService {
                         monitoramento_fisico: null,
                         paineis: [{ painel, linhas }],
                     },
-                    pdm
+                    pdm,
+                    ctx
                 ))
             );
 
