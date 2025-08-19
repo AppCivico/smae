@@ -1356,7 +1356,6 @@ watch(itemParaEdicao, (novoValor) => {
             :schema="schema"
           />
           <Field
-            v-if="!projetoId"
             name="orgao_gestor_id"
             as="select"
             class="inputtext light mb1"
@@ -1364,8 +1363,8 @@ watch(itemParaEdicao, (novoValor) => {
               error: errors.orgao_gestor_id,
               loading: ÓrgãosStore.organs.loading,
             }"
-            :disabled="desabilitarTodosCampos.camposComuns"
             :aria-busy="buscaDePossiveisGestoresPendente"
+            :disabled="desabilitarTodosCampos.camposComuns"
             @change="setFieldValue('responsaveis_no_orgao_gestor', [])"
           >
             <option :value="0">
@@ -1381,16 +1380,7 @@ watch(itemParaEdicao, (novoValor) => {
               {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
             </option>
           </Field>
-          <input
-            v-else
-            type="text"
-            :value="emFoco.orgao_gestor.sigla + ' - ' + truncate(emFoco.orgao_gestor.descricao, 36)"
-            class="inputtext light mb1"
-            :title="emFoco.orgao_gestor.descricao?.length > 36
-              ? emFoco.orgao_gestor.descricao
-              : null"
-            disabled
-          >
+
           <ErrorMessage
             name="orgao_gestor_id"
             class="error-msg"
@@ -1442,8 +1432,10 @@ watch(itemParaEdicao, (novoValor) => {
               error: errors.orgao_responsavel_id,
               loading: portfolioStore.chamadasPendentes.lista
             }"
-            :disabled="desabilitarTodosCampos.camposComuns
-              || !órgãosQueTemResponsáveis?.length"
+            :disabled="
+              values.codigo
+                || desabilitarTodosCampos.camposComuns
+                || !órgãosQueTemResponsáveis?.length"
             @change="setFieldValue('responsavel_id', 0)"
             @update:model-value="values.orgao_responsavel_id = Number(values.orgao_responsavel_id)
               || null"
