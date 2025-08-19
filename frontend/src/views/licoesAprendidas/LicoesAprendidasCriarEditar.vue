@@ -71,22 +71,14 @@ iniciar();
 </script>
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>
-      <template v-if="emFoco?.sequencial">
-        {{ emFoco.sequencial }} -
-      </template>
-
-      {{ emFoco?.contexto
-        ? truncate(emFoco.contexto, 36)
-        : 'Lição Aprendida' || 'Nova lição aprendida' }}
-    </h1>
+    <TituloDaPagina />
 
     <hr class="ml2 f1">
+
     <CheckClose />
   </div>
 
   <Form
-    v-if="!licaoAprendidaId || emFoco"
     v-slot="{ errors, isSubmitting, setFieldValue, values }"
     :disabled="chamadasPendentes.emFoco"
     :initial-values="itemParaEdicao"
