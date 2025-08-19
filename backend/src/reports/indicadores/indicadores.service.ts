@@ -1,10 +1,7 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { Prisma, Regiao } from '@prisma/client';
-import * as fs from 'fs';
 import { createWriteStream } from 'fs';
 import { DateTime } from 'luxon';
-import * as os from 'os';
-import * as path from 'path';
 import { Readable } from 'stream';
 
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
@@ -576,29 +573,26 @@ export class IndicadoresService implements ReportableService {
         const pdm = await this.prisma.pdm.findUniqueOrThrow({ where: { id: params.pdm_id } });
         const out: FileOutput[] = [];
 
-        // Create a temporary directory for file processing
-        const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'indicadores-report-'));
-        const indicadoresCsvPath = path.join(tmpDir, 'indicadores.csv');
-        const regioesCsvPath = path.join(tmpDir, 'regioes.csv');
+        const tmpIndic = ctx.getTmpFile('indicadores.csv');
+        const tmpRegio = ctx.getTmpFile('regioes.csv');
 
         try {
             // Build field definitions
             const camposMetaIniAtv = this.buildFieldDefinitions(pdm, params);
-
             // Process indicadores - execute SQL query directly
             const indicadoresCount = await this.processDadosIndicadores(
                 indicadores,
                 params,
                 camposMetaIniAtv,
-                indicadoresCsvPath
+                tmpIndic.path
             );
             await ctx.resumoSaida('Indicadores', indicadoresCount);
 
-            if (fs.existsSync(indicadoresCsvPath) && fs.statSync(indicadoresCsvPath).size > 0) {
-                this.logger.debug(`CSV de indicadores gerado: ${indicadoresCsvPath}`);
+            if (indicadoresCount > 0) {
+                this.logger.debug(`CSV de indicadores gerado: ${tmpIndic.path}`);
                 out.push({
                     name: 'indicadores.csv',
-                    buffer: fs.readFileSync(indicadoresCsvPath),
+                    localFile: tmpIndic.path,
                 });
             }
 
@@ -609,29 +603,20 @@ export class IndicadoresService implements ReportableService {
                 indicadores,
                 params as CreateRelIndicadorRegioesDto,
                 camposMetaIniAtv,
-                regioesCsvPath
+                tmpRegio.path
             );
             await ctx.resumoSaida('Indicadores Regionalizados', regioesCount);
 
-            if (fs.existsSync(regioesCsvPath) && fs.statSync(regioesCsvPath).size > 0) {
-                this.logger.debug(`CSV de regiões gerado: ${regioesCsvPath}`);
+            if (regioesCount > 0) {
+                this.logger.debug(`CSV de regiões gerado: ${tmpRegio.path}`);
                 out.push({
                     name: 'regioes.csv',
-                    buffer: fs.readFileSync(regioesCsvPath),
+                    localFile: tmpRegio.path,
                 });
             }
         } catch (error) {
             this.logger.error(`Erro ao processar: ${error}`);
             throw error;
-        } finally {
-            // Clean up temporary files
-            try {
-                if (fs.existsSync(indicadoresCsvPath)) fs.unlinkSync(indicadoresCsvPath);
-                if (fs.existsSync(regioesCsvPath)) fs.unlinkSync(regioesCsvPath);
-                fs.rmdirSync(tmpDir);
-            } catch (cleanupError) {
-                this.logger.warn(`Erro ao limpar arquivos temporários: ${cleanupError}`);
-            }
         }
 
         this.logger.debug(`CSVs gerados`);
@@ -642,8 +627,8 @@ export class IndicadoresService implements ReportableService {
             name: 'info.json',
             buffer: Buffer.from(
                 JSON.stringify({
-                    params: params,
-                    horario: Date2YMD.tzSp2UTC(new Date()),
+                        params: params,
+                        horario: Date2YMD.tzSp2UTC(new Date()),
                 }),
                 'utf8'
             ),

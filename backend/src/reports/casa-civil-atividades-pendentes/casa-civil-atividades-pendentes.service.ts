@@ -6,12 +6,9 @@ import { DefaultCsvOptions, FileOutput, ReportableService } from '../utils/utils
 import { CreateCasaCivilAtividadesPendentesFilterDto } from './dto/create-casa-civil-atv-pend-filter.dto';
 import { RelCasaCivilAtividadesPendentes } from './entities/casa-civil-atividaes-pendentes.entity';
 import { Prisma } from '@prisma/client';
+import { CsvWriterOptions, WriteCsvToFile } from 'src/common/helpers/CsvWriter';
+import { flatten } from '@json2csv/transforms';
 
-const {
-    Parser,
-    transforms: { flatten },
-} = require('json2csv');
-const defaultTransform = [flatten({ paths: [] })];
 
 @Injectable()
 export class CasaCivilAtividadesPendentesService implements ReportableService {
@@ -106,22 +103,24 @@ export class CasaCivilAtividadesPendentesService implements ReportableService {
                     row.inicio_real ? `="${new Date(row.inicio_real).toLocaleDateString('pt-BR')}"` : '',
                 label: 'Início Real',
             },
-
             { value: 'orgao_responsavel', label: 'Orgão Responsável' },
             { value: 'responsavel_atividade', label: 'Responsável pela Atividade' },
         ];
 
         const out: FileOutput[] = [];
         if (rows.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
+            const transforms = [flatten()];
+            const tmp = ctx.getTmpFile('atividades-pendentes.csv');
+
+            const csvOpts: CsvWriterOptions<any> = {
+                csvOptions: DefaultCsvOptions,
+                transforms,
                 fields: fieldsCSV,
-            });
-            const linhas = json2csvParser.parse(rows);
+            };
+            await WriteCsvToFile(rows, tmp.stream, csvOpts);
             out.push({
                 name: 'atividades-pendentes.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
+                localFile: tmp.path,
             });
             await ctx.resumoSaida('Atividades Pendentes', rows.length);
         }

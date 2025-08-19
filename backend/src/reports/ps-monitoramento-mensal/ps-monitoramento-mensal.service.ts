@@ -11,11 +11,8 @@ import {
     RelPsMonitRetorno,
 } from './entities/ps-monitoramento-mensal.entity';
 
-const {
-    Parser,
-    transforms: { flatten },
-} = require('json2csv');
-const defaultTransform = [flatten({ paths: [] })];
+import { WriteCsvToFile, CsvWriterOptions } from 'src/common/helpers/CsvWriter';
+import { flatten } from '@json2csv/transforms';
 
 @Injectable()
 export class PSMonitoramentoMensal implements ReportableService {
@@ -306,27 +303,27 @@ export class PSMonitoramentoMensal implements ReportableService {
                 { value: 'analise_qualitativa_liberador', label: 'Analise Qualitativa Liberador' },
             ];
 
-            if (rows.length) {
-                const json2csvParser = new Parser({
-                    ...DefaultCsvOptions,
-                    transforms: defaultTransform,
-                    fields: fieldsCSV,
-                });
+            const transforms = [flatten()];
 
-                const linhas = json2csvParser.parse(rows);
-                out.push({
-                    name: 'monitoramento-mensal-variaveis-ps.csv',
-                    buffer: Buffer.from(linhas, 'utf8'),
-                });
+            if (rows.length) {
+                const reportTmpVars = ctx.getTmpFile('monitoramento-mensal-variaveis-ps.csv');
+                const varsCsvOptions: CsvWriterOptions<RelPsMonitoramentoMensalVariaveis> = {
+                    csvOptions: DefaultCsvOptions,
+                    transforms,
+                    fields: fieldsCSV,
+                };
+                await WriteCsvToFile(rows, reportTmpVars.stream, varsCsvOptions);
+                out.push({ name: 'monitoramento-mensal-variaveis-ps.csv', localFile: reportTmpVars.path });
             }
 
             const cicloMetasRows = await this.buscaMetasCiclo(params, user);
             ctx.resumoSaida('Monitoramento Mensal Metas Ciclo PS', cicloMetasRows.length);
-            
+
             if (cicloMetasRows.length) {
-                const json2csvParser = new Parser({
-                    ...DefaultCsvOptions,
-                    transforms: defaultTransform,
+                const reportTmpMetas = ctx.getTmpFile('monitoramento-mensal-metas-ciclo-ps.csv');
+                const metasCsvOptions: CsvWriterOptions<RelPSMonitoramentoMensalCicloMetasDto> = {
+                    csvOptions: DefaultCsvOptions,
+                    transforms,
                     fields: [
                         { value: 'meta_id', label: 'ID da Meta' },
                         { value: 'meta_codigo', label: 'Código da Meta' },
@@ -336,12 +333,11 @@ export class PSMonitoramentoMensal implements ReportableService {
                         { value: 'risco_ponto_atencao', label: 'Ponto de Atenção do Risco' },
                         { value: 'fechamento_comentario', label: 'Comentário de Fechamento' },
                     ],
-                });
-
-                const linhas = json2csvParser.parse(cicloMetasRows);
+                };
+                await WriteCsvToFile(cicloMetasRows, reportTmpMetas.stream, metasCsvOptions);
                 out.push({
                     name: 'monitoramento-mensal-metas-ciclo-ps.csv',
-                    buffer: Buffer.from(linhas, 'utf8'),
+                    localFile: reportTmpMetas.path
                 });
             }
         } else {

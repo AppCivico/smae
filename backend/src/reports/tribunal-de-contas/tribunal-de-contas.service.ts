@@ -5,13 +5,8 @@ import { DefaultCsvOptions, FileOutput, ReportableService } from '../utils/utils
 import { CreateRelTribunalDeContasDto } from './dto/create-tribunal-de-contas.dto';
 import { RelatorioTribunalDeContasDto, RelTribunalDeContasDto } from './entities/tribunal-de-contas.entity';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
-
-const {
-    Parser,
-    transforms: { flatten },
-} = require('json2csv');
-const defaultTransform = [flatten({ paths: [] })];
-
+import { CsvWriterOptions, WriteCsvToFile } from 'src/common/helpers/CsvWriter';
+import { flatten } from '@json2csv/transforms';
 @Injectable()
 export class TribunalDeContasService implements ReportableService {
     constructor(private readonly prisma: PrismaService) {}
@@ -118,9 +113,13 @@ export class TribunalDeContasService implements ReportableService {
         const out: FileOutput[] = [];
 
         if (dados.linhas?.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
+            const transforms = [flatten()];
+
+            const tmp = ctx.getTmpFile('tribunal-de-contas.csv');
+
+            const csvOpts: CsvWriterOptions<any> = {
+                csvOptions: DefaultCsvOptions,
+                transforms,
                 fields: [
                     {
                         value: (row: any) => (row.emenda ? `="${String(row.emenda).replace(/\D/g, '')}"` : ''),
@@ -169,15 +168,13 @@ export class TribunalDeContasService implements ReportableService {
                         label: 'Liquidação/Pagamento',
                     },
                 ],
-            });
-            const linhas = json2csvParser.parse(
-                dados.linhas.map((r) => {
-                    return { ...r };
-                })
-            );
+            };
+
+            await WriteCsvToFile(dados.linhas, tmp.stream, csvOpts);
+
             out.push({
                 name: 'tribunal-de-contas.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
+                localFile: tmp.path,
             });
             await ctx.resumoSaida('Tribunal de Contas', dados.linhas.length);
         }
@@ -187,8 +184,8 @@ export class TribunalDeContasService implements ReportableService {
                 name: 'info.json',
                 buffer: Buffer.from(
                     JSON.stringify({
-                        params: params,
-                        horario: Date2YMD.tzSp2UTC(new Date()),
+                            params: params,
+                            horario: Date2YMD.tzSp2UTC(new Date()),
                     }),
                     'utf8'
                 ),

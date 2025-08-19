@@ -11,12 +11,8 @@ import {
     RelTransferenciasDto,
     TransferenciasRelatorioDto,
 } from './entities/transferencias.entity';
-
-const {
-    Parser,
-    transforms: { flatten },
-} = require('json2csv');
-const defaultTransform = [flatten({ paths: [] })];
+import { CsvWriterOptions, WriteCsvToFile } from 'src/common/helpers/CsvWriter';
+import { flatten } from '@json2csv/transforms';
 
 type WhereCond = {
     whereString: string;
@@ -510,6 +506,8 @@ export class TransferenciasService implements ReportableService {
         await _ctx.resumoSaida('Cronograma de Transferências', dados.linhas_cronograma.length);
 
         const out: FileOutput[] = [];
+        const transforms = [flatten()];
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let fields: { value: string | ((row: any) => string); label: string }[];
         if (dados.tipo == TipoRelatorioTransferencia.Geral) {
@@ -642,42 +640,34 @@ export class TransferenciasService implements ReportableService {
             ];
         }
 
-        const json2csvParser = new Parser({ fields, ...DefaultCsvOptions });
-        const linhasCsv = json2csvParser.parse(dados.linhas); // Removed .map(r => ({...r})) as it's usually not needed
-        out.push({
-            name: 'transferencias.csv',
-            buffer: Buffer.from(linhasCsv, 'utf8'),
-        });
+        const tmpTransf = _ctx.getTmpFile('transferencias.csv');
+        const transfOpts: CsvWriterOptions<any> = { csvOptions: DefaultCsvOptions, transforms, fields };
+        await WriteCsvToFile(dados.linhas, tmpTransf.stream, transfOpts);
+        out.push({ name: 'transferencias.csv', localFile: tmpTransf.path });
 
         if (dados.linhas_cronograma?.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform, // Uses flatten
-                fields: [
-                    { value: 'transferencia_id', label: 'ID da Transferência' },
-                    { value: 'hirearquia', label: 'Hierarquia' }, // Assumes hirearquia is already ="value" formatted if needed
-                    { value: 'tarefa', label: 'Tarefa' },
-                    {
-                        value: (row: { inicio_planejado: string | null }) =>
-                            row.inicio_planejado ? new Date(row.inicio_planejado).toLocaleDateString('pt-BR') : '',
-                        label: 'Início Planejado',
-                    },
-                    {
-                        value: (row: { termino_planejado: string | null }) =>
-                            row.termino_planejado ? new Date(row.termino_planejado).toLocaleDateString('pt-BR') : '',
-                        label: 'Término Planejado',
-                    },
-                    { value: 'custo_estimado', label: 'Custo Estimado' }, // Numbers are usually fine
-                    { value: 'duracao_planejado', label: 'Duração Planejada' }, // Numbers are usually fine
-                ],
-            });
+            const tmpCron = _ctx.getTmpFile('cronograma.csv');
+            const cronFields = [
+                { value: 'transferencia_id', label: 'ID da Transferência' },
+                { value: 'hirearquia', label: 'Hierarquia' }, // Assumes hirearquia is already ="value" formatted if needed
+                { value: 'tarefa', label: 'Tarefa' },
+                {
+                    value: (row: { inicio_planejado: string | null }) =>
+                        row.inicio_planejado ? new Date(row.inicio_planejado).toLocaleDateString('pt-BR') : '',
+                    label: 'Início Planejado',
+                },
+                {
+                    value: (row: { termino_planejado: string | null }) =>
+                        row.termino_planejado ? new Date(row.termino_planejado).toLocaleDateString('pt-BR') : '',
+                    label: 'Término Planejado',
+                },
+                { value: 'custo_estimado', label: 'Custo Estimado' }, // Numbers are usually fine
+                { value: 'duracao_planejado', label: 'Duração Planejada' }, // Numbers are usually fine
+            ];
 
-            const linhasCronogramaCsv = json2csvParser.parse(dados.linhas_cronograma);
-
-            out.push({
-                name: 'cronograma.csv',
-                buffer: Buffer.from(linhasCronogramaCsv, 'utf8'),
-            });
+            const cronOpts: CsvWriterOptions<any> = { csvOptions: DefaultCsvOptions, transforms, fields: cronFields };
+            await WriteCsvToFile(dados.linhas_cronograma, tmpCron.stream, cronOpts);
+            out.push({ name: 'cronograma.csv', localFile: tmpCron.path });
         }
 
         return [

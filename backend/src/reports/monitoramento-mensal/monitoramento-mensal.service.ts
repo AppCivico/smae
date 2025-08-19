@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { Date2YMD } from '../../common/date2ymd';
 import { PainelService } from '../../painel/painel.service';
@@ -12,12 +12,9 @@ import {
     RetMonitoramentoMensal,
 } from './entities/monitoramento-mensal.entity';
 import { MonitoramentoMensalMfService } from './monitoramento-mensal-mf.service';
+import { CsvWriterOptions, WriteCsvToFile } from 'src/common/helpers/CsvWriter';
+import { flatten } from '@json2csv/transforms';
 
-const {
-    Parser,
-    transforms: { flatten },
-} = require('json2csv');
-const defaultTransform = [flatten({ paths: [] })];
 
 @Injectable()
 export class MonitoramentoMensalService implements ReportableService {
@@ -145,7 +142,6 @@ export class MonitoramentoMensalService implements ReportableService {
         let curPainel = 0;
         for (const painelId of params.paineis) {
             curPainel++;
-
             await ctx.progress(50 + 50 * (curPainel / totalPainel));
             const painel = await this.painel.getPainelShortData({ painel_id: painelId });
             if (!painel) continue;
@@ -163,23 +159,29 @@ export class MonitoramentoMensalService implements ReportableService {
                 ))
             );
 
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-                fields: [...fieldsCSV],
-            });
+            const fileName =
+                'painel-' +
+                painel.nome.replace(/\s/g, '-').replace(/[^a-z0-9-._]/g, '') +
+                '.' +
+                painel.id +
+                '.' +
+                painel.periodicidade +
+                '.csv';
 
-            const linhasBuff = json2csvParser.parse(linhas);
+            const tmp = ctx.getTmpFile(fileName);
+
+            const transforms = [flatten()];
+            const csvOpts: CsvWriterOptions<any> = {
+                csvOptions: DefaultCsvOptions,
+                transforms,
+                fields: [...fieldsCSV],
+            };
+
+            await WriteCsvToFile(linhas, tmp.stream, csvOpts);
+
             out.push({
-                name:
-                    'painel-' +
-                    painel.nome.replace(/\s/g, '-').replace(/[^a-z0-9-._]/g, '') +
-                    '.' +
-                    painel.id +
-                    '.' +
-                    painel.periodicidade +
-                    '.csv',
-                buffer: Buffer.from(linhasBuff, 'utf8'),
+                name: fileName,
+                localFile: tmp.path,
             });
         }
         await ctx.progress(99);

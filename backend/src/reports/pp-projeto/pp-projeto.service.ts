@@ -26,12 +26,8 @@ import { StatusContrato, ContratoPrazoUnidade } from '@prisma/client';
 import { RelProjetosAditivosDto, RelProjetosContratosDto } from '../pp-projetos/entities/projetos.entity';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
-
-const {
-    Parser,
-    transforms: { flatten },
-} = require('json2csv');
-const defaultTransform = [flatten({ paths: [] })];
+import { CsvWriterOptions, WriteCsvToBuffer } from 'src/common/helpers/CsvWriter';
+import { flatten } from '@json2csv/transforms';
 
 class RetornoDbAditivos {
     aditivo_id: number;
@@ -502,12 +498,12 @@ export class PPProjetoService implements ReportableService {
 
             ctx.setRestricaoAcesso({
                 portfolio_orgao_ids: orgao_port.orgaos.map((o) => o.id),
-//                roles: [
-//                    'Projeto.administrador_no_orgao',
-//                    'ProjetoMDO.administrador_no_orgao',
-//                    'Projeto.administrador',
-//                    'ProjetoMDO.administrador',
-//                ],
+                //                roles: [
+                //                    'Projeto.administrador_no_orgao',
+                //                    'ProjetoMDO.administrador_no_orgao',
+                //                    'Projeto.administrador',
+                //                    'ProjetoMDO.administrador',
+                //                ],
             });
         }
 
@@ -515,94 +511,42 @@ export class PPProjetoService implements ReportableService {
 
         const out: FileOutput[] = [];
 
-        const json2csvParser = new Parser({
-            ...DefaultCsvOptions,
-            transforms: defaultTransform,
-        });
+        const transforms = [flatten()];
+
+        const toCsvOut = <T>(name: string, rows: T[], fields?: any[]) => {
+            if (!rows?.length) return;
+            const opts: CsvWriterOptions<T> = { csvOptions: DefaultCsvOptions, transforms, fields };
+            const buffer = WriteCsvToBuffer(rows, opts);
+            out.push({ name, buffer });
+        };
 
         if (dados.detail.status)
             (dados.detail as any)['status-traduzido'] = ProjetoStatusParaExibicao[dados.detail.status];
-
-        const linhas = json2csvParser.parse([dados.detail]);
-
-        out.push({
-            name: 'detalhes-do-projeto.csv',
-            buffer: Buffer.from(linhas, 'utf8'),
-        });
+        toCsvOut('detalhes-do-projeto.csv', [dados.detail]);
         await ctx.resumoSaida(`Detalhes do Projeto - ${dados.detail.nome}`, 1);
         await ctx.progress(50);
 
-        if (dados.cronograma.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-            });
-            const linhas = json2csvParser.parse(dados.cronograma);
-            out.push({
-                name: 'cronograma.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
-            });
-        }
+        toCsvOut('cronograma.csv', dados.cronograma);
         await ctx.progress(55);
 
-        if (dados.acompanhamentos.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-            });
-            const linhas = json2csvParser.parse(dados.acompanhamentos);
-            out.push({
-                name: 'acompanhamentos.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
-            });
-        }
+        toCsvOut('acompanhamentos.csv', dados.acompanhamentos);
         await ctx.progress(60);
 
-        if (dados.encaminhamentos.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-            });
-            const linhas = json2csvParser.parse(dados.encaminhamentos);
-            out.push({
-                name: 'encaminhamentos.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
-            });
-        }
+        toCsvOut('encaminhamentos.csv', dados.encaminhamentos);
         await ctx.progress(65);
 
         if (dados.planos_acao.length) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-                fields: [
-                    { value: 'codigo_risco', label: 'codigo_risco' },
-                    { value: 'contramedida', label: 'contramedida' },
-                    { value: 'prazo_contramedida', label: 'prazo_contramedida' },
-                    { value: 'responsavel', label: 'responsavel' },
-                    { value: 'medidas_de_contingencia', label: 'medidas_de_contingencia' },
-                ],
-            });
-            const linhas = json2csvParser.parse(dados.planos_acao);
-            out.push({
-                name: 'planos-acao.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
-            });
+            toCsvOut('planos-acao.csv', dados.planos_acao, [
+                { value: 'codigo_risco', label: 'Codigo Risco' },
+                { value: 'contramedida', label: 'Contramedida' },
+                { value: 'prazo_contramedida', label: 'Prazo Contramedida' },
+                { value: 'responsavel', label: 'Responsavel' },
+                { value: 'medidas_de_contingencia', label: 'Medidas de Contingencia' },
+            ]);
         }
         await ctx.progress(70);
 
-        if (dados.riscos.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-            });
-            const linhas = json2csvParser.parse(dados.riscos);
-            out.push({
-                name: 'riscos.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
-            });
-        }
+        toCsvOut('riscos.csv', dados.riscos);
         await ctx.progress(80);
 
         const uploads = await this.prisma.projetoDocumento.findMany({
@@ -622,30 +566,20 @@ export class PPProjetoService implements ReportableService {
         });
 
         if (uploads.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-                fields: [
-                    { value: 'arquivo.nome_original', label: 'Nome Original' },
-                    {
-                        label: 'Criado em',
+            toCsvOut('arquivos.csv', uploads as any, [
+                { value: 'arquivo.nome_original', label: 'Nome Original' },
+                {
+                    label: 'Criado em',
                         value: (r: (typeof uploads)[0]) => {
                             return r.criado_em.toISOString();
                         },
-                    },
-                    { value: 'criador.id', label: 'Criador (ID)' },
-                    { value: 'criador.nome_exibicao', label: 'Criador (Nome de Exibição)' },
-                    { value: 'arquivo.caminho', label: 'Caminho no Object Storage' },
-                    { value: 'descricao', label: 'descricao do Documento' },
-                    { value: 'arquivo.id', label: 'ID do arquivo' },
-                ],
-            });
-
-            const linhas = json2csvParser.parse(uploads);
-            out.push({
-                name: 'arquivos.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
-            });
+                },
+                { value: 'criador.id', label: 'Criador (ID)' },
+                { value: 'criador.nome_exibicao', label: 'Criador (Nome de Exibição)' },
+                { value: 'arquivo.caminho', label: 'Caminho no Object Storage' },
+                { value: 'descricao', label: 'descricao do Documento' },
+                { value: 'arquivo.id', label: 'ID do arquivo' },
+            ]);
         }
         await ctx.progress(90);
 
@@ -669,41 +603,10 @@ export class PPProjetoService implements ReportableService {
         }
         await ctx.progress(95);
 
-        if (dados.contratos.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-            });
-            const linhas = json2csvParser.parse(dados.contratos);
-            out.push({
-                name: 'contratos.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
-            });
-        }
+        toCsvOut('contratos.csv', dados.contratos);
+        toCsvOut('aditivos.csv', dados.aditivos);
+        toCsvOut('origens.csv', dados.origens);
 
-        if (dados.aditivos.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-            });
-            const linhas = json2csvParser.parse(dados.aditivos);
-            out.push({
-                name: 'aditivos.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
-            });
-        }
-
-        if (dados.origens.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-            });
-            const linhas = json2csvParser.parse(dados.origens);
-            out.push({
-                name: 'origens.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
-            });
-        }
         await ctx.progress(99);
 
         return [

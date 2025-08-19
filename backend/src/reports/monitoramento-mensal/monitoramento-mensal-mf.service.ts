@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { CicloFisico, Pdm, Prisma } from '@prisma/client';
 import { SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { MetasAnaliseQualiService } from '../../mf/metas/metas-analise-quali.service';
@@ -14,12 +14,9 @@ import {
     RetMonitoramentoFisico,
     RetMonitoramentoMensal,
 } from './entities/monitoramento-mensal.entity';
+import { CsvWriterOptions, WriteCsvToBuffer } from 'src/common/helpers/CsvWriter';
+import { flatten } from '@json2csv/transforms';
 
-const {
-    Parser,
-    transforms: { flatten },
-} = require('json2csv');
-const defaultTransform = [flatten({ paths: [] })];
 
 class QualiCsv {
     informacoes_complementares: string;
@@ -219,6 +216,7 @@ export class MonitoramentoMensalMfService {
         const qualiRows: QualiCsv[] = [];
         const riscoRows: RiscoCsv[] = [];
         const fechamentoRows: FechamentoCsv[] = [];
+
         for (const meta of myInput.monitoramento_fisico.metas) {
             if (meta.analiseQuali) {
                 qualiRows.push({
@@ -232,7 +230,6 @@ export class MonitoramentoMensalMfService {
                     referencia_data: meta.analiseQuali.referencia_data.toString(),
                 });
             }
-
             if (meta.analiseRisco) {
                 riscoRows.push({
                     id: meta.analiseRisco.id.toString(),
@@ -246,7 +243,6 @@ export class MonitoramentoMensalMfService {
                     referencia_data: meta.analiseRisco.referencia_data.toString(),
                 });
             }
-
             if (meta.fechamento) {
                 fechamentoRows.push({
                     id: meta.fechamento.id.toString(),
@@ -261,50 +257,33 @@ export class MonitoramentoMensalMfService {
             }
         }
 
-        if (qualiRows.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-                fields: undefined,
-            });
+        const transforms = [flatten()];
 
-            const linhas = json2csvParser.parse(qualiRows);
+        if (qualiRows.length) {
+            const opts: CsvWriterOptions<QualiCsv> = { csvOptions: DefaultCsvOptions, transforms };
             out.push({
                 name: 'analises-qualitativas.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
+                buffer: WriteCsvToBuffer(qualiRows, opts)
             });
         }
 
         if (fechamentoRows.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-                fields: undefined,
-            });
-
-            const linhas = json2csvParser.parse(fechamentoRows);
+            const opts: CsvWriterOptions<FechamentoCsv> = { csvOptions: DefaultCsvOptions, transforms };
             out.push({
                 name: 'fechamentos.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
+                buffer: WriteCsvToBuffer(fechamentoRows, opts)
             });
         }
 
         if (riscoRows.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-                fields: undefined,
-            });
-
-            const linhas = json2csvParser.parse(riscoRows);
+            const opts: CsvWriterOptions<RiscoCsv> = { csvOptions: DefaultCsvOptions, transforms };
             out.push({
                 name: 'analises-de-risco.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
+                buffer: WriteCsvToBuffer(riscoRows, opts)
             });
         }
 
         const seriesVariaveis = myInput.monitoramento_fisico.seriesVariaveis;
-
         if (seriesVariaveis.length) {
             const campos = [
                 { value: 'serie', label: 'Série' },
@@ -317,7 +296,7 @@ export class MonitoramentoMensalMfService {
                 { value: 'valor_nominal', label: 'Valor Nominal' },
                 { value: 'conferida_por.nome_exibicao', label: 'Conferida Por' },
                 { value: 'conferida_em', label: 'Conferida Em' },
-                {
+                 {
                     value: (row: RelSerieVariavelDto) => {
                         return row.conferida ? 'Sim' : 'Não';
                     },
@@ -346,17 +325,14 @@ export class MonitoramentoMensalMfService {
                 { value: 'titulo_atividade', label: 'Título da ' + pdm.rotulo_atividade },
                 { value: 'analise_qualitativa', label: 'Analise Qualitativa' },
             ];
-
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
+            const opts: CsvWriterOptions<RelSerieVariavelDto> = {
+                csvOptions: DefaultCsvOptions,
+                transforms,
                 fields: campos,
-            });
-
-            const linhas = json2csvParser.parse(seriesVariaveis);
+            };
             out.push({
                 name: 'serie-variaveis.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
+                buffer: WriteCsvToBuffer(seriesVariaveis, opts)
             });
         } else {
             out.push({

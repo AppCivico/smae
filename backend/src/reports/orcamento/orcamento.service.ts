@@ -12,12 +12,8 @@ import {
     OrcamentoExecutadoSaidaDto,
     OrcamentoPlanejadoSaidaDto,
 } from './entities/orcamento-executado.entity';
-
-const {
-    Parser,
-    transforms: { flatten },
-} = require('json2csv');
-const defaultTransform = [flatten({ paths: [] })];
+import { CsvWriterOptions, WriteCsvToFile } from 'src/common/helpers/CsvWriter';
+import { flatten } from '@json2csv/transforms';
 
 class RetornoRealizadoDb {
     plan_dotacao_ano_utilizado: string | null;
@@ -658,6 +654,7 @@ export class OrcamentoService implements ReportableService {
         const { orcExec, anoIni, anoFim, orcPlan } = await this.buscaIds(params, user);
         const pdm = params.pdm_id ? await this.prisma.pdm.findUnique({ where: { id: params.pdm_id } }) : undefined;
         await ctx.progress(1);
+        const transforms = [flatten()];
 
         const retExecutado: OrcamentoExecutadoSaidaDto[] = [];
         if (params.tipo == 'Analitico' && orcExec.length > 0) {
@@ -719,9 +716,11 @@ export class OrcamentoService implements ReportableService {
         if (retExecutado.length) {
             await this.dotacaoService.setManyOrgaoUnidadeFonte(retExecutado);
 
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
+            const reportTmpExec = ctx.getTmpFile('executado.csv');
+
+            const execCsvOptions: CsvWriterOptions<OrcamentoExecutadoSaidaDto> = {
+                csvOptions: DefaultCsvOptions,
+                transforms,
                 fields: [
                     ...camposAnoMes,
                     ...campos,
@@ -751,15 +750,18 @@ export class OrcamentoService implements ReportableService {
                     'smae_percentual_liquidado',
                     'logs',
                 ],
-            });
-            const linhas = json2csvParser.parse(
-                retExecutado.map((r) => {
-                    return { ...r, logs: r.logs.join('\r\n') };
-                })
+            };
+
+            // escreve por streaming e usa o header uma única vez
+            await WriteCsvToFile(
+                retExecutado.map((r) => ({ ...r, logs: r.logs.join('\r\n') })),
+                reportTmpExec.stream,
+                execCsvOptions
             );
+
             out.push({
                 name: 'executado.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
+                localFile: reportTmpExec.path,
             });
         }
         await ctx.progress(50);
@@ -782,9 +784,11 @@ export class OrcamentoService implements ReportableService {
         await ctx.progress(70);
         if (retPlanejado.length) {
             await this.dotacaoService.setManyOrgaoUnidadeFonte(retPlanejado);
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
+            const reportTmpPlan = ctx.getTmpFile('planejado.csv');
+
+            const planCsvOptions: CsvWriterOptions<OrcamentoPlanejadoSaidaDto> = {
+                csvOptions: DefaultCsvOptions,
+                transforms,
                 fields: [
                     ...camposAno,
                     ...campos,
@@ -803,15 +807,17 @@ export class OrcamentoService implements ReportableService {
                     'plan_dotacao_mes_utilizado',
                     'logs',
                 ],
-            });
-            const linhas = json2csvParser.parse(
-                retPlanejado.map((r) => {
-                    return { ...r, logs: r.logs.join('\r\n') };
-                })
+            };
+
+            await WriteCsvToFile(
+                retPlanejado.map((r) => ({ ...r, logs: r.logs.join('\r\n') })),
+                reportTmpPlan.stream,
+                planCsvOptions
             );
+
             out.push({
                 name: 'planejado.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
+                localFile: reportTmpPlan.path,
             });
         }
         await ctx.progress(99);
