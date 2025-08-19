@@ -536,7 +536,7 @@ export class TransferenciasService implements ReportableService {
                     label: 'Contrapartida',
                 },
                 {
-                    value: (row) => (row.emenda ? `="${row.demanda}"` : ''),
+                    value: (row) => (row.emenda ? `="${row.emenda}"` : ''),
                     label: 'Emenda',
                 },
                 { value: 'dotacao', label: 'Dotação Orçamentária' }, // Already formatted as ="value" or ' - '

@@ -193,7 +193,7 @@ export class PPStatusService implements ReportableService {
 
         const transforms = [flatten()];
 
-        const fileName = params.tipo_pdm === 'PP' ? 'projeto-statuss.csv' : 'obra-status.csv';
+        const fileName = params.tipo_pdm === 'PP' ? 'projeto-status.csv' : 'obra-status.csv';
         const tmp = ctx.getTmpFile(fileName);
 
         const csvOpts: CsvWriterOptions<any> = {
