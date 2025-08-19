@@ -1,3 +1,4 @@
+import { flatten } from '@json2csv/transforms';
 import { Injectable } from '@nestjs/common';
 import { FonteRelatorio, ParlamentarCargo, TipoRelatorio } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
@@ -18,9 +19,9 @@ import { CreateRelProjetoOrcamentoDto } from '../projeto-orcamento/dto/create-pr
 import { CreateRelProjetoPrevisaoCustoDto } from '../projeto-previsao-custo/dto/create-projeto-previsao-custo.dto';
 import { CreatePsMonitoramentoMensalFilterDto } from '../ps-monitoramento-mensal/dto/create-ps-monitoramento-mensal-filter.dto';
 import { FiltroMetasIniAtividadeDto } from '../relatorios/dto/filtros.dto';
+import { ReportContext } from '../relatorios/helpers/reports.contexto';
 import { CreateRelTransferenciasDto } from '../transferencias/dto/create-transferencias.dto';
 import { CreateRelTribunalDeContasDto } from '../tribunal-de-contas/dto/create-tribunal-de-contas.dto';
-import { ReportContext } from '../relatorios/helpers/reports.contexto';
 
 @Injectable()
 export class UtilsService {
@@ -189,6 +190,7 @@ export const DefaultCsvOptions = {
     eol: '\r\n',
     withBOM: false, // dont be evil!
 };
+export const DefaultTransforms = [flatten()];
 
 export function EnumHumano(enumType: typeof ParlamentarCargo | typeof TipoRelatorio, value: string): string {
     const normalizedValue = value.trim();

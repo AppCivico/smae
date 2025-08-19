@@ -52,3 +52,14 @@ export async function WriteCsvToFile<T>(
         readableStream.push(null);
     });
 }
+
+export function WriteCsvToBuffer<T>(data: T[], options: CsvWriterOptions<T>): Buffer {
+    const parser = new Parser({
+        header: true,
+        ...options.csvOptions,
+        transforms: options.transforms,
+        fields: options.fields,
+    });
+    const csv = parser.parse(data);
+    return Buffer.from(csv, 'utf8');
+}

@@ -4,15 +4,11 @@ import { Date2YMD } from '../../common/date2ymd';
 import { ProjetoGetPermissionSet } from '../../pp/projeto/projeto.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
-import { DefaultCsvOptions, FileOutput, ReportableService } from '../utils/utils.service';
+import { DefaultCsvOptions, DefaultTransforms, FileOutput, ReportableService } from '../utils/utils.service';
 import { CreateRelProjetoStatusDto } from './dto/create-projeto-status.dto';
 import { PPProjetoStatusRelatorioDto, RelProjetoStatusRelatorioDto } from './entities/projeto-status.dto';
-
-const {
-    Parser,
-    transforms: { flatten },
-} = require('json2csv');
-const defaultTransform = [flatten({ paths: [] })];
+import { CsvWriterOptions, WriteCsvToFile } from 'src/common/helpers/CsvWriter';
+import { flatten } from '@json2csv/transforms';
 
 type ProjetoStatusDbRow = {
     id: number;
@@ -194,14 +190,19 @@ export class PPStatusService implements ReportableService {
 
         const out: FileOutput[] = [];
 
-        const json2csvParser = new Parser({
-            ...DefaultCsvOptions,
-            transforms: defaultTransform,
-        });
-        const linhas = json2csvParser.parse(dados.linhas);
+        const fileName = params.tipo_pdm === 'PP' ? 'projeto-status.csv' : 'obra-status.csv';
+        const tmp = ctx.getTmpFile(fileName);
+
+        const csvOpts: CsvWriterOptions<RelProjetoStatusRelatorioDto> = {
+            csvOptions: DefaultCsvOptions,
+            transforms: DefaultTransforms,
+        };
+
+        await WriteCsvToFile(dados.linhas, tmp.stream, csvOpts);
+
         out.push({
-            name: params.tipo_pdm == 'PP' ? 'projeto-status.csv' : 'obra-status.csv',
-            buffer: Buffer.from(linhas, 'utf8'),
+            name: fileName,
+            localFile: tmp.path,
         });
         await ctx.progress(99);
 

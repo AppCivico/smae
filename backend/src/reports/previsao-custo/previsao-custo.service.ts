@@ -5,15 +5,17 @@ import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { DotacaoService } from '../../dotacao/dotacao.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
-import { DefaultCsvOptions, FileOutput, ReportableService, UtilsService } from '../utils/utils.service';
+import {
+    DefaultCsvOptions,
+    DefaultTransforms,
+    FileOutput,
+    ReportableService,
+    UtilsService,
+} from '../utils/utils.service';
 import { PeriodoRelatorioPrevisaoCustoDto, SuperCreateRelPrevisaoCustoDto } from './dto/create-previsao-custo.dto';
-import { ListPrevisaoCustoDto } from './entities/previsao-custo.entity';
-
-const {
-    Parser,
-    transforms: { flatten },
-} = require('json2csv');
-const defaultTransform = [flatten({ paths: [] })];
+import { ListPrevisaoCustoDto, RelPrevisaoCustoDto } from './entities/previsao-custo.entity';
+import { CsvWriterOptions, WriteCsvToFile } from 'src/common/helpers/CsvWriter';
+import { flatten } from '@json2csv/transforms';
 
 @Injectable()
 export class PrevisaoCustoService implements ReportableService {
@@ -146,9 +148,11 @@ export class PrevisaoCustoService implements ReportableService {
             : camposProjeto;
 
         if (dados.linhas.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
+            const reportTmp = ctx.getTmpFile('previsao-custo.csv');
+
+            const csvOptions: CsvWriterOptions<RelPrevisaoCustoDto> = {
+                csvOptions: DefaultCsvOptions,
+                transforms: DefaultTransforms,
                 fields: [
                     ...campos,
                     'id',
@@ -160,17 +164,16 @@ export class PrevisaoCustoService implements ReportableService {
                     'parte_dotacao',
                     'atualizado_em',
                 ],
-            });
-            const linhas = json2csvParser.parse(
-                dados.linhas.map((r) => {
-                    return { ...r };
-                })
-            );
+            };
+
+            await WriteCsvToFile(dados.linhas, reportTmp.stream, csvOptions);
+
             out.push({
                 name: 'previsao-custo.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
+                localFile: reportTmp.path,
             });
         }
+
         await ctx.progress(99);
 
         return [

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { CicloFisico, Pdm, Prisma } from '@prisma/client';
 import { SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { MetasAnaliseQualiService } from '../../mf/metas/metas-analise-quali.service';
@@ -6,7 +6,7 @@ import { MetasFechamentoService } from '../../mf/metas/metas-fechamento.service'
 import { MetasRiscoService } from '../../mf/metas/metas-risco.service';
 import { PrismaService } from '../../prisma/prisma.service';
 
-import { DefaultCsvOptions, FileOutput } from '../utils/utils.service';
+import { DefaultCsvOptions, DefaultTransforms, FileOutput } from '../utils/utils.service';
 import { CreateRelMonitoramentoMensalDto } from './dto/create-monitoramento-mensal.dto';
 import {
     RelMfMetas,
@@ -14,12 +14,9 @@ import {
     RetMonitoramentoFisico,
     RetMonitoramentoMensal,
 } from './entities/monitoramento-mensal.entity';
-
-const {
-    Parser,
-    transforms: { flatten },
-} = require('json2csv');
-const defaultTransform = [flatten({ paths: [] })];
+import { CsvWriterOptions, WriteCsvToBuffer, WriteCsvToFile } from 'src/common/helpers/CsvWriter';
+import { flatten } from '@json2csv/transforms';
+import { ReportContext } from '../relatorios/helpers/reports.contexto';
 
 class QualiCsv {
     informacoes_complementares: string;
@@ -212,13 +209,14 @@ export class MonitoramentoMensalMfService {
         return serieVariaveis as RelSerieVariavelDto[];
     }
 
-    async getFiles(myInput: RetMonitoramentoMensal, pdm: Pdm): Promise<FileOutput[]> {
+    async getFiles(myInput: RetMonitoramentoMensal, pdm: Pdm, ctx: ReportContext): Promise<FileOutput[]> {
         const out: FileOutput[] = [];
         if (!myInput.monitoramento_fisico || myInput.monitoramento_fisico.metas.length == 0) return [];
 
         const qualiRows: QualiCsv[] = [];
         const riscoRows: RiscoCsv[] = [];
         const fechamentoRows: FechamentoCsv[] = [];
+
         for (const meta of myInput.monitoramento_fisico.metas) {
             if (meta.analiseQuali) {
                 qualiRows.push({
@@ -232,7 +230,6 @@ export class MonitoramentoMensalMfService {
                     referencia_data: meta.analiseQuali.referencia_data.toString(),
                 });
             }
-
             if (meta.analiseRisco) {
                 riscoRows.push({
                     id: meta.analiseRisco.id.toString(),
@@ -246,7 +243,6 @@ export class MonitoramentoMensalMfService {
                     referencia_data: meta.analiseRisco.referencia_data.toString(),
                 });
             }
-
             if (meta.fechamento) {
                 fechamentoRows.push({
                     id: meta.fechamento.id.toString(),
@@ -262,49 +258,33 @@ export class MonitoramentoMensalMfService {
         }
 
         if (qualiRows.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-                fields: undefined,
-            });
-
-            const linhas = json2csvParser.parse(qualiRows);
+            const opts: CsvWriterOptions<QualiCsv> = { csvOptions: DefaultCsvOptions, transforms: DefaultTransforms };
             out.push({
                 name: 'analises-qualitativas.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
+                buffer: WriteCsvToBuffer(qualiRows, opts),
             });
         }
 
         if (fechamentoRows.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-                fields: undefined,
-            });
-
-            const linhas = json2csvParser.parse(fechamentoRows);
+            const opts: CsvWriterOptions<FechamentoCsv> = {
+                csvOptions: DefaultCsvOptions,
+                transforms: DefaultTransforms,
+            };
             out.push({
                 name: 'fechamentos.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
+                buffer: WriteCsvToBuffer(fechamentoRows, opts),
             });
         }
 
         if (riscoRows.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-                fields: undefined,
-            });
-
-            const linhas = json2csvParser.parse(riscoRows);
+            const opts: CsvWriterOptions<RiscoCsv> = { csvOptions: DefaultCsvOptions, transforms: DefaultTransforms };
             out.push({
                 name: 'analises-de-risco.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
+                buffer: WriteCsvToBuffer(riscoRows, opts),
             });
         }
 
         const seriesVariaveis = myInput.monitoramento_fisico.seriesVariaveis;
-
         if (seriesVariaveis.length) {
             const campos = [
                 { value: 'serie', label: 'Série' },
@@ -346,17 +326,17 @@ export class MonitoramentoMensalMfService {
                 { value: 'titulo_atividade', label: 'Título da ' + pdm.rotulo_atividade },
                 { value: 'analise_qualitativa', label: 'Analise Qualitativa' },
             ];
-
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
+            const tmp = ctx.getTmpFile('serie-variavel');
+            const opts: CsvWriterOptions<RelSerieVariavelDto> = {
+                csvOptions: DefaultCsvOptions,
+                transforms: DefaultTransforms,
                 fields: campos,
-            });
+            };
 
-            const linhas = json2csvParser.parse(seriesVariaveis);
+            await WriteCsvToFile(seriesVariaveis, tmp.stream, opts);
             out.push({
                 name: 'serie-variaveis.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
+                localFile: tmp.path,
             });
         } else {
             out.push({
