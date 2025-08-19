@@ -95,20 +95,15 @@ async function salvarTransferencia(cargaManipulada) {
     } else {
       r = await TransferenciasVoluntarias.salvarItem(cargaManipulada);
     }
-    if (r) {
-      TransferenciasVoluntarias.buscarItem(r.id);
 
-      alertStore.success(msg);
+    TransferenciasVoluntarias.buscarItem(r.id);
 
-      if (!props.transferenciaId) {
-        router.push({
-          name: 'RegistroDeTransferenciaEditar',
-          params: {
-            transferenciaId: r.id,
-          },
-        });
-      }
-    }
+    router.push({
+      name: 'TransferenciasVoluntariasDetalhes',
+      params: {
+        transferenciaId: r.id,
+      },
+    });
   } catch (error) {
     alertStore.error(error);
   }
