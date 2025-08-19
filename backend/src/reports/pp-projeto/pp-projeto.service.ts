@@ -9,7 +9,7 @@ import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { ProjetoService, ProjetoStatusParaExibicao } from '../../pp/projeto/projeto.service';
 import { ProjetoRiscoStatus } from '../../pp/risco/entities/risco.entity';
 import { PrismaService } from '../../prisma/prisma.service';
-import { DefaultCsvOptions, FileOutput, ReportableService } from '../utils/utils.service';
+import { DefaultCsvOptions, DefaultTransforms, FileOutput, ReportableService } from '../utils/utils.service';
 import { CreateRelProjetoDto } from './dto/create-previsao-custo.dto';
 import {
     PPProjetoRelatorioDto,
@@ -511,11 +511,9 @@ export class PPProjetoService implements ReportableService {
 
         const out: FileOutput[] = [];
 
-        const transforms = [flatten()];
-
         const toCsvOut = <T>(name: string, rows: T[], fields?: any[]) => {
             if (!rows?.length) return;
-            const opts: CsvWriterOptions<T> = { csvOptions: DefaultCsvOptions, transforms, fields };
+            const opts: CsvWriterOptions<T> = { csvOptions: DefaultCsvOptions, transforms: DefaultTransforms, fields };
             const buffer = WriteCsvToBuffer(rows, opts);
             out.push({ name, buffer });
         };
@@ -570,9 +568,9 @@ export class PPProjetoService implements ReportableService {
                 { value: 'arquivo.nome_original', label: 'Nome Original' },
                 {
                     label: 'Criado em',
-                        value: (r: (typeof uploads)[0]) => {
-                            return r.criado_em.toISOString();
-                        },
+                    value: (r: (typeof uploads)[0]) => {
+                        return r.criado_em.toISOString();
+                    },
                 },
                 { value: 'criador.id', label: 'Criador (ID)' },
                 { value: 'criador.nome_exibicao', label: 'Criador (Nome de Exibição)' },

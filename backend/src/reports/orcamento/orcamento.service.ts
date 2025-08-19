@@ -5,7 +5,13 @@ import { DotacaoService } from '../../dotacao/dotacao.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PrevisaoCustoService } from '../previsao-custo/previsao-custo.service';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
-import { DefaultCsvOptions, FileOutput, ReportableService, UtilsService } from '../utils/utils.service';
+import {
+    DefaultCsvOptions,
+    DefaultTransforms as DefaultTransforms,
+    FileOutput,
+    ReportableService,
+    UtilsService,
+} from '../utils/utils.service';
 import { SuperCreateOrcamentoExecutadoDto } from './dto/create-orcamento-executado.dto';
 import {
     ListOrcamentoExecutadoDto,
@@ -654,7 +660,6 @@ export class OrcamentoService implements ReportableService {
         const { orcExec, anoIni, anoFim, orcPlan } = await this.buscaIds(params, user);
         const pdm = params.pdm_id ? await this.prisma.pdm.findUnique({ where: { id: params.pdm_id } }) : undefined;
         await ctx.progress(1);
-        const transforms = [flatten()];
 
         const retExecutado: OrcamentoExecutadoSaidaDto[] = [];
         if (params.tipo == 'Analitico' && orcExec.length > 0) {
@@ -720,7 +725,7 @@ export class OrcamentoService implements ReportableService {
 
             const execCsvOptions: CsvWriterOptions<OrcamentoExecutadoSaidaDto> = {
                 csvOptions: DefaultCsvOptions,
-                transforms,
+                transforms: DefaultTransforms,
                 fields: [
                     ...camposAnoMes,
                     ...campos,
@@ -788,7 +793,7 @@ export class OrcamentoService implements ReportableService {
 
             const planCsvOptions: CsvWriterOptions<OrcamentoPlanejadoSaidaDto> = {
                 csvOptions: DefaultCsvOptions,
-                transforms,
+                transforms: DefaultTransforms,
                 fields: [
                     ...camposAno,
                     ...campos,

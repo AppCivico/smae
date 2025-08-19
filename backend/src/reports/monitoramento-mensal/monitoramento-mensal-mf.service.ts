@@ -6,7 +6,7 @@ import { MetasFechamentoService } from '../../mf/metas/metas-fechamento.service'
 import { MetasRiscoService } from '../../mf/metas/metas-risco.service';
 import { PrismaService } from '../../prisma/prisma.service';
 
-import { DefaultCsvOptions, FileOutput } from '../utils/utils.service';
+import { DefaultCsvOptions, DefaultTransforms, FileOutput } from '../utils/utils.service';
 import { CreateRelMonitoramentoMensalDto } from './dto/create-monitoramento-mensal.dto';
 import {
     RelMfMetas,
@@ -257,10 +257,8 @@ export class MonitoramentoMensalMfService {
             }
         }
 
-        const transforms = [flatten()];
-
         if (qualiRows.length) {
-            const opts: CsvWriterOptions<QualiCsv> = { csvOptions: DefaultCsvOptions, transforms };
+            const opts: CsvWriterOptions<QualiCsv> = { csvOptions: DefaultCsvOptions, transforms: DefaultTransforms };
             out.push({
                 name: 'analises-qualitativas.csv',
                 buffer: WriteCsvToBuffer(qualiRows, opts)
@@ -268,7 +266,7 @@ export class MonitoramentoMensalMfService {
         }
 
         if (fechamentoRows.length) {
-            const opts: CsvWriterOptions<FechamentoCsv> = { csvOptions: DefaultCsvOptions, transforms };
+            const opts: CsvWriterOptions<FechamentoCsv> = { csvOptions: DefaultCsvOptions, transforms: DefaultTransforms };
             out.push({
                 name: 'fechamentos.csv',
                 buffer: WriteCsvToBuffer(fechamentoRows, opts)
@@ -276,7 +274,7 @@ export class MonitoramentoMensalMfService {
         }
 
         if (riscoRows.length) {
-            const opts: CsvWriterOptions<RiscoCsv> = { csvOptions: DefaultCsvOptions, transforms };
+            const opts: CsvWriterOptions<RiscoCsv> = { csvOptions: DefaultCsvOptions, transforms: DefaultTransforms };
             out.push({
                 name: 'analises-de-risco.csv',
                 buffer: WriteCsvToBuffer(riscoRows, opts)
@@ -327,7 +325,7 @@ export class MonitoramentoMensalMfService {
             ];
             const opts: CsvWriterOptions<RelSerieVariavelDto> = {
                 csvOptions: DefaultCsvOptions,
-                transforms,
+                transforms: DefaultTransforms,
                 fields: campos,
             };
             out.push({

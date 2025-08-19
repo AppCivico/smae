@@ -1,7 +1,7 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { Date2YMD } from '../../common/date2ymd';
 import { PrismaService } from '../../prisma/prisma.service';
-import { DefaultCsvOptions, FileOutput, ReportableService } from '../utils/utils.service';
+import { DefaultCsvOptions, DefaultTransforms, FileOutput, ReportableService } from '../utils/utils.service';
 import { CreateRelTribunalDeContasDto } from './dto/create-tribunal-de-contas.dto';
 import { RelatorioTribunalDeContasDto, RelTribunalDeContasDto } from './entities/tribunal-de-contas.entity';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
@@ -113,13 +113,12 @@ export class TribunalDeContasService implements ReportableService {
         const out: FileOutput[] = [];
 
         if (dados.linhas?.length) {
-            const transforms = [flatten()];
 
             const tmp = ctx.getTmpFile('tribunal-de-contas.csv');
 
             const csvOpts: CsvWriterOptions<any> = {
                 csvOptions: DefaultCsvOptions,
-                transforms,
+                transforms: DefaultTransforms,
                 fields: [
                     {
                         value: (row: any) => (row.emenda ? `="${String(row.emenda).replace(/\D/g, '')}"` : ''),

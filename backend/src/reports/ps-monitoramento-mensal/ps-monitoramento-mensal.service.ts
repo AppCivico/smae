@@ -3,7 +3,13 @@ import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { IndicadoresService } from '../indicadores/indicadores.service';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
-import { DefaultCsvOptions, FileOutput, ReportableService, UtilsService } from '../utils/utils.service';
+import {
+    DefaultCsvOptions,
+    DefaultTransforms,
+    FileOutput,
+    ReportableService,
+    UtilsService,
+} from '../utils/utils.service';
 import { CreatePsMonitoramentoMensalFilterDto } from './dto/create-ps-monitoramento-mensal-filter.dto';
 import {
     RelPSMonitoramentoMensalCicloMetasDto,
@@ -303,13 +309,11 @@ export class PSMonitoramentoMensal implements ReportableService {
                 { value: 'analise_qualitativa_liberador', label: 'Analise Qualitativa Liberador' },
             ];
 
-            const transforms = [flatten()];
-
             if (rows.length) {
                 const reportTmpVars = ctx.getTmpFile('monitoramento-mensal-variaveis-ps.csv');
                 const varsCsvOptions: CsvWriterOptions<RelPsMonitoramentoMensalVariaveis> = {
                     csvOptions: DefaultCsvOptions,
-                    transforms,
+                    transforms: DefaultTransforms,
                     fields: fieldsCSV,
                 };
                 await WriteCsvToFile(rows, reportTmpVars.stream, varsCsvOptions);
@@ -323,7 +327,7 @@ export class PSMonitoramentoMensal implements ReportableService {
                 const reportTmpMetas = ctx.getTmpFile('monitoramento-mensal-metas-ciclo-ps.csv');
                 const metasCsvOptions: CsvWriterOptions<RelPSMonitoramentoMensalCicloMetasDto> = {
                     csvOptions: DefaultCsvOptions,
-                    transforms,
+                    transforms: DefaultTransforms,
                     fields: [
                         { value: 'meta_id', label: 'ID da Meta' },
                         { value: 'meta_codigo', label: 'Código da Meta' },
@@ -337,7 +341,7 @@ export class PSMonitoramentoMensal implements ReportableService {
                 await WriteCsvToFile(cicloMetasRows, reportTmpMetas.stream, metasCsvOptions);
                 out.push({
                     name: 'monitoramento-mensal-metas-ciclo-ps.csv',
-                    localFile: reportTmpMetas.path
+                    localFile: reportTmpMetas.path,
                 });
             }
         } else {

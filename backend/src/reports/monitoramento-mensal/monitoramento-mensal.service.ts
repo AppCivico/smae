@@ -4,7 +4,7 @@ import { Date2YMD } from '../../common/date2ymd';
 import { PainelService } from '../../painel/painel.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
-import { DefaultCsvOptions, FileOutput, ReportableService, UtilsService } from '../utils/utils.service';
+import { DefaultCsvOptions, DefaultTransforms, FileOutput, ReportableService, UtilsService } from '../utils/utils.service';
 import { CreateRelMonitoramentoMensalDto } from './dto/create-monitoramento-mensal.dto';
 import {
     RelPainelDetalhe,
@@ -170,10 +170,9 @@ export class MonitoramentoMensalService implements ReportableService {
 
             const tmp = ctx.getTmpFile(fileName);
 
-            const transforms = [flatten()];
             const csvOpts: CsvWriterOptions<any> = {
                 csvOptions: DefaultCsvOptions,
-                transforms,
+                transforms: DefaultTransforms,
                 fields: [...fieldsCSV],
             };
 

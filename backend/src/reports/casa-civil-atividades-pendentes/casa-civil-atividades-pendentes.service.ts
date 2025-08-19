@@ -2,13 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { Date2YMD } from '../../common/date2ymd';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
-import { DefaultCsvOptions, FileOutput, ReportableService } from '../utils/utils.service';
+import { DefaultCsvOptions, DefaultTransforms, FileOutput, ReportableService } from '../utils/utils.service';
 import { CreateCasaCivilAtividadesPendentesFilterDto } from './dto/create-casa-civil-atv-pend-filter.dto';
 import { RelCasaCivilAtividadesPendentes } from './entities/casa-civil-atividaes-pendentes.entity';
 import { Prisma } from '@prisma/client';
 import { CsvWriterOptions, WriteCsvToFile } from 'src/common/helpers/CsvWriter';
 import { flatten } from '@json2csv/transforms';
-
 
 @Injectable()
 export class CasaCivilAtividadesPendentesService implements ReportableService {
@@ -37,7 +36,8 @@ export class CasaCivilAtividadesPendentesService implements ReportableService {
             whereConditions = Prisma.sql`${whereConditions} AND tf.termino_planejado <= ${dataTermino}::date`;
         }
 
-        if (params.esfera) whereConditions = Prisma.sql`${whereConditions} AND t.esfera = ${params.esfera}::"TransferenciaTipoEsfera"`;
+        if (params.esfera)
+            whereConditions = Prisma.sql`${whereConditions} AND t.esfera = ${params.esfera}::"TransferenciaTipoEsfera"`;
 
         if (params.orgao_id && params.orgao_id.length > 0)
             whereConditions = Prisma.sql`${whereConditions} AND tf.orgao_id = ANY(${params.orgao_id})`;
@@ -109,12 +109,11 @@ export class CasaCivilAtividadesPendentesService implements ReportableService {
 
         const out: FileOutput[] = [];
         if (rows.length) {
-            const transforms = [flatten()];
             const tmp = ctx.getTmpFile('atividades-pendentes.csv');
 
             const csvOpts: CsvWriterOptions<any> = {
                 csvOptions: DefaultCsvOptions,
-                transforms,
+                transforms: DefaultTransforms,
                 fields: fieldsCSV,
             };
             await WriteCsvToFile(rows, tmp.stream, csvOpts);

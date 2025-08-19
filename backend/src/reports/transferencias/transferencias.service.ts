@@ -4,7 +4,7 @@ import { TarefaService } from 'src/pp/tarefa/tarefa.service';
 import { Date2YMD } from '../../common/date2ymd';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
-import { DefaultCsvOptions, FileOutput, ReportableService } from '../utils/utils.service';
+import { DefaultCsvOptions, DefaultTransforms, FileOutput, ReportableService } from '../utils/utils.service';
 import { CreateRelTransferenciasDto, TipoRelatorioTransferencia } from './dto/create-transferencias.dto';
 import {
     RelTransferenciaCronogramaDto,
@@ -506,7 +506,6 @@ export class TransferenciasService implements ReportableService {
         await _ctx.resumoSaida('Cronograma de Transferências', dados.linhas_cronograma.length);
 
         const out: FileOutput[] = [];
-        const transforms = [flatten()];
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let fields: { value: string | ((row: any) => string); label: string }[];
@@ -641,7 +640,11 @@ export class TransferenciasService implements ReportableService {
         }
 
         const tmpTransf = _ctx.getTmpFile('transferencias.csv');
-        const transfOpts: CsvWriterOptions<any> = { csvOptions: DefaultCsvOptions, transforms, fields };
+        const transfOpts: CsvWriterOptions<any> = {
+            csvOptions: DefaultCsvOptions,
+            transforms: DefaultTransforms,
+            fields,
+        };
         await WriteCsvToFile(dados.linhas, tmpTransf.stream, transfOpts);
         out.push({ name: 'transferencias.csv', localFile: tmpTransf.path });
 
@@ -665,7 +668,11 @@ export class TransferenciasService implements ReportableService {
                 { value: 'duracao_planejado', label: 'Duração Planejada' }, // Numbers are usually fine
             ];
 
-            const cronOpts: CsvWriterOptions<any> = { csvOptions: DefaultCsvOptions, transforms, fields: cronFields };
+            const cronOpts: CsvWriterOptions<any> = {
+                csvOptions: DefaultCsvOptions,
+                transforms: DefaultTransforms,
+                fields: cronFields,
+            };
             await WriteCsvToFile(dados.linhas_cronograma, tmpCron.stream, cronOpts);
             out.push({ name: 'cronograma.csv', localFile: tmpCron.path });
         }

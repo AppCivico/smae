@@ -5,7 +5,13 @@ import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { DotacaoService } from '../../dotacao/dotacao.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
-import { DefaultCsvOptions, FileOutput, ReportableService, UtilsService } from '../utils/utils.service';
+import {
+    DefaultCsvOptions,
+    DefaultTransforms,
+    FileOutput,
+    ReportableService,
+    UtilsService,
+} from '../utils/utils.service';
 import { PeriodoRelatorioPrevisaoCustoDto, SuperCreateRelPrevisaoCustoDto } from './dto/create-previsao-custo.dto';
 import { ListPrevisaoCustoDto } from './entities/previsao-custo.entity';
 import { CsvWriterOptions, WriteCsvToFile } from 'src/common/helpers/CsvWriter';
@@ -142,13 +148,11 @@ export class PrevisaoCustoService implements ReportableService {
             : camposProjeto;
 
         if (dados.linhas.length) {
-            const transforms = [flatten()];
-
             const reportTmp = ctx.getTmpFile('previsao-custo.csv');
 
             const csvOptions: CsvWriterOptions<any> = {
                 csvOptions: DefaultCsvOptions,
-                transforms,
+                transforms: DefaultTransforms,
                 fields: [
                     ...campos,
                     'id',
@@ -163,7 +167,7 @@ export class PrevisaoCustoService implements ReportableService {
             };
 
             await WriteCsvToFile(dados.linhas, reportTmp.stream, csvOptions);
-            
+
             out.push({
                 name: 'previsao-custo.csv',
                 localFile: reportTmp.path,
@@ -177,8 +181,8 @@ export class PrevisaoCustoService implements ReportableService {
                 name: 'info.json',
                 buffer: Buffer.from(
                     JSON.stringify({
-                            params: params,
-                            horario: Date2YMD.tzSp2UTC(new Date()),
+                        params: params,
+                        horario: Date2YMD.tzSp2UTC(new Date()),
                     }),
                     'utf8'
                 ),
