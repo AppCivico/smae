@@ -3,6 +3,7 @@ import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth.store';
+import truncate from '@/helpers/texto/truncate';
 
 const authStore = useAuthStore();
 const { temPermissãoPara } = storeToRefs(authStore);
@@ -66,18 +67,20 @@ const rotaTemDetalhe = computed(() => {
           :to="item.href"
         >
           {{
-            item.meta?.tituloParaMigalhaDePao && (
-              typeof item.meta.tituloParaMigalhaDePao === 'function' ?
-                item.meta.tituloParaMigalhaDePao()
-                : item.meta.tituloParaMigalhaDePao
-            )
-              || item.meta?.títuloParaMenu
-              || item.meta.título && (
-                typeof item.meta.título === 'function' ?
-                  item.meta.título()
-                  : item.meta.título
+            truncate(
+              item.meta?.tituloParaMigalhaDePao && (
+                typeof item.meta.tituloParaMigalhaDePao === 'function' ?
+                  item.meta.tituloParaMigalhaDePao()
+                  : item.meta.tituloParaMigalhaDePao
               )
-              || item.name
+                || item.meta?.títuloParaMenu
+                || item.meta.título && (
+                  typeof item.meta.título === 'function' ?
+                    item.meta.título()
+                    : item.meta.título
+                )
+                || item.name
+              , 50)
           }}
         </component>
       </li>
@@ -121,18 +124,20 @@ const rotaTemDetalhe = computed(() => {
 
         <template v-else>
           {{
-            $route.meta?.tituloParaMigalhaDePao && (
-              typeof $route.meta.tituloParaMigalhaDePao === 'function' ?
-                $route.meta.tituloParaMigalhaDePao()
-                : $route.meta.tituloParaMigalhaDePao
-            )
-              || $route.meta?.títuloParaMenu
-              || $route.meta?.título && (
-                typeof $route.meta?.título === 'function' ?
-                  $route.meta?.título()
-                  : $route.meta?.título
+            truncate(
+              $route.meta?.tituloParaMigalhaDePao && (
+                typeof $route.meta.tituloParaMigalhaDePao === 'function' ?
+                  $route.meta.tituloParaMigalhaDePao()
+                  : $route.meta.tituloParaMigalhaDePao
               )
-              || $route.name
+                || $route.meta?.títuloParaMenu
+                || $route.meta?.título && (
+                  typeof $route.meta?.título === 'function' ?
+                    $route.meta?.título()
+                    : $route.meta?.título
+                )
+                || $route.name
+              , 50)
           }}
         </template>
       </li>
