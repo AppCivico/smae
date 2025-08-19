@@ -636,6 +636,8 @@ export class ReportsService {
     async executaRelatorio(relatorio_id: number) {
         this.logger.log(`iniciando processamento do relatório ID ${relatorio_id}`);
 
+        let contexto: ReportContext | null = null;
+
         try {
             const now = new Date(Date.now());
 
@@ -669,7 +671,7 @@ export class ReportsService {
                 },
             });
 
-            const contexto = new ReportContext(this.prisma, relatorio.id, relatorio.sistema);
+            contexto = new ReportContext(this.prisma, relatorio.id, relatorio.sistema);
 
             const pessoaJwt = relatorio.criado_por
                 ? await this.pessoaService.reportPessoaFromJwt(relatorio.criado_por, relatorio.sistema)
@@ -702,7 +704,7 @@ export class ReportsService {
             );
 
             await this.prisma.$transaction(async (prismaTx) => {
-                await this.updateRelatorioMetadata(relatorio.id, arquivoId, now, contexto, prismaTx);
+                await this.updateRelatorioMetadata(relatorio.id, arquivoId, now, contexto!, prismaTx);
 
                 await prismaTx.relatorio.update({
                     where: { id: relatorio_id },
@@ -729,6 +731,8 @@ export class ReportsService {
                     },
                 });
             });
+        } finally {
+            if (contexto) contexto.cleanupTmpFiles();
         }
     }
 
