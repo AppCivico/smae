@@ -116,7 +116,7 @@ export class TribunalDeContasService implements ReportableService {
 
             const tmp = ctx.getTmpFile('tribunal-de-contas.csv');
 
-            const csvOpts: CsvWriterOptions<any> = {
+            const csvOpts: CsvWriterOptions<RelTribunalDeContasDto> = {
                 csvOptions: DefaultCsvOptions,
                 transforms: DefaultTransforms,
                 fields: [

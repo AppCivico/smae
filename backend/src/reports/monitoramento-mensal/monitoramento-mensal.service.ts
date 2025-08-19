@@ -176,7 +176,7 @@ export class MonitoramentoMensalService implements ReportableService {
 
             const tmp = ctx.getTmpFile(fileName);
 
-            const csvOpts: CsvWriterOptions<any> = {
+            const csvOpts: CsvWriterOptions<RelPainelDetalhe> = {
                 csvOptions: DefaultCsvOptions,
                 transforms: DefaultTransforms,
                 fields: [...fieldsCSV],

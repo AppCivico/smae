@@ -13,7 +13,7 @@ import {
     UtilsService,
 } from '../utils/utils.service';
 import { PeriodoRelatorioPrevisaoCustoDto, SuperCreateRelPrevisaoCustoDto } from './dto/create-previsao-custo.dto';
-import { ListPrevisaoCustoDto } from './entities/previsao-custo.entity';
+import { ListPrevisaoCustoDto, RelPrevisaoCustoDto } from './entities/previsao-custo.entity';
 import { CsvWriterOptions, WriteCsvToFile } from 'src/common/helpers/CsvWriter';
 import { flatten } from '@json2csv/transforms';
 
@@ -150,7 +150,7 @@ export class PrevisaoCustoService implements ReportableService {
         if (dados.linhas.length) {
             const reportTmp = ctx.getTmpFile('previsao-custo.csv');
 
-            const csvOptions: CsvWriterOptions<any> = {
+            const csvOptions: CsvWriterOptions<RelPrevisaoCustoDto> = {
                 csvOptions: DefaultCsvOptions,
                 transforms: DefaultTransforms,
                 fields: [

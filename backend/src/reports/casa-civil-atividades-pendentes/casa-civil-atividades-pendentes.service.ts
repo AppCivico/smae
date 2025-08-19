@@ -111,7 +111,7 @@ export class CasaCivilAtividadesPendentesService implements ReportableService {
         if (rows.length) {
             const tmp = ctx.getTmpFile('atividades-pendentes.csv');
 
-            const csvOpts: CsvWriterOptions<any> = {
+            const csvOpts: CsvWriterOptions<RelCasaCivilAtividadesPendentes> = {
                 csvOptions: DefaultCsvOptions,
                 transforms: DefaultTransforms,
                 fields: fieldsCSV,
