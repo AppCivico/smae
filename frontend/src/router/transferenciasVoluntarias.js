@@ -282,7 +282,7 @@ export default {
           'TransferenciasVoluntariasListar',
           'TransferenciasVoluntariasDetalhes',
         ],
-        rotaDeEscape: 'TransferenciasVoluntariasListar',
+        rotaDeEscape: 'TransferenciasVoluntariasDetalhes',
       },
       children: [
         {
@@ -297,12 +297,30 @@ export default {
           component: () => import('@/views/transferenciasVoluntarias/TransferenciasVoluntariasDetalhes.vue'),
           props: tiparPropsDeRota,
           meta: {
-            título: () => (useTransferenciasVoluntariasStore()?.emFoco?.identificador
-              ? `Resumo da transferência ${useTransferenciasVoluntariasStore()?.emFoco?.identificador
-              }`
-              : 'Resumo de transferência'),
+            títuloParaMenu: 'Resumo',
+            título: () => {
+              const { emFoco } = useTransferenciasVoluntariasStore();
+
+              if (!emFoco?.identificador) {
+                return 'Resumo de transferência';
+              }
+
+              return `Resumo da transferência ${emFoco.identificador}`;
+            },
+            tituloParaMigalhaDePao: () => {
+              const { emFoco } = useTransferenciasVoluntariasStore();
+
+              if (!emFoco?.identificador) {
+                return 'Resumo de transferência';
+              }
+
+              return `Resumo da transferência ${emFoco.identificador}`;
+            },
             rotasParaMenuSecundário,
-            rotasParaMigalhasDePão: ['TransferenciasVoluntariasListar'],
+            rotasParaMigalhasDePão: [
+              'TransferenciasVoluntariasListar',
+              'TransferenciasVoluntariasDetalhes',
+            ],
           },
         },
         {
