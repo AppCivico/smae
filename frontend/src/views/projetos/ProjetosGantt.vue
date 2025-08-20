@@ -1,5 +1,6 @@
 <script setup>
 import { storeToRefs } from 'pinia';
+import { onMounted } from 'vue';
 import Gantt from '@/components/projetos/Gantt.vue';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
@@ -19,8 +20,11 @@ function iniciar() {
   }
 }
 
-iniciar();
+onMounted(() => {
+  iniciar();
+});
 </script>
+
 <template>
   <div class="flex spacebetween center mb2">
     <h1>{{ emFoco?.nome }}</h1>
