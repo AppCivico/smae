@@ -972,7 +972,7 @@ export class ParlamentarService {
                 }
 
                 // Sempre calcula o percentual
-                const pct_participacao = (dto.numero_votos / finalComparecimento) * 100;
+                const pct_participacao = +((dto.numero_votos / finalComparecimento) * 100).toFixed(2);
 
                 const representatividade = await prismaTxn.mandatoRepresentatividade.create({
                     data: {
@@ -1062,7 +1062,7 @@ export class ParlamentarService {
                 const comparecimento = dto.numero_comparecimento || finalComparecimento;
 
                 if (comparecimento) {
-                    pct_participacao = (votos / comparecimento) * 100;
+                    pct_participacao = +((votos / comparecimento) * 100).toFixed(2);
                 }
             }
 
@@ -1090,7 +1090,8 @@ export class ParlamentarService {
                     prismaTxn,
                     currentRep.mandato.eleicao_id,
                     currentRep.regiao_id,
-                    dto.numero_comparecimento
+                    dto.numero_comparecimento,
+                    user // Passa o usuário para registrar quem fez a alteração
                 );
             }
 
@@ -1132,8 +1133,8 @@ export class ParlamentarService {
             });
         }
 
-        if (existing) {
-            const x = await prismaTxn.eleicaoComparecimento.updateMany({
+        if (existing.length > 0) {
+            await prismaTxn.eleicaoComparecimento.updateMany({
                 where: { id: existing[0].id },
                 data: {
                     valor: novoValor,
@@ -1171,7 +1172,8 @@ export class ParlamentarService {
         prismaTxn: Prisma.TransactionClient,
         eleicaoId: number,
         regiaoId: number,
-        novoComparecimento: number
+        novoComparecimento: number,
+        user: PessoaFromJwt
     ) {
         // Busca todas da eleicao/regiao
         const representatividades = await prismaTxn.mandatoRepresentatividade.findMany({
@@ -1194,7 +1196,8 @@ export class ParlamentarService {
             return prismaTxn.mandatoRepresentatividade.updateMany({
                 where: { id: rep.id },
                 data: {
-                    pct_participacao: +novoPct.toPrecision(2),
+                    pct_participacao: +novoPct.toFixed(2), // Melhor precisão usando toFixed ao invés de toPrecision
+                    atualizado_por: user.id, // Registra quem fez a alteração que causou o recálculo
                     atualizado_em: new Date(),
                 },
             });
