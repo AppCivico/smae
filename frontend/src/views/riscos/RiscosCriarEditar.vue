@@ -1,13 +1,6 @@
 <script setup>
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { impactoDescricao, probabilidadeDescricao, RiscoCalc } from '@back/common/RiscoCalc.ts';
-import AutocompleteField from '@/components/AutocompleteField2.vue';
-import MenuDeMudançaDeStatusDeRisco from '@/components/riscos/MenuDeMudançaDeStatusDeRisco.vue';
-import { risco as schema } from '@/consts/formSchemas';
-import { useAlertStore } from '@/stores/alert.store';
-import { useProjetosStore } from '@/stores/projetos.store.ts';
-import { useRiscosStore } from '@/stores/riscos.store.ts';
-import { useTarefasStore } from '@/stores/tarefas.store.ts';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
@@ -15,6 +8,13 @@ import {
   Form,
 } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
+import AutocompleteField from '@/components/AutocompleteField2.vue';
+import MenuDeMudançaDeStatusDeRisco from '@/components/riscos/MenuDeMudançaDeStatusDeRisco.vue';
+import { risco as schema } from '@/consts/formSchemas';
+import { useAlertStore } from '@/stores/alert.store';
+import { useProjetosStore } from '@/stores/projetos.store.ts';
+import { useRiscosStore } from '@/stores/riscos.store.ts';
+import { useTarefasStore } from '@/stores/tarefas.store.ts';
 
 const alertStore = useAlertStore();
 const projetosStore = useProjetosStore();
@@ -95,9 +95,7 @@ iniciar();
 </script>
 <template>
   <div class="flex spacebetween center mb2">
-    <TítuloDePágina>
-      {{ riscoId ? 'Risco' : 'Novo risco' }}
-    </TítuloDePágina>
+    <TítuloDePágina />
 
     <hr class="ml2 f1">
 
@@ -109,7 +107,6 @@ iniciar();
   </div>
 
   <Form
-    v-if="!riscoId || emFoco"
     v-slot="{ errors, isSubmitting, setFieldValue, values }"
     :disabled="chamadasPendentes.emFoco"
     :initial-values="itemParaEdicao"
