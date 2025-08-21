@@ -662,17 +662,21 @@ export class OrcamentoService implements ReportableService {
         await ctx.progress(1);
 
         const retExecutado: OrcamentoExecutadoSaidaDto[] = [];
-        if (params.tipo == 'Analitico' && orcExec.length > 0) {
-            const resultadosRealizado: RetornoRealizadoDb[] = await this.queryAnaliticoExecutado(orcExec);
-            for (const r of resultadosRealizado) {
-                retExecutado.push(this.convertRealizadoRow(r));
+        if (params.tipo == 'Analitico') {
+            if (orcExec.length > 0) {
+                const resultadosRealizado: RetornoRealizadoDb[] = await this.queryAnaliticoExecutado(orcExec);
+                for (const r of resultadosRealizado) {
+                    retExecutado.push(this.convertRealizadoRow(r));
+                }
             }
             await ctx.resumoSaida('Orçamento Executado', retExecutado.length);
-        } else if (params.tipo == 'Consolidado' && orcExec.length > 0) {
-            const resultados: RetornoRealizadoDb[] = await this.queryConsolidadoExecutado(orcExec);
+        } else if (params.tipo == 'Consolidado') {
+            if (orcExec.length > 0) {
+                const resultados: RetornoRealizadoDb[] = await this.queryConsolidadoExecutado(orcExec);
 
-            for (const r of resultados) {
-                retExecutado.push(this.convertRealizadoRow(r));
+                for (const r of resultados) {
+                    retExecutado.push(this.convertRealizadoRow(r));
+                }
             }
             await ctx.resumoSaida('Orçamento Executado', retExecutado.length);
         }
@@ -772,16 +776,20 @@ export class OrcamentoService implements ReportableService {
         await ctx.progress(50);
 
         const retPlanejado: OrcamentoPlanejadoSaidaDto[] = [];
-        if (params.tipo == 'Analitico' && orcExec.length > 0) {
-            const resultadosPlanejados = await this.queryAnaliticoPlanejado(anoIni, anoFim, orcPlan);
-            for (const r of resultadosPlanejados) {
-                retPlanejado.push(this.convertPlanejadoRow(r));
+        if (params.tipo == 'Analitico') {
+            if (orcExec.length > 0) {
+                const resultadosPlanejados = await this.queryAnaliticoPlanejado(anoIni, anoFim, orcPlan);
+                for (const r of resultadosPlanejados) {
+                    retPlanejado.push(this.convertPlanejadoRow(r));
+                }
             }
             await ctx.resumoSaida('Orçamento Planejado', retPlanejado.length);
-        } else if (params.tipo == 'Consolidado' && orcExec.length > 0) {
-            const resultadosPlanejados = await this.queryConsolidadoPlanejado(anoIni, anoFim, orcPlan);
-            for (const r of resultadosPlanejados) {
-                retPlanejado.push(this.convertPlanejadoRow(r));
+        } else if (params.tipo == 'Consolidado') {
+            if (orcExec.length > 0) {
+                const resultadosPlanejados = await this.queryConsolidadoPlanejado(anoIni, anoFim, orcPlan);
+                for (const r of resultadosPlanejados) {
+                    retPlanejado.push(this.convertPlanejadoRow(r));
+                }
             }
             await ctx.resumoSaida('Orçamento Planejado', retPlanejado.length);
         }

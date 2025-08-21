@@ -121,8 +121,9 @@ export class CasaCivilAtividadesPendentesService implements ReportableService {
                 name: 'atividades-pendentes.csv',
                 localFile: tmp.path,
             });
-            await ctx.resumoSaida('Atividades Pendentes', rows.length);
         }
+        await ctx.resumoSaida('Atividades Pendentes', rows.length);
+
         return out;
     }
 }

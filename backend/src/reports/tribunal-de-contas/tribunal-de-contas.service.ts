@@ -175,8 +175,9 @@ export class TribunalDeContasService implements ReportableService {
                 name: 'tribunal-de-contas.csv',
                 localFile: tmp.path,
             });
-            await ctx.resumoSaida('Tribunal de Contas', dados.linhas.length);
         }
+
+        await ctx.resumoSaida('Tribunal de Contas', dados.linhas.length);
 
         return [
             {
