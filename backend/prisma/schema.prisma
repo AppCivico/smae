@@ -5441,6 +5441,7 @@ enum ModuloSistema {
 enum EleicaoTipo {
     Municipal
     Estadual
+    Geral
 }
 
 model Eleicao {
