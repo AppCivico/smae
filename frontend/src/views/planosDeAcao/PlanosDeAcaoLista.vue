@@ -1,6 +1,9 @@
 <script setup>
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { grauDescricao } from '@back/common/RiscoCalc.ts';
+import { storeToRefs } from 'pinia';
+import { onMounted, ref } from 'vue';
+import { useRoute } from 'vue-router';
 import MenuDeMudançaDeStatusDeRisco from '@/components/riscos/MenuDeMudançaDeStatusDeRisco.vue';
 import { risco as schema } from '@/consts/formSchemas';
 import statuses from '@/consts/riskStatuses';
@@ -13,8 +16,8 @@ import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
 import { useRiscosStore } from '@/stores/riscos.store.ts';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
-import { storeToRefs } from 'pinia';
-import { ref } from 'vue';
+
+const route = useRoute();
 
 const planosDeAçãoStore = usePlanosDeAçãoStore();
 const portfolioStore = usePortfolioStore();
@@ -68,6 +71,8 @@ async function buscarMonitoramento(id) {
 
 function iniciar() {
   planosDeAçãoStore.$reset();
+  riscosStore.buscarItem(route.params.riscoId);
+
   portfolioStore.buscarTudo();
 
   if (!tarefasStore.lista.length) {
@@ -75,7 +80,9 @@ function iniciar() {
   }
 }
 
-iniciar();
+onMounted(() => {
+  iniciar();
+});
 </script>
 
 <template>
@@ -87,10 +94,12 @@ iniciar();
       >
         Risco prioritário
       </div>
+
       <TítuloDePágina />
     </div>
 
     <hr class="ml2 f1">
+
     <MenuDeMudançaDeStatusDeRisco
       v-if="emFoco?.id
         && (!permissõesDoProjetoEmFoco.apenas_leitura
@@ -267,13 +276,14 @@ iniciar();
             </label>
           </td>
           <th>
-            <router-link
-              :to="{ name: 'detalhes',
-              params: { planoId: item.id }}"
-              >
+            <SmaeLink
+              :to="{
+                name: 'detalhes',
+                params: { planoId: item.id }
+              }"
+            >
               {{ item.contramedida }}
-            </router-link>
-
+            </SmaeLink>
           </th>
           <td>
             {{ item.responsavel || item.orgao.sigla }}
