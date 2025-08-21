@@ -8,6 +8,7 @@ import { ReportContext } from '../relatorios/helpers/reports.contexto';
 import { DefaultCsvOptions, FileOutput, ReportableService } from '../utils/utils.service';
 import { CreateRelParlamentaresDto } from './dto/create-parlamentares.dto';
 import { ParlamentaresRelatorioDto, RelParlamentaresDto } from './entities/parlamentares.entity';
+import { RemoveNullFields } from '../../common/RemoveNullFields';
 
 @Injectable()
 export class ParlamentaresService implements ReportableService {
@@ -32,6 +33,8 @@ export class ParlamentaresService implements ReportableService {
         prismaCtx?: PrismaService | Prisma.TransactionClient
     ): Promise<RelParlamentaresDto[]> {
         const prismaTx = prismaCtx || this.prisma;
+
+        dto = RemoveNullFields(dto);
 
         const parlamentares = await prismaTx.view_parlamentares_mandatos_part_atual.findMany({
             where: {
@@ -61,7 +64,7 @@ export class ParlamentaresService implements ReportableService {
                 mes_aniversario: r.mes_aniversario,
                 email: r.email,
                 ano_eleicao: r.ano_eleicao,
-                zona_atuacao: r.zona_atuacao
+                zona_atuacao: r.zona_atuacao,
             });
         }
         return parlamentaresOut;
@@ -101,8 +104,8 @@ export class ParlamentaresService implements ReportableService {
                     { value: 'endereco', label: 'Endereço' },
                     { value: 'gabinete', label: 'Gabinete' },
                     {
-                        value: (row:any) => row.telefone ? `\u200C${row.telefone}` : '',
-                        label: 'Telefone'
+                        value: (row: any) => (row.telefone ? `\u200C${row.telefone}` : ''),
+                        label: 'Telefone',
                     },
                     { value: 'dia_aniversario', label: 'Dia Aniversário' },
                     { value: 'mes_aniversario', label: 'Mês Aniversário' },
