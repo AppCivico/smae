@@ -944,6 +944,16 @@ export class ParlamentarService {
                         dto.numero_comparecimento
                     );
                     finalComparecimento = dto.numero_comparecimento;
+
+                    // Só recalcula representatividades se estamos atualizando o comparecimento
+                    // e pode afetar outras representatividades já existentes
+                    await this.recalcRepresentatividades(
+                        prismaTxn,
+                        mandato.eleicao_id,
+                        dto.regiao_id,
+                        dto.numero_comparecimento,
+                        user // Passa o usuário para registrar quem fez a alteração
+                    );
                 } else {
                     // Busca comparecimento existente
                     const existingComparecimento = await prismaTxn.eleicaoComparecimento.findFirst({
