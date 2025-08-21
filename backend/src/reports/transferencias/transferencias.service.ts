@@ -276,8 +276,8 @@ export class TransferenciasService implements ReportableService {
                     transferencia_id: tarefaCronoId.transferencia_id!,
                     hirearquia: `="${tarefasHierarquia[e.id]}"`,
                     tarefa: e.tarefa,
-                    inicio_planejado: e.inicio_planejado,
-                    termino_planejado: e.termino_planejado,
+                    inicio_planejado: e.inicio_planejado?.toString() || '',
+                    termino_planejado: e.termino_planejado?.toString() || '',
                     custo_estimado: e.custo_estimado,
                     duracao_planejado: e.duracao_planejado,
                 });
