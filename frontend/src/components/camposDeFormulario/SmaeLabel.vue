@@ -4,7 +4,7 @@ import buscarDadosDoYup from './helpers/buscarDadosDoYup';
 import SmaeTooltip from '../SmaeTooltip/SmaeTooltip.vue';
 
 type Slots = {
-  default(props: { label: string }): void
+  default(props: { label: string, required: boolean }): void
   prepend(): void
   append(): void
   balaoInformativo: unknown
@@ -72,7 +72,14 @@ const temInformacao = computed<boolean>(() => {
   >
     <slot name="prepend" />
 
-    <slot :label="caminhoNoSchema?.spec?.label || name">
+    <slot
+      :label="caminhoNoSchema?.spec?.label || name"
+      :required="required ||
+        (
+          caminhoNoSchema?.spec?.presence === 'required'
+          && caminhoNoSchema?.type !== 'boolean'
+        )"
+    >
       <pre
         v-if="!caminhoNoSchema"
         v-ScrollLockDebug

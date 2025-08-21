@@ -3549,7 +3549,8 @@ export const representatividade = object()
     numero_comparecimento: number()
       .label('Comparecimento')
       .min(0)
-      .max(2147483647),
+      .max(2147483647)
+      .required(),
     numero_votos: number()
       .label('Votos')
       .min(0)

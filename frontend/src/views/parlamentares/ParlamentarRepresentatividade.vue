@@ -6,7 +6,9 @@ import {
   useForm,
   useIsFormDirty,
 } from 'vee-validate';
-import { computed, watch } from 'vue';
+import {
+  computed, onMounted, ref, watch,
+} from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import SmallModal from '@/components/SmallModal.vue';
 import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
@@ -47,6 +49,7 @@ const alertStore = useAlertStore();
 const parlamentaresStore = useParlamentaresStore();
 const regionsStore = useRegionsStore();
 
+const comparecimentoRegiao = ref();
 const {
   emFoco, chamadasPendentes, representatividadeParaEdicao,
 } = storeToRefs(parlamentaresStore);
@@ -129,8 +132,8 @@ async function handleEnviarDados(
 
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   if (
-    representatividadeParaEdicao.value
-    && representatividadeParaEdicao.value.numero_comparecimento !== values.numero_comparecimento
+    comparecimentoRegiao.value
+    && comparecimentoRegiao.value.valor !== values.numero_comparecimento
   ) {
     alertStore.confirmAction(
       'Atenção: ha um valor de comparecimento para essa eleição / cargo / região diferente do informado. A alteração deste valor implicará no recalculo dos percentuais de todos os parlamentares desta  eleição / cargo / região. Confirma alteração ?',
@@ -161,7 +164,19 @@ function iniciar() {
   }
 }
 
-iniciar();
+async function buscarComparecimento(mandatoId: number, regiaoId: number) {
+  const { comparecimentos } = await parlamentaresStore.buscarComparecimento(mandatoId);
+
+  const regiao = comparecimentos.find((item) => item.regiao_id === regiaoId);
+
+  if (!regiao) {
+    return null;
+  }
+
+  comparecimentoRegiao.value = regiao;
+
+  return regiao;
+}
 
 async function handleMudarMandatoOuRegiao() {
   const {
@@ -173,9 +188,8 @@ async function handleMudarMandatoOuRegiao() {
     return;
   }
 
-  const { comparecimentos } = await parlamentaresStore.buscarComparecimento(mandatoId);
+  const regiao = await buscarComparecimento(mandatoId, regiaoId);
 
-  const regiao = comparecimentos.find((item) => item.regiao_id === regiaoId);
   if (!regiao) {
     setFieldValue('numero_comparecimento', null);
   } else {
@@ -198,6 +212,8 @@ watch(representatividadeParaEdicao, (novoValor) => {
     return;
   }
 
+  buscarComparecimento(novoValor.mandato_id, novoValor.regiao_id);
+
   resetForm({
     values: {
       ...novoValor,
@@ -205,6 +221,10 @@ watch(representatividadeParaEdicao, (novoValor) => {
     },
   });
 }, { immediate: true });
+
+onMounted(() => {
+  iniciar();
+});
 </script>
 
 <template>
@@ -261,10 +281,18 @@ watch(representatividadeParaEdicao, (novoValor) => {
 
         <div class="f1">
           <SmaeLabel
+            v-slot="{ required}"
             name="regiao_id"
             :schema="schema"
           >
             {{ isCapital ? 'Região' : 'Município' }}
+
+            <span
+              v-if="required"
+              class="tvermelho"
+            >
+              &nbsp;*
+            </span>
           </SmaeLabel>
 
           <Field
