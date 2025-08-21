@@ -131,12 +131,13 @@ onBeforeRouteLeave(() => {
   </p>
 
   <SmaeTable
-    class="mt2"
+    class="tabela-relatio mt2"
     :dados="relatóriosStore.lista"
     :colunas="[
       { chave: 'criador.nome_exibicao', label: 'Criador' },
       { chave: 'criado_em', label: 'Gerado em', formatador: localizarDataHorario },
       { chave: 'parametros_processados', label: 'Filtros Aplicados' },
+      { chave: 'resumo_saida', label: 'Resumo saída' },
       { chave: 'eh_publico', label: 'Relatório Público', formatador: formatarSeEPublico },
       { chave: 'acoes', label: 'Ações' },
     ]"
@@ -146,8 +147,30 @@ onBeforeRouteLeave(() => {
       <col>
       <col class="col--dataHora">
       <col>
+      <col>
       <col class="col--minimum">
       <col class="col--botão-de-ação">
+    </template>
+
+    <template #celula:resumo_saida="{ celula }">
+      <dl>
+        <div
+          v-for="(resumoValor, resumoLabel) in celula"
+          :key="`resumo-celula--${resumoLabel}`"
+        >
+          <dt class="w700 inline">
+            {{ resumoLabel }}:
+          </dt>
+          <dd class="inline">
+            <template v-if="!Array.isArray(resumoValor)">
+              {{ resumoValor }}
+            </template>
+            <template v-else>
+              {{ combinadorDeListas(resumoValor) }}
+            </template>
+          </dd>
+        </div>
+      </dl>
     </template>
 
     <template #celula:parametros_processados="{ linha }">
@@ -227,3 +250,13 @@ onBeforeRouteLeave(() => {
     carregar mais
   </button>
 </template>
+
+<style lang="less" scoped>
+.tabela-relatio :deep {
+  .table-cell--parametros_processados,
+  .table-cell--resumo_saida {
+    vertical-align: baseline;
+    max-width: 250px;
+  }
+}
+</style>
