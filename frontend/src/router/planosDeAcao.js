@@ -40,7 +40,15 @@ export default {
 
           return `Risco ${emFoco.titulo}`;
         },
-        título: 'Resumo de risco',
+        título: () => {
+          const { emFoco } = useRiscosStore();
+
+          if (!emFoco) {
+            return 'Resumo de riscos';
+          }
+
+          return `Risco ${emFoco.titulo}`;
+        },
         títuloParaMenu: 'Resumo de risco',
         rotasParaMigalhasDePão: [
           'projetosListar',
@@ -160,7 +168,6 @@ export default {
             ],
           },
         },
-
       ],
     },
   ],

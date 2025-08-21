@@ -8,6 +8,7 @@ import {
   Form,
 } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
+import { onMounted } from 'vue';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import MenuDeMudançaDeStatusDeRisco from '@/components/riscos/MenuDeMudançaDeStatusDeRisco.vue';
 import { risco as schema } from '@/consts/formSchemas';
@@ -51,12 +52,12 @@ const props = defineProps({
 
 async function onSubmit(_, { controlledValues: carga }) {
   try {
-    const msg = props.riscoId
+    const msg = route.params.riscoId
       ? 'Dados salvos com sucesso!'
       : 'Item adicionado com sucesso!';
 
-    const resposta = props.riscoId
-      ? await riscosStore.salvarItem(carga, props.riscoId)
+    const resposta = route.params.riscoId
+      ? await riscosStore.salvarItem(carga, route.params.riscoId)
       : await riscosStore.salvarItem(carga);
 
     if (resposta) {
@@ -91,7 +92,9 @@ function iniciar() {
   }
 }
 
-iniciar();
+onMounted(() => {
+  iniciar();
+});
 </script>
 <template>
   <div class="flex spacebetween center mb2">
