@@ -17,18 +17,18 @@ export class TarefaItemDto {
     tarefa: string;
 
     @IsDateYMD({ nullable: true })
-    inicio_planejado: string | null;
+    inicio_planejado: Date | null;
 
     @IsDateYMD({ nullable: true })
-    termino_planejado: string | null;
+    termino_planejado: Date | null;
 
     duracao_planejado: number | null;
 
     @IsDateYMD({ nullable: true })
-    inicio_real: string | null;
+    inicio_real: Date | null;
 
     @IsDateYMD({ nullable: true })
-    termino_real: string | null;
+    termino_real: Date | null;
 
     duracao_real: number | null;
 
@@ -60,9 +60,9 @@ export class TarefaItemDbDto extends TarefaItemDto {
 }
 
 export class TarefaItemProjetadoDto extends TarefaItemDto {
-    @ApiProperty({ type: Date })
+    @ApiProperty({ type: String, format: 'date' })
     projecao_inicio: DateTime | undefined;
-    @ApiProperty({ type: Date })
+    @ApiProperty({ type: String, format: 'date' })
     projecao_termino: DateTime | undefined;
     projecao_atraso: number | undefined;
 }
