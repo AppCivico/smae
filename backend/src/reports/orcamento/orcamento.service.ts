@@ -19,7 +19,6 @@ import {
     OrcamentoPlanejadoSaidaDto,
 } from './entities/orcamento-executado.entity';
 import { CsvWriterOptions, WriteCsvToFile } from 'src/common/helpers/CsvWriter';
-import { flatten } from '@json2csv/transforms';
 
 class RetornoRealizadoDb {
     plan_dotacao_ano_utilizado: string | null;
@@ -197,35 +196,44 @@ export class OrcamentoService implements ReportableService {
             select: { id: true },
         });
 
-        const orcPlan = await this.prisma.orcamentoPlanejado.findMany({
-            where: {
-                meta_id: filtroMetas ? { in: filtroMetas } : undefined,
-                projeto_id: dto.projeto_id ? dto.projeto_id : undefined,
-                ...(dto.portfolio_id
-                    ? {
-                          projeto_id: { 'not': null },
-                          OR: [
-                              { projeto: { portfolio_id: dto.portfolio_id } },
-                              {
-                                  projeto: {
-                                      portfolios_compartilhados: {
-                                          some: { portfolio_id: dto.portfolio_id, removido_em: null },
-                                      },
-                                  },
-                              },
-                          ],
-                      }
-                    : {}),
-                removido_em: null,
-                OR: orgaoMatch.length === 0 ? undefined : orgaoMatch,
-
-                ano_referencia: {
-                    gte: dto.inicio.getFullYear(),
-                    lte: dto.fim.getFullYear(),
-                },
+        const baseWhere: any = {
+            removido_em: null,
+            ano_referencia: {
+                gte: dto.inicio.getFullYear(),
+                lte: dto.fim.getFullYear(),
             },
+        };
+
+        // aplica filtro de metas somente se houver correspondência no planejado
+        if (Array.isArray(filtroMetas) && filtroMetas.length) {
+            const metasExistem = await this.prisma.orcamentoPlanejado.count({
+                where: { ...baseWhere, meta_id: { in: filtroMetas } },
+            });
+
+            if (metasExistem > 0) {
+                baseWhere.meta_id = { in: filtroMetas };
+            } else {
+                this.logger.warn(
+                    `[orcamento_planejado] filtroMetas sem correspondência (${filtroMetas.join(',')}); ignorando para garantir saída do planejado.csv`
+                );
+            }
+        }
+
+        if (dto.projeto_id) {
+            baseWhere.projeto_id = dto.projeto_id;
+        }
+
+        if (dto.portfolio_id) {
+            baseWhere.projeto_id = { not: null };
+        }
+
+        baseWhere.OR = orgaoMatch.length === 0 ? undefined : orgaoMatch;
+
+        const orcPlan = await this.prisma.orcamentoPlanejado.findMany({
+            where: baseWhere,
             select: { id: true },
         });
+
         return { orcExec, anoIni, anoFim, orcPlan };
     }
 
