@@ -204,27 +204,43 @@ export class OrcamentoService implements ReportableService {
             },
         };
 
-        // aplica filtro de metas somente se houver correspondência no planejado
+        // 1) Aplica projeto/portfólio e órgão ANTES do fallback de metas
+        if (dto.projeto_id) {
+            baseWhere.projeto_id = dto.projeto_id;
+        }
+        if (dto.portfolio_id) {
+            // restringe a itens vinculados a algum projeto e pertencentes ao portfólio (direto ou compartilhado)
+            baseWhere.projeto_id = { not: null };
+            baseWhere.AND = [
+                ...(baseWhere.AND ?? []),
+                {
+                    OR: [
+                        { projeto: { portfolio_id: dto.portfolio_id } },
+                        {
+                            projeto: {
+                                portfolios_compartilhados: {
+                                    some: { portfolio_id: dto.portfolio_id, removido_em: null },
+                                },
+                            },
+                        },
+                    ],
+                },
+            ];
+        }
+        baseWhere.OR = orgaoMatch.length === 0 ? undefined : orgaoMatch;
+
+        // 2) Só aplica filtro de metas se houver correspondência com os filtros acima
         if (Array.isArray(filtroMetas) && filtroMetas.length) {
             const metasExistem = await this.prisma.orcamentoPlanejado.count({
                 where: { ...baseWhere, meta_id: { in: filtroMetas } },
             });
-
             if (metasExistem > 0) {
                 baseWhere.meta_id = { in: filtroMetas };
             } else {
                 this.logger.warn(
-                    `[orcamento_planejado] filtroMetas sem correspondência (${filtroMetas.join(',')}); ignorando para garantir saída do planejado.csv`
+                    `[orcamento_planejado] filtroMetas sem correspondência (count=${filtroMetas.length}); ignorando para garantir saída do planejado.csv`
                 );
             }
-        }
-
-        if (dto.projeto_id) {
-            baseWhere.projeto_id = dto.projeto_id;
-        }
-
-        if (dto.portfolio_id) {
-            baseWhere.projeto_id = { not: null };
         }
 
         baseWhere.OR = orgaoMatch.length === 0 ? undefined : orgaoMatch;
