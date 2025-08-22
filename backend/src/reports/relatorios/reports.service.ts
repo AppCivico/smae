@@ -98,6 +98,7 @@ export class ReportsService {
         const service: ReportableService | null = this.servicoDaFonte(dto);
 
         const now = new Date();
+        const unparsedParams = structuredClone(dto.parametros);
         // acaba sendo chamado 2x a cada request, pq já rodou 1x na validação, mas blz.
         let parametros = ParseParametrosDaFonte(dto.fonte, dto.parametros);
 
@@ -126,6 +127,8 @@ export class ReportsService {
             parametros.tipo_pdm = 'PDM';
         }
 
+        const parametrosOriginal = structuredClone(parametros);
+
         const files = await service.toFileOutput(parametros, ctx, user);
         let hasInfo = false;
         for (const file of files) {
@@ -137,7 +140,8 @@ export class ReportsService {
                 name: 'info.json',
                 buffer: Buffer.from(
                     JSON.stringify({
-                        params: parametros,
+                        params: parametrosOriginal,
+                        unpared_params: unparsedParams,
                         horario: Date2YMD.tzSp2UTC(now),
                     }),
                     'utf8'
