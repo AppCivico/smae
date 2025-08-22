@@ -182,6 +182,14 @@ export function ParseParametrosDaFonte(fonte: FonteRelatorio, value: any): any {
         version: undefined,
     });
 
+    const originalKeys = Object.keys(value);
+    // remove if extra keys of validatorObject if not preset in orig
+    for (const key of Object.keys(validatorObject)) {
+        if (!originalKeys.includes(key) && typeof validatorObject == 'object') {
+            delete (validatorObject as any)[key];
+        }
+    }
+
     return validatorObject;
 }
 

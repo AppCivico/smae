@@ -47,7 +47,6 @@ import { FilterRelatorioDto } from './dto/filter-relatorio.dto';
 import { RelatorioDto, RelatorioProcessamentoDto } from './entities/report.entity';
 import { ReportContext } from './helpers/reports.contexto';
 import { BuildParametrosProcessados, ParseBffParamsProcessados } from './helpers/reports.params-processado';
-import { RemoveUndefinedFields } from '../../common/RemoveUndefinedFields';
 
 export const GetTempFileName = function (prefix?: string, suffix?: string) {
     prefix = typeof prefix !== 'undefined' ? prefix : 'tmp.';
@@ -126,8 +125,6 @@ export class ReportsService {
         } else if (dto.fonte === 'Indicadores') {
             parametros.tipo_pdm = 'PDM';
         }
-
-        parametros = RemoveUndefinedFields(parametros);
 
         const files = await service.toFileOutput(parametros, ctx, user);
         let hasInfo = false;
@@ -300,14 +297,14 @@ export class ReportsService {
         user: PessoaFromJwt | null,
         sistema: ModuloSistema = 'SMAE'
     ): Promise<RecordWithId> {
-        let parametros = ParseParametrosDaFonte(dto.fonte, dto.parametros);
+        const parametros = dto.parametros;
         const pdmId = parametros.pdm_id !== undefined ? Number(parametros.pdm_id) : null;
 
         // resolve um problema pra n ficar uma lista em branco no frontend e aqui
         if (dto.fonte === 'Orcamento' || dto.fonte === 'PrevisaoCusto') {
             if (Array.isArray(parametros.orgaos) && parametros.orgaos.length === 0) delete parametros.orgaos;
         }
-
+        console.log(parametros);
         return await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             const result = await prismaTx.relatorio.create({
                 data: {
@@ -325,7 +322,7 @@ export class ReportsService {
                     criado_por: user ? user.id : null,
                     criado_em: new Date(Date.now()),
                 },
-                select: { id: true },
+                select: { id: true, parametros: true, parametros_processados: true },
             });
 
             await this.taskService.create(

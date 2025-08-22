@@ -8,13 +8,13 @@ import { PPObrasRelatorioDto } from './entities/obras.entity';
 import { PPObrasService } from './pp-obras.service';
 
 @ApiTags('Relatórios - API')
-@Controller('relatorio/projetos')
+@Controller('relatorio/obras')
 export class PPObrasController {
     constructor(private readonly obras: PPObrasService) {}
 
     @Post()
     @ApiBearerAuth('access-token')
-    @Roles(['Reports.executar.Projetos'])
+    @Roles(['Reports.executar.MDO'])
     async create(
         @Body() createObrasDto: CreateRelObrasDto,
         @CurrentUser() user: PessoaFromJwt
