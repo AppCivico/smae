@@ -210,7 +210,9 @@ export class OrcamentoService implements ReportableService {
         }
         if (dto.portfolio_id) {
             // restringe a itens vinculados a algum projeto e pertencentes ao portfólio (direto ou compartilhado)
-            baseWhere.projeto_id = { not: null };
+            if (!baseWhere.projeto_id) {
+                baseWhere.projeto_id = { not: null };
+            }
             baseWhere.AND = [
                 ...(baseWhere.AND ?? []),
                 {
