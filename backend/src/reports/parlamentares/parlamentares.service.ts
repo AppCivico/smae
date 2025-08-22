@@ -124,18 +124,6 @@ export class ParlamentaresService implements ReportableService {
         await ctx.resumoSaida('Parlamentares', linhas.length);
         await ctx.progress(99);
 
-        return [
-            {
-                name: 'info.json',
-                buffer: Buffer.from(
-                    JSON.stringify({
-                        params: params,
-                        horario: Date2YMD.tzSp2UTC(new Date()),
-                    }),
-                    'utf8'
-                ),
-            },
-            ...out,
-        ];
+        return out;
     }
 }

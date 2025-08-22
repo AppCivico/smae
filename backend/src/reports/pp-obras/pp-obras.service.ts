@@ -293,18 +293,7 @@ export class PPObrasService implements ReportableService {
     }
 
     async toFileOutput(dto: CreateRelObrasDto, ctx: ReportContext, user: PessoaFromJwt | null): Promise<FileOutput[]> {
-        const out: FileOutput[] = [
-            {
-                name: 'info.json',
-                buffer: Buffer.from(
-                    JSON.stringify({
-                        params: dto,
-                        horario: Date2YMD.tzSp2UTC(new Date()),
-                    }),
-                    'utf8'
-                ),
-            },
-        ];
+        const out: FileOutput[] = [];
         ctx.progress(50);
 
         const whereCond = await this.buildFilteredWhereStr(dto, user);

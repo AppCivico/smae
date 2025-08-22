@@ -676,18 +676,6 @@ export class TransferenciasService implements ReportableService {
             out.push({ name: 'cronograma.csv', localFile: tmpCrono.path });
         }
 
-        return [
-            {
-                name: 'info.json',
-                buffer: Buffer.from(
-                    JSON.stringify({
-                        params: params,
-                        horario: Date2YMD.tzSp2UTC(new Date()),
-                    }),
-                    'utf8'
-                ),
-            },
-            ...out,
-        ];
+        return out;
     }
 }

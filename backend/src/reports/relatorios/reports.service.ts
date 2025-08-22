@@ -20,7 +20,7 @@ import { resolve as resolvePath } from 'path';
 import { uuidv7 } from 'uuidv7';
 import * as XLSX from 'xlsx';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
-import { SYSTEM_TIMEZONE } from '../../common/date2ymd';
+import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { PaginatedDto, PAGINATION_TOKEN_TTL } from '../../common/dto/paginated.dto';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { SmaeConfigService } from '../../common/services/smae-config.service';
@@ -98,6 +98,7 @@ export class ReportsService {
         // TODO agora que existem vários sistemas, conferir se o privilégio faz sentido com o serviço
         const service: ReportableService | null = this.servicoDaFonte(dto);
 
+        const now = new Date();
         // acaba sendo chamado 2x a cada request, pq já rodou 1x na validação, mas blz.
         let parametros = ParseParametrosDaFonte(dto.fonte, dto.parametros);
 
@@ -129,8 +130,22 @@ export class ReportsService {
         parametros = RemoveUndefinedFields(parametros);
 
         const files = await service.toFileOutput(parametros, ctx, user);
+        let hasInfo = false;
         for (const file of files) {
             ctx.addFile(file);
+            if (file.name == 'info.json') hasInfo = true;
+        }
+        if (!hasInfo) {
+            ctx.addFile({
+                name: 'info.json',
+                buffer: Buffer.from(
+                    JSON.stringify({
+                        params: parametros,
+                        horario: Date2YMD.tzSp2UTC(now),
+                    }),
+                    'utf8'
+                ),
+            });
         }
     }
 

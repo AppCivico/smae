@@ -954,19 +954,7 @@ export class PPProjetosService implements ReportableService {
         const geolocFieldNames = ['ID Projeto', 'Endereço', 'GeoJSON'];
         await this.gerarCsv('geoloc', geolocFields, geolocFieldNames, projetosIds, out, ctx, 100);
 
-        return [
-            {
-                name: 'info.json',
-                buffer: Buffer.from(
-                    JSON.stringify({
-                        params: params,
-                        horario: new Date().toISOString(),
-                    }),
-                    'utf8'
-                ),
-            },
-            ...out,
-        ];
+        return [...out];
     }
 
     private async buildFilteredWhereStr(filters: CreateRelProjetosDto, user: PessoaFromJwt | null): Promise<WhereCond> {
