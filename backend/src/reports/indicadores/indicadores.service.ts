@@ -10,7 +10,7 @@ import { EmitErrorAndDestroyStream, Stream2PromiseIntoArray } from '../../common
 import { PrismaService } from '../../prisma/prisma.service';
 import { RegiaoBasica as RegiaoDto } from '../../regiao/entities/regiao.entity';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
-import { FileOutput, ReportableService, UtilsService } from '../utils/utils.service';
+import { FileOutput, Path2FileName, ReportableService, UtilsService } from '../utils/utils.service';
 import { CreateRelIndicadorDto, CreateRelIndicadorRegioesDto } from './dto/create-indicadores.dto';
 import { ListIndicadoresDto, RelIndicadoresDto, RelIndicadoresVariaveisDto } from './entities/indicadores.entity';
 
@@ -1884,5 +1884,9 @@ export class IndicadoresService implements ReportableService {
             parente_id: regiao_by_id[regiao_id].parente_id,
             pdm_codigo_sufixo: regiao_by_id[regiao_id].pdm_codigo_sufixo,
         };
+    }
+
+    getClassFileName(): string {
+        return Path2FileName(__filename);
     }
 }

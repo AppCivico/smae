@@ -5,7 +5,7 @@ import { Date2YMD } from '../../common/date2ymd';
 import { CsvWriterOptions, WriteCsvToFile } from '../../common/helpers/CsvWriter';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
-import { DefaultCsvOptions, FileOutput, ReportableService } from '../utils/utils.service';
+import { DefaultCsvOptions, FileOutput, Path2FileName, ReportableService } from '../utils/utils.service';
 import { CreateRelParlamentaresDto } from './dto/create-parlamentares.dto';
 import { ParlamentaresRelatorioDto, RelParlamentaresDto } from './entities/parlamentares.entity';
 import { RemoveNullFields } from '../../common/RemoveNullFields';
@@ -125,5 +125,9 @@ export class ParlamentaresService implements ReportableService {
         await ctx.progress(99);
 
         return out;
+    }
+
+    getClassFileName(): string {
+        return Path2FileName(__filename);
     }
 }

@@ -8,6 +8,7 @@ import {
     DefaultCsvOptions,
     DefaultTransforms,
     FileOutput,
+    Path2FileName,
     ReportableService,
     UtilsService,
 } from '../utils/utils.service';
@@ -192,5 +193,9 @@ export class MonitoramentoMensalService implements ReportableService {
         await ctx.progress(99);
 
         return out;
+    }
+
+    getClassFileName(): string {
+        return Path2FileName(__filename);
     }
 }

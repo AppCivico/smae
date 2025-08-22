@@ -9,7 +9,13 @@ import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { ProjetoService, ProjetoStatusParaExibicao } from '../../pp/projeto/projeto.service';
 import { ProjetoRiscoStatus } from '../../pp/risco/entities/risco.entity';
 import { PrismaService } from '../../prisma/prisma.service';
-import { DefaultCsvOptions, DefaultTransforms, FileOutput, ReportableService } from '../utils/utils.service';
+import {
+    DefaultCsvOptions,
+    DefaultTransforms,
+    FileOutput,
+    Path2FileName,
+    ReportableService,
+} from '../utils/utils.service';
 import { CreateRelProjetoDto } from './dto/create-previsao-custo.dto';
 import {
     PPProjetoRelatorioDto,
@@ -621,5 +627,9 @@ export class PPProjetoService implements ReportableService {
             },
             ...out,
         ];
+    }
+
+    getClassFileName(): string {
+        return Path2FileName(__filename);
     }
 }

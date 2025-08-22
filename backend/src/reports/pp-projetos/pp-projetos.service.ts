@@ -14,7 +14,7 @@ import { ProjetoRiscoStatus } from '../../pp/risco/entities/risco.entity';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
 import { CsvFileHandler } from '../shared/csv-file-handler';
 import { StreamBatchHandler } from '../shared/stream-handlers';
-import { FileOutput, ReportableService } from '../utils/utils.service';
+import { FileOutput, Path2FileName, ReportableService } from '../utils/utils.service';
 import { CreateRelProjetosDto } from './dto/create-projetos.dto';
 import { PPProjetosStreamingDto } from './dto/streaming-projetos.dto';
 import {
@@ -1874,5 +1874,9 @@ export class PPProjetosService implements ReportableService {
 
         const result = await this.prisma.$queryRawUnsafe(projectIdsQuery, ...whereCond.queryParams);
         return (result as any[]).map((row) => row.id);
+    }
+
+    getClassFileName(): string {
+        return Path2FileName(__filename);
     }
 }

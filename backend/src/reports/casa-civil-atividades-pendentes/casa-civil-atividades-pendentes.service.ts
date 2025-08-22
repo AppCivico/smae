@@ -2,7 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { Date2YMD } from '../../common/date2ymd';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
-import { DefaultCsvOptions, DefaultTransforms, FileOutput, ReportableService } from '../utils/utils.service';
+import {
+    DefaultCsvOptions,
+    DefaultTransforms,
+    FileOutput,
+    Path2FileName,
+    ReportableService,
+} from '../utils/utils.service';
 import { CreateCasaCivilAtividadesPendentesFilterDto } from './dto/create-casa-civil-atv-pend-filter.dto';
 import { RelCasaCivilAtividadesPendentes } from './entities/casa-civil-atividaes-pendentes.entity';
 import { Prisma } from '@prisma/client';
@@ -125,5 +131,9 @@ export class CasaCivilAtividadesPendentesService implements ReportableService {
         await ctx.resumoSaida('Atividades Pendentes', rows.length);
 
         return out;
+    }
+
+    getClassFileName(): string {
+        return Path2FileName(__filename);
     }
 }

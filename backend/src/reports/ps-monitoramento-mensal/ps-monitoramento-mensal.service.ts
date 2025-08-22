@@ -7,6 +7,7 @@ import {
     DefaultCsvOptions,
     DefaultTransforms,
     FileOutput,
+    Path2FileName,
     ReportableService,
     UtilsService,
 } from '../utils/utils.service';
@@ -362,5 +363,9 @@ export class PSMonitoramentoMensal implements ReportableService {
             out.push(indicador);
         }
         return out;
+    }
+
+    getClassFileName(): string {
+        return Path2FileName(__filename);
     }
 }

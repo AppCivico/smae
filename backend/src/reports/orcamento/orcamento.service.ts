@@ -9,6 +9,7 @@ import {
     DefaultCsvOptions,
     DefaultTransforms as DefaultTransforms,
     FileOutput,
+    Path2FileName,
     ReportableService,
     UtilsService,
 } from '../utils/utils.service';
@@ -701,7 +702,6 @@ export class OrcamentoService implements ReportableService {
             camposAno[0] = camposAnoMes[0];
         }
 
-        // TODO: talvez para obras seja necessário verificar o tipo do portfolio
         const camposProjeto = [
             { value: 'projeto.codigo', label: 'Código Projeto' },
             { value: 'projeto.nome', label: 'Nome do Projeto' },
@@ -777,7 +777,7 @@ export class OrcamentoService implements ReportableService {
 
         const retPlanejado: OrcamentoPlanejadoSaidaDto[] = [];
         if (params.tipo == 'Analitico') {
-            if (orcExec.length > 0) {
+            if (orcPlan.length > 0) {
                 const resultadosPlanejados = await this.queryAnaliticoPlanejado(anoIni, anoFim, orcPlan);
                 for (const r of resultadosPlanejados) {
                     retPlanejado.push(this.convertPlanejadoRow(r));
@@ -785,7 +785,7 @@ export class OrcamentoService implements ReportableService {
             }
             await ctx.resumoSaida('Orçamento Planejado', retPlanejado.length);
         } else if (params.tipo == 'Consolidado') {
-            if (orcExec.length > 0) {
+            if (orcPlan.length > 0) {
                 const resultadosPlanejados = await this.queryConsolidadoPlanejado(anoIni, anoFim, orcPlan);
                 for (const r of resultadosPlanejados) {
                     retPlanejado.push(this.convertPlanejadoRow(r));
@@ -836,5 +836,9 @@ export class OrcamentoService implements ReportableService {
         await ctx.progress(99);
 
         return out;
+    }
+
+    getClassFileName(): string {
+        return Path2FileName(__filename);
     }
 }

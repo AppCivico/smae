@@ -135,17 +135,22 @@ export class ReportsService {
             ctx.addFile(file);
             if (file.name == 'info.json') hasInfo = true;
         }
+        const infoJson = JSON.stringify(
+            {
+                params: parametrosOriginal,
+                unpared_params: unparsedParams,
+                horario: Date2YMD.tzSp2UTC(now),
+                tipo: dto.fonte,
+                file_name: service.getClassFileName(),
+            },
+            undefined,
+            4
+        );
+        this.logger.verbose(infoJson);
         if (!hasInfo) {
             ctx.addFile({
                 name: 'info.json',
-                buffer: Buffer.from(
-                    JSON.stringify({
-                        params: parametrosOriginal,
-                        unpared_params: unparsedParams,
-                        horario: Date2YMD.tzSp2UTC(now),
-                    }),
-                    'utf8'
-                ),
+                buffer: Buffer.from(infoJson, 'utf8'),
             });
         }
     }

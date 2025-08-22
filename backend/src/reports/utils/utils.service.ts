@@ -102,9 +102,14 @@ export class FileOutput {
     localFile?: string;
 }
 
+export function Path2FileName(path: string): string {
+    return path.split('/').pop()?.replace(/\.js$/, '.ts') ?? '';
+}
+
 export interface ReportableService {
     toFileOutput(params: any, ctx: ReportContext, user: PessoaFromJwt | null): Promise<FileOutput[]>;
     asJSON(params: any, user: PessoaFromJwt | null): Promise<any>;
+    getClassFileName(): string;
 }
 
 export function ParseParametrosDaFonte(fonte: FonteRelatorio, value: any): any {
