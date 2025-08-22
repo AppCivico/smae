@@ -7,7 +7,6 @@ import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { FindOneParams } from '../../common/decorators/find-params';
 import { PaginatedDto } from '../../common/dto/paginated.dto';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
-import { UploadService } from '../../upload/upload.service';
 import { CreateReportDto } from './dto/create-report.dto';
 import { FilterRelatorioDto } from './dto/filter-relatorio.dto';
 import { RelatorioDto } from './entities/report.entity';
@@ -17,8 +16,7 @@ import { ReportsService } from './reports.service';
 @Controller('relatorios')
 export class ReportsController {
     constructor(
-        private readonly reportsService: ReportsService,
-        private readonly uploadService: UploadService
+        private readonly reportsService: ReportsService
     ) {}
 
     @Post()
@@ -78,7 +76,7 @@ export class ReportsController {
 
     @Get('sync-parametros')
     @ApiBearerAuth('access-token')
-    async syncParametros(@CurrentUser() user: PessoaFromJwt) {
+    async syncParametros() {
         await this.reportsService.syncRelatoriosParametros();
         return '';
     }

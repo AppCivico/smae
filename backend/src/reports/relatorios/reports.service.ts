@@ -47,6 +47,7 @@ import { FilterRelatorioDto } from './dto/filter-relatorio.dto';
 import { RelatorioDto, RelatorioProcessamentoDto } from './entities/report.entity';
 import { ReportContext } from './helpers/reports.contexto';
 import { BuildParametrosProcessados, ParseBffParamsProcessados } from './helpers/reports.params-processado';
+import { RemoveUndefinedFields } from '../../common/RemoveUndefinedFields';
 
 export const GetTempFileName = function (prefix?: string, suffix?: string) {
     prefix = typeof prefix !== 'undefined' ? prefix : 'tmp.';
@@ -98,7 +99,7 @@ export class ReportsService {
         const service: ReportableService | null = this.servicoDaFonte(dto);
 
         // acaba sendo chamado 2x a cada request, pq já rodou 1x na validação, mas blz.
-        const parametros = ParseParametrosDaFonte(dto.fonte, dto.parametros);
+        let parametros = ParseParametrosDaFonte(dto.fonte, dto.parametros);
 
         // Ajusta o tipo de relatório para MDO, se for de status de obra
         if (
@@ -124,6 +125,8 @@ export class ReportsService {
         } else if (dto.fonte === 'Indicadores') {
             parametros.tipo_pdm = 'PDM';
         }
+
+        parametros = RemoveUndefinedFields(parametros);
 
         const files = await service.toFileOutput(parametros, ctx, user);
         for (const file of files) {
@@ -282,8 +285,13 @@ export class ReportsService {
         user: PessoaFromJwt | null,
         sistema: ModuloSistema = 'SMAE'
     ): Promise<RecordWithId> {
-        const parametros = dto.parametros;
+        let parametros = ParseParametrosDaFonte(dto.fonte, dto.parametros);
         const pdmId = parametros.pdm_id !== undefined ? Number(parametros.pdm_id) : null;
+
+        // resolve um problema pra n ficar uma lista em branco no frontend e aqui
+        if (dto.fonte === 'Orcamento' || dto.fonte === 'PrevisaoCusto') {
+            if (Array.isArray(parametros.orgaos) && parametros.orgaos.length === 0) delete parametros.orgaos;
+        }
 
         return await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             const result = await prismaTx.relatorio.create({
@@ -295,7 +303,10 @@ export class ReportsService {
                     visibilidade: dto.eh_publico ? 'Publico' : 'Privado',
                     tipo: TipoRelatorio[parametros.tipo as TipoRelatorio] ? parametros.tipo : null,
                     parametros: parametros,
-                    parametros_processados: await BuildParametrosProcessados(this.prisma, dto),
+                    parametros_processados: await BuildParametrosProcessados(this.prisma, {
+                        ...dto,
+                        parametros: parametros,
+                    }),
                     criado_por: user ? user.id : null,
                     criado_em: new Date(Date.now()),
                 },
