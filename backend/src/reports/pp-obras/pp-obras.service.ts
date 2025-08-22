@@ -297,7 +297,13 @@ export class PPObrasService implements ReportableService {
         ctx.progress(50);
 
         const whereCond = await this.buildFilteredWhereStr(dto, user);
-        await ctx.resumoSaida('Obras', whereCond.count);
+
+        const countProjetos = await this.prisma.$queryRawUnsafe<{ count: number }[]>(
+            `SELECT COUNT(*) FROM projeto ${whereCond.whereString}`,
+            ...whereCond.queryParams
+        );
+
+        await ctx.resumoSaida('Obras', countProjetos[0].count);
 
         out.push(
             await this.streamQueryToCSV(
