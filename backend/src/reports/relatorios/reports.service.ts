@@ -21,7 +21,7 @@ import { uuidv7 } from 'uuidv7';
 import * as XLSX from 'xlsx';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { SYSTEM_TIMEZONE } from '../../common/date2ymd';
-import { PaginatedDto, PAGINATION_TOKEN_TTL } from '../../common/dto/paginated.dto';
+import { PaginatedDto, PaginatedWithPagesDto, PAGINATION_TOKEN_TTL } from '../../common/dto/paginated.dto';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { SmaeConfigService } from '../../common/services/smae-config.service';
 import { PessoaService } from '../../pessoa/pessoa.service';
@@ -47,6 +47,8 @@ import { FilterRelatorioDto } from './dto/filter-relatorio.dto';
 import { RelatorioDto, RelatorioProcessamentoDto } from './entities/report.entity';
 import { ReportContext } from './helpers/reports.contexto';
 import { BuildParametrosProcessados, ParseBffParamsProcessados } from './helpers/reports.params-processado';
+import { FilterRelatorioV2Dto } from './dto/filter-relatorio-v2.dto';
+import { Object2Hash } from 'src/common/object2hash';
 
 export const GetTempFileName = function (prefix?: string, suffix?: string) {
     prefix = typeof prefix !== 'undefined' ? prefix : 'tmp.';
@@ -60,6 +62,13 @@ const AdmZip = require('adm-zip');
 class NextPageTokenJwtBody {
     offset: number;
     ipp: number;
+}
+
+class ReportsPageTokenJwtBody {
+    search_hash: string;
+    ipp: number;
+    issued_at: number;
+    total_rows: number;
 }
 
 @Injectable()
@@ -393,73 +402,7 @@ export class ReportsService {
                 pdm_id: filters.pdm_id,
                 removido_em: null,
                 sistema: { in: [sistema, 'SMAE'] },
-                AND: [
-                    {
-                        OR: [
-                            {
-                                visibilidade: 'Privado',
-                                criado_por: user.id,
-                            },
-                            {
-                                visibilidade: 'Publico',
-                            },
-                            {
-                                visibilidade: 'Restrito',
-                                OR: [
-                                    // If there's no restriction at all
-                                    {
-                                        restrito_para: {
-                                            equals: Prisma.AnyNull,
-                                        },
-                                    },
-                                    // Check for role-based access
-                                    {
-                                        AND: [
-                                            {
-                                                OR: [
-                                                    // Either roles doesn't exist in the JSON
-                                                    {
-                                                        restrito_para: {
-                                                            path: ['$.roles'],
-                                                            equals: Prisma.AnyNull,
-                                                        },
-                                                    },
-                                                    // Or user has one of the required roles
-                                                    {
-                                                        restrito_para: {
-                                                            path: ['$.roles'],
-                                                            array_contains: user.privilegios as string[],
-                                                        },
-                                                    },
-                                                ],
-                                            },
-                                            {
-                                                OR: [
-                                                    // Either portfolio_orgao_ids doesn't exist in the JSON
-                                                    {
-                                                        restrito_para: {
-                                                            path: ['$.portfolio_orgao_ids'],
-                                                            equals: Prisma.AnyNull,
-                                                        },
-                                                    },
-                                                    // Or user belongs to one of the required orgs
-                                                    user.orgao_id
-                                                        ? {
-                                                              restrito_para: {
-                                                                  path: ['$.portfolio_orgao_ids'],
-                                                                  array_contains: [user.orgao_id],
-                                                              },
-                                                          }
-                                                        : {},
-                                                ],
-                                            },
-                                        ],
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                ],
+                AND: this._getPermissionClause(user),
             },
             select: {
                 id: true,
@@ -491,29 +434,7 @@ export class ReportsService {
         }
 
         return {
-            linhas: rows.map((r) => {
-                const progresso = r.arquivo_id ? 100 : r.progresso == -1 ? null : r.progresso;
-
-                const eh_publico: boolean = r.visibilidade === RelatorioVisibilidade.Publico ? true : false;
-
-                return {
-                    ...r,
-                    progresso: progresso,
-                    eh_publico: eh_publico,
-                    parametros_processados: ParseBffParamsProcessados(r.parametros_processados?.valueOf(), r.fonte),
-                    criador: { nome_exibicao: r.criador?.nome_exibicao || '(sistema)' },
-                    arquivo: r.arquivo_id
-                        ? this.uploadService.getDownloadToken(r.arquivo_id, '1d').download_token
-                        : null,
-                    processamento: {
-                        id: 0,
-                        congelado_em: r.iniciado_em,
-                        executado_em: r.processado_em,
-                        err_msg: r.err_msg,
-                    } satisfies RelatorioProcessamentoDto,
-                    resumo_saida: r.resumo_saida?.valueOf() as object[] | null,
-                } satisfies RelatorioDto;
-            }),
+            linhas: rows.map((r) => this._mapRelatorioToDto(r)),
             tem_mais: tem_mais,
             token_ttl: PAGINATION_TOKEN_TTL,
             token_proxima_pagina: token_proxima_pagina,
@@ -830,5 +751,203 @@ export class ReportsService {
             default:
                 return 'Desconhecido';
         }
+    }
+
+    private _getWhereClauseForFindAll(filters: FilterRelatorioV2Dto, user: PessoaFromJwt): Prisma.RelatorioWhereInput {
+        const sistema = user.assertOneModuloSistema('buscar', 'Relatórios');
+        const criadoEmFilter =
+            filters.criado_em_de || filters.criado_em_ate
+                ? {
+                      criado_em: {
+                          gte: filters.criado_em_de ? new Date(filters.criado_em_de) : undefined,
+                          lte: filters.criado_em_ate ? new Date(filters.criado_em_ate) : undefined,
+                      },
+                  }
+                : {};
+        return {
+            fonte: filters.fonte,
+            pdm_id: filters.pdm_id,
+            tipo: filters.tipo,
+            visibilidade: filters.visibilidade,
+            removido_em: null,
+            sistema: { in: [sistema, 'SMAE'] },
+            ...criadoEmFilter,
+            AND: this._getPermissionClause(user),
+        };
+    }
+
+    private _getPermissionClause(user: PessoaFromJwt): Prisma.RelatorioWhereInput {
+        return {
+            OR: [
+                {
+                    visibilidade: 'Privado',
+                    criado_por: user.id,
+                },
+                {
+                    visibilidade: 'Publico',
+                },
+                {
+                    visibilidade: 'Restrito',
+                    OR: [
+                        // If there's no restriction at all
+                        {
+                            restrito_para: {
+                                equals: Prisma.AnyNull,
+                            },
+                        },
+                        // Check for role-based access
+                        {
+                            AND: [
+                                {
+                                    OR: [
+                                        // Either roles doesn't exist in the JSON
+                                        {
+                                            restrito_para: {
+                                                path: ['$.roles'],
+                                                equals: Prisma.AnyNull,
+                                            },
+                                        },
+                                        // Or user has one of the required roles
+                                        {
+                                            restrito_para: {
+                                                path: ['$.roles'],
+                                                array_contains: user.privilegios as string[],
+                                            },
+                                        },
+                                    ],
+                                },
+                                {
+                                    OR: [
+                                        // Either portfolio_orgao_ids doesn't exist in the JSON
+                                        {
+                                            restrito_para: {
+                                                path: ['$.portfolio_orgao_ids'],
+                                                equals: Prisma.AnyNull,
+                                            },
+                                        },
+                                        // Or user belongs to one of the required orgs
+                                        user.orgao_id
+                                            ? {
+                                                  restrito_para: {
+                                                      path: ['$.portfolio_orgao_ids'],
+                                                      array_contains: [user.orgao_id],
+                                                  },
+                                              }
+                                            : {},
+                                    ],
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
+        };
+    }
+
+    async findAllV2(filters: FilterRelatorioV2Dto, user: PessoaFromJwt): Promise<PaginatedWithPagesDto<RelatorioDto>> {
+        const ipp = filters.ipp ?? 25;
+        const page = filters.pagina ?? 1;
+        const skip = (page - 1) * ipp;
+        let total_registros = 0;
+        let token_paginacao = filters.token_paginacao;
+
+        const filtersForHash = { ...filters };
+        delete filtersForHash.pagina;
+        delete filtersForHash.token_paginacao;
+
+        if (token_paginacao) {
+            const decoded = this.decodePageToken(token_paginacao, filtersForHash);
+            total_registros = decoded.total_rows;
+        } else {
+            const where = this._getWhereClauseForFindAll(filters, user);
+            total_registros = await this.prisma.relatorio.count({ where });
+            token_paginacao = this.encodePageToken(filtersForHash, total_registros);
+        }
+
+        const where = this._getWhereClauseForFindAll(filters, user);
+
+        const rows = await this.prisma.relatorio.findMany({
+            where,
+            select: {
+                id: true,
+                criado_em: true,
+                criador: { select: { nome_exibicao: true } },
+                fonte: true,
+                visibilidade: true,
+                arquivo_id: true,
+                parametros: true,
+                parametros_processados: true,
+                pdm_id: true,
+                progresso: true,
+                err_msg: true,
+                iniciado_em: true,
+                processado_em: true,
+                resumo_saida: true,
+            },
+            orderBy: { criado_em: 'desc' },
+            skip,
+            take: ipp,
+        });
+
+        const total_paginas = Math.ceil(total_registros / ipp);
+
+        return {
+            linhas: rows.map((r) => this._mapRelatorioToDto(r)),
+            total_registros: total_registros,
+            paginas: total_paginas,
+            pagina_corrente: page,
+            tem_mais: page < total_paginas,
+            token_paginacao: token_paginacao,
+            token_ttl: PAGINATION_TOKEN_TTL,
+        };
+    }
+
+    private _mapRelatorioToDto(relatorioFromDb: any): RelatorioDto {
+        const progresso = relatorioFromDb.arquivo_id ? 100 : relatorioFromDb.progresso == -1 ? null : relatorioFromDb.progresso;
+
+        const eh_publico: boolean = relatorioFromDb.visibilidade === RelatorioVisibilidade.Publico ? true : false;
+
+        return {
+            ...relatorioFromDb,
+            progresso: progresso,
+            eh_publico: eh_publico,
+            parametros_processados: ParseBffParamsProcessados(
+                relatorioFromDb.parametros_processados?.valueOf(),
+                relatorioFromDb.fonte
+            ),
+            criador: { nome_exibicao: relatorioFromDb.criador?.nome_exibicao || '(sistema)' },
+            arquivo: relatorioFromDb.arquivo_id
+                ? this.uploadService.getDownloadToken(relatorioFromDb.arquivo_id, '1d').download_token
+                : null,
+            processamento: {
+                id: 0,
+                congelado_em: relatorioFromDb.iniciado_em,
+                executado_em: relatorioFromDb.processado_em,
+                err_msg: relatorioFromDb.err_msg,
+            } satisfies RelatorioProcessamentoDto,
+            resumo_saida: relatorioFromDb.resumo_saida?.valueOf() as object[] | null,
+        } satisfies RelatorioDto;
+    }
+
+    private decodePageToken(jwt: string, filters: object): ReportsPageTokenJwtBody {
+        try {
+            const decoded = this.jwtService.verify(jwt) as ReportsPageTokenJwtBody;
+            if (decoded.search_hash !== Object2Hash(filters)) {
+                throw new Error('Filter criteria changed during pagination.');
+            }
+            return decoded;
+        } catch (error) {
+            throw new HttpException(`Token de paginação inválido ou expirado. ${error.message}`, 400);
+        }
+    }
+
+    private encodePageToken(filters: object, total_rows: number): string {
+        const body: ReportsPageTokenJwtBody = {
+            search_hash: Object2Hash(filters),
+            ipp: (filters as FilterRelatorioV2Dto).ipp ?? 25,
+            issued_at: Date.now(),
+            total_rows,
+        };
+        return this.jwtService.sign(body, { expiresIn: PAGINATION_TOKEN_TTL });
     }
 }
