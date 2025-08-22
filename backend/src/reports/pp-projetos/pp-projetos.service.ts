@@ -989,6 +989,11 @@ export class PPProjetosService implements ReportableService {
                 projeto: {
                     AND: perms,
                     portfolio: { modelo_clonagem: false }, // não traz portfólios que são modelos para clonagem
+                    tipo: this.tipo,
+                    id: filters.projeto_id ? { in: filters.projeto_id } : undefined,
+                    codigo: filters.codigo ?? undefined,
+                    orgao_responsavel_id: filters.orgao_responsavel_id ?? undefined,
+                    status: filters.status ?? undefined,
                 },
                 removido_em: null,
                 portfolio_id: filters.portfolio_id,

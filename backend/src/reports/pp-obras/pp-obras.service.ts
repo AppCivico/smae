@@ -455,6 +455,9 @@ export class PPObrasService implements ReportableService {
                 projeto: {
                     AND: perms,
                     portfolio: { modelo_clonagem: false }, // não traz portfólios que são modelos para clonagem
+                    tipo: this.tipo,
+                    orgao_responsavel_id: filters.orgao_responsavel_id ? filters.orgao_responsavel_id : undefined,
+                    grupo_tematico_id: filters.grupo_tematico_id ? filters.grupo_tematico_id : undefined,
                 },
                 removido_em: null,
                 portfolio_id: filters.portfolio_id,
