@@ -501,6 +501,8 @@ model Pessoa {
     AtualizacoesEmLoteCriadas   AtualizacaoEmLote[] @relation("AtualizacaoEmLoteCriador")
     AtualizacoesEmLoteRemovidas AtualizacaoEmLote[] @relation("AtualizacaoEmLoteRemovedor")
 
+    ultimaAtividade PessoaUltimaAtividade?
+
     @@index([email])
     @@map("pessoa")
 }
@@ -3502,7 +3504,7 @@ model Relatorio {
 
     sistema ModuloSistema @default(SMAE)
 
-    resumo_saida Json @db.Json @default("{}")
+    resumo_saida Json @default("{}") @db.Json
 
     // Coluna espelhada da RelatorioFilha, para facilitar a busca.
     processado_em DateTime? @db.Timestamptz(6)
@@ -4853,9 +4855,10 @@ model PessoaSessao {
     removido_em DateTime?
     removido_ip String?   @db.Inet
 
-    PessoaSessaoAtiva  PessoaSessaoAtiva[]
-    PessoaAtividadeLog PessoaAtividadeLog[]
-    LogGenerico        LogGenerico[]
+    PessoaSessaoAtiva     PessoaSessaoAtiva[]
+    PessoaAtividadeLog    PessoaAtividadeLog[]
+    LogGenerico           LogGenerico[]
+    PessoaUltimaAtividade PessoaUltimaAtividade[]
 
     @@index([pessoa_id])
     @@map("pessoa_sessao")
@@ -7821,4 +7824,19 @@ enum ApiRequestLogControlStatus {
     RESTORED
     FAILED_BACKUP
     FAILED_RESTORE
+}
+
+model PessoaUltimaAtividade {
+    id                  Int      @id @default(autoincrement())
+    pessoa_id           Int
+    pessoa_sessao_id    Int?
+    ip                  String   @db.Inet
+    ultima_atividade_em DateTime @default(now()) @db.Timestamptz(6)
+
+    pessoa Pessoa        @relation(fields: [pessoa_id], references: [id], onDelete: Cascade)
+    sessao PessoaSessao? @relation(fields: [pessoa_sessao_id], references: [id], onDelete: SetNull)
+
+    @@unique([pessoa_id])
+    @@index([ultima_atividade_em])
+    @@map("pessoa_ultima_atividade")
 }
