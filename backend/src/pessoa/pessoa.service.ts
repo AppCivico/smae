@@ -1672,16 +1672,6 @@ export class PessoaService implements OnModuleInit {
             };
         });
 
-        const teste = await this.prisma.pessoa.findFirst({
-            where: { id: 1 }, // use o ID que você mostrou no print
-            select: {
-                id: true,
-                ultimaAtividade: { select: { ultima_atividade_em: true } },
-            },
-        });
-        this.logger.log('teste ultimaAtividade =teste ultimaAtividade =teste ultimaAtividade =teste ultimaAtividade =teste ultimaAtividade =teste ultimaAtividade =teste ultimaAtividade =', teste);
-
-
         return listFixed;
     }
 
