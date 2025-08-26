@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { EleicaoTipo } from '@prisma/client';
-import { Transform } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { IsBoolean, IsEnum, IsInt, Max, Min } from 'class-validator';
 
 export class CreateEleicaoDto {
@@ -11,6 +11,7 @@ export class CreateEleicaoDto {
     tipo: EleicaoTipo;
 
     @ApiProperty({ description: 'Ano da eleição', example: 2024 })
+    @Type(() => Number)
     @IsInt()
     @Min(1900)
     @Max(2100)

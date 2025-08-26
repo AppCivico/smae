@@ -18,12 +18,6 @@ import { ListEleicaoDto } from './entity/eleicao.entity';
 export class EleicaoController {
     constructor(private readonly eleicaoService: EleicaoService) {}
 
-    @Get()
-    @ApiBearerAuth('access-token')
-    async getList(@Query() filters: FilterEleicaoDto, @CurrentUser() user: PessoaFromJwt) {
-        return await this.eleicaoService.findAll(filters);
-    }
-
     @Post()
     @ApiBearerAuth('access-token')
     @Roles(['SMAE.superadmin'])

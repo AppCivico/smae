@@ -101,29 +101,32 @@ export class EleicaoService {
             }
         }
 
-        const updated = await this.prisma.$transaction(async (tx) => {
-            logger.log(
-                `Atualizando eleição ${id}: novo tipo=${dto.tipo ?? 'sem alteração'}, novo ano=${dto.ano ?? 'sem alteração'}`
-            );
-
-            const record = await tx.eleicao.update({
-                where: { id },
-                data: dto,
-                select: {
-                    id: true,
-                    tipo: true,
-                    ano: true,
-                    atual_para_mandatos: true,
-                    removido_em: true,
-                },
+        try {
+            const updated = await this.prisma.$transaction(async (tx) => {
+                logger.log(
+                    `Atualizando eleição ${id}: novo tipo=${dto.tipo ?? 'sem alteração'}, novo ano=${dto.ano ?? 'sem alteração'}, atual_para_mandatos=${dto.atual_para_mandatos ?? 'sem alteração'}`
+                );
+                const record = await tx.eleicao.update({
+                    where: { id },
+                    data: dto,
+                    select: {
+                        id: true,
+                        tipo: true,
+                        ano: true,
+                        atual_para_mandatos: true,
+                        removido_em: true,
+                    },
+                });
+                await logger.saveLogs(tx, user.getLogData());
+                return record;
             });
-
-            await logger.saveLogs(tx, user.getLogData());
-
-            return record;
-        });
-
-        return updated;
+            return updated;
+        } catch (error) {
+            if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+                throw new BadRequestException('Já existe uma eleição deste tipo para este ano');
+            }
+            throw error;
+        }
     }
 
     async remove(id: number, user: PessoaFromJwt): Promise<void> {
