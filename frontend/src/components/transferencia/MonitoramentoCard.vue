@@ -81,7 +81,8 @@ const recursoItem = computed(() => {
         <dt class="t13 w300">
           {{ item.label }}
         </dt>
-        <dd class="t3 w300">
+
+        <dd class="w700">
           {{ item.valor }}
         </dd>
       </div>
@@ -128,7 +129,7 @@ const recursoItem = computed(() => {
   display: flex;
   flex-direction: column;
 
-  @container (width > 900px) {
+  @container (width > 600px) {
     flex-direction: row;
   }
 }
@@ -162,7 +163,7 @@ const recursoItem = computed(() => {
     border-bottom: initial;
   }
 
-  @container (width > 900px) {
+  @container (width > 600px) {
     min-width: 0;
     max-width: 230px;
 

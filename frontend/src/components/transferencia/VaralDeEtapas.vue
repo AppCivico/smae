@@ -141,7 +141,7 @@ function formatarTexto(texto) {
         v-else
         ref="listaDeEtapas"
         role="tablist"
-        class="flex pb1 varal-etapas mt05 mb05"
+        class="flex varal-etapas mt05 pb0 mb0"
       >
         <li
           v-for="(item, index) in workflow.fluxo"

@@ -204,7 +204,7 @@ onMounted(() => {
   .varal-de-fases__lista {
     flex-direction: row;
     overflow: auto;
-    padding: 40px 0 20px;
+    padding: 70px 0 20px;
   }
 
   .fase-item {

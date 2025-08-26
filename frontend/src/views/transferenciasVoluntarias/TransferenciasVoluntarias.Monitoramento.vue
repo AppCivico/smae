@@ -8,7 +8,7 @@ import VaralDeFases from '@/components/TransferenciasVoluntarias/Monitoramento.c
 <template>
   <CabecalhoDePagina />
 
-  <div class="flex g2 column">
+  <div class="flex g1 column">
     <MonitoramentoCards />
 
     <VaralDeEtapas />
