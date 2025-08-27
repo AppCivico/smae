@@ -181,7 +181,6 @@ iniciar();
       :disabled="isSubmitting"
       @submit="onSubmit"
     >
-      <pre>{{ eleiçõesDisponíveisParaEdição }}</pre>
       <div class="flex flexwrap g2 mb1">
         <div class="f1">
           <LabelFromYup

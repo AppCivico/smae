@@ -1,13 +1,15 @@
+// @see
+
 export default {
   DeputadoEstadual: {
     valor: 'DeputadoEstadual',
     nome: 'Deputado Estadual',
-    tipo: 'Estadual',
+    tipo: 'Geral',
   },
   DeputadoFederal: {
     valor: 'DeputadoFederal',
     nome: 'Deputado Federal',
-    tipo: 'Estadual',
+    tipo: 'Geral',
   },
   Vereador: {
     valor: 'Vereador',
@@ -17,6 +19,6 @@ export default {
   Senador: {
     valor: 'Senador',
     nome: 'Senador',
-    tipo: 'Estadual',
+    tipo: 'Geral',
   },
 };
