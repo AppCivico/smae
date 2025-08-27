@@ -1,13 +1,4 @@
 <script setup>
-import SmallModal from '@/components/SmallModal.vue';
-import TextEditor from '@/components/TextEditor.vue';
-import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
-import estadosDoBrasil from '@/consts/estadosDoBrasil';
-import { mandato as schema } from '@/consts/formSchemas';
-import níveisDeSuplência from '@/consts/niveisDeSuplencia';
-import { useAlertStore } from '@/stores/alert.store';
-import { useParlamentaresStore } from '@/stores/parlamentares.store';
-import { usePartidosStore } from '@/stores/partidos.store';
 import { vMaska } from 'maska';
 import { storeToRefs } from 'pinia';
 import {
@@ -18,6 +9,15 @@ import {
 } from 'vee-validate';
 import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import SmallModal from '@/components/SmallModal.vue';
+import TextEditor from '@/components/TextEditor.vue';
+import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
+import estadosDoBrasil from '@/consts/estadosDoBrasil';
+import { mandato as schema } from '@/consts/formSchemas';
+import níveisDeSuplência from '@/consts/niveisDeSuplencia';
+import { useAlertStore } from '@/stores/alert.store';
+import { useParlamentaresStore } from '@/stores/parlamentares.store';
+import { usePartidosStore } from '@/stores/partidos.store';
 
 const route = useRoute();
 const router = useRouter();
@@ -92,7 +92,11 @@ const {
 });
 
 const eleiçõesDisponíveisParaEdição = computed(() => eleições
-  .value?.filter((x) => x.atual_para_mandatos) || []);
+  .value?.filter((x) => {
+    console.log(x.tipo, x.ano, { x });
+
+    return x.atual_para_mandatos;
+  }) || []);
 const eleiçãoEscolhida = ref(0);
 
 const dadosDaEleiçãoEscolhida = computed(() => eleições
@@ -177,6 +181,7 @@ iniciar();
       :disabled="isSubmitting"
       @submit="onSubmit"
     >
+      <pre>{{ eleiçõesDisponíveisParaEdição }}</pre>
       <div class="flex flexwrap g2 mb1">
         <div class="f1">
           <LabelFromYup

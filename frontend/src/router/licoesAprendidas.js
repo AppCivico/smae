@@ -111,7 +111,7 @@ export default {
                 return 'Lição aprendida';
               }
 
-              return `Lição ${emFoco.descricao}`;
+              return `Lição ${emFoco.contexto}`;
             },
             títuloParaMenu: 'Resumo',
             rotasParaMigalhasDePão: [

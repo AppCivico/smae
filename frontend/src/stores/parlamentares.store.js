@@ -72,6 +72,8 @@ export const useParlamentaresStore = defineStore('parlamentaresStore', {
       this.erro = null;
 
       this.requestS.get(`${baseUrl}/eleicao`, params).then((resposta) => {
+        console.log('eleicao', resposta);
+
         if (Array.isArray(resposta)) {
           this.eleições = resposta;
         } else {
