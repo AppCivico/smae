@@ -108,16 +108,28 @@ export class AuditLogService {
             orderBy: [],
         });
 
-        return summary
-            .sort((a, b) => b._count._all - a._count._all)
-            .map((r) => {
-                return {
-                    count: r._count._all,
-                    date: r.criado_em ? new Date(r.criado_em.toDateString()) : undefined,
+        if (groupBy.group_by_date) {
+            const agg = new Map<string, AuditLogSummaryRow>();
+            for (const r of summary) {
+                const day = r.criado_em ? r.criado_em.toISOString().slice(0, 10) : undefined; // UTC day
+                const key = JSON.stringify([day, r.contexto, r.pessoa_id]);
+                const curr = agg.get(key) ?? {
+                    count: 0,
+                    date: day ? new Date(`${day}T00:00:00.000Z`) : undefined,
                     contexto: r.contexto,
                     pessoa_id: r.pessoa_id ?? undefined,
                 };
-            });
+                curr.count += r._count._all;
+                agg.set(key, curr);
+            }
+            return [...agg.values()].sort((a, b) => b.count - a.count);
+        }
+        return summary.map((r) => ({
+            count: r._count._all,
+            date: undefined,
+            contexto: r.contexto,
+            pessoa_id: r.pessoa_id ?? undefined,
+        }));
     }
 
     private decodeNextPageToken(jwt: string | undefined): NextPageTokenJwtBody | null {
