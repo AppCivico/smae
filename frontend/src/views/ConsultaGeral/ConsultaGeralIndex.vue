@@ -1,6 +1,7 @@
-<script langs="ts" setup>
+<script lang="ts" setup>
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import BuscadorGeolocalizacao from '@/components/BuscadorGeolocalizacao/BuscadorGeolocalizacaoIndex.vue';
+import { useGeolocalizadorStore, PontoEndereco } from '@/stores/geolocalizador.store';
 
 const dados = [
   {
@@ -73,6 +74,21 @@ const dados = [
     detalhes: null,
   },
 ];
+
+const geolocalizadorStore = useGeolocalizadorStore();
+
+function buscarProximidade(endereco: PontoEndereco) {
+  console.log(endereco);
+
+  const [camada] = endereco.camadas;
+  const [lat, lon] = endereco.endereco.geometry.coordinates;
+
+  geolocalizadorStore.buscaProximidades({
+    geo_camada_codigo: camada.codigo,
+    lat,
+    lon,
+  });
+}
 </script>
 
 <template>
@@ -94,7 +110,7 @@ const dados = [
     </div>
   </div>
 
-  <BuscadorGeolocalizacao />
+  <BuscadorGeolocalizacao @selecao="buscarProximidade" />
 
   <article
     class="tabela-resultados"
