@@ -4466,3 +4466,7 @@ export const EdicaoTransferenciaFaseTarefa = object().shape({
   orgao_id: number().label('Órgão responsável'),
   pessoa_responsavel: string().label('Pessoa responsável'),
 });
+
+export const FiltroEndereco = object().shape({
+  endereco: string().label('Endereço').required(),
+});
