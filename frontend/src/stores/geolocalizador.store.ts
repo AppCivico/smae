@@ -6,6 +6,45 @@ type ChamadasPendentes = {
   buscandoEndereco: boolean;
 };
 
+export type PontoEndereco = {
+  camadas: {
+    codigo: string;
+    cor: null;
+    descricao: string;
+    id: number;
+    nivel_regionalizacao: number;
+    titulo: string;
+  }[];
+  endereco: {
+    bbox: number[];
+    geometry: {
+      coordinates: [number, number];
+      type: 'Point';
+    };
+    geometry_name: unknown;
+    properties: {
+      bairro: string;
+      cep: string;
+      cidade: string;
+      codigo_pais: string;
+      estado: string;
+      numero: null;
+      osm_type: string;
+      pais: string;
+      rua: string;
+      string_endereco: string;
+    };
+    type: 'Feature';
+  };
+};
+
+type LocalizacaoProximidade = {
+  lat: number;
+  lon: number;
+  geo_camada_codigo: string;
+  // regiao_id: 0;
+};
+
 type Estado = {
   selecionado: any;
   enderecos: any[];
@@ -59,6 +98,21 @@ export const useGeolocalizadorStore = defineStore('geolocalizador', {
       } finally {
         this.chamadasPendentes.buscandoEndereco = false;
       }
+    },
+    async buscaProximidades(localizacaoProximidade: LocalizacaoProximidade) {
+      const proximidade = await this.requestS.post(
+        `${baseUrl}/busca-proximidades`,
+        {
+          lat: localizacaoProximidade.lat,
+          lon: localizacaoProximidade.lon,
+          raio_km: 2,
+          geo_camada_config_id: 0,
+          geo_camada_codigo: localizacaoProximidade.geo_camada_codigo,
+          regiao_id: 0,
+        },
+      );
+
+      console.log({ proximidade });
     },
     selecionarEndereco(endereco) {
       this.selecionado = endereco;

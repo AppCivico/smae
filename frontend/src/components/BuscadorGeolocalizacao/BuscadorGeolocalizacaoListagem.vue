@@ -3,14 +3,22 @@ import { watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
-import { useGeolocalizadorStore } from '@/stores/geolocalizador.store';
+import { PontoEndereco, useGeolocalizadorStore } from '@/stores/geolocalizador.store';
+
+type Emits = {
+  (event: 'selecao', endereco: PontoEndereco): void
+};
+
+const emit = defineEmits<Emits>();
 
 const route = useRoute();
 const geolocalizadorStore = useGeolocalizadorStore();
 
 const { enderecos } = storeToRefs(geolocalizadorStore);
 
-function selecionarEndereco(endereco) {
+function selecionarEndereco(endereco: PontoEndereco) {
+  emit('selecao', endereco);
+
   geolocalizadorStore.selecionarEndereco(endereco);
 }
 
