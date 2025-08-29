@@ -106,13 +106,13 @@ export const useGeolocalizadorStore = defineStore('geolocalizador', {
           lat: localizacaoProximidade.lat,
           lon: localizacaoProximidade.lon,
           raio_km: 2,
-          geo_camada_config_id: 0,
-          geo_camada_codigo: localizacaoProximidade.geo_camada_codigo,
-          regiao_id: 0,
+          // geo_camada_config_id: 0,
+          // geo_camada_codigo: localizacaoProximidade.geo_camada_codigo,
+          // regiao_id: 0,
         },
       );
 
-      console.log({ proximidade });
+      console.log(proximidade);
     },
     selecionarEndereco(endereco) {
       this.selecionado = endereco;
