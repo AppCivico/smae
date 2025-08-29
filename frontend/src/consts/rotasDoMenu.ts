@@ -42,6 +42,9 @@ export default [
     name: 'graficos',
   },
   {
+    name: 'consultaGeral',
+  },
+  {
     name: 'configuracoesRaiz',
   },
 
