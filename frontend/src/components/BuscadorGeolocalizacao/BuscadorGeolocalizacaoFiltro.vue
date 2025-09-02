@@ -25,6 +25,6 @@ const camposDeFiltro = [{
     class="mb2"
     :formulario="camposDeFiltro"
     :schema="schema"
-    :carregando="chamadasPendentes.buscandoEndereco"
+    :carregando="chamadasPendentes.buscandoEndereco || chamadasPendentes.buscandoProximidade"
   />
 </template>
