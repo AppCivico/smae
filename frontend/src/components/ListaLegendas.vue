@@ -34,7 +34,10 @@ const mostrarEmColunas = computed(() => props.orientacao === 'vertical');
       'lista-legenda--a-direita': $props.align === 'right',
     }"
   >
-    <h4 class="lista-legenda__titulo t14 w700">
+    <h4
+      v-if="$props.titulo"
+      class="lista-legenda__titulo t14 w700"
+    >
       {{ $props.titulo }}
     </h4>
 
