@@ -24,7 +24,24 @@ const geolocalizadorStore = useGeolocalizadorStore();
 const { proximidadeFormatada } = storeToRefs(geolocalizadorStore);
 
 async function buscarProximidade(endereco: PontoEndereco) {
+  if (
+    !endereco
+    || endereco.camadas.length === 0
+  ) {
+    console.error('Endereço não encontrado', endereco);
+    return;
+  }
+
   const [camada] = endereco.camadas;
+
+  if (
+    !endereco.endereco.geometry.coordinates[0]
+    || !endereco.endereco.geometry.coordinates[1]
+  ) {
+    console.error('Coordenadas não encontradas', endereco.endereco.geometry);
+    return;
+  }
+
   const [lon, lat] = endereco.endereco.geometry.coordinates;
 
   await geolocalizadorStore.buscaProximidades({
@@ -92,7 +109,7 @@ onMounted(() => {
           },
           { chave: 'portfolio_programa', label: 'portfólio/plano ou programa' },
           { chave: 'nome', label: 'nome/meta' },
-          { chave: 'orgao', label: 'orgão' },
+          { chave: 'orgao', label: 'Órgão' },
           { chave: 'status', label: 'status', formatador: v => v || 'N/A' },
           { chave: 'detalhes', label: 'detalhes' },
         ]"
@@ -109,7 +126,7 @@ onMounted(() => {
           </span>
         </template>
 
-        <template #celula:responsavel="{ celula }">
+        <template #celula:orgao="{ celula }">
           <div class="celula__lista">
             <div
               v-for="orgao in celula"
@@ -228,7 +245,7 @@ onMounted(() => {
 .celula__item {
   position: relative;
   display: flex;
-  margin-left: 10pxx;
+  margin-left: 10px;
   line-height: 20px;
 
   &::before {
