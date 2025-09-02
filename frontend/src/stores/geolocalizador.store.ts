@@ -5,6 +5,7 @@ const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 type ChamadasPendentes = {
   buscandoEndereco: boolean;
+  buscandoProximidade: boolean;
 };
 
 export type PontoEndereco = {
@@ -56,6 +57,7 @@ type Estado = {
 
 const chamadasPendentesPadrao: ChamadasPendentes = {
   buscandoEndereco: false,
+  buscandoProximidade: false,
 };
 
 export const useGeolocalizadorStore = defineStore('geolocalizador', {
@@ -69,21 +71,26 @@ export const useGeolocalizadorStore = defineStore('geolocalizador', {
   actions: {
     async buscarPorEndereco(termo: string) {
       try {
+        this.erro.buscandoEndereco = true;
         this.chamadasPendentes.buscandoEndereco = true;
 
         const { linhas } = await this.requestS.post(`${baseUrl}/geolocalizar`, {
           tipo: 'Endereco',
           busca_endereco: termo,
         });
+
         this.enderecos = linhas;
       } catch (erro) {
         this.erro.buscandoEndereco = true;
+
+        throw erro;
       } finally {
         this.chamadasPendentes.buscandoEndereco = false;
       }
     },
     async buscarPorCoordenadas(lat: number, long: number) {
       try {
+        this.erro.buscandoEndereco = false;
         this.chamadasPendentes.buscandoEndereco = true;
 
         const { linhas } = await this.requestS.post(
@@ -98,26 +105,39 @@ export const useGeolocalizadorStore = defineStore('geolocalizador', {
         this.enderecos = linhas;
       } catch (erro) {
         this.erro.buscandoEndereco = true;
+
+        throw erro;
       } finally {
         this.chamadasPendentes.buscandoEndereco = false;
       }
     },
     async buscaProximidades(localizacaoProximidade: LocalizacaoProximidade) {
-      const proximidade = await this.requestS.post(
-        `${baseUrl}/busca-proximidades`,
-        {
-          lat: localizacaoProximidade.lat,
-          lon: localizacaoProximidade.lon,
-          raio_km: 2,
-          // geo_camada_config_id: 0,
-          // geo_camada_codigo: localizacaoProximidade.geo_camada_codigo,
-          // regiao_id: 0,
-        },
-      );
+      try {
+        this.erro.buscandoProximidade = false;
+        this.chamadasPendentes.buscandoProximidade = true;
 
-      this.proximidade = proximidade as any;
+        const proximidade = await this.requestS.post(
+          `${baseUrl}/busca-proximidades`,
+          {
+            lat: localizacaoProximidade.lat,
+            lon: localizacaoProximidade.lon,
+            raio_km: 2,
+            // geo_camada_config_id: 0,
+            // geo_camada_codigo: localizacaoProximidade.geo_camada_codigo,
+            // regiao_id: 0,
+          },
+        );
 
-      return proximidade;
+        this.proximidade = proximidade as any;
+
+        return proximidade;
+      } catch (erro) {
+        this.erro.buscandoProximidade = true;
+
+        throw erro;
+      } finally {
+        this.chamadasPendentes.buscandoProximidade = false;
+      }
     },
     selecionarEndereco(endereco) {
       this.selecionado = endereco;
