@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import statusObras from '@/consts/statusObras';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -50,6 +51,7 @@ type Estado = {
   enderecos: any[];
   erro: ChamadasPendentes;
   chamadasPendentes: ChamadasPendentes;
+  proximidade: Record<string, any>;
 };
 
 const chamadasPendentesPadrao: ChamadasPendentes = {
@@ -62,6 +64,7 @@ export const useGeolocalizadorStore = defineStore('geolocalizador', {
     enderecos: [],
     erro: { ...chamadasPendentesPadrao },
     chamadasPendentes: { ...chamadasPendentesPadrao },
+    proximidade: {},
   }),
   actions: {
     async buscarPorEndereco(termo: string) {
@@ -112,11 +115,73 @@ export const useGeolocalizadorStore = defineStore('geolocalizador', {
         },
       );
 
-      console.log(proximidade);
+      this.proximidade = proximidade as any;
+
+      return proximidade;
     },
     selecionarEndereco(endereco) {
       this.selecionado = endereco;
     },
   },
-  getters: {},
+  getters: {
+    proximidadeFormatada({ proximidade }) {
+      if (Object.keys(proximidade).length === 0) {
+        return [];
+      }
+
+      const gruposSelecionados = ['projetos', 'obras', 'metas'] as const;
+      const dadosOrganizados = gruposSelecionados.reduce((agrupado, chave) => {
+        const grupo = (proximidade[chave] as any[]) || undefined;
+        if (!grupo || grupo.length === 0) {
+          return agrupado;
+        }
+
+        grupo.forEach((registro) => {
+          let dadosPaciais = {};
+          switch (chave) {
+            case 'obras':
+              dadosPaciais = {
+                nome: registro.nome,
+                portfolio_programa: registro.portfolio_titulo,
+                orgao: registro.orgao_responsavel_sigla,
+                status: statusObras[registro.status]?.nome || registro.status,
+                detalhes: {
+                  'Grupo Temático': registro.grupo_tematico_nome,
+                  'Tipo de obra/Intervenção': registro.tipo_intervencao_nome,
+                  'Equipamento/Estrutura Pública': registro.equipamento_nome,
+                  Subprefeitura: registro.subprefeitura_nomes,
+                },
+              };
+              break;
+
+            case 'projetos':
+              dadosPaciais = {
+                nome: registro.nome,
+                portfolio_programa: registro.portfolio_titulo,
+                orgao: registro.orgao_responsavel_sigla,
+                status: registro.status,
+              };
+
+              break;
+
+            default:
+              break;
+          }
+
+          const item = {
+            ...dadosPaciais,
+            id: registro.id,
+            modulo: chave,
+            localizacoes: registro.localizacoes,
+          } as any;
+
+          agrupado.push(item);
+        });
+
+        return agrupado;
+      }, [] as any[]);
+
+      return dadosOrganizados;
+    },
+  },
 });

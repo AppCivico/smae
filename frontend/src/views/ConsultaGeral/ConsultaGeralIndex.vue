@@ -1,164 +1,155 @@
 <script lang="ts" setup>
+import { onMounted } from 'vue';
+import { storeToRefs } from 'pinia';
+import * as CardEnvelope from '@/components/cardEnvelope';
+import ListaLegendas from '@/components/ListaLegendas.vue';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import BuscadorGeolocalizacao from '@/components/BuscadorGeolocalizacao/BuscadorGeolocalizacaoIndex.vue';
 import { useGeolocalizadorStore, PontoEndereco } from '@/stores/geolocalizador.store';
+import combinadorDeListas from '@/helpers/combinadorDeListas';
 
-const dados = [
-  {
-    endereco: 'AVENIDA FERNANDO ESPÍRITO SANTO ALVES DE MATTOS, 1000',
-    programa: 'Monitoramento de Obras 2021/2024 - SEHAB',
-    projeto: 'Copa do povo - Gleba A',
-    responsavel: ['SEHAB'],
-    status: 'Em andamento',
-    detalhes: {
-      grupo_tematico: 'Obra nova',
-      tipo_obra: 'Unidade habitacional',
-      equipamento: 'Provisão habitacional',
-      subprefeitura: 'Itaquera',
-    },
-  },
-  {
-    endereco: 'AVENIDA FERNANDO ESPÍRITO SANTO ALVES DE MATTOS, 1000',
-    programa: 'Monitoramento de Obras 2021/2024 - SEHAB',
-    projeto: 'Copa do povo - Gleba B',
-    responsavel: ['SEHAB'],
-    status: 'Em andamento',
-    detalhes: {
-      grupo_tematico: 'Obra nova',
-      tipo_obra: 'Unidade habitacional',
-      equipamento: 'Provisão habitacional',
-      subprefeitura: 'Itaquera',
-    },
-  },
-  {
-    endereco: 'AVENIDA FERNANDO ESPÍRITO SANTO ALVES DE MATTOS, 1000',
-    programa: 'Orçamento Cidadão 2023 (LOA 2024)',
-    projeto: 'Construção do Céu Jardim Brasil',
-    responsavel: ['SME'],
-    status: 'Selecionado',
-    detalhes: null,
-  },
-  {
-    endereco: 'AVENIDA FERNANDO ESPÍRITO SANTO ALVES DE MATTOS, 1000',
-    programa: 'Portfólio Primeira Infância',
-    projeto: 'Balanço PMPI 2023',
-    responsavel: ['SEPLAN'],
-    status: 'Registrado',
-    detalhes: null,
-  },
-  {
-    endereco: 'AVENIDA FERNANDO ESPÍRITO SANTO ALVES DE MATTOS, 1000',
-    programa: 'Programa de Metas 2021 - 2024 Versão Alteração Programática',
-    projeto: '01 - Atender 1.900.000 pessoas em programas de transferência de renda e/ou apoio nutricional',
-    responsavel: ['SME', 'GCM', 'SEHAB', 'SEPLAN'],
-    status: null,
-    detalhes: {
-      projetos: '1.1 - Banco de Alimentos (SMDHC)',
-      projeto2: 'Projeto 1.1',
-    },
-  },
-  {
-    endereco: 'AVENIDA FERNANDO ESPÍRITO SANTO ALVES DE MATTOS, 1000',
-    programa: 'Plano de Ação para Implementação da Agenda Municipal 2030 2021-2024',
-    projeto: '01.01-A - Fortalecer atuação intersetorial da Prefeitura de cidade de São Paulo visando o aprimoramento das políticas públicas numa perspectiva de olhar integral à(ao) cidadã(o) e divulgar os programas e ações existentes.',
-    responsavel: ['SME', 'SEPLAN'],
-    status: null,
-    detalhes: null,
-  },
-  {
-    endereco: 'AVENIDA FERNANDO ESPÍRITO SANTO ALVES DE MATTOS, 1000',
-    programa: 'Plano Municipal de Agroecologia e Desenvolvimento Rural Sustentável - Plano Rural',
-    projeto: '02.05.01 A - Ampliar em até 20% o investimento dos indígenas com a agricultura',
-    responsavel: ['SME', 'GCM', 'SEPLAN'],
-    status: null,
-    detalhes: null,
-  },
-];
+const legendasStatus = {
+  obras: { item: 'Monitoramento de Obras', color: '#8EC122' },
+  projetos: { item: 'Gestão de Projetos', color: '#F2890D' },
+  metas: { item: 'Programa de Metas', color: '#4074BF' },
+  plenoSetorial: { item: 'Planos Setoriais', color: '#9F045F' },
+};
+
+const legendas = {
+  status: Object.values(legendasStatus),
+};
 
 const geolocalizadorStore = useGeolocalizadorStore();
 
-function buscarProximidade(endereco: PontoEndereco) {
-  console.log(endereco);
+const { proximidadeFormatada } = storeToRefs(geolocalizadorStore);
 
+async function buscarProximidade(endereco: PontoEndereco) {
   const [camada] = endereco.camadas;
-  const [lat, lon] = endereco.endereco.geometry.coordinates;
+  const [lon, lat] = endereco.endereco.geometry.coordinates;
 
-  geolocalizadorStore.buscaProximidades({
+  await geolocalizadorStore.buscaProximidades({
     geo_camada_codigo: camada.codigo,
     lat,
     lon,
   });
 }
+
+onMounted(() => {
+  geolocalizadorStore.$reset();
+});
 </script>
 
 <template>
-  <!-- <Dashboard> -->
-
   <div class="flex spacebetween center mb2 mt2">
     <TituloDaPagina />
 
     <hr class="ml2 f1">
 
     <div class="flex g2 ml1">
-      <button class="btn big outline bgnone tamarelo">
+      <!-- <button class="btn big outline bgnone tamarelo">
         Pesquisar por endereço
-      </button>
+      </button> -->
 
-      <button class="btn big outline bgnone tcprimary">
+      <!-- <button class="btn big outline bgnone tcprimary">
         Pesquisar por dotação
-      </button>
+      </button> -->
     </div>
   </div>
 
   <BuscadorGeolocalizacao @selecao="buscarProximidade" />
 
-  <article
-    class="tabela-resultados"
-  >
-    <SmaeTable
-      :colunas="[
-        // { chave: 'legenda', atributosDaColuna: { class: 'col--minimum' } },
-        { chave: 'endereco', label: 'Endereço / distância (km)', ehCabecalho: true },
-        { chave: 'programa', label: 'portfólio/plano ou programa' },
-        { chave: 'projeto', label: 'nome/meta' },
-        { chave: 'responsavel', label: 'orgão' },
-        { chave: 'status', label: 'status', formatador: v => v || 'N/A' },
-        { chave: 'detalhes', label: 'detalhes' },
-      ]"
-      :dados="dados"
+  <CardEnvelope.Conteudo class="mt4">
+    <article
+      class="tabela-resultados "
     >
-      <template #cabecalho:legenda />
-      <template #celula:endereco="{ celula }">
-        <div class="celula__item">
-          {{ celula }}
-        </div>
-      </template>
+      <CardEnvelope.Titulo>
+        <span class="tabela-resultados__titulo">
+          Resultado por: &nbsp;
+          <strong>Endereço</strong>
+        </span>
+      </CardEnvelope.Titulo>
 
-      <template #celula:responsavel="{ celula }">
-        <div class="celula__lista">
-          <div
-            v-for="orgao in celula"
-            :key="`orgao--${orgao}`"
-            class="celula__item"
-          >
-            {{ orgao }}
-          </div>
-        </div>
-      </template>
+      <p class="tabela-resultados__descricao mt1">
+        O resultado dessa pesquisa atinge até 2 km ao redor do endereço digitado.
+      </p>
 
-      <template #celula:detalhes="{ celula }">
-        <div class="celula__lista">
+      <ListaLegendas
+        titulo=""
+        :legendas="legendas"
+        :borda="false"
+        align="left"
+        orientacao="horizontal"
+      />
+
+      <SmaeTable
+        class="mt3"
+        replicar-cabecalho
+        :colunas="[
+          {
+            chave: 'localizacoes',
+            label: 'Endereço / distância (km)',
+            ehCabecalho: true,
+          },
+          { chave: 'portfolio_programa', label: 'portfólio/plano ou programa' },
+          { chave: 'nome', label: 'nome/meta' },
+          { chave: 'orgao', label: 'orgão' },
+          { chave: 'status', label: 'status', formatador: v => v || 'N/A' },
+          { chave: 'detalhes', label: 'detalhes' },
+        ]"
+        :dados="proximidadeFormatada"
+      >
+        <template #celula:localizacoes="{ celula, linha }">
           <div
-            v-for="(detalhe, detalheKey) in celula"
-            :key="`detalhe--${detalheKey}`"
-            class="celula__item"
-          >
-            {{ detalheKey }}: {{ detalhe }}
+            :class="['celula__item', 'celula__item-classificacao']"
+            :style="{ color: legendasStatus[linha.modulo]?.color || undefined }"
+          />
+
+          <span>
+            {{ combinadorDeListas(celula, ' / ', 'geom_geojson.properties.string_endereco') }}
+          </span>
+        </template>
+
+        <template #celula:responsavel="{ celula }">
+          <div class="celula__lista">
+            <div
+              v-for="orgao in celula"
+              :key="`orgao--${orgao}`"
+              class="celula__item"
+            >
+              {{ orgao }}
+            </div>
           </div>
-        </div>
-      </template>
-    </SmaeTable>
-  </article>
+        </template>
+
+        <template #celula:detalhes="{ celula }">
+          <div
+            v-if="celula"
+            class="celula__lista"
+          >
+            <div
+              v-for="(detalhe, detalheKey) in celula"
+              :key="`detalhe--${detalheKey}`"
+              class="celula__item"
+            >
+              {{ detalheKey }}: {{ detalhe }}
+            </div>
+          </div>
+
+          <span v-else>
+            -
+          </span>
+        </template>
+      </SmaeTable>
+
+      <ListaLegendas
+        titulo=""
+        :legendas="legendas"
+        :borda="false"
+        align="left"
+        orientacao="horizontal"
+      />
+    </article>
+  </CardEnvelope.Conteudo>
 </template>
 
 <style lang="less" scoped>
@@ -168,7 +159,56 @@ function buscarProximidade(endereco: PontoEndereco) {
       vertical-align: baseline;
       max-width: 200px;
     }
+
+    .table-cell--localizacoes {
+      span {
+        display: block;
+        margin-left: 10px;
+      }
+    }
   }
+}
+
+.tabela-resultados__titulo {
+  position: relative;
+  font-weight: 300;
+  font-size: 2rem;
+  line-height: 1.3;
+
+  display: flex;
+  align-items: center;
+
+  strong {
+    font-weight: 700;
+  }
+
+  &::before {
+    content: '';
+    width: 20px;
+    height: 20px;
+    background-color: #F7C234;
+    border-radius: 100%;
+    border: 5px solid white;
+    outline: 0.46px solid #B8C0CC;
+    margin-right: 14px;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 30px;
+    width: 10px;
+    height: 0.46px;
+    background-color: #B8C0CC;
+
+  }
+
+}
+
+.tabela-resultados__descricao {
+  font-size: 1.3rem;
+  font-weight: 300;
+  line-height: 1;
 }
 
 .legenda-item {
@@ -201,6 +241,16 @@ function buscarProximidade(endereco: PontoEndereco) {
     height: 5px;
     border-radius: 100%;
     background-color: #3B5881;
+  }
+}
+
+.celula__item-classificacao {
+  &::before {
+    width: 10px;
+    height: 10px;
+    top: 0;
+
+    background-color: currentColor;
   }
 }
 
