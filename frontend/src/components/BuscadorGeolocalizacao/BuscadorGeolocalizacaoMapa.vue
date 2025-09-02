@@ -12,8 +12,8 @@ const { selecionado } = storeToRefs(geolocalizadorStore);
 <template>
   <MapaExibir
     :key="selecionado"
-    :geo-json="selecionado.enderecos || undefined"
-    :camadas="selecionado.camadas || undefined"
+    :geo-json="selecionado?.enderecos ?? undefined"
+    :camadas="selecionado?.camadas ?? undefined"
     class="mb1"
     :opções-do-polígono="{
       fill: true,
