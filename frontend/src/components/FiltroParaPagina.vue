@@ -23,12 +23,13 @@ type Opcoes = OpcaoPadronizada[] | string[] | number[];
 
 type CampoFiltro = {
   class?: string
-  tipo: 'select' | 'text' | 'search' | 'date' | 'checkbox' | 'autocomplete'
+  tipo: 'select' | 'text' | 'search' | 'date' | 'checkbox' | 'autocomplete' | 'numeric'
   opcoes?: Opcoes
   autocomplete?: {
     label?: string
     apenasUm?: boolean
-  }
+  },
+  atributos?: Record<string, unknown>
 };
 type Campos = Record<string, CampoFiltro>;
 
@@ -48,6 +49,7 @@ type Props = {
 };
 type Emits = {
   (e: 'update:formularioSujo', value: boolean): void
+  (e: 'update:modelValue', value: Record<string, unknown>): void
   (e: 'filtro'): void
 };
 
@@ -58,7 +60,7 @@ const route = useRoute();
 const router = useRouter();
 
 const {
-  errors, handleSubmit, isSubmitting, resetForm, setValues, meta,
+  errors, handleSubmit, isSubmitting, resetForm, setValues, meta, values,
 } = useForm({
   validationSchema: props.schema,
   initialValues: route.query,
@@ -121,6 +123,10 @@ watch(() => route.query, () => {
   });
 }, { deep: true, immediate: true });
 
+watch(() => values, () => {
+  emit('update:modelValue', values);
+});
+
 if (props.autoSubmit) {
   watch(() => meta.value.dirty, () => {
     if (meta.value.dirty) {
@@ -135,6 +141,7 @@ if (props.autoSubmit) {
     class="filtro-para-pagina"
     :class="formularioSujo ? 'filtro-sujo' : ''"
   >
+    -{{ errors }}-
     <FormularioQueryString
       v-slot="{
         pendente,
@@ -236,10 +243,22 @@ if (props.autoSubmit) {
               </Field>
 
               <Field
+                v-else-if="campo.tipo === 'numeric'"
+                class="inputtext light mb1"
+                :name="campoNome"
+                type="text"
+                :aria-busy="$props.carregando"
+                :aria-invalid="!!errors[campoNome]"
+                :aria-errormessage="errors[campoNome] ? `err__${campoNome}` : undefined"
+                inputmode="numeric"
+                v-bind="campo.atributos"
+              />
+
+              <Field
                 v-else
                 class="inputtext light mb1"
                 :name="campoNome"
-                :type="campo.tipo"
+                :type="'text'"
                 :aria-busy="$props.carregando"
                 :aria-invalid="!!errors[campoNome]"
                 :aria-errormessage="errors[campoNome] ? `err__${campoNome}` : undefined"

@@ -4470,3 +4470,43 @@ export const EdicaoTransferenciaFaseTarefa = object().shape({
 export const FiltroEndereco = object().shape({
   endereco: string().label('Endereço').required(),
 });
+
+export const FiltroDotacao = object().shape({
+  orgao_id: string()
+    .label('Órgão')
+    .required(),
+  unidade_id: string()
+    .label('Unidade')
+    .required(),
+  funcao_id: string()
+    .label('Função')
+    .required(),
+  subfuncao_id: string()
+    .label('Subfunção')
+    .required(),
+  programa_id: string()
+    .label('Programa')
+    .required(),
+  projeto_id: string()
+    .label('Projeto/atividade')
+    .required(),
+  conta_despesa: string()
+    .label('Conta despesa')
+    .max(99999999)
+    .required(),
+  despesa_fonte: string()
+    .label('Fonte')
+    .required(),
+  exercicio_fonte_recurso: string()
+    .label('Exercício da Fonte de Recurso')
+    .required(),
+  exercicio_fonte: string()
+    .label('Fonte')
+    .required(),
+  execucao_orcamentaria: string()
+    .label('Acompanhamento da Execução Orçamentária')
+    .required(),
+  origem_recurso: string()
+    .label('Origem do Recurso')
+    .required(),
+});
