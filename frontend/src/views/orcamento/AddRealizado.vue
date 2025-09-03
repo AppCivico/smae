@@ -1,4 +1,10 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { Field, useForm } from 'vee-validate';
+import {
+  defineProps, ref, toRaw, watch,
+} from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import CampoDeDotacao from '@/components/orcamento/CampoDeDotacao.vue';
 import ItensRealizado from '@/components/orcamento/ItensRealizado.vue';
 import ListaDeCompartilhamentos from '@/components/orcamento/ListaDeCompartilhamentos.vue';
@@ -6,17 +12,15 @@ import { orçamentoRealizado as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
-import { storeToRefs } from 'pinia';
-import { Field, useForm } from 'vee-validate';
-import {
-  defineProps, ref, toRaw, watch,
-} from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 
 defineProps({
   parametrosParaValidacao: {
     type: Object,
     required: true,
+  },
+  ano: {
+    type: Number,
+    default: undefined,
   },
 });
 

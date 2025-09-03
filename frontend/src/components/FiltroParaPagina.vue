@@ -43,9 +43,12 @@ export type Formulario = Linha[];
 type Props = {
   formulario: Linha[]
   schema: Record<string, unknown>
+  modelValue: Record<string, unknown>
   valoresIniciais?: Record<string, unknown>
   autoSubmit?: boolean
   carregando?: boolean
+  bloqueado?: boolean
+  naoEmitirQuery?: boolean
 };
 type Emits = {
   (e: 'update:formularioSujo', value: boolean): void
@@ -94,9 +97,11 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
     };
   }, {});
 
-  router.replace({
-    query: queryFiltrada,
-  });
+  if (!props.naoEmitirQuery) {
+    router.replace({
+      query: queryFiltrada,
+    });
+  }
 
   emit('filtro');
 });
@@ -123,8 +128,12 @@ watch(() => route.query, () => {
   });
 }, { deep: true, immediate: true });
 
-watch(() => values, () => {
+watch(values, () => {
   emit('update:modelValue', values);
+});
+
+watch(() => props.modelValue, (val) => {
+  setValues({ ...val });
 });
 
 if (props.autoSubmit) {
@@ -141,7 +150,6 @@ if (props.autoSubmit) {
     class="filtro-para-pagina"
     :class="formularioSujo ? 'filtro-sujo' : ''"
   >
-    -{{ errors }}-
     <FormularioQueryString
       v-slot="{
         pendente,
@@ -182,6 +190,7 @@ if (props.autoSubmit) {
                 v-if="campo.tipo === 'checkbox'"
                 v-slot="{ field: { value }, handleInput }"
                 :name="campoNome"
+                :disabled="$props.bloqueado"
                 :aria-busy="$props.carregando"
                 :aria-invalid="!!errors[campoNome]"
                 :aria-errormessage="errors[campoNome] ? `err__${campoNome}` : undefined"
@@ -194,6 +203,7 @@ if (props.autoSubmit) {
                     type="checkbox"
                     class="interruptor"
                     :checked="value"
+                    :disabled="$props.bloqueado"
                     :aria-busy="$props.carregando"
                     @input="(ev) => handleInput(ev.target.checked)"
                   >
@@ -205,6 +215,7 @@ if (props.autoSubmit) {
                 class="inputtext light mb1"
                 :name="campoNome"
                 as="select"
+                :disabled="$props.bloqueado"
                 :aria-busy="$props.carregando"
                 :aria-invalid="!!errors[campoNome]"
                 :aria-errormessage="errors[campoNome] ? `err__${campoNome}` : undefined"
@@ -247,6 +258,7 @@ if (props.autoSubmit) {
                 class="inputtext light mb1"
                 :name="campoNome"
                 type="text"
+                :disabled="$props.bloqueado"
                 :aria-busy="$props.carregando"
                 :aria-invalid="!!errors[campoNome]"
                 :aria-errormessage="errors[campoNome] ? `err__${campoNome}` : undefined"
@@ -259,6 +271,7 @@ if (props.autoSubmit) {
                 class="inputtext light mb1"
                 :name="campoNome"
                 :type="'text'"
+                :disabled="$props.bloqueado"
                 :aria-busy="$props.carregando"
                 :aria-invalid="!!errors[campoNome]"
                 :aria-errormessage="errors[campoNome] ? `err__${campoNome}` : undefined"
@@ -282,7 +295,7 @@ if (props.autoSubmit) {
             class="btn outline bgnone tcprimary mtauto mb1"
             :class="[{ loading: carregando }]"
             :aria-busy="isSubmitting || carregando"
-            :aria-disabled="!!Object.keys(errors)?.length"
+            :disabled="!!Object.keys(errors)?.length"
             :aria-invalid="!!Object.keys(errors)?.length"
             :aria-errormessage="idsDasMensagensDeErro"
           >

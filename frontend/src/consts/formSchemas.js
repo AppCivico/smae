@@ -4479,34 +4479,23 @@ export const FiltroDotacao = object().shape({
     .label('Unidade')
     .required(),
   funcao_id: string()
-    .label('Função')
-    .required(),
+    .label('Função'),
   subfuncao_id: string()
-    .label('Subfunção')
-    .required(),
+    .label('Subfunção'),
   programa_id: string()
-    .label('Programa')
-    .required(),
+    .label('Programa'),
   projeto_id: string()
-    .label('Projeto/atividade')
-    .required(),
+    .label('Projeto/atividade'),
   conta_despesa: string()
-    .label('Conta despesa')
-    .max(99999999)
-    .required(),
+    .label('Conta despesa'),
   despesa_fonte: string()
-    .label('Fonte')
-    .required(),
+    .label('Fonte'),
   exercicio_fonte_recurso: string()
-    .label('Exercício da Fonte de Recurso')
-    .required(),
+    .label('Exercício da Fonte de Recurso'),
   exercicio_fonte: string()
-    .label('Fonte')
-    .required(),
+    .label('Fonte'),
   execucao_orcamentaria: string()
-    .label('Acompanhamento da Execução Orçamentária')
-    .required(),
+    .label('Acompanhamento da Execução Orçamentária'),
   origem_recurso: string()
-    .label('Origem do Recurso')
-    .required(),
+    .label('Origem do Recurso'),
 });
