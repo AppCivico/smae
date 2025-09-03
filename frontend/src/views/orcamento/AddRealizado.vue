@@ -18,10 +18,6 @@ defineProps({
     type: Object,
     required: true,
   },
-  ano: {
-    type: Number,
-    default: undefined,
-  },
 });
 
 const alertStore = useAlertStore();
