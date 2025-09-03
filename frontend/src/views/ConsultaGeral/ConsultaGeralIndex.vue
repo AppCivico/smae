@@ -1,12 +1,15 @@
 <script lang="ts" setup>
-import { onMounted } from 'vue';
+import { computed, onMounted } from 'vue';
 import { storeToRefs } from 'pinia';
+import { useRoute } from 'vue-router';
 import * as CardEnvelope from '@/components/cardEnvelope';
 import ListaLegendas from '@/components/ListaLegendas.vue';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
-import BuscadorGeolocalizacao from '@/components/BuscadorGeolocalizacao/BuscadorGeolocalizacaoIndex.vue';
-import { useGeolocalizadorStore, PontoEndereco } from '@/stores/geolocalizador.store';
+import FormularioQueryString from '@/components/FormularioQueryString.vue';
+import { useGeolocalizadorStore } from '@/stores/geolocalizador.store';
 import combinadorDeListas from '@/helpers/combinadorDeListas';
+import ConsultaGeralFiltroEndereco from './ConsultaGeralFiltroEndereco.vue';
+import ConsultaGeralFiltroDotacao from './ConsultaGeralFiltroDotacao.vue';
 
 const legendasStatus = {
   obras: { item: 'Monitoramento de Obras', color: '#8EC122' },
@@ -19,37 +22,30 @@ const legendas = {
   status: Object.values(legendasStatus),
 };
 
-const geolocalizadorStore = useGeolocalizadorStore();
+const tiposPesquisa = {
+  endereco: 'Endereço',
+  dotacao: 'Dotação',
+};
 
+const valoresIniciais = {
+  tipo: 'endereco',
+};
+
+const route = useRoute();
+
+const geolocalizadorStore = useGeolocalizadorStore();
 const { proximidadeFormatada } = storeToRefs(geolocalizadorStore);
 
-async function buscarProximidade(endereco: PontoEndereco) {
-  if (
-    !endereco
-    || endereco.camadas.length === 0
-  ) {
-    console.error('Endereço não encontrado', endereco);
-    return;
-  }
+const filtroSelecionado = computed(() => {
+  const { tipo } = route.query;
 
-  const [camada] = endereco.camadas;
+  const mapaTipo = {
+    endereco: ConsultaGeralFiltroEndereco,
+    dotacao: ConsultaGeralFiltroDotacao,
+  };
 
-  if (
-    !endereco.endereco.geometry.coordinates[0]
-    || !endereco.endereco.geometry.coordinates[1]
-  ) {
-    console.error('Coordenadas não encontradas', endereco.endereco.geometry);
-    return;
-  }
-
-  const [lon, lat] = endereco.endereco.geometry.coordinates;
-
-  await geolocalizadorStore.buscaProximidades({
-    geo_camada_codigo: camada.codigo,
-    lat,
-    lon,
-  });
-}
+  return mapaTipo[tipo] || 'h3';
+});
 
 onMounted(() => {
   geolocalizadorStore.$reset();
@@ -57,116 +53,110 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="flex spacebetween center mb2 mt2">
-    <TituloDaPagina />
+  <FormularioQueryString :valores-iniciais="valoresIniciais">
+    <div class="flex spacebetween center mb2 mt2">
+      <TituloDaPagina />
 
-    <hr class="ml2 f1">
+      <hr class="ml2 f1">
 
-    <div class="flex g2 ml1">
-      <!-- <button class="btn big outline bgnone tamarelo">
-        Pesquisar por endereço
-      </button> -->
-
-      <!-- <button class="btn big outline bgnone tcprimary">
-        Pesquisar por dotação
-      </button> -->
+      <div class="flex g2 ml1">
+        <SmaeLink
+          v-for="(tipoPesquisa, tipoPesquisaKey) in tiposPesquisa"
+          :key="`tipo-pesquisa--${tipoPesquisaKey}`"
+          class="btn big outline bgnone"
+          :class="tipoPesquisaKey === $route.query.tipo ? 'tamarelo' : 'tcprimary'"
+          :to="{ query: { tipo: tipoPesquisaKey }}"
+        >
+          Pesquisar por {{ tipoPesquisa }}
+        </SmaeLink>
+      </div>
     </div>
-  </div>
 
-  <BuscadorGeolocalizacao @selecao="buscarProximidade" />
+    <component :is="filtroSelecionado">
+      Carregando...
+    </component>
 
-  <CardEnvelope.Conteudo class="mt4">
-    <article
-      class="tabela-resultados "
-    >
-      <CardEnvelope.Titulo>
-        <span class="tabela-resultados__titulo">
-          Resultado por: &nbsp;
-          <strong>Endereço</strong>
-        </span>
-      </CardEnvelope.Titulo>
-
-      <p class="tabela-resultados__descricao mt1">
-        O resultado dessa pesquisa atinge até 2 km ao redor do endereço digitado.
-      </p>
-
-      <ListaLegendas
-        titulo=""
-        :legendas="legendas"
-        :borda="false"
-        align="left"
-        orientacao="horizontal"
-      />
-
-      <SmaeTable
-        class="mt3"
-        replicar-cabecalho
-        :colunas="[
-          {
-            chave: 'localizacoes',
-            label: 'Endereço / distância (km)',
-            ehCabecalho: true,
-          },
-          { chave: 'portfolio_programa', label: 'portfólio/plano ou programa' },
-          { chave: 'nome', label: 'nome/meta' },
-          { chave: 'orgao', label: 'Órgão' },
-          { chave: 'status', label: 'status', formatador: v => v || 'N/A' },
-          { chave: 'detalhes', label: 'detalhes' },
-        ]"
-        :dados="proximidadeFormatada"
+    <CardEnvelope.Conteudo class="mt4">
+      <article
+        class="tabela-resultados "
       >
-        <template #celula:localizacoes="{ celula, linha }">
-          <div
-            :class="['celula__item', 'celula__item-classificacao']"
-            :style="{ color: legendasStatus[linha.modulo]?.color || undefined }"
-          />
-
-          <span>
-            {{ combinadorDeListas(celula, ' / ', 'geom_geojson.properties.string_endereco') }}
+        <CardEnvelope.Titulo>
+          <span class="tabela-resultados__titulo">
+            Resultado por: &nbsp;
+            <strong>Endereço</strong>
           </span>
-        </template>
+        </CardEnvelope.Titulo>
 
-        <template #celula:orgao="{ celula }">
-          <div class="celula__lista">
+        <p class="tabela-resultados__descricao mt1">
+          O resultado dessa pesquisa atinge até 2 km ao redor do endereço digitado.
+        </p>
+
+        <ListaLegendas
+          titulo=""
+          :legendas="legendas"
+          :borda="false"
+          align="left"
+          orientacao="horizontal"
+        />
+
+        <SmaeTable
+          class="mt3"
+          replicar-cabecalho
+          :colunas="[
+            {
+              chave: 'localizacoes',
+              label: 'Endereço / distância (km)',
+              ehCabecalho: true,
+            },
+            { chave: 'portfolio_programa', label: 'portfólio/plano ou programa' },
+            { chave: 'nome', label: 'nome/meta' },
+            { chave: 'orgao', label: 'Órgão' },
+            { chave: 'status', label: 'status', formatador: v => v || 'N/A' },
+            { chave: 'detalhes', label: 'detalhes' },
+          ]"
+          :dados="proximidadeFormatada"
+        >
+          <template #celula:localizacoes="{ celula, linha }">
             <div
-              v-for="orgao in celula"
-              :key="`orgao--${orgao}`"
-              class="celula__item"
-            >
-              {{ orgao }}
-            </div>
-          </div>
-        </template>
+              :class="['celula__item', 'celula__item-classificacao']"
+              :style="{ color: legendasStatus[linha.modulo]?.color || undefined }"
+            />
 
-        <template #celula:detalhes="{ celula }">
-          <div
-            v-if="celula"
-            class="celula__lista"
-          >
+            <span>
+              {{ combinadorDeListas(celula, ' / ', 'geom_geojson.properties.string_endereco') }}
+            </span>
+          </template>
+
+          <template #celula:detalhes="{ celula }">
             <div
-              v-for="(detalhe, detalheKey) in celula"
-              :key="`detalhe--${detalheKey}`"
-              class="celula__item"
+              v-if="celula"
+              class="celula__lista"
             >
-              {{ detalheKey }}: {{ detalhe }}
+              <div
+                v-for="(detalhe, detalheKey) in celula"
+                :key="`detalhe--${detalheKey}`"
+                class="celula__item"
+              >
+                {{ detalheKey }}: {{ detalhe }}
+              </div>
             </div>
-          </div>
 
-          <span v-else>
-            -
-          </span>
-        </template>
-      </SmaeTable>
+            <span v-else>
+              -
+            </span>
+          </template>
+        </SmaeTable>
 
-      <ListaLegendas
-        titulo=""
-        :legendas="legendas"
-        :borda="false"
-        align="left"
-        orientacao="horizontal"
-      />
-    </article>
-  </CardEnvelope.Conteudo>
+        <ListaLegendas
+          titulo=""
+          :legendas="legendas"
+          :borda="false"
+          align="left"
+          orientacao="horizontal"
+        />
+      </article>
+    </CardEnvelope.Conteudo>
+  </FormularioQueryString>
 </template>
 
 <style lang="less" scoped>
