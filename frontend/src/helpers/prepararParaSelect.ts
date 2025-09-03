@@ -7,12 +7,15 @@ type MapaParaChaveSaida = MapaParaChaveEntrada & {
   label: string;
 };
 
-function obterLabel(mapaLabel: string | string[], item: any) {
+function obterLabel(mapaLabel: string | string[], item: Record<string, any>): string {
   if (!Array.isArray(mapaLabel)) {
-    return item[mapaLabel];
+    return item?.[mapaLabel] || '';
   }
 
-  return mapaLabel.map((chaveLabel) => item[chaveLabel]).join(' - ');
+  return mapaLabel
+    .map((chaveLabel) => item?.[chaveLabel])
+    .filter((v) => v != null && v !== '')
+    .join(' - ');
 }
 
 function prepararParaSelect(

@@ -58,7 +58,7 @@ const route = useRoute();
 
 const DotaçãoStore = useDotaçãoStore();
 
-const ano = computed(() => route.params.ano || props.ano);
+const { ano } = route.params;
 
 const { DotaçãoSegmentos, chamadasPendentes } = storeToRefs(DotaçãoStore);
 
@@ -240,7 +240,7 @@ async function validarDota() {
     try {
       emit('update:respostasof', { loading: true });
       const respostaDoSof = await DotaçãoStore
-        .getDotaçãoRealizado(valorDaDotação.value, ano.value, props.parametrosParaValidacao);
+        .getDotaçãoRealizado(valorDaDotação.value, ano, props.parametrosParaValidacao);
       emit('update:respostasof', respostaDoSof);
     } catch (error) {
       emit('update:respostasof', error);
@@ -258,8 +258,8 @@ function mascararCódigos(evt, alémDoBásico = []) {
   }
 }
 
-if (!DotaçãoSegmentos.value[ano.value]?.atualizado_em && !chamadasPendentes.value.segmentos) {
-  DotaçãoStore.getDotaçãoSegmentos(ano.value);
+if (!DotaçãoSegmentos.value[ano]?.atualizado_em && !chamadasPendentes.value.segmentos) {
+  DotaçãoStore.getDotaçãoSegmentos(ano);
 }
 
 watch(valorDaDotação, (novoValor) => {
@@ -296,7 +296,6 @@ watch(valorDoComplemento, (novoValor) => {
         }"
         @keypress="($event) => mascararCódigos($event, ['*'])"
       >
-      1-
 
       <ErrorMessage
         class="error-msg mb1"

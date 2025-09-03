@@ -132,9 +132,16 @@ watch(values, () => {
   emit('update:modelValue', values);
 });
 
-watch(() => props.modelValue, (val) => {
-  setValues({ ...val });
-});
+watch(() => props.modelValue, async (val) => {
+  if (!val) return;
+
+  const valoresLocais = { ...val } as any;
+
+  setValues(valoresLocais);
+  await nextTick();
+
+  resetForm({ values: valoresLocais });
+}, { deep: true });
 
 if (props.autoSubmit) {
   watch(() => meta.value.dirty, () => {
