@@ -71,7 +71,7 @@ export const useGeolocalizadorStore = defineStore('geolocalizador', {
   actions: {
     async buscarPorEndereco(termo: string) {
       try {
-        this.erro.buscandoEndereco = true;
+        this.erro.buscandoEndereco = false;
         this.chamadasPendentes.buscandoEndereco = true;
 
         const { linhas } = await this.requestS.post(`${baseUrl}/geolocalizar`, {
@@ -79,7 +79,7 @@ export const useGeolocalizadorStore = defineStore('geolocalizador', {
           busca_endereco: termo,
         });
 
-        this.enderecos = linhas;
+        this.enderecos = linhas ?? [];
       } catch (erro) {
         this.erro.buscandoEndereco = true;
 

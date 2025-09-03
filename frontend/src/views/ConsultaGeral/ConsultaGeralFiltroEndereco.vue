@@ -5,15 +5,16 @@ import { useGeolocalizadorStore, PontoEndereco } from '@/stores/geolocalizador.s
 const geolocalizadorStore = useGeolocalizadorStore();
 
 async function buscarProximidade(endereco: PontoEndereco) {
-  if (
-    !endereco
-    || endereco.camadas.length === 0
-  ) {
+  if (!endereco) {
     console.error('Endereço não encontrado', endereco);
     return;
   }
 
   const [camada] = endereco.camadas;
+  if (!camada.codigo) {
+    console.error('Camada.Codigo não encontrado', camada);
+    return;
+  }
 
   if (
     !endereco.endereco.geometry.coordinates[0]
