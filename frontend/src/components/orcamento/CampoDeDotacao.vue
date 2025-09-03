@@ -1,14 +1,14 @@
 <script setup>
-import { dotação as schema } from '@/consts/formSchemas';
-import dinheiro from '@/helpers/dinheiro';
-import toFloat from '@/helpers/toFloat';
-import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, useField } from 'vee-validate';
 import {
   computed, ref, toRef, watch,
 } from 'vue';
 import { useRoute } from 'vue-router';
+import { dotação as schema } from '@/consts/formSchemas';
+import dinheiro from '@/helpers/dinheiro';
+import toFloat from '@/helpers/toFloat';
+import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 // PRA-FAZER: preenchimento inicial dos campos de parciais
 const props = defineProps({
   parametrosParaValidacao: {
@@ -58,7 +58,7 @@ const route = useRoute();
 
 const DotaçãoStore = useDotaçãoStore();
 
-const { ano } = route.params;
+const ano = computed(() => route.params.ano || props.ano);
 
 const { DotaçãoSegmentos, chamadasPendentes } = storeToRefs(DotaçãoStore);
 
@@ -240,7 +240,7 @@ async function validarDota() {
     try {
       emit('update:respostasof', { loading: true });
       const respostaDoSof = await DotaçãoStore
-        .getDotaçãoRealizado(valorDaDotação.value, ano, props.parametrosParaValidacao);
+        .getDotaçãoRealizado(valorDaDotação.value, ano.value, props.parametrosParaValidacao);
       emit('update:respostasof', respostaDoSof);
     } catch (error) {
       emit('update:respostasof', error);
@@ -258,8 +258,8 @@ function mascararCódigos(evt, alémDoBásico = []) {
   }
 }
 
-if (!DotaçãoSegmentos.value[ano]?.atualizado_em && !chamadasPendentes.value.segmentos) {
-  DotaçãoStore.getDotaçãoSegmentos(ano);
+if (!DotaçãoSegmentos.value[ano.value]?.atualizado_em && !chamadasPendentes.value.segmentos) {
+  DotaçãoStore.getDotaçãoSegmentos(ano.value);
 }
 
 watch(valorDaDotação, (novoValor) => {
@@ -296,6 +296,7 @@ watch(valorDoComplemento, (novoValor) => {
         }"
         @keypress="($event) => mascararCódigos($event, ['*'])"
       >
+      1-
 
       <ErrorMessage
         class="error-msg mb1"

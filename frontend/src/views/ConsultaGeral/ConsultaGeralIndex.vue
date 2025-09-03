@@ -36,6 +36,8 @@ const route = useRoute();
 const geolocalizadorStore = useGeolocalizadorStore();
 const { proximidadeFormatada } = storeToRefs(geolocalizadorStore);
 
+const tipo = computed<'endereco' | 'dotacao'>(() => route.query.tipo);
+
 const filtroSelecionado = computed(() => {
   const { tipo } = route.query;
 
@@ -64,7 +66,7 @@ onMounted(() => {
           v-for="(tipoPesquisa, tipoPesquisaKey) in tiposPesquisa"
           :key="`tipo-pesquisa--${tipoPesquisaKey}`"
           class="btn big outline bgnone"
-          :class="tipoPesquisaKey === $route.query.tipo ? 'tamarelo' : 'tcprimary'"
+          :class="tipoPesquisaKey === tipo ? 'tamarelo' : 'tcprimary'"
           :to="{ query: { tipo: tipoPesquisaKey }}"
         >
           Pesquisar por {{ tipoPesquisa }}
@@ -83,11 +85,14 @@ onMounted(() => {
         <CardEnvelope.Titulo>
           <span class="tabela-resultados__titulo">
             Resultado por: &nbsp;
-            <strong>Endereço</strong>
+            <strong>{{ tiposPesquisa[tipo] }}</strong>
           </span>
         </CardEnvelope.Titulo>
 
-        <p class="tabela-resultados__descricao mt1">
+        <p
+          v-if="tipo === 'endereco'"
+          class="tabela-resultados__descricao mt1"
+        >
           O resultado dessa pesquisa atinge até 2 km ao redor do endereço digitado.
         </p>
 

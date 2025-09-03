@@ -1,26 +1,33 @@
 <script lang="ts" setup>
-import { computed, onMounted, ref } from 'vue';
+import {
+  computed, ref, watch,
+} from 'vue';
 import { storeToRefs } from 'pinia';
 import FiltroParaPagina, { Formulario } from '@/components/FiltroParaPagina.vue';
 import { useGeolocalizadorStore } from '@/stores/geolocalizador.store';
 import { FiltroDotacao as schema } from '@/consts/formSchemas';
 import { useDotaçãoStore } from '@/stores/dotacao.store';
 import prepararParaSelect from '@/helpers/prepararParaSelect';
+import SmaeLabel from '@/components/camposDeFormulario/SmaeLabel.vue';
 
 const geolocalizadorStore = useGeolocalizadorStore();
 const { chamadasPendentes } = storeToRefs(geolocalizadorStore);
 
 const formulario = ref({});
 
-const ano = 2024;
+const ano = ref(2025);
 const dotacaoStore = useDotaçãoStore();
 
 const {
   DotaçãoSegmentos: dotacaoSegmentos,
-  chamadasPendentes: dotacaoChamadasPendentes,
+  // chamadasPendentes: dotacaoChamadasPendentes,
 } = storeToRefs(dotacaoStore);
 
-const dotacaoAtual = computed(() => dotacaoSegmentos.value?.[ano] || {});
+function filtrarDotacao() {
+  alert('filtrar');
+}
+
+const dotacaoAtual = computed(() => dotacaoSegmentos.value?.[ano.value] || {});
 
 const camposDeFiltro = computed<Formulario>(() => [
   {
@@ -31,7 +38,12 @@ const camposDeFiltro = computed<Formulario>(() => [
       },
       unidade_id: {
         tipo: 'select',
-        opcoes: prepararParaSelect(dotacaoAtual.value.unidades, { id: 'codigo', label: ['codigo', 'descricao'] }),
+        opcoes: prepararParaSelect(
+          dotacaoAtual.value?.unidades?.filter(
+            (unidade) => formulario.value.orgao_id === unidade.cod_orgao,
+          ),
+          { id: 'codigo', label: ['codigo', 'descricao'] },
+        ),
       },
       funcao_id: {
         tipo: 'select',
@@ -85,19 +97,120 @@ const camposDeFiltro = computed<Formulario>(() => [
   },
 ]);
 
-onMounted(() => {
-  dotacaoStore.getDotaçãoSegmentos(ano);
+const camposLista = computed<string[]>(
+  () => camposDeFiltro.value.reduce<string[]>((agrupado, linha) => {
+    const campos = Object.keys(linha.campos);
+
+    return [...agrupado, ...campos];
+  }, []),
+);
+
+let adicionarPonto = false;
+const dotacaoEComplemento = computed({
+  get: () => {
+    let faltandoCampo = false;
+    const dados: unknown[] = [];
+
+    camposLista.value.forEach((item) => {
+      if (faltandoCampo) {
+        return;
+      }
+
+      const valorItem = formulario.value[item];
+      if (!valorItem) {
+        faltandoCampo = true;
+        return;
+      }
+
+      dados.push(valorItem);
+    });
+
+    let texto = dados.join('.');
+
+    if (adicionarPonto) {
+      texto += '.';
+    }
+
+    return texto;
+  },
+  set(valor) {
+    if (valor[valor.length - 1] === '.') {
+      adicionarPonto = true;
+    } else {
+      adicionarPonto = false;
+    }
+
+    const valorSeparado = valor.split('.');
+
+    const dados = camposLista.value.reduce((agrupado, item, itemPosicao) => ({
+      ...agrupado,
+      [item]: valorSeparado[itemPosicao],
+    }), {});
+
+    const ultimoCampo = camposLista.value[camposLista.value.length - 1];
+    if (dados[ultimoCampo]) {
+      adicionarPonto = false;
+    }
+
+    formulario.value = dados;
+  },
 });
+
+watch(ano, () => {
+  dotacaoStore.getDotaçãoSegmentos(ano.value);
+}, { immediate: true });
 </script>
 
 <template>
-  {{ Object.keys(dotacaoAtual) }}
-  <!-- {{ dotacaoAtual.unidades }} -->
+  <div class="flex g2 flexwrap fg999">
+    <div class="align-end">
+      <SmaeLabel name="ano">
+        ano
+      </SmaeLabel>
+
+      <select
+        id="ano"
+        v-model="ano"
+        class="inputtext light mb1"
+        type="text"
+      >
+        <option :value="2025">
+          2025
+        </option>
+        <option :value="2024">
+          2024
+        </option>
+        <option :value="2023">
+          2023
+        </option>
+        <option :value="2022">
+          2022
+        </option>
+      </select>
+    </div>
+
+    <div class="f1 align-end">
+      <SmaeLabel name="dotacao">
+        Dotação
+      </SmaeLabel>
+
+      <input
+        id="dotacao"
+        v-model="dotacaoEComplemento"
+        class="inputtext light mb1"
+        type="text"
+      >
+    </div>
+  </div>
+
   <FiltroParaPagina
     v-model="formulario"
     class="mb2"
     :schema="schema"
     :formulario="camposDeFiltro"
     :carregando="chamadasPendentes.buscandoEndereco || chamadasPendentes.buscandoProximidade"
+    :bloqueado="!ano"
+    nao-emitir-query
+    @filtro="filtrarDotacao"
   />
 </template>
