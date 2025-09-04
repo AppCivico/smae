@@ -43,7 +43,7 @@ export type Formulario = Linha[];
 type Props = {
   formulario: Linha[]
   schema: Record<string, unknown>
-  modelValue: Record<string, unknown>
+  modelValue?: Record<string, unknown>
   valoresIniciais?: Record<string, unknown>
   autoSubmit?: boolean
   carregando?: boolean
@@ -56,7 +56,10 @@ type Emits = {
   (e: 'filtro'): void
 };
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  modelValue: () => ({}),
+  valoresIniciais: undefined,
+});
 const emit = defineEmits<Emits>();
 
 const route = useRoute();
