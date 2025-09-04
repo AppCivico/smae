@@ -280,7 +280,7 @@ if (props.autoSubmit) {
                 v-else
                 class="inputtext light mb1"
                 :name="campoNome"
-                :type="'text'"
+                :type="campo.tipo"
                 :disabled="$props.bloqueado"
                 :aria-busy="$props.carregando"
                 :aria-invalid="!!errors[campoNome]"
@@ -305,7 +305,7 @@ if (props.autoSubmit) {
             class="btn outline bgnone tcprimary mtauto mb1"
             :class="[{ loading: carregando }]"
             :aria-busy="isSubmitting || carregando"
-            :disabled="!!Object.keys(errors)?.length"
+            :aria-disabled="!!Object.keys(errors)?.length"
             :aria-invalid="!!Object.keys(errors)?.length"
             :aria-errormessage="idsDasMensagensDeErro"
           >
