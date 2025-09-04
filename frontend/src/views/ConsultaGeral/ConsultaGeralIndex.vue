@@ -36,17 +36,15 @@ const route = useRoute();
 const geolocalizadorStore = useGeolocalizadorStore();
 const { proximidadeFormatada } = storeToRefs(geolocalizadorStore);
 
-const tipo = computed<'endereco' | 'dotacao'>(() => route.query.tipo);
+const tipo = computed<'endereco' | 'dotacao' | undefined>(() => route.query.tipo);
 
 const filtroSelecionado = computed(() => {
-  const { tipo } = route.query;
-
   const mapaTipo = {
     endereco: ConsultaGeralFiltroEndereco,
     dotacao: ConsultaGeralFiltroDotacao,
   };
 
-  return mapaTipo[tipo] || 'h3';
+  return mapaTipo[tipo.value] || 'h3';
 });
 
 onMounted(() => {
@@ -56,7 +54,7 @@ onMounted(() => {
 
 <template>
   <FormularioQueryString :valores-iniciais="valoresIniciais">
-    <div class="flex spacebetween center mb2 mt2">
+    <div class="flex flexwrap spacebetween center mb2 mt2">
       <TituloDaPagina />
 
       <hr class="ml2 f1">

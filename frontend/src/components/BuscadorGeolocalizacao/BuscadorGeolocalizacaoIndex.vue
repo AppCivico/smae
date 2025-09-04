@@ -13,19 +13,13 @@ const emit = defineEmits<Emits>();
 </script>
 
 <template>
-  <section class="flex g2">
-    <div class="buscador-geolocalizacao__filtro">
+  <div class="flex g2 flexwrap">
+    <div class="f1 fb40">
       <BuscadorGeolocalizacaoFiltro />
 
       <BuscadorGeolocalizacaoListagem @selecao="ev => emit('selecao', ev)" />
     </div>
 
-    <BuscadorGeolocalizacaoMapa class="f1" />
-  </section>
+    <BuscadorGeolocalizacaoMapa class="f1 fb50" />
+  </div>
 </template>
-
-<style lang="less" scoped>
-.buscador-geolocalizacao__filtro {
-  width: 40%;
-}
-</style>
