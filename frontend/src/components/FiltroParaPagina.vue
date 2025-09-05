@@ -144,7 +144,7 @@ watch(() => props.modelValue, async (val) => {
   await nextTick();
 
   resetForm({ values: valoresLocais });
-}, { deep: true });
+});
 
 if (props.autoSubmit) {
   watch(() => meta.value.dirty, () => {
