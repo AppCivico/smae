@@ -62,6 +62,7 @@ import { TaskModule } from './task/task.module';
 import { TransfereGovApiModule } from './transfere-gov-api/transfere-gov-api.module';
 import { ClassificacaoModule } from './transferencias-voluntarias/classificacao/classificacao.module';
 import { WikiLinkModule } from './wiki-link/wiki-link.module';
+import { DotacaoBuscaModule } from './dotacao-busca/dotacao-busca.module';
 
 // Hacks pro JS
 /*
@@ -126,6 +127,7 @@ import { WikiLinkModule } from './wiki-link/wiki-link.module';
         BuscaGlobalModule,
         AtualizacaoEmLoteModule,
         WikiLinkModule,
+        DotacaoBuscaModule,
     ],
     controllers: [AppController],
     providers: [
