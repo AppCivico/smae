@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { IsBoolean, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 
 export class DotacaoBuscaDto {
@@ -17,7 +17,12 @@ export class DotacaoBuscaDto {
 
     @ApiProperty({ required: false, example: true, default: true })
     @IsOptional()
-    @Type(() => Boolean)
+    @Transform(({ value }) => {
+        if (value === undefined || value === null || value === '') return undefined; // preserve default
+        if (value === true || value === 'true') return true;
+        if (value === false || value === 'false') return false;
+        return Boolean(value);
+    })
     @IsBoolean()
     somenteAtivos?: boolean = true;
 }
