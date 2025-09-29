@@ -61,16 +61,46 @@ export default {
         variavelId: Number.parseInt(params.variavelId, 10) || undefined,
       }),
       meta: {
-        rotasParaMenuSecundário: [
-          'variavel.composicao',
-        ],
+        rotasParaMenuSecundário: ['variavel.resumo', 'variavel.composicao'],
         rotasParaMigalhasDePão: ['variaveisListar'],
       },
       children: [
         {
+          name: 'variavel.resumo',
+          path: 'resumo',
+          component: () => import(
+            '@/views/variaveis/VariavelResumo.vue'
+          ),
+          meta: {
+            rotaDeEscape: 'variaveisListar',
+            rotasParaMigalhasDePão: ['variaveisListar'],
+            títuloParaMenu: 'Resumo',
+            título: () => {
+              const { emFoco } = useVariaveisGlobaisStore();
+
+              if (!emFoco) {
+                return 'Resumo da variável';
+              }
+
+              return `Variavel ${emFoco.titulo}`;
+            },
+            tituloParaMigalhaDePao: () => {
+              const { emFoco } = useVariaveisGlobaisStore();
+
+              if (!emFoco) {
+                return 'Resumo da variável';
+              }
+
+              return `Variavel ${emFoco.titulo}`;
+            },
+          },
+        },
+        {
           name: 'variavel.composicao',
           path: 'composicao',
-          component: () => import('@/views/variaveis/VariavelComposicao/VariavelComposicaoIndex.vue'),
+          component: () => import(
+            '@/views/variaveis/VariavelComposicao/VariavelComposicaoIndex.vue'
+          ),
           meta: {
             rotaDeEscape: 'variaveisListar',
             rotasParaMigalhasDePão: ['variaveisListar', 'variavel.composicao'],
