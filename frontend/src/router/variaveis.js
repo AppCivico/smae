@@ -69,8 +69,8 @@ export default {
       children: [
         {
           name: 'variavel.composicao',
-          path: 'resumo',
-          component: () => import('@/views/variaveis/VariavelResumo/VariavelResumoIndex.vue'),
+          path: 'composicao',
+          component: () => import('@/views/variaveis/VariavelComposicao/VariavelComposicaoIndex.vue'),
           meta: {
             rotaDeEscape: 'variaveisListar',
             rotasParaMigalhasDePão: ['variaveisListar', 'variavel.composicao'],
