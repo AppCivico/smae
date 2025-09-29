@@ -4,8 +4,8 @@ import { computed } from 'vue';
 import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
 import { useAssuntosStore } from '@/stores/assuntosPs.store';
 import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store';
-import type { SessaoDeDetalheLinhas } from './partials/VariaveisResumoSessao.vue';
-import VariaveisResumoSessao from './partials/VariaveisResumoSessao.vue';
+import type { SessaoDeDetalheLinhas } from './partials/VariaveisComposicaoSessao.vue';
+import VariaveisResumoSessao from './partials/VariaveisComposicaoSessao.vue';
 
 type SessaoDeDetalheOptions = 'propriedades' | 'orgao' | 'grupos' | 'variavel' | 'intervalos';
 
