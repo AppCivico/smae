@@ -62,20 +62,29 @@ export default {
       }),
       meta: {
         rotasParaMenuSecundário: [
-          // 'variaveisResumo',
+          'variavel.composicao',
         ],
         rotasParaMigalhasDePão: ['variaveisListar'],
       },
       children: [
         {
-          name: 'variaveisResumo',
+          name: 'variavel.composicao',
           path: 'resumo',
-          component: () => import('@/views/variaveis/VariaveisResumo.vue'),
+          component: () => import('@/views/variaveis/VariavelResumo/VariavelResumoIndex.vue'),
           meta: {
             rotaDeEscape: 'variaveisListar',
-            rotasParaMigalhasDePão: ['variaveisListar'],
-            título: () => useVariaveisGlobaisStore()?.emFoco?.titulo || 'Resumo Variável',
-            títuloParaMenu: 'Resumo',
+            rotasParaMigalhasDePão: ['variaveisListar', 'variavel.composicao'],
+            título: 'Composição',
+            títuloParaMenu: 'Composição',
+            tituloParaMigalhaDePao: () => {
+              const { emFoco } = useVariaveisGlobaisStore();
+
+              if (!emFoco) {
+                return 'Composição da variável';
+              }
+
+              return `Variavel ${emFoco.titulo}`;
+            },
           },
         },
         {

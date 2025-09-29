@@ -4,8 +4,8 @@ import { computed } from 'vue';
 import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
 import { useAssuntosStore } from '@/stores/assuntosPs.store';
 import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store';
-import type { SessaoDeDetalheLinhas } from './partials/VariaveisResumo/VariaveisResumoSessao.vue';
-import VariaveisResumoSessao from './partials/VariaveisResumo/VariaveisResumoSessao.vue';
+import type { SessaoDeDetalheLinhas } from './partials/VariaveisResumoSessao.vue';
+import VariaveisResumoSessao from './partials/VariaveisResumoSessao.vue';
 
 type SessaoDeDetalheOptions = 'propriedades' | 'orgao' | 'grupos' | 'variavel' | 'intervalos';
 
@@ -151,6 +151,7 @@ const sessoes = computed<SessaoDeDetalhe | null>(() => {
     },
     intervalos: {
       titulo: 'Intervalos de interação',
+      quantidadeColunas: 3,
       linhas: [
         [
           { label: 'Início da coleta', valor: emFoco.value.periodos.preenchimento_inicio },
@@ -223,7 +224,7 @@ const assuntosComCategoriasMapeados = computed<CategoriaComAssuntoMapeado>(() =>
           :key="`assunto-categoria--${assuntoComCategoria.id}`"
           class="assuntos-categoria-item"
         >
-          <h5 class="uc">
+          <h5 class="uc tamarelo">
             {{ assuntoComCategoria.nome }}
           </h5>
 
