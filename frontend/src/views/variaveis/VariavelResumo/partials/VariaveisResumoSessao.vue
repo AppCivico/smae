@@ -35,7 +35,7 @@
           'grid-column': item.col && `span ${item.col}`,
         }"
       >
-        <h5 class="variavel-detalhe-sessao__item-label">
+        <h5 class="variavel-detalhe-sessao__item-label tamarelo w700">
           {{ item.label }}
         </h5>
 
@@ -130,10 +130,8 @@ function obterLinhas(quantidadeLinhas: number): number {
 }
 
 .variavel-detalhe-sessao__item-label {
-  font-weight: 700;
   font-size: 16px;
   line-height: 20px;
-  color: #607A9F;
 }
 
 .variavel-detalhe-sessao__item-valor {
