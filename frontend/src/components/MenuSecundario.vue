@@ -1,8 +1,8 @@
 <script setup>
-import { useAuthStore } from '@/stores/auth.store';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/auth.store';
 import TransitionExpand from './TransitionExpand.vue';
 
 const authStore = useAuthStore();
@@ -148,8 +148,9 @@ function alternarItens(índice) {
             class="menu-secundário__item-de-lista"
           >
             <router-link
-              :to="rota.href"
+              :to="rota?.name ? { name: rota.name } : rota.href"
               class="menu-secundário__link"
+              exact-active-class="tamarelo menu-secundário__link-selecionado"
             >
               <!-- TODO:  transformar em função -->
               {{ (typeof rota.meta?.títuloParaMenu === 'function'
@@ -285,5 +286,9 @@ function alternarItens(índice) {
   padding: 1rem 0;
 
   border-bottom: 1px solid @c100;
+}
+
+.menu-secundário__link-selecionado {
+  border-bottom: 4px solid #F7C234;
 }
 </style>
