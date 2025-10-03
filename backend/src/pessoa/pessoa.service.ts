@@ -1416,6 +1416,7 @@ export class PessoaService implements OnModuleInit {
                         perfil_acesso_id: true,
                     },
                 },
+                ultimaAtividade: { select: { ultima_atividade_em: true } },
             },
         });
 
@@ -1433,10 +1434,9 @@ export class PessoaService implements OnModuleInit {
                 lotacao: p.pessoa_fisica?.lotacao ? p.pessoa_fisica.lotacao : undefined,
                 orgao_id: p.pessoa_fisica?.orgao_id || undefined,
                 perfil_acesso_ids: p.PessoaPerfil.map((e) => e.perfil_acesso_id).filter((e) => visiblePriv.includes(e)),
+                ultima_atividade_em: p.ultimaAtividade?.ultima_atividade_em ?? null,
             };
         });
-
-        this.logger.log(`encontrado ${listFixed.length} resultados`);
 
         return listFixed;
     }
