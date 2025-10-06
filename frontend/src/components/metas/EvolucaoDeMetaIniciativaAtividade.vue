@@ -48,6 +48,7 @@
               fill="currentColor"
             />
           </svg>
+
           <h2 class="mt1 mb1 ml1 f1">
             {{ variavel.codigo }} - {{ variavel.titulo }}
           </h2>
@@ -72,7 +73,8 @@
               'CadastroMeta.administrador_no_pdm',
               'CadastroMetaPS.administrador_no_pdm',
               'CadastroMetaPDM.administrador_no_pdm'
-            ])"
+            ])
+          "
           class="f0 dropbtn right"
         >
           <span class="tamarelo"><svg
@@ -110,10 +112,12 @@
       </div>
 
       <LoadingComponent v-if="haChamadasPendentes" />
+
       <GraficoHeatmapVariavelCategorica
         v-else-if="variavel.variavel_categorica_id > 0"
         :valores="Valores[(variavel.id as keyof {})]"
       />
+
       <GraficoLinhasEvolucao
         v-else
         :valores="Valores[(variavel.id as keyof {})]"
@@ -219,13 +223,15 @@ const { Valores } = storeToRefs(VariaveisStore);
 
 const haChamadasPendentes = ref(false);
 
-watch(() => props.variavel.id, () => {
+watch(() => props.variavel.id, async () => {
   if (props.variavel.id) {
-    haChamadasPendentes.value = true;
-    VariaveisStore.getValores(props.variavel.id, { leitura: true })
-      .then(() => {
-        haChamadasPendentes.value = false;
-      });
+    try {
+      haChamadasPendentes.value = true;
+
+      await VariaveisStore.getValores(props.variavel.id, { leitura: true });
+    } finally {
+      haChamadasPendentes.value = false;
+    }
   }
 }, { immediate: true });
 </script>

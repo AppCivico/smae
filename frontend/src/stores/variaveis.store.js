@@ -1,5 +1,5 @@
-import dateToField from '@/helpers/dateToField';
 import { defineStore } from 'pinia';
+import dateToField from '@/helpers/dateToField';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -230,6 +230,33 @@ export const useVariaveisStore = defineStore('Variaveis', {
         this.sériesDaVariávelComposta = r;
       } catch (error) {
         this.sériesDaVariávelComposta = { error };
+      }
+    },
+
+    async buscarAnalise(variavelId, dataValor) {
+      try {
+        switch (this.route.meta.entidadeMãe) {
+          case 'planoSetorial':
+          case 'programaDeMetas':
+            return await this.requestS.get(`${baseUrl}/variavel-analise-qualitativa`, {
+              consulta_historica: true,
+              data_referencia: dataValor,
+              variavel_id: variavelId,
+            });
+
+          default:
+            return await this.requestS.get(
+              `${baseUrl}/mf/metas/variaveis/analise-qualitativa`,
+              {
+                data_valor: dataValor,
+                variavel_id: variavelId,
+              },
+            );
+        }
+      } catch (erro) {
+        console.error(erro);
+
+        throw erro;
       }
     },
   },
