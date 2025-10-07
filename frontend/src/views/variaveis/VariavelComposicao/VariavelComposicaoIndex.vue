@@ -178,7 +178,7 @@ const assuntosComCategoriasMapeados = computed<CategoriaComAssuntoMapeado>(() =>
 
     const categoria = categoriasPorId.value[categoriaId];
 
-    if (!amount[categoriaId] && categoria) {
+    if (!amount[categoriaId]) {
       amount[categoriaId] = {
         nome: categoria?.nome,
         id: categoriaId,
