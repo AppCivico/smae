@@ -82,7 +82,7 @@ export default {
                 return 'Resumo da variável';
               }
 
-              return `Variavel ${emFoco.titulo}`;
+              return `Variável ${emFoco.titulo}`;
             },
             tituloParaMigalhaDePao: () => {
               const { emFoco } = useVariaveisGlobaisStore();
@@ -91,7 +91,7 @@ export default {
                 return 'Resumo da variável';
               }
 
-              return `Variavel ${emFoco.titulo}`;
+              return `Variável ${emFoco.titulo}`;
             },
           },
         },
@@ -113,7 +113,7 @@ export default {
                 return 'Composição da variável';
               }
 
-              return `Variavel ${emFoco.titulo}`;
+              return `Variável ${emFoco.titulo}`;
             },
           },
         },

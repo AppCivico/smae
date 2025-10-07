@@ -135,7 +135,7 @@ const colunas = computed(() => {
 const serieSelecionada = computed<any | null>(() => {
   const dadosSerieSelecionada = linhasSelecionadas.value;
 
-  if (!dadosSerieSelecionada) {
+  if (!dadosSerieSelecionada?.length) {
     return [];
   }
 
@@ -146,7 +146,7 @@ const serieSelecionada = computed<any | null>(() => {
     'Realizado Acumulado',
   ];
 
-  const seriesSituacoes = dadosSerieSelecionada[0].series;
+  const seriesSituacoes = dadosSerieSelecionada[0].series ?? [];
 
   const serieFormatada = seriesSituacoes.reduce((agrupador, serie, serieIndex) => {
     if (!agrupador[serieIndex]) {
@@ -169,18 +169,25 @@ const serieSelecionada = computed<any | null>(() => {
   return serieFormatada;
 });
 
-watch(() => agrupadores.value, () => {
-  const anoAtual = obterAnoAtual();
+watch(
+  () => agrupadores.value,
+  (lista) => {
+    if (!lista?.length) {
+      serieAgrupadaSelecionada.value = undefined;
+      return;
+    }
 
-  const anoExiste = agrupadores.value.find((item) => item === anoAtual);
-  if (anoExiste) {
-    serieAgrupadaSelecionada.value = anoExiste;
-  }
+    const anoAtual = obterAnoAtual();
+    const anoExiste = lista.find((item) => item === anoAtual);
+    if (anoExiste) {
+      serieAgrupadaSelecionada.value = anoExiste;
+      return;
+    }
 
-  const ultimoPeriodo = agrupadores.value[0];
-
-  serieAgrupadaSelecionada.value = ultimoPeriodo;
-}, { immediate: true, deep: true });
+    serieAgrupadaSelecionada.value = lista[0] || undefined;
+  },
+  { immediate: true },
+);
 
 </script>
 
