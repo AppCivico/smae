@@ -50,7 +50,7 @@ const variaveisStore = useVariaveisStore();
 const serieAgrupadaSelecionada = ref<string>();
 const analiseVariavelSelecionada = ref<VariavelAnaliseQualitativaResponseDto | null>(null);
 
-async function objterDocumento(item: Periodo) {
+async function obterDocumento(item: Periodo) {
   const { variavel } = props.informacaoVariavel;
   if (!item.temDocumento || !variavel) {
     return;
@@ -84,7 +84,7 @@ const agrupadores = computed<string[]>(() => {
 const linhas = computed<LinhaAgrupada>(() => {
   const variavelLinhas = props.informacaoVariavel?.linhas;
   if (!variavelLinhas) {
-    return null;
+    return {};
   }
 
   return variavelLinhas.reduce((agrupador, item) => {
@@ -243,7 +243,7 @@ watch(
         <button
           v-if="periodo.temDocumento"
           class="variaveis-series__tabela-botao ml1 like-a__text"
-          @click="objterDocumento(periodo)"
+          @click="obterDocumento(periodo)"
         >
           <svg
             width="16"
