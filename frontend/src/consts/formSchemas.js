@@ -473,12 +473,10 @@ export const contratoDeObras = (tela = 'projeto') => object()
       .label('Área gestora'),
     objeto_resumo: string()
       .max(2048)
-      .min(1)
       .nullable()
       .label('Objeto do contrato - resumido'),
     objeto_detalhado: string()
       .max(2048)
-      .min(1)
       .nullable()
       .label('Objeto do contrato - detalhado'),
     contratante: string()
@@ -520,7 +518,6 @@ export const contratoDeObras = (tela = 'projeto') => object()
       .label('Valor do contrato'),
     observacoes: string()
       .max(2048)
-      .min(1)
       .nullable()
       .label('Observações'),
   });
