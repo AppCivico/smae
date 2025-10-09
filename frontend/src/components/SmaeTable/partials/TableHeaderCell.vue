@@ -24,7 +24,7 @@ const props = defineProps<Props>();
 
 const conteudo = computed(() => {
   if (!props.schema || !props.chave) {
-    return props.label || props.chave;
+    return props.label;
   }
 
   const dadosYup = buscarDadosDoYup(props.schema, props.chave)?.spec?.label;
