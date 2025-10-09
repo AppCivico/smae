@@ -61,7 +61,11 @@ export default {
         variavelId: Number.parseInt(params.variavelId, 10) || undefined,
       }),
       meta: {
-        rotasParaMenuSecundário: ['variavel.resumo', 'variavel.composicao'],
+        rotasParaMenuSecundário: [
+          'variavel.resumo',
+          'variavel.composicao',
+          'variavel.rastreabilidade',
+        ],
         rotasParaMigalhasDePão: ['variaveisListar'],
       },
       children: [
@@ -73,7 +77,7 @@ export default {
           ),
           meta: {
             rotaDeEscape: 'variaveisListar',
-            rotasParaMigalhasDePão: ['variaveisListar'],
+            rotasParaMigalhasDePão: ['variaveisListar', 'variavel.resumo'],
             títuloParaMenu: 'Resumo',
             título: () => {
               const { emFoco } = useVariaveisGlobaisStore();
@@ -96,6 +100,19 @@ export default {
           },
         },
         {
+          name: 'variavel.rastreabilidade',
+          path: 'rastreabilidade',
+          component: () => import(
+            '@/views/variaveis/VariavelRastreabilidade.vue'
+          ),
+          meta: {
+            rotaDeEscape: 'variaveisListar',
+            rotasParaMigalhasDePão: ['variaveisListar', 'variavel.resumo'],
+            título: 'Rastreabilidade',
+            títuloParaMenu: 'Rastreabilidade',
+          },
+        },
+        {
           name: 'variavel.composicao',
           path: 'composicao',
           component: () => import(
@@ -103,18 +120,9 @@ export default {
           ),
           meta: {
             rotaDeEscape: 'variaveisListar',
-            rotasParaMigalhasDePão: ['variaveisListar', 'variavel.composicao'],
+            rotasParaMigalhasDePão: ['variaveisListar', 'variavel.resumo'],
             título: 'Composição',
             títuloParaMenu: 'Composição',
-            tituloParaMigalhaDePao: () => {
-              const { emFoco } = useVariaveisGlobaisStore();
-
-              if (!emFoco) {
-                return 'Composição da variável';
-              }
-
-              return `Variável ${emFoco.titulo}`;
-            },
           },
         },
         {

@@ -49,6 +49,7 @@ type Props = {
   carregando?: boolean
   bloqueado?: boolean
   naoEmitirQuery?: boolean
+  umaLinha?: boolean
 };
 type Emits = {
   (e: 'update:formularioSujo', value: boolean): void
@@ -168,130 +169,133 @@ if (props.autoSubmit) {
     >
       <form
         :aria-busy="pendente"
+        :class="{ 'flex g1 center': $props.umaLinha }"
         @submit.prevent="!carregando && !pendente && onSubmit()"
       >
-        <div
-          v-for="(linha, linhaIndex) in formulario"
-          :key="`linha--${linhaIndex}`"
-          class="flex center g2 flexwrap"
-          :class="linha.decorador === 'direita' && 'row-reverse'"
-        >
-          <hr
-            v-if="linha.decorador"
-            class="f1"
-          >
-
+        <div class="f1">
           <div
-            class="flex g2 flexwrap"
-            :class="linha.class || 'fg999'"
+            v-for="(linha, linhaIndex) in formulario"
+            :key="`linha--${linhaIndex}`"
+            class="flex center g2 flexwrap"
+            :class="linha.decorador === 'direita' && 'row-reverse'"
           >
-            <div
-              v-for="(campo, campoNome) in linha.campos"
-              :key="campoNome"
-              :class="['f1 align-end', campo.class]"
+            <hr
+              v-if="linha.decorador"
+              class="f1"
             >
-              <LabelFromYup
-                :name="campoNome"
-                :schema="schema"
-                class="tc300"
-              />
 
-              <Field
-                v-if="campo.tipo === 'checkbox'"
-                v-slot="{ field: { value }, handleInput }"
-                :name="campoNome"
-                :disabled="$props.bloqueado"
-                :aria-busy="$props.carregando"
-                :aria-invalid="!!errors[campoNome]"
-                :aria-errormessage="errors[campoNome] ? `err__${campoNome}` : undefined"
+            <div
+              class="flex g2 flexwrap"
+              :class="linha.class || 'fg999'"
+            >
+              <div
+                v-for="(campo, campoNome) in linha.campos"
+                :key="campoNome"
+                :class="['f1 align-end', campo.class]"
               >
-                <div
-                  class="flex itemscenter"
-                  style="height: 41px"
-                >
-                  <input
-                    type="checkbox"
-                    class="interruptor"
-                    :checked="value"
-                    :disabled="$props.bloqueado"
-                    :aria-busy="$props.carregando"
-                    @input="(ev) => handleInput(ev.target.checked)"
-                  >
-                </div>
-              </Field>
-
-              <Field
-                v-else-if="campo.tipo === 'select'"
-                class="inputtext light mb1"
-                :name="campoNome"
-                as="select"
-                :disabled="$props.bloqueado"
-                :aria-busy="$props.carregando"
-                :aria-invalid="!!errors[campoNome]"
-                :aria-errormessage="errors[campoNome] ? `err__${campoNome}` : undefined"
-              >
-                <option :value="null">
-                  -
-                </option>
-                <template v-if="campo.opcoes?.length">
-                  <option
-                    v-for="opcao in padronizarOpcoes(campo.opcoes)"
-                    :key="`comunicado-tipo--${campoNome}-${opcao.id}`"
-                    :value="opcao.id"
-                  >
-                    {{ opcao.label }}
-                  </option>
-                </template>
-              </Field>
-
-              <Field
-                v-else-if="campo.tipo === 'autocomplete'"
-                v-slot="{ value, handleChange }"
-                class="inputtext light mb1"
-                :name="campoNome"
-                :aria-invalid="!!errors[campoNome]"
-                :aria-errormessage="errors[campoNome] ? `err__${campoNome}` : undefined"
-              >
-                <AutocompleteField2
-                  class="f1 mb1"
-                  :controlador="{ participantes: value, busca: '' }"
-                  :grupo="campo.opcoes"
-                  :label="campo.autocomplete?.label || 'label'"
-                  :apenas-um="campo.autocomplete?.apenasUm"
-                  :readonly="$props.carregando"
-                  @change="ev => handleChange(ev)"
+                <LabelFromYup
+                  :name="campoNome"
+                  :schema="schema"
+                  class="tc300"
                 />
-              </Field>
 
-              <Field
-                v-else-if="campo.tipo === 'numeric'"
-                class="inputtext light mb1"
-                :name="campoNome"
-                type="text"
-                :disabled="$props.bloqueado"
-                :aria-busy="$props.carregando"
-                :aria-invalid="!!errors[campoNome]"
-                :aria-errormessage="errors[campoNome] ? `err__${campoNome}` : undefined"
-                inputmode="numeric"
-                v-bind="campo.atributos"
-              />
+                <Field
+                  v-if="campo.tipo === 'checkbox'"
+                  v-slot="{ field: { value }, handleInput }"
+                  :name="campoNome"
+                  :disabled="$props.bloqueado"
+                  :aria-busy="$props.carregando"
+                  :aria-invalid="!!errors[campoNome]"
+                  :aria-errormessage="errors[campoNome] ? `err__${campoNome}` : undefined"
+                >
+                  <div
+                    class="flex itemscenter"
+                    style="height: 41px"
+                  >
+                    <input
+                      type="checkbox"
+                      class="interruptor"
+                      :checked="value"
+                      :disabled="$props.bloqueado"
+                      :aria-busy="$props.carregando"
+                      @input="(ev) => handleInput(ev.target.checked)"
+                    >
+                  </div>
+                </Field>
 
-              <Field
-                v-else
-                class="inputtext light mb1"
-                :name="campoNome"
-                :type="campo.tipo"
-                :disabled="$props.bloqueado"
-                :aria-busy="$props.carregando"
-                :aria-invalid="!!errors[campoNome]"
-                :aria-errormessage="errors[campoNome] ? `err__${campoNome}` : undefined"
-              />
+                <Field
+                  v-else-if="campo.tipo === 'select'"
+                  class="inputtext light mb1"
+                  :name="campoNome"
+                  as="select"
+                  :disabled="$props.bloqueado"
+                  :aria-busy="$props.carregando"
+                  :aria-invalid="!!errors[campoNome]"
+                  :aria-errormessage="errors[campoNome] ? `err__${campoNome}` : undefined"
+                >
+                  <option :value="null">
+                    -
+                  </option>
+                  <template v-if="campo.opcoes?.length">
+                    <option
+                      v-for="opcao in padronizarOpcoes(campo.opcoes)"
+                      :key="`comunicado-tipo--${campoNome}-${opcao.id}`"
+                      :value="opcao.id"
+                    >
+                      {{ opcao.label }}
+                    </option>
+                  </template>
+                </Field>
 
-              <ErrorMessage
-                :id="`err__${campoNome}`"
-                class="error-msg mb1"
-                :name="campoNome"
-              />
+                <Field
+                  v-else-if="campo.tipo === 'autocomplete'"
+                  v-slot="{ value, handleChange }"
+                  class="inputtext light mb1"
+                  :name="campoNome"
+                  :aria-invalid="!!errors[campoNome]"
+                  :aria-errormessage="errors[campoNome] ? `err__${campoNome}` : undefined"
+                >
+                  <AutocompleteField2
+                    class="f1 mb1"
+                    :controlador="{ participantes: value, busca: '' }"
+                    :grupo="campo.opcoes"
+                    :label="campo.autocomplete?.label || 'label'"
+                    :apenas-um="campo.autocomplete?.apenasUm"
+                    :readonly="$props.carregando"
+                    @change="ev => handleChange(ev)"
+                  />
+                </Field>
+
+                <Field
+                  v-else-if="campo.tipo === 'numeric'"
+                  class="inputtext light mb1"
+                  :name="campoNome"
+                  type="text"
+                  :disabled="$props.bloqueado"
+                  :aria-busy="$props.carregando"
+                  :aria-invalid="!!errors[campoNome]"
+                  :aria-errormessage="errors[campoNome] ? `err__${campoNome}` : undefined"
+                  inputmode="numeric"
+                  v-bind="campo.atributos"
+                />
+
+                <Field
+                  v-else
+                  class="inputtext light mb1"
+                  :name="campoNome"
+                  :type="campo.tipo"
+                  :disabled="$props.bloqueado"
+                  :aria-busy="$props.carregando"
+                  :aria-invalid="!!errors[campoNome]"
+                  :aria-errormessage="errors[campoNome] ? `err__${campoNome}` : undefined"
+                />
+
+                <ErrorMessage
+                  :id="`err__${campoNome}`"
+                  class="error-msg mb1"
+                  :name="campoNome"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -302,8 +306,8 @@ if (props.autoSubmit) {
         >
           <button
             type="submit"
-            class="btn outline bgnone tcprimary mtauto mb1"
-            :class="[{ loading: carregando }]"
+            class="btn outline bgnone tcprimary"
+            :class="[{ loading: carregando }, {'mtauto mb1': !$props.umaLinha}]"
             :aria-busy="isSubmitting || carregando"
             :aria-disabled="!!Object.keys(errors)?.length"
             :aria-invalid="!!Object.keys(errors)?.length"

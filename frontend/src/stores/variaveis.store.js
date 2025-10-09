@@ -28,6 +28,7 @@ export const useVariaveisStore = defineStore('Variaveis', {
     Valores: {},
     PeríodosAbrangidosPorVariável: {},
     sériesDaVariávelComposta: {},
+    relacionados: {},
   }),
   actions: {
     clear() {
@@ -258,6 +259,16 @@ export const useVariaveisStore = defineStore('Variaveis', {
 
         throw erro;
       }
+    },
+
+    async buscarRelacionados(variavelId, busca) {
+      console.log(busca);
+
+      const relacionados = await this.requestS.get(`${baseUrl}/variavel/${variavelId}/relacionados`, {
+        busca,
+      });
+
+      return relacionados.indicadores_referenciando;
     },
   },
   getters: {
