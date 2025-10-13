@@ -1,5 +1,3 @@
--- AlterEnum
-ALTER TYPE "EleicaoTipo" ADD VALUE 'Geral';
 
 -- CreateTable
 CREATE TABLE "TipoVinculo" (
