@@ -164,7 +164,10 @@ export const useGeolocalizadorStore = defineStore('geolocalizador', {
                 nome: registro.nome,
                 portfolio_programa: registro.portfolio_titulo,
                 orgao: registro.orgao_responsavel_sigla,
-                status: statusObras[registro.status]?.nome || registro.status,
+                status: {
+                  valor: registro.status,
+                  nome: statusObras[registro.status]?.nome || registro.status,
+                },
                 detalhes: {
                   'Grupo Temático': registro.grupo_tematico_nome,
                   'Tipo de obra/Intervenção': registro.tipo_intervencao_nome,
@@ -179,7 +182,10 @@ export const useGeolocalizadorStore = defineStore('geolocalizador', {
                 nome: registro.nome,
                 portfolio_programa: registro.portfolio_titulo,
                 orgao: registro.orgao_responsavel_sigla,
-                status: registro.status,
+                status: {
+                  valor: registro.status,
+                  nome: registro.status,
+                },
               };
 
               break;

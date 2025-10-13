@@ -173,7 +173,7 @@ onMounted(() => {
     .table-cell--localizacoes {
       span {
         display: block;
-        margin-left: 10px;
+        margin-left: 15px;
       }
     }
   }
