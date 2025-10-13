@@ -250,4 +250,8 @@ export type ListaDePrivilegios =
     | 'ReferencialEm.Equipe.ProgramaDeMetas'
     | 'ReferencialEm.Equipe.PS'
     | 'ReferencialEm.EquipeBanco.ProgramaDeMetas'
-    | 'ReferencialEm.EquipeBanco.PS';
+    | 'ReferencialEm.EquipeBanco.PS'
+    | 'CadastroTipoVinculo.editar'
+    | 'CadastroTipoVinculo.inserir'
+    | 'CadastroTipoVinculo.listar'
+    | 'CadastroTipoVinculo.remover';
