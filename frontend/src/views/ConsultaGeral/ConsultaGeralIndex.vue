@@ -6,20 +6,13 @@ import * as CardEnvelope from '@/components/cardEnvelope';
 import ListaLegendas from '@/components/ListaLegendas.vue';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
-import { useGeolocalizadorStore } from '@/stores/geolocalizador.store';
+import { LegendasStatus, useGeolocalizadorStore } from '@/stores/geolocalizador.store';
 import combinadorDeListas from '@/helpers/combinadorDeListas';
 import ConsultaGeralFiltroEndereco from './ConsultaGeralFiltroEndereco.vue';
 import ConsultaGeralFiltroDotacao from './ConsultaGeralFiltroDotacao.vue';
 
-const legendasStatus = {
-  obras: { item: 'Monitoramento de Obras', color: '#8EC122' },
-  projetos: { item: 'Gestão de Projetos', color: '#F2890D' },
-  metas: { item: 'Programa de Metas', color: '#4074BF' },
-  plenoSetorial: { item: 'Planos Setoriais', color: '#9F045F' },
-};
-
 const legendas = {
-  status: Object.values(legendasStatus),
+  status: Object.values(LegendasStatus),
 };
 
 const tiposPesquisa = {
@@ -114,7 +107,7 @@ onMounted(() => {
             { chave: 'portfolio_programa', label: 'portfólio/plano ou programa' },
             { chave: 'nome', label: 'nome/meta' },
             { chave: 'orgao', label: 'Órgão' },
-            { chave: 'status', label: 'status', formatador: v => v || 'N/A' },
+            { chave: 'status.nome', label: 'status', formatador: v => v || 'N/A' },
             { chave: 'detalhes', label: 'detalhes' },
           ]"
           :dados="proximidadeFormatada"
@@ -122,7 +115,7 @@ onMounted(() => {
           <template #celula:localizacoes="{ celula, linha }">
             <div
               :class="['celula__item', 'celula__item-classificacao']"
-              :style="{ color: legendasStatus[linha.modulo]?.color || undefined }"
+              :style="{ color: LegendasStatus[linha.modulo]?.color || undefined }"
             />
 
             <span>
