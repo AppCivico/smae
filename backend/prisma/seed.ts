@@ -143,6 +143,7 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | ModuloSistema[] |
     CadastroEtapa: ['', null],
     CadastroGrupoPaineisExternas: ['', null],
     CadastroClassificacao: ['Cadastro de Classificacao', 'CasaCivil'],
+    CadastroTipoVinculo: ['Cadastro de Tipo de Vínculo', 'CasaCivil'],
 } as const;
 
 const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]> = {

@@ -6,6 +6,7 @@ import { ParlamnetarIdNomes } from 'src/parlamentar/entities/parlamentar.entity'
 import { SeiIntegracaoDto } from '../../../sei-integracao/entities/sei-entidade.entity';
 import { IsBoolean, IsString, MaxLength } from 'class-validator';
 import { IsDateYMD } from '../../../auth/decorators/date.decorator';
+import { PaginatedWithPagesDto } from 'src/common/dto/paginated.dto';
 
 export class DistribuicaoRecursoDto {
     id: number;
@@ -86,9 +87,7 @@ export class AditamentosDto {
     justificativa: string;
 }
 
-export class ListDistribuicaoRecursoDto {
-    linhas: DistribuicaoRecursoDto[];
-}
+export class ListDistribuicaoRecursoDto extends PaginatedWithPagesDto<DistribuicaoRecursoDto> {}
 
 export class DistribuicaoRecursoSeiDto {
     id: number;
