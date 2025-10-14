@@ -115,7 +115,7 @@ onMounted(() => {
           <template #celula:localizacoes="{ celula, linha }">
             <div
               :class="['celula__item', 'celula__item-classificacao']"
-              :style="{ color: LegendasStatus[linha.modulo]?.color || undefined }"
+              :style="{ color: LegendasStatus[linha.modulo]?.color || '#000' }"
             />
 
             <span>
