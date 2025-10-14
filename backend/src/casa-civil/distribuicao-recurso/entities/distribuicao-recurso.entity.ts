@@ -11,6 +11,7 @@ export class DistribuicaoRecursoDto {
     id: number;
     nome: string | null;
     transferencia_id: number;
+    transferencia: DistribuicaoRecursoTransferenciaDto;
     orgao_gestor: IdSiglaDescricao;
     objeto: String;
     valor: Decimal;
@@ -55,6 +56,12 @@ export class DistribuicaoRecursoDto {
     distribuicao_agencia: string | null;
     distribuicao_conta: string | null;
     distribuicao_banco: string | null;
+}
+
+export class DistribuicaoRecursoTransferenciaDto {
+    id: number;
+    identificador: string;
+    valor: Decimal | null;
 }
 
 export class ParlamentarDistribuicaoDto {

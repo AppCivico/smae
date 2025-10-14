@@ -468,11 +468,14 @@ export class DistribuicaoRecursoService {
     }
 
     async findAll(filters: FilterDistribuicaoRecursoDto, user: PessoaFromJwt): Promise<DistribuicaoRecursoDto[]> {
-        const transferencia = await this.prisma.transferencia.findFirstOrThrow({
-            where: {
-                id: filters.transferencia_id,
-            },
-        });
+        if (filters.transferencia_id) {
+            const transferencia = await this.prisma.transferencia.findFirst({
+                where: {
+                    id: filters.transferencia_id,
+                },
+            });
+            if (!transferencia) throw new HttpException('transferencia_id| Transferência não encontrada.', 400);
+        }
 
         const rows = await this.prisma.distribuicaoRecurso.findMany({
             where: {
@@ -593,6 +596,13 @@ export class DistribuicaoRecursoService {
                         },
                     },
                 },
+                transferencia: {
+                    select: {
+                        id: true,
+                        identificador: true,
+                        valor: true,
+                    },
+                },
             },
         });
 
@@ -611,8 +621,8 @@ export class DistribuicaoRecursoService {
             }
 
             let pct_valor_transferencia: number = 0;
-            if (transferencia.valor && r.valor) {
-                pct_valor_transferencia = Math.round((r.valor.toNumber() / transferencia.valor.toNumber()) * 100);
+            if (r.transferencia.valor && r.valor) {
+                pct_valor_transferencia = Math.round((r.valor.toNumber() / r.transferencia.valor.toNumber()) * 100);
             }
 
             const integracoes_sei = integracoes.filter((i) =>
@@ -679,6 +689,11 @@ export class DistribuicaoRecursoService {
                 id: r.id,
                 nome: r.nome,
                 transferencia_id: r.transferencia_id,
+                transferencia: {
+                    id: r.transferencia.id,
+                    identificador: r.transferencia.identificador,
+                    valor: r.transferencia.valor,
+                },
                 orgao_gestor: r.orgao_gestor,
                 objeto: r.objeto,
                 valor: r.valor,
@@ -835,7 +850,9 @@ export class DistribuicaoRecursoService {
 
                 transferencia: {
                     select: {
+                        id: true,
                         valor: true,
+                        identificador: true,
                         parlamentar: {
                             orderBy: { id: 'asc' },
                             where: { removido_em: null },
@@ -970,6 +987,11 @@ export class DistribuicaoRecursoService {
         return {
             id: row.id,
             transferencia_id: row.transferencia_id,
+            transferencia: {
+                id: row.transferencia_id,
+                valor: row.transferencia.valor,
+                identificador: row.transferencia.identificador,
+            },
             nome: row.nome,
             objeto: row.objeto,
             valor: row.valor,
