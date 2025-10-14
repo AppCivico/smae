@@ -55,6 +55,13 @@ type Estado = {
   proximidade: Record<string, any>;
 };
 
+export const LegendasStatus = {
+  obras: { item: 'Monitoramento de Obras', color: '#8EC122' },
+  projetos: { item: 'Gestão de Projetos', color: '#F2890D' },
+  metas: { item: 'Programa de Metas', color: '#4074BF' },
+  plenoSetorial: { item: 'Planos Setoriais', color: '#9F045F' },
+};
+
 const chamadasPendentesPadrao: ChamadasPendentes = {
   buscandoEndereco: false,
   buscandoProximidade: false,
@@ -157,10 +164,11 @@ export const useGeolocalizadorStore = defineStore('geolocalizador', {
         }
 
         grupo.forEach((registro) => {
-          let dadosPaciais = {};
+          let dadosParciais: any = {};
           switch (chave) {
             case 'obras':
-              dadosPaciais = {
+              dadosParciais = {
+                cor: 'verde',
                 nome: registro.nome,
                 portfolio_programa: registro.portfolio_titulo,
                 orgao: registro.orgao_responsavel_sigla,
@@ -178,7 +186,8 @@ export const useGeolocalizadorStore = defineStore('geolocalizador', {
               break;
 
             case 'projetos':
-              dadosPaciais = {
+              dadosParciais = {
+                cor: 'laranja',
                 nome: registro.nome,
                 portfolio_programa: registro.portfolio_titulo,
                 orgao: registro.orgao_responsavel_sigla,
@@ -195,11 +204,15 @@ export const useGeolocalizadorStore = defineStore('geolocalizador', {
           }
 
           const item = {
-            ...dadosPaciais,
+            ...dadosParciais,
             id: registro.id,
             modulo: chave,
             localizacoes: registro.localizacoes,
           } as any;
+
+          for (let i = 0; i < item.localizacoes.length; i += 1) {
+            item.localizacoes[i].geom_geojson.properties.cor_do_marcador = dadosParciais.cor;
+          }
 
           agrupado.push(item);
         });
