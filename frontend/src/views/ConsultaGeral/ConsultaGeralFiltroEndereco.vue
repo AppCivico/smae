@@ -83,6 +83,6 @@ async function buscarProximidade(endereco: PontoEndereco) {
           </p>
         </template>
       </template>
-    </Buscadorgeolocalizacaomapa>
+    </BuscadorgeolocalizacaoMapa>
   </div>
 </template>
