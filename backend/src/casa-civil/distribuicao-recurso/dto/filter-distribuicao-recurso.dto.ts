@@ -1,7 +1,9 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { TransferenciaTipoEsfera } from '@prisma/client';
 import { Transform, Type } from 'class-transformer';
-import { IsInt, IsNumber, IsOptional, Max, Min } from 'class-validator';
+import { IsEnum, IsInt, IsNumber, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
 import { NumberTransformOrUndef } from 'src/auth/transforms/number.transform';
+import { MAX_LENGTH_DEFAULT } from 'src/common/consts';
 
 export class FilterDistribuicaoRecursoDto {
     @IsOptional()
@@ -25,4 +27,27 @@ export class FilterDistribuicaoRecursoDto {
     @Min(1)
     @Transform(NumberTransformOrUndef)
     ipp?: number;
+
+    // Esse filtro será aplicado em Transferências
+    @IsOptional()
+    @IsInt()
+    @Type(() => Number)
+    ano?: number;
+
+    // Esse filtro será aplicado em Transferências
+    @IsOptional()
+    @ApiProperty({ enum: TransferenciaTipoEsfera, enumName: 'TransferenciaTipoEsfera' })
+    @IsEnum(TransferenciaTipoEsfera, {
+        message:
+            '$property| Precisa ser um dos seguintes valores: ' + Object.values(TransferenciaTipoEsfera).join(', '),
+    })
+    esfera?: TransferenciaTipoEsfera;
+
+    // Esse filtro será aplicado em Transferências
+    @IsOptional()
+    @IsString()
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Palavra-Chave' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
+    palavra_chave?: string;
 }

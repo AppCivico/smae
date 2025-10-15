@@ -498,9 +498,20 @@ export class DistribuicaoRecursoService {
             offset = decodedPageToken.offset;
         }
 
+        const palavrasChave = await this.transferenciaService.buscaIdsPalavraChave(filters.palavra_chave);
+
         const where: Prisma.DistribuicaoRecursoWhereInput = {
             removido_em: null,
             transferencia_id: filters.transferencia_id,
+
+            // Filtros de ano, esfera e palavra-chave são aplicados na transferência.
+            transferencia: {
+                ano: filters.ano,
+                esfera: filters.esfera,
+                id: {
+                    in: palavrasChave != undefined ? palavrasChave : undefined,
+                },
+            },
         };
 
         const [total_registros, linhas_com_extra] = await this.prisma.$transaction([
@@ -508,6 +519,8 @@ export class DistribuicaoRecursoService {
             this.prisma.distribuicaoRecurso.findMany({
                 where: where,
                 orderBy: { orgao_gestor: { sigla: 'asc' } },
+                skip: offset,
+                take: ipp + 1,
                 select: {
                     id: true,
                     transferencia_id: true,
