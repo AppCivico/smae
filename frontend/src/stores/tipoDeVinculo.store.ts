@@ -33,7 +33,6 @@ export const useTipoDeVinculoStore = defineStore('tipoDeVinculo', {
     },
     erro: null,
   }),
-
   actions: {
     async buscarItem(tipoVinculoId: number): Promise<void> {
       this.chamadasPendentes.emFoco = true;
@@ -57,7 +56,6 @@ export const useTipoDeVinculoStore = defineStore('tipoDeVinculo', {
       }
       this.chamadasPendentes.lista = false;
     },
-
     async excluirItem(id: number): Promise<boolean> {
       this.chamadasPendentes.lista = true;
       this.erro = null;
@@ -71,7 +69,6 @@ export const useTipoDeVinculoStore = defineStore('tipoDeVinculo', {
         return false;
       }
     },
-
     async salvarItem(params = {}, id = 0): Promise<boolean> {
       this.chamadasPendentes.emFoco = true;
       this.erro = null;
