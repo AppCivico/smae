@@ -30,10 +30,20 @@ export class TipoVinculoService {
             if (!self) throw new HttpException('Tipo de vínculo não encontrado', 404);
 
             // TODO?: verificar se está em uso.
+
+            await this.prisma.tipoVinculo.updateMany({
+                where: { id },
+                data: {
+                    nome: dto.nome,
+                    atualizado_por: user ? user.id : undefined,
+                    atualizado_em: new Date(Date.now()),
+                },
+            });
+        } else {
         }
 
         const created = await this.prisma.tipoVinculo.upsert({
-            where: { id: id },
+            where: { id: id || 0 },
             create: {
                 criado_por: user ? user.id : undefined,
                 criado_em: new Date(Date.now()),
