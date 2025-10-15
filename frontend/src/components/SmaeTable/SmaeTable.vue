@@ -114,6 +114,7 @@
             #[coluna.slots?.celula]="slotProps"
           >
             <slot
+              v-if="coluna.slots?.celula"
               :name="coluna.slots?.celula"
               v-bind="slotProps"
             />
