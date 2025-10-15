@@ -2120,6 +2120,12 @@ export const tipoDeTransferencia = object({
     .oneOf(Object.keys(esferasDeTransferencia)),
 });
 
+export const tipoDeVinculo = object({
+  nome: string()
+    .label('Nome')
+    .required(),
+});
+
 export const transferenciaDistribuicaoDeRecursos = object({
   assinatura_estado: date()
     .label('Data de assinatura do representante do estado')
