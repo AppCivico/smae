@@ -3,7 +3,10 @@
     :is="tabelaEnvelope"
     :aria-label="tituloParaRolagemHorizontal"
   >
-    <table class="smae-table tablemain">
+    <table
+      class="smae-table tablemain"
+      :class="{ 'tbody-zebra': $slots['sub-linha'] }"
+    >
       <slot name="titulo">
         <caption
           v-if="titulo"
@@ -18,6 +21,10 @@
         :colunas="colunasFiltradas"
       >
         <colgroup>
+          <col
+            v-if="$slots['sub-linha']"
+            class="smae-table__coluna smae-table__coluna--toggle col--botão-de-ação"
+          >
           <col
             v-for="coluna in colunasFiltradas"
             :key="`colunas--${coluna.chave}`"
@@ -38,6 +45,12 @@
           :colunas="colunasFiltradas"
         >
           <tr>
+            <th
+              v-if="$slots['sub-linha']"
+              class="smae-table__toggle-header"
+              aria-label="Expandir/Recolher"
+            />
+
             <TableHeaderCell
               v-for="coluna in colunasFiltradas"
               :key="`header--${coluna.chave}`"
@@ -62,64 +75,51 @@
       </thead>
 
       <slot
-        name="corpo"
+        name="conteudo"
         :dados="dados"
       >
-        <tbody>
-          <tr
-            v-for="(linha, linhaIndex) in dados"
-            :key="`linha--${linhaIndex}`"
-            :class="[
-              'smae-table__linha',
-              `smae-table__linha--${linhaIndex}`,
-              obterDestaqueDaLinha(linha)
-            ]"
+        <TableBody
+          :dados="dados"
+          :colunas-filtradas="colunasFiltradas"
+          :has-action-button="hasActionButton"
+          :lista-slots-usados="listaSlotsUsados"
+          :rota-editar="rotaEditar"
+          :parametro-da-rota-editar="parametroDaRotaEditar"
+          :parametro-no-objeto-para-editar="parametroNoObjetoParaEditar"
+          :esconder-deletar="esconderDeletar"
+          :parametro-no-objeto-para-excluir="parametroNoObjetoParaExcluir"
+          :personalizar-linhas="personalizarLinhas"
+          @deletar="(ev: Linha) => emit('deletar', ev)"
+        >
+          <template #corpo="slotProps">
+            <slot
+              name="corpo"
+              v-bind="slotProps"
+            />
+          </template>
+
+          <template
+            v-if="$slots['sub-linha']"
+            #sub-linha="slotProps"
           >
-            <TableCell
-              v-for="coluna in colunasFiltradas"
-              :key="`linha--${linhaIndex}-${coluna.chave}`"
-              class="smae-table__cell"
-              :eh-cabecalho="!!coluna.ehCabecalho"
-              :formatador="coluna.formatador"
-              :linha="linha"
-              :caminho="coluna.chave"
-              v-bind="coluna.atributosDaCelula"
-            >
-              <slot
-                v-if="listaSlotsUsados.celula[coluna.slots?.celula]"
-                :name="coluna.slots?.celula"
-                :linha="linha"
-                :celula="linha[coluna.chave]"
-              />
-            </TableCell>
+            <slot
+              name="sub-linha"
+              v-bind="slotProps"
+            />
+          </template>
 
-            <td v-if="hasActionButton">
-              <div class="flex g1 justifyright">
-                <EditButton
-                  v-if="rotaEditar"
-                  :linha="linha"
-                  :rota-editar="rotaEditar"
-                  :parametro-da-rota-editar="parametroDaRotaEditar"
-                  :parametro-no-objeto-para-editar="parametroNoObjetoParaEditar"
-                />
-
-                <DeleteButton
-                  v-if="!esconderDeletar"
-                  :linha="linha"
-                  :esconder-deletar="esconderDeletar"
-                  :parametro-no-objeto-para-excluir="parametroNoObjetoParaExcluir"
-                  @deletar="ev => emit('deletar', ev)"
-                />
-              </div>
-            </td>
-          </tr>
-
-          <tr v-if="dados.length === 0">
-            <td :colspan="colunasFiltradas.length">
-              Sem dados para exibir
-            </td>
-          </tr>
-        </tbody>
+          <template
+            v-for="coluna in colunasFiltradas"
+            :key="`slot-${coluna.chave}`"
+            #[coluna.slots?.celula]="slotProps"
+          >
+            <slot
+              v-if="coluna.slots?.celula"
+              :name="coluna.slots?.celula"
+              v-bind="slotProps"
+            />
+          </template>
+        </TableBody>
       </slot>
 
       <tfoot v-if="$slots.rodape || exibirRodape">
@@ -130,6 +130,11 @@
         />
 
         <tr v-else>
+          <th
+            v-if="$slots['sub-linha']"
+            class="smae-table__toggle-header"
+          />
+
           <TableHeaderCell
             v-for="coluna in colunasFiltradas"
             :key="`footer--${coluna.chave}`"
@@ -152,13 +157,13 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, useAttrs, useSlots } from 'vue';
 import type { Component } from 'vue';
+import { computed, useAttrs, useSlots } from 'vue';
 import type { AnyObjectSchema } from 'yup';
 import RolagemHorizontal from '../rolagem/RolagemHorizontal.vue';
-import DeleteButton, { type DeleteButtonEvents, type DeleteButtonProps } from './partials/DeleteButton.vue';
-import EditButton, { type EditButtonProps } from './partials/EditButton.vue';
-import TableCell from './partials/TableCell.vue';
+import { type DeleteButtonEvents, type DeleteButtonProps } from './partials/DeleteButton.vue';
+import { type EditButtonProps } from './partials/EditButton.vue';
+import TableBody from './partials/TableBody.vue';
 import TableHeaderCell from './partials/TableHeaderCell.vue';
 import type { Colunas, Linha, Linhas } from './tipagem';
 import normalizadorDeSlots from './utils/normalizadorDeSlots';
@@ -170,6 +175,9 @@ type Slots = {
   'cabecalho:acao': []
   rodape: [colunas: Colunas]
   corpo: [dados: Linhas]
+  'sub-linha': { linha: Linha; linhaIndex: number }
+  'celula:*': [linha: Linha, celula: unknown]
+  conteudo: [dados: Linhas]
 };
 
 type Props =
@@ -248,18 +256,6 @@ const colunasFiltradas = computed(() => props.colunas.filter((v) => v)
       celula: `celula:${normalizadorDeSlots(item.chave)}` as keyof Slots,
     },
   })));
-
-function obterDestaqueDaLinha(linha: Linha): string | null {
-  if (!props.personalizarLinhas) {
-    return null;
-  }
-
-  if (linha[props.personalizarLinhas.parametro] === props.personalizarLinhas.alvo) {
-    return props.personalizarLinhas.classe;
-  }
-
-  return null;
-}
 
 const listaSlotsUsados = computed(() => Object.keys(slots).reduce((agrupador, item) => {
   if (item.includes('cabecalho:')) {
