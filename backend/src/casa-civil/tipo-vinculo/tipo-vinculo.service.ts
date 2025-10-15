@@ -33,7 +33,7 @@ export class TipoVinculoService {
         }
 
         const created = await this.prisma.tipoVinculo.upsert({
-            where: { id: id || 0 },
+            where: { id: id },
             create: {
                 criado_por: user ? user.id : undefined,
                 criado_em: new Date(Date.now()),
