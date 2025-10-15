@@ -215,7 +215,7 @@ export class SearchEntitiesNearbyDto {
     @IsNumber()
     @Min(0.1)
     @Max(10)
-    raio?: number = 2000;
+    raio?: number;
 
     @ApiPropertyOptional({ description: 'ID da configuração da GeoCamada que representa distritos/subprefeituras' })
     @IsOptional()
