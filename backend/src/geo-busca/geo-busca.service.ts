@@ -18,9 +18,10 @@ export class GeoBuscaService {
     constructor(private readonly prisma: PrismaService) {}
 
     async searchEntitiesNearby(dto: SearchEntitiesNearbyDto): Promise<SearchEntitiesNearbyResponseDto> {
-        const { lat, lon, raio_km = 2, regiao_id, geo_camada_config_id, geo_camada_codigo } = dto;
+        const { lat, lon, raio_km = 2, raio = 2000, regiao_id, geo_camada_config_id, geo_camada_codigo } = dto;
 
-        const radiusMeters = raio_km * 1000;
+        // TODO: O raio_km provavelmente será dropado.
+        const radiusMeters = raio_km * 1000 || raio;
         let targetGeoLocalizacaoIds: number[] = [];
         let geoLocalizacaoDistMap: Map<number, number> | undefined = undefined;
         const seenPDMIds = new Set<number>();

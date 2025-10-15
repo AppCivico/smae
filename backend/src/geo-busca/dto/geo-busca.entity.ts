@@ -206,6 +206,17 @@ export class SearchEntitiesNearbyDto {
     @Max(10)
     raio_km?: number = 2;
 
+    @ApiPropertyOptional({
+        description:
+            'Raio de busca. Padrão 2km se lat/lon ou busca_endereco for fornecido para tipo "Endereco". Não utilizado para busca por distrito.',
+        default: 2,
+    })
+    @IsOptional()
+    @IsNumber()
+    @Min(0.1)
+    @Max(10)
+    raio?: number = 2000;
+
     @ApiPropertyOptional({ description: 'ID da configuração da GeoCamada que representa distritos/subprefeituras' })
     @IsOptional()
     @IsNumber()
