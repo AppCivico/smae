@@ -65,6 +65,10 @@ import ClassificacaoRaiz from '@/views/classificacao/ClassificacaoRaiz.vue';
 import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';
 import { useModalidadeDeContratacaoStore } from '@/stores/modalidadeDeContratacao.store';
 import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
+import TipoDeVinculoLista from '@/views/tipoDeVinculo/TipoDeVinculoLista.vue';
+import TipoDeVinculoRaiz from '@/views/tipoDeVinculo/TipoDeVinculoRaiz.vue';
+import TipoDeVinculoCriarEditar from '@/views/tipoDeVinculo/TipoDeVinculoCriarEditar.vue';
+import { useTipoDeVinculoStore } from '@/stores/tipoDeVinculo.store';
 
 const TiposDeAcompanhamentoLista = defineAsyncComponent({
   loader: () => import('@/views/tiposDeAcompanhamento/TiposLista.vue'),
@@ -91,6 +95,7 @@ const rotasParaMenuSecundário = [
       'classificacao',
       'gerenciarRegiões',
       'tipoDeTransferenciaListar',
+      'tipoDeVinculo.listar',
       'mdo.etapasListar',
       'projeto.etapasListar',
       'gruposTematicosObras',
@@ -207,9 +212,7 @@ export default [
             component: GruposTematicosCriarEditar,
             meta: {
               título: 'Novo grupo temático',
-              rotasParaMigalhasDePão: [
-                'gruposTematicosObras',
-              ],
+              rotasParaMigalhasDePão: ['gruposTematicosObras'],
             },
           },
           {
@@ -224,10 +227,9 @@ export default [
               },
             }),
             meta: {
-              título: () => useGruposTematicosStore()?.emFoco?.nome || 'Editar Grupo Temático',
-              rotasParaMigalhasDePão: [
-                'gruposTematicosObras',
-              ],
+              título: () => useGruposTematicosStore()?.emFoco?.nome
+                || 'Editar Grupo Temático',
+              rotasParaMigalhasDePão: ['gruposTematicosObras'],
             },
           },
         ],
@@ -256,9 +258,7 @@ export default [
             component: TiposDeIntervencaoCriarEditar,
             meta: {
               título: 'Novo tipo de intervenção',
-              rotasParaMigalhasDePão: [
-                'tiposDeIntervencao',
-              ],
+              rotasParaMigalhasDePão: ['tiposDeIntervencao'],
             },
           },
           {
@@ -273,10 +273,9 @@ export default [
               },
             }),
             meta: {
-              título: () => useTiposDeIntervencaoStore()?.emFoco?.nome || 'Editar Tipo de Intervenção',
-              rotasParaMigalhasDePão: [
-                'tiposDeIntervencao',
-              ],
+              título: () => useTiposDeIntervencaoStore()?.emFoco?.nome
+                || 'Editar Tipo de Intervenção',
+              rotasParaMigalhasDePão: ['tiposDeIntervencao'],
             },
           },
         ],
@@ -456,6 +455,57 @@ export default [
 
             meta: {
               título: 'Editar Tipo de Transferência',
+            },
+          },
+        ],
+      },
+      {
+        path: 'tipo-de-vinculo',
+        component: TipoDeVinculoRaiz,
+        meta: {
+          título: 'Tipo de Transferência',
+          rotasParaMenuSecundário,
+        },
+        children: [
+          {
+            path: '',
+            name: 'tipoDeVinculo.listar',
+            component: TipoDeVinculoLista,
+            meta: {
+              título: 'Tipos de Vínculo',
+            },
+          },
+          {
+            path: 'novo',
+            name: 'tipoDeVinculo.novo',
+            component: TipoDeVinculoCriarEditar,
+            meta: {
+              título: 'Novo tipos de Vínculo',
+              rotaDeEscape: 'tipoDeVinculo.listar',
+              rotasParaMigalhasDePão: [
+                'tipoDeVinculo.listar',
+              ],
+            },
+          },
+          {
+            path: ':tipoVinculoId',
+            name: 'tipoDeVinculo.editar',
+            component: TipoDeVinculoCriarEditar,
+            meta: {
+              título: 'Editar tipos de vínculo',
+              rotaDeEscape: 'tipoDeVinculo.listar',
+              tituloParaMigalhaDePao: () => {
+                const { emFoco } = useTipoDeVinculoStore();
+
+                if (!emFoco) {
+                  return 'Tipo de vínculo';
+                }
+
+                return `Tipo de vinculo ${emFoco.nome}`;
+              },
+              rotasParaMigalhasDePão: [
+                'tipoDeVinculo.listar',
+              ],
             },
           },
         ],
@@ -1033,7 +1083,6 @@ export default [
           título: 'Novo assunto',
           rotasParaMigalhasDePão: ['assunto.listar'],
           rotaDeEscape: 'assunto.listar',
-
         },
       },
       {
@@ -1134,7 +1183,8 @@ export default [
         }),
 
         meta: {
-          título: () => useModalidadeDeContratacaoStore()?.emFoco?.nome || 'Editar modalidade',
+          título: () => useModalidadeDeContratacaoStore()?.emFoco?.nome
+            || 'Editar modalidade',
           rotasParaMigalhasDePão: ['modalidadesListar'],
         },
       },
