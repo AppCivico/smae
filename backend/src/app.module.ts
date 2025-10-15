@@ -63,6 +63,7 @@ import { TransfereGovApiModule } from './transfere-gov-api/transfere-gov-api.mod
 import { ClassificacaoModule } from './transferencias-voluntarias/classificacao/classificacao.module';
 import { WikiLinkModule } from './wiki-link/wiki-link.module';
 import { DotacaoBuscaModule } from './dotacao-busca/dotacao-busca.module';
+import { TipoVinculoModule } from './casa-civil/tipo-vinculo/tipo-vinculo.module';
 
 // Hacks pro JS
 /*
@@ -128,6 +129,7 @@ import { DotacaoBuscaModule } from './dotacao-busca/dotacao-busca.module';
         AtualizacaoEmLoteModule,
         WikiLinkModule,
         DotacaoBuscaModule,
+        TipoVinculoModule,
     ],
     controllers: [AppController],
     providers: [

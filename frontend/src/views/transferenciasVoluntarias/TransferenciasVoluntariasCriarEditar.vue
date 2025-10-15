@@ -7,7 +7,7 @@ import {
   useIsFormDirty,
 } from 'vee-validate';
 import { computed, ref, watch } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import { transferenciasVoluntarias as schema } from '@/consts/formSchemas';
@@ -19,7 +19,6 @@ import CampoComBuscaRemota from '@/components/campoComBuscaRemota/CampoComBuscaR
 import { useAlertStore } from '@/stores/alert.store';
 import { useClassificacaoStore } from '@/stores/classificacao.store';
 import { useOrgansStore } from '@/stores/organs.store';
-import { useParlamentaresStore } from '@/stores/parlamentares.store';
 import { usePartidosStore } from '@/stores/partidos.store';
 import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
@@ -29,29 +28,15 @@ const TipoDeTransferenciaStore = useTipoDeTransferenciaStore();
 const classificacaoStore = useClassificacaoStore();
 const partidoStore = usePartidosStore();
 const ÓrgãosStore = useOrgansStore();
-const ParlamentaresStore = useParlamentaresStore();
 
 const { chamadasPendentes, erro, itemParaEdicao } = storeToRefs(TransferenciasVoluntarias);
 const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
-const {
-  lista: parlamentarComoLista,
-  parlamentaresPorId,
-  paginação: paginaçãoDeParlamentares,
-} = storeToRefs(ParlamentaresStore);
 const { lista: tipoTransferenciaComoLista } = storeToRefs(TipoDeTransferenciaStore);
 const { lista: classificacaoComoLista } = storeToRefs(classificacaoStore);
 const { lista: partidoComoLista } = storeToRefs(partidoStore);
 
+const route = useRoute();
 const router = useRouter();
-const props = defineProps({
-  transferenciaId: {
-    type: [
-      Number,
-      String,
-    ],
-    default: 0,
-  },
-});
 
 const alertStore = useAlertStore();
 
@@ -80,9 +65,6 @@ const classificacoesDisponiveis = computed(() => (values.tipo_id
 async function salvarTransferencia(cargaManipulada) {
   try {
     let r;
-    const msg = props.transferenciaId
-      ? 'Dados salvos com sucesso!'
-      : 'Item adicionado com sucesso!';
 
     if (cargaManipulada.parlamentares) {
       cargaManipulada.parlamentares = cargaManipulada.parlamentares.filter(
@@ -90,13 +72,24 @@ async function salvarTransferencia(cargaManipulada) {
       );
     }
 
-    if (props.transferenciaId) {
-      r = await TransferenciasVoluntarias.salvarItem(cargaManipulada, props.transferenciaId);
+    if (route.params.transferenciaId) {
+      r = await TransferenciasVoluntarias.salvarItem(cargaManipulada, route.params.transferenciaId);
     } else {
       r = await TransferenciasVoluntarias.salvarItem(cargaManipulada);
     }
 
     TransferenciasVoluntarias.buscarItem(r.id);
+
+    if (!route.params.transferenciaId) {
+      router.push({
+        name: 'RegistroDeTransferenciaEditar',
+        params: {
+          transferenciaId: r.id,
+        },
+      });
+
+      return;
+    }
 
     router.push({
       name: 'TransferenciasVoluntariasDetalhes',
@@ -123,13 +116,12 @@ const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
 const formularioSujo = useIsFormDirty();
 
 function iniciar() {
-  if (props.transferenciaId) {
-    TransferenciasVoluntarias.buscarItem(props.transferenciaId);
+  if (route.params.transferenciaId) {
+    TransferenciasVoluntarias.buscarItem(route.params.transferenciaId);
   }
 
   ÓrgãosStore.getAll();
   // Discutir uma implementação melhor
-  ParlamentaresStore.buscarTudo({ ipp: 500, possui_mandatos: true });
   TipoDeTransferenciaStore.buscarTudo();
   classificacaoStore.buscarTudo();
   partidoStore.buscarTudo();
@@ -187,7 +179,7 @@ watch(itemParaEdicao, (novosValores) => {
         />
       </div>
       <div
-        v-if="props.transferenciaId"
+        v-if="route.params.transferenciaId"
         class="f1"
       >
         <label class="label tc300">
@@ -197,7 +189,7 @@ watch(itemParaEdicao, (novosValores) => {
           name="identificador"
           type="text"
           class="inputtext light mb1"
-          :disabled="props.transferenciaId"
+          :disabled="route.params.transferenciaId"
           :value="itemParaEdicao?.identificador"
         >
       </div>

@@ -501,6 +501,10 @@ model Pessoa {
     AtualizacoesEmLoteCriadas   AtualizacaoEmLote[] @relation("AtualizacaoEmLoteCriador")
     AtualizacoesEmLoteRemovidas AtualizacaoEmLote[] @relation("AtualizacaoEmLoteRemovedor")
 
+    tipoVinculoQueCriei     TipoVinculo[] @relation("Criador")
+    tipoVinculoQueAtualizei TipoVinculo[] @relation("Atualizador")
+    tipoVinculoQueRemovi    TipoVinculo[] @relation("Removedor")
+
     @@index([email])
     @@map("pessoa")
 }
@@ -3502,7 +3506,7 @@ model Relatorio {
 
     sistema ModuloSistema @default(SMAE)
 
-    resumo_saida Json @db.Json @default("{}")
+    resumo_saida Json @default("{}") @db.Json
 
     // Coluna espelhada da RelatorioFilha, para facilitar a busca.
     processado_em DateTime? @db.Timestamptz(6)
@@ -7821,4 +7825,23 @@ enum ApiRequestLogControlStatus {
     RESTORED
     FAILED_BACKUP
     FAILED_RESTORE
+}
+
+model TipoVinculo {
+    id Int @id @default(autoincrement())
+
+    nome String
+
+    criado_por Int
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+
+    atualizado_por Int?
+    atualizado_em  DateTime? @db.Timestamptz(6)
+
+    removido_por Int?
+    removido_em  DateTime? @db.Timestamptz(6)
+
+    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 }

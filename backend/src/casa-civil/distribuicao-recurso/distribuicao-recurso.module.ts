@@ -11,6 +11,7 @@ import { TarefaModule } from 'src/pp/tarefa/tarefa.module';
 import { SeiIntegracaoModule } from '../../sei-integracao/sei-integracao.module';
 import { WorkflowModule } from '../workflow/configuracao/workflow.module';
 import { TransferenciaModule } from '../transferencia/transferencia.module';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
     imports: [
@@ -22,6 +23,7 @@ import { TransferenciaModule } from '../transferencia/transferencia.module';
         SeiIntegracaoModule,
         WorkflowModule,
         forwardRef(() => TransferenciaModule),
+        JwtModule,
     ],
     controllers: [DistribuicaoRecursoController, DistribuicaoRecursoStatusController],
     providers: [DistribuicaoRecursoService, DistribuicaoRecursoStatusService],

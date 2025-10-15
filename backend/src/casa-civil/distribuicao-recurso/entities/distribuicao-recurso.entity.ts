@@ -6,11 +6,13 @@ import { ParlamnetarIdNomes } from 'src/parlamentar/entities/parlamentar.entity'
 import { SeiIntegracaoDto } from '../../../sei-integracao/entities/sei-entidade.entity';
 import { IsBoolean, IsString, MaxLength } from 'class-validator';
 import { IsDateYMD } from '../../../auth/decorators/date.decorator';
+import { PaginatedWithPagesDto } from 'src/common/dto/paginated.dto';
 
 export class DistribuicaoRecursoDto {
     id: number;
     nome: string | null;
     transferencia_id: number;
+    transferencia: DistribuicaoRecursoTransferenciaDto;
     orgao_gestor: IdSiglaDescricao;
     objeto: String;
     valor: Decimal;
@@ -57,6 +59,12 @@ export class DistribuicaoRecursoDto {
     distribuicao_banco: string | null;
 }
 
+export class DistribuicaoRecursoTransferenciaDto {
+    id: number;
+    identificador: string;
+    valor: Decimal | null;
+}
+
 export class ParlamentarDistribuicaoDto {
     id?: number;
     parlamentar_id: number;
@@ -79,9 +87,7 @@ export class AditamentosDto {
     justificativa: string;
 }
 
-export class ListDistribuicaoRecursoDto {
-    linhas: DistribuicaoRecursoDto[];
-}
+export class ListDistribuicaoRecursoDto extends PaginatedWithPagesDto<DistribuicaoRecursoDto> {}
 
 export class DistribuicaoRecursoSeiDto {
     id: number;

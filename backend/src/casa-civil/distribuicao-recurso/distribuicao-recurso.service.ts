@@ -1,4 +1,4 @@
-import { forwardRef, HttpException, Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { forwardRef, HttpException, Inject, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { DistribuicaoStatusTipo, Prisma, TarefaDependenteTipo, WorkflowResponsabilidade } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
@@ -26,6 +26,8 @@ import {
 import { WorkflowService } from '../workflow/configuracao/workflow.service';
 import { Date2YMD } from '../../common/date2ymd';
 import { TransferenciaService } from '../transferencia/transferencia.service';
+import { PaginatedWithPagesDto, PAGINATION_TOKEN_TTL } from 'src/common/dto/paginated.dto';
+import { JwtService } from '@nestjs/jwt';
 
 type OperationsRegistroSEI = {
     id?: number;
@@ -48,8 +50,15 @@ type ItemParaCriarTarefa = {
     }[];
 };
 
+interface NextPageTokenJwtBody {
+    offset: number;
+    ipp: number;
+}
+
 @Injectable()
 export class DistribuicaoRecursoService {
+    private readonly logger = new Logger(DistribuicaoRecursoService.name);
+
     constructor(
         private readonly prisma: PrismaService,
         private readonly blocoNotaService: BlocoNotaService,
@@ -60,7 +69,8 @@ export class DistribuicaoRecursoService {
         private readonly seiService: SeiIntegracaoService,
         private readonly workflowService: WorkflowService,
         @Inject(forwardRef(() => TransferenciaService))
-        private readonly transferenciaService: TransferenciaService
+        private readonly transferenciaService: TransferenciaService,
+        private readonly jwtService: JwtService
     ) {}
 
     async create(
@@ -467,134 +477,162 @@ export class DistribuicaoRecursoService {
         }
     }
 
-    async findAll(filters: FilterDistribuicaoRecursoDto, user: PessoaFromJwt): Promise<DistribuicaoRecursoDto[]> {
-        const transferencia = await this.prisma.transferencia.findFirstOrThrow({
-            where: {
-                id: filters.transferencia_id,
-            },
-        });
+    async findAll(
+        filters: FilterDistribuicaoRecursoDto,
+        user: PessoaFromJwt
+    ): Promise<PaginatedWithPagesDto<DistribuicaoRecursoDto>> {
+        if (filters.transferencia_id) {
+            const transferencia = await this.prisma.transferencia.findFirst({
+                where: {
+                    id: filters.transferencia_id,
+                },
+            });
+            if (!transferencia) throw new HttpException('transferencia_id| Transferência não encontrada.', 400);
+        }
 
-        const rows = await this.prisma.distribuicaoRecurso.findMany({
-            where: {
-                removido_em: null,
-                transferencia_id: filters.transferencia_id,
-            },
-            orderBy: { orgao_gestor: { sigla: 'asc' } },
-            select: {
-                id: true,
-                transferencia_id: true,
-                nome: true,
-                objeto: true,
-                valor: true,
-                valor_total: true,
-                valor_contrapartida: true,
-                valor_empenho: true,
-                valor_liquidado: true,
-                rubrica_de_receita: true,
-                finalidade: true,
-                gestor_contrato: true,
-                custeio: true,
-                pct_custeio: true,
-                investimento: true,
-                pct_investimento: true,
-                empenho: true,
-                data_empenho: true,
-                programa_orcamentario_estadual: true,
-                programa_orcamentario_municipal: true,
-                dotacao: true,
-                proposta: true,
-                contrato: true,
-                convenio: true,
-                assinatura_termo_aceite: true,
-                assinatura_municipio: true,
-                assinatura_estado: true,
-                vigencia: true,
-                conclusao_suspensiva: true,
-                distribuicao_agencia: true,
-                distribuicao_conta: true,
-                distribuicao_banco: true,
-                parlamentares: {
-                    orderBy: { id: 'asc' },
-                    where: { removido_em: null },
-                    select: {
-                        id: true,
-                        parlamentar_id: true,
-                        parlamentar: {
-                            select: {
-                                id: true,
-                                nome: true,
-                                nome_popular: true,
+        const ipp = filters.ipp ?? 50;
+        let offset = 0;
+        const decodedPageToken = this.decodeNextPageToken(filters.token_proxima_pagina);
+
+        if (decodedPageToken) {
+            offset = decodedPageToken.offset;
+        }
+
+        const where: Prisma.DistribuicaoRecursoWhereInput = {
+            removido_em: null,
+            transferencia_id: filters.transferencia_id,
+        };
+
+        const [total_registros, linhas_com_extra] = await this.prisma.$transaction([
+            this.prisma.distribuicaoRecurso.count({ where }),
+            this.prisma.distribuicaoRecurso.findMany({
+                where: where,
+                orderBy: { orgao_gestor: { sigla: 'asc' } },
+                select: {
+                    id: true,
+                    transferencia_id: true,
+                    nome: true,
+                    objeto: true,
+                    valor: true,
+                    valor_total: true,
+                    valor_contrapartida: true,
+                    valor_empenho: true,
+                    valor_liquidado: true,
+                    rubrica_de_receita: true,
+                    finalidade: true,
+                    gestor_contrato: true,
+                    custeio: true,
+                    pct_custeio: true,
+                    investimento: true,
+                    pct_investimento: true,
+                    empenho: true,
+                    data_empenho: true,
+                    programa_orcamentario_estadual: true,
+                    programa_orcamentario_municipal: true,
+                    dotacao: true,
+                    proposta: true,
+                    contrato: true,
+                    convenio: true,
+                    assinatura_termo_aceite: true,
+                    assinatura_municipio: true,
+                    assinatura_estado: true,
+                    vigencia: true,
+                    conclusao_suspensiva: true,
+                    distribuicao_agencia: true,
+                    distribuicao_conta: true,
+                    distribuicao_banco: true,
+                    parlamentares: {
+                        orderBy: { id: 'asc' },
+                        where: { removido_em: null },
+                        select: {
+                            id: true,
+                            parlamentar_id: true,
+                            parlamentar: {
+                                select: {
+                                    id: true,
+                                    nome: true,
+                                    nome_popular: true,
+                                },
                             },
-                        },
-                        partido_id: true,
-                        partido: {
-                            select: {
-                                id: true,
-                                sigla: true,
+                            partido_id: true,
+                            partido: {
+                                select: {
+                                    id: true,
+                                    sigla: true,
+                                },
                             },
-                        },
-                        cargo: true,
-                        objeto: true,
-                        valor: true,
-                    },
-                },
-                orgao_gestor: {
-                    select: {
-                        id: true,
-                        sigla: true,
-                        descricao: true,
-                    },
-                },
-                registros_sei: {
-                    where: { removido_em: null },
-                    select: {
-                        id: true,
-                        nome: true,
-                        processo_sei: true,
-                    },
-                },
-                aditamentos: {
-                    orderBy: { criado_em: 'desc' },
-                    select: {
-                        data_vigencia: true,
-                        data_vigencia_corrente: true,
-                        justificativa: true,
-                    },
-                },
-                status: {
-                    orderBy: [{ data_troca: 'desc' }, { id: 'desc' }],
-                    where: { removido_em: null },
-                    select: {
-                        id: true,
-                        data_troca: true,
-                        motivo: true,
-                        nome_responsavel: true,
-                        orgao_responsavel: {
-                            select: {
-                                id: true,
-                                sigla: true,
-                            },
-                        },
-                        status: {
-                            select: {
-                                id: true,
-                                nome: true,
-                                tipo: true,
-                                permite_novos_registros: true,
-                            },
-                        },
-                        status_base: {
-                            select: {
-                                id: true,
-                                nome: true,
-                                tipo: true,
-                                permite_novos_registros: true,
-                            },
+                            cargo: true,
+                            objeto: true,
+                            valor: true,
                         },
                     },
+                    orgao_gestor: {
+                        select: {
+                            id: true,
+                            sigla: true,
+                            descricao: true,
+                        },
+                    },
+                    registros_sei: {
+                        where: { removido_em: null },
+                        select: {
+                            id: true,
+                            nome: true,
+                            processo_sei: true,
+                        },
+                    },
+                    aditamentos: {
+                        orderBy: { criado_em: 'desc' },
+                        select: {
+                            data_vigencia: true,
+                            data_vigencia_corrente: true,
+                            justificativa: true,
+                        },
+                    },
+                    status: {
+                        orderBy: [{ data_troca: 'desc' }, { id: 'desc' }],
+                        where: { removido_em: null },
+                        select: {
+                            id: true,
+                            data_troca: true,
+                            motivo: true,
+                            nome_responsavel: true,
+                            orgao_responsavel: {
+                                select: {
+                                    id: true,
+                                    sigla: true,
+                                },
+                            },
+                            status: {
+                                select: {
+                                    id: true,
+                                    nome: true,
+                                    tipo: true,
+                                    permite_novos_registros: true,
+                                },
+                            },
+                            status_base: {
+                                select: {
+                                    id: true,
+                                    nome: true,
+                                    tipo: true,
+                                    permite_novos_registros: true,
+                                },
+                            },
+                        },
+                    },
+                    transferencia: {
+                        select: {
+                            id: true,
+                            identificador: true,
+                            valor: true,
+                        },
+                    },
                 },
-            },
-        });
+            }),
+        ]);
+
+        const rows = [...linhas_com_extra];
 
         const processo_seis = rows.map((r) => r.registros_sei.map((s) => s.processo_sei));
         const integracoes = await this.seiService.buscaSeiStatus(processo_seis.flatMap((p) => p));
@@ -603,7 +641,19 @@ export class DistribuicaoRecursoService {
             user.id
         );
 
-        return rows.map((r) => {
+        let tem_mais = false;
+        let token_proxima_pagina: string | null = null;
+
+        if (rows.length > ipp) {
+            tem_mais = true;
+            rows.pop();
+            token_proxima_pagina = this.encodeNextPageToken({ offset: offset + ipp, ipp });
+        }
+
+        const paginas = Math.ceil(total_registros / ipp);
+        const pagina_corrente = Math.floor(offset / ipp) + 1;
+
+        const linhas = rows.map((r) => {
             let pode_registrar_status: boolean = true;
             if (r.status.length) {
                 if (!r.status[0].status?.permite_novos_registros || !r.status[0].status_base?.permite_novos_registros)
@@ -611,8 +661,8 @@ export class DistribuicaoRecursoService {
             }
 
             let pct_valor_transferencia: number = 0;
-            if (transferencia.valor && r.valor) {
-                pct_valor_transferencia = Math.round((r.valor.toNumber() / transferencia.valor.toNumber()) * 100);
+            if (r.transferencia.valor && r.valor) {
+                pct_valor_transferencia = Math.round((r.valor.toNumber() / r.transferencia.valor.toNumber()) * 100);
             }
 
             const integracoes_sei = integracoes.filter((i) =>
@@ -679,6 +729,11 @@ export class DistribuicaoRecursoService {
                 id: r.id,
                 nome: r.nome,
                 transferencia_id: r.transferencia_id,
+                transferencia: {
+                    id: r.transferencia.id,
+                    identificador: r.transferencia.identificador,
+                    valor: r.transferencia.valor,
+                },
                 orgao_gestor: r.orgao_gestor,
                 objeto: r.objeto,
                 valor: r.valor,
@@ -734,6 +789,36 @@ export class DistribuicaoRecursoService {
                 distribuicao_banco: r.distribuicao_banco,
             } satisfies DistribuicaoRecursoDto;
         });
+
+        return {
+            linhas,
+            paginas,
+            pagina_corrente,
+            total_registros,
+            tem_mais,
+            token_paginacao: token_proxima_pagina,
+            token_ttl: PAGINATION_TOKEN_TTL,
+        };
+    }
+
+    private decodeNextPageToken(jwt: string | undefined): NextPageTokenJwtBody | null {
+        let tmp: NextPageTokenJwtBody | null = null;
+        try {
+            if (jwt) tmp = this.jwtService.verify(jwt) as NextPageTokenJwtBody;
+        } catch {
+            this.logger.debug('Token de paginação inválido ou expirado.');
+            return null;
+        }
+        if (tmp && typeof tmp.offset === 'number' && typeof tmp.ipp === 'number') {
+            return tmp;
+        }
+        this.logger.debug('Token de paginação com estrutura inválida.');
+        return null;
+    }
+
+    private encodeNextPageToken(opt: NextPageTokenJwtBody): string {
+        const expiresIn = PAGINATION_TOKEN_TTL ?? '1h';
+        return this.jwtService.sign(opt, { expiresIn });
     }
 
     async findOne(id: number, user: PessoaFromJwt): Promise<DistribuicaoRecursoDetailDto> {
@@ -835,7 +920,9 @@ export class DistribuicaoRecursoService {
 
                 transferencia: {
                     select: {
+                        id: true,
                         valor: true,
+                        identificador: true,
                         parlamentar: {
                             orderBy: { id: 'asc' },
                             where: { removido_em: null },
@@ -970,6 +1057,11 @@ export class DistribuicaoRecursoService {
         return {
             id: row.id,
             transferencia_id: row.transferencia_id,
+            transferencia: {
+                id: row.transferencia_id,
+                valor: row.transferencia.valor,
+                identificador: row.transferencia.identificador,
+            },
             nome: row.nome,
             objeto: row.objeto,
             valor: row.valor,

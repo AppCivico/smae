@@ -143,6 +143,7 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | ModuloSistema[] |
     CadastroEtapa: ['', null],
     CadastroGrupoPaineisExternas: ['', null],
     CadastroClassificacao: ['Cadastro de Classificacao', 'CasaCivil'],
+    CadastroTipoVinculo: ['Cadastro de Tipo de Vínculo', 'CasaCivil'],
 } as const;
 
 const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]> = {
@@ -602,6 +603,12 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['CadastroClassificacao.listar', 'Listar Classificações'],
         ['CadastroClassificacao.remover', 'Excluir Classificações'],
     ],
+    CadastroTipoVinculo: [
+        ['CadastroTipoVinculo.editar', 'Editar Tipo de Vínculo'],
+        ['CadastroTipoVinculo.inserir', 'Incluir Tipo de Vínculo'],
+        ['CadastroTipoVinculo.listar', 'Listar Tipos de Vínculo'],
+        ['CadastroTipoVinculo.remover', 'Excluir Tipos de Vínculo'],
+    ],
 };
 
 const todosPrivilegios: ListaDePrivilegios[] = [];
@@ -669,6 +676,11 @@ const TVCadastroBasico: ListaDePrivilegios[] = [
     'CadastroTransferenciaTipo.inserir',
     'CadastroTransferenciaTipo.editar',
     'CadastroTransferenciaTipo.remover',
+
+    'CadastroTipoVinculo.inserir',
+    'CadastroTipoVinculo.editar',
+    'CadastroTipoVinculo.remover',
+    'CadastroTipoVinculo.listar',
 
     ...SMAECadastroBasico,
     // Tipo de Transferência

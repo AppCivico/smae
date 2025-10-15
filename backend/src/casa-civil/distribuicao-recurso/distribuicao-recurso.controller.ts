@@ -9,11 +9,13 @@ import { DistribuicaoRecursoService } from './distribuicao-recurso.service';
 import { CreateDistribuicaoRecursoDto } from './dto/create-distribuicao-recurso.dto';
 import {
     DistribuicaoRecursoDetailDto,
+    DistribuicaoRecursoDto,
     ListDistribuicaoRecursoDto,
     SeiLidoStatusDto,
 } from './entities/distribuicao-recurso.entity';
 import { UpdateDistribuicaoRecursoDto } from './dto/update-distribuicao-recurso.dto';
 import { FilterDistribuicaoRecursoDto } from './dto/filter-distribuicao-recurso.dto';
+import { ApiPaginatedWithPagesResponse } from 'src/auth/decorators/paginated.decorator';
 
 @ApiTags('Transferência - Distribuição de Recursos')
 @Controller('distribuicao-recurso')
@@ -29,11 +31,12 @@ export class DistribuicaoRecursoController {
 
     @ApiBearerAuth('access-token')
     @Get()
+    @ApiPaginatedWithPagesResponse(DistribuicaoRecursoDto)
     async findAll(
         @Query() filters: FilterDistribuicaoRecursoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<ListDistribuicaoRecursoDto> {
-        return { linhas: await this.distribuicaoRecursoService.findAll(filters, user) };
+        return await this.distribuicaoRecursoService.findAll(filters, user);
     }
 
     @Post(':id/marcar-sei-como-lido')
