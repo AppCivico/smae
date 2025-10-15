@@ -3,7 +3,10 @@
     :is="tabelaEnvelope"
     :aria-label="tituloParaRolagemHorizontal"
   >
-    <table class="smae-table tablemain">
+    <table
+      class="smae-table tablemain"
+      :class="{ 'tbody-zebra': $slots['sub-linha'] }"
+    >
       <slot name="titulo">
         <caption
           v-if="titulo"
@@ -18,6 +21,10 @@
         :colunas="colunasFiltradas"
       >
         <colgroup>
+          <col
+            v-if="$slots['sub-linha']"
+            class="smae-table__coluna smae-table__coluna--toggle col--botão-de-ação"
+          >
           <col
             v-for="coluna in colunasFiltradas"
             :key="`colunas--${coluna.chave}`"
@@ -38,6 +45,12 @@
           :colunas="colunasFiltradas"
         >
           <tr>
+            <th
+              v-if="$slots['sub-linha']"
+              class="smae-table__toggle-header"
+              aria-label="Expandir/Recolher"
+            />
+
             <TableHeaderCell
               v-for="coluna in colunasFiltradas"
               :key="`header--${coluna.chave}`"
@@ -86,6 +99,16 @@
           </template>
 
           <template
+            v-if="$slots['sub-linha']"
+            #sub-linha="slotProps"
+          >
+            <slot
+              name="sub-linha"
+              v-bind="slotProps"
+            />
+          </template>
+
+          <template
             v-for="coluna in colunasFiltradas"
             :key="`slot-${coluna.chave}`"
             #[coluna.slots?.celula]="slotProps"
@@ -106,6 +129,11 @@
         />
 
         <tr v-else>
+          <th
+            v-if="$slots['sub-linha']"
+            class="smae-table__toggle-header"
+          />
+
           <TableHeaderCell
             v-for="coluna in colunasFiltradas"
             :key="`footer--${coluna.chave}`"
@@ -146,6 +174,8 @@ type Slots = {
   'cabecalho:acao': []
   rodape: [colunas: Colunas]
   corpo: [dados: Linhas]
+  'sub-linha': { linha: Linha; linhaIndex: number }
+  'celula:*': [linha: Linha, celula: unknown]
   conteudo: [dados: Linhas]
 };
 
