@@ -130,7 +130,7 @@
       </tr>
 
       <tr v-if="dados.length === 0">
-        <td :colspan="colunasFiltradas.length">
+        <td :colspan="colunasFiltradas.length + (hasActionButton ? 1 : 0)">
           Sem dados para exibir
         </td>
       </tr>
