@@ -11,15 +11,6 @@ export class TipoVinculoService {
     constructor(private readonly prisma: PrismaService) {}
 
     async upsert(dto: CreateTipoVinculoDto, user?: PessoaFromJwt, id?: number): Promise<RecordWithId> {
-        const similarExists = await this.prisma.tipoVinculo.count({
-            where: {
-                nome: { endsWith: dto.nome, mode: 'insensitive' },
-                removido_em: null,
-            },
-        });
-        if (similarExists > 0)
-            throw new HttpException('nome| Nome igual ou semelhante já existe em outro registro ativo', 400);
-
         if (id) {
             const self = await this.prisma.tipoVinculo.findFirst({
                 where: { id, removido_em: null },
@@ -31,6 +22,16 @@ export class TipoVinculoService {
 
             // TODO?: verificar se está em uso.
         }
+
+        const similarExists = await this.prisma.tipoVinculo.count({
+            where: {
+                id: { not: id || 0 },
+                nome: { endsWith: dto.nome, mode: 'insensitive' },
+                removido_em: null,
+            },
+        });
+        if (similarExists > 0)
+            throw new HttpException('nome| Nome igual ou semelhante já existe em outro registro ativo', 400);
 
         const created = await this.prisma.tipoVinculo.upsert({
             where: { id: id || 0 },
