@@ -47,6 +47,14 @@ type LocalizacaoProximidade = {
   // regiao_id: 0;
 };
 
+type LocalizacaoGeoJSON = {
+  geom_geojson: {
+    properties: Record<string, unknown>;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+};
+
 type Estado = {
   selecionado: any;
   enderecos: any[];
@@ -203,16 +211,25 @@ export const useGeolocalizadorStore = defineStore('geolocalizador', {
               break;
           }
 
+          const localizacoesComCor = registro.localizacoes.map(
+            (localizacao: LocalizacaoGeoJSON) => ({
+              ...localizacao,
+              geom_geojson: {
+                ...localizacao.geom_geojson,
+                properties: {
+                  ...localizacao.geom_geojson.properties,
+                  cor_do_marcador: dadosParciais.cor,
+                },
+              },
+            }),
+          );
+
           const item = {
             ...dadosParciais,
             id: registro.id,
             modulo: chave,
-            localizacoes: registro.localizacoes,
+            localizacoes: localizacoesComCor,
           } as any;
-
-          for (let i = 0; i < item.localizacoes.length; i += 1) {
-            item.localizacoes[i].geom_geojson.properties.cor_do_marcador = dadosParciais.cor;
-          }
 
           agrupado.push(item);
         });
