@@ -14,24 +14,28 @@ const props = defineProps<Props>();
 
 const { selecionado, proximidadeFormatada } = storeToRefs(geolocalizadorStore);
 
-const localizacoes = computed(() => proximidadeFormatada.value
-  .filter((i) => i.localizacoes?.length > 0)
-  .map((i) => {
-    const dados = i.localizacoes[0].geom_geojson;
-    if (!dados.properties) {
-      dados.properties = {};
+const localizacoes = computed(() => proximidadeFormatada.value.reduce((agrupador, i) => {
+  if (!i.localizacoes?.length) {
+    return agrupador;
+  }
+
+  const dados = i.localizacoes[0].geom_geojson;
+
+  if (!dados.properties) {
+    dados.properties = {};
+  }
+
+  dados.properties.camposComplementares = {};
+
+  props.camposComplementares?.forEach((campo) => {
+    if (i[campo] !== undefined) {
+      dados.properties.camposComplementares[campo] = i[campo];
     }
+  });
 
-    dados.properties.camposComplementares = {};
-
-    props.camposComplementares?.forEach((campo) => {
-      if (i[campo] !== undefined) {
-        dados.properties.camposComplementares[campo] = i[campo];
-      }
-    });
-
-    return dados;
-  }));
+  agrupador.push(dados);
+  return agrupador;
+}, []));
 
 </script>
 
