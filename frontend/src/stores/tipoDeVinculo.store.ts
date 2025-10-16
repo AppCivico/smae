@@ -42,8 +42,9 @@ export const useTipoDeVinculoStore = defineStore('tipoDeVinculo', {
         this.emFoco = item;
       } catch (erro: unknown) {
         this.erro = erro;
+      } finally {
+        this.chamadasPendentes.emFoco = false;
       }
-      this.chamadasPendentes.emFoco = false;
     },
     async buscarTudo(params = {}): Promise<void> {
       this.chamadasPendentes.lista = true;
