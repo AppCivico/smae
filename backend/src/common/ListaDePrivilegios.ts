@@ -254,4 +254,8 @@ export type ListaDePrivilegios =
     | 'CadastroTipoVinculo.editar'
     | 'CadastroTipoVinculo.inserir'
     | 'CadastroTipoVinculo.listar'
-    | 'CadastroTipoVinculo.remover';
+    | 'CadastroTipoVinculo.remover'
+    | 'CadastroVinculo.editar'
+    | 'CadastroVinculo.inserir'
+    | 'CadastroVinculo.listar'
+    | 'CadastroVinculo.remover';

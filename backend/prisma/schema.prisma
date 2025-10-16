@@ -501,9 +501,12 @@ model Pessoa {
     AtualizacoesEmLoteCriadas   AtualizacaoEmLote[] @relation("AtualizacaoEmLoteCriador")
     AtualizacoesEmLoteRemovidas AtualizacaoEmLote[] @relation("AtualizacaoEmLoteRemovedor")
 
-    tipoVinculoQueCriei     TipoVinculo[] @relation("Criador")
-    tipoVinculoQueAtualizei TipoVinculo[] @relation("Atualizador")
-    tipoVinculoQueRemovi    TipoVinculo[] @relation("Removedor")
+    tipoVinculoQueCriei              TipoVinculo[]                @relation("Criador")
+    tipoVinculoQueAtualizei          TipoVinculo[]                @relation("Atualizador")
+    tipoVinculoQueRemovi             TipoVinculo[]                @relation("Removedor")
+    vinculosDistribuicaoQueCriei     DistribuicaoRecursoVinculo[] @relation("Criador")
+    vinculosDistribuicaoQueAtualizei DistribuicaoRecursoVinculo[] @relation("Atualizador")
+    vinculosDistribuicaoQueRemovi    DistribuicaoRecursoVinculo[] @relation("Removedor")
 
     @@index([email])
     @@map("pessoa")
@@ -1343,6 +1346,7 @@ model Meta {
     PsDashboardConsolidado                 PsDashboardConsolidado[]
     view_ps_dashboard_meta_stats           view_ps_dashboard_meta_stats[]
     ViewPsDashboardConsolidado             view_ps_dashboard_consolidado[]
+    vinculosDistribuicaoRecursos           DistribuicaoRecursoVinculo[]
 
     @@index([pdm_id])
     @@map("meta")
@@ -3888,6 +3892,7 @@ model Projeto {
     ViewPainelEstrategicoProjetos ViewPainelEstrategicoProjetos[]
     ViewProjetoV2                 ViewProjetoV2[]
     ProjetoRelatorioFila          ProjetoRelatorioFila[]          @ignore
+    vinculosDistribuicaoRecursos  DistribuicaoRecursoVinculo[]
 
     @@index([removido_em])
     @@map("projeto")
@@ -6011,6 +6016,7 @@ model DistribuicaoRecurso {
     status        DistribuicaoRecursoStatus[]
     tarefas       Tarefa[]
     parlamentares DistribuicaoParlamentar[]
+    vinculos      DistribuicaoRecursoVinculo[]
 
     @@map("distribuicao_recurso")
 }
@@ -7832,6 +7838,8 @@ model TipoVinculo {
 
     nome String
 
+    vinculos DistribuicaoRecursoVinculo[]
+
     criado_por Int
     criado_em  DateTime @default(now()) @db.Timestamptz(6)
 
@@ -7844,4 +7852,49 @@ model TipoVinculo {
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@map("tipo_vinculo")
+}
+
+enum CampoVinculo {
+    Endereco
+    Dotacao
+}
+
+model DistribuicaoRecursoVinculo {
+    id Int @id @default(autoincrement())
+
+    distribuicao_id Int
+    distribuicao    DistribuicaoRecurso @relation(fields: [distribuicao_id], references: [id])
+
+    tipo_vinculo_id Int
+    tipo_vinculo    TipoVinculo @relation(fields: [tipo_vinculo_id], references: [id])
+
+    projeto_id Int?
+    projeto    Projeto? @relation(fields: [projeto_id], references: [id])
+
+    meta_id Int?
+    meta    Meta? @relation(fields: [meta_id], references: [id])
+
+    observacao    String?
+    campo_vinculo CampoVinculo
+    valor_vinculo String
+
+    criado_por Int
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+
+    invalidado_em   DateTime? @db.Timestamptz(6)
+    motivo_invalido String?
+
+    atualizado_por Int?
+    atualizado_em  DateTime? @db.Timestamptz(6)
+
+    removido_por Int?
+    removido_em  DateTime? @db.Timestamptz(6)
+
+    criador     Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@map("distribuicao_recurso_vinculo")
 }
