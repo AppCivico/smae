@@ -7,6 +7,7 @@ import { FindOneParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { VinculoService } from './vinculo.service';
 import { CreateVinculoDto } from './dto/create-vinculo.dto';
+import { UpdateVinculoDto } from './dto/update-vinculo.dto';
 
 @ApiTags('Vinculo')
 @Controller('distribuicao-recurso-vinculo')
@@ -18,5 +19,16 @@ export class VinculoController {
     @Roles(['CadastroVinculo.inserir'])
     async create(@Body() dto: CreateVinculoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.vinculoService.upsert(dto, user);
+    }
+
+    @Patch(':id')
+    @ApiBearerAuth('access-token')
+    @Roles(['CadastroVinculo.editar'])
+    async update(
+        @Param() params: FindOneParams,
+        @Body() dto: UpdateVinculoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        return await this.vinculoService.upsert(dto, user, +params.id);
     }
 }
