@@ -463,7 +463,7 @@ export default [
         path: 'tipo-de-vinculo',
         component: TipoDeVinculoRaiz,
         meta: {
-          título: 'Tipo de Transferência',
+          título: 'Tipo de Vínculo',
           rotasParaMenuSecundário,
         },
         children: [
@@ -480,7 +480,7 @@ export default [
             name: 'tipoDeVinculo.novo',
             component: TipoDeVinculoCriarEditar,
             meta: {
-              título: 'Novo tipos de Vínculo',
+              título: 'Novo Tipo de Vínculo',
               rotaDeEscape: 'tipoDeVinculo.listar',
               rotasParaMigalhasDePão: [
                 'tipoDeVinculo.listar',
@@ -492,13 +492,13 @@ export default [
             name: 'tipoDeVinculo.editar',
             component: TipoDeVinculoCriarEditar,
             meta: {
-              título: 'Editar tipos de vínculo',
+              título: 'Editar Tipo de Vínculo',
               rotaDeEscape: 'tipoDeVinculo.listar',
               tituloParaMigalhaDePao: () => {
                 const { emFoco } = useTipoDeVinculoStore();
 
                 if (!emFoco) {
-                  return 'Tipo de vínculo';
+                  return 'Tipo de vinculo';
                 }
 
                 return `Tipo de vinculo ${emFoco.nome}`;
