@@ -21,8 +21,8 @@ const router = useRouter();
 const alertStore = useAlertStore();
 
 const { handleSubmit, resetForm } = useForm({
-  validationSchema: {},
-  initialValues: {},
+  validationSchema: schema,
+  initialValues: emFoco,
 });
 
 const onSubmit = handleSubmit.withControlled(async (values) => {
@@ -41,13 +41,9 @@ const onSubmit = handleSubmit.withControlled(async (values) => {
     alertStore.success(msg);
     tipoDeVinculoStore.$reset();
     router.push({ name: route.meta.rotaDeEscape });
-  } catch (error) {
-    alertStore.error(error);
+  } finally {
+    resetForm({ values: {} });
   }
-});
-
-watch(emFoco, () => {
-  resetForm({ values: emFoco.value });
 });
 
 onMounted(() => {

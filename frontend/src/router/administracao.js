@@ -464,8 +464,9 @@ export default [
         component: TipoDeVinculoRaiz,
         meta: {
           entidadeMãe: 'TransferenciasVoluntarias',
-          limitarÀsPermissões: 'CadastroTransferenciaTipo.',
+          limitarÀsPermissões: 'CadastroTipoVinculo.',
           título: 'Tipo de Vínculo',
+          rotaPrescindeDeChave: true,
           rotasParaMenuSecundário,
         },
         children: [
