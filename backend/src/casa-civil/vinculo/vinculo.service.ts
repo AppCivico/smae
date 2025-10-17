@@ -63,6 +63,7 @@ export class VinculoService {
     async findAll(filters: FilterVinculoDto): Promise<VinculoDto[]> {
         const vinculos = await this.prisma.distribuicaoRecursoVinculo.findMany({
             where: {
+                removido_em: null,
                 tipo_vinculo_id: filters.tipo_vinculo_id,
                 meta_id: filters.meta_id,
                 projeto_id: filters.projeto_id,
@@ -123,6 +124,7 @@ export class VinculoService {
                         id: true,
                         tipo: true,
                         nome: true,
+                        status: true,
                         portfolio: {
                             select: {
                                 id: true,
@@ -136,7 +138,17 @@ export class VinculoService {
                                 descricao: true,
                             },
                         },
-                        status: true,
+                        grupo_tematico: {
+                            select: {
+                                nome: true,
+                            },
+                        },
+                        equipamento: {
+                            select: {
+                                nome: true,
+                            },
+                        },
+                        GeoEnderecoReferencia: {},
                     },
                 },
             },
