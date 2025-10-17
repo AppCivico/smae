@@ -24,7 +24,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="flex spacebetween center mb2">
+  <head class="flex spacebetween center mb2">
     <TituloDaPagina />
 
     <hr class="ml2 f1">
@@ -35,7 +35,7 @@ onMounted(() => {
     >
       Novo Tipo de Vínculo
     </SmaeLink>
-  </div>
+  </head>
 
   <SmaeTable
     :colunas="[
