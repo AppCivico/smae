@@ -463,6 +463,8 @@ export default [
         path: 'tipo-de-vinculo',
         component: TipoDeVinculoRaiz,
         meta: {
+          entidadeMãe: 'TransferenciasVoluntarias',
+          limitarÀsPermissões: 'CadastroTransferenciaTipo.',
           título: 'Tipo de Vínculo',
           rotasParaMenuSecundário,
         },

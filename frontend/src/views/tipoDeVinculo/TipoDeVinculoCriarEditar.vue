@@ -8,7 +8,7 @@ import { onMounted, watch } from 'vue';
 import { tipoDeVinculo as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useTipoDeVinculoStore } from '@/stores/tipoDeVinculo.store';
-import TituloDaPagina from '@/components/TituloDaPagina.vue';
+import CabecalhoDePagina from '@/components/CabecalhoDePagina.vue';
 
 defineOptions({ inheritAttrs: false });
 
@@ -58,13 +58,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <head class="flex spacebetween center mb2">
-    <TituloDaPagina />
-
-    <hr class="ml2 f1">
-
-    <CheckClose />
-  </head>
+  <CabecalhoDePagina />
 
   <form @submit="onSubmit">
     <div class="flex g2 mb1">
