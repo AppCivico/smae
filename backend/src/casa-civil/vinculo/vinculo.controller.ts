@@ -43,7 +43,7 @@ export class VinculoController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['AssuntoVariavel.remover'])
+    @Roles(['CadastroVinculo.remover'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
