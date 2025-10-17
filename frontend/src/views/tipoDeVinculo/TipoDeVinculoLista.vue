@@ -3,6 +3,7 @@ import { storeToRefs } from 'pinia';
 import { onMounted } from 'vue';
 import { useTipoDeVinculoStore } from '@/stores/tipoDeVinculo.store';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
+import CabecalhoDePagina from '@/components/CabecalhoDePagina.vue';
 
 const tipodeVinculoStore = useTipoDeVinculoStore();
 const { lista } = storeToRefs(tipodeVinculoStore);
@@ -24,18 +25,16 @@ onMounted(() => {
 </script>
 
 <template>
-  <head class="flex spacebetween center mb2">
-    <TituloDaPagina />
-
-    <hr class="ml2 f1">
-
-    <SmaeLink
-      :to="{ name: 'tipoDeVinculo.novo' }"
-      class="btn big ml1"
-    >
-      Novo Tipo de Vínculo
-    </SmaeLink>
-  </head>
+  <CabecalhoDePagina>
+    <template #acoes>
+      <SmaeLink
+        :to="{ name: 'tipoDeVinculo.novo' }"
+        class="btn big ml1"
+      >
+        Novo Tipo de Vínculo
+      </SmaeLink>
+    </template>
+  </CabecalhoDePagina>
 
   <SmaeTable
     :colunas="[
