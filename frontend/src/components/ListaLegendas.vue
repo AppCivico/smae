@@ -6,7 +6,7 @@ type Props = {
   titulo?: string,
   legendas: {
     [key in string]: ItemLegenda[]
-  },
+  } | ItemLegenda[],
   borda?: boolean,
   duasLinhas?: boolean,
   align?: 'left' | 'right' | 'center',
@@ -22,6 +22,10 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const mostrarEmColunas = computed(() => props.orientacao === 'vertical');
+
+const grupoDeLegendas = computed(() => (Array.isArray(props.legendas)
+  ? { default: props.legendas }
+  : props.legendas));
 </script>
 
 <template>
@@ -43,7 +47,7 @@ const mostrarEmColunas = computed(() => props.orientacao === 'vertical');
 
     <div class="lista-legenda__conteudo flex column g1">
       <dl
-        v-for="(legenda, legendaIndex) in $props.legendas"
+        v-for="(legenda, legendaIndex) in grupoDeLegendas"
         :key="`legenda-item--${legendaIndex}`"
         class="flex g1 flexwrap"
         :class="{ 'column': mostrarEmColunas }"
