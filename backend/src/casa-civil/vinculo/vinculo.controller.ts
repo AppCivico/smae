@@ -8,6 +8,8 @@ import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { VinculoService } from './vinculo.service';
 import { CreateVinculoDto } from './dto/create-vinculo.dto';
 import { UpdateVinculoDto } from './dto/update-vinculo.dto';
+import { ListVinculoDto } from './entities/vinculo.entity';
+import { FilterVinculoDto } from './dto/filter-vinculo.dto';
 
 @ApiTags('Vinculo')
 @Controller('distribuicao-recurso-vinculo')
@@ -30,5 +32,22 @@ export class VinculoController {
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
         return await this.vinculoService.upsert(dto, user, +params.id);
+    }
+
+    @ApiBearerAuth('access-token')
+    @Get()
+    @Roles(['CadastroVinculo.listar'])
+    async findAll(@Query() filters: FilterVinculoDto): Promise<ListVinculoDto> {
+        return { linhas: await this.vinculoService.findAll(filters) };
+    }
+
+    @Delete(':id')
+    @ApiBearerAuth('access-token')
+    @Roles(['AssuntoVariavel.remover'])
+    @ApiNoContentResponse()
+    @HttpCode(HttpStatus.ACCEPTED)
+    async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
+        await this.vinculoService.remove(+params.id, user);
+        return '';
     }
 }
