@@ -108,6 +108,7 @@ const grupoDeLegendas = computed(() => (Array.isArray(props.legendas)
 
 .lista-legenda--a-direita {
   justify-items: end;
+  justify-content: flex-end;
   text-align: end;
 }
 
