@@ -58,13 +58,13 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="flex spacebetween center mb2">
+  <head class="flex spacebetween center mb2">
     <TituloDaPagina />
 
     <hr class="ml2 f1">
 
     <CheckClose />
-  </div>
+  </head>
 
   <form @submit="onSubmit">
     <div class="flex g2 mb1">

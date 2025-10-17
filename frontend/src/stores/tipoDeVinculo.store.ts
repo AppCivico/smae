@@ -14,13 +14,20 @@ interface ListTipoVinculoDto {
 interface ChamadasPendentes {
   lista: boolean;
   emFoco: boolean;
+  excluir: boolean;
+}
+
+interface Erro {
+  lista: null | unknown;
+  emFoco: null | unknown;
+  excluir: null | unknown;
 }
 
 interface Estado {
   lista: TipoVinculoDto[];
   emFoco: TipoVinculoDto | null;
   chamadasPendentes: ChamadasPendentes;
-  erro: null | unknown;
+  erro: Erro;
 }
 
 export const useTipoDeVinculoStore = defineStore('tipoDeVinculo', {
@@ -30,62 +37,67 @@ export const useTipoDeVinculoStore = defineStore('tipoDeVinculo', {
     chamadasPendentes: {
       lista: false,
       emFoco: false,
+      excluir: false,
     },
-    erro: null,
+    erro: {
+      lista: null,
+      emFoco: null,
+      excluir: null,
+    },
   }),
   actions: {
     async buscarItem(tipoVinculoId: number): Promise<void> {
-      this.chamadasPendentes.emFoco = true;
-      this.erro = null;
       try {
+        this.chamadasPendentes.emFoco = true;
+        this.erro.emFoco = null;
+
         const item = await this.requestS.get(`${baseUrl}/tipo-vinculo/${tipoVinculoId}`) as TipoVinculoDto;
         this.emFoco = item;
       } catch (erro: unknown) {
-        this.erro = erro;
+        this.erro.emFoco = erro;
       } finally {
         this.chamadasPendentes.emFoco = false;
       }
     },
     async buscarTudo(params = {}): Promise<void> {
-      this.chamadasPendentes.lista = true;
-      this.erro = null;
       try {
+        this.chamadasPendentes.lista = true;
+        this.erro.lista = null;
+
         const resposta = await this.requestS.get(`${baseUrl}/tipo-vinculo`, params) as ListTipoVinculoDto;
         this.lista = resposta.linhas;
       } catch (erro: unknown) {
-        this.erro = erro;
+        this.erro.lista = erro;
+      } finally {
+        this.chamadasPendentes.lista = false;
       }
-      this.chamadasPendentes.lista = false;
     },
-    async excluirItem(id: number): Promise<boolean> {
-      this.chamadasPendentes.lista = true;
-      this.erro = null;
+    async excluirItem(id: number) {
       try {
+        this.chamadasPendentes.excluir = true;
+        this.erro.excluir = null;
+
         await this.requestS.delete(`${baseUrl}/tipo-vinculo/${id}`);
-        this.chamadasPendentes.lista = false;
-        return true;
       } catch (erro: unknown) {
-        this.erro = erro;
-        this.chamadasPendentes.lista = false;
-        return false;
+        this.erro.excluir = erro;
+      } finally {
+        this.chamadasPendentes.excluir = false;
       }
     },
-    async salvarItem(params = {}, id = 0): Promise<boolean> {
-      this.chamadasPendentes.emFoco = true;
-      this.erro = null;
+    async salvarItem(params = {}, id = 0) {
       try {
+        this.chamadasPendentes.emFoco = true;
+        this.erro.emFoco = null;
+
         if (id) {
           await this.requestS.patch(`${baseUrl}/tipo-vinculo/${id}`, params);
         } else {
           await this.requestS.post(`${baseUrl}/tipo-vinculo`, params);
         }
-
-        this.chamadasPendentes.emFoco = false;
-        return true;
       } catch (erro: unknown) {
-        this.erro = erro;
+        this.erro.emFoco = erro;
+      } finally {
         this.chamadasPendentes.emFoco = false;
-        return false;
       }
     },
   },
