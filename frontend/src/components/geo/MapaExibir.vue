@@ -23,6 +23,7 @@
 </template>
 <script setup>
 import sombraDoMarcador from '@/assets/icons/mapas/map-pin__sombra.svg';
+import { gerarSvgMarcador } from '@/helpers/gerarSvgMarcador';
 import { useRegionsStore } from '@/stores/regions.store';
 import { useResizeObserver } from '@vueuse/core';
 import L from 'leaflet';
@@ -42,6 +43,18 @@ import {
   useSlots,
   watch,
 } from 'vue';
+
+/**
+ * Converte SVG string para Data URL para uso com Leaflet icons
+ * @param {string} svgString - String SVG
+ * @returns {string} Data URL
+ */
+function svgParaDataUrl(svgString) {
+  const encodedSvg = encodeURIComponent(svgString)
+    .replace(/'/g, '%27')
+    .replace(/"/g, '%22');
+  return `data:image/svg+xml,${encodedSvg}`;
+}
 
 defineOptions({ inheritAttrs: false });
 
@@ -161,64 +174,6 @@ const emits = defineEmits([
 ]);
 
 const slots = useSlots();
-
-// Mapa de cores nomeadas para manter compatibilidade
-const coresNomeadas = {
-  vermelho: { fill: '#EE3B2B', stroke: '#C2CED1' },
-  laranja: { fill: '#F2890D', stroke: '#C2CED1' },
-  verde: { fill: '#8EC122', stroke: '#C2CED1' },
-  padrao: { fill: '#152741', stroke: '#f7c234' },
-};
-
-/**
- * Cria um ícone SVG personalizado com cores dinâmicas
- * @param {string|object} cor - Nome da cor, hex color ou objeto com {fill, stroke}
- * Cores nomeadas: 'vermelho', 'laranja', 'verde', 'padrão'
- * Hex color: '#FF5733', '#3498DB', etc.
- * @returns {string} Data URL do SVG
- */
-function criarIconePersonalizado(cor) {
-  let corPreenchimento;
-  let corContorno;
-
-  // Determinar cores baseado no tipo de entrada
-  if (typeof cor === 'string') {
-    // Verificar primeiro se é uma cor nomeada (lookup rápido)
-    if (coresNomeadas[cor]) {
-      const corConfig = coresNomeadas[cor];
-      corPreenchimento = corConfig.fill;
-      corContorno = corConfig.stroke;
-    } else if (/^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{4}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$/.test(cor)) {
-      // Se for hex, usar como preenchimento e uma cor padrão para o contorno
-      corPreenchimento = cor;
-      corContorno = coresNomeadas.padrao.stroke;
-    } else {
-      // Fallback para cor padrão se não for nomeada nem hex válido
-      corPreenchimento = coresNomeadas.padrao.fill;
-      corContorno = coresNomeadas.padrao.stroke;
-    }
-  } else if (cor && typeof cor === 'object') {
-    // Se for um objeto com fill/stroke personalizados
-    const hexRegex = /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{4}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$/;
-    corPreenchimento = (cor.fill && hexRegex.test(cor.fill))
-      ? cor.fill
-      : coresNomeadas.padrao.fill;
-    corContorno = (cor.stroke && hexRegex.test(cor.stroke))
-      ? cor.stroke
-      : coresNomeadas.padrao.stroke;
-  } else {
-    // Fallback para cor padrão
-    corPreenchimento = coresNomeadas.padrao.fill;
-    corContorno = coresNomeadas.padrao.stroke;
-  }
-
-  const svgString = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M12 20.309C9.52086 17.929 7.66388 15.8037 6.41615 13.9321C5.10615 11.9672 4.5 10.3298 4.5 9C4.5 7.01088 5.29018 5.10322 6.6967 3.6967C8.10322 2.29018 10.0109 1.5 12 1.5C13.9891 1.5 15.8968 2.29018 17.3033 3.6967C18.7098 5.10322 19.5 7.01088 19.5 9C19.5 10.3298 18.8938 11.9672 17.5839 13.9321C16.3361 15.8037 14.4791 17.929 12 20.309ZM12 12.5C12.9283 12.5 13.8185 12.1313 14.4749 11.4749C15.1313 10.8185 15.5 9.92826 15.5 9C15.5 8.07174 15.1313 7.1815 14.4749 6.52513C13.8185 5.86875 12.9283 5.5 12 5.5C11.0717 5.5 10.1815 5.86875 9.52513 6.52513C8.86875 7.1815 8.5 8.07174 8.5 9C8.5 9.92826 8.86875 10.8185 9.52513 11.4749C10.1815 12.1313 11.0717 12.5 12 12.5Z" fill="${corPreenchimento}" stroke="${corContorno}"/>
-  </svg>`;
-
-  const encodedSvg = encodeURIComponent(svgString).replace(/'/g, '%27').replace(/"/g, '%22');
-  return `data:image/svg+xml,${encodedSvg}`;
-}
 
 function adicionarMarcadorNoPonto(e) {
   // PRA-FAZER: não funciona ainda!
@@ -341,7 +296,8 @@ function criarGeoJson(dados) {
       corDoMarcador = dados.properties.cores_marcador;
     }
 
-    const urlDoÍcone = criarIconePersonalizado(corDoMarcador);
+    const svgMarcador = gerarSvgMarcador(corDoMarcador);
+    const urlDoÍcone = svgParaDataUrl(svgMarcador);
 
     const ícone = L.icon({
       iconUrl: urlDoÍcone,
@@ -489,8 +445,9 @@ async function iniciarMapa(element) {
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
   }).addTo(mapa);
 
+  const svgMarcadorPadrão = gerarSvgMarcador('padrão');
   L.Marker.prototype.options.icon = L.icon({
-    iconUrl: criarIconePersonalizado('padrao'),
+    iconUrl: svgParaDataUrl(svgMarcadorPadrão),
     iconSize: [48, 48],
     shadowUrl: sombraDoMarcador,
     iconAnchor: [24, 42],

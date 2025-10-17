@@ -6,7 +6,10 @@ import {
 } from 'vue';
 import { useRoute } from 'vue-router';
 import MapaExibir from '@/components/geo/MapaExibir.vue';
+import MarcadorDeMapa from '@/components/geo/MarcadorDeMapa.vue';
+import ListaLegendas from '@/components/ListaLegendas.vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
+import { gerarSvgMarcador } from '@/helpers/gerarSvgMarcador';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useCronogramasStore } from '@/stores/cronogramas.store';
@@ -305,20 +308,17 @@ watchEffect(() => {
       <hr class="mt2 mb2">
     </div>
 
-    <ul class="flex flexwrap g1 mb1 justifyright">
-      <li class="flex g1 tr">
-        <img src="@/assets/icons/mapas/map-pin--verde.svg">
-        Concluído
-      </li>
-      <li class="flex g1 tr">
-        <img src="@/assets/icons/mapas/map-pin--laranja.svg">
-        Atraso moderado
-      </li>
-      <li class="flex g1 tr">
-        <img src="@/assets/icons/mapas/map-pin--vermelho.svg">
-        Atraso alto
-      </li>
-    </ul>
+    <ListaLegendas
+      class="mb1"
+      titulo=""
+      orientacao="horizontal"
+      align="right"
+      :legendas="[
+        { item: 'Concluído', html: gerarSvgMarcador('verde') },
+        { item: 'Atraso moderado', html: gerarSvgMarcador('laranja') },
+        { item: 'Atraso alto', html: gerarSvgMarcador('vermelho') },
+      ]"
+    />
 
     <MapaExibir
       v-if="marcadoresDasEtapas.length"
@@ -333,26 +333,25 @@ watchEffect(() => {
       v-if="!singleCronogramaEtapas?.loading && singleCronogramaEtapas.length"
       class="etapas"
     >
-      <ul class="flex flexwrap g1 mb1 justifyright">
-        <li class="flex g1 tr">
-          <img
-            src="@/assets/icons/mapas/map-pin--sem-contorno.svg"
-          >
-          Endereço preenchido
-        </li>
-        <li class="flex g1 tr">
-          <img
-            src="@/assets/icons/mapas/map-pin--laranja-so-contorno.svg"
-          >
-          Endereço obrigatório não preenchido
-        </li>
-        <li class="flex g1 tr">
-          <img
-            src="@/assets/icons/mapas/map-pin--com-contorno-laranja.svg"
-          >
-          Endereço obrigatório preenchido
-        </li>
-      </ul>
+      <ListaLegendas
+        titulo=""
+        orientacao="horizontal"
+        align="right"
+        :legendas="[
+          {
+            item: 'Endereço preenchido',
+            html: gerarSvgMarcador('padrão', { variante: 'sem-contorno' })
+          },
+          {
+            item: 'Endereço obrigatório não preenchido',
+            html: gerarSvgMarcador('laranja', { variante: 'so-contorno' })
+          },
+          {
+            item: 'Endereço obrigatório preenchido',
+            html: gerarSvgMarcador('laranja', { variante: 'com-contorno' })
+          },
+        ]"
+      />
 
       <div
         v-for="(r, index) in singleCronogramaEtapas?.filter(x => !x.inativo)"
@@ -449,27 +448,30 @@ watchEffect(() => {
               v-if="r?.etapa?.endereco_obrigatorio && !r?.etapa?.geolocalizacao?.length"
               class="tipinfo left"
             >
-              <img
-                src="@/assets/icons/mapas/map-pin--laranja-so-contorno.svg"
-              >
+              <MarcadorDeMapa
+                cor="laranja"
+                variante="so-contorno"
+              />
               <div>Endereço obrigatório não preenchido</div>
             </span>
             <span
               v-else-if="r?.etapa?.endereco_obrigatorio"
               class="tipinfo left"
             >
-              <img
-                src="@/assets/icons/mapas/map-pin--com-contorno-laranja.svg"
-              >
+              <MarcadorDeMapa
+                cor="laranja"
+                variante="com-contorno"
+              />
               <div>Endereço obrigatório preenchido</div>
             </span>
             <span
               v-else-if="r?.etapa?.geolocalizacao?.length"
               class="tipinfo left"
             >
-              <img
-                src="@/assets/icons/mapas/map-pin--sem-contorno.svg"
-              >
+              <MarcadorDeMapa
+                cor="padrão"
+                variante="sem-contorno"
+              />
               <div>Endereço preenchido</div>
             </span>
           </div>
@@ -680,27 +682,30 @@ watchEffect(() => {
                 v-if="rr?.endereco_obrigatorio && !rr?.geolocalizacao?.length"
                 class="tipinfo left"
               >
-                <img
-                  src="../../assets/icons/mapas/map-pin--laranja-so-contorno.svg"
-                >
+                <MarcadorDeMapa
+                  cor="laranja"
+                  variante="so-contorno"
+                />
                 <div>Endereço obrigatório não preenchido</div>
               </span>
               <span
                 v-else-if="rr?.endereco_obrigatorio"
                 class="tipinfo left"
               >
-                <img
-                  src="../../assets/icons/mapas/map-pin--com-contorno-laranja.svg"
-                >
+                <MarcadorDeMapa
+                  cor="laranja"
+                  variante="com-contorno"
+                />
                 <div>Endereço obrigatório preenchido</div>
               </span>
               <span
                 v-else-if="rr?.geolocalizacao?.length"
                 class="tipinfo left"
               >
-                <img
-                  src="../../assets/icons/mapas/map-pin--sem-contorno.svg"
-                >
+                <MarcadorDeMapa
+                  cor="padrão"
+                  variante="sem-contorno"
+                />
                 <div>Endereço preenchido</div>
               </span>
             </div>
@@ -883,27 +888,30 @@ watchEffect(() => {
                     v-if="rrr?.endereco_obrigatorio && !rrr?.geolocalizacao?.length"
                     class="tipinfo left"
                   >
-                    <img
-                      src="@/assets/icons/mapas/map-pin--laranja-so-contorno.svg"
-                    >
+                    <MarcadorDeMapa
+                      cor="laranja"
+                      variante="so-contorno"
+                    />
                     <div>Endereço obrigatório não preenchido</div>
                   </span>
                   <span
                     v-else-if="rrr?.endereco_obrigatorio"
                     class="tipinfo left"
                   >
-                    <img
-                      src="@/assets/icons/mapas/map-pin--com-contorno-laranja.svg"
-                    >
+                    <MarcadorDeMapa
+                      cor="laranja"
+                      variante="com-contorno"
+                    />
                     <div>Endereço obrigatório preenchido</div>
                   </span>
                   <span
                     v-else-if="rrr?.geolocalizacao?.length"
                     class="tipinfo left"
                   >
-                    <img
-                      src="@/assets/icons/mapas/map-pin--sem-contorno.svg"
-                    >
+                    <MarcadorDeMapa
+                      cor="padrão"
+                      variante="sem-contorno"
+                    />
                     <div>Endereço preenchido</div>
                   </span>
                 </div>
