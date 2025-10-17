@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { computed } from 'vue';
 
-type ItemLegenda = { item: string, icon?: string, color?: string };
+type ItemLegenda = { item: string, icon?: string, html?: string, color?: string };
 type Props = {
   titulo?: string,
   legendas: {
@@ -62,6 +62,7 @@ const grupoDeLegendas = computed(() => (Array.isArray(props.legendas)
             :item="legendaItem"
           >
             <dt
+              v-if="!legendaItem.html"
               :style="{ backgroundColor: legendaItem.color }"
               class="legenda-item__icon"
               :class="{ 'legenda-item__icon--apenas-cor': !legendaItem.icon }"
@@ -70,6 +71,10 @@ const grupoDeLegendas = computed(() => (Array.isArray(props.legendas)
                 <use :xlink:href="`#${legendaItem.icon}`" />
               </svg>
             </dt>
+            <dt
+              class="legenda-item__icon"
+              v-html="legendaItem.html"
+            />
 
             <dd>{{ legendaItem.item }}</dd>
           </slot>
