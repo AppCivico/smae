@@ -96,6 +96,7 @@ export const useTipoDeVinculoStore = defineStore('tipoDeVinculo', {
         }
       } catch (erro: unknown) {
         this.erro.emFoco = erro;
+        throw erro;
       } finally {
         this.chamadasPendentes.emFoco = false;
       }

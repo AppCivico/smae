@@ -5,16 +5,16 @@ import { useTipoDeVinculoStore } from '@/stores/tipoDeVinculo.store';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import CabecalhoDePagina from '@/components/CabecalhoDePagina.vue';
 
-const tipodeVinculoStore = useTipoDeVinculoStore();
-const { lista } = storeToRefs(tipodeVinculoStore);
+const tipoDeVinculoStore = useTipoDeVinculoStore();
+const { lista } = storeToRefs(tipoDeVinculoStore);
 
 function buscarDados() {
-  tipodeVinculoStore.$reset();
-  tipodeVinculoStore.buscarTudo();
+  tipoDeVinculoStore.$reset();
+  tipoDeVinculoStore.buscarTudo();
 }
 
 async function excluirItem({ id }) {
-  await tipodeVinculoStore.excluirItem(id);
+  await tipoDeVinculoStore.excluirItem(id);
 
   buscarDados();
 }
