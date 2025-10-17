@@ -1,31 +1,32 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { CampoVinculo } from '@prisma/client';
-import { Type } from 'class-transformer';
-import { IsEnum, IsNumber, IsOptional } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import { IsEnum, IsInt, IsNumber, IsOptional } from 'class-validator';
+import { NumberTransformOrUndef } from 'src/auth/transforms/number.transform';
 
 export class FilterVinculoDto {
     @IsNumber()
     @IsOptional()
-    @Type(() => Number)
+    @Transform(NumberTransformOrUndef)
     meta_id?: number;
 
-    @IsNumber()
+    @IsInt()
     @IsOptional()
-    @Type(() => Number)
+    @Transform(NumberTransformOrUndef)
     projeto_id?: number;
 
-    @IsNumber()
+    @IsInt()
     @IsOptional()
-    @Type(() => Number)
+    @Transform(NumberTransformOrUndef)
     transferencia_id?: number;
 
-    @IsNumber()
+    @IsInt()
     @IsOptional()
-    @Type(() => Number)
+    @Transform(NumberTransformOrUndef)
     distribuicao_id?: number;
 
-    @IsNumber()
-    @Type(() => Number)
+    @IsInt()
+    @Transform(NumberTransformOrUndef)
     @IsOptional()
     tipo_vinculo_id?: number;
 
