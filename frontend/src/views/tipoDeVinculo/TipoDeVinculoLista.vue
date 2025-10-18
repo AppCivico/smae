@@ -14,9 +14,12 @@ function buscarDados() {
 }
 
 async function excluirItem({ id }) {
-  await tipoDeVinculoStore.excluirItem(id);
-
-  buscarDados();
+  try {
+    await tipoDeVinculoStore.excluirItem(id);
+    await buscarDados();
+  } catch (e) {
+    console.error('Falha ao tentar excluir tipo de vínculo', e);
+  }
 }
 
 onMounted(() => {
