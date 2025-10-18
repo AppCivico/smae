@@ -27,7 +27,6 @@ const { handleSubmit, resetForm } = useForm({
 
 const onSubmit = handleSubmit.withControlled(async (values) => {
   try {
-    let r;
     const msg = route.params.tipoVinculoId
       ? 'Dados salvos com sucesso!'
       : 'Item adicionado com sucesso!';
@@ -41,10 +40,14 @@ const onSubmit = handleSubmit.withControlled(async (values) => {
     alertStore.success(msg);
     tipoDeVinculoStore.$reset();
     router.push({ name: route.meta.rotaDeEscape });
-  } finally {
-    resetForm({ values: {} });
+  } catch (e) {
+    console.error('Erro ao tentar salvar item', e);
   }
 });
+
+watch(emFoco, (novo) => {
+  resetForm({ values: novo ?? { nome: '' } });
+}, { immediate: true });
 
 onMounted(() => {
   if (route.params.tipoVinculoId) {
