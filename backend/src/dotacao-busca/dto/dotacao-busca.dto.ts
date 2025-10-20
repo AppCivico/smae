@@ -43,6 +43,8 @@ export type ProjetoObraResumoDto = {
     equipamento_nome: string | null;
 
     dotacoes_encontradas: string[];
+
+    nro_vinculos?: number;
 };
 
 export type PdmPsResumoDto = {
@@ -55,10 +57,12 @@ export type PdmPsResumoDto = {
     rotulo_iniciativa?: string | null;
     rotulo_atividade?: string | null;
 
-    iniciativa?: { id: number; codigo: string | null; titulo: string | null } | null;
-    atividade?: { id: number; codigo: string | null; titulo: string | null } | null;
+    iniciativa?: { id: number; codigo: string | null; titulo: string | null; nro_vinculos?: number } | null;
+    atividade?: { id: number; codigo: string | null; titulo: string | null; nro_vinculos?: number } | null;
 
     dotacoes_encontradas: string[];
+
+    nro_vinculos?: number;
 };
 
 export class DotacaoBuscaResponseDto {

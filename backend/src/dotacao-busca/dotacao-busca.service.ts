@@ -15,7 +15,7 @@ const MAX_RESULTS_DEFAULT = 200;
 export class DotacaoBuscaService {
     constructor(
         private readonly prisma: PrismaService,
-        private readonly dotacaoService: DotacaoService,
+        private readonly dotacaoService: DotacaoService
     ) {}
 
     async searchByDotacao(dto: DotacaoBuscaDto): Promise<DotacaoBuscaResponseDto> {
@@ -115,7 +115,13 @@ export class DotacaoBuscaService {
                     equipamento_nome: true,
                     regioes: true,
                     orgao_responsavel_sigla: true,
-                    projeto: { select: { tipo: true, status: true } },
+                    projeto: {
+                        select: {
+                            tipo: true,
+                            status: true,
+                            vinculosDistribuicaoRecursos: { select: { id: true }, where: { removido_em: null } },
+                        },
+                    },
                 },
                 take: limit,
             });
@@ -135,6 +141,7 @@ export class DotacaoBuscaService {
                     tipo_obra_nome: p.tipo_intervencao_nome,
                     equipamento_nome: p.equipamento_nome,
                     dotacoes_encontradas: Array.from(dots ?? dotacoesSet),
+                    nro_vinculos: p.projeto.vinculosDistribuicaoRecursos.length,
                 };
                 if (p.projeto.tipo === TipoProjeto.MDO) obras.push(item);
                 else projetos.push(item);
@@ -156,6 +163,7 @@ export class DotacaoBuscaService {
                     pdm_id: true,
                     meta_orgao: { select: { orgao: { select: { sigla: true } } } },
                     pdm: { select: { rotulo_iniciativa: true, rotulo_atividade: true } },
+                    vinculosDistribuicaoRecursos: { select: { id: true }, where: { removido_em: null } },
                 },
                 take: limit,
             });
@@ -173,6 +181,7 @@ export class DotacaoBuscaService {
                     iniciativa: null, // opcional: preencher se houver relação direta dotação->iniciativa
                     atividade: null, // opcional: preencher se houver relação direta dotação->atividade
                     dotacoes_encontradas: Array.from(dots ?? dotacoesSet),
+                    nro_vinculos: m.vinculosDistribuicaoRecursos.length,
                 });
             }
         }
