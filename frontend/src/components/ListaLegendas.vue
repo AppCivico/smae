@@ -78,6 +78,7 @@ const grupoDeLegendas = computed(() => (Array.isArray(props.legendas)
               </svg>
             </dt>
             <dt
+              v-else
               class="legenda-item__icon"
               v-html="limparIcone(legendaItem.html)"
             />
