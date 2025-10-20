@@ -6,7 +6,8 @@ import * as CardEnvelope from '@/components/cardEnvelope';
 import ListaLegendas from '@/components/ListaLegendas.vue';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
-import { LegendasStatus, useGeolocalizadorStore } from '@/stores/geolocalizador.store';
+import { useGeolocalizadorStore } from '@/stores/geolocalizador.store';
+import { useEntidadesProximasStore, LegendasStatus } from '@/stores/entidadesProximas.store';
 import combinadorDeListas from '@/helpers/combinadorDeListas';
 import ConsultaGeralFiltroEndereco from './ConsultaGeralFiltroEndereco.vue';
 import ConsultaGeralFiltroDotacao from './ConsultaGeralFiltroDotacao.vue';
@@ -27,7 +28,8 @@ const valoresIniciais = {
 const route = useRoute();
 
 const geolocalizadorStore = useGeolocalizadorStore();
-const { proximidadeFormatada } = storeToRefs(geolocalizadorStore);
+const entidadesProximasStore = useEntidadesProximasStore();
+const { proximidadeFormatada } = storeToRefs(entidadesProximasStore);
 
 const tipo = computed<'endereco' | 'dotacao' | undefined>(() => route.query.tipo);
 
@@ -42,6 +44,7 @@ const filtroSelecionado = computed(() => {
 
 onMounted(() => {
   geolocalizadorStore.$reset();
+  entidadesProximasStore.$reset();
 });
 </script>
 
