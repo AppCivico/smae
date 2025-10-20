@@ -505,7 +505,11 @@ const observer = new IntersectionObserver((entries) => {
     if (entries[0].isIntersecting === true && elementoMapa.value) {
       iniciarMapa(elementoMapa.value).then(() => {
         nextTick(() => {
-          mapa.fitBounds(grupoDeElementosNoMapa().getBounds(), { animate: true });
+          const limites = grupoDeElementosNoMapa().getBounds();
+
+          if (limites.isValid()) {
+            mapa.fitBounds(limites, { animate: true });
+          }
         });
       });
     }
@@ -520,7 +524,11 @@ useResizeObserver(elementoMapa, debounce(async (entries) => {
 
   nextTick(() => {
     if (mapa) {
-      mapa.fitBounds(grupoDeElementosNoMapa().getBounds(), { animate: true });
+      const limites = grupoDeElementosNoMapa().getBounds();
+
+      if (limites.isValid()) {
+        mapa.fitBounds(limites, { animate: true });
+      }
     }
   });
 }, 400));
