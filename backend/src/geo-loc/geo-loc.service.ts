@@ -621,6 +621,17 @@ export class GeoLocService {
                 geo_localizacao: {
                     select: { id: true },
                 },
+
+                // Dados do projeto serão utilizados para invalidar vínculo caso o projeto tenha vínculos de distribuição de recursos e a ref de geolocalização seja removida.
+                projeto: {
+                    select: {
+                        id: true,
+                        vinculosDistribuicaoRecursos: {
+                            where: { removido_em: null },
+                            select: { id: true },
+                        },
+                    },
+                },
             },
         });
 
@@ -647,6 +658,20 @@ export class GeoLocService {
         for (const prevRecord of prevRelationRecords) {
             // se ainda ta na lista dos presentes, n precisa remover
             if (inputIds.filter((r) => r == prevRecord.geo_localizacao.id)[0]) continue;
+
+            // Verificando se o projeto possui vínculos de distribuição de recursos.
+            // Se tiver, invalidamos o vínculo.
+            if (prevRecord.projeto && prevRecord.projeto.vinculosDistribuicaoRecursos.length > 0) {
+                await prismaTx.distribuicaoRecursoVinculo.updateMany({
+                    where: {
+                        projeto_id: prevRecord.projeto.id,
+                    },
+                    data: {
+                        invalidado_em: now,
+                        motivo_invalido: 'Remoção de endereço vinculado ao projeto.',
+                    },
+                });
+            }
 
             await prismaTx.geoLocalizacaoReferencia.update({
                 where: {
