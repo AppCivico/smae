@@ -297,10 +297,10 @@ function criarGeoJson(dados) {
     }
 
     const svgMarcador = gerarSvgMarcador(corDoMarcador);
-    const urlDoÍcone = svgParaDataUrl(svgMarcador);
+    const urlDoIcone = svgParaDataUrl(svgMarcador);
 
     const ícone = L.icon({
-      iconUrl: urlDoÍcone,
+      iconUrl: urlDoIcone,
       iconAnchor: [24, 42],
       shadowUrl: sombraDoMarcador,
       shadowSize: [48, 48],
@@ -445,7 +445,7 @@ async function iniciarMapa(element) {
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
   }).addTo(mapa);
 
-  const svgMarcadorPadrão = gerarSvgMarcador('padrão');
+  const svgMarcadorPadrão = gerarSvgMarcador('padrao');
   L.Marker.prototype.options.icon = L.icon({
     iconUrl: svgParaDataUrl(svgMarcadorPadrão),
     iconSize: [48, 48],

@@ -27,7 +27,7 @@ import { computed } from 'vue';
 const props = defineProps({
   cor: {
     type: [String, Object],
-    default: 'padrão',
+    default: 'padrao',
   },
   variante: {
     type: String,

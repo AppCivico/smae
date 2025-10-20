@@ -340,7 +340,7 @@ watchEffect(() => {
         :legendas="[
           {
             item: 'Endereço preenchido',
-            html: gerarSvgMarcador('padrão', { variante: 'sem-contorno' })
+            html: gerarSvgMarcador('padrao', { variante: 'sem-contorno' })
           },
           {
             item: 'Endereço obrigatório não preenchido',
@@ -469,7 +469,7 @@ watchEffect(() => {
               class="tipinfo left"
             >
               <MarcadorDeMapa
-                cor="padrão"
+                cor="padrao"
                 variante="sem-contorno"
               />
               <div>Endereço preenchido</div>
@@ -703,7 +703,7 @@ watchEffect(() => {
                 class="tipinfo left"
               >
                 <MarcadorDeMapa
-                  cor="padrão"
+                  cor="padrao"
                   variante="sem-contorno"
                 />
                 <div>Endereço preenchido</div>
@@ -909,7 +909,7 @@ watchEffect(() => {
                     class="tipinfo left"
                   >
                     <MarcadorDeMapa
-                      cor="padrão"
+                      cor="padrao"
                       variante="sem-contorno"
                     />
                     <div>Endereço preenchido</div>
