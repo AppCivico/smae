@@ -30,5 +30,13 @@ export class CreateVinculoDto {
 
     @IsOptional()
     @IsNumber()
+    iniciativa_id?: number;
+
+    @IsOptional()
+    @IsNumber()
+    atividade_id?: number;
+
+    @IsOptional()
+    @IsNumber()
     projeto_id?: number;
 }

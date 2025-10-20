@@ -2164,6 +2164,7 @@ model Iniciativa {
     CompromissoOrigem                  CompromissoOrigem[]
     PsDashboardConsolidado             PsDashboardConsolidado[]
     ViewPsDashboardConsolidado         view_ps_dashboard_consolidado[]
+    distribuicaoRecursoVinculos        DistribuicaoRecursoVinculo[]
 
     @@index([meta_id])
     @@map("iniciativa")
@@ -2256,6 +2257,7 @@ model Atividade {
     PdmPerfil                          PdmPerfil[]
     PsDashboardConsolidado             PsDashboardConsolidado[]
     ViewPsDashboardConsolidado         view_ps_dashboard_consolidado[]
+    distribuicaoRecursoVinculos        DistribuicaoRecursoVinculo[]
 
     @@index([iniciativa_id])
     @@map("atividade")
@@ -7875,6 +7877,12 @@ model DistribuicaoRecursoVinculo {
 
     meta_id Int?
     meta    Meta? @relation(fields: [meta_id], references: [id])
+
+    iniciativa_id Int?
+    iniciativa    Iniciativa? @relation(fields: [iniciativa_id], references: [id])
+
+    atividade_id Int?
+    atividade    Atividade? @relation(fields: [atividade_id], references: [id])
 
     observacao    String?
     campo_vinculo CampoVinculo

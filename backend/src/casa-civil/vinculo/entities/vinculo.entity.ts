@@ -12,7 +12,9 @@ export class VinculoDto {
     campo_vinculo: CampoVinculo;
     valor_vinculo: string;
     observacao: string | null;
-    meta: VinculoMetaDto | null;
+    meta: VinculoMetaIniAtvDto | null;
+    iniciativa: VinculoMetaIniAtvDto | null;
+    atividade: VinculoMetaIniAtvDto | null;
     projeto: VinculoProjetoDto | null;
     invalidado_em: Date | null;
     motivo_invalido: string | null;
@@ -30,10 +32,10 @@ export class VinculoDistribuicaoDto {
     };
 }
 
-export class VinculoMetaDto {
+export class VinculoMetaIniAtvDto {
     id: number;
     nome: string;
-    status: string;
+    status: string | null;
     orgao: IdSiglaDescricao;
 }
 

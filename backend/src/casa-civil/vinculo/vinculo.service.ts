@@ -23,13 +23,11 @@ export class VinculoService {
             // Verificações de criação
             const createDto = dto as CreateVinculoDto;
 
-            // Precisa ter meta ou projeto.
-            if (!createDto.meta_id && !createDto.projeto_id)
-                throw new HttpException('É necessário informar uma meta ou um projeto', 400);
+            // Precisa ter projeto ou meta/iniciativa/atividade.
+            if (!createDto.meta_id && !createDto.projeto_id && !createDto.iniciativa_id && !createDto.atividade_id)
+                throw new HttpException('É necessário informar uma meta, projeto, iniciativa ou atividade', 400);
 
-            // Ao mesmo tempo, só pode ter um dos dois.
-            if (createDto.meta_id && createDto.projeto_id)
-                throw new HttpException('Só é possível informar uma meta ou um projeto, não ambos', 400);
+            // TODO: verificar se existe mais de uma col definida (meta/projeto/iniciativa/atividade) e bloquear.
         }
 
         const created = await this.prisma.distribuicaoRecursoVinculo.upsert({
@@ -41,6 +39,8 @@ export class VinculoService {
                 tipo_vinculo_id: (dto as CreateVinculoDto).tipo_vinculo_id ?? 0,
                 distribuicao_id: (dto as CreateVinculoDto).distribuicao_id ?? 0,
                 meta_id: (dto as CreateVinculoDto).meta_id ?? undefined,
+                iniciativa_id: (dto as CreateVinculoDto).iniciativa_id ?? undefined,
+                atividade_id: (dto as CreateVinculoDto).atividade_id ?? undefined,
                 projeto_id: (dto as CreateVinculoDto).projeto_id ?? undefined,
                 campo_vinculo: (dto as CreateVinculoDto).campo_vinculo ?? CampoVinculo.Endereco,
                 valor_vinculo: (dto as CreateVinculoDto).valor_vinculo ?? '',
@@ -104,6 +104,50 @@ export class VinculoService {
                         status: true,
 
                         meta_orgao: {
+                            where: { responsavel: true },
+                            select: {
+                                orgao: {
+                                    select: {
+                                        id: true,
+                                        sigla: true,
+                                        descricao: true,
+                                    },
+                                },
+                            },
+                            take: 1,
+                        },
+                    },
+                },
+
+                iniciativa: {
+                    select: {
+                        id: true,
+                        codigo: true,
+                        titulo: true,
+                        status: true,
+                        iniciativa_orgao: {
+                            where: { responsavel: true },
+                            select: {
+                                orgao: {
+                                    select: {
+                                        id: true,
+                                        sigla: true,
+                                        descricao: true,
+                                    },
+                                },
+                            },
+                            take: 1,
+                        },
+                    },
+                },
+
+                atividade: {
+                    select: {
+                        id: true,
+                        codigo: true,
+                        titulo: true,
+                        status: true,
+                        atividade_orgao: {
                             where: { responsavel: true },
                             select: {
                                 orgao: {
@@ -187,6 +231,30 @@ export class VinculoService {
                           id: v.meta.meta_orgao[0].orgao.id,
                           sigla: v.meta.meta_orgao[0].orgao.sigla,
                           descricao: v.meta.meta_orgao[0].orgao.descricao,
+                      },
+                  }
+                : null,
+            iniciativa: v.iniciativa
+                ? {
+                      id: v.iniciativa.id,
+                      nome: v.iniciativa.titulo,
+                      status: v.iniciativa.status,
+                      orgao: {
+                          id: v.iniciativa.iniciativa_orgao[0].orgao.id,
+                          sigla: v.iniciativa.iniciativa_orgao[0].orgao.sigla,
+                          descricao: v.iniciativa.iniciativa_orgao[0].orgao.descricao,
+                      },
+                  }
+                : null,
+            atividade: v.atividade
+                ? {
+                      id: v.atividade.id,
+                      nome: v.atividade.titulo,
+                      status: v.atividade.status,
+                      orgao: {
+                          id: v.atividade.atividade_orgao[0].orgao.id,
+                          sigla: v.atividade.atividade_orgao[0].orgao.sigla,
+                          descricao: v.atividade.atividade_orgao[0].orgao.descricao,
                       },
                   }
                 : null,
