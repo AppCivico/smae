@@ -1,6 +1,12 @@
 <script lang="ts" setup>
 import { computed } from 'vue';
 
+function limparIcone(input?: string) {
+  if (!input) return '';
+  const re = /<script|on\w+=|javascript:/i;
+  return re.test(input) ? '' : input;
+}
+
 type ItemLegenda = { item: string, icon?: string, html?: string, color?: string };
 type Props = {
   titulo?: string,
@@ -73,7 +79,7 @@ const grupoDeLegendas = computed(() => (Array.isArray(props.legendas)
             </dt>
             <dt
               class="legenda-item__icon"
-              v-html="legendaItem.html"
+              v-html="limparIcone(legendaItem.html)"
             />
 
             <dd>{{ legendaItem.item }}</dd>
