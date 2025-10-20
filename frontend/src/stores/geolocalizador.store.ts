@@ -177,7 +177,6 @@ export const useGeolocalizadorStore = defineStore('geolocalizador', {
             case 'obras':
               dadosParciais = {
                 cor: 'verde',
-                nome: registro.nome,
                 portfolio_programa: registro.portfolio_titulo,
                 orgao: registro.orgao_responsavel_sigla,
                 status: {
@@ -196,7 +195,6 @@ export const useGeolocalizadorStore = defineStore('geolocalizador', {
             case 'projetos':
               dadosParciais = {
                 cor: 'laranja',
-                nome: registro.nome,
                 portfolio_programa: registro.portfolio_titulo,
                 orgao: registro.orgao_responsavel_sigla,
                 status: {
@@ -228,6 +226,8 @@ export const useGeolocalizadorStore = defineStore('geolocalizador', {
             ...dadosParciais,
             id: registro.id,
             modulo: chave,
+            nome: registro.nome,
+            nro_vinculos: registro.nro_vinculos,
             localizacoes: localizacoesComCor,
           } as any;
 
