@@ -82,6 +82,8 @@ export class ProjetoSearchResultDto {
 
     @ApiProperty({ type: () => [GeoInfoBaseDto] })
     localizacoes: GeoInfoBaseDto[];
+
+    nro_vinculos?: number;
 }
 
 export class MetaSearchResultDto {
@@ -113,6 +115,8 @@ export class IniciativaSearchResultDto {
 
     @ApiProperty({ type: () => [GeoInfoBaseDto] })
     localizacoes: GeoInfoBaseDto[];
+
+    nro_vinculos?: number;
 }
 
 export class AtividadeSearchResultDto {
@@ -142,6 +146,8 @@ export class AtividadeSearchResultDto {
 
     @ApiProperty({ type: () => [GeoInfoBaseDto] })
     localizacoes: GeoInfoBaseDto[];
+
+    nro_vinculos?: number;
 }
 
 export class EtapaSearchResultDto {
@@ -178,6 +184,7 @@ export class MetaLookupInfoDto {
     macro_tema_nome: string | null;
     @ApiPropertyOptional({ description: 'Siglas dos órgãos da meta', type: [String] })
     orgaos_sigla?: string[];
+    nro_vinculos?: number;
 }
 
 export class SearchEntitiesNearbyDto {

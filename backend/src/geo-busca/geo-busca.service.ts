@@ -228,7 +228,17 @@ export class GeoBuscaService {
                     orgao_responsavel_id: true,
                     orgao_responsavel_sigla: true,
                     orgao_responsavel_descricao: true,
-                    projeto: { select: { tipo: true, status: true } },
+                    projeto: {
+                        select: {
+                            tipo: true,
+                            status: true,
+                            // Count de vínculos
+                            vinculosDistribuicaoRecursos: {
+                                where: { removido_em: null },
+                                select: { id: true },
+                            },
+                        },
+                    },
                 },
             });
 
@@ -257,6 +267,7 @@ export class GeoBuscaService {
                     orgao_responsavel_sigla: p.orgao_responsavel_sigla,
                     orgao_responsavel_descricao: p.orgao_responsavel_descricao,
                     localizacoes: geoInfos,
+                    nro_vinculos: p.projeto.vinculosDistribuicaoRecursos.length,
                 };
                 if (p.projeto.tipo === TipoProjeto.MDO) {
                     response.obras.push(projetoDto);
@@ -295,6 +306,7 @@ export class GeoBuscaService {
                     codigo: true,
                     meta: { select: { id: true, pdm_id: true } },
                     iniciativa_orgao: { select: { orgao: { select: { sigla: true } } } },
+                    distribuicaoRecursoVinculos: { select: { id: true }, where: { removido_em: null } },
                 },
             });
             iniciativasData.forEach((i) => {
@@ -307,6 +319,7 @@ export class GeoBuscaService {
                     pdm_id: i.meta.pdm_id,
                     orgaos_sigla: i.iniciativa_orgao.map((io) => io.orgao.sigla),
                     localizacoes: entityGeoInfoMap.get(`iniciativa-${i.id}`) || [],
+                    nro_vinculos: i.distribuicaoRecursoVinculos.length,
                 });
             });
         }
@@ -328,6 +341,7 @@ export class GeoBuscaService {
                         },
                     },
                     atividade_orgao: { select: { orgao: { select: { sigla: true } } } },
+                    distribuicaoRecursoVinculos: { select: { id: true }, where: { removido_em: null } },
                 },
             });
             atividadesData.forEach((a) => {
@@ -391,6 +405,7 @@ export class GeoBuscaService {
                     macro_tema: { select: { id: true, descricao: true } },
                     pdm_id: true,
                     meta_orgao: { select: { orgao: { select: { sigla: true } } } },
+                    vinculosDistribuicaoRecursos: { select: { id: true }, where: { removido_em: null } },
                 },
             });
             response.metas_info = metasForInfoData.map((m) => {
@@ -404,6 +419,7 @@ export class GeoBuscaService {
                     macro_tema_nome: m.macro_tema?.descricao ?? null,
                     macro_tema_id: m.macro_tema_id,
                     orgaos_sigla: m.meta_orgao.map((mo) => mo.orgao.sigla),
+                    nro_vinculos: m.vinculosDistribuicaoRecursos.length,
                 } satisfies MetaLookupInfoDto;
             });
         }
