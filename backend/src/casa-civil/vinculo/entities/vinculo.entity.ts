@@ -16,7 +16,7 @@ export class VinculoDto {
     projeto: VinculoProjetoDto | null;
     invalidado_em: Date | null;
     motivo_invalido: string | null;
-    detalhes: {};
+    detalhes: VinculoDetalheObraDto | null;
 }
 
 export class VinculoDistribuicaoDto {
@@ -45,6 +45,15 @@ export class VinculoProjetoDto {
     orgao: IdSiglaDescricao;
     status: string;
 }
+
+export class VinculoDetalheObraDto {
+    grupo_tematico_nome: string | null;
+    equipamento_nome: string | null;
+    subprefeitura_nome: string | null;
+    tipo_intervencao_nome: string | null;
+}
+
+export class VinculoDetalheMetaDto {}
 
 export class ListVinculoDto {
     linhas: VinculoDto[];

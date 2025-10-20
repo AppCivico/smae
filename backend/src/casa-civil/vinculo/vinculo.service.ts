@@ -148,6 +148,11 @@ export class VinculoService {
                                 nome: true,
                             },
                         },
+                        tipo_intervencao: {
+                            select: {
+                                nome: true,
+                            },
+                        },
                         GeoEnderecoReferencia: {},
                     },
                 },
@@ -204,7 +209,12 @@ export class VinculoService {
                 : null,
             invalidado_em: v.invalidado_em,
             motivo_invalido: v.motivo_invalido,
-            detalhes: {},
+            detalhes: {
+                grupo_tematico_nome: v.projeto?.grupo_tematico?.nome ?? null,
+                equipamento_nome: v.projeto?.equipamento?.nome ?? null,
+                subprefeitura_nome: null,
+                tipo_intervencao_nome: v.projeto?.tipo_intervencao?.nome ?? null,
+            },
         }));
     }
 
