@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
+    ModuloSistema,
     ParlamentarCargo,
     TransferenciaHistoricoAcao,
     TransferenciaInterface,
@@ -101,6 +102,8 @@ export class TransferenciaDetailDto {
 
     classificacao: ClassificacaoDto | null;
     classificacao_id: number | null;
+
+    modulos_vinculados: ModuloSistema[];
 }
 
 export class ParlamentarTransferenciaDto {

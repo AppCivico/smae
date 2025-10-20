@@ -7,7 +7,14 @@ import {
     InternalServerErrorException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Prisma, TransferenciaHistoricoAcao, WorkflowResponsabilidade } from '@prisma/client';
+import {
+    ModuloSistema,
+    Prisma,
+    TipoPdm,
+    TipoProjeto,
+    TransferenciaHistoricoAcao,
+    WorkflowResponsabilidade,
+} from '@prisma/client';
 import { TarefaCronogramaDto } from 'src/common/dto/TarefaCronograma.dto';
 import { PaginatedDto, PAGINATION_TOKEN_TTL } from 'src/common/dto/paginated.dto';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
@@ -1435,6 +1442,25 @@ export class TransferenciaService {
                                 },
                             },
                         },
+                        vinculos: {
+                            where: { removido_em: null },
+                            select: {
+                                projeto: {
+                                    select: {
+                                        tipo: true,
+                                    },
+                                },
+                                meta: {
+                                    select: {
+                                        pdm: {
+                                            select: {
+                                                tipo: true,
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
                     },
                 },
                 classificacao_id: true,
@@ -1511,6 +1537,39 @@ export class TransferenciaService {
             orgao_concedente: row.orgao_concedente,
             classificacao: row.classificacao,
             classificacao_id: row.classificacao_id,
+
+            modulos_vinculados: row.distribuicao_recursos
+                .flatMap((dr) => dr.vinculos)
+                .flatMap((v) => {
+                    const modulos: ModuloSistema[] = [];
+                    if (v.projeto) {
+                        switch (v.projeto.tipo) {
+                            case TipoProjeto.PP:
+                                if (!modulos.includes(ModuloSistema.Projetos)) modulos.push(ModuloSistema.Projetos);
+                                break;
+                            case TipoProjeto.MDO:
+                                if (!modulos.includes(ModuloSistema.MDO)) modulos.push(ModuloSistema.MDO);
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+
+                    if (v.meta && v.meta.pdm) {
+                        switch (v.meta.pdm.tipo) {
+                            case TipoPdm.PDM:
+                                if (!modulos.includes(ModuloSistema.PDM)) modulos.push(ModuloSistema.PDM);
+                                break;
+                            case TipoPdm.PS:
+                                if (!modulos.includes(ModuloSistema.PlanoSetorial))
+                                    modulos.push(ModuloSistema.PlanoSetorial);
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    return modulos;
+                }),
         } satisfies TransferenciaDetailDto;
     }
 
