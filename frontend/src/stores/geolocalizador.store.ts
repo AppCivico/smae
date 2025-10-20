@@ -55,6 +55,22 @@ type LocalizacaoGeoJSON = {
   [key: string]: unknown;
 };
 
+type ItemProximidadeFormatado = {
+  id: number;
+  modulo: string;
+  nome: string;
+  nro_vinculos: number;
+  localizacoes: LocalizacaoGeoJSON[];
+  cor: string;
+  portfolio_programa?: string;
+  orgao?: string;
+  status?: {
+    valor: string;
+    nome: string;
+  };
+  detalhes?: Record<string, string | null | undefined>;
+};
+
 type Estado = {
   selecionado: any;
   enderecos: any[];
@@ -172,7 +188,7 @@ export const useGeolocalizadorStore = defineStore('geolocalizador', {
         }
 
         grupo.forEach((registro) => {
-          let dadosParciais: any = {};
+          let dadosParciais: Partial<ItemProximidadeFormatado> = {};
           switch (chave) {
             case 'obras':
               dadosParciais = {
@@ -209,33 +225,36 @@ export const useGeolocalizadorStore = defineStore('geolocalizador', {
               break;
           }
 
-          const localizacoesComCor = registro.localizacoes.map(
+          const corItem = dadosParciais.cor ?? 'padrao';
+
+          const localizacoesComCor = (registro.localizacoes ?? []).map(
             (localizacao: LocalizacaoGeoJSON) => ({
               ...localizacao,
               geom_geojson: {
                 ...localizacao.geom_geojson,
                 properties: {
                   ...localizacao.geom_geojson.properties,
-                  cor_do_marcador: dadosParciais.cor,
+                  cor_do_marcador: corItem,
                 },
               },
             }),
           );
 
-          const item = {
+          const item: ItemProximidadeFormatado = {
             ...dadosParciais,
             id: registro.id,
             modulo: chave,
-            nome: registro.nome,
-            nro_vinculos: registro.nro_vinculos,
+            nome: registro.nome ?? '',
+            nro_vinculos: Number(registro.nro_vinculos ?? 0),
             localizacoes: localizacoesComCor,
-          } as any;
+            cor: corItem,
+          };
 
           agrupado.push(item);
         });
 
         return agrupado;
-      }, [] as any[]);
+      }, [] as ItemProximidadeFormatado[]);
 
       return dadosOrganizados;
     },
