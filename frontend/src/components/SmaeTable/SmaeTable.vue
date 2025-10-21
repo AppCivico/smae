@@ -110,6 +110,16 @@
           </template>
 
           <template
+            v-if="$slots['acoes']"
+            #acoes="slotProps"
+          >
+            <slot
+              name="acoes"
+              v-bind="slotProps"
+            />
+          </template>
+
+          <template
             v-for="coluna in colunasFiltradas"
             :key="`slot-${coluna.chave}`"
             #[coluna.slots?.celula]="slotProps"
@@ -177,6 +187,7 @@ type Slots = {
   rodape: [colunas: Colunas]
   corpo: [dados: Linhas]
   'sub-linha': { linha: Linha; linhaIndex: number }
+  acoes: [linha: Linha]
   'celula:*': [linha: Linha, celula: unknown]
   conteudo: [dados: Linhas]
 };

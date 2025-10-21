@@ -22,6 +22,8 @@ import TransferenciasVoluntariasDocumentos from '@/views/transferenciasVoluntari
 import TransferenciasVoluntariasEnviarArquivo from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasEnviarArquivo.vue';
 import TransferenciasVoluntariasLista from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasLista.vue';
 import TransferenciasVoluntariasRaiz from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasRaiz.vue';
+import TransferenciasVoluntariasVinculos from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasVinculos.vue';
+import TransferenciasVoluntariasVinculoEditar from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasVinculoEditar.vue';
 import tiparPropsDeRota from './helpers/tiparPropsDeRota';
 
 const rotasParaMenuSecundário = [
@@ -32,6 +34,7 @@ const rotasParaMenuSecundário = [
       'TransferenciasVoluntariasNotas',
       'TransferenciasVoluntariasDocumentos',
       'TransferenciaCronograma',
+      'TransferenciasVoluntariasVinculos',
     ],
   },
   {
@@ -423,6 +426,57 @@ export default {
       ],
     },
     /* FIM DE DOCUMENTOS */
+    /* VÍNCULOS */
+    {
+      path: ':transferenciaId/vinculos',
+      component: TransferenciasVoluntariasVinculos,
+      name: 'TransferenciasVoluntariasVinculos',
+      props: ({ params }) => ({
+        transferenciaId:
+          Number.parseInt(params.transferenciaId, 10) || undefined,
+      }),
+      meta: {
+        título: 'Vínculos',
+        rotasParaMenuSecundário,
+        rotasParaMigalhasDePão: [
+          'TransferenciasVoluntariasListar',
+          'TransferenciasVoluntariasDetalhes',
+        ],
+      },
+      children: [
+        {
+          path: ':vinculoId',
+          component: DialogWrapper,
+          props: ({ params }) => ({
+            ...params,
+            vinculoId: Number.parseInt(params.vinculoId, 10) || undefined,
+            transferenciaId:
+              Number.parseInt(params.transferenciaId, 10) || undefined,
+          }),
+          meta: {
+            rotaDeEscape: 'TransferenciasVoluntariasVinculos',
+            título: 'Editar vínculo',
+            títuloParaMenu: 'Editar vínculo',
+            limitarÀsPermissões: 'CadastroTransferencia.editar',
+          },
+          children: [
+            {
+              path: '',
+              name: 'TransferenciasVoluntariasVinculosEditar',
+              component: TransferenciasVoluntariasVinculoEditar,
+              props: ({ params }) => ({
+                ...params,
+                vinculoId: Number.parseInt(params.vinculoId, 10) || undefined,
+                transferenciaId:
+                  Number.parseInt(params.transferenciaId, 10) || undefined,
+              }),
+            },
+          ],
+        },
+        /* FIM DE EDIÇÃO DE VÍNCULO */
+      ],
+    },
+    /* FIM DE VÍNCULOS */
     /* TAREFAS E CRONOGRAMA */
     {
       path: ':transferenciaId/tarefas',

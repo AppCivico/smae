@@ -18,23 +18,28 @@
   </TableCell>
 
   <td v-if="hasActionButton">
-    <div class="flex g1 justifyright">
-      <EditButton
-        v-if="rotaEditar"
-        :linha="linha"
-        :rota-editar="rotaEditar"
-        :parametro-da-rota-editar="parametroDaRotaEditar"
-        :parametro-no-objeto-para-editar="parametroNoObjetoParaEditar"
-      />
+    <slot
+      name="acoes"
+      :linha="linha"
+    >
+      <div class="flex g1 justifyright">
+        <EditButton
+          v-if="rotaEditar"
+          :linha="linha"
+          :rota-editar="rotaEditar"
+          :parametro-da-rota-editar="parametroDaRotaEditar"
+          :parametro-no-objeto-para-editar="parametroNoObjetoParaEditar"
+        />
 
-      <DeleteButton
-        v-if="!esconderDeletar"
-        :linha="linha"
-        :esconder-deletar="esconderDeletar"
-        :parametro-no-objeto-para-excluir="parametroNoObjetoParaExcluir"
-        @deletar="ev => emit('deletar', ev)"
-      />
-    </div>
+        <DeleteButton
+          v-if="!esconderDeletar"
+          :linha="linha"
+          :esconder-deletar="esconderDeletar"
+          :parametro-no-objeto-para-excluir="parametroNoObjetoParaExcluir"
+          @deletar="ev => emit('deletar', ev)"
+        />
+      </div>
+    </slot>
   </td>
 </template>
 

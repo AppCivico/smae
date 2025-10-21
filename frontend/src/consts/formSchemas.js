@@ -2126,6 +2126,17 @@ export const tipoDeVinculo = object({
     .required(),
 });
 
+export const tipoDeVinculoEditar = object({
+  tipo_vinculo_id: number()
+    .label('Tipo de vínculo')
+    .required('Selecione um tipo de vínculo')
+    .positive('Selecione um tipo de vínculo'),
+  observacao: string()
+    .label('Observação')
+    .nullable()
+    .max(2000, 'A observação deve ter no máximo 2000 caracteres'),
+});
+
 export const transferenciaDistribuicaoDeRecursos = object({
   assinatura_estado: date()
     .label('Data de assinatura do representante do estado')

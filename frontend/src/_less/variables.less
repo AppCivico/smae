@@ -32,6 +32,41 @@
 
 @larguras-de-tela__estreita: 30em;
 
+// Podemos expor essas variáveis pra usar como variáveis de css também
+// o que vocês acham?
+:root {
+  --primary: @primary;
+  --amarelo: @amarelo;
+  --c50: @c50;
+  --c100: @c100;
+  --c200: @c200;
+  --c300: @c300;
+  --c400: @c400;
+  --c500: @c500;
+  --c600: @c600;
+  --escuro: @escuro;
+  --branco: @branco;
+  --cinza-medio: @cinza-medio;
+  --cinza-claro: @cinza-claro;
+  --cinza-claro-esverdeado: @cinza-claro-esverdeado;
+  --cinza-claro-azulado: @cinza-claro-azulado;
+  --cinza-claro-avermelhado: @cinza-claro-avermelhado;
+  --bege-claro: @bege-claro;
+  --verde: @verde;
+  --verde-escuro: @verde--escuro;
+  --laranja: @laranja;
+  --vermelho: @vermelho;
+  --marrom: @marrom;
+  --azul: @azul;
+  --estimativa: @estimativa;
+  --efetivo: @efetivo;
+  --alerta-peso-1: @alerta__peso-1;
+  --alerta-peso-2: @alerta__peso-2;
+  --alerta-peso-3: @alerta__peso-3;
+  --alerta-peso-4: @alerta__peso-4;
+  --alerta-peso-5: @alerta__peso-5;
+}
+
 .clearfix() {
   &:before,
   &:after {
@@ -79,10 +114,10 @@
 }
 
 .transition (@a: all, @t:.2s, @e: ease-in-out) {
-  -webkit-transition: @a @t @e;  
+  -webkit-transition: @a @t @e;
   -moz-transition:    @a @t @e;
-  -ms-transition:     @a @t @e; 
-  -o-transition:      @a @t @e;  
+  -ms-transition:     @a @t @e;
+  -o-transition:      @a @t @e;
 }
 
 .transform(@string){
@@ -99,10 +134,10 @@
 }
 .rotate(@z: -90deg){
   -webkit-transform-origin: 50%; -ms-transform-origin: 50%; transform-origin: 50%;
-  -webkit-transform: rotate(@z); 
-  -moz-transform: rotate(@z); 
-  -ms-transform: rotate(@z); 
-  transform: rotate(@z); 
+  -webkit-transform: rotate(@z);
+  -moz-transform: rotate(@z);
+  -ms-transform: rotate(@z);
+  transform: rotate(@z);
 }
 .skew (@deg, @deg2) {
   -webkit-transform:       skew(@deg, @deg2);

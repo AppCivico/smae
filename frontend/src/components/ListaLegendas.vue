@@ -7,7 +7,14 @@ function limparIcone(input?: string) {
   return re.test(input) ? '' : input;
 }
 
-type ItemLegenda = { item: string, icon?: string, html?: string, color?: string };
+type ItemLegenda = {
+  item: string;
+  icon?: string;
+  usarCssColor?: boolean;
+  html?: string;
+  color?: string;
+};
+
 type Props = {
   titulo?: string,
   legendas: {
@@ -69,7 +76,8 @@ const grupoDeLegendas = computed(() => (Array.isArray(props.legendas)
           >
             <dt
               v-if="!legendaItem.html"
-              :style="{ backgroundColor: legendaItem.color }"
+              :style="legendaItem.usarCssColor ? { color: legendaItem.color }
+                : { backgroundColor: legendaItem.color }"
               class="legenda-item__icon"
               :class="{ 'legenda-item__icon--apenas-cor': !legendaItem.icon }"
             >
