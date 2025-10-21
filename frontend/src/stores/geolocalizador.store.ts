@@ -99,8 +99,5 @@ export const useGeolocalizadorStore = defineStore('geolocalizador', {
         this.chamadasPendentes.buscandoEndereco = false;
       }
     },
-    selecionarEndereco(endereco) {
-      this.selecionado = endereco;
-    },
   },
 });

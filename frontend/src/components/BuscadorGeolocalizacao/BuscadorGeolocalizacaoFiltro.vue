@@ -1,8 +1,6 @@
 <script lang="ts" setup>
-
 import { storeToRefs } from 'pinia';
 import FiltroParaPagina from '@/components/FiltroParaPagina.vue';
-
 import { FiltroEndereco as schema } from '@/consts/formSchemas';
 import { useGeolocalizadorStore } from '@/stores/geolocalizador.store';
 
