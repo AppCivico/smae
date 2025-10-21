@@ -51,7 +51,7 @@ const chamadasPendentesPadrao: ChamadasPendentes = {
 
 export const useGeolocalizadorStore = defineStore('geolocalizador', {
   state: (): Estado => ({
-    selecionado: {},
+    selecionado: null,
     enderecos: [],
     erro: { ...chamadasPendentesPadrao },
     chamadasPendentes: { ...chamadasPendentesPadrao },
