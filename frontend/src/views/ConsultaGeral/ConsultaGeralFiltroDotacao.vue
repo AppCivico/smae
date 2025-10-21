@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import {
-  computed, onMounted, ref, watch,
+  computed, ref, watch,
 } from 'vue';
 import { storeToRefs } from 'pinia';
 import FiltroParaPagina, { Formulario } from '@/components/FiltroParaPagina.vue';
