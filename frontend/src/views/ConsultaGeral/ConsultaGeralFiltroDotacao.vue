@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import {
-  computed, ref, watch,
+  computed, onMounted, ref, watch,
 } from 'vue';
 import { storeToRefs } from 'pinia';
 import FiltroParaPagina, { Formulario } from '@/components/FiltroParaPagina.vue';
@@ -15,7 +15,7 @@ const { chamadasPendentes } = storeToRefs(entidadesProximasStore);
 
 const formulario = ref({});
 
-const ano = ref(2025);
+const ano = ref(new Date().getFullYear());
 const dotacaoStore = useDotaçãoStore();
 
 const {
@@ -24,6 +24,11 @@ const {
 } = storeToRefs(dotacaoStore);
 
 const dotacaoAtual = computed(() => dotacaoSegmentos.value?.[ano.value] || {});
+
+const projetoAtividade = computed(() => dotacaoAtual.value.projetos_atividades?.map((i) => ({
+  ...i,
+  codigo: `${i.codigo.slice(0, 1)}.${i.codigo.slice(1)}`,
+})));
 
 const camposDeFiltro = computed<Formulario>(() => [
   {
@@ -59,7 +64,7 @@ const camposDeFiltro = computed<Formulario>(() => [
     campos: {
       projeto_id: {
         tipo: 'select',
-        opcoes: prepararParaSelect(dotacaoAtual.value.projetos_atividades, { id: 'codigo', label: ['codigo', 'descricao'] }),
+        opcoes: prepararParaSelect(projetoAtividade.value, { id: 'codigo', label: ['codigo', 'descricao'] }),
       },
       conta_despesa: {
         tipo: 'numeric',
@@ -124,7 +129,9 @@ const dotacaoEComplemento = computed<string>({
     let texto = dados.join('.');
 
     if (adicionarPonto) {
-      texto += '.';
+      if (texto[texto.length - 1] !== '.') {
+        texto += '.';
+      }
     }
 
     return texto;
@@ -136,7 +143,13 @@ const dotacaoEComplemento = computed<string>({
       adicionarPonto = false;
     }
 
-    const valorSeparado = valor.split('.');
+    let valorSeparado = valor.split('.');
+
+    if (valorSeparado.length >= 7) {
+      const inicio = valorSeparado.slice(0, 5);
+      const fim = valorSeparado.slice(7);
+      valorSeparado = [...inicio, `${valorSeparado[5]}.${valorSeparado[6]}`, ...fim];
+    }
 
     const dados = camposLista.value.reduce((agrupado, item, itemPosicao) => ({
       ...agrupado,

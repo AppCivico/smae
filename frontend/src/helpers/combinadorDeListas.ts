@@ -31,14 +31,15 @@ export default function combinadorDeListas(
   propriedade?: string,
 ): string {
   // Se o separador não for uma string, exibe um aviso no console
+  const e = new Error();
   if (typeof separadorFornecido !== 'string') {
-    console.error('O separador deve ser uma string');
+    console.error('O separador deve ser uma string', e.stack);
   }
 
   // Se a propriedade não for uma string, exibe um aviso no console
   // e retorna uma string vazia para não quebrar o código
   if (propriedade && typeof propriedade !== 'string') {
-    console.error('O caminho da propriedade deve ser uma string');
+    console.error('O caminho da propriedade deve ser uma string', e.stack);
     return '';
   }
 
@@ -46,7 +47,7 @@ export default function combinadorDeListas(
   // mas exibe um erro no console
   if (!Array.isArray(lista)) {
     if (import.meta.env.VITE_EXPOR_ERROS === 'true' || import.meta.env.DEV) {
-      console.error('O parâmetro deve ser um array');
+      console.error('O parâmetro deve ser um array', e.stack);
     }
     return '';
   }

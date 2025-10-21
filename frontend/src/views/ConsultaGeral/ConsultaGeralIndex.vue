@@ -65,7 +65,7 @@ const colunas = computed(() => {
         chave: 'dotacoes_encontradas',
         label: 'Dotação',
         ehCabecalho: true,
-        formatador: combinadorDeListas,
+        formatador: (ev) => combinadorDeListas(ev, ','),
       },
       ...colunasGerais,
     ];
