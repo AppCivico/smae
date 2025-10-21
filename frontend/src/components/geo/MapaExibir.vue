@@ -196,6 +196,20 @@ function marcadorFoiMovido() {
   emits('marcadorFoiMovido', props.modelValue);
 }
 
+async function enquadrarElementosNoMapa() {
+  await nextTick();
+
+  if (!mapa) {
+    return;
+  }
+
+  const limites = grupoDeElementosNoMapa().getBounds();
+
+  if (limites.isValid()) {
+    mapa.fitBounds(limites, { animate: true });
+  }
+}
+
 function atribuirPainelFlutuante(item, dados = null, opcoes = null) {
   let conteudo;
   switch (true) {
@@ -334,6 +348,7 @@ function prepararGeoJsonS(items) {
   geoJsonsNoMapa.forEach((item) => {
     item.remove();
   });
+  geoJsonsNoMapa.splice(0);
 
   if (grupoDeMarcadores) {
     grupoDeMarcadores.clearLayers();
@@ -352,7 +367,7 @@ function prepararGeoJsonS(items) {
       mapa.addLayer(grupoDeMarcadores);
     }
 
-    mapa.fitBounds(grupoDeElementosNoMapa().getBounds());
+    enquadrarElementosNoMapa();
   }
 }
 
@@ -385,11 +400,12 @@ function chamarDesenhoDePolígonosNovos(polígonos) {
   const idsNovos = polígonos
     .reduce((acc, cur) => { if (cur.id) { acc[cur.id] = true; } return acc; }, {});
 
-  for (let i = 0; i < polígonosNoMapa.length; i += 1) {
+  for (let i = polígonosNoMapa.length - 1; i >= 0; i -= 1) {
     if (polígonosNoMapa[i].id && !idsNovos[polígonosNoMapa[i].id]) {
       polígonosNoMapa[i].remove();
+      polígonosNoMapa.splice(i, 1);
     } else {
-      idsNovos[polígonosNoMapa[i]] = undefined;
+      idsNovos[polígonosNoMapa[i].id] = undefined;
     }
   }
 
@@ -504,33 +520,19 @@ const observer = new IntersectionObserver((entries) => {
   if (!mapa) {
     if (entries[0].isIntersecting === true && elementoMapa.value) {
       iniciarMapa(elementoMapa.value).then(() => {
-        nextTick(() => {
-          const limites = grupoDeElementosNoMapa().getBounds();
-
-          if (limites.isValid()) {
-            mapa.fitBounds(limites, { animate: true });
-          }
-        });
+        enquadrarElementosNoMapa();
       });
     }
   }
 }, { threshold: [0.25] });
 
 useResizeObserver(elementoMapa, debounce(async (entries) => {
-  const entry = entries[0];
+  const [entry] = entries;
   const { height } = entry.contentRect;
 
   alturaCorrente.value = `${height}px`;
 
-  nextTick(() => {
-    if (mapa) {
-      const limites = grupoDeElementosNoMapa().getBounds();
-
-      if (limites.isValid()) {
-        mapa.fitBounds(limites, { animate: true });
-      }
-    }
-  });
+  enquadrarElementosNoMapa();
 }, 400));
 
 onMounted(() => {
