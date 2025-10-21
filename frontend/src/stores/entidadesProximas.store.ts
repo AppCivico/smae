@@ -127,14 +127,14 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
     },
   },
   getters: {
-    proximidadeFormatada({ proximidade }) {
-      if (Object.keys(proximidade).length === 0) {
+    proximidadeFormatada({ lista }) {
+      if (Object.keys(lista).length === 0) {
         return [];
       }
 
       const gruposSelecionados = ['projetos', 'obras', 'metas'] as const;
       const dadosOrganizados = gruposSelecionados.reduce((agrupado, chave) => {
-        const grupo = (proximidade[chave] as any[]) || undefined;
+        const grupo = (lista[chave] as any[]) || undefined;
         if (!grupo || grupo.length === 0) {
           return agrupado;
         }

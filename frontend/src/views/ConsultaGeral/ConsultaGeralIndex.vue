@@ -138,43 +138,19 @@ watch(tipo, () => {
         />
 
         <SmaeTable
+          :key="tipo"
           class="mt3"
           replicar-cabecalho
-          <<<<<<<
-          h-e-a-d
-          :colunas="[
-            {
-              chave: 'localizacoes',
-              label: 'Endereço / distância (km)',
-              ehCabecalho: true,
-            },
-            { chave: 'portfolio_programa', label: 'portfólio/plano ou programa' },
-            { chave: 'nome', label: 'nome/meta' },
-            { chave: 'orgao', label: 'Órgão' },
-            { chave: 'status.nome', label: 'status', formatador: (v) => v || 'N/A' },
-            {
-              chave: 'nro_vinculos',
-              label: 'nº vínculos',
-              atributosDaCelula: { class: 'cell--number' },
-              atributosDaColuna: { class: 'col--minimum' },
-              atributosDoCabecalhoDeColuna: { class: 'cell--number' },
-              atributosDoRodapeDeColuna: { class: 'cell--number' },
-            },
-            { chave: 'detalhes', label: 'detalhes' },
-          ]"
-          =="====="
           :colunas="colunas"
-        >
-          >>>>>> bdd391363 (feat: ralizando busca dotacao)
           :dados="proximidadeFormatada"
-          >
+        >
           <template #celula:localizacoes="{ celula, linha }">
             <div
               :class="['celula__item', 'celula__item-classificacao']"
               :style="{ color: LegendasStatus[linha.modulo]?.color || '#000' }"
             />
 
-            <span>
+            <span v-if="celula">
               {{ combinadorDeListas(celula, ' / ', 'geom_geojson.properties.string_endereco') }}
             </span>
           </template>
