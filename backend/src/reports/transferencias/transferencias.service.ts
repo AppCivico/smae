@@ -182,7 +182,33 @@ export class TransferenciasService implements ReportableService {
                 dr.empenho AS distribuicao_recurso_empenho,
                 dr.programa_orcamentario_estadual AS distribuicao_recurso_programa_orcamentario_estadual,
                 dr.programa_orcamentario_municipal AS distribuicao_recurso_programa_orcamentario_municipal,
-                dr.dotacao AS distribuicao_recurso_dotacao,
+                (
+                    SELECT
+                        array_to_string(
+                            ARRAY(
+                                SELECT DISTINCT unnested_value
+                                FROM UNNEST(
+                                    string_to_array(
+                                        CONCAT_WS(
+                                            '|',
+                                            dr.dotacao,
+                                            (
+                                                SELECT STRING_AGG(drv.valor_vinculo, '|')
+                                                FROM distribuicao_recurso_vinculo drv
+                                                WHERE drv.distribuicao_id = dr.id
+                                                AND drv.campo_vinculo = 'Dotacao'
+                                                AND drv.removido_em IS NULL
+                                                AND drv.invalidado_em IS NULL
+                                            )
+                                        ),
+                                        '|'
+                                    )
+                                ) AS t(unnested_value)
+                                WHERE unnested_value IS NOT NULL AND unnested_value != ''
+                            ),
+                            '|'
+                        )
+                ) AS distribuicao_recurso_dotacao,
                 dr.proposta AS distribuicao_recurso_proposta,
                 dr.contrato AS distribuicao_recurso_contrato,
                 dr.convenio AS distribuicao_recurso_convenio,
