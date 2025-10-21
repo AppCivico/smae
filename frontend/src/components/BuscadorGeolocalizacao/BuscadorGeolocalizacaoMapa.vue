@@ -39,12 +39,10 @@ withDefaults(defineProps<Props>(), {
 });
 
 const { selecionado } = storeToRefs(geolocalizadorStore);
-
 </script>
 
 <template>
   <MapaExibir
-    :key="selecionado"
     :geo-json="$props.localizacoes ?? undefined"
     :camadas="selecionado?.camadas ?? undefined"
     class="mb1"
