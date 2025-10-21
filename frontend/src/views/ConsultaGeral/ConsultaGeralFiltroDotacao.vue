@@ -4,14 +4,14 @@ import {
 } from 'vue';
 import { storeToRefs } from 'pinia';
 import FiltroParaPagina, { Formulario } from '@/components/FiltroParaPagina.vue';
-import { useGeolocalizadorStore } from '@/stores/geolocalizador.store';
 import { FiltroDotacao as schema } from '@/consts/formSchemas';
+import { useEntidadesProximasStore } from '@/stores/entidadesProximas.store';
 import { useDotaçãoStore } from '@/stores/dotacao.store';
 import prepararParaSelect from '@/helpers/prepararParaSelect';
 import SmaeLabel from '@/components/camposDeFormulario/SmaeLabel.vue';
 
-const geolocalizadorStore = useGeolocalizadorStore();
-const { chamadasPendentes } = storeToRefs(geolocalizadorStore);
+const entidadesProximasStore = useEntidadesProximasStore();
+const { chamadasPendentes } = storeToRefs(entidadesProximasStore);
 
 const formulario = ref({});
 
@@ -22,10 +22,6 @@ const {
   DotaçãoSegmentos: dotacaoSegmentos,
   // chamadasPendentes: dotacaoChamadasPendentes,
 } = storeToRefs(dotacaoStore);
-
-function filtrarDotacao() {
-  alert('filtrar');
-}
 
 const dotacaoAtual = computed(() => dotacaoSegmentos.value?.[ano.value] || {});
 
@@ -106,7 +102,7 @@ const camposLista = computed<string[]>(
 );
 
 let adicionarPonto = false;
-const dotacaoEComplemento = computed({
+const dotacaoEComplemento = computed<string>({
   get: () => {
     let faltandoCampo = false;
     const dados: unknown[] = [];
@@ -155,6 +151,12 @@ const dotacaoEComplemento = computed({
     formulario.value = dados;
   },
 });
+
+function filtrarDotacao() {
+  console.log(dotacaoEComplemento.value);
+
+  entidadesProximasStore.buscarPorDotacao(dotacaoEComplemento.value);
+}
 
 watch(ano, () => {
   dotacaoStore.getDotaçãoSegmentos(ano.value);
@@ -208,7 +210,7 @@ watch(ano, () => {
     class="mb2"
     :schema="schema"
     :formulario="camposDeFiltro"
-    :carregando="chamadasPendentes.buscandoEndereco || chamadasPendentes.buscandoProximidade"
+    :carregando="chamadasPendentes.buscaDotacao"
     :bloqueado="!ano"
     nao-emitir-query
     @filtro="filtrarDotacao"

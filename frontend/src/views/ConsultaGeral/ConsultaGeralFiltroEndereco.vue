@@ -1,11 +1,16 @@
 <script lang="ts" setup>
+import { storeToRefs } from 'pinia';
+import { computed } from 'vue';
 import BuscadorGeolocalizacaoMapa from '@/components/BuscadorGeolocalizacao/BuscadorGeolocalizacaoMapa.vue';
 import BuscadorGeolocalizacaoFiltro from '@/components/BuscadorGeolocalizacao/BuscadorGeolocalizacaoFiltro.vue';
 import BuscadorGeolocalizacaoListagem from '@/components/BuscadorGeolocalizacao/BuscadorGeolocalizacaoListagem.vue';
-import { useGeolocalizadorStore, PontoEndereco } from '@/stores/geolocalizador.store';
+import type { PontoEndereco } from '@/stores/geolocalizador.store';
+import { useEntidadesProximasStore } from '@/stores/entidadesProximas.store';
 import titleCase from '@/helpers/texto/titleCase';
 
-const geolocalizadorStore = useGeolocalizadorStore();
+const entidadesProximasStore = useEntidadesProximasStore();
+
+const { proximidadeFormatada } = storeToRefs(entidadesProximasStore);
 
 async function buscarProximidade(endereco: PontoEndereco) {
   if (!endereco) {
@@ -29,12 +34,35 @@ async function buscarProximidade(endereco: PontoEndereco) {
 
   const [lon, lat] = endereco.endereco.geometry.coordinates;
 
-  await geolocalizadorStore.buscaProximidades({
+  await entidadesProximasStore.buscarPorLocalizacao({
     geo_camada_codigo: camada.codigo,
     lat,
     lon,
   });
 }
+
+const localizacoes = computed(() => proximidadeFormatada.value.reduce((agrupador, i) => {
+  if (!i.localizacoes?.length) {
+    return agrupador;
+  }
+
+  const dados = i.localizacoes[0].geom_geojson;
+
+  if (!dados.properties) {
+    dados.properties = {};
+  }
+
+  dados.properties.camposComplementares = {};
+
+  ['nome', 'status'].forEach((campo) => {
+    if (i[campo] !== undefined) {
+      dados.properties.camposComplementares[campo] = i[campo];
+    }
+  });
+
+  agrupador.push(dados);
+  return agrupador;
+}, []));
 
 </script>
 
@@ -48,7 +76,7 @@ async function buscarProximidade(endereco: PontoEndereco) {
 
     <BuscadorGeolocalizacaoMapa
       class="f1 fb50"
-      :campos-complementares="['nome', 'status']"
+      :localizacoes="localizacoes"
     >
       <template #painel-flutuante="dados">
         <template v-if="dados.camposComplementares">

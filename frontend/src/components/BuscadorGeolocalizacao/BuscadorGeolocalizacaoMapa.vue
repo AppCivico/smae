@@ -1,48 +1,51 @@
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
-import { computed } from 'vue';
 import MapaExibir from '@/components/geo/MapaExibir.vue';
 import { useGeolocalizadorStore } from '@/stores/geolocalizador.store';
 
 const geolocalizadorStore = useGeolocalizadorStore();
 
-type Props = {
-  camposComplementares?: string[]
+export type GeoFeature = {
+  bbox: [number, number, number, number];
+  type: 'Feature';
+  geometry: {
+    type: 'Point';
+    coordinates: [number, number];
+  };
+  properties: {
+    cep: string;
+    rua: string;
+    pais: string;
+    bairro: string;
+    cidade: string;
+    estado: string;
+    numero: string;
+    rotulo: string;
+    osm_type: string;
+    codigo_pais: string;
+    string_endereco: string;
+    cor_do_marcador: string;
+    camposComplementares: Record<string, unknown>
+  };
+  geometry_name: null;
 };
 
-const props = defineProps<Props>();
+type Props = {
+  localizacoes: GeoFeature[]
+};
 
-const { selecionado, proximidadeFormatada } = storeToRefs(geolocalizadorStore);
+withDefaults(defineProps<Props>(), {
+  localizacoes: () => [] as GeoFeature[],
+});
 
-const localizacoes = computed(() => proximidadeFormatada.value.reduce((agrupador, i) => {
-  if (!i.localizacoes?.length) {
-    return agrupador;
-  }
-
-  const dados = i.localizacoes[0].geom_geojson;
-
-  if (!dados.properties) {
-    dados.properties = {};
-  }
-
-  dados.properties.camposComplementares = {};
-
-  props.camposComplementares?.forEach((campo) => {
-    if (i[campo] !== undefined) {
-      dados.properties.camposComplementares[campo] = i[campo];
-    }
-  });
-
-  agrupador.push(dados);
-  return agrupador;
-}, []));
+const { selecionado } = storeToRefs(geolocalizadorStore);
 
 </script>
 
 <template>
   <MapaExibir
     :key="selecionado"
-    :geo-json="localizacoes ?? undefined"
+    :geo-json="$props.localizacoes ?? undefined"
     :camadas="selecionado?.camadas ?? undefined"
     class="mb1"
     :opções-do-polígono="{

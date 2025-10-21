@@ -1,12 +1,13 @@
 <script lang="ts" setup>
-import { computed, onMounted } from 'vue';
+import { computed, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
 import * as CardEnvelope from '@/components/cardEnvelope';
 import ListaLegendas from '@/components/ListaLegendas.vue';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
-import { LegendasStatus, useGeolocalizadorStore } from '@/stores/geolocalizador.store';
+import { useGeolocalizadorStore } from '@/stores/geolocalizador.store';
+import { useEntidadesProximasStore, LegendasStatus } from '@/stores/entidadesProximas.store';
 import combinadorDeListas from '@/helpers/combinadorDeListas';
 import ConsultaGeralFiltroEndereco from './ConsultaGeralFiltroEndereco.vue';
 import ConsultaGeralFiltroDotacao from './ConsultaGeralFiltroDotacao.vue';
@@ -27,7 +28,8 @@ const valoresIniciais = {
 const route = useRoute();
 
 const geolocalizadorStore = useGeolocalizadorStore();
-const { proximidadeFormatada } = storeToRefs(geolocalizadorStore);
+const entidadesProximasStore = useEntidadesProximasStore();
+const { proximidadeFormatada } = storeToRefs(entidadesProximasStore);
 
 const tipo = computed<'endereco' | 'dotacao' | undefined>(() => route.query.tipo);
 
@@ -40,9 +42,49 @@ const filtroSelecionado = computed(() => {
   return mapaTipo[tipo.value] || 'h3';
 });
 
-onMounted(() => {
-  geolocalizadorStore.$reset();
+const colunas = computed(() => {
+  const colunasGerais = [
+    { chave: 'portfolio_programa', label: 'portfólio/plano ou programa' },
+    { chave: 'nome', label: 'nome/meta' },
+    { chave: 'orgao', label: 'Órgão' },
+    { chave: 'status.nome', label: 'status', formatador: (v) => v || 'N/A' },
+    {
+      chave: 'nro_vinculos',
+      label: 'nº vínculos',
+      atributosDaCelula: { class: 'cell--number' },
+      atributosDaColuna: { class: 'col--minimum' },
+      atributosDoCabecalhoDeColuna: { class: 'cell--number' },
+      atributosDoRodapeDeColuna: { class: 'cell--number' },
+    },
+    { chave: 'detalhes', label: 'detalhes' },
+  ];
+
+  if (tipo.value === 'dotacao') {
+    return [
+      {
+        chave: 'dotacoes_encontradas',
+        label: 'Dotação',
+        ehCabecalho: true,
+        formatador: combinadorDeListas,
+      },
+      ...colunasGerais,
+    ];
+  }
+
+  return [
+    {
+      chave: 'localizacoes',
+      label: 'Endereço / distância (km)',
+      ehCabecalho: true,
+    },
+    ...colunasGerais,
+  ];
 });
+
+watch(tipo, () => {
+  geolocalizadorStore.$reset();
+  entidadesProximasStore.$reset();
+}, { immediate: true });
 </script>
 
 <template>
@@ -96,28 +138,10 @@ onMounted(() => {
         />
 
         <SmaeTable
+          :key="tipo"
           class="mt3"
           replicar-cabecalho
-          :colunas="[
-            {
-              chave: 'localizacoes',
-              label: 'Endereço / distância (km)',
-              ehCabecalho: true,
-            },
-            { chave: 'portfolio_programa', label: 'portfólio/plano ou programa' },
-            { chave: 'nome', label: 'nome/meta' },
-            { chave: 'orgao', label: 'Órgão' },
-            { chave: 'status.nome', label: 'status', formatador: (v) => v || 'N/A' },
-            {
-              chave: 'nro_vinculos',
-              label: 'nº vínculos',
-              atributosDaCelula: { class: 'cell--number' },
-              atributosDaColuna: { class: 'col--minimum' },
-              atributosDoCabecalhoDeColuna: { class: 'cell--number' },
-              atributosDoRodapeDeColuna: { class: 'cell--number' },
-            },
-            { chave: 'detalhes', label: 'detalhes' },
-          ]"
+          :colunas="colunas"
           :dados="proximidadeFormatada"
         >
           <template #celula:localizacoes="{ celula, linha }">
@@ -126,7 +150,7 @@ onMounted(() => {
               :style="{ color: LegendasStatus[linha.modulo]?.color || '#000' }"
             />
 
-            <span>
+            <span v-if="celula">
               {{ combinadorDeListas(celula, ' / ', 'geom_geojson.properties.string_endereco') }}
             </span>
           </template>
