@@ -107,7 +107,15 @@ onMounted(() => {
             { chave: 'portfolio_programa', label: 'portfólio/plano ou programa' },
             { chave: 'nome', label: 'nome/meta' },
             { chave: 'orgao', label: 'Órgão' },
-            { chave: 'status.nome', label: 'status', formatador: v => v || 'N/A' },
+            { chave: 'status.nome', label: 'status', formatador: (v) => v || 'N/A' },
+            {
+              chave: 'nro_vinculos',
+              label: 'nº vínculos',
+              atributosDaCelula: { class: 'cell--number' },
+              atributosDaColuna: { class: 'col--minimum' },
+              atributosDoCabecalhoDeColuna: { class: 'cell--number' },
+              atributosDoRodapeDeColuna: { class: 'cell--number' },
+            },
             { chave: 'detalhes', label: 'detalhes' },
           ]"
           :dados="proximidadeFormatada"
