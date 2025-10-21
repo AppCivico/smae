@@ -1,12 +1,13 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { CreateVinculoDto } from './dto/create-vinculo.dto';
 import { UpdateVinculoDto } from './dto/update-vinculo.dto';
-import { CampoVinculo } from '@prisma/client';
+import { CampoVinculo, Prisma } from '@prisma/client';
 import { FilterVinculoDto } from './dto/filter-vinculo.dto';
 import { VinculoDto } from './entities/vinculo.entity';
+import { uuidv7 } from 'uuidv7';
 
 @Injectable()
 export class VinculoService {
@@ -300,5 +301,60 @@ export class VinculoService {
                 removido_por: user.id,
             },
         });
+    }
+
+    async invalidarVinculo(
+        {
+            id,
+            projeto_id,
+            meta_id,
+            atividade_id,
+            iniciativa_id,
+        }: { id?: number; projeto_id?: number; meta_id?: number; atividade_id?: number; iniciativa_id?: number },
+        motivo_invalido: string,
+        prismaTx?: Prisma.TransactionClient
+    ): Promise<void> {
+        const executarInvalidacao = async (prismaTx: Prisma.TransactionClient) => {
+            // Permite apenas um dos filtros.
+            const filtrosUsados = [id, projeto_id, meta_id, atividade_id, iniciativa_id].filter((f) => f !== undefined);
+            if (filtrosUsados.length === 0)
+                throw new InternalServerErrorException('É necessário informar ao menos um filtro para invalidação');
+            if (filtrosUsados.length > 1)
+                throw new InternalServerErrorException('Apenas um filtro deve ser informado para invalidação');
+
+            await prismaTx.distribuicaoRecursoVinculo.updateMany({
+                where: {
+                    id,
+                    projeto_id,
+                    meta_id,
+                    atividade_id,
+                    iniciativa_id,
+                },
+                data: {
+                    invalidado_em: new Date(Date.now()),
+                    motivo_invalido,
+                },
+            });
+
+            // Envio de e-mail notificando invalidação.
+            /* await prismaTx.emaildbQueue.create({
+                data: {
+                    id: uuidv7(),
+                    config_id: 1,
+                    subject: ``,
+                    template: '',
+                    to: '',
+                    variables: {
+                        resposta: '',
+                    },
+                },
+            }); */
+        };
+
+        if (prismaTx) {
+            await executarInvalidacao(prismaTx);
+        } else {
+            await this.prisma.$transaction(executarInvalidacao);
+        }
     }
 }

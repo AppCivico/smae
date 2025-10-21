@@ -21,6 +21,7 @@ import {
     RetornoCreateEnderecoDto,
     RetornoGeoLoc,
 } from './entities/geo-loc.entity';
+import { VinculoService } from 'src/casa-civil/vinculo/vinculo.service';
 
 class GeoTokenJwtBody {
     id: number;
@@ -63,7 +64,8 @@ export class GeoLocService {
         private readonly jwtService: JwtService,
         private readonly prisma: PrismaService,
         private readonly geoApi: GeoApiService,
-        private readonly smaeConfigService: SmaeConfigService
+        private readonly smaeConfigService: SmaeConfigService,
+        private readonly vinculoService: VinculoService
     ) {}
 
     async geoLoc(input: GeoLocDto): Promise<RetornoGeoLoc> {
@@ -662,15 +664,11 @@ export class GeoLocService {
             // Verificando se o projeto possui vínculos de distribuição de recursos.
             // Se tiver, invalidamos o vínculo.
             if (prevRecord.projeto && prevRecord.projeto.vinculosDistribuicaoRecursos.length > 0) {
-                await prismaTx.distribuicaoRecursoVinculo.updateMany({
-                    where: {
-                        projeto_id: prevRecord.projeto.id,
-                    },
-                    data: {
-                        invalidado_em: now,
-                        motivo_invalido: 'Remoção de endereço vinculado ao projeto.',
-                    },
-                });
+                await this.vinculoService.invalidarVinculo(
+                    { projeto_id: prevRecord.projeto.id },
+                    'Remoção de endereço vinculado ao projeto.',
+                    prismaTx
+                );
             }
 
             await prismaTx.geoLocalizacaoReferencia.update({
