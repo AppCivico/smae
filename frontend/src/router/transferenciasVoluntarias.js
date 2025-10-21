@@ -448,7 +448,6 @@ export default {
           path: ':vinculoId',
           component: DialogWrapper,
           props: ({ params }) => ({
-            ...params,
             vinculoId: Number.parseInt(params.vinculoId, 10) || undefined,
             transferenciaId:
               Number.parseInt(params.transferenciaId, 10) || undefined,
@@ -465,7 +464,6 @@ export default {
               name: 'TransferenciasVoluntariasVinculosEditar',
               component: TransferenciasVoluntariasVinculoEditar,
               props: ({ params }) => ({
-                ...params,
                 vinculoId: Number.parseInt(params.vinculoId, 10) || undefined,
                 transferenciaId:
                   Number.parseInt(params.transferenciaId, 10) || undefined,

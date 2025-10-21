@@ -21,7 +21,8 @@ const {
   linhasDotacao,
   chamadasPendentes,
 } = storeToRefs(vinculosStore);
-const { temPermissãoPara } = storeToRefs(authStore);
+
+const { temPermissãoPara } = authStore;
 
 const visualizacao: Ref<'endereco' | 'dotacao'> = ref('endereco');
 const dotacaoCarregada: Ref<boolean> = ref(false);
