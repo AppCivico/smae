@@ -115,6 +115,6 @@ const localizacoes = computed(() => proximidadeFormatada.value.reduce((agrupador
           </p>
         </template>
       </template>
-    </BuscadorgeolocalizacaoMapa>
+    </BuscadorGeolocalizacaoMapa>
   </div>
 </template>
