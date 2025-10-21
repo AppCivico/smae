@@ -34,6 +34,8 @@ async function buscarProximidade(endereco: PontoEndereco) {
 
   const [lon, lat] = endereco.endereco.geometry.coordinates;
 
+  entidadesProximasStore.$reset();
+
   await entidadesProximasStore.buscarPorLocalizacao({
     geo_camada_codigo: camada.codigo,
     lat,
