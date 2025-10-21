@@ -22,11 +22,8 @@
   </div>
 </template>
 <script setup>
-import marcadorLaranja from '@/assets/icons/mapas/map-pin--laranja.svg';
-import marcadorVerde from '@/assets/icons/mapas/map-pin--verde.svg';
-import marcadorVermelho from '@/assets/icons/mapas/map-pin--vermelho.svg';
-import marcadorPadrão from '@/assets/icons/mapas/map-pin.svg';
 import sombraDoMarcador from '@/assets/icons/mapas/map-pin__sombra.svg';
+import { gerarSvgMarcador } from '@/helpers/gerarSvgMarcador';
 import { useRegionsStore } from '@/stores/regions.store';
 import { useResizeObserver } from '@vueuse/core';
 import L from 'leaflet';
@@ -46,6 +43,18 @@ import {
   useSlots,
   watch,
 } from 'vue';
+
+/**
+ * Converte SVG string para Data URL para uso com Leaflet icons
+ * @param {string} svgString - String SVG
+ * @returns {string} Data URL
+ */
+function svgParaDataUrl(svgString) {
+  const encodedSvg = encodeURIComponent(svgString)
+    .replace(/'/g, '%27')
+    .replace(/"/g, '%22');
+  return `data:image/svg+xml,${encodedSvg}`;
+}
 
 defineOptions({ inheritAttrs: false });
 
@@ -270,24 +279,28 @@ function criarGeoJson(dados) {
   let geoJson;
 
   if (dados.geometry?.type === 'Point') {
-    let urlDoÍcone = marcadorPadrão;
+    // Determinar a cor do marcador baseado nas propriedades
+    let corDoMarcador;
 
-    switch (dados.properties?.cor_do_marcador) {
-      case 'vermelho':
-        urlDoÍcone = marcadorVermelho;
-        break;
-      case 'laranja':
-        urlDoÍcone = marcadorLaranja;
-        break;
-      case 'verde':
-        urlDoÍcone = marcadorVerde;
-        break;
-      default:
-        break;
+    if (dados.properties?.cor_do_marcador) {
+      // Suporta string nomeada ('vermelho', 'laranja', 'verde')
+      corDoMarcador = dados.properties.cor_do_marcador;
+    } else if (dados.properties?.cor_preenchimento || dados.properties?.cor_contorno) {
+      // Suporta cores personalizadas via propriedades separadas
+      corDoMarcador = {
+        fill: dados.properties.cor_preenchimento,
+        stroke: dados.properties.cor_contorno,
+      };
+    } else if (dados.properties?.cores_marcador) {
+      // Suporta objeto com fill/stroke
+      corDoMarcador = dados.properties.cores_marcador;
     }
 
+    const svgMarcador = gerarSvgMarcador(corDoMarcador);
+    const urlDoIcone = svgParaDataUrl(svgMarcador);
+
     const ícone = L.icon({
-      iconUrl: urlDoÍcone,
+      iconUrl: urlDoIcone,
       iconAnchor: [24, 42],
       shadowUrl: sombraDoMarcador,
       shadowSize: [48, 48],
@@ -432,8 +445,9 @@ async function iniciarMapa(element) {
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
   }).addTo(mapa);
 
+  const svgMarcadorPadrão = gerarSvgMarcador('padrao');
   L.Marker.prototype.options.icon = L.icon({
-    iconUrl: marcadorPadrão,
+    iconUrl: svgParaDataUrl(svgMarcadorPadrão),
     iconSize: [48, 48],
     shadowUrl: sombraDoMarcador,
     iconAnchor: [24, 42],
@@ -491,7 +505,11 @@ const observer = new IntersectionObserver((entries) => {
     if (entries[0].isIntersecting === true && elementoMapa.value) {
       iniciarMapa(elementoMapa.value).then(() => {
         nextTick(() => {
-          mapa.fitBounds(grupoDeElementosNoMapa().getBounds(), { animate: true });
+          const limites = grupoDeElementosNoMapa().getBounds();
+
+          if (limites.isValid()) {
+            mapa.fitBounds(limites, { animate: true });
+          }
         });
       });
     }
@@ -506,7 +524,11 @@ useResizeObserver(elementoMapa, debounce(async (entries) => {
 
   nextTick(() => {
     if (mapa) {
-      mapa.fitBounds(grupoDeElementosNoMapa().getBounds(), { animate: true });
+      const limites = grupoDeElementosNoMapa().getBounds();
+
+      if (limites.isValid()) {
+        mapa.fitBounds(limites, { animate: true });
+      }
     }
   });
 }, 400));
