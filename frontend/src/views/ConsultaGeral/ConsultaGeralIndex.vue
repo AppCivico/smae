@@ -144,6 +144,9 @@ watch(tipo, () => {
           :colunas="colunas"
           :dados="proximidadeFormatada"
         >
+          >>>>>> bdd391363 (feat: ralizando busca dotacao)
+          :dados="proximidadeFormatada"
+          >
           <template #celula:localizacoes="{ celula, linha }">
             <div
               :class="['celula__item', 'celula__item-classificacao']"
