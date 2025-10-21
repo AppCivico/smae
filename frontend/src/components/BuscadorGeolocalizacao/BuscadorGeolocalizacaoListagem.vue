@@ -35,27 +35,25 @@ watch(() => route.query?.endereco, () => {
 </script>
 
 <template>
-  <div>
-    <SmaeTable
-      :colunas="[
-        { chave: 'seletor', atributosDaColuna: { class: 'col--minimum' } },
-        { chave: 'endereco.properties.rua', label: 'endereço' },
-        { chave: 'endereco.properties.bairro', label: 'bairro' },
-        { chave: 'endereco.properties.cep', label: 'cep' },
-      ]"
-      :dados="enderecos"
-    >
-      <template #cabecalho:seletor />
-      <template #celula:seletor="{ linha }">
-        <input
-          v-model="selecionado"
-          type="radio"
-          class="inputcheckbox"
-          name="endereco_selecionado"
-          :value="linha"
-          @change="emit('selecao', linha);"
-        >
-      </template>
-    </SmaeTable>
-  </div>
+  <SmaeTable
+    :colunas="[
+      { chave: 'seletor', atributosDaColuna: { class: 'col--minimum' } },
+      { chave: 'endereco.properties.rua', label: 'endereço' },
+      { chave: 'endereco.properties.bairro', label: 'bairro' },
+      { chave: 'endereco.properties.cep', label: 'cep' },
+    ]"
+    :dados="enderecos"
+  >
+    <template #cabecalho:seletor />
+    <template #celula:seletor="{ linha }">
+      <input
+        v-model="selecionado"
+        type="radio"
+        class="inputcheckbox"
+        name="endereco_selecionado"
+        :value="linha"
+        @change="emit('selecao', linha);"
+      >
+    </template>
+  </SmaeTable>
 </template>
