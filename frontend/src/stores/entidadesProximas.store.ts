@@ -5,10 +5,12 @@ const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 type ChamadasPendentes = {
   proximidadePorLocalizacao: boolean;
+  buscaDotacao: boolean;
 };
 
 type Erros = {
   proximidadePorLocalizacao: null | unknown;
+  buscaDotacao: null | unknown;
 };
 
 type EntidadeProxima = {
@@ -67,9 +69,11 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
     lista: {},
     erro: {
       proximidadePorLocalizacao: null,
+      buscaDotacao: null,
     },
     chamadasPendentes: {
       proximidadePorLocalizacao: false,
+      buscaDotacao: false,
     },
   }),
   actions: {
@@ -96,6 +100,29 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
         throw erro;
       } finally {
         this.chamadasPendentes.proximidadePorLocalizacao = false;
+      }
+    },
+    async buscarPorDotacao(dotacao: string) {
+      try {
+        this.erro.buscaDotacao = false;
+        this.chamadasPendentes.buscaDotacao = true;
+
+        const resposta = await this.requestS.get(
+          `${baseUrl}/dotacao-busca`,
+          {
+            query: dotacao,
+          },
+        );
+
+        this.lista = resposta as Record<string, EntidadeProxima[]>;
+
+        return resposta;
+      } catch (erro) {
+        this.erro.buscaDotacao = true;
+
+        throw erro;
+      } finally {
+        this.chamadasPendentes.buscaDotacao = false;
       }
     },
   },
@@ -163,10 +190,11 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
                 },
               },
             }),
-          );
+          ) || [];
 
           const item: ItemProximidadeFormatado = {
             ...dadosParciais,
+            dotacoes_encontradas: registro.dotacoes_encontradas,
             id: registro.id,
             modulo: chave,
             nome: registro.nome ?? '',

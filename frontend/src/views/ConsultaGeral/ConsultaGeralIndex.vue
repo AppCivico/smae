@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed, onMounted } from 'vue';
+import { computed, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
 import * as CardEnvelope from '@/components/cardEnvelope';
@@ -42,10 +42,49 @@ const filtroSelecionado = computed(() => {
   return mapaTipo[tipo.value] || 'h3';
 });
 
-onMounted(() => {
+const colunas = computed(() => {
+  const colunasGerais = [
+    { chave: 'portfolio_programa', label: 'portfólio/plano ou programa' },
+    { chave: 'nome', label: 'nome/meta' },
+    { chave: 'orgao', label: 'Órgão' },
+    { chave: 'status.nome', label: 'status', formatador: (v) => v || 'N/A' },
+    {
+      chave: 'nro_vinculos',
+      label: 'nº vínculos',
+      atributosDaCelula: { class: 'cell--number' },
+      atributosDaColuna: { class: 'col--minimum' },
+      atributosDoCabecalhoDeColuna: { class: 'cell--number' },
+      atributosDoRodapeDeColuna: { class: 'cell--number' },
+    },
+    { chave: 'detalhes', label: 'detalhes' },
+  ];
+
+  if (tipo.value === 'dotacao') {
+    return [
+      {
+        chave: 'dotacoes_encontradas',
+        label: 'Dotação',
+        ehCabecalho: true,
+        formatador: combinadorDeListas,
+      },
+      ...colunasGerais,
+    ];
+  }
+
+  return [
+    {
+      chave: 'localizacoes',
+      label: 'Endereço / distância (km)',
+      ehCabecalho: true,
+    },
+    ...colunasGerais,
+  ];
+});
+
+watch(tipo, () => {
   geolocalizadorStore.$reset();
   entidadesProximasStore.$reset();
-});
+}, { immediate: true });
 </script>
 
 <template>
@@ -101,6 +140,8 @@ onMounted(() => {
         <SmaeTable
           class="mt3"
           replicar-cabecalho
+          <<<<<<<
+          h-e-a-d
           :colunas="[
             {
               chave: 'localizacoes',
@@ -121,8 +162,12 @@ onMounted(() => {
             },
             { chave: 'detalhes', label: 'detalhes' },
           ]"
-          :dados="proximidadeFormatada"
+          =="====="
+          :colunas="colunas"
         >
+          >>>>>> bdd391363 (feat: ralizando busca dotacao)
+          :dados="proximidadeFormatada"
+          >
           <template #celula:localizacoes="{ celula, linha }">
             <div
               :class="['celula__item', 'celula__item-classificacao']"
