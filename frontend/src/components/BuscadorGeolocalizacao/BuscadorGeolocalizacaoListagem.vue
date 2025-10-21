@@ -28,7 +28,7 @@ watch(() => route.query?.endereco, () => {
 
   entidadesProximasStore.$reset();
   enderecos.value.splice(0);
-  selecionado.value = {};
+  selecionado.value = null;
 
   geolocalizadorStore.buscarPorEndereco(endereco);
 }, { immediate: true });
