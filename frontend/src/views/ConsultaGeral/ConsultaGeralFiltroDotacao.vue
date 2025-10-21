@@ -166,8 +166,6 @@ const dotacaoEComplemento = computed<string>({
 });
 
 function filtrarDotacao() {
-  console.log(dotacaoEComplemento.value);
-
   entidadesProximasStore.buscarPorDotacao(dotacaoEComplemento.value);
 }
 
