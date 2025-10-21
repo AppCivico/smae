@@ -3,11 +3,11 @@ import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import { useEntidadesProximasStore } from '@/stores/entidadesProximas.store';
 import { PontoEndereco, useGeolocalizadorStore } from '@/stores/geolocalizador.store';
 import { storeToRefs } from 'pinia';
-import { watch } from 'vue';
+import { ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 type Emits = {
-  (event: 'selecao', endereco: PontoEndereco): void
+  (event: 'selecao', payload: { endereco: PontoEndereco, raio: number }): void
 };
 
 const emit = defineEmits<Emits>();
@@ -19,6 +19,8 @@ const entidadesProximasStore = useEntidadesProximasStore();
 const {
   enderecos, selecionado,
 } = storeToRefs(geolocalizadorStore);
+
+const raio = ref(2);
 
 watch(() => route.query?.endereco, () => {
   const { endereco } = route.query as Record<string, any>;
@@ -35,6 +37,26 @@ watch(() => route.query?.endereco, () => {
 </script>
 
 <template>
+  <div class="flex g1 center mb1">
+    <label
+      for="raio_km"
+      class="label tc300 mb0"
+    >
+      Raio (km)
+    </label>
+    <input
+      id="raio_km"
+      v-model="raio"
+      class="inputtext light f1"
+      name="raio_km"
+      type="number"
+      min="1"
+      step="1"
+      :aria-disabled="!enderecos.length"
+      @change="if (selecionado) emit('selecao', { endereco: selecionado, raio: raio });"
+    >
+  </div>
+
   <SmaeTable
     :colunas="[
       { chave: 'seletor', atributosDaColuna: { class: 'col--minimum' } },
@@ -52,7 +74,7 @@ watch(() => route.query?.endereco, () => {
         class="inputcheckbox"
         name="endereco_selecionado"
         :value="linha"
-        @change="emit('selecao', linha);"
+        @change="emit('selecao', { endereco: linha, raio: raio });"
       >
     </template>
   </SmaeTable>

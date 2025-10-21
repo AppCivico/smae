@@ -12,7 +12,7 @@ const entidadesProximasStore = useEntidadesProximasStore();
 
 const { proximidadeFormatada } = storeToRefs(entidadesProximasStore);
 
-async function buscarProximidade(endereco: PontoEndereco) {
+async function buscarProximidade(endereco: PontoEndereco, raio = 2) {
   if (!endereco) {
     console.error('Endereço não encontrado', endereco);
     return;
@@ -40,7 +40,7 @@ async function buscarProximidade(endereco: PontoEndereco) {
     geo_camada_codigo: camada.codigo,
     lat,
     lon,
-  });
+  }, raio);
 }
 
 const localizacoes = computed(() => proximidadeFormatada.value.reduce((agrupador, i) => {
@@ -73,7 +73,9 @@ const localizacoes = computed(() => proximidadeFormatada.value.reduce((agrupador
     <div class="f1 fb40">
       <BuscadorGeolocalizacaoFiltro />
 
-      <BuscadorGeolocalizacaoListagem @selecao="buscarProximidade" />
+      <BuscadorGeolocalizacaoListagem
+        @selecao="(ev) => buscarProximidade(ev.endereco, ev.raio)"
+      />
     </div>
 
     <BuscadorGeolocalizacaoMapa
