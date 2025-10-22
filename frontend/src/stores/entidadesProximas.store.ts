@@ -132,7 +132,9 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
         return [];
       }
 
-      const gruposSelecionados = ['projetos', 'obras', 'metas', 'plenoSetorial'] as const;
+      type Grupo = keyof typeof LegendasStatus;
+
+      const gruposSelecionados: Grupo[] = Object.keys(LegendasStatus) as Grupo[];
       const dadosOrganizados = gruposSelecionados.reduce((agrupado, chave) => {
         const grupo = (lista[chave] as any[]) || undefined;
         if (!grupo || grupo.length === 0) {
