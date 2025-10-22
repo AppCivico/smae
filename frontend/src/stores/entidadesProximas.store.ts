@@ -61,7 +61,7 @@ export const LegendasStatus = {
   obras: { item: 'Monitoramento de Obras', color: '#8EC122' },
   projetos: { item: 'Gestão de Projetos', color: '#F2890D' },
   metas: { item: 'Programa de Metas', color: '#4074BF' },
-  plenoSetorial: { item: 'Planos Setoriais', color: '#9F045F' },
+  planoSetorial: { item: 'Planos Setoriais', color: '#9F045F' },
 };
 
 export const useEntidadesProximasStore = defineStore('entidadesProximas', {
@@ -183,9 +183,9 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
 
               break;
 
-            case 'plenoSetorial':
+            case 'planoSetorial':
               dadosParciais = {
-                cor: LegendasStatus.plenoSetorial.color,
+                cor: LegendasStatus.planoSetorial.color,
               };
 
               break;
