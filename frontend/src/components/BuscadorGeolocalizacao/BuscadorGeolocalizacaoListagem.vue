@@ -73,6 +73,7 @@ watch(() => route.query?.endereco, () => {
       { chave: 'endereco.properties.cep', label: 'cep' },
     ]"
     :dados="enderecos"
+    class="fb0 f1 rolavel-verticalmente"
   >
     <template #cabecalho:seletor />
     <template #celula:seletor="{ linha }">

@@ -70,7 +70,7 @@ const localizacoes = computed(() => proximidadeFormatada.value.reduce((agrupador
 
 <template>
   <div class="flex g2 flexwrap">
-    <div class="f1 fb40">
+    <div class="f1 fb40 flex column g1">
       <BuscadorGeolocalizacaoFiltro />
 
       <BuscadorGeolocalizacaoListagem
@@ -79,7 +79,8 @@ const localizacoes = computed(() => proximidadeFormatada.value.reduce((agrupador
     </div>
 
     <BuscadorGeolocalizacaoMapa
-      class="f1 fb50"
+      class="f1 fb50 align-stretch"
+      height="48rem"
       :localizacoes="localizacoes"
     >
       <template #painel-flutuante="dados">
