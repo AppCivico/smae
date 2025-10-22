@@ -2,6 +2,7 @@
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import { useEntidadesProximasStore } from '@/stores/entidadesProximas.store';
 import { PontoEndereco, useGeolocalizadorStore } from '@/stores/geolocalizador.store';
+import { debounce } from 'lodash';
 import { storeToRefs } from 'pinia';
 import { ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
@@ -20,7 +21,13 @@ const {
   enderecos, selecionado,
 } = storeToRefs(geolocalizadorStore);
 
-const raio = ref(2);
+const raio = ref(2000);
+
+const emitirSelecao = debounce(() => {
+  if (selecionado.value) {
+    emit('selecao', { endereco: selecionado.value, raio: raio.value });
+  }
+}, 500);
 
 watch(() => route.query?.endereco, () => {
   const { endereco } = route.query as Record<string, any>;
@@ -39,21 +46,22 @@ watch(() => route.query?.endereco, () => {
 <template>
   <div class="flex g1 center mb1">
     <label
-      for="raio_km"
+      for="raio"
       class="label tc300 mb0"
     >
-      Raio (km)
+      Raio (m)
     </label>
     <input
-      id="raio_km"
+      id="raio"
       v-model="raio"
       class="inputtext light f1"
-      name="raio_km"
+      name="raio"
       type="number"
-      min="1"
-      step="1"
+      min="100"
+      max="10000"
+      step="100"
       :aria-disabled="!enderecos.length"
-      @change="if (selecionado) emit('selecao', { endereco: selecionado, raio: raio });"
+      @change="emitirSelecao"
     >
   </div>
 
