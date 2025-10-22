@@ -6,6 +6,7 @@
     <table
       class="smae-table tablemain"
       :class="{ 'tbody-zebra': $slots['sub-linha'] }"
+      v-bind="atributosDaTabela"
     >
       <slot name="titulo">
         <caption
@@ -186,6 +187,7 @@ type Props =
   & {
     titulo?: string
     tituloParaRolagemHorizontal?: string
+    atributosDaTabela?: Record<string, unknown>,
     schema?: AnyObjectSchema,
     colunas: Colunas,
     dados: Linhas
