@@ -104,7 +104,7 @@ watch(() => route.query?.endereco, () => {
         class="inputcheckbox"
         name="endereco_selecionado"
         :value="linha"
-        @change="emit('selecao', { endereco: linha, raio: raio });"
+        @change="emitirSelecao"
       >
     </template>
   </SmaeTable>
