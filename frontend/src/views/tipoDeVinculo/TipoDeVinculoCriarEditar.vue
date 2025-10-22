@@ -22,7 +22,6 @@ const alertStore = useAlertStore();
 
 const { handleSubmit, resetForm } = useForm({
   validationSchema: schema,
-  initialValues: emFoco,
 });
 
 const onSubmit = handleSubmit.withControlled(async (values) => {
@@ -46,7 +45,11 @@ const onSubmit = handleSubmit.withControlled(async (values) => {
 });
 
 watch(emFoco, (novo) => {
-  resetForm({ values: novo ?? { nome: '' } });
+  if (!novo) {
+    resetForm({ values: { nome: '' } });
+  } else {
+    resetForm({ values: novo });
+  }
 }, { immediate: true });
 
 onMounted(() => {

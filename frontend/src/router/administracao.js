@@ -504,7 +504,7 @@ export default [
                   return 'Tipo de vinculo';
                 }
 
-                return `Tipo de vinculo ${emFoco.nome}`;
+                return `${emFoco.nome}`;
               },
               rotasParaMigalhasDePão: [
                 'tipoDeVinculo.listar',
