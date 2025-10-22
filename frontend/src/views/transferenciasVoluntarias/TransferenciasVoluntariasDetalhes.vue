@@ -6,6 +6,7 @@ import {
 import ListaDeDistribuicaoItem from '@/components/transferencia/ListaDeDistribuicaoItem.vue';
 import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
+import modulos from '@/consts/modulosDoSistema';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
@@ -54,6 +55,11 @@ const recursoFinanceiroValores = computed(() => {
     { label: 'Valor total', valor: dinheiro(transferenciaEmFoco.value.valor_total) },
   ];
 });
+
+function traduzirModulo(nomeModulo) {
+  const modulo = modulos[nomeModulo];
+  return modulo?.nome || nomeModulo;
+}
 
 function iniciarFase(idDaFase) {
   alertStore.confirmAction('Tem certeza?', async () => {
@@ -230,6 +236,29 @@ nextTick(() => {
             :max="transferenciaEmFoco?.valor"
             :value="transferenciaEmFoco?.valor_distribuido || 0"
           />
+        </dd>
+      </div>
+      <div class="f1 fb10em fg999">
+        <dt class="t16 w700 mb05 tamarelo">
+          Vínculos
+        </dt>
+        <dd>
+          <ul
+            v-if="transferenciaEmFoco?.modulos_vinculados
+              && transferenciaEmFoco.modulos_vinculados.length > 0"
+            class="flex flexwrap g05"
+          >
+            <li
+              v-for="(modulo, index) in transferenciaEmFoco.modulos_vinculados"
+              :key="`modulo-${index}`"
+              class="particula"
+            >
+              {{ traduzirModulo(modulo) }}
+            </li>
+          </ul>
+          <div v-else>
+            -
+          </div>
         </dd>
       </div>
     </dl>
