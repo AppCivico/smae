@@ -13,6 +13,7 @@ import { RelatorioTribunalDeContasDto, RelTribunalDeContasDto } from './entities
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
 import { CsvWriterOptions, WriteCsvToFile } from 'src/common/helpers/CsvWriter';
 import { flatten } from '@json2csv/transforms';
+import { CampoVinculo } from '@prisma/client';
 @Injectable()
 export class TribunalDeContasService implements ReportableService {
     constructor(private readonly prisma: PrismaService) {}
@@ -78,6 +79,16 @@ export class TribunalDeContasService implements ReportableService {
                         status_base: true,
                     },
                 },
+                vinculos: {
+                    where: {
+                        removido_em: null,
+                        invalidado_em: null,
+                        campo_vinculo: CampoVinculo.Dotacao,
+                    },
+                    select: {
+                        valor_vinculo: true,
+                    },
+                },
             },
         });
 
@@ -89,6 +100,20 @@ export class TribunalDeContasService implements ReportableService {
                     ? distribuicaoStatusRow.status.nome
                     : distribuicaoStatusRow.status_base?.nome;
             }
+
+            // Construindo str de dotação(es)
+            // A str é formada por concatenação da dotação da distribuição e os vínculos de dotação.
+            // (unique dotações)
+            const dotacoes: string[] = [];
+            if (distribuicao.dotacao) {
+                dotacoes.push(distribuicao.dotacao);
+            }
+            distribuicao.vinculos.forEach((vinculo) => {
+                if (vinculo.valor_vinculo && !dotacoes.includes(vinculo.valor_vinculo)) {
+                    dotacoes.push(vinculo.valor_vinculo);
+                }
+            });
+            distribuicao.dotacao = dotacoes.join(' | ');
 
             return {
                 ano: distribuicao.transferencia.ano,
