@@ -132,7 +132,7 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
         return [];
       }
 
-      const gruposSelecionados = ['projetos', 'obras', 'metas'] as const;
+      const gruposSelecionados = ['projetos', 'obras', 'metas', 'plenoSetorial'] as const;
       const dadosOrganizados = gruposSelecionados.reduce((agrupado, chave) => {
         const grupo = (lista[chave] as any[]) || undefined;
         if (!grupo || grupo.length === 0) {
@@ -144,7 +144,7 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
           switch (chave) {
             case 'obras':
               dadosParciais = {
-                cor: 'verde',
+                cor: LegendasStatus.obras.color,
                 portfolio_programa: registro.portfolio_titulo,
                 orgao: registro.orgao_responsavel_sigla,
                 status: {
@@ -162,13 +162,27 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
 
             case 'projetos':
               dadosParciais = {
-                cor: 'laranja',
+                cor: LegendasStatus.projetos.color,
                 portfolio_programa: registro.portfolio_titulo,
                 orgao: registro.orgao_responsavel_sigla,
                 status: {
                   valor: registro.status,
                   nome: registro.status,
                 },
+              };
+
+              break;
+
+            case 'metas':
+              dadosParciais = {
+                cor: LegendasStatus.metas.color,
+              };
+
+              break;
+
+            case 'plenoSetorial':
+              dadosParciais = {
+                cor: LegendasStatus.plenoSetorial.color,
               };
 
               break;
