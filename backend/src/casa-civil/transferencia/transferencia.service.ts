@@ -1443,7 +1443,7 @@ export class TransferenciaService {
                             },
                         },
                         vinculos: {
-                            where: { removido_em: null },
+                            where: { removido_em: null, invalidado_em: null },
                             select: {
                                 projeto: {
                                     select: {
@@ -1540,17 +1540,18 @@ export class TransferenciaService {
 
             modulos_vinculados: row.distribuicao_recursos
                 .flatMap((dr) => dr.vinculos)
-                .flatMap((v) => {
-                    const modulos: ModuloSistema[] = [];
+                .reduce((uniqueModules, v) => {
                     if (v.projeto) {
                         switch (v.projeto.tipo) {
                             case TipoProjeto.PP:
-                                if (!modulos.includes(ModuloSistema.Projetos)) modulos.push(ModuloSistema.Projetos);
+                                if (!uniqueModules.includes(ModuloSistema.Projetos)) {
+                                    uniqueModules.push(ModuloSistema.Projetos);
+                                }
                                 break;
                             case TipoProjeto.MDO:
-                                if (!modulos.includes(ModuloSistema.MDO)) modulos.push(ModuloSistema.MDO);
-                                break;
-                            default:
+                                if (!uniqueModules.includes(ModuloSistema.MDO)) {
+                                    uniqueModules.push(ModuloSistema.MDO);
+                                }
                                 break;
                         }
                     }
@@ -1558,18 +1559,20 @@ export class TransferenciaService {
                     if (v.meta && v.meta.pdm) {
                         switch (v.meta.pdm.tipo) {
                             case TipoPdm.PDM:
-                                if (!modulos.includes(ModuloSistema.PDM)) modulos.push(ModuloSistema.PDM);
+                                if (!uniqueModules.includes(ModuloSistema.PDM)) {
+                                    uniqueModules.push(ModuloSistema.PDM);
+                                }
                                 break;
                             case TipoPdm.PS:
-                                if (!modulos.includes(ModuloSistema.PlanoSetorial))
-                                    modulos.push(ModuloSistema.PlanoSetorial);
-                                break;
-                            default:
+                                if (!uniqueModules.includes(ModuloSistema.PlanoSetorial)) {
+                                    uniqueModules.push(ModuloSistema.PlanoSetorial);
+                                }
                                 break;
                         }
                     }
-                    return modulos;
-                }),
+
+                    return uniqueModules;
+                }, [] as ModuloSistema[]),
         } satisfies TransferenciaDetailDto;
     }
 
