@@ -431,10 +431,7 @@ export default {
       path: ':transferenciaId/vinculos',
       component: TransferenciasVoluntariasVinculos,
       name: 'TransferenciasVoluntariasVinculos',
-      props: ({ params }) => ({
-        transferenciaId:
-          Number.parseInt(params.transferenciaId, 10) || undefined,
-      }),
+      props: (route) => tiparPropsDeRota(route, { transferenciaId: 'number' }),
       meta: {
         título: 'Vínculos',
         rotasParaMenuSecundário,
@@ -447,10 +444,9 @@ export default {
         {
           path: ':vinculoId',
           component: DialogWrapper,
-          props: ({ params }) => ({
-            vinculoId: Number.parseInt(params.vinculoId, 10) || undefined,
-            transferenciaId:
-              Number.parseInt(params.transferenciaId, 10) || undefined,
+          props: (route) => tiparPropsDeRota(route, {
+            vinculoId: 'number',
+            transferenciaId: 'number',
           }),
           meta: {
             rotaDeEscape: 'TransferenciasVoluntariasVinculos',
@@ -463,10 +459,9 @@ export default {
               path: '',
               name: 'TransferenciasVoluntariasVinculosEditar',
               component: TransferenciasVoluntariasVinculoEditar,
-              props: ({ params }) => ({
-                vinculoId: Number.parseInt(params.vinculoId, 10) || undefined,
-                transferenciaId:
-                  Number.parseInt(params.transferenciaId, 10) || undefined,
+              props: (route) => tiparPropsDeRota(route, {
+                vinculoId: 'number',
+                transferenciaId: 'number',
               }),
             },
           ],

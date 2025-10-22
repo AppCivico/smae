@@ -47,7 +47,7 @@ if (tiposDeVinculo.value.length === 0) {
 }
 
 const {
-  errors, handleSubmit, isSubmitting, resetForm, values,
+  errors, handleSubmit, isSubmitting, resetForm,
 } = useForm({
   initialValues: itemParaEdicao,
   validationSchema: schema,
@@ -55,9 +55,9 @@ const {
 
 const formularioSujo = useIsFormDirty();
 
-const onSubmit = handleSubmit(async () => {
+const onSubmit = handleSubmit(async (vals) => {
   try {
-    const resposta = await vinculosStore.salvarItem(values, props.vinculoId);
+    const resposta = await vinculosStore.salvarItem(vals, props.vinculoId);
 
     if (resposta) {
       alertStore.success('Dados salvos com sucesso!');
