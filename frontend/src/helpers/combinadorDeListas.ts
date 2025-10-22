@@ -31,46 +31,47 @@ export default function combinadorDeListas(
   propriedade?: string,
 ): string {
   // Se o separador não for uma string, exibe um aviso no console
-  const e = new Error();
-  if (typeof separadorFornecido !== 'string') {
-    console.error('O separador deve ser uma string', e.stack);
-  }
-
-  // Se a propriedade não for uma string, exibe um aviso no console
-  // e retorna uma string vazia para não quebrar o código
-  if (propriedade && typeof propriedade !== 'string') {
-    console.error('O caminho da propriedade deve ser uma string', e.stack);
-    return '';
-  }
-
-  // Se não for um array retorna uma string vazia pra não quebrar tudo
-  // mas exibe um erro no console
-  if (!Array.isArray(lista)) {
-    if (import.meta.env.VITE_EXPOR_ERROS === 'true' || import.meta.env.DEV) {
-      console.error('O parâmetro deve ser um array', e.stack);
+  try {
+    if (typeof separadorFornecido !== 'string') {
+      throw new Error('O separador deve ser uma string');
     }
+
+    // Se a propriedade não for uma string, exibe um aviso no console
+    // e retorna uma string vazia para não quebrar o código
+    if (propriedade && typeof propriedade !== 'string') {
+      throw new Error('O caminho da propriedade deve ser uma string');
+    }
+
+    // Se não for um array retorna uma string vazia pra não quebrar tudo
+    // mas exibe um erro no console
+    if (!Array.isArray(lista)) {
+      if (import.meta.env.VITE_EXPOR_ERROS === 'true' || import.meta.env.DEV) {
+        throw new Error('O parâmetro deve ser um array');
+      }
+    }
+
+    // Se a lista estiver vazia, retorna um texto vazio
+    if (!lista.length) {
+    }
+
+    const separador = (!separadorFornecido || typeof separadorFornecido !== 'string')
+      ? ', '
+      : separadorFornecido;
+
+    // Se a propriedade tiver um "." quer dizer que ela está dentro de um objeto,
+    // então descemos mais um nível para pegar o valor da propriedade
+    if (propriedade) {
+      return lista.reduce<string>((acumulador, item) => {
+        const valor = obterPropriedadeNoObjeto(propriedade, item as Record<string, unknown>, true);
+        return juntarValores(acumulador, valor, separador);
+      }, '').slice(0, -separador.length);
+    }
+
+    // Se não apenas combina os items do array usando o separador
+    return lista.reduce<string>((acumulador, item) => juntarValores(acumulador, item, separador), '')
+      .slice(0, -separador.length);
+  } catch (erro) {
+    console.error(erro);
     return '';
   }
-
-  // Se a lista estiver vazia, retorna um texto vazio
-  if (!lista.length) {
-    return '';
-  }
-
-  const separador = (!separadorFornecido || typeof separadorFornecido !== 'string')
-    ? ', '
-    : separadorFornecido;
-
-  // Se a propriedade tiver um "." quer dizer que ela está dentro de um objeto,
-  // então descemos mais um nível para pegar o valor da propriedade
-  if (propriedade) {
-    return lista.reduce<string>((acumulador, item) => {
-      const valor = obterPropriedadeNoObjeto(propriedade, item as Record<string, unknown>, true);
-      return juntarValores(acumulador, valor, separador);
-    }, '').slice(0, -separador.length);
-  }
-
-  // Se não apenas combina os items do array usando o separador
-  return lista.reduce<string>((acumulador, item) => juntarValores(acumulador, item, separador), '')
-    .slice(0, -separador.length);
 }

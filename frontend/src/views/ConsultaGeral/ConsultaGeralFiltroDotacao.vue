@@ -13,22 +13,29 @@ import SmaeLabel from '@/components/camposDeFormulario/SmaeLabel.vue';
 const entidadesProximasStore = useEntidadesProximasStore();
 const { chamadasPendentes } = storeToRefs(entidadesProximasStore);
 
-const formulario = ref({});
+const formulario = ref<Record<string, string>>({});
 
 const ano = ref(new Date().getFullYear());
 const dotacaoStore = useDotaçãoStore();
 
 const {
   DotaçãoSegmentos: dotacaoSegmentos,
-  // chamadasPendentes: dotacaoChamadasPendentes,
 } = storeToRefs(dotacaoStore);
 
 const dotacaoAtual = computed(() => dotacaoSegmentos.value?.[ano.value] || {});
 
-const projetoAtividade = computed(() => dotacaoAtual.value.projetos_atividades?.map((i) => ({
-  ...i,
-  codigo: `${i.codigo.slice(0, 1)}.${i.codigo.slice(1)}`,
-})));
+const projetoAtividade = computed(() => {
+  if (!dotacaoAtual.value.projetos_atividades) {
+    return [];
+  }
+
+  return dotacaoAtual.value.projetos_atividades.map((i) => ({
+    ...i,
+    codigo: i.codigo.length >= 2
+      ? `${i.codigo.slice(0, 1)}.${i.codigo.slice(1)}`
+      : i.codigo,
+  }));
+});
 
 const camposDeFiltro = computed<Formulario>(() => [
   {
@@ -106,6 +113,34 @@ const camposLista = computed<string[]>(
   }, []),
 );
 
+/**
+ * Recompõe os segmentos de dotação quando há formatação de projeto/atividade.
+ *
+ * Regra de negócio: O código de projeto/atividade é formatado com ponto decimal
+ * (ex: "2.001"), mas na dotação completa deve ser tratado como um único segmento.
+ * Quando o usuário digita uma dotação com 7+ segmentos, significa que os segmentos
+ * 5 e 6 (projeto/atividade) foram divididos pelo ponto, e precisam ser reagrupados.
+ *
+ * Exemplo:
+ *   Entrada: ['12', '34', '56', '78', '90', '2', '001', '12345678', ...]
+ *   Saída:   ['12', '34', '56', '78', '90', '2.001', '12345678', ...]
+ *
+ * @param segmentos - Array de segmentos da dotação separados por ponto
+ * @returns Array com segmentos ajustados, reagrupando projeto/atividade se necessário
+ */
+function recomporSegmentosDotacao(segmentos: string[]): string[] {
+  // Se há 7 ou mais segmentos, os índices 5 e 6 são partes do projeto/atividade
+  // que precisam ser reagrupados com ponto entre eles
+  if (segmentos.length >= 7) {
+    const inicio = segmentos.slice(0, 5);
+    const projetoAtividadeRecomposto = `${segmentos[5]}.${segmentos[6]}`;
+    const fim = segmentos.slice(7);
+    return [...inicio, projetoAtividadeRecomposto, ...fim];
+  }
+
+  return segmentos;
+}
+
 let adicionarPonto = false;
 const dotacaoEComplemento = computed<string>({
   get: () => {
@@ -143,17 +178,12 @@ const dotacaoEComplemento = computed<string>({
       adicionarPonto = false;
     }
 
-    let valorSeparado = valor.split('.');
-
-    if (valorSeparado.length >= 7) {
-      const inicio = valorSeparado.slice(0, 5);
-      const fim = valorSeparado.slice(7);
-      valorSeparado = [...inicio, `${valorSeparado[5]}.${valorSeparado[6]}`, ...fim];
-    }
+    const valorSeparado = valor.split('.');
+    const segmentosAjustados = recomporSegmentosDotacao(valorSeparado);
 
     const dados = camposLista.value.reduce((agrupado, item, itemPosicao) => ({
       ...agrupado,
-      [item]: valorSeparado[itemPosicao],
+      [item]: segmentosAjustados[itemPosicao],
     }), {});
 
     const ultimoCampo = camposLista.value[camposLista.value.length - 1];
@@ -187,17 +217,12 @@ watch(ano, () => {
         class="inputtext light mb1"
         type="text"
       >
-        <option :value="2025">
-          2025
-        </option>
-        <option :value="2024">
-          2024
-        </option>
-        <option :value="2023">
-          2023
-        </option>
-        <option :value="2022">
-          2022
+        <option
+          v-for="anoOpcao in [2025, 2024, 2023, 2022]"
+          :key="`ano--${anoOpcao}`"
+          :value="anoOpcao"
+        >
+          {{ anoOpcao }}
         </option>
       </select>
     </div>
