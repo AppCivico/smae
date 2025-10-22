@@ -24,6 +24,9 @@ const {
 const raio = ref(2000);
 
 const emitirSelecao = debounce(() => {
+  if (!raio.value) {
+    raio.value = 2000;
+  }
   if (selecionado.value) {
     emit('selecao', { endereco: selecionado.value, raio: raio.value });
   }
