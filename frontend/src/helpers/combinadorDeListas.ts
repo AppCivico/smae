@@ -52,6 +52,7 @@ export default function combinadorDeListas(
 
     // Se a lista estiver vazia, retorna um texto vazio
     if (!lista.length) {
+      return '';
     }
 
     const separador = (!separadorFornecido || typeof separadorFornecido !== 'string')
