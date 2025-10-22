@@ -77,7 +77,7 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
     },
   }),
   actions: {
-    async buscarPorLocalizacao(localizacaoProximidade: LocalizacaoProximidade, raio_km = 2) {
+    async buscarPorLocalizacao(localizacaoProximidade: LocalizacaoProximidade, raio = 2000) {
       try {
         this.erro.proximidadePorLocalizacao = false;
         this.chamadasPendentes.proximidadePorLocalizacao = true;
@@ -87,7 +87,7 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
           {
             lat: localizacaoProximidade.lat,
             lon: localizacaoProximidade.lon,
-            raio_km,
+            raio,
           },
         );
 
