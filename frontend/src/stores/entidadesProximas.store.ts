@@ -147,10 +147,11 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
                 cor: LegendasStatus.obras.color,
                 portfolio_programa: registro.portfolio_titulo,
                 orgao: registro.orgao_responsavel_sigla,
-                status: {
+                status: registro.status ? {
                   valor: registro.status,
-                  nome: statusObras[registro.status]?.nome || registro.status,
-                },
+                  nome: statusObras[registro.status as keyof typeof statusObras]?.nome
+                    || registro.status,
+                } : undefined,
                 detalhes: {
                   'Grupo Temático': registro.grupo_tematico_nome,
                   'Tipo de obra/Intervenção': registro.tipo_intervencao_nome,
@@ -165,10 +166,10 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
                 cor: LegendasStatus.projetos.color,
                 portfolio_programa: registro.portfolio_titulo,
                 orgao: registro.orgao_responsavel_sigla,
-                status: {
+                status: registro.status ? {
                   valor: registro.status,
                   nome: registro.status,
-                },
+                } : undefined,
               };
 
               break;
