@@ -76,8 +76,10 @@ const grupoDeLegendas = computed(() => (Array.isArray(props.legendas)
           >
             <dt
               v-if="!legendaItem.html"
-              :style="legendaItem.usarCssColor ? { color: legendaItem.color }
-                : { backgroundColor: legendaItem.color }"
+              :style="legendaItem.color
+                ? (legendaItem.usarCssColor ? { color: legendaItem.color }
+                  : { backgroundColor: legendaItem.color })
+                : {}"
               class="legenda-item__icon"
               :class="{ 'legenda-item__icon--apenas-cor': !legendaItem.icon }"
             >
