@@ -431,7 +431,7 @@ export default {
       path: ':transferenciaId/vinculos',
       component: TransferenciasVoluntariasVinculos,
       name: 'TransferenciasVoluntariasVinculos',
-      props: (route) => tiparPropsDeRota(route, { transferenciaId: 'number' }),
+      props: tiparPropsDeRota,
       meta: {
         título: 'Vínculos',
         rotasParaMenuSecundário,
@@ -445,10 +445,7 @@ export default {
         {
           path: ':vinculoId',
           component: DialogWrapper,
-          props: (route) => tiparPropsDeRota(route, {
-            vinculoId: 'number',
-            transferenciaId: 'number',
-          }),
+          props: tiparPropsDeRota,
           meta: {
             rotaDeEscape: 'TransferenciasVoluntariasVinculos',
             título: 'Editar vínculo',
