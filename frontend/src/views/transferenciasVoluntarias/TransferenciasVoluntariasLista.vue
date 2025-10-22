@@ -15,7 +15,7 @@ const route = useRoute();
 const router = useRouter();
 const alertStore = useAlertStore();
 const authStore = useAuthStore();
-const { temPermissãoPara } = storeToRefs(authStore);
+const { temPermissãoPara } = authStore;
 
 const {
   lista, chamadasPendentes, erro, paginação,
