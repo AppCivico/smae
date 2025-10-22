@@ -1459,6 +1459,36 @@ export class TransferenciaService {
                                         },
                                     },
                                 },
+                                iniciativa: {
+                                    select: {
+                                        meta: {
+                                            select: {
+                                                pdm: {
+                                                    select: {
+                                                        tipo: true,
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
+                                atividade: {
+                                    select: {
+                                        iniciativa: {
+                                            select: {
+                                                meta: {
+                                                    select: {
+                                                        pdm: {
+                                                            select: {
+                                                                tipo: true,
+                                                            },
+                                                        },
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
                             },
                         },
                     },
@@ -1556,11 +1586,25 @@ export class TransferenciaService {
                         }
                     }
 
-                    if (v.meta && v.meta.pdm) {
-                        switch (v.meta.pdm.tipo) {
+                    if (
+                        (v.meta && v.meta.pdm) ||
+                        (v.iniciativa && v.iniciativa.meta && v.iniciativa.meta.pdm) ||
+                        (v.atividade &&
+                            v.atividade.iniciativa &&
+                            v.atividade.iniciativa.meta &&
+                            v.atividade.iniciativa.meta.pdm)
+                    ) {
+                        const pdmTipo =
+                            v.meta?.pdm?.tipo ??
+                            v.iniciativa?.meta?.pdm?.tipo ??
+                            v.atividade?.iniciativa?.meta?.pdm?.tipo ??
+                            null;
+                        if (!pdmTipo) throw new InternalServerErrorException('PDM tipo não encontrado');
+
+                        switch (pdmTipo) {
                             case TipoPdm.PDM:
-                                if (!uniqueModules.includes(ModuloSistema.PDM)) {
-                                    uniqueModules.push(ModuloSistema.PDM);
+                                if (!uniqueModules.includes(ModuloSistema.ProgramaDeMetas)) {
+                                    uniqueModules.push(ModuloSistema.ProgramaDeMetas);
                                 }
                                 break;
                             case TipoPdm.PS:
