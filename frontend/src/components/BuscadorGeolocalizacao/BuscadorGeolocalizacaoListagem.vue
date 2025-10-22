@@ -64,8 +64,26 @@ watch(() => route.query?.endereco, () => {
       max="10000"
       step="100"
       :aria-disabled="!enderecos.length"
+      list="sugestoes-raio"
       @change="emitirSelecao"
     >
+    <datalist id="sugestoes-raio">
+      <option value="100">
+        100 m
+      </option>
+      <option value="500">
+        500 m
+      </option>
+      <option value="1000">
+        1 km
+      </option>
+      <option value="2000">
+        2 km
+      </option>
+      <option value="5000">
+        5 km
+      </option>
+    </datalist>
   </div>
 
   <SmaeTable
