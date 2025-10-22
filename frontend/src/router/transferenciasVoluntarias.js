@@ -441,6 +441,7 @@ export default {
         ],
       },
       children: [
+        /* EDIÇÃO DE VÍNCULO */
         {
           path: ':vinculoId',
           component: DialogWrapper,
