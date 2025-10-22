@@ -220,7 +220,11 @@ function obterPortfolioOuModulo() {
             name="tipo_vinculo_id"
             as="select"
             class="inputtext light mb1"
+            :aria-busy="chamadasPendentes.tiposDeVinculo"
             :class="{ 'error': errors.tipo_vinculo_id }"
+            @mousedown="chamadasPendentes.tiposDeVinculo && $event.preventDefault()"
+            @keydown="chamadasPendentes.tiposDeVinculo && $event.preventDefault()"
+            @focus="chamadasPendentes.tiposDeVinculo && $event.target.blur()"
           >
             <option value="">
               Selecionar
