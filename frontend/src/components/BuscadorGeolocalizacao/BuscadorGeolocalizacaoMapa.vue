@@ -45,7 +45,6 @@ const { selecionado } = storeToRefs(geolocalizadorStore);
   <MapaExibir
     :geo-json="$props.localizacoes ?? undefined"
     :camadas="selecionado?.camadas ?? undefined"
-    class="mb1"
     :opções-do-polígono="{
       fill: true,
       opacity: 0.5,
