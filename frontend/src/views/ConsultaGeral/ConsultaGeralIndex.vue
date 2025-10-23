@@ -1,16 +1,18 @@
 <script lang="ts" setup>
-import { computed, watch } from 'vue';
-import { storeToRefs } from 'pinia';
-import { useRoute } from 'vue-router';
 import * as CardEnvelope from '@/components/cardEnvelope';
+import FormularioQueryString from '@/components/FormularioQueryString.vue';
 import ListaLegendas from '@/components/ListaLegendas.vue';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
-import FormularioQueryString from '@/components/FormularioQueryString.vue';
-import { useGeolocalizadorStore } from '@/stores/geolocalizador.store';
-import { useEntidadesProximasStore, LegendasStatus } from '@/stores/entidadesProximas.store';
+import DetalhamentoDeVinculosPorItem from '@/components/transferenciasVoluntarias/DetalhamentoDeVinculosPorItem.vue';
 import combinadorDeListas from '@/helpers/combinadorDeListas';
-import ConsultaGeralFiltroEndereco from './ConsultaGeralFiltroEndereco.vue';
+import { LegendasStatus, useEntidadesProximasStore } from '@/stores/entidadesProximas.store';
+import { useGeolocalizadorStore } from '@/stores/geolocalizador.store';
+import { storeToRefs } from 'pinia';
+import { computed, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import ConsultaGeralFiltroDotacao from './ConsultaGeralFiltroDotacao.vue';
+import ConsultaGeralFiltroEndereco from './ConsultaGeralFiltroEndereco.vue';
+import SmallModal from '@/components/SmallModal.vue';
 
 const legendas = {
   status: Object.values(LegendasStatus),
@@ -30,6 +32,8 @@ const route = useRoute();
 const geolocalizadorStore = useGeolocalizadorStore();
 const entidadesProximasStore = useEntidadesProximasStore();
 const { proximidadeFormatada } = storeToRefs(entidadesProximasStore);
+
+const detalhamentoAberto = ref(-1);
 
 const tipo = computed<'endereco' | 'dotacao' | undefined>(() => route.query.tipo);
 
@@ -56,7 +60,6 @@ const colunas = computed(() => {
       atributosDoCabecalhoDeColuna: { class: 'cell--number' },
       atributosDoRodapeDeColuna: { class: 'cell--number' },
     },
-    { chave: 'detalhes', label: 'detalhes' },
   ];
 
   if (tipo.value === 'dotacao') {
@@ -151,15 +154,20 @@ watch(tipo, (novoTipo, tipoAnterior) => {
               {{ combinadorDeListas(celula, ' / ', 'geom_geojson.properties.string_endereco') }}
             </span>
           </template>
-          <template #acoes="{ linha }">
-            <SmaeLink
-              :to="{
-                name: 'DetalhesConsultaGeral',
-                params: { id: linha.id },
-                query: $route.query,
-              }"
+          <template #acoes="{ linha, linhaIndex }">
+            <SmallModal
+              v-if="linhaIndex == detalhamentoAberto"
+              has-close-button
+              @close="detalhamentoAberto = -1"
+            >
+              <DetalhamentoDeVinculosPorItem :dados="linha" />
+            </SmallModal>
+
+            <button
+              type="button"
               title="Ver detalhes"
-              class="fs0"
+              class="fs0 like-a__text addlink"
+              @click="detalhamentoAberto = linhaIndex"
             >
               <svg
                 width="20"
@@ -168,46 +176,27 @@ watch(tipo, (novoTipo, tipoAnterior) => {
               >
                 <use xlink:href="#i_eye" />
               </svg>
-            </SmaeLink>
-            <SmaeLink
-              :to="{
-                name: 'DetalhesConsultaGeral',
-                params: { id: linha.id },
-                query: $route.query,
-              }"
-              title="Adicionar vínculo"
-              class="fs0"
-            >
-              <svg
-                width="20"
-                height="20"
+            </button>
+            <!--
+              <SmaeLink
+                :to="{
+                  name: 'DetalhesConsultaGeral',
+                  params: { id: linha.id },
+                  query: $route.query,
+                }"
+                title="Adicionar vínculo"
                 class="fs0"
               >
-                <use xlink:href="#i_+" />
-              </svg>
-            </SmaeLink>
+                <svg
+                  width="20"
+                  height="20"
+                  class="fs0"
+                >
+                  <use xlink:href="#i_+" />
+                </svg>
+              </SmaeLink>
+            -->
           </template>
-
-          <!-- isso vai sumir, mantendo por historico
-          <template #celula:detalhes="{ celula }">
-            <div
-              v-if="celula"
-              class="celula__lista"
-            >
-              <div
-                v-for="(detalhe, detalheKey) in celula"
-                :key="`detalhe--${detalheKey}`"
-                class="celula__item"
-              >
-                {{ detalheKey }}: {{ detalhe }}
-              </div>
-            </div>
-
-            <span v-else>
-              -
-            </span>
-          </template>
-          -->
         </SmaeTable>
 
         <ListaLegendas
@@ -220,7 +209,6 @@ watch(tipo, (novoTipo, tipoAnterior) => {
       </article>
     </CardEnvelope.Conteudo>
   </FormularioQueryString>
-  <router-view />
 </template>
 
 <style lang="less" scoped>

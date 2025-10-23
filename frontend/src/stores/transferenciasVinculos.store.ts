@@ -1,6 +1,6 @@
-import { defineStore } from 'pinia';
 import type { TipoVinculoDto } from '@back/casa-civil/tipo-vinculo/entities/tipo-vinculo.entity';
-import type { VinculoDto } from '@back/casa-civil/vinculo/entities/vinculo.entity';
+import type { ListVinculoDto, VinculoDto } from '@back/casa-civil/vinculo/entities/vinculo.entity';
+import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -20,6 +20,7 @@ export type Filtros = {
 type Estado = {
   linhasEndereco: Vinculo[];
   linhasDotacao: Vinculo[];
+  lista: Vinculo[];
   tiposDeVinculo: TipoVinculoDto[];
   chamadasPendentes: {
     lista: boolean;
@@ -39,6 +40,7 @@ export const useTransferenciasVinculosStore = defineStore('transferenciasVinculo
   state: (): Estado => ({
     linhasEndereco: [],
     linhasDotacao: [],
+    lista: [],
     tiposDeVinculo: [],
     chamadasPendentes: {
       lista: false,
@@ -60,20 +62,27 @@ export const useTransferenciasVinculosStore = defineStore('transferenciasVinculo
       this.erros.lista = null;
 
       try {
-        if (!filtros?.campo_vinculo || filtros?.campo_vinculo === 'Endereco') {
+        if (filtros?.campo_vinculo === 'Endereco') {
+          // OBSOLETO início. Trocar pela chamada simples
           const respostaEndereco = await this.requestS.get(
             `${baseUrl}/distribuicao-recurso-vinculo`,
             filtros,
           );
           this.linhasEndereco = respostaEndereco?.linhas || [];
-        }
-
-        if (!filtros?.campo_vinculo || filtros?.campo_vinculo === 'Dotacao') {
+        } else if (filtros?.campo_vinculo === 'Dotacao') {
           const respostaDotacao = await this.requestS.get(
             `${baseUrl}/distribuicao-recurso-vinculo`,
             filtros,
           );
           this.linhasDotacao = respostaDotacao?.linhas || [];
+        } else {
+          // OBSOLETO fim
+          const resposta = await this.requestS.get(
+            `${baseUrl}/distribuicao-recurso-vinculo`,
+            filtros,
+          ) as ListVinculoDto;
+
+          this.lista = resposta?.linhas || [];
         }
       } catch (erro) {
         this.erros.lista = erro;
