@@ -1,5 +1,13 @@
-import { defineStore } from 'pinia';
 import statusObras from '@/consts/statusObras';
+import type DotacaoBuscaResponseDto from '@back/dotacao-busca/dto/dotacao-busca.dto';
+import type {
+  EtapaSearchResultDto,
+  MetaIniAtvLookupInfoDto,
+  PdmRotuloInfo,
+  ProjetoSearchResultDto,
+  SearchEntitiesNearbyDto,
+} from '@back/geo-busca/dto/geo-busca.entity';
+import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -13,16 +21,8 @@ type Erros = {
   buscaDotacao: null | unknown;
 };
 
-type EntidadeProxima = {
-  id: number;
-  nome: string;
-  modulo: string;
-  distancia_km?: number;
-  [key: string]: unknown;
-};
-
 type Estado = {
-  lista: Record<string, EntidadeProxima[]>;
+  dados: SearchEntitiesNearbyDto | DotacaoBuscaResponseDto;
   erro: Erros;
   chamadasPendentes: ChamadasPendentes;
 };
@@ -55,18 +55,24 @@ type ItemProximidadeFormatado = {
     nome: string;
   };
   detalhes?: Record<string, string | null | undefined>;
+  dotacoes_encontradas?: unknown;
+
+  meta_info?: MetaIniAtvLookupInfoDto;
+  iniciativa_info?: MetaIniAtvLookupInfoDto;
+  atividade_info?: MetaIniAtvLookupInfoDto;
+  pdm_info?: PdmRotuloInfo;
 };
 
 export const LegendasStatus = {
   obras: { item: 'Monitoramento de Obras', color: '#8EC122' },
   projetos: { item: 'Gestão de Projetos', color: '#F2890D' },
-  metas: { item: 'Programa de Metas', color: '#4074BF' },
+  programaDeMetas: { item: 'Programa de Metas', color: '#4074BF' },
   planoSetorial: { item: 'Planos Setoriais', color: '#9F045F' },
 };
 
 export const useEntidadesProximasStore = defineStore('entidadesProximas', {
   state: (): Estado => ({
-    lista: {},
+    dados: null,
     erro: {
       proximidadePorLocalizacao: null,
       buscaDotacao: null,
@@ -89,9 +95,9 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
             lon: localizacaoProximidade.lon,
             raio,
           },
-        );
+        ) as SearchEntitiesNearbyDto;
 
-        this.lista = resposta as Record<string, EntidadeProxima[]>;
+        this.dados = resposta;
 
         return resposta;
       } catch (erro) {
@@ -107,14 +113,14 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
         this.erro.buscaDotacao = false;
         this.chamadasPendentes.buscaDotacao = true;
 
-        const resposta = await this.requestS.get(
+        const resposta: DotacaoBuscaResponseDto = await this.requestS.get(
           `${baseUrl}/dotacao-busca`,
           {
             query: dotacao,
           },
         );
 
-        this.lista = resposta as Record<string, EntidadeProxima[]>;
+        this.dados = resposta;
 
         return resposta;
       } catch (erro) {
@@ -127,98 +133,152 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
     },
   },
   getters: {
-    proximidadeFormatada({ lista }) {
-      if (Object.keys(lista).length === 0) {
+    proximidadeFormatada({ dados }) {
+      if (!dados || Object.keys(dados).length === 0) {
         return [];
       }
 
-      type Grupo = keyof typeof LegendasStatus;
+      const gruposSelecionados = [
+        'obras',
+        'projetos',
+        'etapas',
+      ];
 
-      const gruposSelecionados: Grupo[] = Object.keys(LegendasStatus) as Grupo[];
       const dadosOrganizados = gruposSelecionados.reduce((agrupado, chave) => {
-        const grupo = (lista[chave] as any[]) || undefined;
+        type Grupo = (EtapaSearchResultDto | ProjetoSearchResultDto)[] | undefined;
+        const grupo: Grupo = (dados[chave] || undefined);
+
         if (!grupo || grupo.length === 0) {
           return agrupado;
         }
 
         grupo.forEach((registro) => {
-          let dadosParciais: Partial<ItemProximidadeFormatado> = {};
+          let dadosParciais: Partial<ItemProximidadeFormatado> = {
+            id: registro.id,
+            modulo: chave,
+            nome: '',
+            cor: 'padrao',
+          };
+
           switch (chave) {
-            case 'obras':
+            case 'obras': {
+              const obra = registro as ProjetoSearchResultDto;
+
               dadosParciais = {
+                ...dadosParciais,
+                nome: obra.nome ?? '',
                 cor: LegendasStatus.obras.color,
-                portfolio_programa: registro.portfolio_titulo,
-                orgao: registro.orgao_responsavel_sigla,
-                status: registro.status ? {
-                  valor: registro.status,
-                  nome: statusObras[registro.status as keyof typeof statusObras]?.nome
-                    || registro.status,
+                portfolio_programa: obra.portfolio_titulo || '',
+                orgao: obra.orgao_responsavel_sigla || '',
+                nro_vinculos: Number(obra.nro_vinculos ?? 0),
+                status: obra.status ? {
+                  valor: obra.status,
+                  nome: statusObras[obra.status as keyof typeof statusObras]?.nome
+                    || obra.status,
                 } : undefined,
                 detalhes: {
-                  'Grupo Temático': registro.grupo_tematico_nome,
-                  'Tipo de obra/Intervenção': registro.tipo_intervencao_nome,
-                  'Equipamento/Estrutura Pública': registro.equipamento_nome,
-                  Subprefeitura: registro.subprefeitura_nomes,
+                  'Grupo Temático': obra.grupo_tematico_nome,
+                  'Tipo de obra/Intervenção': obra.tipo_intervencao_nome,
+                  'Equipamento/Estrutura Pública': obra.equipamento_nome,
+                  Subprefeitura: obra.subprefeitura_nomes,
                 },
               };
               break;
+            }
 
-            case 'projetos':
+            case 'projetos': {
+              const projeto = registro as ProjetoSearchResultDto;
               dadosParciais = {
+                ...dadosParciais,
+                nome: projeto.nome ?? '',
                 cor: LegendasStatus.projetos.color,
-                portfolio_programa: registro.portfolio_titulo,
-                orgao: registro.orgao_responsavel_sigla,
-                status: registro.status ? {
-                  valor: registro.status,
-                  nome: registro.status,
+                portfolio_programa: projeto.portfolio_titulo || '',
+                orgao: projeto.orgao_responsavel_sigla || '',
+                nro_vinculos: Number(projeto.nro_vinculos ?? 0),
+                status: projeto.status ? {
+                  valor: projeto.status,
+                  nome: projeto.status,
                 } : undefined,
               };
 
               break;
+            }
 
-            case 'metas':
-              dadosParciais = {
-                cor: LegendasStatus.metas.color,
-              };
+            case 'etapas': {
+              const etapa = registro as EtapaSearchResultDto;
+
+              dadosParciais.nome = etapa.titulo ?? '';
+
+              if (etapa.meta_id) {
+                const metaInfo = this.metasInfo?.[etapa.meta_id ?? 0];
+
+                if (metaInfo) {
+                  dadosParciais.meta_info = metaInfo;
+                  dadosParciais.nro_vinculos = Number(metaInfo.nro_vinculos ?? 0);
+                  dadosParciais.orgao = metaInfo.orgaos_sigla?.join(', ') || '';
+
+                  const pdmInfo = metaInfo?.pdm_id ? this.pdmInfo?.[metaInfo.pdm_id] : undefined;
+
+                  if (pdmInfo) {
+                    dadosParciais.pdm_info = pdmInfo;
+                    dadosParciais.portfolio_programa = pdmInfo.nome || '';
+
+                    if (['PDM', 'ProgramaDeMetas'].indexOf(pdmInfo?.sistema) > -1) {
+                      dadosParciais.cor = LegendasStatus.programaDeMetas.color;
+                    } else if (pdmInfo?.sistema === 'PlanoSetorial') {
+                      dadosParciais.cor = LegendasStatus.planoSetorial.color;
+                    }
+                  }
+                }
+
+                if (etapa.iniciativa_id) {
+                  const iniciativaInfo = this.iniciativasInfo?.[etapa.iniciativa_id ?? 0];
+
+                  if (iniciativaInfo) {
+                    dadosParciais.iniciativa_info = iniciativaInfo;
+                    dadosParciais.orgao = iniciativaInfo.orgaos_sigla?.join(', ') || '';
+                    dadosParciais.nro_vinculos = Number(iniciativaInfo.nro_vinculos ?? 0);
+                  }
+
+                  if (etapa.atividade_id) {
+                    const atividadeInfo = this.atividadesInfo?.[etapa.atividade_id ?? 0];
+                    if (atividadeInfo) {
+                      dadosParciais.atividade_info = atividadeInfo;
+                      dadosParciais.orgao = atividadeInfo.orgaos_sigla?.join(', ') || '';
+                      dadosParciais.nro_vinculos = Number(atividadeInfo.nro_vinculos ?? 0);
+                    }
+                  }
+                }
+              }
 
               break;
-
-            case 'planoSetorial':
-              dadosParciais = {
-                cor: LegendasStatus.planoSetorial.color,
-              };
-
-              break;
+            }
 
             default:
               break;
           }
 
-          const corItem = dadosParciais.cor ?? 'padrao';
-
           const localizacoesComCor = (registro.localizacoes ?? []).map(
-            (localizacao: LocalizacaoGeoJSON) => ({
+            (localizacao) => ({
               ...localizacao,
               geom_geojson: {
                 ...localizacao.geom_geojson,
                 properties: {
                   ...localizacao.geom_geojson.properties,
-                  cor_do_marcador: corItem,
+                  cor_do_marcador: dadosParciais.cor,
                 },
               },
             }),
           ) || [];
 
-          const item: ItemProximidadeFormatado = {
+          if ('dotacoes_encontradas' in registro) {
+            dadosParciais.dotacoes_encontradas = registro.dotacoes_encontradas;
+          }
+
+          const item = {
             ...dadosParciais,
-            dotacoes_encontradas: registro.dotacoes_encontradas,
-            id: registro.id,
-            modulo: chave,
-            nome: registro.nome ?? '',
-            nro_vinculos: Number(registro.nro_vinculos ?? 0),
             localizacoes: localizacoesComCor,
-            cor: corItem,
-          };
+          } as ItemProximidadeFormatado;
 
           agrupado.push(item);
         });
@@ -228,5 +288,33 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
 
       return dadosOrganizados;
     },
+    metasInfo: ({ dados }): Record<string, MetaIniAtvLookupInfoDto> | null => (!dados?.metas_info
+      ? null
+      : dados.metas_info
+        .reduce((acc: Record<string, MetaIniAtvLookupInfoDto>, cur: MetaIniAtvLookupInfoDto) => {
+          acc[cur.id] = cur;
+          return acc;
+        }, {})),
+    iniciativasInfo: ({ dados }) => (!dados?.iniciativas_info
+      ? null
+      : dados.iniciativas_info
+        .reduce((acc: Record<string, MetaIniAtvLookupInfoDto>, cur: MetaIniAtvLookupInfoDto) => {
+          acc[cur.id] = cur;
+          return acc;
+        }, {})),
+    atividadesInfo: ({ dados }) => (!dados?.atividades_info
+      ? null
+      : dados.atividades_info
+        .reduce((acc: Record<string, MetaIniAtvLookupInfoDto>, cur: MetaIniAtvLookupInfoDto) => {
+          acc[cur.id] = cur;
+          return acc;
+        }, {})),
+    pdmInfo: ({ dados }): Record<string, PdmRotuloInfo> | null => (!dados?.pdm_info
+      ? null
+      : dados.pdm_info
+        .reduce((acc: Record<string, PdmRotuloInfo>, cur: PdmRotuloInfo) => {
+          acc[cur.id] = cur;
+          return acc;
+        }, {})),
   },
 });
