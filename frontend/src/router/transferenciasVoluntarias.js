@@ -61,6 +61,8 @@ export default {
   },
   children: [
     {
+      component: () => import('@/views/ConsultaGeral/ConsultaGeralIndex.vue'),
+      name: 'consultaGeral',
       path: 'consulta-geral',
       meta: {
         título: 'Consulta Geral',
