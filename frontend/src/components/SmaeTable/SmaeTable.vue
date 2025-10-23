@@ -209,7 +209,6 @@ type Props =
       alvo: unknown,
       classe: string
     },
-    temBotoesDeAcao?: boolean
   };
 
 type Emits = DeleteButtonEvents;
@@ -224,7 +223,6 @@ const props = withDefaults(defineProps<Props>(), {
   parametroNoObjetoParaExcluir: 'descricao',
   rolagemHorizontal: false,
   personalizarLinhas: undefined,
-  temBotoesDeAcao: false,
 });
 const emit = defineEmits<Emits>();
 defineSlots<Slots>();
@@ -232,7 +230,7 @@ defineSlots<Slots>();
 const slots = useSlots();
 
 const hasActionButton = computed<boolean>(() => {
-  if (props.rotaEditar || props.temBotoesDeAcao) {
+  if (props.rotaEditar || slots.acoes) {
     return true;
   }
 

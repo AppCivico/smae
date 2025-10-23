@@ -147,7 +147,6 @@ watch(tipo, (novoTipo, tipoAnterior) => {
           replicar-cabecalho
           :colunas="colunas"
           :dados="proximidadeFormatada"
-          :tem-botoes-de-acao="true"
         >
           <template #celula:localizacoes="{ celula, linha }">
             <div
