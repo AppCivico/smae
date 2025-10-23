@@ -23,6 +23,7 @@ import {
 } from '../../orcamento-realizado/orcamento-realizado.service';
 import { Decimal } from '@prisma/client/runtime/library';
 import { SmaeConfigService } from 'src/common/services/smae-config.service';
+import { VinculoService } from 'src/casa-civil/vinculo/vinculo.service';
 
 type PartialOrcamentoRealizadoDto = {
     ano_referencia: number;
@@ -39,7 +40,8 @@ export class OrcamentoRealizadoService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly dotacaoService: DotacaoService,
-        private readonly smaeConfigService: SmaeConfigService
+        private readonly smaeConfigService: SmaeConfigService,
+        private readonly vinculoService: VinculoService
     ) {
         // deixar ligado a verificação
         this.liberarEmpenhoValoresMaioresQueSof = false;
@@ -1132,6 +1134,43 @@ export class OrcamentoRealizadoService {
 
                 // não tem trigger nessa table, não há o que reprocessar
                 // await prismaTxn.dotacaoRealizado.update({ where: { id: processoTx.id }, data: { id: processoTx.id }, });
+            }
+
+            // Verificando se a linha possui vínculos.
+            // Vínculos são de distribuições de recurso (SERI) com Metas, Iniciativas, Atividades e projetos.
+            const linhaOrcRealizado = await this.prisma.orcamentoRealizado.findMany({
+                where: { id: orcRealizado.id },
+                select: {
+                    meta_id: true,
+                    iniciativa_id: true,
+                    atividade_id: true,
+                    projeto_id: true,
+                },
+            });
+
+            // Se possui vínculos, vamos invalidar os mesmos.
+            for (const linha of linhaOrcRealizado) {
+                if (linha.meta_id) {
+                    await this.vinculoService.invalidarVinculo({ meta_id: linha.meta_id }, 'Dotação removida.');
+                }
+
+                if (linha.iniciativa_id) {
+                    await this.vinculoService.invalidarVinculo(
+                        { iniciativa_id: linha.iniciativa_id },
+                        'Dotação removida.'
+                    );
+                }
+
+                if (linha.atividade_id) {
+                    await this.vinculoService.invalidarVinculo(
+                        { atividade_id: linha.atividade_id },
+                        'Dotação removida.'
+                    );
+                }
+
+                if (linha.projeto_id) {
+                    await this.vinculoService.invalidarVinculo({ projeto_id: linha.projeto_id }, 'Dotação removida.');
+                }
             }
         }
     }
