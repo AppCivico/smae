@@ -55,8 +55,6 @@ export class VinculoDetalheObraDto {
     tipo_intervencao_nome: string | null;
 }
 
-export class VinculoDetalheMetaDto {}
-
 export class ListVinculoDto {
     linhas: VinculoDto[];
 }

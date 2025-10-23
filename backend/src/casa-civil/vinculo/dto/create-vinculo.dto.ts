@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { CampoVinculo } from '@prisma/client';
-import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsNumber, IsOptional, IsString, MaxLength } from 'class-validator';
+import { MAX_LENGTH_DEFAULT } from 'src/common/consts';
 
 export class CreateVinculoDto {
     @IsNumber()
@@ -22,6 +23,9 @@ export class CreateVinculoDto {
 
     @IsOptional()
     @IsString()
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Observação' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     observacao?: string;
 
     @IsOptional()
