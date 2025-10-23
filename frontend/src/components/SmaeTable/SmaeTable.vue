@@ -213,7 +213,7 @@ type Props =
 
 type Emits = DeleteButtonEvents;
 
-const attributosDaRaiz = useAttrs();
+const atributosDaRaiz = useAttrs();
 
 const props = withDefaults(defineProps<Props>(), {
   titulo: undefined,
@@ -243,8 +243,8 @@ const tituloParaRolagemHorizontal = computed<string | undefined>(() => {
     return undefined;
   }
 
-  if (attributosDaRaiz.ariaLabel) {
-    return attributosDaRaiz.ariaLabel;
+  if (atributosDaRaiz.ariaLabel) {
+    return atributosDaRaiz.ariaLabel;
   }
 
   if (props.tituloParaRolagemHorizontal) {
