@@ -126,13 +126,6 @@ watch(tipo, (novoTipo, tipoAnterior) => {
           </span>
         </CardEnvelope.Titulo>
 
-        <p
-          v-if="tipo === 'endereco'"
-          class="tabela-resultados__descricao mt1"
-        >
-          O resultado dessa pesquisa atinge até 2 km ao redor do endereço digitado.
-        </p>
-
         <ListaLegendas
           titulo=""
           :legendas="legendas"
@@ -281,12 +274,6 @@ watch(tipo, (novoTipo, tipoAnterior) => {
 
   }
 
-}
-
-.tabela-resultados__descricao {
-  font-size: 1.3rem;
-  font-weight: 300;
-  line-height: 1;
 }
 
 .legenda-item {
