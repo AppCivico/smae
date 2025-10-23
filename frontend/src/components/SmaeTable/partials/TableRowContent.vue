@@ -6,6 +6,7 @@
     :eh-cabecalho="!!coluna.ehCabecalho"
     :formatador="coluna.formatador"
     :linha="linha"
+    :linha-index="linhaIndex"
     :caminho="coluna.chave"
     v-bind="coluna.atributosDaCelula"
   >
@@ -22,6 +23,7 @@
       <slot
         name="acoes"
         :linha="linha"
+        :linha-index="linhaIndex"
       >
         <EditButton
           v-if="rotaEditar"
