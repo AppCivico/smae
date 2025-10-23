@@ -412,8 +412,8 @@ export class GeoBuscaService {
                     titulo: e.titulo ?? `Etapa ID ${e.id}`,
                     cronograma_id: e.cronograma_id,
                     meta_id: metaId ?? 0,
-                    iniciativa_id: iniciativaId ?? 0,
-                    atividade_id: atividadeId ?? 0,
+                    iniciativa_id: iniciativaId ?? undefined,
+                    atividade_id: atividadeId ?? undefined,
                     localizacoes: entityGeoInfoMap.get(`etapa-${e.id}`) || [],
                 });
             });

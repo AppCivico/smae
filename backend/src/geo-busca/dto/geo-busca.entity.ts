@@ -164,10 +164,10 @@ export class EtapaSearchResultDto {
     meta_id: number;
 
     @ApiProperty()
-    iniciativa_id: number;
+    iniciativa_id?: number;
 
     @ApiProperty()
-    atividade_id: number;
+    atividade_id?: number;
 
     @ApiProperty({ type: () => [GeoInfoBaseDto] })
     localizacoes: GeoInfoBaseDto[];
