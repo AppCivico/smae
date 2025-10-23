@@ -1,4 +1,5 @@
 <script setup>
+import { onMounted, ref } from 'vue';
 import { useAlertStore } from '@/stores/alert.store';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -12,6 +13,14 @@ const props = defineProps({
 const route = useRoute();
 const router = useRouter();
 const alertStore = useAlertStore();
+const dialogRef = ref(null);
+
+onMounted(() => {
+  // Abre o dialog como modal ao montar
+  if (dialogRef.value) {
+    dialogRef.value.showModal();
+  }
+});
 
 async function checkClose() {
   const routesMatchedLength = route.matched.length;
@@ -45,20 +54,16 @@ async function checkClose() {
 </script>
 
 <template>
-  <div
-    class="editModal-wrap"
+  <dialog
+    ref="dialogRef"
+    class="editModal-dialog"
+    @click.self="checkClose"
   >
     <slot />
-    <div
-      class="overlay"
-      @click="checkClose"
-    />
-    <div
-      class="editModal"
-    >
+    <div class="editModal">
       <div>
         <router-view />
       </div>
     </div>
-  </div>
+  </dialog>
 </template>
