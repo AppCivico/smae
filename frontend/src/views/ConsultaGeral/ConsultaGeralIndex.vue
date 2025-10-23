@@ -47,7 +47,7 @@ const colunas = computed(() => {
     { chave: 'portfolio_programa', label: 'portfólio/plano ou programa' },
     { chave: 'nome', label: 'nome/meta' },
     { chave: 'orgao', label: 'Órgão' },
-    { chave: 'status.nome', label: 'status', formatador: (v) => v || 'N/A' },
+    { chave: 'status', label: 'status', formatador: (v) => v?.nome || 'N/A' },
     {
       chave: 'nro_vinculos',
       label: 'nº vínculos',
@@ -81,9 +81,13 @@ const colunas = computed(() => {
   ];
 });
 
-watch(tipo, () => {
-  geolocalizadorStore.$reset();
-  entidadesProximasStore.$reset();
+watch(tipo, (novoTipo, tipoAnterior) => {
+  // Só reseta se ambos os tipos estão definidos e são diferentes
+  // Isso evita resetar quando navegamos para rotas filhas (modal) que não têm o parâmetro tipo
+  if (tipoAnterior !== undefined && novoTipo !== undefined && novoTipo !== tipoAnterior) {
+    geolocalizadorStore.$reset();
+    entidadesProximasStore.$reset();
+  }
 }, { immediate: true });
 </script>
 
@@ -143,18 +147,56 @@ watch(tipo, () => {
           replicar-cabecalho
           :colunas="colunas"
           :dados="proximidadeFormatada"
+          :tem-botoes-de-acao="true"
         >
           <template #celula:localizacoes="{ celula, linha }">
             <div
               :class="['celula__item', 'celula__item-classificacao']"
-              :style="{ color: LegendasStatus[linha.modulo]?.color || '#000' }"
+              :style="{ color: linha.cor || '#000' }"
             />
 
             <span v-if="celula">
               {{ combinadorDeListas(celula, ' / ', 'geom_geojson.properties.string_endereco') }}
             </span>
           </template>
+          <template #acoes="{ linha }">
+            <SmaeLink
+              :to="{
+                name: 'DetalhesConsultaGeral',
+                params: { id: linha.id },
+                query: $route.query,
+              }"
+              title="Ver detalhes"
+              class="fs0"
+            >
+              <svg
+                width="20"
+                height="20"
+                class="fs0"
+              >
+                <use xlink:href="#i_eye" />
+              </svg>
+            </SmaeLink>
+            <SmaeLink
+              :to="{
+                name: 'DetalhesConsultaGeral',
+                params: { id: linha.id },
+                query: $route.query,
+              }"
+              title="Adicionar vínculo"
+              class="fs0"
+            >
+              <svg
+                width="20"
+                height="20"
+                class="fs0"
+              >
+                <use xlink:href="#i_+" />
+              </svg>
+            </SmaeLink>
+          </template>
 
+          <!-- isso vai sumir, mantendo por historico
           <template #celula:detalhes="{ celula }">
             <div
               v-if="celula"
@@ -173,6 +215,7 @@ watch(tipo, () => {
               -
             </span>
           </template>
+          -->
         </SmaeTable>
 
         <ListaLegendas
@@ -185,6 +228,7 @@ watch(tipo, () => {
       </article>
     </CardEnvelope.Conteudo>
   </FormularioQueryString>
+  <router-view />
 </template>
 
 <style lang="less" scoped>
