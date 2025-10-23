@@ -13,6 +13,13 @@ export const useDistribuicaoRecursosStore = defineStore('distribuicaoRecursos', 
       emFoco: false,
     },
     erro: null,
+    paginacao: {
+      token_paginacao: '',
+      paginas: 0,
+      pagina_corrente: 0,
+      total_registros: 0,
+      tem_mais: false,
+    },
   }),
   actions: {
     async buscarItem(id = 0, params = {}) {
@@ -38,11 +45,12 @@ export const useDistribuicaoRecursosStore = defineStore('distribuicaoRecursos', 
       this.erro = null;
 
       try {
-        const { linhas } = await this.requestS.get(
+        const resposta = await this.requestS.get(
           `${baseUrl}/distribuicao-recurso`,
           params,
         );
-        this.lista = linhas;
+        this.lista = resposta.linhas;
+        this.paginacao = resposta;
       } catch (erro) {
         this.erro = erro;
       }
