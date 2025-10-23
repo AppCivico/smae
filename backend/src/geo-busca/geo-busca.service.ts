@@ -5,7 +5,7 @@ import { GeoJSON } from 'geojson';
 import { PrismaService } from '../prisma/prisma.service';
 import {
     GeoInfoBaseDto,
-    MetaLookupInfoDto,
+    MetaIniAtvLookupInfoDto,
     ProjetoSearchResultDto,
     SearchEntitiesNearbyDto,
     SearchEntitiesNearbyResponseDto,
@@ -26,6 +26,8 @@ export class GeoBuscaService {
         let geoLocalizacaoDistMap: Map<number, number> | undefined = undefined;
         const seenPDMIds = new Set<number>();
         const seenMetaIdsForLookup = new Set<number>();
+        const seenIniIdsForLookup = new Set<number>();
+        const seenAtvIdsForLookup = new Set<number>();
 
         const hasDistrito = geo_camada_config_id !== undefined && geo_camada_codigo !== undefined;
         const hasRegiao = regiao_id !== undefined;
@@ -124,7 +126,9 @@ export class GeoBuscaService {
                 etapas: [],
                 pdm_info: [],
                 metas_info: [],
-            }; // Initialized metas_info
+                iniciativas_info: [],
+                atividades_info: [],
+            }; // Initialized metas_info, iniciativas_info, atividades_info
         }
 
         const referencias = await this.prisma.geoLocalizacaoReferencia.findMany({
@@ -147,7 +151,9 @@ export class GeoBuscaService {
                 etapas: [],
                 pdm_info: [],
                 metas_info: [],
-            }; // Initialized metas_info
+                iniciativas_info: [],
+                atividades_info: [],
+            }; // Initialized metas_info, iniciativas_info, atividades_info
         }
 
         const response: SearchEntitiesNearbyResponseDto = {
@@ -159,6 +165,8 @@ export class GeoBuscaService {
             etapas: [],
             pdm_info: [],
             metas_info: [],
+            iniciativas_info: [],
+            atividades_info: [],
         };
 
         const makeGeoInfo = (ref: (typeof referencias)[0]): GeoInfoBaseDto => {
@@ -311,6 +319,7 @@ export class GeoBuscaService {
             });
             iniciativasData.forEach((i) => {
                 seenMetaIdsForLookup.add(i.meta.id);
+                seenIniIdsForLookup.add(i.id);
                 response.iniciativas.push({
                     id: i.id,
                     titulo: i.titulo,
@@ -346,6 +355,7 @@ export class GeoBuscaService {
             });
             atividadesData.forEach((a) => {
                 seenMetaIdsForLookup.add(a.iniciativa.meta.id);
+                seenAtvIdsForLookup.add(a.id);
                 response.atividades.push({
                     id: a.id,
                     titulo: a.titulo,
@@ -370,15 +380,27 @@ export class GeoBuscaService {
 
             const etapaRelMetas = await this.prisma.view_etapa_rel_meta.findMany({
                 where: { etapa_id: { in: etapasData.map((e) => e.id) } },
-                select: { etapa_id: true, meta_id: true },
+                select: { etapa_id: true, meta_id: true, iniciativa_id: true, atividade_id: true },
             });
             const etapaToMetaIdMap = new Map(etapaRelMetas.map((erm) => [erm.etapa_id, erm.meta_id]));
+            const etapaToIniIdMap = new Map(etapaRelMetas.map((erm) => [erm.etapa_id, erm.iniciativa_id]));
+            const etapaToAtvIdMap = new Map(etapaRelMetas.map((erm) => [erm.etapa_id, erm.atividade_id]));
 
             const uniqueMetaIdsFromEtapas = [
                 ...new Set(etapaRelMetas.map((erm) => erm.meta_id).filter((id) => id != null)),
             ] as number[];
 
+            const uniqueIniIdsFromEtapas = [
+                ...new Set(etapaRelMetas.map((erm) => erm.iniciativa_id).filter((id) => id != null)),
+            ] as number[];
+
+            const uniqueAtvIdsFromEtapas = [
+                ...new Set(etapaRelMetas.map((erm) => erm.atividade_id).filter((id) => id != null)),
+            ] as number[];
+
             uniqueMetaIdsFromEtapas.forEach((id) => seenMetaIdsForLookup.add(id));
+            uniqueIniIdsFromEtapas.forEach((id) => seenIniIdsForLookup.add(id));
+            uniqueAtvIdsFromEtapas.forEach((id) => seenAtvIdsForLookup.add(id));
 
             etapasData.forEach((e) => {
                 const metaId = etapaToMetaIdMap.get(e.id);
@@ -393,7 +415,7 @@ export class GeoBuscaService {
             });
         }
 
-        // Busca informações adicionais de metas e PDMs
+        // Busca informações adicionais de metas/ini/atv e PDMs
         if (seenMetaIdsForLookup.size > 0) {
             const metasForInfoData = await this.prisma.meta.findMany({
                 where: { id: { in: Array.from(seenMetaIdsForLookup) } },
@@ -420,7 +442,75 @@ export class GeoBuscaService {
                     macro_tema_id: m.macro_tema_id,
                     orgaos_sigla: m.meta_orgao.map((mo) => mo.orgao.sigla),
                     nro_vinculos: m.vinculosDistribuicaoRecursos.length,
-                } satisfies MetaLookupInfoDto;
+                } satisfies MetaIniAtvLookupInfoDto;
+            });
+        }
+
+        if (seenIniIdsForLookup.size > 0) {
+            const iniciativasForInfoData = await this.prisma.iniciativa.findMany({
+                where: { id: { in: Array.from(seenIniIdsForLookup) } },
+                select: {
+                    id: true,
+                    codigo: true,
+                    titulo: true,
+                    meta: {
+                        select: {
+                            pdm_id: true,
+                            macro_tema_id: true,
+                            macro_tema: { select: { id: true, descricao: true } },
+                        },
+                    },
+                    iniciativa_orgao: { select: { orgao: { select: { sigla: true } } } },
+                    distribuicaoRecursoVinculos: { select: { id: true }, where: { removido_em: null } },
+                },
+            });
+            response.iniciativas_info = iniciativasForInfoData.map((i) => {
+                return {
+                    id: i.id,
+                    codigo: i.codigo,
+                    titulo: i.titulo,
+                    pdm_id: i.meta.pdm_id,
+                    orgaos_sigla: i.iniciativa_orgao.map((io) => io.orgao.sigla),
+                    nro_vinculos: i.distribuicaoRecursoVinculos.length,
+                    macro_tema_id: i.meta.macro_tema_id,
+                    macro_tema_nome: i.meta.macro_tema?.descricao ?? null,
+                } satisfies MetaIniAtvLookupInfoDto;
+            });
+        }
+
+        if (seenAtvIdsForLookup.size > 0) {
+            const atividadesForInfoData = await this.prisma.atividade.findMany({
+                where: { id: { in: Array.from(seenAtvIdsForLookup) } },
+                select: {
+                    id: true,
+                    codigo: true,
+                    titulo: true,
+                    iniciativa: {
+                        select: {
+                            meta: {
+                                select: {
+                                    pdm_id: true,
+                                    macro_tema_id: true,
+                                    macro_tema: { select: { id: true, descricao: true } },
+                                },
+                            },
+                        },
+                    },
+                    atividade_orgao: { select: { orgao: { select: { sigla: true } } } },
+                    distribuicaoRecursoVinculos: { select: { id: true }, where: { removido_em: null } },
+                },
+            });
+            response.atividades_info = atividadesForInfoData.map((a) => {
+                return {
+                    id: a.id,
+                    codigo: a.codigo,
+                    titulo: a.titulo,
+                    pdm_id: a.iniciativa.meta.pdm_id,
+                    orgaos_sigla: a.atividade_orgao.map((ao) => ao.orgao.sigla),
+                    nro_vinculos: a.distribuicaoRecursoVinculos.length,
+                    macro_tema_id: a.iniciativa.meta.macro_tema_id,
+                    macro_tema_nome: a.iniciativa.meta.macro_tema?.descricao ?? null,
+                } satisfies MetaIniAtvLookupInfoDto;
             });
         }
 

@@ -175,7 +175,7 @@ export class PdmRotuloInfo {
     sistema: ModuloSistema;
 }
 
-export class MetaLookupInfoDto {
+export class MetaIniAtvLookupInfoDto {
     id: number;
     codigo: string;
     titulo: string;
@@ -263,9 +263,21 @@ export class SearchEntitiesNearbyResponseDto {
     pdm_info: PdmRotuloInfo[];
 
     @ApiProperty({
-        type: [MetaLookupInfoDto],
+        type: [MetaIniAtvLookupInfoDto],
         description:
             'Informações de lookup para Metas referenciadas por iniciativas, atividades ou etapas encontradas.',
     })
-    metas_info: MetaLookupInfoDto[];
+    metas_info: MetaIniAtvLookupInfoDto[];
+
+    @ApiProperty({
+        type: [MetaIniAtvLookupInfoDto],
+        description: 'Informações de lookup para Iniciativas referenciadas por Atividades ou etapas encontradas.',
+    })
+    iniciativas_info: MetaIniAtvLookupInfoDto[];
+
+    @ApiProperty({
+        type: [MetaIniAtvLookupInfoDto],
+        description: 'Informações de lookup para Atividades referenciadas por Etapas encontradas.',
+    })
+    atividades_info: MetaIniAtvLookupInfoDto[];
 }
