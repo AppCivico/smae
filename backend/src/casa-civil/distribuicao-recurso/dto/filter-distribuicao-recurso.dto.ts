@@ -14,7 +14,9 @@ export class FilterDistribuicaoRecursoDto {
     /**
      * Token para buscar próxima página
      */
-    @ApiPropertyOptional({ description: 'Token para buscar a próxima página de resultados' })
+    @IsOptional()
+    @IsString()
+    @MaxLength(1000)
     token_proxima_pagina?: string;
 
     /**
