@@ -19,21 +19,26 @@
 
   <td v-if="hasActionButton">
     <div class="flex g1 justifyright">
-      <EditButton
-        v-if="rotaEditar"
+      <slot
+        name="acoes"
         :linha="linha"
-        :rota-editar="rotaEditar"
-        :parametro-da-rota-editar="parametroDaRotaEditar"
-        :parametro-no-objeto-para-editar="parametroNoObjetoParaEditar"
-      />
+      >
+        <EditButton
+          v-if="rotaEditar"
+          :linha="linha"
+          :rota-editar="rotaEditar"
+          :parametro-da-rota-editar="parametroDaRotaEditar"
+          :parametro-no-objeto-para-editar="parametroNoObjetoParaEditar"
+        />
 
-      <DeleteButton
-        v-if="!esconderDeletar"
-        :linha="linha"
-        :esconder-deletar="esconderDeletar"
-        :parametro-no-objeto-para-excluir="parametroNoObjetoParaExcluir"
-        @deletar="ev => emit('deletar', ev)"
-      />
+        <DeleteButton
+          v-if="!esconderDeletar"
+          :linha="linha"
+          :esconder-deletar="esconderDeletar"
+          :parametro-no-objeto-para-excluir="parametroNoObjetoParaExcluir"
+          @deletar="ev => emit('deletar', ev)"
+        />
+      </slot>
     </div>
   </td>
 </template>

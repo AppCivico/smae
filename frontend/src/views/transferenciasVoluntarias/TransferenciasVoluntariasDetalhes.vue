@@ -34,7 +34,7 @@ const {
   inícioDeFasePermitido,
   idDaPróximaFasePendente,
 } = storeToRefs(workflowAndamento);
-const { temPermissãoPara } = storeToRefs(authStore);
+const { temPermissãoPara } = authStore;
 
 const recursoFinanceiroValores = computed(() => {
   if (!transferenciaEmFoco.value) {
