@@ -62,20 +62,67 @@ export default {
       }),
       meta: {
         rotasParaMenuSecundário: [
-          // 'variaveisResumo',
+          'variavel.resumo',
+          'variavel.composicao',
+          'variavel.rastreabilidade',
         ],
         rotasParaMigalhasDePão: ['variaveisListar'],
       },
       children: [
         {
-          name: 'variaveisResumo',
+          name: 'variavel.resumo',
           path: 'resumo',
-          component: () => import('@/views/variaveis/VariaveisResumo.vue'),
+          component: () => import(
+            '@/views/variaveis/VariavelResumo.vue'
+          ),
           meta: {
             rotaDeEscape: 'variaveisListar',
-            rotasParaMigalhasDePão: ['variaveisListar'],
-            título: () => useVariaveisGlobaisStore()?.emFoco?.titulo || 'Resumo Variável',
+            rotasParaMigalhasDePão: ['variaveisListar', 'variavel.resumo'],
             títuloParaMenu: 'Resumo',
+            título: () => {
+              const { emFoco } = useVariaveisGlobaisStore();
+
+              if (!emFoco) {
+                return 'Resumo da variável';
+              }
+
+              return `Variável ${emFoco.titulo}`;
+            },
+            tituloParaMigalhaDePao: () => {
+              const { emFoco } = useVariaveisGlobaisStore();
+
+              if (!emFoco) {
+                return 'Resumo da variável';
+              }
+
+              return `Variável ${emFoco.titulo}`;
+            },
+          },
+        },
+        {
+          name: 'variavel.rastreabilidade',
+          path: 'rastreabilidade',
+          component: () => import(
+            '@/views/variaveis/VariavelRastreabilidade.vue'
+          ),
+          meta: {
+            rotaDeEscape: 'variaveisListar',
+            rotasParaMigalhasDePão: ['variaveisListar', 'variavel.resumo'],
+            título: 'Rastreabilidade',
+            títuloParaMenu: 'Rastreabilidade',
+          },
+        },
+        {
+          name: 'variavel.composicao',
+          path: 'composicao',
+          component: () => import(
+            '@/views/variaveis/VariavelComposicao/VariavelComposicaoIndex.vue'
+          ),
+          meta: {
+            rotaDeEscape: 'variaveisListar',
+            rotasParaMigalhasDePão: ['variaveisListar', 'variavel.resumo'],
+            título: 'Composição',
+            títuloParaMenu: 'Composição',
           },
         },
         {

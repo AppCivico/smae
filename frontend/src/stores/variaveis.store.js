@@ -1,5 +1,5 @@
-import dateToField from '@/helpers/dateToField';
 import { defineStore } from 'pinia';
+import dateToField from '@/helpers/dateToField';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -28,6 +28,7 @@ export const useVariaveisStore = defineStore('Variaveis', {
     Valores: {},
     PeríodosAbrangidosPorVariável: {},
     sériesDaVariávelComposta: {},
+    relacionados: {},
   }),
   actions: {
     clear() {
@@ -231,6 +232,43 @@ export const useVariaveisStore = defineStore('Variaveis', {
       } catch (error) {
         this.sériesDaVariávelComposta = { error };
       }
+    },
+
+    async buscarAnalise(variavelId, dataValor) {
+      try {
+        switch (this.route.meta.entidadeMãe) {
+          case 'planoSetorial':
+          case 'programaDeMetas':
+            return await this.requestS.get(`${baseUrl}/variavel-analise-qualitativa`, {
+              consulta_historica: true,
+              data_referencia: dataValor,
+              variavel_id: variavelId,
+            });
+
+          default:
+            return await this.requestS.get(
+              `${baseUrl}/mf/metas/variaveis/analise-qualitativa`,
+              {
+                data_valor: dataValor,
+                variavel_id: variavelId,
+              },
+            );
+        }
+      } catch (erro) {
+        console.error(erro);
+
+        throw erro;
+      }
+    },
+
+    async buscarRelacionados(variavelId, busca) {
+      console.log(busca);
+
+      const relacionados = await this.requestS.get(`${baseUrl}/variavel/${variavelId}/relacionados`, {
+        busca,
+      });
+
+      return relacionados.indicadores_referenciando;
     },
   },
   getters: {

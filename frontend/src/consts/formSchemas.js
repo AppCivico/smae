@@ -4474,6 +4474,10 @@ export const FiltroEndereco = object().shape({
   endereco: string().label('Endereço').required(),
 });
 
+export const FiltroBusca = object().shape({
+  busca: string().label('Busca').required(),
+});
+
 export const FiltroDotacao = object().shape({
   orgao_id: string()
     .label('Órgão')
