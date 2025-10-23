@@ -4513,3 +4513,9 @@ export const FiltroDotacao = object().shape({
   origem_recurso: string()
     .label('Origem do Recurso'),
 });
+
+export const FiltroConsultaGeralVinculacao = object().shape({
+  ano: string().label('Ano').nullableOuVazio(),
+  esfera: string().label('Esfera').nullableOuVazio(),
+  palavra_chave: string().label('Palavra-chave').nullableOuVazio(),
+});
