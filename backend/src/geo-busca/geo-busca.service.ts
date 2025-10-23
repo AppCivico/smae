@@ -404,12 +404,16 @@ export class GeoBuscaService {
 
             etapasData.forEach((e) => {
                 const metaId = etapaToMetaIdMap.get(e.id);
+                const iniciativaId = etapaToIniIdMap.get(e.id);
+                const atividadeId = etapaToAtvIdMap.get(e.id);
 
                 response.etapas.push({
                     id: e.id,
                     titulo: e.titulo ?? `Etapa ID ${e.id}`,
                     cronograma_id: e.cronograma_id,
                     meta_id: metaId ?? 0,
+                    iniciativa_id: iniciativaId ?? 0,
+                    atividade_id: atividadeId ?? 0,
                     localizacoes: entityGeoInfoMap.get(`etapa-${e.id}`) || [],
                 });
             });
