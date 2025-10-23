@@ -175,6 +175,7 @@ export class EtapaSearchResultDto {
 
 export class PdmRotuloInfo {
     id: number;
+    nome: string;
     rotulo_atividade: string;
     rotulo_iniciativa: string;
     rotulo_macro_tema: string;

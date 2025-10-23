@@ -524,6 +524,7 @@ export class GeoBuscaService {
                 where: { id: { in: Array.from(seenPDMIds) } },
                 select: {
                     id: true,
+                    nome: true,
                     rotulo_atividade: true,
                     rotulo_iniciativa: true,
                     rotulo_macro_tema: true,
