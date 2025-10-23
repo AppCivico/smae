@@ -6,6 +6,17 @@ const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 export type Vinculo = VinculoDto;
 
+export type Filtros = {
+  campo_vinculo?: string;
+  meta_id?: number;
+  iniciativa_id?: number;
+  atividade_id?: number;
+  projeto_id?: number;
+  transferencia_id?: number;
+  distribuicao_id?: number;
+  tipo_vinculo_id?: number;
+} | null;
+
 type Estado = {
   linhasEndereco: Vinculo[];
   linhasDotacao: Vinculo[];
@@ -44,23 +55,23 @@ export const useTransferenciasVinculosStore = defineStore('transferenciasVinculo
   }),
 
   actions: {
-    async buscarVinculos(transferenciaId: number, campoVinculo?: 'Endereco' | 'Dotacao') {
+    async buscarVinculos(filtros: Filtros = null) {
       this.chamadasPendentes.lista = true;
       this.erros.lista = null;
 
       try {
-        if (!campoVinculo || campoVinculo === 'Endereco') {
+        if (!filtros?.campo_vinculo || filtros?.campo_vinculo === 'Endereco') {
           const respostaEndereco = await this.requestS.get(
             `${baseUrl}/distribuicao-recurso-vinculo`,
-            { transferencia_id: transferenciaId, campo_vinculo: 'Endereco' },
+            filtros,
           );
           this.linhasEndereco = respostaEndereco?.linhas || [];
         }
 
-        if (!campoVinculo || campoVinculo === 'Dotacao') {
+        if (!filtros?.campo_vinculo || filtros?.campo_vinculo === 'Dotacao') {
           const respostaDotacao = await this.requestS.get(
             `${baseUrl}/distribuicao-recurso-vinculo`,
-            { transferencia_id: transferenciaId, campo_vinculo: 'Dotacao' },
+            filtros,
           );
           this.linhasDotacao = respostaDotacao?.linhas || [];
         }

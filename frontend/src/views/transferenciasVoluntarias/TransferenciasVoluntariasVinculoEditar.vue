@@ -62,7 +62,10 @@ const onSubmit = handleSubmit(async (vals) => {
     if (resposta) {
       alertStore.success('Dados salvos com sucesso!');
       const campoVinculo = vinculoAtual.value?.campo_vinculo;
-      await vinculosStore.buscarVinculos(props.transferenciaId, campoVinculo);
+      await vinculosStore.buscarVinculos({
+        transferencia_id: props.transferenciaId,
+        campo_vinculo: campoVinculo,
+      });
       await router.push({
         name: 'TransferenciasVoluntariasVinculos',
       });

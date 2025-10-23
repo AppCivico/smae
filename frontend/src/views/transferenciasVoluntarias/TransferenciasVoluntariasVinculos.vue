@@ -46,7 +46,7 @@ function excluirVinculo(vinculo: Vinculo): void {
     'Deseja mesmo remover este vínculo?',
     async () => {
       if (await vinculosStore.excluirItem(vinculo.id)) {
-        vinculosStore.buscarVinculos(props.transferenciaId, visualizacao.value === 'endereco' ? 'Endereco' : 'Dotacao');
+        vinculosStore.buscarVinculos({ transferencia_id: props.transferenciaId, campo_vinculo: visualizacao.value === 'endereco' ? 'Endereco' : 'Dotacao' });
         alertStore.success('Vínculo removido com sucesso!');
       }
     },
@@ -58,12 +58,12 @@ async function alterarVisualizacao(novaVisualizacao: 'endereco' | 'dotacao'): Pr
   visualizacao.value = novaVisualizacao;
 
   if (novaVisualizacao === 'dotacao' && !dotacaoCarregada.value) {
-    await vinculosStore.buscarVinculos(props.transferenciaId, 'Dotacao');
+    await vinculosStore.buscarVinculos({ transferencia_id: props.transferenciaId, campo_vinculo: 'Dotacao' });
     dotacaoCarregada.value = true;
   }
 }
 
-vinculosStore.buscarVinculos(props.transferenciaId, 'Endereco');
+vinculosStore.buscarVinculos({ transferencia_id: props.transferenciaId, campo_vinculo: 'Endereco' });
 </script>
 
 <template>
