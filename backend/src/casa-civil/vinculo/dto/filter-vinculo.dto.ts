@@ -10,6 +10,16 @@ export class FilterVinculoDto {
     @Transform(NumberTransformOrUndef)
     meta_id?: number;
 
+    @IsNumber()
+    @IsOptional()
+    @Transform(NumberTransformOrUndef)
+    iniciativa_id?: number;
+
+    @IsNumber()
+    @IsOptional()
+    @Transform(NumberTransformOrUndef)
+    atividade_id?: number;
+
     @IsInt()
     @IsOptional()
     @Transform(NumberTransformOrUndef)

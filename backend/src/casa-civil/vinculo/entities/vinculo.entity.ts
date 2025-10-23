@@ -25,10 +25,13 @@ export class VinculoDistribuicaoDto {
     id: number;
     nome: string | null;
     valor: Decimal | null;
-    orgao: {
+    orgao: IdSiglaDescricao;
+
+    transferencia: {
         id: number;
-        sigla: string;
-        descricao: string;
+        nome: string | null;
+        valor: Decimal | null;
+        orgao_concedente: IdSiglaDescricao;
     };
 }
 

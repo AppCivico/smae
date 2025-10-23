@@ -67,6 +67,8 @@ export class VinculoService {
                 removido_em: null,
                 tipo_vinculo_id: filters.tipo_vinculo_id,
                 meta_id: filters.meta_id,
+                iniciativa_id: filters.iniciativa_id,
+                atividade_id: filters.atividade_id,
                 projeto_id: filters.projeto_id,
                 campo_vinculo: filters.campo_vinculo,
                 distribuicao: {
@@ -93,6 +95,21 @@ export class VinculoService {
                                 id: true,
                                 sigla: true,
                                 descricao: true,
+                            },
+                        },
+
+                        transferencia: {
+                            select: {
+                                id: true,
+                                identificador: true,
+                                valor: true,
+                                orgao_concedente: {
+                                    select: {
+                                        id: true,
+                                        sigla: true,
+                                        descricao: true,
+                                    },
+                                },
                             },
                         },
                     },
@@ -214,6 +231,17 @@ export class VinculoService {
                     id: v.distribuicao.orgao_gestor.id,
                     sigla: v.distribuicao.orgao_gestor.sigla,
                     descricao: v.distribuicao.orgao_gestor.descricao,
+                },
+
+                transferencia: {
+                    id: v.distribuicao.transferencia.id,
+                    nome: v.distribuicao.transferencia.identificador,
+                    valor: v.distribuicao.transferencia.valor,
+                    orgao_concedente: {
+                        id: v.distribuicao.transferencia.orgao_concedente.id,
+                        sigla: v.distribuicao.transferencia.orgao_concedente.sigla,
+                        descricao: v.distribuicao.transferencia.orgao_concedente.descricao,
+                    },
                 },
             },
             tipo_vinculo: {
