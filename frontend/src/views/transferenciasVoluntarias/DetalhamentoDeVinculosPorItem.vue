@@ -20,6 +20,8 @@ const item = computed(() => proximidadeFormatada.value.find((i) => i.id === item
     <CheckClose :formulario-sujo="false" />
   </div>
 
+<pre>$props:{{$props}}</pre>
+
   <div
     v-if="!item"
     class="error p1"
