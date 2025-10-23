@@ -22,8 +22,9 @@ import TransferenciasVoluntariasDocumentos from '@/views/transferenciasVoluntari
 import TransferenciasVoluntariasEnviarArquivo from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasEnviarArquivo.vue';
 import TransferenciasVoluntariasLista from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasLista.vue';
 import TransferenciasVoluntariasRaiz from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasRaiz.vue';
-import TransferenciasVoluntariasVinculos from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasVinculos.vue';
 import TransferenciasVoluntariasVinculoEditar from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasVinculoEditar.vue';
+import TransferenciasVoluntariasVinculos from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasVinculos.vue';
+
 import tiparPropsDeRota from './helpers/tiparPropsDeRota';
 
 const rotasParaMenuSecundário = [
@@ -61,8 +62,6 @@ export default {
   children: [
     {
       path: 'consulta-geral',
-      component: () => import('@/views/ConsultaGeral/ConsultaGeralIndex.vue'),
-      name: 'consultaGeral',
       meta: {
         título: 'Consulta Geral',
         tituloSingular: 'Consulta Geral',
