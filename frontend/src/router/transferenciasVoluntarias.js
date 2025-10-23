@@ -24,7 +24,7 @@ import TransferenciasVoluntariasLista from '@/views/transferenciasVoluntarias/Tr
 import TransferenciasVoluntariasRaiz from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasRaiz.vue';
 import TransferenciasVoluntariasVinculos from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasVinculos.vue';
 import TransferenciasVoluntariasVinculoEditar from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasVinculoEditar.vue';
-import TransferenciasVoluntariasDetalhesConsultaGeral from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasDetalhesConsultaGeral.vue';
+import DetalhamentoDeVinculosPorItem from '@/views/transferenciasVoluntarias/DetalhamentoDeVinculosPorItem.vue';
 import tiparPropsDeRota from './helpers/tiparPropsDeRota';
 
 const rotasParaMenuSecundário = [
@@ -76,7 +76,7 @@ export default {
       children: [
         /* DETALHES DA ENTIDADE (Projeto/Meta/Iniciativa/Atividade) */
         {
-          path: ':id',
+          path: 'detalhes',
           component: DialogWrapper,
           meta: {
             rotaDeEscape: 'consultaGeral',
@@ -87,7 +87,7 @@ export default {
             {
               path: '',
               name: 'DetalhesConsultaGeral',
-              component: TransferenciasVoluntariasDetalhesConsultaGeral,
+              component: DetalhamentoDeVinculosPorItem,
             },
           ],
         },
