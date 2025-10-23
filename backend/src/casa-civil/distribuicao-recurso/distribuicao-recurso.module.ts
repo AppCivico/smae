@@ -23,7 +23,10 @@ import { JwtModule } from '@nestjs/jwt';
         SeiIntegracaoModule,
         WorkflowModule,
         forwardRef(() => TransferenciaModule),
-        JwtModule,
+        JwtModule.register({
+            secret: process.env.SESSION_JWT_SECRET + ':pagination',
+            signOptions: { expiresIn: '30d' },
+        }),
     ],
     controllers: [DistribuicaoRecursoController, DistribuicaoRecursoStatusController],
     providers: [DistribuicaoRecursoService, DistribuicaoRecursoStatusService],
