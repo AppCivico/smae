@@ -139,59 +139,57 @@ const colunas = [
       @deletar="(vinculo: Vinculo) => emit('excluir', vinculo)"
     >
       <template #acoes="{ linha }">
-        <div class="flex g1 justifyright">
-          <SmaeTooltip
-            v-if="linha.invalidado_em"
-            :texto="`Vínculo invalidado${linha.motivo_invalido
-              ? `: ${linha.motivo_invalido}`
-              : ''}`"
-            as="span"
+        <SmaeTooltip
+          v-if="linha.invalidado_em"
+          :texto="`Vínculo invalidado${linha.motivo_invalido
+            ? `: ${linha.motivo_invalido}`
+            : ''}`"
+          as="span"
+          class="fs0"
+        >
+          <template #botao>
+            <svg
+              width="20"
+              height="20"
+              color="var(--laranja)"
+              aria-label="Vínculo invalidado"
+            >
+              <use xlink:href="#i_alert" />
+            </svg>
+          </template>
+        </SmaeTooltip>
+        <SmaeLink
+          v-else-if="temPermissao"
+          :to="{
+            name: 'TransferenciasVoluntariasVinculosEditar',
+            params: { vinculoId: linha.id }
+          }"
+        >
+          <svg
+            width="20"
+            height="20"
             class="fs0"
           >
-            <template #botao>
-              <svg
-                width="20"
-                height="20"
-                color="var(--laranja)"
-                aria-label="Vínculo invalidado"
-              >
-                <use xlink:href="#i_alert" />
-              </svg>
-            </template>
-          </SmaeTooltip>
-          <SmaeLink
-            v-else-if="temPermissao"
-            :to="{
-              name: 'TransferenciasVoluntariasVinculosEditar',
-              params: { vinculoId: linha.id }
-            }"
-          >
-            <svg
-              width="20"
-              height="20"
-              class="fs0"
-            >
-              <use xlink:href="#i_edit" />
-            </svg>
-          </SmaeLink>
+            <use xlink:href="#i_edit" />
+          </svg>
+        </SmaeLink>
 
-          <button
-            v-if="temPermissao"
-            class="like-a__text addlink"
-            type="button"
-            aria-label="Remover item"
-            title="Remover item"
-            @click="emit('excluir', linha)"
+        <button
+          v-if="temPermissao"
+          class="like-a__text addlink"
+          type="button"
+          aria-label="Remover item"
+          title="Remover item"
+          @click="emit('excluir', linha)"
+        >
+          <svg
+            width="20"
+            height="20"
+            class="fs0"
           >
-            <svg
-              width="20"
-              height="20"
-              class="fs0"
-            >
-              <use xlink:href="#i_remove" />
-            </svg>
-          </button>
-        </div>
+            <use xlink:href="#i_remove" />
+          </svg>
+        </button>
       </template>
 
       <template #sub-linha="{ linha }">
