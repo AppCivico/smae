@@ -125,7 +125,7 @@ carregarVinculos();
     :dados="lista as unknown as Array<Record<string, unknown>>"
   >
     <template #celula:distribuicao_recurso="{ celula }">
-      {{ celula.valor ? 'R$ ' + dinheiro(celula.valor) : '-' }}
+      {{ (celula?.valor ?? null) !== null ? 'R$ ' + dinheiro(celula.valor) : '-' }}
     </template>
   </SmaeTable>
 </template>
