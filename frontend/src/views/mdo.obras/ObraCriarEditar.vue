@@ -14,12 +14,13 @@ import {
   watch,
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
 import CampoDePlanosMetasRelacionados from '@/components/CampoDePlanosMetasRelacionados.vue';
 import CampoDeRegioesAgrupadas from '@/components/CampoDeRegioesAgrupadas.vue';
-import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import MapaCampo from '@/components/geo/MapaCampo.vue';
+import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import { obras as schema } from '@/consts/formSchemas';
 import statusObras from '@/consts/statusObras';
 import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
@@ -1222,11 +1223,17 @@ watch(listaDeTiposDeIntervenção, () => {
         Localização
       </legend>
 
-      <MapaCampo
-        v-model="values.geolocalizacao"
+      <Field
+        v-slot="{ value, handleChange }"
         name="geolocalizacao"
-        :geolocalização-por-token="geolocalizaçãoPorToken"
-      />
+      >
+        <MapaCampo
+          :model-value="value"
+          name="geolocalizacao"
+          :geolocalização-por-token="geolocalizaçãoPorToken"
+          @update:model-value="handleChange"
+        />
+      </Field>
     </div>
 
     <fieldset>
