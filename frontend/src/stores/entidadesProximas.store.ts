@@ -1,5 +1,5 @@
 import statusObras from '@/consts/statusObras';
-import type DotacaoBuscaResponseDto from '@back/dotacao-busca/dto/dotacao-busca.dto';
+import type { DotacaoBuscaResponseDto } from '@back/dotacao-busca/dto/dotacao-busca.dto';
 import type {
   EtapaSearchResultDto,
   MetaIniAtvLookupInfoDto,
