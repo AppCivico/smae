@@ -26,17 +26,17 @@ const { handleSubmit } = useForm({ validationSchema: schema });
 
 const onSubmit = handleSubmit.withControlled(async (values) => {
   try {
-    // TODO: Implementar lógica de vinculação
-    // eslint-disable-next-line no-console
-    console.log('Vinculando com valores:', values);
-    // eslint-disable-next-line no-console
-    console.log('Distribuição selecionada:', distribuicaoSelecionadaId.value);
+    const params = {
+      ...values,
+      distribuicao_id: distribuicaoSelecionadaId.value,
+    };
+
+    await vinculosStore.salvarItem(params);
 
     alertStore.success('Vinculação realizada com sucesso!');
     router.push({ name: 'consultaGeralVinculacao' });
-  } catch (e) {
-    // eslint-disable-next-line no-console
-    console.error('Erro ao tentar vincular', e);
+  } catch (erro) {
+    alertStore.error(erro);
   }
 });
 </script>

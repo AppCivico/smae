@@ -1,6 +1,10 @@
 <script setup lang="ts">
+import { storeToRefs } from 'pinia';
+import { computed } from 'vue';
+
 import CabecalhoDePagina from '@/components/CabecalhoDePagina.vue';
 import EtapasEmBarras from '@/components/EtapasEmBarras.vue';
+import { useEntidadesProximasStore } from '@/stores/entidadesProximas.store';
 
 import ConsultaGeralVinculacaoRegistro from './partials/ConsultaGeralVinculacaoRegistro.vue';
 import ConsultaGeralVinculacaoSelecao from './partials/ConsultaGeralVinculacaoSelecao.vue';
@@ -9,17 +13,31 @@ interface Etapa {
   id: string;
   label: string;
   concluido: boolean;
-  atual: boolean;
 }
 
-const etapas: Etapa[] = [
+type TipoEtapa = 'selecao' | 'registro';
+
+const entidadesProximasStore = useEntidadesProximasStore();
+const { distribuicaoSelecionadaId } = storeToRefs(entidadesProximasStore);
+
+const etapaAtual = computed<TipoEtapa>(() => (distribuicaoSelecionadaId.value ? 'registro' : 'selecao'));
+
+const componenteAtual = computed(() => {
+  if (etapaAtual.value === 'selecao') {
+    return ConsultaGeralVinculacaoSelecao;
+  }
+
+  return ConsultaGeralVinculacaoRegistro;
+});
+
+const etapas = computed<Etapa[]>(() => [
   {
-    id: 'selecao', label: 'Seleção', concluido: false, atual: true,
+    id: 'selecao', label: 'Seleção', concluido: true,
   },
   {
-    id: 'vincular', label: 'Vincular', concluido: false, atual: false,
+    id: 'vincular', label: 'Vincular', concluido: !!distribuicaoSelecionadaId.value,
   },
-];
+]);
 </script>
 
 <template>
@@ -39,6 +57,5 @@ const etapas: Etapa[] = [
     />
   </div>
 
-  <!-- <ConsultaGeralVinculacaoSelecao /> -->
-  <ConsultaGeralVinculacaoRegistro />
+  <component :is="componenteAtual" />
 </template>
