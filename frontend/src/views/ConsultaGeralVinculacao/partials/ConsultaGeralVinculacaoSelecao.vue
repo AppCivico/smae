@@ -1,14 +1,15 @@
 <script setup lang="ts">
+import { storeToRefs } from 'pinia';
 import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import { storeToRefs } from 'pinia';
+
 import type { Formulario } from '@/components/FiltroParaPagina.vue';
 import FiltroParaPagina from '@/components/FiltroParaPagina.vue';
 import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import { FiltroConsultaGeralVinculacao } from '@/consts/formSchemas';
 import dinheiro from '@/helpers/dinheiro';
-// eslint-disable-next-line import/extensions
+import { useEntidadesProximasStore } from '@/stores/entidadesProximas.store';
 import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
 
 const route = useRoute();
@@ -21,7 +22,11 @@ interface Transferencia {
   valor_total: number;
 }
 
+const entidadesProximasStore = useEntidadesProximasStore();
 const distribuicaoRecursosStore = useDistribuicaoRecursosStore();
+
+const { distribuicaoSelecionadaId } = storeToRefs(entidadesProximasStore);
+
 const {
   lista: transferencias,
   chamadasPendentes,
@@ -86,8 +91,7 @@ async function buscarDados(): Promise<void> {
 }
 
 function selecionarTransferencia(item: Transferencia): void {
-  console.log('Transferência selecionada:', item);
-  // Aqui você implementará a lógica de seleção
+  distribuicaoSelecionadaId.value = item.id;
 }
 
 watch(

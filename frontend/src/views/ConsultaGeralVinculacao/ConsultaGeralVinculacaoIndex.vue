@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { useRoute } from 'vue-router';
 import CabecalhoDePagina from '@/components/CabecalhoDePagina.vue';
 import EtapasEmBarras from '@/components/EtapasEmBarras.vue';
+
+import ConsultaGeralVinculacaoRegistro from './partials/ConsultaGeralVinculacaoRegistro.vue';
 import ConsultaGeralVinculacaoSelecao from './partials/ConsultaGeralVinculacaoSelecao.vue';
 
 interface Etapa {
@@ -10,9 +11,6 @@ interface Etapa {
   concluido: boolean;
   atual: boolean;
 }
-
-const route = useRoute();
-const { vinculacaoId } = route.params;
 
 const etapas: Etapa[] = [
   {
@@ -34,10 +32,13 @@ const etapas: Etapa[] = [
     </p>
   </div>
 
-  <EtapasEmBarras
-    :etapas="etapas"
-    class="mb2"
-  />
+  <div class="flex mb2">
+    <EtapasEmBarras
+      :etapas="etapas"
+      class="fb50"
+    />
+  </div>
 
-  <ConsultaGeralVinculacaoSelecao />
+  <!-- <ConsultaGeralVinculacaoSelecao /> -->
+  <ConsultaGeralVinculacaoRegistro />
 </template>

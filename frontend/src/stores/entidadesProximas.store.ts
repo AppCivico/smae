@@ -30,6 +30,7 @@ type Estado = {
   dadosPorDotacao: DotacaoBuscaResponseDto | null;
   erro: Erros;
   chamadasPendentes: ChamadasPendentes;
+  distribuicaoSelecionadaId: number | undefined;
 };
 
 type LocalizacaoGeoJSON = {
@@ -87,6 +88,7 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
       proximidadePorLocalizacao: false,
       buscaDotacao: false,
     },
+    distribuicaoSelecionadaId: undefined,
   }),
   actions: {
     async buscarPorLocalizacao(localizacaoProximidade: LocalizacaoProximidade, raio = 2000) {
