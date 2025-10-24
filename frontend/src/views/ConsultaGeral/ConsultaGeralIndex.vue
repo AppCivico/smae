@@ -1,16 +1,18 @@
 <script lang="ts" setup>
+import { storeToRefs } from 'pinia';
+import { computed, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
+
 import * as CardEnvelope from '@/components/cardEnvelope';
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
 import ListaLegendas from '@/components/ListaLegendas.vue';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
+import SmallModal from '@/components/SmallModal.vue';
 import DetalhamentoDeVinculosPorItem from '@/components/TransferenciasVoluntarias/DetalhamentoDeVinculosPorItem.vue';
 import combinadorDeListas from '@/helpers/combinadorDeListas';
 import { LegendasStatus, useEntidadesProximasStore } from '@/stores/entidadesProximas.store';
 import { useGeolocalizadorStore } from '@/stores/geolocalizador.store';
-import { storeToRefs } from 'pinia';
-import { computed, ref, watch } from 'vue';
-import { useRoute } from 'vue-router';
-import SmallModal from '@/components/SmallModal.vue';
+
 import ConsultaGeralFiltroDotacao from './ConsultaGeralFiltroDotacao.vue';
 import ConsultaGeralFiltroEndereco from './ConsultaGeralFiltroEndereco.vue';
 
