@@ -150,6 +150,7 @@ watch(tipo, (novoTipo, tipoAnterior) => {
           replicar-cabecalho
           :colunas="colunas"
           :dados="proximidadeFormatada"
+          :atributos-da-tabela="{ class: 'cabecalho-congelado'}"
         >
           <template #celula:localizacoes="{ celula, linha }">
             <div
