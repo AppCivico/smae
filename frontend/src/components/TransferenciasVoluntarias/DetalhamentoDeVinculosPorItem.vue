@@ -1,9 +1,10 @@
 <script setup lang="ts">
+import { storeToRefs } from 'pinia';
+
+import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import dinheiro from '@/helpers/dinheiro';
 import type { Filtros } from '@/stores/transferenciasVinculos.store';
 import { useTransferenciasVinculosStore } from '@/stores/transferenciasVinculos.store';
-import { storeToRefs } from 'pinia';
-import SmaeTable from '../SmaeTable/SmaeTable.vue';
 
 const transferenciasVinculosStore = useTransferenciasVinculosStore();
 
