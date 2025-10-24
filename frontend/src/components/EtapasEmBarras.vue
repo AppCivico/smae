@@ -5,17 +5,13 @@ interface Etapa {
   id: string;
   label?: string;
   concluido: boolean;
-  atual: boolean;
 }
 
 const props = defineProps<{
   etapas: Etapa[];
 }>();
 
-const etapaAtual = computed(() => {
-  const index = props.etapas.findIndex((etapa) => etapa.atual);
-  return index !== -1 ? index + 1 : 1;
-});
+const etapasConcluidas = computed(() => props.etapas.filter((etapa) => etapa.concluido).length);
 
 const totalEtapas = computed(() => props.etapas.length);
 </script>
@@ -29,12 +25,11 @@ const totalEtapas = computed(() => props.etapas.length);
         class="etapa-barra"
         :class="{
           'etapa-concluida': etapa.concluido,
-          'etapa-atual': etapa.atual,
         }"
       />
     </div>
     <p class="etapas-texto t13">
-      Etapa {{ etapaAtual }} / {{ totalEtapas }}
+      Etapas {{ etapasConcluidas }} / {{ totalEtapas }}
     </p>
   </div>
 </template>
@@ -56,15 +51,10 @@ const totalEtapas = computed(() => props.etapas.length);
   height: 8px;
   flex: 1;
   background-color: #E0E0E0;
-  border-radius: 4px;
   transition: background-color 0.3s ease;
 
   &.etapa-concluida {
-    background-color: #4CAF50;
-  }
-
-  &.etapa-atual {
-    background-color: #2196F3;
+    background-color: #607A9F;
   }
 }
 
