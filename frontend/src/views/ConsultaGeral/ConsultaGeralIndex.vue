@@ -53,7 +53,12 @@ const colunas = computed(() => {
     { chave: 'portfolio_programa', label: 'portfólio/plano ou programa' },
     { chave: 'nome', label: 'nome/meta' },
     { chave: 'orgao', label: 'Órgão' },
-    { chave: 'status', label: 'status', formatador: (v) => v?.nome || 'N/A' },
+    {
+      chave: 'status',
+      label: 'status',
+      formatador: (v) => v?.nome || 'N/A',
+      atributosDaColuna: { class: 'col--minimum' },
+    },
     {
       chave: 'nro_vinculos',
       label: 'nº vínculos',
@@ -216,11 +221,6 @@ watch(tipo, (novoTipo, tipoAnterior) => {
 <style lang="less" scoped>
 .tabela-resultados {
   :deep {
-    .table-cell {
-      vertical-align: baseline;
-      max-width: 200px;
-    }
-
     .table-cell--localizacoes {
       span {
         display: block;
@@ -261,9 +261,7 @@ watch(tipo, (novoTipo, tipoAnterior) => {
     width: 10px;
     height: 0.46px;
     background-color: #B8C0CC;
-
   }
-
 }
 
 .legenda-item {
@@ -308,5 +306,4 @@ watch(tipo, (novoTipo, tipoAnterior) => {
     background-color: currentColor;
   }
 }
-
 </style>
