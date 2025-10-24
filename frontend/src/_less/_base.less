@@ -2417,6 +2417,15 @@ progress,
     table-layout: fixed;
   }
 
+  &.cabecalho-congelado {
+    thead {
+      position: sticky;
+      top: 0;
+      background-color: white;
+      z-index: 1;
+    }
+  }
+
   tr,
   tz {
     border-bottom: 1px solid @c100;
