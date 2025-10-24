@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import dinheiro from '@/helpers/dinheiro';
-import type Filtros from '@/stores/transferenciasVinculos.store';
+import type { Filtros } from '@/stores/transferenciasVinculos.store';
 import { useTransferenciasVinculosStore } from '@/stores/transferenciasVinculos.store';
 import { storeToRefs } from 'pinia';
 import SmaeTable from '../SmaeTable/SmaeTable.vue';
