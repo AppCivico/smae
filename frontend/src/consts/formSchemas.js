@@ -13,6 +13,7 @@ import {
   setLocale,
   string,
 } from 'yup';
+
 import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import categoriaDeTransferencia from '@/consts/categoriaDeTransferencia';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
@@ -37,6 +38,7 @@ import tiposSituacaoSchema from '@/consts/tiposSituacaoSchema';
 import tiposStatusDistribuicao from '@/consts/tiposStatusDistribuicao';
 import fieldToDate from '@/helpers/fieldToDate';
 import haDuplicatasNaLista from '@/helpers/haDuplicatasNaLista';
+
 import {
   dataMax,
   dataMin,
@@ -4518,4 +4520,15 @@ export const FiltroConsultaGeralVinculacao = object().shape({
   ano: string().label('Ano').nullableOuVazio(),
   esfera: string().label('Esfera').nullableOuVazio(),
   palavra_chave: string().label('Palavra-chave').nullableOuVazio(),
+});
+
+export const ConsultaGeralVinculacaoRegistro = object({
+  tipo_vinculo_id: number()
+    .label('Tipo de vínculo')
+    .required('Selecione um tipo de vínculo')
+    .positive('Selecione um tipo de vínculo'),
+  observacao: string()
+    .label('Observação')
+    .nullable()
+    .max(2000, 'A observação deve ter no máximo 2000 caracteres'),
 });
