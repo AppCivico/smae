@@ -188,6 +188,7 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
 
             case 'projetos': {
               const projeto = registro as ProjetoSearchResultDto;
+
               dadosParciais = {
                 ...dadosParciais,
                 nome: projeto.nome ?? '',
@@ -207,25 +208,25 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
             case 'etapas': {
               const etapa = registro as EtapaSearchResultDto;
 
-              dadosParciais.nome = etapa.titulo ?? '';
-
               if (etapa.meta_id) {
                 const metaInfo = this.metasInfo?.[etapa.meta_id ?? 0];
+                let pdmInfo;
 
                 if (metaInfo) {
+                  dadosParciais.nome = metaInfo.titulo;
                   dadosParciais.meta_info = metaInfo;
                   dadosParciais.nro_vinculos = Number(metaInfo.nro_vinculos ?? 0);
                   dadosParciais.orgao = metaInfo.orgaos_sigla?.join(', ') || '';
 
-                  const pdmInfo = metaInfo?.pdm_id ? this.pdmInfo?.[metaInfo.pdm_id] : undefined;
+                  pdmInfo = metaInfo?.pdm_id ? this.pdmInfo?.[metaInfo.pdm_id] : undefined;
 
                   if (pdmInfo) {
                     dadosParciais.pdm_info = pdmInfo;
                     dadosParciais.portfolio_programa = pdmInfo.nome || '';
 
-                    if (['PDM', 'ProgramaDeMetas'].indexOf(pdmInfo?.sistema) > -1) {
+                    if (['PDM', 'ProgramaDeMetas'].indexOf(pdmInfo.sistema) > -1) {
                       dadosParciais.cor = LegendasStatus.programaDeMetas.color;
-                    } else if (pdmInfo?.sistema === 'PlanoSetorial') {
+                    } else if (pdmInfo.sistema === 'PlanoSetorial') {
                       dadosParciais.cor = LegendasStatus.planoSetorial.color;
                     }
                   }
@@ -238,6 +239,10 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
                     dadosParciais.iniciativa_info = iniciativaInfo;
                     dadosParciais.orgao = iniciativaInfo.orgaos_sigla?.join(', ') || '';
                     dadosParciais.nro_vinculos = Number(iniciativaInfo.nro_vinculos ?? 0);
+
+                    dadosParciais.detalhes = {
+                      [pdmInfo?.rotulo_iniciativa || 'Iniciativa']: iniciativaInfo.titulo,
+                    };
                   }
 
                   if (etapa.atividade_id) {
@@ -246,6 +251,14 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
                       dadosParciais.atividade_info = atividadeInfo;
                       dadosParciais.orgao = atividadeInfo.orgaos_sigla?.join(', ') || '';
                       dadosParciais.nro_vinculos = Number(atividadeInfo.nro_vinculos ?? 0);
+
+                      if (dadosParciais.detalhes) {
+                        dadosParciais.detalhes[pdmInfo?.rotulo_atividade || 'Atividade'] = atividadeInfo.titulo;
+                      } else {
+                        dadosParciais.detalhes = {
+                          [pdmInfo?.rotulo_atividade || 'Atividade']: atividadeInfo.titulo,
+                        };
+                      }
                     }
                   }
                 }
