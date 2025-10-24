@@ -8,9 +8,15 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  tamanhoAjustavel: {
+    type: Boolean,
+    default: false,
+  },
 });
+
 defineEmits(['close']);
 </script>
+
 <script>
 // use normal <script> to declare options
 export default {
@@ -29,6 +35,7 @@ export default {
       />
       <div
         class="editModal"
+        :class="{ 'editModal--tamanho-ajustavel': tamanhoAjustavel }"
         v-bind="$attrs"
       >
         <button
