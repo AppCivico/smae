@@ -1,17 +1,19 @@
 <script setup lang="ts">
 import {
-  computed,
-  nextTick,
-  watch,
-} from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import {
   ErrorMessage,
   Field,
   useForm,
   useIsFormDirty,
 } from 'vee-validate';
+import {
+  computed,
+  nextTick,
+  watch,
+} from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
+
 import AutocompleteField2 from './AutocompleteField2.vue';
 
 type OpcaoPadronizada = {
@@ -66,7 +68,7 @@ const route = useRoute();
 const router = useRouter();
 
 const {
-  errors, handleSubmit, isSubmitting, resetForm, setValues, meta, values,
+  errors, handleSubmit, isSubmitting, resetForm, setValues, meta, values, setErrors,
 } = useForm({
   validationSchema: props.schema,
   initialValues: route.query,
@@ -106,6 +108,7 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
     });
   }
 
+  resetForm({ values: valoresControlados });
   emit('filtro');
 });
 

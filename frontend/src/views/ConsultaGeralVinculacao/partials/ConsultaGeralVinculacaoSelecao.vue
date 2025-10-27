@@ -65,9 +65,8 @@ const camposDeFiltro = computed<Formulario>(() => [
       esfera: {
         tipo: 'select' as const,
         opcoes: [
-          { id: 'municipal', label: 'Municipal' },
-          { id: 'estadual', label: 'Estadual' },
-          { id: 'federal', label: 'Federal' },
+          { id: 'Estadual', label: 'Estadual' },
+          { id: 'Federal', label: 'Federal' },
         ],
       },
       palavra_chave: {
