@@ -1,14 +1,15 @@
 <script lang="ts" setup>
+import { storeToRefs } from 'pinia';
 import {
   computed, ref, watch,
 } from 'vue';
-import { storeToRefs } from 'pinia';
+
+import SmaeLabel from '@/components/camposDeFormulario/SmaeLabel.vue';
 import FiltroParaPagina, { Formulario } from '@/components/FiltroParaPagina.vue';
 import { FiltroDotacao as schema } from '@/consts/formSchemas';
-import { useEntidadesProximasStore } from '@/stores/entidadesProximas.store';
-import { useDotaçãoStore } from '@/stores/dotacao.store';
 import prepararParaSelect from '@/helpers/prepararParaSelect';
-import SmaeLabel from '@/components/camposDeFormulario/SmaeLabel.vue';
+import { useDotaçãoStore } from '@/stores/dotacao.store';
+import { useEntidadesProximasStore } from '@/stores/entidadesProximas.store';
 
 const entidadesProximasStore = useEntidadesProximasStore();
 const { chamadasPendentes } = storeToRefs(entidadesProximasStore);
@@ -198,6 +199,14 @@ const dotacaoEComplemento = computed<string>({
 function filtrarDotacao() {
   entidadesProximasStore.buscarPorDotacao(dotacaoEComplemento.value);
 }
+
+async function resetarPesquisa() {
+  await filtrarDotacao();
+}
+
+defineExpose({
+  resetarPesquisa,
+});
 
 watch(ano, () => {
   dotacaoStore.getDotaçãoSegmentos(ano.value);

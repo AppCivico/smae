@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { templateRef } from '@vueuse/core';
 import { storeToRefs } from 'pinia';
 import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
@@ -14,6 +15,7 @@ import combinadorDeListas from '@/helpers/combinadorDeListas';
 import { LegendasStatus, useEntidadesProximasStore } from '@/stores/entidadesProximas.store';
 import { useGeolocalizadorStore } from '@/stores/geolocalizador.store';
 
+import ConsultaGeralVinculacaoIndex from '../ConsultaGeralVinculacao/ConsultaGeralVinculacaoIndex.vue';
 import ConsultaGeralFiltroDotacao from './ConsultaGeralFiltroDotacao.vue';
 import ConsultaGeralFiltroEndereco from './ConsultaGeralFiltroEndereco.vue';
 
@@ -36,9 +38,11 @@ const geolocalizadorStore = useGeolocalizadorStore();
 const entidadesProximasStore = useEntidadesProximasStore();
 const { entidadesPorProximidade, entidadesPorDotacao } = storeToRefs(entidadesProximasStore);
 
+const areaFiltroRef = templateRef('area-filtro');
 const detalhamentoAberto = ref(-1);
+const vinculacaoAberta = ref(-1);
 
-const tipo = computed<'endereco' | 'dotacao' | undefined>(() => route.query.tipo);
+const tipo = computed<'endereco' | 'dotacao'>(() => route.query.tipo as 'endereco' | 'dotacao');
 
 const filtroSelecionado = computed(() => {
   const mapaTipo = {
@@ -108,13 +112,17 @@ const colunas = computed(() => {
 });
 
 watch(tipo, (novoTipo, tipoAnterior) => {
-  // Só reseta se ambos os tipos estão definidos e são diferentes
-  // Isso evita resetar quando navegamos para rotas filhas (modal) que não têm o parâmetro tipo
   if (tipoAnterior !== undefined && novoTipo !== undefined && novoTipo !== tipoAnterior) {
     geolocalizadorStore.$reset();
     entidadesProximasStore.$reset();
   }
 }, { immediate: true });
+
+async function handleNovaVinculacao() {
+  vinculacaoAberta.value = -1;
+
+  await areaFiltroRef.value?.resetarPesquisa();
+}
 </script>
 
 <template>
@@ -137,7 +145,10 @@ watch(tipo, (novoTipo, tipoAnterior) => {
       </div>
     </div>
 
-    <component :is="filtroSelecionado">
+    <component
+      :is="filtroSelecionado"
+      ref="area-filtro"
+    >
       Carregando...
     </component>
 
@@ -204,25 +215,33 @@ watch(tipo, (novoTipo, tipoAnterior) => {
                 <use xlink:href="#i_eye" />
               </svg>
             </button>
-            <!--
-              <SmaeLink
-                :to="{
-                  name: 'DetalhesConsultaGeral',
-                  params: { id: linha.id },
-                  query: $route.query,
-                }"
-                title="Adicionar vínculo"
+
+            <button
+              type="button"
+              title="Ver detalhes"
+              class="fs0 like-a__text addlink"
+              @click="vinculacaoAberta = linhaIndex"
+            >
+              <svg
+                width="20"
+                height="20"
                 class="fs0"
               >
-                <svg
-                  width="20"
-                  height="20"
-                  class="fs0"
-                >
-                  <use xlink:href="#i_+" />
-                </svg>
-              </SmaeLink>
-            -->
+                <use xlink:href="#i_+" />
+              </svg>
+            </button>
+
+            <SmallModal
+              v-if="linhaIndex == vinculacaoAberta"
+              tamanho-ajustavel
+              @close="vinculacaoAberta = -1"
+            >
+              <ConsultaGeralVinculacaoIndex
+                :dados="linha"
+                :tipo="tipo"
+                @fechar="handleNovaVinculacao"
+              />
+            </SmallModal>
           </template>
         </SmaeTable>
 
