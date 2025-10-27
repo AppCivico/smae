@@ -1,12 +1,13 @@
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
-import BuscadorGeolocalizacaoMapa from '@/components/BuscadorGeolocalizacao/BuscadorGeolocalizacaoMapa.vue';
+
 import BuscadorGeolocalizacaoFiltro from '@/components/BuscadorGeolocalizacao/BuscadorGeolocalizacaoFiltro.vue';
 import BuscadorGeolocalizacaoListagem from '@/components/BuscadorGeolocalizacao/BuscadorGeolocalizacaoListagem.vue';
-import type { PontoEndereco } from '@/stores/geolocalizador.store';
-import { useEntidadesProximasStore } from '@/stores/entidadesProximas.store';
+import BuscadorGeolocalizacaoMapa from '@/components/BuscadorGeolocalizacao/BuscadorGeolocalizacaoMapa.vue';
 import titleCase from '@/helpers/texto/titleCase';
+import { useEntidadesProximasStore } from '@/stores/entidadesProximas.store';
+import type { PontoEndereco } from '@/stores/geolocalizador.store';
 
 const entidadesProximasStore = useEntidadesProximasStore();
 
@@ -54,11 +55,12 @@ const localizacoes = computed(() => proximidadeFormatada.value.reduce((agrupador
     dados.properties = {};
   }
 
-  dados.properties.camposComplementares = {};
+  dados.properties.camposComplementares = {} as Record<string, unknown>;
 
   ['nome', 'status'].forEach((campo) => {
-    if (i[campo] !== undefined) {
-      dados.properties.camposComplementares[campo] = i[campo];
+    if (Object.hasOwn(i, campo)) {
+      // eslint-disable-next-line max-len
+      (dados.properties.camposComplementares as Record<string, unknown>)[campo] = i[campo as keyof typeof i];
     }
   });
 
@@ -98,13 +100,13 @@ const localizacoes = computed(() => proximidadeFormatada.value.reduce((agrupador
               <dd>{{ dados.string_endereco }}</dd>
             </div>
 
-            <div>
+            <div v-if="dados.camposComplementares.status">
               <dt>
                 Status
               </dt>
 
               <dd class="painel-flutuante__item-com-legenda">
-                {{ dados.camposComplementares.status.nome }}
+                {{ dados.camposComplementares.status.nome || dados.camposComplementares.status }}
               </dd>
             </div>
           </dl>
