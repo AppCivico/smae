@@ -130,7 +130,7 @@ async function handleRegistrarVinculo({ tipo_vinculo_id, observacao }: Vinculaca
     await vinculosStore.salvarItem(dados);
     emit('fechar');
   } catch (e) {
-    console.log(e);
+    console.error(e);
   }
 }
 </script>
