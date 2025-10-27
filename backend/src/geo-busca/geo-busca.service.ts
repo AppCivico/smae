@@ -374,7 +374,7 @@ export class GeoBuscaService {
         const etapaIds = [...new Set(referencias.filter((r) => r.etapa_id).map((r) => r.etapa_id!))];
         if (etapaIds.length > 0) {
             const etapasData = await this.prisma.etapa.findMany({
-                where: { id: { in: etapaIds }, removido_em: null },
+                where: { id: { in: etapaIds }, removido_em: null, cronograma: { removido_em: null } },
                 select: { id: true, titulo: true, cronograma_id: true },
             });
 
