@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { GeoCamadaConfig, Prisma } from '@prisma/client';
+import { CampoVinculo, GeoCamadaConfig, Prisma } from '@prisma/client';
 import * as turf from '@turf/simplify';
 import { Feature, GeoJSON, GeoJsonObject } from 'geojson';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -621,7 +621,7 @@ export class GeoLocService {
             select: {
                 id: true,
                 geo_localizacao: {
-                    select: { id: true },
+                    select: { id: true, endereco_exibicao: true },
                 },
 
                 // Dados do projeto serão utilizados para invalidar vínculo caso o projeto tenha vínculos de distribuição de recursos e a ref de geolocalização seja removida.
@@ -629,8 +629,8 @@ export class GeoLocService {
                     select: {
                         id: true,
                         vinculosDistribuicaoRecursos: {
-                            where: { removido_em: null },
-                            select: { id: true },
+                            where: { removido_em: null, campo_vinculo: CampoVinculo.Endereco },
+                            select: { id: true, valor_vinculo: true },
                         },
                     },
                 },
@@ -664,11 +664,16 @@ export class GeoLocService {
             // Verificando se o projeto possui vínculos de distribuição de recursos.
             // Se tiver, invalidamos o vínculo.
             if (prevRecord.projeto && prevRecord.projeto.vinculosDistribuicaoRecursos.length > 0) {
-                await this.vinculoService.invalidarVinculo(
-                    { projeto_id: prevRecord.projeto.id },
-                    'Remoção de endereço vinculado ao projeto.',
-                    prismaTx
-                );
+                // Também verificamos pelo campo de endereço, para garantir que o vínculo seja referente ao endereço que está sendo removido.
+                for (const vinculo of prevRecord.projeto.vinculosDistribuicaoRecursos) {
+                    if (vinculo.valor_vinculo === prevRecord.geo_localizacao.endereco_exibicao) {
+                        await this.vinculoService.invalidarVinculo(
+                            { id: vinculo.id },
+                            'Remoção de endereço vinculado ao projeto.',
+                            prismaTx
+                        );
+                    }
+                }
             }
 
             await prismaTx.geoLocalizacaoReferencia.update({
