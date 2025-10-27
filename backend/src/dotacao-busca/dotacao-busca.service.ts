@@ -26,162 +26,273 @@ export class DotacaoBuscaService {
 
         // normaliza a parte da dotação e monta padrão para ILIKE
         const parteNormalizada = this.dotacaoService.expandirParteDotacao(query.trim());
-        const sqlLike = `%${parteNormalizada.replace(/\*/g, '%')}%`;
 
-        const [plan, real, proc, nota] = await Promise.all([
-            this.prisma.$queryRaw<{ dotacao: string }[]>`
-                SELECT DISTINCT dotacao FROM dotacao_planejado WHERE dotacao ILIKE ${sqlLike} LIMIT ${limit}
-            `,
-            this.prisma.$queryRaw<{ dotacao: string }[]>`
-                SELECT DISTINCT dotacao FROM dotacao_realizado WHERE dotacao ILIKE ${sqlLike} LIMIT ${limit}
-            `,
-            this.prisma.$queryRaw<{ dotacao: string }[]>`
-                SELECT DISTINCT dotacao FROM dotacao_processo WHERE dotacao ILIKE ${sqlLike} LIMIT ${limit}
-            `,
-            this.prisma.$queryRaw<{ dotacao: string }[]>`
-                SELECT DISTINCT dotacao FROM dotacao_processo_nota WHERE dotacao ILIKE ${sqlLike} LIMIT ${limit}
-            `,
-        ]);
-
-        const dotacoesSet = new Set<string>();
-        [...plan, ...real, ...proc, ...nota].forEach((r) => r?.dotacao && dotacoesSet.add(r.dotacao));
-        const dotacoes = Array.from(dotacoesSet);
-
-        if (dotacoes.length === 0) {
-            return { projetos: [], obras: [], pdm_ps: [] };
-        }
-
-        const [pdmPlan, pdmReal, portPlan, portReal] = await Promise.all([
-            this.prisma.pdmDotacaoPlanejado.findMany({
-                where: { dotacao: { in: dotacoes } },
-                select: { pdm_id: true, dotacao: true },
-                take: limit,
-            }),
-            this.prisma.pdmDotacaoRealizado.findMany({
-                where: { dotacao: { in: dotacoes } },
-                select: { pdm_id: true, dotacao: true },
-                take: limit,
-            }),
-            this.prisma.portfolioDotacaoPlanejado.findMany({
-                where: { dotacao: { in: dotacoes } },
-                select: { portfolio_id: true, dotacao: true },
-                take: limit,
-            }),
-            this.prisma.portfolioDotacaoRealizado.findMany({
-                where: { dotacao: { in: dotacoes } },
-                select: { portfolio_id: true, dotacao: true },
-                take: limit,
-            }),
-        ]);
-
-        const pdmIds = new Set<number>();
-        const portfolioIds = new Set<number>();
-        const pdmIdToDots = new Map<number, Set<string>>();
-        const portfolioIdToDots = new Map<number, Set<string>>();
-
-        for (const r of [...pdmPlan, ...pdmReal]) {
-            if (r.pdm_id) {
-                pdmIds.add(r.pdm_id);
-                if (!pdmIdToDots.has(r.pdm_id)) pdmIdToDots.set(r.pdm_id, new Set());
-                pdmIdToDots.get(r.pdm_id)!.add(r.dotacao);
-            }
-        }
-        for (const r of [...portPlan, ...portReal]) {
-            if (r.portfolio_id) {
-                portfolioIds.add(r.portfolio_id);
-                if (!portfolioIdToDots.has(r.portfolio_id)) portfolioIdToDots.set(r.portfolio_id, new Set());
-                portfolioIdToDots.get(r.portfolio_id)!.add(r.dotacao);
-            }
-        }
-
-        // 4) Buscar PROJETOS/OBRAS a partir dos Portfólios relacionados
-        const projetos: ProjetoObraResumoDto[] = [];
-        const obras: ProjetoObraResumoDto[] = [];
-
-        if (portfolioIds.size > 0) {
-            const projetosFromView = await this.prisma.viewProjetoV2.findMany({
-                where: {
-                    portfolio_id: { in: Array.from(portfolioIds) },
-                    ...(somenteAtivos ? { projeto: { removido_em: null } } : {}),
+        const linhas = await this.prisma.orcamentoRealizado.findMany({
+            where: {
+                removido_em: null,
+                dotacao: { startsWith: parteNormalizada },
+            },
+            select: {
+                dotacao: true,
+                dotacao_complemento: true,
+                projeto: {
+                    where: {
+                        removido_em: null,
+                    },
+                    select: {
+                        // Projeto pegaremos apenas os IDs, para buscar na view de projetos, pois lá os dados já vêm "prontos"
+                        id: true,
+                    },
                 },
-                select: {
-                    id: true,
-                    nome: true,
-                    codigo: true,
-                    portfolio_id: true,
-                    portfolio_titulo: true,
-                    grupo_tematico_nome: true,
-                    tipo_intervencao_nome: true,
-                    equipamento_nome: true,
-                    regioes: true,
-                    orgao_responsavel_sigla: true,
-                    projeto: {
-                        select: {
-                            tipo: true,
-                            status: true,
-                            vinculosDistribuicaoRecursos: { select: { id: true }, where: { removido_em: null } },
+                meta: {
+                    select: {
+                        id: true,
+                        titulo: true,
+                        codigo: true,
+                        pdm: {
+                            select: {
+                                id: true,
+                                tipo: true,
+                                rotulo_atividade: true,
+                                rotulo_iniciativa: true,
+                            },
+                        },
+                        meta_orgao: {
+                            where: { responsavel: true },
+                            select: {
+                                orgao: {
+                                    select: {
+                                        sigla: true,
+                                    },
+                                },
+                            },
+                        },
+                        vinculosDistribuicaoRecursos: {
+                            where: { removido_em: null, invalidado_em: null },
+                            select: {
+                                id: true,
+                            },
                         },
                     },
                 },
-                take: limit,
-            });
+                iniciativa: {
+                    select: {
+                        id: true,
+                        titulo: true,
+                        codigo: true,
+                        iniciativa_orgao: {
+                            where: { responsavel: true },
+                            select: {
+                                orgao: {
+                                    select: {
+                                        sigla: true,
+                                    },
+                                },
+                            },
+                        },
+                        meta: {
+                            select: {
+                                id: true,
+                                titulo: true,
+                                codigo: true,
+                                pdm: {
+                                    select: {
+                                        id: true,
+                                        tipo: true,
+                                        rotulo_atividade: true,
+                                        rotulo_iniciativa: true,
+                                    },
+                                },
+                            },
+                        },
+                        distribuicaoRecursoVinculos: {
+                            where: { removido_em: null },
+                            select: {
+                                id: true,
+                            },
+                        },
+                    },
+                },
+                atividade: {
+                    select: {
+                        id: true,
+                        titulo: true,
+                        codigo: true,
+                        atividade_orgao: {
+                            where: { responsavel: true },
+                            select: {
+                                orgao: {
+                                    select: {
+                                        sigla: true,
+                                    },
+                                },
+                            },
+                        },
+                        iniciativa: {
+                            select: {
+                                id: true,
+                                titulo: true,
+                                meta: {
+                                    select: {
+                                        id: true,
+                                        titulo: true,
+                                        codigo: true,
+                                        pdm: {
+                                            select: {
+                                                id: true,
+                                                tipo: true,
+                                                rotulo_atividade: true,
+                                                rotulo_iniciativa: true,
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                        distribuicaoRecursoVinculos: {
+                            where: { removido_em: null, invalidado_em: null },
+                            select: {
+                                id: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
 
-            for (const p of projetosFromView) {
-                const dots = portfolioIdToDots.get(p.portfolio_id ?? -1);
-                const item: ProjetoObraResumoDto = {
-                    id: p.id,
-                    nome: p.nome,
-                    codigo: p.codigo,
-                    portfolio_id: p.portfolio_id,
-                    portfolio_titulo: p.portfolio_titulo,
-                    orgao_responsavel_sigla: p.orgao_responsavel_sigla,
-                    status: p.projeto.status,
-                    subprefeitura_nomes: p.regioes,
-                    grupo_tematico_nome: p.grupo_tematico_nome,
-                    tipo_obra_nome: p.tipo_intervencao_nome,
-                    equipamento_nome: p.equipamento_nome,
-                    dotacoes_encontradas: Array.from(dots ?? dotacoesSet),
-                    nro_vinculos: p.projeto.vinculosDistribuicaoRecursos.length,
-                };
-                if (p.projeto.tipo === TipoProjeto.MDO) obras.push(item);
-                else projetos.push(item);
+        const projetos: ProjetoObraResumoDto[] = [];
+        const obras: ProjetoObraResumoDto[] = [];
+        const pdm_ps: PdmPsResumoDto[] = [];
+
+        // Buscando projetos na view.
+        const projetosIds = linhas.map((x) => x.projeto?.id).filter((id): id is number => id !== undefined);
+        const projetosLinhasView = await this.prisma.viewProjetoV2.findMany({
+            where: {
+                id: { in: projetosIds },
+            },
+            select: {
+                id: true,
+                nome: true,
+                codigo: true,
+                portfolio_id: true,
+                portfolio_titulo: true,
+                grupo_tematico_id: true,
+                grupo_tematico_nome: true,
+                tipo_intervencao_id: true,
+                tipo_intervencao_nome: true,
+                equipamento_id: true,
+                equipamento_nome: true,
+                empreendimento_id: true,
+                empreendimento_nome: true,
+                empreendimento_identificador: true,
+                regioes: true,
+                orgao_responsavel_id: true,
+                orgao_responsavel_sigla: true,
+                orgao_responsavel_descricao: true,
+                projeto: {
+                    select: {
+                        tipo: true,
+                        status: true,
+                        // Count de vínculos
+                        vinculosDistribuicaoRecursos: {
+                            where: { removido_em: null },
+                            select: { id: true },
+                        },
+                    },
+                },
+            },
+        });
+
+        for (const linhaProjetoView of projetosLinhasView) {
+            if (linhaProjetoView.projeto.tipo === TipoProjeto.MDO) {
+                obras.push({
+                    id: linhaProjetoView.id,
+                    nome: linhaProjetoView.nome,
+                    codigo: linhaProjetoView.codigo,
+                    portfolio_id: linhaProjetoView.portfolio_id,
+                    portfolio_titulo: linhaProjetoView.portfolio_titulo,
+                    orgao_responsavel_sigla: linhaProjetoView.orgao_responsavel_sigla,
+                    status: linhaProjetoView.projeto.status,
+                    subprefeitura_nomes: linhaProjetoView.regioes,
+                    grupo_tematico_nome: linhaProjetoView.grupo_tematico_nome,
+                    tipo_obra_nome: linhaProjetoView.tipo_intervencao_nome,
+                    equipamento_nome: linhaProjetoView.equipamento_nome,
+                    dotacoes_encontradas: [],
+                    nro_vinculos: linhaProjetoView.projeto.vinculosDistribuicaoRecursos.length,
+                });
+            } else {
+                projetos.push({
+                    id: linhaProjetoView.id,
+                    nome: linhaProjetoView.nome,
+                    codigo: linhaProjetoView.codigo,
+                    portfolio_id: linhaProjetoView.portfolio_id,
+                    portfolio_titulo: linhaProjetoView.portfolio_titulo,
+                    orgao_responsavel_sigla: linhaProjetoView.orgao_responsavel_sigla,
+                    status: linhaProjetoView.projeto.status,
+                    subprefeitura_nomes: linhaProjetoView.regioes,
+                    grupo_tematico_nome: linhaProjetoView.grupo_tematico_nome,
+                    tipo_obra_nome: linhaProjetoView.tipo_intervencao_nome,
+                    equipamento_nome: linhaProjetoView.equipamento_nome,
+                    dotacoes_encontradas: [],
+                    nro_vinculos: linhaProjetoView.projeto.vinculosDistribuicaoRecursos.length,
+                });
             }
         }
 
-        // 5) Buscar PdM/PS (metas) a partir dos PDMs relacionados
-        const pdm_ps: PdmPsResumoDto[] = [];
-        if (pdmIds.size > 0) {
-            const metas = await this.prisma.meta.findMany({
-                where: {
-                    pdm_id: { in: Array.from(pdmIds) },
-                    ...(somenteAtivos ? { ativo: true, removido_em: null } : {}),
-                },
-                select: {
-                    id: true,
-                    codigo: true,
-                    titulo: true,
-                    pdm_id: true,
-                    meta_orgao: { select: { orgao: { select: { sigla: true } } } },
-                    pdm: { select: { rotulo_iniciativa: true, rotulo_atividade: true } },
-                    vinculosDistribuicaoRecursos: { select: { id: true }, where: { removido_em: null } },
-                },
-                take: limit,
-            });
-
-            for (const m of metas) {
-                const dots = pdmIdToDots.get(m.pdm_id ?? -1);
+        for (const linha of linhas) {
+            if (linha.meta) {
                 pdm_ps.push({
-                    pdm_id: m.pdm_id,
-                    meta_id: m.id,
-                    meta_codigo: m.codigo,
-                    meta_titulo: m.titulo,
-                    orgaos_sigla: m.meta_orgao.map((x) => x.orgao.sigla),
-                    rotulo_iniciativa: m.pdm?.rotulo_iniciativa ?? null,
-                    rotulo_atividade: m.pdm?.rotulo_atividade ?? null,
-                    iniciativa: null, // opcional: preencher se houver relação direta dotação->iniciativa
-                    atividade: null, // opcional: preencher se houver relação direta dotação->atividade
-                    dotacoes_encontradas: Array.from(dots ?? dotacoesSet),
-                    nro_vinculos: m.vinculosDistribuicaoRecursos.length,
+                    pdm_id: linha.meta.pdm?.id ?? null,
+                    meta_id: linha.meta.id,
+                    meta_codigo: linha.meta.codigo,
+                    meta_titulo: linha.meta.titulo,
+                    orgaos_sigla: linha.meta.meta_orgao.map((x) => x.orgao.sigla),
+                    rotulo_iniciativa: linha.meta.pdm?.rotulo_iniciativa ?? null,
+                    rotulo_atividade: linha.meta.pdm?.rotulo_atividade ?? null,
+                    iniciativa: null,
+                    atividade: null,
+                    dotacoes_encontradas: [],
+                    nro_vinculos: linha.meta.vinculosDistribuicaoRecursos.length,
+                });
+            }
+            if (linha.iniciativa) {
+                pdm_ps.push({
+                    pdm_id: linha.iniciativa.meta?.pdm?.id ?? null,
+                    meta_id: linha.iniciativa.meta?.id ?? null,
+                    meta_codigo: linha.iniciativa.meta?.codigo ?? null,
+                    meta_titulo: linha.iniciativa.meta?.titulo ?? null,
+                    orgaos_sigla: linha.iniciativa.iniciativa_orgao.map((x) => x.orgao.sigla),
+                    rotulo_iniciativa: linha.iniciativa.meta?.pdm?.rotulo_iniciativa ?? null,
+                    rotulo_atividade: linha.iniciativa.meta?.pdm?.rotulo_atividade ?? null,
+                    iniciativa: {
+                        id: linha.iniciativa.id,
+                        codigo: linha.iniciativa.codigo,
+                        titulo: linha.iniciativa.titulo,
+                        nro_vinculos: linha.iniciativa.distribuicaoRecursoVinculos.length,
+                    },
+                    atividade: null,
+                    dotacoes_encontradas: [],
+                    nro_vinculos: linha.iniciativa.distribuicaoRecursoVinculos.length,
+                });
+            }
+            if (linha.atividade) {
+                pdm_ps.push({
+                    pdm_id: linha.atividade.iniciativa?.meta?.pdm?.id ?? null,
+                    meta_id: linha.atividade.iniciativa?.meta?.id ?? null,
+                    meta_codigo: linha.atividade.iniciativa?.meta?.codigo ?? null,
+                    meta_titulo: linha.atividade.iniciativa?.meta?.titulo ?? null,
+                    orgaos_sigla: linha.atividade.atividade_orgao.map((x) => x.orgao.sigla),
+                    rotulo_iniciativa: linha.atividade.iniciativa?.meta?.pdm?.rotulo_iniciativa ?? null,
+                    rotulo_atividade: linha.atividade.iniciativa?.meta?.pdm?.rotulo_atividade ?? null,
+                    iniciativa: null,
+                    atividade: {
+                        id: linha.atividade.id,
+                        codigo: linha.atividade.codigo,
+                        titulo: linha.atividade.titulo,
+                        nro_vinculos: linha.atividade.distribuicaoRecursoVinculos.length,
+                    },
+                    dotacoes_encontradas: [],
+                    nro_vinculos: linha.atividade.distribuicaoRecursoVinculos.length,
                 });
             }
         }
