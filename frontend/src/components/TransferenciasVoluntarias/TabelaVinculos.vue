@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import type { VinculoDetalheObraDto } from '@back/casa-civil/vinculo/entities/vinculo.entity';
-import type { Vinculo } from '@/stores/transferenciasVinculos.store';
 import { computed } from 'vue';
+
 import ListaLegendas from '@/components/ListaLegendas.vue';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import SmaeTooltip from '@/components/SmaeTooltip/SmaeTooltip.vue';
+import statusObras from '@/consts/statusObras';
 import dinheiro from '@/helpers/dinheiro';
+import type { Vinculo } from '@/stores/transferenciasVinculos.store';
 
 interface Props {
   dados: Vinculo[];
@@ -61,6 +63,18 @@ function obterPortfolioOuModulo(linha: Vinculo): string {
     return 'PDM/Meta';
   }
   return '-';
+}
+
+function obterStatusTraduzido(linha: Vinculo): string {
+  const objetoVinculado = obterObjetoVinculado(linha);
+  if (!objetoVinculado?.status) return '-';
+
+  if (linha.projeto?.tipo === 'MDO') {
+    return statusObras[objetoVinculado.status as keyof typeof statusObras]?.nome
+      || objetoVinculado.status;
+  }
+
+  return objetoVinculado.status;
 }
 
 const colunas = [
@@ -218,12 +232,12 @@ const colunas = [
                 Status
               </dt>
               <dd>
-                {{ obterObjetoVinculado(linha)?.status || '-' }}
+                {{ obterStatusTraduzido(linha) }}
               </dd>
             </dl>
 
             <dl
-              v-if="linha.detalhes && Object.keys(linha.detalhes).length > 0"
+              v-if="linha.detalhes && linha.projeto?.tipo === 'MDO'"
               class="flex column g05"
             >
               <dt class="t12 uc w700 tc300">
@@ -241,6 +255,41 @@ const colunas = [
                     </dt>
                     <dd>
                       {{ detalhe.valor }}
+                    </dd>
+                  </div>
+                </dl>
+              </dd>
+            </dl>
+
+            <dl
+              v-if="linha.iniciativa || linha.atividade"
+              class="flex column g05"
+            >
+              <dt class="t12 uc w700 tc300">
+                Detalhes
+              </dt>
+              <dd>
+                <dl>
+                  <div
+                    v-if="linha.iniciativa"
+                    class="flex g025"
+                  >
+                    <dt>
+                      Iniciativa:
+                    </dt>
+                    <dd>
+                      {{ linha.iniciativa.nome }}
+                    </dd>
+                  </div>
+                  <div
+                    v-if="linha.atividade"
+                    class="flex g025"
+                  >
+                    <dt>
+                      Atividade:
+                    </dt>
+                    <dd>
+                      {{ linha.atividade.nome }}
                     </dd>
                   </div>
                 </dl>
