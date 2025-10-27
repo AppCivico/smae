@@ -172,6 +172,7 @@ watch(tipo, (novoTipo, tipoAnterior) => {
             </SmallModal>
 
             <button
+              v-if="linha.nro_vinculos || linha.detalhes"
               type="button"
               title="Ver detalhes"
               class="fs0 like-a__text addlink"
