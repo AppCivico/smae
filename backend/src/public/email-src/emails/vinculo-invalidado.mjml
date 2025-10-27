@@ -1,0 +1,34 @@
+<!-- filepath: /Users/lucas_ansei/projects/smae/backend/src/public/email-src/emails/vinculo-invalidado.mjml -->
+<mjml>
+  <mj-include path="../components/head.mjml" />
+  <mj-body background-color="#011c50">
+    <mj-include path="../components/header.mjml" />
+
+    <mj-section background-color="#fff">
+      <mj-column>
+        <mj-text>
+          <p>Houve alteração do endereço / da dotação utilizada em vínculo com Transferência Voluntária.
+            As Transferências abaixo necessitam de sua atenção para ajuste nos vínculos:</p>
+        </mj-text>
+        
+        [% FOR transferencia IN transferencias %]
+        <mj-text>
+          <p><strong>Transferência:</strong> [% transferencia.identificador %]</p>
+          <p><strong>Distribuição:</strong> [% transferencia.distribuicao.nome %] - [% transferencia.distribuicao.orgao.sigla %] - R$ [% transferencia.distribuicao.valor %]</p>
+          <p><strong>Vínculo:</strong></p>
+          <ul style="margin-left: 20px;">
+            <li>[% transferencia.vinculo.tipo_modulo %]</li>
+            <li>[% transferencia.vinculo.objeto_nome %]</li>
+            <li>[% transferencia.vinculo.campo_vinculo %]: [% transferencia.vinculo.valor_vinculo %]</li>
+          </ul>
+          <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 20px 0;" />
+        </mj-text>
+        [% END %]
+
+      </mj-column>
+    </mj-section>
+
+    <mj-include path="../components/footer.mjml" />
+
+  </mj-body>
+</mjml>

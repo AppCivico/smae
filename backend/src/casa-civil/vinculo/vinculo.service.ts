@@ -8,10 +8,15 @@ import { CampoVinculo, Prisma } from '@prisma/client';
 import { FilterVinculoDto } from './dto/filter-vinculo.dto';
 import { VinculoDto } from './entities/vinculo.entity';
 import { uuidv7 } from 'uuidv7';
+import { SmaeConfigService } from 'src/common/services/smae-config.service';
+import { CONST_PERFIL_CASA_CIVIL } from 'src/common/consts';
 
 @Injectable()
 export class VinculoService {
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly smaeConfigService: SmaeConfigService
+    ) {}
 
     async upsert(dto: CreateVinculoDto | UpdateVinculoDto, user: PessoaFromJwt, id?: number): Promise<RecordWithId> {
         if (id) {
@@ -361,6 +366,65 @@ export class VinculoService {
             if (filtrosUsados.length > 1)
                 throw new InternalServerErrorException('Apenas um filtro deve ser informado para invalidação');
 
+            // Buscar vínculos que serão invalidados para preparar dados do email
+            const vinculosAfetados = await prismaTx.distribuicaoRecursoVinculo.findMany({
+                where: {
+                    id,
+                    projeto_id,
+                    meta_id,
+                    atividade_id,
+                    iniciativa_id,
+                    removido_em: null,
+                    invalidado_em: null,
+                },
+                select: {
+                    id: true,
+                    campo_vinculo: true,
+                    valor_vinculo: true,
+                    distribuicao: {
+                        select: {
+                            nome: true,
+                            valor: true,
+                            orgao_gestor: {
+                                select: {
+                                    sigla: true,
+                                },
+                            },
+                            transferencia: {
+                                select: {
+                                    identificador: true,
+                                },
+                            },
+                        },
+                    },
+                    projeto: {
+                        select: {
+                            nome: true,
+                            portfolio: {
+                                select: {
+                                    titulo: true,
+                                },
+                            },
+                        },
+                    },
+                    meta: {
+                        select: {
+                            titulo: true,
+                        },
+                    },
+                    iniciativa: {
+                        select: {
+                            titulo: true,
+                        },
+                    },
+                    atividade: {
+                        select: {
+                            titulo: true,
+                        },
+                    },
+                },
+            });
+
             await prismaTx.distribuicaoRecursoVinculo.updateMany({
                 where: {
                     id,
@@ -375,19 +439,64 @@ export class VinculoService {
                 },
             });
 
-            // Envio de e-mail notificando invalidação.
-            /* await prismaTx.emaildbQueue.create({
-                data: {
-                    id: uuidv7(),
-                    config_id: 1,
-                    subject: ``,
-                    template: '',
-                    to: '',
-                    variables: {
-                        resposta: '',
+            // Preparar dados para o email
+            const transferencias = vinculosAfetados.map((v) => {
+                // Determinar tipo de módulo (Portfolio/PdM/PS)
+                let tipo_modulo = '';
+                let objeto_nome = '';
+
+                if (v.projeto) {
+                    tipo_modulo = `Portfólio: ${v.projeto.portfolio.titulo}`;
+                    objeto_nome = v.projeto.nome;
+                } else if (v.meta) {
+                    tipo_modulo = 'PdM/Meta';
+                    objeto_nome = v.meta.titulo;
+                } else if (v.iniciativa) {
+                    tipo_modulo = 'Iniciativa';
+                    objeto_nome = v.iniciativa.titulo;
+                } else if (v.atividade) {
+                    tipo_modulo = 'Atividade';
+                    objeto_nome = v.atividade.titulo;
+                }
+
+                return {
+                    identificador: v.distribuicao.transferencia.identificador,
+                    distribuicao: {
+                        nome: v.distribuicao.nome || '',
+                        orgao: {
+                            sigla: v.distribuicao.orgao_gestor.sigla,
+                        },
+                        valor: v.distribuicao.valor?.toString() || '0',
                     },
-                },
-            }); */
+                    vinculo: {
+                        tipo_modulo,
+                        objeto_nome,
+                        campo_vinculo: v.campo_vinculo === 'Endereco' ? 'Endereço' : 'Dotação',
+                        valor_vinculo: v.valor_vinculo,
+                    },
+                };
+            });
+
+            const orgaoConfig = await this.smaeConfigService.getConfig('COMUNICADO_EMAIL_ORGAO_ID');
+            const orgaoId = orgaoConfig ? parseInt(orgaoConfig, 10) : null;
+            if (!orgaoId) throw new Error('Erro ao buscar configuração de órgão para envio de email');
+            const recipientes = await this.buscarRecipientesEmailCasaCivil(prismaTx, orgaoId);
+
+            // Envio de e-mail notificando invalidação.
+            for (const email of recipientes) {
+                await prismaTx.emaildbQueue.create({
+                    data: {
+                        id: uuidv7(),
+                        config_id: 1,
+                        subject: 'Vínculo da transferência alterado',
+                        template: 'vinculo-invalidado.html',
+                        to: email,
+                        variables: {
+                            transferencias,
+                        },
+                    },
+                });
+            }
         };
 
         if (prismaTx) {
@@ -395,5 +504,31 @@ export class VinculoService {
         } else {
             await this.prisma.$transaction(executarInvalidacao);
         }
+    }
+
+    private async buscarRecipientesEmailCasaCivil(
+        prismaTx: Prisma.TransactionClient,
+        orgaoId: number
+    ): Promise<string[]> {
+        const gestoresCasaCivil = await prismaTx.pessoa.findMany({
+            where: {
+                desativado: false,
+                PessoaPerfil: {
+                    some: {
+                        perfil_acesso: {
+                            nome: CONST_PERFIL_CASA_CIVIL,
+                        },
+                    },
+                },
+                pessoa_fisica: {
+                    orgao_id: orgaoId,
+                },
+            },
+            select: { email: true },
+        });
+
+        const recipientes = [...new Set([...gestoresCasaCivil].map((item) => item.email))];
+
+        return recipientes;
     }
 }
