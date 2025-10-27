@@ -7887,6 +7887,7 @@ model DistribuicaoRecursoVinculo {
     observacao    String?
     campo_vinculo CampoVinculo
     valor_vinculo String
+    dados_extra   Json         @default("{}") @db.Json
 
     criado_por Int
     criado_em  DateTime @default(now()) @db.Timestamptz(6)

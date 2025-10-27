@@ -31,6 +31,16 @@ export class VinculoService {
             // TODO: verificar se existe mais de uma col definida (meta/projeto/iniciativa/atividade) e bloquear.
         }
 
+        // Processando dados extra como JSON
+        try {
+            if ('dados_extra' in dto && dto.dados_extra) {
+                dto.dados_extra = JSON.parse(dto.dados_extra as unknown as string) as any;
+            }
+        } catch (error) {
+            // Caso tenha erro no parse, ignorar o dado extra.
+            delete dto.dados_extra;
+        }
+
         const created = await this.prisma.distribuicaoRecursoVinculo.upsert({
             where: { id: id || 0 },
             create: {
@@ -46,6 +56,7 @@ export class VinculoService {
                 campo_vinculo: (dto as CreateVinculoDto).campo_vinculo ?? CampoVinculo.Endereco,
                 valor_vinculo: (dto as CreateVinculoDto).valor_vinculo ?? '',
                 observacao: (dto as CreateVinculoDto).observacao,
+                dados_extra: (dto as CreateVinculoDto).dados_extra,
                 criado_por: user.id,
                 criado_em: new Date(Date.now()),
             },

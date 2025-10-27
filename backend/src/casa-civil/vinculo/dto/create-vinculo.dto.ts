@@ -43,4 +43,9 @@ export class CreateVinculoDto {
     @IsOptional()
     @IsNumber()
     projeto_id?: number;
+
+    // Campo JSON, porém string.
+    @IsOptional()
+    @IsString()
+    dados_extra?: string;
 }
