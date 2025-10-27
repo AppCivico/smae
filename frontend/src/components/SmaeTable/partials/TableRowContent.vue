@@ -18,28 +18,30 @@
     />
   </TableCell>
 
-  <td v-if="hasActionButton">
+  <td v-if="temColunaDeAcoes">
     <div class="flex g1 justifyright">
       <slot
         name="acoes"
         :linha="linha"
         :linha-index="linhaIndex"
       >
-        <EditButton
-          v-if="rotaEditar"
-          :linha="linha"
-          :rota-editar="rotaEditar"
-          :parametro-da-rota-editar="parametroDaRotaEditar"
-          :parametro-no-objeto-para-editar="parametroNoObjetoParaEditar"
-        />
+        <template v-if="hasActionButton">
+          <EditButton
+            v-if="rotaEditar"
+            :linha="linha"
+            :rota-editar="rotaEditar"
+            :parametro-da-rota-editar="parametroDaRotaEditar"
+            :parametro-no-objeto-para-editar="parametroNoObjetoParaEditar"
+          />
 
-        <DeleteButton
-          v-if="!esconderDeletar"
-          :linha="linha"
-          :esconder-deletar="esconderDeletar"
-          :parametro-no-objeto-para-excluir="parametroNoObjetoParaExcluir"
-          @deletar="ev => emit('deletar', ev)"
-        />
+          <DeleteButton
+            v-if="!esconderDeletar"
+            :linha="linha"
+            :esconder-deletar="esconderDeletar"
+            :parametro-no-objeto-para-excluir="parametroNoObjetoParaExcluir"
+            @deletar="ev => emit('deletar', ev)"
+          />
+        </template>
       </slot>
     </div>
   </td>
@@ -66,6 +68,7 @@ type Props =
     linhaIndex: number
     colunasFiltradas: ColunaComSlots[]
     hasActionButton: boolean
+    temColunaDeAcoes: boolean
     listaSlotsUsados: {
       cabecalho: Record<string, true>
       celula: Record<string, true>

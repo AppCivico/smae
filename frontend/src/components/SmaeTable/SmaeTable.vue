@@ -34,7 +34,7 @@
             v-bind="coluna.atributosDaColuna"
           >
           <col
-            v-if="hasActionButton"
+            v-if="temColunaDeAcoes"
             class="col--botão-de-ação"
           >
         </colgroup>
@@ -68,7 +68,7 @@
               </slot>
             </TableHeaderCell>
 
-            <td v-if="hasActionButton">
+            <td v-if="temColunaDeAcoes">
               <slot name="cabecalho:acao" />
             </td>
           </tr>
@@ -83,6 +83,7 @@
           :dados="dados"
           :colunas-filtradas="colunasFiltradas"
           :has-action-button="hasActionButton"
+          :tem-coluna-de-acoes="temColunaDeAcoes"
           :lista-slots-usados="listaSlotsUsados"
           :rota-editar="rotaEditar"
           :parametro-da-rota-editar="parametroDaRotaEditar"
@@ -171,6 +172,7 @@
 import type { Component } from 'vue';
 import { computed, useAttrs, useSlots } from 'vue';
 import type { AnyObjectSchema } from 'yup';
+
 import RolagemHorizontal from '../rolagem/RolagemHorizontal.vue';
 import { type DeleteButtonEvents, type DeleteButtonProps } from './partials/DeleteButton.vue';
 import { type EditButtonProps } from './partials/EditButton.vue';
@@ -230,7 +232,15 @@ defineSlots<Slots>();
 const slots = useSlots();
 
 const hasActionButton = computed<boolean>(() => {
-  if (props.rotaEditar || slots.acoes) {
+  if (props.rotaEditar) {
+    return true;
+  }
+
+  return false;
+});
+
+const temColunaDeAcoes = computed<boolean>(() => {
+  if (hasActionButton.value || slots.acoes) {
     return true;
   }
 
