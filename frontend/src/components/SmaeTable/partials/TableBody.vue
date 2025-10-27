@@ -46,6 +46,7 @@
           :linha-index="linhaIndex"
           :colunas-filtradas="colunasFiltradas"
           :has-action-button="hasActionButton"
+          :tem-coluna-de-acoes="temColunaDeAcoes"
           :lista-slots-usados="listaSlotsUsados"
           :rota-editar="rotaEditar"
           :parametro-da-rota-editar="parametroDaRotaEditar"
@@ -108,6 +109,7 @@
           :linha-index="linhaIndex"
           :colunas-filtradas="colunasFiltradas"
           :has-action-button="hasActionButton"
+          :tem-coluna-de-acoes="temColunaDeAcoes"
           :lista-slots-usados="listaSlotsUsados"
           :rota-editar="rotaEditar"
           :parametro-da-rota-editar="parametroDaRotaEditar"
@@ -130,7 +132,7 @@
       </tr>
 
       <tr v-if="dados.length === 0">
-        <td :colspan="colunasFiltradas.length + (hasActionButton ? 1 : 0)">
+        <td :colspan="colunasFiltradas.length + (temColunaDeAcoes ? 1 : 0)">
           Sem dados para exibir
         </td>
       </tr>
@@ -140,6 +142,7 @@
 
 <script lang="ts" setup>
 import { ref } from 'vue';
+
 import type { Coluna, Linha, Linhas } from '../tipagem';
 import { type DeleteButtonEvents, type DeleteButtonProps } from './DeleteButton.vue';
 import { type EditButtonProps } from './EditButton.vue';
@@ -159,6 +162,7 @@ type Props =
     dados: Linhas
     colunasFiltradas: ColunaComSlots[]
     hasActionButton: boolean
+    temColunaDeAcoes: boolean
     listaSlotsUsados: {
       cabecalho: Record<string, true>
       celula: Record<string, true>
