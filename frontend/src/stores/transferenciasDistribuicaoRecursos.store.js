@@ -1,5 +1,6 @@
-import dateTimeToDate from '@/helpers/dateTimeToDate';
 import { defineStore } from 'pinia';
+
+import dateTimeToDate from '@/helpers/dateTimeToDate';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -50,7 +51,13 @@ export const useDistribuicaoRecursosStore = defineStore('distribuicaoRecursos', 
           params,
         );
         this.lista = resposta.linhas;
-        this.paginacao = resposta;
+        this.paginacao = {
+          token_paginacao: resposta.token_paginacao || '',
+          paginas: resposta.paginas || 0,
+          pagina_corrente: resposta.pagina_corrente || 0,
+          total_registros: resposta.total_registros || 0,
+          tem_mais: resposta.tem_mais || false,
+        };
       } catch (erro) {
         this.erro = erro;
       }

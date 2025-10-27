@@ -82,7 +82,7 @@ onMounted(() => {
           as="textarea"
           rows="5"
           class="inputtext light mb1"
-          maxlength="2048"
+          maxlength="2000"
           anular-vazio
         />
 

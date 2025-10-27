@@ -9,6 +9,7 @@ import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import { FiltroConsultaGeralVinculacao } from '@/consts/formSchemas';
 import dinheiro from '@/helpers/dinheiro';
+import gerarListaAnos from '@/helpers/gerarListaAnos';
 import { useEntidadesProximasStore } from '@/stores/entidadesProximas.store';
 import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
 
@@ -59,12 +60,7 @@ const camposDeFiltro = computed<Formulario>(() => [
     campos: {
       ano: {
         tipo: 'select' as const,
-        opcoes: [
-          { id: '2025', label: '2025' },
-          { id: '2024', label: '2024' },
-          { id: '2023', label: '2023' },
-          { id: '2022', label: '2022' },
-        ],
+        opcoes: gerarListaAnos(),
       },
       esfera: {
         tipo: 'select' as const,
