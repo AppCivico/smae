@@ -3,40 +3,33 @@ import { storeToRefs } from 'pinia';
 import {
   ErrorMessage, Field, useForm,
 } from 'vee-validate';
-import { useRouter } from 'vue-router';
+import { onMounted } from 'vue';
+import type { InferType } from 'yup';
 
 import { ConsultaGeralVinculacaoRegistro as schema } from '@/consts/formSchemas';
-import { useAlertStore } from '@/stores/alert.store';
-import { useEntidadesProximasStore } from '@/stores/entidadesProximas.store';
 import { useTransferenciasVinculosStore } from '@/stores/transferenciasVinculos.store';
 
-const router = useRouter();
-const alertStore = useAlertStore();
-const entidadesProximasStore = useEntidadesProximasStore();
-const vinculosStore = useTransferenciasVinculosStore();
+export type VinculacaoFormulario = InferType<typeof schema>;
 
-const { distribuicaoSelecionadaId } = storeToRefs(entidadesProximasStore);
-const { tiposDeVinculo, chamadasPendentes } = storeToRefs(vinculosStore);
-
-if (tiposDeVinculo.value.length === 0) {
-  vinculosStore.buscarTiposDeVinculo();
+interface Emits {
+  (e: 'registrar', dados: VinculacaoFormulario): void;
 }
 
-const { handleSubmit } = useForm({ validationSchema: schema });
+const emit = defineEmits<Emits>();
 
-const onSubmit = handleSubmit.withControlled(async (values) => {
-  try {
-    const params = {
-      ...values,
-      distribuicao_id: distribuicaoSelecionadaId.value,
-    };
+const vinculosStore = useTransferenciasVinculosStore();
 
-    await vinculosStore.salvarItem(params);
+const { tiposDeVinculo, chamadasPendentes } = storeToRefs(vinculosStore);
 
-    alertStore.success('Vinculação realizada com sucesso!');
-    router.push({ name: 'consultaGeralVinculacao' });
-  } catch (erro) {
-    alertStore.error(erro);
+const { handleSubmit, values } = useForm({ validationSchema: schema });
+
+const onSubmit = handleSubmit.withControlled(async (dadosControlados) => {
+  emit('registrar', dadosControlados as VinculacaoFormulario);
+});
+
+onMounted(() => {
+  if (tiposDeVinculo.value.length === 0) {
+    vinculosStore.buscarTiposDeVinculo();
   }
 });
 </script>
@@ -84,6 +77,7 @@ const onSubmit = handleSubmit.withControlled(async (values) => {
         />
 
         <SmaeText
+          v-model="values.observacao"
           name="observacao"
           as="textarea"
           rows="5"

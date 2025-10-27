@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 
 import BuscadorGeolocalizacaoFiltro from '@/components/BuscadorGeolocalizacao/BuscadorGeolocalizacaoFiltro.vue';
 import BuscadorGeolocalizacaoListagem from '@/components/BuscadorGeolocalizacao/BuscadorGeolocalizacaoListagem.vue';
@@ -10,10 +10,11 @@ import { useEntidadesProximasStore } from '@/stores/entidadesProximas.store';
 import type { PontoEndereco } from '@/stores/geolocalizador.store';
 
 const entidadesProximasStore = useEntidadesProximasStore();
+const enderecoBuscado = ref<PontoEndereco | null>(null);
 
 const { entidadesPorProximidade } = storeToRefs(entidadesProximasStore);
 
-async function buscarProximidade(endereco: PontoEndereco, raio = 2) {
+async function buscarProximidade(endereco: PontoEndereco, raio = 2000) {
   if (!endereco) {
     console.error('Endereço não encontrado', endereco);
     return;
@@ -32,6 +33,8 @@ async function buscarProximidade(endereco: PontoEndereco, raio = 2) {
     console.error('Coordenadas não encontradas', endereco.endereco.geometry);
     return;
   }
+
+  enderecoBuscado.value = endereco;
 
   const [lon, lat] = endereco.endereco.geometry.coordinates;
 
