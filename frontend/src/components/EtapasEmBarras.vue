@@ -18,7 +18,14 @@ const totalEtapas = computed(() => props.etapas.length);
 
 <template>
   <div class="etapas">
-    <div class="etapas__barras">
+    <div
+      role="progressbar"
+      :aria-valuenow="etapasConcluidas"
+      :aria-valuemin="0"
+      :aria-valuemax="totalEtapas"
+      :aria-label="`Progresso: ${etapasConcluidas} de ${totalEtapas} etapas concluídas`"
+      class="etapas__barras"
+    >
       <div
         v-for="etapa in etapas"
         :key="etapa.id"
@@ -26,9 +33,15 @@ const totalEtapas = computed(() => props.etapas.length);
         :class="{
           'etapas__barra--concluida': etapa.concluido,
         }"
+        :aria-label="etapa.label
+          ? `${etapa.label}: ${etapa.concluido ? 'concluída' : 'pendente'}`
+          : undefined"
       />
     </div>
-    <p class="etapas__texto t13">
+    <p
+      class="etapas__texto t13"
+      aria-hidden="true"
+    >
       Etapas {{ etapasConcluidas }} / {{ totalEtapas }}
     </p>
   </div>
@@ -45,12 +58,18 @@ const totalEtapas = computed(() => props.etapas.length);
   display: flex;
   gap: 10px;
   flex: 1;
+
+  &::before,
+  &::after {
+    content: none;
+  }
 }
 
 .etapas__barra {
   height: 8px;
   flex: 1;
   background-color: #E0E0E0;
+  background-image: none;
   transition: background-color 0.3s ease;
 }
 

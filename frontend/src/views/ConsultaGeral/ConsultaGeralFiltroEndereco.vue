@@ -47,6 +47,18 @@ async function buscarProximidade(endereco: PontoEndereco, raio = 2000) {
   }, raio);
 }
 
+async function resetarPesquisa() {
+  if (!enderecoBuscado.value) {
+    throw new Error('Nenhum endereço foi buscado anteriormente');
+  }
+
+  buscarProximidade(enderecoBuscado.value);
+}
+
+defineExpose({
+  resetarPesquisa,
+});
+
 const localizacoes = computed(() => entidadesPorProximidade.value.reduce((agrupador, i) => {
   if (!i.localizacoes?.length) {
     return agrupador;

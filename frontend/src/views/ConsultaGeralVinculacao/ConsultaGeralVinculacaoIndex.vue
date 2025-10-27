@@ -111,7 +111,11 @@ async function handleRegistrarVinculo({ tipo_vinculo_id, observacao }: Vinculaca
 
       valorVinculo = props.dados.dotacoes_encontradas.join('/');
     } else if (props.tipo === 'endereco') {
-      if (!selecionado.value) {
+      if (
+        !selecionado.value
+        || !selecionado.value.endereco
+        || !selecionado.value.endereco.properties?.string_endereco
+      ) {
         throw new Error('Endereço não selecionado');
       }
 
@@ -124,6 +128,7 @@ async function handleRegistrarVinculo({ tipo_vinculo_id, observacao }: Vinculaca
       observacao,
       campo_vinculo: campoVinculo,
       valor_vinculo: valorVinculo,
+      dados_extra: JSON.stringify(selecionado.value) || undefined,
       ...entidade.value,
     };
 

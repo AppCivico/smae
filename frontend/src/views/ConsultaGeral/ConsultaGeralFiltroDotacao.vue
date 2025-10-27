@@ -200,8 +200,8 @@ function filtrarDotacao() {
   entidadesProximasStore.buscarPorDotacao(dotacaoEComplemento.value);
 }
 
-async function resetarPesquisa() {
-  await filtrarDotacao();
+function resetarPesquisa() {
+  filtrarDotacao();
 }
 
 defineExpose({
