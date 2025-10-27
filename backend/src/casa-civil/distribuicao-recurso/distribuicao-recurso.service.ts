@@ -514,11 +514,21 @@ export class DistribuicaoRecursoService {
             },
         };
 
+        let orderByClause:
+            | Prisma.DistribuicaoRecursoOrderByWithRelationInput
+            | Prisma.DistribuicaoRecursoOrderByWithRelationInput[] = {};
+        if (filters.order_by && filters.order_by == 'transferencia_identificador') {
+            orderByClause = [{ transferencia: { ano: 'desc' } }, { transferencia: { identificador_nro: 'desc' } }];
+        } else {
+            // Fallback.
+            orderByClause = { orgao_gestor: { sigla: 'asc' } };
+        }
+
         const [total_registros, linhas_com_extra] = await this.prisma.$transaction([
             this.prisma.distribuicaoRecurso.count({ where }),
             this.prisma.distribuicaoRecurso.findMany({
                 where: where,
-                orderBy: { orgao_gestor: { sigla: 'asc' } },
+                orderBy: orderByClause,
                 skip: offset,
                 take: ipp + 1,
                 select: {

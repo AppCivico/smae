@@ -52,4 +52,8 @@ export class FilterDistribuicaoRecursoDto {
         message: `O campo 'Palavra-Chave' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
     })
     palavra_chave?: string;
+
+    @IsOptional()
+    @IsString()
+    order_by?: string;
 }
