@@ -183,6 +183,12 @@ export class DotacaoBuscaService {
                         },
                     },
                 },
+                vinculosDistribuicoes: {
+                    where: { removido_em: null, invalidado_em: null },
+                    select: {
+                        id: true,
+                    },
+                },
             },
         });
 
@@ -219,11 +225,6 @@ export class DotacaoBuscaService {
                     select: {
                         tipo: true,
                         status: true,
-                        // Count de vínculos
-                        vinculosDistribuicaoRecursos: {
-                            where: { removido_em: null, invalidado_em: null },
-                            select: { id: true },
-                        },
                     },
                 },
             },
@@ -250,7 +251,7 @@ export class DotacaoBuscaService {
                     tipo_obra_nome: linhaProjetoView.tipo_intervencao_nome,
                     equipamento_nome: linhaProjetoView.equipamento_nome,
                     dotacoes_encontradas: [dotacaoCompleta],
-                    nro_vinculos: linhaProjetoView.projeto.vinculosDistribuicaoRecursos.length,
+                    nro_vinculos: linhaOrcamento?.vinculosDistribuicoes.length ?? 0,
                 });
             } else {
                 projetos.push({
@@ -267,7 +268,7 @@ export class DotacaoBuscaService {
                     tipo_obra_nome: linhaProjetoView.tipo_intervencao_nome,
                     equipamento_nome: linhaProjetoView.equipamento_nome,
                     dotacoes_encontradas: [dotacaoCompleta],
-                    nro_vinculos: linhaProjetoView.projeto.vinculosDistribuicaoRecursos.length,
+                    nro_vinculos: linhaOrcamento?.vinculosDistribuicoes.length ?? 0,
                 });
             }
         }
