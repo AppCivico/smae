@@ -7,6 +7,7 @@ import * as CardEnvelope from '@/components/cardEnvelope';
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
 import ListaLegendas from '@/components/ListaLegendas.vue';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
+import type { Coluna } from '@/components/SmaeTable/tipagem.ts';
 import SmallModal from '@/components/SmallModal.vue';
 import DetalhamentoDeVinculosPorItem from '@/components/TransferenciasVoluntarias/DetalhamentoDeVinculosPorItem.vue';
 import combinadorDeListas from '@/helpers/combinadorDeListas';
@@ -62,7 +63,13 @@ const dadosParaTabela = computed(() => {
 });
 
 const colunas = computed(() => {
-  const colunasGerais = [
+  const colunasGerais: Coluna[] = [
+    {
+      chave: 'cor',
+      label: '',
+      atributosDaColuna: { class: 'col--minimum' },
+      atributosDaCelula: { class: 'tc' },
+    },
     { chave: 'portfolio_programa', label: 'portfólio/plano ou programa' },
     { chave: 'nome', label: 'nome/meta' },
     { chave: 'orgao', label: 'Órgão' },
@@ -82,26 +89,22 @@ const colunas = computed(() => {
     },
   ];
 
-  if (tipo.value === 'dotacao') {
-    return [
-      {
-        chave: 'dotacoes_encontradas',
-        label: 'Dotação',
-        ehCabecalho: true,
-        formatador: (ev) => combinadorDeListas(ev, ','),
-      },
-      ...colunasGerais,
-    ];
-  }
-
-  return [
-    {
+  const colunaDinamica = tipo.value === 'dotacao'
+    ? {
+      chave: 'dotacoes_encontradas',
+      label: 'Dotação',
+      ehCabecalho: true,
+    }
+    : {
       chave: 'localizacoes',
       label: 'Endereço / distância (km)',
       ehCabecalho: true,
-    },
-    ...colunasGerais,
-  ];
+    };
+
+  return [
+    colunasGerais[0],
+    colunaDinamica,
+  ].concat(colunasGerais.slice(1));
 });
 
 watch(tipo, (novoTipo, tipoAnterior) => {
@@ -165,15 +168,17 @@ watch(tipo, (novoTipo, tipoAnterior) => {
           :dados="dadosParaTabela"
           :atributos-da-tabela="{ class: 'cabecalho-congelado'}"
         >
-          <template #celula:localizacoes="{ celula, linha }">
+          <template #celula:cor="{ celula }">
             <div
               :class="['celula__item', 'celula__item-classificacao']"
-              :style="{ color: linha.cor || '#000' }"
+              :style="{ color: celula || '#000' }"
             />
-
-            <span v-if="celula">
-              {{ combinadorDeListas(celula, ' / ', 'geom_geojson.properties.string_endereco') }}
-            </span>
+          </template>
+          <template #celula:localizacoes="{ celula }">
+            {{ combinadorDeListas(celula, ' / ', 'geom_geojson.properties.string_endereco') }}
+          </template>
+          <template #celula:dotacoes_encontradas="{ celula }">
+            {{ combinadorDeListas(celula, ', ') }}
           </template>
           <template #acoes="{ linha, linhaIndex }">
             <SmallModal
@@ -234,17 +239,6 @@ watch(tipo, (novoTipo, tipoAnterior) => {
 </template>
 
 <style lang="less" scoped>
-.tabela-resultados {
-  :deep {
-    .table-cell--localizacoes {
-      span {
-        display: block;
-        margin-left: 15px;
-      }
-    }
-  }
-}
-
 .tabela-resultados__titulo {
   position: relative;
   font-weight: 300;
@@ -294,16 +288,10 @@ watch(tipo, (novoTipo, tipoAnterior) => {
 }
 
 .celula__item {
-  position: relative;
   display: flex;
-  margin-left: 10px;
-  line-height: 20px;
 
   &::before {
     content: '';
-    position: absolute;
-    left: -10px;
-    top: 7px;
 
     width: 5px;
     height: 5px;
