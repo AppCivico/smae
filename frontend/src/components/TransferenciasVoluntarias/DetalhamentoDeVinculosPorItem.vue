@@ -49,7 +49,7 @@ function carregarVinculos() {
       break;
 
     default:
-      break;
+      return;
   }
 
   transferenciasVinculosStore.buscarVinculos(filtros);
