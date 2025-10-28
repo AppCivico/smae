@@ -46,25 +46,6 @@ function formatarDetalhes(detalhes: VinculoDetalheObraDto | null) {
     }));
 }
 
-function obterPortfolioOuModulo(linha: Vinculo): string {
-  if (linha.projeto?.portfolio) {
-    return `Portfolio: ${linha.projeto.portfolio.nome}`;
-  }
-  if (linha.projeto) {
-    return 'Projeto';
-  }
-  if (linha.iniciativa) {
-    return 'Iniciativa';
-  }
-  if (linha.atividade) {
-    return 'Atividade';
-  }
-  if (linha.meta) {
-    return 'PDM/Meta';
-  }
-  return '-';
-}
-
 function obterStatusTraduzido(linha: Vinculo): string {
   const objetoVinculado = obterObjetoVinculado(linha);
   if (!objetoVinculado?.status) return '-';
@@ -111,7 +92,10 @@ const colunas = [
 </script>
 
 <template>
-  <div v-if="dados.length === 0" class="p2 tc">
+  <div
+    v-if="dados.length === 0"
+    class="p2 tc"
+  >
     Nenhum vínculo por {{ tipo === 'endereco' ? 'endereço' : 'dotação' }} cadastrado.
   </div>
 
@@ -190,7 +174,7 @@ const colunas = [
 
         <button
           v-if="temPermissao"
-          class="like-a__text addlink"
+          class="like-a__text"
           type="button"
           aria-label="Remover item"
           title="Remover item"
@@ -201,7 +185,7 @@ const colunas = [
             height="20"
             class="fs0"
           >
-            <use xlink:href="#i_remove" />
+            <use xlink:href="#i_waste" />
           </svg>
         </button>
       </template>
@@ -209,9 +193,12 @@ const colunas = [
       <template #sub-linha="{ linha }">
         <td colspan="7">
           <div class="flex flexwrap g2">
-            <dl class="flex column g05">
+            <dl
+              v-if="linha.projeto?.portfolio"
+              class="flex column g05"
+            >
               <dt class="t12 uc w700 tc300">
-                {{ obterPortfolioOuModulo(linha) }}
+                {{ `Portfolio: ${linha.projeto.portfolio.nome}` }}
               </dt>
               <dd>
                 {{ obterObjetoVinculado(linha)?.nome || '-' }}
@@ -275,7 +262,7 @@ const colunas = [
                     class="flex g025"
                   >
                     <dt>
-                      Iniciativa:
+                      {{ `${linha.pdm.rotulo_iniciativa}:` || 'Iniciativa' }}
                     </dt>
                     <dd>
                       {{ linha.iniciativa.nome }}
@@ -286,7 +273,7 @@ const colunas = [
                     class="flex g025"
                   >
                     <dt>
-                      Atividade:
+                      {{ `${linha.pdm.rotulo_atividade}:` || 'Atividade' }}
                     </dt>
                     <dd>
                       {{ linha.atividade.nome }}
