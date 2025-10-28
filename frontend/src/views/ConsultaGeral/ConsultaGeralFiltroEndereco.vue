@@ -11,7 +11,7 @@ import type { PontoEndereco } from '@/stores/geolocalizador.store';
 
 const entidadesProximasStore = useEntidadesProximasStore();
 
-const { proximidadeFormatada } = storeToRefs(entidadesProximasStore);
+const { entidadesPorProximidade } = storeToRefs(entidadesProximasStore);
 
 async function buscarProximidade(endereco: PontoEndereco, raio = 2) {
   if (!endereco) {
@@ -44,7 +44,7 @@ async function buscarProximidade(endereco: PontoEndereco, raio = 2) {
   }, raio);
 }
 
-const localizacoes = computed(() => proximidadeFormatada.value.reduce((agrupador, i) => {
+const localizacoes = computed(() => entidadesPorProximidade.value.reduce((agrupador, i) => {
   if (!i.localizacoes?.length) {
     return agrupador;
   }

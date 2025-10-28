@@ -33,7 +33,7 @@ const route = useRoute();
 
 const geolocalizadorStore = useGeolocalizadorStore();
 const entidadesProximasStore = useEntidadesProximasStore();
-const { proximidadeFormatada } = storeToRefs(entidadesProximasStore);
+const { entidadesPorProximidade, entidadesPorDotacao } = storeToRefs(entidadesProximasStore);
 
 const detalhamentoAberto = ref(-1);
 
@@ -46,6 +46,19 @@ const filtroSelecionado = computed(() => {
   };
 
   return mapaTipo[tipo.value] || 'h3';
+});
+
+const dadosParaTabela = computed(() => {
+  switch (tipo.value) {
+    case 'endereco':
+      return entidadesPorProximidade.value;
+
+    case 'dotacao':
+      return entidadesPorDotacao.value;
+
+    default:
+      return [];
+  }
 });
 
 const colunas = computed(() => {
@@ -149,7 +162,7 @@ watch(tipo, (novoTipo, tipoAnterior) => {
           class="mt3"
           replicar-cabecalho
           :colunas="colunas"
-          :dados="proximidadeFormatada"
+          :dados="dadosParaTabela"
           :atributos-da-tabela="{ class: 'cabecalho-congelado'}"
         >
           <template #celula:localizacoes="{ celula, linha }">
