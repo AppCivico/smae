@@ -237,6 +237,7 @@ async function handleNovaVinculacao() {
               @close="vinculacaoAberta = -1"
             >
               <ConsultaGeralVinculacaoIndex
+                :exibindo="linhaIndex == vinculacaoAberta"
                 :dados="linha"
                 :tipo="tipo"
                 @fechar="vinculacaoAberta = -1"
