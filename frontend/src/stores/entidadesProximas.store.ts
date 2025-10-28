@@ -1,5 +1,8 @@
-import statusObras from '@/consts/statusObras';
-import type { DotacaoBuscaResponseDto } from '@back/dotacao-busca/dto/dotacao-busca.dto';
+import type {
+  DotacaoBuscaResponseDto,
+  ProjetoObraResumoDto,
+  PdmPsResumoDto,
+} from '@back/dotacao-busca/dto/dotacao-busca.dto';
 import type {
   EtapaSearchResultDto,
   MetaIniAtvLookupInfoDto,
@@ -8,6 +11,7 @@ import type {
   SearchEntitiesNearbyResponseDto,
 } from '@back/geo-busca/dto/geo-busca.entity';
 import { defineStore } from 'pinia';
+import statusObras from '@/consts/statusObras';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -42,7 +46,7 @@ type LocalizacaoProximidade = {
   geo_camada_codigo: string;
 };
 
-type ItemProximidadeFormatado = {
+type ItemConsultaGeralFormatado = {
   id: number;
   modulo: string;
   nome: string;
@@ -139,6 +143,140 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
       if (!dadosPorDotacao || Object.keys(dadosPorDotacao).length === 0) {
         return [];
       }
+
+      const gruposSelecionados = [
+        'obras',
+        'projetos',
+        'pdm_ps',
+      ] as const;
+
+      const dadosOrganizados = gruposSelecionados.reduce((agrupado, chave) => {
+        const grupo = dadosPorDotacao[chave] || [];
+
+        if (!grupo || grupo.length === 0) {
+          return agrupado;
+        }
+
+        grupo.forEach((registro) => {
+          let dadosParciais: Partial<ItemConsultaGeralFormatado> = {
+            modulo: chave === 'pdm_ps' ? 'metas' : chave,
+            nome: '',
+            cor: 'padrao',
+            nro_vinculos: Number(registro.nro_vinculos ?? 0),
+            dotacoes_encontradas: registro.dotacoes_encontradas,
+          };
+
+          switch (chave) {
+            case 'obras': {
+              const obra = registro as ProjetoObraResumoDto;
+              dadosParciais = {
+                ...dadosParciais,
+                id: obra.id || 0,
+                nome: obra.nome || '',
+                cor: LegendasStatus.obras.color,
+                portfolio_programa: obra.portfolio_titulo || '',
+                orgao: obra.orgao_responsavel_sigla || '',
+                status: obra.status ? {
+                  valor: obra.status,
+                  nome: statusObras[obra.status as keyof typeof statusObras]?.nome
+                    || obra.status,
+                } : undefined,
+                detalhes: {
+                  'Grupo Temático': obra.grupo_tematico_nome,
+                  'Tipo de obra': obra.tipo_obra_nome,
+                  Equipamento: obra.equipamento_nome,
+                  Subprefeitura: obra.subprefeitura_nomes,
+                },
+              };
+              break;
+            }
+
+            case 'projetos': {
+              const projeto = registro as ProjetoObraResumoDto;
+              dadosParciais = {
+                ...dadosParciais,
+                id: projeto.id || 0,
+                nome: projeto.nome || '',
+                cor: LegendasStatus.projetos.color,
+                portfolio_programa: projeto.portfolio_titulo || '',
+                orgao: projeto.orgao_responsavel_sigla || '',
+                status: projeto.status ? {
+                  valor: projeto.status,
+                  nome: projeto.status,
+                } : undefined,
+              };
+
+              break;
+            }
+
+            case 'pdm_ps': {
+              const pdmPs = registro as PdmPsResumoDto;
+
+              dadosParciais = {
+                ...dadosParciais,
+                id: pdmPs.meta_id || 0,
+                nome: pdmPs.meta_titulo || '',
+                orgao: pdmPs.orgaos_sigla?.join(', ') || '',
+                cor: LegendasStatus.programaDeMetas.color,
+                meta_info: {
+                  id: pdmPs.meta_id || 0,
+                  codigo: pdmPs.meta_codigo || '',
+                  titulo: pdmPs.meta_titulo || '',
+                  pdm_id: pdmPs.pdm_id || 0,
+                  orgaos_sigla: pdmPs.orgaos_sigla,
+                  nro_vinculos: pdmPs.nro_vinculos,
+                } as MetaIniAtvLookupInfoDto,
+              };
+
+              const detalhes: Record<string, string | null | undefined> = {};
+
+              if (pdmPs.iniciativa) {
+                detalhes[pdmPs.rotulo_iniciativa || 'Iniciativa'] = pdmPs.iniciativa.titulo;
+                dadosParciais.iniciativa_info = {
+                  id: pdmPs.iniciativa.id,
+                  codigo: pdmPs.iniciativa.codigo || '',
+                  titulo: pdmPs.iniciativa.titulo || '',
+                  pdm_id: pdmPs.pdm_id || 0,
+                  orgaos_sigla: pdmPs.orgaos_sigla,
+                  nro_vinculos: pdmPs.iniciativa.nro_vinculos,
+                } as MetaIniAtvLookupInfoDto;
+              }
+
+              if (pdmPs.atividade) {
+                detalhes[pdmPs.rotulo_atividade || 'Atividade'] = pdmPs.atividade.titulo;
+                dadosParciais.atividade_info = {
+                  id: pdmPs.atividade.id,
+                  codigo: pdmPs.atividade.codigo || '',
+                  titulo: pdmPs.atividade.titulo || '',
+                  pdm_id: pdmPs.pdm_id || 0,
+                  orgaos_sigla: pdmPs.orgaos_sigla,
+                  nro_vinculos: pdmPs.atividade.nro_vinculos,
+                } as MetaIniAtvLookupInfoDto;
+              }
+
+              if (Object.keys(detalhes).length > 0) {
+                dadosParciais.detalhes = detalhes;
+              }
+
+              break;
+            }
+
+            default:
+              break;
+          }
+
+          const item = {
+            ...dadosParciais,
+            localizacoes: [],
+          } as ItemConsultaGeralFormatado;
+
+          agrupado.push(item);
+        });
+
+        return agrupado;
+      }, [] as ItemConsultaGeralFormatado[]);
+
+      return dadosOrganizados;
     },
     entidadesPorProximidade({ dadosPorGeo }) {
       if (!dadosPorGeo || Object.keys(dadosPorGeo).length === 0) {
@@ -161,7 +299,7 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
         }
 
         grupo.forEach((registro) => {
-          let dadosParciais: Partial<ItemProximidadeFormatado> = {
+          let dadosParciais: Partial<ItemConsultaGeralFormatado> = {
             id: registro.id,
             modulo: chave,
             nome: '',
@@ -299,13 +437,13 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
           const item = {
             ...dadosParciais,
             localizacoes: localizacoesComCor,
-          } as ItemProximidadeFormatado;
+          } as ItemConsultaGeralFormatado;
 
           agrupado.push(item);
         });
 
         return agrupado;
-      }, [] as ItemProximidadeFormatado[]);
+      }, [] as ItemConsultaGeralFormatado[]);
 
       return dadosOrganizados;
     },
