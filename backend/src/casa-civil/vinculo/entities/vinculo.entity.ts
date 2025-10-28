@@ -16,6 +16,7 @@ export class VinculoDto {
     iniciativa: VinculoMetaIniAtvDto | null;
     atividade: VinculoMetaIniAtvDto | null;
     projeto: VinculoProjetoDto | null;
+    pdm: VinculoPdmDto | null;
     invalidado_em: Date | null;
     motivo_invalido: string | null;
     detalhes: VinculoDetalheObraDto | null;
@@ -58,6 +59,11 @@ export class VinculoDetalheObraDto {
     tipo_intervencao_nome: string | null;
 }
 
+export class VinculoPdmDto {
+    rotulo_iniciativa: string | null;
+    rotulo_atividade: string | null;
+    rotulo_macro_tema: string | null;
+}
 export class ListVinculoDto {
     linhas: VinculoDto[];
 }

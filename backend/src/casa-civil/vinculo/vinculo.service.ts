@@ -150,6 +150,14 @@ export class VinculoService {
                             },
                             take: 1,
                         },
+
+                        pdm: {
+                            select: {
+                                rotulo_iniciativa: true,
+                                rotulo_atividade: true,
+                                rotulo_macro_tema: true,
+                            },
+                        },
                     },
                 },
 
@@ -172,6 +180,35 @@ export class VinculoService {
                             },
                             take: 1,
                         },
+
+                        meta: {
+                            select: {
+                                id: true,
+                                codigo: true,
+                                titulo: true,
+                                status: true,
+                                meta_orgao: {
+                                    where: { responsavel: true },
+                                    select: {
+                                        orgao: {
+                                            select: {
+                                                id: true,
+                                                sigla: true,
+                                                descricao: true,
+                                            },
+                                        },
+                                    },
+                                    take: 1,
+                                },
+                                pdm: {
+                                    select: {
+                                        rotulo_atividade: true,
+                                        rotulo_iniciativa: true,
+                                        rotulo_macro_tema: true,
+                                    },
+                                },
+                            },
+                        },
                     },
                 },
 
@@ -193,6 +230,58 @@ export class VinculoService {
                                 },
                             },
                             take: 1,
+                        },
+
+                        iniciativa: {
+                            select: {
+                                id: true,
+                                codigo: true,
+                                titulo: true,
+                                status: true,
+                                iniciativa_orgao: {
+                                    where: { responsavel: true },
+                                    select: {
+                                        orgao: {
+                                            select: {
+                                                id: true,
+                                                sigla: true,
+                                                descricao: true,
+                                            },
+                                        },
+                                    },
+                                    take: 1,
+                                },
+
+                                meta: {
+                                    select: {
+                                        id: true,
+                                        codigo: true,
+                                        titulo: true,
+                                        status: true,
+                                        meta_orgao: {
+                                            where: { responsavel: true },
+                                            select: {
+                                                orgao: {
+                                                    select: {
+                                                        id: true,
+                                                        sigla: true,
+                                                        descricao: true,
+                                                    },
+                                                },
+                                            },
+                                            take: 1,
+                                        },
+
+                                        pdm: {
+                                            select: {
+                                                rotulo_atividade: true,
+                                                rotulo_iniciativa: true,
+                                                rotulo_macro_tema: true,
+                                            },
+                                        },
+                                    },
+                                },
+                            },
                         },
                     },
                 },
@@ -237,98 +326,111 @@ export class VinculoService {
             },
         });
 
-        return vinculos.map((v) => ({
-            id: v.id,
-            distribuicao_recurso: {
-                id: v.distribuicao.id,
-                nome: v.distribuicao.nome,
-                valor: v.distribuicao.valor,
-                orgao: {
-                    id: v.distribuicao.orgao_gestor.id,
-                    sigla: v.distribuicao.orgao_gestor.sigla,
-                    descricao: v.distribuicao.orgao_gestor.descricao,
-                },
+        return vinculos.map((v) => {
+            const iniciativa = v.atividade ? v.atividade.iniciativa : v.iniciativa;
+            const meta = iniciativa ? iniciativa.meta : v.meta;
+            const pdm = meta?.pdm;
 
-                transferencia: {
-                    id: v.distribuicao.transferencia.id,
-                    nome: v.distribuicao.transferencia.identificador,
-                    valor: v.distribuicao.transferencia.valor,
-                    orgao_concedente: {
-                        id: v.distribuicao.transferencia.orgao_concedente.id,
-                        sigla: v.distribuicao.transferencia.orgao_concedente.sigla,
-                        descricao: v.distribuicao.transferencia.orgao_concedente.descricao,
+            return {
+                id: v.id,
+                distribuicao_recurso: {
+                    id: v.distribuicao.id,
+                    nome: v.distribuicao.nome,
+                    valor: v.distribuicao.valor,
+                    orgao: {
+                        id: v.distribuicao.orgao_gestor.id,
+                        sigla: v.distribuicao.orgao_gestor.sigla,
+                        descricao: v.distribuicao.orgao_gestor.descricao,
+                    },
+
+                    transferencia: {
+                        id: v.distribuicao.transferencia.id,
+                        nome: v.distribuicao.transferencia.identificador,
+                        valor: v.distribuicao.transferencia.valor,
+                        orgao_concedente: {
+                            id: v.distribuicao.transferencia.orgao_concedente.id,
+                            sigla: v.distribuicao.transferencia.orgao_concedente.sigla,
+                            descricao: v.distribuicao.transferencia.orgao_concedente.descricao,
+                        },
                     },
                 },
-            },
-            tipo_vinculo: {
-                id: v.tipo_vinculo.id,
-                nome: v.tipo_vinculo.nome,
-            },
-            campo_vinculo: v.campo_vinculo,
-            valor_vinculo: v.valor_vinculo,
-            observacao: v.observacao,
-            meta: v.meta
-                ? {
-                      id: v.meta.id,
-                      nome: v.meta.titulo,
-                      status: v.meta.status,
-                      orgao: {
-                          id: v.meta.meta_orgao[0]?.orgao?.id,
-                          sigla: v.meta.meta_orgao[0]?.orgao?.sigla,
-                          descricao: v.meta.meta_orgao[0]?.orgao?.descricao,
-                      },
-                  }
-                : null,
-            iniciativa: v.iniciativa
-                ? {
-                      id: v.iniciativa.id,
-                      nome: v.iniciativa.titulo,
-                      status: v.iniciativa.status,
-                      orgao: {
-                          id: v.iniciativa.iniciativa_orgao[0]?.orgao?.id,
-                          sigla: v.iniciativa.iniciativa_orgao[0]?.orgao?.sigla,
-                          descricao: v.iniciativa.iniciativa_orgao[0]?.orgao?.descricao,
-                      },
-                  }
-                : null,
-            atividade: v.atividade
-                ? {
-                      id: v.atividade.id,
-                      nome: v.atividade.titulo,
-                      status: v.atividade.status,
-                      orgao: {
-                          id: v.atividade.atividade_orgao[0]?.orgao?.id,
-                          sigla: v.atividade.atividade_orgao[0]?.orgao?.sigla,
-                          descricao: v.atividade.atividade_orgao[0]?.orgao?.descricao,
-                      },
-                  }
-                : null,
-            projeto: v.projeto
-                ? {
-                      id: v.projeto.id,
-                      tipo: v.projeto.tipo,
-                      nome: v.projeto.nome,
-                      portfolio: {
-                          id: v.projeto.portfolio.id,
-                          nome: v.projeto.portfolio.titulo,
-                      },
-                      orgao: {
-                          id: v.projeto.orgao_gestor?.id,
-                          sigla: v.projeto.orgao_gestor?.sigla,
-                          descricao: v.projeto.orgao_gestor?.descricao,
-                      },
-                      status: v.projeto.status,
-                  }
-                : null,
-            invalidado_em: v.invalidado_em,
-            motivo_invalido: v.motivo_invalido,
-            detalhes: {
-                grupo_tematico_nome: v.projeto?.grupo_tematico?.nome ?? null,
-                equipamento_nome: v.projeto?.equipamento?.nome ?? null,
-                subprefeitura_nome: null,
-                tipo_intervencao_nome: v.projeto?.tipo_intervencao?.nome ?? null,
-            },
-        }));
+                tipo_vinculo: {
+                    id: v.tipo_vinculo.id,
+                    nome: v.tipo_vinculo.nome,
+                },
+                campo_vinculo: v.campo_vinculo,
+                valor_vinculo: v.valor_vinculo,
+                observacao: v.observacao,
+                meta: meta
+                    ? {
+                          id: meta.id,
+                          nome: meta.titulo,
+                          status: meta.status,
+                          orgao: {
+                              id: meta.meta_orgao[0]?.orgao?.id,
+                              sigla: meta.meta_orgao[0]?.orgao?.sigla,
+                              descricao: meta.meta_orgao[0]?.orgao?.descricao,
+                          },
+                      }
+                    : null,
+                iniciativa: iniciativa
+                    ? {
+                          id: iniciativa.id,
+                          nome: iniciativa.titulo,
+                          status: iniciativa.status,
+                          orgao: {
+                              id: iniciativa.iniciativa_orgao[0]?.orgao?.id,
+                              sigla: iniciativa.iniciativa_orgao[0]?.orgao?.sigla,
+                              descricao: iniciativa.iniciativa_orgao[0]?.orgao?.descricao,
+                          },
+                      }
+                    : null,
+                atividade: v.atividade
+                    ? {
+                          id: v.atividade.id,
+                          nome: v.atividade.titulo,
+                          status: v.atividade.status,
+                          orgao: {
+                              id: v.atividade.atividade_orgao[0]?.orgao?.id,
+                              sigla: v.atividade.atividade_orgao[0]?.orgao?.sigla,
+                              descricao: v.atividade.atividade_orgao[0]?.orgao?.descricao,
+                          },
+                      }
+                    : null,
+                projeto: v.projeto
+                    ? {
+                          id: v.projeto.id,
+                          tipo: v.projeto.tipo,
+                          nome: v.projeto.nome,
+                          portfolio: {
+                              id: v.projeto.portfolio.id,
+                              nome: v.projeto.portfolio.titulo,
+                          },
+                          orgao: {
+                              id: v.projeto.orgao_gestor?.id,
+                              sigla: v.projeto.orgao_gestor?.sigla,
+                              descricao: v.projeto.orgao_gestor?.descricao,
+                          },
+                          status: v.projeto.status,
+                      }
+                    : null,
+                invalidado_em: v.invalidado_em,
+                motivo_invalido: v.motivo_invalido,
+                detalhes: {
+                    grupo_tematico_nome: v.projeto?.grupo_tematico?.nome ?? null,
+                    equipamento_nome: v.projeto?.equipamento?.nome ?? null,
+                    subprefeitura_nome: null,
+                    tipo_intervencao_nome: v.projeto?.tipo_intervencao?.nome ?? null,
+                },
+                pdm: pdm
+                    ? {
+                          rotulo_atividade: pdm.rotulo_atividade ?? null,
+                          rotulo_iniciativa: pdm.rotulo_iniciativa ?? null,
+                          rotulo_macro_tema: pdm.rotulo_macro_tema ?? null,
+                      }
+                    : null,
+            };
+        });
     }
 
     async remove(id: number, user: PessoaFromJwt): Promise<void> {
