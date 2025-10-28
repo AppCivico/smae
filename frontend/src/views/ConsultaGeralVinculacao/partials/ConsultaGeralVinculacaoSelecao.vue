@@ -43,7 +43,11 @@ const carregando = computed(() => chamadasPendentes.value.lista);
 const colunas = [
   { chave: 'transferencia.identificador', label: 'Identificador da transferência' },
   { chave: 'orgao_gestor.sigla', label: 'Gestor municipal' },
-  { chave: 'objeto', label: 'Nome' },
+  {
+    chave: 'objeto',
+    label: 'Nome',
+    atributosDaCelula: { style: 'min-width: 300px' },
+  },
   {
     chave: 'valor_total',
     label: 'Valor total',
@@ -79,8 +83,21 @@ const camposDeFiltro = computed<Formulario>(() => [
 ]);
 
 async function buscarDados(): Promise<void> {
+  const dadosFormulario = Object.keys(formulario.value).reduce((amount, item) => {
+    const value = formulario.value[item];
+
+    if (value === undefined || value === '') {
+      return amount;
+    }
+
+    return {
+      ...amount,
+      [item]: value,
+    };
+  }, {});
+
   await distribuicaoRecursosStore.buscarTudo({
-    ...formulario.value,
+    ...dadosFormulario,
     ipp: 10,
     order_by: 'transferencia_identificador',
     pagina: route.query.pagina,
