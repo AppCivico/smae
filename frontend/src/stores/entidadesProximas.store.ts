@@ -49,6 +49,8 @@ type LocalizacaoProximidade = {
 
 type ItemConsultaGeralFormatado = {
   id: number;
+  orcamento_realizado_id?: number;
+  geo_localizacao_referencia_id?: number;
   modulo: string;
   nome: string;
   nro_vinculos: number;
@@ -166,6 +168,7 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
             cor: 'padrao',
             nro_vinculos: Number(registro.nro_vinculos ?? 0),
             dotacoes_encontradas: registro.dotacoes_encontradas,
+            orcamento_realizado_id: registro.orcamento_realizado_id,
           };
 
           switch (chave) {
@@ -306,6 +309,7 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
             modulo: chave,
             nome: '',
             cor: 'padrao',
+            geo_localizacao_referencia_id: registro.geo_localizacao_referencia_id,
           };
 
           switch (chave) {

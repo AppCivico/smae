@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia';
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, watch } from 'vue';
 
 import CabecalhoDePagina from '@/components/CabecalhoDePagina.vue';
 import EtapasEmBarras from '@/components/EtapasEmBarras.vue';
 import { useEntidadesProximasStore } from '@/stores/entidadesProximas.store';
 import { useGeolocalizadorStore } from '@/stores/geolocalizador.store';
+import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
 import { useTransferenciasVinculosStore, type Filtros } from '@/stores/transferenciasVinculos.store';
 
 import ConsultaGeralVinculacaoRegistro, { VinculacaoFormulario } from './partials/ConsultaGeralVinculacaoRegistro.vue';
@@ -14,6 +15,7 @@ import ConsultaGeralVinculacaoSelecao from './partials/ConsultaGeralVinculacaoSe
 type Props = {
   dados: Record<string, unknown>,
   tipo: 'dotacao' | 'endereco'
+  exibindo: boolean
 };
 
 type Emits = {
@@ -35,6 +37,7 @@ type TipoEtapa = 'selecao' | 'registro';
 const vinculosStore = useTransferenciasVinculosStore();
 const entidadesProximasStore = useEntidadesProximasStore();
 const geolocalizadorStore = useGeolocalizadorStore();
+const distribuicaoRecursosStore = useDistribuicaoRecursosStore();
 
 const { distribuicaoSelecionadaId } = storeToRefs(entidadesProximasStore);
 const { selecionado } = storeToRefs(geolocalizadorStore);
@@ -129,8 +132,8 @@ async function handleRegistrarVinculo({ tipo_vinculo_id, observacao }: Vinculaca
       tipo_vinculo_id,
       observacao,
       campo_vinculo: campoVinculo,
-      geo_localizacao_referencia_id: 0,
-      orcamento_realizado_id: 0,
+      geo_localizacao_referencia_id: props.dados.geo_localizacao_referencia_id,
+      orcamento_realizado_id: props.dados.orcamento_realizado_id,
       valor_vinculo: valorVinculo,
       dados_extra: JSON.stringify(selecionado.value) || undefined,
       ...entidade.value,
@@ -147,9 +150,10 @@ function fecharVinculacao() {
   emit('fechar');
 }
 
-onMounted(() => {
+watch(() => props.exibindo, () => {
   distribuicaoSelecionadaId.value = undefined;
-});
+  distribuicaoRecursosStore.$reset();
+}, { immediate: true });
 </script>
 
 <template>
