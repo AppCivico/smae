@@ -12,7 +12,9 @@
 <script lang="ts" setup>
 import { computed, defineProps } from 'vue';
 import type { AnyObjectSchema } from 'yup';
+
 import buscarDadosDoYup from '@/components/camposDeFormulario/helpers/buscarDadosDoYup';
+
 import type { Coluna } from '../tipagem';
 
 type Props = Coluna & {
@@ -24,7 +26,7 @@ const props = defineProps<Props>();
 
 const conteudo = computed(() => {
   if (!props.schema || !props.chave) {
-    return props.label || props.chave;
+    return props.label ?? props.chave;
   }
 
   const dadosYup = buscarDadosDoYup(props.schema, props.chave)?.spec?.label;
