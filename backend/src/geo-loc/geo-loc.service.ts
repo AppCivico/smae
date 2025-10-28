@@ -624,14 +624,9 @@ export class GeoLocService {
                     select: { id: true, endereco_exibicao: true },
                 },
 
-                // Dados do projeto serão utilizados para invalidar vínculo caso o projeto tenha vínculos de distribuição de recursos e a ref de geolocalização seja removida.
-                projeto: {
+                vinculosDistribuicoes: {
                     select: {
                         id: true,
-                        vinculosDistribuicaoRecursos: {
-                            where: { removido_em: null, campo_vinculo: CampoVinculo.Endereco },
-                            select: { id: true, valor_vinculo: true, dados_extra: true },
-                        },
                     },
                 },
             },
@@ -661,32 +656,10 @@ export class GeoLocService {
             // se ainda ta na lista dos presentes, n precisa remover
             if (inputIds.filter((r) => r == prevRecord.geo_localizacao.id)[0]) continue;
 
-            // Verificando se o projeto possui vínculos de distribuição de recursos.
-            // Se tiver, invalidamos o vínculo.
-            if (prevRecord.projeto && prevRecord.projeto.vinculosDistribuicaoRecursos.length > 0) {
-                // Também verificamos pelo campo de endereço, para garantir que o vínculo seja referente ao endereço que está sendo removido.
-                for (const vinculo of prevRecord.projeto.vinculosDistribuicaoRecursos) {
-                    const valorVinculo =
-                        vinculo.dados_extra &&
-                        typeof vinculo.dados_extra === 'object' &&
-                        'properties' in vinculo.dados_extra &&
-                        vinculo.dados_extra.properties &&
-                        typeof vinculo.dados_extra.properties === 'object' &&
-                        'rua' in vinculo.dados_extra.properties
-                            ? vinculo.dados_extra.properties.rua
-                            : vinculo.valor_vinculo;
-
-                    // Utilizando regex pois o valor do vínculo pode conter variações como número, complemento, etc.
-                    if (
-                        valorVinculo &&
-                        new RegExp(prevRecord.geo_localizacao.endereco_exibicao, 'i').test(String(valorVinculo))
-                    ) {
-                        await this.vinculoService.invalidarVinculo(
-                            { id: vinculo.id },
-                            'Remoção de endereço vinculado ao projeto.',
-                            prismaTx
-                        );
-                    }
+            if (prevRecord.vinculosDistribuicoes.length > 0) {
+                const vinculoIds = prevRecord.vinculosDistribuicoes.map((v) => v.id);
+                for (const vinculoId of vinculoIds) {
+                    await this.vinculoService.invalidarVinculo({ id: vinculoId }, 'Endereço removido', prismaTx);
                 }
             }
 

@@ -10,6 +10,14 @@ export class CreateVinculoDto {
     @IsNumber()
     distribuicao_id: number;
 
+    @IsOptional()
+    @IsNumber()
+    geo_localizacao_referencia_id?: number;
+
+    @IsOptional()
+    @IsNumber()
+    orcamento_realizado_id?: number;
+
     @IsEnum(CampoVinculo)
     @ApiProperty({
         description: 'Tipo do campo que será utilizado para o vínculo, pode ser endereço ou dotação.',

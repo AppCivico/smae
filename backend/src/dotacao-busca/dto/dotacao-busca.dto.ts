@@ -29,6 +29,7 @@ export class DotacaoBuscaDto {
 
 export type ProjetoObraResumoDto = {
     id: number;
+    orcamento_realizado_id: number | null;
     nome: string | null;
     codigo: string | null;
     portfolio_id: number | null;
@@ -48,6 +49,7 @@ export type ProjetoObraResumoDto = {
 };
 
 export type PdmPsResumoDto = {
+    orcamento_realizado_id: number | null;
     pdm_id: number | null;
     meta_id: number | null;
     meta_codigo: string | null;

@@ -33,6 +33,19 @@ export class VinculoService {
             if (!createDto.meta_id && !createDto.projeto_id && !createDto.iniciativa_id && !createDto.atividade_id)
                 throw new HttpException('É necessário informar uma meta, projeto, iniciativa ou atividade', 400);
 
+            if (createDto.campo_vinculo === CampoVinculo.Endereco && !createDto.geo_localizacao_referencia_id) {
+                throw new HttpException(
+                    'É necessário informar a referência de localização geográfica para vínculos do tipo endereço',
+                    400
+                );
+            }
+
+            if (createDto.campo_vinculo === CampoVinculo.Dotacao && !createDto.orcamento_realizado_id) {
+                throw new HttpException(
+                    'É necessário informar o orçamento realizado para vínculos do tipo dotação',
+                    400
+                );
+            }
             // TODO: verificar se existe mais de uma col definida (meta/projeto/iniciativa/atividade) e bloquear.
         }
 
@@ -54,6 +67,8 @@ export class VinculoService {
                 // Mas como no DTO de criação, estes campos são obrigatórios, eles sempre estarão presentes.
                 tipo_vinculo_id: (dto as CreateVinculoDto).tipo_vinculo_id ?? 0,
                 distribuicao_id: (dto as CreateVinculoDto).distribuicao_id ?? 0,
+                geo_localizacao_referencia_id: (dto as CreateVinculoDto).geo_localizacao_referencia_id ?? undefined,
+                orcamento_realizado_id: (dto as CreateVinculoDto).orcamento_realizado_id ?? undefined,
                 meta_id: (dto as CreateVinculoDto).meta_id ?? undefined,
                 iniciativa_id: (dto as CreateVinculoDto).iniciativa_id ?? undefined,
                 atividade_id: (dto as CreateVinculoDto).atividade_id ?? undefined,

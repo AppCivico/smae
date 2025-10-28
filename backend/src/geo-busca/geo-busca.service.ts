@@ -171,6 +171,7 @@ export class GeoBuscaService {
 
         const makeGeoInfo = (ref: (typeof referencias)[0]): GeoInfoBaseDto => {
             const geoInfo: GeoInfoBaseDto = {
+                id: ref.id,
                 geo_localizacao_id: ref.geo_localizacao_id,
                 endereco_exibicao: ref.geo_localizacao.endereco_exibicao,
                 lat: ref.geo_localizacao.lat,
@@ -255,6 +256,7 @@ export class GeoBuscaService {
 
                 const projetoDto: ProjetoSearchResultDto = {
                     id: p.id,
+                    geo_localizacao_referencia_id: geoInfos.length > 0 ? geoInfos[0].id : 0,
                     nome: p.nome,
                     codigo: p.codigo,
                     portfolio_id: p.portfolio_id,
@@ -322,6 +324,8 @@ export class GeoBuscaService {
                 seenIniIdsForLookup.add(i.id);
                 response.iniciativas.push({
                     id: i.id,
+                    geo_localizacao_referencia_id:
+                        entityGeoInfoMap.get(`iniciativa-${i.id}`)?.[0]?.geo_localizacao_id || 0,
                     titulo: i.titulo,
                     codigo: i.codigo,
                     meta_id: i.meta.id,
@@ -358,6 +362,8 @@ export class GeoBuscaService {
                 seenAtvIdsForLookup.add(a.id);
                 response.atividades.push({
                     id: a.id,
+                    geo_localizacao_referencia_id:
+                        entityGeoInfoMap.get(`atividade-${a.id}`)?.[0]?.geo_localizacao_id || 0,
                     titulo: a.titulo,
                     codigo: a.codigo,
                     iniciativa_id: a.iniciativa.id,
@@ -409,6 +415,7 @@ export class GeoBuscaService {
 
                 response.etapas.push({
                     id: e.id,
+                    geo_localizacao_referencia_id: entityGeoInfoMap.get(`etapa-${e.id}`)?.[0]?.geo_localizacao_id || 0,
                     titulo: e.titulo ?? `Etapa ID ${e.id}`,
                     cronograma_id: e.cronograma_id,
                     meta_id: metaId ?? 0,

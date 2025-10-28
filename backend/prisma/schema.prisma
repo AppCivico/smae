@@ -3417,12 +3417,13 @@ model OrcamentoRealizado {
     removido_em  DateTime?
     removido_por Int?
 
-    projeto    Projeto?    @relation(fields: [projeto_id], references: [id])
-    meta       Meta?       @relation(fields: [meta_id], references: [id])
-    iniciativa Iniciativa? @relation(fields: [iniciativa_id], references: [id])
-    atividade  Atividade?  @relation(fields: [atividade_id], references: [id])
-    criador    Pessoa      @relation("criador", fields: [criado_por], references: [id])
-    removedor  Pessoa?     @relation("removedor", fields: [removido_por], references: [id])
+    projeto               Projeto?                     @relation(fields: [projeto_id], references: [id])
+    meta                  Meta?                        @relation(fields: [meta_id], references: [id])
+    iniciativa            Iniciativa?                  @relation(fields: [iniciativa_id], references: [id])
+    atividade             Atividade?                   @relation(fields: [atividade_id], references: [id])
+    criador               Pessoa                       @relation("criador", fields: [criado_por], references: [id])
+    removedor             Pessoa?                      @relation("removedor", fields: [removido_por], references: [id])
+    vinculosDistribuicoes DistribuicaoRecursoVinculo[]
 
     @@index([meta_id])
     @@index([projeto_id])
@@ -5271,9 +5272,10 @@ model GeoLocalizacaoReferencia {
     criado_em   DateTime  @default(now()) @db.Timestamp(6)
     removido_em DateTime? @db.Timestamp(6)
 
-    geo_localizacao GeoLocalizacao @relation(fields: [geo_localizacao_id], references: [id])
-    criador         Pessoa?        @relation("criador", fields: [criador_por], references: [id])
-    removedor       Pessoa?        @relation("removedor", fields: [removido_por], references: [id])
+    geo_localizacao       GeoLocalizacao               @relation(fields: [geo_localizacao_id], references: [id])
+    criador               Pessoa?                      @relation("criador", fields: [criador_por], references: [id])
+    removedor             Pessoa?                      @relation("removedor", fields: [removido_por], references: [id])
+    vinculosDistribuicoes DistribuicaoRecursoVinculo[]
 
     @@map("geo_localizacao_referencia")
 }
@@ -7883,6 +7885,12 @@ model DistribuicaoRecursoVinculo {
 
     atividade_id Int?
     atividade    Atividade? @relation(fields: [atividade_id], references: [id])
+
+    geo_localizacao_referencia_id Int?
+    geo_localizacao_referencia    GeoLocalizacaoReferencia? @relation(fields: [geo_localizacao_referencia_id], references: [id])
+
+    orcamento_realizado_id Int?
+    orcamento_realizado    OrcamentoRealizado? @relation(fields: [orcamento_realizado_id], references: [id])
 
     observacao    String?
     campo_vinculo CampoVinculo

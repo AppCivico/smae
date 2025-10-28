@@ -5,6 +5,9 @@ import { GeoJSON } from 'geojson';
 
 export class GeoInfoBaseDto {
     @ApiProperty()
+    id: number;
+
+    @ApiProperty()
     geo_localizacao_id: number;
 
     @ApiProperty()
@@ -29,6 +32,9 @@ export class GeoInfoBaseDto {
 export class ProjetoSearchResultDto {
     @ApiProperty()
     id: number;
+
+    @ApiProperty()
+    geo_localizacao_referencia_id: number;
 
     @ApiProperty()
     nome: string;
@@ -99,6 +105,9 @@ export class IniciativaSearchResultDto {
     id: number;
 
     @ApiProperty()
+    geo_localizacao_referencia_id: number;
+
+    @ApiProperty()
     codigo: string;
 
     @ApiProperty()
@@ -122,6 +131,9 @@ export class IniciativaSearchResultDto {
 export class AtividadeSearchResultDto {
     @ApiProperty()
     id: number;
+
+    @ApiProperty()
+    geo_localizacao_referencia_id: number;
 
     @ApiProperty()
     codigo: string;
@@ -153,6 +165,9 @@ export class AtividadeSearchResultDto {
 export class EtapaSearchResultDto {
     @ApiProperty()
     id: number;
+
+    @ApiProperty()
+    geo_localizacao_referencia_id: number;
 
     @ApiPropertyOptional()
     titulo?: string;

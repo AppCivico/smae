@@ -58,6 +58,7 @@ export class DotacaoBuscaService {
                 dotacao_complemento: whereComplemento,
             },
             select: {
+                id: true,
                 dotacao: true,
                 dotacao_complemento: true,
                 projeto: {
@@ -236,6 +237,7 @@ export class DotacaoBuscaService {
 
             if (linhaProjetoView.projeto.tipo === TipoProjeto.MDO) {
                 obras.push({
+                    orcamento_realizado_id: linhaOrcamento?.id ?? null,
                     id: linhaProjetoView.id,
                     nome: linhaProjetoView.nome,
                     codigo: linhaProjetoView.codigo,
@@ -252,6 +254,7 @@ export class DotacaoBuscaService {
                 });
             } else {
                 projetos.push({
+                    orcamento_realizado_id: linhaOrcamento?.id ?? null,
                     id: linhaProjetoView.id,
                     nome: linhaProjetoView.nome,
                     codigo: linhaProjetoView.codigo,
@@ -272,6 +275,7 @@ export class DotacaoBuscaService {
         for (const linha of linhas) {
             if (linha.meta) {
                 pdm_ps.push({
+                    orcamento_realizado_id: linha.id,
                     pdm_id: linha.meta.pdm?.id ?? null,
                     meta_id: linha.meta.id,
                     meta_codigo: linha.meta.codigo,
@@ -287,6 +291,7 @@ export class DotacaoBuscaService {
             }
             if (linha.iniciativa) {
                 pdm_ps.push({
+                    orcamento_realizado_id: linha.id,
                     pdm_id: linha.iniciativa.meta?.pdm?.id ?? null,
                     meta_id: linha.iniciativa.meta?.id ?? null,
                     meta_codigo: linha.iniciativa.meta?.codigo ?? null,
@@ -307,6 +312,7 @@ export class DotacaoBuscaService {
             }
             if (linha.atividade) {
                 pdm_ps.push({
+                    orcamento_realizado_id: linha.id,
                     pdm_id: linha.atividade.iniciativa?.meta?.pdm?.id ?? null,
                     meta_id: linha.atividade.iniciativa?.meta?.id ?? null,
                     meta_codigo: linha.atividade.iniciativa?.meta?.codigo ?? null,
