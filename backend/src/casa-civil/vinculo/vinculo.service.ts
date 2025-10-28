@@ -273,9 +273,9 @@ export class VinculoService {
                       nome: v.meta.titulo,
                       status: v.meta.status,
                       orgao: {
-                          id: v.meta.meta_orgao[0].orgao.id,
-                          sigla: v.meta.meta_orgao[0].orgao.sigla,
-                          descricao: v.meta.meta_orgao[0].orgao.descricao,
+                          id: v.meta.meta_orgao[0]?.orgao?.id,
+                          sigla: v.meta.meta_orgao[0]?.orgao?.sigla,
+                          descricao: v.meta.meta_orgao[0]?.orgao?.descricao,
                       },
                   }
                 : null,
@@ -285,9 +285,9 @@ export class VinculoService {
                       nome: v.iniciativa.titulo,
                       status: v.iniciativa.status,
                       orgao: {
-                          id: v.iniciativa.iniciativa_orgao[0].orgao.id,
-                          sigla: v.iniciativa.iniciativa_orgao[0].orgao.sigla,
-                          descricao: v.iniciativa.iniciativa_orgao[0].orgao.descricao,
+                          id: v.iniciativa.iniciativa_orgao[0]?.orgao?.id,
+                          sigla: v.iniciativa.iniciativa_orgao[0]?.orgao?.sigla,
+                          descricao: v.iniciativa.iniciativa_orgao[0]?.orgao?.descricao,
                       },
                   }
                 : null,
@@ -297,9 +297,9 @@ export class VinculoService {
                       nome: v.atividade.titulo,
                       status: v.atividade.status,
                       orgao: {
-                          id: v.atividade.atividade_orgao[0].orgao.id,
-                          sigla: v.atividade.atividade_orgao[0].orgao.sigla,
-                          descricao: v.atividade.atividade_orgao[0].orgao.descricao,
+                          id: v.atividade.atividade_orgao[0]?.orgao?.id,
+                          sigla: v.atividade.atividade_orgao[0]?.orgao?.sigla,
+                          descricao: v.atividade.atividade_orgao[0]?.orgao?.descricao,
                       },
                   }
                 : null,
@@ -313,9 +313,9 @@ export class VinculoService {
                           nome: v.projeto.portfolio.titulo,
                       },
                       orgao: {
-                          id: v.projeto.orgao_gestor.id,
-                          sigla: v.projeto.orgao_gestor.sigla,
-                          descricao: v.projeto.orgao_gestor.descricao,
+                          id: v.projeto.orgao_gestor?.id,
+                          sigla: v.projeto.orgao_gestor?.sigla,
+                          descricao: v.projeto.orgao_gestor?.descricao,
                       },
                       status: v.projeto.status,
                   }
