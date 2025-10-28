@@ -275,21 +275,27 @@ export class DotacaoBuscaService {
         }
 
         for (const linha of linhas) {
-            if (linha.meta) {
+            if (linha.atividade) {
                 pdm_ps.push({
                     orcamento_realizado_id: linha.id,
-                    pdm_id: linha.meta.pdm?.id ?? null,
-                    meta_id: linha.meta.id,
-                    meta_codigo: linha.meta.codigo,
-                    meta_titulo: linha.meta.titulo,
-                    orgaos_sigla: linha.meta.meta_orgao.map((x) => x.orgao.sigla),
-                    rotulo_iniciativa: linha.meta.pdm?.rotulo_iniciativa ?? null,
-                    rotulo_atividade: linha.meta.pdm?.rotulo_atividade ?? null,
+                    pdm_id: linha.atividade.iniciativa?.meta?.pdm?.id ?? null,
+                    meta_id: linha.atividade.iniciativa?.meta?.id ?? null,
+                    meta_codigo: linha.atividade.iniciativa?.meta?.codigo ?? null,
+                    meta_titulo: linha.atividade.iniciativa?.meta?.titulo ?? null,
+                    orgaos_sigla: linha.atividade.atividade_orgao.map((x) => x.orgao.sigla),
+                    rotulo_iniciativa: linha.atividade.iniciativa?.meta?.pdm?.rotulo_iniciativa ?? null,
+                    rotulo_atividade: linha.atividade.iniciativa?.meta?.pdm?.rotulo_atividade ?? null,
                     iniciativa: null,
-                    atividade: null,
+                    atividade: {
+                        id: linha.atividade.id,
+                        codigo: linha.atividade.codigo,
+                        titulo: linha.atividade.titulo,
+                        nro_vinculos: linha.atividade.distribuicaoRecursoVinculos.length,
+                    },
                     dotacoes_encontradas: [linha.dotacao + (linha.dotacao_complemento ?? '')],
-                    nro_vinculos: linha.meta.vinculosDistribuicaoRecursos.length,
+                    nro_vinculos: linha.atividade.distribuicaoRecursoVinculos.length,
                 });
+                continue;
             }
             if (linha.iniciativa) {
                 pdm_ps.push({
@@ -311,26 +317,22 @@ export class DotacaoBuscaService {
                     dotacoes_encontradas: [linha.dotacao + (linha.dotacao_complemento ?? '')],
                     nro_vinculos: linha.iniciativa.distribuicaoRecursoVinculos.length,
                 });
+                continue;
             }
-            if (linha.atividade) {
+            if (linha.meta) {
                 pdm_ps.push({
                     orcamento_realizado_id: linha.id,
-                    pdm_id: linha.atividade.iniciativa?.meta?.pdm?.id ?? null,
-                    meta_id: linha.atividade.iniciativa?.meta?.id ?? null,
-                    meta_codigo: linha.atividade.iniciativa?.meta?.codigo ?? null,
-                    meta_titulo: linha.atividade.iniciativa?.meta?.titulo ?? null,
-                    orgaos_sigla: linha.atividade.atividade_orgao.map((x) => x.orgao.sigla),
-                    rotulo_iniciativa: linha.atividade.iniciativa?.meta?.pdm?.rotulo_iniciativa ?? null,
-                    rotulo_atividade: linha.atividade.iniciativa?.meta?.pdm?.rotulo_atividade ?? null,
+                    pdm_id: linha.meta.pdm?.id ?? null,
+                    meta_id: linha.meta.id,
+                    meta_codigo: linha.meta.codigo,
+                    meta_titulo: linha.meta.titulo,
+                    orgaos_sigla: linha.meta.meta_orgao.map((x) => x.orgao.sigla),
+                    rotulo_iniciativa: linha.meta.pdm?.rotulo_iniciativa ?? null,
+                    rotulo_atividade: linha.meta.pdm?.rotulo_atividade ?? null,
                     iniciativa: null,
-                    atividade: {
-                        id: linha.atividade.id,
-                        codigo: linha.atividade.codigo,
-                        titulo: linha.atividade.titulo,
-                        nro_vinculos: linha.atividade.distribuicaoRecursoVinculos.length,
-                    },
+                    atividade: null,
                     dotacoes_encontradas: [linha.dotacao + (linha.dotacao_complemento ?? '')],
-                    nro_vinculos: linha.atividade.distribuicaoRecursoVinculos.length,
+                    nro_vinculos: linha.meta.vinculosDistribuicaoRecursos.length,
                 });
             }
         }
