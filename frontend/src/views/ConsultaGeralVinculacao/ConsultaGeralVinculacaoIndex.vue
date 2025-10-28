@@ -110,7 +110,7 @@ async function handleRegistrarVinculo({ tipo_vinculo_id, observacao }: Vinculaca
         !props.dados.dotacoes_encontradas
         || props.dados.dotacoes_encontradas?.length === 0
       ) {
-        throw new Error('Dotação não encontrada`');
+        throw new Error('Dotação não encontrada');
       }
 
       valorVinculo = props.dados.dotacoes_encontradas.join('/');
