@@ -630,7 +630,7 @@ export class GeoLocService {
                         id: true,
                         vinculosDistribuicaoRecursos: {
                             where: { removido_em: null, campo_vinculo: CampoVinculo.Endereco },
-                            select: { id: true, valor_vinculo: true },
+                            select: { id: true, valor_vinculo: true, dados_extra: true },
                         },
                     },
                 },
@@ -666,7 +666,21 @@ export class GeoLocService {
             if (prevRecord.projeto && prevRecord.projeto.vinculosDistribuicaoRecursos.length > 0) {
                 // Também verificamos pelo campo de endereço, para garantir que o vínculo seja referente ao endereço que está sendo removido.
                 for (const vinculo of prevRecord.projeto.vinculosDistribuicaoRecursos) {
-                    if (vinculo.valor_vinculo === prevRecord.geo_localizacao.endereco_exibicao) {
+                    const valorVinculo =
+                        vinculo.dados_extra &&
+                        typeof vinculo.dados_extra === 'object' &&
+                        'properties' in vinculo.dados_extra &&
+                        vinculo.dados_extra.properties &&
+                        typeof vinculo.dados_extra.properties === 'object' &&
+                        'rua' in vinculo.dados_extra.properties
+                            ? vinculo.dados_extra.properties.rua
+                            : vinculo.valor_vinculo;
+
+                    // Utilizando regex pois o valor do vínculo pode conter variações como número, complemento, etc.
+                    if (
+                        valorVinculo &&
+                        new RegExp(prevRecord.geo_localizacao.endereco_exibicao, 'i').test(String(valorVinculo))
+                    ) {
                         await this.vinculoService.invalidarVinculo(
                             { id: vinculo.id },
                             'Remoção de endereço vinculado ao projeto.',
