@@ -506,6 +506,7 @@ export class DistribuicaoRecursoService {
 
             // Filtros de ano, esfera e palavra-chave são aplicados na transferência.
             transferencia: {
+                removido_em: null,
                 ano: filters.ano,
                 esfera: filters.esfera,
                 id: {
