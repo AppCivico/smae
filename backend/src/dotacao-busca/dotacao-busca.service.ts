@@ -25,12 +25,37 @@ export class DotacaoBuscaService {
         }
 
         // normaliza a parte da dotação e monta padrão para ILIKE
-        const parteNormalizada = this.dotacaoService.expandirParteDotacao(query.trim());
+        let parteNormalizada = this.dotacaoService.expandirParteDotacao(query.trim());
+
+        // Dotação pode ter complemento, e este complemento é em outra col.
+        // Se separarmos por '.', a dotação tem 9 partes.
+        // Logo se tiver mais, é complemento.
+        let whereComplemento;
+        if (parteNormalizada.split('.').length > 9) {
+            // Pegando tudo após a 9a parte como complemento
+            const partes = parteNormalizada.split('.');
+            let complemento = partes.slice(8).join('.');
+
+            // DETALHE: como no banco, o campo é número, não tem como com '00'
+            // então removemos os zeros à esquerda para comparar
+            complemento = complemento.replace(/^0+/, '');
+
+            whereComplemento = { startsWith: complemento };
+
+            // No parteNormalizada, deixamos só as 8 primeiras partes
+            parteNormalizada = partes.slice(0, 8).join('.');
+
+            console.log('=====================================');
+            console.log(whereComplemento);
+            console.log(parteNormalizada);
+            console.log('=====================================');
+        }
 
         const linhas = await this.prisma.orcamentoRealizado.findMany({
             where: {
                 removido_em: null,
                 dotacao: { startsWith: parteNormalizada },
+                dotacao_complemento: whereComplemento,
             },
             select: {
                 dotacao: true,
