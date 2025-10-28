@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import type { VinculoDetalheObraDto } from '@back/casa-civil/vinculo/entities/vinculo.entity';
-import type { Vinculo } from '@/stores/transferenciasVinculos.store';
 import { computed } from 'vue';
+
 import ListaLegendas from '@/components/ListaLegendas.vue';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import SmaeTooltip from '@/components/SmaeTooltip/SmaeTooltip.vue';
+import statusObras from '@/consts/statusObras';
 import dinheiro from '@/helpers/dinheiro';
+import type { Vinculo } from '@/stores/transferenciasVinculos.store';
 
 interface Props {
   dados: Vinculo[];
@@ -44,23 +46,16 @@ function formatarDetalhes(detalhes: VinculoDetalheObraDto | null) {
     }));
 }
 
-function obterPortfolioOuModulo(linha: Vinculo): string {
-  if (linha.projeto?.portfolio) {
-    return `Portfolio: ${linha.projeto.portfolio.nome}`;
+function obterStatusTraduzido(linha: Vinculo): string {
+  const objetoVinculado = obterObjetoVinculado(linha);
+  if (!objetoVinculado?.status) return '-';
+
+  if (linha.projeto?.tipo === 'MDO') {
+    return statusObras[objetoVinculado.status as keyof typeof statusObras]?.nome
+      || objetoVinculado.status;
   }
-  if (linha.projeto) {
-    return 'Projeto';
-  }
-  if (linha.iniciativa) {
-    return 'Iniciativa';
-  }
-  if (linha.atividade) {
-    return 'Atividade';
-  }
-  if (linha.meta) {
-    return 'PDM/Meta';
-  }
-  return '-';
+
+  return objetoVinculado.status;
 }
 
 const colunas = [
@@ -97,7 +92,10 @@ const colunas = [
 </script>
 
 <template>
-  <div v-if="dados.length === 0" class="p2 tc">
+  <div
+    v-if="dados.length === 0"
+    class="p2 tc"
+  >
     Nenhum vínculo por {{ tipo === 'endereco' ? 'endereço' : 'dotação' }} cadastrado.
   </div>
 
@@ -176,7 +174,7 @@ const colunas = [
 
         <button
           v-if="temPermissao"
-          class="like-a__text addlink"
+          class="like-a__text"
           type="button"
           aria-label="Remover item"
           title="Remover item"
@@ -187,7 +185,7 @@ const colunas = [
             height="20"
             class="fs0"
           >
-            <use xlink:href="#i_remove" />
+            <use xlink:href="#i_waste" />
           </svg>
         </button>
       </template>
@@ -195,9 +193,12 @@ const colunas = [
       <template #sub-linha="{ linha }">
         <td colspan="7">
           <div class="flex flexwrap g2">
-            <dl class="flex column g05">
+            <dl
+              v-if="linha.projeto?.portfolio"
+              class="flex column g05"
+            >
               <dt class="t12 uc w700 tc300">
-                {{ obterPortfolioOuModulo(linha) }}
+                {{ `Portfolio: ${linha.projeto.portfolio.nome}` }}
               </dt>
               <dd>
                 {{ obterObjetoVinculado(linha)?.nome || '-' }}
@@ -218,12 +219,12 @@ const colunas = [
                 Status
               </dt>
               <dd>
-                {{ obterObjetoVinculado(linha)?.status || '-' }}
+                {{ obterStatusTraduzido(linha) }}
               </dd>
             </dl>
 
             <dl
-              v-if="linha.detalhes && Object.keys(linha.detalhes).length > 0"
+              v-if="linha.detalhes && linha.projeto?.tipo === 'MDO'"
               class="flex column g05"
             >
               <dt class="t12 uc w700 tc300">
@@ -241,6 +242,41 @@ const colunas = [
                     </dt>
                     <dd>
                       {{ detalhe.valor }}
+                    </dd>
+                  </div>
+                </dl>
+              </dd>
+            </dl>
+
+            <dl
+              v-if="linha.iniciativa || linha.atividade"
+              class="flex column g05"
+            >
+              <dt class="t12 uc w700 tc300">
+                Detalhes
+              </dt>
+              <dd>
+                <dl>
+                  <div
+                    v-if="linha.iniciativa"
+                    class="flex g025"
+                  >
+                    <dt>
+                      {{ (linha.pdm?.rotulo_iniciativa ?? 'Iniciativa') + ':' }}
+                    </dt>
+                    <dd>
+                      {{ linha.iniciativa.nome }}
+                    </dd>
+                  </div>
+                  <div
+                    v-if="linha.atividade"
+                    class="flex g025"
+                  >
+                    <dt>
+                      {{ (linha.pdm?.rotulo_atividade ?? 'Atividade') + ':' }}
+                    </dt>
+                    <dd>
+                      {{ linha.atividade.nome }}
                     </dd>
                   </div>
                 </dl>

@@ -2,10 +2,11 @@
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 import type { Ref } from 'vue';
-import type { Vinculo } from '@/stores/transferenciasVinculos.store';
+
 import TabelaVinculos from '@/components/TransferenciasVoluntarias/TabelaVinculos.vue';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
+import type { Vinculo } from '@/stores/transferenciasVinculos.store';
 import { useTransferenciasVinculosStore } from '@/stores/transferenciasVinculos.store';
 
 const props = defineProps<{
@@ -74,17 +75,19 @@ vinculosStore.buscarVinculos({ transferencia_id: props.transferenciaId, campo_vi
           type="button"
           class="btn big outline bgnone"
           :class="visualizacao === 'endereco' ? 'tamarelo' : 'tcprimary'"
+          :aria-pressed="visualizacao === 'endereco'"
           @click="alterarVisualizacao('endereco')"
         >
-          Visualizar por Endereço
+          por Endereço
         </button>
         <button
           type="button"
           class="btn big outline bgnone"
           :class="visualizacao === 'dotacao' ? 'tamarelo' : 'tcprimary'"
+          :aria-pressed="visualizacao === 'dotacao'"
           @click="alterarVisualizacao('dotacao')"
         >
-          Visualizar por Dotação
+          por Dotação
         </button>
       </div>
     </template>
