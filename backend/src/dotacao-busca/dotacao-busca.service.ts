@@ -195,7 +195,7 @@ export class DotacaoBuscaService {
                         status: true,
                         // Count de vínculos
                         vinculosDistribuicaoRecursos: {
-                            where: { removido_em: null },
+                            where: { removido_em: null, invalidado_em: null },
                             select: { id: true },
                         },
                     },
@@ -204,6 +204,11 @@ export class DotacaoBuscaService {
         });
 
         for (const linhaProjetoView of projetosLinhasView) {
+            // Batendo ID do projeto da view com o ID do projeto na linha de orçamento realizado
+            // Para preencher a dotação.
+            const linhaOrcamento = linhas.find((x) => x.projeto?.id === linhaProjetoView.id);
+            const dotacaoCompleta = linhaOrcamento?.dotacao + (linhaOrcamento?.dotacao_complemento ?? '');
+
             if (linhaProjetoView.projeto.tipo === TipoProjeto.MDO) {
                 obras.push({
                     id: linhaProjetoView.id,
@@ -217,7 +222,7 @@ export class DotacaoBuscaService {
                     grupo_tematico_nome: linhaProjetoView.grupo_tematico_nome,
                     tipo_obra_nome: linhaProjetoView.tipo_intervencao_nome,
                     equipamento_nome: linhaProjetoView.equipamento_nome,
-                    dotacoes_encontradas: [],
+                    dotacoes_encontradas: [dotacaoCompleta],
                     nro_vinculos: linhaProjetoView.projeto.vinculosDistribuicaoRecursos.length,
                 });
             } else {
@@ -233,7 +238,7 @@ export class DotacaoBuscaService {
                     grupo_tematico_nome: linhaProjetoView.grupo_tematico_nome,
                     tipo_obra_nome: linhaProjetoView.tipo_intervencao_nome,
                     equipamento_nome: linhaProjetoView.equipamento_nome,
-                    dotacoes_encontradas: [],
+                    dotacoes_encontradas: [dotacaoCompleta],
                     nro_vinculos: linhaProjetoView.projeto.vinculosDistribuicaoRecursos.length,
                 });
             }
@@ -251,7 +256,7 @@ export class DotacaoBuscaService {
                     rotulo_atividade: linha.meta.pdm?.rotulo_atividade ?? null,
                     iniciativa: null,
                     atividade: null,
-                    dotacoes_encontradas: [],
+                    dotacoes_encontradas: [linha.dotacao + (linha.dotacao_complemento ?? '')],
                     nro_vinculos: linha.meta.vinculosDistribuicaoRecursos.length,
                 });
             }
@@ -271,7 +276,7 @@ export class DotacaoBuscaService {
                         nro_vinculos: linha.iniciativa.distribuicaoRecursoVinculos.length,
                     },
                     atividade: null,
-                    dotacoes_encontradas: [],
+                    dotacoes_encontradas: [linha.dotacao + (linha.dotacao_complemento ?? '')],
                     nro_vinculos: linha.iniciativa.distribuicaoRecursoVinculos.length,
                 });
             }
@@ -291,7 +296,7 @@ export class DotacaoBuscaService {
                         titulo: linha.atividade.titulo,
                         nro_vinculos: linha.atividade.distribuicaoRecursoVinculos.length,
                     },
-                    dotacoes_encontradas: [],
+                    dotacoes_encontradas: [linha.dotacao + (linha.dotacao_complemento ?? '')],
                     nro_vinculos: linha.atividade.distribuicaoRecursoVinculos.length,
                 });
             }
