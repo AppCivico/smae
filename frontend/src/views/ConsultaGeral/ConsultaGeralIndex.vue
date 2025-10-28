@@ -239,7 +239,8 @@ async function handleNovaVinculacao() {
               <ConsultaGeralVinculacaoIndex
                 :dados="linha"
                 :tipo="tipo"
-                @fechar="handleNovaVinculacao"
+                @fechar="vinculacaoAberta = -1"
+                @vinculado="handleNovaVinculacao"
               />
             </SmallModal>
           </template>
