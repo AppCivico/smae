@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia';
-import { computed, onMounted, watch } from 'vue';
+import { computed, watch } from 'vue';
 
-import CabecalhoDePagina from '@/components/CabecalhoDePagina.vue';
 import EtapasEmBarras from '@/components/EtapasEmBarras.vue';
 import { useEntidadesProximasStore } from '@/stores/entidadesProximas.store';
 import { useGeolocalizadorStore } from '@/stores/geolocalizador.store';

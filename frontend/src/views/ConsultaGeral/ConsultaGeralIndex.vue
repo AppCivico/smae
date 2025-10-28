@@ -1,8 +1,10 @@
 <script lang="ts" setup>
 import { templateRef } from '@vueuse/core';
 import { storeToRefs } from 'pinia';
-import { computed, ref, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import {
+  computed, ref, watch,
+} from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 import * as CardEnvelope from '@/components/cardEnvelope';
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
@@ -33,6 +35,7 @@ const valoresIniciais = {
 };
 
 const route = useRoute();
+const router = useRouter();
 
 const geolocalizadorStore = useGeolocalizadorStore();
 const entidadesProximasStore = useEntidadesProximasStore();
@@ -118,10 +121,20 @@ watch(tipo, (novoTipo, tipoAnterior) => {
   }
 }, { immediate: true });
 
-async function handleNovaVinculacao() {
+function fecharModal() {
+  router.replace({ query: { ...route.query, pagina: undefined } });
+
   vinculacaoAberta.value = -1;
+}
+
+async function handleNovaVinculacao() {
+  fecharModal();
 
   await areaFiltroRef.value?.resetarPesquisa();
+}
+
+async function handleItemSelecionado(linhaIndex: number) {
+  vinculacaoAberta.value = linhaIndex;
 }
 </script>
 
@@ -220,7 +233,7 @@ async function handleNovaVinculacao() {
               type="button"
               title="Ver detalhes"
               class="fs0 like-a__text addlink"
-              @click="vinculacaoAberta = linhaIndex"
+              @click="handleItemSelecionado(linhaIndex)"
             >
               <svg
                 width="20"
@@ -234,13 +247,13 @@ async function handleNovaVinculacao() {
             <SmallModal
               v-if="linhaIndex == vinculacaoAberta"
               tamanho-ajustavel
-              @close="vinculacaoAberta = -1"
+              @close="fecharModal"
             >
               <ConsultaGeralVinculacaoIndex
                 :exibindo="linhaIndex == vinculacaoAberta"
                 :dados="linha"
                 :tipo="tipo"
-                @fechar="vinculacaoAberta = -1"
+                @fechar="fecharModal"
                 @vinculado="handleNovaVinculacao"
               />
             </SmallModal>
