@@ -490,12 +490,13 @@ export class DistribuicaoRecursoService {
             if (!transferencia) throw new HttpException('transferencia_id| Transferência não encontrada.', 400);
         }
 
-        const ipp = filters.ipp ?? 50;
+        let ipp = filters.ipp ?? 50;
         let offset = 0;
         const decodedPageToken = this.decodeNextPageToken(filters.token_proxima_pagina);
 
         if (decodedPageToken) {
             offset = decodedPageToken.offset;
+            ipp = decodedPageToken.ipp;
         }
 
         const palavrasChave = await this.transferenciaService.buscaIdsPalavraChave(filters.palavra_chave);
@@ -519,10 +520,14 @@ export class DistribuicaoRecursoService {
             | Prisma.DistribuicaoRecursoOrderByWithRelationInput
             | Prisma.DistribuicaoRecursoOrderByWithRelationInput[] = {};
         if (filters.order_by && filters.order_by == 'transferencia_identificador') {
-            orderByClause = [{ transferencia: { ano: 'desc' } }, { transferencia: { identificador_nro: 'desc' } }];
+            orderByClause = [
+                { transferencia: { ano: 'desc' } },
+                { transferencia: { identificador_nro: 'desc' } },
+                { id: 'asc' }, // Stable secondary sort for distributions in the same transferencia
+            ];
         } else {
             // Fallback.
-            orderByClause = { orgao_gestor: { sigla: 'asc' } };
+            orderByClause = [{ orgao_gestor: { sigla: 'asc' } }, { id: 'asc' }];
         }
 
         const [total_registros, linhas_com_extra] = await this.prisma.$transaction([
@@ -668,14 +673,14 @@ export class DistribuicaoRecursoService {
         let tem_mais = false;
         let token_proxima_pagina: string | null = null;
 
-        if (rows.length > ipp) {
-            tem_mais = true;
-            rows.pop();
-            token_proxima_pagina = this.encodeNextPageToken({ offset: offset + ipp, ipp });
-        }
-
         const paginas = Math.ceil(total_registros / ipp);
         const pagina_corrente = Math.floor(offset / ipp) + 1;
+
+        if (rows.length > ipp) {
+            tem_mais = true;
+            rows.pop(); // Always remove the last item (the extra one used to check if there are more pages)
+            token_proxima_pagina = this.encodeNextPageToken({ offset: offset + ipp, ipp });
+        }
 
         const linhas = rows.map((r) => {
             let pode_registrar_status: boolean = true;
