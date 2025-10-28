@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia';
-import { computed } from 'vue';
+import { computed, onMounted } from 'vue';
 
 import CabecalhoDePagina from '@/components/CabecalhoDePagina.vue';
 import EtapasEmBarras from '@/components/EtapasEmBarras.vue';
@@ -18,6 +18,7 @@ type Props = {
 
 type Emits = {
   (e: 'fechar'): void;
+  (e: 'vinculado'): void;
 };
 
 const props = defineProps<Props>();
@@ -34,6 +35,7 @@ type TipoEtapa = 'selecao' | 'registro';
 const vinculosStore = useTransferenciasVinculosStore();
 const entidadesProximasStore = useEntidadesProximasStore();
 const geolocalizadorStore = useGeolocalizadorStore();
+
 const { distribuicaoSelecionadaId } = storeToRefs(entidadesProximasStore);
 const { selecionado } = storeToRefs(geolocalizadorStore);
 
@@ -133,15 +135,34 @@ async function handleRegistrarVinculo({ tipo_vinculo_id, observacao }: Vinculaca
     };
 
     await vinculosStore.salvarItem(dados);
-    emit('fechar');
+    emit('vinculado');
   } catch (e) {
     console.error(e);
   }
 }
+
+function fecharVinculacao() {
+  emit('fechar');
+}
+
+onMounted(() => {
+  distribuicaoSelecionadaId.value = undefined;
+});
 </script>
 
 <template>
-  <CabecalhoDePagina />
+  <header class="flex center g1 mb2">
+    <TituloDePagina class="mb0">
+      Vincular à distribuição
+    </TituloDePagina>
+
+    <hr class="f1">
+
+    <CheckClose
+      apenas-emitir
+      @close="fecharVinculacao"
+    />
+  </header>
 
   <section>
     <div class="mb2">

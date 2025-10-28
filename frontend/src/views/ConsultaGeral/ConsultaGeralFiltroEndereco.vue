@@ -10,7 +10,7 @@ import { useEntidadesProximasStore } from '@/stores/entidadesProximas.store';
 import type { PontoEndereco } from '@/stores/geolocalizador.store';
 
 const entidadesProximasStore = useEntidadesProximasStore();
-const enderecoBuscado = ref<PontoEndereco | null>(null);
+const enderecoBuscado = ref<{ endereco: PontoEndereco, raio: number } | null>(null);
 
 const { entidadesPorProximidade } = storeToRefs(entidadesProximasStore);
 
@@ -34,7 +34,10 @@ async function buscarProximidade(endereco: PontoEndereco, raio = 2000) {
     return;
   }
 
-  enderecoBuscado.value = endereco;
+  enderecoBuscado.value = {
+    endereco,
+    raio,
+  };
 
   const [lon, lat] = endereco.endereco.geometry.coordinates;
 
@@ -52,7 +55,7 @@ async function resetarPesquisa() {
     throw new Error('Nenhum endereço foi buscado anteriormente');
   }
 
-  buscarProximidade(enderecoBuscado.value);
+  buscarProximidade(enderecoBuscado.value.endereco, enderecoBuscado.value.raio);
 }
 
 defineExpose({

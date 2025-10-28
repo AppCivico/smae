@@ -80,6 +80,7 @@ async function buscarDados(): Promise<void> {
   await distribuicaoRecursosStore.buscarTudo({
     ...formulario.value,
     ipp: 10,
+    order_by: 'transferencia_identificador',
     pagina: route.query.pagina,
     token_proxima_pagina: paginacao.value.token_paginacao,
   });
