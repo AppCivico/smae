@@ -75,6 +75,7 @@ vinculosStore.buscarVinculos({ transferencia_id: props.transferenciaId, campo_vi
           type="button"
           class="btn big outline bgnone"
           :class="visualizacao === 'endereco' ? 'tamarelo' : 'tcprimary'"
+          :aria-pressed="visualizacao === 'endereco'"
           @click="alterarVisualizacao('endereco')"
         >
           por Endereço
@@ -83,6 +84,7 @@ vinculosStore.buscarVinculos({ transferencia_id: props.transferenciaId, campo_vi
           type="button"
           class="btn big outline bgnone"
           :class="visualizacao === 'dotacao' ? 'tamarelo' : 'tcprimary'"
+          :aria-pressed="visualizacao === 'dotacao'"
           @click="alterarVisualizacao('dotacao')"
         >
           por Dotação
