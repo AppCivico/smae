@@ -80,6 +80,7 @@ export class DotacaoBuscaService {
                             select: {
                                 id: true,
                                 tipo: true,
+                                nome: true,
                                 rotulo_atividade: true,
                                 rotulo_iniciativa: true,
                             },
@@ -92,12 +93,6 @@ export class DotacaoBuscaService {
                                         sigla: true,
                                     },
                                 },
-                            },
-                        },
-                        vinculosDistribuicaoRecursos: {
-                            where: { removido_em: null, invalidado_em: null },
-                            select: {
-                                id: true,
                             },
                         },
                     },
@@ -126,16 +121,11 @@ export class DotacaoBuscaService {
                                     select: {
                                         id: true,
                                         tipo: true,
+                                        nome: true,
                                         rotulo_atividade: true,
                                         rotulo_iniciativa: true,
                                     },
                                 },
-                            },
-                        },
-                        distribuicaoRecursoVinculos: {
-                            where: { removido_em: null },
-                            select: {
-                                id: true,
                             },
                         },
                     },
@@ -167,6 +157,7 @@ export class DotacaoBuscaService {
                                         pdm: {
                                             select: {
                                                 id: true,
+                                                nome: true,
                                                 tipo: true,
                                                 rotulo_atividade: true,
                                                 rotulo_iniciativa: true,
@@ -174,12 +165,6 @@ export class DotacaoBuscaService {
                                         },
                                     },
                                 },
-                            },
-                        },
-                        distribuicaoRecursoVinculos: {
-                            where: { removido_em: null, invalidado_em: null },
-                            select: {
-                                id: true,
                             },
                         },
                     },
@@ -279,6 +264,7 @@ export class DotacaoBuscaService {
                 pdm_ps.push({
                     orcamento_realizado_id: linha.id,
                     pdm_id: linha.atividade.iniciativa?.meta?.pdm?.id ?? null,
+                    pdm_nome: linha.atividade.iniciativa?.meta?.pdm?.nome ?? null,
                     meta_id: linha.atividade.iniciativa?.meta?.id ?? null,
                     meta_codigo: linha.atividade.iniciativa?.meta?.codigo ?? null,
                     meta_titulo: linha.atividade.iniciativa?.meta?.titulo ?? null,
@@ -290,10 +276,9 @@ export class DotacaoBuscaService {
                         id: linha.atividade.id,
                         codigo: linha.atividade.codigo,
                         titulo: linha.atividade.titulo,
-                        nro_vinculos: linha.atividade.distribuicaoRecursoVinculos.length,
                     },
                     dotacoes_encontradas: [linha.dotacao + (linha.dotacao_complemento ?? '')],
-                    nro_vinculos: linha.atividade.distribuicaoRecursoVinculos.length,
+                    nro_vinculos: linha.vinculosDistribuicoes.length,
                 });
                 continue;
             }
@@ -301,6 +286,7 @@ export class DotacaoBuscaService {
                 pdm_ps.push({
                     orcamento_realizado_id: linha.id,
                     pdm_id: linha.iniciativa.meta?.pdm?.id ?? null,
+                    pdm_nome: linha.iniciativa.meta?.pdm?.nome ?? null,
                     meta_id: linha.iniciativa.meta?.id ?? null,
                     meta_codigo: linha.iniciativa.meta?.codigo ?? null,
                     meta_titulo: linha.iniciativa.meta?.titulo ?? null,
@@ -311,11 +297,10 @@ export class DotacaoBuscaService {
                         id: linha.iniciativa.id,
                         codigo: linha.iniciativa.codigo,
                         titulo: linha.iniciativa.titulo,
-                        nro_vinculos: linha.iniciativa.distribuicaoRecursoVinculos.length,
                     },
                     atividade: null,
                     dotacoes_encontradas: [linha.dotacao + (linha.dotacao_complemento ?? '')],
-                    nro_vinculos: linha.iniciativa.distribuicaoRecursoVinculos.length,
+                    nro_vinculos: linha.vinculosDistribuicoes.length,
                 });
                 continue;
             }
@@ -323,6 +308,7 @@ export class DotacaoBuscaService {
                 pdm_ps.push({
                     orcamento_realizado_id: linha.id,
                     pdm_id: linha.meta.pdm?.id ?? null,
+                    pdm_nome: linha.meta.pdm?.nome ?? null,
                     meta_id: linha.meta.id,
                     meta_codigo: linha.meta.codigo,
                     meta_titulo: linha.meta.titulo,
@@ -332,7 +318,7 @@ export class DotacaoBuscaService {
                     iniciativa: null,
                     atividade: null,
                     dotacoes_encontradas: [linha.dotacao + (linha.dotacao_complemento ?? '')],
-                    nro_vinculos: linha.meta.vinculosDistribuicaoRecursos.length,
+                    nro_vinculos: linha.vinculosDistribuicoes.length,
                 });
             }
         }

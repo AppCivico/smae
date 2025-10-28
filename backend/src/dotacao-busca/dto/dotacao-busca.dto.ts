@@ -59,6 +59,7 @@ export type ProjetoObraResumoDto = {
 export type PdmPsResumoDto = {
     orcamento_realizado_id: number | null;
     pdm_id: number | null;
+    pdm_nome: string | null;
     meta_id: number | null;
     meta_codigo: string | null;
     meta_titulo: string | null;
