@@ -262,7 +262,7 @@ const colunas = [
                     class="flex g025"
                   >
                     <dt>
-                      {{ `${linha.pdm.rotulo_iniciativa}:` || 'Iniciativa' }}
+                      {{ (linha.pdm?.rotulo_iniciativa ?? 'Iniciativa') + ':' }}
                     </dt>
                     <dd>
                       {{ linha.iniciativa.nome }}
@@ -273,7 +273,7 @@ const colunas = [
                     class="flex g025"
                   >
                     <dt>
-                      {{ `${linha.pdm.rotulo_atividade}:` || 'Atividade' }}
+                      {{ (linha.pdm?.rotulo_atividade ?? 'Atividade') + ':' }}
                     </dt>
                     <dd>
                       {{ linha.atividade.nome }}
