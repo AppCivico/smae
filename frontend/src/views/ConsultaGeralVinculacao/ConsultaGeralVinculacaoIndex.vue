@@ -129,6 +129,8 @@ async function handleRegistrarVinculo({ tipo_vinculo_id, observacao }: Vinculaca
       tipo_vinculo_id,
       observacao,
       campo_vinculo: campoVinculo,
+      geo_localizacao_referencia_id: 0,
+      orcamento_realizado_id: 0,
       valor_vinculo: valorVinculo,
       dados_extra: JSON.stringify(selecionado.value) || undefined,
       ...entidade.value,
@@ -151,23 +153,23 @@ onMounted(() => {
 </script>
 
 <template>
-  <header class="flex center g1 mb2">
-    <TituloDePagina class="mb0">
-      Vincular à distribuição
-    </TituloDePagina>
-
-    <hr class="f1">
-
-    <CheckClose
-      apenas-emitir
-      @close="fecharVinculacao"
-    />
-  </header>
-
   <section>
+    <header class="flex center g1 mb2">
+      <TituloDePagina class="mb0">
+        Vincular à distribuição
+      </TituloDePagina>
+
+      <hr class="f1">
+
+      <CheckClose
+        apenas-emitir
+        @close="fecharVinculacao"
+      />
+    </header>
+
     <div class="mb2">
       <p class="t16">
-        Selecione à distribuição que deseja vincular a
+        Selecione a distribuição que deseja vincular a
         <span class="w700 uc">nome da meta/obra/plano/projeto</span>.
       </p>
     </div>

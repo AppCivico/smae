@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia';
-import { computed, ref, watch } from 'vue';
+import {
+  computed, onMounted, ref, watch,
+} from 'vue';
 import { useRoute } from 'vue-router';
 
 import type { Formulario } from '@/components/FiltroParaPagina.vue';
@@ -97,6 +99,10 @@ watch(
   },
   { immediate: true },
 );
+
+onMounted(() => {
+  distribuicaoRecursosStore.paginacao.token_paginacao = '';
+});
 </script>
 
 <template>
