@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { CampoVinculo } from '@prisma/client';
+import { CampoVinculo, TipoPdm } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { IdNomeDto } from 'src/common/dto/IdNome.dto';
 import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
@@ -60,6 +60,9 @@ export class VinculoDetalheObraDto {
 }
 
 export class VinculoPdmDto {
+    id: number;
+    nome: string;
+    tipo: TipoPdm;
     rotulo_iniciativa: string | null;
     rotulo_atividade: string | null;
     rotulo_macro_tema: string | null;

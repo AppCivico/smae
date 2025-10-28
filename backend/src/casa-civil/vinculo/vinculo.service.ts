@@ -168,6 +168,9 @@ export class VinculoService {
 
                         pdm: {
                             select: {
+                                id: true,
+                                tipo: true,
+                                nome: true,
                                 rotulo_iniciativa: true,
                                 rotulo_atividade: true,
                                 rotulo_macro_tema: true,
@@ -217,6 +220,9 @@ export class VinculoService {
                                 },
                                 pdm: {
                                     select: {
+                                        id: true,
+                                        tipo: true,
+                                        nome: true,
                                         rotulo_atividade: true,
                                         rotulo_iniciativa: true,
                                         rotulo_macro_tema: true,
@@ -289,6 +295,9 @@ export class VinculoService {
 
                                         pdm: {
                                             select: {
+                                                id: true,
+                                                tipo: true,
+                                                nome: true,
                                                 rotulo_atividade: true,
                                                 rotulo_iniciativa: true,
                                                 rotulo_macro_tema: true,
@@ -439,6 +448,9 @@ export class VinculoService {
                 },
                 pdm: pdm
                     ? {
+                          id: pdm.id,
+                          tipo: pdm.tipo,
+                          nome: pdm.nome,
                           rotulo_atividade: pdm.rotulo_atividade ?? null,
                           rotulo_iniciativa: pdm.rotulo_iniciativa ?? null,
                           rotulo_macro_tema: pdm.rotulo_macro_tema ?? null,
