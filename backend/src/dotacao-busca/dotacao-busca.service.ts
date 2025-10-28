@@ -56,6 +56,7 @@ export class DotacaoBuscaService {
                 removido_em: null,
                 dotacao: { startsWith: parteNormalizada },
                 dotacao_complemento: whereComplemento,
+                ano_referencia: dto.ano,
             },
             select: {
                 id: true,

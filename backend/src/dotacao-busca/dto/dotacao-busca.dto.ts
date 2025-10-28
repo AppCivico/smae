@@ -25,6 +25,14 @@ export class DotacaoBuscaDto {
     })
     @IsBoolean()
     somenteAtivos?: boolean = true;
+
+    @ApiProperty({ required: false, example: 2024, description: 'Ano da dotação' })
+    @IsOptional()
+    @Type(() => Number)
+    @IsInt()
+    @Min(2000)
+    @Max(2100)
+    ano?: number;
 }
 
 export type ProjetoObraResumoDto = {
