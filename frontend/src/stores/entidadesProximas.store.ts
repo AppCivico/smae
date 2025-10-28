@@ -5,7 +5,7 @@ import type {
   MetaIniAtvLookupInfoDto,
   PdmRotuloInfo,
   ProjetoSearchResultDto,
-  SearchEntitiesNearbyDto,
+  SearchEntitiesNearbyResponseDto,
 } from '@back/geo-busca/dto/geo-busca.entity';
 import { defineStore } from 'pinia';
 
@@ -22,7 +22,8 @@ type Erros = {
 };
 
 type Estado = {
-  dados: SearchEntitiesNearbyDto | DotacaoBuscaResponseDto;
+  dadosPorGeo: SearchEntitiesNearbyResponseDto | null;
+  dadosPorDotacao: DotacaoBuscaResponseDto | null;
   erro: Erros;
   chamadasPendentes: ChamadasPendentes;
 };
@@ -72,7 +73,8 @@ export const LegendasStatus = {
 
 export const useEntidadesProximasStore = defineStore('entidadesProximas', {
   state: (): Estado => ({
-    dados: null,
+    dadosPorGeo: null,
+    dadosPorDotacao: null,
     erro: {
       proximidadePorLocalizacao: null,
       buscaDotacao: null,
@@ -95,9 +97,9 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
             lon: localizacaoProximidade.lon,
             raio,
           },
-        ) as SearchEntitiesNearbyDto;
+        ) as SearchEntitiesNearbyResponseDto;
 
-        this.dados = resposta;
+        this.dadosPorGeo = resposta;
 
         return resposta;
       } catch (erro) {
@@ -113,14 +115,14 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
         this.erro.buscaDotacao = false;
         this.chamadasPendentes.buscaDotacao = true;
 
-        const resposta: DotacaoBuscaResponseDto = await this.requestS.get(
+        const resposta = await this.requestS.get(
           `${baseUrl}/dotacao-busca`,
           {
             query: dotacao,
           },
-        );
+        ) as DotacaoBuscaResponseDto;
 
-        this.dados = resposta;
+        this.dadosPorDotacao = resposta;
 
         return resposta;
       } catch (erro) {
@@ -133,8 +135,13 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
     },
   },
   getters: {
-    proximidadeFormatada({ dados }) {
-      if (!dados || Object.keys(dados).length === 0) {
+    entidadesPorDotacao({ dadosPorDotacao }) {
+      if (!dadosPorDotacao || Object.keys(dadosPorDotacao).length === 0) {
+        return [];
+      }
+    },
+    entidadesPorProximidade({ dadosPorGeo }) {
+      if (!dadosPorGeo || Object.keys(dadosPorGeo).length === 0) {
         return [];
       }
 
@@ -142,11 +149,12 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
         'obras',
         'projetos',
         'etapas',
-      ];
+      ] as const;
 
       const dadosOrganizados = gruposSelecionados.reduce((agrupado, chave) => {
         type Grupo = (EtapaSearchResultDto | ProjetoSearchResultDto)[] | undefined;
-        const grupo: Grupo = (dados[chave] || undefined);
+        // eslint-disable-next-line max-len
+        const grupo: Grupo = (dadosPorGeo[chave as keyof SearchEntitiesNearbyResponseDto] || undefined);
 
         if (!grupo || grupo.length === 0) {
           return agrupado;
@@ -301,30 +309,31 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
 
       return dadosOrganizados;
     },
-    metasInfo: ({ dados }): Record<string, MetaIniAtvLookupInfoDto> | null => (!dados?.metas_info
+    // eslint-disable-next-line max-len
+    metasInfo: ({ dadosPorGeo }): Record<string, MetaIniAtvLookupInfoDto> | null => (!dadosPorGeo?.metas_info
       ? null
-      : dados.metas_info
+      : dadosPorGeo.metas_info
         .reduce((acc: Record<string, MetaIniAtvLookupInfoDto>, cur: MetaIniAtvLookupInfoDto) => {
           acc[cur.id] = cur;
           return acc;
         }, {})),
-    iniciativasInfo: ({ dados }) => (!dados?.iniciativas_info
+    iniciativasInfo: ({ dadosPorGeo }) => (!dadosPorGeo?.iniciativas_info
       ? null
-      : dados.iniciativas_info
+      : dadosPorGeo.iniciativas_info
         .reduce((acc: Record<string, MetaIniAtvLookupInfoDto>, cur: MetaIniAtvLookupInfoDto) => {
           acc[cur.id] = cur;
           return acc;
         }, {})),
-    atividadesInfo: ({ dados }) => (!dados?.atividades_info
+    atividadesInfo: ({ dadosPorGeo }) => (!dadosPorGeo?.atividades_info
       ? null
-      : dados.atividades_info
+      : dadosPorGeo.atividades_info
         .reduce((acc: Record<string, MetaIniAtvLookupInfoDto>, cur: MetaIniAtvLookupInfoDto) => {
           acc[cur.id] = cur;
           return acc;
         }, {})),
-    pdmInfo: ({ dados }): Record<string, PdmRotuloInfo> | null => (!dados?.pdm_info
+    pdmInfo: ({ dadosPorGeo }): Record<string, PdmRotuloInfo> | null => (!dadosPorGeo?.pdm_info
       ? null
-      : dados.pdm_info
+      : dadosPorGeo.pdm_info
         .reduce((acc: Record<string, PdmRotuloInfo>, cur: PdmRotuloInfo) => {
           acc[cur.id] = cur;
           return acc;
