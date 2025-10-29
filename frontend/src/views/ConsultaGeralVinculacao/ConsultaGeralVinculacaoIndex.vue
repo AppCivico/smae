@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia';
 import { computed, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 import EtapasEmBarras from '@/components/EtapasEmBarras.vue';
+import SmallModal from '@/components/SmallModal.vue';
+import PaginacaoInicial from '@/consts/PaginacaoInicial';
 import { useEntidadesProximasStore } from '@/stores/entidadesProximas.store';
 import { useGeolocalizadorStore } from '@/stores/geolocalizador.store';
 import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
@@ -33,12 +36,16 @@ interface Etapa {
 
 type TipoEtapa = 'selecao' | 'registro';
 
+const route = useRoute();
+const router = useRouter();
+
 const vinculosStore = useTransferenciasVinculosStore();
 const entidadesProximasStore = useEntidadesProximasStore();
 const geolocalizadorStore = useGeolocalizadorStore();
 const distribuicaoRecursosStore = useDistribuicaoRecursosStore();
 
 const { distribuicaoSelecionadaId } = storeToRefs(entidadesProximasStore);
+const { paginacao } = storeToRefs(distribuicaoRecursosStore);
 const { selecionado } = storeToRefs(geolocalizadorStore);
 
 const etapaAtual = computed<TipoEtapa>(() => (distribuicaoSelecionadaId.value ? 'registro' : 'selecao'));
@@ -92,6 +99,12 @@ const entidade = computed<Filtros | void>(() => {
   return filtros;
 });
 
+function iniciarDados() {
+  router.replace({ query: { ...route.query, pagina: undefined } });
+
+  paginacao.value = PaginacaoInicial;
+}
+
 async function handleRegistrarVinculo({ tipo_vinculo_id, observacao }: VinculacaoFormulario) {
   const mapaTipo = {
     dotacao: 'Dotacao',
@@ -139,6 +152,8 @@ async function handleRegistrarVinculo({ tipo_vinculo_id, observacao }: Vinculaca
     };
 
     await vinculosStore.salvarItem(dados);
+
+    iniciarDados();
     emit('vinculado');
   } catch (e) {
     console.error(e);
@@ -146,6 +161,8 @@ async function handleRegistrarVinculo({ tipo_vinculo_id, observacao }: Vinculaca
 }
 
 function fecharVinculacao() {
+  iniciarDados();
+
   emit('fechar');
 }
 
@@ -156,37 +173,43 @@ watch(() => props.exibindo, () => {
 </script>
 
 <template>
-  <section>
-    <header class="flex center g1 mb2">
-      <TituloDePagina class="mb0">
-        Vincular à distribuição
-      </TituloDePagina>
+  <SmallModal
+    v-if="props.exibindo"
+    tamanho-ajustavel
+    @close="fecharVinculacao"
+  >
+    <section>
+      <header class="flex center g1 mb2">
+        <TituloDePagina class="mb0">
+          Vincular à distribuição
+        </TituloDePagina>
 
-      <hr class="f1">
+        <hr class="f1">
 
-      <CheckClose
-        apenas-emitir
-        @close="fecharVinculacao"
+        <CheckClose
+          apenas-emitir
+          @close="fecharVinculacao"
+        />
+      </header>
+
+      <div class="mb2">
+        <p class="t16">
+          Selecione a distribuição que deseja vincular a
+          <span class="w700 uc">nome da meta/obra/plano/projeto</span>.
+        </p>
+      </div>
+
+      <div class="flex mb2">
+        <EtapasEmBarras
+          :etapas="etapas"
+          class="fb50"
+        />
+      </div>
+
+      <component
+        :is="componenteAtual"
+        @registrar="handleRegistrarVinculo"
       />
-    </header>
-
-    <div class="mb2">
-      <p class="t16">
-        Selecione a distribuição que deseja vincular a
-        <span class="w700 uc">nome da meta/obra/plano/projeto</span>.
-      </p>
-    </div>
-
-    <div class="flex mb2">
-      <EtapasEmBarras
-        :etapas="etapas"
-        class="fb50"
-      />
-    </div>
-
-    <component
-      :is="componenteAtual"
-      @registrar="handleRegistrarVinculo"
-    />
-  </section>
+    </section>
+  </SmallModal>
 </template>
