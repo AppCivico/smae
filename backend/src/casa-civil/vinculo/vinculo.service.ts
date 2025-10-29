@@ -344,13 +344,6 @@ export class VinculoService {
                                 nome: true,
                             },
                         },
-                        GeoEnderecoReferencia: {
-                            select: {
-                                geo_localizacao: {
-                                    select: {},
-                                },
-                            },
-                        },
                     },
                 },
             },
