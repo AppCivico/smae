@@ -40,6 +40,11 @@ export class DotacaoBuscaService {
             // então removemos os zeros à esquerda para comparar
             complemento = complemento.replace(/^0+/, '');
 
+            // Se o complemento começar com '.', removemos
+            if (complemento.startsWith('.')) {
+                complemento = complemento.slice(1);
+            }
+
             whereComplemento = { startsWith: complemento };
 
             // No parteNormalizada, deixamos só as 8 primeiras partes
