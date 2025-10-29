@@ -344,7 +344,13 @@ export class VinculoService {
                                 nome: true,
                             },
                         },
-                        GeoEnderecoReferencia: {},
+                        GeoEnderecoReferencia: {
+                            select: {
+                                geo_localizacao: {
+                                    select: {},
+                                },
+                            },
+                        },
                     },
                 },
             },
@@ -595,7 +601,8 @@ export class VinculoService {
                         orgao: {
                             sigla: v.distribuicao.orgao_gestor.sigla,
                         },
-                        valor: v.distribuicao.valor?.toString() || '0',
+                        // Já formatando o valor para exibição (com centavos)
+                        valor: v.distribuicao.valor?.toFixed(2).replace('.', ',') || ' ',
                     },
                     vinculo: {
                         tipo_modulo,
@@ -617,7 +624,7 @@ export class VinculoService {
                     data: {
                         id: uuidv7(),
                         config_id: 1,
-                        subject: 'Vínculo da transferência alterado',
+                        subject: 'Vínculo da transferência invalidado',
                         template: 'vinculo-invalidado.html',
                         to: email,
                         variables: {
