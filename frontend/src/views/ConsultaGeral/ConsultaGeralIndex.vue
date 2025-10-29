@@ -99,7 +99,7 @@ const colunas = computed(() => {
   const colunaDinamica = tipo.value === 'dotacao'
     ? {
       chave: 'dotacoes_encontradas',
-      label: 'Dotação',
+      label: 'Dotação / Processo / Nota de Empenho',
       ehCabecalho: true,
     }
     : {

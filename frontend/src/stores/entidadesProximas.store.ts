@@ -1,7 +1,8 @@
+import statusObras from '@/consts/statusObras';
 import type {
   DotacaoBuscaResponseDto,
-  ProjetoObraResumoDto,
   PdmPsResumoDto,
+  ProjetoObraResumoDto,
 } from '@back/dotacao-busca/dto/dotacao-busca.dto';
 import type {
   EtapaSearchResultDto,
@@ -11,7 +12,6 @@ import type {
   SearchEntitiesNearbyResponseDto,
 } from '@back/geo-busca/dto/geo-busca.entity';
 import { defineStore } from 'pinia';
-import statusObras from '@/consts/statusObras';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -63,8 +63,7 @@ type ItemConsultaGeralFormatado = {
     nome: string;
   };
   detalhes?: Record<string, string | null | undefined>;
-  dotacoes_encontradas?: unknown;
-
+  dotacoes_encontradas?: string[];
   meta_info?: MetaIniAtvLookupInfoDto;
   iniciativa_info?: MetaIniAtvLookupInfoDto;
   atividade_info?: MetaIniAtvLookupInfoDto;
@@ -167,9 +166,26 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
             nome: '',
             cor: 'padrao',
             nro_vinculos: Number(registro.nro_vinculos ?? 0),
-            dotacoes_encontradas: registro.dotacoes_encontradas,
             orcamento_realizado_id: registro.orcamento_realizado_id,
           };
+
+          if ('dotacoes_encontradas' in registro) {
+            if (Array.isArray(registro.dotacoes_encontradas)) {
+              dadosParciais.dotacoes_encontradas = registro.dotacoes_encontradas.map((dotacao) => {
+                let dotacaoProcessoNotaEmpenho = dotacao;
+
+                if ('processo' in registro && registro.processo) {
+                  dotacaoProcessoNotaEmpenho += ` / ${registro.processo}`;
+
+                  if ('nota_empenho' in registro && registro.nota_empenho) {
+                    dotacaoProcessoNotaEmpenho += ` / ${registro.nota_empenho}`;
+                  }
+                }
+
+                return dotacaoProcessoNotaEmpenho;
+              });
+            }
+          }
 
           switch (chave) {
             case 'obras': {
@@ -435,10 +451,6 @@ export const useEntidadesProximasStore = defineStore('entidadesProximas', {
               },
             }),
           ) || [];
-
-          if ('dotacoes_encontradas' in registro) {
-            dadosParciais.dotacoes_encontradas = registro.dotacoes_encontradas;
-          }
 
           const item = {
             ...dadosParciais,
