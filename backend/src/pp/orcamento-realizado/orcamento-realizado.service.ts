@@ -1090,7 +1090,10 @@ export class OrcamentoRealizadoService {
         });
 
         if (linhasAfetadas.count == 1) {
-            const orcRealizado = await prismaTxn.orcamentoRealizado.findUniqueOrThrow({ where: { id: +id } });
+            const orcRealizado = await prismaTxn.orcamentoRealizado.findUniqueOrThrow({
+                where: { id: +id },
+                include: { vinculosDistribuicoes: true },
+            });
 
             if (orcRealizado.nota_empenho) {
                 const notaTx = await prismaTxn.dotacaoProcessoNota.findUnique({
@@ -1138,38 +1141,10 @@ export class OrcamentoRealizadoService {
 
             // Verificando se a linha possui vínculos.
             // Vínculos são de distribuições de recurso (SERI) com Metas, Iniciativas, Atividades e projetos.
-            const linhaOrcRealizado = await this.prisma.orcamentoRealizado.findMany({
-                where: { id: orcRealizado.id },
-                select: {
-                    meta_id: true,
-                    iniciativa_id: true,
-                    atividade_id: true,
-                    projeto_id: true,
-                },
-            });
-
-            // Se possui vínculos, vamos invalidar os mesmos.
-            for (const linha of linhaOrcRealizado) {
-                if (linha.meta_id) {
-                    await this.vinculoService.invalidarVinculo({ meta_id: linha.meta_id }, 'Dotação removida.');
-                }
-
-                if (linha.iniciativa_id) {
-                    await this.vinculoService.invalidarVinculo(
-                        { iniciativa_id: linha.iniciativa_id },
-                        'Dotação removida.'
-                    );
-                }
-
-                if (linha.atividade_id) {
-                    await this.vinculoService.invalidarVinculo(
-                        { atividade_id: linha.atividade_id },
-                        'Dotação removida.'
-                    );
-                }
-
-                if (linha.projeto_id) {
-                    await this.vinculoService.invalidarVinculo({ projeto_id: linha.projeto_id }, 'Dotação removida.');
+            if (orcRealizado.vinculosDistribuicoes.length > 0) {
+                // Se possui vínculos, vamos invalidar os mesmos.
+                for (const vinculo of orcRealizado.vinculosDistribuicoes) {
+                    await this.vinculoService.invalidarVinculo({ id: vinculo.id }, 'Dotação removida.', prismaTxn);
                 }
             }
         }

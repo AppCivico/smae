@@ -421,50 +421,6 @@ export class OrcamentoPlanejadoService {
                         where: { id: dotacaoAgora.id },
                         data: { id: dotacaoAgora.id },
                     });
-
-                    // Verificando se a linha possui vínculos.
-                    // Vínculos são de distribuições de recurso (SERI) com Metas, Iniciativas, Atividades e projetos.
-                    const linhaOrcPlan = await this.prisma.orcamentoPlanejado.findMany({
-                        where: { id: orcamentoPlanejado.id },
-                        select: {
-                            meta_id: true,
-                            iniciativa_id: true,
-                            atividade_id: true,
-                            projeto_id: true,
-                        },
-                    });
-
-                    // Se possui vínculos, vamos invalidar os mesmos.
-                    for (const linha of linhaOrcPlan) {
-                        if (linha.meta_id) {
-                            await this.vinculoService.invalidarVinculo(
-                                { meta_id: linha.meta_id },
-                                'Dotação removida.',
-                                prismaTxn
-                            );
-                        }
-                        if (linha.iniciativa_id) {
-                            await this.vinculoService.invalidarVinculo(
-                                { iniciativa_id: linha.iniciativa_id },
-                                'Dotação removida.',
-                                prismaTxn
-                            );
-                        }
-                        if (linha.atividade_id) {
-                            await this.vinculoService.invalidarVinculo(
-                                { atividade_id: linha.atividade_id },
-                                'Dotação removida.',
-                                prismaTxn
-                            );
-                        }
-                        if (linha.projeto_id) {
-                            await this.vinculoService.invalidarVinculo(
-                                { projeto_id: linha.projeto_id },
-                                'Dotação removida.',
-                                prismaTxn
-                            );
-                        }
-                    }
                 }
             },
             {
