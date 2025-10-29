@@ -62,6 +62,8 @@ export class DotacaoBuscaService {
                 id: true,
                 dotacao: true,
                 dotacao_complemento: true,
+                processo: true,
+                nota_empenho: true,
                 projeto: {
                     where: {
                         removido_em: null,
@@ -220,7 +222,9 @@ export class DotacaoBuscaService {
             // Batendo ID do projeto da view com o ID do projeto na linha de orçamento realizado
             // Para preencher a dotação.
             const linhaOrcamento = linhas.find((x) => x.projeto?.id === linhaProjetoView.id);
-            const dotacaoCompleta = linhaOrcamento?.dotacao + (linhaOrcamento?.dotacao_complemento ?? '');
+            const dotacaoCompleta =
+                linhaOrcamento?.dotacao +
+                (linhaOrcamento?.dotacao_complemento ? '.' + linhaOrcamento.dotacao_complemento : '');
 
             if (linhaProjetoView.projeto.tipo === TipoProjeto.MDO) {
                 obras.push({
@@ -237,6 +241,8 @@ export class DotacaoBuscaService {
                     tipo_obra_nome: linhaProjetoView.tipo_intervencao_nome,
                     equipamento_nome: linhaProjetoView.equipamento_nome,
                     dotacoes_encontradas: [dotacaoCompleta],
+                    processo: linhaOrcamento?.processo ?? null,
+                    nota_empenho: linhaOrcamento?.nota_empenho ?? null,
                     nro_vinculos: linhaOrcamento?.vinculosDistribuicoes.length ?? 0,
                 });
             } else {
@@ -253,6 +259,8 @@ export class DotacaoBuscaService {
                     grupo_tematico_nome: linhaProjetoView.grupo_tematico_nome,
                     tipo_obra_nome: linhaProjetoView.tipo_intervencao_nome,
                     equipamento_nome: linhaProjetoView.equipamento_nome,
+                    processo: linhaOrcamento?.processo ?? null,
+                    nota_empenho: linhaOrcamento?.nota_empenho ?? null,
                     dotacoes_encontradas: [dotacaoCompleta],
                     nro_vinculos: linhaOrcamento?.vinculosDistribuicoes.length ?? 0,
                 });
@@ -277,7 +285,11 @@ export class DotacaoBuscaService {
                         codigo: linha.atividade.codigo,
                         titulo: linha.atividade.titulo,
                     },
-                    dotacoes_encontradas: [linha.dotacao + (linha.dotacao_complemento ?? '')],
+                    dotacoes_encontradas: [
+                        linha.dotacao + (linha.dotacao_complemento ? '.' + linha.dotacao_complemento : ''),
+                    ],
+                    processo: linha.processo ?? null,
+                    nota_empenho: linha.nota_empenho ?? null,
                     nro_vinculos: linha.vinculosDistribuicoes.length,
                 });
                 continue;
@@ -299,7 +311,11 @@ export class DotacaoBuscaService {
                         titulo: linha.iniciativa.titulo,
                     },
                     atividade: null,
-                    dotacoes_encontradas: [linha.dotacao + (linha.dotacao_complemento ?? '')],
+                    dotacoes_encontradas: [
+                        linha.dotacao + (linha.dotacao_complemento ? '.' + linha.dotacao_complemento : ''),
+                    ],
+                    processo: linha.processo ?? null,
+                    nota_empenho: linha.nota_empenho ?? null,
                     nro_vinculos: linha.vinculosDistribuicoes.length,
                 });
                 continue;
@@ -317,7 +333,11 @@ export class DotacaoBuscaService {
                     rotulo_atividade: linha.meta.pdm?.rotulo_atividade ?? null,
                     iniciativa: null,
                     atividade: null,
-                    dotacoes_encontradas: [linha.dotacao + (linha.dotacao_complemento ?? '')],
+                    dotacoes_encontradas: [
+                        linha.dotacao + (linha.dotacao_complemento ? '.' + linha.dotacao_complemento : ''),
+                    ],
+                    processo: linha.processo ?? null,
+                    nota_empenho: linha.nota_empenho ?? null,
                     nro_vinculos: linha.vinculosDistribuicoes.length,
                 });
             }

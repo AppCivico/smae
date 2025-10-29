@@ -44,6 +44,8 @@ export type ProjetoObraResumoDto = {
     portfolio_titulo: string | null;
     orgao_responsavel_sigla: string | null;
     status: string | null;
+    processo: string | null;
+    nota_empenho: string | null;
 
     subprefeitura_nomes: string | null;
 
@@ -64,6 +66,8 @@ export type PdmPsResumoDto = {
     meta_codigo: string | null;
     meta_titulo: string | null;
     orgaos_sigla: string[];
+    processo: string | null;
+    nota_empenho: string | null;
 
     rotulo_iniciativa?: string | null;
     rotulo_atividade?: string | null;
