@@ -122,8 +122,6 @@ watch(tipo, (novoTipo, tipoAnterior) => {
 }, { immediate: true });
 
 function fecharModal() {
-  router.replace({ query: { ...route.query, pagina: undefined } });
-
   vinculacaoAberta.value = -1;
 }
 
@@ -231,7 +229,7 @@ async function handleItemSelecionado(linhaIndex: number) {
 
             <button
               type="button"
-              title="Ver detalhes"
+              title="vincular"
               class="fs0 like-a__text addlink"
               @click="handleItemSelecionado(linhaIndex)"
             >
@@ -244,19 +242,13 @@ async function handleItemSelecionado(linhaIndex: number) {
               </svg>
             </button>
 
-            <SmallModal
-              v-if="linhaIndex == vinculacaoAberta"
-              tamanho-ajustavel
-              @close="fecharModal"
-            >
-              <ConsultaGeralVinculacaoIndex
-                :exibindo="linhaIndex == vinculacaoAberta"
-                :dados="linha"
-                :tipo="tipo"
-                @fechar="fecharModal"
-                @vinculado="handleNovaVinculacao"
-              />
-            </SmallModal>
+            <ConsultaGeralVinculacaoIndex
+              :exibindo="linhaIndex == vinculacaoAberta"
+              :dados="linha"
+              :tipo="tipo"
+              @fechar="fecharModal"
+              @vinculado="handleNovaVinculacao"
+            />
           </template>
         </SmaeTable>
 
