@@ -81,12 +81,12 @@ const colunas = [
     label: 'Tipo de Vínculo',
   },
   {
-    chave: 'valor_vinculo',
-    label: props.tipo === 'endereco' ? 'Endereço' : 'Dotação',
-  },
-  {
     chave: 'objeto_vinculado',
     label: 'Projeto/Obra/Meta',
+  },
+  {
+    chave: 'valor_vinculo',
+    label: props.tipo === 'endereco' ? 'Endereço' : 'Dotação',
   },
 ];
 </script>
