@@ -125,6 +125,7 @@ watch(
     :carregando="carregando"
     nao-emitir-query
     @filtro="buscarDados"
+    @update:modelValue="distribuicaoRecursosStore.$reset()"
   />
 
   <SmaeTable
