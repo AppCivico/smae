@@ -33,7 +33,7 @@
         <button
           v-if="linha.id === registroMaisRecente?.id"
           class="like-a__text"
-          arial-label="editar"
+          aria-label="editar"
           title="editar"
           type="button"
           @click="abrirModalStatus(linha)"

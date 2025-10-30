@@ -39,7 +39,7 @@ const idsDosItensAbertos = ref([]);
           v-model="idsDosItensAbertos"
           type="checkbox"
           :value="meta.id"
-          :arial-label="idsDosItensAbertos.includes(meta.id)
+          :aria-label="idsDosItensAbertos.includes(meta.id)
             ? `fechar variáveis da meta ${meta.codigo}`
             : `abrir variáveis da meta ${meta.codigo}`"
           :title="idsDosItensAbertos.includes(meta.id)

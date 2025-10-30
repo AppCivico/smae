@@ -94,7 +94,7 @@ fluxosProjetoStore.buscarTudo().then(ordenarListaAlfabeticamente);
         <td>
           <button
             class="like-a__text"
-            arial-label="excluir"
+            aria-label="excluir"
             title="excluir"
             @click="excluirFluxo(item.id)"
           >
@@ -106,7 +106,10 @@ fluxosProjetoStore.buscarTudo().then(ordenarListaAlfabeticamente);
         </td>
         <td>
           <router-link
-            :to="{ name: 'fluxosEditar', params: { fluxoId: item.id } }"
+            :to="{
+              name: 'fluxosEditar',
+              params: { fluxoId: item.id }
+            }"
             class="tprimary"
           >
             <svg

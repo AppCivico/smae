@@ -86,9 +86,8 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
     id: itemParaEdicao.value.id_jwt ? itemParaEdicao.value.id_jwt : undefined,
   };
   try {
-    let resposta;
     const msg = 'Dados salvos com sucesso!';
-    resposta = await blocoStore.salvarItem(valoresAuxiliares);
+    const resposta = await blocoStore.salvarItem(valoresAuxiliares);
     if (resposta) {
       alertStore.success(msg);
       blocoStore.$reset();
@@ -161,7 +160,18 @@ watch(itemParaEdicao, (novosValores) => {
       xmlns="http://www.w3.org/2000/svg"
     >
       <path
-        d="M10 0.186053C10.293 0.332053 10.625 0.603053 10.996 0.999053L15.003 5.00505C15.43 5.38505 15.703 5.71705 15.822 6.00205C15.941 6.28705 16 6.62005 16 7.00205V18.0021C16 19.3351 15.333 20.0021 14 20.0021H2.002C0.667 20.0031 0 19.3361 0 18.0021V2.00205C0 0.669053 0.667 0.00205337 2 0.00205337H8.996C9.054 0.00205337 9.56 -0.0329466 10 0.186053ZM2 18.0021H14.001L14 8.00205H10C9.46957 8.00205 8.96086 7.79134 8.58579 7.41627C8.21071 7.04119 8 6.53249 8 6.00205V2.00205H2V18.0021ZM10 3.00205V6.00205H13L10 3.00205ZM5 12.0021C4.333 12.0021 4 11.6691 4 11.0021C4 10.3351 4.334 10.0021 5.001 10.0021H11C11.667 10.0021 12 10.3351 12 11.0021C12 11.6691 11.667 12.0021 11 12.0021H5ZM5 8.00205C4.333 8.00205 4 7.66905 4 7.00205C4 6.33505 4.334 6.00205 5.001 6.00205H6C6.667 6.00205 7 6.33505 7 7.00205C7 7.66905 6.667 8.00205 6 8.00205H5ZM5 16.0021C4.333 16.0021 4 15.6691 4 15.0021C4 14.3351 4.333 14.0021 5 14.0021H11C11.667 14.0021 12 14.3351 12 15.0021C12 15.6691 11.667 16.0021 11 16.0021H5Z"
+        d="M10 0.186053C10.293 0.332053 10.625 0.603053 10.996 0.999053L15.003 5.00505C15.43
+          5.38505 15.703 5.71705 15.822 6.00205C15.941 6.28705 16 6.62005 16 7.00205V18.0021C16
+          19.3351 15.333 20.0021 14 20.0021H2.002C0.667 20.0031 0 19.3361 0 18.0021V2.00205C0
+          0.669053 0.667 0.00205337 2 0.00205337H8.996C9.054 0.00205337 9.56 -0.0329466 10
+          0.186053ZM2 18.0021H14.001L14 8.00205H10C9.46957 8.00205 8.96086 7.79134 8.58579
+          7.41627C8.21071 7.04119 8 6.53249 8 6.00205V2.00205H2V18.0021ZM10 3.00205V6.00205H13L10
+          3.00205ZM5 12.0021C4.333 12.0021 4 11.6691 4 11.0021C4 10.3351 4.334 10.0021 5.001
+          10.0021H11C11.667 10.0021 12 10.3351 12 11.0021C12 11.6691 11.667 12.0021 11
+          12.0021H5ZM5 8.00205C4.333 8.00205 4 7.66905 4 7.00205C4 6.33505 4.334 6.00205 5.001
+          6.00205H6C6.667 6.00205 7 6.33505 7 7.00205C7 7.66905 6.667 8.00205 6 8.00205H5ZM5
+          16.0021C4.333 16.0021 4 15.6691 4 15.0021C4 14.3351 4.333 14.0021 5 14.0021H11C11.667
+          14.0021 12 14.3351 12 15.0021C12 15.6691 11.667 16.0021 11 16.0021H5Z"
         fill="#3B5881"
       />
     </svg>
@@ -372,13 +382,15 @@ watch(itemParaEdicao, (novosValores) => {
                     error: errors[`enderecamentos[${idx}].pessoa_enderecado_id`],
                     loading: pessoasSimplificadas?.loading
                   }"
-                  :disabled="
-                    !pessoasSimplificadasPorÓrgão[values.enderecamentos?.[idx]?.orgao_enderecado_id]?.length
-                  "
+                  :disabled="!pessoasSimplificadasPorÓrgão[
+                    values.enderecamentos?.[idx]?.orgao_enderecado_id
+                  ]?.length"
                 >
                   <option value="" />
                   <option
-                    v-for="item in pessoasSimplificadasPorÓrgão[values.enderecamentos?.[idx]?.orgao_enderecado_id]"
+                    v-for="item in pessoasSimplificadasPorÓrgão[
+                      values.enderecamentos?.[idx]?.orgao_enderecado_id
+                    ]"
                     :key="item"
                     :value="item.id"
                   >
@@ -393,7 +405,7 @@ watch(itemParaEdicao, (novosValores) => {
 
               <button
                 class="like-a__text addlink"
-                arial-label="excluir"
+                aria-label="excluir"
                 title="excluir"
                 @click="remove(idx)"
               >
@@ -504,7 +516,7 @@ watch(itemParaEdicao, (novosValores) => {
           <td>
             <button
               class="like-a__text"
-              arial-label="Excluir"
+              aria-label="Excluir"
               title="Excluir"
               @click="excluirNota(item.id_jwt)"
             >
@@ -518,7 +530,7 @@ watch(itemParaEdicao, (novosValores) => {
           </td>
           <td>
             <button
-              arial-label="Editar"
+              aria-label="Editar"
               title="Editar"
               class="like-a__text"
               @click="editarNota(item.id_jwt)"

@@ -58,7 +58,7 @@
               <td class="tr">
                 <SmaeLink
                   class="like-a__text"
-                  arial-label="editar"
+                  aria-label="editar"
                   title="editar"
                   :to="{
                     name: 'TransferenciaDistribuicaoDeRecursos.Editar',
@@ -103,7 +103,7 @@
 
                 <button
                   class="like-a__text"
-                  arial-label="excluir"
+                  aria-label="excluir"
                   title="excluir"
                   type="button"
                   @click="excluirDistribuição(item)"

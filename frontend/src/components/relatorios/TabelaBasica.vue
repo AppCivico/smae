@@ -97,7 +97,7 @@ function excluirRelatório(id) {
               <button
                 v-if="temPermissãoPara(['Reports.remover.'])"
                 class="like-a__text addlink"
-                arial-label="excluir"
+                aria-label="excluir"
                 title="excluir"
                 @click="excluirRelatório(item.id)"
               >

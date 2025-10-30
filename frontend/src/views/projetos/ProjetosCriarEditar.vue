@@ -635,7 +635,7 @@ watch(itemParaEdicao, (novoValor) => {
 
             <button
               class="like-a__text addlink"
-              arial-label="excluir"
+              aria-label="excluir"
               title="excluir"
               :disabled="desabilitarTodosCampos.camposComuns"
               @click="remove(idx)"
@@ -715,7 +715,7 @@ watch(itemParaEdicao, (novoValor) => {
 
             <button
               class="like-a__text addlink"
-              arial-label="excluir"
+              aria-label="excluir"
               title="excluir"
               :disabled="desabilitarTodosCampos.camposComuns"
               @click="remove(idx)"
@@ -938,7 +938,7 @@ watch(itemParaEdicao, (novoValor) => {
 
             <button
               class="like-a__text addlink"
-              arial-label="excluir"
+              aria-label="excluir"
               title="excluir"
               type="button"
               :disabled="desabilitarTodosCampos.camposComuns"

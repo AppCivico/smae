@@ -279,7 +279,7 @@ iniciar();
       </div>
       <button
         class="like-a__text addlink"
-        arial-label="limpar datas"
+        aria-label="limpar datas"
         title="limpar datas"
         type="button"
         @click="() => {

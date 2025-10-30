@@ -98,7 +98,10 @@ if (!Array.isArray(organs) || !organs.length) {
         </td>
         <td>
           <SmaeLink
-            :to="{ name: 'gruposPaineisExternosEditar', params: { gruposPaineisExternosId: item.id } }"
+            :to="{
+              name: 'gruposPaineisExternosEditar',
+              params: { gruposPaineisExternosId: item.id }
+            }"
             class="tprimary"
           >
             <svg
@@ -110,7 +113,7 @@ if (!Array.isArray(organs) || !organs.length) {
         <td>
           <button
             class="like-a__text"
-            arial-label="excluir"
+            aria-label="excluir"
             title="excluir"
             @click="excluirGrupoDePaineisExternos(item.id)"
           >

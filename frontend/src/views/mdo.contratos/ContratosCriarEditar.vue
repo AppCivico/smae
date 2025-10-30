@@ -337,7 +337,7 @@ onMounted(async () => {
 
           <button
             class="like-a__text addlink"
-            arial-label="excluir"
+            aria-label="excluir"
             title="excluir"
             type="button"
             @click="remove(idx)"

@@ -77,7 +77,7 @@ tipoDeTransferencia.buscarTudo();
           </router-link>
         </td>
         <td>
-          <button class="like-a__text" arial-label="excluir" title="excluir"
+          <button class="like-a__text" aria-label="excluir" title="excluir"
             @click="excluirTransferencia(item.id, item.nome)">
             <svg width="20" height="20">
               <use xlink:href="#i_waste" />

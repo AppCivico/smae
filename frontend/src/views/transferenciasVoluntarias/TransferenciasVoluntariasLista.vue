@@ -316,7 +316,7 @@ watch([
               'CadastroTransferencia.remover'
             ])"
             class="like-a__text"
-            arial-label="excluir"
+            aria-label="excluir"
             title="excluir"
             @click="excluirTransferencia(item.id)"
           >

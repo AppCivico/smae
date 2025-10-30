@@ -69,7 +69,7 @@
 
           <button
             class="like-a__text ml1"
-            arial-label="excluir"
+            aria-label="excluir"
             title="excluir"
             @click="excluirGrupo(item.id, item.titulo)"
           >

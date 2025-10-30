@@ -1,6 +1,6 @@
 <script setup>
 import { useAlertStore } from '@/stores/alert.store';
-import { useSituacaoStore } from '@/stores/situacao.store.js';
+import { useSituacaoStore } from '@/stores/situacao.store';
 import { storeToRefs } from 'pinia';
 
 const situacaoStore = useSituacaoStore();
@@ -57,7 +57,7 @@ situacaoStore.buscarTudo().then(ordenarListaAlfabeticamente);
         <td>
           <button
             class="like-a__text"
-            arial-label="excluir"
+            aria-label="excluir"
             title="excluir"
             @click="excluirSituacao(item.id)"
           >

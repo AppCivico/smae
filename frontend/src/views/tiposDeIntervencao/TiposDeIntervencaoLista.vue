@@ -45,7 +45,7 @@
         <td>
           <button
             class="like-a__text"
-            arial-label="excluir"
+            aria-label="excluir"
             title="excluir"
             @click="excluirTipo(item.id, item.nome)"
           >

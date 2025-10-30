@@ -149,7 +149,7 @@
 
               <button
                 class="ml1 mr1 like-a__text"
-                arial-label="excluir"
+                aria-label="excluir"
                 title="excluir"
                 @click="excluirObra(item.id, item.nome)"
               >
