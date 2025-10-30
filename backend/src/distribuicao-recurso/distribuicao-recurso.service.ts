@@ -731,7 +731,9 @@ export class DistribuicaoRecursoService {
 
         let pct_valor_transferencia: number = 0;
         if (row.transferencia.valor && row.valor) {
-            pct_valor_transferencia = Math.round((row.valor.toNumber() / row.transferencia.valor.toNumber()) * 100);
+            pct_valor_transferencia = Math.round(
+                (row.valor.toNumber() / row.transferencia.valor.toNumber()) * 100
+            );
         }
 
         const processo_seis = row.registros_sei.map((s) => s.processo_sei);
