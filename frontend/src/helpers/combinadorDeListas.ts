@@ -32,8 +32,8 @@ export default function combinadorDeListas(
 ): string {
   // Se o separador não for uma string, exibe um aviso no console
   try {
-    if (typeof separadorFornecido !== 'string') {
-      throw new Error('O separador deve ser uma string');
+    if (separadorFornecido !== undefined && typeof separadorFornecido !== 'string') {
+      console.error('O separador deve ser uma string');
     }
 
     // Se a propriedade não for uma string, exibe um aviso no console
@@ -64,7 +64,9 @@ export default function combinadorDeListas(
     if (propriedade) {
       return lista.reduce<string>((acumulador, item) => {
         const valor = obterPropriedadeNoObjeto(propriedade, item as Record<string, unknown>, true);
-        return juntarValores(acumulador, valor, separador);
+        // Se não encontrar a propriedade (undefined), usa o item original
+        const valorFinal = valor !== undefined ? valor : item;
+        return juntarValores(acumulador, valorFinal, separador);
       }, '').slice(0, -separador.length);
     }
 
@@ -72,7 +74,7 @@ export default function combinadorDeListas(
     return lista.reduce<string>((acumulador, item) => juntarValores(acumulador, item, separador), '')
       .slice(0, -separador.length);
   } catch (erro) {
-    console.error(erro);
+    console.error(erro.message);
     return '';
   }
 }
