@@ -159,7 +159,6 @@ export class UpdateProjetoDto extends OmitType(PartialType(CreateProjetoDto), ['
     @IsOptional()
     @IsArray()
     @IsInt({ message: '$property| Precisa ser uma lista de inteiros', each: true })
-    @Max(1000, { each: true })
     equipe?: number[];
 }
 
