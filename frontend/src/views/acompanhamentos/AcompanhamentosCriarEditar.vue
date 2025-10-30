@@ -139,7 +139,7 @@ if (!riscosStore?.lista?.length) {
         <Field
           id="acompanhamento_tipo_id"
           name="acompanhamento_tipo_id"
-          :arial-label="schema.fields.acompanhamento_tipo_id.spec.label"
+          :aria-label="schema.fields.acompanhamento_tipo_id.spec.label"
           maxlength="2"
           class="inputtext light mb1"
           as="select"
@@ -474,7 +474,7 @@ if (!riscosStore?.lista?.length) {
 
             <button
               class="like-a__text addlink mb2"
-              arial-label="excluir"
+              aria-label="excluir"
               title="excluir"
               type="button"
               @click="remove(idx)"
@@ -518,7 +518,7 @@ if (!riscosStore?.lista?.length) {
             <Field
               :id="`risco[${idx}]`"
               :name="`risco[${idx}]`"
-              :arial-label="schema.fields.risco.innerType.spec.label"
+              :aria-label="schema.fields.risco.innerType.spec.label"
               maxlength="2"
               class="inputtext light mb1"
               as="select"
@@ -547,7 +547,7 @@ if (!riscosStore?.lista?.length) {
           </div>
           <button
             class="like-a__text addlink mb2"
-            arial-label="excluir"
+            aria-label="excluir"
             title="excluir"
             type="button"
             @click="remove(idx)"

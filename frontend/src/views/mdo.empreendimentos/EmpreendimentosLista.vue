@@ -1,6 +1,6 @@
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>{{ route?.meta?.título || "Empreendtimentos" }}</h1>
+    <h1>{{ route?.meta?.título || "Empreendimentos" }}</h1>
     <hr class="ml2 f1">
     <router-link
       :to="{ name: 'mdoEmpreendimentosCriar' }"
@@ -43,7 +43,7 @@
         <td>
           <button
             class="like-a__text"
-            arial-label="excluir"
+            aria-label="excluir"
             title="excluir"
             @click="excluirEmpreendimento(item.id, item.identificador)"
           >
@@ -76,6 +76,7 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
+
 import { useAlertStore } from '@/stores/alert.store';
 import { useEmpreendimentosStore } from '@/stores/empreendimentos.store';
 

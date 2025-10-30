@@ -199,7 +199,7 @@ onBeforeRouteLeave(() => {
         <button
           v-if="temPermissãoPara(['Reports.remover.'])"
           class="like-a__text"
-          arial-label="excluir"
+          aria-label="excluir"
           title="excluir"
           type="button"
           @click="excluirRelatório(linha.id)"

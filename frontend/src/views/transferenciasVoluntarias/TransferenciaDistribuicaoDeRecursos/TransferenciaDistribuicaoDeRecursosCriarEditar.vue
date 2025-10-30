@@ -632,7 +632,7 @@ onMounted(async () => {
 
             <button
               class="like-a__text addlink align-start mt2"
-              arial-label="limpar"
+              aria-label="limpar"
               title="limpar"
               type="button"
               @click="values.parlamentares[idx].valor = '0'"
@@ -972,7 +972,7 @@ onMounted(async () => {
 
             <button
               class="like-a__text addlink mt1"
-              arial-label="excluir"
+              aria-label="excluir"
               title="excluir"
               type="button"
               @click="remove(idx)"

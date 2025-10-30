@@ -153,7 +153,7 @@
           </div>
           <button
             class="like-a__text addlink"
-            arial-label="Remover valores"
+            aria-label="Remover valores"
             title="Remover valores"
             type="button"
             @click="remove(idx)"
@@ -287,7 +287,10 @@ async function onSubmit() {
       })),
     };
 
-    const response = await variaveisCategoricasStore.salvarItem(dataToSend, route.params.variavelId);
+    const response = await variaveisCategoricasStore.salvarItem(
+      dataToSend,
+      route.params.variavelId,
+    );
 
     if (response) {
       alertStore.success(msg);
