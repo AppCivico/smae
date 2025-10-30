@@ -74,7 +74,7 @@ export default function combinadorDeListas(
     return lista.reduce<string>((acumulador, item) => juntarValores(acumulador, item, separador), '')
       .slice(0, -separador.length);
   } catch (erro) {
-    console.error(erro.message);
+    console.error(erro instanceof Error ? erro.message : String(erro));
     return '';
   }
 }
