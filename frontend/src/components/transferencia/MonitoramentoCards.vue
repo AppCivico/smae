@@ -76,9 +76,9 @@ const listaOrdenada = computed(() => orderBy(lista.value, (recurso) => {
 </template>
 <style scoped>
 .lista-cards {
-  display: flex;
-  flex-direction: column;
-
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 285px;
   gap: 3rem;
   overflow-x: auto;
 

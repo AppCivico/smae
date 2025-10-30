@@ -115,7 +115,7 @@ function formatarTexto(texto) {
       </template>
       <template #botao>
         <button
-          v-if="workflow && temPermissãoPara('CadastroWorkflows.editar')"
+          v-if="temPermissãoPara('CadastroWorkflows.editar')"
           type="button"
           class="btn bgnone outline tcprimary"
           @click="abrirConfigurarWorkflow"
@@ -141,7 +141,7 @@ function formatarTexto(texto) {
         v-else
         ref="listaDeEtapas"
         role="tablist"
-        class="flex varal-etapas mt05 pb0 mb0"
+        class="flex pb1 varal-etapas"
       >
         <li
           v-for="(item, index) in workflow.fluxo"
@@ -400,7 +400,6 @@ function formatarTexto(texto) {
   justify-items: start;
   gap: 1.2rem;
   position: relative;
-  min-height: 170px;
   padding: 1rem 6rem 1.5rem 1.5rem;
 
   &::before {
@@ -456,7 +455,7 @@ function formatarTexto(texto) {
   padding-inline: 1rem;
   text-align: start;
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 1.4rem;
   width: max-content;
 }
 
