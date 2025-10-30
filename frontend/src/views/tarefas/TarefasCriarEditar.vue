@@ -522,7 +522,7 @@ watch(itemParaEdição, (novoValor) => {
 
             <button
               class="like-a__text addlink"
-              arial-label="excluir"
+              aria-label="excluir"
               title="excluir"
               type="button"
               :disabled="chamadasPendentes.validaçãoDeDependências"
@@ -703,7 +703,7 @@ watch(itemParaEdição, (novoValor) => {
       </div>
       <button
         class="like-a__text addlink"
-        arial-label="limpar datas"
+        aria-label="limpar datas"
         title="limpar datas"
         type="button"
         @click="() => {

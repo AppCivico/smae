@@ -393,7 +393,7 @@ watch(itemParaEdição, (novosValores) => {
 
               <button
                 class="like-a__text addlink"
-                arial-label="excluir"
+                aria-label="excluir"
                 title="excluir"
                 @click="remove(idx)"
               >
@@ -504,7 +504,7 @@ watch(itemParaEdição, (novosValores) => {
           <td>
             <button
               class="like-a__text"
-              arial-label="Excluir"
+              aria-label="Excluir"
               title="Excluir"
               @click="excluirNota(item.id_jwt)"
             >
@@ -518,7 +518,7 @@ watch(itemParaEdição, (novosValores) => {
           </td>
           <td>
             <button
-              arial-label="Editar"
+              aria-label="Editar"
               title="Editar"
               class="like-a__text"
               @click="editarNota(item.id_jwt)"

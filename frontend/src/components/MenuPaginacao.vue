@@ -32,7 +32,7 @@
       <li class="menu-de-paginacao__item menu-de-paginacao__item--corrente">
         <input
           :aria-busy="navegando"
-          arial-label="Página corrente"
+          aria-label="Página corrente"
           :value="paginaCorrente"
           class="like-a__text menu-de-paginacao__campo"
           @change="(ev) => irParaPagina(ev.target.value)"
@@ -53,7 +53,7 @@
               pagina: paginas,
             },
           }"
-          arial-label="Última página"
+          aria-label="Última página"
         >
           {{ paginas }}
         </router-link>

@@ -220,7 +220,7 @@ watch(() => props.valoresIniciais, () => {
 
       <button
         class="like-a__text addlink"
-        arial-label="excluir"
+        aria-label="excluir"
         title="excluir"
         @click="removerLinha(idx)"
       >

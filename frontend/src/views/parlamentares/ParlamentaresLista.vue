@@ -111,7 +111,7 @@ parlamentarStore.buscarTudo();
         <td v-if="authStore.temPermissãoPara('CadastroParlamentar.remover')">
           <button
             class="like-a__text"
-            arial-label="excluir"
+            aria-label="excluir"
             title="excluir"
             @click="excluirParlamentar(item.id)"
           >

@@ -95,7 +95,7 @@ function formatarNumero(numero) {
             <td v-if="exibirEdição">
               <button
                 class="like-a__text"
-                arial-label="excluir"
+                aria-label="excluir"
                 title="excluir"
                 type="button"
                 @click="excluirRepresentatividade(suplente.id, emFoco?.id)"
@@ -196,7 +196,7 @@ function formatarNumero(numero) {
             <td v-if="exibirEdição">
               <button
                 class="like-a__text"
-                arial-label="excluir"
+                aria-label="excluir"
                 title="excluir"
                 type="button"
                 @click="excluirRepresentatividade(suplente.id, emFoco?.id)"

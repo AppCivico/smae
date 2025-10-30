@@ -177,7 +177,7 @@
         </div>
         <button
           class="like-a__text addlink mb1"
-          arial-label="Remover valores"
+          aria-label="Remover valores"
           title="Remover valores"
           @click="remove(idx)"
         >

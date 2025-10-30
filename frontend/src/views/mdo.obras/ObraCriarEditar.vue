@@ -1259,7 +1259,7 @@ watch(itemParaEdição, (novoValor) => {
 
           <button
             class="like-a__text addlink mb1 mr0 mlauto"
-            arial-label="excluir"
+            aria-label="excluir"
             title="excluir"
             @click="remove(idx)"
           >
@@ -1795,7 +1795,7 @@ watch(itemParaEdição, (novoValor) => {
 
           <button
             class="like-a__text addlink"
-            arial-label="excluir"
+            aria-label="excluir"
             title="excluir"
             type="button"
             @click="remove(idx)"

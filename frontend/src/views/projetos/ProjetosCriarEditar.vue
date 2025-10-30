@@ -559,7 +559,7 @@ watch(emFoco, () => {
 
             <div class="f1 mb1">
               <Field
-                arial-label="Texto da premissa"
+                aria-label="Texto da premissa"
                 :name="`premissas[${idx}].premissa`"
                 type="text"
                 class="inputtext light mb1"
@@ -572,7 +572,7 @@ watch(emFoco, () => {
 
             <button
               class="like-a__text addlink"
-              arial-label="excluir"
+              aria-label="excluir"
               title="excluir"
               @click="remove(idx)"
             >
@@ -626,7 +626,7 @@ watch(emFoco, () => {
 
             <div class="f1 mb1">
               <Field
-                arial-label="Texto da restrição"
+                aria-label="Texto da restrição"
                 :name="`restricoes[${idx}].restricao`"
                 type="text"
                 class="inputtext light mb1"
@@ -639,7 +639,7 @@ watch(emFoco, () => {
 
             <button
               class="like-a__text addlink"
-              arial-label="excluir"
+              aria-label="excluir"
               title="excluir"
               @click="remove(idx)"
             >
@@ -845,7 +845,7 @@ watch(emFoco, () => {
 
             <button
               class="like-a__text addlink"
-              arial-label="excluir"
+              aria-label="excluir"
               title="excluir"
               type="button"
               @click="remove(idx)"
@@ -1296,7 +1296,7 @@ watch(emFoco, () => {
 
           <button
             class="like-a__text addlink mb1 mr0 mlauto"
-            arial-label="excluir"
+            aria-label="excluir"
             title="excluir"
             @click="remove(idx)"
           >

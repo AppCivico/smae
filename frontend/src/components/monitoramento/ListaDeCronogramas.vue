@@ -77,7 +77,7 @@ const lista = computed(() => listaDePendentes.value
           v-model="idsDosItensAbertos"
           type="checkbox"
           :value="meta.id"
-          :arial-label="idsDosItensAbertos.includes(meta.id)
+          :aria-label="idsDosItensAbertos.includes(meta.id)
             ? `fechar tarefas da meta ${meta.código}`
             : `abrir tarefas da meta ${meta.código}`"
           :title="idsDosItensAbertos.includes(meta.id)

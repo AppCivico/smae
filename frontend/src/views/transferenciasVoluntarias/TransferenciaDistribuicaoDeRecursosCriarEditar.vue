@@ -308,7 +308,7 @@ const isSomaCorreta = computed(() => {
             <td>
               <button
                 class="like-a__text"
-                arial-label="editar"
+                aria-label="editar"
                 title="editar"
                 type="button"
                 @click="editarDistribuicaoRecursos(item.id)"
@@ -322,7 +322,7 @@ const isSomaCorreta = computed(() => {
             <td>
               <button
                 class="like-a__text"
-                arial-label="excluir"
+                aria-label="excluir"
                 title="excluir"
                 type="button"
                 @click="excluirDistribuição(item.id)"
@@ -793,7 +793,7 @@ const isSomaCorreta = computed(() => {
 
           <button
             class="like-a__text addlink mt1"
-            arial-label="excluir"
+            aria-label="excluir"
             title="excluir"
             @click="remove(idx)"
           >
@@ -1160,7 +1160,7 @@ const isSomaCorreta = computed(() => {
             <button
               v-if="item.id === distribuiçãoEmFoco.historico_status[0].id"
               class="like-a__text"
-              arial-label="editar"
+              aria-label="editar"
               title="editar"
               type="button"
               @click="abrirModalStatus(item)"

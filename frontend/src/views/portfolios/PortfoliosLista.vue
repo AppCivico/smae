@@ -78,7 +78,7 @@ if (!organs.length) {
           <button
             v-if="item?.pode_editar"
             class="like-a__text"
-            arial-label="excluir"
+            aria-label="excluir"
             title="excluir"
             @click="excluirPortfolio(item.id)"
           >

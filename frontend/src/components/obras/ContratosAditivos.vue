@@ -198,7 +198,7 @@ watch(exibirDialogo, (novoValor) => {
         <td>
           <button
             class="like-a__text"
-            arial-label="excluir"
+            aria-label="excluir"
             title="excluir"
             @click="excluirAditivo(aditivo.id, aditivo.numero)"
           >

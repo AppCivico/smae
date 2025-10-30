@@ -236,7 +236,7 @@ watchEffect(() => {
             <button
               v-if="item.pode_excluir"
               class="like-a__text"
-              arial-label="excluir"
+              aria-label="excluir"
               title="excluir"
               @click="excluirVariavel(item.id, item.titulo)"
             >

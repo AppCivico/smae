@@ -156,7 +156,7 @@ watch(statusSelecionado, (novoValor) => {
           <button
             v-if="item.pode_editar"
             class="like-a__text"
-            arial-label="Excluir"
+            aria-label="Excluir"
             title="Excluir"
             @click="excluirNota(item.id_jwt)"
           >

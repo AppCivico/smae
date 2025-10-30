@@ -55,7 +55,7 @@ fasesProjetosStore.buscarTudo().then(ordenarListaAlfabeticamente);
         <td>
           <button
             class="like-a__text"
-            arial-label="excluir"
+            aria-label="excluir"
             title="excluir"
             @click="excluirFase(item.id)"
           >

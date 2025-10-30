@@ -515,7 +515,7 @@ watch(itemParaEdição, (novosValores) => {
           <div class="align-center">
             <button
               class="like-a__text addlink"
-              arial-label="excluir"
+              aria-label="excluir"
               title="excluir"
               @click="remove(idx)"
             >
