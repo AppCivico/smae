@@ -2737,6 +2737,7 @@ export class ProjetoService {
                 tipo == 'PP' &&
                 projeto.em_planejamento_em !== null &&
                 projeto.orgao_responsavel?.id &&
+                dto.orgao_responsavel_id &&
                 projeto.orgao_responsavel?.id != dto.orgao_responsavel_id
             ) {
                 throw new HttpException(
