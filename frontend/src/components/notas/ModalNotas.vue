@@ -1,4 +1,10 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage, Field, FieldArray, useForm,
+} from 'vee-validate';
+import { computed, ref, watch } from 'vue';
+
 import SmallModal from '@/components/SmallModal.vue';
 import { nota as schema } from '@/consts/formSchemas';
 import truncate from '@/helpers/texto/truncate';
@@ -7,11 +13,6 @@ import { useBlocoDeNotasStore } from '@/stores/blocoNotas.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { useTipoDeNotasStore } from '@/stores/tipoNotas.store';
 import { useUsersStore } from '@/stores/users.store';
-import { storeToRefs } from 'pinia';
-import {
-  ErrorMessage, Field, FieldArray, useForm,
-} from 'vee-validate';
-import { computed, ref, watch } from 'vue';
 
 const ÓrgãosStore = useOrgansStore();
 const { organs, órgãosComoLista } = storeToRefs(ÓrgãosStore);
@@ -25,7 +26,7 @@ const status = {
     value: 'Programado',
     text: 'Programado',
   },
-  Em_Curso:{
+  Em_Curso: {
     value: 'Em_Curso',
     text: 'Em curso',
   },
@@ -129,9 +130,9 @@ watch(() => props.blocosToken, () => {
   }
 }, { immediate: true });
 
-watch (statusSelecionado, (novoValor) => {
-  blocoStore.buscarTudo(props.blocosToken, {status: novoValor});
-})
+watch(statusSelecionado, (novoValor) => {
+  blocoStore.buscarTudo(props.blocosToken, { status: novoValor });
+});
 
 tipoStore.buscarTudo();
 ÓrgãosStore.getAll();
@@ -310,7 +311,7 @@ watch(itemParaEdicao, (novosValores) => {
               type="date"
               class="inputtext light"
               @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
-              @update:model-value="($v) => { setFieldValue('data_nota', $v || null); }"
+              @update:model-value="($v) => { setFieldValue('rever_em', $v || null); }"
             />
           </div>
         </div>
