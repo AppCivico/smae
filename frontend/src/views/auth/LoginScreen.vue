@@ -44,7 +44,7 @@ async function onSubmit(values) {
     </div>
     <div class="form-group">
       <router-link
-        to="esqueci-minha-senha"
+        to="/esqueci-minha-senha"
         class="link tamarelo w700 mb2 block"
       >
         Esqueci minha senha
