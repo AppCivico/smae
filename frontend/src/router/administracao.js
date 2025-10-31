@@ -1,20 +1,27 @@
 import { defineAsyncComponent } from 'vue';
+
 // eslint-disable-next-line import/no-cycle
+import LoadingComponent from '@/components/LoadingComponent.vue';
 import {
   useODSStore,
   useOrgansStore,
   useResourcesStore,
   useDocumentTypesStore,
 } from '@/stores';
-import { useFontesStore } from '@/stores/fontesPs.store';
 import { useAssuntosStore } from '@/stores/assuntosPs.store';
-
-import LoadingComponent from '@/components/LoadingComponent.vue';
+import { useFontesStore } from '@/stores/fontesPs.store';
+import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';
+import { useModalidadeDeContratacaoStore } from '@/stores/modalidadeDeContratacao.store';
+import { useTipoDeVinculoStore } from '@/stores/tipoDeVinculo.store';
+import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
 import { Administracao } from '@/views';
-import CadastrosBasicosRaiz from '@/views/CadastrosBasicosRaiz.vue';
 import BancadasCriarEditar from '@/views/bancada/BancadasCriarEditar.vue';
 import BancadasLista from '@/views/bancada/BancadasLista.vue';
 import BancadasRaiz from '@/views/bancada/BancadasRaiz.vue';
+import CadastrosBasicosRaiz from '@/views/CadastrosBasicosRaiz.vue';
+import ClassificacaoCriarEditar from '@/views/classificacao/ClassificacaoCriarEditar.vue';
+import ClassificacaoLista from '@/views/classificacao/ClassificacaoLista.vue';
+import ClassificacaoRaiz from '@/views/classificacao/ClassificacaoRaiz.vue';
 import {
   AddEditDocumentTypes,
   ListDocumentTypes,
@@ -22,6 +29,9 @@ import {
 import EquipamentosCriarEditar from '@/views/equipamentos/EquipamentosCriarEditar.vue';
 import EquipamentosLista from '@/views/equipamentos/EquipamentosLista.vue';
 import EquipamentosRaiz from '@/views/equipamentos/EquipamentosRaiz.vue';
+import EtapasCriarEditar from '@/views/etapasProjeto/EtapasCriarEditar.vue';
+import EtapasLista from '@/views/etapasProjeto/EtapasLista.vue';
+import EtapasRaiz from '@/views/etapasProjeto/EtapasRaiz.vue';
 import GruposTematicosCriarEditar from '@/views/gruposTematicos/GruposTematicosCriarEditar.vue';
 import GruposTematicosLista from '@/views/gruposTematicos/GruposTematicosLista.vue';
 import GruposTematicosRaiz from '@/views/gruposTematicos/GruposTematicosRaiz.vue';
@@ -43,6 +53,12 @@ import {
   AddEditResources,
   ListResources,
 } from '@/views/resources';
+import TipoDeTransferenciaCriarEditar from '@/views/tipoDeTransferencia/TipoDeTransferenciaCriarEditar.vue';
+import TipoDeTransferenciaLista from '@/views/tipoDeTransferencia/TipoDeTransferenciaLista.vue';
+import TipoDeTransferenciaRaiz from '@/views/tipoDeTransferencia/TipoDeTransferenciaRaiz.vue';
+import TipoDeVinculoCriarEditar from '@/views/tipoDeVinculo/TipoDeVinculoCriarEditar.vue';
+import TipoDeVinculoLista from '@/views/tipoDeVinculo/TipoDeVinculoLista.vue';
+import TipoDeVinculoRaiz from '@/views/tipoDeVinculo/TipoDeVinculoRaiz.vue';
 import TiposDeIntervencaoCriarEditar from '@/views/tiposDeIntervencao/TiposDeIntervencaoCriarEditar.vue';
 import TiposDeIntervencaoLista from '@/views/tiposDeIntervencao/TiposDeIntervencaoLista.vue';
 import TiposDeIntervencaoRaiz from '@/views/tiposDeIntervencao/TiposDeIntervencaoRaiz.vue';
@@ -50,25 +66,6 @@ import {
   AddEditUsers,
   ListUsers,
 } from '@/views/users';
-
-import TipoDeTransferenciaCriarEditar from '@/views/tipoDeTransferencia/TipoDeTransferenciaCriarEditar.vue';
-import TipoDeTransferenciaLista from '@/views/tipoDeTransferencia/TipoDeTransferenciaLista.vue';
-import TipoDeTransferenciaRaiz from '@/views/tipoDeTransferencia/TipoDeTransferenciaRaiz.vue';
-
-import EtapasCriarEditar from '@/views/etapasProjeto/EtapasCriarEditar.vue';
-import EtapasLista from '@/views/etapasProjeto/EtapasLista.vue';
-import EtapasRaiz from '@/views/etapasProjeto/EtapasRaiz.vue';
-
-import ClassificacaoCriarEditar from '@/views/classificacao/ClassificacaoCriarEditar.vue';
-import ClassificacaoLista from '@/views/classificacao/ClassificacaoLista.vue';
-import ClassificacaoRaiz from '@/views/classificacao/ClassificacaoRaiz.vue';
-import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';
-import { useModalidadeDeContratacaoStore } from '@/stores/modalidadeDeContratacao.store';
-import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
-import TipoDeVinculoLista from '@/views/tipoDeVinculo/TipoDeVinculoLista.vue';
-import TipoDeVinculoRaiz from '@/views/tipoDeVinculo/TipoDeVinculoRaiz.vue';
-import TipoDeVinculoCriarEditar from '@/views/tipoDeVinculo/TipoDeVinculoCriarEditar.vue';
-import { useTipoDeVinculoStore } from '@/stores/tipoDeVinculo.store';
 
 const TiposDeAcompanhamentoLista = defineAsyncComponent({
   loader: () => import('@/views/tiposDeAcompanhamento/TiposLista.vue'),
@@ -97,7 +94,6 @@ const rotasParaMenuSecundário = [
       'tipoDeTransferenciaListar',
       'tipoDeVinculo.listar',
       'mdo.etapasListar',
-      'projeto.etapasListar',
       'gruposTematicosObras',
       'tiposDeIntervencao',
       'equipamentosLista',
@@ -555,53 +551,6 @@ export default [
             meta: {
               título: 'Editar etapa da obra',
               rotaDeEscape: 'mdo.etapasListar',
-            },
-          },
-        ],
-      },
-      {
-        path: 'etapa-de-projeto',
-        component: EtapasRaiz,
-        meta: {
-          título: 'Etapas de projeto',
-          entidadeMãe: 'projeto',
-          rotaPrescindeDeChave: true,
-          limitarÀsPermissões: 'CadastroProjetoEtapa.',
-          rotasParaMenuSecundário,
-        },
-
-        children: [
-          {
-            name: 'projeto.etapasListar',
-            path: '',
-            component: EtapasLista,
-            meta: {
-              título: 'Etapas do projeto',
-            },
-          },
-          {
-            name: 'projeto.etapaCriar',
-            path: 'novo',
-            component: EtapasCriarEditar,
-            meta: {
-              título: 'Nova etapa do projeto',
-              rotaDeEscape: 'projeto.etapasListar',
-            },
-          },
-          {
-            path: ':etapaId',
-            name: 'projeto.etapaEditar',
-            component: EtapasCriarEditar,
-            props: ({ params }) => ({
-              ...params,
-              ...{
-                etapaId: Number.parseInt(params.etapaId, 10) || undefined,
-              },
-            }),
-
-            meta: {
-              título: 'Editar etapa do projeto',
-              rotaDeEscape: 'projeto.etapasListar',
             },
           },
         ],
