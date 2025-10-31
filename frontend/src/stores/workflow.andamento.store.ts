@@ -51,6 +51,9 @@ export const useWorkflowAndamentoStore = defineStore('workflowAndamento', {
         if (typeof resposta === 'object') {
           this.workflow = resposta;
           this.etapaEmFoco = this.workflow.fluxo.find((etapa) => etapa.atual) || null;
+        } else {
+          this.workflow = null;
+          this.etapaEmFoco = null;
         }
       } catch (erro: unknown) {
         this.erro = erro;

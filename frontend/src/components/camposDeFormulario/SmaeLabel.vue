@@ -4,7 +4,7 @@ import buscarDadosDoYup from './helpers/buscarDadosDoYup';
 import SmaeTooltip from '../SmaeTooltip/SmaeTooltip.vue';
 
 type Slots = {
-  default(props: { label: string }): void
+  default(props: { label: string, required: boolean }): void
   prepend(): void
   append(): void
   balaoInformativo: unknown
@@ -72,7 +72,14 @@ const temInformacao = computed<boolean>(() => {
   >
     <slot name="prepend" />
 
-    <slot :label="caminhoNoSchema?.spec?.label || name">
+    <slot
+      :label="caminhoNoSchema?.spec?.label || name"
+      :required="required ||
+        (
+          caminhoNoSchema?.spec?.presence === 'required'
+          && caminhoNoSchema?.type !== 'boolean'
+        )"
+    >
       <pre
         v-if="!caminhoNoSchema"
         v-ScrollLockDebug
@@ -96,16 +103,19 @@ const temInformacao = computed<boolean>(() => {
 
         {{ temInformacao ? '&nbsp;' : undefined }}
 
-        <SmaeTooltip
-          v-if="temInformacao"
-          as="small"
-          :texto="
-            $props.balaoInformativo
-              || caminhoNoSchema.spec.meta?.balaoInformativo
-          "
-        >
-          <slot name="balaoInformativo" />
-        </SmaeTooltip>
+        <div class="relative flex center">
+          <SmaeTooltip
+            v-if="temInformacao"
+            class="smae-label__tooltip"
+            as="small"
+            :texto="
+              $props.balaoInformativo
+                || caminhoNoSchema.spec.meta?.balaoInformativo
+            "
+          >
+            <slot name="balaoInformativo" />
+          </SmaeTooltip>
+        </div>
       </template>
     </slot>
     <slot name="append" />
@@ -122,4 +132,9 @@ const temInformacao = computed<boolean>(() => {
   }
 }
 
+.smae-label__tooltip {
+  width: fit-content;
+  height: fit-content;
+  position: fixed;
+}
 </style>

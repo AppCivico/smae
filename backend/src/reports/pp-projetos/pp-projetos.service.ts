@@ -1,7 +1,8 @@
-import { Inject, Injectable, forwardRef } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, forwardRef } from '@nestjs/common';
 import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { ProjetoGetPermissionSet, ProjetoService, ProjetoStatusParaExibicao } from '../../pp/projeto/projeto.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { Readable } from 'stream';
 
 import { ContratoPrazoUnidade, ProjetoStatus, StatusContrato, StatusRisco, TipoProjeto } from '@prisma/client';
 import { DateTime } from 'luxon';
@@ -11,8 +12,11 @@ import { TarefaUtilsService } from 'src/pp/tarefa/tarefa.service.utils';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { ProjetoRiscoStatus } from '../../pp/risco/entities/risco.entity';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
-import { DefaultCsvOptions, FileOutput, ReportableService } from '../utils/utils.service';
+import { CsvFileHandler } from '../shared/csv-file-handler';
+import { StreamBatchHandler } from '../shared/stream-handlers';
+import { FileOutput, Path2FileName, ReportableService } from '../utils/utils.service';
 import { CreateRelProjetosDto } from './dto/create-projetos.dto';
+import { PPProjetosStreamingDto } from './dto/streaming-projetos.dto';
 import {
     PPProjetosRelatorioDto,
     RelProjetosAcompanhamentosDto,
@@ -27,18 +31,14 @@ import {
     RelProjetosPlanoAcaoMonitoramentosDto,
     RelProjetosRiscosDto,
 } from './entities/projetos.entity';
-
-const {
-    Parser,
-    transforms: { flatten },
-} = require('json2csv');
+import { Logger } from '@nestjs/common';
+import { SmaeConfigService } from '../../common/services/smae-config.service';
 
 type WhereCond = {
     whereString: string;
     queryParams: any[];
+    count: number;
 };
-
-const defaultTransform = [flatten({ paths: [] })];
 
 class RetornoDbProjeto {
     id: number;
@@ -94,6 +94,8 @@ class RetornoDbProjeto {
     orgao_descricao: string;
 
     projeto_etapa: string | null;
+
+    portfolios_compartilhados_titulos: string | null;
 }
 
 class RetornoDbCronograma {
@@ -254,12 +256,15 @@ class RetornoDbLoc {
 @Injectable()
 export class PPProjetosService implements ReportableService {
     private tipo: TipoProjeto = 'PP';
+    private logger: Logger = new Logger(PPProjetosService.name);
+    private static readonly BATCH_SIZE = 100;
 
     constructor(
         private readonly prisma: PrismaService,
         @Inject(forwardRef(() => ProjetoService)) private readonly projetoService: ProjetoService,
         @Inject(forwardRef(() => TarefaService)) private readonly tarefasService: TarefaService,
-        @Inject(forwardRef(() => TarefaUtilsService)) private readonly tarefasUtilsService: TarefaUtilsService
+        @Inject(forwardRef(() => TarefaUtilsService)) private readonly tarefasUtilsService: TarefaUtilsService,
+        private readonly smaeConfigService: SmaeConfigService
     ) {}
 
     async asJSON(dto: CreateRelProjetosDto, user: PessoaFromJwt | null): Promise<PPProjetosRelatorioDto> {
@@ -276,6 +281,13 @@ export class PPProjetosService implements ReportableService {
         const out_enderecos: RelProjetosGeolocDto[] = [];
 
         const whereCond = await this.buildFilteredWhereStr(dto, user);
+
+        const maxReports = await this.smaeConfigService.getConfigNumberWithDefault('PP_PROJETOS_MAX_ROWS', 200);
+        if (whereCond.count > maxReports) {
+            throw new BadRequestException(
+                `Mais de ${maxReports} projetos encontrados. Por favor, refine sua busca ou utilize o serviço de streaming/exportação.`
+            );
+        }
 
         await this.queryDataProjetos(whereCond, out_projetos);
         await this.queryDataRiscos(whereCond, out_riscos);
@@ -305,165 +317,644 @@ export class PPProjetosService implements ReportableService {
         };
     }
 
+    streamProjetos(dto: CreateRelProjetosDto, user: PessoaFromJwt | null): Readable {
+        const stream = new Readable({ objectMode: true, read() {} });
+
+        this.processProjectsStream(dto, user, stream).catch((error) => {
+            this.logger.error('Error in streamProjetos:', error);
+            if (!stream.destroyed) {
+                stream.emit('error', error);
+            }
+        });
+
+        return stream;
+    }
+
+    private async processProjectsStream(dto: CreateRelProjetosDto, user: PessoaFromJwt | null, stream: Readable) {
+        try {
+            // Get the where condition and project IDs
+            const whereCond = await this.buildFilteredWhereStr(dto, user);
+            const projectIds = await this.getProjetosIds(whereCond);
+
+            this.logger.log(`Starting stream processing for ${projectIds.length} projects`);
+
+            // Process each project individually
+            for (let i = 0; i < projectIds.length; i++) {
+                const projectId = projectIds[i];
+
+                try {
+                    // Create a where condition for just this project
+                    const singleProjectWhereCond: WhereCond = {
+                        whereString:
+                            'WHERE projeto.id = $1 AND projeto.removido_em IS NULL AND portfolio.modelo_clonagem = false',
+                        queryParams: [projectId],
+                        count: 1,
+                    };
+
+                    // Query all data for this single project
+                    const projectData = await this.queryDataForSingleProject(singleProjectWhereCond);
+
+                    // Create the streaming response object
+                    const streamingResponse: PPProjetosStreamingDto = {
+                        projeto_id: projectId,
+                        dados: projectData,
+                    };
+
+                    // Push to stream
+                    if (!stream.destroyed) {
+                        stream.push(streamingResponse);
+                    }
+
+                    // Log progress every 10 projects
+                    if ((i + 1) % 10 === 0) {
+                        this.logger.log(`Processed ${i + 1}/${projectIds.length} projects`);
+                    }
+                } catch (projectError) {
+                    this.logger.error(`Error processing project ${projectId}:`, projectError);
+                    // Continue with next project instead of stopping the entire stream
+                    continue;
+                }
+            }
+
+            // End the stream
+            if (!stream.destroyed) {
+                stream.push(null);
+            }
+
+            this.logger.log(`Completed streaming ${projectIds.length} projects`);
+        } catch (error) {
+            this.logger.error('Error in processProjectsStream:', error);
+            throw error;
+        }
+    }
+
+    private async queryDataForSingleProject(whereCond: WhereCond): Promise<PPProjetosRelatorioDto> {
+        const out_projetos: RelProjetosDto[] = [];
+        const out_cronogramas: RelProjetosCronogramaDto[] = [];
+        const out_riscos: RelProjetosRiscosDto[] = [];
+        const out_planos_acao: RelProjetosPlanoAcaoDto[] = [];
+        const out_monitoramento_planos_acao: RelProjetosPlanoAcaoMonitoramentosDto[] = [];
+        const out_licoes_aprendidas: RelProjetosLicoesAprendidasDto[] = [];
+        const out_acompanhamentos: RelProjetosAcompanhamentosDto[] = [];
+        const out_contratos: RelProjetosContratosDto[] = [];
+        const out_aditivos: RelProjetosAditivosDto[] = [];
+        const out_origens: RelProjetosOrigemDto[] = [];
+        const out_enderecos: RelProjetosGeolocDto[] = [];
+
+        // Execute all queries in parallel for better performance
+        await Promise.all([
+            this.queryDataProjetos(whereCond, out_projetos),
+            this.queryDataCronograma(whereCond, out_cronogramas),
+            this.queryDataRiscos(whereCond, out_riscos),
+            this.queryDataPlanosAcao(whereCond, out_planos_acao),
+            this.queryDataPlanosAcaoMonitoramento(whereCond, out_monitoramento_planos_acao),
+            this.queryDataLicoesAprendidas(whereCond, out_licoes_aprendidas),
+            this.queryDataAcompanhamentos(whereCond, out_acompanhamentos),
+            this.queryDataContratos(whereCond, out_contratos),
+            this.queryDataAditivos(whereCond, out_aditivos),
+            this.queryDataOrigens(whereCond, out_origens),
+            this.queryDataProjetosGeoloc(whereCond, out_enderecos),
+        ]);
+
+        return {
+            linhas: out_projetos,
+            cronograma: out_cronogramas,
+            riscos: out_riscos,
+            planos_de_acao: out_planos_acao,
+            monitoramento_planos_de_acao: out_monitoramento_planos_acao,
+            licoes_aprendidas: out_licoes_aprendidas,
+            acompanhamentos: out_acompanhamentos,
+            contratos: out_contratos,
+            aditivos: out_aditivos,
+            origens: out_origens,
+            enderecos: out_enderecos,
+        };
+    }
+
+    // Alternative implementation: if you want to batch multiple projects together for better DB performance
+    private async processProjectsStreamBatched(
+        dto: CreateRelProjetosDto,
+        user: PessoaFromJwt | null,
+        stream: Readable
+    ) {
+        try {
+            const whereCond = await this.buildFilteredWhereStr(dto, user);
+            const projectIds = await this.getProjetosIds(whereCond);
+
+            this.logger.log(`Starting batched stream processing for ${projectIds.length} projects`);
+
+            const batchSize = 5; // Process 5 projects at a time
+
+            for (let i = 0; i < projectIds.length; i += batchSize) {
+                const batchIds = projectIds.slice(i, i + batchSize);
+
+                // Process each project in the batch
+                const batchPromises = batchIds.map(async (projectId) => {
+                    try {
+                        const singleProjectWhereCond: WhereCond = {
+                            whereString:
+                                'WHERE projeto.id = $1 AND projeto.removido_em IS NULL AND portfolio.modelo_clonagem = false',
+                            queryParams: [projectId],
+                            count: 5,
+                        };
+
+                        const projectData = await this.queryDataForSingleProject(singleProjectWhereCond);
+
+                        return {
+                            projeto_id: projectId,
+                            dados: projectData,
+                        };
+                    } catch (error) {
+                        this.logger.error(`Error processing project ${projectId}:`, error);
+                        return null;
+                    }
+                });
+
+                // Wait for all projects in this batch to complete
+                const batchResults = await Promise.all(batchPromises);
+
+                // Stream the completed projects
+                for (const result of batchResults) {
+                    if (result && !stream.destroyed) {
+                        stream.push(result);
+                    }
+                }
+
+                this.logger.log(
+                    `Processed batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(projectIds.length / batchSize)}`
+                );
+            }
+
+            // End the stream
+            if (!stream.destroyed) {
+                stream.push(null);
+            }
+
+            this.logger.log(`Completed batched streaming ${projectIds.length} projects`);
+        } catch (error) {
+            this.logger.error('Error in processProjectsStreamBatched:', error);
+            throw error;
+        }
+    }
+
+    private async gerarCsv(
+        tipo: string,
+        fields: string[],
+        fieldNames: string[],
+        projectIds: number[],
+        out: FileOutput[],
+        ctx: ReportContext,
+        progress: number
+    ) {
+        const handler = new CsvFileHandler(fields, fieldNames);
+        try {
+            const tmpFile = await this.processDataInBatches(tipo, projectIds, handler, PPProjetosService.BATCH_SIZE);
+            if (tmpFile) {
+                out.push({ name: `${tipo}.csv`, localFile: tmpFile });
+            } else {
+                Logger.warn(`Nenhum dado encontrado para "${tipo}", CSV não gerado.`);
+            }
+        } catch (error) {
+            Logger.error(`Erro ao gerar CSV de projetos:`, error);
+            throw new Error(`Erro ao gerar CSV de projetos: ${error.message}`);
+        }
+        await ctx.progress(progress);
+    }
+
     async toFileOutput(
         params: CreateRelProjetosDto,
         ctx: ReportContext,
         user: PessoaFromJwt | null
     ): Promise<FileOutput[]> {
-        const dados = await this.asJSON(params, user);
-        await ctx.progress(50);
-
+        const whereCond = await this.buildFilteredWhereStr(params, user);
+        const projetosIds = await this.getProjetosIds(whereCond);
         const out: FileOutput[] = [];
 
-        if (dados.linhas.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-            });
-
-            for (const r of dados.linhas) {
-                if (r.status) (r as any)['status-traduzido'] = ProjetoStatusParaExibicao[r.status];
-            }
-            const linhas = json2csvParser.parse(dados.linhas);
-            out.push({
-                name: 'projetos.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
-            });
-        }
-
-        if (dados.cronograma.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-            });
-            const linhas = json2csvParser.parse(dados.cronograma);
-            out.push({
-                name: 'cronograma.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
-            });
-        }
-
-        if (dados.riscos.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-            });
-            const linhas = json2csvParser.parse(dados.riscos);
-            out.push({
-                name: 'riscos.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
-            });
-        }
-
-        if (dados.planos_de_acao.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-            });
-            const linhas = json2csvParser.parse(dados.planos_de_acao);
-            out.push({
-                name: 'planos_de_acao.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
-            });
-        }
-
-        if (dados.monitoramento_planos_de_acao.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-            });
-            const linhas = json2csvParser.parse(dados.monitoramento_planos_de_acao);
-            out.push({
-                name: 'monitoramento_planos_de_acao.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
-            });
-        }
-
-        if (dados.licoes_aprendidas.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-            });
-            const linhas = json2csvParser.parse(dados.licoes_aprendidas);
-            out.push({
-                name: 'licoes_aprendidas.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
-            });
-        }
-
-        if (dados.acompanhamentos.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-            });
-            const linhas = json2csvParser.parse(dados.acompanhamentos);
-            out.push({
-                name: 'acompanhamentos.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
-            });
-        }
-
-        if (dados.contratos.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-            });
-            const linhas = json2csvParser.parse(dados.contratos);
-            out.push({
-                name: 'contratos.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
-            });
-        }
-
-        if (dados.aditivos.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-            });
-            const linhas = json2csvParser.parse(dados.aditivos);
-            out.push({
-                name: 'aditivos.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
-            });
-        }
-
-        if (dados.origens.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-            });
-            const linhas = json2csvParser.parse(dados.origens);
-            out.push({
-                name: 'origens.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
-            });
-        }
-
-        if (dados.enderecos.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-            });
-            const linhas = json2csvParser.parse(dados.enderecos);
-            out.push({
-                name: 'enderecos.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
-            });
-        }
-
-        return [
-            {
-                name: 'info.json',
-                buffer: Buffer.from(
-                    JSON.stringify({
-                        params: params,
-                        horario: Date2YMD.tzSp2UTC(new Date()),
-                    }),
-                    'utf8'
-                ),
-            },
-            ...out,
+        // 1. Processar Projetos
+        const projetosFields = [
+            'id',
+            'nome',
+            'portfolio_id',
+            'portfolio_titulo',
+            'meta_id',
+            'iniciativa_id',
+            'atividade_id',
+            'codigo',
+            'objeto',
+            'objetivo',
+            'publico_alvo',
+            'previsao_inicio',
+            'previsao_termino',
+            'previsao_duracao',
+            'previsao_custo',
+            'escopo',
+            'nao_escopo',
+            'secretario_responsavel',
+            'secretario_executivo',
+            'coordenador_ue',
+            'data_aprovacao',
+            'data_revisao',
+            'versao',
+            'status-traduzido',
+            'projeto_etapa',
+            'orgao_participante.id',
+            'orgao_participante.sigla',
+            'orgao_participante.descricao',
+            'orgao_responsavel.id',
+            'orgao_responsavel.sigla',
+            'orgao_responsavel.descricao',
+            'orgao_gestor.id',
+            'orgao_gestor.sigla',
+            'orgao_gestor.descricao',
+            'gestores',
+            'responsavel.id',
+            'responsavel.nome_exibicao',
+            'premissa.id',
+            'premissa.premissa',
+            'restricao.id',
+            'restricao.restricao',
+            'fonte_recurso.id',
+            'fonte_recurso.nome',
+            'fonte_recurso.fonte_recurso_cod_sof',
+            'fonte_recurso.fonte_recurso_ano',
+            'fonte_recurso.valor_percentual',
+            'fonte_recurso.valor_nominal',
+            'status',
+            'portfolios_compartilhados_titulos',
         ];
+
+        const projetosFieldNames = [
+            'ID do Projeto',
+            'Nome do Projeto',
+            'ID Portfólio',
+            'Título do Portfólio',
+            'ID Meta',
+            'ID Iniciativa',
+            'ID Atividade',
+            'Código',
+            'Objeto',
+            'Objetivo',
+            'Público-Alvo',
+            'Previsão de Início',
+            'Previsão de Término',
+            'Previsão de Duração',
+            'Previsão de Custo',
+            'Escopo',
+            'Não Escopo',
+            'Secretário Responsável',
+            'Secretário Executivo',
+            'Coordenador UE',
+            'Data de Aprovação',
+            'Data de Revisão',
+            'Versão',
+            'Status',
+            'Projeto Etapa',
+            'ID Órgão Participante',
+            'Sigla Órgão Participante',
+            'Descrição Órgão Participante',
+            'ID Órgão Responsável',
+            'Sigla Órgão Responsável',
+            'Descrição Órgão Responsável',
+            'ID Órgão Gestor',
+            'Sigla Órgão Gestor',
+            'Descrição Órgão Gestor',
+            'Gestores do Projeto',
+            'ID Responsável',
+            'Nome do Responsável',
+            'ID Premissa',
+            'Descrição da Premissa',
+            'ID Restrição',
+            'Descrição da Restrição',
+            'ID Fonte de Recurso',
+            'Nome da Fonte de Recurso',
+            'Código SOF da Fonte',
+            'Ano da Fonte',
+            'Valor Percentual da Fonte',
+            'Valor Nominal da Fonte',
+            'Status (Banco)',
+            'Portfólios Compartilhados',
+        ];
+        await this.gerarCsv('projetos', projetosFields, projetosFieldNames, projetosIds, out, ctx, 20);
+        await ctx.resumoSaida('Projetos', projetosIds.length);
+
+        // 2. Processar Cronograma
+        const cronogramaFields = [
+            'projeto_id',
+            'projeto_codigo',
+            'tarefa_id',
+            'hierarquia',
+            'numero',
+            'nivel',
+            'tarefa',
+            'inicio_planejado',
+            'termino_planejado',
+            'custo_estimado',
+            'inicio_real',
+            'termino_real',
+            'duracao_real',
+            'percentual_concluido',
+            'custo_real',
+            'dependencias',
+            'atraso',
+            'responsavel.id',
+            'responsavel.nome_exibicao',
+        ];
+        const cronogramaFieldNames = [
+            'ID Projeto',
+            'Código do Projeto',
+            'ID da Tarefa',
+            'Hierarquia',
+            'Número',
+            'Nível',
+            'Tarefa',
+            'Início Planejado',
+            'Término Planejado',
+            'Custo Estimado',
+            'Início Real',
+            'Término Real',
+            'Duração Real (dias)',
+            '% Concluído',
+            'Custo Real',
+            'Dependências',
+            'Atraso (dias)',
+            'ID do Responsável',
+            'Nome do Responsável',
+        ];
+        await this.gerarCsv('cronograma', cronogramaFields, cronogramaFieldNames, projetosIds, out, ctx, 40);
+
+        // 3. Processar Riscos
+        const riscosFields = [
+            'projeto_id',
+            'projeto_codigo',
+            'codigo',
+            'titulo',
+            'data_registro',
+            'status_risco',
+            'descricao',
+            'causa',
+            'consequencia',
+            'probabilidade',
+            'probabilidade_descricao',
+            'impacto',
+            'impacto_descricao',
+            'nivel',
+            'grau',
+            'grau_descricao',
+            'resposta',
+            'tarefas_afetadas',
+        ];
+        const riscosFieldNames = [
+            'ID Projeto',
+            'Código do Projeto',
+            'Código',
+            'Título',
+            'Data de Registro',
+            'Status do Risco',
+            'Descrição',
+            'Causa',
+            'Consequência',
+            'Probabilidade',
+            'Descrição da Probabilidade',
+            'Impacto',
+            'Descrição do Impacto',
+            'Nível',
+            'Grau',
+            'Descrição do Grau',
+            'Resposta',
+            'Tarefas Afetadas',
+        ];
+        await this.gerarCsv('riscos', riscosFields, riscosFieldNames, projetosIds, out, ctx, 50);
+
+        // 4. Processar Plano de Ação
+        const planosAcaoFields = [
+            'projeto_id',
+            'projeto_codigo',
+            'plano_acao_id',
+            'risco_codigo',
+            'contramedida',
+            'medidas_de_contingencia',
+            'prazo_contramedida',
+            'custo',
+            'custo_percentual',
+            'responsavel',
+            'data_termino',
+        ];
+        const planosAcaoFieldNames = [
+            'ID Projeto',
+            'Código do Projeto',
+            'ID do Plano de Ação',
+            'Código do Risco',
+            'Contramedida',
+            'Medidas de Contingência',
+            'Prazo da Contramedida',
+            'Custo (R$)',
+            'Custo (%)',
+            'Responsável',
+            'Data de Término',
+        ];
+        await this.gerarCsv('planos_de_acao', planosAcaoFields, planosAcaoFieldNames, projetosIds, out, ctx, 55);
+
+        // 5. Processar Plano de Ação Monitoramentos
+        const planosMonitorFields = [
+            'projeto_id',
+            'projeto_codigo',
+            'risco_codigo',
+            'plano_acao_id',
+            'data_afericao',
+            'descricao',
+        ];
+        const planosMonitorFieldNames = [
+            'ID Projeto',
+            'Código Projeto',
+            'Código Risco',
+            'ID Plano de Ação',
+            'Data de aferição',
+            'Descrição',
+        ];
+        await this.gerarCsv(
+            'monitoramento_planos_de_acao',
+            planosMonitorFields,
+            planosMonitorFieldNames,
+            projetosIds,
+            out,
+            ctx,
+            60
+        );
+
+        // 6. Processar Licoes de Aprendidas
+        const licoesFields = [
+            'projeto_id',
+            'projeto_codigo',
+            'sequencial',
+            'data_registro',
+            'responsavel',
+            'descricao',
+            'observacao',
+            'contexto',
+            'resultado',
+        ];
+        const licoesFieldNames = [
+            'ID Projeto',
+            'Código do Projeto',
+            'Sequencial',
+            'Data de Registro',
+            'Responsável',
+            'Descrição',
+            'Observação',
+            'Contexto',
+            'Resultado',
+        ];
+        await this.gerarCsv('licoes_aprendidas', licoesFields, licoesFieldNames, projetosIds, out, ctx, 65);
+
+        // 7. Processar acompanhamentos
+        const acompFields = [
+            'projeto_id',
+            'projeto_codigo',
+            'data_registro',
+            'participantes',
+            'cronograma_paralizado',
+            'prazo_encaminhamento',
+            'pauta',
+            'prazo_realizado',
+            'detalhamento',
+            'encaminhamento',
+            'responsavel',
+            'observacao',
+            'detalhamento_status',
+            'pontos_atencao',
+            'riscos',
+        ];
+        const acompFieldNames = [
+            'ID Projeto',
+            'Código do Projeto',
+            'Data do Registro',
+            'Participantes',
+            'Cronograma Paralisado',
+            'Prazo de Encaminhamento',
+            'Pauta',
+            'Prazo Realizado',
+            'Detalhamento',
+            'Encaminhamento',
+            'Responsável',
+            'Observação',
+            'Status Detalhado',
+            'Pontos de Atenção',
+            'Códigos dos Riscos',
+        ];
+        await this.gerarCsv('acompanhamentos', acompFields, acompFieldNames, projetosIds, out, ctx, 70);
+
+        // 8. Processar contratos
+        const contratosFields = [
+            'id',
+            'projeto_id',
+            'numero',
+            'exclusivo',
+            'processos_SEI',
+            'status',
+            'modalidade_licitacao.id',
+            'modalidade_licitacao.nome',
+            'fontes_recurso',
+            'area_gestora.id',
+            'area_gestora.sigla',
+            'area_gestora.descricao',
+            'objeto',
+            'descricao_detalhada',
+            'contratante',
+            'empresa_contratada',
+            'prazo',
+            'unidade_prazo',
+            'data_base',
+            'data_inicio',
+            'data_termino',
+            'data_termino_atualizada',
+            'valor',
+            'valor_reajustado',
+            'percentual_medido',
+            'observacoes',
+        ];
+
+        const contratosFieldNames = [
+            'ID Contrato',
+            'ID Projeto',
+            'Número',
+            'Exclusivo',
+            'Processos SEI',
+            'Status',
+            'Modalidade de Licitação - ID',
+            'Modalidade de Licitação - Nome',
+            'Fontes de Recurso',
+            'Área Gestora - ID',
+            'Área Gestora - Sigla',
+            'Área Gestora - Descrição',
+            'Objeto',
+            'Descrição Detalhada',
+            'Contratante',
+            'Empresa Contratada',
+            'Prazo',
+            'Unidade Prazo',
+            'Data-base',
+            'Data Início',
+            'Data Término',
+            'Data Término Atualizada',
+            'Valor',
+            'Valor Reajustado',
+            '% Execução',
+            'Observações',
+        ];
+        await this.gerarCsv('contratos', contratosFields, contratosFieldNames, projetosIds, out, ctx, 75);
+
+        // 9. Processar Aditivos
+        const aditivosFields = [
+            'id',
+            'contrato_id',
+            'tipo.nome',
+            'data',
+            'valor_com_reajuste',
+            'percentual_medido',
+            'data_termino_atual',
+        ];
+        const aditivosFieldNames = [
+            'ID Aditivo',
+            'ID Contrato',
+            'Tipo Aditivo',
+            'Data',
+            'Valor com Reajuste',
+            '% Execução',
+            'Data Término Atual',
+        ];
+        await this.gerarCsv('aditivos', aditivosFields, aditivosFieldNames, projetosIds, out, ctx, 80);
+
+        // 10. Processar Origens
+        const origensFields = [
+            'projeto_id',
+            'pdm_id',
+            'pdm_titulo',
+            'meta_id',
+            'meta_titulo',
+            'iniciativa_id',
+            'iniciativa_titulo',
+            'atividade_id',
+            'atividade_titulo',
+        ];
+        const origensFieldNames = [
+            'ID Projeto',
+            'ID PDM',
+            'Título do PDM',
+            'ID Meta',
+            'Título da Meta',
+            'ID Iniciativa',
+            'Título da Iniciativa',
+            'ID Atividade',
+            'Título da Atividade',
+        ];
+        await this.gerarCsv('origens', origensFields, origensFieldNames, projetosIds, out, ctx, 90);
+
+        // 11. Processar Geolocalização
+        const geolocFields = ['projeto_id', 'endereco_exibicao', 'geom_geojson'];
+        const geolocFieldNames = ['ID Projeto', 'Endereço', 'GeoJSON'];
+        await this.gerarCsv('geoloc', geolocFields, geolocFieldNames, projetosIds, out, ctx, 100);
+
+        return [...out];
     }
 
     private async buildFilteredWhereStr(filters: CreateRelProjetosDto, user: PessoaFromJwt | null): Promise<WhereCond> {
@@ -471,36 +962,64 @@ export class PPProjetosService implements ReportableService {
         const queryParams: any[] = [];
 
         let paramIndex = 1;
+        let count = 0;
 
-        if (user) {
-            const perms = await ProjetoGetPermissionSet(this.tipo, user);
+        const perms = await ProjetoGetPermissionSet(this.tipo, user ? user : undefined);
 
-            const allowed = await this.prisma.projeto.findMany({
-                where: {
+        const allowed = await this.prisma.projeto.findMany({
+            where: {
+                AND: perms,
+                removido_em: null,
+                // importante manter o portfolio_id aqui, pois é utilizado no filtro de compartilhamento
+                // e aqui também
+                portfolio_id: filters.portfolio_id,
+                portfolio: { modelo_clonagem: false }, // não traz portfólios que são modelos para clonagem
+                // reduz o número de linhas pra não virar um "IN" gigante
+                tipo: this.tipo,
+                id: filters.projeto_id ? { in: filters.projeto_id } : undefined,
+                codigo: filters.codigo ?? undefined,
+                orgao_responsavel_id: filters.orgao_responsavel_id ?? undefined,
+                status: filters.status ?? undefined,
+            },
+            select: { id: true },
+        });
+
+        const allowed_shared = await this.prisma.portfolioProjetoCompartilhado.findMany({
+            where: {
+                projeto: {
                     AND: perms,
-                    // reduz o número de linhas pra não virar um "IN" gigante
-                    portfolio_id: filters.portfolio_id,
+                    portfolio: { modelo_clonagem: false }, // não traz portfólios que são modelos para clonagem
+                    tipo: this.tipo,
+                    id: filters.projeto_id ? { in: filters.projeto_id } : undefined,
                     codigo: filters.codigo ?? undefined,
+                    orgao_responsavel_id: filters.orgao_responsavel_id ?? undefined,
                     status: filters.status ?? undefined,
-                    removido_em: null,
                 },
-                select: { id: true },
-            });
+                removido_em: null,
+                portfolio_id: filters.portfolio_id,
+            },
+            select: { projeto_id: true },
+        });
 
-            if (allowed.length === 0) {
-                return { whereString: 'WHERE false', queryParams: [] };
-            }
+        // Adicionando projetos compartilhados.
+        // Deve ser adicionado apenas projetos que não sejam originalmente do portfolio utilizado no filtro.
+        allowed.push(
+            ...allowed_shared
+                .filter((n) => !allowed.find((m) => m.id === n.projeto_id))
+                .map((n) => ({ id: n.projeto_id }))
+        );
 
-            whereConditions.push(`projeto.id = ANY($${paramIndex}::int[])`);
-            queryParams.push(allowed.map((n) => n.id));
-            paramIndex++;
+        if (allowed.length === 0) {
+            return { whereString: 'WHERE false', queryParams: [], count: 0 };
         }
 
-        if (filters.portfolio_id) {
-            whereConditions.push(`projeto.portfolio_id = $${paramIndex}`);
-            queryParams.push(filters.portfolio_id);
-            paramIndex++;
-        }
+        count = allowed.length;
+        whereConditions.push(`projeto.id = ANY($${paramIndex}::int[])`);
+        queryParams.push(allowed.map((n) => n.id));
+        paramIndex++;
+
+        // não usa o filtro do portfolio_id, pois já foi aplicado no filtro de permissões
+        delete (filters as any).portfolio_id;
 
         if (filters.orgao_responsavel_id) {
             whereConditions.push(`projeto.orgao_responsavel_id = $${paramIndex}`);
@@ -520,29 +1039,24 @@ export class PPProjetosService implements ReportableService {
             paramIndex++;
         }
 
-        whereConditions.push(`projeto.removido_em IS NULL`);
-        whereConditions.push(`portfolio.modelo_clonagem = false`);
-
-        const whereString = whereConditions.length > 0 ? 'WHERE ' + whereConditions.join(' AND ') : '';
-        return { whereString, queryParams };
+        const whereString = whereConditions.length > 0 ? 'WHERE ' + whereConditions.join(' AND ') : 'WHERE TRUE';
+        return { whereString, queryParams, count: count };
     }
 
     private async queryDataProjetos(whereCond: WhereCond, out: RelProjetosDto[]) {
         const anoCorrente = DateTime.local({ locale: SYSTEM_TIMEZONE }).year;
 
-        // TODO: melhorar essa query
-        // Esse idx é utilizado no union, e em teoria o portfolio_id sempre é enviado.
-        // No entanto, lá na definição de filtros, caso o usuário não tenha permissão/a query não retorne nada (ver buildFilteredWhereStr),
-        // esse if irá ser pulado, portanto definindo o
-        let portfolioParamIdx;
-        if (whereCond.whereString.match(/portfolio_id = \$([0-9]+)/)) {
-            const match = whereCond.whereString.match(/portfolio_id = \$([0-9]+)/);
-            portfolioParamIdx = match ? parseInt(match[1], 10) : null;
-
-            if (!portfolioParamIdx) throw new Error('Erro interno ao extrair relatório');
-        }
-
-        const sql = `SELECT
+        const sql = `
+            WITH shared_portfolios AS (
+                SELECT
+                    ppc.projeto_id,
+                    string_agg(p.titulo, ' | ') AS titulos
+                FROM portfolio_projeto_compartilhado ppc
+                JOIN portfolio p ON p.id = ppc.portfolio_id AND p.removido_em IS NULL
+                WHERE ppc.removido_em IS NULL
+                GROUP BY ppc.projeto_id
+            )
+            SELECT
             projeto.id,
             projeto.portfolio_id,
             portfolio.titulo as portfolio_titulo,
@@ -594,9 +1108,11 @@ export class PPProjetosService implements ReportableService {
             o.id AS orgao_id,
             o.sigla AS orgao_sigla,
             o.descricao AS orgao_descricao,
-            pe.descricao AS projeto_etapa
+            pe.descricao AS projeto_etapa,
+            sp.titulos AS portfolios_compartilhados_titulos
         FROM projeto
           LEFT JOIN tarefa_cronograma tc ON tc.projeto_id = projeto.id AND tc.removido_em IS NULL
+          LEFT JOIN shared_portfolios sp ON sp.projeto_id = projeto.id
           LEFT JOIN portfolio ON portfolio.id = projeto.portfolio_id
           LEFT JOIN projeto_fonte_recurso r ON r.projeto_id = projeto.id
           LEFT JOIN sof_entidades_linhas sof ON sof.codigo = r.fonte_recurso_cod_sof
@@ -611,79 +1127,6 @@ export class PPProjetosService implements ReportableService {
           LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
           LEFT JOIN projeto_etapa pe ON pe.id = projeto.projeto_etapa_id
         ${whereCond.whereString}
-
-        UNION
-
-        SELECT
-            projeto.id,
-            portfolio.id as portfolio_id,
-            portfolio.titulo as portfolio_titulo,
-            projeto.meta_id,
-            projeto.iniciativa_id,
-            projeto.atividade_id,
-            projeto.nome,
-            projeto.codigo,
-            projeto.objeto,
-            projeto.objetivo,
-            projeto.publico_alvo,
-            coalesce(tc.previsao_inicio, projeto.previsao_inicio) AS previsao_inicio,
-            coalesce(tc.previsao_termino, projeto.previsao_termino) AS previsao_termino,
-            coalesce(tc.previsao_duracao, projeto.previsao_duracao) AS previsao_duracao,
-            coalesce(tc.previsao_custo, projeto.previsao_custo) AS previsao_custo,
-            projeto.escopo,
-            projeto.nao_escopo,
-            projeto.secretario_responsavel,
-            projeto.secretario_executivo,
-            projeto.coordenador_ue,
-            projeto.data_aprovacao,
-            projeto.data_revisao,
-            projeto.versao,
-            projeto.status,
-            orgao_responsavel.id AS orgao_responsavel_id,
-            orgao_responsavel.sigla AS orgao_responsavel_sigla,
-            orgao_responsavel.descricao AS orgao_responsavel_descricao,
-            resp.id AS responsavel_id,
-            resp.nome_exibicao AS responsavel_nome_exibicao,
-            orgao_gestor.id as orgao_gestor_id,
-            orgao_gestor.sigla as orgao_gestor_sigla,
-            orgao_gestor.descricao as orgao_gestor_descricao,
-            (
-                SELECT
-                    string_agg(nome_exibicao, '/')
-                FROM pessoa
-                WHERE id = ANY(projeto.responsaveis_no_orgao_gestor)
-            ) as gestores,
-            r.id AS fonte_recurso_id,
-            sof.descricao AS fonte_recurso_nome,
-            r.fonte_recurso_cod_sof AS fonte_recurso_cod_sof,
-            r.fonte_recurso_ano AS fonte_recurso_ano,
-            r.valor_percentual AS fonte_recurso_valor_pct,
-            r.valor_nominal AS fonte_recurso_valor_nominal,
-            pp.id AS premisa_id,
-            pp.premissa,
-            pr.id AS restricao_id,
-            pr.restricao,
-            o.id AS orgao_id,
-            o.sigla AS orgao_sigla,
-            o.descricao AS orgao_descricao,
-            pe.descricao AS projeto_etapa
-        FROM projeto
-        LEFT JOIN tarefa_cronograma tc ON tc.projeto_id = projeto.id AND tc.removido_em IS NULL
-          JOIN portfolio_projeto_compartilhado ppc ON ppc.projeto_id = projeto.id
-          LEFT JOIN portfolio ON portfolio.id = ppc.portfolio_id
-          LEFT JOIN projeto_fonte_recurso r ON r.projeto_id = projeto.id
-          LEFT JOIN sof_entidades_linhas sof ON sof.codigo = r.fonte_recurso_cod_sof
-            AND sof.ano = ( case when r.fonte_recurso_ano > ${anoCorrente}::int then ${anoCorrente}::int else r.fonte_recurso_ano end )
-            AND sof.col = 'fonte_recursos'
-          LEFT JOIN projeto_premissa pp ON pp.projeto_id = projeto.id
-          LEFT JOIN projeto_restricao pr ON pr.projeto_id = projeto.id
-          LEFT JOIN projeto_orgao_participante po ON po.projeto_id = projeto.id
-          LEFT JOIN orgao o ON po.orgao_id = o.id
-          LEFT JOIN orgao orgao_responsavel ON orgao_responsavel.id = projeto.orgao_responsavel_id
-          LEFT JOIN orgao orgao_gestor ON orgao_gestor.id = projeto.orgao_gestor_id
-          LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
-          LEFT JOIN projeto_etapa pe ON pe.id = projeto.projeto_etapa_id
-          WHERE ppc.removido_em IS NULL AND projeto.removido_em IS NULL AND ppc.portfolio_id = ${portfolioParamIdx !== undefined ? `$${portfolioParamIdx}` : '0'}
         `;
 
         const data: RetornoDbProjeto[] = await this.prisma.$queryRawUnsafe(sql, ...whereCond.queryParams);
@@ -771,6 +1214,7 @@ export class PPProjetosService implements ReportableService {
                           valor_nominal: db.fonte_recurso_valor_nominal,
                       }
                     : null,
+                portfolios_compartilhados_titulos: db.portfolios_compartilhados_titulos,
             });
         }
     }
@@ -799,14 +1243,14 @@ export class PPProjetosService implements ReportableService {
                 SELECT
                   string_agg(json_build_object('id', td.dependencia_tarefa_id, 'tipo', td.tipo, 'latencia', td.latencia) #>> '{}', '/')
                 FROM tarefa_dependente td
-                JOIN tarefa t2 ON t2.id = td.dependencia_tarefa_id
+                JOIN tarefa t2 ON t2.id = td.dependencia_tarefa_id AND t2.removido_em IS NULL
                 WHERE td.tarefa_id = t.id
             ) as dependencias
             FROM projeto
             LEFT JOIN tarefa_cronograma tc ON tc.projeto_id = projeto.id AND tc.removido_em IS NULL
             LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
-            JOIN tarefa t ON t.tarefa_cronograma_id = tc.id
-            JOIN portfolio ON projeto.portfolio_id = portfolio.id
+            JOIN tarefa t ON t.tarefa_cronograma_id = tc.id AND t.removido_em IS NULL
+            JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
             ${whereCond.whereString}
         `;
 
@@ -857,7 +1301,7 @@ export class PPProjetosService implements ReportableService {
                 projeto_id: db.projeto_id,
                 projeto_codigo: db.projeto_codigo,
                 tarefa_id: db.id,
-                hirearquia: tarefasHierarquia[db.id],
+                hierarquia: tarefasHierarquia[db.id],
                 numero: db.nivel,
                 nivel: db.nivel,
                 tarefa: db.tarefa,
@@ -913,12 +1357,12 @@ export class PPProjetosService implements ReportableService {
             (
                 SELECT string_agg(t.tarefa, '|')
                 FROM risco_tarefa rt
-                JOIN tarefa t ON rt.tarefa_id = t.id
+                JOIN tarefa t ON rt.tarefa_id = t.id AND t.removido_em IS NULL
                 WHERE rt.projeto_risco_id = projeto_risco.id
             ) as tarefas_afetadas
         FROM projeto
-          JOIN projeto_risco ON projeto_risco.projeto_id = projeto.id
-          JOIN portfolio ON projeto.portfolio_id = portfolio_id
+          JOIN projeto_risco ON projeto_risco.projeto_id = projeto.id AND projeto_risco.removido_em IS NULL
+          JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
         ${whereCond.whereString}
         `;
 
@@ -969,9 +1413,9 @@ export class PPProjetosService implements ReportableService {
             plano_acao.responsavel,
             plano_acao.data_termino
         FROM projeto
-          JOIN projeto_risco ON projeto_risco.projeto_id = projeto.id
-          JOIN plano_acao ON plano_acao.projeto_risco_id = projeto_risco.id
-          JOIN portfolio ON projeto.portfolio_id = portfolio.id
+          JOIN projeto_risco ON projeto_risco.projeto_id = projeto.id AND projeto_risco.removido_em IS NULL
+          JOIN plano_acao ON plano_acao.projeto_risco_id = projeto_risco.id AND plano_acao.removido_em IS NULL
+          JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
         ${whereCond.whereString}
         `;
 
@@ -1007,10 +1451,10 @@ export class PPProjetosService implements ReportableService {
             plano_acao_monitoramento.data_afericao,
             plano_acao_monitoramento.descricao
         FROM projeto
-          JOIN projeto_risco ON projeto_risco.projeto_id = projeto.id
-          JOIN plano_acao ON plano_acao.projeto_risco_id = projeto_risco.id
-          JOIN plano_acao_monitoramento ON plano_acao_monitoramento.plano_acao_id = plano_acao.id
-          JOIN portfolio ON projeto.portfolio_id = portfolio.id
+          JOIN projeto_risco ON projeto_risco.projeto_id = projeto.id AND projeto_risco.removido_em IS NULL
+          JOIN plano_acao ON plano_acao.projeto_risco_id = projeto_risco.id AND plano_acao.removido_em IS NULL
+          JOIN plano_acao_monitoramento ON plano_acao_monitoramento.plano_acao_id = plano_acao.id AND plano_acao_monitoramento.removido_em IS NULL
+          JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
         ${whereCond.whereString}
         `;
 
@@ -1049,8 +1493,8 @@ export class PPProjetosService implements ReportableService {
             projeto_licao_aprendida.contexto,
             projeto_licao_aprendida.resultado
         FROM projeto
-          JOIN projeto_licao_aprendida ON projeto_licao_aprendida.projeto_id = projeto.id
-          JOIN portfolio ON projeto.portfolio_id = portfolio.id
+          JOIN projeto_licao_aprendida ON projeto_licao_aprendida.projeto_id = projeto.id AND projeto_licao_aprendida.removido_em IS NULL
+          JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
         ${whereCond.whereString}
         `;
 
@@ -1081,7 +1525,7 @@ export class PPProjetosService implements ReportableService {
             projeto.codigo AS projeto_codigo,
             projeto_acompanhamento.data_registro,
             projeto_acompanhamento.participantes,
-            projeto_acompanhamento.cronograma_paralisado,
+            projeto_acompanhamento.cronograma_paralisado AS cronograma_paralizado,
             projeto_acompanhamento_item.prazo_encaminhamento,
             projeto_acompanhamento.pauta,
             projeto_acompanhamento_item.prazo_realizado,
@@ -1094,13 +1538,13 @@ export class PPProjetosService implements ReportableService {
             (
                 SELECT string_agg(r.codigo::text, '|')
                 FROM projeto_acompanhamento_risco ar
-                JOIN projeto_risco r ON ar.projeto_risco_id = r.id
+                JOIN projeto_risco r ON ar.projeto_risco_id = r.id AND r.removido_em IS NULL
                 WHERE ar.projeto_acompanhamento_id = projeto_acompanhamento.id
             ) AS riscos
         FROM projeto
           JOIN projeto_acompanhamento ON projeto_acompanhamento.projeto_id = projeto.id AND projeto_acompanhamento.removido_em IS NULL
           LEFT JOIN projeto_acompanhamento_item ON projeto_acompanhamento_item.projeto_acompanhamento_id = projeto_acompanhamento.id AND projeto_acompanhamento_item.removido_em IS NULL
-          JOIN portfolio ON projeto.portfolio_id = portfolio.id
+          JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
         ${whereCond.whereString}
         `;
 
@@ -1180,7 +1624,7 @@ export class PPProjetosService implements ReportableService {
                 WHERE contrato_id = contrato.id
             ) AS fontes_recurso
         FROM projeto
-          JOIN portfolio ON projeto.portfolio_id = portfolio.id
+          JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
           JOIN contrato ON contrato.projeto_id = projeto.id AND contrato.removido_em IS NULL
           LEFT JOIN orgao ON orgao.id = contrato.orgao_id AND orgao.removido_em IS NULL
           LEFT JOIN modalidade_contratacao ON contrato.modalidade_contratacao_id = modalidade_contratacao.id AND modalidade_contratacao.removido_em IS NULL
@@ -1238,7 +1682,7 @@ export class PPProjetosService implements ReportableService {
             contrato_aditivo.valor AS valor_com_reajuste,
             contrato_aditivo.percentual_medido
         FROM projeto
-          JOIN portfolio ON projeto.portfolio_id = portfolio.id
+          JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
           JOIN contrato ON contrato.projeto_id = projeto.id AND contrato.removido_em IS NULL
           JOIN contrato_aditivo ON contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL
           JOIN tipo_aditivo ON tipo_aditivo.id = contrato_aditivo.tipo_aditivo_id AND tipo_aditivo.removido_em IS NULL
@@ -1276,12 +1720,12 @@ export class PPProjetosService implements ReportableService {
             atividade.id atividade_id,
             atividade.titulo as atividade_titulo
         FROM projeto
-          JOIN portfolio ON projeto.portfolio_id = portfolio.id
+          JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
           JOIN projeto_origem ON projeto_origem.projeto_id = projeto.id AND projeto_origem.removido_em IS NULL
           LEFT JOIN meta ON meta.id = projeto_origem.meta_id AND meta.removido_em IS NULL
           LEFT JOIN iniciativa ON iniciativa.id = projeto_origem.iniciativa_id AND iniciativa.removido_em IS NULL
           LEFT JOIN atividade ON atividade.id = projeto_origem.atividade_id AND atividade.removido_em IS NULL
-          LEFT JOIN pdm ON pdm.id = meta.pdm_id
+          LEFT JOIN pdm ON pdm.id = meta.pdm_id AND pdm.removido_em IS NULL
         ${whereCond.whereString}
         `;
 
@@ -1313,7 +1757,7 @@ export class PPProjetosService implements ReportableService {
                 geo.endereco_exibicao AS endereco,
                 geo.geom_geojson AS geojson
             FROM projeto
-            JOIN portfolio ON projeto.portfolio_id = portfolio.id
+            JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
             JOIN geo_localizacao_referencia geo_r ON geo_r.projeto_id = projeto.id AND geo_r.removido_em IS NULL
             JOIN geo_localizacao geo ON geo.id = geo_r.geo_localizacao_id
             ${whereCond.whereString}
@@ -1340,5 +1784,99 @@ export class PPProjetosService implements ReportableService {
                 cep: geojson.properties.cep,
             };
         });
+    }
+
+    private async processDataInBatches<T>(
+        tableName: string,
+        projectIds: number[],
+        handler: StreamBatchHandler<T>,
+        batchSize = PPProjetosService.BATCH_SIZE
+    ): Promise<any> {
+        if (projectIds.length === 0) {
+            return handler.onComplete();
+        }
+
+        const totalBatches = Math.ceil(projectIds.length / batchSize);
+
+        for (let i = 0; i < projectIds.length; i += batchSize) {
+            const batchIds = projectIds.slice(i, i + batchSize);
+
+            const batchData = await this.querySpecificDataByTable(tableName, batchIds);
+
+            if (tableName == 'projetos') {
+                batchData.forEach((row) => {
+                    if (row.status)
+                        (row as any)['status-traduzido'] = ProjetoStatusParaExibicao[row.status as ProjetoStatus];
+                });
+            }
+            await handler.onBatch(batchData, Math.floor(i / batchSize), totalBatches);
+        }
+        return handler.onComplete();
+    }
+
+    // Método auxiliar que reutiliza as queries existentes, filtrando por IDs
+    private async querySpecificDataByTable(tableName: string, projectIds: number[]): Promise<any[]> {
+        const whereCondForBatch = {
+            whereString: 'WHERE projeto.id = ANY($1::int[])',
+            queryParams: [projectIds],
+            count: 1,
+        };
+
+        const result: any[] = [];
+
+        // O switch reutiliza os métodos de query existentes, garantindo que a lógica de negócio não seja alterada
+        switch (tableName) {
+            case 'projetos':
+                await this.queryDataProjetos(whereCondForBatch, result);
+                break;
+            case 'cronograma':
+                await this.queryDataCronograma(whereCondForBatch, result);
+                break;
+            case 'riscos':
+                await this.queryDataRiscos(whereCondForBatch, result);
+                break;
+            case 'planos_de_acao':
+                await this.queryDataPlanosAcao(whereCondForBatch, result);
+                break;
+            case 'monitoramento_planos_de_acao':
+                await this.queryDataPlanosAcaoMonitoramento(whereCondForBatch, result);
+                break;
+            case 'licoes_aprendidas':
+                await this.queryDataLicoesAprendidas(whereCondForBatch, result);
+                break;
+            case 'acompanhamentos':
+                await this.queryDataAcompanhamentos(whereCondForBatch, result);
+                break;
+            case 'contratos':
+                await this.queryDataContratos(whereCondForBatch, result);
+                break;
+            case 'aditivos':
+                await this.queryDataAditivos(whereCondForBatch, result);
+                break;
+            case 'origens':
+                await this.queryDataOrigens(whereCondForBatch, result);
+                break;
+            case 'geoloc':
+                await this.queryDataProjetosGeoloc(whereCondForBatch, result);
+                break;
+        }
+        return result;
+    }
+
+    private async getProjetosIds(whereCond: WhereCond): Promise<number[]> {
+        const projectIdsQuery = `
+        SELECT DISTINCT projeto.id, projeto.codigo
+        FROM projeto
+        JOIN portfolio ON projeto.portfolio_id = portfolio.id
+        ${whereCond.whereString}
+        ORDER BY projeto.codigo
+    `;
+
+        const result = await this.prisma.$queryRawUnsafe(projectIdsQuery, ...whereCond.queryParams);
+        return (result as any[]).map((row) => row.id);
+    }
+
+    getClassFileName(): string {
+        return Path2FileName(__filename);
     }
 }

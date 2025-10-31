@@ -1,12 +1,4 @@
 <script setup>
-import SmaeText from '@/components/camposDeFormulario/SmaeText';
-import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
-import { planoDeAção as schema } from '@/consts/formSchemas';
-import truncate from '@/helpers/texto/truncate';
-import { useAlertStore } from '@/stores/alert.store';
-import { useOrgansStore } from '@/stores/organs.store';
-import { usePlanosDeAçãoStore } from '@/stores/planosDeAcao.store.ts';
-import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
@@ -14,6 +6,15 @@ import {
   Form,
 } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
+import SmaeText from '@/components/camposDeFormulario/SmaeText';
+import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
+import { planoDeAção as schema } from '@/consts/formSchemas';
+import truncate from '@/helpers/texto/truncate';
+import { useAlertStore } from '@/stores/alert.store';
+import { useOrgansStore } from '@/stores/organs.store';
+import { usePlanosDeAçãoStore } from '@/stores/planosDeAcao.store.ts';
+import { useProjetosStore } from '@/stores/projetos.store.ts';
 
 const ÓrgãosStore = useOrgansStore();
 const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
@@ -93,15 +94,8 @@ iniciar();
 </script>
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>
-      <div
-        v-if="planoId"
-        class="t12 uc w700 tamarelo"
-      >
-        {{ $route?.meta?.título || 'Editar plano de ação' }}
-      </div>
-      {{ planoId ? 'Plano de ação' : 'Novo plano de ação' }}
-    </h1>
+    <TituloDaPagina />
+
     <hr class="ml2 f1">
 
     <CheckClose />

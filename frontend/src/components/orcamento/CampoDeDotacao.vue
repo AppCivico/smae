@@ -1,14 +1,14 @@
 <script setup>
-import { dotação as schema } from '@/consts/formSchemas';
-import dinheiro from '@/helpers/dinheiro';
-import toFloat from '@/helpers/toFloat';
-import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, useField } from 'vee-validate';
 import {
   computed, ref, toRef, watch,
 } from 'vue';
 import { useRoute } from 'vue-router';
+import { dotação as schema } from '@/consts/formSchemas';
+import dinheiro from '@/helpers/dinheiro';
+import toFloat from '@/helpers/toFloat';
+import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 // PRA-FAZER: preenchimento inicial dos campos de parciais
 const props = defineProps({
   parametrosParaValidacao: {

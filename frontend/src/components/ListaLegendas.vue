@@ -1,12 +1,25 @@
 <script lang="ts" setup>
 import { computed } from 'vue';
 
-type ItemLegenda = { item: string, icon?: string, color?: string };
+function limparIcone(input?: string) {
+  if (!input) return '';
+  const re = /<script|on\w+=|javascript:/i;
+  return re.test(input) ? '' : input;
+}
+
+type ItemLegenda = {
+  item: string;
+  icon?: string;
+  usarCssColor?: boolean;
+  html?: string;
+  color?: string;
+};
+
 type Props = {
   titulo?: string,
   legendas: {
     [key in string]: ItemLegenda[]
-  },
+  } | ItemLegenda[],
   borda?: boolean,
   duasLinhas?: boolean,
   align?: 'left' | 'right' | 'center',
@@ -22,6 +35,10 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const mostrarEmColunas = computed(() => props.orientacao === 'vertical');
+
+const grupoDeLegendas = computed(() => (Array.isArray(props.legendas)
+  ? { default: props.legendas }
+  : props.legendas));
 </script>
 
 <template>
@@ -34,13 +51,16 @@ const mostrarEmColunas = computed(() => props.orientacao === 'vertical');
       'lista-legenda--a-direita': $props.align === 'right',
     }"
   >
-    <h4 class="lista-legenda__titulo t14 w700">
+    <h4
+      v-if="$props.titulo"
+      class="lista-legenda__titulo t14 w700"
+    >
       {{ $props.titulo }}
     </h4>
 
     <div class="lista-legenda__conteudo flex column g1">
       <dl
-        v-for="(legenda, legendaIndex) in $props.legendas"
+        v-for="(legenda, legendaIndex) in grupoDeLegendas"
         :key="`legenda-item--${legendaIndex}`"
         class="flex g1 flexwrap"
         :class="{ 'column': mostrarEmColunas }"
@@ -55,7 +75,11 @@ const mostrarEmColunas = computed(() => props.orientacao === 'vertical');
             :item="legendaItem"
           >
             <dt
-              :style="{ backgroundColor: legendaItem.color }"
+              v-if="!legendaItem.html"
+              :style="legendaItem.color
+                ? (legendaItem.usarCssColor ? { color: legendaItem.color }
+                  : { backgroundColor: legendaItem.color })
+                : {}"
               class="legenda-item__icon"
               :class="{ 'legenda-item__icon--apenas-cor': !legendaItem.icon }"
             >
@@ -63,6 +87,11 @@ const mostrarEmColunas = computed(() => props.orientacao === 'vertical');
                 <use :xlink:href="`#${legendaItem.icon}`" />
               </svg>
             </dt>
+            <dt
+              v-else
+              class="legenda-item__icon"
+              v-html="limparIcone(legendaItem.html)"
+            />
 
             <dd>{{ legendaItem.item }}</dd>
           </slot>
@@ -96,6 +125,7 @@ const mostrarEmColunas = computed(() => props.orientacao === 'vertical');
 
 .lista-legenda--a-direita {
   justify-items: end;
+  justify-content: flex-end;
   text-align: end;
 }
 

@@ -32,6 +32,41 @@
 
 @larguras-de-tela__estreita: 30em;
 
+// Podemos expor essas variáveis pra usar como variáveis de css também
+// o que vocês acham?
+:root {
+  --primary: @primary;
+  --amarelo: @amarelo;
+  --c50: @c50;
+  --c100: @c100;
+  --c200: @c200;
+  --c300: @c300;
+  --c400: @c400;
+  --c500: @c500;
+  --c600: @c600;
+  --escuro: @escuro;
+  --branco: @branco;
+  --cinza-medio: @cinza-medio;
+  --cinza-claro: @cinza-claro;
+  --cinza-claro-esverdeado: @cinza-claro-esverdeado;
+  --cinza-claro-azulado: @cinza-claro-azulado;
+  --cinza-claro-avermelhado: @cinza-claro-avermelhado;
+  --bege-claro: @bege-claro;
+  --verde: @verde;
+  --verde-escuro: @verde--escuro;
+  --laranja: @laranja;
+  --vermelho: @vermelho;
+  --marrom: @marrom;
+  --azul: @azul;
+  --estimativa: @estimativa;
+  --efetivo: @efetivo;
+  --alerta-peso-1: @alerta__peso-1;
+  --alerta-peso-2: @alerta__peso-2;
+  --alerta-peso-3: @alerta__peso-3;
+  --alerta-peso-4: @alerta__peso-4;
+  --alerta-peso-5: @alerta__peso-5;
+}
+
 .clearfix() {
   &:before,
   &:after {
@@ -79,10 +114,10 @@
 }
 
 .transition (@a: all, @t:.2s, @e: ease-in-out) {
-  -webkit-transition: @a @t @e;  
+  -webkit-transition: @a @t @e;
   -moz-transition:    @a @t @e;
-  -ms-transition:     @a @t @e; 
-  -o-transition:      @a @t @e;  
+  -ms-transition:     @a @t @e;
+  -o-transition:      @a @t @e;
 }
 
 .transform(@string){
@@ -99,10 +134,10 @@
 }
 .rotate(@z: -90deg){
   -webkit-transform-origin: 50%; -ms-transform-origin: 50%; transform-origin: 50%;
-  -webkit-transform: rotate(@z); 
-  -moz-transform: rotate(@z); 
-  -ms-transform: rotate(@z); 
-  transform: rotate(@z); 
+  -webkit-transform: rotate(@z);
+  -moz-transform: rotate(@z);
+  -ms-transform: rotate(@z);
+  transform: rotate(@z);
 }
 .skew (@deg, @deg2) {
   -webkit-transform:       skew(@deg, @deg2);
@@ -144,24 +179,12 @@
   background: -o-linear-gradient(top, @startColor, @endColor @fim);
 }
 
-.rolavel-horizontalmente() {
+// Base mixin for common scrollable properties
+._rolavel-base() {
   position: relative;
   overflow: auto;
-  overflow-x: auto;
-  overflow-y: clip;
-  background: linear-gradient(to right, #fff 30%, rgba(255, 255, 255, 0)),
-    linear-gradient(to right, rgba(255, 255, 255, 0), #fff 70%) 0 100%,
-    radial-gradient(farthest-side at 0% 50%,
-      rgba(0, 0, 0, 0.2),
-      rgba(0, 0, 0, 0)),
-    radial-gradient(farthest-side at 100% 50%,
-      rgba(0, 0, 0, 0.2),
-      rgba(0, 0, 0, 0)) 0 100%;
   background-repeat: no-repeat;
   background-color: #fff;
-  background-size: 40px 100%, 40px 100%, 14px 100%, 14px 100%;
-  background-position: 0 0, 100%, 0 0, 100%;
-  background-attachment: local, local, scroll, scroll;
 
   &:focus:not(:focus-visible) {
     outline: none;
@@ -176,6 +199,68 @@
     outline: 1px solid @c400;
     outline-offset: 2px;
   }
+}
+
+.rolavel () {
+  ._rolavel-base();
+
+  background-image: linear-gradient(to right, #fff 30%, rgba(255, 255, 255, 0)),
+    linear-gradient(to right, rgba(255, 255, 255, 0), #fff 70%),
+    linear-gradient(to bottom, #fff 30%, rgba(255, 255, 255, 0)),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0), #fff 70%),
+    radial-gradient(farthest-side at 0% 50%,
+      rgba(0, 0, 0, 0.2),
+      rgba(0, 0, 0, 0)),
+    radial-gradient(farthest-side at 100% 50%,
+      rgba(0, 0, 0, 0.2),
+      rgba(0, 0, 0, 0)),
+    radial-gradient(farthest-side at 50% 0%,
+      rgba(0, 0, 0, 0.2),
+      rgba(0, 0, 0, 0)),
+    radial-gradient(farthest-side at 50% 100%,
+      rgba(0, 0, 0, 0.2),
+      rgba(0, 0, 0, 0));
+  background-size: 40px 100%, 40px 100%, 100% 40px, 100% 40px, 14px 100%, 14px 100%, 100% 14px, 100% 14px;
+  background-position: 0 0, 100%, 0 0, 0 100%, 0 0, 100%, 0 0, 0 100%;
+  background-attachment: local, local, local, local, scroll, scroll, scroll, scroll;
+}
+
+.rolavel-horizontalmente() {
+  ._rolavel-base();
+
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: clip;
+  background-image: linear-gradient(to right, #fff 30%, rgba(255, 255, 255, 0)),
+    linear-gradient(to right, rgba(255, 255, 255, 0), #fff 70%),
+    radial-gradient(farthest-side at 0% 50%,
+      rgba(0, 0, 0, 0.2),
+      rgba(0, 0, 0, 0)),
+    radial-gradient(farthest-side at 100% 50%,
+      rgba(0, 0, 0, 0.2),
+      rgba(0, 0, 0, 0));
+  background-size: 40px 100%, 40px 100%, 14px 100%, 14px 100%;
+  background-position: 0 0, 100%, 0 0, 100%;
+  background-attachment: local, local, scroll, scroll;
+}
+
+.rolavel-verticalmente() {
+  ._rolavel-base();
+
+  min-height: 0;
+  overflow-x: clip;
+  overflow-y: auto;
+  background-image: linear-gradient(to bottom, #fff 30%, rgba(255, 255, 255, 0)),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0), #fff 70%),
+    radial-gradient(farthest-side at 50% 0%,
+      rgba(0, 0, 0, 0.2),
+      rgba(0, 0, 0, 0)),
+    radial-gradient(farthest-side at 50% 100%,
+      rgba(0, 0, 0, 0.2),
+      rgba(0, 0, 0, 0));
+  background-size: 100% 40px, 100% 40px, 100% 14px, 100% 14px;
+  background-position: 0 0, 0 100%, 0 0, 0 100%;
+  background-attachment: local, local, scroll, scroll;
 }
 
 .dados-defasados() {

@@ -20,7 +20,7 @@ import { resolve as resolvePath } from 'path';
 import { uuidv7 } from 'uuidv7';
 import * as XLSX from 'xlsx';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
-import { SYSTEM_TIMEZONE } from '../../common/date2ymd';
+import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { PaginatedDto, PAGINATION_TOKEN_TTL } from '../../common/dto/paginated.dto';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { SmaeConfigService } from '../../common/services/smae-config.service';
@@ -97,8 +97,10 @@ export class ReportsService {
         // TODO agora que existem vários sistemas, conferir se o privilégio faz sentido com o serviço
         const service: ReportableService | null = this.servicoDaFonte(dto);
 
+        const now = new Date();
+        const unparsedParams = structuredClone(dto.parametros);
         // acaba sendo chamado 2x a cada request, pq já rodou 1x na validação, mas blz.
-        const parametros = ParseParametrosDaFonte(dto.fonte, dto.parametros);
+        let parametros = ParseParametrosDaFonte(dto.fonte, dto.parametros);
 
         // Ajusta o tipo de relatório para MDO, se for de status de obra
         if (
@@ -125,9 +127,31 @@ export class ReportsService {
             parametros.tipo_pdm = 'PDM';
         }
 
+        const parametrosOriginal = structuredClone(parametros);
+
         const files = await service.toFileOutput(parametros, ctx, user);
+        let hasInfo = false;
         for (const file of files) {
             ctx.addFile(file);
+            if (file.name == 'info.json') hasInfo = true;
+        }
+        const infoJson = JSON.stringify(
+            {
+                params: parametrosOriginal,
+                unpared_params: unparsedParams,
+                horario: Date2YMD.tzSp2UTC(now),
+                tipo: dto.fonte,
+                file_name: service.getClassFileName(),
+            },
+            undefined,
+            4
+        );
+        this.logger.verbose(infoJson);
+        if (!hasInfo) {
+            ctx.addFile({
+                name: 'info.json',
+                buffer: Buffer.from(infoJson, 'utf8'),
+            });
         }
     }
 
@@ -285,6 +309,11 @@ export class ReportsService {
         const parametros = dto.parametros;
         const pdmId = parametros.pdm_id !== undefined ? Number(parametros.pdm_id) : null;
 
+        // resolve um problema pra n ficar uma lista em branco no frontend e aqui
+        if (dto.fonte === 'Orcamento' || dto.fonte === 'PrevisaoCusto') {
+            if (Array.isArray(parametros.orgaos) && parametros.orgaos.length === 0) delete parametros.orgaos;
+        }
+        console.log(parametros);
         return await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             const result = await prismaTx.relatorio.create({
                 data: {
@@ -295,11 +324,14 @@ export class ReportsService {
                     visibilidade: dto.eh_publico ? 'Publico' : 'Privado',
                     tipo: TipoRelatorio[parametros.tipo as TipoRelatorio] ? parametros.tipo : null,
                     parametros: parametros,
-                    parametros_processados: await BuildParametrosProcessados(this.prisma, dto),
+                    parametros_processados: await BuildParametrosProcessados(this.prisma, {
+                        ...dto,
+                        parametros: parametros,
+                    }),
                     criado_por: user ? user.id : null,
                     criado_em: new Date(Date.now()),
                 },
-                select: { id: true },
+                select: { id: true, parametros: true, parametros_processados: true },
             });
 
             await this.taskService.create(
@@ -475,6 +507,7 @@ export class ReportsService {
                 err_msg: true,
                 iniciado_em: true,
                 processado_em: true,
+                resumo_saida: true,
             },
             orderBy: {
                 criado_em: 'desc',
@@ -510,6 +543,7 @@ export class ReportsService {
                         executado_em: r.processado_em,
                         err_msg: r.err_msg,
                     } satisfies RelatorioProcessamentoDto,
+                    resumo_saida: r.resumo_saida?.valueOf() as object[] | null,
                 } satisfies RelatorioDto;
             }),
             tem_mais: tem_mais,
@@ -634,6 +668,8 @@ export class ReportsService {
     async executaRelatorio(relatorio_id: number) {
         this.logger.log(`iniciando processamento do relatório ID ${relatorio_id}`);
 
+        let contexto: ReportContext | null = null;
+
         try {
             const now = new Date(Date.now());
 
@@ -667,7 +703,7 @@ export class ReportsService {
                 },
             });
 
-            const contexto = new ReportContext(this.prisma, relatorio.id, relatorio.sistema);
+            contexto = new ReportContext(this.prisma, relatorio.id, relatorio.sistema);
 
             const pessoaJwt = relatorio.criado_por
                 ? await this.pessoaService.reportPessoaFromJwt(relatorio.criado_por, relatorio.sistema)
@@ -700,7 +736,7 @@ export class ReportsService {
             );
 
             await this.prisma.$transaction(async (prismaTx) => {
-                await this.updateRelatorioMetadata(relatorio.id, arquivoId, now, contexto, prismaTx);
+                await this.updateRelatorioMetadata(relatorio.id, arquivoId, now, contexto!, prismaTx);
 
                 await prismaTx.relatorio.update({
                     where: { id: relatorio_id },
@@ -727,6 +763,8 @@ export class ReportsService {
                     },
                 });
             });
+        } finally {
+            if (contexto) contexto.cleanupTmpFiles();
         }
     }
 

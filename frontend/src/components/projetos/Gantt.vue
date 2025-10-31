@@ -182,8 +182,6 @@
   />
 </template>
 <script setup>
-import dependencyTypes from '@/consts/dependencyTypes';
-import renderChart from '@/helpers/ganttChart';
 import { useResizeObserver } from '@vueuse/core';
 import dayjs from 'dayjs';
 import { debounce } from 'lodash';
@@ -194,8 +192,11 @@ import {
   nextTick,
   onMounted,
   ref,
+  useTemplateRef,
   watch,
 } from 'vue';
+import renderChart from '@/helpers/ganttChart';
+import dependencyTypes from '@/consts/dependencyTypes';
 
 const route = useRoute();
 const router = useRouter();
@@ -260,7 +261,7 @@ const tipoDeGantt = ref('overall');
 const anoEmFoco = ref(null);
 const filtroAtivo = ref('projeção');
 const nívelMáximoVisível = ref(0);
-const svgElementContainer = ref(null);
+const svgElementContainer = useTemplateRef('svgElementContainer');
 const projetoId = route?.params?.projetoId;
 
 const qualPropriedadeDeData = (términoOuInício) => {
@@ -328,24 +329,24 @@ const métricas = computed(() => {
           : intervalo.value.início || date.getFullYear(),
       };
 
-    // case 'monthly': // For Monthly Data
-    //   return {
-    //     type: 'monthly',
-    //     month: `${date.toLocaleString('default', { month: 'long' })} ${date.getFullYear()}`,
-    //   };
+      // case 'monthly': // For Monthly Data
+      //   return {
+      //     type: 'monthly',
+      //     month: `${date.toLocaleString('default', { month: 'long' })} ${date.getFullYear()}`,
+      //   };
 
-    // case 'quarterly': // For quarterly or half yearly data
-    //   return {
-    //     type: 'quarterly',
-    //     months: [
-    //       'January 2023',
-    //       'February 2023',
-    //       'March 2023',
-    //       'April 2023',
-    //       'May 2023',
-    //       'June 2023',
-    //     ],
-    //   };
+      // case 'quarterly': // For quarterly or half yearly data
+      //   return {
+      //     type: 'quarterly',
+      //     months: [
+      //       'January 2023',
+      //       'February 2023',
+      //       'March 2023',
+      //       'April 2023',
+      //       'May 2023',
+      //       'June 2023',
+      //     ],
+      //   };
 
     case 'overall':
     default:
@@ -407,6 +408,12 @@ watch(() => nívelMáximoVisível.value, () => {
   renderChart(config.value);
 });
 
+watch(() => config.value.element, () => {
+  if (config.value.element) {
+    renderChart(config.value);
+  }
+});
+
 onMounted(async () => {
   if (props.data.length) {
     anoEmFoco.value = intervalo.value.início;
@@ -416,7 +423,10 @@ onMounted(async () => {
     }
     nívelMáximoVisível.value = nívelMáximoPermitido;
     await nextTick();
-    renderChart(config.value);
+
+    if (config.value.element) {
+      renderChart(config.value);
+    }
   }
 });
 </script>

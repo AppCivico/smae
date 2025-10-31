@@ -46,13 +46,14 @@ export class RelProjetosDto {
     versao: string | null;
 
     projeto_etapa: string | null;
+    portfolios_compartilhados_titulos: string | null;
 }
 
 export class RelProjetosCronogramaDto {
     projeto_id: number;
     projeto_codigo: string;
     tarefa_id: number;
-    hirearquia: string;
+    hierarquia: string;
     numero: number;
     nivel: number;
     tarefa: string;

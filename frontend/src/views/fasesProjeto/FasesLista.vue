@@ -1,6 +1,6 @@
 <script setup>
 import { useAlertStore } from '@/stores/alert.store';
-import { useFasesProjetosStore } from '@/stores/fasesProjeto.store.js';
+import { useFasesProjetosStore } from '@/stores/fasesProjeto.store';
 import { storeToRefs } from 'pinia';
 
 const fasesProjetosStore = useFasesProjetosStore();
@@ -57,7 +57,7 @@ fasesProjetosStore.buscarTudo().then(ordenarListaAlfabeticamente);
         <td>
           <button
             class="like-a__text"
-            arial-label="excluir"
+            aria-label="excluir"
             title="excluir"
             @click="excluirFase(item.id)"
           >

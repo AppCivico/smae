@@ -146,7 +146,7 @@ const listaDePendentes = computed(() => {
           v-model="idsDosItensAbertos"
           type="checkbox"
           :value="meta.id"
-          :arial-label="idsDosItensAbertos.includes(meta.id)
+          :aria-label="idsDosItensAbertos.includes(meta.id)
             ? `fechar variáveis da meta ${meta.código}`
             : `abrir variáveis da meta ${meta.código}`"
           :title="idsDosItensAbertos.includes(meta.id)

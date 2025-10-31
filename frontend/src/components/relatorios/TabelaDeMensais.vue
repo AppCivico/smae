@@ -65,7 +65,7 @@ function excluirRelatório(id) {
           <td v-if="temPermissãoPara(['Reports.remover.'])">
             <button
               class="like-a__text addlink"
-              arial-label="excluir"
+              aria-label="excluir"
               title="excluir"
               @click="excluirRelatório(item.id)"
             >
@@ -76,7 +76,7 @@ function excluirRelatório(id) {
             </button>
           </td>
           <!--td v-if="temPermissãoPara('Reports.executar.')">
-                    <button class="like-a__text" arial-label="duplicar" title="duplicar"><img
+                    <button class="like-a__text" aria-label="duplicar" title="duplicar"><img
                     src="../../assets/icons/duplicar.svg" /></button>
                   </td-->
           <td>

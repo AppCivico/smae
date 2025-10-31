@@ -5,7 +5,7 @@ import {
     SearchEntitiesNearbyResponseDto,
     GeoInfoBaseDto,
     PdmRotuloInfo,
-    MetaLookupInfoDto,
+    MetaIniAtvLookupInfoDto,
 } from '../geo-busca/dto/geo-busca.entity';
 
 import {
@@ -90,7 +90,7 @@ export class BuscaGlobalService {
         let processingOrder = 0;
 
         const pdmInfoMap = new Map<number, PdmRotuloInfo>(searchResults.pdm_info.map((pdm) => [pdm.id, pdm]));
-        const metaLookupMap = new Map<number, MetaLookupInfoDto>(
+        const metaLookupMap = new Map<number, MetaIniAtvLookupInfoDto>(
             searchResults.metas_info.map((meta) => [meta.id, meta])
         );
 
@@ -149,7 +149,7 @@ export class BuscaGlobalService {
         }
 
         // METAS, INICIATIVAS, ATIVIDADES, ETAPAS - Common logic for col1
-        const getCol1ForMetaRelated = (metaInfo?: MetaLookupInfoDto): string | null => {
+        const getCol1ForMetaRelated = (metaInfo?: MetaIniAtvLookupInfoDto): string | null => {
             if (metaInfo?.pdm_id && metaInfo.macro_tema_nome) {
                 const pdmRotulo = pdmInfoMap.get(metaInfo.pdm_id);
                 if (pdmRotulo?.rotulo_macro_tema) {

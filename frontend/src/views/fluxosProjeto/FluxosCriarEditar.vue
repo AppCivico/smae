@@ -215,7 +215,7 @@ watch(statusesDistribuicaoSelecionados, (newValue) => {
     :workflow_etapa_para_id="workflow_etapa_para_id"
     :etapa-id="idDaEtapaEmFoco"
     @close="idDaEtapaEmFoco = -1"
-    @saved="carregarFluxo()"
+    @saved="iniciar()"
   />
 
   <FaseFluxo
@@ -223,7 +223,7 @@ watch(statusesDistribuicaoSelecionados, (newValue) => {
     :relacionamento-id="idDoRelacionamentoComFase"
     :etapa-id="idDaMãeDaFase"
     @close="idDoRelacionamentoComFase = -1"
-    @saved="carregarFluxo()"
+    @saved="iniciar()"
   />
 
   <TarefaFluxo
@@ -234,7 +234,7 @@ watch(statusesDistribuicaoSelecionados, (newValue) => {
       idDaTarefaEmFoco = -1;
       idDaMãeDaTarefa = 0;
     }"
-    @saved="carregarFluxo()"
+    @saved="iniciar()"
   />
 
   <form
@@ -494,7 +494,7 @@ watch(statusesDistribuicaoSelecionados, (newValue) => {
           <button
             v-if="emFoco && !emFoco?.edicao_restrita"
             class="like-a__text"
-            arial-label="excluir"
+            aria-label="excluir"
             title="excluir"
             @click="excluirEtapa(etapa.id)"
           >
@@ -596,7 +596,7 @@ watch(statusesDistribuicaoSelecionados, (newValue) => {
                 <button
                   v-if="emFoco && !emFoco?.edicao_restrita"
                   class="like-a__text"
-                  arial-label="excluir"
+                  aria-label="excluir"
                   title="excluir"
                   @click="excluirFase(fase.id)"
                 >
@@ -652,7 +652,7 @@ watch(statusesDistribuicaoSelecionados, (newValue) => {
                 <button
                   v-if="emFoco && !emFoco?.edicao_restrita"
                   class="like-a__text"
-                  arial-label="excluir"
+                  aria-label="excluir"
                   title="excluir"
                   @click="excluirTarefa(tarefa.id)"
                 >

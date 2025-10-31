@@ -1,3 +1,4 @@
+import { defineAsyncComponent } from 'vue';
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import dateToField from '@/helpers/dateToField';
 import { useAcompanhamentosStore } from '@/stores/acompanhamentos.store.ts';
@@ -5,7 +6,6 @@ import AcompanhamentosCriarEditar from '@/views/acompanhamentos/AcompanhamentosC
 import AcompanhamentosItem from '@/views/acompanhamentos/AcompanhamentosItem.vue';
 import AcompanhamentosLista from '@/views/acompanhamentos/AcompanhamentosLista.vue';
 import AcompanhamentosRaiz from '@/views/acompanhamentos/AcompanhamentosRaiz.vue';
-import { defineAsyncComponent } from 'vue';
 
 const AcompanhamentosResumo = defineAsyncComponent({
   loader: () => import('@/views/acompanhamentos/AcompanhamentosResumo.vue'),
@@ -91,6 +91,7 @@ export default {
               'projetosListar',
               'projetosResumo',
               'acompanhamentosListar',
+              'acompanhamentosResumo',
             ],
           },
         },
@@ -105,13 +106,26 @@ export default {
             acompanhamentoId: Number.parseInt(params.acompanhamentoId, 10) || undefined,
           }),
           meta: {
-            título: 'Resumo do acompanhamento',
             títuloParaMenu: 'Resumo',
+            título: 'Resumo do acompanhamento',
+            tituloParaMigalhaDePao: () => {
+              const { emFoco } = useAcompanhamentosStore();
+
+              if (!emFoco) {
+                return 'Resumo do acompanhamento';
+              }
+
+              const dataRegistro = dateToField(emFoco.data_registro);
+
+              return `Acompanhamento ${dataRegistro}`;
+            },
             rotasParaMigalhasDePão: [
               'projetosListar',
               'projetosResumo',
               'acompanhamentosListar',
+              'acompanhamentosResumo',
             ],
+            títuloParaMigalhasDePao: () => 'aqui',
           },
         },
       ],

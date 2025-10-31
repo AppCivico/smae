@@ -1,36 +1,29 @@
-import { OmitType, PartialType } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
-import { Expose } from 'class-transformer';
-import { IsNumber, IsOptional, ValidateIf } from 'class-validator';
-import { FilterProjetoDto } from 'src/pp/projeto/dto/filter-projeto.dto';
-import { NumberTransform } from '../../../auth/transforms/number.transform';
-import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
+import { PickType } from '@nestjs/swagger';
+import { Expose, Transform } from 'class-transformer';
+import { IsInt, IsOptional, ValidateIf } from 'class-validator';
 import { DateTransform } from 'src/auth/transforms/date.transform';
+import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
+import { FilterProjetoDto } from 'src/pp/projeto/dto/filter-projeto.dto';
 
-export class CreateRelObrasDto extends OmitType(PartialType(FilterProjetoDto), [
-    'eh_prioritario',
-    'arquivado',
-    'status',
-    'portfolio_id',
-]) {
-    @IsNumber()
+export class CreateRelObrasDto extends PickType(FilterProjetoDto, ['projeto_id']) {
+    @IsInt()
     @Expose()
     portfolio_id: number;
 
     @IsOptional()
-    @IsNumber()
+    @IsInt()
     @Expose()
     grupo_tematico_id?: number;
 
     @IsOptional()
-    @IsNumber()
+    @IsInt()
     @Expose()
-    orgao_responsavel_id?: number;
+    orgao_responsavel_id?: number ;
 
     @IsOptional()
-    @IsNumber()
+    @IsInt()
     @Expose()
-    regiao_id?: number;
+    regiao_id?: number | undefined;
 
     @IsOptional()
     @IsOnlyDate()

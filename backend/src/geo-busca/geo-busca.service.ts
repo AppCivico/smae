@@ -5,7 +5,7 @@ import { GeoJSON } from 'geojson';
 import { PrismaService } from '../prisma/prisma.service';
 import {
     GeoInfoBaseDto,
-    MetaLookupInfoDto,
+    MetaIniAtvLookupInfoDto,
     ProjetoSearchResultDto,
     SearchEntitiesNearbyDto,
     SearchEntitiesNearbyResponseDto,
@@ -18,13 +18,16 @@ export class GeoBuscaService {
     constructor(private readonly prisma: PrismaService) {}
 
     async searchEntitiesNearby(dto: SearchEntitiesNearbyDto): Promise<SearchEntitiesNearbyResponseDto> {
-        const { lat, lon, raio_km = 2, regiao_id, geo_camada_config_id, geo_camada_codigo } = dto;
+        const { lat, lon, raio_km = 2, raio, regiao_id, geo_camada_config_id, geo_camada_codigo } = dto;
 
-        const radiusMeters = raio_km * 1000;
+        // TODO: O raio_km provavelmente será dropado.
+        const radiusMeters = raio ? raio : raio_km * 1000;
         let targetGeoLocalizacaoIds: number[] = [];
         let geoLocalizacaoDistMap: Map<number, number> | undefined = undefined;
         const seenPDMIds = new Set<number>();
         const seenMetaIdsForLookup = new Set<number>();
+        const seenIniIdsForLookup = new Set<number>();
+        const seenAtvIdsForLookup = new Set<number>();
 
         const hasDistrito = geo_camada_config_id !== undefined && geo_camada_codigo !== undefined;
         const hasRegiao = regiao_id !== undefined;
@@ -123,7 +126,9 @@ export class GeoBuscaService {
                 etapas: [],
                 pdm_info: [],
                 metas_info: [],
-            }; // Initialized metas_info
+                iniciativas_info: [],
+                atividades_info: [],
+            }; // Initialized metas_info, iniciativas_info, atividades_info
         }
 
         const referencias = await this.prisma.geoLocalizacaoReferencia.findMany({
@@ -146,7 +151,9 @@ export class GeoBuscaService {
                 etapas: [],
                 pdm_info: [],
                 metas_info: [],
-            }; // Initialized metas_info
+                iniciativas_info: [],
+                atividades_info: [],
+            }; // Initialized metas_info, iniciativas_info, atividades_info
         }
 
         const response: SearchEntitiesNearbyResponseDto = {
@@ -158,10 +165,13 @@ export class GeoBuscaService {
             etapas: [],
             pdm_info: [],
             metas_info: [],
+            iniciativas_info: [],
+            atividades_info: [],
         };
 
         const makeGeoInfo = (ref: (typeof referencias)[0]): GeoInfoBaseDto => {
             const geoInfo: GeoInfoBaseDto = {
+                id: ref.id,
                 geo_localizacao_id: ref.geo_localizacao_id,
                 endereco_exibicao: ref.geo_localizacao.endereco_exibicao,
                 lat: ref.geo_localizacao.lat,
@@ -227,7 +237,17 @@ export class GeoBuscaService {
                     orgao_responsavel_id: true,
                     orgao_responsavel_sigla: true,
                     orgao_responsavel_descricao: true,
-                    projeto: { select: { tipo: true, status: true } },
+                    projeto: {
+                        select: {
+                            tipo: true,
+                            status: true,
+                            // Count de vínculos
+                            vinculosDistribuicaoRecursos: {
+                                where: { removido_em: null },
+                                select: { id: true },
+                            },
+                        },
+                    },
                 },
             });
 
@@ -236,6 +256,7 @@ export class GeoBuscaService {
 
                 const projetoDto: ProjetoSearchResultDto = {
                     id: p.id,
+                    geo_localizacao_referencia_id: geoInfos.length > 0 ? geoInfos[0].id : 0,
                     nome: p.nome,
                     codigo: p.codigo,
                     portfolio_id: p.portfolio_id,
@@ -256,6 +277,7 @@ export class GeoBuscaService {
                     orgao_responsavel_sigla: p.orgao_responsavel_sigla,
                     orgao_responsavel_descricao: p.orgao_responsavel_descricao,
                     localizacoes: geoInfos,
+                    nro_vinculos: p.projeto.vinculosDistribuicaoRecursos.length,
                 };
                 if (p.projeto.tipo === TipoProjeto.MDO) {
                     response.obras.push(projetoDto);
@@ -294,18 +316,23 @@ export class GeoBuscaService {
                     codigo: true,
                     meta: { select: { id: true, pdm_id: true } },
                     iniciativa_orgao: { select: { orgao: { select: { sigla: true } } } },
+                    distribuicaoRecursoVinculos: { select: { id: true }, where: { removido_em: null } },
                 },
             });
             iniciativasData.forEach((i) => {
                 seenMetaIdsForLookup.add(i.meta.id);
+                seenIniIdsForLookup.add(i.id);
                 response.iniciativas.push({
                     id: i.id,
+                    geo_localizacao_referencia_id:
+                        entityGeoInfoMap.get(`iniciativa-${i.id}`)?.[0]?.geo_localizacao_id || 0,
                     titulo: i.titulo,
                     codigo: i.codigo,
                     meta_id: i.meta.id,
                     pdm_id: i.meta.pdm_id,
                     orgaos_sigla: i.iniciativa_orgao.map((io) => io.orgao.sigla),
                     localizacoes: entityGeoInfoMap.get(`iniciativa-${i.id}`) || [],
+                    nro_vinculos: i.distribuicaoRecursoVinculos.length,
                 });
             });
         }
@@ -327,12 +354,16 @@ export class GeoBuscaService {
                         },
                     },
                     atividade_orgao: { select: { orgao: { select: { sigla: true } } } },
+                    distribuicaoRecursoVinculos: { select: { id: true }, where: { removido_em: null } },
                 },
             });
             atividadesData.forEach((a) => {
                 seenMetaIdsForLookup.add(a.iniciativa.meta.id);
+                seenAtvIdsForLookup.add(a.id);
                 response.atividades.push({
                     id: a.id,
+                    geo_localizacao_referencia_id:
+                        entityGeoInfoMap.get(`atividade-${a.id}`)?.[0]?.geo_localizacao_id || 0,
                     titulo: a.titulo,
                     codigo: a.codigo,
                     iniciativa_id: a.iniciativa.id,
@@ -349,36 +380,53 @@ export class GeoBuscaService {
         const etapaIds = [...new Set(referencias.filter((r) => r.etapa_id).map((r) => r.etapa_id!))];
         if (etapaIds.length > 0) {
             const etapasData = await this.prisma.etapa.findMany({
-                where: { id: { in: etapaIds }, removido_em: null },
+                where: { id: { in: etapaIds }, removido_em: null, cronograma: { removido_em: null } },
                 select: { id: true, titulo: true, cronograma_id: true },
             });
 
             const etapaRelMetas = await this.prisma.view_etapa_rel_meta.findMany({
                 where: { etapa_id: { in: etapasData.map((e) => e.id) } },
-                select: { etapa_id: true, meta_id: true },
+                select: { etapa_id: true, meta_id: true, iniciativa_id: true, atividade_id: true },
             });
             const etapaToMetaIdMap = new Map(etapaRelMetas.map((erm) => [erm.etapa_id, erm.meta_id]));
+            const etapaToIniIdMap = new Map(etapaRelMetas.map((erm) => [erm.etapa_id, erm.iniciativa_id]));
+            const etapaToAtvIdMap = new Map(etapaRelMetas.map((erm) => [erm.etapa_id, erm.atividade_id]));
 
             const uniqueMetaIdsFromEtapas = [
                 ...new Set(etapaRelMetas.map((erm) => erm.meta_id).filter((id) => id != null)),
             ] as number[];
 
+            const uniqueIniIdsFromEtapas = [
+                ...new Set(etapaRelMetas.map((erm) => erm.iniciativa_id).filter((id) => id != null)),
+            ] as number[];
+
+            const uniqueAtvIdsFromEtapas = [
+                ...new Set(etapaRelMetas.map((erm) => erm.atividade_id).filter((id) => id != null)),
+            ] as number[];
+
             uniqueMetaIdsFromEtapas.forEach((id) => seenMetaIdsForLookup.add(id));
+            uniqueIniIdsFromEtapas.forEach((id) => seenIniIdsForLookup.add(id));
+            uniqueAtvIdsFromEtapas.forEach((id) => seenAtvIdsForLookup.add(id));
 
             etapasData.forEach((e) => {
                 const metaId = etapaToMetaIdMap.get(e.id);
+                const iniciativaId = etapaToIniIdMap.get(e.id);
+                const atividadeId = etapaToAtvIdMap.get(e.id);
 
                 response.etapas.push({
                     id: e.id,
+                    geo_localizacao_referencia_id: entityGeoInfoMap.get(`etapa-${e.id}`)?.[0]?.geo_localizacao_id || 0,
                     titulo: e.titulo ?? `Etapa ID ${e.id}`,
                     cronograma_id: e.cronograma_id,
                     meta_id: metaId ?? 0,
+                    iniciativa_id: iniciativaId ?? undefined,
+                    atividade_id: atividadeId ?? undefined,
                     localizacoes: entityGeoInfoMap.get(`etapa-${e.id}`) || [],
                 });
             });
         }
 
-        // Busca informações adicionais de metas e PDMs
+        // Busca informações adicionais de metas/ini/atv e PDMs
         if (seenMetaIdsForLookup.size > 0) {
             const metasForInfoData = await this.prisma.meta.findMany({
                 where: { id: { in: Array.from(seenMetaIdsForLookup) } },
@@ -390,6 +438,7 @@ export class GeoBuscaService {
                     macro_tema: { select: { id: true, descricao: true } },
                     pdm_id: true,
                     meta_orgao: { select: { orgao: { select: { sigla: true } } } },
+                    vinculosDistribuicaoRecursos: { select: { id: true }, where: { removido_em: null } },
                 },
             });
             response.metas_info = metasForInfoData.map((m) => {
@@ -403,7 +452,76 @@ export class GeoBuscaService {
                     macro_tema_nome: m.macro_tema?.descricao ?? null,
                     macro_tema_id: m.macro_tema_id,
                     orgaos_sigla: m.meta_orgao.map((mo) => mo.orgao.sigla),
-                } satisfies MetaLookupInfoDto;
+                    nro_vinculos: m.vinculosDistribuicaoRecursos.length,
+                } satisfies MetaIniAtvLookupInfoDto;
+            });
+        }
+
+        if (seenIniIdsForLookup.size > 0) {
+            const iniciativasForInfoData = await this.prisma.iniciativa.findMany({
+                where: { id: { in: Array.from(seenIniIdsForLookup) } },
+                select: {
+                    id: true,
+                    codigo: true,
+                    titulo: true,
+                    meta: {
+                        select: {
+                            pdm_id: true,
+                            macro_tema_id: true,
+                            macro_tema: { select: { id: true, descricao: true } },
+                        },
+                    },
+                    iniciativa_orgao: { select: { orgao: { select: { sigla: true } } } },
+                    distribuicaoRecursoVinculos: { select: { id: true }, where: { removido_em: null } },
+                },
+            });
+            response.iniciativas_info = iniciativasForInfoData.map((i) => {
+                return {
+                    id: i.id,
+                    codigo: i.codigo,
+                    titulo: i.titulo,
+                    pdm_id: i.meta.pdm_id,
+                    orgaos_sigla: i.iniciativa_orgao.map((io) => io.orgao.sigla),
+                    nro_vinculos: i.distribuicaoRecursoVinculos.length,
+                    macro_tema_id: i.meta.macro_tema_id,
+                    macro_tema_nome: i.meta.macro_tema?.descricao ?? null,
+                } satisfies MetaIniAtvLookupInfoDto;
+            });
+        }
+
+        if (seenAtvIdsForLookup.size > 0) {
+            const atividadesForInfoData = await this.prisma.atividade.findMany({
+                where: { id: { in: Array.from(seenAtvIdsForLookup) } },
+                select: {
+                    id: true,
+                    codigo: true,
+                    titulo: true,
+                    iniciativa: {
+                        select: {
+                            meta: {
+                                select: {
+                                    pdm_id: true,
+                                    macro_tema_id: true,
+                                    macro_tema: { select: { id: true, descricao: true } },
+                                },
+                            },
+                        },
+                    },
+                    atividade_orgao: { select: { orgao: { select: { sigla: true } } } },
+                    distribuicaoRecursoVinculos: { select: { id: true }, where: { removido_em: null } },
+                },
+            });
+            response.atividades_info = atividadesForInfoData.map((a) => {
+                return {
+                    id: a.id,
+                    codigo: a.codigo,
+                    titulo: a.titulo,
+                    pdm_id: a.iniciativa.meta.pdm_id,
+                    orgaos_sigla: a.atividade_orgao.map((ao) => ao.orgao.sigla),
+                    nro_vinculos: a.distribuicaoRecursoVinculos.length,
+                    macro_tema_id: a.iniciativa.meta.macro_tema_id,
+                    macro_tema_nome: a.iniciativa.meta.macro_tema?.descricao ?? null,
+                } satisfies MetaIniAtvLookupInfoDto;
             });
         }
 
@@ -413,6 +531,7 @@ export class GeoBuscaService {
                 where: { id: { in: Array.from(seenPDMIds) } },
                 select: {
                     id: true,
+                    nome: true,
                     rotulo_atividade: true,
                     rotulo_iniciativa: true,
                     rotulo_macro_tema: true,

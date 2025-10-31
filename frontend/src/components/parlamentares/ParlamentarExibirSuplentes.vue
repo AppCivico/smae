@@ -90,7 +90,7 @@ function excluirSuplente(suplenteId, parlamentarId = emFoco.value.id) {
           <td v-if="exibirEdição">
             <button
               class="like-a__text"
-              arial-label="excluir"
+              aria-label="excluir"
               title="excluir"
               type="button"
               @click="excluirSuplente(suplente.id, emFoco.id)"

@@ -1,22 +1,23 @@
-import formatProcesso from '@/helpers/formatProcesso';
-import { useProcessosStore } from '@/stores/processos.store.ts';
+import { useRoute } from 'vue-router';
+import { useContratosStore } from '@/stores/contratos.store';
 import ContratosCriarEditar from '@/views/mdo.contratos/ContratosCriarEditar.vue';
 
 export default {
   path: 'contratos',
   component: () => import('@/views/mdo.contratos/ContratosRaiz.vue'),
-
   props: true,
-
   children: [
     {
-
       name: 'contratosDoProjetoListar',
       path: '',
       component: () => import('@/views/mdo.contratos/ContratosLista.vue'),
       meta: {
         título: 'Contratos',
         títuloParaMenu: 'Contratos',
+        rotasParaMigalhasDePão: [
+          'projetosListar',
+          'projetosResumo',
+        ],
       },
       props: true,
     },
@@ -28,10 +29,11 @@ export default {
       meta: {
         título: 'Novo contrato',
         títuloParaMenu: 'Novo contrato',
-
+        tituloParaMigalhaDePao: 'Novo',
         rotaDeEscape: 'contratosDoProjetoListar',
-
         rotasParaMigalhasDePão: [
+          'projetosListar',
+          'projetosResumo',
           'contratosDoProjetoListar',
         ],
       },
@@ -51,10 +53,12 @@ export default {
 
           meta: {
             títuloParaMenu: 'Editar',
-
+            título: 'Editar contrato',
+            tituloParaMigalhaDePao: 'Editar contrato',
             rotaDeEscape: 'contratosDoProjetoListar',
-
             rotasParaMigalhasDePão: [
+              'projetosListar',
+              'projetosResumo',
               'contratosDoProjetoListar',
               'contratosDoProjetoResumo',
             ],
@@ -67,17 +71,23 @@ export default {
           component: () => import('@/views/mdo.contratos/ContratosResumo.vue'),
           props: true,
           meta: {
-            título: () => {
-              const daApi = useProcessosStore()?.emFoco?.processo_sei;
+            título: 'Resumo de contrato',
+            tituloParaMigalhaDePao: () => {
+              const rotaAtual = useRoute();
+              const { emFoco } = useContratosStore(rotaAtual.meta.entidadeMãe);
 
-              return daApi ? `Resumo do contrato ${formatProcesso(daApi)}` : 'Resumo de contrato';
+              if (!emFoco) {
+                return 'Resumo de contrato';
+              }
+
+              return `Contrato ${emFoco.numero}`;
             },
             títuloParaMenu: 'Resumo',
-
             rotasParaMigalhasDePão: [
+              'projetosListar',
+              'projetosResumo',
               'contratosDoProjetoListar',
               'contratosDoProjetoResumo',
-              'contratosDoProjetoListar',
             ],
           },
         },

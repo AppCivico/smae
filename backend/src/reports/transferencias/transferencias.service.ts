@@ -1,22 +1,23 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { formataSEI } from 'src/common/formata-sei';
+import { CsvWriterOptions, WriteCsvToFile } from 'src/common/helpers/CsvWriter';
 import { TarefaService } from 'src/pp/tarefa/tarefa.service';
 import { Date2YMD } from '../../common/date2ymd';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
-import { DefaultCsvOptions, FileOutput, ReportableService } from '../utils/utils.service';
+import {
+    DefaultCsvOptions,
+    DefaultTransforms,
+    FileOutput,
+    Path2FileName,
+    ReportableService,
+} from '../utils/utils.service';
 import { CreateRelTransferenciasDto, TipoRelatorioTransferencia } from './dto/create-transferencias.dto';
 import {
     RelTransferenciaCronogramaDto,
     RelTransferenciasDto,
     TransferenciasRelatorioDto,
 } from './entities/transferencias.entity';
-
-const {
-    Parser,
-    transforms: { flatten },
-} = require('json2csv');
-const defaultTransform = [flatten({ paths: [] })];
 
 type WhereCond = {
     whereString: string;
@@ -181,7 +182,33 @@ export class TransferenciasService implements ReportableService {
                 dr.empenho AS distribuicao_recurso_empenho,
                 dr.programa_orcamentario_estadual AS distribuicao_recurso_programa_orcamentario_estadual,
                 dr.programa_orcamentario_municipal AS distribuicao_recurso_programa_orcamentario_municipal,
-                dr.dotacao AS distribuicao_recurso_dotacao,
+                (
+                    SELECT
+                        array_to_string(
+                            ARRAY(
+                                SELECT DISTINCT unnested_value
+                                FROM UNNEST(
+                                    string_to_array(
+                                        CONCAT_WS(
+                                            '|',
+                                            dr.dotacao,
+                                            (
+                                                SELECT STRING_AGG(drv.valor_vinculo, '|')
+                                                FROM distribuicao_recurso_vinculo drv
+                                                WHERE drv.distribuicao_id = dr.id
+                                                AND drv.campo_vinculo = 'Dotacao'
+                                                AND drv.removido_em IS NULL
+                                                AND drv.invalidado_em IS NULL
+                                            )
+                                        ),
+                                        '|'
+                                    )
+                                ) AS t(unnested_value)
+                                WHERE unnested_value IS NOT NULL AND unnested_value != ''
+                            ),
+                            '|'
+                        )
+                ) AS distribuicao_recurso_dotacao,
                 dr.proposta AS distribuicao_recurso_proposta,
                 dr.contrato AS distribuicao_recurso_contrato,
                 dr.convenio AS distribuicao_recurso_convenio,
@@ -506,8 +533,11 @@ export class TransferenciasService implements ReportableService {
 
     async toFileOutput(params: CreateRelTransferenciasDto, _ctx: ReportContext): Promise<FileOutput[]> {
         const dados = await this.asJSON(params);
+        await _ctx.resumoSaida('Transferências', dados.linhas.length);
+        await _ctx.resumoSaida('Cronograma de Transferências', dados.linhas_cronograma.length);
 
         const out: FileOutput[] = [];
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let fields: { value: string | ((row: any) => string); label: string }[];
         if (dados.tipo == TipoRelatorioTransferencia.Geral) {
@@ -536,7 +566,7 @@ export class TransferenciasService implements ReportableService {
                     label: 'Contrapartida',
                 },
                 {
-                    value: (row) => (row.emenda ? `="${row.demanda}"` : ''),
+                    value: (row) => (row.emenda ? `="${row.emenda}"` : ''),
                     label: 'Emenda',
                 },
                 { value: 'dotacao', label: 'Dotação Orçamentária' }, // Already formatted as ="value" or ' - '
@@ -640,56 +670,48 @@ export class TransferenciasService implements ReportableService {
             ];
         }
 
-        const json2csvParser = new Parser({ fields, ...DefaultCsvOptions });
-        const linhasCsv = json2csvParser.parse(dados.linhas); // Removed .map(r => ({...r})) as it's usually not needed
-        out.push({
-            name: 'transferencias.csv',
-            buffer: Buffer.from(linhasCsv, 'utf8'),
-        });
+        const tmpTransf = _ctx.getTmpFile('transferencias.csv');
+        const transfOpts: CsvWriterOptions<RelTransferenciasDto> = {
+            csvOptions: DefaultCsvOptions,
+            transforms: DefaultTransforms,
+            fields,
+        };
+        await WriteCsvToFile(dados.linhas, tmpTransf.stream, transfOpts);
+        out.push({ name: 'transferencias.csv', localFile: tmpTransf.path });
 
         if (dados.linhas_cronograma?.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform, // Uses flatten
-                fields: [
-                    { value: 'transferencia_id', label: 'ID da Transferência' },
-                    { value: 'hirearquia', label: 'Hierarquia' }, // Assumes hirearquia is already ="value" formatted if needed
-                    { value: 'tarefa', label: 'Tarefa' },
-                    {
-                        value: (row: { inicio_planejado: string | null }) =>
-                            row.inicio_planejado ? new Date(row.inicio_planejado).toLocaleDateString('pt-BR') : '',
-                        label: 'Início Planejado',
-                    },
-                    {
-                        value: (row: { termino_planejado: string | null }) =>
-                            row.termino_planejado ? new Date(row.termino_planejado).toLocaleDateString('pt-BR') : '',
-                        label: 'Término Planejado',
-                    },
-                    { value: 'custo_estimado', label: 'Custo Estimado' }, // Numbers are usually fine
-                    { value: 'duracao_planejado', label: 'Duração Planejada' }, // Numbers are usually fine
-                ],
-            });
+            const tmpCrono = _ctx.getTmpFile('cronograma.csv');
+            const cronFields = [
+                { value: 'transferencia_id', label: 'ID da Transferência' },
+                { value: 'hirearquia', label: 'Hierarquia' }, // Assumes hirearquia is already ="value" formatted if needed
+                { value: 'tarefa', label: 'Tarefa' },
+                {
+                    value: (row: { inicio_planejado: string | null }) =>
+                        row.inicio_planejado ? new Date(row.inicio_planejado).toLocaleDateString('pt-BR') : '',
+                    label: 'Início Planejado',
+                },
+                {
+                    value: (row: { termino_planejado: string | null }) =>
+                        row.termino_planejado ? new Date(row.termino_planejado).toLocaleDateString('pt-BR') : '',
+                    label: 'Término Planejado',
+                },
+                { value: 'custo_estimado', label: 'Custo Estimado' }, // Numbers are usually fine
+                { value: 'duracao_planejado', label: 'Duração Planejada' }, // Numbers are usually fine
+            ];
 
-            const linhasCronogramaCsv = json2csvParser.parse(dados.linhas_cronograma);
-
-            out.push({
-                name: 'cronograma.csv',
-                buffer: Buffer.from(linhasCronogramaCsv, 'utf8'),
-            });
+            const cronoOpts: CsvWriterOptions<RelTransferenciaCronogramaDto> = {
+                csvOptions: DefaultCsvOptions,
+                transforms: DefaultTransforms,
+                fields: cronFields,
+            };
+            await WriteCsvToFile(dados.linhas_cronograma, tmpCrono.stream, cronoOpts);
+            out.push({ name: 'cronograma.csv', localFile: tmpCrono.path });
         }
 
-        return [
-            {
-                name: 'info.json',
-                buffer: Buffer.from(
-                    JSON.stringify({
-                        params: params,
-                        horario: Date2YMD.tzSp2UTC(new Date()),
-                    }),
-                    'utf8'
-                ),
-            },
-            ...out,
-        ];
+        return out;
+    }
+
+    getClassFileName(): string {
+        return Path2FileName(__filename);
     }
 }

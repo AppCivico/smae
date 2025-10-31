@@ -38,7 +38,9 @@ const orgaosEquipeMeta = computed(() => {
   if (singleMeta.value?.ps_ponto_focal?.equipes.length === 0) {
     return null;
   }
-  const equipesSelecionadasMeta = EquipesStore.equipesPorIds(singleMeta.value?.ps_ponto_focal?.equipes);
+  const equipesSelecionadasMeta = EquipesStore.equipesPorIds(
+    singleMeta.value?.ps_ponto_focal?.equipes,
+  );
   const orgaoMeta = equipesSelecionadasMeta.reduce((amount, item) => {
     amount.push(`${item.orgao.sigla} - ${item.orgao.descricao}`);
     return amount;
@@ -50,7 +52,9 @@ const orgaosEquipeMetaMonitoramento = computed(() => {
   if (singleMeta.value?.ps_tecnico_cp?.equipes.length === 0) {
     return null;
   }
-  const equipesSelecionadasMetaMonitoramento = EquipesStore.equipesPorIds(singleMeta.value?.ps_tecnico_cp?.equipes);
+  const equipesSelecionadasMetaMonitoramento = EquipesStore.equipesPorIds(
+    singleMeta.value?.ps_tecnico_cp?.equipes,
+  );
   const orgaoMetaMonitoramento = equipesSelecionadasMetaMonitoramento.reduce((amount, item) => {
     amount.push(`${item.orgao.sigla} - ${item.orgao.descricao}`);
     return amount;
@@ -370,7 +374,7 @@ iniciar();
                     </SmaeLink>
                     <button
                       class="like-a__text"
-                      arial-label="excluir"
+                      aria-label="excluir"
                       title="excluir"
                       @click="checkDelete(ini)"
                     >
@@ -431,10 +435,12 @@ iniciar();
                       <div class="t13">
                         {{
                           combinadorDeListas(
-                            orgaoIniciativa = EquipesStore.equipesPorIds(ini.ps_ponto_focal.equipes).reduce((amount, item) => {
-                              amount.push(item.orgao.sigla + " - " + item.orgao.descricao);
-                              return amount;
-                            }, []),
+                            orgaoIniciativa = EquipesStore
+                              .equipesPorIds(ini.ps_ponto_focal.equipes)
+                              .reduce((amount, item) => {
+                                amount.push(item.orgao.sigla + " - " + item.orgao.descricao);
+                                return amount;
+                              }, []),
                             ','
                           )
                         }}
@@ -447,10 +453,12 @@ iniciar();
                       <div class="t13">
                         {{
                           combinadorDeListas(
-                            orgaoIniciativa = EquipesStore.equipesPorIds(ini.ps_tecnico_cp.equipes).reduce((amount, item) => {
-                              amount.push(item.orgao.sigla + " - " + item.orgao.descricao);
-                              return amount;
-                            }, []),
+                            orgaoIniciativa = EquipesStore
+                              .equipesPorIds(ini.ps_tecnico_cp.equipes)
+                              .reduce((amount, item) => {
+                                amount.push(item.orgao.sigla + " - " + item.orgao.descricao);
+                                return amount;
+                              }, []),
                             ','
                           )
                         }}

@@ -3,7 +3,8 @@ import { MAX_DTO_SAFE_NUM, MIN_DTO_SAFE_NUM } from '../../common/dto/consts';
 import { BadRequestException } from '@nestjs/common';
 
 export function NumberTransform(a: TransformFnParams): number {
-    console.log('NumberTransform', a.value);
+    if (a.value === null) return null as any; // Allow null values to pass through
+
     if (a.value === '') {
         const stack = new Error().stack;
         throw new BadRequestException(
@@ -20,6 +21,8 @@ export function NumberTransform(a: TransformFnParams): number {
 }
 
 export function PositiveNumberTransform(a: TransformFnParams): number {
+    if (a.value === null) return null as any; // Allow null values to pass through
+
     if (a.value === '') {
         const stack = new Error().stack;
         throw new BadRequestException(
@@ -35,6 +38,7 @@ export function PositiveNumberTransform(a: TransformFnParams): number {
 }
 
 export function NumberTransformOrUndef(a: TransformFnParams): number | undefined {
+    if (a.value === null) return null as any; // Allow null values to pass through
     if (a.value === '') return undefined;
 
     const n = +a.value;
@@ -43,6 +47,7 @@ export function NumberTransformOrUndef(a: TransformFnParams): number | undefined
 }
 
 export function PositiveNumberTransformOrUndef(a: TransformFnParams): number | undefined {
+    if (a.value === null) return null as any; // Allow null values to pass through
     if (a.value === '') return undefined;
 
     const n = +a.value;

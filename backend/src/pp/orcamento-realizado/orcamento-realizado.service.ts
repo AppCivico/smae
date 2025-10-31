@@ -23,6 +23,7 @@ import {
 } from '../../orcamento-realizado/orcamento-realizado.service';
 import { Decimal } from '@prisma/client/runtime/library';
 import { SmaeConfigService } from 'src/common/services/smae-config.service';
+import { VinculoService } from 'src/casa-civil/vinculo/vinculo.service';
 
 type PartialOrcamentoRealizadoDto = {
     ano_referencia: number;
@@ -39,7 +40,8 @@ export class OrcamentoRealizadoService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly dotacaoService: DotacaoService,
-        private readonly smaeConfigService: SmaeConfigService
+        private readonly smaeConfigService: SmaeConfigService,
+        private readonly vinculoService: VinculoService
     ) {
         // deixar ligado a verificação
         this.liberarEmpenhoValoresMaioresQueSof = false;
@@ -1088,7 +1090,10 @@ export class OrcamentoRealizadoService {
         });
 
         if (linhasAfetadas.count == 1) {
-            const orcRealizado = await prismaTxn.orcamentoRealizado.findUniqueOrThrow({ where: { id: +id } });
+            const orcRealizado = await prismaTxn.orcamentoRealizado.findUniqueOrThrow({
+                where: { id: +id },
+                include: { vinculosDistribuicoes: true },
+            });
 
             if (orcRealizado.nota_empenho) {
                 const notaTx = await prismaTxn.dotacaoProcessoNota.findUnique({
@@ -1132,6 +1137,15 @@ export class OrcamentoRealizadoService {
 
                 // não tem trigger nessa table, não há o que reprocessar
                 // await prismaTxn.dotacaoRealizado.update({ where: { id: processoTx.id }, data: { id: processoTx.id }, });
+            }
+
+            // Verificando se a linha possui vínculos.
+            // Vínculos são de distribuições de recurso (SERI) com Metas, Iniciativas, Atividades e projetos.
+            if (orcRealizado.vinculosDistribuicoes.length > 0) {
+                // Se possui vínculos, vamos invalidar os mesmos.
+                for (const vinculo of orcRealizado.vinculosDistribuicoes) {
+                    await this.vinculoService.invalidarVinculo({ id: vinculo.id }, 'Dotação removida.', prismaTxn);
+                }
             }
         }
     }

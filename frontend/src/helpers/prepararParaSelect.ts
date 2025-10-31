@@ -1,12 +1,27 @@
-type MapaParaChave = {
+type MapaParaChaveEntrada = {
   id: string | number;
+  label: string | string[];
+};
+
+type MapaParaChaveSaida = MapaParaChaveEntrada & {
   label: string;
 };
 
+function obterLabel(mapaLabel: string | string[], item: Record<string, any>): string {
+  if (!Array.isArray(mapaLabel)) {
+    return item?.[mapaLabel] || '';
+  }
+
+  return mapaLabel
+    .map((chaveLabel) => item?.[chaveLabel])
+    .filter((v) => v != null && v !== '')
+    .join(' - ');
+}
+
 function prepararParaSelect(
   valor: Record<string, any>[] | Record<string, any>,
-  mapa: MapaParaChave,
-): MapaParaChave[] {
+  mapa: MapaParaChaveEntrada,
+): MapaParaChaveSaida[] {
   let lista = [];
 
   if (Array.isArray(valor)) {
@@ -17,9 +32,9 @@ function prepararParaSelect(
     lista = Object.values(valor);
   }
 
-  return lista.map<MapaParaChave>((item) => ({
+  return lista.map<MapaParaChaveSaida>((item) => ({
     id: item[mapa.id],
-    label: item[mapa.label],
+    label: obterLabel(mapa.label, item),
   }));
 }
 

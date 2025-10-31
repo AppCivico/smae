@@ -305,6 +305,10 @@
   </form>
 </template>
 <script setup>
+import { storeToRefs } from 'pinia';
+import { computed, onMounted, ref } from 'vue';
+import { useRoute } from 'vue-router';
+
 import direcoesDeOrdenacao from '@/consts/direcoesDeOrdenacao';
 import { obras as schema } from '@/consts/formSchemas';
 import statusObras from '@/consts/statusObras';
@@ -314,9 +318,6 @@ import { useOrgansStore } from '@/stores/organs.store';
 import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store.ts';
 import { useRegionsStore } from '@/stores/regions.store';
 import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
-import { storeToRefs } from 'pinia';
-import { computed, ref } from 'vue';
-import { useRoute } from 'vue-router';
 
 const route = useRoute();
 
@@ -490,5 +491,7 @@ function iniciar() {
     });
 }
 
-iniciar();
+onMounted(() => {
+  iniciar();
+});
 </script>

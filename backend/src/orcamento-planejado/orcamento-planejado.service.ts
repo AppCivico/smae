@@ -13,12 +13,14 @@ import {
 import { OrcamentoPlanejado } from './entities/orcamento-planejado.entity';
 import { PlanoSetorialController } from '../pdm/pdm.controller';
 import { TipoPdmType } from '../common/decorators/current-tipo-pdm';
+import { VinculoService } from 'src/casa-civil/vinculo/vinculo.service';
 
 @Injectable()
 export class OrcamentoPlanejadoService {
     constructor(
         private readonly prisma: PrismaService,
-        private readonly dotacaoService: DotacaoService
+        private readonly dotacaoService: DotacaoService,
+        private readonly vinculoService: VinculoService
     ) {}
 
     async create(tipo: TipoPdmType, dto: CreateOrcamentoPlanejadoDto, user: PessoaFromJwt): Promise<RecordWithId> {

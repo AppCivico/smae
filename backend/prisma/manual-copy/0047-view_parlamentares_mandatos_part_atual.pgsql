@@ -1,3 +1,4 @@
+DROP VIEW IF EXISTS view_parlamentares_mandatos_part_atual;
 CREATE OR REPLACE VIEW view_parlamentares_mandatos_part_atual AS
 SELECT
     coalesce(p.id::text, '') || 'pm' || coalesce(pm.id::text, '') || 'e' || coalesce(e.id::text, '') AS virtual_id,

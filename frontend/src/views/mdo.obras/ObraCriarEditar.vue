@@ -14,12 +14,13 @@ import {
   watch,
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
 import CampoDePlanosMetasRelacionados from '@/components/CampoDePlanosMetasRelacionados.vue';
 import CampoDeRegioesAgrupadas from '@/components/CampoDeRegioesAgrupadas.vue';
-import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import MapaCampo from '@/components/geo/MapaCampo.vue';
+import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import { obras as schema } from '@/consts/formSchemas';
 import statusObras from '@/consts/statusObras';
 import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
@@ -246,8 +247,7 @@ async function buscarPossíveisColaboradores() {
 
 // PRA-FAZER: não usando o `controlledValues` devido à algum erro no campo de
 // mapa. Trazer de volta.
-const onSubmit = handleSubmit(async () => {
-  const carga = values;
+const onSubmit = handleSubmit.withControlled(async (carga) => {
   const cargaManipulada = nulificadorTotal(carga);
 
   switch (true) {
@@ -1223,11 +1223,17 @@ watch(listaDeTiposDeIntervenção, () => {
         Localização
       </legend>
 
-      <MapaCampo
-        v-model="values.geolocalizacao"
+      <Field
+        v-slot="{ value, handleChange }"
         name="geolocalizacao"
-        :geolocalização-por-token="geolocalizaçãoPorToken"
-      />
+      >
+        <MapaCampo
+          :model-value="value"
+          name="geolocalizacao"
+          :geolocalização-por-token="geolocalizaçãoPorToken"
+          @update:model-value="handleChange"
+        />
+      </Field>
     </div>
 
     <fieldset>
@@ -1665,7 +1671,7 @@ watch(listaDeTiposDeIntervenção, () => {
 
           <button
             class="like-a__text addlink"
-            arial-label="excluir"
+            aria-label="excluir"
             title="excluir"
             type="button"
             @click="remove(idx)"

@@ -1,4 +1,8 @@
 <script setup>
+import Big from 'big.js';
+import { storeToRefs } from 'pinia';
+import { computed, ref } from 'vue';
+import { useRoute } from 'vue-router';
 import LocalFilter from '@/components/LocalFilter.vue';
 import { contratoDeObras } from '@/consts/formSchemas';
 import { dateToShortDate } from '@/helpers/dateToDate';
@@ -9,10 +13,6 @@ import { useAlertStore } from '@/stores/alert.store';
 import { useContratosStore } from '@/stores/contratos.store.ts';
 import { useObrasStore } from '@/stores/obras.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
-import Big from 'big.js';
-import { storeToRefs } from 'pinia';
-import { computed, ref } from 'vue';
-import { useRoute } from 'vue-router';
 
 defineProps({
   obraId: {
@@ -254,14 +254,14 @@ iniciar();
           >
             <button
               class="like-a__text"
-              arial-label="excluir"
+              aria-label="excluir"
               title="excluir"
               @click="excluirProcesso(linha.id, linha.numero)"
             >
               <svg
                 width="20"
                 height="20"
-              ><use xlink:href="#i_remove" /></svg>
+              ><use xlink:href="#i_waste" /></svg>
             </button>
           </td>
         </tr>

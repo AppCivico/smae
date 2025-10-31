@@ -100,7 +100,7 @@ const temCabeçalho = computed(() => props.colunas.some((x) => x.etiqueta));
               <button
                 v-else-if="item[coluna.nomeDaPropriedade]?.ação"
                 class="like-a__text"
-                :arial-label="item[coluna.nomeDaPropriedade]?.texto || undefined"
+                :aria-label="item[coluna.nomeDaPropriedade]?.texto || undefined"
                 :title="item[coluna.nomeDaPropriedade]?.texto || coluna.texto || undefined"
                 @click="() => item[coluna.nomeDaPropriedade]?.ação()"
               >

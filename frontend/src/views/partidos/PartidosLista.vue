@@ -74,7 +74,7 @@ partidoStore.buscarTudo();
         <td>
           <button
             class="like-a__text"
-            arial-label="excluir"
+            aria-label="excluir"
             title="excluir"
             @click="excluirPainel(item.id)"
           >

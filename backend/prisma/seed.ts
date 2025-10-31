@@ -143,6 +143,8 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | ModuloSistema[] |
     CadastroEtapa: ['', null],
     CadastroGrupoPaineisExternas: ['', null],
     CadastroClassificacao: ['Cadastro de Classificacao', 'CasaCivil'],
+    CadastroTipoVinculo: ['Cadastro de Tipo de Vínculo', 'CasaCivil'],
+    CadastroVinculo: ['Cadastro de Vínculo', 'CasaCivil'],
 } as const;
 
 const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]> = {
@@ -602,6 +604,18 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['CadastroClassificacao.listar', 'Listar Classificações'],
         ['CadastroClassificacao.remover', 'Excluir Classificações'],
     ],
+    CadastroTipoVinculo: [
+        ['CadastroTipoVinculo.editar', 'Editar Tipo de Vínculo'],
+        ['CadastroTipoVinculo.inserir', 'Incluir Tipo de Vínculo'],
+        ['CadastroTipoVinculo.listar', 'Listar Tipos de Vínculo'],
+        ['CadastroTipoVinculo.remover', 'Excluir Tipos de Vínculo'],
+    ],
+    CadastroVinculo: [
+        ['CadastroVinculo.editar', 'Editar Vínculo'],
+        ['CadastroVinculo.inserir', 'Incluir Vínculo'],
+        ['CadastroVinculo.listar', 'Listar Vínculos'],
+        ['CadastroVinculo.remover', 'Excluir Vínculos'],
+    ],
 };
 
 const todosPrivilegios: ListaDePrivilegios[] = [];
@@ -669,6 +683,16 @@ const TVCadastroBasico: ListaDePrivilegios[] = [
     'CadastroTransferenciaTipo.inserir',
     'CadastroTransferenciaTipo.editar',
     'CadastroTransferenciaTipo.remover',
+
+    'CadastroTipoVinculo.inserir',
+    'CadastroTipoVinculo.editar',
+    'CadastroTipoVinculo.remover',
+    'CadastroTipoVinculo.listar',
+
+    'CadastroVinculo.inserir',
+    'CadastroVinculo.editar',
+    'CadastroVinculo.remover',
+    'CadastroVinculo.listar',
 
     ...SMAECadastroBasico,
     // Tipo de Transferência
@@ -1269,7 +1293,7 @@ PerfilAcessoConfig.push(
     removerNomePerfil('Administrador de Grupo de Variáveis no Órgão'),
     removerNomePerfil(CONST_PERFIL_PARTICIPANTE_EQUIPE_PDM),
     removerNomePerfil('Orçamento - Metas Setorial'),
-    removerNomePerfil('Analista de dados'),
+    removerNomePerfil('Analista de dados')
 );
 
 async function main() {
@@ -1687,13 +1711,13 @@ async function criaPrivComPerfilDeAcesso(
             }
             const idPriv = priv.id;
 
-            const match = await prisma.perfilPrivilegio.findFirst({
+            const match = await prisma.perfilPrivilegio.findMany({
                 where: {
                     perfil_acesso_id: perfilAcesso.id,
                     privilegio_id: idPriv,
                 },
             });
-            if (!match) {
+            if (match.length === 0) {
                 await prisma.perfilPrivilegio.upsert({
                     where: {
                         perfil_acesso_id_privilegio_id: {
@@ -1706,6 +1730,14 @@ async function criaPrivComPerfilDeAcesso(
                         privilegio_id: idPriv,
                     },
                     update: {},
+                });
+            } else if (match.length > 1) {
+                // Keep the first record and delete the extra duplicates
+                const idsToDelete = match.slice(1).map((record) => record.id);
+                await prisma.perfilPrivilegio.deleteMany({
+                    where: {
+                        id: { in: idsToDelete },
+                    },
                 });
             }
 

@@ -13,6 +13,7 @@ import {
   setLocale,
   string,
 } from 'yup';
+
 import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import categoriaDeTransferencia from '@/consts/categoriaDeTransferencia';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
@@ -37,6 +38,7 @@ import tiposSituacaoSchema from '@/consts/tiposSituacaoSchema';
 import tiposStatusDistribuicao from '@/consts/tiposStatusDistribuicao';
 import fieldToDate from '@/helpers/fieldToDate';
 import haDuplicatasNaLista from '@/helpers/haDuplicatasNaLista';
+
 import {
   dataMax,
   dataMin,
@@ -473,12 +475,10 @@ export const contratoDeObras = (tela = 'projeto') => object()
       .label('Área gestora'),
     objeto_resumo: string()
       .max(2048)
-      .min(1)
       .nullable()
       .label('Objeto do contrato - resumido'),
     objeto_detalhado: string()
       .max(2048)
-      .min(1)
       .nullable()
       .label('Objeto do contrato - detalhado'),
     contratante: string()
@@ -520,7 +520,6 @@ export const contratoDeObras = (tela = 'projeto') => object()
       .label('Valor do contrato'),
     observacoes: string()
       .max(2048)
-      .min(1)
       .nullable()
       .label('Observações'),
   });
@@ -1286,7 +1285,7 @@ export const obras = object({
     .nullable(),
   mdo_n_familias_beneficiadas: number()
     .label('Número de famílias beneficiadas')
-    .nullable()
+    .nullableOuVazio()
     .min(0)
     .meta({
       serialize: (valor) => (valor ? Number(valor) : null),
@@ -1294,11 +1293,11 @@ export const obras = object({
   mdo_n_unidades_habitacionais: number()
     .label('Número de unidades')
     .min(0)
-    .nullable(),
+    .nullableOuVazio(),
   mdo_n_unidades_atendidas: number()
     .label('Número de unidades atendidas até o momento')
     .min(0)
-    .nullable()
+    .nullableOuVazio()
     .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
   mdo_observacoes: string()
     .label('Observações')
@@ -1422,7 +1421,7 @@ export const obras = object({
     .label('Programa Habitacional')
     .positive()
     .integer()
-    .nullable(),
+    .nullableOuVazio(),
   projeto_etapa_id: number()
     .label('Etapa')
     .nullable(),
@@ -2121,6 +2120,23 @@ export const tipoDeTransferencia = object({
     .label('Esfera')
     .required()
     .oneOf(Object.keys(esferasDeTransferencia)),
+});
+
+export const tipoDeVinculo = object({
+  nome: string()
+    .label('Nome')
+    .required(),
+});
+
+export const tipoDeVinculoEditar = object({
+  tipo_vinculo_id: number()
+    .label('Tipo de vínculo')
+    .required('Selecione um tipo de vínculo')
+    .positive('Selecione um tipo de vínculo'),
+  observacao: string()
+    .label('Observação')
+    .nullable()
+    .max(2000, 'A observação deve ter no máximo 2000 caracteres'),
 });
 
 export const transferenciaDistribuicaoDeRecursos = object({
@@ -3550,17 +3566,37 @@ export const representatividade = object()
       .label('Comparecimento')
       .min(0)
       .max(2147483647)
-      .nullable(),
+      .required(),
     numero_votos: number()
       .label('Votos')
       .min(0)
       .max(2147483647)
-      .required(),
+      .required()
+      .test(
+        'verificar-votacao',
+        (numeroVotos, { resolve, createError, options }) => {
+          const [{ schema }] = options.from;
+
+          const {
+            numero_votos: numeroVotosSchema,
+            numero_comparecimento: numeroComparecimentoSchema,
+          } = schema.fields;
+          const numeroComparecimento = resolve(ref('numero_comparecimento'));
+
+          if (numeroVotos > numeroComparecimento) {
+            return createError({
+              message: `${numeroVotosSchema.spec.label} não pode ser maior que ${numeroComparecimentoSchema.spec.label}`,
+            });
+          }
+
+          return true;
+        },
+      ),
     pct_participacao: number()
       .label('Percentual')
       .min(0)
       .max(100)
-      .nullable(),
+      .nullableOuVazio(),
     ranking: number()
       .label('Ranking')
       .min(0)
@@ -4445,4 +4481,54 @@ export const EdicaoTransferenciaFaseTarefa = object().shape({
   concluido: boolean().label('Concluído'),
   orgao_id: number().label('Órgão responsável'),
   pessoa_responsavel: string().label('Pessoa responsável'),
+});
+
+export const FiltroEndereco = object().shape({
+  endereco: string().label('Endereço').required(),
+});
+
+export const FiltroDotacao = object().shape({
+  orgao_id: string()
+    .label('Órgão')
+    .required(),
+  unidade_id: string()
+    .label('Unidade')
+    .required(),
+  funcao_id: string()
+    .label('Função'),
+  subfuncao_id: string()
+    .label('Subfunção'),
+  programa_id: string()
+    .label('Programa'),
+  projeto_id: string()
+    .label('Projeto/atividade'),
+  conta_despesa: string()
+    .label('Conta despesa'),
+  despesa_fonte: string()
+    .label('Fonte'),
+  exercicio_fonte_recurso: string()
+    .label('Exercício da Fonte de Recurso'),
+  exercicio_fonte: string()
+    .label('Fonte'),
+  execucao_orcamentaria: string()
+    .label('Acompanhamento da Execução Orçamentária'),
+  origem_recurso: string()
+    .label('Origem do Recurso'),
+});
+
+export const FiltroConsultaGeralVinculacao = object().shape({
+  ano: string().label('Ano').nullableOuVazio(),
+  esfera: string().label('Esfera').nullableOuVazio(),
+  palavra_chave: string().label('Palavra-chave').nullableOuVazio(),
+});
+
+export const ConsultaGeralVinculacaoRegistro = object({
+  tipo_vinculo_id: number()
+    .label('Tipo de vínculo')
+    .required('Selecione um tipo de vínculo')
+    .positive('Selecione um tipo de vínculo'),
+  observacao: string()
+    .label('Observação')
+    .nullable()
+    .max(2000, 'A observação deve ter no máximo 2000 caracteres'),
 });

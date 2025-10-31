@@ -26,6 +26,7 @@ export class RelatorioDto {
         description: 'Lista de parâmetros processados do relatório',
     })
     parametros_processados: RelatorioParamDto[] | null;
+    resumo_saida: object[] | null;
     pdm_id: number | null;
 }
 

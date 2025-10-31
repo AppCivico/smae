@@ -1,15 +1,13 @@
-import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
+import { ApiProperty, OmitType, PartialType, PickType } from '@nestjs/swagger';
 import { ProjetoStatus } from '@prisma/client';
 import { Transform, Expose } from 'class-transformer';
 import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
 import { FilterProjetoDto } from 'src/pp/projeto/dto/filter-projeto.dto';
 import { NumberTransform } from '../../../auth/transforms/number.transform';
 
-export class CreateRelProjetosDto extends OmitType(PartialType(FilterProjetoDto), [
-    'eh_prioritario',
-    'arquivado',
-    'status',
-    'portfolio_id',
+export class CreateRelProjetosDto extends PickType(FilterProjetoDto, [
+    'orgao_responsavel_id',
+    'projeto_id',
 ]) {
     @IsOptional()
     @IsString()

@@ -4,15 +4,11 @@ import { Date2YMD } from '../../common/date2ymd';
 import { ProjetoGetPermissionSet } from '../../pp/projeto/projeto.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
-import { DefaultCsvOptions, FileOutput, ReportableService } from '../utils/utils.service';
+import { DefaultCsvOptions, DefaultTransforms, FileOutput, Path2FileName, ReportableService } from '../utils/utils.service';
 import { CreateRelProjetoStatusDto } from './dto/create-projeto-status.dto';
 import { PPProjetoStatusRelatorioDto, RelProjetoStatusRelatorioDto } from './entities/projeto-status.dto';
-
-const {
-    Parser,
-    transforms: { flatten },
-} = require('json2csv');
-const defaultTransform = [flatten({ paths: [] })];
+import { CsvWriterOptions, WriteCsvToFile } from 'src/common/helpers/CsvWriter';
+import { flatten } from '@json2csv/transforms';
 
 type ProjetoStatusDbRow = {
     id: number;
@@ -189,33 +185,30 @@ export class PPStatusService implements ReportableService {
         // mais um relatório relativamente simples, se tiver problema de memória, pode ser que seja necessário
         // fazer paginação na busca dos projetos, mas a princípio não deve ser necessário
         const dados = await this.asJSON(params, user);
+        await ctx.resumoSaida(params.tipo_pdm === 'PP' ? 'Projeto Status' : 'Obra Status', dados.linhas.length);
         await ctx.progress(50);
 
         const out: FileOutput[] = [];
 
-        const json2csvParser = new Parser({
-            ...DefaultCsvOptions,
-            transforms: defaultTransform,
-        });
-        const linhas = json2csvParser.parse(dados.linhas);
+        const fileName = params.tipo_pdm === 'PP' ? 'projeto-status.csv' : 'obra-status.csv';
+        const tmp = ctx.getTmpFile(fileName);
+
+        const csvOpts: CsvWriterOptions<RelProjetoStatusRelatorioDto> = {
+            csvOptions: DefaultCsvOptions,
+            transforms: DefaultTransforms,
+        };
+
+        await WriteCsvToFile(dados.linhas, tmp.stream, csvOpts);
+
         out.push({
-            name: params.tipo_pdm == 'PP' ? 'projeto-status.csv' : 'obra-status.csv',
-            buffer: Buffer.from(linhas, 'utf8'),
+            name: fileName,
+            localFile: tmp.path,
         });
         await ctx.progress(99);
 
-        return [
-            {
-                name: 'info.json',
-                buffer: Buffer.from(
-                    JSON.stringify({
-                        params: params,
-                        horario: Date2YMD.tzSp2UTC(new Date()),
-                    }),
-                    'utf8'
-                ),
-            },
-            ...out,
-        ];
+        return out;
+    }
+    getClassFileName(): string {
+        return Path2FileName(__filename);
     }
 }

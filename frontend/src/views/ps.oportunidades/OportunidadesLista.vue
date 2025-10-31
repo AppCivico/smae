@@ -195,7 +195,7 @@
         <td>
           <button
             class="like-a__text"
-            arial-label="editar"
+            aria-label="editar"
             title="editar"
             @click="editarOportunidade(item.id, item.avaliacao )"
           >

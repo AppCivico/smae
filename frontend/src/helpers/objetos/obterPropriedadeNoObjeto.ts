@@ -14,7 +14,7 @@ function obterPropriedadeNoObjeto(
         console.warn(`Propriedade "${caminho}" não encontrada em:`, objeto);
       }
 
-      return objeto;
+      return undefined;
     }
 
     return objeto[caminho];

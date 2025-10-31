@@ -62,6 +62,9 @@ import { TaskModule } from './task/task.module';
 import { TransfereGovApiModule } from './transfere-gov-api/transfere-gov-api.module';
 import { ClassificacaoModule } from './transferencias-voluntarias/classificacao/classificacao.module';
 import { WikiLinkModule } from './wiki-link/wiki-link.module';
+import { DotacaoBuscaModule } from './dotacao-busca/dotacao-busca.module';
+import { TipoVinculoModule } from './casa-civil/tipo-vinculo/tipo-vinculo.module';
+import { VinculoModule } from './casa-civil/vinculo/vinculo.module';
 
 // Hacks pro JS
 /*
@@ -126,6 +129,9 @@ import { WikiLinkModule } from './wiki-link/wiki-link.module';
         BuscaGlobalModule,
         AtualizacaoEmLoteModule,
         WikiLinkModule,
+        DotacaoBuscaModule,
+        TipoVinculoModule,
+        VinculoModule,
     ],
     controllers: [AppController],
     providers: [

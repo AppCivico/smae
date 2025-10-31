@@ -1,4 +1,5 @@
 import { OmitType, PartialType } from '@nestjs/swagger';
+import { IsBoolean, IsNumber, IsOptional } from 'class-validator';
 import {
     CreateEquipeDto,
     CreateMandatoDto,
@@ -18,6 +19,14 @@ export class UpdateRepresentatividadeDto extends PartialType(
         'municipio_tipo',
         'nivel',
         'regiao_id',
-        'numero_comparecimento',
+        'pct_participacao',
     ])
-) {}
+) {
+    @IsOptional()
+    @IsNumber()
+    numero_comparecimento?: number;
+
+    @IsOptional()
+    @IsBoolean()
+    confirma_alteracao_comparecimento?: boolean;
+}

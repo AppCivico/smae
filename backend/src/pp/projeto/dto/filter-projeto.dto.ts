@@ -1,6 +1,6 @@
 import { ApiHideProperty, ApiProperty, IntersectionType } from '@nestjs/swagger';
 import { ProjetoStatus, TipoProjeto } from '@prisma/client';
-import { Transform, TransformFnParams } from 'class-transformer';
+import { Expose, Transform, TransformFnParams } from 'class-transformer';
 import {
     ArrayMaxSize,
     ArrayMinSize,
@@ -72,6 +72,7 @@ export class FilterProjetoDto {
     @IsOptional()
     @IsInt({ each: true })
     @Transform(NumberArrayTransformOrUndef)
+    @Expose()
     projeto_id?: number[];
 }
 
@@ -153,7 +154,9 @@ export class CoreFilterProjetoMDODto extends IntersectionType(FilterProjetoDto) 
 
     @IsOptional()
     @IsString()
-    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Palavra chave' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Palavra chave' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     palavra_chave?: string;
 
     @IsOptional()

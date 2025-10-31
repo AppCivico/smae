@@ -7,6 +7,7 @@
     <slot
       :caminho="caminho"
       :linha="linha"
+      :linha-index="linhaIndex"
     >
       {{ conteudoColuna || '-' }}
     </slot>
@@ -23,6 +24,7 @@ defineOptions({ inheritAttrs: false });
 type ParametrosDaCelula = {
   ehCabecalho?: boolean
   linha: Linha
+  linhaIndex: number
   caminho: string
   formatador?: (args: unknown) => number | string
 };

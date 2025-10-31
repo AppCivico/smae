@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { GeoCamadaConfig, Prisma } from '@prisma/client';
+import { CampoVinculo, GeoCamadaConfig, Prisma } from '@prisma/client';
 import * as turf from '@turf/simplify';
 import { Feature, GeoJSON, GeoJsonObject } from 'geojson';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -21,6 +21,7 @@ import {
     RetornoCreateEnderecoDto,
     RetornoGeoLoc,
 } from './entities/geo-loc.entity';
+import { VinculoService } from 'src/casa-civil/vinculo/vinculo.service';
 
 class GeoTokenJwtBody {
     id: number;
@@ -63,7 +64,8 @@ export class GeoLocService {
         private readonly jwtService: JwtService,
         private readonly prisma: PrismaService,
         private readonly geoApi: GeoApiService,
-        private readonly smaeConfigService: SmaeConfigService
+        private readonly smaeConfigService: SmaeConfigService,
+        private readonly vinculoService: VinculoService
     ) {}
 
     async geoLoc(input: GeoLocDto): Promise<RetornoGeoLoc> {
@@ -619,7 +621,13 @@ export class GeoLocService {
             select: {
                 id: true,
                 geo_localizacao: {
-                    select: { id: true },
+                    select: { id: true, endereco_exibicao: true },
+                },
+
+                vinculosDistribuicoes: {
+                    select: {
+                        id: true,
+                    },
                 },
             },
         });
@@ -647,6 +655,13 @@ export class GeoLocService {
         for (const prevRecord of prevRelationRecords) {
             // se ainda ta na lista dos presentes, n precisa remover
             if (inputIds.filter((r) => r == prevRecord.geo_localizacao.id)[0]) continue;
+
+            if (prevRecord.vinculosDistribuicoes.length > 0) {
+                const vinculoIds = prevRecord.vinculosDistribuicoes.map((v) => v.id);
+                for (const vinculoId of vinculoIds) {
+                    await this.vinculoService.invalidarVinculo({ id: vinculoId }, 'Endereço removido', prismaTx);
+                }
+            }
 
             await prismaTx.geoLocalizacaoReferencia.update({
                 where: {

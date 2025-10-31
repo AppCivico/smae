@@ -54,6 +54,7 @@ export class RelObrasDto {
     orgao_responsavel: IdSiglaDescricao | null;
     orgao_colaborador: IdSiglaDescricao | null;
     responsavel: IdNomeExibicaoDto | null;
+    portfolios_compartilhados: string | null;
     pontos_focais_colaboradores: string | null;
     programa_habitacional: string | null;
     n_unidades_habitacionais: number | null;

@@ -5,6 +5,9 @@ import { GeoJSON } from 'geojson';
 
 export class GeoInfoBaseDto {
     @ApiProperty()
+    id: number;
+
+    @ApiProperty()
     geo_localizacao_id: number;
 
     @ApiProperty()
@@ -29,6 +32,9 @@ export class GeoInfoBaseDto {
 export class ProjetoSearchResultDto {
     @ApiProperty()
     id: number;
+
+    @ApiProperty()
+    geo_localizacao_referencia_id: number;
 
     @ApiProperty()
     nome: string;
@@ -82,6 +88,8 @@ export class ProjetoSearchResultDto {
 
     @ApiProperty({ type: () => [GeoInfoBaseDto] })
     localizacoes: GeoInfoBaseDto[];
+
+    nro_vinculos?: number;
 }
 
 export class MetaSearchResultDto {
@@ -95,6 +103,9 @@ export class MetaSearchResultDto {
 export class IniciativaSearchResultDto {
     @ApiProperty()
     id: number;
+
+    @ApiProperty()
+    geo_localizacao_referencia_id: number;
 
     @ApiProperty()
     codigo: string;
@@ -113,11 +124,16 @@ export class IniciativaSearchResultDto {
 
     @ApiProperty({ type: () => [GeoInfoBaseDto] })
     localizacoes: GeoInfoBaseDto[];
+
+    nro_vinculos?: number;
 }
 
 export class AtividadeSearchResultDto {
     @ApiProperty()
     id: number;
+
+    @ApiProperty()
+    geo_localizacao_referencia_id: number;
 
     @ApiProperty()
     codigo: string;
@@ -142,11 +158,16 @@ export class AtividadeSearchResultDto {
 
     @ApiProperty({ type: () => [GeoInfoBaseDto] })
     localizacoes: GeoInfoBaseDto[];
+
+    nro_vinculos?: number;
 }
 
 export class EtapaSearchResultDto {
     @ApiProperty()
     id: number;
+
+    @ApiProperty()
+    geo_localizacao_referencia_id: number;
 
     @ApiPropertyOptional()
     titulo?: string;
@@ -157,19 +178,26 @@ export class EtapaSearchResultDto {
     @ApiProperty()
     meta_id: number;
 
+    @ApiProperty()
+    iniciativa_id?: number;
+
+    @ApiProperty()
+    atividade_id?: number;
+
     @ApiProperty({ type: () => [GeoInfoBaseDto] })
     localizacoes: GeoInfoBaseDto[];
 }
 
 export class PdmRotuloInfo {
     id: number;
+    nome: string;
     rotulo_atividade: string;
     rotulo_iniciativa: string;
     rotulo_macro_tema: string;
     sistema: ModuloSistema;
 }
 
-export class MetaLookupInfoDto {
+export class MetaIniAtvLookupInfoDto {
     id: number;
     codigo: string;
     titulo: string;
@@ -178,6 +206,7 @@ export class MetaLookupInfoDto {
     macro_tema_nome: string | null;
     @ApiPropertyOptional({ description: 'Siglas dos órgãos da meta', type: [String] })
     orgaos_sigla?: string[];
+    nro_vinculos?: number;
 }
 
 export class SearchEntitiesNearbyDto {
@@ -205,6 +234,17 @@ export class SearchEntitiesNearbyDto {
     @Min(0.1)
     @Max(10)
     raio_km?: number = 2;
+
+    @ApiPropertyOptional({
+        description:
+            'Raio de busca. Padrão 2km se lat/lon ou busca_endereco for fornecido para tipo "Endereco". Não utilizado para busca por distrito.',
+        default: 2,
+    })
+    @IsOptional()
+    @IsNumber()
+    @Min(100)
+    @Max(10000)
+    raio?: number;
 
     @ApiPropertyOptional({ description: 'ID da configuração da GeoCamada que representa distritos/subprefeituras' })
     @IsOptional()
@@ -245,9 +285,21 @@ export class SearchEntitiesNearbyResponseDto {
     pdm_info: PdmRotuloInfo[];
 
     @ApiProperty({
-        type: [MetaLookupInfoDto],
+        type: [MetaIniAtvLookupInfoDto],
         description:
             'Informações de lookup para Metas referenciadas por iniciativas, atividades ou etapas encontradas.',
     })
-    metas_info: MetaLookupInfoDto[];
+    metas_info: MetaIniAtvLookupInfoDto[];
+
+    @ApiProperty({
+        type: [MetaIniAtvLookupInfoDto],
+        description: 'Informações de lookup para Iniciativas referenciadas por Atividades ou etapas encontradas.',
+    })
+    iniciativas_info: MetaIniAtvLookupInfoDto[];
+
+    @ApiProperty({
+        type: [MetaIniAtvLookupInfoDto],
+        description: 'Informações de lookup para Atividades referenciadas por Etapas encontradas.',
+    })
+    atividades_info: MetaIniAtvLookupInfoDto[];
 }

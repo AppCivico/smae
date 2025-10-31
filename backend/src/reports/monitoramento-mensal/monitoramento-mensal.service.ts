@@ -1,10 +1,17 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { Date2YMD } from '../../common/date2ymd';
 import { PainelService } from '../../painel/painel.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
-import { DefaultCsvOptions, FileOutput, ReportableService, UtilsService } from '../utils/utils.service';
+import {
+    DefaultCsvOptions,
+    DefaultTransforms,
+    FileOutput,
+    Path2FileName,
+    ReportableService,
+    UtilsService,
+} from '../utils/utils.service';
 import { CreateRelMonitoramentoMensalDto } from './dto/create-monitoramento-mensal.dto';
 import {
     RelPainelDetalhe,
@@ -12,12 +19,8 @@ import {
     RetMonitoramentoMensal,
 } from './entities/monitoramento-mensal.entity';
 import { MonitoramentoMensalMfService } from './monitoramento-mensal-mf.service';
-
-const {
-    Parser,
-    transforms: { flatten },
-} = require('json2csv');
-const defaultTransform = [flatten({ paths: [] })];
+import { CsvWriterOptions, WriteCsvToFile } from 'src/common/helpers/CsvWriter';
+import { flatten } from '@json2csv/transforms';
 
 @Injectable()
 export class MonitoramentoMensalService implements ReportableService {
@@ -111,10 +114,11 @@ export class MonitoramentoMensalService implements ReportableService {
         await ctx.progress(1);
 
         let monitoramento_fisico = await this.mmMf.create_mf(params, metasArr);
+        ctx.resumoSaida('Séries Variáveis', monitoramento_fisico?.seriesVariaveis.length);
 
         const out: FileOutput[] = [];
 
-        out.push(...(await this.mmMf.getFiles({ monitoramento_fisico, paineis: [] }, pdm)));
+        out.push(...(await this.mmMf.getFiles({ monitoramento_fisico, paineis: [] }, pdm, ctx)));
         monitoramento_fisico = null; // libera memória
 
         const fieldsCSV = [
@@ -144,7 +148,6 @@ export class MonitoramentoMensalService implements ReportableService {
         let curPainel = 0;
         for (const painelId of params.paineis) {
             curPainel++;
-
             await ctx.progress(50 + 50 * (curPainel / totalPainel));
             const painel = await this.painel.getPainelShortData({ painel_id: painelId });
             if (!painel) continue;
@@ -158,43 +161,41 @@ export class MonitoramentoMensalService implements ReportableService {
                         monitoramento_fisico: null,
                         paineis: [{ painel, linhas }],
                     },
-                    pdm
+                    pdm,
+                    ctx
                 ))
             );
 
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
-                fields: [...fieldsCSV],
-            });
+            const fileName =
+                'painel-' +
+                painel.nome.replace(/\s/g, '-').replace(/[^a-z0-9-._]/g, '') +
+                '.' +
+                painel.id +
+                '.' +
+                painel.periodicidade +
+                '.csv';
 
-            const linhasBuff = json2csvParser.parse(linhas);
+            const tmp = ctx.getTmpFile(fileName);
+
+            const csvOpts: CsvWriterOptions<RelPainelDetalhe> = {
+                csvOptions: DefaultCsvOptions,
+                transforms: DefaultTransforms,
+                fields: [...fieldsCSV],
+            };
+
+            await WriteCsvToFile(linhas, tmp.stream, csvOpts);
+
             out.push({
-                name:
-                    'painel-' +
-                    painel.nome.replace(/\s/g, '-').replace(/[^a-z0-9-._]/g, '') +
-                    '.' +
-                    painel.id +
-                    '.' +
-                    painel.periodicidade +
-                    '.csv',
-                buffer: Buffer.from(linhasBuff, 'utf8'),
+                name: fileName,
+                localFile: tmp.path,
             });
         }
         await ctx.progress(99);
 
-        return [
-            {
-                name: 'info.json',
-                buffer: Buffer.from(
-                    JSON.stringify({
-                        params: params,
-                        horario: Date2YMD.tzSp2UTC(new Date()),
-                    }),
-                    'utf8'
-                ),
-            },
-            ...out,
-        ];
+        return out;
+    }
+
+    getClassFileName(): string {
+        return Path2FileName(__filename);
     }
 }

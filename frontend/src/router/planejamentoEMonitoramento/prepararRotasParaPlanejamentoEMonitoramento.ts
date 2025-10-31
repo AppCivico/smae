@@ -1,5 +1,5 @@
-import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
 import type { RouteLocation } from 'vue-router';
+import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
 import tiparPropsDeRota from '../helpers/tiparPropsDeRota';
 import metasRoutes from './metas.routes';
 

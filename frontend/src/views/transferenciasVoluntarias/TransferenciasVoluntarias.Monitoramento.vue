@@ -8,11 +8,11 @@ import VaralDeFases from '@/components/TransferenciasVoluntarias/Monitoramento.c
 <template>
   <CabecalhoDePagina />
 
-  <div class="flex g3 column">
+  <div class="flex g1 column">
     <MonitoramentoCards />
 
     <VaralDeEtapas />
 
-    <VaralDeFases class="mt2" />
+    <VaralDeFases class="mt1" />
   </div>
 </template>

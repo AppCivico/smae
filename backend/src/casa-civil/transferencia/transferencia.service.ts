@@ -7,7 +7,14 @@ import {
     InternalServerErrorException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Prisma, TransferenciaHistoricoAcao, WorkflowResponsabilidade } from '@prisma/client';
+import {
+    ModuloSistema,
+    Prisma,
+    TipoPdm,
+    TipoProjeto,
+    TransferenciaHistoricoAcao,
+    WorkflowResponsabilidade,
+} from '@prisma/client';
 import { TarefaCronogramaDto } from 'src/common/dto/TarefaCronograma.dto';
 import { PaginatedDto, PAGINATION_TOKEN_TTL } from 'src/common/dto/paginated.dto';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
@@ -1435,6 +1442,55 @@ export class TransferenciaService {
                                 },
                             },
                         },
+                        vinculos: {
+                            where: { removido_em: null, invalidado_em: null },
+                            select: {
+                                projeto: {
+                                    select: {
+                                        tipo: true,
+                                    },
+                                },
+                                meta: {
+                                    select: {
+                                        pdm: {
+                                            select: {
+                                                tipo: true,
+                                            },
+                                        },
+                                    },
+                                },
+                                iniciativa: {
+                                    select: {
+                                        meta: {
+                                            select: {
+                                                pdm: {
+                                                    select: {
+                                                        tipo: true,
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
+                                atividade: {
+                                    select: {
+                                        iniciativa: {
+                                            select: {
+                                                meta: {
+                                                    select: {
+                                                        pdm: {
+                                                            select: {
+                                                                tipo: true,
+                                                            },
+                                                        },
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
                     },
                 },
                 classificacao_id: true,
@@ -1511,6 +1567,56 @@ export class TransferenciaService {
             orgao_concedente: row.orgao_concedente,
             classificacao: row.classificacao,
             classificacao_id: row.classificacao_id,
+
+            modulos_vinculados: row.distribuicao_recursos
+                .flatMap((dr) => dr.vinculos)
+                .reduce((uniqueModules, v) => {
+                    if (v.projeto) {
+                        switch (v.projeto.tipo) {
+                            case TipoProjeto.PP:
+                                if (!uniqueModules.includes(ModuloSistema.Projetos)) {
+                                    uniqueModules.push(ModuloSistema.Projetos);
+                                }
+                                break;
+                            case TipoProjeto.MDO:
+                                if (!uniqueModules.includes(ModuloSistema.MDO)) {
+                                    uniqueModules.push(ModuloSistema.MDO);
+                                }
+                                break;
+                        }
+                    }
+
+                    if (
+                        (v.meta && v.meta.pdm) ||
+                        (v.iniciativa && v.iniciativa.meta && v.iniciativa.meta.pdm) ||
+                        (v.atividade &&
+                            v.atividade.iniciativa &&
+                            v.atividade.iniciativa.meta &&
+                            v.atividade.iniciativa.meta.pdm)
+                    ) {
+                        const pdmTipo =
+                            v.meta?.pdm?.tipo ??
+                            v.iniciativa?.meta?.pdm?.tipo ??
+                            v.atividade?.iniciativa?.meta?.pdm?.tipo ??
+                            null;
+                        if (!pdmTipo) throw new InternalServerErrorException('PDM tipo não encontrado');
+
+                        switch (pdmTipo) {
+                            case TipoPdm.PDM:
+                                if (!uniqueModules.includes(ModuloSistema.ProgramaDeMetas)) {
+                                    uniqueModules.push(ModuloSistema.ProgramaDeMetas);
+                                }
+                                break;
+                            case TipoPdm.PS:
+                                if (!uniqueModules.includes(ModuloSistema.PlanoSetorial)) {
+                                    uniqueModules.push(ModuloSistema.PlanoSetorial);
+                                }
+                                break;
+                        }
+                    }
+
+                    return uniqueModules;
+                }, [] as ModuloSistema[]),
         } satisfies TransferenciaDetailDto;
     }
 

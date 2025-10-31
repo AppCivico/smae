@@ -1,4 +1,14 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage,
+  Field,
+  FieldArray,
+  useForm,
+  useIsFormDirty,
+} from 'vee-validate';
+import { computed, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
 import CampoDePlanosMetasRelacionados from '@/components/CampoDePlanosMetasRelacionados.vue';
@@ -16,16 +26,6 @@ import { useObservadoresStore } from '@/stores/observadores.store.ts';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
-import { storeToRefs } from 'pinia';
-import {
-  ErrorMessage,
-  Field,
-  FieldArray,
-  useForm,
-  useIsFormDirty,
-} from 'vee-validate';
-import { computed, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -635,7 +635,7 @@ watch(itemParaEdicao, (novoValor) => {
 
             <button
               class="like-a__text addlink"
-              arial-label="excluir"
+              aria-label="excluir"
               title="excluir"
               :disabled="desabilitarTodosCampos.camposComuns"
               @click="remove(idx)"
@@ -715,7 +715,7 @@ watch(itemParaEdicao, (novoValor) => {
 
             <button
               class="like-a__text addlink"
-              arial-label="excluir"
+              aria-label="excluir"
               title="excluir"
               :disabled="desabilitarTodosCampos.camposComuns"
               @click="remove(idx)"
@@ -938,7 +938,7 @@ watch(itemParaEdicao, (novoValor) => {
 
             <button
               class="like-a__text addlink"
-              arial-label="excluir"
+              aria-label="excluir"
               title="excluir"
               type="button"
               :disabled="desabilitarTodosCampos.camposComuns"
@@ -1356,7 +1356,6 @@ watch(itemParaEdicao, (novoValor) => {
             :schema="schema"
           />
           <Field
-            v-if="!projetoId"
             name="orgao_gestor_id"
             as="select"
             class="inputtext light mb1"
@@ -1364,9 +1363,8 @@ watch(itemParaEdicao, (novoValor) => {
               error: errors.orgao_gestor_id,
               loading: ÓrgãosStore.organs.loading,
             }"
-            :disabled="desabilitarTodosCampos.camposComuns
-              || !orgaosDisponiveisPorPortfolio[values.portfolio_id]?.length"
             :aria-busy="buscaDePossiveisGestoresPendente"
+            :disabled="desabilitarTodosCampos.camposComuns"
             @change="setFieldValue('responsaveis_no_orgao_gestor', [])"
           >
             <option :value="0">
@@ -1382,16 +1380,7 @@ watch(itemParaEdicao, (novoValor) => {
               {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
             </option>
           </Field>
-          <input
-            v-else
-            type="text"
-            :value="emFoco.orgao_gestor.sigla + ' - ' + truncate(emFoco.orgao_gestor.descricao, 36)"
-            class="inputtext light mb1"
-            :title="emFoco.orgao_gestor.descricao?.length > 36
-              ? emFoco.orgao_gestor.descricao
-              : null"
-            disabled
-          >
+
           <ErrorMessage
             name="orgao_gestor_id"
             class="error-msg"
@@ -1443,8 +1432,10 @@ watch(itemParaEdicao, (novoValor) => {
               error: errors.orgao_responsavel_id,
               loading: portfolioStore.chamadasPendentes.lista
             }"
-            :disabled="desabilitarTodosCampos.camposComuns
-              || !órgãosQueTemResponsáveis?.length"
+            :disabled="
+              values.codigo
+                || desabilitarTodosCampos.camposComuns
+                || !órgãosQueTemResponsáveis?.length"
             @change="setFieldValue('responsavel_id', 0)"
             @update:model-value="values.orgao_responsavel_id = Number(values.orgao_responsavel_id)
               || null"
@@ -1482,8 +1473,7 @@ watch(itemParaEdicao, (novoValor) => {
               error: errors.responsavel_id,
               loading: portfolioStore.chamadasPendentes.lista
             }"
-            :disabled="desabilitarTodosCampos.camposComuns
-              || !possiveisGerentesPorOrgaoId[values.orgao_responsavel_id]?.length"
+            :disabled="desabilitarTodosCampos.camposComuns"
             :aria-busy="buscaDePossiveisGerentesPendente"
             @update:model-value="values.responsavel_id = Number(values.responsavel_id)
               || null"

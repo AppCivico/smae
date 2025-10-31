@@ -184,7 +184,7 @@ watchEffect(() => {
         <button
           v-if="variavel?.pode_excluir"
           class="like-a__text"
-          arial-label="excluir"
+          aria-label="excluir"
           title="excluir"
           @click="excluirVariavel(variavel.id, variavel.titulo)"
         >

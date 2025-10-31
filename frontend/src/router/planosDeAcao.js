@@ -5,6 +5,7 @@ import PlanosDeAçãoLista from '@/views/planosDeAcao/PlanosDeAcaoLista.vue';
 import PlanosDeAçãoMonitoramento from '@/views/planosDeAcao/PlanosDeAcaoMonitoramento.vue';
 import PlanosDeAçãoRaiz from '@/views/planosDeAcao/PlanosDeAcaoRaiz.vue';
 import PlanosDeAçãoDetalhes from '@/views/planosDeAcao/PlanosDeAcaoDetalhe.vue';
+import { usePlanosDeAçãoStore } from '@/stores/planosDeAcao.store';
 
 export default {
   path: 'planos-de-acao',
@@ -30,17 +31,30 @@ export default {
         riscoId: Number.parseInt(params.riscoId, 10) || undefined,
       }),
       meta: {
-        título: () => {
-          if (useRiscosStore()?.emFoco) {
-            const { codigo, titulo } = useRiscosStore().emFoco;
-            return `${codigo} - ${titulo}`;
+        tituloParaMigalhaDePao: () => {
+          const { emFoco } = useRiscosStore();
+
+          if (!emFoco) {
+            return 'Resumo de riscos';
           }
-          return 'Resumo de risco';
+
+          return `Risco ${emFoco.titulo}`;
         },
+        título: () => {
+          const { emFoco } = useRiscosStore();
+
+          if (!emFoco) {
+            return 'Resumo de riscos';
+          }
+
+          return `Risco ${emFoco.titulo}`;
+        },
+        títuloParaMenu: 'Resumo de risco',
         rotasParaMigalhasDePão: [
           'projetosListar',
           'projetosResumo',
           'riscosListar',
+          'planosDeAçãoListar',
         ],
       },
     },
@@ -58,7 +72,6 @@ export default {
           'projetosResumo',
           'riscosListar',
           'planosDeAçãoListar',
-          'planosDeAçãoCriar',
         ],
       },
     },
@@ -88,14 +101,14 @@ export default {
           meta: {
             título: 'Editar plano de ação',
             títuloParaMenu: 'Editar plano de ação',
-
+            tituloParaMigalhaDePao: 'Editar',
             rotaDeEscape: 'planosDeAçãoListar',
             rotasParaMigalhasDePão: [
               'projetosListar',
               'projetosResumo',
               'riscosListar',
               'planosDeAçãoListar',
-              'planosDeAçãoEditar',
+              'detalhes',
             ],
           },
         },
@@ -113,15 +126,14 @@ export default {
           meta: {
             título: 'Monitoramento de plano de ação',
             títuloParaMenu: 'Monitoramento',
-
+            tituloParaMigalhaDePao: 'Novo Monitoramento',
             rotaDeEscape: 'planosDeAçãoListar',
             rotasParaMigalhasDePão: [
               'projetosListar',
               'projetosResumo',
               'riscosListar',
               'planosDeAçãoListar',
-              'planosDeAçãoEditar',
-              'planosDeAçãoMonitoramento',
+              'detalhes',
             ],
           },
         },
@@ -138,15 +150,24 @@ export default {
           meta: {
             título: 'Resumo do Plano de ação',
             títuloParaMenu: 'Resumo',
+            tituloParaMigalhaDePao: () => {
+              const { emFoco } = usePlanosDeAçãoStore();
+
+              if (!emFoco) {
+                return 'Resumo plano de ação';
+              }
+
+              return `${emFoco.contramedida}`;
+            },
             rotasParaMigalhasDePão: [
               'projetosListar',
               'projetosResumo',
               'riscosListar',
               'planosDeAçãoListar',
+              'detalhes',
             ],
           },
         },
-
       ],
     },
   ],

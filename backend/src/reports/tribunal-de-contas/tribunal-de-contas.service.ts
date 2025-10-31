@@ -1,16 +1,19 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { Date2YMD } from '../../common/date2ymd';
 import { PrismaService } from '../../prisma/prisma.service';
-import { DefaultCsvOptions, FileOutput, ReportableService } from '../utils/utils.service';
+import {
+    DefaultCsvOptions,
+    DefaultTransforms,
+    FileOutput,
+    Path2FileName,
+    ReportableService,
+} from '../utils/utils.service';
 import { CreateRelTribunalDeContasDto } from './dto/create-tribunal-de-contas.dto';
 import { RelatorioTribunalDeContasDto, RelTribunalDeContasDto } from './entities/tribunal-de-contas.entity';
-
-const {
-    Parser,
-    transforms: { flatten },
-} = require('json2csv');
-const defaultTransform = [flatten({ paths: [] })];
-
+import { ReportContext } from '../relatorios/helpers/reports.contexto';
+import { CsvWriterOptions, WriteCsvToFile } from 'src/common/helpers/CsvWriter';
+import { flatten } from '@json2csv/transforms';
+import { CampoVinculo } from '@prisma/client';
 @Injectable()
 export class TribunalDeContasService implements ReportableService {
     constructor(private readonly prisma: PrismaService) {}
@@ -76,6 +79,16 @@ export class TribunalDeContasService implements ReportableService {
                         status_base: true,
                     },
                 },
+                vinculos: {
+                    where: {
+                        removido_em: null,
+                        invalidado_em: null,
+                        campo_vinculo: CampoVinculo.Dotacao,
+                    },
+                    select: {
+                        valor_vinculo: true,
+                    },
+                },
             },
         });
 
@@ -87,6 +100,20 @@ export class TribunalDeContasService implements ReportableService {
                     ? distribuicaoStatusRow.status.nome
                     : distribuicaoStatusRow.status_base?.nome;
             }
+
+            // Construindo str de dotação(es)
+            // A str é formada por concatenação da dotação da distribuição e os vínculos de dotação.
+            // (unique dotações)
+            const dotacoes: string[] = [];
+            if (distribuicao.dotacao) {
+                dotacoes.push(distribuicao.dotacao);
+            }
+            distribuicao.vinculos.forEach((vinculo) => {
+                if (vinculo.valor_vinculo && !dotacoes.includes(vinculo.valor_vinculo)) {
+                    dotacoes.push(vinculo.valor_vinculo);
+                }
+            });
+            distribuicao.dotacao = dotacoes.join(' | ');
 
             return {
                 ano: distribuicao.transferencia.ano,
@@ -111,15 +138,17 @@ export class TribunalDeContasService implements ReportableService {
         };
     }
 
-    async toFileOutput(params: any): Promise<FileOutput[]> {
+    async toFileOutput(params: any, ctx: ReportContext): Promise<FileOutput[]> {
         const dados = await this.asJSON(params);
 
         const out: FileOutput[] = [];
 
         if (dados.linhas?.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
+            const tmp = ctx.getTmpFile('tribunal-de-contas.csv');
+
+            const csvOpts: CsvWriterOptions<RelTribunalDeContasDto> = {
+                csvOptions: DefaultCsvOptions,
+                transforms: DefaultTransforms,
                 fields: [
                     {
                         value: (row: any) => (row.emenda ? `="${String(row.emenda).replace(/\D/g, '')}"` : ''),
@@ -168,30 +197,22 @@ export class TribunalDeContasService implements ReportableService {
                         label: 'Liquidação/Pagamento',
                     },
                 ],
-            });
-            const linhas = json2csvParser.parse(
-                dados.linhas.map((r) => {
-                    return { ...r };
-                })
-            );
+            };
+
+            await WriteCsvToFile(dados.linhas, tmp.stream, csvOpts);
+
             out.push({
                 name: 'tribunal-de-contas.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
+                localFile: tmp.path,
             });
         }
 
-        return [
-            {
-                name: 'info.json',
-                buffer: Buffer.from(
-                    JSON.stringify({
-                        params: params,
-                        horario: Date2YMD.tzSp2UTC(new Date()),
-                    }),
-                    'utf8'
-                ),
-            },
-            ...out,
-        ];
+        await ctx.resumoSaida('Tribunal de Contas', dados.linhas.length);
+
+        return out;
+    }
+
+    getClassFileName(): string {
+        return Path2FileName(__filename);
     }
 }

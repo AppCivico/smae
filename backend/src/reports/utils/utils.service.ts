@@ -1,3 +1,4 @@
+import { flatten } from '@json2csv/transforms';
 import { Injectable } from '@nestjs/common';
 import { FonteRelatorio, ParlamentarCargo, TipoRelatorio } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
@@ -18,9 +19,9 @@ import { CreateRelProjetoOrcamentoDto } from '../projeto-orcamento/dto/create-pr
 import { CreateRelProjetoPrevisaoCustoDto } from '../projeto-previsao-custo/dto/create-projeto-previsao-custo.dto';
 import { CreatePsMonitoramentoMensalFilterDto } from '../ps-monitoramento-mensal/dto/create-ps-monitoramento-mensal-filter.dto';
 import { FiltroMetasIniAtividadeDto } from '../relatorios/dto/filtros.dto';
+import { ReportContext } from '../relatorios/helpers/reports.contexto';
 import { CreateRelTransferenciasDto } from '../transferencias/dto/create-transferencias.dto';
 import { CreateRelTribunalDeContasDto } from '../tribunal-de-contas/dto/create-tribunal-de-contas.dto';
-import { ReportContext } from '../relatorios/helpers/reports.contexto';
 
 @Injectable()
 export class UtilsService {
@@ -101,9 +102,14 @@ export class FileOutput {
     localFile?: string;
 }
 
+export function Path2FileName(path: string): string {
+    return path.split('/').pop()?.replace(/\.js$/, '.ts') ?? '';
+}
+
 export interface ReportableService {
     toFileOutput(params: any, ctx: ReportContext, user: PessoaFromJwt | null): Promise<FileOutput[]>;
     asJSON(params: any, user: PessoaFromJwt | null): Promise<any>;
+    getClassFileName(): string;
 }
 
 export function ParseParametrosDaFonte(fonte: FonteRelatorio, value: any): any {
@@ -181,6 +187,14 @@ export function ParseParametrosDaFonte(fonte: FonteRelatorio, value: any): any {
         version: undefined,
     });
 
+    const originalKeys = Object.keys(value);
+    // remove if extra keys of validatorObject if not preset in orig
+    for (const key of Object.keys(validatorObject)) {
+        if (!originalKeys.includes(key) && typeof validatorObject == 'object') {
+            delete (validatorObject as any)[key];
+        }
+    }
+
     return validatorObject;
 }
 
@@ -189,6 +203,7 @@ export const DefaultCsvOptions = {
     eol: '\r\n',
     withBOM: false, // dont be evil!
 };
+export const DefaultTransforms = [flatten()];
 
 export function EnumHumano(enumType: typeof ParlamentarCargo | typeof TipoRelatorio, value: string): string {
     const normalizedValue = value.trim();

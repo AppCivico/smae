@@ -51,7 +51,7 @@ onMounted(() => {
 
   <section class="edicoes-em-lote-lista">
     <SmaeTable
-      titulo-rolagem-horizontal="Tabela: Edição em Lote - Lista"
+      titulo-para-rolagem-horizontal="Tabela: Edição em Lote - Lista"
       class="mt2"
       rolagem-horizontal
       :dados="lista"

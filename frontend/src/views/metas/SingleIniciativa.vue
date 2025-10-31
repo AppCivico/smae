@@ -44,7 +44,9 @@ const orgaosEquipeIniciativa = computed(() => {
   if (singleIniciativa.value?.ps_ponto_focal?.equipes.length === 0) {
     return null;
   }
-  const equipesSelecionadasMeta = EquipesStore.equipesPorIds(singleIniciativa.value?.ps_ponto_focal?.equipes);
+  const equipesSelecionadasMeta = EquipesStore.equipesPorIds(
+    singleIniciativa.value?.ps_ponto_focal?.equipes,
+  );
   const orgaoIniciativa = equipesSelecionadasMeta.reduce((amount, item) => {
     amount.push(item.orgao.sigla + " - " + item.orgao.descricao);
     return amount;
@@ -177,11 +179,14 @@ iniciar();
             <div class="t13">
               {{
                 combinadorDeListas(
-                  orgaoIniciativa = EquipesStore.equipesPorIds(singleIniciativa.ps_ponto_focal.equipes).reduce((amount, item) => {
-                    amount.push(item.orgao.sigla + " - " + item.orgao.descricao);
-                    return amount;
-                  }, []))
-              }}     
+                  orgaoIniciativa = EquipesStore
+                    .equipesPorIds(singleIniciativa.ps_ponto_focal.equipes)
+                    .reduce((amount, item) => {
+                      amount.push(item.orgao.sigla + " - " + item.orgao.descricao);
+                      return amount;
+                    }, [])
+                )
+              }}
             </div>
           </div>
           <div class="mr2 f1">
@@ -191,11 +196,14 @@ iniciar();
             <div class="t13">
               {{
                 combinadorDeListas(
-                  orgaoIniciativa = EquipesStore.equipesPorIds(singleIniciativa.ps_tecnico_cp.equipes).reduce((amount, item) => {
-                    amount.push(item.orgao.sigla + " - " + item.orgao.descricao);
-                    return amount;
-                  }, []))
-              }}     
+                  orgaoIniciativa = EquipesStore
+                    .equipesPorIds(singleIniciativa.ps_tecnico_cp.equipes)
+                    .reduce((amount, item) => {
+                      amount.push(item.orgao.sigla + " - " + item.orgao.descricao);
+                      return amount;
+                    }, [])
+                )
+              }}
             </div>
           </div>
         </div>
@@ -331,7 +339,7 @@ iniciar();
                 </div>
                 <button
                   class="like-a__text"
-                  arial-label="excluir"
+                  aria-label="excluir"
                   title="excluir"
                   @click="checkDelete(ini)"
                 >
@@ -372,11 +380,14 @@ iniciar();
                     <div class="t13">
                       {{
                         combinadorDeListas(
-                          orgaoIniciativa = EquipesStore.equipesPorIds(ini.ps_ponto_focal.equipes).reduce((amount, item) => {
-                            amount.push(item.orgao.sigla + " - " + item.orgao.descricao);
-                            return amount;
-                          }, []))
-                      }}     
+                          orgaoIniciativa = EquipesStore
+                            .equipesPorIds(ini.ps_ponto_focal.equipes)
+                            .reduce((amount, item) => {
+                              amount.push(item.orgao.sigla + " - " + item.orgao.descricao);
+                              return amount;
+                            }, [])
+                        )
+                      }}
                     </div>
                   </div>   
                   <div class="mr2 f1">
@@ -386,11 +397,14 @@ iniciar();
                     <div class="t13">
                       {{
                         combinadorDeListas(
-                          orgaoIniciativa = EquipesStore.equipesPorIds(ini.ps_tecnico_cp.equipes).reduce((amount, item) => {
-                            amount.push(item.orgao.sigla + " - " + item.orgao.descricao);
-                            return amount;
-                          }, []))
-                      }}     
+                          orgaoIniciativa = EquipesStore
+                            .equipesPorIds(ini.ps_tecnico_cp.equipes)
+                            .reduce((amount, item) => {
+                              amount.push(item.orgao.sigla + " - " + item.orgao.descricao);
+                              return amount;
+                            }, [])
+                        )
+                      }}
                     </div>
                   </div>
                 </div>

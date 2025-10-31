@@ -185,8 +185,16 @@ details[open] summary {
   .dados-defasados();
 }
 
+.rolavel {
+  .rolavel();
+}
+
 .rolavel-horizontalmente {
   .rolavel-horizontalmente();
+}
+
+.rolavel-verticalmente {
+  .rolavel-verticalmente();
 }
 
 .congelado-no-topo {
@@ -308,6 +316,10 @@ input ~ span[role='alert'],
 
 .block {
   display: block !important;
+}
+
+.dib {
+  display: inline-block !important;
 }
 
 .ib {
@@ -785,6 +797,10 @@ p {
   padding-right: 5rem !important;
 }
 
+.pb0 {
+  padding-bottom: 0 !important;
+}
+
 .pb05 {
   padding-bottom: 0.5rem !important;
 }
@@ -896,6 +912,10 @@ p {
     align-self: flex-end;
   }
 
+  .align-stretch {
+    align-self: stretch;
+  }
+
   &.column {
     flex-direction: column;
   }
@@ -941,6 +961,10 @@ p {
   }
 
   // não adicionar `!important` em regras compostas
+  .fs0 {
+    flex-shrink: 0;
+  }
+
   .f1 {
     flex: 1;
   }
@@ -1506,6 +1530,39 @@ p {
   }
 }
 
+// Bloqueia scroll do body quando dialog está aberto
+body:has(dialog[open].editModal-dialog) {
+  overflow: hidden;
+}
+
+// Dialog nativo para modais
+.editModal-dialog {
+  border: none;
+  border-radius: 8px;
+  padding: 2rem;
+  width: 80%;
+  max-width: 665px;
+  max-height: 90vh;
+  overflow-y: auto;
+
+  // Backdrop (fundo escuro)
+  &::backdrop {
+    background: fade(@c50, 75%);
+  }
+
+  .editModal {
+    background: @branco;
+    color: @primary;
+    display: block;
+
+    &.small {
+      max-width: 500px;
+    }
+  }
+}
+
+// Fallback para navegadores antigos que não suportam dialog
+// ou para manter compatibilidade com código existente
 .editModal-wrap {
   position: fixed;
   left: 0;
@@ -1513,12 +1570,12 @@ p {
   width: 100%;
   height: 100%;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   z-index: 9999;
-  overflow: auto;
+  overflow-y: auto;
   padding: 3rem;
-  height: 100vh;
+  min-height: 100vh;
 
   .overlay {
     position: fixed;
@@ -1546,6 +1603,10 @@ p {
     &.small {
       max-width: 500px;
     }
+  }
+
+  .editModal--tamanho-ajustavel {
+    max-width: initial;
   }
 }
 
@@ -2358,6 +2419,15 @@ progress,
 
   &.fix {
     table-layout: fixed;
+  }
+
+  &.cabecalho-congelado {
+    thead {
+      position: sticky;
+      top: 0;
+      background-color: white;
+      z-index: 1;
+    }
   }
 
   tr,

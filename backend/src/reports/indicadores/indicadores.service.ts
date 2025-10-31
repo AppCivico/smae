@@ -1,11 +1,8 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { Prisma, Regiao } from '@prisma/client';
+import { createWriteStream } from 'fs';
 import { DateTime } from 'luxon';
 import { Readable } from 'stream';
-import { createWriteStream } from 'fs';
-import * as fs from 'fs';
-import * as path from 'path';
-import * as os from 'os';
 
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { Date2YMD } from '../../common/date2ymd';
@@ -13,7 +10,7 @@ import { EmitErrorAndDestroyStream, Stream2PromiseIntoArray } from '../../common
 import { PrismaService } from '../../prisma/prisma.service';
 import { RegiaoBasica as RegiaoDto } from '../../regiao/entities/regiao.entity';
 import { ReportContext } from '../relatorios/helpers/reports.contexto';
-import { DefaultCsvOptions, FileOutput, ReportableService, UtilsService } from '../utils/utils.service';
+import { FileOutput, Path2FileName, ReportableService, UtilsService } from '../utils/utils.service';
 import { CreateRelIndicadorDto, CreateRelIndicadorRegioesDto } from './dto/create-indicadores.dto';
 import { ListIndicadoresDto, RelIndicadoresDto, RelIndicadoresVariaveisDto } from './entities/indicadores.entity';
 
@@ -576,71 +573,54 @@ export class IndicadoresService implements ReportableService {
         const pdm = await this.prisma.pdm.findUniqueOrThrow({ where: { id: params.pdm_id } });
         const out: FileOutput[] = [];
 
-        // Create a temporary directory for file processing
-        const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'indicadores-report-'));
-        const indicadoresCsvPath = path.join(tmpDir, 'indicadores.csv');
-        const regioesCsvPath = path.join(tmpDir, 'regioes.csv');
+        const tmpIndic = ctx.getTmpFile('indicadores.csv');
+        const tmpRegio = ctx.getTmpFile('regioes.csv');
 
         try {
             // Build field definitions
             const camposMetaIniAtv = this.buildFieldDefinitions(pdm, params);
-
             // Process indicadores - execute SQL query directly
-            await this.processDadosIndicadores(indicadores, params, camposMetaIniAtv, indicadoresCsvPath);
+            const indicadoresCount = await this.processDadosIndicadores(
+                indicadores,
+                params,
+                camposMetaIniAtv,
+                tmpIndic.path
+            );
+            await ctx.resumoSaida('Indicadores', indicadoresCount);
 
-            if (fs.existsSync(indicadoresCsvPath) && fs.statSync(indicadoresCsvPath).size > 0) {
-                this.logger.debug(`CSV de indicadores gerado: ${indicadoresCsvPath}`);
+            if (indicadoresCount > 0) {
+                this.logger.debug(`CSV de indicadores gerado: ${tmpIndic.path}`);
                 out.push({
                     name: 'indicadores.csv',
-                    buffer: fs.readFileSync(indicadoresCsvPath),
+                    localFile: tmpIndic.path,
                 });
             }
 
             await ctx.progress(50);
 
             // Process regioes - execute SQL query directly
-            await this.processDadosRegioes(
+            const regioesCount = await this.processDadosRegioes(
                 indicadores,
                 params as CreateRelIndicadorRegioesDto,
                 camposMetaIniAtv,
-                regioesCsvPath
+                tmpRegio.path
             );
+            await ctx.resumoSaida('Indicadores Regionalizados', regioesCount);
 
-            if (fs.existsSync(regioesCsvPath) && fs.statSync(regioesCsvPath).size > 0) {
-                this.logger.debug(`CSV de regiões gerado: ${regioesCsvPath}`);
+            if (regioesCount > 0) {
+                this.logger.debug(`CSV de regiões gerado: ${tmpRegio.path}`);
                 out.push({
                     name: 'regioes.csv',
-                    buffer: fs.readFileSync(regioesCsvPath),
+                    localFile: tmpRegio.path,
                 });
             }
         } catch (error) {
             this.logger.error(`Erro ao processar: ${error}`);
             throw error;
-        } finally {
-            // Clean up temporary files
-            try {
-                if (fs.existsSync(indicadoresCsvPath)) fs.unlinkSync(indicadoresCsvPath);
-                if (fs.existsSync(regioesCsvPath)) fs.unlinkSync(regioesCsvPath);
-                fs.rmdirSync(tmpDir);
-            } catch (cleanupError) {
-                this.logger.warn(`Erro ao limpar arquivos temporários: ${cleanupError}`);
-            }
         }
 
         this.logger.debug(`CSVs gerados`);
         await ctx.progress(99);
-
-        // Add info file
-        out.push({
-            name: 'info.json',
-            buffer: Buffer.from(
-                JSON.stringify({
-                    params: params,
-                    horario: Date2YMD.tzSp2UTC(new Date()),
-                }),
-                'utf8'
-            ),
-        });
 
         return out;
     }
@@ -650,7 +630,8 @@ export class IndicadoresService implements ReportableService {
         params: CreateRelIndicadorDto,
         camposMetaIniAtv: any[],
         filePath: string
-    ): Promise<void> {
+    ): Promise<number> {
+        let total = 0;
         // Create file stream
         const fileStream = createWriteStream(filePath);
 
@@ -698,25 +679,25 @@ export class IndicadoresService implements ReportableService {
                 ),
                 i.casas_decimais
             )::text as valor
-        FROM 
+        FROM
             generate_series($1::date, $2::date, $3::interval) dt
-        CROSS JOIN 
+        CROSS JOIN
             (select 'Realizado'::"Serie" as serie UNION ALL select 'RealizadoAcumulado'::"Serie" as serie ) series
-        JOIN 
+        JOIN
             indicador i ON i.id IN (${indicadores.length ? indicadores.map((r) => r.id).join(',') : 0})
-        LEFT JOIN 
+        LEFT JOIN
             meta ON meta.id = i.meta_id
-        LEFT JOIN 
+        LEFT JOIN
             iniciativa ON iniciativa.id = i.iniciativa_id
-        LEFT JOIN 
+        LEFT JOIN
             atividade ON atividade.id = i.atividade_id
-        LEFT JOIN 
+        LEFT JOIN
             iniciativa i2 ON i2.id = atividade.iniciativa_id
-        LEFT JOIN 
+        LEFT JOIN
             meta m2 ON m2.id = iniciativa.meta_id OR m2.id = i2.meta_id
-        LEFT JOIN 
+        LEFT JOIN
             pdm ON pdm.id = meta.pdm_id OR pdm.id = m2.pdm_id
-        WHERE 
+        WHERE
             dt.dt >= i.inicio_medicao AND dt.dt < i.fim_medicao + (select periodicidade_intervalo(i.periodicidade))
         `;
 
@@ -724,11 +705,13 @@ export class IndicadoresService implements ReportableService {
             // Handle different query types
             if (params.tipo == 'Mensal' && params.mes) {
                 // For Mensal, query a single month
-                await this.executeSqlAndWriteToFile(queryBase, fileStream, null, camposMetaIniAtv, [
-                    `${params.ano}-${params.mes}-01`,
-                    `${params.ano}-${params.mes}-01`,
-                    '1 month',
-                ]);
+                total += Number(
+                    await this.executeSqlAndWriteToFile(queryBase, fileStream, null, camposMetaIniAtv, [
+                        `${params.ano}-${params.mes}-01`,
+                        `${params.ano}-${params.mes}-01`,
+                        '1 month',
+                    ])
+                );
             } else if (params.periodo == 'Anual' && params.tipo == 'Analitico') {
                 // For Anual Analitico, query all months in the year
                 const anoInicial = await this.capturaAnoSerieIndicadorInicial(
@@ -737,25 +720,30 @@ export class IndicadoresService implements ReportableService {
                 );
 
                 for (let ano = anoInicial; ano <= params.ano; ano++) {
-                    await this.executeSqlAndWriteToFile(queryBase, fileStream, null, camposMetaIniAtv, [
-                        `${ano}-01-01`,
-                        `${ano}-12-01`,
-                        '1 month',
-                    ]);
+                    total += Number(
+                        await this.executeSqlAndWriteToFile(queryBase, fileStream, null, camposMetaIniAtv, [
+                            `${ano}-01-01`,
+                            `${ano}-12-01`,
+                            '1 month',
+                        ])
+                    );
                 }
             } else if (params.periodo == 'Anual' && params.tipo == 'Consolidado') {
                 // For Anual Consolidado, query the whole year
-                await this.executeSqlAndWriteToFile(queryBase, fileStream, null, camposMetaIniAtv, [
-                    `${params.ano}-12-01`,
-                    `${params.ano}-12-01`,
-                    '1 year',
-                ]);
+                total += Number(
+                    await this.executeSqlAndWriteToFile(queryBase, fileStream, null, camposMetaIniAtv, [
+                        `${params.ano}-12-01`,
+                        `${params.ano}-12-01`,
+                        '1 year',
+                    ])
+                );
             }
             // Add other query types as needed
         } finally {
             // Close file stream
             fileStream.end();
         }
+        return total;
     }
 
     /**
@@ -789,7 +777,8 @@ export class IndicadoresService implements ReportableService {
         params: CreateRelIndicadorRegioesDto,
         camposMetaIniAtv: any[],
         filePath: string
-    ): Promise<void> {
+    ): Promise<number> {
+        let total = 0;
         // Create file stream
         const fileStream = createWriteStream(filePath);
 
@@ -844,7 +833,7 @@ export class IndicadoresService implements ReportableService {
             }
 
             // Build the anoInicial query first
-            let queryFromWhere = `indicador i ON i.id IN (${indicadores.length ? indicadores.map((r) => r.id).join(',') : 0})
+            const queryFromWhere = `indicador i ON i.id IN (${indicadores.length ? indicadores.map((r) => r.id).join(',') : 0})
         join indicador_variavel iv ON iv.indicador_id = i.id
         join variavel v ON v.id = iv.variavel_id
         join orgao ON v.orgao_id = orgao.id
@@ -905,31 +894,31 @@ export class IndicadoresService implements ReportableService {
                 dt.dt::date,
                 ${this.getJanelaExpression(params)}
             ) AS valor_json
-        FROM 
+        FROM
             generate_series($1::date, $2::date, $3::interval) dt
-        CROSS JOIN 
+        CROSS JOIN
             (select 'Realizado'::"Serie" as serie UNION ALL select 'RealizadoAcumulado'::"Serie" as serie) series
-        JOIN 
+        JOIN
             indicador i ON i.id IN (${indicadores.length ? indicadores.map((r) => r.id).join(',') : 0})
-        JOIN 
+        JOIN
             indicador_variavel iv ON iv.indicador_id = i.id
-        JOIN 
+        JOIN
             variavel v ON v.id = iv.variavel_id
-        JOIN 
+        JOIN
             orgao ON v.orgao_id = orgao.id
-        LEFT JOIN 
+        LEFT JOIN
             meta ON meta.id = i.meta_id
-        LEFT JOIN 
+        LEFT JOIN
             iniciativa ON iniciativa.id = i.iniciativa_id
-        LEFT JOIN 
+        LEFT JOIN
             atividade ON atividade.id = i.atividade_id
-        LEFT JOIN 
+        LEFT JOIN
             iniciativa i2 ON i2.id = atividade.iniciativa_id
-        LEFT JOIN 
+        LEFT JOIN
             meta m2 ON m2.id = iniciativa.meta_id OR m2.id = i2.meta_id
-        LEFT JOIN 
+        LEFT JOIN
             pdm ON pdm.id = meta.pdm_id OR pdm.id = m2.pdm_id
-        WHERE 
+        WHERE
             v.regiao_id is not null
             ${regionWhere}
             AND dt.dt >= i.inicio_medicao AND dt.dt < i.fim_medicao + (select periodicidade_intervalo(i.periodicidade))
@@ -950,50 +939,58 @@ export class IndicadoresService implements ReportableService {
             // Handle different query types based on params
             if (params.tipo == 'Mensal' && params.mes) {
                 this.logger.debug(`Executing Mensal query for regioes`);
-                await this.executeSqlAndWriteToFile(
-                    queryBase,
-                    fileStream,
-                    regioes,
-                    [...camposMetaIniAtv, ...regioesFields],
-                    [`${params.ano}-${params.mes}-01`, `${params.ano}-${params.mes}-01`, '1 month'],
-                    true // isRegioes flag
+                total += Number(
+                    await this.executeSqlAndWriteToFile(
+                        queryBase,
+                        fileStream,
+                        regioes,
+                        [...camposMetaIniAtv, ...regioesFields],
+                        [`${params.ano}-${params.mes}-01`, `${params.ano}-${params.mes}-01`, '1 month'],
+                        true // isRegioes flag
+                    )
                 );
             } else if (params.periodo == 'Anual' && params.tipo == 'Analitico') {
                 this.logger.debug(`Executing Anual Analitico query for regioes from ${anoInicial} to ${params.ano}`);
 
                 for (let ano = anoInicial; ano <= params.ano; ano++) {
                     this.logger.debug(`Processing year ${ano} for regioes`);
+                    total += Number(
+                        await this.executeSqlAndWriteToFile(
+                            queryBase,
+                            fileStream,
+                            regioes,
+                            [...camposMetaIniAtv, ...regioesFields],
+                            [`${ano}-01-01`, `${ano}-12-01`, '1 month'],
+                            true // isRegioes flag
+                        )
+                    );
+                }
+            } else if (params.periodo == 'Anual' && params.tipo == 'Consolidado') {
+                this.logger.debug(`Executing Anual Consolidado query for regioes`);
+                total += Number(
                     await this.executeSqlAndWriteToFile(
                         queryBase,
                         fileStream,
                         regioes,
                         [...camposMetaIniAtv, ...regioesFields],
-                        [`${ano}-01-01`, `${ano}-12-01`, '1 month'],
+                        [`${params.ano}-12-01`, `${params.ano}-12-01`, '1 year'],
                         true // isRegioes flag
-                    );
-                }
-            } else if (params.periodo == 'Anual' && params.tipo == 'Consolidado') {
-                this.logger.debug(`Executing Anual Consolidado query for regioes`);
-                await this.executeSqlAndWriteToFile(
-                    queryBase,
-                    fileStream,
-                    regioes,
-                    [...camposMetaIniAtv, ...regioesFields],
-                    [`${params.ano}-12-01`, `${params.ano}-12-01`, '1 year'],
-                    true // isRegioes flag
+                    )
                 );
             } else if (params.periodo == 'Semestral' && params.tipo == 'Consolidado') {
                 const tipo = params.semestre == 'Primeiro' ? 'Primeiro' : 'Segundo';
                 const dataAno = tipo == 'Primeiro' ? params.ano + '-06-01' : params.ano + '-12-01';
 
                 this.logger.debug(`Executing Semestral Consolidado query for regioes: ${tipo} ${params.ano}`);
-                await this.executeSqlAndWriteToFile(
-                    queryBase,
-                    fileStream,
-                    regioes,
-                    [...camposMetaIniAtv, ...regioesFields],
-                    [dataAno, dataAno, '1 second'],
-                    true // isRegioes flag
+                total += Number(
+                    await this.executeSqlAndWriteToFile(
+                        queryBase,
+                        fileStream,
+                        regioes,
+                        [...camposMetaIniAtv, ...regioesFields],
+                        [dataAno, dataAno, '1 second'],
+                        true // isRegioes flag
+                    )
                 );
             } else if (params.periodo == 'Semestral' && params.tipo == 'Analitico') {
                 const tipo = params.semestre == 'Primeiro' ? 'Primeiro' : 'Segundo';
@@ -1002,19 +999,21 @@ export class IndicadoresService implements ReportableService {
                     const semestreInicio = tipo === 'Segundo' ? ano + '-12-01' : ano + '-06-01';
 
                     this.logger.debug(`Executing Semestral Analitico query for regioes: ${tipo} ${ano}`);
-                    await this.executeSqlAndWriteToFile(
-                        queryBase,
-                        fileStream,
-                        regioes,
-                        [...camposMetaIniAtv, ...regioesFields],
-                        [
-                            DateTime.fromISO(semestreInicio)
-                                .minus({ months: tipo === 'Segundo' ? 11 : 5 })
-                                .toISODate(),
-                            semestreInicio,
-                            '1 month',
-                        ],
-                        true // isRegioes flag
+                    total += Number(
+                        await this.executeSqlAndWriteToFile(
+                            queryBase,
+                            fileStream,
+                            regioes,
+                            [...camposMetaIniAtv, ...regioesFields],
+                            [
+                                DateTime.fromISO(semestreInicio)
+                                    .minus({ months: tipo === 'Segundo' ? 11 : 5 })
+                                    .toISODate(),
+                                semestreInicio,
+                                '1 month',
+                            ],
+                            true // isRegioes flag
+                        )
                     );
                 }
             } else {
@@ -1027,6 +1026,7 @@ export class IndicadoresService implements ReportableService {
             // Close file stream
             fileStream.end();
         }
+        return total;
     }
 
     /**
@@ -1042,7 +1042,7 @@ export class IndicadoresService implements ReportableService {
         fields: any[],
         params: any[],
         isRegioes: boolean = false
-    ): Promise<void> {
+    ): Promise<number> {
         let rowCount = 0;
         let batchCount = 0;
 
@@ -1138,6 +1138,8 @@ export class IndicadoresService implements ReportableService {
             this.logger.error(`Error executing SQL: ${error}`);
             throw error;
         }
+
+        return rowCount;
     }
 
     /**
@@ -1882,5 +1884,9 @@ export class IndicadoresService implements ReportableService {
             parente_id: regiao_by_id[regiao_id].parente_id,
             pdm_codigo_sufixo: regiao_by_id[regiao_id].pdm_codigo_sufixo,
         };
+    }
+
+    getClassFileName(): string {
+        return Path2FileName(__filename);
     }
 }

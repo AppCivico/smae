@@ -1,4 +1,4 @@
-import { createWriteStream, WriteStream } from 'fs';
+import { createWriteStream, WriteStream, unlinkSync } from 'fs';
 import { ListaDePrivilegios } from '../../../common/ListaDePrivilegios';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { FileOutput } from '../../utils/utils.service';
@@ -13,9 +13,12 @@ export type RestricaoAcesso = {
 export class ReportContext {
     private cancelled: boolean = false;
     private files: FileOutput[] = [];
+    private tmpFiles: string[] = [];
     private restricaoAcesso: RestricaoAcesso | null = null;
     private prisma: PrismaService;
     private relatorio_id: number | null;
+    private resumoSaidaData: Record<string, any> = {};
+
 
     public readonly sistema: ModuloSistema;
 
@@ -53,6 +56,7 @@ export class ReportContext {
     getTmpFile(prefix: string): { path: string; stream: WriteStream } {
         const path = GetTempFileName(prefix);
         const stream = createWriteStream(path);
+        this.tmpFiles.push(path);
         return { path, stream };
     }
 
@@ -70,5 +74,50 @@ export class ReportContext {
 
     getRestricaoAcesso(): RestricaoAcesso | null {
         return this.restricaoAcesso;
+    }
+
+    /**
+     * Adiciona ou atualiza um campo no resumo_saida do relatório.
+     */
+    async resumoSaida(chave: string, valor: any): Promise<void> {
+        this.resumoSaidaData[chave] = valor;
+
+        if (this.relatorio_id) {
+            try {
+                await this.prisma.relatorio.update({
+                    where: { id: this.relatorio_id },
+                    data: {
+                        resumo_saida: JSON.parse(JSON.stringify(this.resumoSaidaData)),
+                    },
+                });
+            } catch (error) {
+                console.error('Erro ao atualizar resumo_saida do relatório', error);
+            }
+        }
+    }
+
+    getResumoSaida(): Record<string, any> {
+        return this.resumoSaidaData;
+    }
+
+    /**
+     * Remove todos os arquivos temporários criados durante a execução do relatório.
+     */
+    cleanupTmpFiles(): void {
+        for (const filePath of this.tmpFiles) {
+            try {
+                unlinkSync(filePath);
+            } catch (error) {
+                console.error(`Erro ao remover arquivo temporário ${filePath}:`, error);
+            }
+        }
+        this.tmpFiles = [];
+    }
+
+    /**
+     * Retorna a lista de arquivos temporários criados.
+     */
+    getTmpFiles(): string[] {
+        return [...this.tmpFiles];
     }
 }

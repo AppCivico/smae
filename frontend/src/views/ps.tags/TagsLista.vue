@@ -69,7 +69,7 @@
               'CadastroTagPDM.remover',
             ]) && psEmFoco?.pode_editar"
             class="like-a__text"
-            arial-label="excluir"
+            aria-label="excluir"
             title="excluir"
             @click="excluirTag(item.id, item.descricao)"
           >

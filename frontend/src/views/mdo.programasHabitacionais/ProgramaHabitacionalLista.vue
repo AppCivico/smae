@@ -29,7 +29,10 @@
         <td>{{ item.nome }}</td>
         <td>
           <router-link
-            :to="{ name: 'mdoProgramaHabitacionalEditar', params: { programaHabitacionalId: item.id } }"
+            :to="{
+              name: 'mdoProgramaHabitacionalEditar',
+              params: { programaHabitacionalId: item.id }
+            }"
             class="tprimary"
           >
             <svg
@@ -41,7 +44,7 @@
         <td>
           <button
             class="like-a__text"
-            arial-label="excluir"
+            aria-label="excluir"
             title="excluir"
             @click="excluirProgramaHabitacional(item.id, item.nome)"
           >

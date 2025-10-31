@@ -72,6 +72,8 @@ export const useParlamentaresStore = defineStore('parlamentaresStore', {
       this.erro = null;
 
       this.requestS.get(`${baseUrl}/eleicao`, params).then((resposta) => {
+        console.log('eleicao', resposta);
+
         if (Array.isArray(resposta)) {
           this.eleições = resposta;
         } else {
@@ -268,12 +270,12 @@ export const useParlamentaresStore = defineStore('parlamentaresStore', {
           await this.requestS.post(`${baseUrl}/parlamentar/${parlamentarId}/representatividade`, params);
         }
 
-        this.chamadasPendentes.representatividade = false;
         return true;
       } catch (erro) {
         this.erro = erro;
+        throw erro;
+      } finally {
         this.chamadasPendentes.representatividade = false;
-        return false;
       }
     },
 
@@ -294,6 +296,19 @@ export const useParlamentaresStore = defineStore('parlamentaresStore', {
         return false;
       }
     },
+    async buscarComparecimento(mandatoId) {
+      try {
+        const resposta = await this.requestS.get(`${baseUrl}/parlamentar/eleicao-comparecimento`, {
+          mandato_id: mandatoId,
+        });
+
+        return resposta;
+      } catch (erro) {
+        this.erro = erro;
+
+        throw new Error(erro);
+      }
+    },
   },
 
   getters: {
@@ -312,7 +327,7 @@ export const useParlamentaresStore = defineStore('parlamentaresStore', {
         ? { ...emFoco.equipe.find((x) => Number(pessoaId) === x.id) }
         : {};
     },
-    representatividadeParaEdição({ emFoco }) {
+    representatividadeParaEdicao({ emFoco }) {
       const { representatividadeId } = this.route.params;
 
       let representatividade;
@@ -336,6 +351,10 @@ export const useParlamentaresStore = defineStore('parlamentaresStore', {
             }
           }
         }
+      }
+
+      if (!representatividade) {
+        return null;
       }
 
       return {
