@@ -1,6 +1,6 @@
 <script setup>
 import { storeToRefs } from 'pinia';
-import { computed, onMounted, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 import CabecalhoDePagina from '@/components/CabecalhoDePagina.vue';
@@ -80,7 +80,7 @@ function montarRotaCriar() {
   if (route.meta.entidadeMãe === 'TransferenciasVoluntarias') {
     return { name: 'TransferenciasVoluntarias.etapaCriar' };
   }
-  return null;
+  return { name: '.etapaCriar' };
 }
 
 onMounted(() => {
@@ -111,28 +111,11 @@ onMounted(() => {
 
   <SmaeTable
     :colunas="[
-      { chave: 'descricao', label: 'Nome' },
-      { chave: 'portfolio_id', label: 'Portfólio' },
-      { chave: 'etapa_padrao_associada', label: 'Etapa Padrão Associada' },
-      { chave: 'etapa_padrao', label: 'Etapa Padrão' },
+      { chave: 'descricao', label: 'Nome' }
     ]"
     parametro-no-objeto-para-excluir="descricao"
     :dados="listaFiltrada"
-    :rota-editar="podeEditar()
-      ? montarRotaEditar
-      : undefined"
+    :rota-editar="podeEditar() ? montarRotaEditar : undefined"
     @deletar="excluirItem"
-  >
-    <template #celula:portfolio_id="{ linha }">
-      {{ linha.portfolio?.titulo || '-' }}
-    </template>
-
-    <template #celula:etapa_padrao="{ linha }">
-      {{ linha.eh_padrao ? 'Sim' : 'Não' }}
-    </template>
-
-    <template #celula:etapa_padrao_associada="{ linha }">
-      {{ linha.etapa_padrao?.descricao || '-' }}
-    </template>
-  </SmaeTable>
+  />
 </template>
