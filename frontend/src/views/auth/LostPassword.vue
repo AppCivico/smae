@@ -18,7 +18,7 @@ async function onSubmit(values) {
 <template>
   <div>
     <router-link
-      to="login"
+      to="/login"
       class="btn round outline tamarelo mb2"
     >
       <svg
