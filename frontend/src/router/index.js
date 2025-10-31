@@ -1,13 +1,16 @@
+import qs from 'qs';
+import { watch } from 'vue';
+import { createRouter, createWebHistory } from 'vue-router';
+
 import $eventHub from '@/components/eventHub';
 import decodificadorDePrimitivas from '@/helpers/decodificadorDePrimitivas';
 import retornarModuloAPartirDeEntidadeMae from '@/helpers/retornarModuloAPartirDeEntidadeMae';
 import { useAuthStore } from '@/stores/auth.store';
 import { Home } from '@/views';
 import { Login, LostPassword, NewPassword } from '@/views/auth';
+import AuthLayout from '@/views/auth/AuthLayout.vue';
 import Panorama from '@/views/Panorama.vue';
-import qs from 'qs';
-import { watch } from 'vue';
-import { createRouter, createWebHistory } from 'vue-router';
+
 import administracao from './administracao';
 import análise from './analise';
 import comunicadosGerais from './comunicadosGerais';
@@ -59,9 +62,15 @@ export const router = createRouter({
       },
     },
 
-    { path: '/login', component: Login },
-    { path: '/esqueci-minha-senha', component: LostPassword },
-    { path: '/nova-senha', component: NewPassword },
+    {
+      path: '',
+      component: AuthLayout,
+      children: [
+        { path: '/login', component: Login },
+        { path: '/esqueci-minha-senha', component: LostPassword },
+        { path: '/nova-senha', component: NewPassword },
+      ],
+    },
 
     ...administracao,
     ...configuracoes,
