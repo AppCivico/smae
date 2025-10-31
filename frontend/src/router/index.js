@@ -63,7 +63,7 @@ export const router = createRouter({
     },
 
     {
-      path: '',
+      path: '/',
       component: AuthLayout,
       children: [
         { path: '/login', component: Login },
