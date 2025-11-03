@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateProjetoEtapaDto } from './dto/create-projeto-etapa.dto';
 import { UpdateProjetoEtapaDto } from './dto/update-projeto-etapa.dto';
 import { TipoProjeto } from '@prisma/client';
+import { FilterProjetoEtapaDto } from './dto/filter-projeto-etapa.dto';
 
 @Injectable()
 export class ProjetoEtapaService {
@@ -23,6 +24,7 @@ export class ProjetoEtapaService {
 
         const created = await this.prisma.projetoEtapa.create({
             data: {
+                portfolio_id: dto.portfolio_id,
                 tipo_projeto: tipo,
                 criado_por: user.id,
                 criado_em: new Date(Date.now()),
@@ -34,15 +36,22 @@ export class ProjetoEtapaService {
         return created;
     }
 
-    async findAll(tipo: TipoProjeto) {
+    async findAll(tipo: TipoProjeto, filters: FilterProjetoEtapaDto) {
         const listActive = await this.prisma.projetoEtapa.findMany({
             where: {
                 removido_em: null,
                 tipo_projeto: tipo,
+                portfolio_id: filters.portfolio_id,
             },
             select: {
                 id: true,
                 descricao: true,
+                portfolio: {
+                    select: {
+                        id: true,
+                        titulo: true,
+                    },
+                },
             },
             orderBy: { descricao: 'asc' },
         });
@@ -78,6 +87,7 @@ export class ProjetoEtapaService {
                 atualizado_por: user.id,
                 atualizado_em: new Date(Date.now()),
                 descricao: dto.descricao,
+                portfolio_id: dto.portfolio_id,
             },
         });
 

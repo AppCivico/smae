@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -10,6 +10,7 @@ import { ListProjetoEtapaDto } from './dto/list-projeto-etapa.dto';
 import { UpdateProjetoEtapaDto } from './dto/update-projeto-etapa.dto';
 import { ProjetoEtapaService } from './projeto-etapa.service';
 import { TipoProjeto } from '@prisma/client';
+import { FilterProjetoEtapaDto } from './dto/filter-projeto-etapa.dto';
 
 @ApiTags('Projeto Etapa')
 @Controller('projeto-etapa')
@@ -29,8 +30,8 @@ export class ProjetoEtapaController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    async findAll(): Promise<ListProjetoEtapaDto> {
-        return { linhas: await this.projetoEtapaService.findAll(this.tipo) };
+    async findAll(@Query() filters: FilterProjetoEtapaDto): Promise<ListProjetoEtapaDto> {
+        return { linhas: await this.projetoEtapaService.findAll(this.tipo, filters) };
     }
 
     @Patch(':id')
@@ -73,8 +74,8 @@ export class ProjetoEtapaMDOController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    async findAll(): Promise<ListProjetoEtapaDto> {
-        return { linhas: await this.projetoEtapaService.findAll(this.tipo) };
+    async findAll(@Query() filters: FilterProjetoEtapaDto): Promise<ListProjetoEtapaDto> {
+        return { linhas: await this.projetoEtapaService.findAll(this.tipo, filters) };
     }
 
     @Patch(':id')

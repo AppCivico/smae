@@ -1097,6 +1097,12 @@ model Tag {
 model ProjetoEtapa {
     id Int @id @default(autoincrement())
 
+    portfolio_id Int?
+    portfolio    Portfolio? @relation(fields: [portfolio_id], references: [id])
+
+    etapa_padrao_id Int?
+    etapa_padrao    ProjetoEtapa? @relation("EtapaPadrao", fields: [etapa_padrao_id], references: [id])
+
     tipo_projeto TipoProjeto @default(PP)
 
     descricao String
@@ -1115,6 +1121,7 @@ model ProjetoEtapa {
     removedor                     Pessoa?                         @relation("Removedor", fields: [removido_por], references: [id])
     Projeto                       Projeto[]
     ViewPainelEstrategicoProjetos ViewPainelEstrategicoProjetos[]
+    EtapaPadrao                   ProjetoEtapa[]                  @relation("EtapaPadrao")
 
     @@map("projeto_etapa")
 }
@@ -3620,6 +3627,7 @@ model Portfolio {
     ViewProjetoMDO                ViewProjetoMDO[]
     ViewPainelEstrategicoProjetos ViewPainelEstrategicoProjetos[]
     ViewProjetoV2                 ViewProjetoV2[]
+    etapasProjeto                 ProjetoEtapa[]
 
     @@map("portfolio")
 }
