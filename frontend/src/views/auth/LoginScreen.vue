@@ -1,7 +1,8 @@
 <script setup>
+import { Field, Form } from 'vee-validate';
+
 import { autenticação as schema } from '@/consts/formSchemas';
 import { useAuthStore } from '@/stores/auth.store';
-import { Field, Form } from 'vee-validate';
 
 async function onSubmit(values) {
   const authStore = useAuthStore();
@@ -25,7 +26,7 @@ async function onSubmit(values) {
         @change="($e) => { setFieldValue('email', $e.target.value.trim()); }"
       />
       <div class="error-msg">
-        {{ errors.username }}
+        {{ errors.email }}
       </div>
     </div>
     <div class="form-group">
@@ -39,7 +40,7 @@ async function onSubmit(values) {
         @change="($e) => { setFieldValue('senha', $e.target.value.trim()); }"
       />
       <div class="error-msg">
-        {{ errors.password }}
+        {{ errors.senha }}
       </div>
     </div>
     <div class="form-group">
