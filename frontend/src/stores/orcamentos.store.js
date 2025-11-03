@@ -1,6 +1,7 @@
-import toFloat from '@/helpers/toFloat';
 import Big from 'big.js';
 import { defineStore } from 'pinia';
+
+import toFloat from '@/helpers/toFloat';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
