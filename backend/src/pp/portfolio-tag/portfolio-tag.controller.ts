@@ -18,13 +18,13 @@ export class PortfolioTagController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroPortfolioTag.inserir'])
+    //@Roles(['CadastroPortfolioTag.inserir'])
     async create(@Body() dto: UpsertPortfolioTagDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.portfolioTagService.upsert(dto, user);
     }
 
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroPortfolioTag.editar', 'CadastroPortfolioTag.inserir'])
+    //@Roles(['CadastroPortfolioTag.editar', 'CadastroPortfolioTag.inserir'])
     @Get()
     async findAll(@Query() filters: FilterPortfolioTagDto): Promise<ListPortfolioTagDto> {
         return await this.portfolioTagService.findAll(filters);
@@ -32,14 +32,14 @@ export class PortfolioTagController {
 
     @Get(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroPortfolioTag.editar', 'CadastroPortfolioTag.inserir'])
+    //@Roles(['CadastroPortfolioTag.editar', 'CadastroPortfolioTag.inserir'])
     async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<PortfolioTagDto> {
         return await this.portfolioTagService.findOne(params.id, user);
     }
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroPortfolioTag.editar'])
+    //@Roles(['CadastroPortfolioTag.editar'])
     async update(
         @Param() params: FindOneParams,
         @Body() dto: UpsertPortfolioTagDto,
@@ -50,7 +50,7 @@ export class PortfolioTagController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroPortfolioTag.remover'])
+    //@Roles(['CadastroPortfolioTag.remover'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
