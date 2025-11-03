@@ -25,6 +25,7 @@ export class ProjetoEtapaService {
         const created = await this.prisma.projetoEtapa.create({
             data: {
                 portfolio_id: dto.portfolio_id,
+                etapa_padrao_id: dto.etapa_padrao_id,
                 tipo_projeto: tipo,
                 criado_por: user.id,
                 criado_em: new Date(Date.now()),
@@ -94,6 +95,7 @@ export class ProjetoEtapaService {
                 atualizado_em: new Date(Date.now()),
                 descricao: dto.descricao,
                 portfolio_id: dto.portfolio_id,
+                etapa_padrao_id: dto.etapa_padrao_id,
             },
         });
 

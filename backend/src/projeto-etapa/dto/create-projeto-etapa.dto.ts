@@ -12,4 +12,8 @@ export class CreateProjetoEtapaDto {
     @IsOptional()
     @IsNumber()
     portfolio_id?: number;
+
+    @IsOptional()
+    @IsNumber()
+    etapa_padrao_id?: number;
 }
