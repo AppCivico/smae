@@ -160,6 +160,11 @@ export class UpdateProjetoDto extends OmitType(PartialType(CreateProjetoDto), ['
     @IsArray()
     @IsInt({ message: '$property| Precisa ser uma lista de inteiros', each: true })
     equipe?: number[];
+
+    @IsOptional()
+    @IsArray()
+    @IsInt({ message: '$property| Precisa ser uma lista de inteiros', each: true })
+    tags_portfolio?: number[];
 }
 
 export class UpdateProjetoDocumentDto {

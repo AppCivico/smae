@@ -293,6 +293,7 @@ export class ProjetoDetailDto extends ResumoDetalheOrigensDto {
     orgao_origem: IdSiglaDescricao | null;
 
     tags: IdDesc[];
+    tags_portfolio: IdDesc[];
 }
 
 export class ProjetoDetailBaseMdo {

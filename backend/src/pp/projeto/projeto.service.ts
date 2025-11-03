@@ -1859,6 +1859,17 @@ export class ProjetoService {
                         },
                     },
                 },
+
+                tags_portfolio: {
+                    select: {
+                        portfolio: {
+                            select: {
+                                id: true,
+                                descricao: true,
+                            },
+                        },
+                    },
+                },
             },
         });
         if (!projeto) throw new HttpException('Projeto não encontrado ou sem permissão para acesso', 400);
@@ -2061,6 +2072,13 @@ export class ProjetoService {
                   })
                 : null,
             tags,
+
+            tags_portfolio: projeto.tags_portfolio.map((tp) => {
+                return {
+                    id: tp.portfolio.id,
+                    descricao: tp.portfolio.descricao!,
+                };
+            }),
         };
 
         if (tipo == 'MDO') {
@@ -2629,6 +2647,52 @@ export class ProjetoService {
 
                     if (tags.length !== dto.tags.length)
                         throw new HttpException('tags| Uma ou mais tag não foi encontrada', 400);
+                }
+            }
+
+            if (Array.isArray(dto.tags_portfolio)) {
+                const newTagsSorted = dto.tags_portfolio.sort().join(',');
+                const oldTagsSorted = projeto.tags_portfolio
+                    .map((t) => t.id)
+                    .sort()
+                    .join(',');
+
+                if (newTagsSorted !== oldTagsSorted) {
+                    const tagsPortfolio = await prismaTx.portfolioTag.findMany({
+                        where: {
+                            id: { in: dto.tags_portfolio },
+                            portfolio_id: projeto.portfolio_id,
+                            removido_em: null,
+                        },
+                        select: { id: true },
+                    });
+
+                    if (tagsPortfolio.length !== dto.tags_portfolio.length)
+                        throw new HttpException('tags_portfolio| Uma ou mais tag de portfólio não foi encontrada', 400);
+
+                    // Soft delete dos relacionamentos existentes
+                    await prismaTx.projetoPortfolioTag.updateMany({
+                        where: {
+                            projeto_id: projetoId,
+                            removido_em: null,
+                        },
+                        data: {
+                            removido_em: now,
+                            removido_por: user.id,
+                        },
+                    });
+
+                    // Criar novos relacionamentos
+                    if (dto.tags_portfolio.length > 0) {
+                        await prismaTx.projetoPortfolioTag.createMany({
+                            data: dto.tags_portfolio.map((tagId) => ({
+                                projeto_id: projetoId,
+                                portfolio_tag_id: tagId,
+                                criado_por: user.id,
+                                criado_em: now,
+                            })),
+                        });
+                    }
                 }
             }
 
