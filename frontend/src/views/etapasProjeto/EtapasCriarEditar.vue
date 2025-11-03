@@ -40,15 +40,30 @@ const props = defineProps({
 
 const emFoco = computed(() => {
   if (props.etapaId) {
-    return etapasPorId.value[props.etapaId] || null;
+    const etapa = etapasPorId.value[props.etapaId];
+    if (!etapa) return null;
+
+    return {
+      descricao: etapa.descricao,
+      eh_padrao: etapa.eh_padrao,
+      portfolio_id: etapa.portfolio?.id || null,
+      etapa_padrao_id: etapa.etapa_padrao?.id || null,
+    };
   }
 
   return {
     descricao: '',
-    etapa_padrao: false,
+    eh_padrao: false,
     portfolio_id: null,
-    etapa_padrao_associada_id: null,
+    etapa_padrao_id: null,
   };
+});
+
+const etapasPadraoDisponiveis = computed(() => {
+  if (props.etapaId) {
+    return etapasPadrao.value.filter((etapa) => etapa.id !== props.etapaId);
+  }
+  return etapasPadrao.value;
 });
 
 onMounted(() => {
@@ -201,38 +216,38 @@ function excluirEtapaDoProjeto(id) {
     <div class="flex g2 mb1">
       <div class="f1 mb1">
         <LabelFromYup
-          name="etapa_padrao"
+          name="eh_padrao"
           :schema="schema"
         />
         <label class="block mb05">
           <Field
-            name="etapa_padrao"
+            name="eh_padrao"
             type="radio"
             :value="true"
             @change="() => {
               resetField('portfolio_id');
-              resetField('etapa_padrao_associada_id');
+              resetField('etapa_padrao_id');
             }"
           />
           Sim
         </label>
         <label class="block">
           <Field
-            name="etapa_padrao"
+            name="eh_padrao"
             type="radio"
             :value="false"
           />
           Não
         </label>
         <ErrorMessage
-          name="etapa_padrao"
+          name="eh_padrao"
           class="error-msg"
         />
       </div>
     </div>
 
     <div
-      v-if="values.etapa_padrao === false"
+      v-if="values.eh_padrao === false"
       class="flex g2 mb1"
     >
       <div class="f1 mb1">
@@ -266,21 +281,21 @@ function excluirEtapaDoProjeto(id) {
 
       <div class="f1 mb1">
         <LabelFromYup
-          name="etapa_padrao_associada_id"
+          name="etapa_padrao_id"
           :schema="schema"
         />
         <Field
-          name="etapa_padrao_associada_id"
+          name="etapa_padrao_id"
           as="select"
           class="inputtext light mb1"
-          :class="{ error: errors.etapa_padrao_associada_id }"
+          :class="{ error: errors.etapa_padrao_id }"
           :disabled="chamadasPendentes.lista"
         >
           <option value="">
             Selecionar
           </option>
           <option
-            v-for="etapa in etapasPadrao"
+            v-for="etapa in etapasPadraoDisponiveis"
             :key="etapa.id"
             :value="etapa.id"
           >
@@ -288,7 +303,7 @@ function excluirEtapaDoProjeto(id) {
           </option>
         </Field>
         <ErrorMessage
-          name="etapa_padrao_associada_id"
+          name="etapa_padrao_id"
           class="error-msg"
         />
       </div>
