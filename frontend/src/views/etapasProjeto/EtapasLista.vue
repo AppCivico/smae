@@ -113,8 +113,8 @@ onMounted(() => {
     :colunas="[
       { chave: 'descricao', label: 'Nome' },
       { chave: 'portfolio_id', label: 'Portfólio' },
-      { chave: 'etapa_padrao', label: 'Etapa Padrão' },
       { chave: 'etapa_padrao_associada_id', label: 'Etapa Padrão Associada' },
+      { chave: 'etapa_padrao', label: 'Etapa Padrão' },
     ]"
     parametro-no-objeto-para-excluir="descricao"
     :dados="listaFiltrada"
