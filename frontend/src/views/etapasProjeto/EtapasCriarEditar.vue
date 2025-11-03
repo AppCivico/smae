@@ -185,7 +185,7 @@ function excluirEtapaDoProjeto(id) {
 
   <form
     v-if="!etapaId || emFoco"
-    v-slot="{ errors, isSubmitting, values, resetField }"
+    v-slot="{ errors, isSubmitting, values, setFieldValue }"
     :disabled="chamadasPendentes.emFoco"
     :initial-values="emFoco"
     :validation-schema="schema"
@@ -227,8 +227,8 @@ function excluirEtapaDoProjeto(id) {
             type="radio"
             :value="true"
             @change="() => {
-              resetField('portfolio_id');
-              resetField('etapa_padrao_id');
+              setFieldValue('portfolio_id', null);
+              setFieldValue('etapa_padrao_id', null);
             }"
           />
           Sim
