@@ -110,6 +110,11 @@ export class ProjetoEtapaService {
             );
         }
 
+        // Vendo se não está tentando colocar "self" como padrão
+        if (dto.etapa_padrao_id === id) {
+            throw new HttpException('etapa_padrao_id| Não pode informar a própria etapa como padrão', 400);
+        }
+
         await this.prisma.projetoEtapa.update({
             where: { id: id },
             data: {
@@ -130,6 +135,11 @@ export class ProjetoEtapaService {
             where: { tipo, removido_em: null, projeto_etapa_id: id },
         });
         if (emUso > 0) throw new HttpException('Etapa em uso em projetos.', 400);
+
+        const emUsoPadrao = await this.prisma.projetoEtapa.count({
+            where: { tipo_projeto: tipo, removido_em: null, etapa_padrao_id: id },
+        });
+        if (emUsoPadrao > 0) throw new HttpException('Etapa em uso como padrão em outras etapas.', 400);
 
         const created = await this.prisma.projetoEtapa.updateMany({
             where: { id: id, tipo_projeto: tipo },
