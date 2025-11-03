@@ -52,6 +52,12 @@ export class ProjetoEtapaService {
                         titulo: true,
                     },
                 },
+                etapa_padrao: {
+                    select: {
+                        id: true,
+                        descricao: true,
+                    },
+                },
             },
             orderBy: { descricao: 'asc' },
         });
