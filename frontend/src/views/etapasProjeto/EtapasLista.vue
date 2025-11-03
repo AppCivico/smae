@@ -93,7 +93,7 @@ function montarRotaCriar() {
   if (route.meta.entidadeMãe === 'TransferenciasVoluntarias') {
     return { name: 'TransferenciasVoluntarias.etapaCriar' };
   }
-  return { name: '.etapaCriar' };
+  return null;
 }
 
 onMounted(() => {

@@ -24,7 +24,10 @@ const portfoliosStore = usePortfolioStore();
 const {
   chamadasPendentes, erro, etapasPorId, etapasPadrao,
 } = storeToRefs(etapasProjetosStore);
-const { lista: portfolios } = storeToRefs(portfoliosStore);
+const {
+  lista: portfolios,
+  chamadasPendentes: chamadasPendentesPortfolios,
+} = storeToRefs(portfoliosStore);
 
 defineOptions({ inheritAttrs: false });
 
@@ -242,7 +245,7 @@ function excluirEtapaDoProjeto(id) {
           as="select"
           class="inputtext light mb1"
           :class="{ error: errors.portfolio_id }"
-          :disabled="chamadasPendentes.lista"
+          :disabled="chamadasPendentesPortfolios.lista"
         >
           <option value="">
             Selecionar
