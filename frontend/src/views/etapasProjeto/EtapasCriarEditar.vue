@@ -44,6 +44,7 @@ const emFoco = computed(() => {
     if (!etapa) return null;
 
     return {
+      id: etapa.id,
       descricao: etapa.descricao,
       eh_padrao: etapa.eh_padrao,
       portfolio_id: etapa.portfolio?.id || null,
@@ -52,6 +53,7 @@ const emFoco = computed(() => {
   }
 
   return {
+    id: null,
     descricao: '',
     eh_padrao: false,
     portfolio_id: null,
