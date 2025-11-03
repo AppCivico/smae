@@ -1,10 +1,10 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import {
-  ErrorMessage, Field, Form, useForm,
+  ErrorMessage, Field, useForm, useIsFormDirty,
 } from 'vee-validate';
 import {
-  computed, defineOptions, onMounted, watch,
+  computed, defineOptions, onMounted,
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -42,35 +42,6 @@ const emFoco = computed(() => {
   if (props.etapaId) {
     const etapa = etapasPorId.value[props.etapaId];
     if (!etapa) return null;
-
-    return {
-      id: etapa.id,
-      descricao: etapa.descricao,
-      eh_padrao: etapa.eh_padrao,
-      portfolio_id: etapa.portfolio?.id || null,
-      etapa_padrao_id: etapa.etapa_padrao?.id || null,
-    };
-  }
-
-  return {
-    id: null,
-    descricao: '',
-    eh_padrao: false,
-    portfolio_id: null,
-    etapa_padrao_id: null,
-  };
-});
-
-const etapasPadraoDisponiveis = computed(() => {
-  if (props.etapaId) {
-    return etapasPadrao.value.filter((etapa) => etapa.id !== props.etapaId);
-  }
-  return etapasPadrao.value;
-});
-
-onMounted(() => {
-  portfoliosStore.buscarTudo();
-});
 
     return {
       id: etapa.id,
@@ -185,10 +156,6 @@ function excluirEtapaDoProjeto(id) {
 
   <form
     v-if="!etapaId || emFoco"
-    v-slot="{ errors, isSubmitting, values, setFieldValue }"
-    :disabled="chamadasPendentes.emFoco"
-    :initial-values="emFoco"
-    :validation-schema="schema"
     @submit="onSubmit"
   >
     <div class="flex g2 mb1">
