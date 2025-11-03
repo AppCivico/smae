@@ -1,4 +1,4 @@
-import { IsNumber, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsBoolean, IsNumber, IsOptional, IsString, MaxLength } from 'class-validator';
 import { MAX_LENGTH_MEDIO } from 'src/common/consts';
 
 export class CreateProjetoEtapaDto {
@@ -16,4 +16,8 @@ export class CreateProjetoEtapaDto {
     @IsOptional()
     @IsNumber()
     etapa_padrao_id?: number;
+
+    @IsOptional()
+    @IsBoolean()
+    eh_padrao?: boolean;
 }

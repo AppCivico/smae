@@ -22,6 +22,10 @@ export class ProjetoEtapaService {
         if (similarExists > 0)
             throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
 
+        // Caso informe que é padrão, não pode mandar "etapa_padrao_id"
+        if (dto.eh_padrao && dto.etapa_padrao_id)
+            throw new HttpException('etapa_padrao_id| Não pode informar etapa padrão se o registro for padrão', 400);
+
         const created = await this.prisma.projetoEtapa.create({
             data: {
                 portfolio_id: dto.portfolio_id,
@@ -30,6 +34,7 @@ export class ProjetoEtapaService {
                 criado_por: user.id,
                 criado_em: new Date(Date.now()),
                 descricao: dto.descricao,
+                eh_padrao: dto.eh_padrao,
             },
             select: { id: true },
         });
@@ -47,6 +52,7 @@ export class ProjetoEtapaService {
             select: {
                 id: true,
                 descricao: true,
+                eh_padrao: true,
                 portfolio: {
                     select: {
                         id: true,
@@ -67,8 +73,9 @@ export class ProjetoEtapaService {
     }
 
     async update(tipo: TipoProjeto, id: number, dto: UpdateProjetoEtapaDto, user: PessoaFromJwt) {
-        await this.prisma.projetoEtapa.findFirstOrThrow({
+        const self = await this.prisma.projetoEtapa.findFirstOrThrow({
             where: { id: id, tipo_projeto: tipo },
+            include: { EtapaPadrao: true },
         });
 
         if (dto.descricao !== undefined) {
@@ -88,6 +95,21 @@ export class ProjetoEtapaService {
                 );
         }
 
+        // Caso tenha etapas que utilizam a row como padrão, não pode deixar de ser padrão.
+        if (self.EtapaPadrao.length > 0 && dto.eh_padrao === false) {
+            throw new HttpException(
+                'eh_padrao| Não pode deixar de ser padrão, existem etapas que utilizam esta etapa como padrão',
+                400
+            );
+        }
+
+        if (!self.eh_padrao && dto.eh_padrao && dto.etapa_padrao_id) {
+            throw new HttpException(
+                'etapa_padrao_id| Não pode transformar em etapa padrão, pois já existe uma etapa padrão associada.',
+                400
+            );
+        }
+
         await this.prisma.projetoEtapa.update({
             where: { id: id },
             data: {
@@ -96,6 +118,7 @@ export class ProjetoEtapaService {
                 descricao: dto.descricao,
                 portfolio_id: dto.portfolio_id,
                 etapa_padrao_id: dto.etapa_padrao_id,
+                eh_padrao: dto.eh_padrao,
             },
         });
 

@@ -5,4 +5,5 @@ export class ProjetoEtapaDto {
     descricao: string;
     portfolio: IdTituloDto | null;
     etapa_padrao: IdDescricaoDto | null;
+    eh_padrao: boolean;
 }
