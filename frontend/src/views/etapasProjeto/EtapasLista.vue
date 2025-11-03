@@ -9,28 +9,15 @@ import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
-import { usePortfolioStore } from '@/stores/portfolios.store';
 
 const route = useRoute();
 const authStore = useAuthStore();
 const { temPermissãoPara } = authStore;
 const etapasProjetosStore = useEtapasProjetosStore(route.meta.entidadeMãe);
-const portfoliosStore = usePortfolioStore();
 const { lista } = storeToRefs(etapasProjetosStore);
-const { lista: portfolios } = storeToRefs(portfoliosStore);
 
 const alertStore = useAlertStore();
 const listaFiltrada = ref([]);
-
-const portfoliosPorId = computed(() => portfolios.value.reduce((acc, portfolio) => {
-  acc[portfolio.id] = portfolio;
-  return acc;
-}, {}));
-
-const etapasPorId = computed(() => lista.value.reduce((acc, etapa) => {
-  acc[etapa.id] = etapa;
-  return acc;
-}, {}));
 
 function buscarDados() {
   etapasProjetosStore.$reset();
@@ -98,7 +85,6 @@ function montarRotaCriar() {
 
 onMounted(() => {
   buscarDados();
-  portfoliosStore.buscarTudo();
 });
 </script>
 <template>
@@ -138,22 +124,15 @@ onMounted(() => {
     @deletar="excluirItem"
   >
     <template #celula:portfolio_id="{ linha }">
-      {{ linha.portfolio_id
-        ? portfoliosPorId[linha.portfolio_id]?.titulo || linha.portfolio_id
-        : '-'
-      }}
+      {{ linha.portfolio?.titulo || '-' }}
     </template>
 
     <template #celula:etapa_padrao="{ linha }">
-      {{ linha.etapa_padrao ? 'Sim' : 'Não' }}
+      {{ linha.eh_padrao ? 'Sim' : 'Não' }}
     </template>
 
     <template #celula:etapa_padrao_associada_id="{ linha }">
-      {{ linha.etapa_padrao_associada_id
-        ? etapasPorId[linha.etapa_padrao_associada_id]?.descricao
-          || linha.etapa_padrao_associada_id
-        : '-'
-      }}
+      {{ linha.etapa_padrao?.descricao || '-' }}
     </template>
   </SmaeTable>
 </template>
