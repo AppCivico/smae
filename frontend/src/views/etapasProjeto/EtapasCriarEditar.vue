@@ -1,10 +1,10 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import {
-  ErrorMessage, Field, Form, useForm,
+  ErrorMessage, Field, useForm, useIsFormDirty,
 } from 'vee-validate';
 import {
-  computed, defineOptions, onMounted, watch,
+  computed, defineOptions, onMounted,
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -61,6 +61,15 @@ const emFoco = computed(() => {
   };
 });
 
+const {
+  errors, handleSubmit, isSubmitting, values, setFieldValue,
+} = useForm({
+  initialValues: emFoco,
+  validationSchema: schema,
+});
+
+const formularioSujo = useIsFormDirty();
+
 const etapasPadraoDisponiveis = computed(() => {
   if (props.etapaId) {
     return etapasPadrao.value.filter((etapa) => etapa.id !== props.etapaId);
@@ -72,8 +81,7 @@ onMounted(() => {
   portfoliosStore.buscarTudo();
 });
 
-async function onSubmit(_, { controlledValues }) {
-  const carga = controlledValues;
+const onSubmit = handleSubmit(async (carga) => {
   let redirect;
   if (route.meta.entidadeMãe === 'TransferenciasVoluntarias') {
     redirect = 'TransferenciasVoluntarias.etapasListar';
@@ -101,7 +109,7 @@ async function onSubmit(_, { controlledValues }) {
   } catch (error) {
     alertStore.error(error);
   }
-}
+});
 
 function excluirEtapaDoProjeto(id) {
   alertStore.confirmAction(
@@ -143,15 +151,11 @@ function excluirEtapaDoProjeto(id) {
           : "Nova etapa" }}
     </h1>
     <hr class="ml2 f1">
-    <CheckClose />
+    <CheckClose :formulario-sujo="formularioSujo" />
   </div>
 
-  <Form
+  <form
     v-if="!etapaId || emFoco"
-    v-slot="{ errors, isSubmitting, values, setFieldValue }"
-    :disabled="chamadasPendentes.emFoco"
-    :initial-values="emFoco"
-    :validation-schema="schema"
     @submit="onSubmit"
   >
     <div class="flex g2 mb1">
@@ -290,7 +294,7 @@ function excluirEtapaDoProjeto(id) {
       </button>
       <hr class="ml2 f1">
     </div>
-  </Form>
+  </form>
 
   <div
     v-if="chamadasPendentes?.emFoco"
