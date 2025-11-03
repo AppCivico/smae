@@ -1,0 +1,10 @@
+import { Transform } from 'class-transformer';
+import { IsNumber, IsOptional } from 'class-validator';
+import { NumberTransformOrUndef } from 'src/auth/transforms/number.transform';
+
+export class FilterPortfolioTagDto {
+    @IsOptional()
+    @IsNumber()
+    @Transform(NumberTransformOrUndef)
+    portfolio_id?: number;
+}

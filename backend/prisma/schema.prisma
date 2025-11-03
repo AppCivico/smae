@@ -508,6 +508,12 @@ model Pessoa {
     vinculosDistribuicaoQueAtualizei DistribuicaoRecursoVinculo[] @relation("Atualizador")
     vinculosDistribuicaoQueRemovi    DistribuicaoRecursoVinculo[] @relation("Removedor")
 
+    tagsPortfolioQueCriei     PortfolioTag[]        @relation("Criador")
+    tagsPortfolioQueAtualizei PortfolioTag[]        @relation("Atualizador")
+    tagsPortfolioQueRemovi    PortfolioTag[]        @relation("Removedor")
+    relTagPortProjetoQCriei   ProjetoPortfolioTag[] @relation("Criador")
+    relTagPortProjetoQRemovi  ProjetoPortfolioTag[] @relation("Removedor")
+
     @@index([email])
     @@map("pessoa")
 }
@@ -3629,6 +3635,7 @@ model Portfolio {
     ViewPainelEstrategicoProjetos ViewPainelEstrategicoProjetos[]
     ViewProjetoV2                 ViewProjetoV2[]
     etapasProjeto                 ProjetoEtapa[]
+    tags                          PortfolioTag[]
 
     @@map("portfolio")
 }
@@ -3897,8 +3904,9 @@ model Projeto {
     vetores_busca  Unsupported("tsvector")? @default(dbgenerated())
     ViewProjetoMDO ViewProjetoMDO[]
 
-    tags          Int[]               @default([])
-    ProjetoOrigem CompromissoOrigem[]
+    tags           Int[]                 @default([])
+    ProjetoOrigem  CompromissoOrigem[]
+    tags_portfolio ProjetoPortfolioTag[]
 
     origem_cache                  Json                            @default("{}") @db.Json
     ViewPainelEstrategicoProjetos ViewPainelEstrategicoProjetos[]
@@ -6996,6 +7004,49 @@ model ProjetoTag {
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
     @@map("projeto_tag")
+}
+
+model PortfolioTag {
+    id Int @id @default(autoincrement())
+
+    portfolio_id Int
+    portfolio    Portfolio @relation(fields: [portfolio_id], references: [id])
+
+    descricao String
+
+    criado_por     Int?
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    projetos ProjetoPortfolioTag[]
+
+    @@map("portfolio_tag")
+}
+
+model ProjetoPortfolioTag {
+    projeto_id       Int
+    portfolio_tag_id Int
+
+    criado_por   Int?
+    criado_em    DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por Int?
+    removido_em  DateTime? @db.Timestamptz(6)
+
+    criador   Pessoa? @relation("Criador", fields: [criado_por], references: [id])
+    removedor Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    projeto   Projeto      @relation(fields: [projeto_id], references: [id])
+    portfolio PortfolioTag @relation(fields: [portfolio_tag_id], references: [id])
+
+    @@id([projeto_id, portfolio_tag_id])
+    @@map("projeto_portfolio_tag")
 }
 
 model SmaeConfig {

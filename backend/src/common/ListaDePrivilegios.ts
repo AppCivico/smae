@@ -258,4 +258,8 @@ export type ListaDePrivilegios =
     | 'CadastroVinculo.editar'
     | 'CadastroVinculo.inserir'
     | 'CadastroVinculo.listar'
-    | 'CadastroVinculo.remover';
+    | 'CadastroVinculo.remover'
+    | 'CadastroPortfolioTag.editar'
+    | 'CadastroPortfolioTag.inserir'
+    | 'CadastroPortfolioTag.listar'
+    | 'CadastroPortfolioTag.remover';

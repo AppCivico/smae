@@ -616,6 +616,12 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['CadastroVinculo.listar', 'Listar Vínculos'],
         ['CadastroVinculo.remover', 'Excluir Vínculos'],
     ],
+    CadastroPortfolioTag: [
+        ['CadastroPortfolioTag.editar', 'Editar Tag de Portfólio'],
+        ['CadastroPortfolioTag.inserir', 'Incluir Tag de Portfólio'],
+        ['CadastroPortfolioTag.listar', 'Listar Tags de Portfólio'],
+        ['CadastroPortfolioTag.remover', 'Excluir Tags de Portfólio'],
+    ],
 };
 
 const todosPrivilegios: ListaDePrivilegios[] = [];
@@ -854,6 +860,10 @@ const PPCadastroBasico: ListaDePrivilegios[] = [
     'TipoAditivo.inserir',
     'TipoAditivo.editar',
     'TipoAditivo.remover',
+
+    'CadastroPortfolioTag.inserir',
+    'CadastroPortfolioTag.editar',
+    'CadastroPortfolioTag.remover',
 ] as const;
 
 const PerfilAcessoConfig: PerfilConfigArray = [
