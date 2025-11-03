@@ -1,10 +1,10 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import {
-  ErrorMessage, Field, useForm, useIsFormDirty,
+  ErrorMessage, Field, Form, useForm,
 } from 'vee-validate';
 import {
-  computed, defineOptions, onMounted,
+  computed, defineOptions, onMounted, watch,
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -24,10 +24,7 @@ const portfoliosStore = usePortfolioStore();
 const {
   chamadasPendentes, erro, etapasPorId, etapasPadrao,
 } = storeToRefs(etapasProjetosStore);
-const {
-  lista: portfolios,
-  chamadasPendentes: chamadasPendentesPortfolios,
-} = storeToRefs(portfoliosStore);
+const { lista: portfolios } = storeToRefs(portfoliosStore);
 
 defineOptions({ inheritAttrs: false });
 
@@ -40,8 +37,20 @@ const props = defineProps({
 
 const emFoco = computed(() => {
   if (props.etapaId) {
-    const etapa = etapasPorId.value[props.etapaId];
-    if (!etapa) return null;
+    return etapasPorId.value[props.etapaId] || null;
+  }
+
+  return {
+    descricao: '',
+    etapa_padrao: false,
+    portfolio_id: null,
+    etapa_padrao_associada_id: null,
+  };
+});
+
+onMounted(() => {
+  portfoliosStore.buscarTudo();
+});
 
     return {
       id: etapa.id,
@@ -156,6 +165,10 @@ function excluirEtapaDoProjeto(id) {
 
   <form
     v-if="!etapaId || emFoco"
+    v-slot="{ errors, isSubmitting, values, resetField }"
+    :disabled="chamadasPendentes.emFoco"
+    :initial-values="emFoco"
+    :validation-schema="schema"
     @submit="onSubmit"
   >
     <div class="flex g2 mb1">
@@ -185,38 +198,38 @@ function excluirEtapaDoProjeto(id) {
     <div class="flex g2 mb1">
       <div class="f1 mb1">
         <LabelFromYup
-          name="eh_padrao"
+          name="etapa_padrao"
           :schema="schema"
         />
         <label class="block mb05">
           <Field
-            name="eh_padrao"
+            name="etapa_padrao"
             type="radio"
             :value="true"
             @change="() => {
-              setFieldValue('portfolio_id', null);
-              setFieldValue('etapa_padrao_id', null);
+              resetField('portfolio_id');
+              resetField('etapa_padrao_associada_id');
             }"
           />
           Sim
         </label>
         <label class="block">
           <Field
-            name="eh_padrao"
+            name="etapa_padrao"
             type="radio"
             :value="false"
           />
           Não
         </label>
         <ErrorMessage
-          name="eh_padrao"
+          name="etapa_padrao"
           class="error-msg"
         />
       </div>
     </div>
 
     <div
-      v-if="values.eh_padrao === false"
+      v-if="values.etapa_padrao === false"
       class="flex g2 mb1"
     >
       <div class="f1 mb1">
@@ -229,7 +242,7 @@ function excluirEtapaDoProjeto(id) {
           as="select"
           class="inputtext light mb1"
           :class="{ error: errors.portfolio_id }"
-          :disabled="chamadasPendentesPortfolios.lista"
+          :disabled="chamadasPendentes.lista"
         >
           <option value="">
             Selecionar
@@ -250,21 +263,21 @@ function excluirEtapaDoProjeto(id) {
 
       <div class="f1 mb1">
         <LabelFromYup
-          name="etapa_padrao_id"
+          name="etapa_padrao_associada_id"
           :schema="schema"
         />
         <Field
-          name="etapa_padrao_id"
+          name="etapa_padrao_associada_id"
           as="select"
           class="inputtext light mb1"
-          :class="{ error: errors.etapa_padrao_id }"
+          :class="{ error: errors.etapa_padrao_associada_id }"
           :disabled="chamadasPendentes.lista"
         >
           <option value="">
             Selecionar
           </option>
           <option
-            v-for="etapa in etapasPadraoDisponiveis"
+            v-for="etapa in etapasPadrao"
             :key="etapa.id"
             :value="etapa.id"
           >
@@ -272,7 +285,7 @@ function excluirEtapaDoProjeto(id) {
           </option>
         </Field>
         <ErrorMessage
-          name="etapa_padrao_id"
+          name="etapa_padrao_associada_id"
           class="error-msg"
         />
       </div>

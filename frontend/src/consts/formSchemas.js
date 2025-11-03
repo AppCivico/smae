@@ -3697,7 +3697,7 @@ export const etapasProjeto = object({
     .label('Etapa')
     .required(),
 
-  eh_padrao: boolean()
+  etapa_padrao: boolean()
     .label('Etapa Padrão')
     .required()
     .default(false),
@@ -3705,16 +3705,16 @@ export const etapasProjeto = object({
   portfolio_id: number()
     .label('Portfólio')
     .nullable()
-    .when('eh_padrao', {
+    .when('etapa_padrao', {
       is: false,
       then: (schema) => schema.required('Portfólio é obrigatório quando não é etapa padrão'),
       otherwise: (schema) => schema.nullable(),
     }),
 
-  etapa_padrao_id: number()
+  etapa_padrao_associada_id: number()
     .label('Etapa Padrão Associada')
     .nullable()
-    .when('eh_padrao', {
+    .when('etapa_padrao', {
       is: false,
       then: (schema) => schema.required('Etapa Padrão Associada é obrigatória quando não é etapa padrão'),
       otherwise: (schema) => schema.nullable(),
