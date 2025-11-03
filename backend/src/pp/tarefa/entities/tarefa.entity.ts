@@ -71,7 +71,7 @@ export class TarefaDetailDto extends TarefaItemDto {
     inicio_planejado_calculado: boolean;
     termino_planejado_calculado: boolean;
     duracao_planejado_calculado: boolean;
-
+    termino_projetado: Date | null;
     descricao: string;
 
     projeto: ProjetoDetailDto | null;

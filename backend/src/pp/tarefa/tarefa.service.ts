@@ -1000,6 +1000,7 @@ export class TarefaService {
                 duracao_planejado: true,
                 inicio_real: true,
                 termino_real: true,
+                db_projecao_termino: true,
                 duracao_real: true,
                 custo_estimado: true,
                 custo_real: true,
@@ -1035,6 +1036,7 @@ export class TarefaService {
             termino_planejado: Date2YMD.toStringOrNull(row.termino_planejado) as any as Date,
             inicio_real: Date2YMD.toStringOrNull(row.inicio_real) as any as Date,
             termino_real: Date2YMD.toStringOrNull(row.termino_real) as any as Date,
+            termino_projetado: Date2YMD.toStringOrNull(row.db_projecao_termino) as any as Date,
             projeto: projeto,
         };
     }
