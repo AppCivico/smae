@@ -113,7 +113,7 @@ onMounted(() => {
     :colunas="[
       { chave: 'descricao', label: 'Nome' },
       { chave: 'portfolio_id', label: 'Portfólio' },
-      { chave: 'etapa_padrao_associada_id', label: 'Etapa Padrão Associada' },
+      { chave: 'etapa_padrao_associada', label: 'Etapa Padrão Associada' },
       { chave: 'etapa_padrao', label: 'Etapa Padrão' },
     ]"
     parametro-no-objeto-para-excluir="descricao"
@@ -131,7 +131,7 @@ onMounted(() => {
       {{ linha.eh_padrao ? 'Sim' : 'Não' }}
     </template>
 
-    <template #celula:etapa_padrao_associada_id="{ linha }">
+    <template #celula:etapa_padrao_associada="{ linha }">
       {{ linha.etapa_padrao?.descricao || '-' }}
     </template>
   </SmaeTable>
