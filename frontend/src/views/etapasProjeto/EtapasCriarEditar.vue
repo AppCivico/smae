@@ -13,14 +13,45 @@ import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
 import { usePortfolioStore } from '@/stores/portfolios.store';
+import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store';
 
 const alertStore = useAlertStore();
 const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
-const { temPermissãoPara } = storeToRefs(authStore);
 const etapasProjetosStore = useEtapasProjetosStore(route.meta.entidadeMãe);
-const portfoliosStore = usePortfolioStore();
+
+const entidadeConfig = {
+  projeto: {
+    permissãoRemover: 'CadastroProjetoEtapa.remover',
+  },
+  mdo: {
+    permissãoRemover: 'CadastroProjetoEtapaMDO.remover',
+  },
+  TransferenciasVoluntarias: {
+    permissãoRemover: true,
+  },
+};
+
+function obterPermissãoRemover() {
+  const config = entidadeConfig[route.meta.entidadeMãe];
+  if (!config) return false;
+
+  if (config.permissãoRemover === true) {
+    return true;
+  }
+
+  return authStore.temPermissãoPara(config.permissãoRemover);
+}
+
+let portfoliosStore;
+if (route.meta.entidadeMãe === 'projeto') {
+  portfoliosStore = usePortfolioStore();
+} else if (route.meta.entidadeMãe === 'mdo' || route.meta.entidadeMãe === 'obras') {
+  portfoliosStore = usePortfolioObraStore();
+} else {
+  throw new Error(`entidadeMãe não suportada: ${route.meta.entidadeMãe}`);
+}
 const {
   chamadasPendentes, erro, etapasPorId, etapasPadrao,
 } = storeToRefs(etapasProjetosStore);
@@ -87,9 +118,9 @@ const onSubmit = handleSubmit(async (carga) => {
     redirect = 'TransferenciasVoluntarias.etapasListar';
   } else if (route.meta.entidadeMãe === 'mdo'
   || route.meta.entidadeMãe === 'obras') {
-    redirect = 'mdo.etapasListar';
+    redirect = 'mdo.etapas.listar';
   } else if (route.meta.entidadeMãe === 'projeto') {
-    redirect = 'projeto.etapasListar';
+    redirect = 'projeto.etapas.listar';
   }
   try {
     const msg = props.etapaId
@@ -160,7 +191,7 @@ function excluirEtapaDoProjeto(id) {
   >
     <div class="flex g2 mb1">
       <div class="f2 mb1">
-        <LabelFromYup
+        <SmaeLabel
           name="descricao"
           :schema="schema"
         />
@@ -184,7 +215,7 @@ function excluirEtapaDoProjeto(id) {
 
     <div class="flex g2 mb1">
       <div class="f1 mb1">
-        <LabelFromYup
+        <SmaeLabel
           name="eh_padrao"
           :schema="schema"
         />
@@ -220,7 +251,7 @@ function excluirEtapaDoProjeto(id) {
       class="flex g2 mb1"
     >
       <div class="f1 mb1">
-        <LabelFromYup
+        <SmaeLabel
           name="portfolio_id"
           :schema="schema"
         />
@@ -249,7 +280,7 @@ function excluirEtapaDoProjeto(id) {
       </div>
 
       <div class="f1 mb1">
-        <LabelFromYup
+        <SmaeLabel
           name="etapa_padrao_id"
           :schema="schema"
         />
@@ -304,11 +335,7 @@ function excluirEtapaDoProjeto(id) {
   </div>
 
   <button
-    v-else-if="emFoco?.id && (
-      temPermissãoPara('CadastroProjetoEtapa.remover'
-        || route.meta.entidadeMãe === 'TransferenciasVoluntarias'
-      )
-    )"
+    v-else-if="emFoco?.id && obterPermissãoRemover()"
     class="btn amarelo big"
     @click="excluirEtapaDoProjeto(emFoco.id)"
   >
