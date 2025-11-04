@@ -6,16 +6,12 @@ const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 type Lista = ListPortfolioTagDto['linhas'];
 
-interface ChamadasPendentes {
-  lista: boolean;
-  emFoco: boolean;
+interface ChamadasPendentesLocal extends ChamadasPendentes {
   excluir: boolean;
   salvar: boolean;
 }
 
-interface Erros {
-  lista: null | unknown;
-  emFoco: null | unknown;
+interface ErrosLocal extends Erros {
   excluir: null | unknown;
   salvar: null | unknown;
 }
@@ -23,8 +19,8 @@ interface Erros {
 interface Estado {
   lista: Lista;
   emFoco: PortfolioTagDto | null;
-  chamadasPendentes: ChamadasPendentes;
-  erro: Erros;
+  chamadasPendentes: ChamadasPendentesLocal;
+  erro: ErrosLocal;
 }
 
 export const useProjetoEtiquetasStore = defineStore('projetoEtiquetasStore', {
