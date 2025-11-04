@@ -39,6 +39,8 @@ import TarefasCriarEditar from '@/views/tv.tarefas/TarefasCriarEditar.vue';
 import TarefasLista from '@/views/tv.tarefas/TarefasLista.vue';
 import TarefasRaiz from '@/views/tv.tarefas/TarefasRaiz.vue';
 
+import tiparPropsDeRota from './helpers/tiparPropsDeRota';
+
 const PortfoliosCriarEditar = defineAsyncComponent({
   loader: () => import('@/views/portfolios/PortfoliosCriarEditar.vue'),
   loadingComponent: LoadingComponent,
@@ -558,12 +560,7 @@ export default [
             path: ':etiquetaId',
             name: 'projeto.etiquetas.editar',
             component: () => import('@/views/projetos.etiquetas/EtiquetasCriarEditar.vue'),
-            props: ({ params }) => ({
-              ...params,
-              ...{
-                etiquetaId: Number.parseInt(params.etiquetaId, 10) || undefined,
-              },
-            }),
+            props: tiparPropsDeRota,
             meta: {
               limitarÀsPermissões: ['CadastroPortfolioTag.editar'],
               título: 'Editar etiqueta',
