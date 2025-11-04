@@ -261,7 +261,7 @@ export default [
               rotasParaMenuSecundário: [
                 'mdo.portfolio.listar',
                 'mdo.gruposObservadores.listar',
-                'mdo.etapasListar',
+                'mdo.etapas.listar',
               ],
             },
             children: [
