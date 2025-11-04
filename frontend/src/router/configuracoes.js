@@ -142,6 +142,7 @@ export default [
             'projeto.portfolio.listar',
             'projeto.gruposObservadores.listar',
             'projeto.etapas.listar',
+            'projeto.etiquetas.listar',
           ],
         },
 
@@ -199,6 +200,7 @@ export default [
             'projeto.portfolio.listar',
             'projeto.gruposObservadores.listar',
             'projeto.etapas.listar',
+            'projeto.etiquetas.listar',
           ],
         },
 
@@ -334,9 +336,7 @@ export default [
                 component: GruposDeObservadoresCriarEditar,
                 meta: {
                   título: 'Novo grupo de observadores',
-                  rotasParaMigalhasDePão: [
-                    'mdo.gruposObservadores.listar',
-                  ],
+                  rotasParaMigalhasDePão: ['mdo.gruposObservadores.listar'],
                   rotaDeEscape: 'mdo.gruposObservadores.listar',
                 },
               },
@@ -355,9 +355,7 @@ export default [
 
                 meta: {
                   título: 'Editar Novo grupo de observadores',
-                  rotasParaMigalhasDePão: [
-                    'mdo.gruposObservadores.listar',
-                  ],
+                  rotasParaMigalhasDePão: ['mdo.gruposObservadores.listar'],
                   rotaDeEscape: 'mdo.gruposObservadores.listar',
                 },
               },
@@ -434,9 +432,7 @@ export default [
             component: PaineisExternosLista,
             meta: {
               título: 'Painéis externos',
-              limitarÀsPermissões: [
-                'CadastroPainelExterno.',
-              ],
+              limitarÀsPermissões: ['CadastroPainelExterno.'],
             },
           },
           {
@@ -444,9 +440,7 @@ export default [
             path: 'novo',
             component: PaineisExternosCriarEditar,
             meta: {
-              limitarÀsPermissões: [
-                'CadastroPainelExterno.inserir',
-              ],
+              limitarÀsPermissões: ['CadastroPainelExterno.inserir'],
               título: 'Novo painel externo',
               rotasParaMigalhasDePão: ['paineisExternosListar'],
             },
@@ -463,9 +457,7 @@ export default [
             }),
 
             meta: {
-              limitarÀsPermissões: [
-                'CadastroPainelExterno.editar',
-              ],
+              limitarÀsPermissões: ['CadastroPainelExterno.editar'],
               título: 'Editar painel externo',
               rotasParaMigalhasDePão: ['paineisExternosListar'],
             },
@@ -515,6 +507,59 @@ export default [
               título: () => useEquipesStore().itemParaEdicao.titulo,
               rotaDeEscape: 'equipesListar',
               rotasParaMigalhasDePão: ['equipesListar'],
+            },
+          },
+        ],
+      },
+      {
+        path: 'etiquetas',
+        component: () => import('@/views/projetos.etiquetas/EtiquetasRaiz.vue'),
+        meta: {
+          título: 'Etiquetas',
+          rotaPrescindeDeChave: true,
+          // limitarÀsPermissões: ['ProjetoTag.inserir'],
+          rotasParaMenuSecundário: [
+            'projeto.portfolio.listar',
+            'projeto.gruposObservadores.listar',
+            'projeto.etapas.listar',
+            'projeto.etiquetas.listar',
+          ],
+        },
+        children: [
+          {
+            name: 'projeto.etiquetas.listar',
+            path: '',
+            component: () => import('@/views/projetos.etiquetas/EtiquetasLista.vue'),
+            meta: {
+              título: 'Etiquetas',
+            },
+          },
+          {
+            name: 'projeto.etiquetas.criar',
+            path: 'novo',
+            component: () => import('@/views/projetos.etiquetas/EtiquetasCriarEditar.vue'),
+            meta: {
+              limitarÀsPermissões: ['CadastroPortfolioTag.inserir'],
+              título: 'Nova etiqueta',
+              rotasParaMigalhasDePão: ['projeto.etiquetas.listar'],
+              rotaDeEscape: 'projeto.etiquetas.listar',
+            },
+          },
+          {
+            path: ':etiquetaId',
+            name: 'projeto.etiquetas.editar',
+            component: () => import('@/views/projetos.etiquetas/EtiquetasCriarEditar.vue'),
+            props: ({ params }) => ({
+              ...params,
+              ...{
+                etiquetaId: Number.parseInt(params.etiquetaId, 10) || undefined,
+              },
+            }),
+            meta: {
+              limitarÀsPermissões: ['CadastroPortfolioTag.editar'],
+              título: 'Editar etiqueta',
+              rotasParaMigalhasDePão: ['projeto.etiquetas.listar'],
+              rotaDeEscape: 'projeto.etiquetas.listar',
             },
           },
         ],
@@ -572,12 +617,8 @@ export default [
           título: 'Empreendimentos',
           entidadeMãe: 'mdo',
           rotaPrescindeDeChave: true,
-          limitarÀsPermissões: [
-            'CadastroEmpreendimentoMDO.',
-          ],
-          rotasParaMenuSecundário: [
-            'mdoEmpreendimentosListar',
-          ],
+          limitarÀsPermissões: ['CadastroEmpreendimentoMDO.'],
+          rotasParaMenuSecundário: ['mdoEmpreendimentosListar'],
         },
         children: [
           {
@@ -1017,6 +1058,8 @@ export default [
           rotasParaMenuSecundário: [
             'projeto.portfolio.listar',
             'projeto.gruposObservadores.listar',
+            'projeto.etapas.listar',
+            'projeto.etiquetas.listar',
           ],
 
           rotaParaItensAssociados: {
@@ -1037,9 +1080,7 @@ export default [
             component: GruposDeObservadoresCriarEditar,
             meta: {
               título: 'Novo grupo de observadores',
-              rotasParaMigalhasDePão: [
-                'projeto.gruposObservadores.listar',
-              ],
+              rotasParaMigalhasDePão: ['projeto.gruposObservadores.listar'],
               rotaDeEscape: 'projeto.gruposObservadores.listar',
             },
           },
@@ -1058,9 +1099,7 @@ export default [
 
             meta: {
               título: 'Editar Novo grupo de observadores',
-              rotasParaMigalhasDePão: [
-                'projeto.gruposObservadores.listar',
-              ],
+              rotasParaMigalhasDePão: ['projeto.gruposObservadores.listar'],
               rotaDeEscape: 'projeto.gruposObservadores.listar',
             },
           },
@@ -1092,9 +1131,7 @@ export default [
       {
         path: ':pdm_id',
         meta: {
-          limitarÀsPermissões: [
-            'CadastroPdm.editar',
-          ],
+          limitarÀsPermissões: ['CadastroPdm.editar'],
         },
         children: [
           {
@@ -1109,9 +1146,7 @@ export default [
             meta: {
               título: 'Permissões para edição do orçamento',
               rotaDeEscape: 'gerenciarPdm',
-              rotasParaMigalhasDePão: [
-                'gerenciarPdm',
-              ],
+              rotasParaMigalhasDePão: ['gerenciarPdm'],
             },
           },
         ],
