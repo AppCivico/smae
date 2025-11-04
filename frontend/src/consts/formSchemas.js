@@ -4559,3 +4559,14 @@ export const ConsultaGeralVinculacaoRegistro = object({
     .nullable()
     .max(2000, 'A observação deve ter no máximo 2000 caracteres'),
 });
+
+export const projetoEtiqueta = object({
+  portfolio_id: number()
+    .label('Portfólio')
+    .required('Selecione um portfólio')
+    .positive('Selecione um portfólio'),
+  descricao: string()
+    .label('Descrição')
+    .required('Preencha a descrição')
+    .max(250, 'A descrição deve ter no máximo 250 caracteres'),
+});
