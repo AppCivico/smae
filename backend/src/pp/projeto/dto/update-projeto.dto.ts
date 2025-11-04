@@ -1,6 +1,7 @@
 import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import {
+    ArrayMaxSize,
     IsArray,
     IsBoolean,
     IsInt,
@@ -159,6 +160,7 @@ export class UpdateProjetoDto extends OmitType(PartialType(CreateProjetoDto), ['
     @IsOptional()
     @IsArray()
     @IsInt({ message: '$property| Precisa ser uma lista de inteiros', each: true })
+    @ArrayMaxSize(100, { message: '$property| Tamanho máximo da lista são $constraint1 itens' })
     equipe?: number[];
 
     @IsOptional()
