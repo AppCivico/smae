@@ -7,7 +7,7 @@
   <form @submit.prevent="onSubmit">
     <div class="flex g2 mb1">
       <div class="f1">
-        <LabelFromYup
+        <SmaeLabel
           name="portfolio_id"
           :schema="schema"
         />
@@ -37,7 +37,7 @@
         />
       </div>
       <div class="f1">
-        <LabelFromYup
+        <SmaeLabel
           name="descricao"
           :schema="schema"
         />

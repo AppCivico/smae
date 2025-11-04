@@ -336,7 +336,9 @@ export default [
                 component: GruposDeObservadoresCriarEditar,
                 meta: {
                   título: 'Novo grupo de observadores',
-                  rotasParaMigalhasDePão: ['mdo.gruposObservadores.listar'],
+                  rotasParaMigalhasDePão: [
+                    'mdo.gruposObservadores.listar',
+                  ],
                   rotaDeEscape: 'mdo.gruposObservadores.listar',
                 },
               },
@@ -355,7 +357,9 @@ export default [
 
                 meta: {
                   título: 'Editar Novo grupo de observadores',
-                  rotasParaMigalhasDePão: ['mdo.gruposObservadores.listar'],
+                  rotasParaMigalhasDePão: [
+                    'mdo.gruposObservadores.listar',
+                  ],
                   rotaDeEscape: 'mdo.gruposObservadores.listar',
                 },
               },
@@ -432,7 +436,9 @@ export default [
             component: PaineisExternosLista,
             meta: {
               título: 'Painéis externos',
-              limitarÀsPermissões: ['CadastroPainelExterno.'],
+              limitarÀsPermissões: [
+                'CadastroPainelExterno.',
+              ],
             },
           },
           {
@@ -440,7 +446,9 @@ export default [
             path: 'novo',
             component: PaineisExternosCriarEditar,
             meta: {
-              limitarÀsPermissões: ['CadastroPainelExterno.inserir'],
+              limitarÀsPermissões: [
+                'CadastroPainelExterno.inserir',
+              ],
               título: 'Novo painel externo',
               rotasParaMigalhasDePão: ['paineisExternosListar'],
             },
@@ -616,8 +624,12 @@ export default [
           título: 'Empreendimentos',
           entidadeMãe: 'mdo',
           rotaPrescindeDeChave: true,
-          limitarÀsPermissões: ['CadastroEmpreendimentoMDO.'],
-          rotasParaMenuSecundário: ['mdoEmpreendimentosListar'],
+          limitarÀsPermissões: [
+            'CadastroEmpreendimentoMDO.',
+          ],
+          rotasParaMenuSecundário: [
+            'mdoEmpreendimentosListar',
+          ],
         },
         children: [
           {
@@ -1079,7 +1091,9 @@ export default [
             component: GruposDeObservadoresCriarEditar,
             meta: {
               título: 'Novo grupo de observadores',
-              rotasParaMigalhasDePão: ['projeto.gruposObservadores.listar'],
+              rotasParaMigalhasDePão: [
+                'projeto.gruposObservadores.listar',
+              ],
               rotaDeEscape: 'projeto.gruposObservadores.listar',
             },
           },
@@ -1098,7 +1112,9 @@ export default [
 
             meta: {
               título: 'Editar Novo grupo de observadores',
-              rotasParaMigalhasDePão: ['projeto.gruposObservadores.listar'],
+              rotasParaMigalhasDePão: [
+                'projeto.gruposObservadores.listar',
+              ],
               rotaDeEscape: 'projeto.gruposObservadores.listar',
             },
           },
@@ -1130,7 +1146,9 @@ export default [
       {
         path: ':pdm_id',
         meta: {
-          limitarÀsPermissões: ['CadastroPdm.editar'],
+          limitarÀsPermissões: [
+            'CadastroPdm.editar',
+          ],
         },
         children: [
           {
@@ -1145,7 +1163,9 @@ export default [
             meta: {
               título: 'Permissões para edição do orçamento',
               rotaDeEscape: 'gerenciarPdm',
-              rotasParaMigalhasDePão: ['gerenciarPdm'],
+              rotasParaMigalhasDePão: [
+                'gerenciarPdm',
+              ],
             },
           },
         ],
