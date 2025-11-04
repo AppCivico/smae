@@ -247,6 +247,8 @@ export type ListaDePrivilegios =
     | 'Menu.AtualizacaoEmLote.MDO'
     | 'Menu.metas'
     | 'Menu.meta.pdm'
+    | 'Menu.historico_monitoramento_ps'
+    | 'Menu.historico_monitoramento_pdm'
     | 'ReferencialEm.Equipe.ProgramaDeMetas'
     | 'ReferencialEm.Equipe.PS'
     | 'ReferencialEm.EquipeBanco.ProgramaDeMetas'

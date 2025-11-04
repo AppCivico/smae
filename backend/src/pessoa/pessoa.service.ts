@@ -1753,6 +1753,20 @@ export class PessoaService implements OnModuleInit {
                 perfilEquipe: ['Medicao', 'Validacao', 'Liberacao'],
                 privilegios: ['ReferencialEm.EquipeBanco.PS'],
             },
+            {
+                tipo: 'PS',
+                modulo: 'PlanoSetorial',
+                chaveEquipe: 'perfis_equipe_ps',
+                perfilEquipe: ['AdminPS', 'TecnicoPS'],
+                privilegios: ['Menu.historico_monitoramento_ps'],
+            },
+            {
+                tipo: 'PDM',
+                modulo: 'ProgramaDeMetas',
+                chaveEquipe: 'perfis_equipe_pdm',
+                perfilEquipe: ['AdminPS', 'TecnicoPS'],
+                privilegios: ['Menu.historico_monitoramento_pdm'],
+            },
         ];
 
         for (const config of configuracoesModulo) {
