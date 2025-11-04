@@ -465,7 +465,9 @@ export default [
             }),
 
             meta: {
-              limitarÀsPermissões: ['CadastroPainelExterno.editar'],
+              limitarÀsPermissões: [
+                'CadastroPainelExterno.editar',
+              ],
               título: 'Editar painel externo',
               rotasParaMigalhasDePão: ['paineisExternosListar'],
             },
