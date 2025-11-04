@@ -31,7 +31,7 @@ else
     LOGGING_CMD="cat"
 fi
 
-ls -lhas | $LOGGING_CMD
+env | $LOGGING_CMD
 
 npx prisma migrate deploy 2>&1 | $LOGGING_CMD
 node --enable-source-maps dist/prisma/seed.js 2>&1 | $LOGGING_CMD
