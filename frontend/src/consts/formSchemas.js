@@ -3696,6 +3696,29 @@ export const etapasProjeto = object({
   descricao: string()
     .label('Etapa')
     .required(),
+
+  eh_padrao: boolean()
+    .label('Etapa Padrão')
+    .required()
+    .default(false),
+
+  portfolio_id: number()
+    .label('Portfólio')
+    .nullable()
+    .when('eh_padrao', {
+      is: false,
+      then: (schema) => schema.required('Portfólio é obrigatório quando não é etapa padrão'),
+      otherwise: (schema) => schema.nullable(),
+    }),
+
+  etapa_padrao_id: number()
+    .label('Etapa Padrão Associada')
+    .nullable()
+    .when('eh_padrao', {
+      is: false,
+      then: (schema) => schema.required('Etapa Padrão Associada é obrigatória quando não é etapa padrão'),
+      otherwise: (schema) => schema.nullable(),
+    }),
 });
 
 export const fasesProjeto = object({

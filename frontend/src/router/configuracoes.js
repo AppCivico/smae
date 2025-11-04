@@ -1,54 +1,43 @@
 import { defineAsyncComponent } from 'vue';
 
 import LoadingComponent from '@/components/LoadingComponent.vue';
+import { useEquipesStore } from '@/stores/equipes.store';
 import ConfiguracoesRaiz from '@/views/ConfiguracoesRaiz.vue';
-
+import EtapasCriarEditar from '@/views/etapasProjeto/EtapasCriarEditar.vue';
+import EtapasLista from '@/views/etapasProjeto/EtapasLista.vue';
+import EtapasRaiz from '@/views/etapasProjeto/EtapasRaiz.vue';
+import FasesCriarEditar from '@/views/fasesProjeto/FasesCriarEditar.vue';
+import FasesLista from '@/views/fasesProjeto/FasesLista.vue';
+import FasesRaiz from '@/views/fasesProjeto/FasesRaiz.vue';
+import FluxosCriarEditar from '@/views/fluxosProjeto/FluxosCriarEditar.vue';
+import FluxosLista from '@/views/fluxosProjeto/FluxosLista.vue';
+import FluxosRaiz from '@/views/fluxosProjeto/FluxosRaiz.vue';
+import GruposDePaineisExternosCriarEditar from '@/views/gruposDePaineisExternos/GruposDePaineisExternosCriarEditar.vue';
+import GruposDePaineisExternosLista from '@/views/gruposDePaineisExternos/GruposDePaineisExternosLista.vue';
+import GruposDePaineisExternosRaiz from '@/views/gruposDePaineisExternos/GruposDePaineisExternosRaiz.vue';
 import {
   AddEditGrupo,
   AddEditPainel,
   ListGrupos,
   ListPainel,
 } from '@/views/paineis';
+import PaineisExternosCriarEditar from '@/views/paineisExternos/PaineisExternosCriarEditar.vue';
+import PaineisExternosLista from '@/views/paineisExternos/PaineisExternosLista.vue';
+import PaineisExternosRaiz from '@/views/paineisExternos/PaineisExternosRaiz.vue';
 import {
   AddEditPdM,
   ListPdM,
 } from '@/views/pdm';
-
 import EdicaoOrcamento from '@/views/pdm/EdicaoOrcamento.vue';
-
-import PaineisExternosCriarEditar from '@/views/paineisExternos/PaineisExternosCriarEditar.vue';
-import PaineisExternosLista from '@/views/paineisExternos/PaineisExternosLista.vue';
-import PaineisExternosRaiz from '@/views/paineisExternos/PaineisExternosRaiz.vue';
-
-import FluxosCriarEditar from '@/views/fluxosProjeto/FluxosCriarEditar.vue';
-import FluxosLista from '@/views/fluxosProjeto/FluxosLista.vue';
-import FluxosRaiz from '@/views/fluxosProjeto/FluxosRaiz.vue';
-
-import EtapasCriarEditar from '@/views/etapasProjeto/EtapasCriarEditar.vue';
-import EtapasLista from '@/views/etapasProjeto/EtapasLista.vue';
-import EtapasRaiz from '@/views/etapasProjeto/EtapasRaiz.vue';
-
-import FasesCriarEditar from '@/views/fasesProjeto/FasesCriarEditar.vue';
-import FasesLista from '@/views/fasesProjeto/FasesLista.vue';
-import FasesRaiz from '@/views/fasesProjeto/FasesRaiz.vue';
-
-import GruposDePaineisExternosCriarEditar from '@/views/gruposDePaineisExternos/GruposDePaineisExternosCriarEditar.vue';
-import GruposDePaineisExternosLista from '@/views/gruposDePaineisExternos/GruposDePaineisExternosLista.vue';
-import GruposDePaineisExternosRaiz from '@/views/gruposDePaineisExternos/GruposDePaineisExternosRaiz.vue';
-
 import SituacaoCriarEditar from '@/views/situacao/SituacaoCriarEditar.vue';
 import SituacaoLista from '@/views/situacao/SituacaoLista.vue';
 import SituacaoRaiz from '@/views/situacao/SituacaoRaiz.vue';
-
-import TarefasCriarEditar from '@/views/tv.tarefas/TarefasCriarEditar.vue';
-import TarefasLista from '@/views/tv.tarefas/TarefasLista.vue';
-import TarefasRaiz from '@/views/tv.tarefas/TarefasRaiz.vue';
-
 import StatusDistribuicaoCriarEditar from '@/views/statusesDistribuicao/StatusDistribuicaoCriarEditar.vue';
 import StatusDistribuicaoLista from '@/views/statusesDistribuicao/StatusDistribuicaoLista.vue';
 import StatusDistribuicaoRaiz from '@/views/statusesDistribuicao/StatusDistribuicaoRaiz.vue';
-
-import { useEquipesStore } from '@/stores/equipes.store';
+import TarefasCriarEditar from '@/views/tv.tarefas/TarefasCriarEditar.vue';
+import TarefasLista from '@/views/tv.tarefas/TarefasLista.vue';
+import TarefasRaiz from '@/views/tv.tarefas/TarefasRaiz.vue';
 
 const PortfoliosCriarEditar = defineAsyncComponent({
   loader: () => import('@/views/portfolios/PortfoliosCriarEditar.vue'),
@@ -152,6 +141,7 @@ export default [
           rotasParaMenuSecundário: [
             'projeto.portfolio.listar',
             'projeto.gruposObservadores.listar',
+            'projeto.etapasListar',
           ],
         },
 
@@ -191,6 +181,60 @@ export default [
               título: 'Editar portfólio',
               rotasParaMigalhasDePão: ['projeto.portfolio.listar'],
               rotaDeEscape: 'projeto.portfolio.listar',
+            },
+          },
+        ],
+      },
+
+      {
+        path: 'etapas',
+        component: EtapasRaiz,
+        meta: {
+          título: 'Etapas de projeto',
+          títuloParaMenu: 'Etapas',
+          entidadeMãe: 'projeto',
+          rotaPrescindeDeChave: true,
+          limitarÀsPermissões: 'CadastroProjetoEtapa.',
+          rotasParaMenuSecundário: [
+            'projeto.portfolio.listar',
+            'projeto.gruposObservadores.listar',
+            'projeto.etapasListar',
+          ],
+        },
+
+        children: [
+          {
+            name: 'projeto.etapasListar',
+            path: '',
+            component: EtapasLista,
+            meta: {
+              título: 'Etapas de projeto',
+            },
+          },
+          {
+            name: 'projeto.etapaCriar',
+            path: 'novo',
+            component: EtapasCriarEditar,
+            meta: {
+              título: 'Nova etapa do projeto',
+              rotasParaMigalhasDePão: ['projeto.etapasListar'],
+              rotaDeEscape: 'projeto.etapasListar',
+            },
+          },
+          {
+            path: ':etapaId',
+            name: 'projeto.etapaEditar',
+            component: EtapasCriarEditar,
+            props: ({ params }) => ({
+              ...params,
+              ...{
+                etapaId: Number.parseInt(params.etapaId, 10) || undefined,
+              },
+            }),
+            meta: {
+              título: 'Editar etapa do projeto',
+              rotasParaMigalhasDePão: ['projeto.etapasListar'],
+              rotaDeEscape: 'projeto.etapasListar',
             },
           },
         ],

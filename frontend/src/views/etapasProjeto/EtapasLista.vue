@@ -1,160 +1,138 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { computed, onMounted, ref } from 'vue';
+import { useRoute } from 'vue-router';
+
+import CabecalhoDePagina from '@/components/CabecalhoDePagina.vue';
 import LocalFilter from '@/components/LocalFilter.vue';
-import TabelaGenérica from '@/components/TabelaGenerica.vue';
+import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
-import { storeToRefs } from 'pinia';
-import { computed, ref } from 'vue';
-import { useRoute } from 'vue-router';
 
 const route = useRoute();
 const authStore = useAuthStore();
 const { temPermissãoPara } = authStore;
 const etapasProjetosStore = useEtapasProjetosStore(route.meta.entidadeMãe);
-const {
-  lista, chamadasPendentes, erro,
-} = storeToRefs(etapasProjetosStore);
+const { lista } = storeToRefs(etapasProjetosStore);
 
 const alertStore = useAlertStore();
+const listaFiltrada = ref([]);
 
-async function excluirEtapa(id, nomeDaEtapa) {
-  alertStore.confirmAction(`Deseja mesmo remover "${nomeDaEtapa}"?`, async () => {
-    if (await etapasProjetosStore.excluirItem(id)) {
-      etapasProjetosStore.buscarTudo();
-      alertStore.success('Etapa removida.');
-    }
-  }, 'Remover');
+function buscarDados() {
+  etapasProjetosStore.$reset();
+  etapasProjetosStore.buscarTudo();
 }
 
-const colunas = [
-  {
-    nomeDaPropriedade: 'nome',
-  },
-  {
-    nomeDaPropriedade: 'editar',
-    texto: 'editar',
-    svgId: 'edit',
-    classe: 'col--botão-de-ação',
-  },
-  {
-    nomeDaPropriedade: 'excluir',
-    texto: 'excluir',
-    svgId: 'remove',
-    classe: 'col--botão-de-ação',
-  },
-];
-const listaFiltradaPorTermoDeBusca = ref([]);
+async function excluirItem({ id }) {
+  if (await etapasProjetosStore.excluirItem(id)) {
+    buscarDados();
+    alertStore.success('Etapa removida.');
+  }
+}
 
-const listaPreparada = computed(() => {
-  const listaOrdenada = lista.value.map((x) => {
-    const item = {
-      nome: x.descricao,
-    };
+function montarRotaEditar({ id }) {
+  if (route.meta.entidadeMãe === 'projeto') {
+    return { name: 'projeto.etapaEditar', params: { etapaId: id } };
+  }
+  if (route.meta.entidadeMãe === 'mdo') {
+    return { name: 'mdo.etapaEditar', params: { etapaId: id } };
+  }
+  if (route.meta.entidadeMãe === 'TransferenciasVoluntarias') {
+    return { name: 'TransferenciasVoluntarias.etapaEditar', params: { etapaId: id } };
+  }
+  return null;
+}
 
-    if (temPermissãoPara('CadastroProjetoEtapa.editar') && route.meta.entidadeMãe === 'projeto') {
-      item.editar = {
-        rota: {
-          name: 'projeto.etapaEditar',
-          params: {
-            etapaId: x.id,
-          },
-        },
-      };
-    }
+function podeEditar() {
+  if (route.meta.entidadeMãe === 'projeto') {
+    return temPermissãoPara('CadastroProjetoEtapa.editar');
+  }
+  if (route.meta.entidadeMãe === 'mdo') {
+    return temPermissãoPara('CadastroProjetoEtapaMDO.editar');
+  }
+  if (route.meta.entidadeMãe === 'TransferenciasVoluntarias') {
+    return true;
+  }
+  return false;
+}
 
-    if (temPermissãoPara('CadastroProjetoEtapaMDO.editar') && route.meta.entidadeMãe === 'mdo') {
-      item.editar = {
-        rota: {
-          name: 'mdo.etapaEditar',
-          params: {
-            etapaId: x.id,
-          },
-        },
-      };
-    }
+function podeInserir() {
+  if (route.meta.entidadeMãe === 'projeto') {
+    return temPermissãoPara('CadastroProjetoEtapa.inserir');
+  }
+  if (route.meta.entidadeMãe === 'mdo') {
+    return temPermissãoPara('CadastroProjetoEtapaMDO.inserir');
+  }
+  if (route.meta.entidadeMãe === 'TransferenciasVoluntarias') {
+    return true;
+  }
+  return false;
+}
 
-    if (route.meta.entidadeMãe === 'TransferenciasVoluntarias') {
-      item.editar = {
-        rota: {
-          name: 'TransferenciasVoluntarias.etapaEditar',
-          params: {
-            etapaId: x.id,
-          },
-        },
-      };
-    }
+function montarRotaCriar() {
+  if (route.meta.entidadeMãe === 'projeto') {
+    return { name: 'projeto.etapaCriar' };
+  }
+  if (route.meta.entidadeMãe === 'mdo') {
+    return { name: 'mdo.etapaCriar' };
+  }
+  if (route.meta.entidadeMãe === 'TransferenciasVoluntarias') {
+    return { name: 'TransferenciasVoluntarias.etapaCriar' };
+  }
+  return null;
+}
 
-    if (temPermissãoPara('CadastroProjetoEtapa.remover') || route.meta.entidadeMãe === 'TransferenciasVoluntarias' || temPermissãoPara('CadastroProjetoEtapaMDO.remover')) {
-      item.excluir = {
-        ação: () => excluirEtapa(x.id, x.descricao),
-      };
-    }
-
-    return item;
-  });
-
-  listaOrdenada.sort((a, b) => {
-    const nomeA = a.nome.toLowerCase();
-    const nomeB = b.nome.toLowerCase();
-    if (nomeA < nomeB) {
-      return -1;
-    }
-    if (nomeA > nomeB) {
-      return 1;
-    }
-    return 0;
-  });
-
-  return listaOrdenada;
+onMounted(() => {
+  buscarDados();
 });
 </script>
 <template>
-  <div class="flex spacebetween center mb2">
-    <h1>{{ $route.meta.título }}</h1>
-    <hr class="ml2 f1">
-    <SmaeLink
-      v-if="temPermissãoPara(['CadastroProjetoEtapa.inserir'])
-        || $route.meta.entidadeMãe === 'TransferenciasVoluntarias'
-        || temPermissãoPara(['CadastroProjetoEtapaMDO.inserir'])"
-      :to="{name: '.etapaCriar'}"
-      class="btn big ml2"
-    >
-      Nova etapa
-    </SmaeLink>
-  </div>
+  <CabecalhoDePagina>
+    <template #acoes>
+      <SmaeLink
+        v-if="podeInserir()"
+        :to="montarRotaCriar()"
+        class="btn big ml1"
+      >
+        Nova etapa
+      </SmaeLink>
+    </template>
+  </CabecalhoDePagina>
 
   <div class="flex center mb2 spacebetween">
     <slot name="filtro" />
 
     <LocalFilter
-      v-model="listaFiltradaPorTermoDeBusca"
-      :lista="listaPreparada"
+      v-model="listaFiltrada"
+      :lista="lista"
     />
   </div>
 
-  <TabelaGenérica
-    v-if="!chamadasPendentes.lista || lista.length"
-    :lista="listaFiltradaPorTermoDeBusca"
-    :colunas="colunas"
-    :erro="erro"
-    :chamadas-pendentes="chamadasPendentes"
-    class="mb1"
-  />
-
-  <div
-    v-if="chamadasPendentes?.lista"
-    class="spinner"
+  <SmaeTable
+    :colunas="[
+      { chave: 'descricao', label: 'Nome' },
+      { chave: 'portfolio_id', label: 'Portfólio' },
+      { chave: 'etapa_padrao_associada', label: 'Etapa Padrão Associada' },
+      { chave: 'etapa_padrao', label: 'Etapa Padrão' },
+    ]"
+    parametro-no-objeto-para-excluir="descricao"
+    :dados="listaFiltrada"
+    :rota-editar="podeEditar()
+      ? montarRotaEditar
+      : undefined"
+    @deletar="excluirItem"
   >
-    Carregando
-  </div>
+    <template #celula:portfolio_id="{ linha }">
+      {{ linha.portfolio?.titulo || '-' }}
+    </template>
 
-  <div
-    v-if="erro"
-    class="error p1"
-  >
-    <div class="error-msg">
-      {{ erro }}
-    </div>
-  </div>
+    <template #celula:etapa_padrao="{ linha }">
+      {{ linha.eh_padrao ? 'Sim' : 'Não' }}
+    </template>
+
+    <template #celula:etapa_padrao_associada="{ linha }">
+      {{ linha.etapa_padrao?.descricao || '-' }}
+    </template>
+  </SmaeTable>
 </template>

@@ -98,5 +98,8 @@ export const useEtapasProjetosStore = (prefixo) => defineStore(prefixo ? `${pref
         return acc;
       }, {});
     },
+    etapasPadrao() {
+      return this.lista.filter((x) => x.eh_padrao === true);
+    },
   },
 })();
