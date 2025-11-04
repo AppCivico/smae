@@ -517,7 +517,6 @@ export default [
         meta: {
           título: 'Etiquetas',
           rotaPrescindeDeChave: true,
-          // limitarÀsPermissões: ['ProjetoTag.inserir'],
           rotasParaMenuSecundário: [
             'projeto.portfolio.listar',
             'projeto.gruposObservadores.listar',
