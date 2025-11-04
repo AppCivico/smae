@@ -50,6 +50,7 @@ export class PortfolioTagService {
                 atualizado_por: user ? user.id : undefined,
                 atualizado_em: new Date(Date.now()),
                 descricao: dto.descricao,
+                portfolio_id: dto.portfolio_id,
             },
             select: { id: true },
         });
