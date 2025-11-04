@@ -19,6 +19,58 @@ const { lista } = storeToRefs(etapasProjetosStore);
 const alertStore = useAlertStore();
 const listaFiltrada = ref([]);
 
+// Mapeamento de configurações por entidadeMãe
+const entidadeConfig = {
+  projeto: {
+    rotaPrefix: 'projeto.etapas',
+    permissãoEditar: 'CadastroProjetoEtapa.editar',
+    permissãoInserir: 'CadastroProjetoEtapa.inserir',
+    requerPermissão: true,
+  },
+  mdo: {
+    rotaPrefix: 'mdo.etapas',
+    permissãoEditar: 'CadastroProjetoEtapaMDO.editar',
+    permissãoInserir: 'CadastroProjetoEtapaMDO.inserir',
+    requerPermissão: true,
+  },
+  TransferenciasVoluntarias: {
+    rotaPrefix: 'TransferenciasVoluntarias',
+    permissãoEditar: null,
+    permissãoInserir: null,
+    requerPermissão: false,
+  },
+};
+
+function obterConfiguracao() {
+  return entidadeConfig[route.meta.entidadeMãe];
+}
+
+function construirRota(acao, id = null) {
+  const config = obterConfiguracao();
+  if (!config) return null;
+
+  const nomeDaRota = `${config.rotaPrefix}.${acao.toLowerCase()}`;
+  if (id) {
+    return { name: nomeDaRota, params: { etapaId: id } };
+  }
+  return { name: nomeDaRota };
+}
+
+function podeRealizar(acao) {
+  const config = obterConfiguracao();
+  if (!config) return false;
+
+  if (!config.requerPermissão) {
+    return true;
+  }
+
+  const chavePermissao = acao === 'editar'
+    ? config.permissãoEditar
+    : config.permissãoInserir;
+
+  return chavePermissao ? temPermissãoPara(chavePermissao) : false;
+}
+
 function buscarDados() {
   etapasProjetosStore.$reset();
   etapasProjetosStore.buscarTudo();
@@ -32,55 +84,19 @@ async function excluirItem({ id }) {
 }
 
 function montarRotaEditar({ id }) {
-  if (route.meta.entidadeMãe === 'projeto') {
-    return { name: 'projeto.etapaEditar', params: { etapaId: id } };
-  }
-  if (route.meta.entidadeMãe === 'mdo') {
-    return { name: 'mdo.etapaEditar', params: { etapaId: id } };
-  }
-  if (route.meta.entidadeMãe === 'TransferenciasVoluntarias') {
-    return { name: 'TransferenciasVoluntarias.etapaEditar', params: { etapaId: id } };
-  }
-  return null;
+  return construirRota('Editar', id);
 }
 
 function podeEditar() {
-  if (route.meta.entidadeMãe === 'projeto') {
-    return temPermissãoPara('CadastroProjetoEtapa.editar');
-  }
-  if (route.meta.entidadeMãe === 'mdo') {
-    return temPermissãoPara('CadastroProjetoEtapaMDO.editar');
-  }
-  if (route.meta.entidadeMãe === 'TransferenciasVoluntarias') {
-    return true;
-  }
-  return false;
+  return podeRealizar('editar');
 }
 
 function podeInserir() {
-  if (route.meta.entidadeMãe === 'projeto') {
-    return temPermissãoPara('CadastroProjetoEtapa.inserir');
-  }
-  if (route.meta.entidadeMãe === 'mdo') {
-    return temPermissãoPara('CadastroProjetoEtapaMDO.inserir');
-  }
-  if (route.meta.entidadeMãe === 'TransferenciasVoluntarias') {
-    return true;
-  }
-  return false;
+  return podeRealizar('inserir');
 }
 
 function montarRotaCriar() {
-  if (route.meta.entidadeMãe === 'projeto') {
-    return { name: 'projeto.etapaCriar' };
-  }
-  if (route.meta.entidadeMãe === 'mdo') {
-    return { name: 'mdo.etapaCriar' };
-  }
-  if (route.meta.entidadeMãe === 'TransferenciasVoluntarias') {
-    return { name: 'TransferenciasVoluntarias.etapaCriar' };
-  }
-  return null;
+  return construirRota('Criar');
 }
 
 onMounted(() => {
