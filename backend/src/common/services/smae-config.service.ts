@@ -12,6 +12,9 @@ import {
 
 @Injectable()
 export class SmaeConfigService {
+    private configCache: Map<string, { value: string | null; expiresAt: number }> = new Map();
+    private readonly CACHE_TTL_MS = 10_000; // 10 seconds
+
     constructor(private readonly prisma: PrismaService) {}
 
     async findAll(): Promise<SmaeConfigDto[]> {
@@ -42,16 +45,26 @@ export class SmaeConfigService {
     }
 
     async getConfig(key: string): Promise<string | null> {
+        const now = Date.now();
+        const cached = this.configCache.get(key);
+        if (cached && cached.expiresAt > now) {
+            return cached.value;
+        }
+
         const config = await this.prisma.smaeConfig.findFirst({
             where: {
                 key: key,
             },
         });
-        if (config) return config.value;
+        let value: string | null = null;
+        if (config) {
+            value = config.value;
+        } else if (process.env[key]) {
+            value = process.env[key] ?? null;
+        }
 
-        if (process.env[key]) return process.env[key] ?? null;
-
-        return null;
+        this.configCache.set(key, { value, expiresAt: now + this.CACHE_TTL_MS });
+        return value;
     }
 
     async getConfigWithDefault<T>(key: string, defaultValue: T, parser?: (value: string) => T): Promise<T> {
