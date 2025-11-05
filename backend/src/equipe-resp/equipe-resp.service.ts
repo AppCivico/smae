@@ -6,6 +6,7 @@ import { PessoaPrivilegioService } from '../auth/pessoaPrivilegio.service';
 import { LoggerWithLog } from '../common/LoggerWithLog';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { OrgaoService } from '../orgao/orgao.service';
 import { CreateEquipeRespDto, UpdateEquipeRespDto } from './dto/equipe-resp.dto';
 import { EquipeRespItemDto, FilterEquipeRespDto } from './entities/equipe-resp.entity';
 
@@ -13,8 +14,13 @@ import { EquipeRespItemDto, FilterEquipeRespDto } from './entities/equipe-resp.e
 export class EquipeRespService {
     constructor(
         private readonly prisma: PrismaService,
-        private readonly pessoaPrivService: PessoaPrivilegioService
+        private readonly pessoaPrivService: PessoaPrivilegioService,
+        private readonly orgaoService: OrgaoService
     ) {}
+
+    private async getAllowedOrgaoIds(orgao_id: number, prismaTx: Prisma.TransactionClient): Promise<number[]> {
+        return await this.orgaoService.getOrgaoSubtreeIds(orgao_id, prismaTx);
+    }
 
     async create(dto: CreateEquipeRespDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const logger = LoggerWithLog('Grupo Repensável de Variáveis: Criação');
@@ -40,6 +46,9 @@ export class EquipeRespService {
                 });
                 if (exists) throw new BadRequestException('Título já está em uso.');
 
+                // Obtém todos os IDs de órgãos permitidos (órgão base + subordinados)
+                const allowedOrgaoIds = await this.getAllowedOrgaoIds(orgao_id, prismaTx);
+
                 const pEnviados = await this.pessoaPrivService.pessoasComPriv([], dto.participantes);
                 const pComPriv = await this.pessoaPrivService.pessoasComPriv(
                     ['SMAE.GrupoVariavel.participante'],
@@ -48,9 +57,9 @@ export class EquipeRespService {
                 for (const pessoaId of dto.participantes) {
                     const pessoa = pEnviados.filter((r) => r.pessoa_id == pessoaId)[0];
                     if (!pessoa) throw new BadRequestException(`Pessoa ID ${pessoaId} não encontrada.`);
-                    if (pessoa.orgao_id != orgao_id)
+                    if (!allowedOrgaoIds.includes(pessoa.orgao_id))
                         throw new BadRequestException(
-                            `Pessoa ID ${pessoaId} não pode ser participante do grupo, pois participa de outro órgão.`
+                            `Pessoa ID ${pessoaId} não pode ser participante do grupo, pois não está no órgão responsável ou seus subordinados.`
                         );
 
                     const temPriv = pComPriv.filter((r) => r.pessoa_id == pessoaId)[0];
@@ -71,9 +80,9 @@ export class EquipeRespService {
                     const pessoa = pComPriv2.filter((r) => r.pessoa_id == pessoaId)[0];
                     if (!pessoa)
                         throw new BadRequestException(`Pessoa ID ${pessoaId} não pode ser colaborador do grupo.`);
-                    if (pessoa.orgao_id != orgao_id)
+                    if (!allowedOrgaoIds.includes(pessoa.orgao_id))
                         throw new BadRequestException(
-                            `Pessoa ID ${pessoaId} não pode ser colaborador do grupo em outro órgão.`
+                            `Pessoa ID ${pessoaId} não pode ser colaborador do grupo, pois não está no órgão responsável ou seus subordinados.`
                         );
                 }
 
@@ -213,7 +222,7 @@ export class EquipeRespService {
         const perfisPdm = new Set<PerfilResponsavelEquipe>();
         const perfisPs = new Set<PerfilResponsavelEquipe>();
 
-        // Get PDM types and their associated profiles
+        // Obtém tipos de PDM e seus perfis associados
         const pdmTiposEPerfis = await prismaTx.pdm.findMany({
             where: {
                 removido_em: null,
@@ -373,7 +382,7 @@ export class EquipeRespService {
             if (user.orgao_id != gp.orgao_id)
                 throw new BadRequestException('Você só tem permissão para editar Equipe no mesmo órgão.');
 
-            // user.id  must be in gp.GrupoResponsavelEquipeColaborador
+            // user.id deve estar em gp.GrupoResponsavelEquipeColaborador
             if (!gp.GrupoResponsavelEquipeColaborador.map((r) => r.pessoa_id).includes(user.id))
                 throw new BadRequestException(
                     'Você só tem permissão para editar Equipe se for um colaborador do grupo.'
@@ -385,6 +394,14 @@ export class EquipeRespService {
         const now = new Date(Date.now());
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<void> => {
             logger.log(`Dados: ${JSON.stringify(dto)}`);
+
+            // Obtém todos os IDs de órgãos permitidos (órgão base + subordinados) se estamos atualizando
+            // participantes ou colaboradores
+            let allowedOrgaoIds: number[] = [];
+            if (dto.participantes || dto.colaboradores) {
+                allowedOrgaoIds = await this.getAllowedOrgaoIds(orgao_id, prismaTx);
+            }
+
             if (dto.titulo) {
                 const exists = await prismaTx.grupoResponsavelEquipe.count({
                     where: {
@@ -421,9 +438,9 @@ export class EquipeRespService {
                 for (const pessoaId of dto.participantes) {
                     const pessoa = pEnviados.filter((r) => r.pessoa_id == pessoaId)[0];
                     if (!pessoa) throw new BadRequestException(`Pessoa ID ${pessoaId} não encontrada.`);
-                    if (pessoa.orgao_id != orgao_id)
+                    if (!allowedOrgaoIds.includes(pessoa.orgao_id))
                         throw new BadRequestException(
-                            `Pessoa ID ${pessoaId} não pode ser participante do grupo, pois participa de outro órgão.`
+                            `Pessoa ID ${pessoaId} não pode ser participante do grupo, pois não está no órgão responsável ou seus subordinados.`
                         );
 
                     const temPriv = pComPriv.filter((r) => r.pessoa_id == pessoaId)[0];
@@ -539,9 +556,9 @@ export class EquipeRespService {
                     const pessoa = pComPriv.filter((r) => r.pessoa_id == pessoaId)[0];
                     if (!pessoa)
                         throw new BadRequestException(`Pessoa ID ${pessoaId} não pode ser colaborador do grupo.`);
-                    if (pessoa.orgao_id != orgao_id)
+                    if (!allowedOrgaoIds.includes(pessoa.orgao_id))
                         throw new BadRequestException(
-                            `Pessoa ID ${pessoaId} não pode ser colaborador do grupo em outro órgão.`
+                            `Pessoa ID ${pessoaId} não pode ser colaborador do grupo, pois não está no órgão responsável ou seus subordinados.`
                         );
 
                     if (!keptRecord.includes(pessoaId)) {

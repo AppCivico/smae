@@ -4,13 +4,32 @@ import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrgaoDto } from './dto/create-orgao.dto';
-import { UpdateOrgaoDto } from './dto/update-orgao.dto';
 import { FilterOrgaoDto } from './dto/filter-orgao.dto';
+import { UpdateOrgaoDto } from './dto/update-orgao.dto';
 import { OrgaoReduzidoDto } from './entities/orgao.entity';
 
 @Injectable()
 export class OrgaoService {
     constructor(private readonly prisma: PrismaService) {}
+
+    /**
+     * Obtém todos os IDs dos órgãos na subárvore (incluindo o órgão base e todos os subordinados).
+     * Utilizado para validação de membros de equipe e alterações de hierarquia.
+     */
+    async getOrgaoSubtreeIds(orgao_id: number, prismaTx?: Prisma.TransactionClient): Promise<number[]> {
+        const prisma = prismaTx || this.prisma;
+        const subtreeOrgaoIds: { id: number }[] = await prisma.$queryRaw`
+            WITH RECURSIVE orgao_subtree AS (
+                SELECT id FROM orgao WHERE id = ${orgao_id} AND removido_em IS NULL
+                UNION ALL
+                SELECT o.id FROM orgao o
+                INNER JOIN orgao_subtree os ON o.parente_id = os.id
+                WHERE o.removido_em IS NULL
+            )
+            SELECT id FROM orgao_subtree;
+        `;
+        return subtreeOrgaoIds.map((o) => o.id);
+    }
 
     async create(dto: CreateOrgaoDto, user?: PessoaFromJwt): Promise<RecordWithId> {
         const similarExists = await this.prisma.orgao.count({
@@ -159,6 +178,43 @@ export class OrgaoService {
                     },
                 });
 
+                // Verifica se mudança de hierarquia quebra membros de equipes
+                if (dto.parente_id !== undefined && dto.parente_id !== self.parente_id) {
+                    // Obtém todos os órgãos na subárvore do órgão sendo movido
+                    const allSubtreeIds = await this.getOrgaoSubtreeIds(id, prismaTx);
+
+                    // Verifica se alguma pessoa na subárvore participa de equipes
+                    const membershipsInDanger = await prismaTx.grupoResponsavelEquipe.findMany({
+                        where: {
+                            removido_em: null,
+                            OR: [
+                                {
+                                    GrupoResponsavelEquipePessoa: {
+                                        some: { orgao_id: { in: allSubtreeIds }, removido_em: null },
+                                    },
+                                },
+                                {
+                                    GrupoResponsavelEquipeColaborador: {
+                                        some: { orgao_id: { in: allSubtreeIds }, removido_em: null },
+                                    },
+                                },
+                            ],
+                        },
+                        select: {
+                            titulo: true,
+                        },
+                    });
+
+                    if (membershipsInDanger.length > 0) {
+                        throw new HttpException(
+                            `Não é possível alterar a hierarquia do órgão, pois isso pode invalidar a participação de membros em equipes. ` +
+                                `Remova as pessoas do órgão (e seus subordinados) das equipes antes de prosseguir. ` +
+                                `Equipes afetadas: ${membershipsInDanger.map((e) => e.titulo).join(', ')}`,
+                            400
+                        );
+                    }
+                }
+
                 // se enviar um ou o outro, pre-carregar o que faltar do banco, e inicia as validações
                 if (dto.parente_id || dto.nivel) {
                     if (dto.parente_id === undefined) dto.parente_id = self.parente_id;
@@ -222,8 +278,20 @@ export class OrgaoService {
         if (filhoExiste > 0)
             throw new HttpException('Não é possível remover o órgão, pois existem órgãos dependentes.', 400);
 
-        // TODO
-        // verificar se há pessoas neste orgao
+        const countPessoas = await this.prisma.pessoaFisica.count({
+            where: {
+                orgao_id: id,
+                // Verifica QUALQUER pessoa (ativa ou inativa) para evitar complicações na reativação
+            },
+        });
+        if (countPessoas > 0) {
+            throw new HttpException(
+                `Não é possível remover o órgão, pois ${countPessoas} pessoa(s) ainda estão associadas a ele. ` +
+                    `Remova ou transfira todas as pessoas antes de excluir o órgão.`,
+                400
+            );
+        }
+
         const created = await this.prisma.orgao.updateMany({
             where: { id: id },
             data: {
