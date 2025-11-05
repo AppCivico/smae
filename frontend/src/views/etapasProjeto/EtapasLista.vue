@@ -15,7 +15,7 @@ const route = useRoute();
 const authStore = useAuthStore();
 const { temPermissãoPara } = authStore;
 const etapasProjetosStore = useEtapasProjetosStore(route.meta.entidadeMãe);
-const { lista } = storeToRefs(etapasProjetosStore);
+const { lista, chamadasPendentes } = storeToRefs(etapasProjetosStore);
 
 const alertStore = useAlertStore();
 const listaFiltrada = ref([]);
@@ -102,7 +102,9 @@ onMounted(() => {
     />
   </div>
 
+  <LoadingComponent v-if="chamadasPendentes?.lista" />
   <SmaeTable
+    v-else
     :colunas="[
       { chave: 'descricao', label: 'Nome' },
       { chave: 'portfolio_id', label: 'Portfólio' },
