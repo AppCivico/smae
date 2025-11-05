@@ -4275,6 +4275,9 @@ model ProjetoFonteRecurso {
     fonte_recurso_cod_sof String
     fonte_recurso_ano     Int
 
+    fonte_recurso_detalhamento_cod       String?
+    fonte_recurso_detalhamento_descricao String?
+
     valor_percentual Float?
     valor_nominal    Float?
 

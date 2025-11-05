@@ -72,6 +72,20 @@ export class PPfonteRecursoDto {
     @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     @ValidateIf((object, value) => value !== null)
     valor_nominal?: number | null;
+
+    @IsOptional()
+    @IsString()
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Detalhamento da fonte de recurso no SOF' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
+    fonte_recurso_detalhamento_cod?: string | null;
+
+    @IsOptional()
+    @IsString()
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Detalhamento da fonte de recurso no SOF' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
+    fonte_recurso_detalhamento_descricao?: string | null;
 }
 
 export class CreateProjetoDto {

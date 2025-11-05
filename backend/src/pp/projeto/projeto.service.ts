@@ -3431,6 +3431,8 @@ export class ProjetoService {
                         fonte_recurso_cod_sof: fr.fonte_recurso_cod_sof,
                         valor_nominal: valor_nominal,
                         valor_percentual: valor_percentual,
+                        fonte_recurso_detalhamento_cod: fr.fonte_recurso_detalhamento_cod,
+                        fonte_recurso_detalhamento_descricao: fr.fonte_recurso_detalhamento_descricao,
                         atualizado_em: new Date(Date.now()),
                     },
                 });
@@ -3440,6 +3442,8 @@ export class ProjetoService {
                     data: {
                         fonte_recurso_ano: fr.fonte_recurso_ano,
                         fonte_recurso_cod_sof: fr.fonte_recurso_cod_sof,
+                        fonte_recurso_detalhamento_cod: fr.fonte_recurso_detalhamento_cod,
+                        fonte_recurso_detalhamento_descricao: fr.fonte_recurso_detalhamento_descricao,
                         valor_nominal: valor_nominal,
                         valor_percentual: valor_percentual,
                         projeto_id: projetoId,
