@@ -14,7 +14,7 @@
         <Field
           name="portfolio_id"
           as="select"
-          :disabled="$props.etiquetaId || !emFoco?.pode_editar"
+          :disabled="$props.etiquetaId || !podeEditar"
           class="inputtext light mb1"
           :class="{
             error: errors.portfolio_id,
@@ -45,7 +45,7 @@
         <Field
           name="descricao"
           type="text"
-          :disabled="!emFoco?.pode_editar"
+          :disabled="!podeEditar"
           class="inputtext light mb1"
         />
         <ErrorMessage
@@ -75,7 +75,7 @@ import {
   useForm,
   useIsFormDirty,
 } from 'vee-validate';
-import { onMounted } from 'vue';
+import { computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import CabecalhoDePagina from '@/components/CabecalhoDePagina.vue';
@@ -106,6 +106,14 @@ const {
 });
 
 const formularioSujo = useIsFormDirty();
+
+const podeEditar = computed(() => {
+  if (!emFoco.value) {
+    return true;
+  }
+
+  return emFoco.value.pode_editar;
+});
 
 const onSubmit = handleSubmit(async (values) => {
   try {
