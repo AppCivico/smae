@@ -14,6 +14,7 @@
         <Field
           name="portfolio_id"
           as="select"
+          :disabled="$props.etiquetaId || !emFoco?.pode_editar"
           class="inputtext light mb1"
           :class="{
             error: errors.portfolio_id,
@@ -44,6 +45,7 @@
         <Field
           name="descricao"
           type="text"
+          :disabled="!emFoco?.pode_editar"
           class="inputtext light mb1"
         />
         <ErrorMessage
@@ -91,7 +93,7 @@ const props = defineProps<{
 const alertStore = useAlertStore();
 const portfolioStore = usePortfolioStore();
 const projetoEtiquetasStore = useProjetoEtiquetasStore();
-const { itemParaEdicao } = storeToRefs(projetoEtiquetasStore);
+const { emFoco } = storeToRefs(projetoEtiquetasStore);
 const { lista: portfoliosLista } = storeToRefs(portfolioStore);
 
 const {
@@ -99,7 +101,7 @@ const {
   handleSubmit,
   isSubmitting,
 } = useForm({
-  initialValues: itemParaEdicao,
+  initialValues: emFoco,
   validationSchema: schema,
 });
 

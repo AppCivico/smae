@@ -106,9 +106,5 @@ export const useProjetoEtiquetasStore = defineStore('projetoEtiquetasStore', {
     },
   },
   getters: {
-    itemParaEdicao: ({ emFoco }) => ({
-      ...emFoco,
-      portfolio_id: emFoco?.portfolio?.id || null,
-    }),
   },
 });

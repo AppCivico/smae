@@ -1,5 +1,8 @@
 <template>
-  <SmaeLink :to="parametrosEditar">
+  <SmaeLink
+    v-if="parametrosEditar"
+    :to="parametrosEditar"
+  >
     <svg
       width="20"
       height="20"
@@ -12,7 +15,9 @@
 <script lang="ts" setup>
 import { computed } from 'vue';
 import { RouteLocationRaw } from 'vue-router';
+
 import obterPropriedadeNoObjeto from '@/helpers/objetos/obterPropriedadeNoObjeto';
+
 import type { Linha } from '../tipagem';
 
 type FuncaoRotaEditar = (linha: Linha) => RouteLocationRaw;
