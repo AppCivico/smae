@@ -21,6 +21,8 @@ import {
 } from './entities/orcamento-executado.entity';
 import { CsvWriterOptions, WriteCsvToFile } from 'src/common/helpers/CsvWriter';
 import { flatten } from '@json2csv/transforms';
+import { PrismaMerge } from '../../prisma/prisma.helpers';
+import { Prisma } from '@prisma/client';
 
 class RetornoRealizadoDb {
     plan_dotacao_ano_utilizado: string | null;
@@ -156,77 +158,88 @@ export class OrcamentoService implements ReportableService {
             filtroMetas = metas.map((r) => r.id);
         }
 
-        const orgaoMatch: any[] = [];
-        if (Array.isArray(dto.orgaos) && dto.orgaos.length > 0)
-            for (const orgao of dto.orgaos) {
-                orgaoMatch.push({
-                    dotacao: {
-                        startsWith: orgao + '.',
-                    },
-                });
-            }
-
-        const orcExec = await this.prisma.orcamentoRealizadoItem.findMany({
-            where: {
-                sobrescrito_em: null,
-                OrcamentoRealizado: {
-                    meta_id: filtroMetas ? { in: filtroMetas } : undefined,
-                    projeto_id: dto.projeto_id ? dto.projeto_id : undefined,
-                    ...(dto.portfolio_id
-                        ? {
-                              projeto_id: { 'not': null },
-                              OR: [
-                                  { projeto: { portfolio_id: dto.portfolio_id } },
-                                  {
-                                      projeto: {
-                                          portfolios_compartilhados: {
-                                              some: { portfolio_id: dto.portfolio_id, removido_em: null },
-                                          },
-                                      },
-                                  },
-                              ],
-                          }
-                        : {}),
-                    removido_em: null,
-                    OR: orgaoMatch.length === 0 ? undefined : orgaoMatch,
-                },
-                data_referencia: {
-                    gte: Date2YMD.tzSp2UTC(dto.inicio),
-                    lte: Date2YMD.tzSp2UTC(dto.fim),
-                },
+        // Monta filtro base
+        let filtroBase: Prisma.OrcamentoRealizadoItemWhereInput = {
+            sobrescrito_em: null,
+            data_referencia: {
+                gte: Date2YMD.tzSp2UTC(dto.inicio),
+                lte: Date2YMD.tzSp2UTC(dto.fim),
             },
+            OrcamentoRealizado: {
+                removido_em: null,
+            },
+        };
+
+        // Agora repete o padrão para orçamento planejado
+        let filtroPlan: Prisma.OrcamentoPlanejadoWhereInput = {
+            removido_em: null,
+            ano_referencia: {
+                gte: dto.inicio.getFullYear(),
+                lte: dto.fim.getFullYear(),
+            },
+        };
+
+        // Collect additional AND conditions
+        const andConditionsBase: Prisma.OrcamentoRealizadoItemWhereInput[] = [];
+        const andConditionsPlan: Prisma.OrcamentoPlanejadoWhereInput[] = [];
+
+        // Filtro por metas
+        if (filtroMetas) {
+            andConditionsBase.push({
+                OrcamentoRealizado: { meta_id: { in: filtroMetas } },
+            });
+            andConditionsPlan.push({ meta_id: { in: filtroMetas } });
+        }
+
+        // Filtro por projeto
+        if (dto.projeto_id) {
+            andConditionsBase.push({
+                OrcamentoRealizado: { projeto_id: dto.projeto_id },
+            });
+            andConditionsPlan.push({ projeto_id: dto.projeto_id });
+        }
+
+        // Filtro por portfolio
+        if (dto.portfolio_id) {
+            andConditionsBase.push(buildPortfolioFilterOrcamentoRealizadoItem(dto.portfolio_id));
+            andConditionsPlan.push(buildPortfolioFilterOrcamentoPlanejado(dto.portfolio_id));
+        }
+
+        // Filtro por órgãos
+        if (Array.isArray(dto.orgaos) && dto.orgaos.length > 0) {
+            const orgaoMatch = dto.orgaos.map((orgao) => ({
+                dotacao: { startsWith: orgao + '.' },
+            }));
+            andConditionsBase.push({
+                OrcamentoRealizado: { OR: orgaoMatch },
+            });
+            andConditionsPlan.push({ OR: orgaoMatch });
+        }
+
+        // Apply AND conditions if any exist
+        if (andConditionsBase.length > 0) {
+            filtroBase = PrismaMerge(filtroBase, {
+                AND: andConditionsBase,
+            });
+        }
+
+        if (andConditionsPlan.length > 0) {
+            filtroPlan = PrismaMerge(filtroPlan, {
+                AND: andConditionsPlan,
+            });
+        }
+
+        // Busca os IDs de orçamentos realizados
+        const orcExec = await this.prisma.orcamentoRealizadoItem.findMany({
+            where: filtroBase,
             select: { id: true },
         });
 
         const orcPlan = await this.prisma.orcamentoPlanejado.findMany({
-            where: {
-                meta_id: filtroMetas ? { in: filtroMetas } : undefined,
-                projeto_id: dto.projeto_id ? dto.projeto_id : undefined,
-                ...(dto.portfolio_id
-                    ? {
-                          projeto_id: { 'not': null },
-                          OR: [
-                              { projeto: { portfolio_id: dto.portfolio_id } },
-                              {
-                                  projeto: {
-                                      portfolios_compartilhados: {
-                                          some: { portfolio_id: dto.portfolio_id, removido_em: null },
-                                      },
-                                  },
-                              },
-                          ],
-                      }
-                    : {}),
-                removido_em: null,
-                OR: orgaoMatch.length === 0 ? undefined : orgaoMatch,
-
-                ano_referencia: {
-                    gte: dto.inicio.getFullYear(),
-                    lte: dto.fim.getFullYear(),
-                },
-            },
+            where: filtroPlan,
             select: { id: true },
         });
+
         return { orcExec, anoIni, anoFim, orcPlan };
     }
 
@@ -841,4 +854,38 @@ export class OrcamentoService implements ReportableService {
     getClassFileName(): string {
         return Path2FileName(__filename);
     }
+}
+
+function buildPortfolioFilterOrcamentoRealizadoItem(portfolio_id: number): Prisma.OrcamentoRealizadoItemWhereInput {
+    return {
+        OrcamentoRealizado: {
+            projeto_id: { not: null },
+            OR: [
+                { projeto: { portfolio_id } },
+                {
+                    projeto: {
+                        portfolios_compartilhados: {
+                            some: { portfolio_id, removido_em: null },
+                        },
+                    },
+                },
+            ],
+        },
+    };
+}
+
+function buildPortfolioFilterOrcamentoPlanejado(portfolio_id: number): Prisma.OrcamentoPlanejadoWhereInput {
+    return {
+        projeto_id: { not: null },
+        OR: [
+            { projeto: { portfolio_id } },
+            {
+                projeto: {
+                    portfolios_compartilhados: {
+                        some: { portfolio_id, removido_em: null },
+                    },
+                },
+            },
+        ],
+    };
 }
