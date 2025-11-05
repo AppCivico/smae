@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+
 import modulos from '@/consts/modulosDoSistema';
 import retornarModuloAPartirDeEntidadeMae from '@/helpers/retornarModuloAPartirDeEntidadeMae';
 import { useAlertStore } from '@/stores/alert.store';
