@@ -1262,7 +1262,7 @@ export class PessoaService implements OnModuleInit {
 
         const pessoa = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
-                // Validate unique constraints first
+                // Valida restrições únicas primeiro
                 const emailExists = await prismaTx.pessoa.count({ where: { email: createPessoaDto.email } });
                 if (emailExists > 0) {
                     throw new BadRequestException('email| E-mail já tem conta');
@@ -1288,7 +1288,7 @@ export class PessoaService implements OnModuleInit {
                     }
                 }
 
-                // Create basic pessoa record first
+                // Cria registro básico de pessoa primeiro
                 let pessoaFisica;
                 if (createPessoaDto.orgao_id) {
                     pessoaFisica = await prismaTx.pessoaFisica.create({

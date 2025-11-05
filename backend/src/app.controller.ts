@@ -76,14 +76,14 @@ export class AppController {
             },
         });
 
-        // Sort by size in descending order
+        // Ordena por tamanho em ordem decrescente
         fileStats.sort((a, b) => {
             if (b._sum.tamanho_bytes !== null && a._sum.tamanho_bytes !== null)
                 return b._sum.tamanho_bytes - a._sum.tamanho_bytes;
             return b._count._all - a._count._all;
         });
 
-        // Convert bytes to megabytes (MB) and create a new array of objects
+        // Converte bytes para megabytes (MB) e cria novo array de objetos
         const perMimeType = fileStats.map((stats) => ({
             mime_type: stats.mime_type,
             count: stats._count._all,
@@ -91,7 +91,7 @@ export class AppController {
             tamanho_mb: stats._sum.tamanho_bytes ? (stats._sum.tamanho_bytes / (1024 * 1024)).toFixed(2) : null,
         }));
 
-        // Calculate total count and total size
+        // Calcula contagem total e tamanho total
         const totalCount = fileStats.reduce((acc, stats) => acc + stats._count._all, 0);
         const totalSizeBytes = fileStats.reduce((acc, stats) => acc + (stats._sum.tamanho_bytes || 0), 0);
         const totalSizeMB = (totalSizeBytes / (1024 * 1024)).toFixed(2);

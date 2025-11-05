@@ -1,11 +1,11 @@
 export function formataSEI(input: string): string {
-    // Check if the input contains the pipe character
+    // Verifica se a entrada contém o caractere pipe
     if (input.includes('|')) {
-        // Split the input by pipe and recursively call formataSEI on each part
+        // Divide a entrada por pipe e chama formataSEI recursivamente em cada parte
         return input.split('|')
             .map(part => formataSEI(part.trim()))
-            .filter(Boolean)  // Remove empty results
-            .join(' | ');     // Join the formatted parts with pipes
+            .filter(Boolean)  // Remove resultados vazios
+            .join(' | ');     // Junta as partes formatadas com pipes
     }
 
     const numero = input.replace(/\D/g, '');
