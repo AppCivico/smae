@@ -1,6 +1,6 @@
 import { OmitType } from '@nestjs/swagger';
 import { Transform, Expose } from 'class-transformer';
-import { IsInt } from 'class-validator';
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsInt, IsOptional, IsString } from 'class-validator';
 import { SuperCreateOrcamentoExecutadoDto } from 'src/reports/orcamento/dto/create-orcamento-executado.dto';
 import { NumberTransformOrUndef } from '../../../auth/transforms/number.transform';
 
