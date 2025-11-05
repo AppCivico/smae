@@ -21,14 +21,17 @@ const alertStore = useAlertStore();
 const listaFiltrada = ref([]);
 
 function obterConfiguracao() {
-  return configEtapas[route.meta.entidadeMãe];
+  const config = configEtapas[route.meta.entidadeMãe];
+  if (!config) {
+    throw new Error(`Configuração não encontrada para entidadeMãe: ${route.meta.entidadeMãe}`);
+  }
+  return config;
 }
 
 function construirRota(acao, id = null) {
   const config = obterConfiguracao();
-  if (!config) return null;
-
   const nomeDaRota = `${config.rotaPrefix}.${acao.toLowerCase()}`;
+
   if (id) {
     return { name: nomeDaRota, params: { etapaId: id } };
   }
@@ -37,7 +40,6 @@ function construirRota(acao, id = null) {
 
 function podeRealizar(acao) {
   const config = obterConfiguracao();
-  if (!config) return false;
 
   if (!config.requerPermissão) {
     return true;
