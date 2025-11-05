@@ -8,6 +8,7 @@ import {
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+import configEtapas from '@/consts/configEtapas';
 import { etapasProjeto as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
@@ -21,27 +22,16 @@ const route = useRoute();
 const authStore = useAuthStore();
 const etapasProjetosStore = useEtapasProjetosStore(route.meta.entidadeMãe);
 
-const entidadeConfig = {
-  projeto: {
-    permissãoRemover: 'CadastroProjetoEtapa.remover',
-  },
-  mdo: {
-    permissãoRemover: 'CadastroProjetoEtapaMDO.remover',
-  },
-  TransferenciasVoluntarias: {
-    permissãoRemover: true,
-  },
-};
-
 function obterPermissãoRemover() {
-  const config = entidadeConfig[route.meta.entidadeMãe];
+  const config = configEtapas[route.meta.entidadeMãe];
   if (!config) return false;
 
-  if (config.permissãoRemover === true) {
+  if (!config.requerPermissão) {
     return true;
   }
 
-  return authStore.temPermissãoPara(config.permissãoRemover);
+  const permissao = config.permissões.remover;
+  return permissao ? authStore.temPermissãoPara(permissao) : false;
 }
 
 let portfoliosStore;

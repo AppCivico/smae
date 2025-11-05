@@ -1,11 +1,12 @@
 <script setup>
 import { storeToRefs } from 'pinia';
-import { computed, onMounted, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 import CabecalhoDePagina from '@/components/CabecalhoDePagina.vue';
 import LocalFilter from '@/components/LocalFilter.vue';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
+import configEtapas from '@/consts/configEtapas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
@@ -19,30 +20,8 @@ const { lista } = storeToRefs(etapasProjetosStore);
 const alertStore = useAlertStore();
 const listaFiltrada = ref([]);
 
-// Mapeamento de configurações por entidadeMãe
-const entidadeConfig = {
-  projeto: {
-    rotaPrefix: 'projeto.etapas',
-    permissãoEditar: 'CadastroProjetoEtapa.editar',
-    permissãoInserir: 'CadastroProjetoEtapa.inserir',
-    requerPermissão: true,
-  },
-  mdo: {
-    rotaPrefix: 'mdo.etapas',
-    permissãoEditar: 'CadastroProjetoEtapaMDO.editar',
-    permissãoInserir: 'CadastroProjetoEtapaMDO.inserir',
-    requerPermissão: true,
-  },
-  TransferenciasVoluntarias: {
-    rotaPrefix: 'TransferenciasVoluntarias',
-    permissãoEditar: null,
-    permissãoInserir: null,
-    requerPermissão: false,
-  },
-};
-
 function obterConfiguracao() {
-  return entidadeConfig[route.meta.entidadeMãe];
+  return configEtapas[route.meta.entidadeMãe];
 }
 
 function construirRota(acao, id = null) {
@@ -64,9 +43,7 @@ function podeRealizar(acao) {
     return true;
   }
 
-  const chavePermissao = acao === 'editar'
-    ? config.permissãoEditar
-    : config.permissãoInserir;
+  const chavePermissao = config.permissões[acao];
 
   return chavePermissao ? temPermissãoPara(chavePermissao) : false;
 }
