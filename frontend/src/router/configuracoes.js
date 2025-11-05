@@ -141,7 +141,7 @@ export default [
           rotasParaMenuSecundário: [
             'projeto.portfolio.listar',
             'projeto.gruposObservadores.listar',
-            'projeto.etapasListar',
+            'projeto.etapas.listar',
           ],
         },
 
@@ -198,13 +198,13 @@ export default [
           rotasParaMenuSecundário: [
             'projeto.portfolio.listar',
             'projeto.gruposObservadores.listar',
-            'projeto.etapasListar',
+            'projeto.etapas.listar',
           ],
         },
 
         children: [
           {
-            name: 'projeto.etapasListar',
+            name: 'projeto.etapas.listar',
             path: '',
             component: EtapasLista,
             meta: {
@@ -212,18 +212,18 @@ export default [
             },
           },
           {
-            name: 'projeto.etapaCriar',
+            name: 'projeto.etapas.criar',
             path: 'novo',
             component: EtapasCriarEditar,
             meta: {
               título: 'Nova etapa do projeto',
-              rotasParaMigalhasDePão: ['projeto.etapasListar'],
-              rotaDeEscape: 'projeto.etapasListar',
+              rotasParaMigalhasDePão: ['projeto.etapas.listar'],
+              rotaDeEscape: 'projeto.etapas.listar',
             },
           },
           {
             path: ':etapaId',
-            name: 'projeto.etapaEditar',
+            name: 'projeto.etapas.editar',
             component: EtapasCriarEditar,
             props: ({ params }) => ({
               ...params,
@@ -233,8 +233,8 @@ export default [
             }),
             meta: {
               título: 'Editar etapa do projeto',
-              rotasParaMigalhasDePão: ['projeto.etapasListar'],
-              rotaDeEscape: 'projeto.etapasListar',
+              rotasParaMigalhasDePão: ['projeto.etapas.listar'],
+              rotaDeEscape: 'projeto.etapas.listar',
             },
           },
         ],
@@ -261,6 +261,7 @@ export default [
               rotasParaMenuSecundário: [
                 'mdo.portfolio.listar',
                 'mdo.gruposObservadores.listar',
+                'mdo.etapas.listar',
               ],
             },
             children: [
@@ -314,6 +315,7 @@ export default [
               rotasParaMenuSecundário: [
                 'mdo.portfolio.listar',
                 'mdo.gruposObservadores.listar',
+                'mdo.etapas.listar',
               ],
               rotaParaItensAssociados: {
                 nome: 'obrasResumo',
@@ -357,6 +359,56 @@ export default [
                     'mdo.gruposObservadores.listar',
                   ],
                   rotaDeEscape: 'mdo.gruposObservadores.listar',
+                },
+              },
+            ],
+          },
+          {
+            path: 'etapas',
+            component: EtapasRaiz,
+            meta: {
+              título: 'Etapas de obra',
+              títuloParaMenu: 'Etapas',
+              entidadeMãe: 'mdo',
+              rotaPrescindeDeChave: true,
+              limitarÀsPermissões: 'CadastroProjetoEtapaMDO.',
+              rotasParaMenuSecundário: [
+                'mdo.portfolio.listar',
+                'mdo.gruposObservadores.listar',
+                'mdo.etapas.listar',
+              ],
+            },
+            children: [
+              {
+                name: 'mdo.etapas.listar',
+                path: '',
+                component: EtapasLista,
+                meta: {
+                  título: 'Etapas da obra',
+                },
+              },
+              {
+                name: 'mdo.etapas.criar',
+                path: 'novo',
+                component: EtapasCriarEditar,
+                meta: {
+                  título: 'Nova etapa da obra',
+                  rotasParaMigalhasDePão: ['mdo.etapas.listar'],
+                  rotaDeEscape: 'mdo.etapas.listar',
+                },
+              },
+              {
+                path: ':etapaId',
+                name: 'mdo.etapas.editar',
+                component: EtapasCriarEditar,
+                props: ({ params }) => ({
+                  ...params,
+                  etapaId: Number.parseInt(params.etapaId, 10) || undefined,
+                }),
+                meta: {
+                  título: 'Editar etapa da obra',
+                  rotasParaMigalhasDePão: ['mdo.etapas.listar'],
+                  rotaDeEscape: 'mdo.etapas.listar',
                 },
               },
             ],

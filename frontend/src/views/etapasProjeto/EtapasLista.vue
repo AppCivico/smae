@@ -1,11 +1,12 @@
 <script setup>
 import { storeToRefs } from 'pinia';
-import { computed, onMounted, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 import CabecalhoDePagina from '@/components/CabecalhoDePagina.vue';
 import LocalFilter from '@/components/LocalFilter.vue';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
+import configEtapas from '@/consts/configEtapas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
@@ -14,10 +15,40 @@ const route = useRoute();
 const authStore = useAuthStore();
 const { temPermissãoPara } = authStore;
 const etapasProjetosStore = useEtapasProjetosStore(route.meta.entidadeMãe);
-const { lista } = storeToRefs(etapasProjetosStore);
+const { lista, chamadasPendentes } = storeToRefs(etapasProjetosStore);
 
 const alertStore = useAlertStore();
 const listaFiltrada = ref([]);
+
+function obterConfiguracao() {
+  const config = configEtapas[route.meta.entidadeMãe];
+  if (!config) {
+    throw new Error(`Configuração não encontrada para entidadeMãe: ${route.meta.entidadeMãe}`);
+  }
+  return config;
+}
+
+function construirRota(acao, id = null) {
+  const config = obterConfiguracao();
+  const nomeDaRota = `${config.rotaPrefix}.${acao.toLowerCase()}`;
+
+  if (id) {
+    return { name: nomeDaRota, params: { etapaId: id } };
+  }
+  return { name: nomeDaRota };
+}
+
+function podeRealizar(acao) {
+  const config = obterConfiguracao();
+
+  if (!config.requerPermissão) {
+    return true;
+  }
+
+  const chavePermissao = config.permissões[acao];
+
+  return chavePermissao ? temPermissãoPara(chavePermissao) : false;
+}
 
 function buscarDados() {
   etapasProjetosStore.$reset();
@@ -32,55 +63,19 @@ async function excluirItem({ id }) {
 }
 
 function montarRotaEditar({ id }) {
-  if (route.meta.entidadeMãe === 'projeto') {
-    return { name: 'projeto.etapaEditar', params: { etapaId: id } };
-  }
-  if (route.meta.entidadeMãe === 'mdo') {
-    return { name: 'mdo.etapaEditar', params: { etapaId: id } };
-  }
-  if (route.meta.entidadeMãe === 'TransferenciasVoluntarias') {
-    return { name: 'TransferenciasVoluntarias.etapaEditar', params: { etapaId: id } };
-  }
-  return null;
+  return construirRota('Editar', id);
 }
 
 function podeEditar() {
-  if (route.meta.entidadeMãe === 'projeto') {
-    return temPermissãoPara('CadastroProjetoEtapa.editar');
-  }
-  if (route.meta.entidadeMãe === 'mdo') {
-    return temPermissãoPara('CadastroProjetoEtapaMDO.editar');
-  }
-  if (route.meta.entidadeMãe === 'TransferenciasVoluntarias') {
-    return true;
-  }
-  return false;
+  return podeRealizar('editar');
 }
 
 function podeInserir() {
-  if (route.meta.entidadeMãe === 'projeto') {
-    return temPermissãoPara('CadastroProjetoEtapa.inserir');
-  }
-  if (route.meta.entidadeMãe === 'mdo') {
-    return temPermissãoPara('CadastroProjetoEtapaMDO.inserir');
-  }
-  if (route.meta.entidadeMãe === 'TransferenciasVoluntarias') {
-    return true;
-  }
-  return false;
+  return podeRealizar('inserir');
 }
 
 function montarRotaCriar() {
-  if (route.meta.entidadeMãe === 'projeto') {
-    return { name: 'projeto.etapaCriar' };
-  }
-  if (route.meta.entidadeMãe === 'mdo') {
-    return { name: 'mdo.etapaCriar' };
-  }
-  if (route.meta.entidadeMãe === 'TransferenciasVoluntarias') {
-    return { name: 'TransferenciasVoluntarias.etapaCriar' };
-  }
-  return null;
+  return construirRota('Criar');
 }
 
 onMounted(() => {
@@ -109,7 +104,9 @@ onMounted(() => {
     />
   </div>
 
+  <LoadingComponent v-if="chamadasPendentes?.lista" />
   <SmaeTable
+    v-else
     :colunas="[
       { chave: 'descricao', label: 'Nome' },
       { chave: 'portfolio_id', label: 'Portfólio' },

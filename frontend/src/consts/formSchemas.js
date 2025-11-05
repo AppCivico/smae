@@ -3705,6 +3705,8 @@ export const etapasProjeto = object({
   portfolio_id: number()
     .label('Portfólio')
     .nullable()
+    .positive()
+    .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
     .when('eh_padrao', {
       is: false,
       then: (schema) => schema.required('Portfólio é obrigatório quando não é etapa padrão'),
@@ -3714,6 +3716,8 @@ export const etapasProjeto = object({
   etapa_padrao_id: number()
     .label('Etapa Padrão Associada')
     .nullable()
+    .positive()
+    .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
     .when('eh_padrao', {
       is: false,
       then: (schema) => schema.required('Etapa Padrão Associada é obrigatória quando não é etapa padrão'),

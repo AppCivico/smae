@@ -29,9 +29,6 @@ import {
 import EquipamentosCriarEditar from '@/views/equipamentos/EquipamentosCriarEditar.vue';
 import EquipamentosLista from '@/views/equipamentos/EquipamentosLista.vue';
 import EquipamentosRaiz from '@/views/equipamentos/EquipamentosRaiz.vue';
-import EtapasCriarEditar from '@/views/etapasProjeto/EtapasCriarEditar.vue';
-import EtapasLista from '@/views/etapasProjeto/EtapasLista.vue';
-import EtapasRaiz from '@/views/etapasProjeto/EtapasRaiz.vue';
 import GruposTematicosCriarEditar from '@/views/gruposTematicos/GruposTematicosCriarEditar.vue';
 import GruposTematicosLista from '@/views/gruposTematicos/GruposTematicosLista.vue';
 import GruposTematicosRaiz from '@/views/gruposTematicos/GruposTematicosRaiz.vue';
@@ -93,7 +90,6 @@ const rotasParaMenuSecundário = [
       'gerenciarRegiões',
       'tipoDeTransferenciaListar',
       'tipoDeVinculo.listar',
-      'mdo.etapasListar',
       'gruposTematicosObras',
       'tiposDeIntervencao',
       'equipamentosLista',
@@ -505,52 +501,6 @@ export default [
               rotasParaMigalhasDePão: [
                 'tipoDeVinculo.listar',
               ],
-            },
-          },
-        ],
-      },
-      {
-        path: 'etapa-de-obra',
-        component: EtapasRaiz,
-        meta: {
-          título: 'Etapas de obra',
-          entidadeMãe: 'mdo',
-          rotaPrescindeDeChave: true,
-          limitarÀsPermissões: 'CadastroProjetoEtapaMDO.',
-          rotasParaMenuSecundário,
-        },
-        props: true,
-        children: [
-          {
-            name: 'mdo.etapasListar',
-            path: '',
-            component: EtapasLista,
-            meta: {
-              título: 'Etapas da obra',
-            },
-          },
-          {
-            name: 'mdo.etapaCriar',
-            path: 'novo',
-            component: EtapasCriarEditar,
-            meta: {
-              título: 'Nova etapa da obra',
-              rotaDeEscape: 'mdo.etapasListar',
-            },
-          },
-          {
-            path: ':etapaId',
-            name: 'mdo.etapaEditar',
-            component: EtapasCriarEditar,
-            props: ({ params }) => ({
-              ...params,
-              ...{
-                etapaId: Number.parseInt(params.etapaId, 10) || undefined,
-              },
-            }),
-            meta: {
-              título: 'Editar etapa da obra',
-              rotaDeEscape: 'mdo.etapasListar',
             },
           },
         ],
