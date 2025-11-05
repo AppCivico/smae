@@ -2813,7 +2813,6 @@ export const projeto = object()
               .oneOf(Object.keys(tiposDeOrigens), 'A origem escolhida é inválida'),
           }),
       ),
-
     portfolios_compartilhados: array()
       .label('Compartilhar com portfólios')
       .nullable(),
@@ -2901,6 +2900,9 @@ export const projeto = object()
     status: mixed()
       .label('Status')
       .oneOf(Object.keys(statusDeProjetos))
+      .nullable(),
+    tags_portfolio: array()
+      .label('Etiquetas')
       .nullable(),
     tolerancia_atraso: number()
       .label('Percentual de tolerância com atraso')

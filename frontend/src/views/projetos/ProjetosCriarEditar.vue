@@ -9,6 +9,7 @@ import {
 } from 'vee-validate';
 import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
 import CampoDePlanosMetasRelacionados from '@/components/CampoDePlanosMetasRelacionados.vue';
@@ -25,6 +26,7 @@ import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { useObservadoresStore } from '@/stores/observadores.store.ts';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
+import { useProjetoEtiquetasStore } from '@/stores/projetoEtiqueta.store.ts';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -34,12 +36,18 @@ const DotaçãoStore = useDotaçãoStore();
 const alertStore = useAlertStore();
 const observadoresStore = useObservadoresStore();
 const portfolioStore = usePortfolioStore();
+const projetoEtiquetasStore = useProjetoEtiquetasStore();
 const projetosStore = useProjetosStore();
 const {
   lista: gruposDeObservadores,
   chamadasPendentes: gruposDeObservadoresPendentes,
   erro: erroNosGruposDeObservadores,
 } = storeToRefs(observadoresStore);
+
+const {
+  lista: etiquetasDoPortfolio,
+  chamadasPendentes: etiquetasPendentes,
+} = storeToRefs(projetoEtiquetasStore);
 
 const {
   chamadasPendentes,
@@ -287,6 +295,7 @@ function iniciar() {
 
   if (emFoco.value?.portfolio_id) {
     observadoresStore.buscarTudo();
+    projetoEtiquetasStore.buscarTudo({ portfolio_id: emFoco.value.portfolio_id });
   }
 
   ÓrgãosStore.getAllOrganResponsibles().finally(() => {
@@ -306,6 +315,14 @@ watch(itemParaEdicao, (novoValor) => {
   resetForm({
     initialValues: novoValor,
   });
+});
+
+watch(() => values.portfolio_id, (novoPortfolioId) => {
+  values.tags_portfolio = [];
+
+  if (novoPortfolioId) {
+    projetoEtiquetasStore.buscarTudo({ portfolio_id: novoPortfolioId });
+  }
 });
 </script>
 
@@ -453,6 +470,35 @@ watch(itemParaEdicao, (novoValor) => {
         <ErrorMessage
           class="error-msg mb1"
           name="status"
+        />
+      </div>
+    </div>
+
+    <div class="flex g2 mb1 f1">
+      <div class="f1 mb1">
+        <SmaeLabel
+          name="tags_portfolio"
+          :schema="schema"
+        />
+
+        <AutocompleteField
+          name="tags_portfolio"
+          :controlador="{
+            busca: '',
+            participantes: values.tags_portfolio || []
+          }"
+          :grupo="etiquetasDoPortfolio"
+          :class="{
+            error: errors.tags_portfolio,
+            loading: etiquetasPendentes.lista
+          }"
+          label="descricao"
+          :readonly="desabilitarTodosCampos.camposComuns"
+        />
+
+        <ErrorMessage
+          name="tags_portfolio"
+          class="error-msg"
         />
       </div>
     </div>
