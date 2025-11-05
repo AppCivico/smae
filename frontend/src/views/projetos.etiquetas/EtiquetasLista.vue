@@ -16,7 +16,7 @@
       { chave: 'descricao', label: 'Descrição' },
       { chave: 'portfolio.titulo', label: 'Portfólio' },
     ]"
-    :rota-editar="({ id }) => ({
+    :rota-editar="({ id, pode_editar }) => pode_editar && ({
       name: 'projeto.etiquetas.editar',
       params: { etiquetaId: id }
     })"
