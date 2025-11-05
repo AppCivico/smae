@@ -958,89 +958,57 @@ export class PPProjetosService implements ReportableService {
     }
 
     private async buildFilteredWhereStr(filters: CreateRelProjetosDto, user: PessoaFromJwt | null): Promise<WhereCond> {
-        const whereConditions: string[] = [];
-        const queryParams: any[] = [];
-
-        let paramIndex = 1;
-        let count = 0;
-
+        // Obtém as permissões do usuário
         const perms = await ProjetoGetPermissionSet(this.tipo, user ? user : undefined);
 
+        // Condição base que se aplica tanto a projetos diretos quanto compartilhados
+        const baseWhere = {
+            AND: perms,
+            removido_em: null,
+            tipo: this.tipo,
+            portfolio: { modelo_clonagem: false }, // não traz portfólios que são modelos para clonagem
+            id: filters.projeto_id ? { in: filters.projeto_id } : undefined,
+            codigo: filters.codigo ?? undefined,
+            orgao_responsavel_id: filters.orgao_responsavel_id ?? undefined,
+            status: filters.status ?? undefined,
+        };
+
+        // Busca projetos diretamente no portfólio
         const allowed = await this.prisma.projeto.findMany({
             where: {
-                AND: perms,
-                removido_em: null,
-                // importante manter o portfolio_id aqui, pois é utilizado no filtro de compartilhamento
-                // e aqui também
+                ...baseWhere,
                 portfolio_id: filters.portfolio_id,
-                portfolio: { modelo_clonagem: false }, // não traz portfólios que são modelos para clonagem
-                // reduz o número de linhas pra não virar um "IN" gigante
-                tipo: this.tipo,
-                id: filters.projeto_id ? { in: filters.projeto_id } : undefined,
-                codigo: filters.codigo ?? undefined,
-                orgao_responsavel_id: filters.orgao_responsavel_id ?? undefined,
-                status: filters.status ?? undefined,
             },
             select: { id: true },
         });
 
+        // Busca projetos compartilhados com o portfólio
         const allowed_shared = await this.prisma.portfolioProjetoCompartilhado.findMany({
             where: {
-                projeto: {
-                    AND: perms,
-                    portfolio: { modelo_clonagem: false }, // não traz portfólios que são modelos para clonagem
-                    tipo: this.tipo,
-                    id: filters.projeto_id ? { in: filters.projeto_id } : undefined,
-                    codigo: filters.codigo ?? undefined,
-                    orgao_responsavel_id: filters.orgao_responsavel_id ?? undefined,
-                    status: filters.status ?? undefined,
-                },
+                projeto: baseWhere,
                 removido_em: null,
                 portfolio_id: filters.portfolio_id,
             },
             select: { projeto_id: true },
         });
 
-        // Adicionando projetos compartilhados.
-        // Deve ser adicionado apenas projetos que não sejam originalmente do portfolio utilizado no filtro.
-        allowed.push(
-            ...allowed_shared
-                .filter((n) => !allowed.find((m) => m.id === n.projeto_id))
-                .map((n) => ({ id: n.projeto_id }))
-        );
+        // Mescla ambas as listas, removendo duplicados, importante nesse caso do projetos com batch-export
+        const projectIdSet = new Set<number>();
+        allowed.forEach((p) => projectIdSet.add(p.id));
+        allowed_shared.forEach((s) => projectIdSet.add(s.projeto_id));
+        const allProjectIds = Array.from(projectIdSet);
 
-        if (allowed.length === 0) {
+        // Se não encontrou nenhum projeto, retorna uma condição WHERE false
+        if (allProjectIds.length === 0) {
             return { whereString: 'WHERE false', queryParams: [], count: 0 };
         }
 
-        count = allowed.length;
-        whereConditions.push(`projeto.id = ANY($${paramIndex}::int[])`);
-        queryParams.push(allowed.map((n) => n.id));
-        paramIndex++;
-
-        // não usa o filtro do portfolio_id, pois já foi aplicado no filtro de permissões
-        delete (filters as any).portfolio_id;
-
-        if (filters.orgao_responsavel_id) {
-            whereConditions.push(`projeto.orgao_responsavel_id = $${paramIndex}`);
-            queryParams.push(filters.orgao_responsavel_id);
-            paramIndex++;
-        }
-
-        if (filters.codigo) {
-            whereConditions.push(`projeto.codigo = $${paramIndex}`);
-            queryParams.push(filters.codigo);
-            paramIndex++;
-        }
-
-        if (filters.status) {
-            whereConditions.push(`projeto.status::text = $${paramIndex}`);
-            queryParams.push(filters.status);
-            paramIndex++;
-        }
-
-        const whereString = whereConditions.length > 0 ? 'WHERE ' + whereConditions.join(' AND ') : 'WHERE TRUE';
-        return { whereString, queryParams, count: count };
+        // Retorna uma condição WHERE simples apenas com os IDs dos projetos filtrados
+        return {
+            whereString: 'WHERE projeto.id = ANY($1::int[])',
+            queryParams: [allProjectIds],
+            count: allProjectIds.length,
+        };
     }
 
     private async queryDataProjetos(whereCond: WhereCond, out: RelProjetosDto[]) {
