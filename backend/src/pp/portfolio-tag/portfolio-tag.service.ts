@@ -5,6 +5,7 @@ import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { UpsertPortfolioTagDto } from './dto/upsert-portfolio-tag.dto';
 import { ListPortfolioTagDto } from './dto/list-portfolio-tag.dto';
 import { FilterPortfolioTagDto } from './dto/filter-portfolio-tag.dto';
+import { PortfolioTagDto } from './entities/portfolio-tag.entity';
 
 @Injectable()
 export class PortfolioTagService {
@@ -19,6 +20,12 @@ export class PortfolioTagService {
                 },
             });
             if (!self) throw new HttpException('Tag de portfólio não encontrada', 404);
+
+            // Caso esteja em uso, não pode editar.
+            const emUso = await this.prisma.projetoPortfolioTag.count({
+                where: { portfolio_tag_id: id, removido_em: null },
+            });
+            if (emUso > 0) throw new HttpException('Tag de portfólio em uso em projetos. Edição não permitida.', 400);
         }
 
         const similarExists = await this.prisma.portfolioTag.count({
@@ -73,14 +80,31 @@ export class PortfolioTagService {
                         titulo: true,
                     },
                 },
+                projetos: {
+                    where: {
+                        removido_em: null,
+                    },
+                    select: {
+                        projeto_id: true,
+                    },
+                },
             },
             orderBy: [{ descricao: 'asc' }],
         });
-        return { linhas: listActive };
+
+        const linhas = listActive.map((item) => ({
+            id: item.id,
+            descricao: item.descricao,
+            portfolio_id: item.portfolio.id,
+            portifolio_titulo: item.portfolio.titulo,
+            pode_editar: item.projetos.length === 0,
+        }));
+
+        return { linhas };
     }
 
-    async findOne(id: number, user: PessoaFromJwt) {
-        return await this.prisma.portfolioTag.findUniqueOrThrow({
+    async findOne(id: number, user: PessoaFromJwt): Promise<PortfolioTagDto> {
+        const linha = await this.prisma.portfolioTag.findUniqueOrThrow({
             where: {
                 id: id,
             },
@@ -93,8 +117,24 @@ export class PortfolioTagService {
                         titulo: true,
                     },
                 },
+                projetos: {
+                    where: {
+                        removido_em: null,
+                    },
+                    select: {
+                        projeto_id: true,
+                    },
+                },
             },
         });
+
+        return {
+            id: linha.id,
+            descricao: linha.descricao,
+            portfolio_id: linha.portfolio.id,
+            portifolio_titulo: linha.portfolio.titulo,
+            pode_editar: linha.projetos.length === 0,
+        };
     }
 
     async remove(id: number, user: PessoaFromJwt) {
