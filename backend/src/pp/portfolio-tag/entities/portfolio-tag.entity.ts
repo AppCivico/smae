@@ -4,6 +4,6 @@ export class PortfolioTagDto {
     id: number;
     descricao: string;
     portfolio_id: number;
-    portifolio_titulo: string;
+    portfolio: IdTituloDto;
     pode_editar: boolean;
 }

@@ -96,7 +96,7 @@ export class PortfolioTagService {
             id: item.id,
             descricao: item.descricao,
             portfolio_id: item.portfolio.id,
-            portifolio_titulo: item.portfolio.titulo,
+            portfolio: item.portfolio,
             pode_editar: item.projetos.length === 0,
         }));
 
@@ -132,7 +132,7 @@ export class PortfolioTagService {
             id: linha.id,
             descricao: linha.descricao,
             portfolio_id: linha.portfolio.id,
-            portifolio_titulo: linha.portfolio.titulo,
+            portfolio: linha.portfolio,
             pode_editar: linha.projetos.length === 0,
         };
     }
