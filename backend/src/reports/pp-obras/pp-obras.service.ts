@@ -2,6 +2,7 @@ import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import {
     CategoriaProcessoSei,
     ContratoPrazoUnidade,
+    Prisma,
     ProjetoOrigemTipo,
     ProjetoStatus,
     StatusContrato,
@@ -427,93 +428,70 @@ export class PPObrasService implements ReportableService {
         filters: CreateRelObrasDto,
         user: PessoaFromJwt | null
     ): Promise<WhereCond & { count: number }> {
-        const whereConditions: string[] = [];
-        const queryParams: any[] = [];
-
-        let paramIndex = 1;
-
         const perms = await ProjetoGetPermissionSet(this.tipo, user ? user : undefined);
 
+        // Primeiro, obtenha todos os projetos (diretos e compartilhados) que atendem aos critérios básicos
+        const baseWhere: Prisma.ProjetoWhereInput = {
+            AND: perms,
+            removido_em: null,
+            tipo: this.tipo,
+            portfolio: { modelo_clonagem: false }, // não traz portfólios que são modelos para clonagem
+            orgao_responsavel_id: filters.orgao_responsavel_id ? filters.orgao_responsavel_id : undefined,
+            grupo_tematico_id: filters.grupo_tematico_id ? filters.grupo_tematico_id : undefined,
+            previsao_inicio: filters.periodo ? { gte: filters.periodo } : undefined,
+        };
+
+        // Obtém projetos diretos do portfólio
         const allowed = await this.prisma.projeto.findMany({
             where: {
-                AND: perms,
-                removido_em: null,
-                // importante manter o portfolio_id aqui, pois é utilizado no filtro de compartilhamento
-                // e aqui também
+                ...baseWhere,
                 portfolio_id: filters.portfolio_id,
-                portfolio: { modelo_clonagem: false }, // não traz portfólios que são modelos para clonagem
-                // reduz o número de linhas pra não virar um "IN" gigante
-                tipo: this.tipo,
-                orgao_responsavel_id: filters.orgao_responsavel_id ? filters.orgao_responsavel_id : undefined,
-                grupo_tematico_id: filters.grupo_tematico_id ? filters.grupo_tematico_id : undefined,
             },
             select: { id: true },
         });
 
+        // Obtém projetos compartilhados com o portfólio
         const allowed_shared = await this.prisma.portfolioProjetoCompartilhado.findMany({
             where: {
-                projeto: {
-                    AND: perms,
-                    portfolio: { modelo_clonagem: false }, // não traz portfólios que são modelos para clonagem
-                    tipo: this.tipo,
-                    orgao_responsavel_id: filters.orgao_responsavel_id ? filters.orgao_responsavel_id : undefined,
-                    grupo_tematico_id: filters.grupo_tematico_id ? filters.grupo_tematico_id : undefined,
-                },
+                projeto: baseWhere,
                 removido_em: null,
                 portfolio_id: filters.portfolio_id,
             },
             select: { projeto_id: true },
         });
 
-        // Adicionando projetos compartilhados.
-        // Deve ser adicionado apenas projetos que não sejam originalmente do portfolio utilizado no filtro.
-        allowed.push(
-            ...allowed_shared
-                .filter((n) => !allowed.find((m) => m.id === n.projeto_id))
-                .map((n) => ({ id: n.projeto_id }))
-        );
+        // Mescla ambas as listas, removendo duplicados
+        const projectIdSet = new Set<number>();
+        allowed.forEach((p) => projectIdSet.add(p.id));
+        allowed_shared.forEach((s) => projectIdSet.add(s.projeto_id));
+        let allProjectIds = Array.from(projectIdSet);
 
-        if (allowed.length === 0) {
-            return { whereString: 'WHERE false', queryParams: [], count: allowed.length };
-        }
-
-        whereConditions.push(`projeto.id = ANY($${paramIndex}::int[])`);
-        queryParams.push(allowed.map((n) => n.id));
-        paramIndex++;
-
-        // não usa o filtro do portfolio_id, pois já foi aplicado no filtro de permissões
-        delete (filters as any).portfolio_id;
-
-        if (filters.orgao_responsavel_id) {
-            whereConditions.push(`projeto.orgao_responsavel_id = $${paramIndex}`);
-            queryParams.push(filters.orgao_responsavel_id);
-            paramIndex++;
-        }
-
-        if (filters.grupo_tematico_id) {
-            whereConditions.push(`projeto.grupo_tematico_id = $${paramIndex}`);
-            queryParams.push(filters.grupo_tematico_id);
-            paramIndex++;
-        }
-
+        // Aplica o filtro regiao_id se necessário
         if (filters.regiao_id) {
-            whereConditions.push(
-                `EXISTS (SELECT 1 FROM projeto_regiao me WHERE me.projeto_id = projeto.id AND me.regiao_id = $${paramIndex} and me.removido_em IS NULL)`
-            );
-            queryParams.push(filters.regiao_id);
-            paramIndex++;
+            // Obtém projetos que possuem a região especificada
+            const projectsWithRegion = await this.prisma.projetoRegiao.findMany({
+                where: {
+                    projeto_id: { in: allProjectIds },
+                    regiao_id: filters.regiao_id,
+                    removido_em: null,
+                },
+                select: { projeto_id: true },
+            });
+
+            // Filtra para incluir apenas projetos com essa região
+            allProjectIds = projectsWithRegion.map((p) => p.projeto_id);
         }
 
-        if (filters.periodo) {
-            whereConditions.push(`projeto.previsao_inicio >= $${paramIndex}`);
-            queryParams.push(filters.periodo);
-            paramIndex++;
+        if (allProjectIds.length === 0) {
+            return { whereString: 'WHERE false', queryParams: [], count: 0 };
         }
 
-        whereConditions.push(`projeto.removido_em IS NULL`);
-
-        const whereString = whereConditions.length > 0 ? 'WHERE ' + whereConditions.join(' AND ') : 'WHERE TRUE';
-        return { whereString, queryParams, count: allowed.length };
+        // Retorna uma condição WHERE simples com os IDs de projetos filtrados
+        return {
+            whereString: 'WHERE projeto.id = ANY($1::int[])',
+            queryParams: [allProjectIds],
+            count: allProjectIds.length,
+        };
     }
 
     private buildObrasBaseQuery(): string {
