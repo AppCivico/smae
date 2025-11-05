@@ -4,7 +4,7 @@ import {
   ErrorMessage, Field, useForm, useIsFormDirty,
 } from 'vee-validate';
 import {
-  computed, defineOptions, onMounted,
+  computed, defineOptions, onMounted, ref,
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -34,21 +34,42 @@ function obterPermissãoRemover() {
   return permissao ? authStore.temPermissãoPara(permissao) : false;
 }
 
-let portfoliosStore;
-if (route.meta.entidadeMãe === 'projeto') {
-  portfoliosStore = usePortfolioStore();
-} else if (route.meta.entidadeMãe === 'mdo' || route.meta.entidadeMãe === 'obras') {
-  portfoliosStore = usePortfolioObraStore();
-} else {
-  throw new Error(`entidadeMãe não suportada: ${route.meta.entidadeMãe}`);
+function inicializarPortfolioStore() {
+  const { entidadeMãe } = route.meta;
+
+  if (entidadeMãe === 'projeto') {
+    const store = usePortfolioStore();
+    const { lista, chamadasPendentes } = storeToRefs(store);
+    return { store, portfolios: lista, chamadasPendentes };
+  }
+
+  if (entidadeMãe === 'mdo' || entidadeMãe === 'obras') {
+    const store = usePortfolioObraStore();
+    const { lista, chamadasPendentes } = storeToRefs(store);
+    return { store, portfolios: lista, chamadasPendentes };
+  }
+
+  if (entidadeMãe === 'TransferenciasVoluntarias') {
+    // TransferenciasVoluntarias não usa portfolio
+    return {
+      store: null,
+      portfolios: ref([]),
+      chamadasPendentes: ref({ lista: false }),
+    };
+  }
+
+  throw new Error(`entidadeMãe não suportada: ${entidadeMãe}`);
 }
+
+const {
+  store: portfoliosStore,
+  portfolios,
+  chamadasPendentes: chamadasPendentesPortfolios,
+} = inicializarPortfolioStore();
+
 const {
   chamadasPendentes, erro, etapasPorId, etapasPadrao,
 } = storeToRefs(etapasProjetosStore);
-const {
-  lista: portfolios,
-  chamadasPendentes: chamadasPendentesPortfolios,
-} = storeToRefs(portfoliosStore);
 
 defineOptions({ inheritAttrs: false });
 
@@ -99,7 +120,9 @@ const etapasPadraoDisponiveis = computed(() => {
 });
 
 onMounted(() => {
-  portfoliosStore.buscarTudo();
+  if (portfoliosStore) {
+    portfoliosStore.buscarTudo();
+  }
 });
 
 const onSubmit = handleSubmit(async (carga) => {
