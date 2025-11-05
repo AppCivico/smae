@@ -51,20 +51,31 @@ export class SmaeConfigService {
             return cached.value;
         }
 
-        const config = await this.prisma.smaeConfig.findFirst({
-            where: {
-                key: key,
-            },
-        });
-        let value: string | null = null;
-        if (config) {
-            value = config.value;
-        } else if (process.env[key]) {
-            value = process.env[key] ?? null;
+        // se o cache ta expirado, recarrega todas as configs do banco
+        const allValid = Array.from(this.configCache.values()).every((entry) => entry.expiresAt > now);
+        if (!allValid) {
+            const configs = await this.prisma.smaeConfig.findMany({
+                select: { key: true, value: true },
+            });
+            for (const config of configs) {
+                this.configCache.set(config.key, { value: config.value, expiresAt: now + this.CACHE_TTL_MS });
+            }
         }
 
-        this.configCache.set(key, { value, expiresAt: now + this.CACHE_TTL_MS });
-        return value;
+        // Verifica novamente após recarregar
+        const afterReload = this.configCache.get(key);
+        if (afterReload) {
+            return afterReload.value;
+        }
+
+        // Se não estiver no banco, tenta obter da variável de ambiente
+        if (process.env[key]) {
+            const value = process.env[key] ?? null;
+            this.configCache.set(key, { value, expiresAt: now + this.CACHE_TTL_MS });
+            return value;
+        }
+
+        return null;
     }
 
     async getConfigWithDefault<T>(key: string, defaultValue: T, parser?: (value: string) => T): Promise<T> {
