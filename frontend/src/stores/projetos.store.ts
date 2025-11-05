@@ -1,6 +1,3 @@
-import consolidarDiretorios from '@/helpers/consolidarDiretorios';
-import dateTimeToDate from '@/helpers/dateTimeToDate';
-import simplificadorDeOrigem from '@/helpers/simplificadorDeOrigem';
 import { PaginatedWithPagesDto } from '@back/common/dto/paginated.dto';
 import type {
   DadosCodTituloMetaDto,
@@ -20,6 +17,9 @@ import type {
 } from '@back/pp/projeto/entities/projeto.proxy-pdm-meta.entity';
 import type { DiretorioItemDto } from '@back/upload/dto/diretorio.dto';
 import { defineStore } from 'pinia';
+import simplificadorDeOrigem from '@/helpers/simplificadorDeOrigem';
+import dateTimeToDate from '@/helpers/dateTimeToDate';
+import consolidarDiretorios from '@/helpers/consolidarDiretorios';
 import mapIniciativas from './helpers/mapIniciativas';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -425,6 +425,7 @@ export const useProjetosStore = defineStore('projetos', {
       resumo: emFoco?.resumo || '',
       // eslint-disable-next-line max-len
       responsaveis_no_orgao_gestor: emFoco?.responsaveis_no_orgao_gestor?.map((x) => x.id) || null,
+      tags_portfolio: emFoco?.tags_portfolio.map((x) => x.id) || [],
     }),
 
     geolocalizaçãoPorToken: ({ emFoco }) => (Array.isArray(emFoco?.geolocalizacao)

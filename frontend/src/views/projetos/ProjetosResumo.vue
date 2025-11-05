@@ -1,18 +1,20 @@
 <script setup>
-import { computed } from 'vue';
 import { storeToRefs } from 'pinia';
+import { computed } from 'vue';
+
 import MapaExibir from '@/components/geo/MapaExibir.vue';
 import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudançaDeStatusDeProjeto.vue';
+import SmaeTooltip from '@/components/SmaeTooltip/SmaeTooltip.vue';
 import { projeto as schema } from '@/consts/formSchemas';
 import statuses from '@/consts/projectStatuses';
 import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
 import subtractDates from '@/helpers/subtractDates';
 import truncate from '@/helpers/texto/truncate';
+import combinadorDeListas from '@/helpers/combinadorDeListas.ts';
 import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { useOrgansStore } from '@/stores/organs.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
-import SmaeTooltip from '@/components/SmaeTooltip/SmaeTooltip.vue';
 
 const DotaçãoStore = useDotaçãoStore();
 const ÓrgãosStore = useOrgansStore();
@@ -108,6 +110,14 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
         </dt>
         <dd class="t13">
           {{ statuses[emFoco?.status]?.nome || emFoco?.status }}
+        </dd>
+      </dl>
+      <dl class="f1 mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.tags_portfolio.spec.label }}
+        </dt>
+        <dd class="t13">
+          {{ combinadorDeListas(emFoco?.tags_portfolio, ', ', 'descricao') || '-' }}
         </dd>
       </dl>
     </div>
