@@ -36,6 +36,7 @@ import { ListPessoa } from './entities/list-pessoa.entity';
 import { Pessoa as PessoaDto } from './entities/pessoa.entity';
 import { PessoaResponsabilidadesMetaService } from './pessoa.responsabilidades.metas.service';
 import { FeatureFlagService } from '../feature-flag/feature-flag.service';
+import { OrgaoService } from '../orgao/orgao.service';
 const BCRYPT_ROUNDS = 10;
 
 @Injectable()
@@ -50,7 +51,8 @@ export class PessoaService implements OnModuleInit {
         private readonly pRespMetaService: PessoaResponsabilidadesMetaService,
         private readonly equipeRespService: EquipeRespService,
         private readonly featureFlagService: FeatureFlagService,
-        private readonly smaeConfigService: SmaeConfigService
+        private readonly smaeConfigService: SmaeConfigService,
+        private readonly orgaoService: OrgaoService
     ) {}
 
     async onModuleInit() {
@@ -1382,13 +1384,23 @@ export class PessoaService implements OnModuleInit {
 
         const filtrosExtra = this.filtrosPrivilegios(filters);
 
+        const orgaoList: number[] = [];
+        if (filters?.orgao_id) {
+            if (filters.orgao_recursivo) {
+                const childOrgaoIds = await this.orgaoService.getOrgaoSubtreeIds(filters.orgao_id);
+                orgaoList.push(...childOrgaoIds);
+            } else {
+                orgaoList.push(filters.orgao_id);
+            }
+        }
+
         const listActive = await this.prisma.pessoa.findMany({
             orderBy: [{ desativado: 'asc' }, { nome_exibicao: 'asc' }],
             where: {
                 id: { gt: 0 },
                 NOT: { pessoa_fisica_id: null },
                 AND: filtrosExtra,
-                ...(filters?.orgao_id ? { pessoa_fisica: { orgao_id: filters.orgao_id } } : {}),
+                ...(orgaoList.length ? { pessoa_fisica: { orgao_id: { in: orgaoList } } } : {}),
             },
             select: {
                 id: true,

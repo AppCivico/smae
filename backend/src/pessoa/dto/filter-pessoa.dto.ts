@@ -151,6 +151,11 @@ export class FilterPessoaDto extends FilterPermsPessoaDto {
     orgao_id?: number;
 
     @IsOptional()
+    @IsBoolean()
+    @Transform(({ value }: any) => value === 'true')
+    orgao_recursivo?: boolean;
+
+    @IsOptional()
     @IsEmail()
     email?: string;
 }
