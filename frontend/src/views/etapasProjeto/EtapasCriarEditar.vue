@@ -59,6 +59,8 @@ const {
   chamadasPendentes, erro, etapasPorId, etapasPadrao,
 } = storeToRefs(etapasProjetosStore);
 
+const ehTransferencia = computed(() => route.meta.entidadeMãe === 'TransferenciasVoluntarias');
+
 defineOptions({ inheritAttrs: false });
 
 const props = defineProps({
@@ -85,7 +87,7 @@ const emFoco = computed(() => {
   return {
     id: null,
     descricao: '',
-    eh_padrao: false,
+    eh_padrao: true,
     portfolio_id: null,
     etapa_padrao_id: null,
   };
@@ -214,7 +216,10 @@ function excluirEtapaDoProjeto(id) {
       </div>
     </div>
 
-    <div class="flex g2 mb1">
+    <div
+      v-if="!ehTransferencia"
+      class="flex g2 mb1"
+    >
       <div class="f1 mb1">
         <SmaeLabel
           name="eh_padrao"
@@ -248,7 +253,7 @@ function excluirEtapaDoProjeto(id) {
     </div>
 
     <div
-      v-if="values.eh_padrao === false"
+      v-if="!ehTransferencia && values.eh_padrao === false"
       class="flex g2 mb1"
     >
       <div class="f1 mb1">

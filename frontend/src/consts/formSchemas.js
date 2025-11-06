@@ -3699,8 +3699,8 @@ export const etapasProjeto = object({
 
   eh_padrao: boolean()
     .label('Etapa Padrão')
-    .required()
-    .default(false),
+    .nullable()
+    .default(true),
 
   portfolio_id: number()
     .label('Portfólio')
