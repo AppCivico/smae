@@ -180,8 +180,9 @@ import {
 } from 'vee-validate';
 import { ref, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import TituloDaPagina from '@/components/TituloDaPagina.vue';
+
 import AutocompleteField from '@/components/AutocompleteField2.vue';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import { equipes as schema } from '@/consts/formSchemas';
 import tipoDePerfil from '@/consts/tipoDePerfil';
 import requestS from '@/helpers/requestS.ts';
@@ -265,6 +266,7 @@ async function buscarPessoasSimplificadas() {
     const { linhas: linhasParticipantes } = await requestS.get(
       `${baseUrl}/pessoa/reduzido`,
       {
+        orgao_recursivo: true,
         orgao_id: values.orgao_id,
       },
     );
@@ -280,6 +282,7 @@ async function buscarPessoasSimplificadas() {
     const { linhas: linhasColaboradores } = await requestS.get(
       `${baseUrl}/pessoa/reduzido`,
       {
+        orgao_recursivo: true,
         colaborador_grupo_variavel: true,
         orgao_id: values.orgao_id,
       },
@@ -294,7 +297,7 @@ async function buscarPessoasSimplificadas() {
 }
 
 async function iniciar() {
-  usersStore.buscarPessoasSimplificadas();
+  usersStore.buscarPessoasSimplificadas({ orgao_recursivo: true });
 
   if (emFoco.value?.id !== route.params?.equipeId) {
     equipesStore.$reset();

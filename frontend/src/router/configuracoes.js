@@ -2,6 +2,7 @@ import { defineAsyncComponent } from 'vue';
 
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import { useEquipesStore } from '@/stores/equipes.store';
+import { useProjetoEtiquetasStore } from '@/stores/projetoEtiqueta.store';
 import ConfiguracoesRaiz from '@/views/ConfiguracoesRaiz.vue';
 import EtapasCriarEditar from '@/views/etapasProjeto/EtapasCriarEditar.vue';
 import EtapasLista from '@/views/etapasProjeto/EtapasLista.vue';
@@ -568,6 +569,15 @@ export default [
             meta: {
               limitarÀsPermissões: ['CadastroPortfolioTag.editar'],
               título: 'Editar etiqueta',
+              tituloParaMigalhaDePao: () => {
+                const { emFoco } = useProjetoEtiquetasStore();
+
+                if (!emFoco) {
+                  return 'Editar etiqueta';
+                }
+
+                return emFoco.descricao;
+              },
               rotasParaMigalhasDePão: ['projeto.etiquetas.listar'],
               rotaDeEscape: 'projeto.etiquetas.listar',
             },
