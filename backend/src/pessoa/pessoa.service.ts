@@ -1802,6 +1802,26 @@ export class PessoaService implements OnModuleInit {
             }
         }
 
+        const liberadoVersao30 = await this.smaeConfigService.getConfigBooleanWithDefault('LIBERA_SPRINT_30', false);
+        if (!liberadoVersao30) {
+            const priv_remover: ListaDePrivilegios[] = [
+                'CadastroTipoVinculo.editar',
+                'CadastroTipoVinculo.inserir',
+                'CadastroTipoVinculo.listar',
+                'CadastroTipoVinculo.remover',
+                'CadastroVinculo.editar',
+                'CadastroVinculo.inserir',
+                'CadastroVinculo.listar',
+                'CadastroVinculo.remover',
+            ];
+            for (const priv of priv_remover) {
+                ret.privilegios = ret.privilegios.filter((v) => v !== priv);
+            }
+        } else {
+            // se ta liberada
+            ret.privilegios.push('Menu.cc_consulta_geral');
+        }
+
         return ret;
     }
 
