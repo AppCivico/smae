@@ -1868,11 +1868,11 @@ async function ensure_bot_user() {
 async function populateEleicao() {
     const eleicoes: { ano: number; tipo: EleicaoTipo; atual_para_mandatos: boolean }[] = [
         { ano: 2020, tipo: EleicaoTipo.Municipal, atual_para_mandatos: true },
-        { ano: 2022, tipo: EleicaoTipo.Estadual, atual_para_mandatos: true },
+        { ano: 2022, tipo: EleicaoTipo.Geral, atual_para_mandatos: true },
         { ano: 2024, tipo: EleicaoTipo.Municipal, atual_para_mandatos: false },
-        { ano: 2026, tipo: EleicaoTipo.Estadual, atual_para_mandatos: false },
+        { ano: 2026, tipo: EleicaoTipo.Geral, atual_para_mandatos: false },
         { ano: 2028, tipo: EleicaoTipo.Municipal, atual_para_mandatos: false },
-        { ano: 2030, tipo: EleicaoTipo.Estadual, atual_para_mandatos: false },
+        { ano: 2030, tipo: EleicaoTipo.Geral, atual_para_mandatos: false },
     ];
 
     for (const eleicao of eleicoes) {
