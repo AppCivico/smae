@@ -221,6 +221,7 @@ export default [
             component: EtapasCriarEditar,
             meta: {
               título: 'Nova etapa do projeto',
+              tituloParaMigalhaDePao: 'Nova etapa',
               rotasParaMigalhasDePão: ['projeto.etapas.listar'],
               rotaDeEscape: 'projeto.etapas.listar',
             },
@@ -237,6 +238,7 @@ export default [
             }),
             meta: {
               título: 'Editar etapa do projeto',
+              tituloParaMigalhaDePao: 'Editar etapa',
               rotasParaMigalhasDePão: ['projeto.etapas.listar'],
               rotaDeEscape: 'projeto.etapas.listar',
             },
@@ -397,6 +399,7 @@ export default [
                 component: EtapasCriarEditar,
                 meta: {
                   título: 'Nova etapa da obra',
+                  tituloParaMigalhaDePao: 'Nova etapa',
                   rotasParaMigalhasDePão: ['mdo.etapas.listar'],
                   rotaDeEscape: 'mdo.etapas.listar',
                 },
@@ -411,6 +414,7 @@ export default [
                 }),
                 meta: {
                   título: 'Editar etapa da obra',
+                  tituloParaMigalhaDePao: 'Editar etapa',
                   rotasParaMigalhasDePão: ['mdo.etapas.listar'],
                   rotaDeEscape: 'mdo.etapas.listar',
                 },
