@@ -109,7 +109,7 @@ export default {
               'MDO.colaborador_de_projeto',
               'MDO.espectador_de_projeto',
             ],
-            rotaDeEscape: 'obrasListar',
+            rotaDeEscape: 'obrasResumo',
             título: 'Editar Obra',
             entidadeMãe: 'mdo',
           },
