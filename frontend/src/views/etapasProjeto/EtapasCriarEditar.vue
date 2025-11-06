@@ -22,18 +22,6 @@ const route = useRoute();
 const authStore = useAuthStore();
 const etapasProjetosStore = useEtapasProjetosStore(route.meta.entidadeMãe);
 
-function obterPermissãoRemover() {
-  const config = configEtapas[route.meta.entidadeMãe];
-  if (!config) return false;
-
-  if (!config.requerPermissão) {
-    return true;
-  }
-
-  const permissao = config.permissões.remover;
-  return permissao ? authStore.temPermissãoPara(permissao) : false;
-}
-
 function inicializarPortfolioStore() {
   const { entidadeMãe } = route.meta;
 
@@ -71,6 +59,8 @@ const {
   chamadasPendentes, erro, etapasPorId, etapasPadrao,
 } = storeToRefs(etapasProjetosStore);
 
+const ehTransferencia = computed(() => route.meta.entidadeMãe === 'TransferenciasVoluntarias');
+
 defineOptions({ inheritAttrs: false });
 
 const props = defineProps({
@@ -97,7 +87,7 @@ const emFoco = computed(() => {
   return {
     id: null,
     descricao: '',
-    eh_padrao: false,
+    eh_padrao: true,
     portfolio_id: null,
     etapa_padrao_id: null,
   };
@@ -128,7 +118,7 @@ onMounted(() => {
 const onSubmit = handleSubmit(async (carga) => {
   let redirect;
   if (route.meta.entidadeMãe === 'TransferenciasVoluntarias') {
-    redirect = 'TransferenciasVoluntarias.etapasListar';
+    redirect = 'TransferenciasVoluntarias.etapa.listar';
   } else if (route.meta.entidadeMãe === 'mdo'
   || route.meta.entidadeMãe === 'obras') {
     redirect = 'mdo.etapas.listar';
@@ -226,7 +216,10 @@ function excluirEtapaDoProjeto(id) {
       </div>
     </div>
 
-    <div class="flex g2 mb1">
+    <div
+      v-if="!ehTransferencia"
+      class="flex g2 mb1"
+    >
       <div class="f1 mb1">
         <SmaeLabel
           name="eh_padrao"
@@ -260,7 +253,7 @@ function excluirEtapaDoProjeto(id) {
     </div>
 
     <div
-      v-if="values.eh_padrao === false"
+      v-if="!ehTransferencia && values.eh_padrao === false"
       class="flex g2 mb1"
     >
       <div class="f1 mb1">
@@ -346,14 +339,6 @@ function excluirEtapaDoProjeto(id) {
   >
     Carregando
   </div>
-
-  <button
-    v-else-if="emFoco?.id && obterPermissãoRemover()"
-    class="btn amarelo big"
-    @click="excluirEtapaDoProjeto(emFoco.id)"
-  >
-    Remover item
-  </button>
 
   <div
     v-if="erro"

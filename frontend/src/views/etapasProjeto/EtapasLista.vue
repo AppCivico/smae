@@ -1,6 +1,6 @@
 <script setup>
 import { storeToRefs } from 'pinia';
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 import CabecalhoDePagina from '@/components/CabecalhoDePagina.vue';
@@ -19,6 +19,24 @@ const { lista, chamadasPendentes } = storeToRefs(etapasProjetosStore);
 
 const alertStore = useAlertStore();
 const listaFiltrada = ref([]);
+
+const ehTransferencia = computed(() => route.meta.entidadeMãe === 'TransferenciasVoluntarias');
+
+const colunas = computed(() => {
+  const colunasBase = [
+    { chave: 'descricao', label: 'Nome' },
+  ];
+
+  if (!ehTransferencia.value) {
+    colunasBase.push(
+      { chave: 'portfolio_id', label: 'Portfólio' },
+      { chave: 'etapa_padrao_associada', label: 'Etapa Padrão Associada' },
+      { chave: 'etapa_padrao', label: 'Etapa Padrão' },
+    );
+  }
+
+  return colunasBase;
+});
 
 function obterConfiguracao() {
   const config = configEtapas[route.meta.entidadeMãe];
@@ -107,12 +125,7 @@ onMounted(() => {
   <LoadingComponent v-if="chamadasPendentes?.lista" />
   <SmaeTable
     v-else
-    :colunas="[
-      { chave: 'descricao', label: 'Nome' },
-      { chave: 'portfolio_id', label: 'Portfólio' },
-      { chave: 'etapa_padrao_associada', label: 'Etapa Padrão Associada' },
-      { chave: 'etapa_padrao', label: 'Etapa Padrão' },
-    ]"
+    :colunas="colunas"
     parametro-no-objeto-para-excluir="descricao"
     :dados="listaFiltrada"
     :rota-editar="podeEditar()
@@ -120,15 +133,24 @@ onMounted(() => {
       : undefined"
     @deletar="excluirItem"
   >
-    <template #celula:portfolio_id="{ linha }">
+    <template
+      v-if="!ehTransferencia"
+      #celula:portfolio_id="{ linha }"
+    >
       {{ linha.portfolio?.titulo || '-' }}
     </template>
 
-    <template #celula:etapa_padrao="{ linha }">
+    <template
+      v-if="!ehTransferencia"
+      #celula:etapa_padrao="{ linha }"
+    >
       {{ linha.eh_padrao ? 'Sim' : 'Não' }}
     </template>
 
-    <template #celula:etapa_padrao_associada="{ linha }">
+    <template
+      v-if="!ehTransferencia"
+      #celula:etapa_padrao_associada="{ linha }"
+    >
       {{ linha.etapa_padrao?.descricao || '-' }}
     </template>
   </SmaeTable>

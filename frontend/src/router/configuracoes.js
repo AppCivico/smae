@@ -221,6 +221,7 @@ export default [
             component: EtapasCriarEditar,
             meta: {
               título: 'Nova etapa do projeto',
+              tituloParaMigalhaDePao: 'Nova etapa',
               rotasParaMigalhasDePão: ['projeto.etapas.listar'],
               rotaDeEscape: 'projeto.etapas.listar',
             },
@@ -237,6 +238,7 @@ export default [
             }),
             meta: {
               título: 'Editar etapa do projeto',
+              tituloParaMigalhaDePao: 'Editar etapa',
               rotasParaMigalhasDePão: ['projeto.etapas.listar'],
               rotaDeEscape: 'projeto.etapas.listar',
             },
@@ -397,6 +399,7 @@ export default [
                 component: EtapasCriarEditar,
                 meta: {
                   título: 'Nova etapa da obra',
+                  tituloParaMigalhaDePao: 'Nova etapa',
                   rotasParaMigalhasDePão: ['mdo.etapas.listar'],
                   rotaDeEscape: 'mdo.etapas.listar',
                 },
@@ -411,6 +414,7 @@ export default [
                 }),
                 meta: {
                   título: 'Editar etapa da obra',
+                  tituloParaMigalhaDePao: 'Editar etapa',
                   rotasParaMigalhasDePão: ['mdo.etapas.listar'],
                   rotaDeEscape: 'mdo.etapas.listar',
                 },
@@ -732,7 +736,7 @@ export default [
           limitarÀsPermissões: 'CadastroWorkflows.',
           rotasParaMenuSecundário: [
             'fluxosListar',
-            'TransferenciasVoluntarias.etapasListar',
+            'TransferenciasVoluntarias.etapa.listar',
             'fasesListar',
             'workflow.TarefasListar',
             'situacaoListar',
@@ -793,7 +797,7 @@ export default [
 
             children: [
               {
-                name: 'TransferenciasVoluntarias.etapasListar',
+                name: 'TransferenciasVoluntarias.etapa.listar',
                 path: '',
                 component: EtapasLista,
                 meta: {
@@ -801,7 +805,7 @@ export default [
                 },
               },
               {
-                name: 'TransferenciasVoluntarias.etapaCriar',
+                name: 'TransferenciasVoluntarias.etapa.criar',
                 path: 'nova',
                 component: EtapasCriarEditar,
                 meta: {
@@ -810,7 +814,7 @@ export default [
               },
               {
                 path: ':etapaId',
-                name: 'TransferenciasVoluntarias.etapaEditar',
+                name: 'TransferenciasVoluntarias.etapa.editar',
                 component: EtapasCriarEditar,
                 props: ({ params }) => ({
                   ...params,
