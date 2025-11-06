@@ -436,6 +436,7 @@ export default {
       props: tiparPropsDeRota,
       meta: {
         título: 'Vínculos',
+        limitarÀsPermissões: 'CadastroVinculo.listar',
         rotasParaMenuSecundário,
         rotasParaMigalhasDePão: [
           'TransferenciasVoluntariasListar',
