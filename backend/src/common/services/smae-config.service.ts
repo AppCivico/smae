@@ -52,15 +52,14 @@ export class SmaeConfigService {
         }
 
         // se o cache ta expirado, recarrega todas as configs do banco
-        const allValid = Array.from(this.configCache.values()).every((entry) => entry.expiresAt > now);
-        if (!allValid) {
-            const configs = await this.prisma.smaeConfig.findMany({
-                select: { key: true, value: true },
-            });
-            for (const config of configs) {
-                this.configCache.set(config.key, { value: config.value, expiresAt: now + this.CACHE_TTL_MS });
-            }
+        const configs = await this.prisma.smaeConfig.findMany({
+            select: { key: true, value: true },
+        });
+        for (const config of configs) {
+            this.configCache.set(config.key, { value: config.value, expiresAt: now + this.CACHE_TTL_MS });
         }
+
+        console.log(this.configCache);
 
         // Verifica novamente após recarregar
         const afterReload = this.configCache.get(key);
@@ -117,6 +116,7 @@ export class SmaeConfigService {
     async getConfigBooleanWithDefault(key: string, defaultValue: boolean): Promise<boolean> {
         return this.getConfigWithDefault<boolean>(key, defaultValue, (value) => {
             // Converte o valor para booleano, tratando strings como 'true' ou 'false
+            console.log(value, typeof value);
             if (typeof value === 'string') {
                 return value.toLowerCase() === 'true';
             }
