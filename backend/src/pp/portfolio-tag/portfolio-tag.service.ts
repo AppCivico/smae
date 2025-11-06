@@ -33,6 +33,7 @@ export class PortfolioTagService {
                 id: { not: id || 0 },
                 descricao: { endsWith: dto.descricao, mode: 'insensitive' },
                 removido_em: null,
+                portfolio_id: dto.portfolio_id,
             },
         });
         if (similarExists > 0)
@@ -140,7 +141,7 @@ export class PortfolioTagService {
     async remove(id: number, user: PessoaFromJwt) {
         // Verificando se está em uso
         const emUso = await this.prisma.projetoPortfolioTag.count({
-            where: { portfolio_tag_id: id },
+            where: { portfolio_tag_id: id, removido_em: null },
         });
         if (emUso > 0) throw new HttpException('Tag de portfólio em uso em projetos.', 400);
 
