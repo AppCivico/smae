@@ -7034,6 +7034,7 @@ model PortfolioTag {
 }
 
 model ProjetoPortfolioTag {
+    id               Int @id @default(autoincrement())
     projeto_id       Int
     portfolio_tag_id Int
 
@@ -7048,7 +7049,6 @@ model ProjetoPortfolioTag {
     projeto   Projeto      @relation(fields: [projeto_id], references: [id])
     portfolio PortfolioTag @relation(fields: [portfolio_tag_id], references: [id])
 
-    @@id([projeto_id, portfolio_tag_id])
     @@map("projeto_portfolio_tag")
 }
 
