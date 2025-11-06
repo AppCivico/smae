@@ -1,3 +1,5 @@
+import { useObrasStore } from '@/stores/obras.store';
+
 import obrasAcompanhamentos from './obras.acompanhamentos';
 import obrasContratos from './obras.contratos';
 import obrasOrcamentos from './obras.orcamentos';
@@ -102,12 +104,17 @@ export default {
             obraId: Number.parseInt(params.obraId, 10) || undefined,
           }),
           meta: {
+            tituloParaMigalhaDePao: 'Editar Obra',
             limitarÀsPermissões: [
               'ProjetoMDO.administrador',
               'ProjetoMDO.administrador_no_orgao',
               'MDO.gestor_de_projeto',
               'MDO.colaborador_de_projeto',
               'MDO.espectador_de_projeto',
+            ],
+            rotasParaMigalhasDePão: [
+              'obrasListar',
+              'obrasResumo',
             ],
             rotaDeEscape: 'obrasResumo',
             título: 'Editar Obra',
@@ -125,6 +132,19 @@ export default {
           meta: {
             título: 'Escopo da Obra',
             títuloParaMenu: 'Escopo',
+            tituloParaMigalhaDePao: () => {
+              const { emFoco } = useObrasStore();
+
+              if (!emFoco) {
+                return 'Escopo da Obra';
+              }
+
+              return emFoco.nome;
+            },
+            rotasParaMigalhasDePão: [
+              'obrasListar',
+              'obrasResumo',
+            ],
           },
         },
         {
@@ -136,7 +156,6 @@ export default {
             rotasParaMigalhasDePão: [
               'obrasListar',
               'obrasResumo',
-              'obrasEditar', // PRA-FAZER: trocar pela de resumo, quando estiver pronta
             ],
           },
           children: [
@@ -148,6 +167,7 @@ export default {
               meta: {
                 título: 'Cronograma de obra',
                 títuloParaMenu: 'Cronograma',
+                tituloParaMigalhaDePao: 'Cronograma',
               },
               children: [
                 {
@@ -241,6 +261,10 @@ export default {
           meta: {
             título: 'Documentos de Obra',
             títuloParaMenu: 'Documentos',
+            rotasParaMigalhasDePão: [
+              'obrasListar',
+              'obrasResumo',
+            ],
           },
           children: [
             {
