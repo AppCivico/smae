@@ -318,8 +318,6 @@ watch(itemParaEdicao, (novoValor) => {
 });
 
 watch(() => values.portfolio_id, (novoPortfolioId) => {
-  values.tags_portfolio = [];
-
   if (novoPortfolioId) {
     projetoEtiquetasStore.buscarTudo({ portfolio_id: novoPortfolioId });
   }
@@ -375,7 +373,10 @@ watch(() => values.portfolio_id, (novoPortfolioId) => {
           class="inputtext light mb1"
           :class="{ error: errors.portfolio_id, loading: portfolioStore.chamadasPendentes.lista }"
           :disabled="desabilitarTodosCampos.camposComuns || !!portfolioId || !!projetoId"
-          @change="() => setFieldValue('regiao_id', 0)"
+          @change="() => {
+            setFieldValue('regiao_id', 0)
+            setFieldValue('tags_portfolio', [])
+          }"
         >
           <option :value="0">
             Selecionar
