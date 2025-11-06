@@ -22,18 +22,6 @@ const route = useRoute();
 const authStore = useAuthStore();
 const etapasProjetosStore = useEtapasProjetosStore(route.meta.entidadeMãe);
 
-function obterPermissãoRemover() {
-  const config = configEtapas[route.meta.entidadeMãe];
-  if (!config) return false;
-
-  if (!config.requerPermissão) {
-    return true;
-  }
-
-  const permissao = config.permissões.remover;
-  return permissao ? authStore.temPermissãoPara(permissao) : false;
-}
-
 function inicializarPortfolioStore() {
   const { entidadeMãe } = route.meta;
 
@@ -128,7 +116,7 @@ onMounted(() => {
 const onSubmit = handleSubmit(async (carga) => {
   let redirect;
   if (route.meta.entidadeMãe === 'TransferenciasVoluntarias') {
-    redirect = 'TransferenciasVoluntarias.etapasListar';
+    redirect = 'TransferenciasVoluntarias.etapa.listar';
   } else if (route.meta.entidadeMãe === 'mdo'
   || route.meta.entidadeMãe === 'obras') {
     redirect = 'mdo.etapas.listar';
@@ -346,14 +334,6 @@ function excluirEtapaDoProjeto(id) {
   >
     Carregando
   </div>
-
-  <button
-    v-else-if="emFoco?.id && obterPermissãoRemover()"
-    class="btn amarelo big"
-    @click="excluirEtapaDoProjeto(emFoco.id)"
-  >
-    Remover item
-  </button>
 
   <div
     v-if="erro"

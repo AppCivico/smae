@@ -736,7 +736,7 @@ export default [
           limitarÀsPermissões: 'CadastroWorkflows.',
           rotasParaMenuSecundário: [
             'fluxosListar',
-            'TransferenciasVoluntarias.etapasListar',
+            'TransferenciasVoluntarias.etapa.listar',
             'fasesListar',
             'workflow.TarefasListar',
             'situacaoListar',
@@ -797,7 +797,7 @@ export default [
 
             children: [
               {
-                name: 'TransferenciasVoluntarias.etapasListar',
+                name: 'TransferenciasVoluntarias.etapa.listar',
                 path: '',
                 component: EtapasLista,
                 meta: {
@@ -805,7 +805,7 @@ export default [
                 },
               },
               {
-                name: 'TransferenciasVoluntarias.etapaCriar',
+                name: 'TransferenciasVoluntarias.etapa.criar',
                 path: 'nova',
                 component: EtapasCriarEditar,
                 meta: {
@@ -814,7 +814,7 @@ export default [
               },
               {
                 path: ':etapaId',
-                name: 'TransferenciasVoluntarias.etapaEditar',
+                name: 'TransferenciasVoluntarias.etapa.editar',
                 component: EtapasCriarEditar,
                 props: ({ params }) => ({
                   ...params,

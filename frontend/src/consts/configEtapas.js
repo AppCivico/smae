@@ -32,7 +32,7 @@ const configEtapas = {
     requerPermissão: true,
   },
   TransferenciasVoluntarias: {
-    rotaPrefix: 'TransferenciasVoluntarias',
+    rotaPrefix: 'TransferenciasVoluntarias.etapa',
     permissões: {
       editar: null,
       inserir: null,
