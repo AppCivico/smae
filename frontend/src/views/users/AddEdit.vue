@@ -195,18 +195,14 @@ onMounted(async () => {
     PaineisGruposStore.getAll(),
   ]);
 
+  if (!permissions.value.SMAE.superadmin) {
+    bloquearCampoOrgao.value = true;
+  }
+
+  // define valor apenas na criação de usuário
   if (!id) {
     setFieldValue('modulos_permitidos', [sistemaCorrente.value]);
-
-    if (!permissions.value.SMAE.superadmin) {
-      bloquearCampoOrgao.value = true;
-
-      // define valor apenas na criação de usuário
-      if (!id) {
-        setFieldValue('orgao_id', usuarioLogado.value.orgao_id);
-      }
-    }
-
+    setFieldValue('orgao_id', usuarioLogado.value.orgao_id);
     return;
   }
 
