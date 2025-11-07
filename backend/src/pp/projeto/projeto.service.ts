@@ -280,13 +280,9 @@ const getOrderByConfigView = (
     ordem_coluna: string,
     ordem_direcao: 'asc' | 'desc'
 ): Prisma.Enumerable<Prisma.ViewProjetoV2OrderByWithRelationInput> => {
-    if (ordem_coluna === 'regioes') {
-        throw new BadRequestException('Ordenação por regiões não é mais suportada');
-    }
-
     const directionSort: {
         sort: Prisma.SortOrder;
-        nulls: Prisma.NullsOrder;
+        nulls?: Prisma.NullsOrder;
     } = ordem_direcao === 'asc' ? { sort: 'asc', nulls: 'last' } : { sort: 'desc', nulls: 'last' };
 
     switch (ordem_coluna) {
@@ -296,13 +292,17 @@ const getOrderByConfigView = (
         case 'previsao_termino':
             return [{ previsao_termino: directionSort }, { codigo: 'asc' }];
 
+        case 'regioes':
+            // coluna é not-null, não pode usar nulls
+            return [{ regioes: ordem_direcao }, { codigo: 'asc' }];
+
         default:
             throw new BadRequestException(`ordem_coluna ${ordem_coluna} não é suportada`);
     }
 };
 
 const isOrderByConfigView = (ordem_coluna: string): boolean => {
-    return ordem_coluna.startsWith('previsao_custo') || ordem_coluna.startsWith('previsao_termino');
+    return ['previsao_custo', 'previsao_termino', 'regioes'].includes(ordem_coluna);
 };
 
 const getOrderByConfig = (
