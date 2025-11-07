@@ -1704,6 +1704,8 @@ export class ProjetoService {
                         id: true,
                         fonte_recurso_cod_sof: true,
                         fonte_recurso_ano: true,
+                        fonte_recurso_detalhamento_cod: true,
+                        fonte_recurso_detalhamento_descricao: true,
                         valor_percentual: true,
                         valor_nominal: true,
                     },

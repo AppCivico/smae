@@ -337,6 +337,8 @@ export class ProjetoRecursos {
     nome?: string; // só volta no report, n volta na api
     fonte_recurso_cod_sof: string;
     fonte_recurso_ano: number;
+    fonte_recurso_detalhamento_cod: string | null;
+    fonte_recurso_detalhamento_descricao: string | null;
     valor_percentual: number | null;
     valor_nominal: number | null;
 }
