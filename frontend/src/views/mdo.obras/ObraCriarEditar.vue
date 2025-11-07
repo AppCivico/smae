@@ -117,7 +117,6 @@ const {
 const {
   DotaçãoSegmentos,
   DotaçãoDetalhamentos,
-  chamadasPendentes: dotaçãoChamadasPendentes,
 } = storeToRefs(DotaçãoStore);
 
 const DetalhamentosPorFonte = computed(() => DotaçãoDetalhamentos.value);
@@ -232,10 +231,12 @@ async function BuscarDetalhamento(ano, codigoFonte, idx = null) {
       detalhamentosLoadingPorLinha.value[idx] = true;
     }
 
-    await DotaçãoStore.getDotaçãoDetalhamentos(ano, codigoFonte);
-
-    if (idx !== null) {
-      detalhamentosLoadingPorLinha.value[idx] = false;
+    try {
+      await DotaçãoStore.getDotaçãoDetalhamentos(ano, codigoFonte);
+    } finally {
+      if (idx !== null) {
+        detalhamentosLoadingPorLinha.value[idx] = false;
+      }
     }
   }
 }

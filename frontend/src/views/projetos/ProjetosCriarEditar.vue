@@ -70,7 +70,6 @@ const {
 const {
   DotaçãoSegmentos,
   DotaçãoDetalhamentos,
-  chamadasPendentes: dotaçãoChamadasPendentes,
 } = storeToRefs(DotaçãoStore);
 
 const DetalhamentosPorFonte = computed(() => DotaçãoDetalhamentos.value);
@@ -197,10 +196,20 @@ async function BuscarDotaçãoParaAno(valorOuEvento, idx = null) {
   }
 }
 
-function BuscarDetalhamento(ano, codigoFonte) {
+async function BuscarDetalhamento(ano, codigoFonte, idx = null) {
   const chave = `${ano}-${codigoFonte}`;
   if (ano && codigoFonte && !DetalhamentosPorFonte.value?.[chave]) {
-    DotaçãoStore.getDotaçãoDetalhamentos(ano, codigoFonte);
+    if (idx !== null) {
+      detalhamentosLoadingPorLinha.value[idx] = true;
+    }
+
+    try {
+      await DotaçãoStore.getDotaçãoDetalhamentos(ano, codigoFonte);
+    } finally {
+      if (idx !== null) {
+        detalhamentosLoadingPorLinha.value[idx] = false;
+      }
+    }
   }
 }
 
@@ -211,7 +220,7 @@ function aoMudarFonte(idx, event) {
   setFieldValue(`fonte_recursos[${idx}].fonte_recurso_detalhamento_descricao`, '');
 
   if (novaFonte && values.fonte_recursos[idx].fonte_recurso_ano) {
-    BuscarDetalhamento(values.fonte_recursos[idx].fonte_recurso_ano, novaFonte);
+    BuscarDetalhamento(values.fonte_recursos[idx].fonte_recurso_ano, novaFonte, idx);
   }
 }
 
@@ -1030,12 +1039,12 @@ watch(() => values.portfolio_id, (novoPortfolioId) => {
                 :disabled="
                   desabilitarTodosCampos.camposComuns
                     || !fields[idx].value.fonte_recurso_cod_sof
-                    || dotaçãoChamadasPendentes.detalhamentos
+                    || detalhamentosLoadingPorLinha[idx]
                 "
                 @change="(e) => atualizarDetalhamentoDescricao(idx, e.target.value)"
               >
                 <option value="">
-                  {{ dotaçãoChamadasPendentes.detalhamentos ? 'Carregando...' : 'Selecionar' }}
+                  {{ detalhamentosLoadingPorLinha[idx] ? 'Carregando...' : 'Selecionar' }}
                 </option>
                 <option
                   v-for="item in DetalhamentosPorFonte
