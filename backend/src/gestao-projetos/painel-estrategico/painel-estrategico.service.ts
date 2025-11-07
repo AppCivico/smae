@@ -158,18 +158,19 @@ export class PainelEstrategicoService {
             WITH projeto_counts AS (
                 SELECT
                     CASE
-                        WHEN pe.ordem_painel IS NOT NULL THEN pe.descricao
-                        WHEN vpe.projeto_etapa_id IS NULL THEN 'Sem Informação'
+                        WHEN pe_padrao.ordem_painel IS NOT NULL THEN pe_padrao.descricao
+                        WHEN pe.id IS NULL THEN 'Sem Informação'
                         ELSE 'Outros'
                     END as etapa,
                     CASE
-                        WHEN pe.ordem_painel IS NOT NULL THEN pe.ordem_painel
-                        WHEN vpe.projeto_etapa_id IS NULL THEN 999999999
+                        WHEN pe_padrao.ordem_painel IS NOT NULL THEN pe_padrao.ordem_painel
+                        WHEN pe.id IS NULL THEN 999999999
                         ELSE 999999998
                     END as ordem,
                     COUNT(DISTINCT vpe.projeto_id)::int as quantidade
                 FROM view_painel_estrategico_projeto vpe
                 LEFT JOIN projeto_etapa pe ON pe.id = vpe.projeto_etapa_id
+                LEFT JOIN projeto_etapa pe_padrao ON pe_padrao.id = pe.etapa_padrao_id
                 WHERE vpe.projeto_id IN (${projetoIds})
                 GROUP BY 1, 2
             ),
