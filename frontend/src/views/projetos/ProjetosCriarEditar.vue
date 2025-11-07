@@ -74,6 +74,8 @@ const {
 } = storeToRefs(DotaçãoStore);
 
 const DetalhamentosPorFonte = computed(() => DotaçãoDetalhamentos.value);
+const detalhamentosLoadingPorLinha = ref({});
+const segmentosLoadingPorLinha = ref({});
 
 const router = useRouter();
 const route = useRoute();
@@ -179,11 +181,19 @@ function alertarTrocaDeStatus() {
   }
 }
 
-function BuscarDotaçãoParaAno(valorOuEvento) {
+async function BuscarDotaçãoParaAno(valorOuEvento, idx = null) {
   const ano = valorOuEvento.target?.value || valorOuEvento;
 
   if (!DotaçãoSegmentos?.value?.[ano]) {
-    DotaçãoStore.getDotaçãoSegmentos(ano);
+    if (idx !== null) {
+      segmentosLoadingPorLinha.value[idx] = true;
+    }
+
+    await DotaçãoStore.getDotaçãoSegmentos(ano);
+
+    if (idx !== null) {
+      segmentosLoadingPorLinha.value[idx] = false;
+    }
   }
 }
 
@@ -952,7 +962,7 @@ watch(() => values.portfolio_id, (novoPortfolioId) => {
                 max="3000"
                 step="1"
                 :disabled="desabilitarTodosCampos.camposComuns"
-                @change="BuscarDotaçãoParaAno"
+                @change="(e) => BuscarDotaçãoParaAno(e, idx)"
               />
               <ErrorMessage
                 class="error-msg mb1"
@@ -973,11 +983,21 @@ watch(() => values.portfolio_id, (novoPortfolioId) => {
                 maxlength="2"
                 class="inputtext light mb1"
                 as="select"
-                :disabled="desabilitarTodosCampos.camposComuns"
+                :disabled="
+                  desabilitarTodosCampos.camposComuns
+                    || !fields[idx].value.fonte_recurso_ano
+                    || segmentosLoadingPorLinha[idx]
+                "
                 @change="(e) => aoMudarFonte(idx, e)"
               >
                 <option value="">
-                  Selecionar
+                  {{
+                    segmentosLoadingPorLinha[idx]
+                      ? 'Carregando...'
+                      : !fields[idx].value.fonte_recurso_ano
+                        ? 'Selecione o ano primeiro'
+                        : 'Selecionar'
+                  }}
                 </option>
                 <option
                   v-for="item in
@@ -986,7 +1006,7 @@ watch(() => values.portfolio_id, (novoPortfolioId) => {
                   :value="item.codigo"
                   :title="item.descricao?.length > 36 ? item.descricao : null"
                 >
-                  {{ item.descricao }}
+                  {{ item.codigo }} - {{ truncate(item.descricao, 36) }}
                 </option>
               </Field>
               <ErrorMessage
