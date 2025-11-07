@@ -9,7 +9,7 @@ import {
   computed, onMounted, ref, watch,
 } from 'vue';
 import { useRoute } from 'vue-router';
-import tipoDePerfil from '@/consts/tipoDePerfil';
+
 // eslint-disable-next-line import/no-extraneous-dependencies
 // Em 2024-10-28, o desenvolvedor responsável pelo back end orientou a usar essa variável
 import { Dashboard } from '@/components';
@@ -17,6 +17,7 @@ import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
 import TransitionExpand from '@/components/TransitionExpand.vue';
 import { usuário as schema } from '@/consts/formSchemas';
 import módulosDoSistema from '@/consts/modulosDoSistema.ts';
+import tipoDePerfil from '@/consts/tipoDePerfil';
 import truncate from '@/helpers/texto/truncate';
 import { router } from '@/router';
 import { useAlertStore } from '@/stores/alert.store';
@@ -197,10 +198,13 @@ onMounted(async () => {
   if (!id) {
     setFieldValue('modulos_permitidos', [sistemaCorrente.value]);
 
-    if (permissions.value.CadastroPessoa.inserir) {
+    if (!permissions.value.SMAE.superadmin) {
       bloquearCampoOrgao.value = true;
 
-      setFieldValue('orgao_id', usuarioLogado.value.orgao_id);
+      // define valor apenas na criação de usuário
+      if (!id) {
+        setFieldValue('orgao_id', usuarioLogado.value.orgao_id);
+      }
     }
 
     return;
