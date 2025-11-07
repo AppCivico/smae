@@ -67,7 +67,13 @@ const {
   órgãosQueTemResponsáveisEPorId,
 } = storeToRefs(ÓrgãosStore);
 
-const { DotaçãoSegmentos } = storeToRefs(DotaçãoStore);
+const {
+  DotaçãoSegmentos,
+  DotaçãoDetalhamentos,
+  chamadasPendentes: dotaçãoChamadasPendentes,
+} = storeToRefs(DotaçãoStore);
+
+const DetalhamentosPorFonte = computed(() => DotaçãoDetalhamentos.value);
 
 const router = useRouter();
 const route = useRoute();
@@ -178,6 +184,42 @@ function BuscarDotaçãoParaAno(valorOuEvento) {
 
   if (!DotaçãoSegmentos?.value?.[ano]) {
     DotaçãoStore.getDotaçãoSegmentos(ano);
+  }
+}
+
+function BuscarDetalhamento(ano, codigoFonte) {
+  const chave = `${ano}-${codigoFonte}`;
+  if (ano && codigoFonte && !DetalhamentosPorFonte.value?.[chave]) {
+    DotaçãoStore.getDotaçãoDetalhamentos(ano, codigoFonte);
+  }
+}
+
+function aoMudarFonte(idx, event) {
+  const novaFonte = event.target.value;
+
+  setFieldValue(`fonte_recursos[${idx}].fonte_recurso_detalhamento_cod`, '');
+  setFieldValue(`fonte_recursos[${idx}].fonte_recurso_detalhamento_descricao`, '');
+
+  if (novaFonte && values.fonte_recursos[idx].fonte_recurso_ano) {
+    BuscarDetalhamento(values.fonte_recursos[idx].fonte_recurso_ano, novaFonte);
+  }
+}
+
+function atualizarDetalhamentoDescricao(idx, codigoDet) {
+  const ano = values.fonte_recursos[idx].fonte_recurso_ano;
+  const codigoFonte = values.fonte_recursos[idx].fonte_recurso_cod_sof;
+  const chave = `${ano}-${codigoFonte}`;
+
+  if (codigoDet) {
+    const detalhamento = DetalhamentosPorFonte.value?.[chave]?.find(
+      (item) => item.codigo === codigoDet,
+    );
+    setFieldValue(
+      `fonte_recursos[${idx}].fonte_recurso_detalhamento_descricao`,
+      detalhamento?.descricao || '',
+    );
+  } else {
+    setFieldValue(`fonte_recursos[${idx}].fonte_recurso_detalhamento_descricao`, '');
   }
 }
 
@@ -305,6 +347,14 @@ function iniciar() {
   if (emFoco.value?.meta_id) {
     buscarArvoreDeMetas(emFoco.value?.meta_id);
   }
+
+  if (itemParaEdicao.value?.fonte_recursos?.length) {
+    itemParaEdicao.value.fonte_recursos.forEach((fonte) => {
+      if (fonte.fonte_recurso_ano && fonte.fonte_recurso_cod_sof) {
+        BuscarDetalhamento(fonte.fonte_recurso_ano, fonte.fonte_recurso_cod_sof);
+      }
+    });
+  }
 }
 
 watch(emFoco, () => {
@@ -337,7 +387,6 @@ watch(() => values.portfolio_id, (novoPortfolioId) => {
 
     <CheckClose :formulario-sujo="formularioSujo" />
   </header>
-
   <form
     v-if="!projetoId || emFoco"
     @submit.prevent="!isSubmitting ? onSubmit() : null"
@@ -925,6 +974,7 @@ watch(() => values.portfolio_id, (novoPortfolioId) => {
                 class="inputtext light mb1"
                 as="select"
                 :disabled="desabilitarTodosCampos.camposComuns"
+                @change="(e) => aoMudarFonte(idx, e)"
               >
                 <option value="">
                   Selecionar
@@ -936,12 +986,52 @@ watch(() => values.portfolio_id, (novoPortfolioId) => {
                   :value="item.codigo"
                   :title="item.descricao?.length > 36 ? item.descricao : null"
                 >
-                  {{ item.codigo }} - {{ truncate(item.descricao, 36) }}
+                  {{ item.descricao }}
                 </option>
               </Field>
               <ErrorMessage
                 class="error-msg mb1"
                 :name="`fonte_recursos[${idx}].fonte_recurso_cod_sof`"
+              />
+            </div>
+
+            <div class="f1 mb1">
+              <LabelFromYup
+                name="fonte_recurso_detalhamento_cod"
+                :for="`fonte_recursos[${idx}].fonte_recurso_detalhamento_cod`"
+                class="tc300"
+                :schema="schema.fields.fonte_recursos.innerType"
+              />
+
+              <Field
+                :name="`fonte_recursos[${idx}].fonte_recurso_detalhamento_cod`"
+                class="inputtext light mb1"
+                as="select"
+                :disabled="
+                  desabilitarTodosCampos.camposComuns
+                    || !fields[idx].value.fonte_recurso_cod_sof
+                    || dotaçãoChamadasPendentes.detalhamentos
+                "
+                @change="(e) => atualizarDetalhamentoDescricao(idx, e.target.value)"
+              >
+                <option value="">
+                  {{ dotaçãoChamadasPendentes.detalhamentos ? 'Carregando...' : 'Selecionar' }}
+                </option>
+                <option
+                  v-for="item in DetalhamentosPorFonte
+                    ?.[`${fields[idx].value.fonte_recurso_ano}-${fields[idx]
+                      .value.fonte_recurso_cod_sof
+                    }`]
+                    || []"
+                  :key="item.codigo"
+                  :value="item.codigo"
+                >
+                  {{ item.descricao }}
+                </option>
+              </Field>
+              <ErrorMessage
+                class="error-msg mb1"
+                :name="`fonte_recursos[${idx}].fonte_recurso_detalhamento_cod`"
               />
             </div>
 

@@ -2696,6 +2696,12 @@ export const projeto = object()
               .min(2003, 'A partir de 2003')
               .max(3000, 'Até o ano 3000')
               .required('Escolha um ano válido'),
+            fonte_recurso_detalhamento_cod: string()
+              .label('Código detalhamento')
+              .nullable(),
+            fonte_recurso_detalhamento_descricao: string()
+              .label('Descrição detalhamento')
+              .nullable(),
             id: number()
               .nullable(),
             valor_nominal: mixed()

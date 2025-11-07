@@ -7,10 +7,12 @@ type Dados = SofEntidadeDto['dados'] & { atualizado_em: string };
 
 interface ChamadasPendentes {
   segmentos: boolean;
+  detalhamentos: boolean;
 }
 
 interface Estado {
   DotaçãoSegmentos: { [k: number | string]: Dados };
+  DotaçãoDetalhamentos: { [k: string]: Array<{ codigo: string; descricao: string }> };
   chamadasPendentes: ChamadasPendentes;
 
   erro: null | unknown;
@@ -24,9 +26,11 @@ interface ExtraParams {
 export const useDotaçãoStore = defineStore('dotação', {
   state: (): Estado => ({
     DotaçãoSegmentos: {},
+    DotaçãoDetalhamentos: {},
 
     chamadasPendentes: {
       segmentos: false,
+      detalhamentos: false,
     },
     erro: null,
   }),
@@ -50,6 +54,24 @@ export const useDotaçãoStore = defineStore('dotação', {
       }
 
       this.chamadasPendentes.segmentos = false;
+    },
+    async getDotaçãoDetalhamentos(ano: number, codigoFonte: string) {
+      const chave = `${ano}-${codigoFonte}`;
+
+      try {
+        if (!this.DotaçãoDetalhamentos[chave]) {
+          this.chamadasPendentes.detalhamentos = true;
+
+          const r = await this.requestS.get(`${baseUrl}/sof-entidade/${ano}/detalhamento/${codigoFonte}`);
+          if (r.data) {
+            this.DotaçãoDetalhamentos[chave] = r.data;
+          }
+        }
+      } catch (error) {
+        this.erro = error;
+      }
+
+      this.chamadasPendentes.detalhamentos = false;
     },
     async getDotaçãoPlanejado(dotacao: string, ano: number, extraParams: ExtraParams) {
       if (!extraParams.pdm_id && !extraParams.portfolio_id) {
