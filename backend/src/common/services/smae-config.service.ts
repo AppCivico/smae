@@ -59,8 +59,6 @@ export class SmaeConfigService {
             this.configCache.set(config.key, { value: config.value, expiresAt: now + this.CACHE_TTL_MS });
         }
 
-        console.log(this.configCache);
-
         // Verifica novamente após recarregar
         const afterReload = this.configCache.get(key);
         if (afterReload) {
