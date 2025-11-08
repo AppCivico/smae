@@ -58,6 +58,7 @@ import { TarefaService } from '../tarefa/tarefa.service';
 import { SmaeConfigService } from 'src/common/services/smae-config.service';
 import { CONST_PERFIL_COLAB_OBRA_NO_ORGAO, CONST_PERFIL_GESTOR_OBRA } from '../../common/consts';
 import { RemoveUndefinedFields } from '../../common/RemoveUndefinedFields';
+import { LoggerWithLog } from '../../common/LoggerWithLog';
 
 const FASES_PLANEJAMENTO_E_ANTERIORES: ProjetoStatus[] = ['Registrado', 'Selecionado', 'EmPlanejamento'];
 const StatusParaFase: Record<ProjetoStatus, ProjetoFase> = {
@@ -600,7 +601,9 @@ export class ProjetoService {
      * *: essa pessoa tem acesso de escrita até a hora que o status do projeto passar de "EmPlanejamento", depois disso vira read-only
      * */
     async create(tipo: TipoProjeto, dto: CreateProjetoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+        const logger = LoggerWithLog('Projeto.create');
         dto = RemoveUndefinedFields(dto);
+        logger.log(`DTO: ${JSON.stringify(dto)}`);
         // pra criar, verifica se a pessoa pode realmente acessar o portfolio, então
         // começa listando todos os portfolios
         const portfolios = await this.portfolioService.findAll(tipo, user, true);
@@ -802,6 +805,7 @@ export class ProjetoService {
 
                 await this.appendRegioesByGeoLoc(geo, self, portfolio, prismaTx, now, user);
 
+                await logger.saveLogs(prismaTx, user.getLogData());
                 return row;
             }
         );
@@ -2522,7 +2526,10 @@ export class ProjetoService {
         user: PessoaFromJwt,
         prismaTx?: Prisma.TransactionClient
     ): Promise<RecordWithId> {
+        const logger = LoggerWithLog('Projeto.update');
         dto = RemoveUndefinedFields(dto);
+        logger.log(`projeto ${projetoId} DTO: ${JSON.stringify(dto)}`);
+
         // aqui é feito a verificação se esse usuário pode realmente acessar esse recurso
         const projeto = (await this.findOne(tipo, projetoId, user, 'ReadWrite')) as ProjetoDetailMdoDto;
         const hasOnlyResponsibilityEdit =
@@ -2787,7 +2794,7 @@ export class ProjetoService {
                     },
                 });
                 if (feedback.count)
-                    this.logger.verbose(
+                    logger.verbose(
                         `Repassando update de tolerancia_atraso= ${dto.tolerancia_atraso} para tarefaCronograma: ${feedback.count} updated rows`
                     );
             }
@@ -2834,6 +2841,9 @@ export class ProjetoService {
 
                     orgao_responsavel_id: dto.orgao_responsavel_id,
                     responsavel_id: dto.responsavel_id,
+
+                    atualizado_em: now,
+                    atualizado_por: user.id,
 
                     projeto_etapa_id: dto.projeto_etapa_id,
                     nome: dto.nome,
@@ -2956,6 +2966,7 @@ export class ProjetoService {
 
             await this.upsertGrupoPort(prismaTx, projeto, dto, now, user);
             await this.upsertEquipe(tipo, prismaTx, projeto, dto, now, user);
+            await logger.saveLogs(prismaTx, user.getLogData());
         };
 
         if (prismaTx) {
@@ -3461,6 +3472,8 @@ export class ProjetoService {
     }
 
     async remove(tipo: TipoProjeto, id: number, user: PessoaFromJwt) {
+        const logger = LoggerWithLog('Projeto.remove');
+        logger.log(`projeto ${id}`);
         await this.prisma.projeto.updateMany({
             where: {
                 tipo: tipo,
@@ -3472,10 +3485,13 @@ export class ProjetoService {
                 removido_em: new Date(Date.now()),
             },
         });
+        await logger.saveLogs(this.prisma, user.getLogData());
         return;
     }
 
     async append_document(tipo: TipoProjeto, projetoId: number, dto: CreateProjetoDocumentDto, user: PessoaFromJwt) {
+        const logger = LoggerWithLog('Projeto.append_document');
+        logger.log(`projeto ${projetoId}. DTO: ${JSON.stringify(dto)}`);
         // aqui é feito a verificação se esse usuário pode realmente acessar esse recurso
         await this.findOne(tipo, projetoId, user, 'ReadWriteTeam');
 
@@ -3502,6 +3518,7 @@ export class ProjetoService {
                 if (dto.diretorio_caminho)
                     await this.uploadService.updateDir({ caminho: dto.diretorio_caminho }, dto.upload_token, prismaTx);
 
+                await logger.saveLogs(prismaTx, user.getLogData());
                 return r;
             }
         );
@@ -3587,6 +3604,8 @@ export class ProjetoService {
     }
 
     async remove_document(tipo: TipoProjeto, projetoId: number, projetoDocId: number, user: PessoaFromJwt) {
+        const logger = LoggerWithLog('Projeto.remove_document');
+        logger.log(`remoção do documento ${projetoDocId} do projeto ${projetoId}`);
         // aqui é feito a verificação se esse usuário pode realmente acessar esse recurso
         await this.findOne(tipo, projetoId, user, 'ReadWriteTeam');
 
@@ -3597,9 +3616,12 @@ export class ProjetoService {
                 removido_em: new Date(Date.now()),
             },
         });
+        await logger.saveLogs(this.prisma, user.getLogData());
     }
 
     async cloneTarefas(tipo: TipoProjeto, projetoId: number, dto: CloneProjetoTarefasDto, user: PessoaFromJwt) {
+        const logger = LoggerWithLog('Projeto.cloneTarefas');
+        logger.log(`projeto ${projetoId}. DTO: ${JSON.stringify(dto)}`);
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             // Buscando projeto para verificar status.
             const projeto = await prismaTx.projeto.findFirstOrThrow({
@@ -3671,6 +3693,8 @@ export class ProjetoService {
                     );
                 }
             }
+
+            await logger.saveLogs(prismaTx, user.getLogData());
         });
     }
 
@@ -3681,6 +3705,8 @@ export class ProjetoService {
         user: PessoaFromJwt,
         prismaTx?: Prisma.TransactionClient
     ): Promise<RecordWithId> {
+        const logger = LoggerWithLog('Projeto.transferPortfolio');
+        logger.log(`projeto ${projetoId}. DTO: ${JSON.stringify(dto)}`);
         const projeto = await this.findOne(tipo, projetoId, user, 'ReadWrite');
 
         const updated = async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
@@ -3760,6 +3786,7 @@ export class ProjetoService {
                 }),
             ]);
 
+            await logger.saveLogs(prismaTx, user.getLogData());
             return { id: projeto.id };
         };
 
@@ -3925,6 +3952,8 @@ export class ProjetoService {
     }
 
     async updateProjetoRevisao(tipo: TipoProjeto, dto: RevisarObrasDto, user: PessoaFromJwt): Promise<RecordWithId[]> {
+        const logger = LoggerWithLog('Projeto.updateProjetoRevisao');
+        logger.log(`DTO: ${JSON.stringify(dto)}`);
         const updated = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId[]> => {
                 const obrasRevisadas = await prismaTx.projetoPessoaRevisao.findMany({
@@ -3961,6 +3990,7 @@ export class ProjetoService {
                         );
                     }
                 }
+                await logger.saveLogs(prismaTx, user.getLogData());
                 return await Promise.all(operations);
             }
         );
@@ -3969,8 +3999,10 @@ export class ProjetoService {
     }
 
     async deleteProjetoRevisao(tipo: TipoProjeto, user: PessoaFromJwt) {
+        const logger = LoggerWithLog('Projeto.deleteProjetoRevisao');
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             await prismaTx.projetoPessoaRevisao.deleteMany({ where: { pessoa_id: user.id, projeto: { tipo: tipo } } });
+            await logger.saveLogs(prismaTx, user.getLogData());
             return;
         });
     }

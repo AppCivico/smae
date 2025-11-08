@@ -61,6 +61,7 @@ model Pessoa {
     PerfilAcessoQueCriei     PerfilAcesso[] @relation("Criador")
     PerfilAcessoQueRemovi    PerfilAcesso[] @relation("Removedor")
     PerfilAcessoQueAtualizei PerfilAcesso[] @relation("Atualizador")
+    ProjetoQueAtualizei      Projeto[]      @relation("Atualizador")
 
     OdsQueCriei     Ods[] @relation("Criador")
     OdsQueRemovi    Ods[] @relation("Removedor")
@@ -3725,6 +3726,10 @@ model Projeto {
     logradouro_nome   String?
     logradouro_numero String?
     logradouro_cep    String?
+
+    atualizado_em  DateTime? @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizador    Pessoa?   @relation("Atualizador", fields: [atualizado_por], references: [id])
 
     codigo                    String? // abre apenas depois de priorizado
     previsao_custo            Float?
