@@ -479,6 +479,10 @@ export class EquipeRespService {
                         throw new BadRequestException(
                             `Pessoa ID ${pessoaId} não pode ser participante do grupo, pois participa de outro órgão.`
                         );
+                    if (!allowedOrgaoIds.includes(pessoa.orgao_id))
+                        throw new BadRequestException(
+                            `Pessoa ID ${pessoaId} não pode ser participante do grupo, pois não está no órgão responsável ou seus subordinados.`
+                        );
 
                     const temPriv = pComPriv.filter((r) => r.pessoa_id == pessoaId)[0];
                     if (!temPriv) {
@@ -488,11 +492,6 @@ export class EquipeRespService {
                             prismaTx
                         );
                     }
-
-                    if (pessoa.orgao_id != orgao_id)
-                        throw new BadRequestException(
-                            `Pessoa ID ${pessoaId} não pode ser participante do grupo em outro órgão.`
-                        );
 
                     if (!keptRecord.includes(pessoaId)) {
                         // O participante é novo, crie um novo registro
