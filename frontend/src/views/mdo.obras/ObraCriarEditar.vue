@@ -256,8 +256,11 @@ async function BuscarDetalhamento(ano, codigoFonte, idx = null) {
 }
 
 function aoMudarFonte(idx, event) {
-  // Bounds check: previne erro se linha foi removida durante operação assíncrona
   if (!values.fonte_recursos[idx]) {
+    return;
+  }
+
+  if (!values.fonte_recursos[idx].fonte_recurso_ano) {
     return;
   }
 
@@ -266,7 +269,7 @@ function aoMudarFonte(idx, event) {
   setFieldValue(`fonte_recursos[${idx}].fonte_recurso_detalhamento_cod`, '');
   setFieldValue(`fonte_recursos[${idx}].fonte_recurso_detalhamento_descricao`, '');
 
-  if (novaFonte && values.fonte_recursos[idx].fonte_recurso_ano) {
+  if (novaFonte) {
     BuscarDetalhamento(values.fonte_recursos[idx].fonte_recurso_ano, novaFonte, idx);
   }
 }
