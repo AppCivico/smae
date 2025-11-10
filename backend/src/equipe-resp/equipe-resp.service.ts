@@ -186,23 +186,28 @@ export class EquipeRespService {
         for (const teamId of equipes) {
             if (!currentIds.includes(teamId)) {
                 const team = await prismaTx.grupoResponsavelEquipe.findFirst({
-                    where: {
-                        id: teamId,
-                        removido_em: null,
-                        orgao_id,
-                    },
-                    select: {
-                        orgao_id: true,
-                    },
+                    where: { id: teamId, removido_em: null },
+                    select: { orgao_id: true, titulo: true }, // precisa pegar o orgao_id
                 });
 
-                if (!team) throw new BadRequestException(`Equipe ID ${teamId} não encontrada, órgão ${orgao_id}.`);
+                if (!team) {
+                    throw new BadRequestException(`Equipe ID ${teamId} não foi encontrada.`);
+                }
+
+                // pra cada equipe adicionada, tem q testar de novo se pode entrar
+                const allowedMemberOrgaoIds = await this.orgaoService.getOrgaoSubtreeIds(team.orgao_id, prismaTx);
+
+                if (!allowedMemberOrgaoIds.includes(orgao_id)) {
+                    throw new BadRequestException(
+                        `Não é possível adicionar a pessoa à equipe "${team.titulo}", pois o órgão da pessoa (ID ${orgao_id}) não é subordinado ao órgão da equipe (ID ${team.orgao_id}).`
+                    );
+                }
 
                 await prismaTx.grupoResponsavelEquipeParticipante.create({
                     data: {
                         grupo_responsavel_equipe_id: teamId,
                         pessoa_id: pessoaId,
-                        orgao_id: team.orgao_id,
+                        orgao_id: orgao_id,
                     },
                 });
             }
