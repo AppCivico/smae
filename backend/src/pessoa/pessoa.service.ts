@@ -607,7 +607,13 @@ export class PessoaService implements OnModuleInit {
                 self.pessoa_fisica.orgao_id &&
                 self.pessoa_fisica.orgao_id != updatePessoaDto.orgao_id
             ) {
-                await this.trocouDeOrgao(prismaTx, { ...self, pessoa_fisica: self.pessoa_fisica }, now, logger);
+                await this.trocouDeOrgao(
+                    prismaTx,
+                    { ...self, pessoa_fisica: self.pessoa_fisica },
+                    now,
+                    logger,
+                    updatePessoaDto.orgao_id
+                );
             }
 
             const updated = await prismaTx.pessoa.update({
@@ -1037,6 +1043,77 @@ export class PessoaService implements OnModuleInit {
         });
     }
 
+    /**
+     * Verifica se as equipes da pessoa permanecem válidas com o novo órgão.
+     *
+     * Regras:
+     * - Participantes: podem mudar para qualquer órgão dentro da hierarquia válida da equipe (órgão base + subordinados)
+     * - Colaboradores: NÃO podem mudar de órgão - devem permanecer no órgão exato da equipe
+     */
+    private async verificaValidadeEquipesNovoOrgao(
+        prismaTx: Prisma.TransactionClient,
+        pessoaId: number,
+        novoOrgaoId: number,
+        logger: LoggerWithLog
+    ): Promise<void> {
+        logger.log(`Verificando validade das equipes para o novo órgão ID ${novoOrgaoId}`);
+
+        // Verifica se a pessoa é COLABORADOR em alguma equipe
+        const equipesComoColaborador = await prismaTx.grupoResponsavelEquipe.findMany({
+            where: {
+                removido_em: null,
+                GrupoResponsavelEquipeColaborador: { some: { pessoa_id: pessoaId, removido_em: null } },
+            },
+            select: {
+                id: true,
+                titulo: true,
+                orgao_id: true,
+            },
+        });
+
+        if (equipesComoColaborador.length > 0) {
+            throw new BadRequestException(
+                `Não é possível mudar de órgão, pois ainda é colaborador nas equipes: ${equipesComoColaborador
+                    .map((e) => e.titulo)
+                    .join(', ')}. Colaboradores devem ser removidos da equipe antes da mudança de órgão.`
+            );
+        }
+
+        // Verifica se a pessoa é PARTICIPANTE em alguma equipe
+        const equipesComoParticipante = await prismaTx.grupoResponsavelEquipe.findMany({
+            where: {
+                removido_em: null,
+                GrupoResponsavelEquipePessoa: { some: { pessoa_id: pessoaId, removido_em: null } },
+            },
+            select: {
+                id: true,
+                titulo: true,
+                orgao_id: true,
+            },
+        });
+
+        if (equipesComoParticipante.length === 0) {
+            logger.log('Pessoa não é participante de nenhuma equipe. Nenhuma verificação necessária.');
+            return;
+        }
+
+        // Para cada equipe onde é participante, verifica se o novo órgão está na hierarquia válida
+        for (const equipe of equipesComoParticipante) {
+            logger.log(`Verificando equipe "${equipe.titulo}" (órgão base ID ${equipe.orgao_id}) como participante`);
+
+            // Obtém a hierarquia permitida para a equipe (órgão base + subordinados)
+            const orgaosPermitidosParaEquipe = await this.orgaoService.getOrgaoSubtreeIds(equipe.orgao_id, prismaTx);
+
+            if (!orgaosPermitidosParaEquipe.includes(novoOrgaoId)) {
+                throw new BadRequestException(
+                    `Não é possível mudar para o novo órgão, pois invalidaria a participação na equipe "${equipe.titulo}". ` +
+                        `A pessoa precisa ser removida desta equipe antes de prosseguir.`
+                );
+            }
+            logger.log(`Novo órgão ID ${novoOrgaoId} é válido para a equipe ${equipe.id}.`);
+        }
+    }
+
     private async trocouDeOrgao(
         prismaTx: Prisma.TransactionClient,
         self: {
@@ -1047,7 +1124,8 @@ export class PessoaService implements OnModuleInit {
             id: number;
         },
         now: Date,
-        logger: LoggerWithLog
+        logger: LoggerWithLog,
+        novoOrgaoId: number
     ) {
         const orgaoAntigo = self.pessoa_fisica.orgao_id;
         const orgaoAntigoStr = `órgão antigo ID ${orgaoAntigo}`;
@@ -1137,61 +1215,25 @@ export class PessoaService implements OnModuleInit {
             }
         }
 
-        {
-            logger.log(`Trocou de órgão: verificando o ${orgaoAntigoStr} se há responsabilidades em equipes`);
+        // Verifica se as equipes ainda são válidas com o novo órgão
+        // Isso já bloqueia se a pessoa for colaboradora de alguma equipe
+        await this.verificaValidadeEquipesNovoOrgao(prismaTx, self.id, novoOrgaoId, logger);
 
-            const grupoQSouResp = await prismaTx.grupoResponsavelEquipeResponsavel.findMany({
+        // Atualiza o orgao_id nos relacionamentos de equipes (participante)
+        // Colaboradores não chegam aqui pois a verificação acima já bloqueia
+        {
+            logger.log(`Trocou de órgão: atualizando orgao_id em grupoResponsavelEquipeParticipante`);
+            await prismaTx.grupoResponsavelEquipeParticipante.updateMany({
                 where: {
-                    removido_em: null,
                     pessoa_id: self.id,
+                    removido_em: null,
                 },
-                select: {
-                    grupo_responsavel_equipe: {
-                        select: {
-                            titulo: true,
-                        },
-                    },
+                data: {
+                    orgao_id: novoOrgaoId,
                 },
             });
-
-            if (grupoQSouResp.length) {
-                throw new BadRequestException(
-                    `Não é possível mudar de órgão, pois ainda é responsável na equipes: ${grupoQSouResp
-                        .map((r) => {
-                            return `${r.grupo_responsavel_equipe.titulo}`;
-                        })
-                        .join('\n')}`
-                );
-            }
         }
 
-        {
-            logger.log(`Trocou de órgão: verificando o ${orgaoAntigoStr} se há responsabilidades equipes`);
-
-            const grupoQSouPart = await prismaTx.grupoResponsavelEquipeParticipante.findMany({
-                where: {
-                    removido_em: null,
-                    pessoa_id: self.id,
-                },
-                select: {
-                    grupo_responsavel_equipe: {
-                        select: {
-                            titulo: true,
-                        },
-                    },
-                },
-            });
-
-            if (grupoQSouPart.length) {
-                throw new BadRequestException(
-                    `Não é possível mudar de órgão, pois ainda é participante na equipe: ${grupoQSouPart
-                        .map((r) => {
-                            return `${r.grupo_responsavel_equipe.titulo}`;
-                        })
-                        .join('\n')}`
-                );
-            }
-        }
         {
             logger.log(`Trocou de órgão: removendo relacionamentos de projetoEquipe no ${orgaoAntigoStr}`);
             await prismaTx.projetoEquipe.updateMany({

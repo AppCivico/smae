@@ -32,6 +32,15 @@ export class FilterEquipeRespDto {
     @Transform((a: TransformFnParams) => (a.value === '' ? undefined : +a.value))
     orgao_id?: number;
 
+    /**
+     * Quando informado, retorna equipes do órgão e de todos os seus órgãos pais.
+     * Útil para listar equipes válidas para uma pessoa baseado em seu órgão.
+     */
+    @IsOptional()
+    @IsInt()
+    @Transform((a: TransformFnParams) => (a.value === '' ? undefined : +a.value))
+    orgao_id_contexto?: number;
+
     @IsOptional()
     @IsBoolean()
     @Transform(({ value }: any) => value === 'true')

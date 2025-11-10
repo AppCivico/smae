@@ -80,9 +80,9 @@ export class EquipeRespService {
                     const pessoa = pComPriv2.filter((r) => r.pessoa_id == pessoaId)[0];
                     if (!pessoa)
                         throw new BadRequestException(`Pessoa ID ${pessoaId} não pode ser colaborador do grupo.`);
-                    if (!allowedOrgaoIds.includes(pessoa.orgao_id))
+                    if (pessoa.orgao_id !== orgao_id)
                         throw new BadRequestException(
-                            `Pessoa ID ${pessoaId} não pode ser colaborador do grupo, pois não está no órgão responsável ou seus subordinados.`
+                            `Pessoa ID ${pessoaId} não pode ser colaborador do grupo, pois não está no órgão responsável (colaboradores devem estar no mesmo órgão da equipe).`
                         );
                 }
 
@@ -265,10 +265,17 @@ export class EquipeRespService {
     }
 
     async findAll(filter: FilterEquipeRespDto): Promise<EquipeRespItemDto[]> {
+        // Determina os IDs de órgãos permitidos baseado no contexto
+        let orgaoIdsPermitidos: number[] | undefined = undefined;
+        if (filter.orgao_id_contexto) {
+            // Busca o órgão contexto e todos os seus pais (hierarquia ascendente)
+            orgaoIdsPermitidos = await this.orgaoService.buscaHierarquiaPais(filter.orgao_id_contexto);
+        }
+
         const rows = await this.prisma.grupoResponsavelEquipe.findMany({
             where: {
                 id: filter.id,
-                orgao_id: filter.orgao_id,
+                orgao_id: orgaoIdsPermitidos ? { in: orgaoIdsPermitidos } : filter.orgao_id,
                 removido_em: null,
             },
             include: {
@@ -555,9 +562,9 @@ export class EquipeRespService {
                     const pessoa = pComPriv.filter((r) => r.pessoa_id == pessoaId)[0];
                     if (!pessoa)
                         throw new BadRequestException(`Pessoa ID ${pessoaId} não pode ser colaborador do grupo.`);
-                    if (!allowedOrgaoIds.includes(pessoa.orgao_id))
+                    if (pessoa.orgao_id !== orgao_id)
                         throw new BadRequestException(
-                            `Pessoa ID ${pessoaId} não pode ser colaborador do grupo, pois não está no órgão responsável ou seus subordinados.`
+                            `Pessoa ID ${pessoaId} não pode ser colaborador do grupo, pois não está no órgão responsável (colaboradores devem estar no mesmo órgão da equipe).`
                         );
 
                     if (!keptRecord.includes(pessoaId)) {

@@ -31,6 +31,26 @@ export class OrgaoService {
         return subtreeOrgaoIds.map((o) => o.id);
     }
 
+    /**
+     * Obtém toda a hierarquia de órgãos pais para um determinado órgão.
+     * Retorna o próprio órgão e todos os seus ancestrais até a raiz.
+     * Utilizado para determinar quais equipes uma pessoa pode participar.
+     */
+    async buscaHierarquiaPais(orgao_id: number, prismaTx?: Prisma.TransactionClient): Promise<number[]> {
+        const prisma = prismaTx || this.prisma;
+        const ancestrais: { id: number }[] = await prisma.$queryRaw`
+            WITH RECURSIVE orgao_ancestors AS (
+                SELECT id, parente_id FROM orgao WHERE id = ${orgao_id} AND removido_em IS NULL
+                UNION ALL
+                SELECT o.id, o.parente_id FROM orgao o
+                INNER JOIN orgao_ancestors oa ON o.id = oa.parente_id
+                WHERE o.removido_em IS NULL
+            )
+            SELECT id FROM orgao_ancestors;
+        `;
+        return ancestrais.map((o) => o.id);
+    }
+
     async create(dto: CreateOrgaoDto, user?: PessoaFromJwt): Promise<RecordWithId> {
         const similarExists = await this.prisma.orgao.count({
             where: {
