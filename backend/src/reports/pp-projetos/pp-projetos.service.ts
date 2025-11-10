@@ -98,6 +98,8 @@ class RetornoDbProjeto {
     projeto_etapa: string | null;
 
     portfolios_compartilhados_titulos: string | null;
+
+    etiquetas: string | null;
 }
 
 class RetornoDbCronograma {
@@ -583,6 +585,7 @@ export class PPProjetosService implements ReportableService {
             'fonte_recurso.valor_nominal',
             'status',
             'portfolios_compartilhados_titulos',
+            'etiquetas',
         ];
 
         const projetosFieldNames = [
@@ -635,6 +638,7 @@ export class PPProjetosService implements ReportableService {
             'Valor Nominal da Fonte',
             'Status (Banco)',
             'Portfólios Compartilhados',
+            'Etiquetas',
         ];
         await this.gerarCsv('projetos', projetosFields, projetosFieldNames, projetosIds, out, ctx, 20);
         await ctx.resumoSaida('Projetos', projetosIds.length);
@@ -1065,6 +1069,13 @@ export class PPProjetosService implements ReportableService {
                 FROM pessoa
                 WHERE id = ANY(projeto.responsaveis_no_orgao_gestor)
             ) as gestores,
+            (
+                SELECT
+                    string_agg(pt.descricao, ' | ' ORDER BY pt.descricao)
+                FROM projeto_portfolio_tag ppt
+                JOIN portfolio_tag pt ON pt.id = ppt.portfolio_tag_id AND pt.removido_em IS NULL
+                WHERE ppt.projeto_id = projeto.id AND ppt.removido_em IS NULL
+            ) as etiquetas,
             r.id AS fonte_recurso_id,
             sof.descricao AS fonte_recurso_nome,
             r.fonte_recurso_cod_sof AS fonte_recurso_cod_sof,
@@ -1189,6 +1200,7 @@ export class PPProjetosService implements ReportableService {
                       }
                     : null,
                 portfolios_compartilhados_titulos: db.portfolios_compartilhados_titulos,
+                etiquetas: db.etiquetas ? db.etiquetas : null,
             });
         }
     }
