@@ -216,10 +216,14 @@ async function BuscarDotaçãoParaAno(valorOuEvento, idx = null) {
       segmentosLoadingPorLinha.value[idx] = true;
     }
 
-    await DotaçãoStore.getDotaçãoSegmentos(ano);
-
-    if (idx !== null) {
-      segmentosLoadingPorLinha.value[idx] = false;
+    try {
+      await DotaçãoStore.getDotaçãoSegmentos(ano);
+    } catch (error) {
+      alertStore.error('Erro ao carregar segmentos de orçamento.');
+    } finally {
+      if (idx !== null) {
+        segmentosLoadingPorLinha.value[idx] = false;
+      }
     }
   }
 }
