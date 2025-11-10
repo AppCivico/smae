@@ -566,7 +566,10 @@ CREATE OR REPLACE VIEW view_projeto_mdo AS
 WITH ProjetoRegioes AS (
     SELECT
         pr.projeto_id,
-        json_agg(json_build_object('descricao', r.descricao, 'nivel', r.nivel)) AS regioes_data
+        json_agg(
+            json_build_object('descricao', r.descricao, 'nivel', r.nivel)
+            ORDER BY r.descricao
+        ) AS regioes_data
     FROM projeto_regiao pr
     JOIN regiao r ON pr.regiao_id = r.id AND r.removido_em IS NULL
     WHERE pr.removido_em IS NULL
