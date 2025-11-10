@@ -1,4 +1,4 @@
-import type { SofEntidadeDto } from '@back/sof-entidade/entities/sof-entidade.entity';
+import type { SofDetalhamentoFonteDto, SofEntidadeDto } from '@back/sof-entidade/entities/sof-entidade.entity';
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -12,7 +12,7 @@ interface ChamadasPendentes {
 
 interface Estado {
   DotaçãoSegmentos: { [k: number | string]: Dados };
-  DotaçãoDetalhamentos: { [k: string]: Array<{ codigo: string; descricao: string }> };
+  DotaçãoDetalhamentos: { [k: string]: SofDetalhamentoFonteDto['dados'] };
   chamadasPendentes: ChamadasPendentes;
 
   erro: null | unknown;
@@ -58,19 +58,29 @@ export const useDotaçãoStore = defineStore('dotação', {
     async getDotaçãoDetalhamentos(ano: number, codigoFonte: string) {
       const chave = `${ano}-${codigoFonte}`;
 
-      try {
-        if (!this.DotaçãoDetalhamentos[chave]) {
-          this.chamadasPendentes.detalhamentosByKey[chave] = true;
+      if (this.DotaçãoDetalhamentos[chave] || this.chamadasPendentes.detalhamentosByKey[chave]) {
+        return this.DotaçãoDetalhamentos[chave];
+      }
 
-          const r = await this.requestS.get(`${baseUrl}/sof-entidade/${ano}/detalhamento/${codigoFonte}`);
-          if (r.data) {
-            this.DotaçãoDetalhamentos[chave] = r.data;
-          }
+      let isOwner = false;
+
+      try {
+        this.chamadasPendentes.detalhamentosByKey[chave] = true;
+        isOwner = true;
+
+        const r = await this.requestS.get(`${baseUrl}/sof-entidade/${ano}/detalhamento/${codigoFonte}`) as SofDetalhamentoFonteDto;
+        if (r.dados) {
+          this.DotaçãoDetalhamentos[chave] = r.dados;
         }
+
+        return this.DotaçãoDetalhamentos[chave];
       } catch (error) {
         this.erro = error;
+        return undefined;
       } finally {
-        delete this.chamadasPendentes.detalhamentosByKey[chave];
+        if (isOwner) {
+          delete this.chamadasPendentes.detalhamentosByKey[chave];
+        }
       }
     },
     async getDotaçãoPlanejado(dotacao: string, ano: number, extraParams: ExtraParams) {

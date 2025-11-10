@@ -196,6 +196,14 @@ async function BuscarDotaçãoParaAno(valorOuEvento, idx = null) {
   }
 }
 
+function aoMudarAno(idx, event) {
+  setFieldValue(`fonte_recursos[${idx}].fonte_recurso_cod_sof`, '');
+  setFieldValue(`fonte_recursos[${idx}].fonte_recurso_detalhamento_cod`, '');
+  setFieldValue(`fonte_recursos[${idx}].fonte_recurso_detalhamento_descricao`, '');
+
+  BuscarDotaçãoParaAno(event, idx);
+}
+
 async function BuscarDetalhamento(ano, codigoFonte, idx = null) {
   const chave = `${ano}-${codigoFonte}`;
   if (ano && codigoFonte && !DetalhamentosPorFonte.value?.[chave]) {
@@ -205,6 +213,8 @@ async function BuscarDetalhamento(ano, codigoFonte, idx = null) {
 
     try {
       await DotaçãoStore.getDotaçãoDetalhamentos(ano, codigoFonte);
+    } catch (error) {
+      alertStore.error('Erro ao carregar detalhamentos da fonte de recurso.');
     } finally {
       if (idx !== null) {
         detalhamentosLoadingPorLinha.value[idx] = false;
@@ -214,6 +224,11 @@ async function BuscarDetalhamento(ano, codigoFonte, idx = null) {
 }
 
 function aoMudarFonte(idx, event) {
+  // Bounds check: previne erro se linha foi removida durante operação assíncrona
+  if (!values.fonte_recursos[idx]) {
+    return;
+  }
+
   const novaFonte = event.target.value;
 
   setFieldValue(`fonte_recursos[${idx}].fonte_recurso_detalhamento_cod`, '');
@@ -225,12 +240,17 @@ function aoMudarFonte(idx, event) {
 }
 
 function atualizarDetalhamentoDescricao(idx, codigoDet) {
+  // Bounds check: previne erro se linha foi removida durante operação assíncrona
+  if (!values.fonte_recursos[idx]) {
+    return;
+  }
+
   const ano = values.fonte_recursos[idx].fonte_recurso_ano;
   const codigoFonte = values.fonte_recursos[idx].fonte_recurso_cod_sof;
   const chave = `${ano}-${codigoFonte}`;
 
-  if (codigoDet) {
-    const detalhamento = DetalhamentosPorFonte.value?.[chave]?.find(
+  if (codigoDet && DetalhamentosPorFonte.value?.[chave]) {
+    const detalhamento = DetalhamentosPorFonte.value[chave].find(
       (item) => item.codigo === codigoDet,
     );
     setFieldValue(
@@ -971,7 +991,7 @@ watch(() => values.portfolio_id, (novoPortfolioId) => {
                 max="3000"
                 step="1"
                 :disabled="desabilitarTodosCampos.camposComuns"
-                @change="(e) => BuscarDotaçãoParaAno(e, idx)"
+                @change="(e) => aoMudarAno(idx, e)"
               />
               <ErrorMessage
                 class="error-msg mb1"
@@ -995,8 +1015,8 @@ watch(() => values.portfolio_id, (novoPortfolioId) => {
                 :disabled="
                   desabilitarTodosCampos.camposComuns
                     || !fields[idx].value.fonte_recurso_ano
-                    || segmentosLoadingPorLinha[idx]
                 "
+                :aria-busy="segmentosLoadingPorLinha[idx] ? 'true' : 'false'"
                 @change="(e) => aoMudarFonte(idx, e)"
               >
                 <option value="">
@@ -1039,8 +1059,8 @@ watch(() => values.portfolio_id, (novoPortfolioId) => {
                 :disabled="
                   desabilitarTodosCampos.camposComuns
                     || !fields[idx].value.fonte_recurso_cod_sof
-                    || detalhamentosLoadingPorLinha[idx]
                 "
+                :aria-busy="detalhamentosLoadingPorLinha[idx] ? 'true' : 'false'"
                 @change="(e) => atualizarDetalhamentoDescricao(idx, e.target.value)"
               >
                 <option value="">
