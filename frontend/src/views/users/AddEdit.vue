@@ -88,14 +88,26 @@ const orgaoSelecionadoComAscendentes = computed(() => {
 
 const equipesDisponiveis = computed(() => orgaoSelecionadoComAscendentes.value
   .reduce((acc, cur) => {
-    if (equipesPorOrgaoIdPorPerfil.value[cur]) {
-      Object.keys(equipesPorOrgaoIdPorPerfil.value[cur]).forEach((chave) => {
-        if (!acc[chave]) {
-          acc[chave] = [];
-        }
-        acc[chave] = acc[chave].concat(equipesPorOrgaoIdPorPerfil.value[cur][chave]);
-      });
+    const equipesDoOrgao = equipesPorOrgaoIdPorPerfil.value[cur];
+
+    if (!equipesDoOrgao) {
+      return acc;
     }
+
+    Object.entries(equipesDoOrgao).forEach(([chave, equipes]) => {
+      const destino = acc[chave] ?? [];
+      const idsVistos = new Set(destino.map((item) => item.id));
+
+      equipes.forEach((equipe) => {
+        if (!idsVistos.has(equipe.id)) {
+          idsVistos.add(equipe.id);
+          destino.push(equipe);
+        }
+      });
+
+      acc[chave] = destino;
+    });
+
     return acc;
   }, {}));
 
