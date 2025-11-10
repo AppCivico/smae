@@ -37,6 +37,6 @@ export class SofEntidadeController {
         return (await this.sofApiService.doDetailhamentoFonteRequest(
             ano,
             numeroFonte
-        )) as any as SofDetalhamentoFonteDto;
+        )) as unknown as SofDetalhamentoFonteDto;
     }
 }

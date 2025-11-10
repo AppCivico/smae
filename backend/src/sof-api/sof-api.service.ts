@@ -63,7 +63,7 @@ type SuccessEntidadesResponse = {
 
 type SuccessDetalhamentoFonteResponse = {
     metadados: MetaDados;
-    data: Entidade[];
+    dados: Entidade[];
 };
 
 type SuccessOrcadoResponse = {
@@ -400,7 +400,7 @@ export class SofApiService {
                 .json();
             this.logger.debug(`resposta: ${JSON.stringify(response)}`);
             if ('metadados' in response && response.metadados.sucess) {
-                const res = (response as SuccessDetalhamentoFonteResponse).data.map((item) => {
+                const res = (response as SuccessDetalhamentoFonteResponse).dados.map((item) => {
                     return {
                         codigo: String(item.codigo),
                         descricao: String(item.descricao),
@@ -409,7 +409,7 @@ export class SofApiService {
 
                 return {
                     metadados: response.metadados,
-                    data: res,
+                    dados: res,
                 };
             }
 
