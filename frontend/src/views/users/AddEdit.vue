@@ -75,8 +75,10 @@ const orgaoSelecionadoComAscendentes = computed(() => {
   const listaDeOrgaos = [orgaoIdSelecionado];
 
   let orgaoPaiId = órgãosPorId.value[orgaoIdSelecionado]?.parente_id;
+  const visited = new Set([orgaoIdSelecionado]);
 
-  while (orgaoPaiId) {
+  while (orgaoPaiId && !visited.has(orgaoPaiId)) {
+    visited.add(orgaoPaiId);
     listaDeOrgaos.push(orgaoPaiId);
     orgaoPaiId = órgãosPorId.value[orgaoPaiId]?.parente_id;
   }
