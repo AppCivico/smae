@@ -422,6 +422,17 @@ export class SofApiService {
                 this.logger.debug(`${endpoint}.res.body: ${body}`);
             }
 
+            // Caso seja um erro 404, significa que não há dados, então retornamos um array vazio
+            if (error instanceof got.HTTPError && error.response.statusCode === 404) {
+                return {
+                    metadados: {
+                        sucess: true,
+                        message: 'Nenhum dado encontrado para o detalhamento da fonte.',
+                    },
+                    dados: [],
+                };
+            }
+
             throw new SofError(`Serviço SOF: falha ao acessar serviço: ${error}\n\nResponse.Body: ${body}`);
         }
     }
