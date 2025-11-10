@@ -48,6 +48,7 @@ export class RelProjetoRelatorioDto extends PartialType(
     projecao_termino: string | null;
     data_aprovacao: string | null;
     data_revisao: string | null;
+    etiquetas: string | null;
 }
 
 export class RelProjetoCronogramaDto {

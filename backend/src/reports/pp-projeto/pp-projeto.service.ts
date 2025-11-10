@@ -197,6 +197,8 @@ export class PPProjetoService implements ReportableService {
             orgaos_participantes: projetoRow.orgaos_participantes
                 ? projetoRow.orgaos_participantes.map((e) => e.sigla).join('|')
                 : null,
+
+            etiquetas: projetoRow.tags_portfolio ? projetoRow.tags_portfolio.map((e) => e.descricao).join('|') : null,
         };
 
         const tarefaCronoId = await this.prisma.tarefaCronograma.findFirst({
