@@ -62,12 +62,9 @@ export const useDotaçãoStore = defineStore('dotação', {
         return this.DotaçãoDetalhamentos[chave];
       }
 
-      let isOwner = false;
+      this.chamadasPendentes.detalhamentosByKey[chave] = true;
 
       try {
-        this.chamadasPendentes.detalhamentosByKey[chave] = true;
-        isOwner = true;
-
         const r = await this.requestS.get(`${baseUrl}/sof-entidade/${ano}/detalhamento/${codigoFonte}`) as SofDetalhamentoFonteDto;
         if (r.dados) {
           this.DotaçãoDetalhamentos[chave] = r.dados;
@@ -78,9 +75,7 @@ export const useDotaçãoStore = defineStore('dotação', {
         this.erro = error;
         return undefined;
       } finally {
-        if (isOwner) {
-          delete this.chamadasPendentes.detalhamentosByKey[chave];
-        }
+        delete this.chamadasPendentes.detalhamentosByKey[chave];
       }
     },
     async getDotaçãoPlanejado(dotacao: string, ano: number, extraParams: ExtraParams) {
