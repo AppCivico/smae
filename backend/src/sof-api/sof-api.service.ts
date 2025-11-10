@@ -63,6 +63,11 @@ type SuccessEntidadesResponse = {
 
 type SuccessDetalhamentoFonteResponse = {
     metadados: MetaDados;
+    data: Entidade[];
+};
+
+type DetalhamentoFonteReturn = {
+    metadados: MetaDados;
     dados: Entidade[];
 };
 
@@ -385,7 +390,7 @@ export class SofApiService {
         }
     }
 
-    async doDetailhamentoFonteRequest(ano: number, numeroFonte: number): Promise<SuccessDetalhamentoFonteResponse> {
+    async doDetailhamentoFonteRequest(ano: number, numeroFonte: number): Promise<DetalhamentoFonteReturn> {
         const endpoint =
             'v1/itens_dotacao/detalhamentos_fonte?ano=' +
             encodeURIComponent(ano) +
@@ -400,7 +405,7 @@ export class SofApiService {
                 .json();
             this.logger.debug(`resposta: ${JSON.stringify(response)}`);
             if ('metadados' in response && response.metadados.sucess) {
-                const res = (response as SuccessDetalhamentoFonteResponse).dados.map((item) => {
+                const res = (response as SuccessDetalhamentoFonteResponse).data.map((item) => {
                     return {
                         codigo: String(item.codigo),
                         descricao: String(item.descricao),
