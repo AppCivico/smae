@@ -90,7 +90,7 @@ export class PortfolioTagService {
                     },
                 },
             },
-            orderBy: [{ descricao: 'asc' }],
+            orderBy: [{ portfolio: { titulo: 'asc' } }, { descricao: 'asc' }],
         });
 
         const linhas = listActive.map((item) => ({

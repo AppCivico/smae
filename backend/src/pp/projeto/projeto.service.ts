@@ -1868,6 +1868,7 @@ export class ProjetoService {
 
                 tags_portfolio: {
                     where: { removido_em: null },
+                    orderBy: [{ portfolio: { descricao: 'asc' } }],
                     select: {
                         portfolio: {
                             select: {
