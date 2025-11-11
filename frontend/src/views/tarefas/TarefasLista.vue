@@ -63,7 +63,7 @@ const podeMudarDeEtapaProjeto = computed(() => {
 
 const nívelMáximoVisível = ref(0);
 
-const { lista: listaDeEtapas, erro: erroNaListaDeEtapas } = storeToRefs(etapasProjetosStore);
+const { etapasPorPortfolio, erro: erroNaListaDeEtapas } = storeToRefs(etapasProjetosStore);
 
 async function iniciar() {
   emailsStore.buscarItem({ transferencia_id: route.params.transferenciaId });
@@ -125,13 +125,13 @@ watch(podeMudarDeEtapaProjeto, (novoValor) => {
     <template #acoes>
       <nav class="flex g1">
         <div
-          v-if="podeMudarDeEtapaProjeto && listaDeEtapas.length"
+          v-if="podeMudarDeEtapaProjeto && etapasPorPortfolio[projetoEmFoco?.portfolio_id]?.length"
           class="dropbtn"
         >
           <span class="btn">Mudar etapa</span>
           <ul>
             <li
-              v-for="etapa, index in listaDeEtapas"
+              v-for="etapa, index in etapasPorPortfolio[projetoEmFoco?.portfolio_id]"
               :key="index"
             >
               <button
