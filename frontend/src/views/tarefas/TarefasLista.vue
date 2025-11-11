@@ -1,4 +1,10 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import {
+  computed, defineOptions, ref, watch,
+} from 'vue';
+import { useRoute } from 'vue-router';
+
 import LegendaEstimadoVsEfetivo from '@/components/LegendaEstimadoVsEfetivo.vue';
 import LinhaDeCronograma from '@/components/projetos/LinhaDeCronograma.vue';
 import CabecalhoResumo from '@/components/tarefas/CabecalhoResumo.vue';
@@ -8,11 +14,6 @@ import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
 import { useObrasStore } from '@/stores/obras.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
-import { storeToRefs } from 'pinia';
-import {
-  computed, defineOptions, ref, watch,
-} from 'vue';
-import { useRoute } from 'vue-router';
 
 defineOptions({ inheritAttrs: false });
 
