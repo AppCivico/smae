@@ -1872,8 +1872,8 @@ export class PessoaService implements OnModuleInit {
                 ret.privilegios = ret.privilegios.filter((v) => v !== priv);
             }
         } else {
-            // só pode ter esse Menu quem tem o gestor_distribuicao_recurso
-            if (ret.privilegios.includes('SMAE.gestor_distribuicao_recurso')) {
+            // só pode ter esse Menu quem tem o CadastroTransferencia.administrador
+            if (ret.privilegios.includes('CadastroTransferencia.administrador')) {
                 ret.privilegios.push('Menu.cc_consulta_geral');
             }
         }
