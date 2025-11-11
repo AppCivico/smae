@@ -2,6 +2,7 @@ import { Controller, Get, HttpCode, HttpStatus, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { DotacaoBuscaDto, DotacaoBuscaResponseDto } from './dto/dotacao-busca.dto';
 import { DotacaoBuscaService } from './dotacao-busca.service';
+import { Roles } from '../auth/decorators/roles.decorator';
 
 @ApiTags('Busca por Dotação')
 @ApiBearerAuth('access-token')
@@ -29,7 +30,7 @@ export class DotacaoBuscaController {
         description: 'Filtrar apenas entidades ativas',
         schema: { type: 'boolean', default: true },
     })
-    @HttpCode(HttpStatus.OK)
+    @Roles(['Menu.cc_consulta_geral'])
     @ApiOkResponse({ type: DotacaoBuscaResponseDto })
     async search(@Query() dto: DotacaoBuscaDto): Promise<DotacaoBuscaResponseDto> {
         return this.service.searchByDotacao(dto);
