@@ -30,7 +30,6 @@ function obterConfiguracao() {
   return config;
 }
 
-// Determina o contexto da rota (administracao ou configuracoes)
 const contextoEtapa = computed(() => route.meta.contextoEtapa || obterConfiguracao().contextoEtapa);
 
 // Filtra lista com base no contexto
@@ -64,7 +63,6 @@ const colunas = computed(() => {
 
   return colunasBase;
 });
-
 
 function construirRota(acao, id = null) {
   const config = obterConfiguracao();

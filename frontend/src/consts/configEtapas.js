@@ -25,7 +25,7 @@ const configEtapas = {
       remover: 'CadastroProjetoEtapa.remover',
     },
     requerPermissão: true,
-    contextoEtapa: 'configuracoes', // Apenas etapas específicas (não padrão)
+    contextoEtapa: 'configuracoes',
   },
   mdo: {
     rotaPrefix: 'mdo.etapas',
@@ -40,7 +40,7 @@ const configEtapas = {
       remover: 'CadastroProjetoEtapaMDO.remover',
     },
     requerPermissão: true,
-    contextoEtapa: 'configuracoes', // Apenas etapas específicas (não padrão)
+    contextoEtapa: 'configuracoes',
   },
   obras: {
     rotaPrefix: 'mdo.etapas',
@@ -55,7 +55,7 @@ const configEtapas = {
       remover: 'CadastroProjetoEtapaMDO.remover',
     },
     requerPermissão: true,
-    contextoEtapa: 'configuracoes', // Apenas etapas específicas (não padrão)
+    contextoEtapa: 'configuracoes',
   },
   TransferenciasVoluntarias: {
     rotaPrefix: 'TransferenciasVoluntarias.etapa',

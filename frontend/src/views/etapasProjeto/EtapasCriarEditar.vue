@@ -61,7 +61,6 @@ const {
 
 const ehTransferencia = computed(() => route.meta.entidadeMãe === 'TransferenciasVoluntarias');
 
-// Determina o contexto da rota (administracao ou configuracoes)
 const contextoEtapa = computed(() => {
   if (route.meta.contextoEtapa) {
     return route.meta.contextoEtapa;
@@ -93,7 +92,6 @@ const emFoco = computed(() => {
     };
   }
 
-  // Define eh_padrao baseado no contexto
   let ehPadraoPorContexto = true;
   if (contextoEtapa.value === 'administracao') {
     ehPadraoPorContexto = true;
@@ -233,7 +231,6 @@ function excluirEtapaDoProjeto(id) {
       </div>
     </div>
 
-    <!-- Campo eh_padrao: oculto quando em contexto específico (administracao ou configuracoes) -->
     <div
       v-if="!ehTransferencia && !contextoEtapa"
       class="flex g2 mb1"
@@ -270,7 +267,6 @@ function excluirEtapaDoProjeto(id) {
       </div>
     </div>
 
-    <!-- Campo oculto para contextos específicos -->
     <Field
       v-if="contextoEtapa"
       name="eh_padrao"
@@ -278,7 +274,6 @@ function excluirEtapaDoProjeto(id) {
       :value="contextoEtapa === 'administracao'"
     />
 
-    <!-- Campos de portfolio e etapa padrão associada: apenas em contexto de configurações -->
     <div
       v-if="!ehTransferencia && (contextoEtapa === 'configuracoes' || values.eh_padrao === false)"
       class="flex g2 mb1"
