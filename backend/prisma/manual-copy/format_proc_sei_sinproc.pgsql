@@ -2,19 +2,24 @@ CREATE OR REPLACE FUNCTION format_proc_sei_sinproc(p_input VARCHAR)
 RETURNS VARCHAR AS
 $$
 DECLARE
-    v_clean TEXT := p_input;
+    v_clean TEXT := regexp_replace(p_input, '\D', '', 'g'); -- remove non-digits
     v_len   INT := length(v_clean);
     v_result TEXT;
 BEGIN
-    -- SEI format: DDDD.DDDD/DDDDDDD-D  → 15 digits
-    IF v_len = 15 THEN
+    -- SEI format: DDDD.DDDD/DDDDDDD-D → 15 or 16 digits
+    IF v_len >= 15 THEN
         v_result := substr(v_clean, 1, 4) || '.' ||
                     substr(v_clean, 5, 4) || '/' ||
-                    substr(v_clean, 9, 7) || '-' ||
-                    substr(v_clean, 16, 1);
+                    substr(v_clean, 9, 7);
+
+        -- optional all digit after '-'
+        IF v_len >= 16 THEN
+            v_result := v_result || '-' || substr(v_clean, 16);
+        END IF;
+
         RETURN v_result;
 
-    -- SINPROC format: AAAA-D.DDD.DDD-D  → 12 digits
+    -- SINPROC format: AAAA-D.DDD.DDD-D → 12 digits
     ELSIF v_len = 12 THEN
         v_result := substr(v_clean, 1, 4) || '-' ||
                     substr(v_clean, 5, 1) || '.' ||
@@ -23,7 +28,7 @@ BEGIN
                     substr(v_clean, 12, 1);
         RETURN v_result;
 
-    -- se não enfia o ' pra ajustar o excel
+    -- se não, enfia o ' pra ajustar o Excel
     ELSE
         RETURN '''' || p_input;
     END IF;
