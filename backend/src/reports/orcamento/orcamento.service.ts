@@ -375,7 +375,7 @@ export class OrcamentoService implements ReportableService {
                 select
                     o.dotacao,
                     o.dotacao_complemento,
-                    o.processo,
+                    format_proc_sei_sinproc(o.processo) as processo,
                     o.nota_empenho,
                     i.valor_empenho as smae_valor_empenhado,
                     i.valor_liquidado as smae_valor_liquidado,
@@ -494,7 +494,7 @@ export class OrcamentoService implements ReportableService {
                 select
                     o.dotacao,
                     o.dotacao_complemento,
-                    o.processo,
+                    format_proc_sei_sinproc(o.processo) as processo,
                     o.nota_empenho,
                     to_char_numeric(i.valor_empenho::numeric) as smae_valor_empenhado,
                     to_char_numeric(i.valor_liquidado::numeric) as smae_valor_liquidado,
