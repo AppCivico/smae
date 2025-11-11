@@ -233,7 +233,7 @@ function excluirEtapaDoProjeto(id) {
     <Field
       name="eh_padrao"
       type="hidden"
-      :value="contextoEtapa === 'administracao'"
+      :value="contextoEtapa === 'administracao' ? true : (emFoco?.eh_padrao ?? true)"
     />
 
     <div
