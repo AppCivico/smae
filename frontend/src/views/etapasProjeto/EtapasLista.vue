@@ -22,6 +22,34 @@ const listaFiltrada = ref([]);
 
 const ehTransferencia = computed(() => route.meta.entidadeMãe === 'TransferenciasVoluntarias');
 
+function obterConfiguracao() {
+  const config = configEtapas[route.meta.entidadeMãe];
+  if (!config) {
+    throw new Error(`Configuração não encontrada para entidadeMãe: ${route.meta.entidadeMãe}`);
+  }
+  return config;
+}
+
+// Determina o contexto da rota (administracao ou configuracoes)
+const contextoEtapa = computed(() => route.meta.contextoEtapa || obterConfiguracao().contextoEtapa);
+
+// Filtra lista com base no contexto
+const listaFiltradaPorContexto = computed(() => {
+  if (!contextoEtapa.value) {
+    return lista.value;
+  }
+
+  if (contextoEtapa.value === 'administracao') {
+    return lista.value.filter((x) => x.eh_padrao === true);
+  }
+
+  if (contextoEtapa.value === 'configuracoes') {
+    return lista.value.filter((x) => x.eh_padrao === false);
+  }
+
+  return lista.value;
+});
+
 const colunas = computed(() => {
   const colunasBase = [
     { chave: 'descricao', label: 'Nome' },
@@ -38,17 +66,17 @@ const colunas = computed(() => {
   return colunasBase;
 });
 
-function obterConfiguracao() {
-  const config = configEtapas[route.meta.entidadeMãe];
-  if (!config) {
-    throw new Error(`Configuração não encontrada para entidadeMãe: ${route.meta.entidadeMãe}`);
-  }
-  return config;
-}
 
 function construirRota(acao, id = null) {
   const config = obterConfiguracao();
-  const nomeDaRota = `${config.rotaPrefix}.${acao.toLowerCase()}`;
+
+  // Se estamos no contexto de administração, usa rotas específicas
+  let nomeDaRota;
+  if (contextoEtapa.value === 'administracao' && config.rotasAdministracao) {
+    nomeDaRota = config.rotasAdministracao[acao.toLowerCase()];
+  } else {
+    nomeDaRota = `${config.rotaPrefix}.${acao.toLowerCase()}`;
+  }
 
   if (id) {
     return { name: nomeDaRota, params: { etapaId: id } };
@@ -118,7 +146,7 @@ onMounted(() => {
 
     <LocalFilter
       v-model="listaFiltrada"
-      :lista="lista"
+      :lista="listaFiltradaPorContexto"
     />
   </div>
 

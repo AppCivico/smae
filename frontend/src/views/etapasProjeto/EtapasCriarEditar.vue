@@ -61,6 +61,15 @@ const {
 
 const ehTransferencia = computed(() => route.meta.entidadeMãe === 'TransferenciasVoluntarias');
 
+// Determina o contexto da rota (administracao ou configuracoes)
+const contextoEtapa = computed(() => {
+  if (route.meta.contextoEtapa) {
+    return route.meta.contextoEtapa;
+  }
+  const config = configEtapas[route.meta.entidadeMãe];
+  return config?.contextoEtapa || null;
+});
+
 defineOptions({ inheritAttrs: false });
 
 const props = defineProps({
@@ -84,10 +93,18 @@ const emFoco = computed(() => {
     };
   }
 
+  // Define eh_padrao baseado no contexto
+  let ehPadraoPorContexto = true;
+  if (contextoEtapa.value === 'administracao') {
+    ehPadraoPorContexto = true;
+  } else if (contextoEtapa.value === 'configuracoes') {
+    ehPadraoPorContexto = false;
+  }
+
   return {
     id: null,
     descricao: '',
-    eh_padrao: true,
+    eh_padrao: ehPadraoPorContexto,
     portfolio_id: null,
     etapa_padrao_id: null,
   };
@@ -119,9 +136,9 @@ const onSubmit = handleSubmit(async (carga) => {
   let redirect;
   if (route.meta.entidadeMãe === 'TransferenciasVoluntarias') {
     redirect = 'TransferenciasVoluntarias.etapa.listar';
-  } else if (route.meta.entidadeMãe === 'mdo'
-  || route.meta.entidadeMãe === 'obras') {
-    redirect = 'mdo.etapas.listar';
+  } else if (route.meta.entidadeMãe === 'mdo' || route.meta.entidadeMãe === 'obras') {
+    // Se estiver no contexto de administração, redireciona para lá
+    redirect = contextoEtapa.value === 'administracao' ? 'mdo.etapasListar' : 'mdo.etapas.listar';
   } else if (route.meta.entidadeMãe === 'projeto') {
     redirect = 'projeto.etapas.listar';
   }
@@ -216,8 +233,9 @@ function excluirEtapaDoProjeto(id) {
       </div>
     </div>
 
+    <!-- Campo eh_padrao: oculto quando em contexto específico (administracao ou configuracoes) -->
     <div
-      v-if="!ehTransferencia"
+      v-if="!ehTransferencia && !contextoEtapa"
       class="flex g2 mb1"
     >
       <div class="f1 mb1">
@@ -252,8 +270,17 @@ function excluirEtapaDoProjeto(id) {
       </div>
     </div>
 
+    <!-- Campo oculto para contextos específicos -->
+    <Field
+      v-if="contextoEtapa"
+      name="eh_padrao"
+      type="hidden"
+      :value="contextoEtapa === 'administracao'"
+    />
+
+    <!-- Campos de portfolio e etapa padrão associada: apenas em contexto de configurações -->
     <div
-      v-if="!ehTransferencia && values.eh_padrao === false"
+      v-if="!ehTransferencia && (contextoEtapa === 'configuracoes' || values.eh_padrao === false)"
       class="flex g2 mb1"
     >
       <div class="f1 mb1">
