@@ -6,12 +6,17 @@ import { UpsertPortfolioTagDto } from './dto/upsert-portfolio-tag.dto';
 import { ListPortfolioTagDto } from './dto/list-portfolio-tag.dto';
 import { FilterPortfolioTagDto } from './dto/filter-portfolio-tag.dto';
 import { PortfolioTagDto } from './entities/portfolio-tag.entity';
+import { PortfolioService } from '../portfolio/portfolio.service';
+import { TipoProjeto } from '@prisma/client';
 
 @Injectable()
 export class PortfolioTagService {
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly portfolioService: PortfolioService
+    ) {}
 
-    async upsert(dto: UpsertPortfolioTagDto, user?: PessoaFromJwt, id?: number): Promise<RecordWithId> {
+    async upsert(dto: UpsertPortfolioTagDto, user: PessoaFromJwt, id?: number): Promise<RecordWithId> {
         if (id) {
             const self = await this.prisma.portfolioTag.findFirst({
                 where: { id, removido_em: null },
@@ -40,10 +45,8 @@ export class PortfolioTagService {
             throw new HttpException('Descrição igual ou semelhante já existe em outro registro ativo', 400);
 
         // Verificando portfolio (deve ser de PP)
-        const portfolio = await this.prisma.portfolio.findFirst({
-            where: { id: dto.portfolio_id, tipo_projeto: 'PP', removido_em: null },
-            select: { id: true },
-        });
+        // Chamando findOne do service de portfolio, para garantir permissão de acesso.
+        const portfolio = await this.portfolioService.findOne(TipoProjeto.PP, dto.portfolio_id, user);
         if (!portfolio) throw new HttpException('Portfólio não encontrado', 404);
 
         const created = await this.prisma.portfolioTag.upsert({
@@ -66,11 +69,26 @@ export class PortfolioTagService {
         return created;
     }
 
-    async findAll(filters?: FilterPortfolioTagDto): Promise<ListPortfolioTagDto> {
+    async findAll(user: PessoaFromJwt, filters?: FilterPortfolioTagDto): Promise<ListPortfolioTagDto> {
+        // Chamando findAll para verificar acesso.
+        let portfoliosId = [];
+
+        if (filters?.portfolio_id) {
+            const portfolio = await this.portfolioService.findOne('PP', filters.portfolio_id, user);
+            if (!portfolio) throw new HttpException('Portfólio não encontrado ou sem permissão para acesso', 400);
+            portfoliosId = [filters.portfolio_id];
+        } else {
+            const portfolios = await this.portfolioService.findAll('PP', user, true);
+            portfoliosId = portfolios.map((p) => p.id);
+            if (portfoliosId.length === 0) {
+                return { linhas: [] };
+            }
+        }
+
         const listActive = await this.prisma.portfolioTag.findMany({
             where: {
                 removido_em: null,
-                portfolio_id: filters?.portfolio_id,
+                portfolio_id: { in: portfoliosId },
             },
             select: {
                 id: true,
@@ -98,7 +116,7 @@ export class PortfolioTagService {
             descricao: item.descricao,
             portfolio_id: item.portfolio.id,
             portfolio: item.portfolio,
-            pode_editar: item.projetos.length === 0,
+            pode_editar: true,
         }));
 
         return { linhas };
@@ -134,7 +152,7 @@ export class PortfolioTagService {
             descricao: linha.descricao,
             portfolio_id: linha.portfolio.id,
             portfolio: linha.portfolio,
-            pode_editar: linha.projetos.length === 0,
+            pode_editar: true,
         };
     }
 

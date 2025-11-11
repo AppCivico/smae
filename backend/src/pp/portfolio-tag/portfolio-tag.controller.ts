@@ -26,8 +26,11 @@ export class PortfolioTagController {
     @ApiBearerAuth('access-token')
     @Roles(['CadastroPortfolioTag.editar', 'CadastroPortfolioTag.inserir'])
     @Get()
-    async findAll(@Query() filters: FilterPortfolioTagDto): Promise<ListPortfolioTagDto> {
-        return await this.portfolioTagService.findAll(filters);
+    async findAll(
+        @Query() filters: FilterPortfolioTagDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<ListPortfolioTagDto> {
+        return await this.portfolioTagService.findAll(user, filters);
     }
 
     @Get(':id')
