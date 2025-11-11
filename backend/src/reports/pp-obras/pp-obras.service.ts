@@ -950,7 +950,7 @@ export class PPObrasService implements ReportableService {
                 SELECT max(percentual_medido) FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL
             ) AS percentual_medido,
             (
-                SELECT string_agg(contrato_sei.numero_sei::text, '|')
+                SELECT string_agg(format_proc_sei_sinproc(contrato_sei.numero_sei::text), '|')
                 FROM contrato_sei
                 WHERE contrato_sei.contrato_id = contrato.id
             ) AS processos_sei,
@@ -977,22 +977,12 @@ export class PPObrasService implements ReportableService {
 
     private convertRowsContratos(input: RetornoDbContratos[]): RelObrasContratosDto[] {
         return input.map((db) => {
-            // Os nros SEI são concatenados por |
-            // É necessário fazer o split e aplicar a máscara (formataSEI)
-            // E novamente concatenar por | para manter o padrão
-            const processos_sei = db.processos_sei
-                ? db.processos_sei
-                      .split('|')
-                      .map((nro) => formataSEI(nro))
-                      .join('|')
-                : null;
-
             return {
                 id: db.id,
                 obra_id: db.obra_id,
                 numero: db.numero,
                 exclusivo: db.exclusivo,
-                processos_SEI: processos_sei,
+                processos_SEI: db.processos_sei,
                 status: db.status,
                 modalidade_licitacao: db.modalidade_contratacao_id
                     ? { id: db.modalidade_contratacao_id!, nome: db.modalidade_contratacao_nome!.toString() }
@@ -1171,7 +1161,7 @@ export class PPObrasService implements ReportableService {
         return `SELECT
             projeto.id AS obra_id,
             projeto_registro_sei.categoria,
-            projeto_registro_sei.processo_sei,
+            format_proc_sei_sinproc(projeto_registro_sei.processo_sei) AS processo_sei,
             projeto_registro_sei.descricao,
             projeto_registro_sei.link,
             projeto_registro_sei.comentarios,
@@ -1195,7 +1185,7 @@ export class PPObrasService implements ReportableService {
             return {
                 obra_id: db.obra_id,
                 categoria: db.categoria,
-                processo_sei: formataSEI(db.processo_sei),
+                processo_sei: db.processo_sei,
                 descricao: db.descricao ?? null,
                 link: db.link ?? null,
                 comentarios: db.comentarios ?? null,
