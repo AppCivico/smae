@@ -33,7 +33,6 @@ import {
 } from './entities/projetos.entity';
 import { Logger } from '@nestjs/common';
 import { SmaeConfigService } from '../../common/services/smae-config.service';
-import { formataSEI } from '../../common/formata-sei';
 
 type WhereCond = {
     whereString: string;
@@ -1630,12 +1629,7 @@ export class PPProjetosService implements ReportableService {
                 projeto_id: db.projeto_id,
                 numero: db.numero,
                 exclusivo: db.exclusivo,
-                processos_SEI: db.processos_sei
-                    ? db.processos_sei
-                          .split('|')
-                          .map((nro) => formataSEI(nro))
-                          .join('|')
-                    : null,
+                processos_SEI: db.processos_sei,
                 status: db.status,
                 modalidade_licitacao: db.modalidade_contratacao_id
                     ? { id: db.modalidade_contratacao_id!, nome: db.modalidade_contratacao_nome!.toString() }

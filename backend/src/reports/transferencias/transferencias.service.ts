@@ -221,7 +221,7 @@ export class TransferenciasService implements ReportableService {
                 dr.investimento as distribuicao_recurso_investimento,
                 (
                     SELECT
-                        string_agg(processo_sei, '|')
+                        string_agg(format_proc_sei_sinproc(processo_sei::text) , ' | ')
                     FROM distribuicao_recurso_sei
                     WHERE distribuicao_recurso_id = dr.id
                 ) AS distribuicao_recurso_sei,
@@ -508,8 +508,7 @@ export class TransferenciasService implements ReportableService {
                           vigencia: Date2YMD.toStringOrNull(db.distribuicao_recurso_vigencia) ?? '',
                           conclusao_suspensiva:
                               Date2YMD.toStringOrNull(db.distribuicao_recurso_conclusao_suspensiva) ?? '',
-                          registro_sei:
-                              (db.distribuicao_recurso_sei ? formataSEI(db.distribuicao_recurso_sei) : null) ?? '',
+                          registro_sei: (db.distribuicao_recurso_sei ? db.distribuicao_recurso_sei : null) ?? '',
                           nome_responsavel: this.formatExcelString(db.distribuicao_recurso_status_nome_responsavel),
                           status_nome_base: db.distribuicao_recurso_status_nome_base ?? '',
                           pct_custeio: this.formatExcelString(db.distribuicao_recurso_pct_custeio?.toString()) ?? '  ',

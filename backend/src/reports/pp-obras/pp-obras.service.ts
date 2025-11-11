@@ -8,7 +8,6 @@ import {
     StatusContrato,
     TipoProjeto,
 } from '@prisma/client';
-import { formataSEI } from 'src/common/formata-sei';
 import { TarefaService } from 'src/pp/tarefa/tarefa.service';
 import { TarefaUtilsService } from 'src/pp/tarefa/tarefa.service.utils';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
