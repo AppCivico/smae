@@ -135,10 +135,9 @@ const onSubmit = handleSubmit(async (carga) => {
   if (route.meta.entidadeMãe === 'TransferenciasVoluntarias') {
     redirect = 'TransferenciasVoluntarias.etapa.listar';
   } else if (route.meta.entidadeMãe === 'mdo' || route.meta.entidadeMãe === 'obras') {
-    // Se estiver no contexto de administração, redireciona para lá
     redirect = contextoEtapa.value === 'administracao' ? 'mdo.etapasListar' : 'mdo.etapas.listar';
   } else if (route.meta.entidadeMãe === 'projeto') {
-    redirect = 'projeto.etapas.listar';
+    redirect = contextoEtapa.value === 'administracao' ? 'projeto.etapasListar' : 'projeto.etapas.listar';
   }
   try {
     const msg = props.etapaId
@@ -231,51 +230,14 @@ function excluirEtapaDoProjeto(id) {
       </div>
     </div>
 
-    <div
-      v-if="!ehTransferencia && !contextoEtapa"
-      class="flex g2 mb1"
-    >
-      <div class="f1 mb1">
-        <SmaeLabel
-          name="eh_padrao"
-          :schema="schema"
-        />
-        <label class="block mb05">
-          <Field
-            name="eh_padrao"
-            type="radio"
-            :value="true"
-            @change="() => {
-              setFieldValue('portfolio_id', null);
-              setFieldValue('etapa_padrao_id', null);
-            }"
-          />
-          Sim
-        </label>
-        <label class="block">
-          <Field
-            name="eh_padrao"
-            type="radio"
-            :value="false"
-          />
-          Não
-        </label>
-        <ErrorMessage
-          name="eh_padrao"
-          class="error-msg"
-        />
-      </div>
-    </div>
-
     <Field
-      v-if="contextoEtapa"
       name="eh_padrao"
       type="hidden"
       :value="contextoEtapa === 'administracao'"
     />
 
     <div
-      v-if="!ehTransferencia && (contextoEtapa === 'configuracoes' || values.eh_padrao === false)"
+      v-if="!ehTransferencia && contextoEtapa === 'configuracoes'"
       class="flex g2 mb1"
     >
       <div class="f1 mb1">
