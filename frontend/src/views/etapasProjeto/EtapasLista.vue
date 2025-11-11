@@ -55,11 +55,10 @@ const colunas = computed(() => {
     { chave: 'descricao', label: 'Nome' },
   ];
 
-  if (!ehTransferencia.value) {
+  if (!ehTransferencia.value && contextoEtapa.value === 'configuracoes') {
     colunasBase.push(
       { chave: 'portfolio_id', label: 'Portfólio' },
       { chave: 'etapa_padrao_associada', label: 'Etapa Padrão Associada' },
-      { chave: 'etapa_padrao', label: 'Etapa Padrão' },
     );
   }
 
