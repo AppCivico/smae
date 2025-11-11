@@ -2824,6 +2824,24 @@ export class ProjetoService {
             // Caso a previsão de término seja enviada/modificada (e for diferente do que está salvo). Garantir que não seja menor que a previsão de início.
             this.validaDataProjeto(dto, projeto);
 
+            // Validando troca de etapa do projeto.
+            // A etapa deve existir e ser compatível com o tipo do projeto.
+            // E além disso deve estar no mesmo portfolio do projeto.
+            if (dto.projeto_etapa_id && dto.projeto_etapa_id != projeto.projeto_etapa?.id) {
+                const projetoEtapa = await prismaTx.projetoEtapa.findFirst({
+                    where: {
+                        id: dto.projeto_etapa_id,
+                        removido_em: null,
+                        tipo_projeto: tipo,
+                        portfolio_id: projeto.portfolio_id,
+                    },
+                    select: { id: true },
+                });
+                if (!projetoEtapa) {
+                    throw new HttpException('projeto_etapa_id| Etapa do projeto não encontrada ou inválida.', 400);
+                }
+            }
+
             const self = await prismaTx.projeto.update({
                 where: { id: projetoId },
                 data: {
