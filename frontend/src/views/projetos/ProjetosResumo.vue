@@ -7,11 +7,11 @@ import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudanç
 import SmaeTooltip from '@/components/SmaeTooltip/SmaeTooltip.vue';
 import { projeto as schema } from '@/consts/formSchemas';
 import statuses from '@/consts/projectStatuses';
+import combinadorDeListas from '@/helpers/combinadorDeListas.ts';
 import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
 import subtractDates from '@/helpers/subtractDates';
 import truncate from '@/helpers/texto/truncate';
-import combinadorDeListas from '@/helpers/combinadorDeListas.ts';
 import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { useOrgansStore } from '@/stores/organs.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
@@ -276,6 +276,7 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
         <col>
         <col>
         <col>
+        <col>
         <thead>
           <tr>
             <th
@@ -283,6 +284,12 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
               colspan="2"
             >
               {{ schema.fields.fonte_recursos.innerType.fields.fonte_recurso_cod_sof.spec.label }}
+            </th>
+            <th>
+              {{
+                schema.fields.fonte_recursos.innerType.fields
+                  .fonte_recurso_detalhamento_cod.spec.label
+              }}
             </th>
             <th class="cell--number cell--minimum">
               {{ schema.fields.fonte_recursos.innerType.fields.fonte_recurso_ano.spec.label }}
@@ -304,18 +311,32 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
             {{ item.fonte_recurso_cod_sof }}
           </td>
           <td
-            :title="FontesDeRecursosPorAnoPorCódigo?.[item.fonte_recurso_ano]?.[item.fonte_recurso_cod_sof]?.descricao"
+            :title="FontesDeRecursosPorAnoPorCódigo?.[item.fonte_recurso_ano]
+              ?.[item.fonte_recurso_cod_sof]?.descricao"
           >
             <template
-              v-if="FontesDeRecursosPorAnoPorCódigo?.[item.fonte_recurso_ano]?.[item.fonte_recurso_cod_sof]?.descricao"
+              v-if="FontesDeRecursosPorAnoPorCódigo?.[item.fonte_recurso_ano]
+                ?.[item.fonte_recurso_cod_sof]?.descricao"
             >
               {{
                 truncate(
-                  FontesDeRecursosPorAnoPorCódigo[item.fonte_recurso_ano][item.fonte_recurso_cod_sof].descricao,
+                  FontesDeRecursosPorAnoPorCódigo[item.fonte_recurso_ano]
+                    [item.fonte_recurso_cod_sof].descricao,
                   36
                 )
               }}
             </template>
+          </td>
+          <td
+            v-if="item.fonte_recurso_detalhamento_cod
+              && item.fonte_recurso_detalhamento_descricao"
+          >
+            {{
+              item.fonte_recurso_detalhamento_cod
+            }} - {{ item.fonte_recurso_detalhamento_descricao }}
+          </td>
+          <td v-else>
+            -
           </td>
           <td class="cell--number">
             {{ item.fonte_recurso_ano }}
@@ -329,7 +350,7 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
         </tr>
         <tr v-if="!emFoco?.fonte_recursos?.length">
           <td
-            colspan="5"
+            colspan="6"
             class="center"
           >
             -
