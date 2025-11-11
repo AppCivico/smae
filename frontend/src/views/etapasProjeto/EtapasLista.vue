@@ -22,22 +22,6 @@ const listaFiltrada = ref([]);
 
 const ehTransferencia = computed(() => route.meta.entidadeMãe === 'TransferenciasVoluntarias');
 
-const colunas = computed(() => {
-  const colunasBase = [
-    { chave: 'descricao', label: 'Nome' },
-  ];
-
-  if (!ehTransferencia.value) {
-    colunasBase.push(
-      { chave: 'portfolio_id', label: 'Portfólio' },
-      { chave: 'etapa_padrao_associada', label: 'Etapa Padrão Associada' },
-      { chave: 'etapa_padrao', label: 'Etapa Padrão' },
-    );
-  }
-
-  return colunasBase;
-});
-
 function obterConfiguracao() {
   const config = configEtapas[route.meta.entidadeMãe];
   if (!config) {
@@ -46,9 +30,50 @@ function obterConfiguracao() {
   return config;
 }
 
+const contextoEtapa = computed(() => route.meta.contextoEtapa || obterConfiguracao().contextoEtapa);
+
+// Filtra lista com base no contexto
+const listaFiltradaPorContexto = computed(() => {
+  if (!contextoEtapa.value) {
+    return lista.value;
+  }
+
+  if (contextoEtapa.value === 'administracao') {
+    return lista.value.filter((x) => x.eh_padrao === true);
+  }
+
+  if (contextoEtapa.value === 'configuracoes') {
+    return lista.value.filter((x) => x.eh_padrao === false);
+  }
+
+  return lista.value;
+});
+
+const colunas = computed(() => {
+  const colunasBase = [
+    { chave: 'descricao', label: 'Nome' },
+  ];
+
+  if (!ehTransferencia.value && contextoEtapa.value === 'configuracoes') {
+    colunasBase.push(
+      { chave: 'portfolio_id', label: 'Portfólio' },
+      { chave: 'etapa_padrao_associada', label: 'Etapa Padrão Associada' },
+    );
+  }
+
+  return colunasBase;
+});
+
 function construirRota(acao, id = null) {
   const config = obterConfiguracao();
-  const nomeDaRota = `${config.rotaPrefix}.${acao.toLowerCase()}`;
+
+  // Se estamos no contexto de administração, usa rotas específicas
+  let nomeDaRota;
+  if (contextoEtapa.value === 'administracao' && config.rotasAdministracao) {
+    nomeDaRota = config.rotasAdministracao[acao.toLowerCase()];
+  } else {
+    nomeDaRota = `${config.rotaPrefix}.${acao.toLowerCase()}`;
+  }
 
   if (id) {
     return { name: nomeDaRota, params: { etapaId: id } };
@@ -118,7 +143,7 @@ onMounted(() => {
 
     <LocalFilter
       v-model="listaFiltrada"
-      :lista="lista"
+      :lista="listaFiltradaPorContexto"
     />
   </div>
 

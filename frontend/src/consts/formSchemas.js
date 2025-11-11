@@ -3731,12 +3731,7 @@ export const etapasProjeto = object({
     .label('Etapa Padrão Associada')
     .nullable()
     .positive()
-    .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
-    .when('eh_padrao', {
-      is: false,
-      then: (schema) => schema.required('Etapa Padrão Associada é obrigatória quando não é etapa padrão'),
-      otherwise: (schema) => schema.nullable(),
-    }),
+    .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
 });
 
 export const fasesProjeto = object({
