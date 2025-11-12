@@ -284,7 +284,7 @@ function excluirEtapaDoProjeto(id) {
           as="select"
           class="inputtext light mb1"
           :class="{ error: errors.etapa_padrao_id }"
-          :aria-busy="chamadasPendentes.etapasPadrao"
+          :aria-busy="chamadasPendentes.listaPadrao"
         >
           <option value="">
             Selecionar
