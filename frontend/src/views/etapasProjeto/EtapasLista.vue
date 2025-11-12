@@ -32,22 +32,7 @@ function obterConfiguracao() {
 
 const contextoEtapa = computed(() => route.meta.contextoEtapa || obterConfiguracao().contextoEtapa);
 
-// Filtra lista com base no contexto
-const listaFiltradaPorContexto = computed(() => {
-  if (!contextoEtapa.value) {
-    return lista.value;
-  }
-
-  if (contextoEtapa.value === 'administracao') {
-    return lista.value.filter((x) => x.eh_padrao === true);
-  }
-
-  if (contextoEtapa.value === 'configuracoes') {
-    return lista.value.filter((x) => x.eh_padrao === false);
-  }
-
-  return lista.value;
-});
+// Backend já filtra por eh_padrao, não é mais necessário filtrar no frontend
 
 const colunas = computed(() => {
   const colunasBase = [
@@ -95,7 +80,17 @@ function podeRealizar(acao) {
 
 function buscarDados() {
   etapasProjetosStore.$reset();
-  etapasProjetosStore.buscarTudo();
+
+  // Determinar eh_padrao baseado no contexto
+  const params = {};
+  if (contextoEtapa.value === 'administracao') {
+    params.eh_padrao = true;
+  } else if (contextoEtapa.value === 'configuracoes') {
+    params.eh_padrao = false;
+  }
+  // Se contexto é null (Transferências), não adiciona eh_padrao
+
+  etapasProjetosStore.buscarTudo(params);
 }
 
 async function excluirItem({ id }) {
@@ -143,7 +138,7 @@ onMounted(() => {
 
     <LocalFilter
       v-model="listaFiltrada"
-      :lista="listaFiltradaPorContexto"
+      :lista="lista"
     />
   </div>
 
