@@ -1,7 +1,8 @@
-import { BadRequestException, Controller, Get, Res } from '@nestjs/common';
+import { BadRequestException, Controller, Get, Post, Res } from '@nestjs/common';
 import { ApiBearerAuth, ApiExcludeEndpoint } from '@nestjs/swagger';
 import { spawn } from 'child_process';
 import { Response } from 'express';
+import * as fs from 'fs';
 import * as path from 'path';
 import * as percentile from 'percentile';
 import { IsPublic } from './auth/decorators/is-public.decorator';
@@ -182,6 +183,38 @@ export class AppController {
 
         const resolvedLogFile = path.resolve(logFile);
         await this.handleLogStream(res, 'cat', [resolvedLogFile]);
+    }
+
+    @Post('/system/trigger-restart')
+    @ApiBearerAuth('access-token')
+    @Roles(['SMAE.sysadmin'])
+    @ApiExcludeEndpoint()
+    async triggerRestart() {
+        const restartTriggerFile = '/tmp/restart-api';
+
+        try {
+            fs.writeFileSync(restartTriggerFile, new Date().toISOString());
+            return {
+                success: true,
+                message: 'Restart trigger file created. API will restart shortly.',
+                timestamp: new Date().toISOString(),
+            };
+        } catch (error) {
+            throw new BadRequestException(`Failed to create restart trigger: ${error.message}`);
+        }
+    }
+
+    @Get('/system/env-vars')
+    @ApiBearerAuth('access-token')
+    @Roles(['SMAE.sysadmin'])
+    @ApiExcludeEndpoint()
+    async getEnvVars() {
+        const envVars = { ...process.env };
+
+        return {
+            env_vars: envVars,
+            count: Object.keys(envVars).length,
+        };
     }
 
     private async handleLogStream(res: Response, command: string, args: string[]) {
