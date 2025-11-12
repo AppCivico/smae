@@ -101,19 +101,5 @@ export const useEtapasProjetosStore = (prefixo) => defineStore(prefixo ? `${pref
     etapasPadrao() {
       return this.lista.filter((x) => x.eh_padrao === true);
     },
-
-    etapasPorPortfolio() {
-      return this.lista.reduce((acc, cur) => {
-        if (!cur?.portfolio?.id) {
-          return acc;
-        }
-
-        if (!acc[cur.portfolio?.id || 0]) {
-          acc[cur.portfolio?.id || 0] = [];
-        }
-        acc[cur.portfolio.id].push(cur);
-        return acc;
-      }, {});
-    },
   },
 })();
