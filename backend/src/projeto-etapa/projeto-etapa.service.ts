@@ -5,10 +5,15 @@ import { CreateProjetoEtapaDto } from './dto/create-projeto-etapa.dto';
 import { UpdateProjetoEtapaDto } from './dto/update-projeto-etapa.dto';
 import { TipoProjeto } from '@prisma/client';
 import { FilterProjetoEtapaDto } from './dto/filter-projeto-etapa.dto';
+import { PortfolioService } from 'src/pp/portfolio/portfolio.service';
+import { ProjetoEtapaDto } from './entities/tag.entity';
 
 @Injectable()
 export class ProjetoEtapaService {
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly portfolioService: PortfolioService
+    ) {}
 
     async create(tipo: TipoProjeto, dto: CreateProjetoEtapaDto, user: PessoaFromJwt) {
         // Verificar se é padrão.
@@ -45,12 +50,28 @@ export class ProjetoEtapaService {
         return created;
     }
 
-    async findAll(tipo: TipoProjeto, filters: FilterProjetoEtapaDto) {
+    async findAll(tipo: TipoProjeto, filters: FilterProjetoEtapaDto, user: PessoaFromJwt): Promise<ProjetoEtapaDto[]> {
+        // Chamando findAll para verificar acesso.
+        let portfoliosId = [];
+
+        if (filters?.portfolio_id) {
+            const portfolio = await this.portfolioService.findOne('PP', filters.portfolio_id, user);
+            if (!portfolio) throw new HttpException('Portfólio não encontrado ou sem permissão para acesso', 400);
+            portfoliosId = [filters.portfolio_id];
+        } else {
+            const portfolios = await this.portfolioService.findAll('PP', user, true);
+            portfoliosId = portfolios.map((p) => p.id);
+            if (portfoliosId.length === 0) {
+                return [];
+            }
+        }
+
         const listActive = await this.prisma.projetoEtapa.findMany({
             where: {
                 removido_em: null,
                 tipo_projeto: tipo,
-                portfolio_id: filters.portfolio_id,
+                portfolio_id: { in: portfoliosId },
+                eh_padrao: filters.eh_padrao,
             },
             select: {
                 id: true,

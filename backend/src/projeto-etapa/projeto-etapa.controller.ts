@@ -30,8 +30,11 @@ export class ProjetoEtapaController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    async findAll(@Query() filters: FilterProjetoEtapaDto): Promise<ListProjetoEtapaDto> {
-        return { linhas: await this.projetoEtapaService.findAll(this.tipo, filters) };
+    async findAll(
+        @Query() filters: FilterProjetoEtapaDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<ListProjetoEtapaDto> {
+        return { linhas: await this.projetoEtapaService.findAll(this.tipo, filters, user) };
     }
 
     @Patch(':id')
@@ -74,8 +77,11 @@ export class ProjetoEtapaMDOController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    async findAll(@Query() filters: FilterProjetoEtapaDto): Promise<ListProjetoEtapaDto> {
-        return { linhas: await this.projetoEtapaService.findAll(this.tipo, filters) };
+    async findAll(
+        @Query() filters: FilterProjetoEtapaDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<ListProjetoEtapaDto> {
+        return { linhas: await this.projetoEtapaService.findAll(this.tipo, filters, user) };
     }
 
     @Patch(':id')

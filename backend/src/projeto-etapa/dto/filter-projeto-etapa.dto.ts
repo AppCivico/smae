@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsNumber, IsOptional } from 'class-validator';
+import { IsBoolean, IsNumber, IsOptional } from 'class-validator';
 import { NumberTransformOrUndef } from 'src/auth/transforms/number.transform';
 
 export class FilterProjetoEtapaDto {
@@ -7,4 +7,9 @@ export class FilterProjetoEtapaDto {
     @IsNumber()
     @Transform(NumberTransformOrUndef)
     portfolio_id?: number;
+
+    @IsOptional()
+    @IsBoolean()
+    @Transform(({ value }: any) => value === 'true')
+    eh_padrao?: boolean;
 }
