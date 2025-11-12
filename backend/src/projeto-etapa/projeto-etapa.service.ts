@@ -55,11 +55,11 @@ export class ProjetoEtapaService {
         let portfoliosId = [];
 
         if (filters?.portfolio_id) {
-            const portfolio = await this.portfolioService.findOne('PP', filters.portfolio_id, user);
+            const portfolio = await this.portfolioService.findOne(tipo, filters.portfolio_id, user);
             if (!portfolio) throw new HttpException('Portfólio não encontrado ou sem permissão para acesso', 400);
             portfoliosId = [filters.portfolio_id];
         } else {
-            const portfolios = await this.portfolioService.findAll('PP', user, true);
+            const portfolios = await this.portfolioService.findAll(tipo, user, true);
             portfoliosId = portfolios.map((p) => p.id);
         }
 
