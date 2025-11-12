@@ -186,6 +186,11 @@ export class GeoBuscaService {
             return geoInfo;
         };
 
+        const getMinDistancia = (geoInfos: GeoInfoBaseDto[]): number | undefined => {
+            const distances = geoInfos.map((gi) => gi.distancia_metros).filter((d): d is number => d !== undefined);
+            return distances.length > 0 ? Math.min(...distances) : undefined;
+        };
+
         const entityGeoInfoMap = new Map<string, GeoInfoBaseDto[]>();
         const addGeoInfoToMap = (entityType: string, entityId: number, geoInfo: GeoInfoBaseDto) => {
             const key = `${entityType}-${entityId}`;
@@ -278,6 +283,7 @@ export class GeoBuscaService {
                     orgao_responsavel_descricao: p.orgao_responsavel_descricao,
                     localizacoes: geoInfos,
                     nro_vinculos: p.projeto.vinculosDistribuicaoRecursos.length,
+                    distancia_metros: getMinDistancia(geoInfos),
                 };
                 if (p.projeto.tipo === TipoProjeto.MDO) {
                     response.obras.push(projetoDto);
@@ -297,10 +303,13 @@ export class GeoBuscaService {
                 },
             });
             metasData.forEach((m) => {
+                const geoInfos = entityGeoInfoMap.get(`meta-${m.id}`) || [];
+
                 seenMetaIdsForLookup.add(m.id); // Ensure meta_id is added for metas_info lookup
                 response.metas.push({
                     id: m.id,
-                    localizacoes: entityGeoInfoMap.get(`meta-${m.id}`) || [],
+                    localizacoes: geoInfos,
+                    distancia_metros: getMinDistancia(geoInfos),
                 });
             });
         }
@@ -320,6 +329,8 @@ export class GeoBuscaService {
                 },
             });
             iniciativasData.forEach((i) => {
+                const geoInfos = entityGeoInfoMap.get(`iniciativa-${i.id}`) || [];
+
                 seenMetaIdsForLookup.add(i.meta.id);
                 seenIniIdsForLookup.add(i.id);
                 response.iniciativas.push({
@@ -331,8 +342,9 @@ export class GeoBuscaService {
                     meta_id: i.meta.id,
                     pdm_id: i.meta.pdm_id,
                     orgaos_sigla: i.iniciativa_orgao.map((io) => io.orgao.sigla),
-                    localizacoes: entityGeoInfoMap.get(`iniciativa-${i.id}`) || [],
+                    localizacoes: geoInfos,
                     nro_vinculos: i.distribuicaoRecursoVinculos.length,
+                    distancia_metros: getMinDistancia(geoInfos),
                 });
             });
         }
@@ -358,6 +370,8 @@ export class GeoBuscaService {
                 },
             });
             atividadesData.forEach((a) => {
+                const geoInfos = entityGeoInfoMap.get(`atividade-${a.id}`) || [];
+
                 seenMetaIdsForLookup.add(a.iniciativa.meta.id);
                 seenAtvIdsForLookup.add(a.id);
                 response.atividades.push({
@@ -371,7 +385,8 @@ export class GeoBuscaService {
                     meta_id: a.iniciativa.meta.id,
                     pdm_id: a.iniciativa.meta.pdm_id,
                     orgaos_sigla: a.atividade_orgao.map((ao) => ao.orgao.sigla),
-                    localizacoes: entityGeoInfoMap.get(`atividade-${a.id}`) || [],
+                    localizacoes: geoInfos,
+                    distancia_metros: getMinDistancia(geoInfos),
                 });
             });
         }
@@ -412,6 +427,7 @@ export class GeoBuscaService {
                 const metaId = etapaToMetaIdMap.get(e.id);
                 const iniciativaId = etapaToIniIdMap.get(e.id);
                 const atividadeId = etapaToAtvIdMap.get(e.id);
+                const geoInfos = entityGeoInfoMap.get(`etapa-${e.id}`) || [];
 
                 response.etapas.push({
                     id: e.id,
@@ -421,7 +437,8 @@ export class GeoBuscaService {
                     meta_id: metaId ?? 0,
                     iniciativa_id: iniciativaId ?? undefined,
                     atividade_id: atividadeId ?? undefined,
-                    localizacoes: entityGeoInfoMap.get(`etapa-${e.id}`) || [],
+                    localizacoes: geoInfos,
+                    distancia_metros: getMinDistancia(geoInfos),
                 });
             });
         }

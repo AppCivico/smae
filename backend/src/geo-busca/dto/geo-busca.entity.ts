@@ -90,6 +90,9 @@ export class ProjetoSearchResultDto {
     localizacoes: GeoInfoBaseDto[];
 
     nro_vinculos?: number;
+
+    @ApiPropertyOptional({ description: 'Distância em metros até o ponto de busca (menor distância dentre as localizações)' })
+    distancia_metros?: number;
 }
 
 export class MetaSearchResultDto {
@@ -98,6 +101,9 @@ export class MetaSearchResultDto {
 
     @ApiProperty({ type: () => [GeoInfoBaseDto] })
     localizacoes: GeoInfoBaseDto[];
+
+    @ApiPropertyOptional({ description: 'Distância em metros até o ponto de busca (menor distância dentre as localizações)' })
+    distancia_metros?: number;
 }
 
 export class IniciativaSearchResultDto {
@@ -126,6 +132,9 @@ export class IniciativaSearchResultDto {
     localizacoes: GeoInfoBaseDto[];
 
     nro_vinculos?: number;
+
+    @ApiPropertyOptional({ description: 'Distância em metros até o ponto de busca (menor distância dentre as localizações)' })
+    distancia_metros?: number;
 }
 
 export class AtividadeSearchResultDto {
@@ -160,6 +169,9 @@ export class AtividadeSearchResultDto {
     localizacoes: GeoInfoBaseDto[];
 
     nro_vinculos?: number;
+
+    @ApiPropertyOptional({ description: 'Distância em metros até o ponto de busca (menor distância dentre as localizações)' })
+    distancia_metros?: number;
 }
 
 export class EtapaSearchResultDto {
@@ -186,6 +198,9 @@ export class EtapaSearchResultDto {
 
     @ApiProperty({ type: () => [GeoInfoBaseDto] })
     localizacoes: GeoInfoBaseDto[];
+
+    @ApiPropertyOptional({ description: 'Distância em metros até o ponto de busca (menor distância dentre as localizações)' })
+    distancia_metros?: number;
 }
 
 export class PdmRotuloInfo {
