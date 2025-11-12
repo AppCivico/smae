@@ -64,12 +64,12 @@ start_node_app() {
     log "Starting Node.js application..."
     # Start the app in the background and store its PID
     if [ "$USE_FILE_LOG" = "1" ]; then
-        # When logging to file, redirect both stdout and stderr
-        node --enable-source-maps dist/src/main >> "$LOG_FILE" 2>&1 &
+        # Tee both to file and stdout
+        node --enable-source-maps dist/src/main 2>&1 | tee -a "$LOG_FILE" &
     else
-        # Otherwise, let it print to the script's stdout/stderr
         node --enable-source-maps dist/src/main &
     fi
+
     NODE_PID=$!
     log "Node.js application started with PID: $NODE_PID"
 }
