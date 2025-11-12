@@ -15,7 +15,7 @@ const route = useRoute();
 const authStore = useAuthStore();
 const { temPermissãoPara } = authStore;
 const etapasProjetosStore = useEtapasProjetosStore(route.meta.entidadeMãe);
-const { lista, etapasPadrao, chamadasPendentes } = storeToRefs(etapasProjetosStore);
+const { lista, listaPadrao, chamadasPendentes } = storeToRefs(etapasProjetosStore);
 
 const alertStore = useAlertStore();
 const listaFiltrada = ref([]);
@@ -35,7 +35,7 @@ const contextoEtapa = computed(() => route.meta.contextoEtapa || obterConfigurac
 // Retorna a lista apropriada baseada no contexto
 const listaContextual = computed(() => {
   if (contextoEtapa.value === 'administracao') {
-    return etapasPadrao.value;
+    return listaPadrao.value;
   }
   return lista.value;
 });

@@ -56,7 +56,7 @@ const {
 } = inicializarPortfolioStore();
 
 const {
-  chamadasPendentes, erro, etapasPorId, etapasPadrao,
+  chamadasPendentes, erro, etapasPorId, listaPadrao,
 } = storeToRefs(etapasProjetosStore);
 
 const ehTransferencia = computed(() => route.meta.entidadeMãe === 'TransferenciasVoluntarias');
@@ -119,9 +119,9 @@ const formularioSujo = useIsFormDirty();
 
 const etapasPadraoDisponiveis = computed(() => {
   if (props.etapaId) {
-    return etapasPadrao.value.filter((etapa) => etapa.id !== props.etapaId);
+    return listaPadrao.value.filter((etapa) => etapa.id !== props.etapaId);
   }
-  return etapasPadrao.value;
+  return listaPadrao.value;
 });
 
 onMounted(() => {
