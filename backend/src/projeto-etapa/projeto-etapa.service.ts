@@ -11,11 +11,14 @@ export class ProjetoEtapaService {
     constructor(private readonly prisma: PrismaService) {}
 
     async create(tipo: TipoProjeto, dto: CreateProjetoEtapaDto, user: PessoaFromJwt) {
+        // Verificar se é padrão.
+        const eh_padrao = dto.eh_padrao ?? false;
         const similarExists = await this.prisma.projetoEtapa.count({
             where: {
                 tipo_projeto: tipo,
                 descricao: { equals: dto.descricao, mode: 'insensitive' },
                 removido_em: null,
+                eh_padrao: eh_padrao,
             },
         });
 
@@ -85,6 +88,7 @@ export class ProjetoEtapaService {
                     descricao: { equals: dto.descricao, mode: 'insensitive' },
                     removido_em: null,
                     NOT: { id: id },
+                    eh_padrao: dto.eh_padrao ?? self.eh_padrao,
                 },
             });
 
