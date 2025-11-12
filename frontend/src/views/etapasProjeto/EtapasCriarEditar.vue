@@ -128,6 +128,11 @@ onMounted(() => {
   if (portfoliosStore) {
     portfoliosStore.buscarTudo();
   }
+
+  // Etapas padrão pra preencher o select
+  if (contextoEtapa.value === 'configuracoes') {
+    etapasProjetosStore.buscarEtapasPadrao();
+  }
 });
 
 const onSubmit = handleSubmit(async (carga) => {
@@ -279,7 +284,7 @@ function excluirEtapaDoProjeto(id) {
           as="select"
           class="inputtext light mb1"
           :class="{ error: errors.etapa_padrao_id }"
-          :disabled="chamadasPendentes.lista"
+          :aria-busy="chamadasPendentes.etapasPadrao"
         >
           <option value="">
             Selecionar
