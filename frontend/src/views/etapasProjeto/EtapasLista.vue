@@ -15,7 +15,7 @@ const route = useRoute();
 const authStore = useAuthStore();
 const { temPermissãoPara } = authStore;
 const etapasProjetosStore = useEtapasProjetosStore(route.meta.entidadeMãe);
-const { lista, chamadasPendentes } = storeToRefs(etapasProjetosStore);
+const { lista, listaPadrao, chamadasPendentes } = storeToRefs(etapasProjetosStore);
 
 const alertStore = useAlertStore();
 const listaFiltrada = ref([]);
@@ -32,7 +32,13 @@ function obterConfiguracao() {
 
 const contextoEtapa = computed(() => route.meta.contextoEtapa || obterConfiguracao().contextoEtapa);
 
-// Backend já filtra por eh_padrao, não é mais necessário filtrar no frontend
+// Retorna a lista apropriada baseada no contexto
+const listaContextual = computed(() => {
+  if (contextoEtapa.value === 'administracao') {
+    return listaPadrao.value;
+  }
+  return lista.value;
+});
 
 const colunas = computed(() => {
   const colunasBase = [
@@ -81,16 +87,14 @@ function podeRealizar(acao) {
 function buscarDados() {
   etapasProjetosStore.$reset();
 
-  // Determinar eh_padrao baseado no contexto
-  const params = {};
   if (contextoEtapa.value === 'administracao') {
-    params.eh_padrao = true;
+    etapasProjetosStore.buscarEtapasPadrao();
   } else if (contextoEtapa.value === 'configuracoes') {
-    params.eh_padrao = false;
+    etapasProjetosStore.buscarTudo({ eh_padrao: false });
+  } else {
+    // Transferências Voluntárias não tem filtro
+    etapasProjetosStore.buscarTudo();
   }
-  // Se contexto é null (Transferências), não adiciona eh_padrao
-
-  etapasProjetosStore.buscarTudo(params);
 }
 
 async function excluirItem({ id }) {
@@ -138,7 +142,7 @@ onMounted(() => {
 
     <LocalFilter
       v-model="listaFiltrada"
-      :lista="lista"
+      :lista="listaContextual"
     />
   </div>
 
