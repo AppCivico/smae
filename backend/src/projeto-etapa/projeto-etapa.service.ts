@@ -61,9 +61,6 @@ export class ProjetoEtapaService {
         } else {
             const portfolios = await this.portfolioService.findAll('PP', user, true);
             portfoliosId = portfolios.map((p) => p.id);
-            if (portfoliosId.length === 0) {
-                return [];
-            }
         }
 
         const listActive = await this.prisma.projetoEtapa.findMany({
