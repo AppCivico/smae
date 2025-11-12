@@ -56,7 +56,7 @@ const {
 } = inicializarPortfolioStore();
 
 const {
-  chamadasPendentes, erro, etapasPorId, listaPadrao,
+  chamadasPendentes, erro, etapasPorId, etapasPadrao,
 } = storeToRefs(etapasProjetosStore);
 
 const ehTransferencia = computed(() => route.meta.entidadeMãe === 'TransferenciasVoluntarias');
@@ -119,9 +119,9 @@ const formularioSujo = useIsFormDirty();
 
 const etapasPadraoDisponiveis = computed(() => {
   if (props.etapaId) {
-    return listaPadrao.value.filter((etapa) => etapa.id !== props.etapaId);
+    return etapasPadrao.value.filter((etapa) => etapa.id !== props.etapaId);
   }
-  return listaPadrao.value;
+  return etapasPadrao.value;
 });
 
 onMounted(() => {
@@ -284,7 +284,7 @@ function excluirEtapaDoProjeto(id) {
           as="select"
           class="inputtext light mb1"
           :class="{ error: errors.etapa_padrao_id }"
-          :aria-busy="chamadasPendentes.listaPadrao"
+          :aria-busy="chamadasPendentes.etapasPadrao"
         >
           <option value="">
             Selecionar

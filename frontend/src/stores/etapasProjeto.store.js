@@ -22,11 +22,11 @@ function caminhoParaApi(rotaMeta) {
 export const useEtapasProjetosStore = (prefixo) => defineStore(prefixo ? `${prefixo}.etapasProjetos` : 'etapasProjetos', {
   state: () => ({
     lista: [],
-    listaPadrao: [],
+    etapasPadrao: [],
     transferencias: [],
     chamadasPendentes: {
       lista: false,
-      listaPadrao: false,
+      etapasPadrao: false,
       transferencias: false,
       emFoco: false,
     },
@@ -50,7 +50,7 @@ export const useEtapasProjetosStore = (prefixo) => defineStore(prefixo ? `${pref
     },
 
     async buscarEtapasPadrao() {
-      this.chamadasPendentes.listaPadrao = true;
+      this.chamadasPendentes.etapasPadrao = true;
       this.erro = null;
 
       try {
@@ -58,11 +58,11 @@ export const useEtapasProjetosStore = (prefixo) => defineStore(prefixo ? `${pref
           `${baseUrl}/${caminhoParaApi(this.route.meta)}`,
           { eh_padrao: true },
         );
-        this.listaPadrao = linhas;
+        this.etapasPadrao = linhas;
       } catch (erro) {
         this.erro = erro;
       }
-      this.chamadasPendentes.listaPadrao = false;
+      this.chamadasPendentes.etapasPadrao = false;
     },
 
     async excluirItem(id) {
