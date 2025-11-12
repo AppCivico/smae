@@ -47,4 +47,4 @@ ENV PORT=3001
 
 HEALTHCHECK CMD node -e "const http=require('http');const req=http.get('http://localhost:'+(process.env.PORT||3001)+'/api/ping',res=>{res.resume();res.on('end',()=>process.exit(0));});req.on('error',()=>process.exit(1));req.setTimeout(2000,()=>{req.destroy();process.exit(1);});"
 
-CMD ["sh", "./run-api.sh"]
+CMD ["./run-api.sh"]
