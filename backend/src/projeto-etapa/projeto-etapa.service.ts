@@ -70,10 +70,10 @@ export class ProjetoEtapaService {
             where: {
                 removido_em: null,
                 tipo_projeto: tipo,
-                // Caso filtre por "eh_padrao", não olhamos o portfolio
+                // Caso filtre por "eh_padrao", não olhamos o portfolio (isso para PP, para obras ainda olha)
                 ...(filters.eh_padrao === undefined || filters.eh_padrao === false
                     ? { portfolio_id: { in: portfoliosId } }
-                    : {}),
+                    : { portfolio_id: undefined }),
                 eh_padrao: filters.eh_padrao,
             },
             select: {
