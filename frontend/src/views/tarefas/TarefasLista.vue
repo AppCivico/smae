@@ -1,7 +1,7 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import {
-  computed, defineOptions, ref, watch,
+  computed, defineOptions, onUnmounted, ref, watch,
 } from 'vue';
 import { useRoute } from 'vue-router';
 
@@ -63,7 +63,7 @@ const podeMudarDeEtapaProjeto = computed(() => {
 
 const nívelMáximoVisível = ref(0);
 
-const { etapasPorPortfolio, erro: erroNaListaDeEtapas } = storeToRefs(etapasProjetosStore);
+const { lista: etapas, erro: erroNaListaDeEtapas } = storeToRefs(etapasProjetosStore);
 
 async function iniciar() {
   emailsStore.buscarItem({ transferencia_id: route.params.transferenciaId });
@@ -110,11 +110,21 @@ async function mudarEtapa(idEtapa) {
 }
 iniciar();
 
-watch(podeMudarDeEtapaProjeto, (novoValor) => {
-  if (novoValor) {
-    etapasProjetosStore.buscarTudo();
-  }
-}, { immediate: true });
+watch(
+  [podeMudarDeEtapaProjeto, () => projetoEmFoco.value.portfolio_id],
+  ([novoValor, novoPortfolio]) => {
+    if (novoValor && novoPortfolio) {
+      etapasProjetosStore.buscarTudo({
+        portfolio_id: novoPortfolio,
+      });
+    }
+  },
+  { immediate: true },
+);
+
+onUnmounted(() => {
+  etapasProjetosStore.$reset();
+});
 </script>
 <template>
   <CabecalhoDePagina class="mb2">
@@ -125,13 +135,13 @@ watch(podeMudarDeEtapaProjeto, (novoValor) => {
     <template #acoes>
       <nav class="flex g1">
         <div
-          v-if="podeMudarDeEtapaProjeto && etapasPorPortfolio[projetoEmFoco?.portfolio_id]?.length"
+          v-if="podeMudarDeEtapaProjeto && etapas?.length"
           class="dropbtn"
         >
           <span class="btn">Mudar etapa</span>
           <ul>
             <li
-              v-for="etapa, index in etapasPorPortfolio[projetoEmFoco?.portfolio_id]"
+              v-for="etapa, index in etapas"
               :key="index"
             >
               <button
