@@ -18,6 +18,23 @@ export class ProjetoEtapaService {
     async create(tipo: TipoProjeto, dto: CreateProjetoEtapaDto, user: PessoaFromJwt) {
         // Verificar se é padrão.
         const eh_padrao = dto.eh_padrao ?? false;
+
+        // Verificar se o usuário tem permissão para criar o tipo de etapa solicitado
+        const requiredPrivilege = eh_padrao
+            ? tipo === 'PP'
+                ? 'CadastroProjetoEtapaPadrao.inserir'
+                : 'CadastroProjetoEtapaPadraoMDO.inserir'
+            : tipo === 'PP'
+              ? 'CadastroProjetoEtapa.inserir'
+              : 'CadastroProjetoEtapaMDO.inserir';
+
+        if (!user.hasSomeRoles([requiredPrivilege])) {
+            throw new HttpException(
+                `Sem permissão para ${eh_padrao ? 'criar etapa padrão' : 'criar etapa de portfólio'}. Privilégio necessário: ${requiredPrivilege}`,
+                403
+            );
+        }
+
         const similarExists = await this.prisma.projetoEtapa.count({
             where: {
                 tipo_projeto: tipo,
@@ -28,11 +45,11 @@ export class ProjetoEtapaService {
         });
 
         if (similarExists > 0)
-            throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
+            throw new HttpException('Descrição igual ou semelhante já existe em outro registro ativo', 400);
 
         // Caso informe que é padrão, não pode mandar "etapa_padrao_id"
         if (dto.eh_padrao && dto.etapa_padrao_id)
-            throw new HttpException('etapa_padrao_id| Não pode informar etapa padrão se o registro for padrão', 400);
+            throw new HttpException('Não pode informar etapa padrão se o registro for padrão', 400);
 
         // Validar etapa_padrao_id se fornecido
         if (dto.etapa_padrao_id) {
@@ -47,7 +64,7 @@ export class ProjetoEtapaService {
 
             if (!etapaPadrao) {
                 throw new HttpException(
-                    'etapa_padrao_id| A etapa padrão informada não existe, não é do mesmo tipo ou não está marcada como padrão',
+                    'A etapa padrão informada não existe, não é do mesmo tipo ou não está marcada como padrão',
                     400
                 );
             }
@@ -197,42 +214,27 @@ export class ProjetoEtapaService {
             include: { EtapaPadrao: true },
         });
 
-        if (dto.descricao !== undefined) {
-            const similarExists = await this.prisma.projetoEtapa.count({
-                where: {
-                    tipo_projeto: tipo,
-                    descricao: { equals: dto.descricao, mode: 'insensitive' },
-                    removido_em: null,
-                    NOT: { id: id },
-                    eh_padrao: dto.eh_padrao ?? self.eh_padrao,
-                },
-            });
-
-            if (similarExists > 0)
-                throw new HttpException(
-                    'descricao| Descrição igual ou semelhante já existe em outro registro ativo',
-                    400
-                );
-        }
+        // BUSINESS RULE VALIDATIONS (before permission checks)
 
         // Caso tenha etapas que utilizam a row como padrão, não pode deixar de ser padrão.
-        if (self.EtapaPadrao.length > 0 && dto.eh_padrao === false) {
+        if (self.eh_padrao && dto.eh_padrao === false && self.EtapaPadrao.length > 0) {
             throw new HttpException(
-                'eh_padrao| Não pode deixar de ser padrão, existem etapas que utilizam esta etapa como padrão',
-                400
-            );
-        }
-
-        if (!self.eh_padrao && dto.eh_padrao && dto.etapa_padrao_id) {
-            throw new HttpException(
-                'etapa_padrao_id| Não pode transformar em etapa padrão, pois já existe uma etapa padrão associada.',
+                `Não pode deixar de ser padrão, existem ${self.EtapaPadrao.length} etapa(s) que utilizam esta etapa como padrão`,
                 400
             );
         }
 
         // Vendo se não está tentando colocar "self" como padrão
         if (dto.etapa_padrao_id === id) {
-            throw new HttpException('etapa_padrao_id| Não pode informar a própria etapa como padrão', 400);
+            throw new HttpException('Não pode informar a própria etapa como padrão', 400);
+        }
+
+        // Se está se tornando padrão, não pode ter etapa_padrao_id
+        if (!self.eh_padrao && dto.eh_padrao && dto.etapa_padrao_id) {
+            throw new HttpException(
+                'Não pode transformar em etapa padrão, pois já existe uma etapa padrão associada.',
+                400
+            );
         }
 
         // Validar etapa_padrao_id se fornecido
@@ -248,14 +250,76 @@ export class ProjetoEtapaService {
 
             if (!etapaPadrao) {
                 throw new HttpException(
-                    'etapa_padrao_id| A etapa padrão informada não existe, não é do mesmo tipo ou não está marcada como padrão',
+                    'A etapa padrão informada não existe, não é do mesmo tipo ou não está marcada como padrão',
                     400
                 );
             }
         }
 
-        // Processar ordem_painel
+        // PERMISSION VALIDATIONS
+
+        // Determinar o tipo final de etapa (padrão ou portfólio)
         const ehPadraoFinal = dto.eh_padrao ?? self.eh_padrao;
+
+        // Verificar se o usuário tem permissão para editar o tipo de etapa
+        const requiredPrivilege = ehPadraoFinal
+            ? tipo === 'PP'
+                ? 'CadastroProjetoEtapaPadrao.editar'
+                : 'CadastroProjetoEtapaPadraoMDO.editar'
+            : tipo === 'PP'
+              ? 'CadastroProjetoEtapa.editar'
+              : 'CadastroProjetoEtapaMDO.editar';
+
+        if (!user.hasSomeRoles([requiredPrivilege])) {
+            throw new HttpException(
+                `Sem permissão para ${ehPadraoFinal ? 'editar etapa padrão' : 'editar etapa de portfólio'}. Privilégio necessário: ${requiredPrivilege}`,
+                403
+            );
+        }
+
+        // Se estiver mudando de tipo (padrao para portfolio ou vice-versa), verificar ambas as permissões
+        if (dto.eh_padrao !== undefined && dto.eh_padrao !== self.eh_padrao) {
+            const otherRequiredPrivilege = dto.eh_padrao
+                ? tipo === 'PP'
+                    ? 'CadastroProjetoEtapaPadrao.editar'
+                    : 'CadastroProjetoEtapaPadraoMDO.editar'
+                : tipo === 'PP'
+                  ? 'CadastroProjetoEtapa.editar'
+                  : 'CadastroProjetoEtapaMDO.editar';
+
+            const originalRequiredPrivilege = self.eh_padrao
+                ? tipo === 'PP'
+                    ? 'CadastroProjetoEtapaPadrao.editar'
+                    : 'CadastroProjetoEtapaPadraoMDO.editar'
+                : tipo === 'PP'
+                  ? 'CadastroProjetoEtapa.editar'
+                  : 'CadastroProjetoEtapaMDO.editar';
+
+            if (!user.hasSomeRoles([otherRequiredPrivilege]) || !user.hasSomeRoles([originalRequiredPrivilege])) {
+                throw new HttpException(
+                    `Sem permissão para converter entre etapa padrão e etapa de portfólio. São necessários os privilégios: ${originalRequiredPrivilege} e ${otherRequiredPrivilege}`,
+                    403
+                );
+            }
+        }
+
+        if (dto.descricao !== undefined) {
+            const similarExists = await this.prisma.projetoEtapa.count({
+                where: {
+                    tipo_projeto: tipo,
+                    descricao: { equals: dto.descricao, mode: 'insensitive' },
+                    removido_em: null,
+                    NOT: { id: id },
+                    eh_padrao: dto.eh_padrao ?? self.eh_padrao,
+                },
+            });
+
+            if (similarExists > 0)
+                throw new HttpException('Descrição igual ou semelhante já existe em outro registro ativo', 400);
+        }
+
+        // Processar ordem_painel
+        // ehPadraoFinal já foi determinado anteriormente para validação de permissões
         let ordem_painel = self.ordem_painel;
 
         if (ehPadraoFinal) {
@@ -345,6 +409,31 @@ export class ProjetoEtapaService {
     }
 
     async remove(tipo: TipoProjeto, id: number, user: PessoaFromJwt) {
+        const self = await this.prisma.projetoEtapa.findFirst({
+            where: { id: id, tipo_projeto: tipo, removido_em: null },
+            select: { eh_padrao: true, ordem_painel: true },
+        });
+
+        if (!self) {
+            throw new HttpException('Etapa não encontrada', 404);
+        }
+
+        // Verificar se o usuário tem permissão para remover o tipo de etapa
+        const requiredPrivilege = self.eh_padrao
+            ? tipo === 'PP'
+                ? 'CadastroProjetoEtapaPadrao.remover'
+                : 'CadastroProjetoEtapaPadraoMDO.remover'
+            : tipo === 'PP'
+              ? 'CadastroProjetoEtapa.remover'
+              : 'CadastroProjetoEtapaMDO.remover';
+
+        if (!user.hasSomeRoles([requiredPrivilege])) {
+            throw new HttpException(
+                `Sem permissão para ${self.eh_padrao ? 'remover etapa padrão' : 'remover etapa de portfólio'}. Privilégio necessário: ${requiredPrivilege}`,
+                403
+            );
+        }
+
         const emUso = await this.prisma.projeto.count({
             where: { tipo, removido_em: null, projeto_etapa_id: id },
         });
@@ -363,10 +452,7 @@ export class ProjetoEtapaService {
             throw new HttpException(`Etapa em uso em ${projetoEmUso} projetos.`, 400);
         }
 
-        const self = await this.prisma.projetoEtapa.findFirst({
-            where: { id: id, tipo_projeto: tipo, removido_em: null },
-            select: { eh_padrao: true, ordem_painel: true },
-        });
+        // self já foi carregado anteriormente para validação de permissões
 
         const created = await this.prisma.$transaction(async (prismaTx) => {
             const result = await prismaTx.projetoEtapa.updateMany({

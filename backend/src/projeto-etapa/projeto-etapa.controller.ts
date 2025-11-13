@@ -20,7 +20,7 @@ export class ProjetoEtapaController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroProjetoEtapa.inserir'])
+    @Roles(['CadastroProjetoEtapa.inserir', 'CadastroProjetoEtapaPadrao.inserir'])
     async create(
         @Body() createTagDto: CreateProjetoEtapaDto,
         @CurrentUser() user: PessoaFromJwt
@@ -39,7 +39,7 @@ export class ProjetoEtapaController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroProjetoEtapa.editar'])
+    @Roles(['CadastroProjetoEtapa.editar', 'CadastroProjetoEtapaPadrao.editar'])
     async update(
         @Param() params: FindOneParams,
         @Body() updateTagDto: UpdateProjetoEtapaDto,
@@ -50,7 +50,7 @@ export class ProjetoEtapaController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroProjetoEtapa.remover'])
+    @Roles(['CadastroProjetoEtapa.remover', 'CadastroProjetoEtapaPadrao.remover'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
@@ -67,7 +67,7 @@ export class ProjetoEtapaMDOController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroProjetoEtapaMDO.inserir'])
+    @Roles(['CadastroProjetoEtapaMDO.inserir', 'CadastroProjetoEtapaPadraoMDO.inserir'])
     async create(
         @Body() createTagDto: CreateProjetoEtapaDto,
         @CurrentUser() user: PessoaFromJwt
@@ -86,7 +86,7 @@ export class ProjetoEtapaMDOController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroProjetoEtapaMDO.editar'])
+    @Roles(['CadastroProjetoEtapaMDO.editar', 'CadastroProjetoEtapaPadraoMDO.editar'])
     async update(
         @Param() params: FindOneParams,
         @Body() updateTagDto: UpdateProjetoEtapaDto,
@@ -97,7 +97,7 @@ export class ProjetoEtapaMDOController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroProjetoEtapaMDO.remover'])
+    @Roles(['CadastroProjetoEtapaMDO.remover', 'CadastroProjetoEtapaPadraoMDO.remover'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
