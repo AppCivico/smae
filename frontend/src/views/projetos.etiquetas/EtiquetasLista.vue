@@ -13,8 +13,8 @@
   <SmaeTable
     :dados="lista"
     :colunas="[
-      { chave: 'descricao', label: 'Descrição' },
       { chave: 'portfolio.titulo', label: 'Portfólio' },
+      { chave: 'descricao', label: 'Descrição' },
     ]"
     :rota-editar="({ id, pode_editar }) => pode_editar && ({
       name: 'projeto.etiquetas.editar',
