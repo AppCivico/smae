@@ -145,17 +145,17 @@ export class ProjetoEtapaService {
             portfoliosId = portfolios.map((p) => p.id);
         }
 
-        if (filters.eh_padrao && filters?.portfolio_id)
+        // Caso filtre por "eh_padrao", não olhamos o portfolio (isso para PP, para obras ainda olha)
+        const ehTelaAssociacao = filters.eh_padrao === undefined || filters.eh_padrao === false;
+
+        if (ehTelaAssociacao && filters?.portfolio_id)
             throw new HttpException('Não é possível filtrar por portfólio quando o filtro eh_padrao está ativo', 400);
 
         const listActive = await this.prisma.projetoEtapa.findMany({
             where: {
                 removido_em: null,
                 tipo_projeto: tipo,
-                // Caso filtre por "eh_padrao", não olhamos o portfolio (isso para PP, para obras ainda olha)
-                ...(filters.eh_padrao === undefined || filters.eh_padrao === false
-                    ? { portfolio_id: { in: portfoliosId } }
-                    : { portfolio_id: undefined }),
+                ...(ehTelaAssociacao ? { portfolio_id: { in: portfoliosId } } : { portfolio_id: undefined }),
                 eh_padrao: filters.eh_padrao,
             },
             select: {
@@ -176,7 +176,16 @@ export class ProjetoEtapaService {
                     },
                 },
             },
-            orderBy: [{ ordem_painel: 'asc' }, { descricao: 'asc' }],
+            orderBy: ehTelaAssociacao
+                ? [
+                      {
+                          portfolio: {
+                              titulo: 'asc',
+                          },
+                      },
+                      { descricao: 'asc' },
+                  ]
+                : [{ ordem_painel: 'asc' }, { descricao: 'asc' }],
         });
 
         return listActive;
