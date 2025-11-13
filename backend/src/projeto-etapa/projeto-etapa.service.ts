@@ -176,7 +176,7 @@ export class ProjetoEtapaService {
                     },
                 },
             },
-            orderBy: [{ ordem_painel: 'asc', descricao: 'asc' }],
+            orderBy: [{ ordem_painel: 'asc' }, { descricao: 'asc' }],
         });
 
         return listActive;
