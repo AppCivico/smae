@@ -6,7 +6,7 @@ import { UpdateProjetoEtapaDto } from './dto/update-projeto-etapa.dto';
 import { TipoProjeto } from '@prisma/client';
 import { FilterProjetoEtapaDto } from './dto/filter-projeto-etapa.dto';
 import { PortfolioService } from 'src/pp/portfolio/portfolio.service';
-import { ProjetoEtapaDto } from './entities/tag.entity';
+import { ProjetoEtapaDto } from './entities/projeto-etapa.entity';
 
 @Injectable()
 export class ProjetoEtapaService {
@@ -162,6 +162,7 @@ export class ProjetoEtapaService {
                 id: true,
                 descricao: true,
                 eh_padrao: true,
+                ordem_painel: true,
                 portfolio: {
                     select: {
                         id: true,
@@ -175,7 +176,7 @@ export class ProjetoEtapaService {
                     },
                 },
             },
-            orderBy: { descricao: 'asc' },
+            orderBy: [{ ordem_painel: 'asc', descricao: 'asc' }],
         });
 
         return listActive;

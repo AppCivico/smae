@@ -6,4 +6,5 @@ export class ProjetoEtapaDto {
     portfolio: IdTituloDto | null;
     etapa_padrao: IdDescricaoDto | null;
     eh_padrao: boolean;
+    ordem_painel: number | null;
 }
