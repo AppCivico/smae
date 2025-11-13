@@ -626,10 +626,7 @@ export class ProjetoService {
         const origem_cache = await CompromissoOrigemHelper.processaOrigens(dto.origens_extra, this.prisma);
 
         if (dto.projeto_etapa_id) {
-            await this.prisma.projetoEtapa.findFirstOrThrow({
-                where: { id: dto.projeto_etapa_id, removido_em: null, tipo_projeto: tipo },
-                select: { id: true },
-            });
+            await this.validateProjetoEtapa(this.prisma, dto.projeto_etapa_id, tipo, portfolio.id);
         }
 
         if (dto.portfolios_compartilhados?.length) {
@@ -2828,18 +2825,7 @@ export class ProjetoService {
             // A etapa deve existir e ser compatível com o tipo do projeto.
             // E além disso deve estar no mesmo portfolio do projeto.
             if (dto.projeto_etapa_id && dto.projeto_etapa_id != projeto.projeto_etapa?.id) {
-                const projetoEtapa = await prismaTx.projetoEtapa.findFirst({
-                    where: {
-                        id: dto.projeto_etapa_id,
-                        removido_em: null,
-                        tipo_projeto: tipo,
-                        portfolio_id: projeto.portfolio_id,
-                    },
-                    select: { id: true },
-                });
-                if (!projetoEtapa) {
-                    throw new HttpException('projeto_etapa_id| Etapa do projeto não encontrada ou inválida.', 400);
-                }
+                await this.validateProjetoEtapa(prismaTx, dto.projeto_etapa_id, tipo, projeto.portfolio_id);
             }
 
             const self = await prismaTx.projeto.update({
@@ -2995,6 +2981,29 @@ export class ProjetoService {
         }
 
         return { id: projetoId };
+    }
+
+    private async validateProjetoEtapa(
+        prismaTx: Prisma.TransactionClient,
+        id: number,
+        tipo: TipoProjeto,
+        portfolio_id: number
+    ) {
+        const projetoEtapa = await prismaTx.projetoEtapa.findFirst({
+            where: {
+                id: id,
+                removido_em: null,
+                tipo_projeto: tipo,
+                portfolio_id: portfolio_id,
+            },
+            select: { id: true, eh_padrao: true },
+        });
+        if (!projetoEtapa) {
+            throw new HttpException('Etapa do projeto não encontrada ou inválida.', 400);
+        }
+        if (projetoEtapa.eh_padrao) {
+            throw new HttpException('Não é possível atribuir uma etapa padrão ao projeto.', 400);
+        }
     }
 
     private validaDataProjeto(
