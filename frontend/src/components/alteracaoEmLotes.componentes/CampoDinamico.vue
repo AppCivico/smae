@@ -204,16 +204,20 @@ const maxLength = computed(() => props.config?.schema?.tests?.find((test) => tes
       @update:modelValue="updateValue"
     />
 
-    <div
+    <Field
       v-else-if="config?.tipo === 'etapa-com-portfolio'"
+      v-slot="{ handleChange }"
+      :name="fieldName"
       class="grupo-de-campos"
+      @update:model-value="updateValue"
     >
       <CampoDeEtapaPorPortfolio
         :model-value="modelValue || []"
         :readonly="readonly"
-        @update:modelValue="updateValue"
+        :aria-readonly="readonly"
+        @update:model-value="handleChange"
       />
-    </div>
+    </Field>
 
     <Field
       v-else-if="config.tipo === 'text'"
