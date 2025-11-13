@@ -4579,3 +4579,14 @@ export const projetoEtiqueta = object({
     .required('Preencha a descrição')
     .max(250, 'A descrição deve ter no máximo 250 caracteres'),
 });
+
+export const campoEtapaPorPortfolio = object({
+  portfolio_id: number()
+    .label('Portfólio')
+    .required('Selecione um portfólio')
+    .min(1, 'Selecione um portfólio'),
+  etapa_id: number()
+    .label('Etapa')
+    .required('Selecione uma etapa')
+    .min(1, 'Selecione uma etapa'),
+});
