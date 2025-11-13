@@ -288,14 +288,14 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['CadastroProjetoEtapa.remover', 'Remover Etapa de Portfólio'],
     ],
     CadastroProjetoEtapaPadrao: [
-        ['CadastroProjetoEtapaPadrao.inserir', 'Inserir cadastro básico de Etapa Padrão'],
-        ['CadastroProjetoEtapaPadrao.editar', 'Editar cadastro básico de Etapa Padrão'],
-        ['CadastroProjetoEtapaPadrao.remover', 'Remover cadastro básico de Etapa Padrão'],
+        ['CadastroProjetoEtapaPadrao.inserir', 'Inserir cadastro básico de Etapa Padrão em Projeto'],
+        ['CadastroProjetoEtapaPadrao.editar', 'Editar cadastro básico de Etapa Padrão em Projeto'],
+        ['CadastroProjetoEtapaPadrao.remover', 'Remover cadastro básico de Etapa Padrão em Projeto'],
     ],
     CadastroProjetoEtapaPadraoMDO: [
-        ['CadastroProjetoEtapaPadraoMDO.inserir', 'Inserir cadastro básico de Etapa Padrão'],
-        ['CadastroProjetoEtapaPadraoMDO.editar', 'Editar cadastro básico de Etapa Padrão'],
-        ['CadastroProjetoEtapaPadraoMDO.remover', 'Remover cadastro básico de Etapa Padrão'],
+        ['CadastroProjetoEtapaPadraoMDO.inserir', 'Inserir cadastro básico de Etapa Padrão em Obra'],
+        ['CadastroProjetoEtapaPadraoMDO.editar', 'Editar cadastro básico de Etapa Padrão em Obra'],
+        ['CadastroProjetoEtapaPadraoMDO.remover', 'Remover cadastro básico de Etapa Padrão em Obra'],
     ],
     CadastroProjetoEtapaMDO: [
         ['CadastroProjetoEtapaMDO.inserir', 'Inserir cadastro básico de Etapa de MdO'],

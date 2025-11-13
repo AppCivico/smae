@@ -7,6 +7,7 @@ import { TipoProjeto } from '@prisma/client';
 import { FilterProjetoEtapaDto } from './dto/filter-projeto-etapa.dto';
 import { PortfolioService } from 'src/pp/portfolio/portfolio.service';
 import { ProjetoEtapaDto } from './entities/projeto-etapa.entity';
+import { ListaDePrivilegios } from '../common/ListaDePrivilegios';
 
 @Injectable()
 export class ProjetoEtapaService {
@@ -15,25 +16,44 @@ export class ProjetoEtapaService {
         private readonly portfolioService: PortfolioService
     ) {}
 
+    private getRequiredPrivilege(
+        tipo: TipoProjeto,
+        ehPadrao: boolean,
+        action: 'inserir' | 'editar' | 'remover'
+    ): ListaDePrivilegios {
+        const baseName = ehPadrao ? 'CadastroProjetoEtapaPadrao' : 'CadastroProjetoEtapa';
+        const suffix = tipo === 'PP' ? '' : 'MDO';
+        return `${baseName}${suffix}.${action}`;
+    }
+
+    private checkPermission(
+        user: PessoaFromJwt,
+        tipo: TipoProjeto,
+        ehPadrao: boolean,
+        action: 'inserir' | 'editar' | 'remover'
+    ): void {
+        const privilege = this.getRequiredPrivilege(tipo, ehPadrao, action);
+
+        if (!user.hasSomeRoles([privilege])) {
+            const actionMap = {
+                inserir: 'criar',
+                editar: 'editar',
+                remover: 'remover',
+            };
+            const actionType = ehPadrao ? 'etapa padrão' : 'etapa de portfólio';
+            throw new HttpException(
+                `Sem permissão para ${actionMap[action]} ${actionType}. Privilégio necessário: ${privilege}`,
+                403
+            );
+        }
+    }
+
     async create(tipo: TipoProjeto, dto: CreateProjetoEtapaDto, user: PessoaFromJwt) {
         // Verificar se é padrão.
         const eh_padrao = dto.eh_padrao ?? false;
 
         // Verificar se o usuário tem permissão para criar o tipo de etapa solicitado
-        const requiredPrivilege = eh_padrao
-            ? tipo === 'PP'
-                ? 'CadastroProjetoEtapaPadrao.inserir'
-                : 'CadastroProjetoEtapaPadraoMDO.inserir'
-            : tipo === 'PP'
-              ? 'CadastroProjetoEtapa.inserir'
-              : 'CadastroProjetoEtapaMDO.inserir';
-
-        if (!user.hasSomeRoles([requiredPrivilege])) {
-            throw new HttpException(
-                `Sem permissão para ${eh_padrao ? 'criar etapa padrão' : 'criar etapa de portfólio'}. Privilégio necessário: ${requiredPrivilege}`,
-                403
-            );
-        }
+        this.checkPermission(user, tipo, eh_padrao, 'inserir');
 
         const similarExists = await this.prisma.projetoEtapa.count({
             where: {
@@ -262,42 +282,16 @@ export class ProjetoEtapaService {
         const ehPadraoFinal = dto.eh_padrao ?? self.eh_padrao;
 
         // Verificar se o usuário tem permissão para editar o tipo de etapa
-        const requiredPrivilege = ehPadraoFinal
-            ? tipo === 'PP'
-                ? 'CadastroProjetoEtapaPadrao.editar'
-                : 'CadastroProjetoEtapaPadraoMDO.editar'
-            : tipo === 'PP'
-              ? 'CadastroProjetoEtapa.editar'
-              : 'CadastroProjetoEtapaMDO.editar';
-
-        if (!user.hasSomeRoles([requiredPrivilege])) {
-            throw new HttpException(
-                `Sem permissão para ${ehPadraoFinal ? 'editar etapa padrão' : 'editar etapa de portfólio'}. Privilégio necessário: ${requiredPrivilege}`,
-                403
-            );
-        }
+        this.checkPermission(user, tipo, ehPadraoFinal, 'editar');
 
         // Se estiver mudando de tipo (padrao para portfolio ou vice-versa), verificar ambas as permissões
         if (dto.eh_padrao !== undefined && dto.eh_padrao !== self.eh_padrao) {
-            const otherRequiredPrivilege = dto.eh_padrao
-                ? tipo === 'PP'
-                    ? 'CadastroProjetoEtapaPadrao.editar'
-                    : 'CadastroProjetoEtapaPadraoMDO.editar'
-                : tipo === 'PP'
-                  ? 'CadastroProjetoEtapa.editar'
-                  : 'CadastroProjetoEtapaMDO.editar';
+            const newPrivilege = this.getRequiredPrivilege(tipo, dto.eh_padrao, 'editar');
+            const originalPrivilege = this.getRequiredPrivilege(tipo, self.eh_padrao, 'editar');
 
-            const originalRequiredPrivilege = self.eh_padrao
-                ? tipo === 'PP'
-                    ? 'CadastroProjetoEtapaPadrao.editar'
-                    : 'CadastroProjetoEtapaPadraoMDO.editar'
-                : tipo === 'PP'
-                  ? 'CadastroProjetoEtapa.editar'
-                  : 'CadastroProjetoEtapaMDO.editar';
-
-            if (!user.hasSomeRoles([otherRequiredPrivilege]) || !user.hasSomeRoles([originalRequiredPrivilege])) {
+            if (!user.hasSomeRoles([newPrivilege]) || !user.hasSomeRoles([originalPrivilege])) {
                 throw new HttpException(
-                    `Sem permissão para converter entre etapa padrão e etapa de portfólio. São necessários os privilégios: ${originalRequiredPrivilege} e ${otherRequiredPrivilege}`,
+                    `Sem permissão para converter entre etapa padrão e etapa de portfólio. São necessários os privilégios: ${originalPrivilege} e ${newPrivilege}`,
                     403
                 );
             }
@@ -419,20 +413,7 @@ export class ProjetoEtapaService {
         }
 
         // Verificar se o usuário tem permissão para remover o tipo de etapa
-        const requiredPrivilege = self.eh_padrao
-            ? tipo === 'PP'
-                ? 'CadastroProjetoEtapaPadrao.remover'
-                : 'CadastroProjetoEtapaPadraoMDO.remover'
-            : tipo === 'PP'
-              ? 'CadastroProjetoEtapa.remover'
-              : 'CadastroProjetoEtapaMDO.remover';
-
-        if (!user.hasSomeRoles([requiredPrivilege])) {
-            throw new HttpException(
-                `Sem permissão para ${self.eh_padrao ? 'remover etapa padrão' : 'remover etapa de portfólio'}. Privilégio necessário: ${requiredPrivilege}`,
-                403
-            );
-        }
+        this.checkPermission(user, tipo, self.eh_padrao, 'remover');
 
         const emUso = await this.prisma.projeto.count({
             where: { tipo, removido_em: null, projeto_etapa_id: id },
