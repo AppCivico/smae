@@ -133,7 +133,7 @@ const schema = object({
           if (meta.tipo === 'campos-compostos' && meta.campos) {
             const shape = Object.fromEntries(
               Object.entries(meta.campos)
-                .map(([key, subSchema]) => [key, subSchema?.required?.('Campo obrigatório')]),
+                .map(([key, subSchema]) => [key, subSchema.required('Campo obrigatório')]),
             );
             return object().shape(shape);
           }
