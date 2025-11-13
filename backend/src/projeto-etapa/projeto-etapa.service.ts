@@ -346,6 +346,14 @@ export class ProjetoEtapaService {
         });
         if (emUsoPadrao > 0) throw new HttpException('Etapa em uso como padrão em outras etapas.', 400);
 
+        // test if projeto is using this etapa
+        const projetoEmUso = await this.prisma.projeto.count({
+            where: { tipo, removido_em: null, projeto_etapa_id: id },
+        });
+        if (projetoEmUso > 0) {
+            throw new HttpException(`Etapa em uso em ${projetoEmUso} projetos.`, 400);
+        }
+
         const self = await this.prisma.projetoEtapa.findFirst({
             where: { id: id, tipo_projeto: tipo, removido_em: null },
             select: { eh_padrao: true, ordem_painel: true },

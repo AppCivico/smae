@@ -169,8 +169,8 @@ export class PainelEstrategicoService {
                     END as ordem,
                     COUNT(DISTINCT vpe.projeto_id)::int as quantidade
                 FROM view_painel_estrategico_projeto vpe
-                LEFT JOIN projeto_etapa pe ON pe.id = vpe.projeto_etapa_id
-                LEFT JOIN projeto_etapa pe_padrao ON pe_padrao.id = pe.etapa_padrao_id
+                LEFT JOIN projeto_etapa pe ON pe.id = vpe.projeto_etapa_id AND pe.removido_em IS NULL
+                LEFT JOIN projeto_etapa pe_padrao ON pe_padrao.id = pe.etapa_padrao_id AND pe_padrao.removido_em IS NULL
                 WHERE vpe.projeto_id IN (${projetoIds})
                 GROUP BY 1, 2
             ),
@@ -182,6 +182,7 @@ export class PainelEstrategicoService {
                     0 as quantidade
                 FROM projeto_etapa
                 WHERE ordem_painel IS NOT NULL AND tipo_projeto = 'PP'
+                AND removido_em IS NULL
 
                 UNION ALL
 
