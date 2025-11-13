@@ -345,12 +345,39 @@ export class ProjetoEtapaService {
         });
         if (emUsoPadrao > 0) throw new HttpException('Etapa em uso como padrão em outras etapas.', 400);
 
-        const created = await this.prisma.projetoEtapa.updateMany({
-            where: { id: id, tipo_projeto: tipo },
-            data: {
-                removido_por: user.id,
-                removido_em: new Date(Date.now()),
-            },
+        const self = await this.prisma.projetoEtapa.findFirst({
+            where: { id: id, tipo_projeto: tipo, removido_em: null },
+            select: { eh_padrao: true, ordem_painel: true },
+        });
+
+        const created = await this.prisma.$transaction(async (prismaTx) => {
+            const result = await prismaTx.projetoEtapa.updateMany({
+                where: { id: id, tipo_projeto: tipo },
+                data: {
+                    removido_por: user.id,
+                    removido_em: new Date(Date.now()),
+                },
+            });
+
+            if (self?.eh_padrao && self.ordem_painel !== null) {
+                await prismaTx.projetoEtapa.updateMany({
+                    where: {
+                        tipo_projeto: tipo,
+                        removido_em: null,
+                        eh_padrao: true,
+                        ordem_painel: {
+                            gt: self.ordem_painel,
+                        },
+                    },
+                    data: {
+                        ordem_painel: {
+                            decrement: 1,
+                        },
+                    },
+                });
+            }
+
+            return result;
         });
 
         return created;
