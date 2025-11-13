@@ -21,7 +21,7 @@ export class EmpreendimentoService {
                     },
                 });
                 if (similarExistsNome > 0)
-                    throw new HttpException('nome| Nome igual ou semelhante já existe em outro registro ativo', 400);
+                    throw new HttpException('Nome igual ou semelhante já existe em outro registro ativo', 400);
 
                 const similarExistsIdentificador = await prismaTx.empreendimento.count({
                     where: {
@@ -30,7 +30,7 @@ export class EmpreendimentoService {
                     },
                 });
                 if (similarExistsIdentificador > 0)
-                    throw new HttpException('nome| Nome igual ou semelhante já existe em outro registro ativo', 400);
+                    throw new HttpException('Nome igual ou semelhante já existe em outro registro ativo', 400);
 
                 const empreendimento = await prismaTx.empreendimento.create({
                     data: {
@@ -101,8 +101,7 @@ export class EmpreendimentoService {
                         },
                     });
                     if (similarExists > 0)
-                        throw new HttpException(
-                            'nome| Nome igual ou semelhante já existe em outro registro ativo',
+                        throw new HttpException('Nome igual ou semelhante já existe em outro registro ativo',
                             400
                         );
                 }
@@ -116,8 +115,7 @@ export class EmpreendimentoService {
                         },
                     });
                     if (similarExists > 0)
-                        throw new HttpException(
-                            'identificador| identificador igual ou semelhante já existe em outro registro ativo',
+                        throw new HttpException('identificador igual ou semelhante já existe em outro registro ativo',
                             400
                         );
                 }

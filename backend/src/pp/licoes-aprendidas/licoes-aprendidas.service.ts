@@ -40,7 +40,7 @@ export class LicoesAprendidasService {
                         },
                     });
 
-                    if (exists) throw new HttpException('sequencial| Valor já em uso', 400);
+                    if (exists) throw new HttpException('Valor já em uso', 400);
                 } else {
                     const ultimoSeqRow = await prismaTx.projetoLicaoAprendida.findFirst({
                         take: 1,
@@ -139,7 +139,7 @@ export class LicoesAprendidasService {
                         },
                     });
 
-                    if (exists) throw new HttpException('sequencial| Valor já em uso', 400);
+                    if (exists) throw new HttpException('Valor já em uso', 400);
                 }
 
                 return await prismaTx.projetoLicaoAprendida.update({

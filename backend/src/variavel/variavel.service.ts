@@ -2112,10 +2112,10 @@ export class VariavelService {
 
     private checkPeriodoVariavelGlobal(dto: UpdateVariavelDto) {
         if (!dto.inicio_medicao)
-            throw new HttpException('inicio_medicao| Início da medição é obrigatório para variáveis globais', 400);
+            throw new HttpException('Início da medição é obrigatório para variáveis globais', 400);
 
         if (dto.fim_medicao && dto.inicio_medicao && dto.fim_medicao < dto.inicio_medicao)
-            throw new HttpException('fim_medicao| Fim da medição deve ser maior que o início', 400);
+            throw new HttpException('Fim da medição deve ser maior que o início', 400);
     }
 
     private async updateCategorica(

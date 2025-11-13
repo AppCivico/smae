@@ -21,7 +21,7 @@ export class WorkflowFaseService {
                     },
                 });
                 if (similarExists > 0)
-                    throw new HttpException('fase| Nome igual ou semelhante já existe em outro registro ativo', 400);
+                    throw new HttpException('Nome igual ou semelhante já existe em outro registro ativo', 400);
 
                 const workflowFase = await prismaTxn.workflowFase.create({
                     data: {
@@ -61,8 +61,7 @@ export class WorkflowFaseService {
                         },
                     });
                     if (similarExists > 0)
-                        throw new HttpException(
-                            'fase| Nome igual ou semelhante já existe em outro registro ativo',
+                        throw new HttpException('Nome igual ou semelhante já existe em outro registro ativo',
                             400
                         );
                 }

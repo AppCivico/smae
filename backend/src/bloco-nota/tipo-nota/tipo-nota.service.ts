@@ -16,7 +16,7 @@ export class TipoNotaService {
         });
 
         if (similarExists > 0)
-            throw new BadRequestException('codigo| Descrição igual ou semelhante já existe em outro registro ativo');
+            throw new BadRequestException('Descrição igual ou semelhante já existe em outro registro ativo');
 
         const created = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             const created = await prismaTx.tipoNota.create({
@@ -107,7 +107,7 @@ export class TipoNotaService {
             });
 
             if (similarExists > 0)
-                throw new HttpException('codigo| Código igual ou semelhante já existe em outro registro ativo', 400);
+                throw new HttpException('Código igual ou semelhante já existe em outro registro ativo', 400);
         }
 
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {

@@ -62,7 +62,7 @@ export class PainelController {
         @Query() filters: FilterPainelDaMetaDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<ListPainelDto> {
-        if (!filters.meta_id) throw new HttpException('meta_id| Deve ser enviado', 400);
+        if (!filters.meta_id) throw new HttpException('Deve ser enviado', 400);
         const restringirGrupos = true;
 
         return {

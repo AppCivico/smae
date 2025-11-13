@@ -19,7 +19,7 @@ export class WorkflowAndamentoService {
 
     async findAndamento(filter: FilterWorkflowAndamentoDto, user: PessoaFromJwt): Promise<WorkflowAndamentoDto | void> {
         if (!filter.transferencia_id)
-            throw new HttpException('transferencia_id| É obrigatório para uso deste endpoint.', 400);
+            throw new HttpException('É obrigatório para uso deste endpoint.', 400);
 
         const transferencia = await this.prisma.transferencia.findFirst({
             where: {
@@ -506,7 +506,7 @@ export class WorkflowAndamentoService {
             },
         });
         if (!transferencia)
-            throw new HttpException('transferencia_id| Transferência com workflow, não encontrada.', 400);
+            throw new HttpException('Transferência com workflow, não encontrada.', 400);
 
         if (!transferencia.andamentoWorkflow.length)
             throw new HttpException('Transferência sem linhas de andamento', 400);

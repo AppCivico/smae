@@ -44,8 +44,7 @@ export class RegiaoService {
                 },
             });
             if (nivel1exists > 0 && sistema !== 'CasaCivil')
-                throw new HttpException(
-                    'nivel| Já existe uma região nivel 1 no SMAE, só é suportado um município por vez.',
+                throw new HttpException('Já existe uma região nivel 1 no SMAE, só é suportado um município por vez.',
                     400
                 );
         }
@@ -58,7 +57,7 @@ export class RegiaoService {
             },
         });
         if (similarExists > 0)
-            throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
+            throw new HttpException('Descrição igual ou semelhante já existe em outro registro ativo', 400);
 
         let uploadId: number | null = null;
         if (createRegiaoDto.upload_shapefile) {
@@ -162,8 +161,7 @@ export class RegiaoService {
                 },
             });
             if (similarExists > 0)
-                throw new HttpException(
-                    'descricao| Descrição igual ou semelhante já existe em outro registro ativo',
+                throw new HttpException('Descrição igual ou semelhante já existe em outro registro ativo',
                     400
                 );
         }

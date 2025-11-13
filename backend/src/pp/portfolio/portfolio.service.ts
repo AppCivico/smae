@@ -23,7 +23,7 @@ export class PortfolioService {
             },
         });
         if (similarExists > 0)
-            throw new HttpException('titulo| Título igual ou semelhante já existe em outro registro ativo', 400);
+            throw new HttpException('Título igual ou semelhante já existe em outro registro ativo', 400);
 
         if (user.hasSomeRoles(['Projeto.administrar_portfolios', 'ProjetoMDO.administrar_portfolios']) == false) {
             for (const orgao of dto.orgaos) {
@@ -265,7 +265,7 @@ export class PortfolioService {
                 },
             });
             if (similarExists > 0)
-                throw new HttpException('titulo| Título igual ou semelhante já existe em outro registro ativo', 400);
+                throw new HttpException('Título igual ou semelhante já existe em outro registro ativo', 400);
         }
 
         if (Array.isArray(dto.orgaos) && dto.orgaos.length > 0) {

@@ -29,7 +29,7 @@ export class WorkflowFluxoService {
                     },
                 });
                 if (saidaJaExiste)
-                    throw new HttpException('workflow_etapa_de_id| Etapa de saída já em uso para este Workflow.', 400);
+                    throw new HttpException('Etapa de saída já em uso para este Workflow.', 400);
 
                 const destinoJaExiste = await prismaTxn.fluxo.count({
                     where: {
@@ -39,8 +39,7 @@ export class WorkflowFluxoService {
                     },
                 });
                 if (destinoJaExiste)
-                    throw new HttpException(
-                        'workflow_etapa_para_id| Etapa de saída já em uso para este Workflow.',
+                    throw new HttpException('Etapa de saída já em uso para este Workflow.',
                         400
                     );
 
@@ -54,7 +53,7 @@ export class WorkflowFluxoService {
                             removido_em: null,
                         },
                     });
-                    if (ordemEmUso) throw new HttpException('ordem| Ordem já em uso para este Workflow.', 400);
+                    if (ordemEmUso) throw new HttpException('Ordem já em uso para este Workflow.', 400);
 
                     ordem = dto.ordem;
                 } else {
@@ -87,8 +86,7 @@ export class WorkflowFluxoService {
                 });
                 console.log(fluxoAnterior);
                 if (fluxoAnterior && dto.workflow_etapa_de_id != fluxoAnterior.fluxo_etapa_para_id)
-                    throw new HttpException(
-                        'workflow_etapa_de_id| Etapa de entrada deve ser a mesma de saída do passo anterior do fluxo.',
+                    throw new HttpException('Etapa de entrada deve ser a mesma de saída do passo anterior do fluxo.',
                         400
                     );
 
@@ -140,8 +138,7 @@ export class WorkflowFluxoService {
                         },
                     });
                     if (saidaJaExiste)
-                        throw new HttpException(
-                            'workflow_etapa_de_id| Etapa de saída já em uso para este Workflow.',
+                        throw new HttpException('Etapa de saída já em uso para este Workflow.',
                             400
                         );
                 }
@@ -155,8 +152,7 @@ export class WorkflowFluxoService {
                         },
                     });
                     if (destinoJaExiste)
-                        throw new HttpException(
-                            'workflow_etapa_para_id| Etapa de saída já em uso para este Workflow.',
+                        throw new HttpException('Etapa de saída já em uso para este Workflow.',
                             400
                         );
                 }
@@ -171,7 +167,7 @@ export class WorkflowFluxoService {
                             removido_em: null,
                         },
                     });
-                    if (ordemEmUso) throw new HttpException('ordem| Ordem já em uso para este Workflow.', 400);
+                    if (ordemEmUso) throw new HttpException('Ordem já em uso para este Workflow.', 400);
 
                     ordem = dto.ordem;
                 }

@@ -16,7 +16,7 @@ export class TipoOrgaoService {
             },
         });
         if (similarExists > 0)
-            throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
+            throw new HttpException('Descrição igual ou semelhante já existe em outro registro ativo', 400);
 
         const created = await this.prisma.tipoOrgao.create({
             data: {
@@ -55,8 +55,7 @@ export class TipoOrgaoService {
                 },
             });
             if (similarExists > 0)
-                throw new HttpException(
-                    'descricao| Descrição igual ou semelhante já existe em outro registro ativo',
+                throw new HttpException('Descrição igual ou semelhante já existe em outro registro ativo',
                     400
                 );
         }

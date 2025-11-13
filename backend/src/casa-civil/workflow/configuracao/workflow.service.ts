@@ -24,7 +24,7 @@ export class WorkflowService {
                     },
                 });
                 if (!transferenciaTipoExiste)
-                    throw new HttpException('transferencia_tipo_id| Tipo de transferência não existe.', 400);
+                    throw new HttpException('Tipo de transferência não existe.', 400);
 
                 const similarExists = await prismaTxn.workflow.count({
                     where: {
@@ -33,7 +33,7 @@ export class WorkflowService {
                     },
                 });
                 if (similarExists > 0)
-                    throw new HttpException('nome| Nome igual ou semelhante já existe em outro registro ativo', 400);
+                    throw new HttpException('Nome igual ou semelhante já existe em outro registro ativo', 400);
 
                 // Preparing distribution statuses from the DTO.
                 const statusesToCreateData: { status_base_id?: number; status_id?: number }[] = [];
@@ -172,7 +172,7 @@ export class WorkflowService {
                     });
 
                     if (!etapas.length) {
-                        throw new HttpException('ativo| Workflow não possui etapas configuradas.', 400);
+                        throw new HttpException('Workflow não possui etapas configuradas.', 400);
                     }
 
                     if (!etapas.every((e) => e.fases.length)) {
@@ -193,8 +193,7 @@ export class WorkflowService {
                         },
                     });
                     if (workflowJaAtivo)
-                        throw new HttpException(
-                            'ativo| Já existe um workflow ativo para este tipo de transferência.',
+                        throw new HttpException('Já existe um workflow ativo para este tipo de transferência.',
                             400
                         );
                 }
@@ -483,7 +482,7 @@ export class WorkflowService {
             },
         });
         if (transferenciaEmAndamento)
-            throw new HttpException('id| Workflow não pode ser editado, pois há uma Transferência que o utiliza.', 400);
+            throw new HttpException('Workflow não pode ser editado, pois há uma Transferência que o utiliza.', 400);
     }
 
     async configValida(id: number, prismaTxn?: Prisma.TransactionClient): Promise<boolean> {

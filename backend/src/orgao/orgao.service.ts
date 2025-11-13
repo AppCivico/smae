@@ -59,7 +59,7 @@ export class OrgaoService {
             },
         });
         if (similarExists > 0)
-            throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
+            throw new HttpException('Descrição igual ou semelhante já existe em outro registro ativo', 400);
 
         if (dto.sigla) {
             const similarExists = await this.prisma.orgao.count({
@@ -69,7 +69,7 @@ export class OrgaoService {
                 },
             });
             if (similarExists > 0)
-                throw new HttpException('sigla| Sigla igual ou semelhante já existe em outro registro ativo', 400);
+                throw new HttpException('Sigla igual ou semelhante já existe em outro registro ativo', 400);
         }
 
         if (dto.parente_id === null && dto.nivel > 1) {
@@ -170,8 +170,7 @@ export class OrgaoService {
                         },
                     });
                     if (similarExists > 0)
-                        throw new HttpException(
-                            'descricao| Descrição igual ou semelhante já existe em outro registro ativo',
+                        throw new HttpException('Descrição igual ou semelhante já existe em outro registro ativo',
                             400
                         );
                 }
@@ -185,8 +184,7 @@ export class OrgaoService {
                         },
                     });
                     if (similarExists > 0)
-                        throw new HttpException(
-                            'sigla| Sigla igual ou semelhante já existe em outro registro ativo',
+                        throw new HttpException('Sigla igual ou semelhante já existe em outro registro ativo',
                             400
                         );
                 }

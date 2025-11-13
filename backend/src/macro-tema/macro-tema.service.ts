@@ -31,7 +31,7 @@ export class MacroTemaService {
                     removido_em: null,
                 },
             });
-            if (!pdm) throw new HttpException('pdm| Não foi encontrado linha de PDM correspondente.', 400);
+            if (!pdm) throw new HttpException('Não foi encontrado linha de PDM correspondente.', 400);
 
             const descricaoExists = await prismaTx.macroTema.count({
                 where: {
@@ -44,7 +44,7 @@ export class MacroTemaService {
                     },
                 },
             });
-            if (descricaoExists) throw new HttpException('descricao| Já existe um Macro Tema com esta descrição.', 400);
+            if (descricaoExists) throw new HttpException('Já existe um Macro Tema com esta descrição.', 400);
 
             const macroTema = await prismaTx.macroTema.create({
                 data: {
@@ -106,7 +106,7 @@ export class MacroTemaService {
                         },
                     });
                     if (descricaoExists)
-                        throw new HttpException('descricao| Já existe um Macro Tema com esta descrição.', 400);
+                        throw new HttpException('Já existe um Macro Tema com esta descrição.', 400);
                 }
 
                 const macroTema = await prismaTx.macroTema.update({

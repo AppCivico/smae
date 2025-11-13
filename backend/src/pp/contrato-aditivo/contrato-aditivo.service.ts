@@ -156,10 +156,10 @@ export class ContratoAditivoService {
                 });
 
                 if (tipoAditivo.habilita_valor && dto.valor === null)
-                    throw new HttpException('Valor| Obrigatório para este tipo de aditivo', 400);
+                    throw new HttpException('Obrigatório para este tipo de aditivo', 400);
 
                 if (tipoAditivo.habilita_valor_data_termino && dto.data_termino_atualizada === null)
-                    throw new HttpException('Data| Obrigatória para este tipo de aditivo', 400);
+                    throw new HttpException('Obrigatória para este tipo de aditivo', 400);
 
                 return await prismaTx.contratoAditivo.update({
                     where: {

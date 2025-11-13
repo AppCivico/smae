@@ -259,7 +259,7 @@ export class MetaService {
                         codigo: { equals: dto.codigo, mode: 'insensitive' },
                     },
                 });
-                if (codigoJaEmUso > 0) throw new HttpException('codigo| Já existe meta com este código', 400);
+                if (codigoJaEmUso > 0) throw new HttpException('Já existe meta com este código', 400);
 
                 const tituloJaEmUso = await prismaTx.meta.count({
                     where: {
@@ -268,7 +268,7 @@ export class MetaService {
                         titulo: { equals: dto.titulo, mode: 'insensitive' },
                     },
                 });
-                if (tituloJaEmUso > 0) throw new HttpException('titulo| Já existe meta com este título', 400);
+                if (tituloJaEmUso > 0) throw new HttpException('Já existe meta com este título', 400);
 
                 const origem_cache = await CompromissoOrigemHelper.processaOrigens(origens_extra, this.prisma);
 
@@ -844,7 +844,7 @@ export class MetaService {
                             id: { not: id },
                         },
                     });
-                    if (codigoJaEmUso) throw new HttpException('codigo| Já existe outra meta com este código', 400);
+                    if (codigoJaEmUso) throw new HttpException('Já existe outra meta com este código', 400);
                 }
 
                 if (updateMetaDto.titulo) {
@@ -856,7 +856,7 @@ export class MetaService {
                             id: { not: id },
                         },
                     });
-                    if (tituloJaEmUso > 0) throw new HttpException('titulo| Já existe outra meta com este título', 400);
+                    if (tituloJaEmUso > 0) throw new HttpException('Já existe outra meta com este título', 400);
                 }
 
                 let origem_cache: object | undefined = undefined;

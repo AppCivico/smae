@@ -34,7 +34,7 @@ export class AuthService {
         }
 
         if (pessoa.desativado) {
-            throw new BadRequestException('email| Conta não está mais ativa.');
+            throw new BadRequestException('Conta não está mais ativa.');
         }
 
         return this.criarSession(pessoa.id as number, ip);
@@ -60,15 +60,15 @@ export class AuthService {
     async pessoaPeloEmailSenha(email: string, senhaInformada: string): Promise<Pessoa> {
         const pessoa = await this.pessoaService.findByEmail(email);
 
-        if (!pessoa) throw new BadRequestException('email| E-mail ou senha inválidos');
+        if (!pessoa) throw new BadRequestException('E-mail ou senha inválidos');
 
         const isPasswordValid = await this.pessoaService.senhaCorreta(senhaInformada, pessoa);
         if (!isPasswordValid) {
             if (pessoa.senha_bloqueada)
-                throw new BadRequestException('email| Conta está bloqueada, acesse o e-mail para recuperar a conta');
+                throw new BadRequestException('Conta está bloqueada, acesse o e-mail para recuperar a conta');
 
             await this.pessoaService.incrementarSenhaInvalida(pessoa);
-            throw new BadRequestException('email| E-mail ou senha inválidos');
+            throw new BadRequestException('E-mail ou senha inválidos');
         }
 
         return pessoa;
@@ -164,28 +164,28 @@ export class AuthService {
                 audience: 'resetPass',
             });
         } catch {
-            throw new BadRequestException('reduced_access_token| token inválido');
+            throw new BadRequestException('token inválido');
         }
 
         const updated = await this.pessoaService.escreverNovaSenhaById(result.pessoaId, body.senha);
         if (updated) {
             return this.criarSession(result.pessoaId, ip);
         } else {
-            throw new BadRequestException('reduced_access_token| a senha já foi atualizada!');
+            throw new BadRequestException('a senha já foi atualizada!');
         }
     }
 
     async solicitarNovaSenha(body: SolicitarNovaSenhaRequestBody) {
         const pessoa = await this.pessoaService.findByEmail(body.email);
 
-        if (!pessoa) throw new BadRequestException('email| E-mail não encontrado');
+        if (!pessoa) throw new BadRequestException('E-mail não encontrado');
 
         if (
             pessoa.senha_bloqueada &&
             pessoa.senha_bloqueada_em &&
             Date.now() - pessoa.senha_bloqueada_em.getTime() < 60 * 1000
         )
-            throw new BadRequestException('email| Solicitação já foi efetuada recentemente. Conferia seu e-mail.');
+            throw new BadRequestException('Solicitação já foi efetuada recentemente. Conferia seu e-mail.');
 
         await this.pessoaService.criaNovaSenha(pessoa, true);
     }

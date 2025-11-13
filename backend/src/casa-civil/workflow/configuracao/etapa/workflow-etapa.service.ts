@@ -22,8 +22,7 @@ export class WorkflowEtapaService {
                     },
                 });
                 if (similarExists > 0)
-                    throw new HttpException(
-                        'etapa_fluxo| Nome igual ou semelhante já existe em outro registro ativo',
+                    throw new HttpException('Nome igual ou semelhante já existe em outro registro ativo',
                         400
                     );
 
@@ -65,8 +64,7 @@ export class WorkflowEtapaService {
                         },
                     });
                     if (similarExists > 0)
-                        throw new HttpException(
-                            'etapa_fluxo| Nome igual ou semelhante já existe em outro registro ativo',
+                        throw new HttpException('Nome igual ou semelhante já existe em outro registro ativo',
                             400
                         );
                 }

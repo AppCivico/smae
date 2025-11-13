@@ -368,7 +368,7 @@ export class PessoaService implements OnModuleInit {
         if (!this.#cpfObrigatorioSemRF) return;
 
         if (!dto.registro_funcionario && !dto.cpf) {
-            throw new HttpException('cpf| CPF obrigatório para conta sem registro_funcionario', 400);
+            throw new HttpException('CPF obrigatório para conta sem registro_funcionario', 400);
         }
     }
 
@@ -379,8 +379,7 @@ export class PessoaService implements OnModuleInit {
             dto.email &&
             dto.email.endsWith('@' + this.#matchEmailRFObrigatorio)
         ) {
-            throw new HttpException(
-                `registro_funcionario| Registro de funcionário obrigatório para e-mails terminando @${this.#matchEmailRFObrigatorio}`,
+            throw new HttpException(`Registro de funcionário obrigatório para e-mails terminando @${this.#matchEmailRFObrigatorio}`,
                 400
             );
         }
@@ -388,8 +387,7 @@ export class PessoaService implements OnModuleInit {
         if (!this.#cpfObrigatorioSemRF) return;
 
         if (!dto.cpf && !dto.registro_funcionario) {
-            throw new HttpException(
-                'registro_funcionario| Registro de funcionário obrigatório caso CPF não seja informado',
+            throw new HttpException('Registro de funcionário obrigatório caso CPF não seja informado',
                 400
             );
         }
@@ -553,7 +551,7 @@ export class PessoaService implements OnModuleInit {
                   })
                 : 0;
             if (emailExists > 0) {
-                throw new HttpException('email| E-mail está em uso em outra conta', 400);
+                throw new HttpException('E-mail está em uso em outra conta', 400);
             }
 
             if (updatePessoaDto.registro_funcionario) {
@@ -564,8 +562,7 @@ export class PessoaService implements OnModuleInit {
                     },
                 });
                 if (registroFuncionarioExists > 0) {
-                    throw new HttpException(
-                        'registro_funcionario| Registro de funcionário já atrelado a outra conta',
+                    throw new HttpException('Registro de funcionário já atrelado a outra conta',
                         400
                     );
                 }
@@ -579,7 +576,7 @@ export class PessoaService implements OnModuleInit {
                     },
                 });
                 if (registroFuncionarioExists > 0) {
-                    throw new HttpException('cpf| CPF já atrelado a outra conta', 400);
+                    throw new HttpException('CPF já atrelado a outra conta', 400);
                 }
             }
 
@@ -1309,7 +1306,7 @@ export class PessoaService implements OnModuleInit {
                 // Valida restrições únicas primeiro
                 const emailExists = await prismaTx.pessoa.count({ where: { email: createPessoaDto.email } });
                 if (emailExists > 0) {
-                    throw new BadRequestException('email| E-mail já tem conta');
+                    throw new BadRequestException('E-mail já tem conta');
                 }
 
                 if (createPessoaDto.registro_funcionario) {
@@ -1317,8 +1314,7 @@ export class PessoaService implements OnModuleInit {
                         where: { pessoa_fisica: { registro_funcionario: createPessoaDto.registro_funcionario } },
                     });
                     if (rfExists > 0) {
-                        throw new BadRequestException(
-                            'registro_funcionario| Registro de funcionário já atrelado a outra conta'
+                        throw new BadRequestException('Registro de funcionário já atrelado a outra conta'
                         );
                     }
                 }
@@ -1328,7 +1324,7 @@ export class PessoaService implements OnModuleInit {
                         where: { pessoa_fisica: { cpf: createPessoaDto.cpf } },
                     });
                     if (cpfExists > 0) {
-                        throw new BadRequestException('cpf| CPF já atrelado a outra conta');
+                        throw new BadRequestException('CPF já atrelado a outra conta');
                     }
                 }
 
@@ -1953,7 +1949,7 @@ export class PessoaService implements OnModuleInit {
         });
 
         const isPasswordValid = await this.senhaCorreta(novaSenhaDto.senha_corrente, pessoa);
-        if (!isPasswordValid) throw new BadRequestException('senha_corrente| Senha atual não confere');
+        if (!isPasswordValid) throw new BadRequestException('Senha atual não confere');
 
         if (!(await this.escreverNovaSenhaById(user.id, novaSenhaDto.senha_nova, true))) {
             throw new BadRequestException('Senha não pode ser alterada no momento');

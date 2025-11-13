@@ -22,7 +22,7 @@ export class DistribuicaoStatusService {
                     },
                 });
                 if (similarExists > 0)
-                    throw new HttpException('nome| Nome igual ou semelhante já existe em outro registro ativo', 400);
+                    throw new HttpException('Nome igual ou semelhante já existe em outro registro ativo', 400);
 
                 let valor_contabilizado_calc: boolean;
                 // let valor_contabilizado_calc: boolean | undefined = dto.valor_distribuicao_contabilizado;

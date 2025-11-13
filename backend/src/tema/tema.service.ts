@@ -35,7 +35,7 @@ export class TemaService {
                     },
                 },
             });
-            if (descricaoExists) throw new HttpException('descricao| Já existe um Tema com esta descrição.', 400);
+            if (descricaoExists) throw new HttpException('Já existe um Tema com esta descrição.', 400);
 
             const tema = await prismaTx.tema.create({
                 data: {
@@ -98,7 +98,7 @@ export class TemaService {
                         },
                     });
                     if (descricaoExists)
-                        throw new HttpException('descricao| Já existe um Tema com esta descrição.', 400);
+                        throw new HttpException('Já existe um Tema com esta descrição.', 400);
                 }
 
                 const tema = await this.prisma.tema.update({

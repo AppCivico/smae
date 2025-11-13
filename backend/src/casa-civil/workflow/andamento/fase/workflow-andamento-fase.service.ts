@@ -71,8 +71,7 @@ export class WorkflowAndamentoFaseService {
                         },
                     });
                     if (!situacaoNaConfig)
-                        throw new HttpException(
-                            'situacao_id| Situação não está presente na configuração do Workflow.',
+                        throw new HttpException('Situação não está presente na configuração do Workflow.',
                             400
                         );
                 }
@@ -117,8 +116,7 @@ export class WorkflowAndamentoFaseService {
                         dto.orgao_responsavel_id != orgaoCasaCivil.id &&
                         configFluxoFase.responsabilidade === WorkflowResponsabilidade.Propria
                     ) {
-                        throw new HttpException(
-                            'orgao_responsavel_id| Fase é de responsabilidade própria e portanto não deve ser atribuida a outro órgão.',
+                        throw new HttpException('Fase é de responsabilidade própria e portanto não deve ser atribuida a outro órgão.',
                             400
                         );
                     }
@@ -129,8 +127,7 @@ export class WorkflowAndamentoFaseService {
                         dto.orgao_responsavel_id == orgaoCasaCivil.id &&
                         configFluxoFase.responsabilidade === WorkflowResponsabilidade.OutroOrgao
                     )
-                        throw new HttpException(
-                            'orgao_responsavel_id| Fase é de responsabilidade de outro órgão e portanto não deve ser atribuida ao órgão da SERI.',
+                        throw new HttpException('Fase é de responsabilidade de outro órgão e portanto não deve ser atribuida ao órgão da SERI.',
                             400
                         );
                 }
@@ -267,8 +264,7 @@ export class WorkflowAndamentoFaseService {
                     tarefa.orgao_responsavel_id != undefined &&
                     tarefa.orgao_responsavel_id != orgaoCasaCivil.id
                 )
-                    throw new HttpException(
-                        `orgao_responsavel_id| Órgão não deve ser enviado para tarefa ${tarefaWorkfloConfig.workflow_tarefa.tarefa_fluxo}, pois é de responsabilidade própria.`,
+                    throw new HttpException(`Órgão não deve ser enviado para tarefa ${tarefaWorkfloConfig.workflow_tarefa.tarefa_fluxo}, pois é de responsabilidade própria.`,
                         400
                     );
 
@@ -301,8 +297,7 @@ export class WorkflowAndamentoFaseService {
                     !tarefa.orgao_responsavel_id &&
                     !transferenciaAndamentoTarefaRow.orgao_responsavel_id
                 )
-                    throw new HttpException(
-                        `orgao_responsavel_id| Órgão deve ser enviado para tarefa "${tarefaWorkfloConfig.workflow_tarefa.tarefa_fluxo}", pois é de responsabilidade de outro órgão.`,
+                    throw new HttpException(`Órgão deve ser enviado para tarefa "${tarefaWorkfloConfig.workflow_tarefa.tarefa_fluxo}", pois é de responsabilidade de outro órgão.`,
                         400
                     );
 

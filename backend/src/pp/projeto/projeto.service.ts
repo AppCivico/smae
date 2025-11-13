@@ -398,15 +398,15 @@ export class ProjetoService {
 
         function validaOutro() {
             if (!origem_outro)
-                throw new HttpException('origem_outro| Deve ser enviado quando origem_tipo for Outro', 400);
+                throw new HttpException('Deve ser enviado quando origem_tipo for Outro', 400);
 
-            if (meta_id) throw new HttpException('meta_id| Não deve ser enviado caso origem_tipo seja Outro', 400);
+            if (meta_id) throw new HttpException('Não deve ser enviado caso origem_tipo seja Outro', 400);
             if (iniciativa_id)
-                throw new HttpException('iniciativa_id| Não deve ser enviado caso origem_tipo seja Outro', 400);
+                throw new HttpException('Não deve ser enviado caso origem_tipo seja Outro', 400);
             if (atividade_id)
-                throw new HttpException('atividade_id| Não deve ser enviado caso origem_tipo seja Outro', 400);
+                throw new HttpException('Não deve ser enviado caso origem_tipo seja Outro', 400);
             if (meta_codigo)
-                throw new HttpException('meta_codigo| Não deve ser enviado caso origem_tipo seja Outro', 400);
+                throw new HttpException('Não deve ser enviado caso origem_tipo seja Outro', 400);
 
             // força a limpeza no banco, pode ser que tenha vindo como undefined
             meta_id = atividade_id = iniciativa_id = meta_codigo = null;
@@ -414,13 +414,13 @@ export class ProjetoService {
 
         function validaPdmAntigo() {
             const errMsg = 'caso origem seja outro sistema de meta';
-            if (!meta_codigo) throw new HttpException(`meta_codigo| Meta código deve ser enviado ${errMsg}`, 400);
+            if (!meta_codigo) throw new HttpException(`Meta código deve ser enviado ${errMsg}`, 400);
             if (!origem_outro)
-                throw new HttpException(`origem_outro| Descrição da origem deve ser enviado ${errMsg}`, 400);
+                throw new HttpException(`Descrição da origem deve ser enviado ${errMsg}`, 400);
 
-            if (meta_id) throw new HttpException(`meta_id| Meta não deve ser enviado ${errMsg}`, 400);
-            if (iniciativa_id) throw new HttpException(`iniciativa_id| Iniciativa não deve ser enviado ${errMsg}`, 400);
-            if (atividade_id) throw new HttpException(`atividade_id| Atividade não deve ser enviado ${errMsg}`, 400);
+            if (meta_id) throw new HttpException(`Meta não deve ser enviado ${errMsg}`, 400);
+            if (iniciativa_id) throw new HttpException(`Iniciativa não deve ser enviado ${errMsg}`, 400);
+            if (atividade_id) throw new HttpException(`Atividade não deve ser enviado ${errMsg}`, 400);
 
             // força a limpeza no banco, pode ser que tenha vindo como undefined
             meta_id = atividade_id = iniciativa_id = null;
@@ -428,8 +428,7 @@ export class ProjetoService {
 
         async function validaPdmSistema(self: ProjetoService) {
             if (!atividade_id && !iniciativa_id && !meta_id)
-                throw new HttpException(
-                    'meta| é obrigatório enviar meta_id|iniciativa_id|atividade_id quando origem_tipo=PdmSistema',
+                throw new HttpException('é obrigatório enviar meta_id|iniciativa_id|atividade_id quando origem_tipo=PdmSistema',
                     400
                 );
 
@@ -470,9 +469,9 @@ export class ProjetoService {
             }
 
             if (origem_outro)
-                throw new HttpException('origem_outro| Não deve ser enviado caso origem_tipo seja PdmSistema', 400);
+                throw new HttpException('Não deve ser enviado caso origem_tipo seja PdmSistema', 400);
             if (meta_codigo)
-                throw new HttpException('meta_codigo| Não deve ser enviado caso origem_tipo seja PdmSistema', 400);
+                throw new HttpException('Não deve ser enviado caso origem_tipo seja PdmSistema', 400);
 
             // força a limpeza no banco, pode ser que tenha vindo como undefined
             meta_codigo = origem_outro = null;
@@ -566,8 +565,7 @@ export class ProjetoService {
             });
             console.log({ pessoas, responsaveis_no_orgao_gestor });
             if (pessoas.length !== responsaveis_no_orgao_gestor.length)
-                throw new HttpException(
-                    'responsaveis_no_orgao_gestor| Uma ou mais pessoas não foram encontradas no órgão gestor',
+                throw new HttpException('Uma ou mais pessoas não foram encontradas no órgão gestor',
                     400
                 );
         }
@@ -610,8 +608,7 @@ export class ProjetoService {
 
         const portfolio = portfolios.filter((r) => r.id == dto.portfolio_id)[0];
         if (!portfolio)
-            throw new HttpException(
-                'portfolio_id| Portfolio não está liberado para criação de projetos para seu usuário',
+            throw new HttpException('Portfolio não está liberado para criação de projetos para seu usuário',
                 400
             );
 
@@ -633,8 +630,7 @@ export class ProjetoService {
             // Caso o portfolio seja de modelo para clonagem.
             // Não permitir compartilhar com outros ports.
             if (portfolio.modelo_clonagem)
-                throw new HttpException(
-                    'portfolios_compartilhados| Não pode ser compartilhado pois pertence a um Portfolio de modelo de clonagem.',
+                throw new HttpException('Não pode ser compartilhado pois pertence a um Portfolio de modelo de clonagem.',
                     400
                 );
 
@@ -645,10 +641,10 @@ export class ProjetoService {
         }
 
         if (tipo == 'MDO') {
-            if (!dto.orgao_origem_id) throw new HttpException('orgao_origem_id| Campo obrigatório para obras', 400);
-            if (!dto.grupo_tematico_id) throw new HttpException('grupo_tematico_id| Campo obrigatório para obras', 400);
+            if (!dto.orgao_origem_id) throw new HttpException('Campo obrigatório para obras', 400);
+            if (!dto.grupo_tematico_id) throw new HttpException('Campo obrigatório para obras', 400);
             if (!dto.tipo_intervencao_id)
-                throw new HttpException('tipo_intervencao_id| Campo obrigatório para obras', 400);
+                throw new HttpException('Campo obrigatório para obras', 400);
 
             await this.verificaGrupoTematico(dto);
         }
@@ -666,7 +662,7 @@ export class ProjetoService {
             });
 
             if (tags.length !== dto.tags.length)
-                throw new HttpException('tags| Uma ou mais tag não foi encontrada', 400);
+                throw new HttpException('Uma ou mais tag não foi encontrada', 400);
         }
 
         const created = await this.prisma.$transaction(
@@ -931,7 +927,7 @@ export class ProjetoService {
                 'MDO_Paralisada',
             ];
             if (dto.status && !liberados.includes(dto.status))
-                throw new HttpException('status| Status inválido para Obras', 400);
+                throw new HttpException('Status inválido para Obras', 400);
         } else if (tipo == 'PP') {
             // mantém o default do banco, como era antes
             if (dto.status && op == 'create') {
@@ -959,15 +955,14 @@ export class ProjetoService {
                 'Validado',
             ];
             if (dto.status && !liberados.includes(dto.status))
-                throw new HttpException('status| Status inválido para Projetos', 400);
+                throw new HttpException('Status inválido para Projetos', 400);
         }
     }
 
     private async checkPortCompartilhadoOrgaos(portPrincipal: PortfolioDto, portCompartilhados: PortfolioDto[]) {
         for (const portfolioCompartilhado of portCompartilhados) {
             if (portfolioCompartilhado.id == portPrincipal.id)
-                throw new HttpException(
-                    'portfolios_compartilhados| Portfolio compartilhado deve ser diferente do Portfolio principal.',
+                throw new HttpException('Portfolio compartilhado deve ser diferente do Portfolio principal.',
                     400
                 );
 
@@ -978,8 +973,7 @@ export class ProjetoService {
                         return portPrincipal.orgaos.map((o) => o.id).includes(pco);
                     })
             )
-                throw new HttpException(
-                    'portfolios_compartilhados| Portfolio compartilhado deve conter ao menos um órgão em comum com o Portfolio principal.',
+                throw new HttpException('Portfolio compartilhado deve conter ao menos um órgão em comum com o Portfolio principal.',
                     400
                 );
         }
@@ -2604,7 +2598,7 @@ export class ProjetoService {
 
         const portfolio = portfolios.filter((r) => r.id == projeto.portfolio_id)[0];
         if (!portfolio)
-            throw new HttpException('portfolio_id| Portfolio não está liberado para o seu usuário editar', 400);
+            throw new HttpException('Portfolio não está liberado para o seu usuário editar', 400);
 
         const edit = dto.responsaveis_no_orgao_gestor
             ? {
@@ -2654,7 +2648,7 @@ export class ProjetoService {
                     });
 
                     if (tags.length !== dto.tags.length)
-                        throw new HttpException('tags| Uma ou mais tag não foi encontrada', 400);
+                        throw new HttpException('Uma ou mais tag não foi encontrada', 400);
                 }
             }
 
@@ -2676,7 +2670,7 @@ export class ProjetoService {
                     });
 
                     if (tagsPortfolio.length !== dto.tags_portfolio.length)
-                        throw new HttpException('tags_portfolio| Uma ou mais tag de portfólio não foi encontrada', 400);
+                        throw new HttpException('Uma ou mais tag de portfólio não foi encontrada', 400);
 
                     // Soft delete dos relacionamentos existentes
                     await prismaTx.projetoPortfolioTag.updateMany({
@@ -3754,26 +3748,24 @@ export class ProjetoService {
                     },
                 })
                 .catch(() => {
-                    throw new HttpException('portfolio_id| Não foi encontrado', 400);
+                    throw new HttpException('Não foi encontrado', 400);
                 });
             const estaCompartilhado = projeto.portfolios_compartilhados?.some((p) => p.id == dto.portfolio_id);
             if (estaCompartilhado)
-                throw new HttpException(
-                    'portfolio_id| Projeto está compartilhado com o Portfolio destino.' +
+                throw new HttpException('Projeto está compartilhado com o Portfolio destino.' +
                         ' Remova primeiro o compartilhamento, e poderá transferir o projeto.',
                     400
                 );
 
             // Nível de tarefas, do port novo, não pode ser menor.
             if (portfolioNovo.nivel_maximo_tarefa < portfolioAntigo.nivel_maximo_tarefa)
-                throw new HttpException(
-                    'portfolio_id| Portfolio novo deve ter nível máximo de tarefa maior ou igual ao portfolio original.',
+                throw new HttpException('Portfolio novo deve ter nível máximo de tarefa maior ou igual ao portfolio original.',
                     400
                 );
 
             // Nível de regionalização deve ser igual.
             if (portfolioNovo.nivel_regionalizacao != portfolioAntigo.nivel_regionalizacao)
-                throw new HttpException('portfolio_id| Portfolio novo deve ter mesmo nível de regionalização.', 400);
+                throw new HttpException('Portfolio novo deve ter mesmo nível de regionalização.', 400);
 
             // Meses disponíveis para orçamento devem ser iguais.
             if (
@@ -3782,15 +3774,14 @@ export class ProjetoService {
                     portfolioAntigo.orcamento_execucao_disponivel_meses
                 )
             )
-                throw new HttpException(
-                    'portfolio_id| Portfolio novo deve ter mesmos meses disponíveis para orçamento.',
+                throw new HttpException('Portfolio novo deve ter mesmos meses disponíveis para orçamento.',
                     400
                 );
 
             // Por agora o órgão gestor não será modificado.
             // Portanto deve ser verificado se ele está presente nos órgãos do novo port.
             if (!portfolioNovo.orgaos.map((o) => o.orgao_id).some((o) => o == projeto.orgao_gestor.id))
-                throw new HttpException('portfolio_id| Órgão gestor do Projeto deve estar no Portfolio novo.', 400);
+                throw new HttpException('Órgão gestor do Projeto deve estar no Portfolio novo.', 400);
 
             await Promise.all([
                 prismaTx.projeto.update({ where: { id: projetoId }, data: { portfolio_id: dto.portfolio_id } }),

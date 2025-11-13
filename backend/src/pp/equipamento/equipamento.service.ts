@@ -21,7 +21,7 @@ export class EquipamentoService {
                     },
                 });
                 if (similarExists > 0)
-                    throw new HttpException('nome| Nome igual ou semelhante já existe em outro registro ativo', 400);
+                    throw new HttpException('Nome igual ou semelhante já existe em outro registro ativo', 400);
 
                 const equipamento = await prismaTx.equipamento.create({
                     data: {
@@ -89,8 +89,7 @@ export class EquipamentoService {
                         },
                     });
                     if (similarExists > 0)
-                        throw new HttpException(
-                            'nome| Nome igual ou semelhante já existe em outro registro ativo',
+                        throw new HttpException('Nome igual ou semelhante já existe em outro registro ativo',
                             400
                         );
                 }

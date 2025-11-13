@@ -20,7 +20,7 @@ export class ClassificacaoService {
                     },
                 })) > 0
             ) {
-                throw new HttpException('nome| Nome igual ou semelhante já existe em outro registro ativo', 400);
+                throw new HttpException('Nome igual ou semelhante já existe em outro registro ativo', 400);
             }
             return await prismaTxn.classificacao.create({
                 data: {

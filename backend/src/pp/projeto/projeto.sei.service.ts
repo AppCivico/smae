@@ -26,8 +26,7 @@ export class ProjetoSeiService {
         });
 
         if (existenteProjetoSei > 0)
-            throw new HttpException(
-                `processo_sei| Já existe um registro do processo SEI ${dto.processo_sei} para este projeto`,
+            throw new HttpException(`Já existe um registro do processo SEI ${dto.processo_sei} para este projeto`,
                 400
             );
 
@@ -105,8 +104,7 @@ export class ProjetoSeiService {
             });
 
             if (existenteProjetoSei > 0)
-                throw new HttpException(
-                    `processo_sei| Já existe um registro do processo SEI ${dto.processo_sei} para este projeto`,
+                throw new HttpException(`Já existe um registro do processo SEI ${dto.processo_sei} para este projeto`,
                     400
                 );
         }
@@ -120,8 +118,7 @@ export class ProjetoSeiService {
             },
         });
         if (self.categoria !== 'Manual')
-            throw new HttpException(
-                `processo_sei| Processo SEI não pode ser alterado, pois foi criado pelo sistema.`,
+            throw new HttpException(`Processo SEI não pode ser alterado, pois foi criado pelo sistema.`,
                 400
             );
 
@@ -150,8 +147,7 @@ export class ProjetoSeiService {
             },
         });
         if (self.categoria !== 'Manual')
-            throw new HttpException(
-                `processo_sei| Processo SEI não pode ser removido, pois foi criado pelo sistema.`,
+            throw new HttpException(`Processo SEI não pode ser removido, pois foi criado pelo sistema.`,
                 400
             );
 

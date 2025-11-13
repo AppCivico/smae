@@ -70,7 +70,7 @@ export class TransferenciaService {
                 const tipoExiste = await prismaTxn.transferenciaTipo.count({
                     where: { id: dto.tipo_id, removido_em: null },
                 });
-                if (!tipoExiste) throw new HttpException('tipo_id| Tipo não encontrado.', 400);
+                if (!tipoExiste) throw new HttpException('Tipo não encontrado.', 400);
 
                 /*Validação para caso seja informada a classificação realize a validação de existência
                  */
@@ -78,7 +78,7 @@ export class TransferenciaService {
                     const tipoExiste = await prismaTxn.classificacao.count({
                         where: { id: dto.classificacao_id, removido_em: null },
                     });
-                    if (!tipoExiste) throw new HttpException('classificacao_id| Classificação não encontrada.', 400);
+                    if (!tipoExiste) throw new HttpException('Classificação não encontrada.', 400);
                 }
 
                 // Tratando workflow
@@ -107,7 +107,7 @@ export class TransferenciaService {
                     },
                 });
                 if (tipo.esfera != dto.esfera)
-                    throw new HttpException('esfera| Esfera da transferência e esfera do tipo devem ser iguais', 400);
+                    throw new HttpException('Esfera da transferência e esfera do tipo devem ser iguais', 400);
 
                 // Criando identificador
                 // Identificador segue a seguinte regra: count(1) + 1 de transf / ano
@@ -367,7 +367,7 @@ export class TransferenciaService {
                         clausula_suspensiva: true,
                     },
                 });
-                if (!self) throw new HttpException('id| Transferência não encontrada', 404);
+                if (!self) throw new HttpException('Transferência não encontrada', 404);
 
                 /*Validação para caso seja informada a classificação realize a validação de existência
                  */
@@ -375,7 +375,7 @@ export class TransferenciaService {
                     const tipoExiste = await prismaTxn.classificacao.count({
                         where: { id: dto.classificacao_id, removido_em: null },
                     });
-                    if (!tipoExiste) throw new HttpException('classificacao_id| Classificação não encontrada.', 400);
+                    if (!tipoExiste) throw new HttpException('Classificação não encontrada.', 400);
                 }
 
                 if (self.esfera != dto.esfera || self.tipo_id != dto.tipo_id) {
@@ -391,8 +391,7 @@ export class TransferenciaService {
                         },
                     });
                     if (tipo.esfera != dto.esfera)
-                        throw new HttpException(
-                            'esfera| Esfera da transferência e esfera do tipo devem ser iguais',
+                        throw new HttpException('Esfera da transferência e esfera do tipo devem ser iguais',
                             400
                         );
                 }
@@ -420,8 +419,7 @@ export class TransferenciaService {
                         },
                     });
                     if (temMovimentacaoWorkflow)
-                        throw new HttpException(
-                            'ano| Ano não pode ser modificado, pois transferência já está em progresso.',
+                        throw new HttpException('Ano não pode ser modificado, pois transferência já está em progresso.',
                             400
                         );
 
@@ -532,8 +530,7 @@ export class TransferenciaService {
                     self.clausula_suspensiva == false &&
                     dto.clausula_suspensiva_vencimento == null
                 )
-                    throw new HttpException(
-                        'clausula_suspensiva_vencimento| Data de vencimento da cláusula suspensiva deve ser informada.',
+                    throw new HttpException('Data de vencimento da cláusula suspensiva deve ser informada.',
                         400
                     );
 
@@ -619,7 +616,7 @@ export class TransferenciaService {
                     for (const relParlamentar of dto.parlamentares) {
                         if (relParlamentar.id) {
                             const row = updatedSelf.parlamentar.find((e) => e.id == relParlamentar.id);
-                            if (!row) throw new HttpException('id| Linha não encontrada.', 400);
+                            if (!row) throw new HttpException('Linha não encontrada.', 400);
 
                             if (
                                 row.objeto !== relParlamentar.objeto ||
@@ -708,8 +705,7 @@ export class TransferenciaService {
                             },
                         });
                         if (parlamentarDistribuicao)
-                            throw new HttpException(
-                                'parlamentar| Parlamentar já está configurado em distribuição de recurso. Remova-o primeiro na distribuição.',
+                            throw new HttpException('Parlamentar já está configurado em distribuição de recurso. Remova-o primeiro na distribuição.',
                                 400
                             );
 
@@ -772,15 +768,13 @@ export class TransferenciaService {
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
                 // “VALOR DO REPASSE”  é a soma de “Custeio” + Investimento”
                 if (Number(dto.valor).toFixed(2) != (+dto.custeio + +dto.investimento).toFixed(2))
-                    throw new HttpException(
-                        'valor| Valor do repasse deve ser a soma dos valores de custeio e investimento.',
+                    throw new HttpException('Valor do repasse deve ser a soma dos valores de custeio e investimento.',
                         400
                     );
 
                 // “VALOR TOTAL”  é a soma de “Custeio” + Investimento” + “Contrapartida”
                 if (Number(dto.valor_total).toFixed(2) != (+dto.valor + +dto.valor_contrapartida).toFixed(2))
-                    throw new HttpException(
-                        'valor| Valor total deve ser a soma dos valores de repasse e contrapartida.',
+                    throw new HttpException('Valor total deve ser a soma dos valores de repasse e contrapartida.',
                         400
                     );
 
@@ -1006,15 +1000,14 @@ export class TransferenciaService {
                         .reduce((acc, curr) => acc + +curr.valor!, 0);
 
                     if (+sumValor > +dto.valor!)
-                        throw new HttpException(
-                            'parlamentares| A soma dos valores dos parlamentares não pode superar o valor de repasse da transferência.',
+                        throw new HttpException('A soma dos valores dos parlamentares não pode superar o valor de repasse da transferência.',
                             400
                         );
 
                     for (const relParlamentar of dto.parlamentares) {
                         if (relParlamentar.id) {
                             const row = self.parlamentar.find((e) => e.id == relParlamentar.id);
-                            if (!row) throw new HttpException('id| Linha não encontrada.', 400);
+                            if (!row) throw new HttpException('Linha não encontrada.', 400);
 
                             if (
                                 row.objeto !== relParlamentar.objeto ||
@@ -1044,8 +1037,7 @@ export class TransferenciaService {
                                     );
 
                                     if (+sumDistribuicoes > +relParlamentar.valor)
-                                        throw new HttpException(
-                                            'valor| O novo valor do parlamentar não pode ser inferior ao valor já distribuído.',
+                                        throw new HttpException('O novo valor do parlamentar não pode ser inferior ao valor já distribuído.',
                                             400
                                         );
                                 }
@@ -1510,7 +1502,7 @@ export class TransferenciaService {
                 },
             },
         });
-        if (!row) throw new HttpException('id| Transferência não encontrada.', 404);
+        if (!row) throw new HttpException('Transferência não encontrada.', 404);
 
         return {
             id: row.id,

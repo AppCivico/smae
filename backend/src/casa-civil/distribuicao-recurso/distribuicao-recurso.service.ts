@@ -85,7 +85,7 @@ export class DistribuicaoRecursoService {
                 removido_em: null,
             },
         });
-        if (!orgaoGestorExiste) throw new HttpException('orgao_gestor_id| Órgão gestor inválido', 400);
+        if (!orgaoGestorExiste) throw new HttpException('Órgão gestor inválido', 400);
 
         this.checkDuplicateSei(dto);
 
@@ -101,7 +101,7 @@ export class DistribuicaoRecursoService {
                 valor_total: true,
             },
         });
-        if (!transferencia) throw new HttpException('transferencia_id| Transferência não encontrada.', 400);
+        if (!transferencia) throw new HttpException('Transferência não encontrada.', 400);
 
         const agora = new Date(Date.now());
         const create = async (prismaTx: Prisma.TransactionClient) => {
@@ -114,23 +114,20 @@ export class DistribuicaoRecursoService {
                     },
                 });
                 if (similarExists > 0)
-                    throw new HttpException(
-                        'nome| Nome de distribuição, igual ou semelhante já existe em outro registro ativo',
+                    throw new HttpException('Nome de distribuição, igual ou semelhante já existe em outro registro ativo',
                         400
                     );
             }
 
             // “VALOR DO REPASSE”  é a soma de “Custeio” + Investimento”
             if (Number(dto.valor).toFixed(2) != (+dto.custeio + +dto.investimento).toFixed(2))
-                throw new HttpException(
-                    'valor| Valor do repasse deve ser a soma dos valores de custeio e investimento.',
+                throw new HttpException('Valor do repasse deve ser a soma dos valores de custeio e investimento.',
                     400
                 );
 
             // “VALOR TOTAL”  é a soma de “Custeio” + Investimento” + “Contrapartida”
             if (Number(dto.valor_total).toFixed(2) != (+dto.valor + +dto.valor_contrapartida).toFixed(2))
-                throw new HttpException(
-                    'valor| Valor total deve ser a soma dos valores de repasse e contrapartida.',
+                throw new HttpException('Valor total deve ser a soma dos valores de repasse e contrapartida.',
                     400
                 );
 
@@ -245,8 +242,7 @@ export class DistribuicaoRecursoService {
 
                 const sumValor = dto.parlamentares.filter((e) => e.valor).reduce((acc, curr) => acc + +curr.valor!, 0);
                 if (+sumValor > +dto.valor)
-                    throw new HttpException(
-                        'parlamentares| A soma dos valores dos parlamentares não pode superar o valor de repasse da distribuição.',
+                    throw new HttpException('A soma dos valores dos parlamentares não pode superar o valor de repasse da distribuição.',
                         400
                     );
 
@@ -328,8 +324,7 @@ export class DistribuicaoRecursoService {
                     sumValor += novaRow.valor ? +novaRow.valor : 0;
 
                     if (+sumValor > +valorNaTransf)
-                        throw new HttpException(
-                            'parlamentares|A soma dos valores do parlamentar em todas as distruições não pode superar o valor de repasse, do parlamentar, na transferência.',
+                        throw new HttpException('A soma dos valores do parlamentar em todas as distruições não pode superar o valor de repasse, do parlamentar, na transferência.',
                             400
                         );
 
@@ -487,7 +482,7 @@ export class DistribuicaoRecursoService {
                     id: filters.transferencia_id,
                 },
             });
-            if (!transferencia) throw new HttpException('transferencia_id| Transferência não encontrada.', 400);
+            if (!transferencia) throw new HttpException('Transferência não encontrada.', 400);
         }
 
         let ipp = filters.ipp ?? 50;
@@ -1005,7 +1000,7 @@ export class DistribuicaoRecursoService {
                 },
             },
         });
-        if (!row) throw new HttpException('id| Distribuição de recurso não encontrada.', 404);
+        if (!row) throw new HttpException('Distribuição de recurso não encontrada.', 404);
 
         const historico_status: DistribuicaoHistoricoStatusDto[] = row.status.map((r) => {
             return {
@@ -1161,7 +1156,7 @@ export class DistribuicaoRecursoService {
                     removido_em: null,
                 },
             });
-            if (!orgaoGestorExiste) throw new HttpException('orgao_gestor_id| Órgão gestor inválido', 400);
+            if (!orgaoGestorExiste) throw new HttpException('Órgão gestor inválido', 400);
         }
         const now = new Date(Date.now());
 
@@ -1186,7 +1181,7 @@ export class DistribuicaoRecursoService {
                 delete dto.registros_sei;
 
                 if (self.empenho == false && dto.empenho && dto.empenho == true && dto.data_empenho == undefined)
-                    throw new HttpException('data_empenho| Obrigatório quando for empenho.', 400);
+                    throw new HttpException('Obrigatório quando for empenho.', 400);
 
                 if (dto.nome && dto.nome != self.nome) {
                     const similarExists = await prismaTx.distribuicaoRecurso.count({
@@ -1198,8 +1193,7 @@ export class DistribuicaoRecursoService {
                         },
                     });
                     if (similarExists > 0)
-                        throw new HttpException(
-                            'nome| Nome igual ou semelhante já existe em outro registro ativo',
+                        throw new HttpException('Nome igual ou semelhante já existe em outro registro ativo',
                             400
                         );
 
@@ -1458,8 +1452,7 @@ export class DistribuicaoRecursoService {
 
                 // “VALOR DO REPASSE”  é a soma de “Custeio” + Investimento”
                 if (Number(updated.valor).toFixed(2) != (+updated.custeio + +updated.investimento).toFixed(2))
-                    throw new HttpException(
-                        'valor| Valor do repasse deve ser a soma dos valores de custeio e investimento.',
+                    throw new HttpException('Valor do repasse deve ser a soma dos valores de custeio e investimento.',
                         400
                     );
 
@@ -1467,8 +1460,7 @@ export class DistribuicaoRecursoService {
                 if (
                     Number(updated.valor_total).toFixed(2) != (+updated.valor + +updated.valor_contrapartida).toFixed(2)
                 )
-                    throw new HttpException(
-                        'valor| Valor total deve ser a soma dos valores de repasse e contrapartida.',
+                    throw new HttpException('Valor total deve ser a soma dos valores de repasse e contrapartida.',
                         400
                     );
 
@@ -1493,8 +1485,7 @@ export class DistribuicaoRecursoService {
                         .filter((e) => e.valor)
                         .reduce((acc, curr) => acc + +curr.valor!, 0);
                     if (+sumValor > +updated.valor)
-                        throw new HttpException(
-                            'parlamentares| A soma dos valores dos parlamentares não pode superar o valor de repasse da distribuição.',
+                        throw new HttpException('A soma dos valores dos parlamentares não pode superar o valor de repasse da distribuição.',
                             400
                         );
 
@@ -1513,8 +1504,7 @@ export class DistribuicaoRecursoService {
                             },
                         });
                         if (!parlamentarNaTransf)
-                            throw new HttpException(
-                                'parlamentar_id| Parlamentar não encontrado na transferência.',
+                            throw new HttpException('Parlamentar não encontrado na transferência.',
                                 400
                             );
 
@@ -1577,14 +1567,13 @@ export class DistribuicaoRecursoService {
                         sumValor += +relParlamentar.valor!;
 
                         if (+sumValor > +valorNaTransf)
-                            throw new HttpException(
-                                'parlamentares| A soma dos valores do parlamentar em todas as distruições não pode superar o valor de repasse, do parlamentar, na transferência.',
+                            throw new HttpException('A soma dos valores do parlamentar em todas as distruições não pode superar o valor de repasse, do parlamentar, na transferência.',
                                 400
                             );
 
                         if (relParlamentar.id) {
                             const row = updated.parlamentares.find((e) => e.id == relParlamentar.id);
-                            if (!row) throw new HttpException('id| Linha não encontrada.', 400);
+                            if (!row) throw new HttpException('Linha não encontrada.', 400);
 
                             if (
                                 row.objeto !== relParlamentar.objeto ||
@@ -1608,7 +1597,7 @@ export class DistribuicaoRecursoService {
                                 (e) => e.parlamentar_id == relParlamentar.parlamentar_id
                             );
                             if (exists)
-                                throw new HttpException('parlamentar_id| Parlamentar já está na distribuição.', 400);
+                                throw new HttpException('Parlamentar já está na distribuição.', 400);
 
                             operations.push(
                                 prismaTx.distribuicaoParlamentar.create({
@@ -1674,7 +1663,7 @@ export class DistribuicaoRecursoService {
     ) {
         // Verificando se a justificativa foi enviada e não é null.
         // Ela é required na tabela.
-        if (!dto.justificativa_aditamento) throw new HttpException('justificativa_aditamento| Deve ser enviada.', 400);
+        if (!dto.justificativa_aditamento) throw new HttpException('Deve ser enviada.', 400);
 
         const self = await prismaTx.distribuicaoRecurso.findFirstOrThrow({
             where: {
@@ -1692,7 +1681,7 @@ export class DistribuicaoRecursoService {
             },
         });
         if (!dto.justificativa_aditamento || self.vigencia == null)
-            throw new HttpException('justificativa_aditamento| Deve ser enviada.', 400);
+            throw new HttpException('Deve ser enviada.', 400);
 
         await prismaTx.distribuicaoRecursoAditamento.create({
             data: {

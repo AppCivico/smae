@@ -233,7 +233,7 @@ export class PdmService {
             },
         });
         if (similarExists > 0)
-            throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
+            throw new HttpException('Descrição igual ou semelhante já existe em outro registro ativo', 400);
 
         let arquivo_logo_id: undefined | number;
         if (dto.upload_logo) {
@@ -243,7 +243,7 @@ export class PdmService {
         delete dto.upload_logo;
 
         if (dto.possui_atividade && !dto.possui_iniciativa)
-            throw new HttpException('possui_atividade| possui_iniciativa precisa ser True para ativar Atividades', 400);
+            throw new HttpException('possui_iniciativa precisa ser True para ativar Atividades', 400);
 
         const now = new Date(Date.now());
         const created = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
@@ -770,8 +770,7 @@ export class PdmService {
                 },
             });
             if (similarExists > 0)
-                throw new HttpException(
-                    'descricao| Descrição igual ou semelhante já existe em outro registro ativo',
+                throw new HttpException('Descrição igual ou semelhante já existe em outro registro ativo',
                     400
                 );
         }
@@ -979,7 +978,7 @@ export class PdmService {
                 where: { id: { in: dto.pdm_anteriores }, tipo: 'PS', removido_em: null },
             });
             if (qtde != dto.pdm_anteriores.length) {
-                throw new BadRequestException('pdm_anteriores| Um ou mais Plano Setoriais anteriores não são válidos');
+                throw new BadRequestException('Um ou mais Plano Setoriais anteriores não são válidos');
             }
         }
     }

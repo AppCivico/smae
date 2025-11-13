@@ -17,7 +17,7 @@ export class PartidoService {
             },
         });
         if (similarExists > 0)
-            throw new HttpException('nome| Nome igual ou semelhante já existe em outro registro ativo', 400);
+            throw new HttpException('Nome igual ou semelhante já existe em outro registro ativo', 400);
 
         if (dto.sigla) {
             const similarExists = await this.prisma.partido.count({
@@ -27,7 +27,7 @@ export class PartidoService {
                 },
             });
             if (similarExists > 0)
-                throw new HttpException('sigla| Sigla igual ou semelhante já existe em outro registro ativo', 400);
+                throw new HttpException('Sigla igual ou semelhante já existe em outro registro ativo', 400);
         }
 
         const similarNumeroExists = await this.prisma.partido.count({
@@ -104,7 +104,7 @@ export class PartidoService {
                 },
             });
             if (similarExists > 0)
-                throw new HttpException('nome| Nome igual ou semelhante já existe em outro registro ativo', 400);
+                throw new HttpException('Nome igual ou semelhante já existe em outro registro ativo', 400);
         }
 
         if (dto.sigla && dto.sigla != self.sigla) {
@@ -116,7 +116,7 @@ export class PartidoService {
                 },
             });
             if (similarExists > 0)
-                throw new HttpException('sigla| Sigla igual ou semelhante já existe em outro registro ativo', 400);
+                throw new HttpException('Sigla igual ou semelhante já existe em outro registro ativo', 400);
         }
 
         if (dto.numero && dto.numero !== self.numero) {

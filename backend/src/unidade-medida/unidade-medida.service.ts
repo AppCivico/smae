@@ -17,7 +17,7 @@ export class UnidadeMedidaService {
             },
         });
         if (similarDescExists > 0)
-            throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
+            throw new HttpException('Descrição igual ou semelhante já existe em outro registro ativo', 400);
 
         const similarSiglaExists = await this.prisma.unidadeMedida.count({
             where: {
@@ -26,7 +26,7 @@ export class UnidadeMedidaService {
             },
         });
         if (similarSiglaExists > 0)
-            throw new HttpException('sigla| Sigla igual ou semelhante já existe em outro registro ativo', 400);
+            throw new HttpException('Sigla igual ou semelhante já existe em outro registro ativo', 400);
 
         const created = await this.prisma.unidadeMedida.create({
             data: {
@@ -69,8 +69,7 @@ export class UnidadeMedidaService {
                 },
             });
             if (similarDescExists > 0)
-                throw new HttpException(
-                    'descricao| Descrição igual ou semelhante já existe em outro registro ativo',
+                throw new HttpException('Descrição igual ou semelhante já existe em outro registro ativo',
                     400
                 );
 
@@ -82,7 +81,7 @@ export class UnidadeMedidaService {
                 },
             });
             if (similarSiglaExists > 0)
-                throw new HttpException('sigla| Sigla igual ou semelhante já existe em outro registro ativo', 400);
+                throw new HttpException('Sigla igual ou semelhante já existe em outro registro ativo', 400);
         }
 
         await this.prisma.unidadeMedida.update({
