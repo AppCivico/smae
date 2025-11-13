@@ -27,7 +27,8 @@ export function LoggerWithLog(methodName: string): LoggerWithLog {
                     ip: logOpts.ip || '0.0.0.0',
                     log: logs.join('\n'),
                     pessoa_id: logOpts.pessoa_id,
-                    pessoa_sessao_id: logOpts.pessoa_sessao_id,
+                    pessoa_sessao_id:
+                        logOpts.pessoa_sessao_id && logOpts.pessoa_sessao_id > 0 ? logOpts.pessoa_sessao_id : null,
                 },
             });
         },
