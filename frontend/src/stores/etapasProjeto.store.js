@@ -112,7 +112,7 @@ export const useEtapasProjetosStore = (prefixo) => defineStore(prefixo ? `${pref
   getters: {
     etapasPorId() {
       // Combina ambas as listas para garantir que etapas padrão também estejam disponíveis
-      const todasEtapas = [...this.lista, ...this.etapasPadrao];
+      const todasEtapas = this.lista.concat(this.etapasPadrao);
       return todasEtapas.reduce((acc, cur) => {
         acc[cur.id] = cur;
         return acc;
