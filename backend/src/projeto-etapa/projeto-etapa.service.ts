@@ -34,6 +34,87 @@ export class ProjetoEtapaService {
         if (dto.eh_padrao && dto.etapa_padrao_id)
             throw new HttpException('etapa_padrao_id| Não pode informar etapa padrão se o registro for padrão', 400);
 
+        // Validar etapa_padrao_id se fornecido
+        if (dto.etapa_padrao_id) {
+            const etapaPadrao = await this.prisma.projetoEtapa.findFirst({
+                where: {
+                    id: dto.etapa_padrao_id,
+                    tipo_projeto: tipo,
+                    eh_padrao: true,
+                    removido_em: null,
+                },
+            });
+
+            if (!etapaPadrao) {
+                throw new HttpException(
+                    'etapa_padrao_id| A etapa padrão informada não existe, não é do mesmo tipo ou não está marcada como padrão',
+                    400
+                );
+            }
+        }
+
+        // Processar ordem_painel se eh_padrao=true
+        let ordem_painel: number | null = null;
+        if (eh_padrao) {
+            // Se forneceu ordem_painel no dto
+            if (dto.ordem_painel !== undefined && dto.ordem_painel !== null) {
+                // Se <= 0, usar 1
+                let ordemDesejada = dto.ordem_painel <= 0 ? 1 : dto.ordem_painel;
+
+                // Buscar o máximo atual
+                const maxOrdem = await this.prisma.projetoEtapa.aggregate({
+                    where: {
+                        tipo_projeto: tipo,
+                        removido_em: null,
+                        eh_padrao: true,
+                    },
+                    _max: {
+                        ordem_painel: true,
+                    },
+                });
+
+                const maxAtual = maxOrdem._max.ordem_painel ?? 0;
+
+                // Se ordem desejada > max+1, truncar para max+1
+                if (ordemDesejada > maxAtual + 1) {
+                    ordemDesejada = maxAtual + 1;
+                }
+
+                // Mover registros existentes para cima (incrementar ordem_painel dos registros >= ordem desejada)
+                await this.prisma.projetoEtapa.updateMany({
+                    where: {
+                        tipo_projeto: tipo,
+                        removido_em: null,
+                        eh_padrao: true,
+                        ordem_painel: {
+                            gte: ordemDesejada,
+                        },
+                    },
+                    data: {
+                        ordem_painel: {
+                            increment: 1,
+                        },
+                    },
+                });
+
+                ordem_painel = ordemDesejada;
+            } else {
+                // Não forneceu ordem_painel, usar MAX+1
+                const maxOrdem = await this.prisma.projetoEtapa.aggregate({
+                    where: {
+                        tipo_projeto: tipo,
+                        removido_em: null,
+                        eh_padrao: true,
+                    },
+                    _max: {
+                        ordem_painel: true,
+                    },
+                });
+
+                ordem_painel = (maxOrdem._max.ordem_painel ?? 0) + 1;
+            }
+        }
+
         const created = await this.prisma.projetoEtapa.create({
             data: {
                 portfolio_id: dto.portfolio_id,
@@ -43,6 +124,7 @@ export class ProjetoEtapaService {
                 criado_em: new Date(Date.now()),
                 descricao: dto.descricao,
                 eh_padrao: dto.eh_padrao,
+                ordem_painel: ordem_painel,
             },
             select: { id: true },
         });
@@ -62,6 +144,9 @@ export class ProjetoEtapaService {
             const portfolios = await this.portfolioService.findAll(tipo, user, true);
             portfoliosId = portfolios.map((p) => p.id);
         }
+
+        if (filters.eh_padrao && filters?.portfolio_id)
+            throw new HttpException('Não é possível filtrar por portfólio quando o filtro eh_padrao está ativo', 400);
 
         const listActive = await this.prisma.projetoEtapa.findMany({
             where: {
@@ -140,6 +225,99 @@ export class ProjetoEtapaService {
             throw new HttpException('etapa_padrao_id| Não pode informar a própria etapa como padrão', 400);
         }
 
+        // Validar etapa_padrao_id se fornecido
+        if (dto.etapa_padrao_id !== undefined && dto.etapa_padrao_id !== null) {
+            const etapaPadrao = await this.prisma.projetoEtapa.findFirst({
+                where: {
+                    id: dto.etapa_padrao_id,
+                    tipo_projeto: tipo,
+                    eh_padrao: true,
+                    removido_em: null,
+                },
+            });
+
+            if (!etapaPadrao) {
+                throw new HttpException(
+                    'etapa_padrao_id| A etapa padrão informada não existe, não é do mesmo tipo ou não está marcada como padrão',
+                    400
+                );
+            }
+        }
+
+        // Processar ordem_painel
+        const ehPadraoFinal = dto.eh_padrao ?? self.eh_padrao;
+        let ordem_painel = self.ordem_painel;
+
+        if (ehPadraoFinal) {
+            // Se está se tornando padrão pela primeira vez, ou se forneceu ordem_painel
+            const isBecomingPadrao = !self.eh_padrao && ehPadraoFinal;
+            const ordemPainelFornecida = dto.ordem_painel !== undefined && dto.ordem_painel !== null;
+
+            if (isBecomingPadrao && !ordemPainelFornecida) {
+                // Está se tornando padrão e não forneceu ordem_painel, usar MAX+1
+                const maxOrdem = await this.prisma.projetoEtapa.aggregate({
+                    where: {
+                        tipo_projeto: tipo,
+                        removido_em: null,
+                        eh_padrao: true,
+                    },
+                    _max: {
+                        ordem_painel: true,
+                    },
+                });
+
+                ordem_painel = (maxOrdem._max.ordem_painel ?? 0) + 1;
+            } else if (ordemPainelFornecida) {
+                // Forneceu ordem_painel no dto
+                // Se <= 0, usar 1
+                let ordemDesejada = dto.ordem_painel! <= 0 ? 1 : dto.ordem_painel!;
+
+                // Buscar o máximo atual (excluindo o próprio registro)
+                const maxOrdem = await this.prisma.projetoEtapa.aggregate({
+                    where: {
+                        tipo_projeto: tipo,
+                        removido_em: null,
+                        eh_padrao: true,
+                        NOT: { id: id },
+                    },
+                    _max: {
+                        ordem_painel: true,
+                    },
+                });
+
+                const maxAtual = maxOrdem._max.ordem_painel ?? 0;
+
+                // Se ordem desejada > max+1, truncar para max+1
+                if (ordemDesejada > maxAtual + 1) {
+                    ordemDesejada = maxAtual + 1;
+                }
+
+                // Se a ordem mudou, precisamos reorganizar
+                if (ordemDesejada !== self.ordem_painel) {
+                    // Mover registros existentes para cima (incrementar ordem_painel dos registros >= ordem desejada)
+                    await this.prisma.projetoEtapa.updateMany({
+                        where: {
+                            tipo_projeto: tipo,
+                            removido_em: null,
+                            eh_padrao: true,
+                            NOT: { id: id },
+                            ordem_painel: {
+                                gte: ordemDesejada,
+                            },
+                        },
+                        data: {
+                            ordem_painel: {
+                                increment: 1,
+                            },
+                        },
+                    });
+                }
+
+                ordem_painel = ordemDesejada;
+            }
+            // Se não forneceu ordem_painel e já era padrão, mantém o que estava (preload from db)
+        }
+
         await this.prisma.projetoEtapa.update({
             where: { id: id },
             data: {
@@ -149,6 +327,7 @@ export class ProjetoEtapaService {
                 portfolio_id: dto.portfolio_id,
                 etapa_padrao_id: dto.etapa_padrao_id,
                 eh_padrao: dto.eh_padrao,
+                ordem_painel: ordem_painel,
             },
         });
 

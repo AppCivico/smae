@@ -1,5 +1,6 @@
-import { IsBoolean, IsNumber, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsBoolean, IsNumber, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
 import { MAX_LENGTH_MEDIO } from 'src/common/consts';
+import { MAX_DTO_SAFE_NUM } from '../../common/dto/consts';
 
 export class CreateProjetoEtapaDto {
     /**
@@ -20,4 +21,10 @@ export class CreateProjetoEtapaDto {
     @IsOptional()
     @IsBoolean()
     eh_padrao?: boolean;
+
+    @IsOptional()
+    @IsNumber()
+    @Min(1)
+    @Max(MAX_DTO_SAFE_NUM)
+    ordem_painel: number;
 }
