@@ -214,7 +214,6 @@ const maxLength = computed(() => props.config?.schema?.tests?.find((test) => tes
       <CampoDeEtapaPorPortfolio
         :model-value="modelValue || []"
         :readonly="readonly"
-        :aria-readonly="readonly"
         @update:model-value="handleChange"
       />
     </Field>

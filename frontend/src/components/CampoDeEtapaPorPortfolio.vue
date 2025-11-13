@@ -14,6 +14,7 @@ interface Etapa {
 
 type Props = {
   modelValue?: number;
+  readonly?: boolean;
 };
 
 type Emits = {
@@ -75,6 +76,9 @@ watch(() => values.etapa_id, (novoValor) => {
       name="portfolio_id"
       as="select"
       class="inputtext light mb1"
+      :readonly="readonly"
+      :disabled="readonly"
+      :aria-disabled="readonly"
       :class="{
         error: errors.portfolio_id,
         loading: portfolioStore.chamadasPendentes.lista
@@ -109,12 +113,14 @@ watch(() => values.etapa_id, (novoValor) => {
     <Field
       name="etapa_id"
       as="select"
+      :readonly="readonly"
+      :aria-disabled="readonly"
       class="inputtext light mb1"
       :class="{
         error: errors.etapa_id,
         loading: etapasStore.chamadasPendentes?.lista
       }"
-      :disabled="!values.portfolio_id || values.portfolio_id === 0"
+      :disabled="readonly || !values.portfolio_id || values.portfolio_id === 0"
     >
       <option :value="0">
         Selecionar
