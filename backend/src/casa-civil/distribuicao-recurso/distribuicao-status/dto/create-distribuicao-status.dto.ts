@@ -6,12 +6,12 @@ import { MAX_LENGTH_DEFAULT } from 'src/common/consts';
 export class CreateDistribuicaoStatusDto {
     @IsString()
     @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Nome' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
-    @MinLength(1, { message: '$property| nome: Mínimo 1 caractere' })
+    @MinLength(1, { message: 'nome: Mínimo 1 caractere' })
     nome: string;
 
     @ApiProperty({ enum: DistribuicaoStatusTipo, enumName: 'DistribuicaoStatusTipo' })
     @IsEnum(DistribuicaoStatusTipo, {
-        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(DistribuicaoStatusTipo).join(', '),
+        message: 'Precisa ser um dos seguintes valores: ' + Object.values(DistribuicaoStatusTipo).join(', '),
     })
     tipo: DistribuicaoStatusTipo;
 

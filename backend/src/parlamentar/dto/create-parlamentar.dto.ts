@@ -15,16 +15,16 @@ import { IsValidCPF } from '../../common/decorators/IsValidCPF';
 import { MAX_LENGTH_DEFAULT, MAX_LENGTH_HTML, MAX_LENGTH_MEDIO } from 'src/common/consts';
 
 export class CreateParlamentarDto {
-    @IsString({ message: '$property| nome: Precisa ser alfanumérico' })
+    @IsString({ message: 'nome: Precisa ser alfanumérico' })
     @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Nome' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
-    @MinLength(1, { message: '$property| nome: Mínimo 1 caractere' })
+    @MinLength(1, { message: 'nome: Mínimo 1 caractere' })
     nome: string;
 
-    @IsString({ message: '$property| Nome popular: Precisa ser alfanumérico' })
+    @IsString({ message: 'Nome popular: Precisa ser alfanumérico' })
     @MaxLength(MAX_LENGTH_DEFAULT, {
         message: `O campo 'Nome popular' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
     })
-    @MinLength(1, { message: '$property| nome: Mínimo 1 caractere' })
+    @MinLength(1, { message: 'nome: Mínimo 1 caractere' })
     nome_popular: string;
 
     /**
@@ -57,7 +57,7 @@ export class CreateParlamentarDto {
      */
     @IsOptional()
     @ValidateIf((object, value) => value !== null)
-    @IsString({ message: '$property| upload_token de um arquivo de foto' })
+    @IsString({ message: 'upload_token de um arquivo de foto' })
     upload_foto?: string | null;
 
     @IsValidCPF()
@@ -81,7 +81,7 @@ export class CreateEquipeDto {
 
     @ApiProperty({ enum: ParlamentarEquipeTipo, enumName: 'Cargo' })
     @IsEnum(ParlamentarEquipeTipo, {
-        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(ParlamentarEquipeTipo).join(', '),
+        message: 'Precisa ser um dos seguintes valores: ' + Object.values(ParlamentarEquipeTipo).join(', '),
     })
     tipo: ParlamentarEquipeTipo;
 }
@@ -97,13 +97,13 @@ export class CreateMandatoDto {
     partido_atual_id: number;
 
     @IsOptional()
-    @IsString({ message: '$property| gabinete: Precisa ser alfanumérico' })
-    @MaxLength(250, { message: '$property| gabinete: Máximo 250 caracteres' })
+    @IsString({ message: 'gabinete: Precisa ser alfanumérico' })
+    @MaxLength(250, { message: 'gabinete: Máximo 250 caracteres' })
     gabinete: string | null;
 
     @IsOptional()
-    @IsString({ message: '$property| endereco: Precisa ser alfanumérico' })
-    @MaxLength(250, { message: '$property| endereco: Máximo 250 caracteres' })
+    @IsString({ message: 'endereco: Precisa ser alfanumérico' })
+    @MaxLength(250, { message: 'endereco: Máximo 250 caracteres' })
     endereco: string;
 
     @IsBoolean()
@@ -111,19 +111,19 @@ export class CreateMandatoDto {
 
     @ApiProperty({ enum: ParlamentarCargo, enumName: 'ParlamentarCargo' })
     @IsEnum(ParlamentarCargo, {
-        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(ParlamentarCargo).join(', '),
+        message: 'Precisa ser um dos seguintes valores: ' + Object.values(ParlamentarCargo).join(', '),
     })
     cargo: ParlamentarCargo;
 
     @ApiProperty({ enum: ParlamentarUF, enumName: 'UF' })
     @IsEnum(ParlamentarUF, {
-        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(ParlamentarUF).join(', '),
+        message: 'Precisa ser um dos seguintes valores: ' + Object.values(ParlamentarUF).join(', '),
     })
     uf: ParlamentarUF;
 
     @ApiProperty({ enum: ParlamentarSuplente, enumName: 'Suplente' })
     @IsEnum(ParlamentarSuplente, {
-        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(ParlamentarSuplente).join(', '),
+        message: 'Precisa ser um dos seguintes valores: ' + Object.values(ParlamentarSuplente).join(', '),
     })
     @IsOptional()
     suplencia?: ParlamentarSuplente;
@@ -145,12 +145,12 @@ export class CreateMandatoDto {
     mandato_principal_id?: number;
 
     @IsOptional()
-    @IsString({ message: '$property| ocupação: Precisa ser alfanumérico' })
+    @IsString({ message: 'ocupação: Precisa ser alfanumérico' })
     @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo 'Atuação' deve ter no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     atuacao?: string;
 
     @IsOptional()
-    @IsString({ message: '$property| biografia: Precisa ser alfanumérico' })
+    @IsString({ message: 'biografia: Precisa ser alfanumérico' })
     @MaxLength(MAX_LENGTH_HTML, { message: `O campo "Biografia" pode ser no máximo ${MAX_LENGTH_HTML} caracteres` })
     biografia?: string;
 
@@ -176,13 +176,13 @@ export class CreateMandatoRepresentatividadeDto {
 
     @ApiProperty({ enum: DadosEleicaoNivel, enumName: 'DadosEleicaoNivel' })
     @IsEnum(DadosEleicaoNivel, {
-        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(DadosEleicaoNivel).join(', '),
+        message: 'Precisa ser um dos seguintes valores: ' + Object.values(DadosEleicaoNivel).join(', '),
     })
     nivel: DadosEleicaoNivel;
 
     @ApiProperty({ enum: MunicipioTipo, enumName: 'MunicipioTipo' })
     @IsEnum(MunicipioTipo, {
-        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(MunicipioTipo).join(', '),
+        message: 'Precisa ser um dos seguintes valores: ' + Object.values(MunicipioTipo).join(', '),
     })
     @IsOptional()
     municipio_tipo?: MunicipioTipo;
@@ -200,7 +200,7 @@ export class CreateMandatoRepresentatividadeDto {
     @IsOptional()
     @IsNumber(
         { maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false },
-        { message: '$property| até duas casas decimais' }
+        { message: 'até duas casas decimais' }
     )
     @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     @ValidateIf((object, value) => value !== null)
@@ -227,7 +227,7 @@ export class CreateMandatoSuplenteDto {
 
     @ApiProperty({ enum: ParlamentarSuplente, enumName: 'Suplente' })
     @IsEnum(ParlamentarSuplente, {
-        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(ParlamentarSuplente).join(', '),
+        message: 'Precisa ser um dos seguintes valores: ' + Object.values(ParlamentarSuplente).join(', '),
     })
     @IsOptional()
     suplencia?: ParlamentarSuplente;

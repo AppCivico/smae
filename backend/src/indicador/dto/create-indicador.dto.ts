@@ -22,14 +22,14 @@ export class CreateIndicadorDto {
     /**
      * Código
      */
-    @IsString({ message: '$property| Precisa ser alfanumérico' })
+    @IsString({ message: 'Precisa ser alfanumérico' })
     @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Código' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     codigo: string;
 
     /**
      * título
      */
-    @IsString({ message: '$property| Título: Precisa ser alfanumérico' })
+    @IsString({ message: 'Título: Precisa ser alfanumérico' })
     @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo 'Título' deve ter no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     titulo: string;
 
@@ -39,7 +39,7 @@ export class CreateIndicadorDto {
      * */
     @ApiProperty({ enum: Polaridade, enumName: 'Polaridade' })
     @IsEnum(Polaridade, {
-        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(Polaridade).join(', '),
+        message: 'Precisa ser um dos seguintes valores: ' + Object.values(Polaridade).join(', '),
     })
     polaridade: Polaridade;
 
@@ -48,21 +48,21 @@ export class CreateIndicadorDto {
      * */
     @ApiProperty({ enum: Periodicidade, enumName: 'Periodicidade' })
     @IsEnum(Periodicidade, {
-        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(Periodicidade).join(', '),
+        message: 'Precisa ser um dos seguintes valores: ' + Object.values(Periodicidade).join(', '),
     })
     periodicidade: Periodicidade;
 
     /**
      * regionalizavel
      */
-    @IsBoolean({ message: '$property| precisa ser um boolean' })
+    @IsBoolean({ message: 'precisa ser um boolean' })
     regionalizavel: boolean;
 
     /**
      * nivel_regionalizacao
      */
     @IsOptional()
-    @IsInt({ message: '$property| nivel_regionalizacao precisa ser um número ou null' })
+    @IsInt({ message: 'nivel_regionalizacao precisa ser um número ou null' })
     @ValidateIf((object, value) => value !== null)
     @Min(1)
     @Type(() => Number)
@@ -89,7 +89,7 @@ export class CreateIndicadorDto {
     /**
      * meta_id
      */
-    @IsInt({ message: '$property| precisa ser um número' })
+    @IsInt({ message: 'precisa ser um número' })
     @Type(() => Number)
     @IsOptional()
     meta_id?: number;
@@ -97,7 +97,7 @@ export class CreateIndicadorDto {
     /**
      * iniciativa_id
      */
-    @IsInt({ message: '$property| precisa ser um número' })
+    @IsInt({ message: 'precisa ser um número' })
     @Type(() => Number)
     @IsOptional()
     iniciativa_id?: number;
@@ -105,42 +105,42 @@ export class CreateIndicadorDto {
     /**
      * atividade_id
      */
-    @IsInt({ message: '$property| precisa ser um número' })
+    @IsInt({ message: 'precisa ser um número' })
     @Type(() => Number)
     @IsOptional()
     atividade_id?: number;
 
     @IsOptional()
-    @IsString({ message: '$property| Precisa ser uma string' })
+    @IsString({ message: 'Precisa ser uma string' })
     @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Contexto" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     contexto?: string | null;
 
     @IsOptional()
-    @IsString({ message: '$property| Precisa ser uma string' })
+    @IsString({ message: 'Precisa ser uma string' })
     complemento?: string | null;
 
-    @IsInt({ message: '$property| $property inválido' })
-    @Min(0, { message: '$property| casas_decimais tem valor mínimo de zero' })
-    @Max(MAX_CASAS_DECIMAIS, { message: `$property| casas_decimais tem valor máximo de ${MAX_CASAS_DECIMAIS}` })
+    @IsInt({ message: '$property inválido' })
+    @Min(0, { message: 'casas_decimais tem valor mínimo de zero' })
+    @Max(MAX_CASAS_DECIMAIS, { message: `casas_decimais tem valor máximo de ${MAX_CASAS_DECIMAIS}` })
     @Transform((a: TransformFnParams) => (a.value === '' ? undefined : +a.value))
     @ValidateIf((object, value) => value !== null)
     casas_decimais: number | null;
 
     @IsOptional()
     @IsEnum(IndicadorTipo, {
-        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(IndicadorTipo).join(', '),
+        message: 'Precisa ser um dos seguintes valores: ' + Object.values(IndicadorTipo).join(', '),
     })
     @ApiProperty({ enum: IndicadorTipo, enumName: 'IndicadorTipo' })
     indicador_tipo?: IndicadorTipo;
 }
 
 export class LinkIndicadorVariavelDto {
-    @IsArray({ message: '$property| precisa ser um array' })
-    @IsInt({ each: true, message: '$property| precisa ser um número' })
+    @IsArray({ message: 'precisa ser um array' })
+    @IsInt({ each: true, message: 'precisa ser um número' })
     variavel_ids: number[];
 }
 
 export class UnlinkIndicadorVariavelDto {
-    @IsInt({ message: '$property| precisa ser um número' })
+    @IsInt({ message: 'precisa ser um número' })
     variavel_id: number;
 }

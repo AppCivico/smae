@@ -33,7 +33,7 @@ export class FilterTransferenciaDto {
     @ApiProperty({ enum: TransferenciaTipoEsfera, enumName: 'TransferenciaTipoEsfera' })
     @IsEnum(TransferenciaTipoEsfera, {
         message:
-            '$property| Precisa ser um dos seguintes valores: ' + Object.values(TransferenciaTipoEsfera).join(', '),
+            'Precisa ser um dos seguintes valores: ' + Object.values(TransferenciaTipoEsfera).join(', '),
     })
     esfera?: TransferenciaTipoEsfera;
 
@@ -56,7 +56,7 @@ export class FilterTransferenciaHistoricoDto {
     @IsEnum(TransferenciaHistoricoAcao, {
         each: true,
         message:
-            '$property| Precisa ser um dos seguintes valores: ' + Object.values(TransferenciaHistoricoAcao).join(', '),
+            'Precisa ser um dos seguintes valores: ' + Object.values(TransferenciaHistoricoAcao).join(', '),
     })
     acao?: TransferenciaHistoricoAcao[];
 }

@@ -4,19 +4,19 @@ import { NumberArrayTransformOrEmpty } from '../../../auth/transforms/number-arr
 import { NumberTransform } from '../../../auth/transforms/number.transform';
 
 export class PainelEstrategicoFilterDto {
-    @IsArray({ message: '$property| portfolio_id' })
+    @IsArray({ message: 'portfolio_id' })
     @IsOptional()
     @IsInt({ each: true })
     @Transform(NumberArrayTransformOrEmpty)
     portfolio_id: number[];
 
-    @IsArray({ message: '$property| orgao_responsavel_id' })
+    @IsArray({ message: 'orgao_responsavel_id' })
     @IsOptional()
     @IsInt({ each: true })
     @Transform(NumberArrayTransformOrEmpty)
     orgao_responsavel_id: number[];
 
-    @IsArray({ message: '$property| projeto_id' })
+    @IsArray({ message: 'projeto_id' })
     @IsOptional()
     @IsInt({ each: true })
     @Transform(NumberArrayTransformOrEmpty)

@@ -7,7 +7,7 @@ export class UpdatePdmDto extends PartialType(CreatePdmDto) {
      * use true para manter ativo, false para desativar. nulo/faltando não faz nenhuma ação
      */
     @IsOptional()
-    @IsBoolean({ message: '$property| valor inválido' })
+    @IsBoolean({ message: 'valor inválido' })
     @ValidateIf((object, value) => value !== null)
     ativo?: boolean | null;
 }

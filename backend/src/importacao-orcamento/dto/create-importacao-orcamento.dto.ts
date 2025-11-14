@@ -11,7 +11,7 @@ export class CreateImportacaoOrcamentoDto {
      * see: https://docs.sheetjs.com/docs/miscellany/formats
      *
      */
-    @IsString({ message: '$property| upload_token de um arquivo de ícone' })
+    @IsString({ message: 'upload_token de um arquivo de ícone' })
     upload: string;
 
     @ApiProperty({ example: 0 })

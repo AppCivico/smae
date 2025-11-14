@@ -58,7 +58,7 @@ export class FilterDashTransferenciasDto {
     @ApiProperty({ description: 'Contém qualquer um dos partidos', example: '[]' })
     @IsOptional()
     @IsArray()
-    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
+    @IsInt({ each: true, message: 'Cada item precisa ser um número inteiro' })
     @Transform(NumberArrayTransformOrUndef)
     partido_ids?: number[];
 
@@ -72,7 +72,7 @@ export class FilterDashTransferenciasDto {
     @ApiProperty({ description: 'Contém qualquer um dos órgãos', example: '[]' })
     @IsOptional()
     @IsArray()
-    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
+    @IsInt({ each: true, message: 'Cada item precisa ser um número inteiro' })
     @Transform(NumberArrayTransformOrUndef)
     orgaos_ids?: number[];
 
@@ -100,21 +100,21 @@ export class FilterDashTransferenciasAnaliseDto extends PartialType(
     @ApiProperty({ description: 'Contém qualquer um dos parlamentares', example: '[]' })
     @IsOptional()
     @IsArray()
-    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
+    @IsInt({ each: true, message: 'Cada item precisa ser um número inteiro' })
     @Transform(NumberArrayTransformOrUndef)
     parlamentar_ids?: number[];
 
     @ApiProperty({ description: 'Contém qualquer um dos anos', example: '[]' })
     @IsOptional()
     @IsArray()
-    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
+    @IsInt({ each: true, message: 'Cada item precisa ser um número inteiro' })
     @Transform(NumberArrayTransformOrUndef)
     anos?: number[];
 
     @ApiProperty({ description: 'Contém qualquer uma das etapas', example: '[]' })
     @IsOptional()
     @IsArray()
-    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
+    @IsInt({ each: true, message: 'Cada item precisa ser um número inteiro' })
     @Transform(NumberArrayTransformOrUndef)
     etapa_ids?: number[];
 }

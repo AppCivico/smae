@@ -53,9 +53,9 @@ export class CreateVariavelCategoricaDto {
     /**
      * Valores da variável categórica
      */
-    @IsArray({ message: '$property| precisa ser um array' })
-    @ArrayMinSize(1, { message: '$property| precisa ter um item' })
-    @ArrayMaxSize(1000, { message: '$property| precisa ter no máximo 1000 items' })
+    @IsArray({ message: 'precisa ser um array' })
+    @ArrayMinSize(1, { message: 'precisa ter um item' })
+    @ArrayMaxSize(1000, { message: 'precisa ter no máximo 1000 items' })
     @ValidateNested({ each: true })
     @Type(() => CreateVariavelCategoricaValorDto)
     valores: CreateVariavelCategoricaValorDto[]; // manter undefined pq precisamos apagar antes do insert

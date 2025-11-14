@@ -7,7 +7,7 @@ export class FilterAtividadeDto {
      * @example "1"
      */
     @IsOptional()
-    @IsInt({ message: '$property| iniciativa_id' })
+    @IsInt({ message: 'iniciativa_id' })
     @Type(() => Number)
     iniciativa_id?: number;
 
@@ -16,7 +16,7 @@ export class FilterAtividadeDto {
      * @example ""
      */
     @IsOptional()
-    @IsInt({ message: '$property| id' })
+    @IsInt({ message: 'id' })
     @Type(() => Number)
     id?: number;
 }

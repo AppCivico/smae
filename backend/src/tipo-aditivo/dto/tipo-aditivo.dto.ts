@@ -4,7 +4,7 @@ import { IsBoolean, IsInt, IsOptional, IsString, MaxLength } from 'class-validat
 import { MAX_LENGTH_DEFAULT } from 'src/common/consts';
 
 export class CreateTipoAditivoDto {
-    @IsString({ message: '$property| Nome: Precisa ser alfanumérico' })
+    @IsString({ message: 'Nome: Precisa ser alfanumérico' })
     @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Nome' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     nome: string;
 
@@ -22,7 +22,7 @@ export class FilterTipoAditivoDto {
      * @example ""
      */
     @IsOptional()
-    @IsInt({ message: '$property| id' })
+    @IsInt({ message: 'id' })
     @Type(() => Number)
     id?: number;
 }

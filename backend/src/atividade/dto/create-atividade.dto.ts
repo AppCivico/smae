@@ -29,7 +29,7 @@ export class AtividadeOrgaoParticipante {
      * órgão
      * @example 1
      */
-    @IsInt({ message: '$property| orgao_id' })
+    @IsInt({ message: 'orgao_id' })
     @Type(() => Number)
     orgao_id: number;
 
@@ -37,10 +37,10 @@ export class AtividadeOrgaoParticipante {
      * lista dos participantes? pelo menos uma pessoa
      * @example "[4, 5, 6]"
      */
-    @IsArray({ message: '$property| precisa ser um array' })
-    @ArrayMinSize(1, { message: '$property| precisa ter um item' })
-    @ArrayMaxSize(100, { message: '$property| precisa ter no máximo 100 items' })
-    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
+    @IsArray({ message: 'precisa ser um array' })
+    @ArrayMinSize(1, { message: 'precisa ter um item' })
+    @ArrayMaxSize(100, { message: 'precisa ter no máximo 100 items' })
+    @IsInt({ each: true, message: 'Cada item precisa ser um número inteiro' })
     participantes: number[];
 }
 
@@ -48,30 +48,30 @@ export class CreateAtividadeDto {
     /**
      * iniciativa_id
      */
-    @IsInt({ message: '$property| tema precisa ser um número ou null' })
+    @IsInt({ message: 'tema precisa ser um número ou null' })
     @Type(() => Number)
     iniciativa_id: number;
 
     /**
      * Código
      */
-    @IsString({ message: '$property| código: Precisa ser alfanumérico, campo obrigatório' })
-    @MinLength(1, { message: '$property| código: pelo menos um caractere' })
+    @IsString({ message: 'código: Precisa ser alfanumérico, campo obrigatório' })
+    @MinLength(1, { message: 'código: pelo menos um caractere' })
     @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Código' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     codigo: string;
 
     /**
      * título
      */
-    @IsString({ message: '$property| título: Precisa ser alfanumérico, campo obrigatório' })
-    @MinLength(1, { message: '$property| título: pelo menos um caractere' })
+    @IsString({ message: 'título: Precisa ser alfanumérico, campo obrigatório' })
+    @MinLength(1, { message: 'título: pelo menos um caractere' })
     @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Título' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     titulo: string;
 
     /**
      * contexto
      */
-    @IsString({ message: '$property| contexto: Precisa ser alfanumérico' })
+    @IsString({ message: 'contexto: Precisa ser alfanumérico' })
     @IsOptional()
     @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Contexto" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     contexto?: string;
@@ -79,14 +79,14 @@ export class CreateAtividadeDto {
     /**
      * complemento
      */
-    @IsString({ message: '$property| contexto: Precisa ser alfanumérico' })
+    @IsString({ message: 'contexto: Precisa ser alfanumérico' })
     @IsOptional()
     complemento?: string;
 
     /**
      * compoe_indicador_iniciativa
      */
-    @IsBoolean({ message: '$property| precisa ser um boolean' })
+    @IsBoolean({ message: 'precisa ser um boolean' })
     compoe_indicador_iniciativa: boolean;
 
     /**
@@ -104,12 +104,12 @@ export class CreateAtividadeDto {
      */
     @IsOptional()
     @IsArray({
-        message: '$property| responsável(eis) na coordenadoria de projetos: precisa ser uma array, campo obrigatório',
+        message: 'responsável(eis) na coordenadoria de projetos: precisa ser uma array, campo obrigatório',
     })
     @ArrayMaxSize(100, {
-        message: '$property| responsável(eis) na coordenadoria de projetos: precisa ter no máximo 100 items',
+        message: 'responsável(eis) na coordenadoria de projetos: precisa ter no máximo 100 items',
     })
-    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
+    @IsInt({ each: true, message: 'Cada item precisa ser um número inteiro' })
     coordenadores_cp?: number[];
 
     /**
@@ -117,9 +117,9 @@ export class CreateAtividadeDto {
      * @example "[1, 2, 3]"
      */
     @IsOptional()
-    @IsArray({ message: '$property| tag(s): precisa ser uma array.' })
-    @ArrayMaxSize(100, { message: '$property| tag(s): precisa ter no máximo 100 items' })
-    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
+    @IsArray({ message: 'tag(s): precisa ser uma array.' })
+    @ArrayMaxSize(100, { message: 'tag(s): precisa ter no máximo 100 items' })
+    @IsInt({ each: true, message: 'Cada item precisa ser um número inteiro' })
     tags?: number[];
 
     @IsOptional()
@@ -147,8 +147,8 @@ export class CreateAtividadeDto {
 
     @IsArray()
     @IsOptional()
-    @ArrayMinSize(0, { message: '$property| precisa ter um item' })
-    @ArrayMaxSize(1000, { message: '$property| precisa ter no máximo 1000 items' })
+    @ArrayMinSize(0, { message: 'precisa ter um item' })
+    @ArrayMaxSize(1000, { message: 'precisa ter no máximo 1000 items' })
     @ValidateNested({ each: true })
     @Type(() => UpsertOrigemDto)
     origens_extra?: UpsertOrigemDto[];

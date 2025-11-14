@@ -13,7 +13,7 @@ export function TaskValidatorOf(property: string, validationOptions?: Validation
             constraints: [property],
             async: true,
             options: {
-                message: `$property| Params não passou na validação!`,
+                message: `Params não passou na validação!`,
                 ...validationOptions,
             },
             validator: {

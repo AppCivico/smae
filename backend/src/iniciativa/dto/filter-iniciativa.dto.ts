@@ -7,7 +7,7 @@ export class FilterIniciativaDto {
      * @example "1"
      */
     @IsOptional()
-    @IsInt({ message: '$property| meta_id' })
+    @IsInt({ message: 'meta_id' })
     @Type(() => Number)
     meta_id?: number;
 
@@ -16,7 +16,7 @@ export class FilterIniciativaDto {
      * @example ""
      */
     @IsOptional()
-    @IsInt({ message: '$property| id' })
+    @IsInt({ message: 'id' })
     @Type(() => Number)
     id?: number;
 }

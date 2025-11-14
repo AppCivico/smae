@@ -20,7 +20,7 @@ export class FilterRelatorioDto {
     @IsOptional()
     @ApiProperty({ enum: FonteRelatorio, enumName: 'FonteRelatorio' })
     @IsEnum(FonteRelatorio, {
-        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(FonteRelatorio).join(', '),
+        message: 'Precisa ser um dos seguintes valores: ' + Object.values(FonteRelatorio).join(', '),
     })
     fonte?: FonteRelatorio;
 

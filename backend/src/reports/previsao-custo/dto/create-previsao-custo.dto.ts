@@ -24,7 +24,7 @@ export class PrevisaoCustoParams {
     })
     @IsEnum(PeriodoRelatorioPrevisaoCustoDto, {
         message:
-            '$property| Precisa ser um dos seguintes valores: ' +
+            'Precisa ser um dos seguintes valores: ' +
             Object.values(PeriodoRelatorioPrevisaoCustoDto).join(', '),
     })
     @Expose()

@@ -205,7 +205,7 @@ export class CreateRunUpdateDto {
     tipo: TipoAtualizacaoEmLote;
 
     @IsArray()
-    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
+    @IsInt({ each: true, message: 'Cada item precisa ser um número inteiro' })
     @Transform(NumberArrayTransformOrUndef)
     ids: number[];
 

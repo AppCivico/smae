@@ -38,7 +38,7 @@ export function IsValidCPF(validationOptions?: ValidationOptions) {
             propertyName: propertyName,
             constraints: [],
             options: {
-                message: '$property| CPF inválido, envie no formato 000.000.000-00',
+                message: 'CPF inválido, envie no formato 000.000.000-00',
                 ...validationOptions,
             },
             validator: {

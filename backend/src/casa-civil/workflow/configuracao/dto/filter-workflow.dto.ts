@@ -3,7 +3,7 @@ import { IsBoolean, IsNumber, IsOptional } from 'class-validator';
 
 export class FilterWorkflowDto {
     @IsOptional()
-    @IsBoolean({ message: '$property| Precisa ser um boolean' })
+    @IsBoolean({ message: 'Precisa ser um boolean' })
     @Transform(({ value }: any) => value === 'true')
     ativo?: boolean;
 
@@ -14,7 +14,7 @@ export class FilterWorkflowDto {
 
 export class FilterWorkflowEtapaDto {
     @IsOptional()
-    @IsBoolean({ message: '$property| Precisa ser um boolean' })
+    @IsBoolean({ message: 'Precisa ser um boolean' })
     @Transform(({ value }: any) => value === 'true')
     incluir_removidas?: boolean;
 }

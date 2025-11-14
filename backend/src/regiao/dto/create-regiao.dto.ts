@@ -8,9 +8,9 @@ export class CreateRegiaoDto {
      * Nivel (1 até 4) [1=cidade, 2=norte/sul, 3=prefeitura, 4=subprefeitura]
      * @example 2
      */
-    @IsInt({ message: '$property| Precisa ser um número' })
-    @Min(1, { message: '$property| região mínima nível 1' })
-    @Max(4, { message: '$property| região máxima nível 4' })
+    @IsInt({ message: 'Precisa ser um número' })
+    @Min(1, { message: 'região mínima nível 1' })
+    @Max(4, { message: 'região máxima nível 4' })
     @Type(() => Number)
     nivel: number;
 
@@ -19,7 +19,7 @@ export class CreateRegiaoDto {
      * @example 27
      */
     @IsOptional()
-    @IsString({ message: '$property| Precisa ser um texto' })
+    @IsString({ message: 'Precisa ser um texto' })
     @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Código' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     codigo?: string;
 
@@ -27,7 +27,7 @@ export class CreateRegiaoDto {
      * Descrição
      * @example "Subprefeitura da Sé"
      */
-    @IsString({ message: '$property| Descrição: Precisa ser alfanumérico' })
+    @IsString({ message: 'Descrição: Precisa ser alfanumérico' })
     @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Descrição" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     descricao: string;
 
@@ -42,7 +42,7 @@ export class CreateRegiaoDto {
      * ID da região acima
      */
     @IsOptional()
-    @IsInt({ message: '$property| Precisa ser nulo ou o ID' })
+    @IsInt({ message: 'Precisa ser nulo ou o ID' })
     @ValidateIf((object, value) => value !== null)
     @Transform((a: TransformFnParams) => (a.value === '' ? undefined : +a.value))
     parente_id: number | undefined;
@@ -52,7 +52,7 @@ export class CreateRegiaoDto {
      */
     @IsOptional()
     @ValidateIf((object, value) => value !== null)
-    @IsString({ message: '$property| upload_token de um arquivo de Shapefile' })
+    @IsString({ message: 'upload_token de um arquivo de Shapefile' })
     upload_shapefile?: string | null;
 }
 

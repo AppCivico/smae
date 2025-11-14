@@ -7,37 +7,37 @@ export class CreateOrgaoDto {
     /**
      * Sigla do Órgão
      */
-    @IsString({ message: '$property| sigla: Precisa ser alfanumérico' })
+    @IsString({ message: 'sigla: Precisa ser alfanumérico' })
     @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Sigla' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     sigla: string;
 
     /**
      * Órgão
      */
-    @IsString({ message: '$property| descrição: Precisa ser alfanumérico' })
+    @IsString({ message: 'descrição: Precisa ser alfanumérico' })
     @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Descrição" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     descricao: string;
 
     /**
      * Tipo do Órgão
      */
-    @IsInt({ message: '$property| precisa ser um número' })
+    @IsInt({ message: 'precisa ser um número' })
     @Type(() => Number)
     tipo_orgao_id: number;
 
     @IsOptional()
-    @IsString({ message: '$property| cnpj: Precisa ser alfanumérico' })
+    @IsString({ message: 'cnpj: Precisa ser alfanumérico' })
     @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Cpnj' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     @IsCNPJ()
     cnpj: string;
 
     @IsOptional()
-    @IsString({ message: '$property| email: Precisa ser alfanumérico' })
+    @IsString({ message: 'email: Precisa ser alfanumérico' })
     @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'E-mail' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     email: string;
 
     @IsOptional()
-    @IsString({ message: '$property| secretário responsável: Precisa ser alfanumérico' })
+    @IsString({ message: 'secretário responsável: Precisa ser alfanumérico' })
     @MaxLength(MAX_LENGTH_DEFAULT, {
         message: `O campo 'Secretário Responsável' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
     })
@@ -48,12 +48,12 @@ export class CreateOrgaoDto {
     oficial: boolean;
 
     @IsOptional()
-    @IsInt({ message: '$property| precisa ser um número' })
+    @IsInt({ message: 'precisa ser um número' })
     @Type(() => Number)
     nivel: number;
 
     @IsOptional()
-    @IsInt({ message: '$property| precisa ser um número' })
+    @IsInt({ message: 'precisa ser um número' })
     @Type(() => Number)
     parente_id: number | null;
 }

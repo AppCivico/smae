@@ -7,7 +7,7 @@ export class CreateOdsDto {
      * Número
      * @example 1
      */
-    @IsInt({ message: '$property| Número precisa ser positivo' })
+    @IsInt({ message: 'Número precisa ser positivo' })
     @Type(() => Number)
     numero: number;
 
@@ -15,16 +15,16 @@ export class CreateOdsDto {
      * Título
      * @example "Erradicar Pobreza"
      */
-    @IsString({ message: '$property| Título: Precisa ser alfanumérico' })
-    @MinLength(1, { message: '$property| Título: Mínimo de 1 caracteres' })
+    @IsString({ message: 'Título: Precisa ser alfanumérico' })
+    @MinLength(1, { message: 'Título: Mínimo de 1 caracteres' })
     @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Título' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     titulo: string;
 
     /**
      * Descrição
      */
-    @IsString({ message: '$property| Descrição: Precisa ser alfanumérico' })
-    @MinLength(4, { message: '$property| Descrição: Mínimo de 4 caracteres' })
+    @IsString({ message: 'Descrição: Precisa ser alfanumérico' })
+    @MinLength(4, { message: 'Descrição: Mínimo de 4 caracteres' })
     @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Descrição" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     descricao: string;
 }

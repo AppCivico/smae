@@ -55,7 +55,7 @@ export class CreateDistribuicaoRecursoDto {
         {},
         {
             message:
-                '$property| Precisa ser um número com até 35 dígitos antes do ponto, e até 2 dígitos após, enviado em formato string',
+                'Precisa ser um número com até 35 dígitos antes do ponto, e até 2 dígitos após, enviado em formato string',
         }
     )
     @ValidateIf((object, value) => value !== null)
@@ -65,7 +65,7 @@ export class CreateDistribuicaoRecursoDto {
         {},
         {
             message:
-                '$property| Precisa ser um número com até 35 dígitos antes do ponto, e até 2 dígitos após, enviado em formato string',
+                'Precisa ser um número com até 35 dígitos antes do ponto, e até 2 dígitos após, enviado em formato string',
         }
     )
     @ValidateIf((object, value) => value !== null)
@@ -75,7 +75,7 @@ export class CreateDistribuicaoRecursoDto {
         {},
         {
             message:
-                '$property| Precisa ser um número com até 35 dígitos antes do ponto, e até 2 dígitos após, enviado em formato string',
+                'Precisa ser um número com até 35 dígitos antes do ponto, e até 2 dígitos após, enviado em formato string',
         }
     )
     @ValidateIf((object, value) => value !== null)
@@ -85,7 +85,7 @@ export class CreateDistribuicaoRecursoDto {
         {},
         {
             message:
-                '$property| Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String',
+                'Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String',
         }
     )
     @ValidateIf((object, value) => value !== null)
@@ -95,7 +95,7 @@ export class CreateDistribuicaoRecursoDto {
         {},
         {
             message:
-                '$property| Precisa ser um número com até 35 dígitos antes do ponto, e até 2 dígitos após, enviado em formato string',
+                'Precisa ser um número com até 35 dígitos antes do ponto, e até 2 dígitos após, enviado em formato string',
         }
     )
     @ValidateIf((object, value) => value !== null)
@@ -106,7 +106,7 @@ export class CreateDistribuicaoRecursoDto {
         {},
         {
             message:
-                '$property| Precisa ser um número com até 35 dígitos antes do ponto, e até 2 dígitos após, enviado em formato string',
+                'Precisa ser um número com até 35 dígitos antes do ponto, e até 2 dígitos após, enviado em formato string',
         }
     )
     @ValidateIf((object, value) => value !== null)
@@ -128,7 +128,7 @@ export class CreateDistribuicaoRecursoDto {
     @IsOptional()
     @IsNumber(
         { maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false },
-        { message: '$property| até duas casas decimais' }
+        { message: 'até duas casas decimais' }
     )
     @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     @ValidateIf((object, value) => value !== null)
@@ -137,7 +137,7 @@ export class CreateDistribuicaoRecursoDto {
     @IsOptional()
     @IsNumber(
         { maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false },
-        { message: '$property| até duas casas decimais' }
+        { message: 'até duas casas decimais' }
     )
     @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     @ValidateIf((object, value) => value !== null)
@@ -147,7 +147,7 @@ export class CreateDistribuicaoRecursoDto {
         {},
         {
             message:
-                '$property| Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String',
+                'Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String',
         }
     )
     @ValidateIf((object, value) => value !== null)
@@ -323,7 +323,7 @@ export class CreateDistribuicaoParlamentarDto {
         {},
         {
             message:
-                '$property| Precisa ser um número com até 35 dígitos antes do ponto, e até 2 dígitos após, enviado em formato string',
+                'Precisa ser um número com até 35 dígitos antes do ponto, e até 2 dígitos após, enviado em formato string',
         }
     )
     @ValidateIf((object, value) => value !== null)

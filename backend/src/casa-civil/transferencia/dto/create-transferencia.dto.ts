@@ -43,14 +43,14 @@ export class CreateTransferenciaDto {
     @IsOptional()
     @ApiProperty({ enum: TransferenciaInterface, enumName: 'TransferenciaInterface' })
     @IsEnum(TransferenciaInterface, {
-        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(TransferenciaInterface).join(', '),
+        message: 'Precisa ser um dos seguintes valores: ' + Object.values(TransferenciaInterface).join(', '),
     })
     interface?: TransferenciaInterface;
 
     @ApiProperty({ enum: TransferenciaTipoEsfera, enumName: 'TransferenciaTipoEsfera' })
     @IsEnum(TransferenciaTipoEsfera, {
         message:
-            '$property| Precisa ser um dos seguintes valores: ' + Object.values(TransferenciaTipoEsfera).join(', '),
+            'Precisa ser um dos seguintes valores: ' + Object.values(TransferenciaTipoEsfera).join(', '),
     })
     esfera: TransferenciaTipoEsfera;
 
@@ -72,7 +72,7 @@ export class CreateTransferenciaDto {
      * ano: ano para pesquisa
      * @example "2022"
      */
-    @IsInt({ message: '$property| ano precisa ser positivo' })
+    @IsInt({ message: 'ano precisa ser positivo' })
     @Min(1889)
     @Max(2050)
     @Type(() => Number)
@@ -181,7 +181,7 @@ export class CreateTransferenciaParlamentarDto {
 
     @ApiProperty({ enum: ParlamentarCargo, enumName: 'ParlamentarCargo' })
     @IsEnum(ParlamentarCargo, {
-        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(ParlamentarCargo).join(', '),
+        message: 'Precisa ser um dos seguintes valores: ' + Object.values(ParlamentarCargo).join(', '),
     })
     cargo: ParlamentarCargo;
 
@@ -196,7 +196,7 @@ export class CreateTransferenciaAnexoDto {
     /**
      * Upload do Documento
      */
-    @IsString({ message: '$property| upload_token do documento' })
+    @IsString({ message: 'upload_token do documento' })
     upload_token: string;
 
     @IsString()

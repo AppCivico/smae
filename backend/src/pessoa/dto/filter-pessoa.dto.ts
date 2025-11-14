@@ -146,7 +146,7 @@ export class FilterPessoaDto extends FilterPermsPessoaDto {
      * @example "1"
      */
     @IsOptional()
-    @IsInt({ message: '$property| orgao_id' })
+    @IsInt({ message: 'orgao_id' })
     @Type(() => Number)
     orgao_id?: number;
 

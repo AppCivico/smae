@@ -11,7 +11,7 @@ export class CreateUploadDto {
      * */
     @ApiProperty({ enum: TipoUpload, enumName: 'TipoUpload' })
     @IsEnum(TipoUpload, {
-        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(TipoUpload).join(', '),
+        message: 'Precisa ser um dos seguintes valores: ' + Object.values(TipoUpload).join(', '),
     })
     tipo: TipoUpload;
 
@@ -20,7 +20,7 @@ export class CreateUploadDto {
      * @example 1
      * */
     @IsOptional()
-    @IsInt({ message: '$property| Necessário ID do Tipo Documento' })
+    @IsInt({ message: 'Necessário ID do Tipo Documento' })
     @ValidateIf((object: CreateUploadDto) => object.tipo === TipoUpload.DOCUMENTO)
     @Type(() => Number)
     tipo_documento_id?: number | null;
@@ -29,7 +29,7 @@ export class CreateUploadDto {
      * Descrição do arquivo
      */
     @IsOptional()
-    @IsString({ message: '$property| descrição: Precisa ser alfanumérico' })
+    @IsString({ message: 'descrição: Precisa ser alfanumérico' })
     @ApiProperty({ deprecated: true, description: 'Não usar, descrição deve ser colocada no documento, salvo apenas no S3 após 2024-07-08'})
     @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Descrição" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     descricao?: string;

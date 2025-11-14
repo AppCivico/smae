@@ -26,8 +26,8 @@ export class MfEtapaDto {
     @IsOptional()
     @IsNumber()
     @ValidateIf((object, value) => value !== null)
-    @Min(0, { message: '$property| Percentual de execução precisa ser positivo ou zero' })
-    @Max(100, { message: '$property| Percentual de execução máximo é 100' })
+    @Min(0, { message: 'Percentual de execução precisa ser positivo ou zero' })
+    @Max(100, { message: 'Percentual de execução máximo é 100' })
     percentual_execucao?: number;
 
     @IsOptional()

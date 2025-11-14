@@ -31,7 +31,7 @@ export class CreatePainelExternoDto {
 
     @IsArray()
     @IsOptional()
-    @ArrayMaxSize(100, { message: '$property| grupo(s): precisa ter no máximo 100 items' })
-    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
+    @ArrayMaxSize(100, { message: 'grupo(s): precisa ter no máximo 100 items' })
+    @IsInt({ each: true, message: 'Cada item precisa ser um número inteiro' })
     grupos?: number[];
 }

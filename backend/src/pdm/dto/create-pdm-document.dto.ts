@@ -5,7 +5,7 @@ export class CreatePdmDocumentDto {
     /**
      * Upload do Documento
      */
-    @IsString({ message: '$property| upload_token de um arquivo de ícone' })
+    @IsString({ message: 'upload_token de um arquivo de ícone' })
     upload_token: string;
 
     @IsOptional()
@@ -15,7 +15,7 @@ export class CreatePdmDocumentDto {
     descricao?: string | null;
 
     @IsOptional()
-    @IsString({ message: '$property| Caminho do diretório de arquivos' })
+    @IsString({ message: 'Caminho do diretório de arquivos' })
     diretorio_caminho: string;
 }
 

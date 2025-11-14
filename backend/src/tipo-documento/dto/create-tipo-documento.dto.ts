@@ -9,7 +9,7 @@ function CheckExt(validationOptions?: ValidationOptions) {
             propertyName: propertyName,
             constraints: [],
             options: {
-                message: '$property| Envie os formatos separado por virgulas, eg: doc, docx, txt',
+                message: 'Envie os formatos separado por virgulas, eg: doc, docx, txt',
                 ...validationOptions,
             },
             validator: {
@@ -37,7 +37,7 @@ export class CreateTipoDocumentoDto {
     /**
      * Descrição
      */
-    @IsString({ message: '$property| Descrição: Precisa ser alfanumérico' })
+    @IsString({ message: 'Descrição: Precisa ser alfanumérico' })
     @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Descrição" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     descricao: string;
 
@@ -45,12 +45,12 @@ export class CreateTipoDocumentoDto {
      * Código do tipo de upload [usar para identificar os lugares onde pode ser aceito]
      * @example PDM
      */
-    @IsString({ message: '$property| Código: Precisa ser alfanumérico' })
+    @IsString({ message: 'Código: Precisa ser alfanumérico' })
     codigo: string;
 
     /**
      * Título
      */
-    @IsString({ message: '$property| Código: Precisa ser alfanumérico' })
+    @IsString({ message: 'Código: Precisa ser alfanumérico' })
     titulo: string;
 }

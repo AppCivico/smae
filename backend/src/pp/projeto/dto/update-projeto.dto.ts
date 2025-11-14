@@ -26,7 +26,7 @@ export class PPpremissaDto {
     @IsNumber()
     id?: number;
 
-    @IsString({ message: '$property| precisa ser um alfanumérico' })
+    @IsString({ message: 'precisa ser um alfanumérico' })
     @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Premissas" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     premissa: string;
 }
@@ -39,7 +39,7 @@ export class PPrestricaoDto {
     @IsNumber()
     id?: number;
 
-    @IsString({ message: '$property| precisa ser um alfanumérico' })
+    @IsString({ message: 'precisa ser um alfanumérico' })
     @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Restricões" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     restricao: string;
 }
@@ -60,8 +60,8 @@ export class UpdateProjetoRegistroSeiDto extends PartialType(CreateProjetoSeiDto
 //    realizado_termino?: Date
 //
 //    @IsOptional()
-//    @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false }, { message: '$property| Custo até duas casas decimais' })
-//    @Min(0, { message: '$property| Custo precisa ser positivo' })
+//    @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false }, { message: 'Custo até duas casas decimais' })
+//    @Min(0, { message: 'Custo precisa ser positivo' })
 //    @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
 //    @ValidateIf((object, value) => value !== null)
 //    realizado_custo?: number
@@ -148,7 +148,7 @@ export class UpdateProjetoDto extends OmitType(PartialType(CreateProjetoDto), ['
 
     @IsOptional()
     @IsArray()
-    @IsInt({ message: '$property| Precisa ser uma lista de inteiros', each: true })
+    @IsInt({ message: 'Precisa ser uma lista de inteiros', each: true })
     @Max(1000, { each: true })
     grupo_portfolio?: number[];
 
@@ -159,13 +159,13 @@ export class UpdateProjetoDto extends OmitType(PartialType(CreateProjetoDto), ['
      */
     @IsOptional()
     @IsArray()
-    @IsInt({ message: '$property| Precisa ser uma lista de inteiros', each: true })
-    @ArrayMaxSize(100, { message: '$property| Tamanho máximo da lista são $constraint1 itens' })
+    @IsInt({ message: 'Precisa ser uma lista de inteiros', each: true })
+    @ArrayMaxSize(100, { message: 'Tamanho máximo da lista são $constraint1 itens' })
     equipe?: number[];
 
     @IsOptional()
     @IsArray()
-    @IsInt({ message: '$property| Precisa ser uma lista de inteiros', each: true })
+    @IsInt({ message: 'Precisa ser uma lista de inteiros', each: true })
     tags_portfolio?: number[];
 }
 
@@ -173,7 +173,7 @@ export class UpdateProjetoDocumentDto {
     /**
      * Token para encontrar documento
      */
-    @IsString({ message: '$property| upload_token do documento' })
+    @IsString({ message: 'upload_token do documento' })
     upload_token: string;
 
     @IsString()
@@ -204,7 +204,7 @@ export class TransferProjetoPortfolioDto {
 }
 
 export class RevisarObrasDto {
-    @IsArray({ message: '$property| precisa ser um array' })
+    @IsArray({ message: 'precisa ser um array' })
     @ValidateNested({ each: true })
     @Type(() => ObraRevisaoDto)
     obras: ObraRevisaoDto[];

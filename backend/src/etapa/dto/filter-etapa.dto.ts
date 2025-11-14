@@ -8,7 +8,7 @@ export class FilterEtapaDto {
      * @example "1"
      */
     @IsOptional()
-    @IsInt({ message: '$property| etapa_pai_id' })
+    @IsInt({ message: 'etapa_pai_id' })
     @Type(() => Number)
     etapa_pai_id?: number;
 
@@ -17,7 +17,7 @@ export class FilterEtapaDto {
      * @example "1"
      */
     @IsOptional()
-    @IsInt({ message: '$property| regiao_id' })
+    @IsInt({ message: 'regiao_id' })
     @Type(() => Number)
     regiao_id?: number;
 
@@ -26,7 +26,7 @@ export class FilterEtapaDto {
      * @example "1"
      */
     @IsOptional()
-    @IsInt({ message: '$property| cronograma_id' })
+    @IsInt({ message: 'cronograma_id' })
     @Type(() => Number)
     cronograma_id?: number;
 
@@ -35,7 +35,7 @@ export class FilterEtapaDto {
      * @example "1"
      */
     @IsOptional()
-    @IsInt({ message: '$property| cronograma_pai_id' })
+    @IsInt({ message: 'cronograma_pai_id' })
     @Type(() => Number)
     cronograma_pai_id?: number;
 }

@@ -106,7 +106,7 @@ export class FilterVariavelDto {
     @IsOptional()
     @ApiProperty({ enum: Periodicidade, enumName: 'Periodicidade' })
     @IsEnum(Periodicidade, {
-        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(Periodicidade).join(', '),
+        message: 'Precisa ser um dos seguintes valores: ' + Object.values(Periodicidade).join(', '),
     })
     periodicidade?: Periodicidade;
 
@@ -172,7 +172,7 @@ export class VariavelOrderByDto {
 
 export class FilterVariavelGlobalDto extends IntersectionType(FilterVariavelDto, VariavelOrderByDto) {
     @IsOptional()
-    @IsInt({ message: '$property| plano_setorial_id' })
+    @IsInt({ message: 'plano_setorial_id' })
     @Transform(NumberTransform)
     plano_setorial_id?: number;
 

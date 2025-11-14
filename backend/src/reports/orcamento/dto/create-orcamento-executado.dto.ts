@@ -13,7 +13,7 @@ export class OrcamentoExecutadoParams {
      */
     @ApiProperty({ enum: TipoRelatorio, enumName: 'TipoRelatorio' })
     @IsEnum(TipoRelatorio, {
-        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(TipoRelatorio).join(', '),
+        message: 'Precisa ser um dos seguintes valores: ' + Object.values(TipoRelatorio).join(', '),
     })
     @Expose()
     tipo: TipoRelatorio;
@@ -39,10 +39,10 @@ export class OrcamentoExecutadoParams {
      * @example "[]"
      */
     @IsOptional()
-    @IsArray({ message: '$property| tag(s): precisa ser uma array.' })
-    @ArrayMinSize(0, { message: '$property| tag(s): precisa ter pelo menos um item' })
-    @ArrayMaxSize(100, { message: '$property| tag(s): precisa ter no máximo 100 items' })
-    @IsString({ each: true, message: '$property| Cada item precisa ser um texto' })
+    @IsArray({ message: 'tag(s): precisa ser uma array.' })
+    @ArrayMinSize(0, { message: 'tag(s): precisa ter pelo menos um item' })
+    @ArrayMaxSize(100, { message: 'tag(s): precisa ter no máximo 100 items' })
+    @IsString({ each: true, message: 'Cada item precisa ser um texto' })
     @Expose()
     orgaos?: string[];
 }

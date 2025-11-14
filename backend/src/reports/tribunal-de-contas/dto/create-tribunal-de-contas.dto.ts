@@ -8,7 +8,7 @@ export class CreateRelTribunalDeContasDto {
     @ApiProperty({ enum: TransferenciaTipoEsfera, enumName: 'TransferenciaTipoEsfera' })
     @IsEnum(TransferenciaTipoEsfera, {
         message:
-            '$property| Precisa ser um dos seguintes valores: ' + Object.values(TransferenciaTipoEsfera).join(', '),
+            'Precisa ser um dos seguintes valores: ' + Object.values(TransferenciaTipoEsfera).join(', '),
     })
     @Expose()
     esfera?: TransferenciaTipoEsfera;

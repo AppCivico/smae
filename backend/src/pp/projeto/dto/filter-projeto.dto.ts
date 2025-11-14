@@ -39,11 +39,11 @@ export class FilterProjetoDto {
         return value.split(',');
     })
     @ApiProperty({ enum: ProjetoStatus, enumName: 'ProjetoStatus' })
-    @IsArray({ message: '$property| precisa ser uma array.' })
-    @ArrayMinSize(0, { message: '$property| precisa ter pelo menos um item' })
-    @ArrayMaxSize(100, { message: '$property| precisa ter no máximo 100 items' })
+    @IsArray({ message: 'precisa ser uma array.' })
+    @ArrayMinSize(0, { message: 'precisa ter pelo menos um item' })
+    @ArrayMaxSize(100, { message: 'precisa ter no máximo 100 items' })
     @IsEnum(ProjetoStatus, {
-        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(ProjetoStatus).join(', '),
+        message: 'Precisa ser um dos seguintes valores: ' + Object.values(ProjetoStatus).join(', '),
         each: true,
     })
     status?: ProjetoStatus[];
@@ -165,7 +165,7 @@ export class CoreFilterProjetoMDODto extends IntersectionType(FilterProjetoDto) 
     registros_sei?: string[];
 
     @IsOptional()
-    @IsBoolean({ message: '$property| Precisa ser um boolean' })
+    @IsBoolean({ message: 'Precisa ser um boolean' })
     @Transform(({ value }: any) => value === 'true')
     revisado?: boolean;
 

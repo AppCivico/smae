@@ -8,7 +8,7 @@ export class FilterMetaDto {
      * @example "1"
      */
     @IsOptional()
-    @IsInt({ message: '$property| pdm_id' })
+    @IsInt({ message: 'pdm_id' })
     @Type(() => Number)
     pdm_id?: number;
 
@@ -17,7 +17,7 @@ export class FilterMetaDto {
      * @example "1"
      */
     @IsOptional()
-    @IsInt({ message: '$property| id' })
+    @IsInt({ message: 'id' })
     @Type(() => Number)
     id?: number;
 }
