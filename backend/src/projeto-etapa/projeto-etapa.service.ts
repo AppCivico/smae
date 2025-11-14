@@ -183,7 +183,7 @@ export class ProjetoEtapaService {
         }
 
         // Caso filtre por "eh_padrao", não olhamos o portfolio (isso para PP, para obras ainda olha)
-        const ehTelaAssociacao = filters.eh_padrao === undefined || filters.eh_padrao === false;
+        const ehTelaAssociacao = filters.eh_padrao === true;
 
         if (ehTelaAssociacao && filters?.portfolio_id)
             throw new HttpException('Não é possível filtrar por portfólio quando o filtro eh_padrao está ativo', 400);
