@@ -10,6 +10,7 @@ import { useRoute, useRouter } from 'vue-router';
 
 import configEtapas from '@/consts/configEtapas';
 import { etapasProjeto as schema } from '@/consts/formSchemas';
+import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
@@ -136,6 +137,8 @@ onMounted(() => {
 });
 
 const onSubmit = handleSubmit(async (carga) => {
+  const cargaManipulada = nulificadorTotal(carga);
+
   let redirect;
   if (route.meta.entidadeMãe === 'TransferenciasVoluntarias') {
     redirect = 'TransferenciasVoluntarias.etapa.listar';
@@ -150,8 +153,8 @@ const onSubmit = handleSubmit(async (carga) => {
       : 'Item adicionado com sucesso!';
 
     const resposta = props.etapaId
-      ? await etapasProjetosStore.salvarItem(carga, props.etapaId)
-      : await etapasProjetosStore.salvarItem(carga);
+      ? await etapasProjetosStore.salvarItem(cargaManipulada, props.etapaId)
+      : await etapasProjetosStore.salvarItem(cargaManipulada);
 
     if (resposta) {
       alertStore.success(msg);
