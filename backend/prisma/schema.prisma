@@ -3460,6 +3460,17 @@ model SofEntidade {
     @@map("sof_entidade")
 }
 
+model SofDetalhamentoFonte {
+    ano          Int
+    numero_fonte Int
+
+    atualizado_em DateTime @default(now()) @db.Timestamptz(6)
+    dados         Json     @default("[]") @db.Json
+
+    @@id([ano, numero_fonte])
+    @@map("sof_detalhamento_fonte")
+}
+
 model TextoConfig {
     id Int @id @default(1)
 

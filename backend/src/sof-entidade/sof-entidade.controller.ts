@@ -3,14 +3,10 @@ import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { FindAnoParams } from '../common/decorators/find-params';
 import { SofDetalhamentoFonteDto, SofEntidadeDto } from './entities/sof-entidade.entity';
 import { SofEntidadeService } from './sof-entidade.service';
-import { SofApiService } from 'src/sof-api/sof-api.service';
 
 @Controller('sof-entidade')
 export class SofEntidadeController {
-    constructor(
-        private readonly sofEntidadeService: SofEntidadeService,
-        private readonly sofApiService: SofApiService
-    ) {}
+    constructor(private readonly sofEntidadeService: SofEntidadeService) {}
 
     @Get(':ano')
     @ApiBearerAuth('access-token')
@@ -34,9 +30,9 @@ export class SofEntidadeController {
         @Param('ano') ano: number,
         @Param('numeroFonte') numeroFonte: number
     ): Promise<SofDetalhamentoFonteDto> {
-        return (await this.sofApiService.doDetailhamentoFonteRequest(
-            ano,
-            numeroFonte
+        return (await this.sofEntidadeService.findDetalhamentoFonte(
+            +ano,
+            +numeroFonte
         )) as unknown as SofDetalhamentoFonteDto;
     }
 }
