@@ -18,7 +18,7 @@ export class CreateProjetoEtapaDto {
 
     @IsOptional()
     @IsNumber()
-    etapa_padrao_id?: number;
+    etapa_padrao_id?: number | null;
 
     @IsOptional()
     @IsBoolean()
