@@ -514,7 +514,7 @@ export default [
         path: 'etapa-de-projeto',
         component: EtapasRaiz,
         meta: {
-          título: 'Etapas de projeto',
+          título: 'Etapas padrão',
           entidadeMãe: 'projeto',
           rotaPrescindeDeChave: true,
           limitarÀsPermissões: 'CadastroProjetoEtapaPadrao.',
@@ -528,7 +528,7 @@ export default [
             path: '',
             component: EtapasLista,
             meta: {
-              título: 'Etapas de projeto',
+              título: 'Etapas padrão',
               rotasParaMigalhasDePão: ['cadastrosBasicos'],
             },
           },
@@ -537,7 +537,7 @@ export default [
             path: 'novo',
             component: EtapasCriarEditar,
             meta: {
-              título: 'Nova etapa de projeto',
+              título: 'Nova etapa padrão',
               rotasParaMigalhasDePão: ['cadastrosBasicos', 'projeto.etapasListar'],
               rotaDeEscape: 'projeto.etapasListar',
             },
@@ -553,7 +553,7 @@ export default [
               },
             }),
             meta: {
-              título: 'Editar etapa de projeto',
+              título: 'Editar etapa padrão',
               rotasParaMigalhasDePão: ['cadastrosBasicos', 'projeto.etapasListar'],
               rotaDeEscape: 'projeto.etapasListar',
             },
@@ -564,7 +564,7 @@ export default [
         path: 'etapa-de-obra',
         component: EtapasRaiz,
         meta: {
-          título: 'Etapas de obra',
+          título: 'Etapas padrão',
           entidadeMãe: 'mdo',
           rotaPrescindeDeChave: true,
           limitarÀsPermissões: 'CadastroProjetoEtapaPadraoMDO.',
@@ -578,7 +578,7 @@ export default [
             path: '',
             component: EtapasLista,
             meta: {
-              título: 'Etapas de obra',
+              título: 'Etapas padrão',
               rotasParaMigalhasDePão: ['cadastrosBasicos'],
             },
           },
@@ -587,7 +587,7 @@ export default [
             path: 'novo',
             component: EtapasCriarEditar,
             meta: {
-              título: 'Nova etapa da obra',
+              título: 'Nova etapa padrão',
               rotasParaMigalhasDePão: ['cadastrosBasicos', 'mdo.etapasListar'],
               rotaDeEscape: 'mdo.etapasListar',
             },
@@ -603,7 +603,7 @@ export default [
               },
             }),
             meta: {
-              título: 'Editar etapa da obra',
+              título: 'Editar etapa padrão',
               rotasParaMigalhasDePão: ['cadastrosBasicos', 'mdo.etapasListar'],
               rotaDeEscape: 'mdo.etapasListar',
             },
