@@ -196,16 +196,22 @@ onBeforeRouteLeave(() => {
     </template>
 
     <template #celula:acoes="{ linha }">
-      <div class="flex g1">
+      <div class="flex center g1">
         <button
           v-if="temPermissãoPara(['Reports.remover.'])"
           class="like-a__text"
           aria-label="excluir"
-          title="excluir"
+          :title="!linha.arquivo ? 'cancelar' : 'excluir'"
           type="button"
           @click="excluirRelatório(linha.id)"
         >
           <svg
+            v-if="!linha.arquivo"
+            width="12"
+            height="12"
+          ><use xlink:href="#i_x" /></svg>
+          <svg
+            v-else
             width="20"
             height="20"
           ><use xlink:href="#i_waste" /></svg>
@@ -220,16 +226,22 @@ onBeforeRouteLeave(() => {
             :texto="linha.processamento.err_msg"
           />
         </span>
-        <template v-else-if="!linha.arquivo">
+        <span
+          v-else-if="!linha.arquivo"
+          class="nowrap"
+        >
           <LoadingComponent
-            v-if="!linha.arquivo"
             title="Relatório em processamento"
+            class="ib dib"
+            style="margin-right: 0.25em;"
           >
             <span class="sr-only">
               Relatório em processamento
             </span>
           </LoadingComponent>
-        </template>
+
+          {{ linha.progresso }}%
+        </span>
         <a
           v-else
           :href="`${baseUrl}/download/${linha.arquivo}`"
