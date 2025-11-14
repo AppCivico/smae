@@ -1,9 +1,10 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { ref } from 'vue';
+
 import { Dashboard } from '@/components';
 import { useCiclosStore } from '@/stores/ciclos.store';
 import { usePdMStore } from '@/stores/pdm.store';
-import { storeToRefs } from 'pinia';
-import { ref } from 'vue';
 
 const PdMStore = usePdMStore();
 const { activePdm } = storeToRefs(PdMStore);
@@ -42,7 +43,6 @@ function dateToTitle(d) {
 </script>
 <template>
   <Dashboard>
-
     <div class="label tamarelo">
       Metas por fase de cronograma
     </div>

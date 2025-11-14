@@ -1,11 +1,12 @@
 <script setup>
-import { computed } from 'vue';
 import { storeToRefs } from 'pinia';
+import { computed } from 'vue';
+
+import { relatorioSemestralAnualPlanoSetorial as schema } from '@/consts/formSchemas';
 import { localizarDataHorario } from '@/helpers/dateToDate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
-import { relatorioSemestralAnualPlanoSetorial as schema } from '@/consts/formSchemas';
 
 const { temPermissãoPara } = storeToRefs(useAuthStore());
 

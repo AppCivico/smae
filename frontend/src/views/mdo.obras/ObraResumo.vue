@@ -1,16 +1,17 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
+
 import MapaExibir from '@/components/geo/MapaExibir.vue';
 import ListaAninhada from '@/components/ListaAninhada.vue';
 import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudançaDeStatusDeProjeto.vue';
 import { obra as schema } from '@/consts/formSchemas';
 import statusesObras from '@/consts/statusObras';
+import combinadorDeListas from '@/helpers/combinadorDeListas';
 import createDataTree from '@/helpers/createDataTree';
 import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
 import subtractDates from '@/helpers/subtractDates';
-import combinadorDeListas from '@/helpers/combinadorDeListas';
 import { useObrasStore } from '@/stores/obras.store';
 import { useOrgansStore } from '@/stores/organs.store';
 

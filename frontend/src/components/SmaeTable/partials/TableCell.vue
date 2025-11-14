@@ -15,8 +15,10 @@
 </template>
 
 <script lang="ts" setup>
-import obterPropriedadeNoObjeto from '@/helpers/objetos/obterPropriedadeNoObjeto';
 import { computed } from 'vue';
+
+import obterPropriedadeNoObjeto from '@/helpers/objetos/obterPropriedadeNoObjeto';
+
 import type { Linha } from '../tipagem';
 
 defineOptions({ inheritAttrs: false });

@@ -1,9 +1,10 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import { onMounted } from 'vue';
-import { useTipoDeVinculoStore } from '@/stores/tipoDeVinculo.store';
-import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
+
 import CabecalhoDePagina from '@/components/CabecalhoDePagina.vue';
+import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
+import { useTipoDeVinculoStore } from '@/stores/tipoDeVinculo.store';
 
 const tipoDeVinculoStore = useTipoDeVinculoStore();
 const { lista } = storeToRefs(tipoDeVinculoStore);

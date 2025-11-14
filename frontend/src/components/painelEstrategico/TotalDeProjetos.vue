@@ -21,6 +21,7 @@
 
 <script setup>
 import { defineProps } from 'vue';
+
 import NumeroComLegenda from './NumeroComLegenda.vue';
 
 defineProps({

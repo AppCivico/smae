@@ -67,10 +67,11 @@ import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, Form } from 'vee-validate';
 import { computed, defineOptions } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { useMacrotemasPsStore } from '@/stores/macrotemasPs.store';
-import { useAlertStore } from '@/stores/alert.store';
-import { macrotema as schema } from '@/consts/formSchemas';
+
 import TituloDaPagina from '@/components/TituloDaPagina.vue';
+import { macrotema as schema } from '@/consts/formSchemas';
+import { useAlertStore } from '@/stores/alert.store';
+import { useMacrotemasPsStore } from '@/stores/macrotemasPs.store';
 
 defineOptions({
   inheritAttrs: false,

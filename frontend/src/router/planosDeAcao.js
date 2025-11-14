@@ -1,11 +1,11 @@
+import { usePlanosDeAçãoStore } from '@/stores/planosDeAcao.store';
 import { useRiscosStore } from '@/stores/riscos.store.ts';
 import PlanosDeAçãoCriarEditar from '@/views/planosDeAcao/PlanosDeAcaoCriarEditar.vue';
+import PlanosDeAçãoDetalhes from '@/views/planosDeAcao/PlanosDeAcaoDetalhe.vue';
 import PlanosDeAçãoItem from '@/views/planosDeAcao/PlanosDeAcaoItem.vue';
 import PlanosDeAçãoLista from '@/views/planosDeAcao/PlanosDeAcaoLista.vue';
 import PlanosDeAçãoMonitoramento from '@/views/planosDeAcao/PlanosDeAcaoMonitoramento.vue';
 import PlanosDeAçãoRaiz from '@/views/planosDeAcao/PlanosDeAcaoRaiz.vue';
-import PlanosDeAçãoDetalhes from '@/views/planosDeAcao/PlanosDeAcaoDetalhe.vue';
-import { usePlanosDeAçãoStore } from '@/stores/planosDeAcao.store';
 
 export default {
   path: 'planos-de-acao',

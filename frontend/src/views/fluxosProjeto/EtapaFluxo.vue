@@ -3,6 +3,7 @@
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, useForm } from 'vee-validate';
 import { computed, ref, watch } from 'vue';
+
 import SmallModal from '@/components/SmallModal.vue';
 import { fasesFluxo as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
@@ -148,7 +149,7 @@ watch(itemParaEdicao, (novoValor) => {
         class="inputtext light mb1"
         :value="emFoco.id"
       />
-      
+
       <div class="flex flexwrap g2 mb1">
         <div class="f1">
           <LabelFromYup

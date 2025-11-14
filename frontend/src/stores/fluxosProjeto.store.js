@@ -1,5 +1,7 @@
-import dateTimeToDate from '@/helpers/dateTimeToDate';
 import { defineStore } from 'pinia';
+
+import dateTimeToDate from '@/helpers/dateTimeToDate';
+
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 export const useFluxosProjetosStore = defineStore('fluxosProjetos', {

@@ -1,9 +1,10 @@
 <script setup>
-import { useObrasStore } from '@/stores/obras.store';
 import {
   computed,
   defineOptions,
 } from 'vue';
+
+import { useObrasStore } from '@/stores/obras.store';
 
 defineOptions({ inheritAttrs: false });
 

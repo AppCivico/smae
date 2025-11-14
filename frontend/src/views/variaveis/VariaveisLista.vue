@@ -1,4 +1,8 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { ref, watchEffect } from 'vue';
+import { useRoute } from 'vue-router';
+
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
 import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import SmallModal from '@/components/SmallModal.vue';
@@ -7,9 +11,6 @@ import TabelaDeVariaveisGlobais from '@/components/variaveis/TabelaDeVariaveisGl
 import { useAlertStore } from '@/stores/alert.store';
 import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store.ts';
 import VariaveisSeries from '@/views/variaveis/VariaveisSeries.vue';
-import { storeToRefs } from 'pinia';
-import { ref, watchEffect } from 'vue';
-import { useRoute } from 'vue-router';
 
 const route = useRoute();
 

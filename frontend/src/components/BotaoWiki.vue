@@ -1,8 +1,9 @@
 <script lang="ts" setup>
-import { watch } from 'vue';
 import { storeToRefs } from 'pinia';
-import { useWikiStore } from '@/stores/wiki.store';
+import { watch } from 'vue';
+
 import useRotaAtual from '@/composables/useRotaAtual';
+import { useWikiStore } from '@/stores/wiki.store';
 
 const wikiStore = useWikiStore();
 const { rotaAtual } = useRotaAtual();

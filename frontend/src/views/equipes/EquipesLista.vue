@@ -104,13 +104,12 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
-import SmaeLink from '@/components/SmaeLink.vue';
-import LocalFilter from '@/components/LocalFilter.vue';
 
+import LocalFilter from '@/components/LocalFilter.vue';
+import SmaeLink from '@/components/SmaeLink.vue';
+import tipoDePerfil from '@/consts/tipoDePerfil';
 import { useAlertStore } from '@/stores/alert.store';
 import { useEquipesStore } from '@/stores/equipes.store';
-
-import tipoDePerfil from '@/consts/tipoDePerfil';
 
 const listaFiltradaPorTermoDeBusca = ref([]);
 

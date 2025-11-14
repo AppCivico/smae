@@ -8,10 +8,11 @@ import {
 } from 'vee-validate';
 import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import CargosDeParlamentar from '@/consts/cargosDeParlamentar';
-import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
+
 import InputImageProfile from '@/components/InputImageProfile.vue';
 import ParlamentaresExibirRepresentatividade from '@/components/parlamentares/ParlamentaresExibirRepresentatividade.vue';
+import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
+import CargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import { parlamentar as schema } from '@/consts/formSchemas';
 import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
 import requestS from '@/helpers/requestS.ts';

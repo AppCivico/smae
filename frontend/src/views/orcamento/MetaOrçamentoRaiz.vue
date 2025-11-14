@@ -1,11 +1,12 @@
 <script setup>
-import { useMetasStore } from '@/stores/metas.store';
 import { storeToRefs } from 'pinia';
 import {
   computed,
   watch,
 } from 'vue';
 import { useRoute } from 'vue-router';
+
+import { useMetasStore } from '@/stores/metas.store';
 
 const route = useRoute();
 

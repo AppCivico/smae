@@ -10,12 +10,13 @@ import {
   computed, onMounted, ref, watch,
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
 import SmallModal from '@/components/SmallModal.vue';
 import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import { representatividade as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
-import { useRegionsStore } from '@/stores/regions.store';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
+import { useRegionsStore } from '@/stores/regions.store';
 
 type Props = {
   apenasEmitir?: boolean,

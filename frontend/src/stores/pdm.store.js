@@ -1,10 +1,11 @@
+import { defineStore } from 'pinia';
+
 import { router } from '@/router';
 import { useAlertStore } from '@/stores/alert.store';
 import { useMacrotemasStore } from '@/stores/macrotemas.store';
 import { useSubtemasStore } from '@/stores/subtemas.store';
 import { useTagsStore } from '@/stores/tags.store';
 import { useTemasStore } from '@/stores/temas.store';
-import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 

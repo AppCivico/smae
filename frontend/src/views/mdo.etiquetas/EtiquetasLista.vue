@@ -71,9 +71,10 @@
 </template>
 
 <script setup>
-import { useAlertStore } from '@/stores/alert.store';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
+
+import { useAlertStore } from '@/stores/alert.store';
 import { useEtiquetasStore } from '@/stores/etiquetaMdo.store';
 
 const route = useRoute();

@@ -1,10 +1,11 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+
 import dateToDate from '@/helpers/dateToDate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { usePaineisStore } from '@/stores/paineis.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
-import { storeToRefs } from 'pinia';
 
 const { temPermissãoPara } = storeToRefs(useAuthStore());
 const { painéisPorId } = storeToRefs(usePaineisStore());

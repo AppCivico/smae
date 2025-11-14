@@ -1,15 +1,17 @@
 <script setup>
 // eslint-disable-next-line import/no-named-default
+import { storeToRefs } from 'pinia';
+import { computed, ref } from 'vue';
+import { useRoute } from 'vue-router';
+
 import { default as LinhaCusteio } from '@/components/orcamento/LinhaCusteio.vue';
 import dateToField from '@/helpers/dateToField';
 import formataValor from '@/helpers/formataValor';
 import { useAlertStore, useOrcamentosStore } from '@/stores';
-import { storeToRefs } from 'pinia';
-import { computed, ref } from 'vue';
-import { usePdMStore } from '@/stores/pdm.store';
 import { useObrasStore } from '@/stores/obras.store';
+import { usePdMStore } from '@/stores/pdm.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
-import { useRoute } from 'vue-router';
+
 import FiltroPorOrgaoEUnidade from './FiltroPorOrgaoEUnidade.vue';
 import agrupaFilhos from './helpers/agrupaFilhos';
 import maiorData from './helpers/maiorData';

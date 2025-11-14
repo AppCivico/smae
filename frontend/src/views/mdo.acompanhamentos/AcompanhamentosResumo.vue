@@ -1,9 +1,10 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+
 import { acompanhamento as schema } from '@/consts/formSchemas';
 import dateToField from '@/helpers/dateToField';
 import { useAcompanhamentosStore } from '@/stores/acompanhamentos.store.ts';
 import { useObrasStore } from '@/stores/obras.store';
-import { storeToRefs } from 'pinia';
 
 defineProps({
   obraId: {

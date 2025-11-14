@@ -1,11 +1,12 @@
 <script lang="ts" setup>
-import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
-import { useEntidadesProximasStore } from '@/stores/entidadesProximas.store';
-import { PontoEndereco, useGeolocalizadorStore } from '@/stores/geolocalizador.store';
 import { debounce } from 'lodash';
 import { storeToRefs } from 'pinia';
 import { ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
+
+import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
+import { useEntidadesProximasStore } from '@/stores/entidadesProximas.store';
+import { PontoEndereco, useGeolocalizadorStore } from '@/stores/geolocalizador.store';
 
 type Emits = {
   (event: 'selecao', payload: { endereco: PontoEndereco, raio: number }): void

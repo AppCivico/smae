@@ -111,6 +111,7 @@ import {
 } from 'vee-validate';
 import { defineOptions } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
 import CampoDeArquivo from '@/components/CampoDeArquivo.vue';
 import { tag as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';

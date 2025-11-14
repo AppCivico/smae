@@ -1,12 +1,13 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { computed, ref } from 'vue';
+
 import LocalFilter from '@/components/LocalFilter.vue';
 import { processo as schema } from '@/consts/formSchemas';
 import formatProcesso from '@/helpers/formatProcesso';
 import { useAlertStore } from '@/stores/alert.store';
 import { useObrasStore } from '@/stores/obras.store';
 import { useProcessosStore } from '@/stores/processos.store.ts';
-import { storeToRefs } from 'pinia';
-import { computed, ref } from 'vue';
 
 defineProps({
   obraId: {

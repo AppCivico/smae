@@ -6,13 +6,14 @@ import {
   watch,
 } from 'vue';
 import { onBeforeRouteLeave, useRoute } from 'vue-router';
+
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
+import SmaeTooltip from '@/components/SmaeTooltip/SmaeTooltip.vue';
 import combinadorDeListas from '@/helpers/combinadorDeListas';
 import { localizarDataHorario } from '@/helpers/dateToDate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
-import SmaeTooltip from '@/components/SmaeTooltip/SmaeTooltip.vue';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 const { temPermissãoPara } = storeToRefs(useAuthStore());

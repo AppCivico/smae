@@ -1,11 +1,12 @@
 <script>
 import { useRoute } from 'vue-router';
+
+import SmaeTooltip from '@/components/SmaeTooltip/SmaeTooltip.vue';
 import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
 import { useAlertStore } from '@/stores/alert.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
-import SmaeTooltip from '@/components/SmaeTooltip/SmaeTooltip.vue';
 
 export default {
   name: 'LinhaDeCronograma',

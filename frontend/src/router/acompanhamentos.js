@@ -1,4 +1,5 @@
 import { defineAsyncComponent } from 'vue';
+
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import dateToField from '@/helpers/dateToField';
 import { useAcompanhamentosStore } from '@/stores/acompanhamentos.store.ts';

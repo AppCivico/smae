@@ -5,6 +5,7 @@ import {
   watchEffect,
 } from 'vue';
 import { useRoute } from 'vue-router';
+
 import MapaExibir from '@/components/geo/MapaExibir.vue';
 import MarcadorDeMapa from '@/components/geo/MarcadorDeMapa.vue';
 import ListaLegendas from '@/components/ListaLegendas.vue';
@@ -19,6 +20,7 @@ import { useMetasStore } from '@/stores/metas.store';
 import AddEditEtapa from '@/views/metas/AddEditEtapa.vue';
 import AddEditFase from '@/views/metas/AddEditFase.vue';
 import AddEditMonitorar from '@/views/metas/AddEditMonitorar.vue';
+
 import achatarGeoLocalizacao from './helpers/achatarGeoLocalizacao';
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
 

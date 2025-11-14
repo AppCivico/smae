@@ -3,16 +3,17 @@ import { storeToRefs } from 'pinia';
 import {
   computed, nextTick,
 } from 'vue';
+
+import SmaeLink from '@/components/SmaeLink.vue';
 import ListaDeDistribuicaoItem from '@/components/transferencia/ListaDeDistribuicaoItem.vue';
+import modulos from '@/consts/modulosDoSistema';
 import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
-import modulos from '@/consts/modulosDoSistema';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import { useWorkflowAndamentoStore } from '@/stores/workflow.andamento.store.ts';
-import SmaeLink from '@/components/SmaeLink.vue';
 
 const props = defineProps({
   transferenciaId: {

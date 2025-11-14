@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue';
+
 import EdicaoTarefaComCronogramaModal, { type EdicaoTarefaComCronogramaModalExposed } from './EdicaoTarefaComCronogramaModal.vue';
 
 export type FaseTipo = 'fase' | 'tarefa-cronograma' | 'tarefa-workflow';

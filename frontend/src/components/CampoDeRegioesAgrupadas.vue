@@ -1,5 +1,4 @@
 <script setup>
-import { useRegionsStore } from '@/stores/regions.store';
 import { storeToRefs } from 'pinia';
 import { useField } from 'vee-validate';
 import {
@@ -8,6 +7,8 @@ import {
   toRef,
   watch,
 } from 'vue';
+
+import { useRegionsStore } from '@/stores/regions.store';
 
 const props = defineProps({
   modelValue: {

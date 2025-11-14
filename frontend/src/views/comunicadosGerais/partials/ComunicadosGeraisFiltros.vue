@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed, watch } from 'vue';
 import { format, subDays } from 'date-fns';
-import { useRoute, useRouter } from 'vue-router';
 import { Field, useForm, ErrorMessage } from 'vee-validate';
+import { computed, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
 import { comunicadosGeraisFiltrosSchema, comunicadosGeraisFiltrosSchemaTipoOpcoes } from '@/consts/formSchemas';
 

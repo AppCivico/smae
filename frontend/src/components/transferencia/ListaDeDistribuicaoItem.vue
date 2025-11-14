@@ -1,12 +1,13 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import { ref, defineProps, computed } from 'vue';
-import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
+
 import LoadingComponent from '@/components/LoadingComponent.vue';
+import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import TransitionExpand from '@/components/TransitionExpand.vue';
-import dinheiro from '@/helpers/dinheiro';
 import dateToDate from '@/helpers/dateToDate';
 import dateToField from '@/helpers/dateToField';
+import dinheiro from '@/helpers/dinheiro';
 import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
 
 const props = defineProps({

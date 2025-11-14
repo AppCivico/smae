@@ -1,9 +1,10 @@
 <script setup>
-import LegendaDeTarefas from '@/components/monitoramento/LegendaDeTarefas.vue';
-import { usePanoramaStore } from '@/stores/panorama.store.ts';
-import ListaDeCronogramas from '@/components/monitoramento/ListaDeCronogramas.vue';
-import { usePdMStore } from '@/stores/pdm.store';
 import { storeToRefs } from 'pinia';
+
+import LegendaDeTarefas from '@/components/monitoramento/LegendaDeTarefas.vue';
+import ListaDeCronogramas from '@/components/monitoramento/ListaDeCronogramas.vue';
+import { usePanoramaStore } from '@/stores/panorama.store.ts';
+import { usePdMStore } from '@/stores/pdm.store';
 
 const panoramaStore = usePanoramaStore();
 const {

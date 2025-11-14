@@ -1,12 +1,13 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { ref } from 'vue';
+import { useRoute } from 'vue-router';
+
 import LocalFilter from '@/components/LocalFilter.vue';
 import { planoSetorial as schema } from '@/consts/formSchemas';
 import truncate from '@/helpers/texto/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store.ts';
-import { storeToRefs } from 'pinia';
-import { ref } from 'vue';
-import { useRoute } from 'vue-router';
 
 const route = useRoute();
 

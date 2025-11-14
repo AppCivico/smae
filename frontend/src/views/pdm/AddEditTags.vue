@@ -1,12 +1,12 @@
 <script setup>
-import { tag as schema } from '@/consts/formSchemas';
-import requestS from '@/helpers/requestS.ts';
-import { router } from '@/router';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { reactive } from 'vue';
 import { useRoute } from 'vue-router';
 
+import { tag as schema } from '@/consts/formSchemas';
+import requestS from '@/helpers/requestS.ts';
+import { router } from '@/router';
 import {
   useAlertStore, useEditModalStore,
   useMetasStore,

@@ -4,6 +4,7 @@ import {
   defineOptions,
   onMounted, reactive, ref, watch,
 } from 'vue';
+
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import truncate from '@/helpers/texto/truncate';
 import { useAuthStore } from '@/stores/auth.store';

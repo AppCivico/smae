@@ -8,6 +8,7 @@
 
 <script lang="ts" setup>
 import { defineProps, computed } from 'vue';
+
 import GraficoDashboard, { TooltipOptions } from '@/components/graficos/GraficoDashboard.vue';
 
 const props = defineProps({

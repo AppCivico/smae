@@ -1,10 +1,13 @@
 <script setup>
-import agrupadorDeVariáveis from '@/helpers/agrupadorDeVariaveis';
+import { storeToRefs } from 'pinia';
+import { ErrorMessage, Field, Form } from 'vee-validate';
+import { useRoute } from 'vue-router';
+
 import { Dashboard } from '@/components';
 import auxiliarDePreenchimento from '@/components/AuxiliarDePreenchimento.vue';
 import { default as countVars } from '@/components/monitoramento/countVars.vue';
-import { default as listVars } from '@/components/monitoramento/listVars.vue';
 import listCompostas from '@/components/monitoramento/listCompostas.vue';
+import { default as listVars } from '@/components/monitoramento/listVars.vue';
 import { default as modalAnaliseRisco } from '@/components/monitoramento/modalAnaliseRisco.vue';
 import { default as modalFechamento } from '@/components/monitoramento/modalFechamento.vue';
 import { default as modalQualificacaoMeta } from '@/components/monitoramento/modalQualificacaoMeta.vue';
@@ -12,6 +15,7 @@ import { default as modalRealizado } from '@/components/monitoramento/modalReali
 import modalRealizadoEmLote from '@/components/monitoramento/modalRealizadoEmLote.vue';
 import { default as sidebarRealizado } from '@/components/monitoramento/sidebarRealizado.vue';
 import { auxiliarDePreenchimentoDeEvoluçãoDeMeta as schema } from '@/consts/formSchemas';
+import agrupadorDeVariáveis from '@/helpers/agrupadorDeVariaveis';
 import dateToField from '@/helpers/dateToField';
 import { router } from '@/router';
 import { useAlertStore } from '@/stores/alert.store';
@@ -20,9 +24,6 @@ import { useCiclosStore } from '@/stores/ciclos.store';
 import { useEditModalStore } from '@/stores/editModal.store';
 import { usePdMStore } from '@/stores/pdm.store';
 import { useSideBarStore } from '@/stores/sideBar.store';
-import { storeToRefs } from 'pinia';
-import { ErrorMessage, Field, Form } from 'vee-validate';
-import { useRoute } from 'vue-router';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 

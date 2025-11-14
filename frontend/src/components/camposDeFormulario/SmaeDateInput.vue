@@ -1,10 +1,10 @@
 <script setup>
+import { parseISO, isValid, format } from 'date-fns';
 import { useField } from 'vee-validate';
 import {
   computed,
   toRef,
 } from 'vue';
-import { parseISO, isValid, format } from 'date-fns';
 
 const props = defineProps({
   modelValue: {

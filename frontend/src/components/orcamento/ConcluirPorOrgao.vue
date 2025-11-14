@@ -1,9 +1,10 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { ref } from 'vue';
+
 import SmallModal from '@/components/SmallModal.vue';
 import dateToDate from '@/helpers/dateToDate';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
-import { storeToRefs } from 'pinia';
-import { ref } from 'vue';
 
 const OrcamentosStore = useOrcamentosStore();
 

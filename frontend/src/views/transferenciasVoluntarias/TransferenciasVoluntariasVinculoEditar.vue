@@ -5,6 +5,7 @@ import {
 } from 'vee-validate';
 import { computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
+
 import { tipoDeVinculoEditar as schema } from '@/consts/formSchemas';
 import dinheiro from '@/helpers/dinheiro';
 import { useAlertStore } from '@/stores/alert.store';

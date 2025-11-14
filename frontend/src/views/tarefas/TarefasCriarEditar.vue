@@ -1,7 +1,4 @@
 <script setup>
-import {
-  computed, defineOptions, ref, watch,
-} from 'vue';
 import { isEqual } from 'lodash';
 import { storeToRefs } from 'pinia';
 import {
@@ -11,7 +8,11 @@ import {
   useForm,
   useIsFormDirty,
 } from 'vee-validate';
+import {
+  computed, defineOptions, ref, watch,
+} from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import dependencyTypes from '@/consts/dependencyTypes';
 import schema from '@/consts/formSchemas/tarefa';

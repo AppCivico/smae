@@ -24,8 +24,9 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
 import Big from 'big.js';
+import { computed } from 'vue';
+
 import GraficoDashboard from '@/components/graficos/GraficoDashboard.vue';
 import NumeroComLegenda
   from '@/components/painelEstrategico/NumeroComLegenda.vue';

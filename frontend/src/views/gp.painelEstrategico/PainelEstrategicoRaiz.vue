@@ -1,5 +1,10 @@
 <script lang="ts" setup>
-import titleCase from '@/helpers/texto/titleCase';
+import type { GeoLocCamadaFullDto } from '@back/geo-loc/entities/geo-loc.entity.ts';
+import { isEqual } from 'lodash';
+import { storeToRefs } from 'pinia';
+import { computed, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
 import * as CardEnvelope from '@/components/cardEnvelope';
 import Dashboard from '@/components/DashboardLayout.vue';
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
@@ -20,14 +25,10 @@ import TabelaProjetos from '@/components/painelEstrategico/TabelaProjetos.vue';
 import TotalDeProjetos from '@/components/painelEstrategico/TotalDeProjetos.vue';
 import projectStatuses from '@/consts/projectStatuses';
 import gerarCoresIntermediarias from '@/helpers/cores/gerarCoresIntermediarias';
+import titleCase from '@/helpers/texto/titleCase';
 import { useAlertStore } from '@/stores/alert.store';
 import { usePainelEstrategicoStore } from '@/stores/painelEstrategico.store';
 import { useRegionsStore } from '@/stores/regions.store';
-import type { GeoLocCamadaFullDto } from '@back/geo-loc/entities/geo-loc.entity.ts';
-import { isEqual } from 'lodash';
-import { storeToRefs } from 'pinia';
-import { computed, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 
 type Camada = GeoLocCamadaFullDto & {
   id: number

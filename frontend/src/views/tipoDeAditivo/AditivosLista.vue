@@ -71,10 +71,11 @@
   </table>
 </template>
 <script setup>
-import { useAlertStore } from '@/stores/alert.store';
-import { useTipoDeAditivosStore } from '@/stores/tipoDeAditivos.store';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
+
+import { useAlertStore } from '@/stores/alert.store';
+import { useTipoDeAditivosStore } from '@/stores/tipoDeAditivos.store';
 
 const route = useRoute();
 

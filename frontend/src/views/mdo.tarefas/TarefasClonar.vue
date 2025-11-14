@@ -1,8 +1,4 @@
 <script setup>
-import SmallModal from '@/components/SmallModal.vue';
-import { useAlertStore } from '@/stores/alert.store';
-import { useObrasStore } from '@/stores/obras.store';
-import { useTarefasStore } from '@/stores/tarefas.store.ts';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
@@ -13,6 +9,11 @@ import {
 import { computed, onUnmounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { number, object } from 'yup';
+
+import SmallModal from '@/components/SmallModal.vue';
+import { useAlertStore } from '@/stores/alert.store';
+import { useObrasStore } from '@/stores/obras.store';
+import { useTarefasStore } from '@/stores/tarefas.store.ts';
 
 const emit = defineEmits(['clonagemConcluída']);
 

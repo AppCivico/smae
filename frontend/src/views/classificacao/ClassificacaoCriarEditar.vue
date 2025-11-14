@@ -117,15 +117,14 @@
 </template>
 
 <script lang="ts" setup>
-import { useRoute, useRouter } from 'vue-router';
 import { ErrorMessage, Field, useForm } from 'vee-validate';
 import {
   computed, onMounted, watch,
 } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import { classificacaoCriarEditarSchema as schema } from '@/consts/formSchemas';
-
 import { useClassificacaoStore } from '@/stores/classificacao.store';
 import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
 

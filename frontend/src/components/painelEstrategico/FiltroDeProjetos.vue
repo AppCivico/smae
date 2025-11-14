@@ -87,16 +87,17 @@
   </form>
 </template>
 <script setup lang="ts">
-import AutocompleteField from '@/components/AutocompleteField2.vue';
-import { useOrgansStore } from '@/stores';
-import { usePortfolioStore } from '@/stores/portfolios.store';
-import { useProjetosStore } from '@/stores/projetos.store';
 import type { ProjetoDto } from '@back/pp/projeto/entities/projeto.entity';
 import { storeToRefs } from 'pinia';
 import type { Ref } from 'vue';
 import { computed, onUnmounted, ref } from 'vue';
 import type { LocationQueryValue } from 'vue-router';
 import { useRoute } from 'vue-router';
+
+import AutocompleteField from '@/components/AutocompleteField2.vue';
+import { useOrgansStore } from '@/stores';
+import { usePortfolioStore } from '@/stores/portfolios.store';
+import { useProjetosStore } from '@/stores/projetos.store';
 
 defineProps({
   ariaBusy: {

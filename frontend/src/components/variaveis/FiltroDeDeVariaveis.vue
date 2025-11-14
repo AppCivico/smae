@@ -392,6 +392,13 @@
   </form>
 </template>
 <script setup lang="ts">
+import { storeToRefs } from 'pinia';
+import type { Ref } from 'vue';
+import {
+  computed, ref,
+} from 'vue';
+import { useRoute } from 'vue-router';
+
 import direcoesDeOrdenacao from '@/consts/direcoesDeOrdenacao';
 import { variavelGlobalParaGeracao as schema } from '@/consts/formSchemas';
 import niveisRegionalizacao from '@/consts/niveisRegionalizacao';
@@ -403,12 +410,6 @@ import { useOrgansStore } from '@/stores/organs.store';
 import { useRegionsStore } from '@/stores/regions.store';
 import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store';
 import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store.ts';
-import { storeToRefs } from 'pinia';
-import type { Ref } from 'vue';
-import {
-  computed, ref,
-} from 'vue';
-import { useRoute } from 'vue-router';
 
 const route = useRoute();
 

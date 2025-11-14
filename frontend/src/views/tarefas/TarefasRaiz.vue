@@ -1,6 +1,7 @@
 <script setup>
-import { useTarefasStore } from '@/stores/tarefas.store.ts';
 import { onUnmounted } from 'vue';
+
+import { useTarefasStore } from '@/stores/tarefas.store.ts';
 
 const tarefasStore = useTarefasStore();
 

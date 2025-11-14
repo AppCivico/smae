@@ -1,11 +1,4 @@
 <script setup>
-import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
-import ErrorComponent from '@/components/ErrorComponent.vue';
-import { acompanhamento as schema } from '@/consts/formSchemas';
-import dateToField from '@/helpers/dateToField';
-import { useAcompanhamentosStore } from '@/stores/acompanhamentos.store.ts';
-import { useAlertStore } from '@/stores/alert.store';
-import { useTiposDeAcompanhamentoStore } from '@/stores/tiposDeAcompanhamento.store.ts';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
@@ -14,6 +7,14 @@ import {
   Form,
 } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
+
+import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
+import ErrorComponent from '@/components/ErrorComponent.vue';
+import { acompanhamento as schema } from '@/consts/formSchemas';
+import dateToField from '@/helpers/dateToField';
+import { useAcompanhamentosStore } from '@/stores/acompanhamentos.store.ts';
+import { useAlertStore } from '@/stores/alert.store';
+import { useTiposDeAcompanhamentoStore } from '@/stores/tiposDeAcompanhamento.store.ts';
 
 const acompanhamentosStore = useAcompanhamentosStore();
 const alertStore = useAlertStore();

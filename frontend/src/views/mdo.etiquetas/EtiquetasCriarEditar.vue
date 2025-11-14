@@ -62,12 +62,13 @@
 </template>
 
 <script setup>
-import { etiqueta as schema } from '@/consts/formSchemas';
-import { useAlertStore } from '@/stores/alert.store';
-import { useEtiquetasStore } from '@/stores/etiquetaMdo.store';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, Form } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
+
+import { etiqueta as schema } from '@/consts/formSchemas';
+import { useAlertStore } from '@/stores/alert.store';
+import { useEtiquetasStore } from '@/stores/etiquetaMdo.store';
 
 const router = useRouter();
 const route = useRoute();

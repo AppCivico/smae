@@ -164,13 +164,14 @@
 </template>
 
 <script lang="ts" setup>
+import { storeToRefs } from 'pinia';
+import { Field, useForm } from 'vee-validate';
+import { computed, ref } from 'vue';
+
 import SmaeLink from '@/components/SmaeLink.vue';
 import { arquivoSimples as uploadSchema } from '@/consts/formSchemas';
 import { useDocumentTypesStore } from '@/stores';
 import { useFileStore } from '@/stores/file.store';
-import { storeToRefs } from 'pinia';
-import { Field, useForm } from 'vee-validate';
-import { computed, ref } from 'vue';
 
 export type ArquivoAdicionado = {
   nome_original: string,

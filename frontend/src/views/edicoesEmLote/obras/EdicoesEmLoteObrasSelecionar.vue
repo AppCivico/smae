@@ -1,17 +1,18 @@
 <script lang="ts" setup>
-import { computed, toRaw, watch } from 'vue';
 import { storeToRefs } from 'pinia';
+import { computed, toRaw, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
+
+import ContadorItems from '@/components/alteracaoEmLotes.componentes/Selecionar/ContadorItems.vue';
 import FiltroParaRegistros from '@/components/alteracaoEmLotes.componentes/Selecionar/FiltroParaRegistros.vue';
-import { useObrasStore } from '@/stores/obras.store';
+import SelecionarTudo from '@/components/camposDeFormulario/SelecionarTudo/SelecionarTudo.vue';
+import MenuPaginacao from '@/components/MenuPaginacao.vue';
+import SmaeFieldsetSubmit from '@/components/SmaeFieldsetSubmit.vue';
+import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import { obras as obrasSchema } from '@/consts/formSchemas';
 import statusObras from '@/consts/statusObras';
 import { useEdicoesEmLoteStore } from '@/stores/edicoesEmLote.store';
-import MenuPaginacao from '@/components/MenuPaginacao.vue';
-import SmaeFieldsetSubmit from '@/components/SmaeFieldsetSubmit.vue';
-import SelecionarTudo from '@/components/camposDeFormulario/SelecionarTudo/SelecionarTudo.vue';
-import ContadorItems from '@/components/alteracaoEmLotes.componentes/Selecionar/ContadorItems.vue';
+import { useObrasStore } from '@/stores/obras.store';
 
 const route = useRoute();
 

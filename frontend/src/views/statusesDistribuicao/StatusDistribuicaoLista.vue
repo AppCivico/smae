@@ -82,11 +82,11 @@
 </template>
 
 <script setup>
-import { useAlertStore } from '@/stores/alert.store';
 import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 
+import { useAlertStore } from '@/stores/alert.store';
 import { useStatusDistribuicaoWorflowStore } from '@/stores/statusDistribuicaoWorkflow.store';
 
 const route = useRoute();

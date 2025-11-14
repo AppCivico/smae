@@ -1,7 +1,8 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+
 import { useBlocoDeNotasStore } from '@/stores/blocoNotas.store';
 import { useTipoDeNotasStore } from '@/stores/tipoNotas.store';
-import { storeToRefs } from 'pinia';
 
 const tipoStore = useTipoDeNotasStore();
 const { lista: listaTipo } = storeToRefs(tipoStore);

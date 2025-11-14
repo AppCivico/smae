@@ -28,8 +28,9 @@
   </Dashboard>
 </template>
 <script lang="ts" setup>
-import Dashboard from '@/components/DashboardLayout.vue';
 import { Ref, ref } from 'vue';
+
+import Dashboard from '@/components/DashboardLayout.vue';
 
 type Icone = {
   id: string;

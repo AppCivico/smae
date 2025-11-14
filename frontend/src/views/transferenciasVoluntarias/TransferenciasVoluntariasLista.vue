@@ -2,12 +2,13 @@
 import { storeToRefs } from 'pinia';
 import { ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { useAuthStore } from '@/stores/auth.store';
+
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
+import combinadorDeListas from '@/helpers/combinadorDeListas';
 import dinheiro from '@/helpers/dinheiro';
 import truncate from '@/helpers/texto/truncate';
-import combinadorDeListas from '@/helpers/combinadorDeListas';
 import { useAlertStore } from '@/stores/alert.store';
+import { useAuthStore } from '@/stores/auth.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 
 const transferenciasVoluntarias = useTransferenciasVoluntariasStore();

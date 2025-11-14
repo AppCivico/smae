@@ -1,10 +1,11 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { ref } from 'vue';
+
 import { Dashboard } from '@/components';
 import { useAuthStore } from '@/stores/auth.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { usePaineisStore } from '@/stores/paineis.store';
-import { storeToRefs } from 'pinia';
-import { ref } from 'vue';
 
 const authStore = useAuthStore();
 const { permissions } = storeToRefs(authStore);

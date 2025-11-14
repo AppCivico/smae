@@ -64,13 +64,14 @@
 </template>
 
 <script setup>
+import { storeToRefs } from 'pinia';
+import { ErrorMessage, Field, Form } from 'vee-validate';
+import { useRoute, useRouter } from 'vue-router';
+
 import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import { modalidadeContratacao as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useModalidadeDeContratacaoStore } from '@/stores/modalidadeDeContratacao.store';
-import { storeToRefs } from 'pinia';
-import { ErrorMessage, Field, Form } from 'vee-validate';
-import { useRoute, useRouter } from 'vue-router';
 
 const router = useRouter();
 const route = useRoute();

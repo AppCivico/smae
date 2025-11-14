@@ -1,6 +1,7 @@
 <script setup>
-import { dateToMonth } from '@/helpers/dateToDate';
 import { computed } from 'vue';
+
+import { dateToMonth } from '@/helpers/dateToDate';
 
 const props = defineProps({
   meta: {

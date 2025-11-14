@@ -1,10 +1,11 @@
 <script setup>
-import { useAlertStore } from '@/stores/alert.store';
-import { useCiclosStore } from '@/stores/ciclos.store';
-import { useEditModalStore } from '@/stores/editModal.store';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import * as Yup from 'yup';
+
+import { useAlertStore } from '@/stores/alert.store';
+import { useCiclosStore } from '@/stores/ciclos.store';
+import { useEditModalStore } from '@/stores/editModal.store';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 

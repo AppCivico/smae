@@ -1,9 +1,10 @@
 <script setup>
-import { Dashboard } from '@/components';
-import { useDashboardStore } from '@/stores/dashboard.store.ts';
 import { iframeResize } from 'iframe-resizer';
 import { storeToRefs } from 'pinia';
 import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router';
+
+import { Dashboard } from '@/components';
+import { useDashboardStore } from '@/stores/dashboard.store.ts';
 
 const router = useRouter();
 const route = useRoute();

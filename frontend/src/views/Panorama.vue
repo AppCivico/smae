@@ -1,4 +1,8 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
 import { Dashboard } from '@/components';
 import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
 import FeedbackEmptyList from '@/components/FeedbackEmptyList.vue';
@@ -11,9 +15,6 @@ import MetaNormal from '@/components/panorama/MetaNormal.vue';
 import { useAuthStore } from '@/stores/auth.store';
 import { usePanoramaStore } from '@/stores/panorama.store.ts';
 import { usePdMStore } from '@/stores/pdm.store';
-import { storeToRefs } from 'pinia';
-import { watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 
 const dadosExtrasDeAbas = {
   TabelaDeVariaveis: {

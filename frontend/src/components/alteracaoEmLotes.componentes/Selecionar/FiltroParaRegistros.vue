@@ -1,23 +1,24 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
 import { storeToRefs } from 'pinia';
+import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
+
 import FiltroParaPagina from '@/components/FiltroParaPagina.vue';
-import { useObrasStore } from '@/stores/obras.store';
-import { useOrgansStore } from '@/stores/organs.store';
-import { useRegionsStore } from '@/stores/regions.store';
-import { useEquipamentosStore } from '@/stores/equipamentos.store';
-import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store';
-import { useEdicoesEmLoteStore } from '@/stores/edicoesEmLote.store';
-import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';
-import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
-import prepararParaSelect from '@/helpers/prepararParaSelect';
-import statusObras from '@/consts/statusObras';
+import type { Formulario } from '@/components/FiltroParaPagina.vue';
 import {
   alteracaoEmLoteNovoFiltro as schema,
   obras as obrasSchema,
 } from '@/consts/formSchemas';
-import type { Formulario } from '@/components/FiltroParaPagina.vue';
+import statusObras from '@/consts/statusObras';
+import prepararParaSelect from '@/helpers/prepararParaSelect';
+import { useEdicoesEmLoteStore } from '@/stores/edicoesEmLote.store';
+import { useEquipamentosStore } from '@/stores/equipamentos.store';
+import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';
+import { useObrasStore } from '@/stores/obras.store';
+import { useOrgansStore } from '@/stores/organs.store';
+import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store';
+import { useRegionsStore } from '@/stores/regions.store';
+import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
 
 const route = useRoute();
 

@@ -1,8 +1,9 @@
 <script setup>
-import { Dashboard } from '@/components';
-import { useAuthStore, usePaineisGruposStore } from '@/stores';
 import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
+
+import { Dashboard } from '@/components';
+import { useAuthStore, usePaineisGruposStore } from '@/stores';
 
 const authStore = useAuthStore();
 const { permissions } = storeToRefs(authStore);
@@ -161,11 +162,11 @@ function toggleAccordeon(t) {
                     <router-link
                       v-if="perm?.CadastroPessoa?.editar"
                       :to="{
-          name: 'editarUsuários',
-          params: {
-            id: pp.id
-          }
-        }"
+                        name: 'editarUsuários',
+                        params: {
+                          id: pp.id
+                        }
+                      }"
                       class="tprimary"
                     >
                       <svg

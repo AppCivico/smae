@@ -316,10 +316,11 @@
 </template>
 
 <script setup>
+import { computed, onMounted, ref } from 'vue';
+
 import ParlamentaresExibirRepresentatividade from '@/components/parlamentares/ParlamentaresExibirRepresentatividade.vue';
 import { useAuthStore } from '@/stores/auth.store';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
-import { computed, onMounted, ref } from 'vue';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 

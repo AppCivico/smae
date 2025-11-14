@@ -1,9 +1,10 @@
 <script lang="ts" setup>
-import criaOpcoesDosGraficosDeVariaveis from '@/helpers/criaOpcoesDosGraficosDeVariaveis';
+import { cloneDeep } from 'lodash';
+import { computed } from 'vue';
+
 import GraficoDashboard, { TooltipOptions } from '@/components/graficos/GraficoDashboard.vue';
 import quadroDeVariaveis from '@/consts/quadroDeVariaveis';
-import { computed } from 'vue';
-import { cloneDeep } from 'lodash';
+import criaOpcoesDosGraficosDeVariaveis from '@/helpers/criaOpcoesDosGraficosDeVariaveis';
 
 const props = defineProps<{
   variaveis: Record<string, number>;

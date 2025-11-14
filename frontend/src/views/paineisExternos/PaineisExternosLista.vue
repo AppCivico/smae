@@ -1,9 +1,10 @@
 <script setup>
-import { useAlertStore } from '@/stores/alert.store';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
-import { usePaineisExternosStore } from '@/stores/paineisExternos.store';
+
 import truncate from '@/helpers/texto/truncate';
+import { useAlertStore } from '@/stores/alert.store';
+import { usePaineisExternosStore } from '@/stores/paineisExternos.store';
 
 const portfolioStore = usePaineisExternosStore();
 const {

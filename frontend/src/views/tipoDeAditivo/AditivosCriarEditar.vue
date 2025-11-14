@@ -102,12 +102,13 @@
 </template>
 
 <script setup>
-import { tipoDeAditivo as schema } from '@/consts/formSchemas';
-import { useAlertStore } from '@/stores/alert.store';
-import { useTipoDeAditivosStore } from '@/stores/tipoDeAditivos.store';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, Form } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
+
+import { tipoDeAditivo as schema } from '@/consts/formSchemas';
+import { useAlertStore } from '@/stores/alert.store';
+import { useTipoDeAditivosStore } from '@/stores/tipoDeAditivos.store';
 
 const router = useRouter();
 const route = useRoute();

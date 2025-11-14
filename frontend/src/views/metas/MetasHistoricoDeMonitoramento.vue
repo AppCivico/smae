@@ -1,9 +1,10 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { computed, defineOptions, watch } from 'vue';
+
 import DetalhamentoDeCiclo from '@/components/monitoramento/DetalhamentoDeCiclo.vue';
 import { useCiclosStore } from '@/stores/ciclos.store';
 import { usePdMStore } from '@/stores/pdm.store';
-import { storeToRefs } from 'pinia';
-import { computed, defineOptions, watch } from 'vue';
 
 defineOptions({
   inheritAttrs: false,

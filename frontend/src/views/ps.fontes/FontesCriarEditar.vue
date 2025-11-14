@@ -69,18 +69,17 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue';
 import { storeToRefs } from 'pinia';
-import { useRoute, useRouter } from 'vue-router';
 import {
   ErrorMessage, Field, Form, useIsFormDirty,
 } from 'vee-validate';
+import { onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
-import { fonte as schema } from '@/consts/formSchemas';
-
-import { useFontesStore } from '@/stores/fontesPs.store';
-import { useAlertStore } from '@/stores/alert.store';
 import TituloDaPagina from '@/components/TituloDaPagina.vue';
+import { fonte as schema } from '@/consts/formSchemas';
+import { useAlertStore } from '@/stores/alert.store';
+import { useFontesStore } from '@/stores/fontesPs.store';
 
 const router = useRouter();
 const route = useRoute();

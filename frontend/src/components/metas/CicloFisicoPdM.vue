@@ -102,12 +102,13 @@
   </div>
 </template>
 <script lang="ts" setup>
-import dateToDate, { dateToMonthYear } from '@/helpers/dateToDate';
-import dateToTitle from '@/helpers/dateToTitle';
 import type {
   MfListVariavelAnaliseQualitativaDto,
 } from '@back/mf/metas/dto/mf-meta.dto';
 import { computed, PropType } from 'vue';
+
+import dateToDate, { dateToMonthYear } from '@/helpers/dateToDate';
+import dateToTitle from '@/helpers/dateToTitle';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 

@@ -1,6 +1,10 @@
 <script setup>
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { grauDescricao } from '@back/common/RiscoCalc.ts';
+import { storeToRefs } from 'pinia';
+import { computed, ref } from 'vue';
+import { useRoute } from 'vue-router';
+
 import LocalFilter from '@/components/LocalFilter.vue';
 import { risco as schema } from '@/consts/formSchemas';
 import statuses from '@/consts/riskStatuses';
@@ -8,9 +12,6 @@ import arrayToValueAndLabel from '@/helpers/arrayToValueAndLabel';
 import dateToField from '@/helpers/dateToField';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useRiscosStore } from '@/stores/riscos.store.ts';
-import { storeToRefs } from 'pinia';
-import { computed, ref } from 'vue';
-import { useRoute } from 'vue-router';
 
 const projetosStore = useProjetosStore();
 const {

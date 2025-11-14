@@ -1,5 +1,6 @@
 <script setup>
 import { defineProps } from 'vue';
+
 import isValidHtmlTag from '@/helpers/isValidHtmlTag';
 
 defineProps({

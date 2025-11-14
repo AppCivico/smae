@@ -18,11 +18,12 @@
 </template>
 
 <script setup>
+import { computed } from 'vue';
+
 import {
   determinarAtributosPath,
   determinarCores,
 } from '@/helpers/gerarSvgMarcador';
-import { computed } from 'vue';
 
 const props = defineProps({
   cor: {

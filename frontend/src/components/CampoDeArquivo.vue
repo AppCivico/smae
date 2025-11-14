@@ -1,8 +1,5 @@
 <script setup>
-import { useTiposDeDocumentosStore } from '@/stores/tiposDeDocumentos.store';
-import formatosDeImagem from '@/consts/formatosDeImagem';
-import tiposDeArquivos from '@/consts/tiposDeArquivos';
-import requestS from '@/helpers/requestS.ts';
+import { storeToRefs } from 'pinia';
 import { useField } from 'vee-validate';
 import {
   computed,
@@ -12,8 +9,12 @@ import {
   toRef,
   watch,
 } from 'vue';
-import { storeToRefs } from 'pinia';
+
+import formatosDeImagem from '@/consts/formatosDeImagem';
+import tiposDeArquivos from '@/consts/tiposDeArquivos';
+import requestS from '@/helpers/requestS.ts';
 import { useAlertStore } from '@/stores/alert.store';
+import { useTiposDeDocumentosStore } from '@/stores/tiposDeDocumentos.store';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 

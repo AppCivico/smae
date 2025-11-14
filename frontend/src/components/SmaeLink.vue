@@ -1,6 +1,7 @@
 <script setup>
 import { computed, defineOptions } from 'vue';
 import { RouterLink, useRoute } from 'vue-router';
+
 import { useAuthStore } from '@/stores/auth.store';
 
 defineOptions({

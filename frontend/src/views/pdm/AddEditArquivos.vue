@@ -1,12 +1,12 @@
 <script setup>
-import requestS from '@/helpers/requestS.ts';
-import { router } from '@/router';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { reactive } from 'vue';
 import { useRoute } from 'vue-router';
 import * as Yup from 'yup';
 
+import requestS from '@/helpers/requestS.ts';
+import { router } from '@/router';
 import {
   useAlertStore,
   useDocumentTypesStore,
@@ -59,7 +59,7 @@ async function onSubmit(values) {
     if (u.upload_token) {
       r = await PdMStore.insertArquivo(pdm_id, {
         upload_token: u.upload_token,
-        descricao: values.descricao
+        descricao: values.descricao,
       });
       if (r == true) {
         msg = 'Item adicionado com sucesso!';

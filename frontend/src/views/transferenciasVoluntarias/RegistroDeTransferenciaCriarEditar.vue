@@ -1,19 +1,20 @@
 <script setup>
 import Big from 'big.js';
 import { storeToRefs } from 'pinia';
-import { useRouter } from 'vue-router';
 import {
   ErrorMessage, Field, FieldArray, useForm,
 } from 'vee-validate';
 import { computed, nextTick, watch } from 'vue';
+import { useRouter } from 'vue-router';
+
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
+import SmaeTooltip from '@/components/SmaeTooltip/SmaeTooltip.vue';
 import { registroDeTransferencia as schema } from '@/consts/formSchemas';
 import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
 import { useAlertStore } from '@/stores/alert.store';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
 import { usePartidosStore } from '@/stores/partidos.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
-import SmaeTooltip from '@/components/SmaeTooltip/SmaeTooltip.vue';
 
 const tooltip = {
   dadosBancariosAceite: 'Indica o código numérico dos dados bancários para execução da emenda parlamentar oriunda de Transferência Especial.',

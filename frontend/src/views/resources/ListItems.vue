@@ -1,9 +1,10 @@
 <script setup>
-import { ref, reactive } from 'vue';
 import { storeToRefs } from 'pinia';
+import { ref, reactive } from 'vue';
+
 import { Dashboard } from '@/components';
-import { useAlertStore, useAuthStore, useResourcesStore } from '@/stores';
 import TituloDaPagina from '@/components/TituloDaPagina.vue';
+import { useAlertStore, useAuthStore, useResourcesStore } from '@/stores';
 
 const authStore = useAuthStore();
 const alertStore = useAlertStore();

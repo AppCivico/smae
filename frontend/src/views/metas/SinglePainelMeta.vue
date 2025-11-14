@@ -2,6 +2,7 @@
 import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
 import { useRoute } from 'vue-router';
+
 import { default as EvolucaoGraphComparison } from '@/components/EvolucaoGraphComparison.vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import { useAuthStore, useMetasStore, usePaineisStore } from '@/stores';

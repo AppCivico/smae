@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+
 import FiltroParaPagina, { type Formulario } from '@/components/FiltroParaPagina.vue';
 import { projetoFiltro as schema } from '@/consts/formSchemas';
 import projectStatuses from '@/consts/projectStatuses';

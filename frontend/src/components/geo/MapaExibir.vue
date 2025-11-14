@@ -24,7 +24,7 @@
 <script setup>
 import sombraDoMarcador from '@/assets/icons/mapas/map-pin__sombra.svg';
 import { gerarSvgMarcador } from '@/helpers/gerarSvgMarcador';
-import { useRegionsStore } from '@/stores/regions.store';
+
 import { useResizeObserver } from '@vueuse/core';
 import L from 'leaflet';
 import 'leaflet.markercluster/dist/leaflet.markercluster';
@@ -43,6 +43,8 @@ import {
   useSlots,
   watch,
 } from 'vue';
+
+import { useRegionsStore } from '@/stores/regions.store';
 
 /**
  * Converte SVG string para Data URL para uso com Leaflet icons

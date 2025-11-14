@@ -1,6 +1,8 @@
 <script setup>
+import { onUnmounted } from 'vue';
+
 import { useFasesProjetosStore } from '@/stores/fasesProjeto.store.js';
-import { onUnmounted} from 'vue';
+
 const fasesProjetosStore = useFasesProjetosStore();
 
 fasesProjetosStore.buscarTudo();

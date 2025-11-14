@@ -1,10 +1,11 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
-import { usePdMStore } from '@/stores/pdm.store';
-import { useAlertStore } from '@/stores/alert.store';
+
 import { Dashboard } from '@/components';
 import MigalhasDePao from '@/components/MigalhasDePao.vue';
+import { useAlertStore } from '@/stores/alert.store';
+import { usePdMStore } from '@/stores/pdm.store';
 import EdicaoOrcamentoFormulario from '@/views/planosSetoriais/EdicaoOrcamento/EdicaoOrcamentoFormulario.vue';
 
 const router = useRouter();

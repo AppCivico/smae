@@ -4,6 +4,7 @@ import {
   computed, inject, ref, watch,
 } from 'vue';
 import { useRoute } from 'vue-router';
+
 import LinhaRealizado from '@/components/orcamento/LinhaRealizado.vue';
 import formataValor from '@/helpers/formataValor';
 import { useAlertStore } from '@/stores/alert.store';
@@ -11,6 +12,7 @@ import { useObrasStore } from '@/stores/obras.store';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
 import { usePdMStore } from '@/stores/pdm.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
+
 import FiltroPorOrgaoEUnidade from './FiltroPorOrgaoEUnidade.vue';
 import agrupaFilhos from './helpers/agrupaFilhos';
 import somaItems from './helpers/somaItems';
