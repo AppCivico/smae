@@ -101,10 +101,10 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | ModuloSistema[] |
     CadastroGrupoPortfolioMDO: ['Grupos de Portfólio de MdO', 'MDO'],
     Projeto: ['Projetos', 'Projetos'],
     ProjetoMDO: ['Projetos de Obras', 'MDO'],
-    CadastroProjetoEtapa: ['Etapas do portfólio', 'Projetos'],
-    CadastroProjetoEtapaPadrao: ['Etapas de Projetos', 'Projetos'],
-    CadastroProjetoEtapaPadraoMDO: ['Etapas de obra', 'MDO'],
-    CadastroProjetoEtapaMDO: ['Etapas do portfólio', 'MDO'],
+    CadastroProjetoEtapaPadrao: ['Etapa Padrão de Projetos', 'Projetos'],
+    CadastroProjetoEtapaPadraoMDO: ['Etapa Padrão de obra', 'MDO'],
+    CadastroProjetoEtapa: ['Etapas de Projetos', 'Projetos'],
+    CadastroProjetoEtapaMDO: ['Etapas de Obras', 'MDO'],
     ReportsProjetos: ['Relatórios de Projetos', 'Projetos'],
     ReportsMDO: ['Relatórios de MDO', 'MDO'],
 
@@ -288,6 +288,11 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['CadastroProjetoEtapa.editar', 'Editar Etapa de Portfólio'],
         ['CadastroProjetoEtapa.remover', 'Remover Etapa de Portfólio'],
     ],
+    CadastroProjetoEtapaMDO: [
+        ['CadastroProjetoEtapaMDO.inserir', 'Inserir Etapa de Obras'],
+        ['CadastroProjetoEtapaMDO.editar', 'Editar Etapa de Obras'],
+        ['CadastroProjetoEtapaMDO.remover', 'Remover Etapa de Obras'],
+    ],
     CadastroProjetoEtapaPadrao: [
         ['CadastroProjetoEtapaPadrao.inserir', 'Inserir cadastro básico de Etapa Padrão em Projeto'],
         ['CadastroProjetoEtapaPadrao.editar', 'Editar cadastro básico de Etapa Padrão em Projeto'],
@@ -297,11 +302,6 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['CadastroProjetoEtapaPadraoMDO.inserir', 'Inserir cadastro básico de Etapa Padrão em Obra'],
         ['CadastroProjetoEtapaPadraoMDO.editar', 'Editar cadastro básico de Etapa Padrão em Obra'],
         ['CadastroProjetoEtapaPadraoMDO.remover', 'Remover cadastro básico de Etapa Padrão em Obra'],
-    ],
-    CadastroProjetoEtapaMDO: [
-        ['CadastroProjetoEtapaMDO.inserir', 'Inserir cadastro básico de Etapa de MdO'],
-        ['CadastroProjetoEtapaMDO.editar', 'Editar cadastro básico de Etapa de MdO'],
-        ['CadastroProjetoEtapaMDO.remover', 'Remover cadastro básico de Etapa de MdO'],
     ],
     // cadastros de PDM e metas
     CadastroPdm: [
