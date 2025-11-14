@@ -79,7 +79,11 @@ function podeRealizar(acao) {
     return true;
   }
 
-  const chavePermissao = config.permissões[acao];
+  const permissoes = contextoEtapa.value === 'administracao'
+    ? config.permissõesAdministracao
+    : config.permissões;
+
+  const chavePermissao = permissoes?.[acao];
 
   return chavePermissao ? temPermissãoPara(chavePermissao) : false;
 }
