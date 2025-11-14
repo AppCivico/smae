@@ -192,7 +192,7 @@ export class ProjetoEtapaService {
             where: {
                 removido_em: null,
                 tipo_projeto: tipo,
-                ...(ehTelaAssociacao ? { portfolio_id: { in: portfoliosId } } : { portfolio_id: undefined }),
+                ...(ehTelaAssociacao ? { portfolio_id: undefined } : { portfolio_id: { in: portfoliosId } }),
                 eh_padrao: filters.eh_padrao,
             },
             select: {
