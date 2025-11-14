@@ -200,8 +200,8 @@ onBeforeRouteLeave(() => {
         <button
           v-if="temPermissãoPara(['Reports.remover.'])"
           class="like-a__text"
-          aria-label="excluir"
-          :title="!linha.arquivo ? 'cancelar' : 'excluir'"
+          :aria-label="!linha.arquivo ? 'cancelar geração' : 'excluir'"
+          :title="!linha.arquivo ? 'cancelar geração' : 'excluir'"
           type="button"
           @click="excluirRelatório(linha.id)"
         >
@@ -239,8 +239,9 @@ onBeforeRouteLeave(() => {
               Relatório em processamento
             </span>
           </LoadingComponent>
-
-          {{ linha.progresso }}%
+          <template v-if="linha.progresso !== null && linha.progresso !== undefined">
+            {{ linha.progresso }}%
+          </template>
         </span>
         <a
           v-else
