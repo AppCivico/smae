@@ -1,12 +1,4 @@
 <script setup>
-import { nota as schema } from '@/consts/formSchemas';
-import truncate from '@/helpers/texto/truncate';
-import { useAlertStore } from '@/stores/alert.store';
-import { useBlocoDeNotasStore } from '@/stores/blocoNotas.store';
-import { useOrgansStore } from '@/stores/organs.store';
-import { useTipoDeNotasStore } from '@/stores/tipoNotas.store';
-import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
-import { useUsersStore } from '@/stores/users.store';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage, Field, FieldArray, useForm,
@@ -18,6 +10,15 @@ import {
   watch,
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
+import { nota as schema } from '@/consts/formSchemas';
+import truncate from '@/helpers/texto/truncate';
+import { useAlertStore } from '@/stores/alert.store';
+import { useBlocoDeNotasStore } from '@/stores/blocoNotas.store';
+import { useOrgansStore } from '@/stores/organs.store';
+import { useTipoDeNotasStore } from '@/stores/tipoNotas.store';
+import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
+import { useUsersStore } from '@/stores/users.store';
 
 defineOptions({ inheritAttrs: false });
 
@@ -153,7 +154,9 @@ watch(blocosToken, (novoValor) => {
 });
 </script>
 <template>
-  <div class="spacebetween">&nbsp; </div>
+  <div class="spacebetween">
+&nbsp;
+  </div>
   <div class="flex spacebetween center mb2">
     <h1>{{ route?.meta?.título || "Nota" }}</h1>
     <hr class="ml2 f1">

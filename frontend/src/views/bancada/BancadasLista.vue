@@ -1,7 +1,8 @@
 <script setup>
-import { useAlertStore } from '@/stores/alert.store';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
+
+import { useAlertStore } from '@/stores/alert.store';
 import { useBancadasStore } from '@/stores/bancadas.store';
 
 const bancadaStore = useBancadasStore();

@@ -1,11 +1,11 @@
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
-import { Form, Field } from 'vee-validate';
-import * as Yup from 'yup';
-import { useRoute } from 'vue-router';
-import { router } from '@/router';
 import { storeToRefs } from 'pinia';
+import { Form, Field } from 'vee-validate';
+import { ref, reactive, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
+import * as Yup from 'yup';
 
+import { router } from '@/router';
 import {
   useAlertStore, useEditModalStore, useTemasStore, usePdMStore, useMetasStore,
 } from '@/stores';

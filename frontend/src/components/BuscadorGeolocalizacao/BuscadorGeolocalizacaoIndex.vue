@@ -1,8 +1,9 @@
 <script lang="ts" setup>
 import { PontoEndereco } from '@/stores/geolocalizador.store';
-import BuscadorGeolocalizacaoMapa, { type GeoFeature } from './BuscadorGeolocalizacaoMapa.vue';
+
 import BuscadorGeolocalizacaoFiltro from './BuscadorGeolocalizacaoFiltro.vue';
 import BuscadorGeolocalizacaoListagem from './BuscadorGeolocalizacaoListagem.vue';
+import BuscadorGeolocalizacaoMapa, { type GeoFeature } from './BuscadorGeolocalizacaoMapa.vue';
 
 type Props = {
   localizacoes: GeoFeature[]

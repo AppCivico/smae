@@ -5,6 +5,7 @@ import {
 } from 'vee-validate';
 import { watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
 import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
 import { grupoDeObservadores as schema } from '@/consts/formSchemas';
 import truncate from '@/helpers/texto/truncate';

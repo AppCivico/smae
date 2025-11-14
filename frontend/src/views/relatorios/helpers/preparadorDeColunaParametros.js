@@ -2,6 +2,7 @@ import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import interfacesDeTransferências from '@/consts/interfacesDeTransferências';
 import { useOrgansStore } from '@/stores/organs.store';
+import { useParlamentaresStore } from '@/stores/parlamentares.store';
 import { usePartidosStore } from '@/stores/partidos.store';
 import { usePdMStore } from '@/stores/pdm.store';
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
@@ -9,7 +10,6 @@ import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store.ts';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useTagsStore } from '@/stores/tags.store';
 import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
-import { useParlamentaresStore } from '@/stores/parlamentares.store';
 
 const ÓrgãosStore = useOrgansStore();
 const partidosStore = usePartidosStore();

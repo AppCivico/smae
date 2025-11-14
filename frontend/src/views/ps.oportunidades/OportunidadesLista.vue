@@ -289,16 +289,17 @@
 </template>
 
 <script setup>
+import { storeToRefs } from 'pinia';
+import { Field, useForm } from 'vee-validate';
+import { onMounted, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
 import SmallModal from '@/components/SmallModal.vue';
 import { oportunidadeFiltros as schema } from '@/consts/formSchemas';
 import dateToField from '@/helpers/dateToField';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOportunidadesStore } from '@/stores/oportunidades.store';
-import { storeToRefs } from 'pinia';
-import { Field, useForm } from 'vee-validate';
-import { onMounted, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute();
 const router = useRouter();

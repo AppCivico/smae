@@ -1,4 +1,8 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { Field, Form } from 'vee-validate';
+import { useRoute, useRouter } from 'vue-router';
+
 import { relatórioDePortfolioObras as schema } from '@/consts/formSchemas';
 import nulificadorTotal from '@/helpers/nulificadorTotal';
 import truncate from '@/helpers/texto/truncate';
@@ -8,9 +12,6 @@ import { useOrgansStore } from '@/stores/organs.store';
 import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store.ts';
 import { useRegionsStore } from '@/stores/regions.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
-import { storeToRefs } from 'pinia';
-import { Field, Form } from 'vee-validate';
-import { useRoute, useRouter } from 'vue-router';
 
 const ÓrgãosStore = useOrgansStore();
 const portfolioObrasStore = usePortfolioObraStore();

@@ -1,11 +1,12 @@
 <script setup>
+import { storeToRefs } from 'pinia';
 import {
   onMounted,
   onUpdated,
   reactive,
   ref,
 } from 'vue';
-import { storeToRefs } from 'pinia';
+
 import { Dashboard } from '@/components';
 import {
   useAlertStore,

@@ -1,11 +1,12 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
+
 import LocalFilter from '@/components/LocalFilter.vue';
 import TabelaGenérica from '@/components/TabelaGenerica.vue';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import { useAlertStore } from '@/stores/alert.store';
 import { useTiposDeAcompanhamentoStore } from '@/stores/tiposDeAcompanhamento.store.ts';
-import TituloDaPagina from '@/components/TituloDaPagina.vue';
 
 const tiposDeAcompanhamentoStore = useTiposDeAcompanhamentoStore();
 const {

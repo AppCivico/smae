@@ -154,16 +154,16 @@
 </template>
 
 <script setup>
-import { onUnmounted } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useIsFormDirty } from 'vee-validate';
+import { onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+import SmaeLink from '@/components/SmaeLink.vue';
 import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
 import { useAlertStore } from '@/stores/alert.store';
 import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
-import SmaeLink from '@/components/SmaeLink.vue';
 
 const router = useRouter();
 const { params } = useRoute();

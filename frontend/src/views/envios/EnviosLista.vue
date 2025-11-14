@@ -1,10 +1,11 @@
 <script setup>
-import LocalFilter from '@/components/LocalFilter.vue';
-import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
-import { useImportaçõesStore } from '@/stores/importacoes.store.ts';
 import { storeToRefs } from 'pinia';
 import { ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
+
+import LocalFilter from '@/components/LocalFilter.vue';
+import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
+import { useImportaçõesStore } from '@/stores/importacoes.store.ts';
 
 defineOptions({
   inheritAttrs: false,

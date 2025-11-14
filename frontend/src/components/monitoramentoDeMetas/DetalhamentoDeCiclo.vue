@@ -216,15 +216,16 @@
   </details>
 </template>
 <script setup>
-import ListaDeDocumentos from '@/components/monitoramentoDeMetas/ListaDeDocumentos.vue';
-import { dateToShortDate } from '@/helpers/dateToDate';
-import dateToTitle from '@/helpers/dateToTitle';
-import { useMonitoramentoDeMetasStore } from '@/stores/monitoramentoDeMetas.store';
 import { storeToRefs } from 'pinia';
 import {
   computed, onMounted, ref, watch,
 } from 'vue';
 import { useRoute } from 'vue-router';
+
+import ListaDeDocumentos from '@/components/monitoramentoDeMetas/ListaDeDocumentos.vue';
+import { dateToShortDate } from '@/helpers/dateToDate';
+import dateToTitle from '@/helpers/dateToTitle';
+import { useMonitoramentoDeMetasStore } from '@/stores/monitoramentoDeMetas.store';
 
 const route = useRoute();
 

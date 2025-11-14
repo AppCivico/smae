@@ -2,6 +2,7 @@
 import { storeToRefs } from 'pinia';
 import { onUnmounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
+
 import FiltroParaPagina from '@/components/FiltroParaPagina.vue';
 import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import schemaDaBusca from '@/consts/formSchemas/buscaLivre';

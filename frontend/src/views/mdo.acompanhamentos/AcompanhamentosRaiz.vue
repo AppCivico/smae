@@ -1,7 +1,8 @@
 <script setup>
+import { onUnmounted } from 'vue';
+
 import { useAcompanhamentosStore } from '@/stores/acompanhamentos.store.ts';
 import { useTiposDeAcompanhamentoStore } from '@/stores/tiposDeAcompanhamento.store.ts';
-import { onUnmounted } from 'vue';
 
 const acompanhamentosStore = useAcompanhamentosStore();
 const tiposDeAcompanhamentoStore = useTiposDeAcompanhamentoStore();

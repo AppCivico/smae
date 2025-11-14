@@ -1,4 +1,10 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage, Field, Form,
+} from 'vee-validate';
+import { useRoute, useRouter } from 'vue-router';
+
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import schema from '@/consts/formSchemas/tarefa';
 import addToDates from '@/helpers/addToDates';
@@ -7,11 +13,6 @@ import subtractDates from '@/helpers/subtractDates';
 import { useAlertStore } from '@/stores/alert.store';
 import { useEmailsStore } from '@/stores/envioEmail.store';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
-import { storeToRefs } from 'pinia';
-import {
-  ErrorMessage, Field, Form,
-} from 'vee-validate';
-import { useRoute, useRouter } from 'vue-router';
 
 const alertStore = useAlertStore();
 const tarefasStore = useTarefasStore();

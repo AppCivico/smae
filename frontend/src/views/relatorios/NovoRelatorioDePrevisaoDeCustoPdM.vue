@@ -1,4 +1,9 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { Field, Form } from 'vee-validate';
+import { computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import { relatórioDePrevisãoDeCustoPdM as schema } from '@/consts/formSchemas';
 import truncate from '@/helpers/texto/truncate';
@@ -11,10 +16,6 @@ import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 // Mantendo comportamento legado
 // eslint-disable-next-line import/no-cycle
 import { useTagsStore } from '@/stores/tags.store';
-import { storeToRefs } from 'pinia';
-import { Field, Form } from 'vee-validate';
-import { computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 
 const alertStore = useAlertStore();
 const PdMStore = usePdMStore();

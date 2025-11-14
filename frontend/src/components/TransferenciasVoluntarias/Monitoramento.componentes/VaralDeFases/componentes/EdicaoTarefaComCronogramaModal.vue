@@ -1,18 +1,19 @@
 <script lang="ts" setup>
-import { computed, onMounted, ref } from 'vue';
-import { ErrorMessage, Field, useForm } from 'vee-validate';
-import { storeToRefs } from 'pinia';
 import { differenceInDays } from 'date-fns';
+import { storeToRefs } from 'pinia';
+import { ErrorMessage, Field, useForm } from 'vee-validate';
+import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
+
+import SmallModal from '@/components/SmallModal.vue';
 import {
   EdicaoTransferenciaFase,
   EdicaoTransferenciaFaseTarefa,
 } from '@/consts/formSchemas';
-
-import { useUsersStore } from '@/stores/users.store';
 import { useTarefasStore } from '@/stores/tarefas.store';
+import { useUsersStore } from '@/stores/users.store';
 import { useWorkflowAndamentoStore } from '@/stores/workflow.andamento.store';
-import SmallModal from '@/components/SmallModal.vue';
+
 import type { DadosTarefa, FaseTipo } from './VaralDeFaseItem.vue';
 
 const route = useRoute();

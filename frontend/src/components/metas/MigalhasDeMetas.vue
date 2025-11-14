@@ -1,13 +1,14 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { computed, watchEffect } from 'vue';
+import { useRoute } from 'vue-router';
+
 import rotasDosNiveisDeMetas from '@/consts/rotasDosNiveisDeMetas';
 import {
   useAtividadesStore,
   useIniciativasStore,
   useMetasStore,
 } from '@/stores';
-import { storeToRefs } from 'pinia';
-import { computed, watchEffect } from 'vue';
-import { useRoute } from 'vue-router';
 
 const route = useRoute();
 

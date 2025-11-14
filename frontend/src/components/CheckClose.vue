@@ -1,8 +1,9 @@
 <script setup>
+import { useRoute, useRouter } from 'vue-router';
+
 import prepararRotaDeEscape from '@/helpers/prepararRotaDeEscape';
 import { useAlertStore } from '@/stores/alert.store';
 import { useEditModalStore } from '@/stores/editModal.store';
-import { useRoute, useRouter } from 'vue-router';
 
 defineOptions({
   inheritAttrs: false,

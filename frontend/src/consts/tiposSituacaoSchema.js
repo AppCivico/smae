@@ -5,5 +5,5 @@ export default [
   'Cancelado',
   'ConcluidoComSucesso',
   'EncerradoSemSucesso',
-  'Terminal'
-  ];
+  'Terminal',
+];

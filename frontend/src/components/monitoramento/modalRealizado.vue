@@ -1,16 +1,17 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { Field, Form, useForm } from 'vee-validate';
+import { ref } from 'vue';
+import { useRoute } from 'vue-router';
+import * as Yup from 'yup';
+
+import { arquivoSimples as uploadSchema } from '@/consts/formSchemas';
 import requestS from '@/helpers/requestS.ts';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useCiclosStore } from '@/stores/ciclos.store';
 import { useDocumentTypesStore } from '@/stores/documentTypes.store';
 import { useEditModalStore } from '@/stores/editModal.store';
-import { storeToRefs } from 'pinia';
-import { Field, Form, useForm } from 'vee-validate';
-import { ref } from 'vue';
-import { useRoute } from 'vue-router';
-import * as Yup from 'yup';
-import { arquivoSimples as uploadSchema } from '@/consts/formSchemas';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 

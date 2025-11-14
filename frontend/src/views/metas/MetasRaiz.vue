@@ -1,8 +1,9 @@
 <script setup>
-import Dashboard from '@/components/DashboardLayout.vue';
-import { usePdMStore } from '@/stores/pdm.store';
 import { storeToRefs } from 'pinia';
 import { onMounted, onUnmounted } from 'vue';
+
+import Dashboard from '@/components/DashboardLayout.vue';
+import { usePdMStore } from '@/stores/pdm.store';
 
 const PdmStore = usePdMStore();
 const { activePdm } = storeToRefs(PdmStore);

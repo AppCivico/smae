@@ -1,4 +1,8 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { defineOptions, computed } from 'vue';
+import { useRoute } from 'vue-router';
+
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import ContratosAditivos from '@/components/obras/ContratosAditivos.vue';
 import { contratoDeObras } from '@/consts/formSchemas';
@@ -6,11 +10,8 @@ import { dateToShortDate } from '@/helpers/dateToDate';
 import dinheiro from '@/helpers/dinheiro';
 import formatProcesso from '@/helpers/formatProcesso';
 import { useContratosStore } from '@/stores/contratos.store.ts';
-import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useObrasStore } from '@/stores/obras.store';
-import { storeToRefs } from 'pinia';
-import { defineOptions, computed } from 'vue';
-import { useRoute } from 'vue-router';
+import { useProjetosStore } from '@/stores/projetos.store.ts';
 
 defineOptions({ inheritAttrs: false });
 

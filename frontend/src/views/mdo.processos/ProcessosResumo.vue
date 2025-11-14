@@ -1,10 +1,11 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { defineOptions } from 'vue';
+
 import { processo as schema } from '@/consts/formSchemas';
 import formatProcesso from '@/helpers/formatProcesso';
 import { useObrasStore } from '@/stores/obras.store';
 import { useProcessosStore } from '@/stores/processos.store.ts';
-import { storeToRefs } from 'pinia';
-import { defineOptions } from 'vue';
 
 defineOptions({ inheritAttrs: false });
 

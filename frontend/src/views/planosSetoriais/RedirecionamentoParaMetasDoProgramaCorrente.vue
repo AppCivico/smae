@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
 import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
+
+import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
 
 const router = useRouter();
 const route = useRoute();

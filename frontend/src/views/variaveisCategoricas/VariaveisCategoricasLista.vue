@@ -92,6 +92,7 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
+
 import { useAlertStore } from '@/stores/alert.store';
 import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store';
 

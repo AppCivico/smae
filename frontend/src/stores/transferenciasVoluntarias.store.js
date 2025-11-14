@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+
 import consolidarDiretorios from '@/helpers/consolidarDiretorios';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
 

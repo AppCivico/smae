@@ -1,12 +1,13 @@
 <script setup>
-import tiposDePlanos from '@/consts/tiposDePlanos';
-import simplificarOrigem from '@/helpers/simplificadorDeOrigem';
-import truncate from '@/helpers/texto/truncate';
-import { usePlanosSimplificadosStore } from '@/stores/planosMetasSimplificados.store.ts';
 import { storeToRefs } from 'pinia';
 import { useField } from 'vee-validate';
 import { ref, watch, watchEffect } from 'vue';
 import { useRoute } from 'vue-router';
+
+import tiposDePlanos from '@/consts/tiposDePlanos';
+import simplificarOrigem from '@/helpers/simplificadorDeOrigem';
+import truncate from '@/helpers/texto/truncate';
+import { usePlanosSimplificadosStore } from '@/stores/planosMetasSimplificados.store.ts';
 
 const emit = defineEmits(['update:modelValue']);
 

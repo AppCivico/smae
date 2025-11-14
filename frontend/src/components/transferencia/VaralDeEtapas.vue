@@ -1,13 +1,14 @@
 <script setup>
-import { ref, watch } from 'vue';
 import { storeToRefs } from 'pinia';
-import { useAuthStore } from '@/stores/auth.store';
-import { useAlertStore } from '@/stores/alert.store';
-import { useWorkflowAndamentoStore } from '@/stores/workflow.andamento.store.ts';
-import { localizarDataHorario } from '@/helpers/dateToDate';
-import dateToField from '@/helpers/dateToField';
+import { ref, watch } from 'vue';
+
 import SmallModal from '@/components/SmallModal.vue';
 import TextoComBotao from '@/components/TextoComBotao.vue';
+import { localizarDataHorario } from '@/helpers/dateToDate';
+import dateToField from '@/helpers/dateToField';
+import { useAlertStore } from '@/stores/alert.store';
+import { useAuthStore } from '@/stores/auth.store';
+import { useWorkflowAndamentoStore } from '@/stores/workflow.andamento.store.ts';
 
 const authStore = useAuthStore();
 const { temPermissãoPara } = storeToRefs(authStore);

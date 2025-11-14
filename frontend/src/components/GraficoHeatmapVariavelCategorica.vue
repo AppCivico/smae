@@ -70,15 +70,16 @@
 </template>
 
 <script setup>
+import { sortBy } from 'lodash';
 import {
   ref,
   computed,
   onMounted,
   watch,
 } from 'vue';
+
 import GraficoDashboard from '@/components/graficos/GraficoDashboard.vue';
 import { dateToMonthYear } from '@/helpers/dateToDate';
-import { sortBy } from 'lodash';
 
 const props = defineProps({
   valores: {

@@ -1,15 +1,16 @@
 <script setup>
+import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
   Field,
   Form,
 } from 'vee-validate';
 import { computed } from 'vue';
-import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
+
+import { tipoDeAcompanhamento as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useTiposDeAcompanhamentoStore } from '@/stores/tiposDeAcompanhamento.store.ts';
-import { tipoDeAcompanhamento as schema } from '@/consts/formSchemas';
 
 const alertStore = useAlertStore();
 const tiposDeAcompanhamentoStore = useTiposDeAcompanhamentoStore();

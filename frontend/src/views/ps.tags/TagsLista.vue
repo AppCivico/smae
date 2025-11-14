@@ -102,10 +102,11 @@
 import { storeToRefs } from 'pinia';
 import { defineOptions } from 'vue';
 import { useRoute } from 'vue-router';
+
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
-import { useTagsPsStore } from '@/stores/tagsPs.store';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
+import { useTagsPsStore } from '@/stores/tagsPs.store';
 
 defineOptions({
   inheritAttrs: false,

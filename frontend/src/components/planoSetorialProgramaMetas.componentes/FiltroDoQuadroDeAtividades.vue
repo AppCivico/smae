@@ -115,10 +115,6 @@
   </form>
 </template>
 <script setup lang="ts">
-import AutocompleteField from '@/components/AutocompleteField2.vue';
-import { useOrgansStore } from '@/stores';
-import { useEquipesStore } from '@/stores/equipes.store';
-import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
 import { storeToRefs } from 'pinia';
 import {
   computed,
@@ -129,6 +125,11 @@ import {
 } from 'vue';
 import type { LocationQueryRaw } from 'vue-router';
 import { useRoute, useRouter } from 'vue-router';
+
+import AutocompleteField from '@/components/AutocompleteField2.vue';
+import { useOrgansStore } from '@/stores';
+import { useEquipesStore } from '@/stores/equipes.store';
+import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
 
 defineProps({
   ariaBusy: {

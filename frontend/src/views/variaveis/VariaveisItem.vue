@@ -1,7 +1,8 @@
 <script setup>
-import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store.ts';
 import { storeToRefs } from 'pinia';
 import { onUnmounted } from 'vue';
+
+import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store.ts';
 
 const variaveisGlobaisStore = useVariaveisGlobaisStore();
 

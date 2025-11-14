@@ -1,13 +1,13 @@
 <script setup>
-import { Dashboard } from '@/components';
-import requestS from '@/helpers/requestS.ts';
-import { router } from '@/router';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { reactive, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import * as Yup from 'yup';
 
+import { Dashboard } from '@/components';
+import requestS from '@/helpers/requestS.ts';
+import { router } from '@/router';
 import {
   useAlertStore,
   useAuthStore,

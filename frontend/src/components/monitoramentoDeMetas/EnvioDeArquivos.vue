@@ -46,14 +46,15 @@
   </form>
 </template>
 <script setup>
-import { useAlertStore } from '@/stores/alert.store';
-import { useMonitoramentoDeMetasStore } from '@/stores/monitoramentoDeMetas.store';
-import CampoDeArquivo from '@/components/CampoDeArquivo.vue';
 import {
   computed,
   ref,
 } from 'vue';
 import { useRoute } from 'vue-router';
+
+import CampoDeArquivo from '@/components/CampoDeArquivo.vue';
+import { useAlertStore } from '@/stores/alert.store';
+import { useMonitoramentoDeMetasStore } from '@/stores/monitoramentoDeMetas.store';
 
 const emit = defineEmits(['envioBemSucedido']);
 

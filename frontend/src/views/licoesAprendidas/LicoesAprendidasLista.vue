@@ -2,6 +2,7 @@
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
+
 import LocalFilter from '@/components/LocalFilter.vue';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import { liçãoAprendida as schema } from '@/consts/formSchemas';

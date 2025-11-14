@@ -1,12 +1,13 @@
 <script setup>
+import {
+  computed, defineAsyncComponent, ref, watchEffect,
+} from 'vue';
+
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import LocalFilter from '@/components/LocalFilter.vue';
 import consolidarDiretorios from '@/helpers/consolidarDiretorios';
 import createDataTree from '@/helpers/createDataTree.ts';
 import requestS from '@/helpers/requestS.ts';
-import {
-  computed, defineAsyncComponent, ref, watchEffect,
-} from 'vue';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 

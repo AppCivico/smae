@@ -1,13 +1,14 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { ErrorMessage, Field, Form } from 'vee-validate';
+import { computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
 import categoriaDeTransferencia from '@/consts/categoriaDeTransferencia';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import { tipoDeTransferencia as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
-import { storeToRefs } from 'pinia';
-import { ErrorMessage, Field, Form } from 'vee-validate';
-import { computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 
 defineOptions({ inheritAttrs: false });
 
@@ -16,7 +17,7 @@ const {
   chamadasPendentes,
   erro,
   lista,
-   } = storeToRefs(tipoDeTransferencia);
+} = storeToRefs(tipoDeTransferencia);
 
 const router = useRouter();
 const route = useRoute();
@@ -28,12 +29,9 @@ const props = defineProps({
 });
 
 const alertStore = useAlertStore();
-const itemParaEdicao = computed(() => lista.value.find((x) => {
-   return x.id === Number(route.params.tipoId);
- }) || {
-   id: 0, nome: '', categoria: null, esfera: null,
+const itemParaEdicao = computed(() => lista.value.find((x) => x.id === Number(route.params.tipoId)) || {
+  id: 0, nome: '', categoria: null, esfera: null,
 });
-
 
 async function onSubmit(values) {
   try {
@@ -70,23 +68,42 @@ if (props.tipoId) {
     <CheckClose />
   </div>
 
-  <Form v-slot="{ errors, isSubmitting }"
+  <Form
+    v-slot="{ errors, isSubmitting }"
     :validation-schema="schema"
     :initial-values="itemParaEdicao"
-    @submit="onSubmit">
+    @submit="onSubmit"
+  >
     <div class="flex g2 mb1">
       <div class="f1">
-        <LabelFromYup name="nome" :schema="schema" />
-        <Field name="nome" type="text" class="inputtext light mb1" />
-        <ErrorMessage class="error-msg mb1" name="nome" />
+        <LabelFromYup
+          name="nome"
+          :schema="schema"
+        />
+        <Field
+          name="nome"
+          type="text"
+          class="inputtext light mb1"
+        />
+        <ErrorMessage
+          class="error-msg mb1"
+          name="nome"
+        />
       </div>
     </div>
 
     <div class="flex g2 mb1">
       <div class="f1">
-        <LabelFromYup name="categoria" :schema="schema"/>
+        <LabelFromYup
+          name="categoria"
+          :schema="schema"
+        />
         <Field
-          name="categoria" as="select" class="inputtext light mb1" :class="{ 'error': errors.categoria }">
+          name="categoria"
+          as="select"
+          class="inputtext light mb1"
+          :class="{ 'error': errors.categoria }"
+        >
           <option value="">
             Selecionar
           </option>
@@ -103,9 +120,16 @@ if (props.tipoId) {
         </div>
       </div>
       <div class="f1">
-        <LabelFromYup name="esfera" :schema="schema"/>
+        <LabelFromYup
+          name="esfera"
+          :schema="schema"
+        />
         <Field
-          name="esfera" as="select" class="inputtext light mb1" :class="{ 'error': errors.esfera }">
+          name="esfera"
+          as="select"
+          class="inputtext light mb1"
+          :class="{ 'error': errors.esfera }"
+        >
           <option value="">
             Selecionar
           </option>
@@ -127,18 +151,28 @@ if (props.tipoId) {
 
     <div class="flex spacebetween center mb2">
       <hr class="mr2 f1">
-      <button class="btn big" :disabled="isSubmitting || Object.keys(errors)?.length" :title="Object.keys(errors)?.length
-      ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
-      : null">
+      <button
+        class="btn big"
+        :disabled="isSubmitting || Object.keys(errors)?.length"
+        :title="Object.keys(errors)?.length
+          ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
+          : null"
+      >
         Salvar
       </button>
       <hr class="ml2 f1">
     </div>
   </Form>
 
-  <span v-if="chamadasPendentes?.emFoco" class="spinner">Carregando</span>
+  <span
+    v-if="chamadasPendentes?.emFoco"
+    class="spinner"
+  >Carregando</span>
 
-  <div v-if="erro" class="error p1">
+  <div
+    v-if="erro"
+    class="error p1"
+  >
     <div class="error-msg">
       {{ erro }}
     </div>

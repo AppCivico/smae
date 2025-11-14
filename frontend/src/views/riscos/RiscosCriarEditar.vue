@@ -7,8 +7,9 @@ import {
   Field,
   Form,
 } from 'vee-validate';
-import { useRoute, useRouter } from 'vue-router';
 import { onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import MenuDeMudançaDeStatusDeRisco from '@/components/riscos/MenuDeMudançaDeStatusDeRisco.vue';
 import { risco as schema } from '@/consts/formSchemas';

@@ -1,9 +1,10 @@
 <script lang="ts" setup>
-import { useEquipesStore } from '@/stores/equipes.store';
-import { useOrgansStore } from '@/stores/organs.store';
 import { storeToRefs } from 'pinia';
 import { onUnmounted } from 'vue';
 import { RouterView } from 'vue-router';
+
+import { useEquipesStore } from '@/stores/equipes.store';
+import { useOrgansStore } from '@/stores/organs.store';
 
 const equipesStore = useEquipesStore();
 const organsStore = useOrgansStore();

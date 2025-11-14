@@ -4,6 +4,7 @@ import { grauDescricao } from '@back/common/RiscoCalc.ts';
 import { storeToRefs } from 'pinia';
 import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
+
 import MenuDeMudançaDeStatusDeRisco from '@/components/riscos/MenuDeMudançaDeStatusDeRisco.vue';
 import { risco as schema } from '@/consts/formSchemas';
 import statuses from '@/consts/riskStatuses';
@@ -11,9 +12,8 @@ import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
 import requestS from '@/helpers/requestS.ts';
 import { usePlanosDeAçãoStore } from '@/stores/planosDeAcao.store.ts';
-import { useProjetosStore } from '@/stores/projetos.store.ts';
-
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
+import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useRiscosStore } from '@/stores/riscos.store.ts';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
 

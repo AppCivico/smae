@@ -188,9 +188,10 @@ import type { Indicador } from '@back/indicador/entities/indicador.entity';
 import type { VariavelItemDto } from '@back/variavel/entities/variavel.entity';
 import { storeToRefs } from 'pinia';
 import { ref, watch, type PropType } from 'vue';
+
+import GraficoHeatmapVariavelCategorica from '@/components/GraficoHeatmapVariavelCategorica.vue';
 import GraficoLinhasEvolucao from '@/components/GraficoLinhasEvolucao.vue';
 import GruposDeSerie from '@/components/metas/GruposDeSerie.vue';
-import GraficoHeatmapVariavelCategorica from '@/components/GraficoHeatmapVariavelCategorica.vue';
 import dateToField from '@/helpers/dateToField';
 import { useAuthStore } from '@/stores/auth.store';
 import { useVariaveisStore } from '@/stores/variaveis.store';

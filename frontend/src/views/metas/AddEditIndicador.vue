@@ -6,14 +6,16 @@ import {
   ref, unref, watch,
 } from 'vue';
 import { useRoute } from 'vue-router';
+
+import SmaeMonth from '@/components/camposDeFormulario/SmaeMonth';
 import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
-import SmallModal from '@/components/SmallModal.vue';
 import EditorDeFormula from '@/components/metas/EditorDeFormula.vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import TabelaDeVariaveis from '@/components/metas/TabelaDeVariaveis.vue';
 import TabelaDeVariaveisCompostas from '@/components/metas/TabelaDeVariaveisCompostas.vue';
 import TabelaDeVariaveisCompostasEmUso from '@/components/metas/TabelaDeVariaveisCompostasEmUso.vue';
 import TabelaDeVariaveisEmUso from '@/components/metas/TabelaDeVariaveisEmUso.vue';
+import SmallModal from '@/components/SmallModal.vue';
 import AssociadorDeVariaveis from '@/components/variaveis/AssociadorDeVariaveis.vue';
 import { indicador as schema } from '@/consts/formSchemas';
 import { router } from '@/router';
@@ -30,7 +32,6 @@ import AddEditValoresComposta from '@/views/metas/AddEditValoresComposta.vue';
 import AddEditVariavel from '@/views/metas/AddEditVariavel.vue';
 import AddEditVariavelComposta from '@/views/metas/AddEditVariavelComposta.vue';
 import GerarVariaveisCompostas from '@/views/metas/GerarVariaveisCompostas.vue';
-import SmaeMonth from '@/components/camposDeFormulario/SmaeMonth';
 
 defineOptions({
   inheritAttrs: false,

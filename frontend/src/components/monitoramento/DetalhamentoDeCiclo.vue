@@ -230,10 +230,12 @@
 </template>
 
 <script setup>
+import { onMounted, ref, watch } from 'vue';
+
 import { dateToShortDate } from '@/helpers/dateToDate';
 import dateToTitle from '@/helpers/dateToTitle';
 import requestS from '@/helpers/requestS.ts';
-import { onMounted, ref, watch } from 'vue';
+
 import ErrorComponent from '../ErrorComponent.vue';
 import LoadingComponent from '../LoadingComponent.vue';
 

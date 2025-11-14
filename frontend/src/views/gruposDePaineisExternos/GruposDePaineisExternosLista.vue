@@ -1,10 +1,11 @@
 <script setup>
-import { useAlertStore } from '@/stores/alert.store';
-import { useOrgansStore } from '@/stores/organs.store';
-import { useGruposPaineisExternos } from '@/stores/grupospaineisExternos.store.ts';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
+
 import SmaeLink from '@/components/SmaeLink.vue';
+import { useAlertStore } from '@/stores/alert.store';
+import { useGruposPaineisExternos } from '@/stores/grupospaineisExternos.store.ts';
+import { useOrgansStore } from '@/stores/organs.store';
 
 const organsStore = useOrgansStore();
 const { organs, órgãosPorId } = storeToRefs(organsStore);

@@ -1,12 +1,13 @@
 <script setup>
-import { computed } from 'vue';
-import { storeToRefs } from 'pinia';
-import { useRoute } from 'vue-router';
 import { orderBy } from 'lodash';
+import { storeToRefs } from 'pinia';
+import { computed } from 'vue';
+import { useRoute } from 'vue-router';
+
 import * as CardEnvelope from '@/components/cardEnvelope';
+import ListaLegendas from '@/components/ListaLegendas.vue';
 import MonitoramentoCard from '@/components/transferencia/MonitoramentoCard.vue';
 import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
-import ListaLegendas from '@/components/ListaLegendas.vue';
 
 const { params } = useRoute();
 

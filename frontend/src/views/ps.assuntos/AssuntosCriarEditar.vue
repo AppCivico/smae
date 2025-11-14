@@ -96,13 +96,12 @@
 
 <script setup>
 import { storeToRefs } from 'pinia';
-import { useRoute, useRouter } from 'vue-router';
 import {
   ErrorMessage, Field, Form, useIsFormDirty,
 } from 'vee-validate';
+import { useRoute, useRouter } from 'vue-router';
 
 import { assunto as schema } from '@/consts/formSchemas';
-
 import { useAlertStore } from '@/stores/alert.store';
 import { useAssuntosStore } from '@/stores/assuntosPs.store';
 

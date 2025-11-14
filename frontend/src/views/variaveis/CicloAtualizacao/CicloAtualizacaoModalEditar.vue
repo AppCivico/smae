@@ -369,16 +369,18 @@
 
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
-import { computed, ref } from 'vue';
 import { ErrorMessage, Field, useForm } from 'vee-validate';
+import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
+
+import AuxiliarDePreenchimento from '@/components/AuxiliarDePreenchimento.vue';
+import UploadArquivos, { ArquivoAdicionado } from '@/components/UploadArquivos.vue';
+import { cicloAtualizacaoModalEditarSchema } from '@/consts/formSchemas';
+import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
+import truncate from '@/helpers/texto/truncate';
 import { useCicloAtualizacaoStore } from '@/stores/cicloAtualizacao.store';
 import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store';
-import truncate from '@/helpers/texto/truncate';
-import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
-import { cicloAtualizacaoModalEditarSchema } from '@/consts/formSchemas';
-import UploadArquivos, { ArquivoAdicionado } from '@/components/UploadArquivos.vue';
-import AuxiliarDePreenchimento from '@/components/AuxiliarDePreenchimento.vue';
+
 import useCicloAtualizacao from './composables/useCicloAtualizacao';
 
 type VariaveisDados = {

@@ -8,9 +8,12 @@ import {
 } from 'vee-validate';
 import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CampoDeArquivo from '@/components/CampoDeArquivo.vue';
 import CampoDeEquipesComBuscaPorOrgao from '@/components/CampoDeEquipesComBuscaPorOrgao.vue';
+import { planoSetorial as schema } from '@/consts/formSchemas';
+import { listaDeMeses } from '@/consts/months';
 import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
 import truncate from '@/helpers/texto/truncate';
 import { useAlertStore } from '@/stores/alert.store';
@@ -18,8 +21,6 @@ import { useAuthStore } from '@/stores/auth.store';
 import { useEquipesStore } from '@/stores/equipes.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store.ts';
-import { listaDeMeses } from '@/consts/months';
-import { planoSetorial as schema } from '@/consts/formSchemas';
 
 const router = useRouter();
 const route = useRoute();

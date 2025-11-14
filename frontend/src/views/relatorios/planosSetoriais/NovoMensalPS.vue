@@ -1,20 +1,21 @@
 <script setup>
-import AutocompleteField from '@/components/AutocompleteField2.vue';
-import { useAlertStore } from '@/stores/alert.store';
-import { usePlanosSimplificadosStore } from '@/stores/planosMetasSimplificados.store';
-import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store.ts';
-import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage, Field, Form,
 } from 'vee-validate';
 import { ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
+import AutocompleteField from '@/components/AutocompleteField2.vue';
 // Mantendo comportamento legado
 // eslint-disable-next-line import/no-cycle
 import { relatórioMensalPS as schema } from '@/consts/formSchemas';
 import months from '@/consts/months';
 import nulificadorTotal from '@/helpers/nulificadorTotal';
+import { useAlertStore } from '@/stores/alert.store';
+import { usePlanosSimplificadosStore } from '@/stores/planosMetasSimplificados.store';
+import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store.ts';
+import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 // Mantendo comportamento legado
 // eslint-disable-next-line import/no-cycle
 import { useTagsStore } from '@/stores/tags.store';

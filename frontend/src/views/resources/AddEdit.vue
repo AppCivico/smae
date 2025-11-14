@@ -1,13 +1,12 @@
 <script setup>
-import * as Yup from 'yup';
 import { storeToRefs } from 'pinia';
-import { useRoute } from 'vue-router';
 import { Field, Form, useIsFormDirty } from 'vee-validate';
-import { router } from '@/router';
+import { useRoute } from 'vue-router';
+import * as Yup from 'yup';
 
 import { Dashboard } from '@/components';
 import TituloDaPagina from '@/components/TituloDaPagina.vue';
-
+import { router } from '@/router';
 import { useAlertStore } from '@/stores/alert.store';
 import { useResourcesStore } from '@/stores/resources.store';
 

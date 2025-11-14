@@ -1,11 +1,12 @@
 <script setup>
-import AutocompleteField from '@/components/AutocompleteField2.vue';
-import { relatórioSemestralOuAnual as schema } from '@/consts/formSchemas';
-import { useAlertStore } from '@/stores/alert.store';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
+import AutocompleteField from '@/components/AutocompleteField2.vue';
+import { relatórioSemestralOuAnual as schema } from '@/consts/formSchemas';
+import { useAlertStore } from '@/stores/alert.store';
 // Mantendo comportamento legado
 // eslint-disable-next-line import/no-cycle
 import { useMetasStore } from '@/stores/metas.store';

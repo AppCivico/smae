@@ -1,8 +1,8 @@
-import { defineStore } from "pinia";
+import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
-export const useEmailsStore = defineStore("emailsStore", {
+export const useEmailsStore = defineStore('emailsStore', {
   state: () => ({
     lista: [],
     emFoco: null,
@@ -14,14 +14,14 @@ export const useEmailsStore = defineStore("emailsStore", {
     erro: null,
   }),
   actions: {
-    async buscarItem( params = {}) {
+    async buscarItem(params = {}) {
       this.chamadasPendentes.emFoco = true;
       this.erro = null;
 
       try {
         const resposta = await this.requestS.get(
           `${baseUrl}/aviso-email/`,
-          params
+          params,
         );
         this.emFoco = {
           ...resposta,

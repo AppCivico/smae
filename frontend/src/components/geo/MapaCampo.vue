@@ -12,8 +12,9 @@ import {
 import {
   computed, defineModel, defineOptions, nextTick, ref, toRef,
 } from 'vue';
-import SmallModal from '@/components/SmallModal.vue';
+
 import MapaExibir from '@/components/geo/MapaExibir.vue';
+import SmallModal from '@/components/SmallModal.vue';
 import { geoLocalização as schema } from '@/consts/formSchemas';
 import tiposDeLogradouro from '@/consts/tiposDeLogradouro';
 import requestS from '@/helpers/requestS.ts';

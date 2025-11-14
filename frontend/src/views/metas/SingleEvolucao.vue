@@ -4,13 +4,14 @@ import {
   computed, ref, watch,
 } from 'vue';
 import { useRoute } from 'vue-router';
+
 import EsperarEntrarNaTela from '@/components/EsperarEntrarNaTela.vue';
-import OverlayIndisponivel from '@/components/OverlayIndisponivel.vue';
-import GraficoLinhasEvolucao from '@/components/GraficoLinhasEvolucao.vue';
 import GraficoHeatmapVariavelCategorica from '@/components/GraficoHeatmapVariavelCategorica.vue';
+import GraficoLinhasEvolucao from '@/components/GraficoLinhasEvolucao.vue';
 import EvolucaoDeMetaIniciativaAtividade from '@/components/metas/EvolucaoDeMetaIniciativaAtividade.vue';
 import GruposDeSerie from '@/components/metas/GruposDeSerie.vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
+import OverlayIndisponivel from '@/components/OverlayIndisponivel.vue';
 import SmallModal from '@/components/SmallModal.vue';
 import { useAuthStore } from '@/stores/auth.store';
 import { useIndicadoresStore } from '@/stores/indicadores.store';

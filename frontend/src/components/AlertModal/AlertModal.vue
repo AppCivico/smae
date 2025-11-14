@@ -1,5 +1,4 @@
 <script setup>
-import { useAlertStore } from '@/stores/alert.store';
 import { storeToRefs } from 'pinia';
 import {
   computed,
@@ -7,6 +6,8 @@ import {
   ref,
   watch,
 } from 'vue';
+
+import { useAlertStore } from '@/stores/alert.store';
 
 const alertStore = useAlertStore();
 const { alertas, estaCarregando } = storeToRefs(alertStore);

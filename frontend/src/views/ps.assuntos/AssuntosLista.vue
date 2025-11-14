@@ -86,12 +86,13 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
 import { storeToRefs } from 'pinia';
+import { ref } from 'vue';
 import { useRoute } from 'vue-router';
+
+import LocalFilter from '@/components/LocalFilter.vue';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAssuntosStore } from '@/stores/assuntosPs.store';
-import LocalFilter from '@/components/LocalFilter.vue';
 
 const route = useRoute();
 

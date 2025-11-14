@@ -1,4 +1,9 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { Field, Form } from 'vee-validate';
+import { computed, ref } from 'vue';
+import { useRoute } from 'vue-router';
+
 import { variável } from '@/consts/formSchemas';
 import fieldToDate from '@/helpers/fieldToDate';
 import maskMonth from '@/helpers/maskMonth';
@@ -13,10 +18,6 @@ import { useMetasStore } from '@/stores/metas.store';
 import { useRegionsStore } from '@/stores/regions.store';
 import { useResourcesStore } from '@/stores/resources.store';
 import { useVariaveisStore } from '@/stores/variaveis.store';
-import { storeToRefs } from 'pinia';
-import { Field, Form } from 'vee-validate';
-import { computed, ref } from 'vue';
-import { useRoute } from 'vue-router';
 
 const resourcesStore = useResourcesStore();
 const { resources } = storeToRefs(resourcesStore);

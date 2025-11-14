@@ -46,15 +46,17 @@
 </template>
 
 <script lang="ts" setup>
+import { storeToRefs } from 'pinia';
+import type { Component } from 'vue';
+import { computed, onMounted, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
 import SmallModal from '@/components/SmallModal.vue';
 import dateToDate from '@/helpers/dateToDate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useCicloAtualizacaoStore } from '@/stores/cicloAtualizacao.store';
 import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store';
-import { storeToRefs } from 'pinia';
-import type { Component } from 'vue';
-import { computed, onMounted, ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+
 import CicloAtualizacaoModalAdicionar from './CicloAtualizacaoModalAdicionar.vue';
 import CicloAtualizacaoModalEditar from './CicloAtualizacaoModalEditar.vue';
 import useCicloAtualizacao from './composables/useCicloAtualizacao';

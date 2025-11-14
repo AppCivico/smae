@@ -1,9 +1,10 @@
 <script setup>
-import { default as TextEditor } from '@/components/TextEditor.vue';
-import { useAlertStore, useCiclosStore, useEditModalStore } from '@/stores';
 import { storeToRefs } from 'pinia';
 import { Form } from 'vee-validate';
 import { ref } from 'vue';
+
+import { default as TextEditor } from '@/components/TextEditor.vue';
+import { useAlertStore, useCiclosStore, useEditModalStore } from '@/stores';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 

@@ -1,9 +1,11 @@
 <script setup>
-import rotasDoMenu from '@/consts/rotasDoMenu.ts';
-import { useAuthStore } from '@/stores/auth.store';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 import { onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router';
+
+import rotasDoMenu from '@/consts/rotasDoMenu.ts';
+import { useAuthStore } from '@/stores/auth.store';
+
 import TransitionExpand from './TransitionExpand.vue';
 
 const authStore = useAuthStore();

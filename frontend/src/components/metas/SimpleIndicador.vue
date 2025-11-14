@@ -2,10 +2,11 @@
 import { storeToRefs } from 'pinia';
 import { computed, nextTick, ref } from 'vue';
 import { useRoute } from 'vue-router';
+
 // eslint-disable-next-line import/no-named-default
-import OverlayIndisponivel from '@/components/OverlayIndisponivel.vue';
-import GraficoLinhasEvolucao from '@/components/GraficoLinhasEvolucao.vue';
 import GraficoHeatmapVariavelCategorica from '@/components/GraficoHeatmapVariavelCategorica.vue';
+import GraficoLinhasEvolucao from '@/components/GraficoLinhasEvolucao.vue';
+import OverlayIndisponivel from '@/components/OverlayIndisponivel.vue';
 import rolarTelaPara from '@/helpers/rolarTelaPara.ts';
 import { useAuthStore } from '@/stores/auth.store';
 import { useIndicadoresStore } from '@/stores/indicadores.store';

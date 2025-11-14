@@ -17,6 +17,7 @@
 <script lang="ts" setup>
 import obterPropriedadeNoObjeto from '@/helpers/objetos/obterPropriedadeNoObjeto';
 import { useAlertStore } from '@/stores/alert.store';
+
 import { Linha } from '../tipagem';
 
 export type DeleteButtonProps = {

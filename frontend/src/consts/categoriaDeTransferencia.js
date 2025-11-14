@@ -1,4 +1,4 @@
-export default{
+export default {
   Discricionaria: {
     nome: 'Discricionárias dos Ministérios/Secretarias',
     valor: 'Discricionaria',
@@ -7,4 +7,4 @@ export default{
     nome: 'Impositiva',
     valor: 'Impositiva',
   },
-}
+};

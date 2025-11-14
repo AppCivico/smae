@@ -1,7 +1,7 @@
 <script lang="ts" setup>
+import { useResizeObserver } from '@vueuse/core';
 import { debounce } from 'lodash';
 import { computed, ref } from 'vue';
-import { useResizeObserver } from '@vueuse/core';
 
 type Slots = {
   default(): [unknown]

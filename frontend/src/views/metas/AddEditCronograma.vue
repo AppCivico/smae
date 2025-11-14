@@ -1,17 +1,18 @@
 <script setup>
-import { ref } from 'vue';
-import * as Yup from 'yup';
 import { storeToRefs } from 'pinia';
-import { useRoute } from 'vue-router';
 import { Field, Form } from 'vee-validate';
+import { ref } from 'vue';
+import { useRoute } from 'vue-router';
+import * as Yup from 'yup';
+
+import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
+import { router } from '@/router';
 import {
   useAlertStore,
   useAtividadesStore, useCronogramasStore,
   useIniciativasStore,
   useMetasStore,
 } from '@/stores';
-import { router } from '@/router';
-import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 
 const alertStore = useAlertStore();
 const route = useRoute();

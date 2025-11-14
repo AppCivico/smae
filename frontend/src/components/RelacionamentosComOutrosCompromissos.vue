@@ -297,12 +297,6 @@
   </div>
 </template>
 <script lang="ts" setup>
-import SmaeLink from '@/components/SmaeLink.vue';
-import statusObras from '@/consts/statusObras';
-import tiposDePlanos from '@/consts/tiposDePlanos';
-import combinadorDeListas from '@/helpers/combinadorDeListas';
-import requestS from '@/helpers/requestS';
-import truncate from '@/helpers/texto/truncate';
 import type { IdSigla } from '@back/common/dto/IdSigla.dto.ts';
 import type {
   MetaPdmDto,
@@ -314,6 +308,14 @@ import {
 } from 'vue';
 import type { RouteMeta } from 'vue-router';
 import { useRoute } from 'vue-router';
+
+import SmaeLink from '@/components/SmaeLink.vue';
+import statusObras from '@/consts/statusObras';
+import tiposDePlanos from '@/consts/tiposDePlanos';
+import combinadorDeListas from '@/helpers/combinadorDeListas';
+import requestS from '@/helpers/requestS';
+import truncate from '@/helpers/texto/truncate';
+
 import RolagemHorizontal from './rolagem/RolagemHorizontal.vue';
 
 defineOptions({

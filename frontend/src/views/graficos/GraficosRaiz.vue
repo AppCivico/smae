@@ -1,5 +1,6 @@
 <script setup>
 import { Dashboard } from '@/components';
+
 import GraficosTransferenciasVoluntarias from './GraficosTransferenciasVoluntarias.vue';
 
 </script>

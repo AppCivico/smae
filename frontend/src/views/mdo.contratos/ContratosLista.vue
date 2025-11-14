@@ -3,6 +3,7 @@ import Big from 'big.js';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
+
 import LocalFilter from '@/components/LocalFilter.vue';
 import { contratoDeObras } from '@/consts/formSchemas';
 import { dateToShortDate } from '@/helpers/dateToDate';

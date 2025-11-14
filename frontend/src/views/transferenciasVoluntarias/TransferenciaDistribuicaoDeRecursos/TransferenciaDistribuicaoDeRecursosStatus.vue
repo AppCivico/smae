@@ -83,11 +83,13 @@ import {
   ref,
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
-import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
-import dateToDate from '@/helpers/dateToDate';
-import TransferenciasDistribuicaoStatusCriarEditar from './TransferenciasDistribuicaoStatusCriarEditar.vue';
+
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
+import dateToDate from '@/helpers/dateToDate';
+import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
+import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
+
+import TransferenciasDistribuicaoStatusCriarEditar from './TransferenciasDistribuicaoStatusCriarEditar.vue';
 
 const distribuicaoRecursos = useDistribuicaoRecursosStore();
 const TransferenciasVoluntarias = useTransferenciasVoluntariasStore();

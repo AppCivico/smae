@@ -1,11 +1,12 @@
 <script lang="ts" setup>
-import { onMounted } from 'vue';
 import { storeToRefs } from 'pinia';
+import { onMounted } from 'vue';
 import { useRoute } from 'vue-router';
+
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
-import { useEdicoesEmLoteStore } from '@/stores/edicoesEmLote.store';
-import dateToDate from '@/helpers/dateToDate';
 import SmaeTooltip from '@/components/SmaeTooltip/SmaeTooltip.vue';
+import dateToDate from '@/helpers/dateToDate';
+import { useEdicoesEmLoteStore } from '@/stores/edicoesEmLote.store';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 

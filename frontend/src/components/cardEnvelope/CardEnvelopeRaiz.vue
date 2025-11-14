@@ -33,10 +33,9 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, defineSlots } from 'vue';
-
-import { Swiper, SwiperSlide } from 'swiper/vue';
 import { Pagination, Navigation } from 'swiper/modules';
+import { Swiper, SwiperSlide } from 'swiper/vue';
+import { ref, computed, defineSlots } from 'vue';
 
 import 'swiper/css';
 import 'swiper/css/navigation';

@@ -81,8 +81,8 @@
 
 <script setup>
 import { storeToRefs } from 'pinia';
-
 import { onMounted } from 'vue';
+
 import { useAlertStore } from '@/stores/alert.store';
 import { useClassificacaoStore } from '@/stores/classificacao.store';
 

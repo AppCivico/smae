@@ -1,4 +1,9 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { Field, Form } from 'vee-validate';
+import { onMounted, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import { relatórioMensal as schema } from '@/consts/formSchemas';
 import months from '@/consts/months';
@@ -14,10 +19,6 @@ import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 // Mantendo comportamento legado
 // eslint-disable-next-line import/no-cycle
 import { useTagsStore } from '@/stores/tags.store';
-import { storeToRefs } from 'pinia';
-import { Field, Form } from 'vee-validate';
-import { onMounted, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 
 const TagsStore = useTagsStore();
 const { filtradasPorPdM } = storeToRefs(TagsStore);

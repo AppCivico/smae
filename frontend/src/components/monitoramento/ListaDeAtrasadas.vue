@@ -1,10 +1,10 @@
 <script setup>
-import dateToTitle from '@/helpers/dateToTitle';
-import FeedbackEmptyList from '@/components/FeedbackEmptyList.vue';
-import { ref } from 'vue';
-import { usePanoramaStore } from '@/stores/panorama.store.ts';
-
 import { storeToRefs } from 'pinia';
+import { ref } from 'vue';
+
+import FeedbackEmptyList from '@/components/FeedbackEmptyList.vue';
+import dateToTitle from '@/helpers/dateToTitle';
+import { usePanoramaStore } from '@/stores/panorama.store.ts';
 
 const panoramaStore = usePanoramaStore();
 const {

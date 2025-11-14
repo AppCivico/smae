@@ -59,14 +59,14 @@ function renderChart(dataFlattened) {
 ${d.data.hierarquia || d.data.numero ? `<span class="btn" style="box-sizing: content-box;position:absolute;margin-top:-20px;margin-left:${20}px;border-radius:100px;border:5px solid ${color};height:40px;line-height:40px;text-align:center;overflow:hidden;padding: 0 1.35em;">${d.data.hierarquia || d.data.numero}</span>` : `<span class="btn" style="position:absolute;top:-22px;left: 50%;transform: translateX(-50%);border:5px solid ${color};">Projeto</span>`}
   <div class="t10" style="color:#08011E;position:absolute;right:20px;top:17px;"><i class="fas fa-ellipsis-h"></i></div>
   ${d.data.idDoProjeto
-          ? `<h3 class="t16 w700 nowrap" style="color:#08011E;margin-left:20px;margin-top:32px">${d.data.nome}</h3>`
-          : `<h3 class="w700 t12 nowrap" style="color:#08011E;margin-left:20px;margin-top:32px">${d.data.nome || d.data.tarefa}</h3>`}
+    ? `<h3 class="t16 w700 nowrap" style="color:#08011E;margin-left:20px;margin-top:32px">${d.data.nome}</h3>`
+    : `<h3 class="w700 t12 nowrap" style="color:#08011E;margin-left:20px;margin-top:32px">${d.data.nome || d.data.tarefa}</h3>`}
   ${d.data.atraso
-          ? `<div class="error-msg t10" style="margin-left:20px;margin-top:3px;">
+    ? `<div class="error-msg t10" style="margin-left:20px;margin-top:3px;">
      <strong>${d.data.atraso}</strong> dias de atraso
    </div>`
-          : ''
-        }
+    : ''
+}
  </div>
   `;
     })

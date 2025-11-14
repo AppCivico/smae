@@ -1,6 +1,7 @@
+import { defineStore } from 'pinia';
+
 import dateToField from '@/helpers/dateToField';
 import { useEtapasStore } from '@/stores/etapas.store';
-import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 

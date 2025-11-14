@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import GraficoBarraEmLinha, { type ListaVariaveis } from '@/components/graficos/GraficoBarraEmLinha.vue';
+
 import useGraficoEmBarra from './composable/useGraficoEmBarra';
 
 const variaveisMetadado: Omit<ListaVariaveis, 'valor'> = {

@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 interface Etapa {
-  regiao_id: string | number,
-  etapa_filha: Etapa[],
+  regiao_id: string | number;
+  etapa_filha: Etapa[];
 }
 
 /**

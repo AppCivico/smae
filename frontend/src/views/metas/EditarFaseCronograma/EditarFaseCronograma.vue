@@ -3,16 +3,18 @@ import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, useForm } from 'vee-validate';
 import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
 import AutocompleteField from '@/components/AutocompleteField2.vue';
+import CheckClose from '@/components/CheckClose.vue';
 import MapaCampo from '@/components/geo/MapaCampo.vue';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import { fase as schema } from '@/consts/formSchemas';
 import {
   useAlertStore, useAuthStore, useCronogramasStore, useEditModalStore, useEtapasStore, useRegionsStore,
 } from '@/stores';
 import { useEquipesStore } from '@/stores/equipes.store';
+
 import temDescendenteEmOutraRegião from '../auxiliares/temDescendenteEmOutraRegiao.ts';
-import TituloDaPagina from '@/components/TituloDaPagina.vue';
-import CheckClose from '@/components/CheckClose.vue';
 
 const authStore = useAuthStore();
 const alertStore = useAlertStore();

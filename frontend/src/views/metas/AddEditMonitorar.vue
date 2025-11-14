@@ -1,4 +1,10 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { Field, Form } from 'vee-validate';
+import { ref } from 'vue';
+import { useRoute } from 'vue-router';
+import * as Yup from 'yup';
+
 import { router } from '@/router';
 import {
   useAlertStore,
@@ -8,11 +14,6 @@ import {
   useIniciativasStore,
   useMetasStore,
 } from '@/stores';
-import { storeToRefs } from 'pinia';
-import { Field, Form } from 'vee-validate';
-import { ref } from 'vue';
-import { useRoute } from 'vue-router';
-import * as Yup from 'yup';
 
 const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();

@@ -1,7 +1,9 @@
 import { defineStore } from 'pinia';
+
 import consolidarDiretorios from '@/helpers/consolidarDiretorios';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
 import simplificadorDeOrigem from '@/helpers/simplificadorDeOrigem';
+
 import mapIniciativas from './helpers/mapIniciativas';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;

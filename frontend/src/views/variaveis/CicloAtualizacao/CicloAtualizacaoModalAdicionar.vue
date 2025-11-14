@@ -271,11 +271,13 @@ import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, useForm } from 'vee-validate';
 import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
+
 import UploadArquivos, { ArquivoAdicionado } from '@/components/UploadArquivos.vue';
-import { useCicloAtualizacaoStore } from '@/stores/cicloAtualizacao.store';
-import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
 import { cicloAtualizacaoModalAdicionarSchema } from '@/consts/formSchemas';
+import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
+import { useCicloAtualizacaoStore } from '@/stores/cicloAtualizacao.store';
 import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store';
+
 import useCicloAtualizacao from './composables/useCicloAtualizacao';
 
 type VariavelConfiguracaoItem = {

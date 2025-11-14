@@ -1,9 +1,10 @@
 <script setup>
-import SmallModal from '@/components/SmallModal.vue';
-import getCaretPosition from '@/helpers/getCaretPosition.ts';
 import {
   computed, nextTick, onMounted, onUpdated, ref, watch,
 } from 'vue';
+
+import SmallModal from '@/components/SmallModal.vue';
+import getCaretPosition from '@/helpers/getCaretPosition.ts';
 
 const props = defineProps({
   modelValue: {

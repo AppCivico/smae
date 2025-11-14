@@ -1,8 +1,9 @@
 <script setup>
-import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
-import { useMetasStore } from '@/stores/metas.store';
 import { storeToRefs } from 'pinia';
 import { defineOptions, onUnmounted, watch } from 'vue';
+
+import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
+import { useMetasStore } from '@/stores/metas.store';
 
 const MetasStore = useMetasStore();
 

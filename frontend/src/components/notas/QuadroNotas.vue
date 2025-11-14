@@ -62,6 +62,7 @@
 import { storeToRefs } from 'pinia';
 import { watch } from 'vue';
 import { useRoute } from 'vue-router';
+
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import removerHtml from '@/helpers/html/removerHtml';
 import truncate from '@/helpers/texto/truncate';

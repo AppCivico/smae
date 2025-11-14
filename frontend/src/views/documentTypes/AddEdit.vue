@@ -1,14 +1,13 @@
 <script setup>
-import * as Yup from 'yup';
 import { storeToRefs } from 'pinia';
-import { useRoute } from 'vue-router';
 import { Field, Form, useIsFormDirty } from 'vee-validate';
+import { useRoute } from 'vue-router';
+import * as Yup from 'yup';
 
 import { Dashboard } from '@/components';
+import CheckClose from '@/components/CheckClose.vue';
 import MigalhasDePao from '@/components/MigalhasDePao.vue';
 import TituloDaPagina from '@/components/TituloDaPagina.vue';
-import CheckClose from '@/components/CheckClose.vue';
-
 import { router } from '@/router';
 import { useAlertStore } from '@/stores/alert.store';
 import { useDocumentTypesStore } from '@/stores/documentTypes.store';

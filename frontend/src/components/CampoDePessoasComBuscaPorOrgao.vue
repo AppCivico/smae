@@ -1,15 +1,17 @@
 <script setup>
+import isEqual from 'lodash/isEqual';
 import { storeToRefs } from 'pinia';
 import { useField } from 'vee-validate';
 import {
   computed, onMounted, ref, toRef, watch, watchEffect,
 } from 'vue';
 import { useRoute } from 'vue-router';
-import isEqual from 'lodash/isEqual';
+
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import requestS from '@/helpers/requestS.ts';
 import truncate from '@/helpers/texto/truncate';
 import { useOrgansStore } from '@/stores/organs.store';
+
 import SmaeTooltip from './SmaeTooltip/SmaeTooltip.vue';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;

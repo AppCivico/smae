@@ -1,14 +1,15 @@
 <script setup>
-import AutocompleteField from '@/components/AutocompleteField2.vue';
-import requestS from '@/helpers/requestS.ts';
-import truncate from '@/helpers/texto/truncate';
-import { useOdsStore } from '@/stores/odsPs.store';
 import { storeToRefs } from 'pinia';
 import { useField } from 'vee-validate';
 import {
   computed, onMounted, ref, watch, watchEffect,
 } from 'vue';
 import { useRoute } from 'vue-router';
+
+import AutocompleteField from '@/components/AutocompleteField2.vue';
+import requestS from '@/helpers/requestS.ts';
+import truncate from '@/helpers/texto/truncate';
+import { useOdsStore } from '@/stores/odsPs.store';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 

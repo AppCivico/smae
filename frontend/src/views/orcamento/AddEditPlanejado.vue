@@ -1,4 +1,10 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { ErrorMessage, Field, useForm } from 'vee-validate';
+import { defineOptions, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import * as Yup from 'yup';
+
 import dinheiro from '@/helpers/dinheiro';
 import toFloat from '@/helpers/toFloat';
 import { useAlertStore } from '@/stores/alert.store';
@@ -6,11 +12,6 @@ import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { useMetasStore } from '@/stores/metas.store';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
-import { storeToRefs } from 'pinia';
-import { ErrorMessage, Field, useForm } from 'vee-validate';
-import { defineOptions, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import * as Yup from 'yup';
 
 defineOptions({ inheritAttrs: false });
 
@@ -114,7 +115,7 @@ const schema = Yup.object().shape({
 });
 
 const {
-  errors, handleSubmit, isSubmitting, values, validateField, setValues
+  errors, handleSubmit, isSubmitting, values, validateField, setValues,
 } = useForm({
   initialValues: currentEdit.value,
   validationSchema: schema,
