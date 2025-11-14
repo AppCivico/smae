@@ -1,4 +1,11 @@
-import { MiddlewareConsumer, Module, NestModule, RequestMethod, ValidationPipe } from '@nestjs/common';
+import {
+    BadRequestException,
+    MiddlewareConsumer,
+    Module,
+    NestModule,
+    RequestMethod,
+    ValidationPipe,
+} from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ServeStaticModule } from '@nestjs/serve-static';
@@ -52,6 +59,7 @@ import { OrcamentoPrevistoModule } from './pp/orcamento-previsto/orcamento-previ
 import { PrismaErrorFilterUnknown } from './prisma-error-unknown.filter';
 import { PrismaErrorFilter } from './prisma-error.filter';
 import { PrismaModule } from './prisma/prisma.module';
+import { exceptionFactory } from './common/validation/validation-exception-factory';
 import { OrcamentoModule } from './reports/orcamento/orcamento.module';
 import { ReportsModule } from './reports/relatorios/reports.module';
 import { UtilsService } from './reports/utils/utils.service';
@@ -65,6 +73,7 @@ import { WikiLinkModule } from './wiki-link/wiki-link.module';
 import { DotacaoBuscaModule } from './dotacao-busca/dotacao-busca.module';
 import { TipoVinculoModule } from './casa-civil/tipo-vinculo/tipo-vinculo.module';
 import { VinculoModule } from './casa-civil/vinculo/vinculo.module';
+import { PortfolioTagModule } from './pp/portfolio-tag/portfolio-tag.module';
 
 // Hacks pro JS
 /*
@@ -132,6 +141,7 @@ import { VinculoModule } from './casa-civil/vinculo/vinculo.module';
         DotacaoBuscaModule,
         TipoVinculoModule,
         VinculoModule,
+        PortfolioTagModule,
     ],
     controllers: [AppController],
     providers: [
@@ -176,6 +186,7 @@ import { VinculoModule } from './casa-civil/vinculo/vinculo.module';
                 // e o o único jeito seria colocando um ValidationPipe em cada controller, ou listando
                 // todos os controllers... então fica desligado
                 //forbidNonWhitelisted: true,
+                exceptionFactory: exceptionFactory,
             }),
         },
         UtilsService,

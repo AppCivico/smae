@@ -101,8 +101,10 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | ModuloSistema[] |
     CadastroGrupoPortfolioMDO: ['Grupos de Portfólio de MdO', 'MDO'],
     Projeto: ['Projetos', 'Projetos'],
     ProjetoMDO: ['Projetos de Obras', 'MDO'],
-    CadastroProjetoEtapa: ['Etapas', 'Projetos'],
-    CadastroProjetoEtapaMDO: ['Etapas', 'MDO'],
+    CadastroProjetoEtapaPadrao: ['Etapa Padrão de Projetos', 'Projetos'],
+    CadastroProjetoEtapaPadraoMDO: ['Etapa Padrão de obra', 'MDO'],
+    CadastroProjetoEtapa: ['Etapas de Projetos', 'Projetos'],
+    CadastroProjetoEtapaMDO: ['Etapas de Obras', 'MDO'],
     ReportsProjetos: ['Relatórios de Projetos', 'Projetos'],
     ReportsMDO: ['Relatórios de MDO', 'MDO'],
 
@@ -145,6 +147,7 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | ModuloSistema[] |
     CadastroClassificacao: ['Cadastro de Classificacao', 'CasaCivil'],
     CadastroTipoVinculo: ['Cadastro de Tipo de Vínculo', 'CasaCivil'],
     CadastroVinculo: ['Cadastro de Vínculo', 'CasaCivil'],
+    CadastroPortfolioTag: ['Tags de Portfólio', 'Projetos'],
 } as const;
 
 const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]> = {
@@ -281,14 +284,24 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
     ],
 
     CadastroProjetoEtapa: [
-        ['CadastroProjetoEtapa.inserir', 'Inserir cadastro básico de Etapa'],
-        ['CadastroProjetoEtapa.editar', 'Editar cadastro básico de Etapa'],
-        ['CadastroProjetoEtapa.remover', 'Remover cadastro básico de Etapa'],
+        ['CadastroProjetoEtapa.inserir', 'Inserir Etapa de Portfólio'],
+        ['CadastroProjetoEtapa.editar', 'Editar Etapa de Portfólio'],
+        ['CadastroProjetoEtapa.remover', 'Remover Etapa de Portfólio'],
     ],
     CadastroProjetoEtapaMDO: [
-        ['CadastroProjetoEtapaMDO.inserir', 'Inserir cadastro básico de Etapa de MdO'],
-        ['CadastroProjetoEtapaMDO.editar', 'Editar cadastro básico de Etapa de MdO'],
-        ['CadastroProjetoEtapaMDO.remover', 'Remover cadastro básico de Etapa de MdO'],
+        ['CadastroProjetoEtapaMDO.inserir', 'Inserir Etapa de Obras'],
+        ['CadastroProjetoEtapaMDO.editar', 'Editar Etapa de Obras'],
+        ['CadastroProjetoEtapaMDO.remover', 'Remover Etapa de Obras'],
+    ],
+    CadastroProjetoEtapaPadrao: [
+        ['CadastroProjetoEtapaPadrao.inserir', 'Inserir cadastro básico de Etapa Padrão em Projeto'],
+        ['CadastroProjetoEtapaPadrao.editar', 'Editar cadastro básico de Etapa Padrão em Projeto'],
+        ['CadastroProjetoEtapaPadrao.remover', 'Remover cadastro básico de Etapa Padrão em Projeto'],
+    ],
+    CadastroProjetoEtapaPadraoMDO: [
+        ['CadastroProjetoEtapaPadraoMDO.inserir', 'Inserir cadastro básico de Etapa Padrão em Obra'],
+        ['CadastroProjetoEtapaPadraoMDO.editar', 'Editar cadastro básico de Etapa Padrão em Obra'],
+        ['CadastroProjetoEtapaPadraoMDO.remover', 'Remover cadastro básico de Etapa Padrão em Obra'],
     ],
     // cadastros de PDM e metas
     CadastroPdm: [
@@ -616,6 +629,12 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['CadastroVinculo.listar', 'Listar Vínculos'],
         ['CadastroVinculo.remover', 'Excluir Vínculos'],
     ],
+    CadastroPortfolioTag: [
+        ['CadastroPortfolioTag.editar', 'Editar Tag de Portfólio'],
+        ['CadastroPortfolioTag.inserir', 'Incluir Tag de Portfólio'],
+        ['CadastroPortfolioTag.listar', 'Listar Tags de Portfólio'],
+        ['CadastroPortfolioTag.remover', 'Excluir Tags de Portfólio'],
+    ],
 };
 
 const todosPrivilegios: ListaDePrivilegios[] = [];
@@ -803,9 +822,9 @@ type PerfilConfigArray = {
 }[];
 
 const MDOCadastroBasico: ListaDePrivilegios[] = [
-    'CadastroProjetoEtapaMDO.inserir',
-    'CadastroProjetoEtapaMDO.editar',
-    'CadastroProjetoEtapaMDO.remover',
+    'CadastroProjetoEtapaPadraoMDO.inserir',
+    'CadastroProjetoEtapaPadraoMDO.editar',
+    'CadastroProjetoEtapaPadraoMDO.remover',
 
     // tag é etiquetas
     'ProjetoTagMDO.inserir',
@@ -843,9 +862,9 @@ const MDOCadastroBasico: ListaDePrivilegios[] = [
 ] as const;
 
 const PPCadastroBasico: ListaDePrivilegios[] = [
-    'CadastroProjetoEtapa.inserir',
-    'CadastroProjetoEtapa.editar',
-    'CadastroProjetoEtapa.remover',
+    'CadastroProjetoEtapaPadrao.inserir',
+    'CadastroProjetoEtapaPadrao.editar',
+    'CadastroProjetoEtapaPadrao.remover',
 
     'ModalidadeContratacao.inserir',
     'ModalidadeContratacao.editar',
@@ -854,6 +873,10 @@ const PPCadastroBasico: ListaDePrivilegios[] = [
     'TipoAditivo.inserir',
     'TipoAditivo.editar',
     'TipoAditivo.remover',
+
+    'CadastroPortfolioTag.inserir',
+    'CadastroPortfolioTag.editar',
+    'CadastroPortfolioTag.remover',
 ] as const;
 
 const PerfilAcessoConfig: PerfilConfigArray = [
@@ -979,6 +1002,10 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'CadastroPessoa.administrador',
             ...MDOCadastroBasico,
             'SMAE.AtualizacaoEmLote',
+
+            'CadastroProjetoEtapaMDO.inserir',
+            'CadastroProjetoEtapaMDO.editar',
+            'CadastroProjetoEtapaMDO.remover',
         ],
     },
     {
@@ -995,6 +1022,9 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'CadastroGrupoPortfolioMDO.administrador_no_orgao',
             'MDO.revisar_obra',
             'ProjetoMDO.orcamento',
+            'CadastroProjetoEtapaMDO.inserir',
+            'CadastroProjetoEtapaMDO.editar',
+            'CadastroProjetoEtapaMDO.remover',
 
             ...MDOCadastroBasico,
             'SMAE.AtualizacaoEmLote',
@@ -1028,6 +1058,10 @@ const PerfilAcessoConfig: PerfilConfigArray = [
             'CadastroPainelExterno.editar',
             'CadastroPainelExterno.remover',
             'CadastroGrupoPainelExterno.administrador_no_orgao',
+
+            'CadastroProjetoEtapa.inserir',
+            'CadastroProjetoEtapa.editar',
+            'CadastroProjetoEtapa.remover',
         ],
     },
     {

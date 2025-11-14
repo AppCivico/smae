@@ -1,5 +1,4 @@
 <template>
-  <div class="spacebetween">&nbsp</div>
   <div>
     <TítuloDePágina id="titulo-da-pagina">
       Resumo da Tarefa
@@ -130,11 +129,23 @@
           </dt>
           <dd>{{ emFoco?.atraso ? `${emFoco.atraso} dias` : ' - ' }}</dd>
         </dl>
-        <dl class="f2">
+        <dl class="f1">
           <dt class="tc500 w700 t16">
             Previsão de custo
           </dt>
           <dd>{{ emFoco?.custo_estimado ? `R$${dinheiro(emFoco.custo_estimado)}` : ' - ' }}</dd>
+        </dl>
+        <dl class="f1">
+          <dt class="tc500 w700 t16">
+            Termino projetado
+          </dt>
+          <dd>
+            {{
+              emFoco?.termino_projetado
+                ? dateToDate(emFoco.termino_projetado)
+                : ' - '
+            }}
+          </dd>
         </dl>
       </div>
     </div>
@@ -199,10 +210,11 @@
 
 <script setup>
 import { storeToRefs } from 'pinia';
-import { useTarefasStore } from '@/stores/tarefas.store.ts';
+
+import dependencyTypes from '@/consts/dependencyTypes';
 import dateToDate from '@/helpers/dateToDate';
 import dinheiro from '@/helpers/dinheiro';
-import dependencyTypes from '@/consts/dependencyTypes';
+import { useTarefasStore } from '@/stores/tarefas.store.ts';
 
 const tarefasStore = useTarefasStore();
 

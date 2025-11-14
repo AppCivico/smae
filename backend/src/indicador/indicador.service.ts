@@ -303,8 +303,7 @@ export class IndicadorService {
                 if (!uniqueRef[fv.referencia]) {
                     uniqueRef[fv.referencia] = true;
                 } else {
-                    throw new HttpException(
-                        `formula_variaveis| ${fv.referencia} duplicada, utilize apenas uma vez!`,
+                    throw new HttpException(`${fv.referencia} duplicada, utilize apenas uma vez!`,
                         400
                     );
                 }
@@ -344,8 +343,7 @@ export class IndicadorService {
 
         for (const neededRef of Object.keys(neededRefs)) {
             if (!uniqueRef[neededRef]) {
-                throw new HttpException(
-                    `formula_variaveis| Referencia ${neededRef} enviada na formula não foi declarada nas variáveis.`,
+                throw new HttpException(`Referencia ${neededRef} enviada na formula não foi declarada nas variáveis.`,
                     400
                 );
             }
@@ -364,8 +362,7 @@ export class IndicadorService {
                 });
 
                 if (!formulaCompostaCount) {
-                    throw new HttpException(
-                        `formula_variaveis| Referencia de fórmula composta @_${formulaCompostaId} enviada na formula não foi encontrada no indicador.`,
+                    throw new HttpException(`Referencia de fórmula composta @_${formulaCompostaId} enviada na formula não foi encontrada no indicador.`,
                         400
                     );
                 }
@@ -387,7 +384,7 @@ export class IndicadorService {
         try {
             formula_compilada = FP.parse(formula.toLocaleUpperCase());
         } catch (error) {
-            throw new HttpException(`formula| formula não foi entendida: ${formula}\n${error}`, 400);
+            throw new HttpException(`formula não foi entendida: ${formula}\n${error}`, 400);
         }
         return formula_compilada;
     }

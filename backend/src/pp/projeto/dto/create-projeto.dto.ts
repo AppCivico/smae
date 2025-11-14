@@ -45,7 +45,7 @@ export class PPfonteRecursoDto {
     /**
      * código da fonte de recurso no SOF, no ano escolhido
      */
-    @IsString({ message: '$property| precisa ser um alfanumérico' })
+    @IsString({ message: 'precisa ser um alfanumérico' })
     @MaxLength(MAX_LENGTH_DEFAULT, {
         message: `O campo 'Código da fonte de recurso no SOF' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
     })
@@ -59,7 +59,7 @@ export class PPfonteRecursoDto {
 
     @IsNumber(
         { maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false },
-        { message: '$property| até duas casas decimais' }
+        { message: 'até duas casas decimais' }
     )
     @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     @ValidateIf((object, value) => value !== null)
@@ -67,18 +67,32 @@ export class PPfonteRecursoDto {
 
     @IsNumber(
         { maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false },
-        { message: '$property| até duas casas decimais' }
+        { message: 'até duas casas decimais' }
     )
     @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     @ValidateIf((object, value) => value !== null)
     valor_nominal?: number | null;
+
+    @IsOptional()
+    @IsString()
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Detalhamento da fonte de recurso no SOF' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
+    fonte_recurso_detalhamento_cod?: string | null;
+
+    @IsOptional()
+    @IsString()
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Detalhamento da fonte de recurso no SOF' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
+    fonte_recurso_detalhamento_descricao?: string | null;
 }
 
 export class CreateProjetoDto {
     @IsArray()
     @IsOptional()
-    @ArrayMinSize(0, { message: '$property| precisa ter um item' })
-    @ArrayMaxSize(1000, { message: '$property| precisa ter no máximo 1000 items' })
+    @ArrayMinSize(0, { message: 'precisa ter um item' })
+    @ArrayMaxSize(1000, { message: 'precisa ter no máximo 1000 items' })
     @ValidateNested({ each: true })
     @Type(() => UpsertOrigemDto)
     origens_extra?: UpsertOrigemDto[];
@@ -87,7 +101,7 @@ export class CreateProjetoDto {
      * portfolio_id
      * @example 0
      */
-    @IsInt({ message: '$property| portfolio_id precisa ser inteiro' })
+    @IsInt({ message: 'portfolio_id precisa ser inteiro' })
     @Type(() => Number)
     portfolio_id: number;
 
@@ -96,10 +110,10 @@ export class CreateProjetoDto {
      * @example "[]"
      */
     @IsOptional()
-    @IsArray({ message: '$property| precisa ser um array' })
-    @ArrayMinSize(0, { message: '$property| precisa ter um item' })
-    @ArrayMaxSize(100, { message: '$property| precisa ter no máximo 100 items' })
-    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
+    @IsArray({ message: 'precisa ser um array' })
+    @ArrayMinSize(0, { message: 'precisa ter um item' })
+    @ArrayMaxSize(100, { message: 'precisa ter no máximo 100 items' })
+    @IsInt({ each: true, message: 'Cada item precisa ser um número inteiro' })
     @ValidateIf((object, value) => value !== null)
     portfolios_compartilhados?: number[] | null;
 
@@ -109,7 +123,7 @@ export class CreateProjetoDto {
     @IsOptional()
     @ApiProperty({ enum: ProjetoStatus, enumName: 'ProjetoStatus' })
     @IsEnum(ProjetoStatus, {
-        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(ProjetoStatus).join(', '),
+        message: 'Precisa ser um dos seguintes valores: ' + Object.values(ProjetoStatus).join(', '),
     })
     status?: ProjetoStatus;
 
@@ -129,7 +143,7 @@ export class CreateProjetoDto {
      * @example "0"
      */
     @IsOptional()
-    @IsInt({ message: '$property| grupo_tematico_id precisa ser inteiro' })
+    @IsInt({ message: 'grupo_tematico_id precisa ser inteiro' })
     grupo_tematico_id?: number;
 
     /**
@@ -137,7 +151,7 @@ export class CreateProjetoDto {
      * @example "0"
      */
     @IsOptional()
-    @IsInt({ message: '$property| tipo_intervencao_id precisa ser inteiro' })
+    @IsInt({ message: 'tipo_intervencao_id precisa ser inteiro' })
     tipo_intervencao_id?: number;
 
     /**
@@ -145,7 +159,7 @@ export class CreateProjetoDto {
      * @example "0"
      */
     @IsOptional()
-    @IsInt({ message: '$property| equipamento_id precisa ser inteiro' })
+    @IsInt({ message: 'equipamento_id precisa ser inteiro' })
     equipamento_id?: number;
 
     /**
@@ -153,7 +167,7 @@ export class CreateProjetoDto {
      * @example "0"
      */
     @IsOptional()
-    @IsInt({ message: '$property| empreendimento_id precisa ser inteiro' })
+    @IsInt({ message: 'empreendimento_id precisa ser inteiro' })
     empreendimento_id?: number;
 
     @IsOptional()
@@ -174,19 +188,19 @@ export class CreateProjetoDto {
     mdo_programa_habitacional?: string | null;
 
     @IsOptional()
-    @IsInt({ message: '$property| mdo_n_unidades_habitacionais precisa ser inteiro' })
+    @IsInt({ message: 'mdo_n_unidades_habitacionais precisa ser inteiro' })
     @ValidateIf((object, value) => value !== null)
     @Transform(NumberTransform)
     mdo_n_unidades_habitacionais?: number | null;
 
     @IsOptional()
-    @IsInt({ message: '$property| mdo_n_familias_beneficiadas precisa ser inteiro' })
+    @IsInt({ message: 'mdo_n_familias_beneficiadas precisa ser inteiro' })
     @ValidateIf((object, value) => value !== null)
     @Transform(NumberTransform)
     mdo_n_familias_beneficiadas?: number | null;
 
     @IsOptional()
-    @IsInt({ message: '$property| mdo_n_familias_beneficiadas precisa ser inteiro' })
+    @IsInt({ message: 'mdo_n_familias_beneficiadas precisa ser inteiro' })
     @ValidateIf((object, value) => value !== null)
     @Transform(NumberTransform)
     mdo_n_unidades_atendidas?: number | null;
@@ -198,7 +212,7 @@ export class CreateProjetoDto {
      */
     @ApiProperty({ enum: ProjetoOrigemTipo, enumName: 'ProjetoOrigemTipo' })
     @IsEnum(ProjetoOrigemTipo, {
-        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(ProjetoOrigemTipo).join(', '),
+        message: 'Precisa ser um dos seguintes valores: ' + Object.values(ProjetoOrigemTipo).join(', '),
     })
     origem_tipo: ProjetoOrigemTipo;
 
@@ -222,7 +236,7 @@ export class CreateProjetoDto {
      * meta_id, se for por meta
      */
     @IsOptional()
-    @IsInt({ message: '$property| meta_id precisa ser positivo' })
+    @IsInt({ message: 'meta_id precisa ser positivo' })
     @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     @ValidateIf((object, value) => value !== null)
     meta_id?: number | null;
@@ -231,7 +245,7 @@ export class CreateProjetoDto {
      * iniciativa_id, se for por iniciativa
      */
     @IsOptional()
-    @IsInt({ message: '$property| iniciativa_id precisa ser positivo' })
+    @IsInt({ message: 'iniciativa_id precisa ser positivo' })
     @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     @ValidateIf((object, value) => value !== null)
     iniciativa_id?: number | null;
@@ -240,13 +254,13 @@ export class CreateProjetoDto {
      * atividade_id, se for por atividade
      */
     @IsOptional()
-    @IsInt({ message: '$property| atividade_id precisa ser positivo' })
+    @IsInt({ message: 'atividade_id precisa ser positivo' })
     @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     @ValidateIf((object, value) => value !== null)
     atividade_id?: number | null;
 
     @IsOptional()
-    @IsInt({ message: '$property| projeto_etapa_id precisa ser positivo' })
+    @IsInt({ message: 'projeto_etapa_id precisa ser positivo' })
     @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     @ValidateIf((object, value) => value !== null)
     projeto_etapa_id?: number | null;
@@ -262,7 +276,7 @@ export class CreateProjetoDto {
      * ID do órgão do gestor do portfólio no MDO
      * @example 0
      */
-    @IsInt({ message: '$property| orgao_gestor_id precisa ser inteiro' })
+    @IsInt({ message: 'orgao_gestor_id precisa ser inteiro' })
     @Type(() => Number)
     orgao_gestor_id: number;
 
@@ -270,10 +284,10 @@ export class CreateProjetoDto {
      * ID das pessoas responsáveis no orgao gestor [pessoas que aparecem no filtro do `gestor_de_projeto=true`]
      * @example "[]"
      */
-    @IsArray({ message: '$property| precisa ser um array' })
-    @ArrayMinSize(0, { message: '$property| precisa ter um item' })
-    @ArrayMaxSize(100, { message: '$property| precisa ter no máximo 100 items' })
-    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
+    @IsArray({ message: 'precisa ser um array' })
+    @ArrayMinSize(0, { message: 'precisa ter um item' })
+    @ArrayMaxSize(100, { message: 'precisa ter no máximo 100 items' })
+    @IsInt({ each: true, message: 'Cada item precisa ser um número inteiro' })
     @ValidateIf((object, value) => value !== null)
     responsaveis_no_orgao_gestor: number[] | null;
 
@@ -282,10 +296,10 @@ export class CreateProjetoDto {
      * @example "[]"
      */
     @IsOptionalNonNullable()
-    @IsArray({ message: '$property| precisa ser um array' })
-    @ArrayMinSize(0, { message: '$property| precisa ter um item' })
-    @ArrayMaxSize(100, { message: '$property| precisa ter no máximo 100 items' })
-    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
+    @IsArray({ message: 'precisa ser um array' })
+    @ArrayMinSize(0, { message: 'precisa ter um item' })
+    @ArrayMaxSize(100, { message: 'precisa ter no máximo 100 items' })
+    @IsInt({ each: true, message: 'Cada item precisa ser um número inteiro' })
     orgaos_participantes: number[];
 
     /**
@@ -294,7 +308,7 @@ export class CreateProjetoDto {
      * órgão responsável pela obra
      */
     @IsOptionalNonNullable()
-    @IsInt({ message: '$property| orgao_responsavel_id precisa ser inteiro' })
+    @IsInt({ message: 'orgao_responsavel_id precisa ser inteiro' })
     @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     @ValidateIf((object, value) => value !== null)
     orgao_responsavel_id: number | null;
@@ -304,7 +318,7 @@ export class CreateProjetoDto {
      * órgão origem da obra (eg: secretaria da educação)
      */
     @IsOptional()
-    @IsInt({ message: '$property| orgao_responsavel_id precisa ser inteiro' })
+    @IsInt({ message: 'orgao_responsavel_id precisa ser inteiro' })
     @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     @ValidateIf((object, value) => value !== null)
     orgao_origem_id?: number | null;
@@ -314,7 +328,7 @@ export class CreateProjetoDto {
      * órgão executor da obra (eg: SIURB Infraestrutura Urbana e Obras)
      */
     @IsOptional()
-    @IsInt({ message: '$property| orgao_responsavel_id precisa ser inteiro' })
+    @IsInt({ message: 'orgao_responsavel_id precisa ser inteiro' })
     @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     @ValidateIf((object, value) => value !== null)
     orgao_executor_id?: number | null;
@@ -325,7 +339,7 @@ export class CreateProjetoDto {
      * ponto focal responsável [são as pessoas filtradas pelo priv `MDO.colaborador_de_projeto`]
      */
     @IsOptionalNonNullable()
-    @IsInt({ message: '$property| responsavel_id precisa ser inteiro' })
+    @IsInt({ message: 'responsavel_id precisa ser inteiro' })
     @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     @ValidateIf((object, value) => value !== null)
     responsavel_id: number | null;
@@ -370,9 +384,9 @@ export class CreateProjetoDto {
      **/
     @IsNumber(
         { maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false },
-        { message: '$property| Custo até duas casas decimais' }
+        { message: 'Custo até duas casas decimais' }
     )
-    @Min(0, { message: '$property| Custo precisa ser positivo' })
+    @Min(0, { message: 'Custo precisa ser positivo' })
     @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     @ValidateIf((object, value) => value !== null)
     previsao_custo: number | null;
@@ -386,8 +400,8 @@ export class CreateProjetoDto {
     mdo_observacoes?: string;
 
     @IsOptional()
-    @IsInt({ message: '$property| precisa ser inteiro' })
-    @Min(0, { message: '$property| Mínimo 0' })
+    @IsInt({ message: 'precisa ser inteiro' })
+    @Min(0, { message: 'Mínimo 0' })
     tolerancia_atraso?: number;
 
     /**
@@ -402,7 +416,7 @@ export class CreateProjetoDto {
     principais_etapas?: string;
 
     @IsOptional()
-    @IsInt({ message: '$property| regiao_id precisa ser inteiro' })
+    @IsInt({ message: 'regiao_id precisa ser inteiro' })
     @Transform((a: TransformFnParams) => (a.value === null || a.value === 0 ? null : +a.value))
     regiao_id?: number | null;
 
@@ -478,7 +492,7 @@ export class CreateProjetoDto {
 
     @IsOptional()
     @IsArray()
-    @IsInt({ message: '$property| regiao_ids precisa ser inteiro', each: true })
+    @IsInt({ message: 'regiao_ids precisa ser inteiro', each: true })
     @ValidateIf((object, value) => value !== null)
     @Transform(NumberArrayTransformOrEmpty)
     regiao_ids?: number[] | null;
@@ -492,20 +506,20 @@ export class CreateProjetoDto {
     secretario_colaborador?: string | null;
 
     @IsOptional()
-    @IsInt({ message: '$property| precisa ser inteiro' })
-    @Min(0, { message: '$property| Mínimo 0' })
+    @IsInt({ message: 'precisa ser inteiro' })
+    @Min(0, { message: 'Mínimo 0' })
     orgao_colaborador_id?: number;
 
     @IsOptional()
     @IsArray()
-    @IsInt({ message: '$property| colaboradores_no_orgao precisa ser inteiro', each: true })
+    @IsInt({ message: 'colaboradores_no_orgao precisa ser inteiro', each: true })
     @ValidateIf((object, value) => value !== null)
     @Transform(NumberArrayTransformOrEmpty)
     colaboradores_no_orgao?: number[] | null;
 
     @IsOptional()
     @IsArray()
-    @IsInt({ message: '$property| tags precisa ser inteiro', each: true })
+    @IsInt({ message: 'tags precisa ser inteiro', each: true })
     @ValidateIf((object, value) => value !== null)
     @Transform(NumberArrayTransformOrEmpty)
     tags?: number[] | null;
@@ -514,7 +528,7 @@ export class CreateProjetoDto {
      * tipo de aditivo MDO
      */
     @IsOptional()
-    @IsInt({ message: '$property| tipo_aditivo_id precisa ser inteiro' })
+    @IsInt({ message: 'tipo_aditivo_id precisa ser inteiro' })
     @ApiProperty({ deprecated: true })
     tipo_aditivo_id?: number | null;
 
@@ -523,7 +537,7 @@ export class CreateProjetoDto {
      * agora vem do cadastro do `/api/projeto-programa-mdo`
      */
     @IsOptional()
-    @IsInt({ message: '$property| projeto_programa_id precisa ser inteiro' })
+    @IsInt({ message: 'projeto_programa_id precisa ser inteiro' })
     @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     @ValidateIf((object, value) => value !== null)
     programa_id?: number | null;
@@ -532,7 +546,7 @@ export class CreateProjetoDto {
      * modalidade de contratação MDO
      */
     @IsOptional()
-    @IsInt({ message: '$property| modalidade_contratacao_id precisa ser inteiro' })
+    @IsInt({ message: 'modalidade_contratacao_id precisa ser inteiro' })
     @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     @ValidateIf((object, value) => value !== null)
     modalidade_contratacao_id?: number | null;
@@ -542,7 +556,7 @@ export class CreateProjetoDocumentDto {
     /**
      * Upload do Documento
      */
-    @IsString({ message: '$property| upload_token do documento' })
+    @IsString({ message: 'upload_token do documento' })
     upload_token: string;
 
     @IsString()
@@ -603,7 +617,7 @@ export class CreateProjetoSeiDto {
             allow_query_components: true,
             validate_length: true,
         },
-        { message: '$property| O link um precisa ter o protocolo HTTP ou HTTPS, um TLD válido.' }
+        { message: 'O link um precisa ter o protocolo HTTP ou HTTPS, um TLD válido.' }
     )
     link: string;
 

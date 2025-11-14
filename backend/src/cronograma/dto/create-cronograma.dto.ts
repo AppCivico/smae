@@ -6,7 +6,7 @@ export class CreateCronogramaDto {
     /**
      * meta_id
      */
-    @IsInt({ message: '$property| meta precisa ser um número ou null' })
+    @IsInt({ message: 'meta precisa ser um número ou null' })
     @Type(() => Number)
     @ValidateIf((object, value) => value !== null)
     @IsOptional()
@@ -15,7 +15,7 @@ export class CreateCronogramaDto {
     /**
      * iniciativa_id
      */
-    @IsInt({ message: '$property| iniciativa precisa ser um número ou null' })
+    @IsInt({ message: 'iniciativa precisa ser um número ou null' })
     @Type(() => Number)
     @ValidateIf((object, value) => value !== null)
     @IsOptional()
@@ -24,7 +24,7 @@ export class CreateCronogramaDto {
     /**
      * atividade_id
      */
-    @IsInt({ message: '$property| atividade precisa ser um número ou null' })
+    @IsInt({ message: 'atividade precisa ser um número ou null' })
     @Type(() => Number)
     @ValidateIf((object, value) => value !== null)
     @IsOptional()
@@ -33,7 +33,7 @@ export class CreateCronogramaDto {
     /**
      * descricao
      */
-    @IsString({ message: '$property| descricao: Precisa ser alfanumérico' })
+    @IsString({ message: 'descricao: Precisa ser alfanumérico' })
     @IsOptional()
     @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Descrição" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     descricao?: string;
@@ -41,14 +41,14 @@ export class CreateCronogramaDto {
     /**
      * observacao
      */
-    @IsString({ message: '$property| observacao: Precisa ser alfanumérico' })
+    @IsString({ message: 'observacao: Precisa ser alfanumérico' })
     @IsOptional()
     observacao?: string;
 
-    @IsBoolean({ message: '$property| precisa ser um boolean' })
+    @IsBoolean({ message: 'precisa ser um boolean' })
     regionalizavel: boolean;
 
-    @IsInt({ message: '$property| atividade precisa ser um número ou null' })
+    @IsInt({ message: 'atividade precisa ser um número ou null' })
     @Type(() => Number)
     @ValidateIf((object, value) => value !== null)
     @IsOptional()

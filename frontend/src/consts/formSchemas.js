@@ -1237,6 +1237,12 @@ export const obras = object({
             .min(2003, 'A partir de 2003')
             .max(3000, 'Até o ano 3000')
             .required('Escolha um ano válido'),
+          fonte_recurso_detalhamento_cod: string()
+            .label('Código detalhamento')
+            .nullable(),
+          fonte_recurso_detalhamento_descricao: string()
+            .label('Descrição detalhamento')
+            .nullable(),
           id: number()
             .nullable(),
           valor_nominal: mixed()
@@ -2696,6 +2702,12 @@ export const projeto = object()
               .min(2003, 'A partir de 2003')
               .max(3000, 'Até o ano 3000')
               .required('Escolha um ano válido'),
+            fonte_recurso_detalhamento_cod: string()
+              .label('Código detalhamento')
+              .nullable(),
+            fonte_recurso_detalhamento_descricao: string()
+              .label('Descrição detalhamento')
+              .nullable(),
             id: number()
               .nullable(),
             valor_nominal: mixed()
@@ -2813,7 +2825,6 @@ export const projeto = object()
               .oneOf(Object.keys(tiposDeOrigens), 'A origem escolhida é inválida'),
           }),
       ),
-
     portfolios_compartilhados: array()
       .label('Compartilhar com portfólios')
       .nullable(),
@@ -2901,6 +2912,9 @@ export const projeto = object()
     status: mixed()
       .label('Status')
       .oneOf(Object.keys(statusDeProjetos))
+      .nullable(),
+    tags_portfolio: array()
+      .label('Etiquetas')
       .nullable(),
     tolerancia_atraso: number()
       .label('Percentual de tolerância com atraso')
@@ -3696,6 +3710,28 @@ export const etapasProjeto = object({
   descricao: string()
     .label('Etapa')
     .required(),
+
+  eh_padrao: boolean()
+    .label('Etapa Padrão')
+    .nullable()
+    .default(true),
+
+  portfolio_id: number()
+    .label('Portfólio')
+    .nullable()
+    .positive()
+    .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
+    .when('eh_padrao', {
+      is: false,
+      then: (schema) => schema.required('Portfólio é obrigatório quando não é etapa padrão'),
+      otherwise: (schema) => schema.nullable(),
+    }),
+
+  etapa_padrao_id: number()
+    .label('Etapa Padrão Associada')
+    .nullable()
+    .positive()
+    .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
 });
 
 export const fasesProjeto = object({
@@ -4531,4 +4567,26 @@ export const ConsultaGeralVinculacaoRegistro = object({
     .label('Observação')
     .nullable()
     .max(2000, 'A observação deve ter no máximo 2000 caracteres'),
+});
+
+export const projetoEtiqueta = object({
+  portfolio_id: number()
+    .label('Portfólio')
+    .required('Selecione um portfólio')
+    .positive('Selecione um portfólio'),
+  descricao: string()
+    .label('Descrição')
+    .required('Preencha a descrição')
+    .max(250, 'A descrição deve ter no máximo 250 caracteres'),
+});
+
+export const campoEtapaPorPortfolio = object({
+  portfolio_id: number()
+    .label('Portfólio')
+    .required('Selecione um portfólio')
+    .min(1, 'Selecione um portfólio'),
+  etapa_id: number()
+    .label('Etapa')
+    .required('Selecione uma etapa')
+    .min(1, 'Selecione uma etapa'),
 });

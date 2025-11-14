@@ -1,4 +1,5 @@
 <script setup>
+// Em 2024-10-28, o desenvolvedor responsável pelo back end orientou a usar essa variável
 import { CONST_PERFIL_PARTICIPANTE_EQUIPE, LISTA_PRIV_ADMIN } from '@back/common/consts';
 import { kebabCase } from 'lodash';
 import { storeToRefs } from 'pinia';
@@ -11,7 +12,6 @@ import {
 import { useRoute } from 'vue-router';
 
 // eslint-disable-next-line import/no-extraneous-dependencies
-// Em 2024-10-28, o desenvolvedor responsável pelo back end orientou a usar essa variável
 import { Dashboard } from '@/components';
 import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
 import TransitionExpand from '@/components/TransitionExpand.vue';
@@ -44,7 +44,7 @@ const perfilParaDetalhar = ref(0);
 const bloquearCampoOrgao = ref(false);
 const personalizarNomeParaExibição = ref(false);
 
-const { organs } = storeToRefs(organsStore);
+const { organs, órgãosPorId } = storeToRefs(organsStore);
 const { PaineisGrupos } = storeToRefs(PaineisGruposStore);
 const { sistemaCorrente, permissions, user: usuarioLogado } = storeToRefs(authStore);
 const {
@@ -64,6 +64,52 @@ const {
 });
 
 const formularioSujo = useIsFormDirty();
+
+const orgaoSelecionadoComAscendentes = computed(() => {
+  const orgaoIdSelecionado = values.orgao_id;
+
+  if (!orgaoIdSelecionado) {
+    return [];
+  }
+
+  const listaDeOrgaos = [orgaoIdSelecionado];
+
+  let orgaoPaiId = órgãosPorId.value[orgaoIdSelecionado]?.parente_id;
+  const visited = new Set([orgaoIdSelecionado]);
+
+  while (orgaoPaiId && !visited.has(orgaoPaiId)) {
+    visited.add(orgaoPaiId);
+    listaDeOrgaos.push(orgaoPaiId);
+    orgaoPaiId = órgãosPorId.value[orgaoPaiId]?.parente_id;
+  }
+
+  return listaDeOrgaos;
+});
+
+const equipesDisponiveis = computed(() => orgaoSelecionadoComAscendentes.value
+  .reduce((acc, cur) => {
+    const equipesDoOrgao = equipesPorOrgaoIdPorPerfil.value[cur];
+
+    if (!equipesDoOrgao) {
+      return acc;
+    }
+
+    Object.entries(equipesDoOrgao).forEach(([chave, equipes]) => {
+      const destino = acc[chave] ?? [];
+      const idsVistos = new Set(destino.map((item) => item.id));
+
+      equipes.forEach((equipe) => {
+        if (!idsVistos.has(equipe.id)) {
+          idsVistos.add(equipe.id);
+          destino.push(equipe);
+        }
+      });
+
+      acc[chave] = destino;
+    });
+
+    return acc;
+  }, {}));
 
 const perfisPorModulo = computed(() => (Array.isArray(accessProfiles.value)
   ? accessProfiles.value.reduce((acc, cur) => {
@@ -515,13 +561,12 @@ onMounted(async () => {
                     {{ erroDeEquipes }}
                   </ErrorComponent>
                   <ul
-                    v-if="values.perfil_acesso_ids?.includes(perfil.id)
-                      && equipesPorOrgaoIdPorPerfil[values.orgao_id]"
+                    v-if="values.perfil_acesso_ids?.includes(perfil.id) && equipesDisponiveis"
                     :aria-busy="chamadasPendentesDeEquipes"
                     class="lista-de-perfis"
                   >
                     <li
-                      v-for="(perfilDeEquipe, chave) in equipesPorOrgaoIdPorPerfil[values.orgao_id]"
+                      v-for="(perfilDeEquipe, chave) in equipesDisponiveis"
                       :key="chave"
                       class="lista-de-perfis__item"
                     >

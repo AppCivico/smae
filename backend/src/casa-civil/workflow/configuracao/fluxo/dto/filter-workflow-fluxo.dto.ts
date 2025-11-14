@@ -3,7 +3,7 @@ import { IsInt, IsOptional } from 'class-validator';
 
 export class FilterWorkflowFluxoDto {
     @IsOptional()
-    @IsInt({ message: '$property| workflow_id' })
+    @IsInt({ message: 'workflow_id' })
     @Type(() => Number)
     workflow_id?: number;
 }

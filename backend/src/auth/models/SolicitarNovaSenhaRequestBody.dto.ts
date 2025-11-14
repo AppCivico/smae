@@ -5,6 +5,6 @@ export class SolicitarNovaSenhaRequestBody {
      * e-mail da conta
      * @example "admin@email.com"
      */
-    @IsString({ message: '$property| Precisa ser um e-mail' })
+    @IsString({ message: 'Precisa ser um e-mail' })
     email: string;
 }

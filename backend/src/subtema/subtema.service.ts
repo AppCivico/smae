@@ -30,7 +30,7 @@ export class SubTemaService {
                     removido_em: null,
                 },
             });
-            if (!pdm) throw new HttpException('pdm_id| Não foi encontrado linha de PDM correspondente.', 400);
+            if (!pdm) throw new HttpException('Não foi encontrado linha de PDM correspondente.', 400);
 
             const descricaoExists = await prismaTx.subTema.count({
                 where: {
@@ -43,7 +43,7 @@ export class SubTemaService {
                     },
                 },
             });
-            if (descricaoExists) throw new HttpException('descricao| Já existe um Sub-tema com esta descrição.', 400);
+            if (descricaoExists) throw new HttpException('Já existe um Sub-tema com esta descrição.', 400);
 
             const subTema = await prismaTx.subTema.create({
                 data: {
@@ -107,7 +107,7 @@ export class SubTemaService {
                         },
                     });
                     if (descricaoExists)
-                        throw new HttpException('descricao| Já existe um Tema com esta descrição.', 400);
+                        throw new HttpException('Já existe um Tema com esta descrição.', 400);
                 }
 
                 const subTema = await this.prisma.subTema.update({

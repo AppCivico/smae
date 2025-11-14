@@ -49,6 +49,12 @@ export type ListaDePrivilegios =
     | 'CadastroProjetoEtapa.inserir'
     | 'CadastroProjetoEtapa.editar'
     | 'CadastroProjetoEtapa.remover'
+    | 'CadastroProjetoEtapaPadrao.inserir'
+    | 'CadastroProjetoEtapaPadrao.editar'
+    | 'CadastroProjetoEtapaPadrao.remover'
+    | 'CadastroProjetoEtapaPadraoMDO.inserir'
+    | 'CadastroProjetoEtapaPadraoMDO.editar'
+    | 'CadastroProjetoEtapaPadraoMDO.remover'
     | 'CadastroMeta.listar'
     | 'CadastroMeta.administrador_no_pdm'
     | 'CadastroMeta.administrador_no_pdm_admin_cp'
@@ -261,4 +267,8 @@ export type ListaDePrivilegios =
     | 'CadastroVinculo.editar'
     | 'CadastroVinculo.inserir'
     | 'CadastroVinculo.listar'
-    | 'CadastroVinculo.remover';
+    | 'CadastroVinculo.remover'
+    | 'CadastroPortfolioTag.editar'
+    | 'CadastroPortfolioTag.inserir'
+    | 'CadastroPortfolioTag.listar'
+    | 'CadastroPortfolioTag.remover';

@@ -514,7 +514,7 @@ export class VariavelAnaliseQualitativaDocumentoDto {
     /**
      * Upload do Documento
      */
-    @IsString({ message: '$property| upload_token de um arquivo' })
+    @IsString({ message: 'upload_token de um arquivo' })
     upload_token: string;
 }
 
@@ -577,6 +577,6 @@ export class FormulaCompostaAnaliseQualitativaDocumentoDto {
     /**
      * Upload do Documento
      */
-    @IsString({ message: '$property| upload_token de um arquivo' })
+    @IsString({ message: 'upload_token de um arquivo' })
     upload_token: string;
 }

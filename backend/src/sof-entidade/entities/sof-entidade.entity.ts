@@ -27,3 +27,8 @@ export class SofEntidadeDto {
     atualizado_em: string;
     dados: SuccessEntidadesResponse;
 }
+
+export class SofDetalhamentoFonteDto {
+    atualizado_em: string;
+    dados: Entidade[];
+}

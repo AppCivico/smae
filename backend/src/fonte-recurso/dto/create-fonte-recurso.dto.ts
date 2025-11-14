@@ -6,15 +6,15 @@ export class CreateFonteRecursoDto {
      * Sigla
      */
     @IsOptional()
-    @IsString({ message: '$property| sigla: Precisa ser alfanumérico' })
+    @IsString({ message: 'sigla: Precisa ser alfanumérico' })
     @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Sigla' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     sigla?: string | null;
 
     /**
      * Fonte
      */
-    @IsString({ message: '$property| Fonte: Precisa ser alfanumérico' })
-    @MinLength(1, { message: '$property| Fonte: Mínimo de 1 caractere' })
+    @IsString({ message: 'Fonte: Precisa ser alfanumérico' })
+    @MinLength(1, { message: 'Fonte: Mínimo de 1 caractere' })
     @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Fonte' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     fonte: string;
 }

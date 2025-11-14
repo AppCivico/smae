@@ -4,15 +4,15 @@ import { Type } from 'class-transformer';
 import { IsArray, IsBoolean, IsEnum, IsInt, IsOptional, Max, Min } from 'class-validator';
 
 export class CreateWorkflowfluxoFaseDto {
-    @IsInt({ message: '$property| fluxo_id precisa ser um número ou null' })
+    @IsInt({ message: 'fluxo_id precisa ser um número ou null' })
     @Type(() => Number)
     fluxo_id: number;
 
-    @IsInt({ message: '$property| fase_id precisa ser um número ou null' })
+    @IsInt({ message: 'fase_id precisa ser um número ou null' })
     @Type(() => Number)
     fase_id: number;
 
-    @IsInt({ message: '$property| precisa ser um número' })
+    @IsInt({ message: 'precisa ser um número' })
     @Max(1000)
     @Min(0)
     @IsOptional()
@@ -23,14 +23,14 @@ export class CreateWorkflowfluxoFaseDto {
      * @example "[1, 2, 3]"
      */
     @IsArray({
-        message: '$property| Situações deve ser um array.',
+        message: 'Situações deve ser um array.',
     })
-    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
+    @IsInt({ each: true, message: 'Cada item precisa ser um número inteiro' })
     @IsOptional()
     situacao?: number[];
 
     @IsOptional()
-    @IsBoolean({ message: '$property| precisa ser um boolean' })
+    @IsBoolean({ message: 'precisa ser um boolean' })
     marco?: boolean;
 
     @IsOptional()
@@ -41,7 +41,7 @@ export class CreateWorkflowfluxoFaseDto {
     @ApiProperty({ enum: WorkflowResponsabilidade, enumName: 'WorkflowResponsabilidade' })
     @IsEnum(WorkflowResponsabilidade, {
         message:
-            '$property| Precisa ser um dos seguintes valores: ' + Object.values(WorkflowResponsabilidade).join(', '),
+            'Precisa ser um dos seguintes valores: ' + Object.values(WorkflowResponsabilidade).join(', '),
     })
     responsabilidade: WorkflowResponsabilidade;
 }

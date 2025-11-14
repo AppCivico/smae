@@ -1,5 +1,6 @@
 from .sof_client import SofClient
-
+from typing import Optional
+import json
 
 class Client(SofClient):
 
@@ -108,15 +109,26 @@ class Client(SofClient):
 
         return self.get(endpoint, **params)
 
-    def fonte_recursos(self, ano:int)->dict:
+    def fonte_recursos(self, ano:int, cod_fonte:Optional[int]=None)->dict:
 
         endpoint = 'fonteRecursos'
         #pode filtrar por varios itens como categoria etc.
         params = {
             'anoExercicio' : ano,
             }
+        
+        if cod_fonte:
+            params['codFonteRecurso'] = cod_fonte
 
         return self.get(endpoint, **params)
+    
+    def fonte_recursos_cached(self, ano:int)->dict:
+
+        with open('fontes_cache.json') as f:
+            print('Loding cached fontes recursos data because of API changes.')
+            hardcoded_data = json.load(f)
+        return hardcoded_data
+
 
 
     def __call__(self, endpoint_name:str, ano:str,*_, **kwargs)->dict:

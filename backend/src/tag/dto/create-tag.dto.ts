@@ -6,7 +6,7 @@ export class CreateTagDto {
     /**
      * Descrição
      */
-    @IsString({ message: '$property| descrição: Precisa ser alfanumérico' })
+    @IsString({ message: 'descrição: Precisa ser alfanumérico' })
     @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Descrição" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     descricao: string;
 
@@ -15,13 +15,13 @@ export class CreateTagDto {
      */
     @IsOptional()
     @ValidateIf((object, value) => value !== null)
-    @IsString({ message: '$property| upload_token de um arquivo de ícone' })
+    @IsString({ message: 'upload_token de um arquivo de ícone' })
     upload_icone?: string | null;
 
     /**
      * ID do PDM
      */
-    @IsInt({ message: '$property| Necessário ID do PDM' })
+    @IsInt({ message: 'Necessário ID do PDM' })
     @IsOptional()
     @Type(() => Number)
     pdm_id: number;
@@ -30,7 +30,7 @@ export class CreateTagDto {
      * ID do ODS (opcional, enviar null para remover/não existir)
      */
     @IsInt({
-        message: '$property| ODS no PATCH pode não existir (fica o antigo), se enviado precisa ser nulo ou numérico',
+        message: 'ODS no PATCH pode não existir (fica o antigo), se enviado precisa ser nulo ou numérico',
     })
     @ValidateIf((object, value) => value !== null)
     @Type(() => Number)

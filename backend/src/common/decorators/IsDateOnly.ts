@@ -8,7 +8,7 @@ export function IsOnlyDate(validationOptions?: ValidationOptions) {
             propertyName: propertyName,
             constraints: [],
             options: {
-                message: '$property| Envie no formato YYYY-MM-DD',
+                message: 'Envie no formato YYYY-MM-DD',
                 ...validationOptions,
             },
             validator: {

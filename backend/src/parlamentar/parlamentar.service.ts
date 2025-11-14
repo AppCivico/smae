@@ -906,16 +906,16 @@ export class ParlamentarService {
                 removido_em: null,
             },
         });
-        if (!mandato) throw new HttpException('mandato_id| Não foi possível encontrar este mandato', 404);
+        if (!mandato) throw new HttpException('Não foi possível encontrar este mandato', 404);
 
         if (dto.nivel == DadosEleicaoNivel.Estado && dto.municipio_tipo != undefined)
-            throw new HttpException('municipio_tipo| Não deve ser enviado para eleição de nível estadual.', 400);
+            throw new HttpException('Não deve ser enviado para eleição de nível estadual.', 400);
 
         if (dto.nivel !== DadosEleicaoNivel.Estado && !dto.municipio_tipo)
-            throw new HttpException('municipio_tipo| Deve ser informado para nível.', 400);
+            throw new HttpException('Deve ser informado para nível.', 400);
 
         if (!dto.ranking) {
-            throw new HttpException('ranking| Ranking é obrigatório', 400);
+            throw new HttpException('Ranking é obrigatório', 400);
         }
 
         // Busca representatividade existente
@@ -965,8 +965,7 @@ export class ParlamentarService {
                     });
 
                     if (!existingComparecimento) {
-                        throw new HttpException(
-                            'numero_comparecimento| Não foi possível encontrar dados de comparecimento para esta eleição/região. Informe o número de comparecimento.',
+                        throw new HttpException('Não foi possível encontrar dados de comparecimento para esta eleição/região. Informe o número de comparecimento.',
                             400
                         );
                     }
@@ -975,8 +974,7 @@ export class ParlamentarService {
 
                 // Valida numero_votos <= comparecimento
                 if (dto.numero_votos > finalComparecimento) {
-                    throw new HttpException(
-                        'numero_votos| Número de votos não pode ser maior que o comparecimento',
+                    throw new HttpException('Número de votos não pode ser maior que o comparecimento',
                         400
                     );
                 }
@@ -1061,7 +1059,7 @@ export class ParlamentarService {
             (await this.getComparecimentoForRegiao(currentRep.mandato.eleicao_id, currentRep.regiao_id));
 
         if (dto.numero_votos && finalComparecimento && dto.numero_votos > finalComparecimento) {
-            throw new HttpException('numero_votos| Número de votos não pode ser maior que o comparecimento', 400);
+            throw new HttpException('Número de votos não pode ser maior que o comparecimento', 400);
         }
 
         return await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
@@ -1163,7 +1161,7 @@ export class ParlamentarService {
             } else if (regiao.nivel == 3) {
                 nivelDadoEleicao = DadosEleicaoNivel.Subprefeitura;
             } else {
-                throw new HttpException('regiao_id| Faltando tratamento para nível de região', 400);
+                throw new HttpException('Faltando tratamento para nível de região', 400);
             }
 
             await prismaTxn.eleicaoComparecimento.create({
@@ -1256,7 +1254,7 @@ export class ParlamentarService {
         //         },
         //     },
         // });
-        // if (!mandatoPrincipal) throw new HttpException('mandato_id| Mandato principal inválido', 400);
+        // if (!mandatoPrincipal) throw new HttpException('Mandato principal inválido', 400);
 
         // const parlamentarSuplente = await this.prisma.parlamentar.findFirst({
         //     where: {
@@ -1276,16 +1274,16 @@ export class ParlamentarService {
         // });
 
         // if (!parlamentarSuplente)
-        //     throw new HttpException('parlamentar_suplente_id| Não foi encontrado parlamentar suplente', 400);
+        //     throw new HttpException('Não foi encontrado parlamentar suplente', 400);
 
         // if (parlamentarSuplente && parlamentarSuplente.mandatos.length == 0)
-        //     throw new HttpException('parlamentar_suplente_id| Não foi encontrado mandato para este parlamentar', 400);
+        //     throw new HttpException('Não foi encontrado mandato para este parlamentar', 400);
 
         // if (
         //     mandatoPrincipal.suplentes.length > 0 &&
         //     mandatoPrincipal.suplentes.filter((e) => e.suplencia == dto.suplencia).length > 0
         // )
-        //     throw new HttpException('suplencia| Parlamentar já possui um outro suplente deste nivel', 400);
+        //     throw new HttpException('Parlamentar já possui um outro suplente deste nivel', 400);
 
         // const mandatoSuplente = parlamentarSuplente.mandatos[0];
 
@@ -1299,7 +1297,7 @@ export class ParlamentarService {
         //     );
 
         // if (!mandatoSuplente.suplencia && !dto.suplencia)
-        //     throw new HttpException('suplencia| Grau de suplente deve ser informado', 400);
+        //     throw new HttpException('Grau de suplente deve ser informado', 400);
 
         // await this.prisma.parlamentarMandato.updateMany({
         //     where: {

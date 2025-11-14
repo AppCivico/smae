@@ -22,8 +22,7 @@ export class WorkflowSituacaoService {
                     },
                 });
                 if (similarExists > 0)
-                    throw new HttpException(
-                        'situacao| Nome igual ou semelhante já existe em outro registro ativo',
+                    throw new HttpException('Nome igual ou semelhante já existe em outro registro ativo',
                         400
                     );
 
@@ -68,8 +67,7 @@ export class WorkflowSituacaoService {
                         },
                     });
                     if (similarExists > 0)
-                        throw new HttpException(
-                            'situacao| Nome igual ou semelhante já existe em outro registro ativo',
+                        throw new HttpException('Nome igual ou semelhante já existe em outro registro ativo',
                             400
                         );
                 }

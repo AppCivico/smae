@@ -12,7 +12,7 @@ export class UpdateCronogramaEtapaDto {
     /**
      * ordem
      */
-    @IsInt({ message: '$property| ordem precisa ser um número ou null' })
+    @IsInt({ message: 'ordem precisa ser um número ou null' })
     @Type(() => Number)
     @ValidateIf((object, value) => value !== null)
     @IsOptional()

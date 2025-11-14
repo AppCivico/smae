@@ -20,7 +20,7 @@ export class GrupoPaineisService {
         });
 
         if (similarExists > 0)
-            throw new HttpException('descricao| Nome igual ou semelhante já existe em outro registro ativo', 400);
+            throw new HttpException('Nome igual ou semelhante já existe em outro registro ativo', 400);
 
         const created = await this.prisma.grupoPainel.create({
             data: {
@@ -118,7 +118,7 @@ export class GrupoPaineisService {
         });
 
         if (similarExists > 0)
-            throw new HttpException('descricao| Nome igual ou semelhante já existe em outro registro ativo', 400);
+            throw new HttpException('Nome igual ou semelhante já existe em outro registro ativo', 400);
 
         await this.prisma.grupoPainel.update({
             where: { id: id },

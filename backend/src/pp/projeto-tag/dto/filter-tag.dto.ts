@@ -7,7 +7,7 @@ export class FilterProjetoTagDto {
      * @example ""
      */
     @IsOptional()
-    @IsInt({ message: '$property| id' })
+    @IsInt({ message: 'id' })
     @Type(() => Number)
     id?: number;
 }

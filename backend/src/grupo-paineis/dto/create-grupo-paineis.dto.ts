@@ -5,7 +5,7 @@ export class CreateGrupoPaineisDto {
     /**
      * nome
      */
-    @IsString({ message: '$property| Precisa ser alfanumérico' })
+    @IsString({ message: 'Precisa ser alfanumérico' })
     @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Nome' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     nome: string;
 

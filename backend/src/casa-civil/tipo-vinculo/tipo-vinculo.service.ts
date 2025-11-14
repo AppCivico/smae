@@ -31,7 +31,7 @@ export class TipoVinculoService {
             },
         });
         if (similarExists > 0)
-            throw new HttpException('nome| Nome igual ou semelhante já existe em outro registro ativo', 400);
+            throw new HttpException('Nome igual ou semelhante já existe em outro registro ativo', 400);
 
         const created = await this.prisma.tipoVinculo.upsert({
             where: { id: id || 0 },

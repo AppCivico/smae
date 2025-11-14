@@ -1,4 +1,13 @@
 <script setup>
+import {
+  computed,
+  onUnmounted,
+  ref,
+  toRef,
+  watch,
+} from 'vue';
+import { useRoute } from 'vue-router';
+
 import AnimatedNumber from '@/components/AnimatedNumber.vue';
 import SimpleOrcamentoCusteio from '@/components/orcamento/SimpleOrcamentoCusteio.vue';
 import SimpleOrcamentoPlanejado from '@/components/orcamento/SimpleOrcamentoPlanejado.vue';
@@ -6,13 +15,6 @@ import SimpleOrcamentoRealizado from '@/components/orcamento/SimpleOrcamentoReal
 import dinheiro from '@/helpers/dinheiro';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
-import {
-  computed,
-  ref,
-  toRef,
-  watch,
-} from 'vue';
-import { useRoute } from 'vue-router';
 
 defineOptions({ inheritAttrs: false });
 
@@ -120,6 +122,10 @@ function iniciar() {
 watch(() => props.anosDoOrcamento, () => {
   iniciar();
 }, { immediate: true });
+
+onUnmounted(() => {
+  OrcamentosStore.$reset();
+});
 </script>
 <template>
   <header class="flex spacebetween center mb2">

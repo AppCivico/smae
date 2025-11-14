@@ -1,10 +1,4 @@
-import {
-    BadRequestException,
-    HttpException,
-    Injectable,
-    Logger,
-    NotFoundException
-} from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Prisma, TipoProjeto } from '@prisma/client';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { Date2YMD } from '../../common/date2ymd';
@@ -18,9 +12,7 @@ import { PortfolioDto, PortfolioOneDto } from './entities/portfolio.entity';
 @Injectable()
 export class PortfolioService {
     private readonly logger = new Logger(PortfolioService.name);
-    constructor(
-        private readonly prisma: PrismaService
-    ) {}
+    constructor(private readonly prisma: PrismaService) {}
 
     async create(tipoProjeto: TipoProjeto, dto: CreatePortfolioDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const similarExists = await this.prisma.portfolio.count({
@@ -31,7 +23,7 @@ export class PortfolioService {
             },
         });
         if (similarExists > 0)
-            throw new HttpException('titulo| Título igual ou semelhante já existe em outro registro ativo', 400);
+            throw new HttpException('Título igual ou semelhante já existe em outro registro ativo', 400);
 
         if (user.hasSomeRoles(['Projeto.administrar_portfolios', 'ProjetoMDO.administrar_portfolios']) == false) {
             for (const orgao of dto.orgaos) {
@@ -273,7 +265,7 @@ export class PortfolioService {
                 },
             });
             if (similarExists > 0)
-                throw new HttpException('titulo| Título igual ou semelhante já existe em outro registro ativo', 400);
+                throw new HttpException('Título igual ou semelhante já existe em outro registro ativo', 400);
         }
 
         if (Array.isArray(dto.orgaos) && dto.orgaos.length > 0) {

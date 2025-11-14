@@ -4,15 +4,17 @@
       && $props.arquivos?.length"
     class="tablemain mb1 mt1"
   >
-    <col>
-    <col>
-    <col>
-    <col class="col--data">
-    <col class="col--botão-de-ação">
-    <col
-      v-if="$props.permitirExclusao"
-      class="col--botão-de-ação"
-    >
+    <colgroup>
+      <col>
+      <col>
+      <col>
+      <col class="col--data">
+      <col class="col--botão-de-ação">
+      <col
+        v-if="$props.permitirExclusao"
+        class="col--botão-de-ação"
+      >
+    </colgroup>
     <thead>
       <tr>
         <th>Documentos</th>
@@ -73,8 +75,9 @@
   </table>
 </template>
 <script setup lang="ts">
-import { dateToShortDate } from '@/helpers/dateToDate';
 import type { ArquivoAnaliseQualitativaDocumentoDto } from '@back/mf/metas/dto/mf-meta-analise-quali.dto';
+
+import { dateToShortDate } from '@/helpers/dateToDate';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 

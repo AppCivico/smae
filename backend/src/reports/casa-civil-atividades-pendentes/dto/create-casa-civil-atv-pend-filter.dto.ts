@@ -8,7 +8,7 @@ import { TransferenciaTipoEsfera } from '@prisma/client';
 
 export class CreateCasaCivilAtividadesPendentesFilterDto {
     @IsOptional()
-    @IsArray({ message: '$property| tipo_id: precisa ser uma array.' })
+    @IsArray({ message: 'tipo_id: precisa ser uma array.' })
     @Expose()
     tipo_id?: number[];
 
@@ -29,11 +29,11 @@ export class CreateCasaCivilAtividadesPendentesFilterDto {
     @Expose()
     @IsOptional()
     @ApiProperty({ enum: TransferenciaTipoEsfera, enumName: 'TransferenciaTipoEsfera' })
-    @IsEnum(TransferenciaTipoEsfera, { message: '$property| esfera: valor inválido.' })
+    @IsEnum(TransferenciaTipoEsfera, { message: 'esfera: valor inválido.' })
     esfera?: TransferenciaTipoEsfera;
 
     @IsOptional()
-    @IsArray({ message: '$property| orgao_id: precisa ser uma array.' })
+    @IsArray({ message: 'orgao_id: precisa ser uma array.' })
     @Expose()
     orgao_id?: number[];
 }

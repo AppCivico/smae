@@ -65,7 +65,7 @@ export class CreateVariavelBaseDto {
      * ID da região (opcional)
      */
     @IsOptional()
-    @IsInt({ message: '$property| região é opcional via (null) ou precisa ser um numérico' })
+    @IsInt({ message: 'região é opcional via (null) ou precisa ser um numérico' })
     @ValidateIf((object, value) => value !== null)
     @Transform(({ value }: any) => (String(value) === '0' || value === null ? null : +value))
     @Type(() => Number)
@@ -84,7 +84,7 @@ export class CreateVariavelBaseDto {
         {},
         {
             message:
-                '$property| Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String',
+                'Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String',
         }
     )
     @Type(() => String)
@@ -92,9 +92,9 @@ export class CreateVariavelBaseDto {
     valor_base?: number;
 
     @IsOptional()
-    @IsInt({ message: '$property| $property inválido' })
-    @Min(0, { message: '$property| casas_decimais tem valor mínimo de zero' })
-    @Max(MAX_CASAS_DECIMAIS, { message: `$property| casas_decimais tem valor máximo de ${MAX_CASAS_DECIMAIS}` })
+    @IsInt({ message: '$property inválido' })
+    @Min(0, { message: 'casas_decimais tem valor mínimo de zero' })
+    @Max(MAX_CASAS_DECIMAIS, { message: `casas_decimais tem valor máximo de ${MAX_CASAS_DECIMAIS}` })
     @Transform((a: TransformFnParams) => (a.value === '' ? undefined : +a.value))
     casas_decimais: number;
 
@@ -104,7 +104,7 @@ export class CreateVariavelBaseDto {
      */
     @ApiProperty({ enum: Periodicidade, enumName: 'Periodicidade' })
     @IsEnum(Periodicidade, {
-        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(Periodicidade).join(', '),
+        message: 'Precisa ser um dos seguintes valores: ' + Object.values(Periodicidade).join(', '),
     })
     periodicidade: Periodicidade;
 
@@ -115,24 +115,24 @@ export class CreateVariavelBaseDto {
     @IsOptional()
     @ApiProperty({ enum: Polaridade, enumName: 'Polaridade' })
     @IsEnum(Polaridade, {
-        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(Polaridade).join(', '),
+        message: 'Precisa ser um dos seguintes valores: ' + Object.values(Polaridade).join(', '),
     })
     polaridade: Polaridade;
 
     @IsOptional()
-    @IsInt({ message: '$property| unidade de medida precisa ser numérico' })
+    @IsInt({ message: 'unidade de medida precisa ser numérico' })
     @Type(() => Number)
     unidade_medida_id?: number;
 
-    @IsBoolean({ message: '$property| Precisa ser um boolean' })
+    @IsBoolean({ message: 'Precisa ser um boolean' })
     acumulativa: boolean;
 
     @IsOptional()
-    @IsBoolean({ message: '$property| Precisa ser um boolean' })
+    @IsBoolean({ message: 'Precisa ser um boolean' })
     mostrar_monitoramento: boolean;
 
     @IsOptional()
-    @IsInt({ message: '$property| ano_base precisa ser numérico' })
+    @IsInt({ message: 'ano_base precisa ser numérico' })
     @ValidateIf((object, value) => value !== null)
     @Type(() => Number)
     ano_base?: number | null;
@@ -156,7 +156,7 @@ export class CreateVariavelBaseDto {
     fim_medicao: Date | null;
 
     @IsOptional()
-    @IsInt({ message: '$property| atraso_meses precisa ser numérico' })
+    @IsInt({ message: 'atraso_meses precisa ser numérico' })
     @Type(() => Number)
     @Min(0)
     atraso_meses?: number;
@@ -177,9 +177,9 @@ export class CreateVariavelBaseDto {
 
     @IsOptional()
     @ValidateIf((object, value) => value !== null)
-    @IsArray({ message: '$property| assuntos(s): precisa ser uma array.' })
-    @ArrayMaxSize(1000, { message: '$property| assuntos(s): precisa ter no máximo 1000 items' })
-    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
+    @IsArray({ message: 'assuntos(s): precisa ser uma array.' })
+    @ArrayMaxSize(1000, { message: 'assuntos(s): precisa ter no máximo 1000 items' })
+    @IsInt({ each: true, message: 'Cada item precisa ser um número inteiro' })
     assuntos?: number[];
 
     @IsOptional()
@@ -253,7 +253,7 @@ export class CreateVariavelPDMDto extends CreateVariavelBaseDto {
     /**
      * ID do indicador (é required para criar já o relacionamento)
      */
-    @IsInt({ message: '$property| indicador precisa existir' })
+    @IsInt({ message: 'indicador precisa existir' })
     @Type(() => Number)
     indicador_id: number; // manter undefined pq precisamos apagar antes do insert
 
@@ -261,9 +261,9 @@ export class CreateVariavelPDMDto extends CreateVariavelBaseDto {
      * lista dos responsáveis pelo preenchimento? pelo menos uma pessoa
      * @example "[4, 5, 6]"
      */
-    @IsArray({ message: '$property| precisa ser um array' })
-    @ArrayMinSize(1, { message: '$property| precisa ter um item' })
-    @ArrayMaxSize(100, { message: '$property| precisa ter no máximo 100 items' })
+    @IsArray({ message: 'precisa ser um array' })
+    @ArrayMinSize(1, { message: 'precisa ter um item' })
+    @ArrayMaxSize(100, { message: 'precisa ter no máximo 100 items' })
     responsaveis: number[]; // manter undefined pq precisamos apagar antes do insert
 }
 

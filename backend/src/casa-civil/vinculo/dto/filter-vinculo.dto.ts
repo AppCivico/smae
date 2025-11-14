@@ -43,7 +43,7 @@ export class FilterVinculoDto {
     @IsOptional()
     @ApiProperty({ enum: CampoVinculo, enumName: 'CampoVinculo' })
     @IsEnum(CampoVinculo, {
-        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(CampoVinculo).join(', '),
+        message: 'Precisa ser um dos seguintes valores: ' + Object.values(CampoVinculo).join(', '),
     })
     campo_vinculo?: CampoVinculo;
 }

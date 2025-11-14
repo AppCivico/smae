@@ -11,7 +11,7 @@ export class CreateMetaOrcamentoDto extends ParteDotacaoDto {
      * @example "42"
      */
     @IsOptional()
-    @IsInt({ message: '$property| meta_id precisa ser positivo' })
+    @IsInt({ message: 'meta_id precisa ser positivo' })
     @Type(() => Number)
     meta_id?: number;
 
@@ -20,7 +20,7 @@ export class CreateMetaOrcamentoDto extends ParteDotacaoDto {
      * @example "42"
      */
     @IsOptional()
-    @IsInt({ message: '$property| iniciativa_id precisa ser positivo' })
+    @IsInt({ message: 'iniciativa_id precisa ser positivo' })
     @Type(() => Number)
     iniciativa_id?: number;
 
@@ -29,7 +29,7 @@ export class CreateMetaOrcamentoDto extends ParteDotacaoDto {
      * @example "42"
      */
     @IsOptional()
-    @IsInt({ message: '$property| atividade_id precisa ser positivo' })
+    @IsInt({ message: 'atividade_id precisa ser positivo' })
     @Type(() => Number)
     atividade_id?: number;
 
@@ -37,7 +37,7 @@ export class CreateMetaOrcamentoDto extends ParteDotacaoDto {
      * ano_referencia
      * @example "2022"
      */
-    @IsInt({ message: '$property| ano_referencia precisa ser positivo' })
+    @IsInt({ message: 'ano_referencia precisa ser positivo' })
     @Type(() => Number)
     ano_referencia: number;
 
@@ -47,9 +47,9 @@ export class CreateMetaOrcamentoDto extends ParteDotacaoDto {
      */
     @IsNumber(
         { maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false },
-        { message: '$property| Custo até duas casas decimais' }
+        { message: 'Custo até duas casas decimais' }
     )
-    @Min(0, { message: '$property| Custo precisa ser positivo' })
+    @Min(0, { message: 'Custo precisa ser positivo' })
     @Type(() => Number)
     custo_previsto: number;
 }
@@ -62,7 +62,7 @@ export class FilterMetaOrcamentoDto {
      * Filtrar por meta_id
      * @example "42"
      */
-    @IsInt({ message: '$property| meta_id precisa ser positivo' })
+    @IsInt({ message: 'meta_id precisa ser positivo' })
     @Type(() => Number)
     meta_id: number;
 
@@ -70,7 +70,7 @@ export class FilterMetaOrcamentoDto {
      * Filtrar por ano_referencia?
      * @example "2022"
      */
-    @IsInt({ message: '$property| ano_referencia precisa ser positivo' })
+    @IsInt({ message: 'ano_referencia precisa ser positivo' })
     @Type(() => Number)
     ano_referencia: number;
 }
@@ -82,7 +82,7 @@ export class OrcamentoPrevistoEhZeroStatusDto {
 }
 
 export class UpdateOrcamentoPrevistoZeradoDto {
-    @IsInt({ message: '$property| meta_id precisa ser positivo' })
+    @IsInt({ message: 'meta_id precisa ser positivo' })
     @Type(() => Number)
     meta_id: number;
 
@@ -90,7 +90,7 @@ export class UpdateOrcamentoPrevistoZeradoDto {
      * ano_referencia
      * @example "2022"
      */
-    @IsInt({ message: '$property| ano_referencia precisa ser positivo' })
+    @IsInt({ message: 'ano_referencia precisa ser positivo' })
     @Type(() => Number)
     ano_referencia: number;
 
@@ -98,7 +98,7 @@ export class UpdateOrcamentoPrevistoZeradoDto {
      * Se o valor o valor Previsto para o ano deve ser zero
      * @example true
      */
-    @IsBoolean({ message: '$property| Precisa ser um booleano' })
+    @IsBoolean({ message: 'Precisa ser um booleano' })
     @Type(() => Boolean)
     considerar_zero: boolean;
 }

@@ -1,0 +1,3 @@
+
+class InvalidRequest(ValueError):
+    pass

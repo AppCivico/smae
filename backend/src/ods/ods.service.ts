@@ -10,7 +10,7 @@ export class OdsService {
 
     async create(createOdsDto: CreateOdsDto, user: PessoaFromJwt) {
         const equalExists = await this.prisma.ods.count({ where: { numero: createOdsDto.numero, removido_em: null } });
-        if (equalExists > 0) throw new HttpException('numero| Número já existe em outro registro ativo', 400);
+        if (equalExists > 0) throw new HttpException('Número já existe em outro registro ativo', 400);
 
         const created = await this.prisma.ods.create({
             data: {
@@ -45,7 +45,7 @@ export class OdsService {
                     NOT: { id: id },
                 },
             });
-            if (equalExists > 0) throw new HttpException('numero| Número já existe em outro registro ativo', 400);
+            if (equalExists > 0) throw new HttpException('Número já existe em outro registro ativo', 400);
         }
 
         await this.prisma.ods.update({

@@ -19,11 +19,9 @@ export default {
       meta: {
         título: 'Acompanhamento da obra',
         títuloParaMenu: 'Acompanhamento da obra',
-
         rotasParaMigalhasDePão: [
           'obrasListar',
-          // 'obrasResumo',
-          'obrasEditar', // PRA-FAZER: trocar pela de resumo, quando estiver pronta
+          'obrasResumo',
         ],
       },
       props: true,
@@ -55,8 +53,7 @@ export default {
       meta: {
         rotasParaMigalhasDePão: [
           'obrasListar',
-          // 'obrasResumo',
-          'obrasEditar', // PRA-FAZER: trocar pela de resumo, quando estiver pronta
+          'obrasResumo',
           'acompanhamentosDeObrasListar',
         ],
       },

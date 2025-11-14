@@ -29,7 +29,7 @@ export class WorkflowfluxoFaseService {
                         workflow_id: true,
                     },
                 });
-                if (!fluxo) throw new HttpException('fluxo_id| Fluxo não encontrado', 400);
+                if (!fluxo) throw new HttpException('Fluxo não encontrado', 400);
 
                 const emUso = await prismaTxn.transferencia.count({
                     where: {
@@ -138,7 +138,7 @@ export class WorkflowfluxoFaseService {
                             removido_em: null,
                         },
                     });
-                    if (saidaJaExiste) throw new HttpException('fase_id| Fase já em uso para este fluxo.', 400);
+                    if (saidaJaExiste) throw new HttpException('Fase já em uso para este fluxo.', 400);
                 }
 
                 // Tratando ordem para reordenar as outras fases se necessário

@@ -6,3 +6,7 @@ export class IdTituloOrNullDto {
     id: number;
     titulo: string | null;
 }
+export class IdDescricaoDto {
+    id: number;
+    descricao: string;
+}

@@ -9,7 +9,7 @@ export class FilterTagDto {
      */
     @IsOptional()
     @IsArray()
-    @IsInt({ message: '$property| id' , each: true })
+    @IsInt({ message: 'id' , each: true })
     @Transform(NumberArrayTransformOrUndef)
     id?: number[];
 
@@ -18,7 +18,7 @@ export class FilterTagDto {
      * @example "1"
      */
     @IsOptional()
-    @IsInt({ message: '$property| pdm_id' })
+    @IsInt({ message: 'pdm_id' })
     @Type(() => Number)
     pdm_id?: number;
 }

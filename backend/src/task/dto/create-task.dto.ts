@@ -10,7 +10,7 @@ import { CreateRunUpdateDto } from '../run_update/dto/create-run-update.dto';
 export class CreateTaskDto {
     @ApiProperty({ enum: task_type, enumName: 'task_type' })
     @IsEnum(task_type, {
-        message: '$property| must be one of: ' + Object.values(task_type).join(', '),
+        message: 'must be one of: ' + Object.values(task_type).join(', '),
     })
     type: task_type;
 

@@ -61,6 +61,16 @@ type SuccessEntidadesResponse = {
     fonte_recursos: Entidade[];
 };
 
+type SuccessDetalhamentoFonteResponse = {
+    metadados: MetaDados;
+    data: Entidade[];
+};
+
+type DetalhamentoFonteReturn = {
+    metadados: MetaDados;
+    dados: Entidade[];
+};
+
 type SuccessOrcadoResponse = {
     data: RetornoOrcado[];
     metadados: MetaDados;
@@ -70,7 +80,12 @@ type ErrorHttpResponse = {
     detail: string;
 };
 
-type ApiResponse = SuccessEmpenhosResponse | ErrorHttpResponse | SuccessEntidadesResponse | SuccessOrcadoResponse;
+type ApiResponse =
+    | SuccessEmpenhosResponse
+    | ErrorHttpResponse
+    | SuccessEntidadesResponse
+    | SuccessOrcadoResponse
+    | SuccessDetalhamentoFonteResponse;
 
 export type InputOrcadoProjeto = {
     ano: number;
@@ -369,6 +384,58 @@ export class SofApiService {
                 } else if (error.response.statusCode == 422) {
                     throw new HttpException(`Confira os valores informados: ${body}`, 400);
                 }
+            }
+
+            throw new SofError(`Serviço SOF: falha ao acessar serviço: ${error}\n\nResponse.Body: ${body}`);
+        }
+    }
+
+    async doDetailhamentoFonteRequest(ano: number, numeroFonte: number): Promise<DetalhamentoFonteReturn> {
+        const endpoint =
+            'v1/itens_dotacao/detalhamentos_fonte?ano=' +
+            encodeURIComponent(ano) +
+            '&fonte_number=' +
+            encodeURIComponent(numeroFonte);
+        this.logger.debug(`chamando GET ${endpoint}`);
+        try {
+            const response: ApiResponse = await this.got
+                .get<ApiResponse>(endpoint, {
+                    timeout: 120 * 1000,
+                })
+                .json();
+            this.logger.debug(`resposta: ${JSON.stringify(response)}`);
+            if ('metadados' in response && response.metadados.sucess) {
+                const res = (response as SuccessDetalhamentoFonteResponse).data.map((item) => {
+                    return {
+                        codigo: String(item.codigo),
+                        descricao: String(item.descricao),
+                    };
+                });
+
+                return {
+                    metadados: response.metadados,
+                    dados: res,
+                };
+            }
+
+            throw new Error(`Serviço SOF retornou dados desconhecidos: ${JSON.stringify(response)}`);
+        } catch (error: any) {
+            this.logger.debug(`${endpoint} falhou: ${error}`);
+            let body = '';
+            if (error instanceof got.HTTPError) {
+                body = String(error.response.body);
+                this.logger.debug(`${endpoint}.res.body: ${body}`);
+            }
+
+            // Caso seja um erro 404, significa que não há dados, então retornamos um array vazio
+            if (error instanceof got.HTTPError && error.response.statusCode === 404) {
+                return {
+                    metadados: {
+                        sucess: true,
+                        message: 'Nenhum dado encontrado para o detalhamento da fonte.',
+                    },
+                    dados: [],
+                };
             }
 
             throw new SofError(`Serviço SOF: falha ao acessar serviço: ${error}\n\nResponse.Body: ${body}`);

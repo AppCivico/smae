@@ -1,4 +1,9 @@
 <script setup lang="ts">
+import type { MinhaContaDto } from '@back/minha-conta/models/minha-conta.dto.ts';
+import { storeToRefs } from 'pinia';
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+
 import type { ModuloSistema, ModulosDoSistema, RotaInicial } from '@/consts/modulosDoSistema';
 import módulos from '@/consts/modulosDoSistema';
 import requestS from '@/helpers/requestS';
@@ -13,10 +18,6 @@ import { useProcessosStore } from '@/stores/processos.store';
 import { useRegionsStore } from '@/stores/regions.store';
 import { useTarefasStore } from '@/stores/tarefas.store';
 import { useUsersStore } from '@/stores/users.store';
-import type { MinhaContaDto } from '@back/minha-conta/models/minha-conta.dto.ts';
-import { storeToRefs } from 'pinia';
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -137,6 +138,20 @@ iniciar();
       <p class="w700 t24 tamarelo">
         Selecione o módulo a ser visualizado:
       </p>
+
+      <div class="mt4 logos flex g2 center bgb p05">
+        <img
+          class="logos__sp-imagem mr1"
+          src="@/assets/sp.png"
+        >
+        <div class="flex center">
+          <span class="logos__powered-by">powered by</span>
+          <img
+            class="logos__fgv-imagem"
+            src="@/assets/fgv-projetos.jpg"
+          >
+        </div>
+      </div>
     </div>
 
     <ul
@@ -280,5 +295,19 @@ iniciar();
   max-width: max-content;
   margin-right: auto;
   margin-left: auto;
+}
+
+.logos__sp-imagem {
+  width: 8rem;
+  height: 100%;
+}
+
+.logos__powered-by {
+  font-size: 0.857rem;
+}
+
+.logos__fgv-imagem {
+  width: 18rem;
+  height: 100%;
 }
 </style>

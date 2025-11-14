@@ -7,5 +7,6 @@ import { OrgaoService } from './orgao.service';
     imports: [PrismaModule],
     controllers: [OrgaoController],
     providers: [OrgaoService],
+    exports: [OrgaoService],
 })
 export class OrgaoModule {}

@@ -31,9 +31,9 @@ export class CreateOrcamentoRealizadoItemDto {
     @IsOptional()
     @IsNumber(
         { maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false },
-        { message: '$property| Valor Empenho com até duas casas decimais' }
+        { message: 'Valor Empenho com até duas casas decimais' }
     )
-    @Min(0, { message: '$property| Valor Empenhado precisa ser positivo ou zero' })
+    @Min(0, { message: 'Valor Empenhado precisa ser positivo ou zero' })
     @Type(() => Number)
     @ValidateIf((object, value) => value !== null && value !== '')
     valor_empenho: number | null;
@@ -45,10 +45,10 @@ export class CreateOrcamentoRealizadoItemDto {
     @IsOptional()
     @IsNumber(
         { maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false },
-        { message: '$property| Percentual Empenhado com até duas casas decimais' }
+        { message: 'Percentual Empenhado com até duas casas decimais' }
     )
-    @Min(0, { message: '$property| Percentual Empenhado precisa ser positivo ou zero' })
-    @Max(100, { message: '$property| Percentual Empenhado precisa menor que 100' })
+    @Min(0, { message: 'Percentual Empenhado precisa ser positivo ou zero' })
+    @Max(100, { message: 'Percentual Empenhado precisa menor que 100' })
     @Type(() => Number)
     @ValidateIf((object, value) => value !== null && value !== '')
     percentual_empenho: number | null;
@@ -60,9 +60,9 @@ export class CreateOrcamentoRealizadoItemDto {
     @IsOptional()
     @IsNumber(
         { maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false },
-        { message: '$property| Valor Liquidado com até duas casas decimais' }
+        { message: 'Valor Liquidado com até duas casas decimais' }
     )
-    @Min(0, { message: '$property| Valor Liquidado precisa ser positivo ou zero' })
+    @Min(0, { message: 'Valor Liquidado precisa ser positivo ou zero' })
     @Type(() => Number)
     @ValidateIf((object, value) => value !== null && value !== '')
     valor_liquidado: number | null;
@@ -74,10 +74,10 @@ export class CreateOrcamentoRealizadoItemDto {
     @IsOptional()
     @IsNumber(
         { maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false },
-        { message: '$property| Percentual Liquidado com até duas casas decimais' }
+        { message: 'Percentual Liquidado com até duas casas decimais' }
     )
-    @Min(0, { message: '$property| Percentual Liquidado precisa ser positivo ou zero' })
-    @Max(100, { message: '$property| Percentual Liquidado precisa menor que 100' })
+    @Min(0, { message: 'Percentual Liquidado precisa ser positivo ou zero' })
+    @Max(100, { message: 'Percentual Liquidado precisa menor que 100' })
     @Type(() => Number)
     @ValidateIf((object, value) => value !== null && value !== '')
     percentual_liquidado: number | null;
@@ -86,9 +86,9 @@ export class CreateOrcamentoRealizadoItemDto {
      * Valor Liquidado para meta - zero ou mais
      * @example "42343.34"
      */
-    @IsInt({ message: '$property| Mês informado precisa ser entre 1 e 12' })
-    @Min(1, { message: '$property| Mês informado precisa ser entre 1 e 12' })
-    @Max(12, { message: '$property| Mês informado precisa ser entre 1 e 12' })
+    @IsInt({ message: 'Mês informado precisa ser entre 1 e 12' })
+    @Min(1, { message: 'Mês informado precisa ser entre 1 e 12' })
+    @Max(12, { message: 'Mês informado precisa ser entre 1 e 12' })
     mes: number;
 }
 
@@ -98,7 +98,7 @@ export class CreateOrcamentoRealizadoDto {
      * @example "42"
      */
     @IsOptional()
-    @IsInt({ message: '$property| meta_id precisa ser positivo' })
+    @IsInt({ message: 'meta_id precisa ser positivo' })
     @Type(() => Number)
     meta_id?: number;
 
@@ -107,7 +107,7 @@ export class CreateOrcamentoRealizadoDto {
      * @example "42"
      */
     @IsOptional()
-    @IsInt({ message: '$property| iniciativa_id precisa ser positivo' })
+    @IsInt({ message: 'iniciativa_id precisa ser positivo' })
     @Type(() => Number)
     iniciativa_id?: number;
 
@@ -116,7 +116,7 @@ export class CreateOrcamentoRealizadoDto {
      * @example "42"
      */
     @IsOptional()
-    @IsInt({ message: '$property| atividade_id precisa ser positivo' })
+    @IsInt({ message: 'atividade_id precisa ser positivo' })
     @Type(() => Number)
     atividade_id?: number;
 
@@ -125,7 +125,7 @@ export class CreateOrcamentoRealizadoDto {
      * @example "2022"
      */
     @IsOptional()
-    @IsInt({ message: '$property| ano_referencia precisa ser positivo' })
+    @IsInt({ message: 'ano_referencia precisa ser positivo' })
     @Type(() => Number)
     ano_referencia: number;
 
@@ -204,7 +204,7 @@ export class FilterOrcamentoRealizadoDto {
      * @example ""
      */
     @IsOptional()
-    @IsInt({ message: '$property| remove um item de orçamento da lista' })
+    @IsInt({ message: 'remove um item de orçamento da lista' })
     @Type(() => Number)
     not_id?: number;
 
@@ -212,7 +212,7 @@ export class FilterOrcamentoRealizadoDto {
      * meta_id: eg: 205 - necessário para buscar o status do 'concluido' no retorno
      * @example ""
      */
-    @IsInt({ message: '$property| meta_id precisa ser positivo' })
+    @IsInt({ message: 'meta_id precisa ser positivo' })
     @Type(() => Number)
     meta_id: number;
 
@@ -249,18 +249,18 @@ export class FilterOrcamentoRealizadoDto {
      * Sempre é necessário passar o ano_referencia eg: 2022
      * @example ""
      */
-    @IsInt({ message: '$property| ano_referencia precisa ser positivo' })
+    @IsInt({ message: 'ano_referencia precisa ser positivo' })
     @Type(() => Number)
     ano_referencia: number;
 
     @IsOptional()
-    @IsInt({ message: '$property| iniciativa_id precisa ser positivo' })
+    @IsInt({ message: 'iniciativa_id precisa ser positivo' })
     @Type(() => Number)
     @ValidateIf((object, value) => value !== null)
     iniciativa_id?: number | null;
 
     @IsOptional()
-    @IsInt({ message: '$property| atividade_id precisa ser positivo' })
+    @IsInt({ message: 'atividade_id precisa ser positivo' })
     @Type(() => Number)
     @ValidateIf((object, value) => value !== null)
     atividade_id?: number | null;
@@ -272,7 +272,7 @@ export class FilterOrcamentoRealizadoCompartilhadoDto extends PickType(FilterOrc
     'ano_referencia',
     'not_id',
 ]) {
-    @IsInt({ message: '$property| pdm_id precisa ser positivo' })
+    @IsInt({ message: 'pdm_id precisa ser positivo' })
     @Transform(PositiveNumberTransform)
     pdm_id: number;
 
@@ -315,22 +315,22 @@ export class PatchOrcamentoRealizadoConcluidoDto {
      * meta_id
      * @example "42"
      */
-    @IsInt({ message: '$property| meta_id precisa ser positivo' })
+    @IsInt({ message: 'meta_id precisa ser positivo' })
     meta_id: number;
 
     /**
      * Sempre é necessário passar o ano_referencia eg: 2022
      * @example ""
      */
-    @IsInt({ message: '$property| ano_referencia precisa ser positivo' })
+    @IsInt({ message: 'ano_referencia precisa ser positivo' })
     ano_referencia: number;
 
     @IsOptional()
-    @IsBoolean({ message: '$property| concluído precisa ser um boolean' })
+    @IsBoolean({ message: 'concluído precisa ser um boolean' })
     concluido: boolean;
 }
 
 export class PatchOrcamentoRealizadoConcluidoComOrgaoDto extends PatchOrcamentoRealizadoConcluidoDto {
-    @IsInt({ message: '$property| orgao_id precisa ser positivo' })
+    @IsInt({ message: 'orgao_id precisa ser positivo' })
     orgao_id: number;
 }

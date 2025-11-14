@@ -21,7 +21,7 @@ export class FilterOrcamentoPrevistoDto {
      * Filtrar por ano_referencia?
      * @example "2022"
      */
-    @IsInt({ message: '$property| ano_referencia precisa ser positivo' })
+    @IsInt({ message: 'ano_referencia precisa ser positivo' })
     @Type(() => Number)
     ano_referencia: number;
 }

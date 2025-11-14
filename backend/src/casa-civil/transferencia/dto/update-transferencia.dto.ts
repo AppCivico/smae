@@ -25,7 +25,7 @@ export class CompletarTransferenciaDto {
         {},
         {
             message:
-                '$property| Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String',
+                'Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String',
         }
     )
     @ValidateIf((object, value) => value !== null)
@@ -35,7 +35,7 @@ export class CompletarTransferenciaDto {
         {},
         {
             message:
-                '$property| Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String',
+                'Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String',
         }
     )
     @ValidateIf((object, value) => value !== null)
@@ -45,7 +45,7 @@ export class CompletarTransferenciaDto {
         {},
         {
             message:
-                '$property| Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String',
+                'Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String',
         }
     )
     @ValidateIf((object, value) => value !== null)
@@ -55,7 +55,7 @@ export class CompletarTransferenciaDto {
         {},
         {
             message:
-                '$property| Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String',
+                'Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String',
         }
     )
     @ValidateIf((object, value) => value !== null)
@@ -64,7 +64,7 @@ export class CompletarTransferenciaDto {
     @IsOptional()
     @IsNumber(
         { maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false },
-        { message: '$property| até duas casas decimais' }
+        { message: 'até duas casas decimais' }
     )
     @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     @ValidateIf((object, value) => value !== null)
@@ -74,7 +74,7 @@ export class CompletarTransferenciaDto {
         {},
         {
             message:
-                '$property| Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String',
+                'Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String',
         }
     )
     @ValidateIf((object, value) => value !== null)
@@ -83,7 +83,7 @@ export class CompletarTransferenciaDto {
     @IsOptional()
     @IsNumber(
         { maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false },
-        { message: '$property| até duas casas decimais' }
+        { message: 'até duas casas decimais' }
     )
     @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     @ValidateIf((object, value) => value !== null)
@@ -184,7 +184,7 @@ export class UpdateTransferenciaParlamentarDto extends PartialType(
         {},
         {
             message:
-                '$property| Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String',
+                'Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String',
         }
     )
     @ValidateIf((object, value) => value !== null)
@@ -195,7 +195,7 @@ export class UpdateTransferenciaAnexoDto {
     /**
      * Token para encontrar documento
      */
-    @IsString({ message: '$property| upload_token do documento' })
+    @IsString({ message: 'upload_token do documento' })
     upload_token: string;
 
     @IsString()

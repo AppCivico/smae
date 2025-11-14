@@ -13,7 +13,7 @@ export function ReportValidatorOf(property: string, validationOptions?: Validati
             constraints: [property],
             async: true,
             options: {
-                message: `$property| Envie os parâmetros de acordo com a ${property}`,
+                message: `Envie os parâmetros de acordo com a ${property}`,
                 ...validationOptions,
             },
             validator: {

@@ -40,7 +40,7 @@ export class ExecutaTransferenciaResponsabilidades {
     @ApiProperty({ enum: TransferenciaRespOperacao, enumName: 'TransferenciaRespOperacao' })
     @IsEnum(TransferenciaRespOperacao, {
         message:
-            '$property| Precisa ser um dos seguintes valores: ' + Object.values(TransferenciaRespOperacao).join(', '),
+            'Precisa ser um dos seguintes valores: ' + Object.values(TransferenciaRespOperacao).join(', '),
     })
     operacao: TransferenciaRespOperacao;
 

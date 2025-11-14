@@ -10,7 +10,7 @@ export class FilterIndicadorDto {
      * @example ""
      */
     @IsOptional()
-    @IsInt({ message: '$property| meta_id' })
+    @IsInt({ message: 'meta_id' })
     @Type(() => Number)
     meta_id?: number;
 
@@ -19,7 +19,7 @@ export class FilterIndicadorDto {
      * @example ""
      */
     @IsOptional()
-    @IsInt({ message: '$property| iniciativa_id' })
+    @IsInt({ message: 'iniciativa_id' })
     @Type(() => Number)
     iniciativa_id?: number;
 
@@ -28,7 +28,7 @@ export class FilterIndicadorDto {
      * @example ""
      */
     @IsOptional()
-    @IsInt({ message: '$property| atividade_id' })
+    @IsInt({ message: 'atividade_id' })
     @Type(() => Number)
     atividade_id?: number;
 
@@ -37,7 +37,7 @@ export class FilterIndicadorDto {
      * @example ""
      */
     @IsOptional()
-    @IsInt({ message: '$property| id' })
+    @IsInt({ message: 'id' })
     @Type(() => Number)
     id?: number;
 }
@@ -66,7 +66,7 @@ export class FilterSerieVariavelDto {
      * @example ""
      */
     @IsOptional()
-    @IsInt({ message: '$property| meta_id' })
+    @IsInt({ message: 'meta_id' })
     @Type(() => Number)
     meta_id?: number;
 
@@ -75,7 +75,7 @@ export class FilterSerieVariavelDto {
      * @example ""
      */
     @IsOptional()
-    @IsInt({ message: '$property| atividade_id' })
+    @IsInt({ message: 'atividade_id' })
     @Type(() => Number)
     atividade_id?: number;
 
@@ -84,7 +84,7 @@ export class FilterSerieVariavelDto {
      * @example ""
      */
     @IsOptional()
-    @IsInt({ message: '$property| iniciativa' })
+    @IsInt({ message: 'iniciativa' })
     @Type(() => Number)
     iniciativa_id?: number;
 }

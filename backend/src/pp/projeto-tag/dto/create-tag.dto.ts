@@ -5,7 +5,7 @@ export class CreateProjetoTagDto {
     /**
      * nome
      */
-    @IsString({ message: '$property| Descrição: Precisa ser alfanumérico' })
+    @IsString({ message: 'Descrição: Precisa ser alfanumérico' })
     @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Descrição" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     descricao: string;
 }

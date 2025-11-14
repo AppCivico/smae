@@ -21,7 +21,7 @@ export class PlanoAcaoService {
             },
             select: { id: true },
         });
-        if (!projeto) throw new HttpException('Projeto| Inválido', 400);
+        if (!projeto) throw new HttpException('Inválido', 400);
 
         const projeto_risco = await this.prisma.projetoRisco.findFirst({
             where: {
@@ -31,7 +31,7 @@ export class PlanoAcaoService {
             },
             select: { id: true },
         });
-        if (!projeto_risco) throw new HttpException('Projeto_risco| Inválido', 400);
+        if (!projeto_risco) throw new HttpException('Inválido', 400);
 
         const plano_acao = await this.prisma.planoAcao.create({
             data: {
@@ -122,7 +122,7 @@ export class PlanoAcaoService {
                 },
             },
         });
-        if (!plano_acao) throw new HttpException('plano_acao| inválido', 400);
+        if (!plano_acao) throw new HttpException('inválido', 400);
 
         return {
             ...plano_acao,

@@ -14,7 +14,7 @@ export class CreateRelTransferenciasDto {
     @ApiProperty({ enum: TransferenciaTipoEsfera, enumName: 'TransferenciaTipoEsfera' })
     @IsEnum(TransferenciaTipoEsfera, {
         message:
-            '$property| Precisa ser um dos seguintes valores: ' + Object.values(TransferenciaTipoEsfera).join(', '),
+            'Precisa ser um dos seguintes valores: ' + Object.values(TransferenciaTipoEsfera).join(', '),
     })
     @Expose()
     esfera?: TransferenciaTipoEsfera;
@@ -22,7 +22,7 @@ export class CreateRelTransferenciasDto {
     @IsOptional()
     @ApiProperty({ enum: TransferenciaInterface, enumName: 'TransferenciaInterface' })
     @IsEnum(TransferenciaInterface, {
-        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(TransferenciaInterface).join(', '),
+        message: 'Precisa ser um dos seguintes valores: ' + Object.values(TransferenciaInterface).join(', '),
     })
     @Expose()
     interface?: TransferenciaInterface;
@@ -76,7 +76,7 @@ export class CreateRelTransferenciasDto {
     @ApiProperty({ enum: TipoRelatorioTransferencia, enumName: 'TipoRelatorioTransferencia' })
     @IsEnum(TipoRelatorioTransferencia, {
         message:
-            '$property| Precisa ser um dos seguintes valores: ' + Object.values(TipoRelatorioTransferencia).join(', '),
+            'Precisa ser um dos seguintes valores: ' + Object.values(TipoRelatorioTransferencia).join(', '),
     })
     @Expose()
     tipo: TipoRelatorioTransferencia;

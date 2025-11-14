@@ -6,9 +6,10 @@ from requests.exceptions import HTTPError
 #temporario porque endpoint de fontes quebrou
 import json
 
-from core.exceptions import EmptyData, UnexpectedResponse
+from core.exceptions import EmptyData, UnexpectedResponse, InvalidRequest
 
 from core.dao import DaoItensDotacao
+from core.dao import DaoDetalhamentoFonte
 from core.schemas import itens_dotacao as schm_dotacao
 from core.schemas import MetaDados
 from config import SOF_API_TOKEN
@@ -16,10 +17,16 @@ from config import SOF_API_TOKEN
 app = APIRouter()
 
 
-def get_dao():
+def get_dao() -> DaoItensDotacao:
 
     dao = DaoItensDotacao(auth_token=SOF_API_TOKEN)
     
+    return dao
+
+def get_detalhee_fonte_dao() -> DaoDetalhamentoFonte:
+
+    dao = DaoDetalhamentoFonte(auth_token=SOF_API_TOKEN)
+
     return dao
 
 def build_response(dao, endpoint_name, **params):
@@ -32,6 +39,8 @@ def build_response(dao, endpoint_name, **params):
         raise HTTPException(404, detail=str(e))
     except UnexpectedResponse as e:
         raise HTTPException(422, detail=str(e))
+    except InvalidRequest as e:
+        raise HTTPException(400, detail=str(e))
     except HTTPError as e:
         raise HTTPException(503, str(e))
 
@@ -98,20 +107,18 @@ def elementos(ano: str, dao: DaoItensDotacao = Depends(get_dao)):
 
 @app.get("/fonte_recursos", response_model=schm_dotacao.ResultItem, tags=['Dotacao'])
 def fonte_recursos(ano: str, dao: DaoItensDotacao = Depends(get_dao)):
+   """Esses dados são hardcoded porque a API não retorna mais os dados da fonte dos recursos"""
    
-   with open('fontes_cache.json') as f:
-      result = json.load(f)
-   resp_data = [schm_dotacao.ItemBasico(**item) for item in result['fonte_recursos']]
-   resp = schm_dotacao.ResultItem(data=resp_data,
-                    metadados=MetaDados(sucess=True))
+   return build_response(dao, 'fonte_recursos_cached', ano=ano)
 
-   return resp
-   # não vou mais buscar do banco porque quebrou a API (ver com SF o que aconteceu)
-   #return build_response(dao, 'fonte_recursos', ano=ano)
+
+@app.get("/detalhamentos_fonte", response_model=schm_dotacao.ResultItem, tags=['Dotacao'])
+def detalhamentos_fonte(fonte_number: str, ano: int, dao: DaoDetalhamentoFonte = Depends(get_detalhee_fonte_dao)):
+   return build_response(dao, 'detalhamentos_fonte', fonte_number=fonte_number, ano=ano)
 
 
 @app.get("/all_items", response_model=schm_dotacao.AllItems, tags=['Dotacao'])
-def fonte_recursos(ano: str, dao: DaoItensDotacao = Depends(get_dao)):
+def all_items(ano: str, dao: DaoItensDotacao = Depends(get_dao)):
 
     resp = dao(ano=ano)
 

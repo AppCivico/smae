@@ -17,7 +17,7 @@ export class CreateRelProjetosDto extends PickType(FilterProjetoDto, [
     @IsOptional()
     @ApiProperty({ enum: ProjetoStatus, enumName: 'ProjetoStatus' })
     @IsEnum(ProjetoStatus, {
-        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(ProjetoStatus).join(', '),
+        message: 'Precisa ser um dos seguintes valores: ' + Object.values(ProjetoStatus).join(', '),
     })
     @Expose()
     status?: ProjetoStatus;

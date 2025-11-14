@@ -1,8 +1,10 @@
 <script setup>
-import { useAuthStore } from '@/stores/auth.store';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
+import { useAuthStore } from '@/stores/auth.store';
+
 import TransitionExpand from './TransitionExpand.vue';
 
 const authStore = useAuthStore();

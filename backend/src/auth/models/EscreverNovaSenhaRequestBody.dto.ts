@@ -10,15 +10,15 @@ export class EscreverNovaSenhaRequestBody {
      * Access Token
      * @example "header.auth.sign"
      */
-    @IsString({ message: '$property| Precisa do token' })
+    @IsString({ message: 'Precisa do token' })
     reduced_access_token: string;
 
     /**
      * Senha
      * @example "Teste*123"
      */
-    @IsString({ message: '$property| Senha: Precisa ser alfanumérico' })
-    @MinLength(8, { message: '$property| Senha: Mínimo de 8 caracteres' })
+    @IsString({ message: 'Senha: Precisa ser alfanumérico' })
+    @MinLength(8, { message: 'Senha: Mínimo de 8 caracteres' })
     @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Senha' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     @Matches(REGEXP, {
         message: MESSAGE,

@@ -1,160 +1,185 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { computed, onMounted, ref } from 'vue';
+import { useRoute } from 'vue-router';
+
+import CabecalhoDePagina from '@/components/CabecalhoDePagina.vue';
 import LocalFilter from '@/components/LocalFilter.vue';
-import TabelaGenérica from '@/components/TabelaGenerica.vue';
+import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
+import configEtapas from '@/consts/configEtapas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
-import { storeToRefs } from 'pinia';
-import { computed, ref } from 'vue';
-import { useRoute } from 'vue-router';
 
 const route = useRoute();
 const authStore = useAuthStore();
 const { temPermissãoPara } = authStore;
 const etapasProjetosStore = useEtapasProjetosStore(route.meta.entidadeMãe);
-const {
-  lista, chamadasPendentes, erro,
-} = storeToRefs(etapasProjetosStore);
+const { lista, etapasPadrao, chamadasPendentes } = storeToRefs(etapasProjetosStore);
 
 const alertStore = useAlertStore();
+const listaFiltrada = ref([]);
 
-async function excluirEtapa(id, nomeDaEtapa) {
-  alertStore.confirmAction(`Deseja mesmo remover "${nomeDaEtapa}"?`, async () => {
-    if (await etapasProjetosStore.excluirItem(id)) {
-      etapasProjetosStore.buscarTudo();
-      alertStore.success('Etapa removida.');
-    }
-  }, 'Remover');
+const ehTransferencia = computed(() => route.meta.entidadeMãe === 'TransferenciasVoluntarias');
+
+function obterConfiguracao() {
+  const config = configEtapas[route.meta.entidadeMãe];
+  if (!config) {
+    throw new Error(`Configuração não encontrada para entidadeMãe: ${route.meta.entidadeMãe}`);
+  }
+  return config;
 }
 
-const colunas = [
-  {
-    nomeDaPropriedade: 'nome',
-  },
-  {
-    nomeDaPropriedade: 'editar',
-    texto: 'editar',
-    svgId: 'edit',
-    classe: 'col--botão-de-ação',
-  },
-  {
-    nomeDaPropriedade: 'excluir',
-    texto: 'excluir',
-    svgId: 'remove',
-    classe: 'col--botão-de-ação',
-  },
-];
-const listaFiltradaPorTermoDeBusca = ref([]);
+const contextoEtapa = computed(() => route.meta.contextoEtapa || obterConfiguracao().contextoEtapa);
 
-const listaPreparada = computed(() => {
-  const listaOrdenada = lista.value.map((x) => {
-    const item = {
-      nome: x.descricao,
-    };
+// Retorna a lista apropriada baseada no contexto
+const listaContextual = computed(() => {
+  if (contextoEtapa.value === 'administracao') {
+    return etapasPadrao.value;
+  }
+  return lista.value;
+});
 
-    if (temPermissãoPara('CadastroProjetoEtapa.editar') && route.meta.entidadeMãe === 'projeto') {
-      item.editar = {
-        rota: {
-          name: 'projeto.etapaEditar',
-          params: {
-            etapaId: x.id,
-          },
-        },
-      };
-    }
+const colunas = computed(() => {
+  const colunasBase = [
+    { chave: 'descricao', label: 'Nome' },
+  ];
 
-    if (temPermissãoPara('CadastroProjetoEtapaMDO.editar') && route.meta.entidadeMãe === 'mdo') {
-      item.editar = {
-        rota: {
-          name: 'mdo.etapaEditar',
-          params: {
-            etapaId: x.id,
-          },
-        },
-      };
-    }
+  if (!ehTransferencia.value && contextoEtapa.value === 'configuracoes') {
+    colunasBase.push(
+      { chave: 'portfolio_id', label: 'Portfólio' },
+      { chave: 'etapa_padrao_associada', label: 'Etapa Padrão Associada' },
+    );
+  }
 
-    if (route.meta.entidadeMãe === 'TransferenciasVoluntarias') {
-      item.editar = {
-        rota: {
-          name: 'TransferenciasVoluntarias.etapaEditar',
-          params: {
-            etapaId: x.id,
-          },
-        },
-      };
-    }
+  return colunasBase;
+});
 
-    if (temPermissãoPara('CadastroProjetoEtapa.remover') || route.meta.entidadeMãe === 'TransferenciasVoluntarias' || temPermissãoPara('CadastroProjetoEtapaMDO.remover')) {
-      item.excluir = {
-        ação: () => excluirEtapa(x.id, x.descricao),
-      };
-    }
+function construirRota(acao, id = null) {
+  const config = obterConfiguracao();
 
-    return item;
-  });
+  // Se estamos no contexto de administração, usa rotas específicas
+  let nomeDaRota;
+  if (contextoEtapa.value === 'administracao' && config.rotasAdministracao) {
+    nomeDaRota = config.rotasAdministracao[acao.toLowerCase()];
+  } else {
+    nomeDaRota = `${config.rotaPrefix}.${acao.toLowerCase()}`;
+  }
 
-  listaOrdenada.sort((a, b) => {
-    const nomeA = a.nome.toLowerCase();
-    const nomeB = b.nome.toLowerCase();
-    if (nomeA < nomeB) {
-      return -1;
-    }
-    if (nomeA > nomeB) {
-      return 1;
-    }
-    return 0;
-  });
+  if (id) {
+    return { name: nomeDaRota, params: { etapaId: id } };
+  }
+  return { name: nomeDaRota };
+}
 
-  return listaOrdenada;
+function podeRealizar(acao) {
+  const config = obterConfiguracao();
+
+  if (!config.requerPermissão) {
+    return true;
+  }
+
+  const permissoes = contextoEtapa.value === 'administracao'
+    ? config.permissõesAdministracao
+    : config.permissões;
+
+  const chavePermissao = permissoes?.[acao];
+
+  return chavePermissao ? temPermissãoPara(chavePermissao) : false;
+}
+
+function buscarDados() {
+  etapasProjetosStore.$reset();
+
+  if (contextoEtapa.value === 'administracao') {
+    etapasProjetosStore.buscarEtapasPadrao();
+  } else if (contextoEtapa.value === 'configuracoes') {
+    etapasProjetosStore.buscarTudo({ eh_padrao: false });
+  } else {
+    // Transferências Voluntárias não tem filtro
+    etapasProjetosStore.buscarTudo();
+  }
+}
+
+async function excluirItem({ id }) {
+  if (await etapasProjetosStore.excluirItem(id)) {
+    buscarDados();
+    alertStore.success('Etapa removida.');
+  }
+}
+
+function montarRotaEditar({ id }) {
+  return construirRota('Editar', id);
+}
+
+function podeEditar() {
+  return podeRealizar('editar');
+}
+
+function podeInserir() {
+  return podeRealizar('inserir');
+}
+
+function montarRotaCriar() {
+  return construirRota('Criar');
+}
+
+onMounted(() => {
+  buscarDados();
 });
 </script>
 <template>
-  <div class="flex spacebetween center mb2">
-    <h1>{{ $route.meta.título }}</h1>
-    <hr class="ml2 f1">
-    <SmaeLink
-      v-if="temPermissãoPara(['CadastroProjetoEtapa.inserir'])
-        || $route.meta.entidadeMãe === 'TransferenciasVoluntarias'
-        || temPermissãoPara(['CadastroProjetoEtapaMDO.inserir'])"
-      :to="{name: '.etapaCriar'}"
-      class="btn big ml2"
-    >
-      Nova etapa
-    </SmaeLink>
-  </div>
+  <CabecalhoDePagina>
+    <template #acoes>
+      <SmaeLink
+        v-if="podeInserir()"
+        :to="montarRotaCriar()"
+        class="btn big ml1"
+      >
+        Nova etapa
+      </SmaeLink>
+    </template>
+  </CabecalhoDePagina>
 
   <div class="flex center mb2 spacebetween">
     <slot name="filtro" />
 
     <LocalFilter
-      v-model="listaFiltradaPorTermoDeBusca"
-      :lista="listaPreparada"
+      v-model="listaFiltrada"
+      :lista="listaContextual"
     />
   </div>
 
-  <TabelaGenérica
-    v-if="!chamadasPendentes.lista || lista.length"
-    :lista="listaFiltradaPorTermoDeBusca"
+  <LoadingComponent v-if="chamadasPendentes?.lista" />
+  <SmaeTable
+    v-else
     :colunas="colunas"
-    :erro="erro"
-    :chamadas-pendentes="chamadasPendentes"
-    class="mb1"
-  />
-
-  <div
-    v-if="chamadasPendentes?.lista"
-    class="spinner"
+    parametro-no-objeto-para-excluir="descricao"
+    :dados="listaFiltrada"
+    :rota-editar="podeEditar()
+      ? montarRotaEditar
+      : undefined"
+    @deletar="excluirItem"
   >
-    Carregando
-  </div>
+    <template
+      v-if="!ehTransferencia"
+      #celula:portfolio_id="{ linha }"
+    >
+      {{ linha.portfolio?.titulo || '-' }}
+    </template>
 
-  <div
-    v-if="erro"
-    class="error p1"
-  >
-    <div class="error-msg">
-      {{ erro }}
-    </div>
-  </div>
+    <template
+      v-if="!ehTransferencia"
+      #celula:etapa_padrao="{ linha }"
+    >
+      {{ linha.eh_padrao ? 'Sim' : 'Não' }}
+    </template>
+
+    <template
+      v-if="!ehTransferencia"
+      #celula:etapa_padrao_associada="{ linha }"
+    >
+      {{ linha.etapa_padrao?.descricao || '-' }}
+    </template>
+  </SmaeTable>
 </template>

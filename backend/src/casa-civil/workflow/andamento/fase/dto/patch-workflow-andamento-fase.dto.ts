@@ -27,7 +27,7 @@ export class UpdateWorkflowAndamentoFaseDto {
     pessoa_responsavel_id?: number;
 
     @IsOptional()
-    @IsArray({ message: '$property| tarefa(s): precisa ser uma array.' })
+    @IsArray({ message: 'tarefa(s): precisa ser uma array.' })
     @Type(() => WorkflowTarefaUpdateParamDto)
     @ValidateNested({ each: true })
     tarefas?: WorkflowTarefaUpdateParamDto[];

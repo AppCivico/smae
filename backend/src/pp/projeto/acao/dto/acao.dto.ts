@@ -28,7 +28,7 @@ export type ProjetoAcao = (typeof ProjetoAcao)[keyof typeof ProjetoAcao];
 export class CreateAcaoDto {
     @ApiProperty({ enum: ProjetoAcao, enumName: 'ProjetoAcao' })
     @IsEnum(ProjetoAcao, {
-        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(ProjetoAcao).join(', '),
+        message: 'Precisa ser um dos seguintes valores: ' + Object.values(ProjetoAcao).join(', '),
     })
     acao: ProjetoAcao;
 

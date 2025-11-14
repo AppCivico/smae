@@ -9,7 +9,7 @@ import { MAX_LENGTH_DEFAULT } from '../consts';
 
 export class UpsertOrigemDto {
     @IsOptional()
-    @IsInt({ message: '$property| precisa ser inteiro' })
+    @IsInt({ message: 'precisa ser inteiro' })
     id?: number;
 
     /**
@@ -19,7 +19,7 @@ export class UpsertOrigemDto {
      */
     @ApiProperty({ enum: ProjetoOrigemTipo, enumName: 'ProjetoOrigemTipo' })
     @IsEnum(ProjetoOrigemTipo, {
-        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(ProjetoOrigemTipo).join(', '),
+        message: 'Precisa ser um dos seguintes valores: ' + Object.values(ProjetoOrigemTipo).join(', '),
     })
     origem_tipo: ProjetoOrigemTipo;
 
@@ -41,7 +41,7 @@ export class UpsertOrigemDto {
      * meta_id, se for por meta
      */
     @IsOptional()
-    @IsInt({ message: '$property| meta_id precisa ser positivo' })
+    @IsInt({ message: 'meta_id precisa ser positivo' })
     @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     @ValidateIf((object, value) => value !== null)
     meta_id?: number | null;
@@ -50,7 +50,7 @@ export class UpsertOrigemDto {
      * iniciativa_id, se for por iniciativa
      */
     @IsOptional()
-    @IsInt({ message: '$property| iniciativa_id precisa ser positivo' })
+    @IsInt({ message: 'iniciativa_id precisa ser positivo' })
     @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     @ValidateIf((object, value) => value !== null)
     iniciativa_id?: number | null;
@@ -59,7 +59,7 @@ export class UpsertOrigemDto {
      * atividade_id, se for por atividade
      */
     @IsOptional()
-    @IsInt({ message: '$property| atividade_id precisa ser positivo' })
+    @IsInt({ message: 'atividade_id precisa ser positivo' })
     @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     @ValidateIf((object, value) => value !== null)
     atividade_id?: number | null;

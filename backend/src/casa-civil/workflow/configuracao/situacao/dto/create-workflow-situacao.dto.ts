@@ -11,7 +11,7 @@ export class CreateWorkflowSituacaoDto {
 
     @ApiProperty({ enum: WorkflowSituacaoTipo, enumName: 'WorkflowSituacaoTipo' })
     @IsEnum(WorkflowSituacaoTipo, {
-        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(WorkflowSituacaoTipo).join(', '),
+        message: 'Precisa ser um dos seguintes valores: ' + Object.values(WorkflowSituacaoTipo).join(', '),
     })
     tipo_situacao: WorkflowSituacaoTipo;
 }

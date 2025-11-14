@@ -74,7 +74,7 @@ export class IniciativaService {
                     },
                 });
                 if (codigoJaEmUso > 0)
-                    throw new HttpException('codigo| Já existe iniciativa com este código nesta meta', 400);
+                    throw new HttpException('Já existe iniciativa com este código nesta meta', 400);
 
                 const tituloJaEmUso = await prismaTx.iniciativa.count({
                     where: {
@@ -84,7 +84,7 @@ export class IniciativaService {
                     },
                 });
                 if (tituloJaEmUso > 0)
-                    throw new HttpException('codigo| Já existe iniciativa com este título nesta meta', 400);
+                    throw new HttpException('Já existe iniciativa com este título nesta meta', 400);
 
                 const origem_cache = await CompromissoOrigemHelper.processaOrigens(origens_extra, this.prisma);
                 const iniciativa = await prismaTx.iniciativa.create({
@@ -479,7 +479,7 @@ export class IniciativaService {
                     },
                 });
                 if (codigoJaEmUso)
-                    throw new HttpException('codigo| Já existe iniciativa com este código nesta meta', 400);
+                    throw new HttpException('Já existe iniciativa com este código nesta meta', 400);
             }
 
             if (dto.titulo) {
@@ -492,7 +492,7 @@ export class IniciativaService {
                     },
                 });
                 if (codigoJaEmUso)
-                    throw new HttpException('codigo| Já existe iniciativa com este título nesta meta', 400);
+                    throw new HttpException('Já existe iniciativa com este título nesta meta', 400);
             }
 
             let origem_cache: object | undefined = undefined;

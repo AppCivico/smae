@@ -70,7 +70,13 @@ async function main() {
 }
 
 async function processPgsqlFiles(dir: string) {
-    const files = fs.readdirSync(dir).filter((file) => file.endsWith('.pgsql'));
+    const files = fs
+        .readdirSync(dir, {
+            recursive: true,
+            withFileTypes: true,
+        })
+        .filter((file) => file.name.endsWith('.pgsql') && file.isFile())
+        .map((file) => file.name);
 
     if (files.length === 0) {
         logger.warn(`No .pgsql files found in ${dir}`);
@@ -79,7 +85,7 @@ async function processPgsqlFiles(dir: string) {
 
     // First pass: collect all normalized filenames to check for conflicts
     const normalizedNames = new Map<string, string[]>();
-    files.forEach(file => {
+    files.forEach((file) => {
         const normalized = normalizeFileName(file);
         if (!normalizedNames.has(normalized)) {
             normalizedNames.set(normalized, []);
@@ -214,7 +220,10 @@ async function updateFunctions(filesToUpdate: IFilenameHash[]) {
                 await connection.query('COMMIT');
             } catch (error) {
                 await connection.query('ROLLBACK');
-                logger.error(`Error updating ${file.originalFileName} (saved as ${file.fileName}) history:`, error.message);
+                logger.error(
+                    `Error updating ${file.originalFileName} (saved as ${file.fileName}) history:`,
+                    error.message
+                );
             }
         }
     }

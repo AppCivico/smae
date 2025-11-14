@@ -214,6 +214,10 @@ export default ({ entidadeMãe, parametrosPagina }: Props) => {
           meta: {
             título: 'Histórico de Monitoramento',
             títuloParaMenu: undefined,
+            limitarÀsPermissões: [
+              'Menu.historico_monitoramento_ps',
+              'Menu.historico_monitoramento_pdm',
+            ],
           },
           children: [
             {

@@ -22,7 +22,7 @@ export class BancadaService {
             },
         });
         if (similarExists > 0)
-            throw new HttpException('nome| Nome igual ou semelhante já existe em outro registro ativo', 400);
+            throw new HttpException('Nome igual ou semelhante já existe em outro registro ativo', 400);
 
         if (dto.sigla) {
             const similarExists = await this.prisma.bancada.count({
@@ -32,7 +32,7 @@ export class BancadaService {
                 },
             });
             if (similarExists > 0)
-                throw new HttpException('sigla| Sigla igual ou semelhante já existe em outro registro ativo', 400);
+                throw new HttpException('Sigla igual ou semelhante já existe em outro registro ativo', 400);
         }
 
         if (dto.partido_ids && dto.partido_ids.length > 0) await this.checkPartido(dto.partido_ids);
@@ -70,7 +70,7 @@ export class BancadaService {
 
             for (const id of ids) {
                 if (!partidos.find((p) => p.id == id))
-                    throw new HttpException(`partido_ids| partido ${id} inválido`, 400);
+                    throw new HttpException(`partido ${id} inválido`, 400);
             }
         }
     }
@@ -143,7 +143,7 @@ export class BancadaService {
                 },
             });
             if (similarExists > 0)
-                throw new HttpException('nome| Nome igual ou semelhante já existe em outro registro ativo', 400);
+                throw new HttpException('Nome igual ou semelhante já existe em outro registro ativo', 400);
         }
 
         if (dto.sigla) {
@@ -155,7 +155,7 @@ export class BancadaService {
                 },
             });
             if (similarExists > 0)
-                throw new HttpException('sigla| Sigla igual ou semelhante já existe em outro registro ativo', 400);
+                throw new HttpException('Sigla igual ou semelhante já existe em outro registro ativo', 400);
         }
 
         if (dto.partido_ids && dto.partido_ids.length > 0 && dto.partido_ids.length != self.partidos.length) {

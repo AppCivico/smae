@@ -24,7 +24,7 @@ export class PainelExternoService {
         });
 
         if (similarExists > 0)
-            throw new HttpException('descricao| Nome igual ou semelhante já existe em outro registro ativo', 400);
+            throw new HttpException('Nome igual ou semelhante já existe em outro registro ativo', 400);
 
         const now = new Date(Date.now());
         const created = await this.prisma.$transaction(
@@ -114,7 +114,7 @@ export class PainelExternoService {
             });
 
             if (similarExists > 0)
-                throw new HttpException('descricao| Nome igual ou semelhante já existe em outro registro', 400);
+                throw new HttpException('Nome igual ou semelhante já existe em outro registro', 400);
         }
 
         const now = new Date(Date.now());

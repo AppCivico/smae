@@ -82,6 +82,8 @@ class RetornoDbProjeto {
     fonte_recurso_ano: number;
     fonte_recurso_valor_pct: number;
     fonte_recurso_valor_nominal: number;
+    fonte_recurso_detalhamento_cod: string | null;
+    fonte_recurso_detalhamento_descricao: string | null;
 
     premisa_id: number;
     premissa: string;
@@ -96,6 +98,8 @@ class RetornoDbProjeto {
     projeto_etapa: string | null;
 
     portfolios_compartilhados_titulos: string | null;
+
+    etiquetas: string | null;
 }
 
 class RetornoDbCronograma {
@@ -581,6 +585,7 @@ export class PPProjetosService implements ReportableService {
             'fonte_recurso.valor_nominal',
             'status',
             'portfolios_compartilhados_titulos',
+            'etiquetas',
         ];
 
         const projetosFieldNames = [
@@ -633,6 +638,7 @@ export class PPProjetosService implements ReportableService {
             'Valor Nominal da Fonte',
             'Status (Banco)',
             'Portfólios Compartilhados',
+            'Etiquetas',
         ];
         await this.gerarCsv('projetos', projetosFields, projetosFieldNames, projetosIds, out, ctx, 20);
         await ctx.resumoSaida('Projetos', projetosIds.length);
@@ -1063,12 +1069,21 @@ export class PPProjetosService implements ReportableService {
                 FROM pessoa
                 WHERE id = ANY(projeto.responsaveis_no_orgao_gestor)
             ) as gestores,
+            (
+                SELECT
+                    string_agg(pt.descricao, ' | ' ORDER BY pt.descricao)
+                FROM projeto_portfolio_tag ppt
+                JOIN portfolio_tag pt ON pt.id = ppt.portfolio_tag_id AND pt.removido_em IS NULL
+                WHERE ppt.projeto_id = projeto.id AND ppt.removido_em IS NULL
+            ) as etiquetas,
             r.id AS fonte_recurso_id,
             sof.descricao AS fonte_recurso_nome,
             r.fonte_recurso_cod_sof AS fonte_recurso_cod_sof,
             r.fonte_recurso_ano AS fonte_recurso_ano,
             r.valor_percentual AS fonte_recurso_valor_pct,
             r.valor_nominal AS fonte_recurso_valor_nominal,
+            r.fonte_recurso_detalhamento_cod AS fonte_recurso_detalhamento_cod,
+            r.fonte_recurso_detalhamento_descricao AS fonte_recurso_detalhamento_descricao,
             pp.id AS premisa_id,
             pp.premissa,
             pr.id AS restricao_id,
@@ -1180,9 +1195,12 @@ export class PPProjetosService implements ReportableService {
                           fonte_recurso_ano: db.fonte_recurso_ano,
                           valor_percentual: db.fonte_recurso_valor_pct,
                           valor_nominal: db.fonte_recurso_valor_nominal,
+                          fonte_recurso_detalhamento_cod: db.fonte_recurso_detalhamento_cod,
+                          fonte_recurso_detalhamento_descricao: db.fonte_recurso_detalhamento_descricao,
                       }
                     : null,
                 portfolios_compartilhados_titulos: db.portfolios_compartilhados_titulos,
+                etiquetas: db.etiquetas ? db.etiquetas : null,
             });
         }
     }
@@ -1582,7 +1600,7 @@ export class PPProjetosService implements ReportableService {
                 SELECT max(percentual_medido) FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL
             ) AS percentual_medido,
             (
-                SELECT string_agg(contrato_sei.numero_sei::text, '|')
+                SELECT string_agg(format_proc_sei_sinproc(contrato_sei.numero_sei::text), '|')
                 FROM contrato_sei
                 WHERE contrato_sei.contrato_id = contrato.id
             ) AS processos_sei,

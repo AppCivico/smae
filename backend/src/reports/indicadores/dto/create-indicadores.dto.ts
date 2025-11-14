@@ -26,7 +26,7 @@ export class IndicadorParams {
      */
     @ApiProperty({ enum: TipoRelatorio, enumName: 'TipoRelatorio' })
     @IsEnum(TipoRelatorio, {
-        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(TipoRelatorio).join(', '),
+        message: 'Precisa ser um dos seguintes valores: ' + Object.values(TipoRelatorio).join(', '),
     })
     @Expose()
     tipo: TipoRelatorio;
@@ -39,7 +39,7 @@ export class IndicadorParams {
     @ValidateIf((object, value) => value !== null)
     @ApiProperty({ enum: SemestreDto, enumName: 'SemestreDto' })
     @IsEnum(SemestreDto, {
-        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(SemestreDto).join(', '),
+        message: 'Precisa ser um dos seguintes valores: ' + Object.values(SemestreDto).join(', '),
     })
     @Expose()
     semestre?: SemestreDto | null;
@@ -49,7 +49,7 @@ export class IndicadorParams {
      */
     @ApiProperty({ enum: PeriodoRelatorioDto, enumName: 'PeriodoDto' })
     @IsEnum(PeriodoRelatorioDto, {
-        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(PeriodoRelatorioDto).join(', '),
+        message: 'Precisa ser um dos seguintes valores: ' + Object.values(PeriodoRelatorioDto).join(', '),
     })
     @Expose()
     periodo: PeriodoRelatorioDto;

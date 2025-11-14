@@ -197,6 +197,8 @@ export class PPProjetoService implements ReportableService {
             orgaos_participantes: projetoRow.orgaos_participantes
                 ? projetoRow.orgaos_participantes.map((e) => e.sigla).join('|')
                 : null,
+
+            etiquetas: projetoRow.tags_portfolio ? projetoRow.tags_portfolio.map((e) => e.descricao).join('|') : null,
         };
 
         const tarefaCronoId = await this.prisma.tarefaCronograma.findFirst({
@@ -349,7 +351,7 @@ export class PPProjetoService implements ReportableService {
                 SELECT max(percentual_medido) FROM contrato_aditivo WHERE contrato_aditivo.contrato_id = contrato.id AND contrato_aditivo.removido_em IS NULL
             ) AS percentual_medido,
             (
-                SELECT string_agg(contrato_sei.numero_sei::text, '|')
+                SELECT string_agg(format_proc_sei_sinproc(contrato_sei.numero_sei::text), '|')
                 FROM contrato_sei
                 WHERE contrato_sei.contrato_id = contrato.id
             ) AS processos_sei,

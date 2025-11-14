@@ -185,15 +185,15 @@ export class CompromissoOrigemHelper {
 
         function validaPdmAntigo(dto: UpsertOrigemDto) {
             const errMsg = 'caso origem seja outro sistema de meta';
-            if (!dto.meta_codigo) throw new HttpException(`meta_codigo| Meta código deve ser enviado ${errMsg}`, 400);
+            if (!dto.meta_codigo) throw new HttpException(`Meta código deve ser enviado ${errMsg}`, 400);
             if (!dto.origem_outro)
-                throw new HttpException(`origem_outro| Descrição da origem deve ser enviado ${errMsg}`, 400);
+                throw new HttpException(`Descrição da origem deve ser enviado ${errMsg}`, 400);
 
-            if (dto.meta_id) throw new HttpException(`meta_id| Meta não deve ser enviado ${errMsg}`, 400);
+            if (dto.meta_id) throw new HttpException(`Meta não deve ser enviado ${errMsg}`, 400);
             if (dto.iniciativa_id)
-                throw new HttpException(`iniciativa_id| Iniciativa não deve ser enviado ${errMsg}`, 400);
+                throw new HttpException(`Iniciativa não deve ser enviado ${errMsg}`, 400);
             if (dto.atividade_id)
-                throw new HttpException(`atividade_id| Atividade não deve ser enviado ${errMsg}`, 400);
+                throw new HttpException(`Atividade não deve ser enviado ${errMsg}`, 400);
 
             // força a limpeza no banco, pode ser que tenha vindo como undefined
             dto.meta_id = dto.atividade_id = dto.iniciativa_id = null;
@@ -201,8 +201,7 @@ export class CompromissoOrigemHelper {
 
         async function validaPdmSistema(dto: UpsertOrigemDto) {
             if (!dto.atividade_id && !dto.iniciativa_id && !dto.meta_id)
-                throw new HttpException(
-                    'meta| é obrigatório enviar meta_id|iniciativa_id|atividade_id quando origem_tipo=PdmSistema',
+                throw new HttpException('é obrigatório enviar meta_id|iniciativa_id|atividade_id quando origem_tipo=PdmSistema',
                     400
                 );
 
@@ -240,9 +239,9 @@ export class CompromissoOrigemHelper {
             }
 
             if (dto.origem_outro)
-                throw new HttpException('origem_outro| Não deve ser enviado caso origem_tipo seja PdmSistema', 400);
+                throw new HttpException('Não deve ser enviado caso origem_tipo seja PdmSistema', 400);
             if (dto.meta_codigo)
-                throw new HttpException('meta_codigo| Não deve ser enviado caso origem_tipo seja PdmSistema', 400);
+                throw new HttpException('Não deve ser enviado caso origem_tipo seja PdmSistema', 400);
 
             // força a limpeza no banco, pode ser que tenha vindo como undefined
             dto.meta_codigo = dto.origem_outro = null;

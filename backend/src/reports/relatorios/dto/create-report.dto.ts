@@ -25,7 +25,7 @@ import { CreateRelTribunalDeContasDto } from 'src/reports/tribunal-de-contas/dto
 export class CreateReportDto {
     @ApiProperty({ enum: FonteRelatorio, enumName: 'FonteRelatorio' })
     @IsEnum(FonteRelatorio, {
-        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(FonteRelatorio).join(', '),
+        message: 'Precisa ser um dos seguintes valores: ' + Object.values(FonteRelatorio).join(', '),
     })
     fonte: FonteRelatorio;
 

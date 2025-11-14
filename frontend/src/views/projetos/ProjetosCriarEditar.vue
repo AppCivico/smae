@@ -9,6 +9,7 @@ import {
 } from 'vee-validate';
 import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
 import CampoDePlanosMetasRelacionados from '@/components/CampoDePlanosMetasRelacionados.vue';
@@ -25,6 +26,7 @@ import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { useObservadoresStore } from '@/stores/observadores.store.ts';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
+import { useProjetoEtiquetasStore } from '@/stores/projetoEtiqueta.store.ts';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -34,12 +36,18 @@ const DotaçãoStore = useDotaçãoStore();
 const alertStore = useAlertStore();
 const observadoresStore = useObservadoresStore();
 const portfolioStore = usePortfolioStore();
+const projetoEtiquetasStore = useProjetoEtiquetasStore();
 const projetosStore = useProjetosStore();
 const {
   lista: gruposDeObservadores,
   chamadasPendentes: gruposDeObservadoresPendentes,
   erro: erroNosGruposDeObservadores,
 } = storeToRefs(observadoresStore);
+
+const {
+  lista: etiquetasDoPortfolio,
+  chamadasPendentes: etiquetasPendentes,
+} = storeToRefs(projetoEtiquetasStore);
 
 const {
   chamadasPendentes,
@@ -59,7 +67,14 @@ const {
   órgãosQueTemResponsáveisEPorId,
 } = storeToRefs(ÓrgãosStore);
 
-const { DotaçãoSegmentos } = storeToRefs(DotaçãoStore);
+const {
+  DotaçãoSegmentos,
+  DotaçãoDetalhamentos,
+} = storeToRefs(DotaçãoStore);
+
+const DetalhamentosPorFonte = computed(() => DotaçãoDetalhamentos.value);
+const detalhamentosLoadingPorLinha = ref({});
+const segmentosLoadingPorLinha = ref({});
 
 const router = useRouter();
 const route = useRoute();
@@ -165,11 +180,92 @@ function alertarTrocaDeStatus() {
   }
 }
 
-function BuscarDotaçãoParaAno(valorOuEvento) {
+async function BuscarDotaçãoParaAno(valorOuEvento, idx = null) {
   const ano = valorOuEvento.target?.value || valorOuEvento;
 
   if (!DotaçãoSegmentos?.value?.[ano]) {
-    DotaçãoStore.getDotaçãoSegmentos(ano);
+    if (idx !== null) {
+      segmentosLoadingPorLinha.value[idx] = true;
+    }
+
+    try {
+      await DotaçãoStore.getDotaçãoSegmentos(ano);
+    } catch (error) {
+      alertStore.error('Erro ao carregar segmentos de orçamento.');
+    } finally {
+      if (idx !== null) {
+        segmentosLoadingPorLinha.value[idx] = false;
+      }
+    }
+  }
+}
+
+function aoMudarAno(idx, event) {
+  setFieldValue(`fonte_recursos[${idx}].fonte_recurso_cod_sof`, '');
+  setFieldValue(`fonte_recursos[${idx}].fonte_recurso_detalhamento_cod`, '');
+  setFieldValue(`fonte_recursos[${idx}].fonte_recurso_detalhamento_descricao`, '');
+
+  BuscarDotaçãoParaAno(event, idx);
+}
+
+async function BuscarDetalhamento(ano, codigoFonte, idx = null) {
+  const chave = `${ano}-${codigoFonte}`;
+  if (ano && codigoFonte && !DetalhamentosPorFonte.value?.[chave]) {
+    if (idx !== null) {
+      detalhamentosLoadingPorLinha.value[idx] = true;
+    }
+
+    try {
+      await DotaçãoStore.getDotaçãoDetalhamentos(ano, codigoFonte);
+    } catch (error) {
+      alertStore.error('Erro ao carregar detalhamentos da fonte de recurso.');
+    } finally {
+      if (idx !== null) {
+        detalhamentosLoadingPorLinha.value[idx] = false;
+      }
+    }
+  }
+}
+
+function aoMudarFonte(idx, event) {
+  if (!values.fonte_recursos[idx]) {
+    return;
+  }
+
+  if (!values.fonte_recursos[idx].fonte_recurso_ano) {
+    return;
+  }
+
+  const novaFonte = event.target.value;
+
+  setFieldValue(`fonte_recursos[${idx}].fonte_recurso_detalhamento_cod`, '');
+  setFieldValue(`fonte_recursos[${idx}].fonte_recurso_detalhamento_descricao`, '');
+
+  if (novaFonte) {
+    BuscarDetalhamento(values.fonte_recursos[idx].fonte_recurso_ano, novaFonte, idx);
+  }
+}
+
+function atualizarDetalhamentoDescricao(idx, codigoDet) {
+  // Bounds check: previne erro se linha foi removida durante operação assíncrona
+  if (!values.fonte_recursos[idx]) {
+    return;
+  }
+
+  const ano = values.fonte_recursos[idx].fonte_recurso_ano;
+  const codigoFonte = values.fonte_recursos[idx].fonte_recurso_cod_sof;
+  const chave = `${ano}-${codigoFonte}`;
+
+  if (codigoDet && DetalhamentosPorFonte.value?.[chave]) {
+    const detalhamento = DetalhamentosPorFonte.value[chave].find(
+      (item) => item.codigo === codigoDet,
+    );
+    setFieldValue(
+      `fonte_recursos[${idx}].fonte_recurso_detalhamento_descricao`,
+      detalhamento?.descricao || '',
+    );
+  } else {
+    setFieldValue(`fonte_recursos[${idx}].fonte_recurso_detalhamento_descricao`, '');
   }
 }
 
@@ -287,6 +383,7 @@ function iniciar() {
 
   if (emFoco.value?.portfolio_id) {
     observadoresStore.buscarTudo();
+    projetoEtiquetasStore.buscarTudo({ portfolio_id: emFoco.value.portfolio_id });
   }
 
   ÓrgãosStore.getAllOrganResponsibles().finally(() => {
@@ -295,6 +392,14 @@ function iniciar() {
 
   if (emFoco.value?.meta_id) {
     buscarArvoreDeMetas(emFoco.value?.meta_id);
+  }
+
+  if (itemParaEdicao.value?.fonte_recursos?.length) {
+    itemParaEdicao.value.fonte_recursos.forEach((fonte) => {
+      if (fonte.fonte_recurso_ano && fonte.fonte_recurso_cod_sof) {
+        BuscarDetalhamento(fonte.fonte_recurso_ano, fonte.fonte_recurso_cod_sof);
+      }
+    });
   }
 }
 
@@ -306,6 +411,12 @@ watch(itemParaEdicao, (novoValor) => {
   resetForm({
     initialValues: novoValor,
   });
+});
+
+watch(() => values.portfolio_id, (novoPortfolioId) => {
+  if (novoPortfolioId) {
+    projetoEtiquetasStore.buscarTudo({ portfolio_id: novoPortfolioId });
+  }
 });
 </script>
 
@@ -322,7 +433,6 @@ watch(itemParaEdicao, (novoValor) => {
 
     <CheckClose :formulario-sujo="formularioSujo" />
   </header>
-
   <form
     v-if="!projetoId || emFoco"
     @submit.prevent="!isSubmitting ? onSubmit() : null"
@@ -358,7 +468,10 @@ watch(itemParaEdicao, (novoValor) => {
           class="inputtext light mb1"
           :class="{ error: errors.portfolio_id, loading: portfolioStore.chamadasPendentes.lista }"
           :disabled="desabilitarTodosCampos.camposComuns || !!portfolioId || !!projetoId"
-          @change="() => setFieldValue('regiao_id', 0)"
+          @change="() => {
+            setFieldValue('regiao_id', 0)
+            setFieldValue('tags_portfolio', [])
+          }"
         >
           <option :value="0">
             Selecionar
@@ -453,6 +566,35 @@ watch(itemParaEdicao, (novoValor) => {
         <ErrorMessage
           class="error-msg mb1"
           name="status"
+        />
+      </div>
+    </div>
+
+    <div class="flex g2 mb1 f1">
+      <div class="f1 mb1">
+        <SmaeLabel
+          name="tags_portfolio"
+          :schema="schema"
+        />
+
+        <AutocompleteField
+          name="tags_portfolio"
+          :controlador="{
+            busca: '',
+            participantes: values.tags_portfolio || []
+          }"
+          :grupo="etiquetasDoPortfolio"
+          :class="{
+            error: errors.tags_portfolio,
+            loading: etiquetasPendentes.lista
+          }"
+          label="descricao"
+          :readonly="desabilitarTodosCampos.camposComuns"
+        />
+
+        <ErrorMessage
+          name="tags_portfolio"
+          class="error-msg"
         />
       </div>
     </div>
@@ -856,7 +998,7 @@ watch(itemParaEdicao, (novoValor) => {
                 max="3000"
                 step="1"
                 :disabled="desabilitarTodosCampos.camposComuns"
-                @change="BuscarDotaçãoParaAno"
+                @change="(e) => aoMudarAno(idx, e)"
               />
               <ErrorMessage
                 class="error-msg mb1"
@@ -877,10 +1019,21 @@ watch(itemParaEdicao, (novoValor) => {
                 maxlength="2"
                 class="inputtext light mb1"
                 as="select"
-                :disabled="desabilitarTodosCampos.camposComuns"
+                :disabled="
+                  desabilitarTodosCampos.camposComuns
+                    || !fields[idx].value.fonte_recurso_ano
+                "
+                :aria-busy="segmentosLoadingPorLinha[idx] ? 'true' : 'false'"
+                @change="(e) => aoMudarFonte(idx, e)"
               >
                 <option value="">
-                  Selecionar
+                  {{
+                    segmentosLoadingPorLinha[idx]
+                      ? 'Carregando...'
+                      : !fields[idx].value.fonte_recurso_ano
+                        ? 'Selecione o ano primeiro'
+                        : 'Selecionar'
+                  }}
                 </option>
                 <option
                   v-for="item in
@@ -895,6 +1048,46 @@ watch(itemParaEdicao, (novoValor) => {
               <ErrorMessage
                 class="error-msg mb1"
                 :name="`fonte_recursos[${idx}].fonte_recurso_cod_sof`"
+              />
+            </div>
+
+            <div class="f1 mb1">
+              <LabelFromYup
+                name="fonte_recurso_detalhamento_cod"
+                :for="`fonte_recursos[${idx}].fonte_recurso_detalhamento_cod`"
+                class="tc300"
+                :schema="schema.fields.fonte_recursos.innerType"
+              />
+
+              <Field
+                :name="`fonte_recursos[${idx}].fonte_recurso_detalhamento_cod`"
+                class="inputtext light mb1"
+                as="select"
+                :disabled="
+                  desabilitarTodosCampos.camposComuns
+                    || !fields[idx].value.fonte_recurso_cod_sof
+                "
+                :aria-busy="detalhamentosLoadingPorLinha[idx] ? 'true' : 'false'"
+                @change="(e) => atualizarDetalhamentoDescricao(idx, e.target.value)"
+              >
+                <option value="">
+                  {{ detalhamentosLoadingPorLinha[idx] ? 'Carregando...' : 'Selecionar' }}
+                </option>
+                <option
+                  v-for="item in DetalhamentosPorFonte
+                    ?.[`${fields[idx].value.fonte_recurso_ano}-${fields[idx]
+                      .value.fonte_recurso_cod_sof
+                    }`]
+                    || []"
+                  :key="item.codigo"
+                  :value="item.codigo"
+                >
+                  {{ item.descricao }}
+                </option>
+              </Field>
+              <ErrorMessage
+                class="error-msg mb1"
+                :name="`fonte_recursos[${idx}].fonte_recurso_detalhamento_cod`"
               />
             </div>
 

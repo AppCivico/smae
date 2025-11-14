@@ -1,4 +1,5 @@
 import { object, number } from 'yup';
+
 import { obras as schemaOriginal } from '@/consts/formSchemas';
 import tarefa from '@/consts/formSchemas/tarefa';
 
@@ -134,11 +135,8 @@ const metasEdicaoEmLote = {
   },
   projeto_etapa_id: {
     permite_edicao_em_massa: true,
-    storeKey: 'etapas_projetos',
-    fetchAction: 'buscarTudo',
-    listState: 'lista',
-    optionValue: 'id',
-    optionLabel: 'descricao',
+    tipo: 'etapa-com-portfolio',
+    operacoes_permitidas: ['Set'],
   },
   responsaveis_no_orgao_gestor: {
     permite_edicao_em_massa: true,

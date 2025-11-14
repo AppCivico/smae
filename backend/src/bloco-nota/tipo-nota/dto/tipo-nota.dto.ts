@@ -6,8 +6,8 @@ import { NumberTransform } from '../../../auth/transforms/number.transform';
 import { MAX_LENGTH_DEFAULT } from 'src/common/consts';
 
 export class CreateTipoNotaDto {
-    @IsString({ message: '$property| descrição: Precisa ser alfanumérico' })
-    @MinLength(1, { message: '$property| descrição: Mínimo 1 caracteres' })
+    @IsString({ message: 'descrição: Precisa ser alfanumérico' })
+    @MinLength(1, { message: 'descrição: Mínimo 1 caracteres' })
     @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Código' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     codigo: string;
 

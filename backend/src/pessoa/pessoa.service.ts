@@ -36,6 +36,7 @@ import { ListPessoa } from './entities/list-pessoa.entity';
 import { Pessoa as PessoaDto } from './entities/pessoa.entity';
 import { PessoaResponsabilidadesMetaService } from './pessoa.responsabilidades.metas.service';
 import { FeatureFlagService } from '../feature-flag/feature-flag.service';
+import { OrgaoService } from '../orgao/orgao.service';
 const BCRYPT_ROUNDS = 10;
 
 @Injectable()
@@ -50,7 +51,8 @@ export class PessoaService implements OnModuleInit {
         private readonly pRespMetaService: PessoaResponsabilidadesMetaService,
         private readonly equipeRespService: EquipeRespService,
         private readonly featureFlagService: FeatureFlagService,
-        private readonly smaeConfigService: SmaeConfigService
+        private readonly smaeConfigService: SmaeConfigService,
+        private readonly orgaoService: OrgaoService
     ) {}
 
     async onModuleInit() {
@@ -366,7 +368,7 @@ export class PessoaService implements OnModuleInit {
         if (!this.#cpfObrigatorioSemRF) return;
 
         if (!dto.registro_funcionario && !dto.cpf) {
-            throw new HttpException('cpf| CPF obrigatório para conta sem registro_funcionario', 400);
+            throw new HttpException('CPF obrigatório para conta sem registro_funcionario', 400);
         }
     }
 
@@ -377,8 +379,7 @@ export class PessoaService implements OnModuleInit {
             dto.email &&
             dto.email.endsWith('@' + this.#matchEmailRFObrigatorio)
         ) {
-            throw new HttpException(
-                `registro_funcionario| Registro de funcionário obrigatório para e-mails terminando @${this.#matchEmailRFObrigatorio}`,
+            throw new HttpException(`Registro de funcionário obrigatório para e-mails terminando @${this.#matchEmailRFObrigatorio}`,
                 400
             );
         }
@@ -386,8 +387,7 @@ export class PessoaService implements OnModuleInit {
         if (!this.#cpfObrigatorioSemRF) return;
 
         if (!dto.cpf && !dto.registro_funcionario) {
-            throw new HttpException(
-                'registro_funcionario| Registro de funcionário obrigatório caso CPF não seja informado',
+            throw new HttpException('Registro de funcionário obrigatório caso CPF não seja informado',
                 400
             );
         }
@@ -551,7 +551,7 @@ export class PessoaService implements OnModuleInit {
                   })
                 : 0;
             if (emailExists > 0) {
-                throw new HttpException('email| E-mail está em uso em outra conta', 400);
+                throw new HttpException('E-mail está em uso em outra conta', 400);
             }
 
             if (updatePessoaDto.registro_funcionario) {
@@ -562,8 +562,7 @@ export class PessoaService implements OnModuleInit {
                     },
                 });
                 if (registroFuncionarioExists > 0) {
-                    throw new HttpException(
-                        'registro_funcionario| Registro de funcionário já atrelado a outra conta',
+                    throw new HttpException('Registro de funcionário já atrelado a outra conta',
                         400
                     );
                 }
@@ -577,7 +576,7 @@ export class PessoaService implements OnModuleInit {
                     },
                 });
                 if (registroFuncionarioExists > 0) {
-                    throw new HttpException('cpf| CPF já atrelado a outra conta', 400);
+                    throw new HttpException('CPF já atrelado a outra conta', 400);
                 }
             }
 
@@ -605,7 +604,13 @@ export class PessoaService implements OnModuleInit {
                 self.pessoa_fisica.orgao_id &&
                 self.pessoa_fisica.orgao_id != updatePessoaDto.orgao_id
             ) {
-                await this.trocouDeOrgao(prismaTx, { ...self, pessoa_fisica: self.pessoa_fisica }, now, logger);
+                await this.trocouDeOrgao(
+                    prismaTx,
+                    { ...self, pessoa_fisica: self.pessoa_fisica },
+                    now,
+                    logger,
+                    updatePessoaDto.orgao_id
+                );
             }
 
             const updated = await prismaTx.pessoa.update({
@@ -1035,6 +1040,77 @@ export class PessoaService implements OnModuleInit {
         });
     }
 
+    /**
+     * Verifica se as equipes da pessoa permanecem válidas com o novo órgão.
+     *
+     * Regras:
+     * - Participantes: podem mudar para qualquer órgão dentro da hierarquia válida da equipe (órgão base + subordinados)
+     * - Colaboradores: NÃO podem mudar de órgão - devem permanecer no órgão exato da equipe
+     */
+    private async verificaValidadeEquipesNovoOrgao(
+        prismaTx: Prisma.TransactionClient,
+        pessoaId: number,
+        novoOrgaoId: number,
+        logger: LoggerWithLog
+    ): Promise<void> {
+        logger.log(`Verificando validade das equipes para o novo órgão ID ${novoOrgaoId}`);
+
+        // Verifica se a pessoa é COLABORADOR em alguma equipe
+        const equipesComoColaborador = await prismaTx.grupoResponsavelEquipe.findMany({
+            where: {
+                removido_em: null,
+                GrupoResponsavelEquipeColaborador: { some: { pessoa_id: pessoaId, removido_em: null } },
+            },
+            select: {
+                id: true,
+                titulo: true,
+                orgao_id: true,
+            },
+        });
+
+        if (equipesComoColaborador.length > 0) {
+            throw new BadRequestException(
+                `Não é possível mudar de órgão, pois ainda é colaborador nas equipes: ${equipesComoColaborador
+                    .map((e) => e.titulo)
+                    .join(', ')}. Colaboradores devem ser removidos da equipe antes da mudança de órgão.`
+            );
+        }
+
+        // Verifica se a pessoa é PARTICIPANTE em alguma equipe
+        const equipesComoParticipante = await prismaTx.grupoResponsavelEquipe.findMany({
+            where: {
+                removido_em: null,
+                GrupoResponsavelEquipePessoa: { some: { pessoa_id: pessoaId, removido_em: null } },
+            },
+            select: {
+                id: true,
+                titulo: true,
+                orgao_id: true,
+            },
+        });
+
+        if (equipesComoParticipante.length === 0) {
+            logger.log('Pessoa não é participante de nenhuma equipe. Nenhuma verificação necessária.');
+            return;
+        }
+
+        // Para cada equipe onde é participante, verifica se o novo órgão está na hierarquia válida
+        for (const equipe of equipesComoParticipante) {
+            logger.log(`Verificando equipe "${equipe.titulo}" (órgão base ID ${equipe.orgao_id}) como participante`);
+
+            // Obtém a hierarquia permitida para a equipe (órgão base + subordinados)
+            const orgaosPermitidosParaEquipe = await this.orgaoService.getOrgaoSubtreeIds(equipe.orgao_id, prismaTx);
+
+            if (!orgaosPermitidosParaEquipe.includes(novoOrgaoId)) {
+                throw new BadRequestException(
+                    `Não é possível mudar para o novo órgão, pois invalidaria a participação na equipe "${equipe.titulo}". ` +
+                        `A pessoa precisa ser removida desta equipe antes de prosseguir.`
+                );
+            }
+            logger.log(`Novo órgão ID ${novoOrgaoId} é válido para a equipe ${equipe.id}.`);
+        }
+    }
+
     private async trocouDeOrgao(
         prismaTx: Prisma.TransactionClient,
         self: {
@@ -1045,7 +1121,8 @@ export class PessoaService implements OnModuleInit {
             id: number;
         },
         now: Date,
-        logger: LoggerWithLog
+        logger: LoggerWithLog,
+        novoOrgaoId: number
     ) {
         const orgaoAntigo = self.pessoa_fisica.orgao_id;
         const orgaoAntigoStr = `órgão antigo ID ${orgaoAntigo}`;
@@ -1135,61 +1212,25 @@ export class PessoaService implements OnModuleInit {
             }
         }
 
-        {
-            logger.log(`Trocou de órgão: verificando o ${orgaoAntigoStr} se há responsabilidades em equipes`);
+        // Verifica se as equipes ainda são válidas com o novo órgão
+        // Isso já bloqueia se a pessoa for colaboradora de alguma equipe
+        await this.verificaValidadeEquipesNovoOrgao(prismaTx, self.id, novoOrgaoId, logger);
 
-            const grupoQSouResp = await prismaTx.grupoResponsavelEquipeResponsavel.findMany({
+        // Atualiza o orgao_id nos relacionamentos de equipes (participante)
+        // Colaboradores não chegam aqui pois a verificação acima já bloqueia
+        {
+            logger.log(`Trocou de órgão: atualizando orgao_id em grupoResponsavelEquipeParticipante`);
+            await prismaTx.grupoResponsavelEquipeParticipante.updateMany({
                 where: {
-                    removido_em: null,
                     pessoa_id: self.id,
+                    removido_em: null,
                 },
-                select: {
-                    grupo_responsavel_equipe: {
-                        select: {
-                            titulo: true,
-                        },
-                    },
+                data: {
+                    orgao_id: novoOrgaoId,
                 },
             });
-
-            if (grupoQSouResp.length) {
-                throw new BadRequestException(
-                    `Não é possível mudar de órgão, pois ainda é responsável na equipes: ${grupoQSouResp
-                        .map((r) => {
-                            return `${r.grupo_responsavel_equipe.titulo}`;
-                        })
-                        .join('\n')}`
-                );
-            }
         }
 
-        {
-            logger.log(`Trocou de órgão: verificando o ${orgaoAntigoStr} se há responsabilidades equipes`);
-
-            const grupoQSouPart = await prismaTx.grupoResponsavelEquipeParticipante.findMany({
-                where: {
-                    removido_em: null,
-                    pessoa_id: self.id,
-                },
-                select: {
-                    grupo_responsavel_equipe: {
-                        select: {
-                            titulo: true,
-                        },
-                    },
-                },
-            });
-
-            if (grupoQSouPart.length) {
-                throw new BadRequestException(
-                    `Não é possível mudar de órgão, pois ainda é participante na equipe: ${grupoQSouPart
-                        .map((r) => {
-                            return `${r.grupo_responsavel_equipe.titulo}`;
-                        })
-                        .join('\n')}`
-                );
-            }
-        }
         {
             logger.log(`Trocou de órgão: removendo relacionamentos de projetoEquipe no ${orgaoAntigoStr}`);
             await prismaTx.projetoEquipe.updateMany({
@@ -1262,10 +1303,10 @@ export class PessoaService implements OnModuleInit {
 
         const pessoa = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
-                // Validate unique constraints first
+                // Valida restrições únicas primeiro
                 const emailExists = await prismaTx.pessoa.count({ where: { email: createPessoaDto.email } });
                 if (emailExists > 0) {
-                    throw new BadRequestException('email| E-mail já tem conta');
+                    throw new BadRequestException('E-mail já tem conta');
                 }
 
                 if (createPessoaDto.registro_funcionario) {
@@ -1273,8 +1314,7 @@ export class PessoaService implements OnModuleInit {
                         where: { pessoa_fisica: { registro_funcionario: createPessoaDto.registro_funcionario } },
                     });
                     if (rfExists > 0) {
-                        throw new BadRequestException(
-                            'registro_funcionario| Registro de funcionário já atrelado a outra conta'
+                        throw new BadRequestException('Registro de funcionário já atrelado a outra conta'
                         );
                     }
                 }
@@ -1284,11 +1324,11 @@ export class PessoaService implements OnModuleInit {
                         where: { pessoa_fisica: { cpf: createPessoaDto.cpf } },
                     });
                     if (cpfExists > 0) {
-                        throw new BadRequestException('cpf| CPF já atrelado a outra conta');
+                        throw new BadRequestException('CPF já atrelado a outra conta');
                     }
                 }
 
-                // Create basic pessoa record first
+                // Cria registro básico de pessoa primeiro
                 let pessoaFisica;
                 if (createPessoaDto.orgao_id) {
                     pessoaFisica = await prismaTx.pessoaFisica.create({
@@ -1382,13 +1422,23 @@ export class PessoaService implements OnModuleInit {
 
         const filtrosExtra = this.filtrosPrivilegios(filters);
 
+        const orgaoList: number[] = [];
+        if (filters?.orgao_id) {
+            if (filters.orgao_recursivo) {
+                const childOrgaoIds = await this.orgaoService.getOrgaoSubtreeIds(filters.orgao_id);
+                orgaoList.push(...childOrgaoIds);
+            } else {
+                orgaoList.push(filters.orgao_id);
+            }
+        }
+
         const listActive = await this.prisma.pessoa.findMany({
             orderBy: [{ desativado: 'asc' }, { nome_exibicao: 'asc' }],
             where: {
                 id: { gt: 0 },
                 NOT: { pessoa_fisica_id: null },
                 AND: filtrosExtra,
-                ...(filters?.orgao_id ? { pessoa_fisica: { orgao_id: filters.orgao_id } } : {}),
+                ...(orgaoList.length ? { pessoa_fisica: { orgao_id: { in: orgaoList } } } : {}),
             },
             select: {
                 id: true,
@@ -1753,6 +1803,20 @@ export class PessoaService implements OnModuleInit {
                 perfilEquipe: ['Medicao', 'Validacao', 'Liberacao'],
                 privilegios: ['ReferencialEm.EquipeBanco.PS'],
             },
+            {
+                tipo: 'PS',
+                modulo: 'PlanoSetorial',
+                chaveEquipe: 'perfis_equipe_ps',
+                perfilEquipe: ['AdminPS', 'TecnicoPS'],
+                privilegios: ['Menu.historico_monitoramento_ps'],
+            },
+            {
+                tipo: 'PDM',
+                modulo: 'ProgramaDeMetas',
+                chaveEquipe: 'perfis_equipe_pdm',
+                perfilEquipe: ['AdminPS', 'TecnicoPS'],
+                privilegios: ['Menu.historico_monitoramento_pdm'],
+            },
         ];
 
         for (const config of configuracoesModulo) {
@@ -1885,7 +1949,7 @@ export class PessoaService implements OnModuleInit {
         });
 
         const isPasswordValid = await this.senhaCorreta(novaSenhaDto.senha_corrente, pessoa);
-        if (!isPasswordValid) throw new BadRequestException('senha_corrente| Senha atual não confere');
+        if (!isPasswordValid) throw new BadRequestException('Senha atual não confere');
 
         if (!(await this.escreverNovaSenhaById(user.id, novaSenhaDto.senha_nova, true))) {
             throw new BadRequestException('Senha não pode ser alterada no momento');

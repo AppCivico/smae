@@ -267,7 +267,7 @@ export class OrcamentoPlanejadoService {
             where: { id: filters.meta_id, removido_em: null },
             select: { pdm_id: true },
         });
-        if (!meta) throw new HttpException(`meta_id| Meta não foi encontrada`, 404);
+        if (!meta) throw new HttpException(`Meta não foi encontrada`, 404);
 
         const queryRows = await this.prisma.orcamentoPlanejado.findMany({
             where: {

@@ -1,54 +1,46 @@
 import { defineAsyncComponent } from 'vue';
 
 import LoadingComponent from '@/components/LoadingComponent.vue';
+import { useEquipesStore } from '@/stores/equipes.store';
+import { useProjetoEtiquetasStore } from '@/stores/projetoEtiqueta.store';
 import ConfiguracoesRaiz from '@/views/ConfiguracoesRaiz.vue';
-
+import EtapasCriarEditar from '@/views/etapasProjeto/EtapasCriarEditar.vue';
+import EtapasLista from '@/views/etapasProjeto/EtapasLista.vue';
+import EtapasRaiz from '@/views/etapasProjeto/EtapasRaiz.vue';
+import FasesCriarEditar from '@/views/fasesProjeto/FasesCriarEditar.vue';
+import FasesLista from '@/views/fasesProjeto/FasesLista.vue';
+import FasesRaiz from '@/views/fasesProjeto/FasesRaiz.vue';
+import FluxosCriarEditar from '@/views/fluxosProjeto/FluxosCriarEditar.vue';
+import FluxosLista from '@/views/fluxosProjeto/FluxosLista.vue';
+import FluxosRaiz from '@/views/fluxosProjeto/FluxosRaiz.vue';
+import GruposDePaineisExternosCriarEditar from '@/views/gruposDePaineisExternos/GruposDePaineisExternosCriarEditar.vue';
+import GruposDePaineisExternosLista from '@/views/gruposDePaineisExternos/GruposDePaineisExternosLista.vue';
+import GruposDePaineisExternosRaiz from '@/views/gruposDePaineisExternos/GruposDePaineisExternosRaiz.vue';
 import {
   AddEditGrupo,
   AddEditPainel,
   ListGrupos,
   ListPainel,
 } from '@/views/paineis';
+import PaineisExternosCriarEditar from '@/views/paineisExternos/PaineisExternosCriarEditar.vue';
+import PaineisExternosLista from '@/views/paineisExternos/PaineisExternosLista.vue';
+import PaineisExternosRaiz from '@/views/paineisExternos/PaineisExternosRaiz.vue';
 import {
   AddEditPdM,
   ListPdM,
 } from '@/views/pdm';
-
 import EdicaoOrcamento from '@/views/pdm/EdicaoOrcamento.vue';
-
-import PaineisExternosCriarEditar from '@/views/paineisExternos/PaineisExternosCriarEditar.vue';
-import PaineisExternosLista from '@/views/paineisExternos/PaineisExternosLista.vue';
-import PaineisExternosRaiz from '@/views/paineisExternos/PaineisExternosRaiz.vue';
-
-import FluxosCriarEditar from '@/views/fluxosProjeto/FluxosCriarEditar.vue';
-import FluxosLista from '@/views/fluxosProjeto/FluxosLista.vue';
-import FluxosRaiz from '@/views/fluxosProjeto/FluxosRaiz.vue';
-
-import EtapasCriarEditar from '@/views/etapasProjeto/EtapasCriarEditar.vue';
-import EtapasLista from '@/views/etapasProjeto/EtapasLista.vue';
-import EtapasRaiz from '@/views/etapasProjeto/EtapasRaiz.vue';
-
-import FasesCriarEditar from '@/views/fasesProjeto/FasesCriarEditar.vue';
-import FasesLista from '@/views/fasesProjeto/FasesLista.vue';
-import FasesRaiz from '@/views/fasesProjeto/FasesRaiz.vue';
-
-import GruposDePaineisExternosCriarEditar from '@/views/gruposDePaineisExternos/GruposDePaineisExternosCriarEditar.vue';
-import GruposDePaineisExternosLista from '@/views/gruposDePaineisExternos/GruposDePaineisExternosLista.vue';
-import GruposDePaineisExternosRaiz from '@/views/gruposDePaineisExternos/GruposDePaineisExternosRaiz.vue';
-
 import SituacaoCriarEditar from '@/views/situacao/SituacaoCriarEditar.vue';
 import SituacaoLista from '@/views/situacao/SituacaoLista.vue';
 import SituacaoRaiz from '@/views/situacao/SituacaoRaiz.vue';
-
+import StatusDistribuicaoCriarEditar from '@/views/statusesDistribuicao/StatusDistribuicaoCriarEditar.vue';
+import StatusDistribuicaoLista from '@/views/statusesDistribuicao/StatusDistribuicaoLista.vue';
+import StatusDistribuicaoRaiz from '@/views/statusesDistribuicao/StatusDistribuicaoRaiz.vue';
 import TarefasCriarEditar from '@/views/tv.tarefas/TarefasCriarEditar.vue';
 import TarefasLista from '@/views/tv.tarefas/TarefasLista.vue';
 import TarefasRaiz from '@/views/tv.tarefas/TarefasRaiz.vue';
 
-import StatusDistribuicaoCriarEditar from '@/views/statusesDistribuicao/StatusDistribuicaoCriarEditar.vue';
-import StatusDistribuicaoLista from '@/views/statusesDistribuicao/StatusDistribuicaoLista.vue';
-import StatusDistribuicaoRaiz from '@/views/statusesDistribuicao/StatusDistribuicaoRaiz.vue';
-
-import { useEquipesStore } from '@/stores/equipes.store';
+import tiparPropsDeRota from './helpers/tiparPropsDeRota';
 
 const PortfoliosCriarEditar = defineAsyncComponent({
   loader: () => import('@/views/portfolios/PortfoliosCriarEditar.vue'),
@@ -152,6 +144,8 @@ export default [
           rotasParaMenuSecundário: [
             'projeto.portfolio.listar',
             'projeto.gruposObservadores.listar',
+            'projeto.etapas.listar',
+            'projeto.etiquetas.listar',
           ],
         },
 
@@ -195,6 +189,63 @@ export default [
           },
         ],
       },
+
+      {
+        path: 'etapas',
+        component: EtapasRaiz,
+        meta: {
+          título: 'Etapas de projeto',
+          títuloParaMenu: 'Etapas',
+          entidadeMãe: 'projeto',
+          rotaPrescindeDeChave: true,
+          limitarÀsPermissões: 'CadastroProjetoEtapa.',
+          rotasParaMenuSecundário: [
+            'projeto.portfolio.listar',
+            'projeto.gruposObservadores.listar',
+            'projeto.etapas.listar',
+            'projeto.etiquetas.listar',
+          ],
+        },
+
+        children: [
+          {
+            name: 'projeto.etapas.listar',
+            path: '',
+            component: EtapasLista,
+            meta: {
+              título: 'Etapas de projeto',
+            },
+          },
+          {
+            name: 'projeto.etapas.criar',
+            path: 'novo',
+            component: EtapasCriarEditar,
+            meta: {
+              título: 'Nova etapa do projeto',
+              tituloParaMigalhaDePao: 'Nova etapa',
+              rotasParaMigalhasDePão: ['projeto.etapas.listar'],
+              rotaDeEscape: 'projeto.etapas.listar',
+            },
+          },
+          {
+            path: ':etapaId',
+            name: 'projeto.etapas.editar',
+            component: EtapasCriarEditar,
+            props: ({ params }) => ({
+              ...params,
+              ...{
+                etapaId: Number.parseInt(params.etapaId, 10) || undefined,
+              },
+            }),
+            meta: {
+              título: 'Editar etapa do projeto',
+              tituloParaMigalhaDePao: 'Editar etapa',
+              rotasParaMigalhasDePão: ['projeto.etapas.listar'],
+              rotaDeEscape: 'projeto.etapas.listar',
+            },
+          },
+        ],
+      },
       // MDO
       {
         path: 'mdo',
@@ -217,6 +268,7 @@ export default [
               rotasParaMenuSecundário: [
                 'mdo.portfolio.listar',
                 'mdo.gruposObservadores.listar',
+                'mdo.etapas.listar',
               ],
             },
             children: [
@@ -270,6 +322,7 @@ export default [
               rotasParaMenuSecundário: [
                 'mdo.portfolio.listar',
                 'mdo.gruposObservadores.listar',
+                'mdo.etapas.listar',
               ],
               rotaParaItensAssociados: {
                 nome: 'obrasResumo',
@@ -313,6 +366,58 @@ export default [
                     'mdo.gruposObservadores.listar',
                   ],
                   rotaDeEscape: 'mdo.gruposObservadores.listar',
+                },
+              },
+            ],
+          },
+          {
+            path: 'etapas',
+            component: EtapasRaiz,
+            meta: {
+              título: 'Etapas de obra',
+              títuloParaMenu: 'Etapas',
+              entidadeMãe: 'mdo',
+              rotaPrescindeDeChave: true,
+              limitarÀsPermissões: 'CadastroProjetoEtapaMDO.',
+              rotasParaMenuSecundário: [
+                'mdo.portfolio.listar',
+                'mdo.gruposObservadores.listar',
+                'mdo.etapas.listar',
+              ],
+            },
+            children: [
+              {
+                name: 'mdo.etapas.listar',
+                path: '',
+                component: EtapasLista,
+                meta: {
+                  título: 'Etapas da obra',
+                },
+              },
+              {
+                name: 'mdo.etapas.criar',
+                path: 'novo',
+                component: EtapasCriarEditar,
+                meta: {
+                  título: 'Nova etapa da obra',
+                  tituloParaMigalhaDePao: 'Nova etapa',
+                  rotasParaMigalhasDePão: ['mdo.etapas.listar'],
+                  rotaDeEscape: 'mdo.etapas.listar',
+                },
+              },
+              {
+                path: ':etapaId',
+                name: 'mdo.etapas.editar',
+                component: EtapasCriarEditar,
+                props: ({ params }) => ({
+                  ...params,
+                  etapaId: Number.parseInt(params.etapaId, 10) || undefined,
+                }),
+                meta: {
+                  título: 'Editar etapa da obra',
+                  tituloParaMigalhaDePao: 'Editar etapa',
+                  rotasParaMigalhasDePão: ['mdo.etapas.listar'],
+                  rotaDeEscape: 'mdo.etapas.listar',
                 },
               },
             ],
@@ -419,6 +524,62 @@ export default [
               título: () => useEquipesStore().itemParaEdicao.titulo,
               rotaDeEscape: 'equipesListar',
               rotasParaMigalhasDePão: ['equipesListar'],
+            },
+          },
+        ],
+      },
+      {
+        path: 'etiquetas',
+        component: () => import('@/views/projetos.etiquetas/EtiquetasRaiz.vue'),
+        meta: {
+          título: 'Etiquetas',
+          rotaPrescindeDeChave: true,
+          rotasParaMenuSecundário: [
+            'projeto.portfolio.listar',
+            'projeto.gruposObservadores.listar',
+            'projeto.etapas.listar',
+            'projeto.etiquetas.listar',
+          ],
+        },
+        children: [
+          {
+            name: 'projeto.etiquetas.listar',
+            path: '',
+            component: () => import('@/views/projetos.etiquetas/EtiquetasLista.vue'),
+            meta: {
+              título: 'Etiquetas',
+            },
+          },
+          {
+            name: 'projeto.etiquetas.criar',
+            path: 'novo',
+            component: () => import('@/views/projetos.etiquetas/EtiquetasCriarEditar.vue'),
+            meta: {
+              limitarÀsPermissões: ['CadastroPortfolioTag.inserir'],
+              título: 'Nova etiqueta',
+              rotasParaMigalhasDePão: ['projeto.etiquetas.listar'],
+              rotaDeEscape: 'projeto.etiquetas.listar',
+            },
+          },
+          {
+            path: ':etiquetaId',
+            name: 'projeto.etiquetas.editar',
+            component: () => import('@/views/projetos.etiquetas/EtiquetasCriarEditar.vue'),
+            props: tiparPropsDeRota,
+            meta: {
+              limitarÀsPermissões: ['CadastroPortfolioTag.editar'],
+              título: 'Editar etiqueta',
+              tituloParaMigalhaDePao: () => {
+                const { emFoco } = useProjetoEtiquetasStore();
+
+                if (!emFoco) {
+                  return 'Editar etiqueta';
+                }
+
+                return emFoco.descricao;
+              },
+              rotasParaMigalhasDePão: ['projeto.etiquetas.listar'],
+              rotaDeEscape: 'projeto.etiquetas.listar',
             },
           },
         ],
@@ -585,7 +746,7 @@ export default [
           limitarÀsPermissões: 'CadastroWorkflows.',
           rotasParaMenuSecundário: [
             'fluxosListar',
-            'TransferenciasVoluntarias.etapasListar',
+            'TransferenciasVoluntarias.etapa.listar',
             'fasesListar',
             'workflow.TarefasListar',
             'situacaoListar',
@@ -646,7 +807,7 @@ export default [
 
             children: [
               {
-                name: 'TransferenciasVoluntarias.etapasListar',
+                name: 'TransferenciasVoluntarias.etapa.listar',
                 path: '',
                 component: EtapasLista,
                 meta: {
@@ -654,7 +815,7 @@ export default [
                 },
               },
               {
-                name: 'TransferenciasVoluntarias.etapaCriar',
+                name: 'TransferenciasVoluntarias.etapa.criar',
                 path: 'nova',
                 component: EtapasCriarEditar,
                 meta: {
@@ -663,7 +824,7 @@ export default [
               },
               {
                 path: ':etapaId',
-                name: 'TransferenciasVoluntarias.etapaEditar',
+                name: 'TransferenciasVoluntarias.etapa.editar',
                 component: EtapasCriarEditar,
                 props: ({ params }) => ({
                   ...params,
@@ -921,6 +1082,8 @@ export default [
           rotasParaMenuSecundário: [
             'projeto.portfolio.listar',
             'projeto.gruposObservadores.listar',
+            'projeto.etapas.listar',
+            'projeto.etiquetas.listar',
           ],
 
           rotaParaItensAssociados: {

@@ -33,7 +33,7 @@ export class TagService {
         });
 
         if (similarExists > 0)
-            throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
+            throw new HttpException('Descrição igual ou semelhante já existe em outro registro ativo', 400);
 
         let uploadId: number | null = null;
         if (createTagDto.upload_icone) {
@@ -111,8 +111,7 @@ export class TagService {
             });
 
             if (similarExists > 0)
-                throw new HttpException(
-                    'descricao| Descrição igual ou semelhante já existe em outro registro ativo',
+                throw new HttpException('Descrição igual ou semelhante já existe em outro registro ativo',
                     400
                 );
         }

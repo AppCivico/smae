@@ -1,4 +1,10 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import {
+  computed, defineOptions, onUnmounted, ref, watch,
+} from 'vue';
+import { useRoute } from 'vue-router';
+
 import LegendaEstimadoVsEfetivo from '@/components/LegendaEstimadoVsEfetivo.vue';
 import LinhaDeCronograma from '@/components/projetos/LinhaDeCronograma.vue';
 import CabecalhoResumo from '@/components/tarefas/CabecalhoResumo.vue';
@@ -8,11 +14,6 @@ import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
 import { useObrasStore } from '@/stores/obras.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
-import { storeToRefs } from 'pinia';
-import {
-  computed, defineOptions, ref, watch,
-} from 'vue';
-import { useRoute } from 'vue-router';
 
 defineOptions({ inheritAttrs: false });
 
@@ -62,7 +63,7 @@ const podeMudarDeEtapaProjeto = computed(() => {
 
 const nívelMáximoVisível = ref(0);
 
-const { lista: listaDeEtapas, erro: erroNaListaDeEtapas } = storeToRefs(etapasProjetosStore);
+const { lista: etapas, erro: erroNaListaDeEtapas } = storeToRefs(etapasProjetosStore);
 
 async function iniciar() {
   emailsStore.buscarItem({ transferencia_id: route.params.transferenciaId });
@@ -109,11 +110,21 @@ async function mudarEtapa(idEtapa) {
 }
 iniciar();
 
-watch(podeMudarDeEtapaProjeto, (novoValor) => {
-  if (novoValor) {
-    etapasProjetosStore.buscarTudo();
-  }
-}, { immediate: true });
+watch(
+  [podeMudarDeEtapaProjeto, () => projetoEmFoco.value.portfolio_id],
+  ([novoValor, novoPortfolio]) => {
+    if (novoValor && novoPortfolio) {
+      etapasProjetosStore.buscarTudo({
+        portfolio_id: novoPortfolio,
+      });
+    }
+  },
+  { immediate: true },
+);
+
+onUnmounted(() => {
+  etapasProjetosStore.$reset();
+});
 </script>
 <template>
   <CabecalhoDePagina class="mb2">
@@ -124,13 +135,13 @@ watch(podeMudarDeEtapaProjeto, (novoValor) => {
     <template #acoes>
       <nav class="flex g1">
         <div
-          v-if="podeMudarDeEtapaProjeto && listaDeEtapas.length"
+          v-if="podeMudarDeEtapaProjeto && etapas?.length"
           class="dropbtn"
         >
           <span class="btn">Mudar etapa</span>
           <ul>
             <li
-              v-for="etapa, index in listaDeEtapas"
+              v-for="etapa, index in etapas"
               :key="index"
             >
               <button

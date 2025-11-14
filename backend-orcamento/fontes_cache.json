@@ -1,4 +1,7 @@
-{
+{   "metadados": 
+    {"txtStatus" : "ok",
+    "qtdPaginas" : 1
+    },
     "fonte_recursos": [
             {
                 "codigo": "00",

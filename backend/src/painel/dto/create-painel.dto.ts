@@ -20,7 +20,7 @@ export class CreatePainelDto {
 
     @ApiProperty({ enum: Periodicidade, enumName: 'Periodicidade' })
     @IsEnum(Periodicidade, {
-        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(Periodicidade).join(', '),
+        message: 'Precisa ser um dos seguintes valores: ' + Object.values(Periodicidade).join(', '),
     })
     periodicidade: Periodicidade;
 
@@ -38,8 +38,8 @@ export class CreatePainelDto {
 
     @IsArray()
     @IsOptional()
-    @ArrayMinSize(1, { message: '$property| grupo(s): precisa ter pelo menos um item' })
-    @ArrayMaxSize(100, { message: '$property| grupo(s): precisa ter no máximo 100 items' })
-    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
+    @ArrayMinSize(1, { message: 'grupo(s): precisa ter pelo menos um item' })
+    @ArrayMaxSize(100, { message: 'grupo(s): precisa ter no máximo 100 items' })
+    @IsInt({ each: true, message: 'Cada item precisa ser um número inteiro' })
     grupos?: number[];
 }

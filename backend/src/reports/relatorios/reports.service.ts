@@ -103,6 +103,15 @@ export class ReportsService {
         const unparsedParams = structuredClone(dto.parametros);
         // acaba sendo chamado 2x a cada request, pq já rodou 1x na validação, mas blz.
         let parametros = ParseParametrosDaFonte(dto.fonte, dto.parametros);
+        const validations = await validate(parametros, {
+            whitelist: true,
+            forbidNonWhitelisted: true,
+        });
+        if (validations.length > 0) {
+            throw new BadRequestException(
+                `Verificação falhou: ${FormatValidationErrors(validations)} - ${JSON.stringify(unparsedParams)}`
+            );
+        }
 
         // Ajusta o tipo de relatório para MDO, se for de status de obra
         if (

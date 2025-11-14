@@ -32,6 +32,56 @@ export class SofEntidadeService {
         };
     }
 
+    async findDetalhamentoFonte(ano: number, numeroFonte: number) {
+        // Busca no cache
+        let dados = await this.prisma.sofDetalhamentoFonte.findUnique({
+            where: {
+                ano_numero_fonte: {
+                    ano: ano,
+                    numero_fonte: numeroFonte,
+                },
+            },
+        });
+
+        // Verifica se o cache está válido (menos de 24 horas)
+        const now = DateTime.now();
+        const cacheValido = dados && now.diff(DateTime.fromJSDate(dados.atualizado_em), 'hours').hours < 24;
+
+        if (!cacheValido) {
+            this.logger.log(
+                `Cache expirado ou inexistente para detalhamento fonte ${numeroFonte} do ano ${ano}, buscando no SOF`
+            );
+            // Busca no SOF e atualiza o cache
+            const apiResponse = await this.sof.doDetailhamentoFonteRequest(ano, numeroFonte);
+
+            dados = await this.prisma.sofDetalhamentoFonte.upsert({
+                where: {
+                    ano_numero_fonte: {
+                        ano: ano,
+                        numero_fonte: numeroFonte,
+                    },
+                },
+                create: {
+                    ano: ano,
+                    numero_fonte: numeroFonte,
+                    atualizado_em: new Date(),
+                    dados: apiResponse.dados,
+                },
+                update: {
+                    atualizado_em: new Date(),
+                    dados: apiResponse.dados,
+                },
+            });
+        }
+
+        if (!dados) throw new HttpException(`Erro ao buscar dados de detalhamento de fonte`, 500);
+
+        return {
+            atualizado_em: Date2YMD.toString(dados.atualizado_em),
+            dados: dados.dados,
+        };
+    }
+
     @Cron(process.env['SOF_CRONTAB_STRING'] || '*/5 * * * *')
     async handleListaSofCron() {
         if (process.env['DISABLE_SOF_CRONTAB'] || process.env['DISABLED_CRONTABS'] == 'all') return;

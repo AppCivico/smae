@@ -6,9 +6,10 @@ import { PessoaResponsabilidadesMetaService } from './pessoa.responsabilidades.m
 import { PessoaPrivilegioModule } from '../auth/pessoaPrivilegio.module';
 import { EquipeRespModule } from '../equipe-resp/equipe-resp.module';
 import { PessoaUtilsService } from './pessoa.utils.service';
+import { OrgaoModule } from '../orgao/orgao.module';
 
 @Module({
-    imports: [PrismaModule, PessoaPrivilegioModule, EquipeRespModule],
+    imports: [PrismaModule, PessoaPrivilegioModule, EquipeRespModule, OrgaoModule],
     controllers: [PessoaController],
     providers: [PessoaService, PessoaResponsabilidadesMetaService, PessoaUtilsService],
     exports: [PessoaService],

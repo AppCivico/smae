@@ -59,7 +59,7 @@ export class PainelService {
         });
 
         if (similarExists > 0)
-            throw new HttpException('descricao| Nome igual ou semelhante já existe em outro registro ativo', 400);
+            throw new HttpException('Nome igual ou semelhante já existe em outro registro ativo', 400);
 
         const created = await this.prisma.$transaction(
             async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
@@ -434,7 +434,7 @@ export class PainelService {
         });
 
         if (similarExists > 0)
-            throw new HttpException('descricao| Nome igual ou semelhante já existe em outro registro ativo', 400);
+            throw new HttpException('Nome igual ou semelhante já existe em outro registro ativo', 400);
 
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
             const grupos_to_assign = [];

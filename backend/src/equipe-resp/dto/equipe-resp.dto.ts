@@ -25,9 +25,9 @@ export class CreateEquipeRespDto {
      * cada pessoa precisa ter o privilégio `SMAE.GrupoVariavel.colaborador`
      * @example "[4, 5, 6]"
      */
-    @IsArray({ message: '$property| precisa ser um array' })
-    @ArrayMaxSize(10000, { message: '$property| precisa ter no máximo 10000 items' })
-    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
+    @IsArray({ message: 'precisa ser um array' })
+    @ArrayMaxSize(10000, { message: 'precisa ter no máximo 10000 items' })
+    @IsInt({ each: true, message: 'Cada item precisa ser um número inteiro' })
     participantes: number[];
 
     /**
@@ -35,9 +35,9 @@ export class CreateEquipeRespDto {
      * cada pessoa precisa ter o privilégio `CadastroGrupoVariavel.colaborador_responsavel`
      * @example "[]"
      */
-    @IsArray({ message: '$property| precisa ser um array' })
-    @ArrayMaxSize(10000, { message: '$property| precisa ter no máximo 10000 items' })
-    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
+    @IsArray({ message: 'precisa ser um array' })
+    @ArrayMaxSize(10000, { message: 'precisa ter no máximo 10000 items' })
+    @IsInt({ each: true, message: 'Cada item precisa ser um número inteiro' })
     colaboradores: number[];
 }
 

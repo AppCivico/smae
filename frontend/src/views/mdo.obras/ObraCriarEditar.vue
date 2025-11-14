@@ -114,7 +114,14 @@ const {
   órgãosQueTemResponsáveisEPorId,
 } = storeToRefs(ÓrgãosStore);
 
-const { DotaçãoSegmentos } = storeToRefs(DotaçãoStore);
+const {
+  DotaçãoSegmentos,
+  DotaçãoDetalhamentos,
+} = storeToRefs(DotaçãoStore);
+
+const DetalhamentosPorFonte = computed(() => DotaçãoDetalhamentos.value);
+const detalhamentosLoadingPorLinha = ref({});
+const segmentosLoadingPorLinha = ref({});
 
 const router = useRouter();
 const route = useRoute();
@@ -201,11 +208,92 @@ function alertarTrocaDeStatus() {
   }
 }
 
-function BuscarDotaçãoParaAno(valorOuEvento) {
+async function BuscarDotaçãoParaAno(valorOuEvento, idx = null) {
   const ano = valorOuEvento.target?.value || valorOuEvento;
 
   if (!DotaçãoSegmentos?.value?.[ano]) {
-    DotaçãoStore.getDotaçãoSegmentos(ano);
+    if (idx !== null) {
+      segmentosLoadingPorLinha.value[idx] = true;
+    }
+
+    try {
+      await DotaçãoStore.getDotaçãoSegmentos(ano);
+    } catch (error) {
+      alertStore.error('Erro ao carregar segmentos de orçamento.');
+    } finally {
+      if (idx !== null) {
+        segmentosLoadingPorLinha.value[idx] = false;
+      }
+    }
+  }
+}
+
+function aoMudarAno(idx, event) {
+  setFieldValue(`fonte_recursos[${idx}].fonte_recurso_cod_sof`, '');
+  setFieldValue(`fonte_recursos[${idx}].fonte_recurso_detalhamento_cod`, '');
+  setFieldValue(`fonte_recursos[${idx}].fonte_recurso_detalhamento_descricao`, '');
+
+  BuscarDotaçãoParaAno(event, idx);
+}
+
+async function BuscarDetalhamento(ano, codigoFonte, idx = null) {
+  const chave = `${ano}-${codigoFonte}`;
+  if (ano && codigoFonte && !DetalhamentosPorFonte.value?.[chave]) {
+    if (idx !== null) {
+      detalhamentosLoadingPorLinha.value[idx] = true;
+    }
+
+    try {
+      await DotaçãoStore.getDotaçãoDetalhamentos(ano, codigoFonte);
+    } catch (error) {
+      alertStore.error('Erro ao carregar detalhamentos da fonte de recurso.');
+    } finally {
+      if (idx !== null) {
+        detalhamentosLoadingPorLinha.value[idx] = false;
+      }
+    }
+  }
+}
+
+function aoMudarFonte(idx, event) {
+  if (!values.fonte_recursos[idx]) {
+    return;
+  }
+
+  if (!values.fonte_recursos[idx].fonte_recurso_ano) {
+    return;
+  }
+
+  const novaFonte = event.target.value;
+
+  setFieldValue(`fonte_recursos[${idx}].fonte_recurso_detalhamento_cod`, '');
+  setFieldValue(`fonte_recursos[${idx}].fonte_recurso_detalhamento_descricao`, '');
+
+  if (novaFonte) {
+    BuscarDetalhamento(values.fonte_recursos[idx].fonte_recurso_ano, novaFonte, idx);
+  }
+}
+
+function atualizarDetalhamentoDescricao(idx, codigoDet) {
+  // Bounds check: previne erro se linha foi removida durante operação assíncrona
+  if (!values.fonte_recursos[idx]) {
+    return;
+  }
+
+  const ano = values.fonte_recursos[idx].fonte_recurso_ano;
+  const codigoFonte = values.fonte_recursos[idx].fonte_recurso_cod_sof;
+  const chave = `${ano}-${codigoFonte}`;
+
+  if (codigoDet && DetalhamentosPorFonte.value?.[chave]) {
+    const detalhamento = DetalhamentosPorFonte.value[chave].find(
+      (item) => item.codigo === codigoDet,
+    );
+    setFieldValue(
+      `fonte_recursos[${idx}].fonte_recurso_detalhamento_descricao`,
+      detalhamento?.descricao || '',
+    );
+  } else {
+    setFieldValue(`fonte_recursos[${idx}].fonte_recurso_detalhamento_descricao`, '');
   }
 }
 
@@ -351,6 +439,15 @@ function iniciar() {
 
   if (emFoco.value?.meta_id) {
     buscarArvoreDeMetas(emFoco.value?.meta_id);
+  }
+
+  // Buscar detalhamentos para fontes já existentes
+  if (itemParaEdicao.value?.fonte_recursos?.length) {
+    itemParaEdicao.value.fonte_recursos.forEach((fonte) => {
+      if (fonte.fonte_recurso_ano && fonte.fonte_recurso_cod_sof) {
+        BuscarDetalhamento(fonte.fonte_recurso_ano, fonte.fonte_recurso_cod_sof);
+      }
+    });
   }
 }
 
@@ -1592,7 +1689,7 @@ watch(listaDeTiposDeIntervenção, () => {
               min="2003"
               max="3000"
               step="1"
-              @change="BuscarDotaçãoParaAno"
+              @change="(e) => aoMudarAno(idx, e)"
             />
             <ErrorMessage
               class="error-msg mb1"
@@ -1613,9 +1710,18 @@ watch(listaDeTiposDeIntervenção, () => {
               maxlength="2"
               class="inputtext light mb1"
               as="select"
+              :disabled="!fields[idx].value.fonte_recurso_ano"
+              :aria-busy="segmentosLoadingPorLinha[idx] ? 'true' : 'false'"
+              @change="(e) => aoMudarFonte(idx, e)"
             >
               <option value="">
-                Selecionar
+                {{
+                  segmentosLoadingPorLinha[idx]
+                    ? 'Carregando...'
+                    : !fields[idx].value.fonte_recurso_ano
+                      ? 'Selecione o ano primeiro'
+                      : 'Selecionar'
+                }}
               </option>
               <option
                 v-for="item in
@@ -1630,6 +1736,43 @@ watch(listaDeTiposDeIntervenção, () => {
             <ErrorMessage
               class="error-msg mb1"
               :name="`fonte_recursos[${idx}].fonte_recurso_cod_sof`"
+            />
+          </div>
+
+          <div class="f1 mb1">
+            <LabelFromYup
+              name="fonte_recurso_detalhamento_cod"
+              :for="`fonte_recursos[${idx}].fonte_recurso_detalhamento_cod`"
+              class="tc300"
+              :schema="schema.fields.fonte_recursos.innerType"
+            />
+
+            <Field
+              :name="`fonte_recursos[${idx}].fonte_recurso_detalhamento_cod`"
+              class="inputtext light mb1"
+              as="select"
+              :disabled="!fields[idx].value.fonte_recurso_cod_sof"
+              :aria-busy="detalhamentosLoadingPorLinha[idx] ? 'true' : 'false'"
+              @change="(e) => atualizarDetalhamentoDescricao(idx, e.target.value)"
+            >
+              <option value="">
+                {{ detalhamentosLoadingPorLinha[idx] ? 'Carregando...' : 'Selecionar' }}
+              </option>
+              <option
+                v-for="item in DetalhamentosPorFonte
+                  ?.[`${fields[idx].value.fonte_recurso_ano}-${fields[idx]
+                    .value.fonte_recurso_cod_sof
+                  }`]
+                  || []"
+                :key="item.codigo"
+                :value="item.codigo"
+              >
+                {{ item.descricao }}
+              </option>
+            </Field>
+            <ErrorMessage
+              class="error-msg mb1"
+              :name="`fonte_recursos[${idx}].fonte_recurso_detalhamento_cod`"
             />
           </div>
 

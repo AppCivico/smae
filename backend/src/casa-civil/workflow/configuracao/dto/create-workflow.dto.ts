@@ -38,7 +38,7 @@ export class CreateWorkflowDto {
      */
     @IsOptional()
     @IsArray()
-    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
+    @IsInt({ each: true, message: 'Cada item precisa ser um número inteiro' })
     distribuicao_statuses_base?: number[];
 
     /**
@@ -47,6 +47,6 @@ export class CreateWorkflowDto {
      */
     @IsOptional()
     @IsArray()
-    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
+    @IsInt({ each: true, message: 'Cada item precisa ser um número inteiro' })
     distribuicao_statuses_customizados?: number[];
 }

@@ -18,9 +18,9 @@ export class FormulaVariaveis {
      * referência da variavel, único por indicador - Regexp: ^_[0-9]{1,8}$
      * @example "_1159"
      */
-    @IsString({ message: '$property| precisa ser uma string' })
+    @IsString({ message: 'precisa ser uma string' })
     @Matches(/^_\d{1,8}$/, {
-        message: '$property| Inválido, precisa começar com _ e ter entre 1 até 8 dígitos numéricos',
+        message: 'Inválido, precisa começar com _ e ter entre 1 até 8 dígitos numéricos',
     })
     referencia: string;
 
@@ -35,20 +35,20 @@ export class FormulaVariaveis {
      *
      * 0 será convertido para 1 automaticamente
      */
-    @IsInt({ message: '$property| descrição: Precisa ser um número' })
+    @IsInt({ message: 'descrição: Precisa ser um número' })
     @Transform((a: TransformFnParams) => (+a.value === 0 ? 1 : +a.value))
     janela: number;
 
     /**
      * ID da variavel
      */
-    @IsInt({ message: '$property| precisa ser um número' })
+    @IsInt({ message: 'precisa ser um número' })
     variavel_id: number;
 
     /**
      * Usar serie acumulada
      */
-    @IsBoolean({ message: '$property| precisa ser um boolean' })
+    @IsBoolean({ message: 'precisa ser um boolean' })
     usar_serie_acumulada: boolean;
 }
 
@@ -97,7 +97,7 @@ export class UpdateIndicadorDto extends OmitType(PartialType(CreateIndicadorDto)
      * @example "CEIL($_1 + $_2) / 100.4 * POWER($_2 + LN($_1), 1) * FLOOR(1- 1 / 2) + LOG(2, 4) + @_1"
      */
     @IsOptional()
-    @IsString({ message: '$property| Precisa ser um texto de formula válido' })
+    @IsString({ message: 'Precisa ser um texto de formula válido' })
     @ValidateIf((object, value) => value !== null)
     formula?: string | null;
 
@@ -114,7 +114,7 @@ export class UpdateIndicadorDto extends OmitType(PartialType(CreateIndicadorDto)
      * acumulado_usa_formula - Se é pra calcular o acumulado usando a formula ou é pra fazer a conta automaticamente pelos valores resultantes
      */
     @IsOptional()
-    @IsBoolean({ message: '$property| precisa ser um boolean' })
+    @IsBoolean({ message: 'precisa ser um boolean' })
     @ValidateIf((object, value) => value !== null)
     acumulado_usa_formula?: boolean | null;
 
@@ -130,7 +130,7 @@ export class UpdateIndicadorDto extends OmitType(PartialType(CreateIndicadorDto)
         {},
         {
             message:
-                '$property| Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String',
+                'Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String',
         }
     )
     @ValidateIf((object, value) => value !== null)
@@ -142,7 +142,7 @@ export class UpdateIndicadorDto extends OmitType(PartialType(CreateIndicadorDto)
         {},
         {
             message:
-                '$property| Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String',
+                'Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String',
         }
     )
     @ValidateIf((object, value) => value !== null)

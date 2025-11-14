@@ -18,7 +18,7 @@ export class AnoDto {
      * ano: ano para pesquisa
      * @example "2022"
      */
-    @IsInt({ message: '$property| ano precisa ser positivo' })
+    @IsInt({ message: 'ano precisa ser positivo' })
     @Min(2003)
     @Max(2050)
     @Type(() => Number)
@@ -68,7 +68,7 @@ export class AnoDotacaoNotaEmpenhoDto extends AnoDto {
      * @example "1"
      */
     @IsOptional()
-    @IsInt({ message: '$property| mês precisa ser positivo' })
+    @IsInt({ message: 'mês precisa ser positivo' })
     @Min(1)
     @Max(12)
     @Transform(({ value }: any) => +value)
@@ -103,7 +103,7 @@ export class AnoParteDotacaoDto extends ParteDotacaoDto {
      * ano: ano para pesquisa
      * @example "2022"
      */
-    @IsInt({ message: '$property| ano precisa ser positivo' })
+    @IsInt({ message: 'ano precisa ser positivo' })
     @Min(2003)
     @Max(2050)
     @Type(() => Number)

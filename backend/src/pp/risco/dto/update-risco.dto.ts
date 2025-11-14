@@ -14,7 +14,7 @@ export class UpdateRiscoDto extends OmitType(PartialType(CreateRiscoDto), []) {
      * */
     @ApiProperty({ enum: StatusRisco, enumName: 'StatusRisco' })
     @IsEnum(StatusRisco, {
-        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(StatusRisco).join(', '),
+        message: 'Precisa ser um dos seguintes valores: ' + Object.values(StatusRisco).join(', '),
     })
     @IsOptional()
     status?: StatusRisco;

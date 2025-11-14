@@ -22,7 +22,6 @@ class ItensDotacao:
 
         dao = Dao()
         sof = SofClient(auth_token)
-
         sof_dao = partial(dao, get_func=sof)
 
         return sof_dao
@@ -41,7 +40,8 @@ class ItensDotacao:
             grupos  = 'lstGrupos',
             modalidades = 'lstModalidades',
             elementos = 'lstElementos',
-            fonte_recursos = 'lstFontesRecursos'
+            fonte_recursos = 'lstFontesRecursos',
+            fonte_recursos_cached='fonte_recursos'
         )
 
     @property
@@ -91,7 +91,11 @@ class ItensDotacao:
             'fonte_recursos': {
                 'code_key': 'codFonteRecurso',
                 'desc_key': 'txtDescricaoFonteRecurso'
-            }
+            },
+            'fonte_recursos_cached': {
+                'code_key': 'codigo',
+                'desc_key': 'descricao'
+            },
         }
 
     def __get_unique_keys(self, data:list)->set:
@@ -250,15 +254,13 @@ class ItensDotacao:
             if method_name == 'unidades':
                 self.__solve_unidades(ano, data)
                 continue
-            #hotfix endpoint fonte quebrado - vai puxar de forma hardcoded
-            if method_name!= 'fonte_recursos':
-                method = getattr(self, method_name)
-                data[method_name] = method(ano=ano)
-            #aqui é hardcoded porque quebrou o endpoint de fontes
+            if method_name == 'fonte_recursos':
+                #skiping porque a api está com problemas nesse endpoint
+                method = getattr(self, 'fonte_recursos_cached')
+            elif method_name == 'fonte_recursos_cached':
+                continue
             else:
-                with open('fontes_cache.json') as f:
-                    hardcode_data = json.load(f)['fonte_recursos']
-                data['fonte_recursos'] = hardcode_data
-
-
+                method = getattr(self, method_name)
+            data[method_name] = method(ano=ano)
+  
         return data

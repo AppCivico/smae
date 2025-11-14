@@ -88,7 +88,7 @@ export class AtividadeService {
                     },
                 });
                 if (codigoJaEmUso > 0)
-                    throw new HttpException('codigo| Já existe atividade com este código nesta iniciativa', 400);
+                    throw new HttpException('Já existe atividade com este código nesta iniciativa', 400);
 
                 const tituloJaEmUso = await prismaTx.atividade.count({
                     where: {
@@ -98,7 +98,7 @@ export class AtividadeService {
                     },
                 });
                 if (tituloJaEmUso > 0)
-                    throw new HttpException('titulo| Já existe atividade com este título nesta iniciativa', 400);
+                    throw new HttpException('Já existe atividade com este título nesta iniciativa', 400);
 
                 if (dto.ativo) {
                     const iniciativaAtivaCount = await prismaTx.iniciativa.count({
@@ -133,12 +133,10 @@ export class AtividadeService {
 
                 if (tipo == '_PDM') {
                     if (!orgaos_participantes || orgaos_participantes.length === 0)
-                        throw new BadRequestException(
-                            'orgaos_participantes| Precisa ter pelo menos um orgão participante'
+                        throw new BadRequestException('Precisa ter pelo menos um orgão participante'
                         );
                     if (!coordenadores_cp || coordenadores_cp.length === 0)
-                        throw new BadRequestException(
-                            'coordenadores_cp| Precisa ter pelo menos um coordenador responsável pela atividade'
+                        throw new BadRequestException('Precisa ter pelo menos um coordenador responsável pela atividade'
                         );
 
                     await prismaTx.atividadeOrgao.createMany({
@@ -532,7 +530,7 @@ export class AtividadeService {
                     },
                 });
                 if (codigoJaEmUso)
-                    throw new HttpException('codigo| Já existe outra atividade com este código nesta iniciativa', 400);
+                    throw new HttpException('Já existe outra atividade com este código nesta iniciativa', 400);
             }
 
             if (dto.titulo) {
@@ -545,7 +543,7 @@ export class AtividadeService {
                     },
                 });
                 if (tituloJaEmUso > 0)
-                    throw new HttpException('titulo| Já existe outra atividade com este título nesta iniciativa', 400);
+                    throw new HttpException('Já existe outra atividade com este título nesta iniciativa', 400);
             }
 
             let origem_cache: object | undefined = undefined;
@@ -581,10 +579,9 @@ export class AtividadeService {
 
             if (tipo == '_PDM') {
                 if (!op || op.length === 0)
-                    throw new BadRequestException('orgaos_participantes| Precisa ter pelo menos um orgão participante');
+                    throw new BadRequestException('Precisa ter pelo menos um orgão participante');
                 if (!cp || cp.length === 0)
-                    throw new BadRequestException(
-                        'coordenadores_cp| Precisa ter pelo menos um coordenador responsável pela atividade'
+                    throw new BadRequestException('Precisa ter pelo menos um coordenador responsável pela atividade'
                     );
 
                 await prismaTx.atividadeOrgao.deleteMany({ where: { atividade_id: id } });

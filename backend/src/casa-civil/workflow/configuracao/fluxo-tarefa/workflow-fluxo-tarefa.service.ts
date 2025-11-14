@@ -32,7 +32,7 @@ export class WorkflowFluxoTarefaService {
                         },
                     },
                 });
-                if (!fluxoFase) throw new HttpException('fluxo_fase_id| Fluxo fase não encontrado', 400);
+                if (!fluxoFase) throw new HttpException('Fluxo fase não encontrado', 400);
 
                 await this.workflowService.verificaEdicao(fluxoFase.fluxo.workflow_id, prismaTxn);
 
@@ -44,7 +44,7 @@ export class WorkflowFluxoTarefaService {
                     },
                 });
                 if (jaExiste)
-                    throw new HttpException('fluxo_fase_id| Já existe uma configuração com estes parâmetros.', 400);
+                    throw new HttpException('Já existe uma configuração com estes parâmetros.', 400);
 
                 // Tratando ordem para garantir que não haja lacunas
                 let ordem: number;

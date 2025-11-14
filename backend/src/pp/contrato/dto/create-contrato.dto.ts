@@ -25,7 +25,7 @@ export class CreateContratoDto {
     @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Número' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     numero: string;
 
-    @IsBoolean({ message: '$property| precisa ser um boolean' })
+    @IsBoolean({ message: 'precisa ser um boolean' })
     contrato_exclusivo: boolean;
 
     @ApiProperty({
@@ -45,22 +45,22 @@ export class CreateContratoDto {
     orgao_id?: number;
 
     @IsArray({
-        message: '$property| Fontes de recurso: precisa ser uma array de strings',
+        message: 'Fontes de recurso: precisa ser uma array de strings',
     })
     @ArrayMaxSize(100, {
-        message: '$property| Fontes de recurso: precisa ter no máximo 100 items',
+        message: 'Fontes de recurso: precisa ter no máximo 100 items',
     })
     @ValidateNested({ each: true })
     @Type(() => CreateContratoFonteRecursoDto)
     fontes_recurso: CreateContratoFonteRecursoDto[];
 
     @IsArray({
-        message: '$property| Processos SEI: precisa ser uma array de strings',
+        message: 'Processos SEI: precisa ser uma array de strings',
     })
     @ArrayMaxSize(100, {
-        message: '$property| Processos SEI: precisa ter no máximo 100 items',
+        message: 'Processos SEI: precisa ter no máximo 100 items',
     })
-    @IsString({ each: true, message: '$property| Cada item precisa ser uma string' })
+    @IsString({ each: true, message: 'Cada item precisa ser uma string' })
     processos_sei: string[];
 
     @IsOptional()
@@ -93,7 +93,7 @@ export class CreateContratoDto {
     @IsNumberString(
         {},
         {
-            message: '$property| Precisa ser número de CNPJ com 14 dígitos, enviado em formato String',
+            message: 'Precisa ser número de CNPJ com 14 dígitos, enviado em formato String',
         }
     )
     @ValidateIf((object, value) => value !== null)
@@ -145,7 +145,7 @@ export class CreateContratoDto {
         {},
         {
             message:
-                '$property| Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String',
+                'Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String',
         }
     )
     @ValidateIf((object, value) => value !== null)

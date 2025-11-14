@@ -1,4 +1,4 @@
-import type { SofEntidadeDto } from '@back/sof-entidade/entities/sof-entidade.entity';
+import type { SofDetalhamentoFonteDto, SofEntidadeDto } from '@back/sof-entidade/entities/sof-entidade.entity';
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -7,10 +7,12 @@ type Dados = SofEntidadeDto['dados'] & { atualizado_em: string };
 
 interface ChamadasPendentes {
   segmentos: boolean;
+  detalhamentosByKey: Record<string, boolean>;
 }
 
 interface Estado {
   DotaçãoSegmentos: { [k: number | string]: Dados };
+  DotaçãoDetalhamentos: { [k: string]: SofDetalhamentoFonteDto['dados'] };
   chamadasPendentes: ChamadasPendentes;
 
   erro: null | unknown;
@@ -24,9 +26,11 @@ interface ExtraParams {
 export const useDotaçãoStore = defineStore('dotação', {
   state: (): Estado => ({
     DotaçãoSegmentos: {},
+    DotaçãoDetalhamentos: {},
 
     chamadasPendentes: {
       segmentos: false,
+      detalhamentosByKey: {},
     },
     erro: null,
   }),
@@ -50,6 +54,29 @@ export const useDotaçãoStore = defineStore('dotação', {
       }
 
       this.chamadasPendentes.segmentos = false;
+    },
+    async getDotaçãoDetalhamentos(ano: number, codigoFonte: string) {
+      const chave = `${ano}-${codigoFonte}`;
+
+      if (this.DotaçãoDetalhamentos[chave] || this.chamadasPendentes.detalhamentosByKey[chave]) {
+        return this.DotaçãoDetalhamentos[chave];
+      }
+
+      this.chamadasPendentes.detalhamentosByKey[chave] = true;
+
+      try {
+        const r = await this.requestS.get(`${baseUrl}/sof-entidade/${ano}/detalhamento/${codigoFonte}`) as SofDetalhamentoFonteDto;
+        if (r.dados) {
+          this.DotaçãoDetalhamentos[chave] = r.dados;
+        }
+
+        return this.DotaçãoDetalhamentos[chave];
+      } catch (error) {
+        this.erro = error;
+        return undefined;
+      } finally {
+        delete this.chamadasPendentes.detalhamentosByKey[chave];
+      }
     },
     async getDotaçãoPlanejado(dotacao: string, ano: number, extraParams: ExtraParams) {
       if (!extraParams.pdm_id && !extraParams.portfolio_id) {

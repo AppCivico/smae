@@ -10,7 +10,7 @@ export class CreateIndicadorFormulaCompostaDto extends PickType(CreateIndicadorD
     /**
      * Titulo
      */
-    @IsString({ message: '$property| Precisa ser alfanumérico' })
+    @IsString({ message: 'Precisa ser alfanumérico' })
     @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Título' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
     titulo: string;
 
@@ -21,7 +21,7 @@ export class CreateIndicadorFormulaCompostaDto extends PickType(CreateIndicadorD
      *
      * @example "($_1 + $_2) / 2"
      */
-    @IsString({ message: '$property| Precisa ser um texto de formula válido' })
+    @IsString({ message: 'Precisa ser um texto de formula válido' })
     formula: string;
 
     /**

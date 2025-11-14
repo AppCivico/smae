@@ -7,7 +7,7 @@ export class FilterCronogramaEtapaDto {
      * Filtrar por cronograma_id?
      * @example "1"
      */
-    @IsInt({ message: '$property| cronograma_id' })
+    @IsInt({ message: 'cronograma_id' })
     @Type(() => Number)
     cronograma_id: number;
 
@@ -16,12 +16,12 @@ export class FilterCronogramaEtapaDto {
      * @example "1"
      */
     @IsOptional()
-    @IsInt({ message: '$property| etapa_id' })
+    @IsInt({ message: 'etapa_id' })
     @Type(() => Number)
     etapa_id?: number;
 
     @IsOptional()
-    @IsBoolean({ message: '$property| Precisa ser um boolean' })
+    @IsBoolean({ message: 'Precisa ser um boolean' })
     @Transform(({ value }: any) => value === 'true')
     inativo?: boolean;
 

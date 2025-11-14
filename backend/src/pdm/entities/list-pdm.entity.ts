@@ -9,16 +9,16 @@ export class ListPdm extends PickType(PdmDto, ['pode_editar', 'perm_level']) {
     /**
      * Nome
      */
-    @IsString({ message: '$property| Nome: Precisa ser alfanumérico' })
-    @MinLength(1, { message: '$property| nome: Mínimo de 1 caractere' })
-    @MaxLength(250, { message: '$property| nome: Máximo 250 caracteres' })
+    @IsString({ message: 'Nome: Precisa ser alfanumérico' })
+    @MinLength(1, { message: 'nome: Mínimo de 1 caractere' })
+    @MaxLength(250, { message: 'nome: Máximo 250 caracteres' })
     nome: string;
 
     /**
      * Descrição
      */
     @IsOptional()
-    @IsString({ message: '$property| descrição: Precisa ser alfanumérico' })
+    @IsString({ message: 'descrição: Precisa ser alfanumérico' })
     @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Descrição" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
     descricao?: string | null;
 

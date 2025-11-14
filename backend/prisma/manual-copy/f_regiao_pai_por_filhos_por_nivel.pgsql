@@ -1,38 +1,3 @@
-CREATE OR REPLACE FUNCTION f_regiao_filha_ate_nivel(p_regiao_id INT, p_max_nivel INT)
-RETURNS TABLE (
-    id INT,
-    parent INT,
-    nivel INT
-)
-AS $$
-BEGIN
-    RETURN QUERY
-
-
-    WITH RECURSIVE RegionHierarchy AS (
-        SELECT
-            me.id,
-            me.parente_id, me.nivel
-        FROM
-            regiao me
-        WHERE
-            me.id = p_regiao_id
-        UNION ALL
-        SELECT
-            r.id,
-            r.parente_id , r.nivel
-        FROM
-            regiao r
-        INNER JOIN
-            RegionHierarchy h ON r.parente_id = h.id
-    )
-    select me.*
-    from RegionHierarchy me where me.nivel = p_max_nivel;
-
-END;
-$$ LANGUAGE plpgsql;
-
-
 
 CREATE OR REPLACE FUNCTION f_regiao_pai_por_filhos_por_nivel(input_ids INT[], max_level INT)
 RETURNS TABLE (
@@ -132,31 +97,3 @@ BEGIN
     JOIN regiao r on sp.id = r.id;
 END;
 $$ LANGUAGE plpgsql;
-
-create or replace view view_pdm_meta_iniciativa_atividade as
-select
-    m.id as meta_id,
-    m.pdm_id as pdm_id,
-    null::int as iniciativa_id,
-    null::int as atividade_id
-from meta m
-where m.removido_em is null
-    UNION ALL
-select
-    m.id as meta_id,
-    m.pdm_id as pdm_id,
-    i.id as iniciativa_id,
-    null::int as atividade_id
-from meta m
-join iniciativa i on i.meta_id = m.id and i.removido_em is null
-where m.removido_em is null
-    UNION ALL
-select
-    m.id as meta_id,
-    m.pdm_id as pdm_id,
-    i.id as iniciativa_id,
-    a.id as atividade_id
-from meta m
-join iniciativa i on i.meta_id = m.id and i.removido_em is null
-join atividade a on a.iniciativa_id = i.id and a.removido_em is null
-where m.removido_em is null;

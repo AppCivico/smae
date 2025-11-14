@@ -1,10 +1,13 @@
 <script setup>
-import { computed } from 'vue';
 import { Field, ErrorMessage } from 'vee-validate';
-import SmaeNumberInput from '@/components/camposDeFormulario/SmaeNumberInput.vue';
-import SmaeDateInput from '@/components/camposDeFormulario/SmaeDateInput.vue';
+import { computed } from 'vue';
+
 import AutocompleteField2 from '@/components/AutocompleteField2.vue';
 import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
+import SmaeDateInput from '@/components/camposDeFormulario/SmaeDateInput.vue';
+import SmaeNumberInput from '@/components/camposDeFormulario/SmaeNumberInput.vue';
+
+import CampoDeEtapaPorPortfolio from '../CampoDeEtapaPorPortfolio.vue';
 
 const props = defineProps({
   config: Object,
@@ -132,6 +135,7 @@ const maxLength = computed(() => props.config?.schema?.tests?.find((test) => tes
       >
         {{ campoConfig(subConfig).label || 'Valor' }}
       </LabelFromYup>
+
       <CampoDinamico
         :config="campoConfig(subConfig)"
         :model-value="modelValue?.[key] ?? null"
@@ -201,6 +205,20 @@ const maxLength = computed(() => props.config?.schema?.tests?.find((test) => tes
     />
 
     <Field
+      v-else-if="config?.tipo === 'etapa-com-portfolio'"
+      v-slot="{ handleChange }"
+      :name="fieldName"
+      class="grupo-de-campos"
+      @update:model-value="updateValue"
+    >
+      <CampoDeEtapaPorPortfolio
+        :model-value="modelValue || []"
+        :readonly="readonly"
+        @update:model-value="handleChange"
+      />
+    </Field>
+
+    <Field
       v-else-if="config.tipo === 'text'"
       type="text"
       class="inputtext light"
@@ -236,7 +254,12 @@ const maxLength = computed(() => props.config?.schema?.tests?.find((test) => tes
       @focus="readonly && $event.target.blur()"
       @update:modelValue="updateValue"
     >
-      <option value="" disabled>Selecione...</option>
+      <option
+        value=""
+        disabled
+      >
+        Selecione...
+      </option>
       <option
         v-for="opcao in getOptionsForField(config)"
         :key="opcao.value"

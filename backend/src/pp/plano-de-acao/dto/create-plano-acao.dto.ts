@@ -33,19 +33,19 @@ export class CreatePlanoAcaoDto {
     @ValidateIf((object, value) => value !== null)
     @IsNumber(
         { maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false },
-        { message: '$property| até duas casas decimais' }
+        { message: 'até duas casas decimais' }
     )
-    @Min(0, { message: '$property| Valor Empenhado precisa ser positivo ou zero' })
+    @Min(0, { message: 'Valor Empenhado precisa ser positivo ou zero' })
     custo: number | null;
 
     @IsNumber(
         { maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false },
-        { message: '$property| até duas casas decimais' }
+        { message: 'até duas casas decimais' }
     )
     @IsOptional()
     @ValidateIf((object, value) => value !== null)
-    @Min(0, { message: '$property| Valor Empenhado precisa ser positivo ou zero' })
-    @Max(100, { message: '$property| Valor Empenhado precisa até 100' })
+    @Min(0, { message: 'Valor Empenhado precisa ser positivo ou zero' })
+    @Max(100, { message: 'Valor Empenhado precisa até 100' })
     custo_percentual: number | null;
 
     @IsOptional()
