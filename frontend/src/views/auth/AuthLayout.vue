@@ -14,14 +14,15 @@
 
         <RouterView />
 
-        <div class="logos flex center justifycenter bgb p05">
+        <div class="logos flex center justifycenter p05">
           <img
             class="logos__sp-imagem mr1"
-            src="@/assets/sp.png"
+            src="@/assets/sp-branco.png"
           >
+
           <img
             class="logos__fgv-imagem"
-            src="@/assets/fgv-projetos.jpg"
+            src="@/assets/fgv-projetos-branco.png"
           >
         </div>
       </div>
@@ -31,12 +32,10 @@
 
 <style lang="less" scoped>
 .logos__sp-imagem {
-  width: 6rem;
-  height: 100%;
+  width: 8rem;
 }
 
 .logos__fgv-imagem {
-  width: 10rem;
-  height: 100%;
+  width: 11rem;
 }
 </style>
