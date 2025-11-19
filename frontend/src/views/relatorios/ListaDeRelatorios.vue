@@ -6,13 +6,14 @@ import {
   watch,
 } from 'vue';
 import { onBeforeRouteLeave, useRoute } from 'vue-router';
+
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
+import SmaeTooltip from '@/components/SmaeTooltip/SmaeTooltip.vue';
 import combinadorDeListas from '@/helpers/combinadorDeListas';
 import { localizarDataHorario } from '@/helpers/dateToDate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
-import SmaeTooltip from '@/components/SmaeTooltip/SmaeTooltip.vue';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 const { temPermissãoPara } = storeToRefs(useAuthStore());
@@ -195,16 +196,22 @@ onBeforeRouteLeave(() => {
     </template>
 
     <template #celula:acoes="{ linha }">
-      <div class="flex g1">
+      <div class="flex center g1">
         <button
           v-if="temPermissãoPara(['Reports.remover.'])"
           class="like-a__text"
-          aria-label="excluir"
-          title="excluir"
+          :aria-label="!linha.arquivo ? 'cancelar geração' : 'excluir'"
+          :title="!linha.arquivo ? 'cancelar geração' : 'excluir'"
           type="button"
           @click="excluirRelatório(linha.id)"
         >
           <svg
+            v-if="!linha.arquivo"
+            width="12"
+            height="12"
+          ><use xlink:href="#i_x" /></svg>
+          <svg
+            v-else
             width="20"
             height="20"
           ><use xlink:href="#i_waste" /></svg>
@@ -219,16 +226,23 @@ onBeforeRouteLeave(() => {
             :texto="linha.processamento.err_msg"
           />
         </span>
-        <template v-else-if="!linha.arquivo">
+        <span
+          v-else-if="!linha.arquivo"
+          class="nowrap"
+        >
           <LoadingComponent
-            v-if="!linha.arquivo"
             title="Relatório em processamento"
+            class="ib dib"
+            style="margin-right: 0.25em;"
           >
             <span class="sr-only">
               Relatório em processamento
             </span>
           </LoadingComponent>
-        </template>
+          <template v-if="linha.progresso !== null && linha.progresso !== undefined">
+            {{ linha.progresso }}%
+          </template>
+        </span>
         <a
           v-else
           :href="`${baseUrl}/download/${linha.arquivo}`"
