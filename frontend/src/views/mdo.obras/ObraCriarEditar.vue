@@ -1049,11 +1049,17 @@ watch(listaDeTiposDeIntervenção, () => {
         :schema="schema"
       />
 
-      <CampoDeRegioesAgrupadas
-        v-model="values.regiao_ids"
-        :valores-iniciais="itemParaEdicao.regiao_ids"
-        :nível="portfolioMdoStore.portfoliosPorId[values.portfolio_id]?.nivel_regionalizacao"
-      />
+      <Field
+        v-slot="{ value, handleChange }"
+        name="regiao_ids"
+      >
+        <CampoDeRegioesAgrupadas
+          :model-value="value"
+          :valores-iniciais="itemParaEdicao.regiao_ids"
+          :nível="portfolioMdoStore.portfoliosPorId[values.portfolio_id]?.nivel_regionalizacao"
+          @update:model-value="handleChange"
+        />
+      </Field>
     </fieldset>
 
     <fieldset class="mb2">
