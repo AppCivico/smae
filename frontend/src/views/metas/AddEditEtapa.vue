@@ -44,7 +44,6 @@ const parentVar = atividade_id ?? iniciativa_id ?? meta_id ?? false;
 const parentField = atividade_id ? 'atividade_id' : iniciativa_id ? 'iniciativa_id' : meta_id ? 'meta_id' : false;
 const currentEdit = route.path.slice(0, route.path.indexOf('/cronograma') + 11);
 
-const authStore = useAuthStore();
 const MetasStore = useMetasStore();
 const { activePdm, singleMeta } = storeToRefs(MetasStore);
 MetasStore.getPdM();
