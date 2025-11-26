@@ -9,14 +9,14 @@ import CheckClose from '@/components/CheckClose.vue';
 import MapaCampo from '@/components/geo/MapaCampo.vue';
 import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import { fase as schema } from '@/consts/formSchemas';
+import escaparDaRota from '@/helpers/escaparDaRota';
 import {
-  useAlertStore, useAuthStore, useCronogramasStore, useEditModalStore, useEtapasStore, useRegionsStore,
+  useAlertStore, useCronogramasStore, useEditModalStore, useEtapasStore, useRegionsStore,
 } from '@/stores';
 import { useEquipesStore } from '@/stores/equipes.store';
 
 import temDescendenteEmOutraRegião from '../auxiliares/temDescendenteEmOutraRegiao.ts';
 
-const authStore = useAuthStore();
 const alertStore = useAlertStore();
 const editModalStore = useEditModalStore();
 
@@ -45,7 +45,6 @@ const parentVar = atividade_id ?? iniciativa_id ?? meta_id ?? false;
 // mantendo comportamento legado
 // eslint-disable-next-line no-nested-ternary
 const parentField = atividade_id ? 'atividade_id' : iniciativa_id ? 'iniciativa_id' : meta_id ? 'meta_id' : false;
-const currentEdit = route.path.slice(0, route.path.indexOf('/cronograma') + 11);
 
 const CronogramasStore = useCronogramasStore();
 const { singleCronograma } = storeToRefs(CronogramasStore);
@@ -236,7 +235,6 @@ const onSubmit = handleSubmit.withControlled(() => {
       values.ps_ponto_focal = { equipes: values.equipes };
       delete values.equipes;
 
-      let rota = false;
       // mantendo comportamento legado
       // eslint-disable-next-line @typescript-eslint/naming-convention
       let etapa_id_gen = null;
@@ -248,7 +246,6 @@ const onSubmit = handleSubmit.withControlled(() => {
 
           r = await EtapasStore.update(currentId, values);
           msg = 'Dados salvos com sucesso!';
-          rota = currentEdit;
           etapa_id_gen = currentId;
 
           // mantendo comportamento legado
@@ -265,7 +262,6 @@ const onSubmit = handleSubmit.withControlled(() => {
       } else {
         r = await EtapasStore.insert(Number(cronograma_id), values);
         msg = 'Item adicionado com sucesso!';
-        rota = currentEdit;
         etapa_id_gen = r;
       }
 
@@ -275,7 +271,7 @@ const onSubmit = handleSubmit.withControlled(() => {
         (async () => {
           await EtapasStore.getAll(cronograma_id);
           await CronogramasStore.getById(parentVar, parentField, cronograma_id);
-          router.push(rota);
+          escaparDaRota(router);
         })();
         alertStore.success(msg);
         editModalStore.clear();
