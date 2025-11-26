@@ -752,12 +752,20 @@ watchEffect(() => {
               <SmaeLink
                 v-if="!r.cronograma_origem_etapa
                   || r.cronograma_origem_etapa.id == singleCronograma?.id"
+                :title="'Editar ' + rr.titulo"
                 :to="{
                   name: '.faseCronograma.editar',
                   params: {
                     cronograma_id: singleCronograma.id,
                     etapa_id: r.etapa.id,
                     fase_id: rr.id,
+                  },
+                  query: {
+                    escape: {
+                      name: $route.name,
+                      params: $route.params,
+                      query: $route.query,
+                    }
                   }
                 }"
               >
