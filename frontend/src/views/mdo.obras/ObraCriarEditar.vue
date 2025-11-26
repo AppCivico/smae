@@ -1286,14 +1286,22 @@ watch(listaDeTiposDeIntervenção, () => {
             Descrição&nbsp;<span class="tvermelho">*</span>
           </LabelFromYup>
 
-          <SmaeText
+          <Field
+            v-slot="{ field, handleChange, value }"
             name="origem_outro"
-            as="textarea"
-            rows="5"
-            class="inputtext light mb1"
-            :class="{ 'error': errors.origem_outro }"
-            maxlength="500"
-          />
+          >
+            <SmaeText
+              :model-value="value"
+              :name="field.name"
+              as="textarea"
+              rows="5"
+              class="inputtext light mb1"
+              :class="{ 'error': errors.origem_outro }"
+              maxlength="500"
+              @update:model-value="handleChange"
+            />
+          </Field>
+
           <ErrorMessage
             name="origem_outro"
             class="error-msg"
