@@ -145,7 +145,7 @@ iniciar();
           src="@/assets/sp.png"
         >
         <div class="flex center">
-          <span class="logos__powered-by">powered by</span>
+          <span class="logos__powered-by">Realização</span>
           <img
             class="logos__fgv-imagem"
             src="@/assets/fgv-projetos.jpg"

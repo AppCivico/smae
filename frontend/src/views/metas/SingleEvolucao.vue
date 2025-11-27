@@ -219,14 +219,6 @@ watch([parentId, parentField], iniciar, { immediate: true });
                   <div class="t12 lh1 w700 uc tc400">
                     Previsto X Realizado
                   </div>
-                  <div class="tipinfo ml1">
-                    <svg
-                      width="20"
-                      height="20"
-                    ><use xlink:href="#i_i" /></svg><div>
-                      Indicador calculado pela média móvel das variáveis
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>

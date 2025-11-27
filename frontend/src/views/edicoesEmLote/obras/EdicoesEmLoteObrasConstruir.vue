@@ -431,7 +431,7 @@ async function handlePropertyChange(event, idx) {
           <button
             :disabled="modoRevisao"
             type="button"
-            class="like-a__text addlink self-end mb-1"
+            class="like-a__text addlink self-end mb-1 mrauto"
             aria-label="Remover Edição"
             title="Remover Edição"
             @click="remove(idx)"
@@ -439,7 +439,7 @@ async function handlePropertyChange(event, idx) {
             <svg
               width="20"
               height="20"
-            ><use xlink:href="#i_remove" /></svg>
+            ><use xlink:href="#i_waste" /></svg>
           </button>
         </div>
 
