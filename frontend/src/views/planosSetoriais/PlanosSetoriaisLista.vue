@@ -58,11 +58,13 @@ if (!lista.length) {
     tabindex="0"
   >
     <table class="tablemain mt2">
-      <col>
-      <col>
-      <col>
-      <col class="col--minimum">
-      <col>
+      <colgroup>
+        <col>
+        <col>
+        <col>
+        <col class="col--minimum">
+        <col>
+      </colgroup>
       <thead>
         <tr>
           <th>
