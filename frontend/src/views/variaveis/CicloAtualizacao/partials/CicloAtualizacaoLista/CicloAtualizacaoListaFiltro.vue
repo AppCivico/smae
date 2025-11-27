@@ -69,6 +69,14 @@ const {
   initialValues: route.query,
 });
 
+function ordenarEquipesPorOrgaoETitulo(a: EquipeRespItemDto, b: EquipeRespItemDto): number {
+  const siglaDaEquipeA = a.orgao?.sigla || '';
+  const siglaDaEquipeB = b.orgao?.sigla || '';
+  const comparacaoPorSigla = siglaDaEquipeA.localeCompare(siglaDaEquipeB);
+
+  return comparacaoPorSigla !== 0 ? comparacaoPorSigla : a.titulo.localeCompare(b.titulo);
+}
+
 const equipes = computed(() => (equipesStore.lista as EquipeRespItemDto[])
   .filter((item) => {
     switch (route.query.aba) {
@@ -84,7 +92,8 @@ const equipes = computed(() => (equipesStore.lista as EquipeRespItemDto[])
       default:
         return true;
     }
-  }));
+  })
+  .sort(ordenarEquipesPorOrgaoETitulo));
 
 const campos = computed<FieldsProps[]>(() => [
   { class: 'fb20em', nome: 'codigo', tipo: 'text' },
