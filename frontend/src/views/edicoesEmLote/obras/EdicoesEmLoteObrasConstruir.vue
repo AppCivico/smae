@@ -439,7 +439,7 @@ async function handlePropertyChange(event, idx) {
             <svg
               width="20"
               height="20"
-            ><use xlink:href="#i_waste" /></svg>
+            ><use xlink:href="#i_remove" /></svg>
           </button>
         </div>
 
