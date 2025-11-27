@@ -20,7 +20,7 @@
           :type="model ? 'button' : null"
           :to="linkDeRetrocesso"
           data-test="link-paginacao-anterior"
-          @click="(ev) => irParaPagina(paginaCorrente - 1)"
+          @click.capture="() => irParaPagina(paginaCorrente - 1)"
         >
           <svg
             aria-hidden="true"
@@ -54,7 +54,7 @@
           :type="model ? 'button' : null"
           :to="linkParaUltimaPagina"
           aria-label="Última página"
-          @click="(ev) => irParaPagina(paginas)"
+          @click.capture="() => irParaPagina(paginas)"
         >
           {{ paginas }}
         </component>
@@ -72,7 +72,7 @@
           :type="model ? 'button' : null"
           :to="linkDeAvanco"
           data-test="link-paginacao-seguinte"
-          @click="(ev) => irParaPagina(paginaCorrente + 1)"
+          @click.capture="() => irParaPagina(paginaCorrente + 1)"
         >
           <span class="menu-de-paginacao__texto">
             Seguinte
@@ -170,8 +170,6 @@ const linkParaUltimaPagina = computed(() => (model.value
 
 async function irParaPagina(numero) {
   emit('trocaDePaginaSolicitada', { pagina: Number(numero) });
-  // Não faz nada pois o componente é um router-link
-  if (!model.value) return;
 
   if (model.value) {
     model.value = Number(numero);
@@ -181,7 +179,7 @@ async function irParaPagina(numero) {
     await router.push({
       query: {
         ...route.query,
-        [`${props.prefixo}token_paginacao`]: numero === 1
+        [`${props.prefixo}token_paginacao`]: Number(numero) === 1
           ? undefined
           : props.tokenPaginacao || route.query[`${props.prefixo}token_paginacao`],
         [`${props.prefixo}pagina`]: numero,
