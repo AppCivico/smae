@@ -1,10 +1,11 @@
 <script setup>
-import dinheiro from '@/helpers/dinheiro';
-import maskFloat from '@/helpers/maskFloat';
 import { useField } from 'vee-validate';
 import {
   computed, toRef,
 } from 'vue';
+
+import dinheiro from '@/helpers/dinheiro';
+import maskFloat from '@/helpers/maskFloat';
 
 const props = defineProps({
   value: {

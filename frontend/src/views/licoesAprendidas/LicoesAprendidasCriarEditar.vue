@@ -6,12 +6,13 @@ import {
   Form,
 } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
-import { liçãoAprendida as schema } from '@/consts/formSchemas';
+
 import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
+import { liçãoAprendida as schema } from '@/consts/formSchemas';
 import truncate from '@/helpers/texto/truncate';
 import { useAlertStore } from '@/stores/alert.store';
-import { useTarefasStore } from '@/stores/tarefas.store.ts';
 import { useLiçõesAprendidasStore } from '@/stores/licoesAprendidas.store.ts';
+import { useTarefasStore } from '@/stores/tarefas.store.ts';
 
 const alertStore = useAlertStore();
 const liçõesAprendidasStore = useLiçõesAprendidasStore();

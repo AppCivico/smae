@@ -186,6 +186,10 @@
   </div>
 </template>
 <script setup>
+import { storeToRefs } from 'pinia';
+import { watchEffect } from 'vue';
+import { useRoute } from 'vue-router';
+
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
 import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import FiltroDeListagemDeObras from '@/components/obras/FiltroDeListagemDeObras.vue';
@@ -194,9 +198,6 @@ import statusObras from '@/consts/statusObras';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useObrasStore } from '@/stores/obras.store';
-import { storeToRefs } from 'pinia';
-import { watchEffect } from 'vue';
-import { useRoute } from 'vue-router';
 
 const authStore = useAuthStore();
 const route = useRoute();

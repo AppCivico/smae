@@ -1,11 +1,12 @@
 <script setup>
-import { fasesProjeto as schema } from "@/consts/formSchemas";
-import { useAlertStore } from "@/stores/alert.store";
+import { storeToRefs } from 'pinia';
+import { ErrorMessage, Field, Form } from 'vee-validate';
+import { computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
+import { fasesProjeto as schema } from '@/consts/formSchemas';
+import { useAlertStore } from '@/stores/alert.store';
 import { useFasesProjetosStore } from '@/stores/fasesProjeto.store.js';
-import { storeToRefs } from "pinia";
-import { ErrorMessage, Field, Form } from "vee-validate";
-import { computed } from "vue";
-import { useRoute, useRouter } from "vue-router";
 
 const alertStore = useAlertStore();
 const fasesProjetosStore = useFasesProjetosStore();
@@ -20,26 +21,23 @@ const props = defineProps({
   },
 });
 
-const itemParaEdicao = computed(() => lista.value.find((x) => {
-   return x.id === Number(route.params.fasesId);
- }) || {
-   id: 0, fase: '',
+const itemParaEdicao = computed(() => lista.value.find((x) => x.id === Number(route.params.fasesId)) || {
+  id: 0, fase: '',
 });
-
 
 async function onSubmit(_, { controlledValues: carga }) {
   try {
     const msg = props.fasesId
-      ? "Dados salvos com sucesso!"
-      : "Item adicionado com sucesso!";
+      ? 'Dados salvos com sucesso!'
+      : 'Item adicionado com sucesso!';
 
-    const resposta =  await fasesProjetosStore.salvarItem(carga, props.fasesId)
+    const resposta = await fasesProjetosStore.salvarItem(carga, props.fasesId);
 
     if (resposta) {
       alertStore.success(msg);
       fasesProjetosStore.$reset();
       fasesProjetosStore.buscarTudo();
-      router.push({ name: "fasesListar" });
+      router.push({ name: 'fasesListar' });
     }
   } catch (error) {
     alertStore.error(error);
@@ -50,7 +48,7 @@ async function onSubmit(_, { controlledValues: carga }) {
 <template>
   <div class="flex spacebetween center mb2">
     <h1>{{ route?.meta?.título || 'Nova fase' }}</h1>
-    <hr class="ml2 f1" />
+    <hr class="ml2 f1">
     <CheckClose />
   </div>
 
@@ -63,7 +61,10 @@ async function onSubmit(_, { controlledValues: carga }) {
   >
     <div class="flex g2 mb1">
       <div class="f2 mb1">
-        <LabelFromYup name="fase" :schema="schema" />
+        <LabelFromYup
+          name="fase"
+          :schema="schema"
+        />
         <Field
           id="fase"
           name="fase"
@@ -71,14 +72,17 @@ async function onSubmit(_, { controlledValues: carga }) {
           maxlength="250"
           class="inputtext light mb1"
         />
-        <ErrorMessage name="fase" class="error-msg" />
+        <ErrorMessage
+          name="fase"
+          class="error-msg"
+        />
       </div>
     </div>
 
     <FormErrorsList :errors="errors" />
 
     <div class="flex spacebetween center mb2">
-      <hr class="mr2 f1" />
+      <hr class="mr2 f1">
       <button
         class="btn big"
         :disabled="isSubmitting || Object.keys(errors)?.length"
@@ -90,13 +94,21 @@ async function onSubmit(_, { controlledValues: carga }) {
       >
         Salvar
       </button>
-      <hr class="ml2 f1" />
+      <hr class="ml2 f1">
     </div>
   </Form>
 
-  <div v-if="chamadasPendentes?.emFoco" class="spinner">Carregando</div>
+  <div
+    v-if="chamadasPendentes?.emFoco"
+    class="spinner"
+  >
+    Carregando
+  </div>
 
-  <div v-if="erro" class="error p1">
+  <div
+    v-if="erro"
+    class="error p1"
+  >
     <div class="error-msg">
       {{ erro }}
     </div>

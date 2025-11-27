@@ -1,15 +1,16 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { Field, Form } from 'vee-validate';
+import { ref } from 'vue';
+import { useRoute } from 'vue-router';
+import * as Yup from 'yup';
+
 import { router } from '@/router';
 import {
   useAlertStore,
   useEditModalStore,
   usePaineisStore,
 } from '@/stores';
-import { storeToRefs } from 'pinia';
-import { Field, Form } from 'vee-validate';
-import { ref } from 'vue';
-import { useRoute } from 'vue-router';
-import * as Yup from 'yup';
 
 const route = useRoute();
 const { painel_id } = route.params;

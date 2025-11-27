@@ -9,6 +9,7 @@ import {
 } from 'vee-validate';
 import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
 import SmallModal from '@/components/SmallModal.vue';
 import TextEditor from '@/components/TextEditor.vue';
 import cargosDeParlamentar from '@/consts/cargosDeParlamentar';

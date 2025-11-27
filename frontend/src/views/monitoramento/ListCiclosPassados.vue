@@ -1,6 +1,7 @@
 <script setup>
-import { ref, reactive } from 'vue';
 import { storeToRefs } from 'pinia';
+import { ref, reactive } from 'vue';
+
 import { Dashboard } from '@/components';
 import { useAuthStore } from '@/stores/auth.store';
 import { useCiclosStore } from '@/stores/ciclos.store';

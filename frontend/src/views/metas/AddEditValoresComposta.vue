@@ -1,9 +1,4 @@
 <script setup>
-import auxiliarDePreenchimento from '@/components/AuxiliarDePreenchimento.vue';
-import dateToTitle from '@/helpers/dateToTitle';
-import geradorDeAtributoStep from '@/helpers/geradorDeAtributoStep';
-import { useAlertStore } from '@/stores/alert.store';
-import { useVariaveisStore } from '@/stores/variaveis.store';
 import { cloneDeep } from 'lodash';
 import { storeToRefs } from 'pinia';
 import {
@@ -17,6 +12,12 @@ import {
   computed, ref, watch,
 } from 'vue';
 import { useRoute } from 'vue-router';
+
+import auxiliarDePreenchimento from '@/components/AuxiliarDePreenchimento.vue';
+import dateToTitle from '@/helpers/dateToTitle';
+import geradorDeAtributoStep from '@/helpers/geradorDeAtributoStep';
+import { useAlertStore } from '@/stores/alert.store';
+import { useVariaveisStore } from '@/stores/variaveis.store';
 
 const alertStore = useAlertStore();
 

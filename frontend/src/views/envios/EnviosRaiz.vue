@@ -1,8 +1,9 @@
 <script setup>
-import { Dashboard } from '@/components';
-import { useAuthStore } from '@/stores/auth.store';
 import { storeToRefs } from 'pinia';
 import { useRouter } from 'vue-router';
+
+import { Dashboard } from '@/components';
+import { useAuthStore } from '@/stores/auth.store';
 
 const router = useRouter();
 

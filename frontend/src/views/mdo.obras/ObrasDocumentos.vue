@@ -1,13 +1,14 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import {
+  defineOptions,
+} from 'vue';
+
 import ErrorComponent from '@/components/ErrorComponent.vue';
 import GerenciadorDeArquivos from '@/components/GerenciadorDeArquivos.vue';
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import { useAlertStore } from '@/stores/alert.store';
 import { useObrasStore } from '@/stores/obras.store';
-import { storeToRefs } from 'pinia';
-import {
-  defineOptions,
-} from 'vue';
 
 defineOptions({ inheritAttrs: false });
 defineProps({

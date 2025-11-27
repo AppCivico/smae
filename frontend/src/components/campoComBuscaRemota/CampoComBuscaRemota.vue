@@ -147,8 +147,9 @@ import {
   defineEmits,
   onMounted,
 } from 'vue';
-import SmallModal from '@/components/SmallModal.vue';
+
 import LoadingComponent from '@/components/LoadingComponent.vue';
+import SmallModal from '@/components/SmallModal.vue';
 import requestS from '@/helpers/requestS';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;

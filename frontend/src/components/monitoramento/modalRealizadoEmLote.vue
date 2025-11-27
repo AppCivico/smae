@@ -1,14 +1,4 @@
 <script setup>
-import auxiliarDePreenchimento from '@/components/AuxiliarDePreenchimento.vue';
-import { valoresRealizadoEmLote as schema, arquivoSimples as uploadSchema } from '@/consts/formSchemas';
-import dateToField from '@/helpers/dateToField';
-import geradorDeAtributoStep from '@/helpers/geradorDeAtributoStep';
-import nulificadorTotal from '@/helpers/nulificadorTotal';
-import requestS from '@/helpers/requestS.ts';
-import { useAlertStore } from '@/stores/alert.store';
-import { useCiclosStore } from '@/stores/ciclos.store';
-import { useDocumentTypesStore } from '@/stores/documentTypes.store';
-import { useEditModalStore } from '@/stores/editModal.store';
 import Big from 'big.js';
 import { storeToRefs } from 'pinia';
 import {
@@ -20,6 +10,17 @@ import {
 } from 'vee-validate';
 import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
+
+import auxiliarDePreenchimento from '@/components/AuxiliarDePreenchimento.vue';
+import { valoresRealizadoEmLote as schema, arquivoSimples as uploadSchema } from '@/consts/formSchemas';
+import dateToField from '@/helpers/dateToField';
+import geradorDeAtributoStep from '@/helpers/geradorDeAtributoStep';
+import nulificadorTotal from '@/helpers/nulificadorTotal';
+import requestS from '@/helpers/requestS.ts';
+import { useAlertStore } from '@/stores/alert.store';
+import { useCiclosStore } from '@/stores/ciclos.store';
+import { useDocumentTypesStore } from '@/stores/documentTypes.store';
+import { useEditModalStore } from '@/stores/editModal.store';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 

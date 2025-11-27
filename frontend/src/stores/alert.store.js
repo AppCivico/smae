@@ -1,5 +1,6 @@
-import gerarId from '@/helpers/texto/gerarId';
 import { defineStore } from 'pinia';
+
+import gerarId from '@/helpers/texto/gerarId';
 
 export const useAlertStore = defineStore('alert', {
   state: () => ({

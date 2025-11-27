@@ -8,14 +8,14 @@ import {
 } from 'vee-validate';
 import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
+import CampoComBuscaRemota from '@/components/campoComBuscaRemota/CampoComBuscaRemota.vue';
 import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import { transferenciasVoluntarias as schema } from '@/consts/formSchemas';
 import interfacesDeTransferências from '@/consts/interfacesDeTransferências';
 import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
 import truncate from '@/helpers/texto/truncate';
-
-import CampoComBuscaRemota from '@/components/campoComBuscaRemota/CampoComBuscaRemota.vue';
 import { useAlertStore } from '@/stores/alert.store';
 import { useClassificacaoStore } from '@/stores/classificacao.store';
 import { useOrgansStore } from '@/stores/organs.store';

@@ -1,8 +1,9 @@
 <script setup>
+import { useRoute } from 'vue-router';
+
 import niveisRegionalizacao from '@/consts/niveisRegionalizacao';
 import { useAlertStore } from '@/stores/alert.store';
 import { useVariaveisStore } from '@/stores/variaveis.store';
-import { useRoute } from 'vue-router';
 
 const alertStore = useAlertStore();
 const VariaveisStore = useVariaveisStore();

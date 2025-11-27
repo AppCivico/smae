@@ -8,8 +8,9 @@
 
 <script lang="ts" setup>
 import { defineProps, computed } from 'vue';
-import criaOpcoesDoGraficoDeProjetos from '@/helpers/criaOpcoesDoGraficoDeProjetos';
+
 import GraficoDashboard, { TooltipOptions } from '@/components/graficos/GraficoDashboard.vue';
+import criaOpcoesDoGraficoDeProjetos from '@/helpers/criaOpcoesDoGraficoDeProjetos';
 
 const props = defineProps({
   projetosPorEtapas: {

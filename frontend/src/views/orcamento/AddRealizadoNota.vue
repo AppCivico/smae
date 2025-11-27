@@ -1,4 +1,12 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { Field, useForm } from 'vee-validate';
+import {
+  defineOptions, ref, toRaw, watch,
+} from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import * as Yup from 'yup';
+
 import ItensRealizado from '@/components/orcamento/ItensRealizado.vue';
 import ListaDeCompartilhamentos from '@/components/orcamento/ListaDeCompartilhamentos.vue';
 import { useAlertStore } from '@/stores/alert.store';
@@ -8,13 +16,6 @@ import { useIniciativasStore } from '@/stores/iniciativas.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
-import { storeToRefs } from 'pinia';
-import { Field, useForm } from 'vee-validate';
-import {
-  defineOptions, ref, toRaw, watch,
-} from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import * as Yup from 'yup';
 
 defineOptions({ inheritAttrs: false });
 

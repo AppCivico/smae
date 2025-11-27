@@ -74,6 +74,7 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
+
 import { useAlertStore } from '@/stores/alert.store';
 import { useFontesStore } from '@/stores/fontesPs.store';
 

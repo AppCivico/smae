@@ -2,8 +2,9 @@
 import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { useAuthStore } from '@/stores/auth.store';
+
 import truncate from '@/helpers/texto/truncate';
+import { useAuthStore } from '@/stores/auth.store';
 
 const authStore = useAuthStore();
 const { temPermissãoPara } = storeToRefs(authStore);

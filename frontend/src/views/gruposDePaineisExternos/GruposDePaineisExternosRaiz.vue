@@ -1,6 +1,7 @@
 <script setup>
-import { useGruposPaineisExternos } from '@/stores/grupospaineisExternos.store.ts';
 import { onUnmounted } from 'vue';
+
+import { useGruposPaineisExternos } from '@/stores/grupospaineisExternos.store.ts';
 
 onUnmounted(() => { useGruposPaineisExternos().$reset(); });
 </script>

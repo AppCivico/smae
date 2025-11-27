@@ -2,6 +2,7 @@
 import { storeToRefs } from 'pinia';
 import { reactive, ref } from 'vue';
 import { useRoute } from 'vue-router';
+
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import { useAuthStore } from '@/stores/auth.store';
 import { useMacrotemasStore } from '@/stores/macrotemas.store';

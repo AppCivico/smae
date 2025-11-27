@@ -178,10 +178,11 @@
 </template>
 
 <script setup>
+import { defineProps } from 'vue';
+
 import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import dinheiro from '@/helpers/dinheiro';
 import truncate from '@/helpers/texto/truncate';
-import { defineProps } from 'vue';
 
 defineProps({
   orcamentos: {

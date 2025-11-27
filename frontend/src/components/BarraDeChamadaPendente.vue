@@ -18,6 +18,7 @@
 import {
   nextTick, onBeforeUnmount, onMounted, ref,
 } from 'vue';
+
 import $eventHub from './eventHub';
 
 const envioPendente = ref(true);

@@ -1,7 +1,8 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+
 import statuses from '@/consts/projectStatuses';
 import { useAuthStore } from '@/stores/auth.store';
-import { storeToRefs } from 'pinia';
 
 const authStore = useAuthStore();
 const { temPermissãoPara } = storeToRefs(authStore);

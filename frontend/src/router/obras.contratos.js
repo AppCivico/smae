@@ -1,4 +1,5 @@
 import { useRoute } from 'vue-router';
+
 import formatProcesso from '@/helpers/formatProcesso';
 import { useContratosStore } from '@/stores/contratos.store';
 import { useProcessosStore } from '@/stores/processos.store.ts';

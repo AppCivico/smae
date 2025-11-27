@@ -12,6 +12,7 @@ import {
   watch,
 } from 'vue';
 import { useRoute } from 'vue-router';
+
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import SmallModal from '@/components/SmallModal.vue';
 import { aditivoDeContrato as schema } from '@/consts/formSchemas';
@@ -19,9 +20,9 @@ import dateTimeToDate from '@/helpers/dateTimeToDate';
 import { dateToShortDate } from '@/helpers/dateToDate';
 import dinheiro from '@/helpers/dinheiro';
 import { useAlertStore } from '@/stores/alert.store';
-import { useProjetosStore } from '@/stores/projetos.store.ts';
-import { useObrasStore } from '@/stores/obras.store';
 import { useContratosStore } from '@/stores/contratos.store.ts';
+import { useObrasStore } from '@/stores/obras.store';
+import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useTipoDeAditivosStore } from '@/stores/tipoDeAditivos.store';
 
 const emit = defineEmits(['salvo', 'excluido']);

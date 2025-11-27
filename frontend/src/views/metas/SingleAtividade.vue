@@ -1,4 +1,7 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { useRoute } from 'vue-router';
+
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import SimpleIndicador from '@/components/metas/SimpleIndicador.vue';
 import TagsDeMetas from '@/components/metas/TagsDeMetas.vue';
@@ -8,8 +11,7 @@ import { useAtividadesStore } from '@/stores/atividades.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useEquipesStore } from '@/stores/equipes.store';
 import { useMetasStore } from '@/stores/metas.store';
-import { storeToRefs } from 'pinia';
-import { useRoute } from 'vue-router';
+
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
 
 const authStore = useAuthStore();
@@ -88,7 +90,7 @@ iniciar();
               {{ singleAtividade.orgaos_participantes.filter((x) =>
                 x.responsavel).map(x => x.orgao.descricao).join(', ') }}
             </div>
-          </div>              
+          </div>
           <div
             v-if="singleAtividade.orgaos_participantes.filter(x => !x.responsavel).length"
             class="f1"
@@ -129,7 +131,7 @@ iniciar();
                     amount.push(item.orgao.sigla + " - " + item.orgao.descricao);
                     return amount;
                   }, []))
-              }}     
+              }}
             </div>
           </div>
           <div class="mr2 f1">
@@ -143,41 +145,41 @@ iniciar();
                     amount.push(item.orgao.sigla + " - " + item.orgao.descricao);
                     return amount;
                   }, []))
-              }}     
+              }}
             </div>
           </div>
         </div>
         <div class="flex g2 mb2">
-            <div
-              v-if="EquipesStore.equipesPorIds(singleAtividade.ps_ponto_focal.equipes).length"
-              class="mr2 f1"
-            >
-              <div class="t12 uc w700 mb05 tamarelo">
-                Equipes responsáveis
-              </div>
-              <div class="t13">
-                {{ combinadorDeListas(
-                  EquipesStore.equipesPorIds(singleAtividade.ps_ponto_focal.equipes),
-                  false,
-                  'titulo',
-                ) }}
-              </div>
+          <div
+            v-if="EquipesStore.equipesPorIds(singleAtividade.ps_ponto_focal.equipes).length"
+            class="mr2 f1"
+          >
+            <div class="t12 uc w700 mb05 tamarelo">
+              Equipes responsáveis
             </div>
-            <div
-              v-if="EquipesStore.equipesPorIds(singleAtividade.ps_tecnico_cp.equipes).length"
-              class="mr2 f1"
-            >
-              <div class="t12 uc w700 mb05 tamarelo">
-                Equipe técnica de monitoramento
-              </div>
-              <div class="t13">
-                {{ combinadorDeListas(
-                  EquipesStore.equipesPorIds(singleAtividade.ps_tecnico_cp.equipes),
-                  false,
-                  'titulo',
-                ) }}
-              </div>
+            <div class="t13">
+              {{ combinadorDeListas(
+                EquipesStore.equipesPorIds(singleAtividade.ps_ponto_focal.equipes),
+                false,
+                'titulo',
+              ) }}
             </div>
+          </div>
+          <div
+            v-if="EquipesStore.equipesPorIds(singleAtividade.ps_tecnico_cp.equipes).length"
+            class="mr2 f1"
+          >
+            <div class="t12 uc w700 mb05 tamarelo">
+              Equipe técnica de monitoramento
+            </div>
+            <div class="t13">
+              {{ combinadorDeListas(
+                EquipesStore.equipesPorIds(singleAtividade.ps_tecnico_cp.equipes),
+                false,
+                'titulo',
+              ) }}
+            </div>
+          </div>
         </div>
       </div>
       <div v-if="singleAtividade?.tags.length">

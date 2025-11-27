@@ -2,14 +2,13 @@
 import { storeToRefs } from 'pinia';
 import { reactive, ref } from 'vue';
 
+import Dashboard from '@/components/DashboardLayout.vue';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import {
   useAlertStore,
   useAuthStore,
   useDocumentTypesStore,
 } from '@/stores';
-
-import Dashboard from '@/components/DashboardLayout.vue';
-import TituloDaPagina from '@/components/TituloDaPagina.vue';
 
 const authStore = useAuthStore();
 const alertStore = useAlertStore();

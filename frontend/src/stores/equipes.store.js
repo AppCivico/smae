@@ -1,5 +1,6 @@
-import tipoDePerfil from '@/consts/tipoDePerfil';
 import { defineStore } from 'pinia';
+
+import tipoDePerfil from '@/consts/tipoDePerfil';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}/equipe-responsavel`;
 

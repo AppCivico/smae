@@ -14,16 +14,17 @@ import {
   watch,
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import { contratoDeObras } from '@/consts/formSchemas';
 import truncate from '@/helpers/texto/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useContratosStore } from '@/stores/contratos.store.ts';
 import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
-import TituloDaPagina from '@/components/TituloDaPagina.vue';
 
 const router = useRouter();
 const route = useRoute();

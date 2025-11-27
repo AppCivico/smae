@@ -1,13 +1,14 @@
 <script setup>
-import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
+import { storeToRefs } from 'pinia';
+
+import dateToField from '@/helpers/dateToField';
 import { useAlertStore } from '@/stores/alert.store';
 import { useFluxosProjetosStore } from '@/stores/fluxosProjeto.store';
-import { storeToRefs } from 'pinia';
-import dateToField from '@/helpers/dateToField';
+import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
 
 const tipoDeTransferenciaStore = useTipoDeTransferenciaStore();
 const fluxosProjetoStore = useFluxosProjetosStore();
-const { lista, chamadasPendentes, erro} = storeToRefs(fluxosProjetoStore);
+const { lista, chamadasPendentes, erro } = storeToRefs(fluxosProjetoStore);
 const { lista: tipoTransferenciaComoLista } = storeToRefs(tipoDeTransferenciaStore);
 
 const alertStore = useAlertStore();
@@ -22,19 +23,17 @@ async function excluirFluxo(id) {
 }
 
 function ordenarListaAlfabeticamente() {
-   lista.value.sort((a, b) => a.nome.localeCompare(b.nome));
+  lista.value.sort((a, b) => a.nome.localeCompare(b.nome));
 }
 
-const getTipoTransferencia = (tipoTransferenciaId) => {
-  return tipoTransferenciaComoLista.value.find(t => t.id === tipoTransferenciaId);
-};
+const getTipoTransferencia = (tipoTransferenciaId) => tipoTransferenciaComoLista.value.find((t) => t.id === tipoTransferenciaId);
 
 const getEsfera = (tipoTransferenciaId) => {
   const tipoTransferencia = getTipoTransferencia(tipoTransferenciaId);
   return tipoTransferencia ? tipoTransferencia.esfera : '-';
 };
 
-tipoDeTransferenciaStore.buscarTudo()
+tipoDeTransferenciaStore.buscarTudo();
 fluxosProjetoStore.buscarTudo().then(ordenarListaAlfabeticamente);
 </script>
 <template>
@@ -88,9 +87,9 @@ fluxosProjetoStore.buscarTudo().then(ordenarListaAlfabeticamente);
         <td>{{ item.nome }}</td>
         <td>{{ getEsfera(item.transferencia_tipo.id) }}</td>
         <td>{{ item.transferencia_tipo.nome }}</td>
-        <td>{{ item.termino? dateToField(item.termino) : '-'}}</td>
+        <td>{{ item.termino? dateToField(item.termino) : '-' }}</td>
         <td>{{ item.ativo? 'Sim' : 'Não' }}</td>
-        <td>{{ item.inicio? dateToField(item.inicio) : '-'}}</td>
+        <td>{{ item.inicio? dateToField(item.inicio) : '-' }}</td>
         <td>
           <button
             class="like-a__text"

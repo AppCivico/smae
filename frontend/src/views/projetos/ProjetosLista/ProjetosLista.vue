@@ -1,18 +1,20 @@
 <script setup lang="ts">
+import { storeToRefs } from 'pinia';
 import {
   computed, onBeforeMount, ref, watch,
 } from 'vue';
 import { useRoute } from 'vue-router';
-import { storeToRefs } from 'pinia';
-import MigalhasDePao from '@/components/MigalhasDePao.vue';
+
 import MenuPaginacao from '@/components/MenuPaginacao.vue';
-import TituloDaPagina from '@/components/TituloDaPagina.vue';
+import MigalhasDePao from '@/components/MigalhasDePao.vue';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
-import { useProjetosStore } from '@/stores/projetos.store';
-import dinheiro from '@/helpers/dinheiro';
-import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import projectStatuses from '@/consts/projectStatuses';
+import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
+import dinheiro from '@/helpers/dinheiro';
 import { useAuthStore } from '@/stores/auth.store';
+import { useProjetosStore } from '@/stores/projetos.store';
+
 import ProjetosListaFiltro from './partials/ProjetosListaFiltro.vue';
 
 defineOptions({

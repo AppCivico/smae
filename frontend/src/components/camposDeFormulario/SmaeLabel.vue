@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import buscarDadosDoYup from './helpers/buscarDadosDoYup';
+
 import SmaeTooltip from '../SmaeTooltip/SmaeTooltip.vue';
+import buscarDadosDoYup from './helpers/buscarDadosDoYup';
 
 type Slots = {
   default(props: { label: string, required: boolean }): void

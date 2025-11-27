@@ -1,11 +1,12 @@
 <script setup>
-import { tarefasProjeto as schema } from '@/consts/formSchemas';
-import { useAlertStore } from '@/stores/alert.store';
-import { useWorkflowTarefasStore } from '@/stores/workflowTarefas.store';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, Form } from 'vee-validate';
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
+import { tarefasProjeto as schema } from '@/consts/formSchemas';
+import { useAlertStore } from '@/stores/alert.store';
+import { useWorkflowTarefasStore } from '@/stores/workflowTarefas.store';
 
 const alertStore = useAlertStore();
 const workflowTarefas = useWorkflowTarefasStore();

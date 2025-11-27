@@ -1,9 +1,10 @@
 <script setup>
-import { ref } from 'vue';
-import { Form, Field } from 'vee-validate';
-import * as Yup from 'yup';
-import { useRoute } from 'vue-router';
 import { storeToRefs } from 'pinia';
+import { Form, Field } from 'vee-validate';
+import { ref } from 'vue';
+import { useRoute } from 'vue-router';
+import * as Yup from 'yup';
+
 import { router } from '@/router';
 import {
   useAuthStore, useEditModalStore, useAlertStore, useCiclosStore,
@@ -100,10 +101,10 @@ function checkClose() {
         xmlns="http://www.w3.org/2000/svg"
       ><use
         :xlink:href="`#i_${props.parent.atividade
-                ? 'atividade'
-                : props.parent.iniciativa
-                  ? 'iniciativa'
-                  : 'indicador'}`"
+          ? 'atividade'
+          : props.parent.iniciativa
+            ? 'iniciativa'
+            : 'indicador'}`"
       /></svg>
       <div class="t20">
         <strong>{{ props.parent.indicador.codigo }} {{ props.parent.indicador.titulo }}</strong>

@@ -1,13 +1,14 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { ErrorMessage, Field, Form } from 'vee-validate';
+import { defineOptions } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import { painelExterno as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useGruposPaineisExternos } from '@/stores/grupospaineisExternos.store.ts';
 import { usePaineisExternosStore } from '@/stores/paineisExternos.store';
-import { storeToRefs } from 'pinia';
-import { ErrorMessage, Field, Form } from 'vee-validate';
-import { defineOptions } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 
 defineOptions({ inheritAttrs: false });
 

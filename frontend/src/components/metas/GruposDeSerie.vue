@@ -1,8 +1,10 @@
 <script setup>
-import SmallModal from '@/components/SmallModal.vue';
-import requestS from '@/helpers/requestS.ts';
 import { computed, defineProps, ref } from 'vue';
 import { useRoute } from 'vue-router';
+
+import SmallModal from '@/components/SmallModal.vue';
+import requestS from '@/helpers/requestS.ts';
+
 import CicloFisicoPdM from './CicloFisicoPdM.vue';
 import CicloFisicoPS from './CicloFisicoPS.vue';
 

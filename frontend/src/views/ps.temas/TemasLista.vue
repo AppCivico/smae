@@ -83,10 +83,11 @@
 import { storeToRefs } from 'pinia';
 import { computed, defineOptions } from 'vue';
 import { useRoute } from 'vue-router';
+
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
-import { useTemasPsStore } from '@/stores/temasPs.store';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
+import { useTemasPsStore } from '@/stores/temasPs.store';
 
 defineOptions({
   inheritAttrs: false,

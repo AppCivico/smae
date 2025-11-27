@@ -144,12 +144,13 @@
   </div>
 </template>
 <script lang="ts" setup>
-import fasesDaVariavel from '@/consts/fasesDaVariavel';
-import { localizarDataHorario } from '@/helpers/dateToDate';
-import dateToTitle from '@/helpers/dateToTitle';
 import type { VariavelAuxiliarDto } from '@back/variavel/dto/list-variavel.dto';
 import type { VariavelAnaliseQualitativaResponseDto } from '@back/variavel/dto/variavel.ciclo.dto';
 import { computed, PropType } from 'vue';
+
+import fasesDaVariavel from '@/consts/fasesDaVariavel';
+import { localizarDataHorario } from '@/helpers/dateToDate';
+import dateToTitle from '@/helpers/dateToTitle';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 

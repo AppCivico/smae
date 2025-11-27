@@ -1,12 +1,14 @@
 <script lang="ts" setup>
+import { PSMFCountDto, PSMFOrcamentoCountDto } from '@back/mf/ps-dash/dto/ps.dto';
 import { computed } from 'vue';
 import { RouteLocationRaw } from 'vue-router';
+
 // eslint-disable-next-line import/no-unresolved, import/extensions
-import { PSMFCountDto, PSMFOrcamentoCountDto } from '@back/mf/ps-dash/dto/ps.dto';
+import { type AbasDisponiveis } from '@/views/variaveis/CicloAtualizacao/CicloAtualizacaoLista.vue';
+
 import {
   obterFaseIcone, obterFaseStatus, ChavesFase,
 } from './helpers/obterDadosItems';
-import { type AbasDisponiveis } from '@/views/variaveis/CicloAtualizacao/CicloAtualizacaoLista.vue';
 
 const variaveisMetadado: Record<string, {
   legenda: string,

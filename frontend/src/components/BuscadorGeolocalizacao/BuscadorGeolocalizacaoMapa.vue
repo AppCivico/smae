@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
+
 import MapaExibir from '@/components/geo/MapaExibir.vue';
 import { useGeolocalizadorStore } from '@/stores/geolocalizador.store';
 

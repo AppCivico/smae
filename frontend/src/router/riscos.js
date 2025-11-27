@@ -3,6 +3,7 @@ import RiscosCriarEditar from '@/views/riscos/RiscosCriarEditar.vue';
 import RiscosItem from '@/views/riscos/RiscosItem.vue';
 import RiscosLista from '@/views/riscos/RiscosLista.vue';
 import RiscosRaiz from '@/views/riscos/RiscosRaiz.vue';
+
 import planosDeAção from './planosDeAcao';
 
 export default {

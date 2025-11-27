@@ -78,6 +78,7 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
+
 import { useAlertStore } from '@/stores/alert.store';
 import { useEquipamentosStore } from '@/stores/equipamentos.store';
 

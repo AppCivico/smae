@@ -1,9 +1,10 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { computed, defineProps, ref } from 'vue';
+
 import ParlamentaresCadastrarSuplentes from '@/components/parlamentares/ParlamentaresCadastrarSuplentes.vue';
 import { useAlertStore } from '@/stores/alert.store';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
-import { storeToRefs } from 'pinia';
-import { computed, defineProps, ref } from 'vue';
 
 const alertStore = useAlertStore();
 const parlamentaresStore = useParlamentaresStore();

@@ -1,11 +1,4 @@
 <script setup>
-import TituloDaPagina from '@/components/TituloDaPagina.vue';
-import { arquivo as schemaDoFormulário } from '@/consts/formSchemas';
-import dateTimeToDate from '@/helpers/dateTimeToDate';
-import requestS from '@/helpers/requestS.ts';
-import { useAlertStore } from '@/stores/alert.store';
-import { useDocumentTypesStore } from '@/stores/documentTypes.store';
-import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage, Field, useForm, useIsFormDirty,
@@ -14,6 +7,14 @@ import {
   computed, reactive, watch,
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
+import { arquivo as schemaDoFormulário } from '@/consts/formSchemas';
+import dateTimeToDate from '@/helpers/dateTimeToDate';
+import requestS from '@/helpers/requestS.ts';
+import { useAlertStore } from '@/stores/alert.store';
+import { useDocumentTypesStore } from '@/stores/documentTypes.store';
+import { useProjetosStore } from '@/stores/projetos.store.ts';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 

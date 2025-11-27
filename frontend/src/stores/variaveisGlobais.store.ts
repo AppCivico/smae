@@ -13,7 +13,7 @@ const baseUrl = `${import.meta.env.VITE_API_URL}`;
 type Variavel = VariavelDetailDto & VariavelGlobalDetailDto & VariavelDetailComAuxiliaresDto ;
 
 export type PlanosSimplificadosPorTipo = {
-  [key: string]: ListPdmSimplesDto['linhas']
+  [key: string]: ListPdmSimplesDto['linhas'];
 };
 
 interface Estado {

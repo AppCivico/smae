@@ -22,7 +22,7 @@ interface Estado {
   erros: {
     lista: null | unknown;
     portfoliosPermitidos: null | unknown;
-    arquivos: null | unknown
+    arquivos: null | unknown;
   };
   paginação: {
     temMais: boolean;

@@ -1,12 +1,13 @@
 <script setup>
-import { região as schema } from '@/consts/formSchemas';
-import requestS from '@/helpers/requestS.ts';
-import { router } from '@/router';
-import { useAlertStore, useEditModalStore, useRegionsStore } from '@/stores';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { reactive } from 'vue';
 import { useRoute } from 'vue-router';
+
+import { região as schema } from '@/consts/formSchemas';
+import requestS from '@/helpers/requestS.ts';
+import { router } from '@/router';
+import { useAlertStore, useEditModalStore, useRegionsStore } from '@/stores';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 const props = defineProps(['props']);

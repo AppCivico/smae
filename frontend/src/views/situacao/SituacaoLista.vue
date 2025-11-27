@@ -1,10 +1,11 @@
 <script setup>
-import { useAlertStore } from '@/stores/alert.store';
-import { useSituacaoStore } from '@/stores/situacao.store';
 import { storeToRefs } from 'pinia';
 
+import { useAlertStore } from '@/stores/alert.store';
+import { useSituacaoStore } from '@/stores/situacao.store';
+
 const situacaoStore = useSituacaoStore();
-const { lista, chamadasPendentes, erro} = storeToRefs(situacaoStore);
+const { lista, chamadasPendentes, erro } = storeToRefs(situacaoStore);
 
 const alertStore = useAlertStore();
 

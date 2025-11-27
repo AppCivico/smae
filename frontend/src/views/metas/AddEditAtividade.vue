@@ -1,9 +1,10 @@
 <script setup>
-import * as Yup from 'yup';
 import { storeToRefs } from 'pinia';
-import { useRoute } from 'vue-router';
-import { computed, ref, unref } from 'vue';
 import { ErrorMessage, Field, Form } from 'vee-validate';
+import { computed, ref, unref } from 'vue';
+import { useRoute } from 'vue-router';
+import * as Yup from 'yup';
+
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CampoDeEquipesComBuscaPorOrgao from '@/components/CampoDeEquipesComBuscaPorOrgao.vue';
 import CampoDePlanosMetasRelacionados from '@/components/CampoDePlanosMetasRelacionados.vue';

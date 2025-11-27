@@ -1,12 +1,4 @@
 <script setup>
-import AbsoluteNumberInput from '@/components/AbsoluteNumberInput.vue';
-import { geraçãoDeVariávelComposta } from '@/consts/formSchemas';
-import { router } from '@/router';
-import { useAlertStore } from '@/stores/alert.store';
-import { useEditModalStore } from '@/stores/editModal.store';
-import { useIndicadoresStore } from '@/stores/indicadores.store';
-import { useRegionsStore } from '@/stores/regions.store';
-import { useVariaveisStore } from '@/stores/variaveis.store';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
@@ -14,10 +6,18 @@ import {
   useForm,
   useIsFormDirty,
 } from 'vee-validate';
-
-import niveisRegionalizacao from '@/consts/niveisRegionalizacao';
 import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
+
+import AbsoluteNumberInput from '@/components/AbsoluteNumberInput.vue';
+import { geraçãoDeVariávelComposta } from '@/consts/formSchemas';
+import niveisRegionalizacao from '@/consts/niveisRegionalizacao';
+import { router } from '@/router';
+import { useAlertStore } from '@/stores/alert.store';
+import { useEditModalStore } from '@/stores/editModal.store';
+import { useIndicadoresStore } from '@/stores/indicadores.store';
+import { useRegionsStore } from '@/stores/regions.store';
+import { useVariaveisStore } from '@/stores/variaveis.store';
 
 const alertStore = useAlertStore();
 const editModalStore = useEditModalStore();

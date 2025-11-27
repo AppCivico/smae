@@ -1,12 +1,13 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { computed, defineOptions, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
 import LocalFilter from '@/components/LocalFilter.vue';
 import { acompanhamento as schema } from '@/consts/formSchemas';
 import dateToField from '@/helpers/dateToField';
 import { useAcompanhamentosStore } from '@/stores/acompanhamentos.store.ts';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
-import { storeToRefs } from 'pinia';
-import { computed, defineOptions, ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 
 defineOptions({ inheritAttrs: false });
 

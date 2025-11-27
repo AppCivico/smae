@@ -1,11 +1,12 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import truncate from '@/helpers/texto/truncate';
 import { usePanoramaStore } from '@/stores/panorama.store.ts';
 import { usePdMStore } from '@/stores/pdm.store';
-import { storeToRefs } from 'pinia';
-import { computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 
 const panoramaStore = usePanoramaStore();
 const { dadosParaFiltro, chamadasPendentes } = storeToRefs(panoramaStore);

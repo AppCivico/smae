@@ -1,7 +1,8 @@
 <script setup>
-import { useAlertStore } from '@/stores/alert.store';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
+
+import { useAlertStore } from '@/stores/alert.store';
 import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
 
 const tipoDeTransferencia = useTipoDeTransferenciaStore();
@@ -31,7 +32,10 @@ tipoDeTransferencia.buscarTudo();
   <div class="flex spacebetween center mb2">
     <h1>{{ route?.meta?.título || 'Tipo de Transferência' }}</h1>
     <hr class="ml2 f1">
-    <router-link :to="{ name: 'tipoDeTransferenciaCriar' }" class="btn big ml1">
+    <router-link
+      :to="{ name: 'tipoDeTransferenciaCriar' }"
+      class="btn big ml1"
+    >
       Novo Tipo de Transferência
     </router-link>
   </div>
@@ -58,7 +62,10 @@ tipoDeTransferencia.buscarTudo();
       </tr>
     </thead>
     <tbody>
-      <tr v-for="item in lista" :key="item.id">
+      <tr
+        v-for="item in lista"
+        :key="item.id"
+      >
         <td>
           {{ item.nome }}
         </td>
@@ -69,22 +76,33 @@ tipoDeTransferencia.buscarTudo();
           {{ item.esfera }}
         </td>
         <td>
-          <router-link :to="{ name: 'tipoDeTransferenciaEditar', params: { tipoId: item.id } }"
-            class="tprimary">
-            <svg width="20" height="20">
+          <router-link
+            :to="{ name: 'tipoDeTransferenciaEditar', params: { tipoId: item.id } }"
+            class="tprimary"
+          >
+            <svg
+              width="20"
+              height="20"
+            >
               <use xlink:href="#i_edit" />
             </svg>
           </router-link>
         </td>
         <td>
-          <button class="like-a__text" aria-label="excluir" title="excluir"
-            @click="excluirTransferencia(item.id, item.nome)">
-            <svg width="20" height="20">
+          <button
+            class="like-a__text"
+            aria-label="excluir"
+            title="excluir"
+            @click="excluirTransferencia(item.id, item.nome)"
+          >
+            <svg
+              width="20"
+              height="20"
+            >
               <use xlink:href="#i_waste" />
             </svg>
           </button>
         </td>
-
       </tr>
       <tr v-if="chamadasPendentes.lista">
         <td colspan="3">

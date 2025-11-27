@@ -1,12 +1,12 @@
 <script setup>
-import { ref, unref } from 'vue';
-import { Dashboard } from '@/components';
-import { Form, Field } from 'vee-validate';
-import * as Yup from 'yup';
-import { useRoute } from 'vue-router';
-import { router } from '@/router';
 import { storeToRefs } from 'pinia';
+import { Form, Field } from 'vee-validate';
+import { ref, unref } from 'vue';
+import { useRoute } from 'vue-router';
+import * as Yup from 'yup';
 
+import { Dashboard } from '@/components';
+import { router } from '@/router';
 import { useEditModalStore, useAlertStore, usePaineisGruposStore } from '@/stores';
 
 const editModalStore = useEditModalStore();

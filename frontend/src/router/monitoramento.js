@@ -1,4 +1,6 @@
 import dateToTitle from '@/helpers/dateToTitle';
+import { useCiclosStore } from '@/stores/ciclos.store';
+import { usePdMStore } from '@/stores/pdm.store';
 import {
   ListCiclos,
   ListCiclosPassados,
@@ -11,9 +13,7 @@ import MonitoramentosVariáveis from '@/views/monitoramento/MonitoramentoPorVari
 import MonitoramentosRaiz from '@/views/monitoramento/MonitoramentosRaiz.vue';
 // Stores
 // eslint-disable-next-line import/no-cycle
-import { useCiclosStore } from '@/stores/ciclos.store';
 // eslint-disable-next-line import/no-cycle
-import { usePdMStore } from '@/stores/pdm.store';
 
 // Apesar dessa função para normalizar o comportamento, há exceções
 const rotasParaMigalhasDePão = (

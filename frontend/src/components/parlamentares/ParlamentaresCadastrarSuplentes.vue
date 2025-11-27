@@ -1,8 +1,4 @@
 <script setup>
-import SmallModal from '@/components/SmallModal.vue';
-import { suplentes as schema } from '@/consts/formSchemas';
-import { useAlertStore } from '@/stores/alert.store';
-import { useParlamentaresStore } from '@/stores/parlamentares.store';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
@@ -12,6 +8,11 @@ import {
 } from 'vee-validate';
 import { computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
+import SmallModal from '@/components/SmallModal.vue';
+import { suplentes as schema } from '@/consts/formSchemas';
+import { useAlertStore } from '@/stores/alert.store';
+import { useParlamentaresStore } from '@/stores/parlamentares.store';
 
 const emit = defineEmits(['close']);
 const props = defineProps({

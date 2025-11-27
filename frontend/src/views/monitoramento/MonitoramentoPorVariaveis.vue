@@ -1,4 +1,8 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
 import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
 import LegendaDeVariáveis from '@/components/monitoramento/LegendaDeVariaveis.vue';
 import ListaDeAtrasadas from '@/components/monitoramento/ListaDeAtrasadas.vue';
@@ -6,9 +10,6 @@ import ListaDeAtualizadas from '@/components/monitoramento/ListaDeAtualizadas.vu
 import ListaDePendentes from '@/components/monitoramento/ListaDePendentes.vue';
 import { usePanoramaStore } from '@/stores/panorama.store.ts';
 import { usePdMStore } from '@/stores/pdm.store';
-import { storeToRefs } from 'pinia';
-import { useRoute, useRouter } from 'vue-router';
-import { watch } from 'vue';
 
 const route = useRoute();
 const router = useRouter();

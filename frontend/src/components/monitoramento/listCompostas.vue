@@ -1,6 +1,6 @@
 <script setup>
-import dateToTitle from '@/helpers/dateToTitle';
 import modalComplementacaoEmLote from '@/components/monitoramento/modalComplementacaoEmLote.vue';
+import dateToTitle from '@/helpers/dateToTitle';
 import { useAuthStore } from '@/stores/auth.store';
 import { useCiclosStore } from '@/stores/ciclos.store';
 import { useEditModalStore } from '@/stores/editModal.store';

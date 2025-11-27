@@ -1,23 +1,22 @@
 <script setup lang="ts">
+import type { SerieIndicadorValorNominal, SerieValorNomimal } from '@back/variavel/entities/variavel.entity';
+import { storeToRefs } from 'pinia';
+import { Field, useForm, useIsFormDirty } from 'vee-validate';
 import {
   computed, defineEmits, defineProps, ref, watch,
 } from 'vue';
-import { storeToRefs } from 'pinia';
-import { Field, useForm, useIsFormDirty } from 'vee-validate';
-import type { SerieIndicadorValorNominal, SerieValorNomimal } from '@back/variavel/entities/variavel.entity';
+
+import auxiliarDePreenchimento from '@/components/AuxiliarDePreenchimento.vue';
 import CheckClose from '@/components/CheckClose.vue';
 import ErrorComponent from '@/components/ErrorComponent.vue';
 import LoadingComponent from '@/components/LoadingComponent.vue';
-import auxiliarDePreenchimento from '@/components/AuxiliarDePreenchimento.vue';
-
-import truncate from '@/helpers/texto/truncate';
 import dateToTitle from '@/helpers/dateToTitle';
-import nulificadorTotal from '@/helpers/nulificadorTotal';
 import geradorDeAtributoStep from '@/helpers/geradorDeAtributoStep';
-
+import nulificadorTotal from '@/helpers/nulificadorTotal';
+import truncate from '@/helpers/texto/truncate';
 import { useAlertStore } from '@/stores/alert.store';
-import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store';
 import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store';
+import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store';
 
 type TiposValidos = 'Previsto' | 'PrevistoAcumulado' | 'Realizado' | 'RealizadoAcumulado';
 

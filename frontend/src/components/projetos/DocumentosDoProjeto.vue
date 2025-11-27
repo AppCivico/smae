@@ -1,8 +1,9 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+
 import GerenciadorDeArquivos from '@/components/GerenciadorDeArquivos.vue';
 import { useAlertStore } from '@/stores/alert.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
-import { storeToRefs } from 'pinia';
 
 const alertStore = useAlertStore();
 const projetosStore = useProjetosStore();

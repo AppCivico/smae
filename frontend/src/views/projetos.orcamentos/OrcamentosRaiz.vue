@@ -1,8 +1,9 @@
 <script setup>
-import { useProjetosStore } from '@/stores/projetos.store.ts';
 import {
   computed,
 } from 'vue';
+
+import { useProjetosStore } from '@/stores/projetos.store.ts';
 
 const ProjetosStore = useProjetosStore();
 

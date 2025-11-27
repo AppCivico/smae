@@ -1,10 +1,11 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import { computed, defineProps } from 'vue';
-import { useAlertStore } from '@/stores/alert.store';
-import { useParlamentaresStore } from '@/stores/parlamentares.store';
+
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
+import { useAlertStore } from '@/stores/alert.store';
+import { useParlamentaresStore } from '@/stores/parlamentares.store';
 
 const alertStore = useAlertStore();
 const parlamentaresStore = useParlamentaresStore();

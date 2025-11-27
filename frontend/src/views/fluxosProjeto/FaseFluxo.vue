@@ -2,6 +2,7 @@
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, useForm } from 'vee-validate';
 import { computed, ref } from 'vue';
+
 import SmallModal from '@/components/SmallModal.vue';
 import { etapasFluxo as schema } from '@/consts/formSchemas';
 import responsabilidadeEtapaFluxo from '@/consts/responsabilidadeEtapaFluxo';

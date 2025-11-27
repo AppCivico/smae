@@ -1,4 +1,8 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { ErrorMessage, Field, useForm } from 'vee-validate';
+import { computed, ref, watch } from 'vue';
+
 import SmallModal from '@/components/SmallModal.vue';
 import { tarefaFluxo as schema } from '@/consts/formSchemas';
 import responsabilidadeEtapaFluxo from '@/consts/responsabilidadeEtapaFluxo';
@@ -6,9 +10,6 @@ import { useAlertStore } from '@/stores/alert.store';
 import { useFluxosProjetosStore } from '@/stores/fluxosProjeto.store';
 import { useFluxosTarefasProjetosStore } from '@/stores/fluxosTarefaProjeto.store';
 import { useWorkflowTarefasStore } from '@/stores/workflowTarefas.store';
-import { storeToRefs } from 'pinia';
-import { ErrorMessage, Field, useForm } from 'vee-validate';
-import { computed, ref, watch } from 'vue';
 
 const fluxosProjetoStore = useFluxosProjetosStore();
 const fluxoTarefasProjetosStore = useFluxosTarefasProjetosStore();

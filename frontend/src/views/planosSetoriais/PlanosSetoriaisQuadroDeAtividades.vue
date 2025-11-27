@@ -2,10 +2,11 @@
 import { storeToRefs } from 'pinia';
 import { computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
+
 import * as CardEnvelope from '@/components/cardEnvelope';
-import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
 import ListaLegendas from '@/components/ListaLegendas.vue';
+import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import FiltroDoQuadroDeAtividades from '@/components/planoSetorialProgramaMetas.componentes/FiltroDoQuadroDeAtividades.vue';
 import CicloListaItem, { type CicloVigenteItemParams, type ListaVariaveis } from '@/components/planoSetorialProgramaMetas.componentes/QuadroDeAtividades/CicloListaItem.vue';
 import CicloVigenteFiltro from '@/components/planoSetorialProgramaMetas.componentes/QuadroDeAtividades/CicloVigenteFiltro.vue';

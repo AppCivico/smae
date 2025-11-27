@@ -1,15 +1,17 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import {
+  onMounted, onUpdated, ref, watch,
+} from 'vue';
+import { useRoute } from 'vue-router';
+
 import { Dashboard } from '@/components';
 import { default as itemFilho } from '@/components/monitoramento/itemFilho.vue';
 import { useCiclosStore } from '@/stores/ciclos.store';
 import { useEditModalStore } from '@/stores/editModal.store';
 import { usePdMStore } from '@/stores/pdm.store';
 import { default as AddEditEtapa } from '@/views/monitoramento/AddEditEtapa.vue';
-import { storeToRefs } from 'pinia';
-import {
-  onMounted, onUpdated, ref, watch,
-} from 'vue';
-import { useRoute } from 'vue-router';
+
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from '../metas/helpers/auxiliaresParaFaroisDeAtraso.ts';
 
 const editModalStore = useEditModalStore();

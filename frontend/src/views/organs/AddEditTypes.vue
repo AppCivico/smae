@@ -1,12 +1,13 @@
 <script setup>
-import { Form, Field } from 'vee-validate';
-import * as Yup from 'yup';
-import { useRoute } from 'vue-router';
 import { storeToRefs } from 'pinia';
-import { router } from '@/router';
+import { Form, Field } from 'vee-validate';
+import { useRoute } from 'vue-router';
+import * as Yup from 'yup';
+
 import { Dashboard } from '@/components';
-import { useAlertStore, useOrgansStore } from '@/stores';
 import MigalhasDePao from '@/components/MigalhasDePao.vue';
+import { router } from '@/router';
+import { useAlertStore, useOrgansStore } from '@/stores';
 
 const alertStore = useAlertStore();
 const route = useRoute();

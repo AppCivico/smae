@@ -1,6 +1,7 @@
 <script setup>
-import { ref, watch } from 'vue';
 import { debounce } from 'lodash';
+import { ref, watch } from 'vue';
+
 import filtrarObjetos from '@/helpers/filtrarObjetos';
 
 const props = defineProps({

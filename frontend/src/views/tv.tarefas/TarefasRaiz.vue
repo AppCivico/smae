@@ -1,6 +1,7 @@
 <script setup>
-import { useWorkflowTarefasStore } from '@/stores/workflowTarefas.store';
 import { onUnmounted } from 'vue';
+
+import { useWorkflowTarefasStore } from '@/stores/workflowTarefas.store';
 
 const workflowTarefas = useWorkflowTarefasStore();
 

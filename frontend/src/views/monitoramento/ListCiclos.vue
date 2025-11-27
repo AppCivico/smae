@@ -1,14 +1,15 @@
 <script setup>
+import { storeToRefs } from 'pinia';
 import {
   ref, reactive, onMounted, onUpdated,
 } from 'vue';
-import { storeToRefs } from 'pinia';
-import { Dashboard } from '@/components';
 import { useRoute } from 'vue-router';
-import { default as AddEditCiclo } from '@/views/monitoramento/AddEditCiclo.vue';
+
+import { Dashboard } from '@/components';
 import { useAuthStore } from '@/stores/auth.store';
 import { useCiclosStore } from '@/stores/ciclos.store';
 import { useEditModalStore } from '@/stores/editModal.store';
+import { default as AddEditCiclo } from '@/views/monitoramento/AddEditCiclo.vue';
 
 const route = useRoute();
 const { ciclo_id } = route.params;

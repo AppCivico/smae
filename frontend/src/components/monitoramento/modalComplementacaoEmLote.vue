@@ -1,8 +1,4 @@
 <script setup>
-import { perdidoDeComplementação as schema } from '@/consts/formSchemas';
-import { useAlertStore } from '@/stores/alert.store';
-import { useCiclosStore } from '@/stores/ciclos.store';
-import { useEditModalStore } from '@/stores/editModal.store';
 import {
   ErrorMessage,
   Field,
@@ -11,6 +7,11 @@ import {
 } from 'vee-validate';
 import { computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
+
+import { perdidoDeComplementação as schema } from '@/consts/formSchemas';
+import { useAlertStore } from '@/stores/alert.store';
+import { useCiclosStore } from '@/stores/ciclos.store';
+import { useEditModalStore } from '@/stores/editModal.store';
 
 const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();

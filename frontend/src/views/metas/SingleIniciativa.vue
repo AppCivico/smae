@@ -1,4 +1,8 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { nextTick, computed } from 'vue';
+import { useRoute } from 'vue-router';
+
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import SimpleIndicador from '@/components/metas/SimpleIndicador.vue';
 import TagsDeMetas from '@/components/metas/TagsDeMetas.vue';
@@ -10,11 +14,8 @@ import {
 } from '@/stores';
 import { useAlertStore } from '@/stores/alert.store';
 import { useEquipesStore } from '@/stores/equipes.store';
-import { storeToRefs } from 'pinia';
-import { nextTick } from 'vue';
-import { useRoute } from 'vue-router';
+
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
-import { computed } from 'vue'
 
 const EquipesStore = useEquipesStore();
 const alertStore = useAlertStore();
@@ -48,7 +49,7 @@ const orgaosEquipeIniciativa = computed(() => {
     singleIniciativa.value?.ps_ponto_focal?.equipes,
   );
   const orgaoIniciativa = equipesSelecionadasMeta.reduce((amount, item) => {
-    amount.push(item.orgao.sigla + " - " + item.orgao.descricao);
+    amount.push(`${item.orgao.sigla} - ${item.orgao.descricao}`);
     return amount;
   }, []);
   return combinadorDeListas(orgaoIniciativa);
@@ -125,7 +126,7 @@ iniciar();
 
   <div class="boards">
     <template v-if="singleIniciativa.id">
-      <div v-if="route.meta.entidadeMãe === 'pdm'">    
+      <div v-if="route.meta.entidadeMãe === 'pdm'">
         <div class="flex g2">
           <div class="mr2">
             <div class="t12 uc w700 mb05 tamarelo">
@@ -389,7 +390,7 @@ iniciar();
                         )
                       }}
                     </div>
-                  </div>   
+                  </div>
                   <div class="mr2 f1">
                     <div class="t12 uc w700 mb05 tc300">
                       Órgão monitoramento
@@ -441,25 +442,25 @@ iniciar();
                   </div>
                 </div>
               </div>
-          </header>
-        </div>
-      </template>
+            </header>
+          </div>
+        </template>
 
-      <div
-        v-if="Atividades[iniciativaId]?.loading"
-        class="board_vazio"
-      >
-        <div class="tc">
-          <div class="p1">
-            <span>Carregando</span> <svg
-              class="ml1 ib"
-              width="20"
-              height="20"
-            ><use xlink:href="#i_spin" /></svg>
+        <div
+          v-if="Atividades[iniciativaId]?.loading"
+          class="board_vazio"
+        >
+          <div class="tc">
+            <div class="p1">
+              <span>Carregando</span> <svg
+                class="ml1 ib"
+                width="20"
+                height="20"
+              ><use xlink:href="#i_spin" /></svg>
+            </div>
           </div>
         </div>
-      </div>
-    </template>
+      </template>
 
       <RelacionamentosComOutrosCompromissos
         :iniciativa-id="singleIniciativa.id"

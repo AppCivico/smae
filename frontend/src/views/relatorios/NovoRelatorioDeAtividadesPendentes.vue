@@ -5,6 +5,7 @@ import {
 } from 'vee-validate';
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import { relatórioAtividadesPendentes as schema } from '@/consts/formSchemas';

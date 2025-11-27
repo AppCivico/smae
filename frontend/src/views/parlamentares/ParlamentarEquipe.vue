@@ -1,10 +1,5 @@
 <script setup>
-import SmallModal from '@/components/SmallModal.vue';
-import { pessoaNaEquipeDeParlamentar as schema } from '@/consts/formSchemas';
-import tiposNaEquipe from '@/consts/tiposNaEquipeDeParlamentar';
-import { useAlertStore } from '@/stores/alert.store';
-import { useParlamentaresStore } from '@/stores/parlamentares.store';
-import { vMaska } from "maska";
+import { vMaska } from 'maska';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
@@ -14,6 +9,12 @@ import {
 } from 'vee-validate';
 import { watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
+import SmallModal from '@/components/SmallModal.vue';
+import { pessoaNaEquipeDeParlamentar as schema } from '@/consts/formSchemas';
+import tiposNaEquipe from '@/consts/tiposNaEquipeDeParlamentar';
+import { useAlertStore } from '@/stores/alert.store';
+import { useParlamentaresStore } from '@/stores/parlamentares.store';
 
 const route = useRoute();
 const router = useRouter();
@@ -134,7 +135,8 @@ watch(pessoaParaEdição, (novoValor) => {
     >
       <div class="flex flexwrap g2 mb1">
         <div
-          class="f1">
+          class="f1"
+        >
           <LabelFromYup
             name="tipo"
             :schema="schema"
@@ -192,6 +194,7 @@ watch(pessoaParaEdição, (novoValor) => {
             :schema="schema"
           />
           <Field
+            v-maska
             name="telefone"
             type="text"
             class="inputtext light mb1"
@@ -200,7 +203,6 @@ watch(pessoaParaEdição, (novoValor) => {
               loading: chamadasPendentes.emFoco,
             }"
             maxlength="15"
-            v-maska
             data-maska="(##) #####-####'"
           />
           <ErrorMessage

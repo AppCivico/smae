@@ -1,12 +1,14 @@
 <script lang="ts" setup>
-import { nextTick, onMounted, ref } from 'vue';
-import { storeToRefs } from 'pinia';
 import { useResizeObserver } from '@vueuse/core';
 import { debounce } from 'lodash';
+import { storeToRefs } from 'pinia';
+import { nextTick, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
+
+import TextoComBotao from '@/components/TextoComBotao.vue';
 import { useAuthStore } from '@/stores/auth.store';
 import { useWorkflowAndamentoStore } from '@/stores/workflow.andamento.store';
-import TextoComBotao from '@/components/TextoComBotao.vue';
+
 import VaralDeFaseItem from './componentes/VaralDeFaseItem.vue';
 
 const TAMANHO_LARGO = 600;

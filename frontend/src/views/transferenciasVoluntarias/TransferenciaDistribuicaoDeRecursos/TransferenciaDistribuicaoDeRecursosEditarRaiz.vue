@@ -3,9 +3,10 @@
 </template>
 
 <script setup>
-import { watch } from 'vue';
 import { storeToRefs } from 'pinia';
+import { watch } from 'vue';
 import { useRoute } from 'vue-router';
+
 import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 

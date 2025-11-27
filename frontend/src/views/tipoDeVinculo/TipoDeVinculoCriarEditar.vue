@@ -3,12 +3,13 @@ import { storeToRefs } from 'pinia';
 import {
   ErrorMessage, Field, useForm,
 } from 'vee-validate';
-import { useRoute, useRouter } from 'vue-router';
 import { onMounted, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
+import CabecalhoDePagina from '@/components/CabecalhoDePagina.vue';
 import { tipoDeVinculo as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useTipoDeVinculoStore } from '@/stores/tipoDeVinculo.store';
-import CabecalhoDePagina from '@/components/CabecalhoDePagina.vue';
 
 defineOptions({ inheritAttrs: false });
 

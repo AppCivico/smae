@@ -1,7 +1,8 @@
 <script setup>
-import { computed, watch } from 'vue';
-import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { storeToRefs } from 'pinia';
+import { computed, watch } from 'vue';
+
+import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 
 const props = defineProps({
   ano: {

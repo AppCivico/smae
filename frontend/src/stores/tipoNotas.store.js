@@ -1,8 +1,8 @@
-import { defineStore } from "pinia";
+import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
-export const useTipoDeNotasStore = defineStore("tipoDeNotasStore", {
+export const useTipoDeNotasStore = defineStore('tipoDeNotasStore', {
   state: () => ({
     lista: [],
 

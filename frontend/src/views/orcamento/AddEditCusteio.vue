@@ -1,4 +1,9 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { Field, Form } from 'vee-validate';
+import { defineOptions, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import { custeio as schema } from '@/consts/formSchemas';
 import dinheiro from '@/helpers/dinheiro';
@@ -8,10 +13,6 @@ import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { useIniciativasStore } from '@/stores/iniciativas.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
-import { storeToRefs } from 'pinia';
-import { Field, Form } from 'vee-validate';
-import { defineOptions, ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 
 defineOptions({ inheritAttrs: false });
 

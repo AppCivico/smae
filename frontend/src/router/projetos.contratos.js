@@ -1,4 +1,5 @@
 import { useRoute } from 'vue-router';
+
 import { useContratosStore } from '@/stores/contratos.store';
 import ContratosCriarEditar from '@/views/mdo.contratos/ContratosCriarEditar.vue';
 
