@@ -7,12 +7,14 @@ import {
 } from 'vitest';
 import Componente from './MenuPaginacao.vue';
 
+const mockRouterPush = vi.fn(() => Promise.resolve());
+
 vi.mock('vue-router', () => ({
   useRoute: vi.fn(() => ({
     query: {},
   })),
   useRouter: vi.fn(() => ({
-    push: () => {},
+    push: mockRouterPush,
   })),
   $route: {
     query: {},
@@ -70,5 +72,87 @@ describe('MenuPaginacao', () => {
 
     await campoDePagina.setValue(5);
     expect(envelope.props('modelValue')).toBe(5);
+  });
+
+  test('se o número de página muda quando inserimos um valor manualmente', async () => {
+    const envelope = mount(Componente, {
+      props: {
+        paginas: 10,
+      },
+      global: {
+        stubs: {
+          RouterLink: RouterLinkStub,
+        },
+        mocks: {
+          $route: {
+            query: {
+              pagina: 1,
+            },
+          },
+        },
+      },
+    });
+
+    const campoDePagina = envelope.find('[data-test="campo-navegacao-pagina"]');
+
+    await campoDePagina.setValue(3);
+    await campoDePagina.trigger('keyup.enter');
+
+    expect(envelope.emitted('trocaDePaginaSolicitada')).toBeTruthy();
+    expect(envelope.emitted('trocaDePaginaSolicitada')[0][0]).toEqual({ pagina: 3 });
+
+    // Verifica se a navegação ocorreu corretamente
+    expect(mockRouterPush).toHaveBeenCalledWith(
+      expect.objectContaining({
+        query: expect.objectContaining({
+          pagina: '3',
+        }),
+      }),
+    );
+  });
+
+  test('se o token_paginacao é removido ao navegar para página 1', async () => {
+    mockRouterPush.mockClear();
+
+    const envelope = mount(Componente, {
+      props: {
+        paginas: 10,
+        tokenPaginacao: 'abc123',
+      },
+      global: {
+        stubs: {
+          RouterLink: RouterLinkStub,
+        },
+        mocks: {
+          $route: {
+            query: {
+              pagina: 3,
+              token_paginacao: 'abc123',
+            },
+          },
+        },
+      },
+    });
+
+    const campoDePagina = envelope.find('[data-test="campo-navegacao-pagina"]');
+
+    await campoDePagina.setValue(1);
+    await campoDePagina.trigger('keyup.enter');
+
+    expect(envelope.emitted('trocaDePaginaSolicitada')).toBeTruthy();
+    expect(envelope.emitted('trocaDePaginaSolicitada')[0][0]).toEqual({ pagina: 1 });
+
+    // Verifica se a navegação ocorreu sem o token_paginacao
+    expect(mockRouterPush).toHaveBeenCalledWith(
+      expect.objectContaining({
+        query: expect.objectContaining({
+          pagina: '1',
+        }),
+      }),
+    );
+
+    // Garante que token_paginacao não está presente ou é undefined
+    const callArgs = mockRouterPush.mock.calls[0][0];
+    expect(callArgs.query.token_paginacao).toBeUndefined();
   });
 });
