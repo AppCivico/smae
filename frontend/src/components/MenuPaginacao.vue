@@ -50,7 +50,7 @@
       >
         <component
           :is="model ? 'button' : 'router-link'"
-          class="menu-de-paginacao__link"
+          class="menu-de-paginacao__link menu-de-paginacao__link--total-de-paginas"
           :type="model ? 'button' : null"
           :to="linkParaUltimaPagina"
           aria-label="Última página"
@@ -85,6 +85,13 @@
         </component>
       </li>
     </ul>
+
+    <div
+      v-if="totalRegistros"
+      class="menu-de-paginacao__total-de-registros"
+    >
+      {{ totalRegistros }} registro{{ totalRegistros === 1 ? '' : 's' }}
+    </div>
   </nav>
 </template>
 <script setup>
@@ -187,14 +194,20 @@ async function irParaPagina(numero) {
   text-transform: uppercase;
   font-weight: 700;
   background-color: @c50;
+  padding: 1rem;
+  gap: 1em;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+  align-items: center;
 }
 
 .menu-de-paginacao__lista {
-  padding: 1rem;
-  display:  flex;
+  display: flex;
   gap: 2rem;
   justify-content: center;
   align-items: center;
+  flex-grow: 1;
 }
 
 .menu-de-paginacao__item {
@@ -220,7 +233,7 @@ async function irParaPagina(numero) {
 
   &:before {
     content: 'de';
-     min-width: 0;
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     flex-grow: 1;
@@ -228,8 +241,7 @@ async function irParaPagina(numero) {
   }
 }
 
-.menu-de-paginacao__item--seguinte {
-}
+.menu-de-paginacao__item--seguinte {}
 
 .menu-de-paginacao__link {
   display: flex;
@@ -254,20 +266,34 @@ async function irParaPagina(numero) {
   flex-basis: 0;
 }
 
+.menu-de-paginacao__link--total-de-paginas {
+  display: inline-block;
+}
+
+.menu-de-paginacao__link--total-de-paginas,
+.menu-de-paginacao__campo {
+  max-width: 100%;
+  min-width: 3em;
+  text-align: center;
+  padding: 0.5em;
+}
+
 .menu-de-paginacao__campo {
   background-color: @c100;
   border-color: @c100;
   border-style: solid;
   border-width: 1px;
   width: 100%;
-  max-width: 100%;
-  min-width: 3em;
-  text-align: center;
   border-radius: 4px;
-  padding: 0.5em;
 
   &[aria-busy='true'] {
     border-color: @amarelo;
   }
+}
+
+.menu-de-paginacao__total-de-registros {
+  margin-left: auto;
+  margin-right: auto;
+  font-size: smaller;
 }
 </style>
