@@ -313,119 +313,123 @@ async function handlePropertyChange(event, idx) {
         <div
           v-for="(field, idx) in fields"
           :key="field.key"
-          class="fields-list"
+          class="fields__wrapper"
         >
-          <div class="f1">
-            <LabelFromYup
-              :name="`edicoes[${idx}].propriedade`"
-              label="Editar"
-              class="tc300"
-            >
-              Editar
-            </LabelFromYup>
-            <Field
-              :name="`edicoes[${idx}].propriedade`"
-              as="select"
-              class="inputtext light"
-              :class="{ error: errors?.[`edicoes[${idx}].propriedade`] }"
-              :aria-disabled="modoRevisao"
-              @mousedown="modoRevisao && $event.preventDefault()"
-              @keydown="modoRevisao && $event.preventDefault()"
-              @focus="modoRevisao && $event.target.blur()"
-              @input="(event) => handlePropertyChange(event, idx)"
-            >
-              <option
-                value=""
-                disabled
-              >
-                Selecione...
-              </option>
-              <option
-                v-for="opcao in getOpcoesDisponiveis(idx)"
-                :key="opcao.value"
-                :value="opcao.value"
-              >
-                {{ opcao.label }}
-              </option>
-            </Field>
-            <ErrorMessage
-              class="error-msg"
-              :name="`edicoes[${idx}].propriedade`"
-            />
-          </div>
-
           <div
-            :hidden="!campoConfig(idx)?.meta?.operacoes_permitidas?.length > 0"
-            class="f1 flex flexwrap g2"
+            class="fields-list"
           >
-            <LabelFromYup
-              :name="`edicoes[${idx}].operacao`"
-              class="tc300 fb100"
-            >
-              Operação
-            </LabelFromYup>
-            <Field
-              :name="`edicoes[${idx}].operacao`"
-              as="select"
-              class="inputtext light fb100"
-              :aria-readonly="modoRevisao"
-              :class="{ error: errors?.[`edicoes[${idx}].operacao`] }"
-              @mousedown="modoRevisao && $event.preventDefault()"
-              @keydown="modoRevisao && $event.preventDefault()"
-              @focus="modoRevisao && $event.target.blur()"
-            >
-              <option
-                v-for="op in campoConfig(idx)?.meta?.operacoes_permitidas || ['Set']"
-                :key="op"
-                :value="op"
-              >
-                {{ op === 'Set' ? 'Substituir' : op === 'Add' ? 'Adicionar' : 'Remover' }}
-              </option>
-            </Field>
-            <!-- jesus -->
-            <small
-              v-if="campoConfig(idx)?.meta?.explicacoes?.operacao?.[values.edicoes[idx].operacao]"
-              class="explicacao fb100"
-            >
-              {{ campoConfig(idx).meta.explicacoes.operacao[values.edicoes[idx].operacao] }}
-            </small>
-            <ErrorMessage
-              :name="`edicoes[${idx}].operacao`"
-              class="error-msg"
-            />
-          </div>
-
-          <div class="f1">
-            <template v-if="values.edicoes?.[idx]?.propriedade">
+            <div class="f1">
               <LabelFromYup
-                :name="`edicoes[${idx}].valor`"
+                :name="`edicoes[${idx}].propriedade`"
+                label="Editar"
                 class="tc300"
               >
-                {{ campoConfig(idx).label || 'Valor' }}
+                Editar
               </LabelFromYup>
-              <CampoDinamico
-                v-model="values.edicoes[idx].valor"
-                :config="campoConfig(idx)"
-                :path="`edicoes[${idx}].valor`"
-                :errors="errors"
-                :loading-options="loadingOptions"
-                :store-instances="storeInstances"
-                :fontes-estaticas="fontesEstaticas"
-                :readonly="modoRevisao"
-              />
-            </template>
-            <template v-else>
-              <div class="label tc300">
-                Selecione
-              </div>
-              <div class="inputtext light disabled-placeholder">
-                Selecione um campo à esquerda
-              </div>
+              <Field
+                :name="`edicoes[${idx}].propriedade`"
+                as="select"
+                class="inputtext light"
+                :class="{ error: errors?.[`edicoes[${idx}].propriedade`] }"
+                :aria-disabled="modoRevisao"
+                @mousedown="modoRevisao && $event.preventDefault()"
+                @keydown="modoRevisao && $event.preventDefault()"
+                @focus="modoRevisao && $event.target.blur()"
+                @input="(event) => handlePropertyChange(event, idx)"
+              >
+                <option
+                  value=""
+                  disabled
+                >
+                  Selecione...
+                </option>
+                <option
+                  v-for="opcao in getOpcoesDisponiveis(idx)"
+                  :key="opcao.value"
+                  :value="opcao.value"
+                >
+                  {{ opcao.label }}
+                </option>
+              </Field>
               <ErrorMessage
                 class="error-msg"
-                :name="`edicoes[${idx}].valor`"
+                :name="`edicoes[${idx}].propriedade`"
               />
-            </template>
+            </div>
+
+            <div
+              :hidden="!campoConfig(idx)?.meta?.operacoes_permitidas?.length > 0"
+              class="f1 flex flexwrap g2"
+            >
+              <LabelFromYup
+                :name="`edicoes[${idx}].operacao`"
+                class="tc300 fb100"
+              >
+                Operação
+              </LabelFromYup>
+              <Field
+                :name="`edicoes[${idx}].operacao`"
+                as="select"
+                class="inputtext light fb100"
+                :aria-readonly="modoRevisao"
+                :class="{ error: errors?.[`edicoes[${idx}].operacao`] }"
+                @mousedown="modoRevisao && $event.preventDefault()"
+                @keydown="modoRevisao && $event.preventDefault()"
+                @focus="modoRevisao && $event.target.blur()"
+              >
+                <option
+                  v-for="op in campoConfig(idx)?.meta?.operacoes_permitidas || ['Set']"
+                  :key="op"
+                  :value="op"
+                >
+                  {{ op === 'Set' ? 'Substituir' : op === 'Add' ? 'Adicionar' : 'Remover' }}
+                </option>
+              </Field>
+              <!-- jesus -->
+              <small
+                v-if="campoConfig(idx)?.meta?.explicacoes?.operacao?.[values.edicoes[idx].operacao]"
+                class="explicacao fb100"
+              >
+                {{ campoConfig(idx).meta.explicacoes.operacao[values.edicoes[idx].operacao] }}
+              </small>
+              <ErrorMessage
+                :name="`edicoes[${idx}].operacao`"
+                class="error-msg"
+              />
+            </div>
+
+            <div class="f1">
+              <template v-if="values.edicoes?.[idx]?.propriedade">
+                <LabelFromYup
+                  :name="`edicoes[${idx}].valor`"
+                  class="tc300"
+                >
+                  {{ campoConfig(idx).label || 'Valor' }}
+                </LabelFromYup>
+                <CampoDinamico
+                  v-model="values.edicoes[idx].valor"
+                  :config="campoConfig(idx)"
+                  :path="`edicoes[${idx}].valor`"
+                  :errors="errors"
+                  :loading-options="loadingOptions"
+                  :store-instances="storeInstances"
+                  :fontes-estaticas="fontesEstaticas"
+                  :readonly="modoRevisao"
+                />
+              </template>
+              <template v-else>
+                <div class="label tc300">
+                  Selecione
+                </div>
+                <div class="inputtext light disabled-placeholder">
+                  Selecione um campo à esquerda
+                </div>
+                <ErrorMessage
+                  class="error-msg"
+                  :name="`edicoes[${idx}].valor`"
+                />
+              </template>
+            </div>
           </div>
 
           <button
@@ -497,6 +501,15 @@ async function handlePropertyChange(event, idx) {
 </template>
 
 <style scoped>
+.fields__wrapper {
+  display: flex;
+
+  button {
+    align-self: flex-start;
+    margin-block-start: 2rem;
+  }
+}
+
 .disabled-placeholder {
   color: #aaa;
   background-color: #f9f9f9;
@@ -511,6 +524,7 @@ async function handlePropertyChange(event, idx) {
 }
 
 .fields-list {
+  width: 100%;
   display: flex;
   gap: 1.5rem 2rem;
   align-items: start;
@@ -523,7 +537,6 @@ async function handlePropertyChange(event, idx) {
 
 .fields-list > :last-child {
   align-self: flex-start;
-  margin-block-start: 2.2rem;
 }
 
 @supports (selector(:has(*))) {
