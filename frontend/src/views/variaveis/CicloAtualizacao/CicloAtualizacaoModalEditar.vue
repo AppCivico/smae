@@ -270,6 +270,7 @@
                   :disabled="!forumlariosAExibir.cadastro.liberado"
                   @update:model-value="atualizarVariavelAcumulado(variavelDadoIndex, $event)"
                 />
+
                 <Field
                   v-else
                   :class="[
@@ -292,6 +293,11 @@
                     {{ variaveisCategoricasValor.descricao && truncate(`- ${variaveisCategoricasValor.descricao}`, 55) }}
                   </option>
                 </Field>
+
+                <ErrorMessage
+                  v-if="errors[`variaveis_dados[${variavelDadoIndex}].valor_realizado`]"
+                  :name="`variaveis_dados[${variavelDadoIndex}].valor_realizado`"
+                />
               </td>
 
               <td
@@ -438,7 +444,10 @@ const dataCicloAtualizacao = computed<string | null>(() => (
   dateIgnorarTimezone(dataReferencia)
 ));
 
-const schema = computed(() => cicloAtualizacaoModalEditarSchema(fasePosicao.value));
+const schema = computed(() => cicloAtualizacaoModalEditarSchema(
+  fasePosicao.value,
+  emFoco.value?.variavel.casas_decimais,
+));
 
 const {
   handleSubmit, errors, setFieldValue, values, validateField,
@@ -728,8 +737,7 @@ function restaurarFormulario() {
         padding-bottom: 30px;
       }
 
-      &:nth-last-child(-n+2) {
-        th,
+      &:nth-last-child(-n+1) {
         td {
           padding-bottom: 0;
         }
@@ -758,8 +766,10 @@ function restaurarFormulario() {
 
 .valores-variaveis-tabela__item--valor_realizado,
 .valores-variaveis-tabela__item--valor_realizado_acumulado {
+  vertical-align: top;
+
   input {
-    width: 125px;
+    width: 175px;
   }
 }
 
