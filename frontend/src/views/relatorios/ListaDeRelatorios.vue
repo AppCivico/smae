@@ -229,11 +229,11 @@ onBeforeRouteLeave(() => {
         <span
           v-else-if="!linha.arquivo"
           class="nowrap"
+          style="display: inline-flex; gap: 0.25em; align-items: center;"
         >
           <LoadingComponent
             title="Relatório em processamento"
             class="ib dib"
-            style="margin-right: 0.25em;"
           >
             <span class="sr-only">
               Relatório em processamento
