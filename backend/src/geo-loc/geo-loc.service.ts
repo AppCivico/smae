@@ -729,7 +729,9 @@ export class GeoLocService {
                         codigo: c.geo_camada.codigo,
                         titulo: c.geo_camada.titulo,
                         id: c.geo_camada.id,
-                        descricao: c.geo_camada.config.descricao,
+                        descricao: c.geo_camada.config.descricao
+                            ? c.geo_camada.config.descricao
+                            : c.geo_camada.config.chave_camada,
                         nivel_regionalizacao: c.geo_camada.config.nivel_regionalizacao,
                         cor: c.geo_camada.config.cor,
                     };
