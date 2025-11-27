@@ -1049,11 +1049,17 @@ watch(listaDeTiposDeIntervenção, () => {
         :schema="schema"
       />
 
-      <CampoDeRegioesAgrupadas
-        v-model="values.regiao_ids"
-        :valores-iniciais="itemParaEdicao.regiao_ids"
-        :nível="portfolioMdoStore.portfoliosPorId[values.portfolio_id]?.nivel_regionalizacao"
-      />
+      <Field
+        v-slot="{ value, handleChange }"
+        name="regiao_ids"
+      >
+        <CampoDeRegioesAgrupadas
+          :model-value="value"
+          :valores-iniciais="itemParaEdicao.regiao_ids"
+          :nível="portfolioMdoStore.portfoliosPorId[values.portfolio_id]?.nivel_regionalizacao"
+          @update:model-value="handleChange"
+        />
+      </Field>
     </fieldset>
 
     <fieldset class="mb2">
@@ -1280,14 +1286,22 @@ watch(listaDeTiposDeIntervenção, () => {
             Descrição&nbsp;<span class="tvermelho">*</span>
           </LabelFromYup>
 
-          <SmaeText
+          <Field
+            v-slot="{ field, handleChange, value }"
             name="origem_outro"
-            as="textarea"
-            rows="5"
-            class="inputtext light mb1"
-            :class="{ 'error': errors.origem_outro }"
-            maxlength="500"
-          />
+          >
+            <SmaeText
+              :model-value="value"
+              :name="field.name"
+              as="textarea"
+              rows="5"
+              class="inputtext light mb1"
+              :class="{ 'error': errors.origem_outro }"
+              maxlength="500"
+              @update:model-value="handleChange"
+            />
+          </Field>
+
           <ErrorMessage
             name="origem_outro"
             class="error-msg"

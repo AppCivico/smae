@@ -4,13 +4,14 @@ import {
   computed, ref, watch,
 } from 'vue';
 import { useRoute } from 'vue-router';
+
 import EsperarEntrarNaTela from '@/components/EsperarEntrarNaTela.vue';
-import OverlayIndisponivel from '@/components/OverlayIndisponivel.vue';
-import GraficoLinhasEvolucao from '@/components/GraficoLinhasEvolucao.vue';
 import GraficoHeatmapVariavelCategorica from '@/components/GraficoHeatmapVariavelCategorica.vue';
+import GraficoLinhasEvolucao from '@/components/GraficoLinhasEvolucao.vue';
 import EvolucaoDeMetaIniciativaAtividade from '@/components/metas/EvolucaoDeMetaIniciativaAtividade.vue';
 import GruposDeSerie from '@/components/metas/GruposDeSerie.vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
+import OverlayIndisponivel from '@/components/OverlayIndisponivel.vue';
 import SmallModal from '@/components/SmallModal.vue';
 import { useAuthStore } from '@/stores/auth.store';
 import { useIndicadoresStore } from '@/stores/indicadores.store';
@@ -217,14 +218,6 @@ watch([parentId, parentField], iniciar, { immediate: true });
                 <div class="flex center">
                   <div class="t12 lh1 w700 uc tc400">
                     Previsto X Realizado
-                  </div>
-                  <div class="tipinfo ml1">
-                    <svg
-                      width="20"
-                      height="20"
-                    ><use xlink:href="#i_i" /></svg><div>
-                      Indicador calculado pela média móvel das variáveis
-                    </div>
                   </div>
                 </div>
               </div>
