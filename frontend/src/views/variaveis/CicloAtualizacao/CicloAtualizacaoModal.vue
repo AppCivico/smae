@@ -1,6 +1,8 @@
 <template>
   <SmallModal
     :active="modalVisivel"
+    class="ciclo-atualizacao-editar__modal"
+    tamanho-ajustavel
     @close="checarFecharModal"
   >
     <section class="ciclo-atualizacao-editar">
@@ -168,5 +170,9 @@ const conteudoEscolhido = computed<ConteudoOpcao>(() => {
   line-height: 39px;
   color: #233B5C;
   margin: 0;
+}
+
+.ciclo-atualizacao-editar {
+  max-width: 725px;
 }
 </style>
