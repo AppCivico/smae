@@ -268,7 +268,7 @@
                   type="number"
                   :name="`variaveis_dados[${variavelDadoIndex}].valor_realizado`"
                   :disabled="!forumlariosAExibir.cadastro.liberado"
-                  @update:model-value="atualizarVariavelAcululado(variavelDadoIndex, $event)"
+                  @update:model-value="atualizarVariavelAcumulado(variavelDadoIndex, $event)"
                 />
                 <Field
                   v-else
@@ -557,14 +557,14 @@ function temErro(caminho: string) {
   return erro[caminho];
 }
 
-function atualizarVariavelAcululado(variavelIndex: number, valor: string) {
+function atualizarVariavelAcumulado(variavelIndex: number, valor: string) {
   const valorVariavelInicial = Number(emFoco.value?.valores[variavelIndex].valor_realizado);
-  const valorVariavelAcululadoInicial = Number(
+  const valorVariavelAcumuladoInicial = Number(
     emFoco.value?.valores[variavelIndex].valor_realizado_acumulado,
   );
   const novoValor = Number(valor);
 
-  const novoValorAcumulado = (valorVariavelAcululadoInicial - valorVariavelInicial) + novoValor;
+  const novoValorAcumulado = (valorVariavelAcumuladoInicial - valorVariavelInicial) + novoValor;
 
   setFieldValue(
     `variaveis_dados[${variavelIndex}].valor_realizado_acumulado` as any,
