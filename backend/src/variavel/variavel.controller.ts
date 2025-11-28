@@ -31,6 +31,7 @@ import {
     VariavelGlobalRelacionamentoDto,
 } from './relacionados/dto/variavel.relacionamento.dto';
 import {
+    FilterPeriodoDto,
     FilterSVNPeriodoDto,
     FilterVariavelDetalheDto,
     SerieIndicadorValorNominal,
@@ -130,6 +131,17 @@ export class IndicadorVariavelPDMController {
         @CurrentUser() user: PessoaFromJwt
     ): Promise<ListSeriesAgrupadas> {
         return await this.variavelService.getSeriePrevistoRealizado(this.tipo, filters, params.id, user);
+    }
+
+    @Get('indicador-variavel/:id/periodos-validos')
+    @ApiBearerAuth('access-token')
+    @Roles(MetaController.ReadPerm)
+    async getPeriodosValidos(
+        @Param() params: FindOneParams,
+        @Query() filters: FilterPeriodoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ) {
+        return await this.variavelService.getPeriodosValidos(this.tipo, filters, params.id, user);
     }
 }
 
@@ -293,6 +305,28 @@ export class VariavelGlobalController {
         @CurrentUser() user: PessoaFromJwt
     ): Promise<ListSeriesAgrupadas> {
         return await this.variavelService.getSeriePrevistoRealizado(this.tipo, filters, params.id, user);
+    }
+
+    @Get('variavel/:id/periodos-validos')
+    @ApiBearerAuth('access-token')
+    @Roles([...VariavelGlobalController.WritePerm, ...MetaSetorialController.ReadPerm])
+    async getPeriodosValidos(
+        @Param() params: FindOneParams,
+        @Query() filters: FilterPeriodoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ) {
+        return await this.variavelService.getPeriodosValidos(this.tipo, filters, params.id, user);
+    }
+
+    @Get('plano-setorial-indicador-variavel/:id/periodos-validos')
+    @ApiBearerAuth('access-token')
+    @Roles([...VariavelGlobalController.WritePerm, ...MetaSetorialController.ReadPerm])
+    async getPeriodosValidosCopia(
+        @Param() params: FindOneParams,
+        @Query() filters: FilterPeriodoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ) {
+        return await this.variavelService.getPeriodosValidos(this.tipo, filters, params.id, user);
     }
 
     @Post('processa-variaveis-suspensas')

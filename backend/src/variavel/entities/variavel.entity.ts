@@ -126,6 +126,14 @@ export class FilterPeriodoDto {
     suporta_ciclo_info?: Boolean;
 }
 
+export class PeriodosValidosDto {
+    /**
+     * Lista de períodos válidos em formato YYYY-MM-DD
+     * @example ["2023-01-01", "2023-02-01", "2023-03-01"]
+     */
+    periodos_validos: string[];
+}
+
 export const TipoUso = { 'leitura': 'leitura', 'escrita': 'escrita' } as const;
 export type TipoUso = keyof typeof TipoUso;
 

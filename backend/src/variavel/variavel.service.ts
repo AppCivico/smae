@@ -60,6 +60,7 @@ import {
     FilterPeriodoDto,
     FilterSVNPeriodoDto,
     FilterVariavelDetalheDto,
+    PeriodosValidosDto,
     SACicloFisicoDto,
     SerieIndicadorValorNominal,
     SeriesAgrupadas,
@@ -2630,6 +2631,26 @@ export class VariavelService {
         }
 
         return result;
+    }
+
+    async getPeriodosValidos(
+        tipo: TipoVariavel,
+        filters: FilterPeriodoDto,
+        variavelId: number,
+        user: PessoaFromJwt
+    ): Promise<{ periodos_validos: string[] }> {
+        const selfItem = await this.findAll(tipo, { id: variavelId });
+        if (selfItem.length === 0) throw new NotFoundException('Variável não encontrada');
+
+        let indicadorId: number | null = null;
+        if (tipo === 'PDM') {
+            const indicadorViaVar = await this.getIndicadorViaVariavel(variavelId);
+            indicadorId = indicadorViaVar.id;
+        }
+
+        const todosPeriodos = await this.util.gerarPeriodoVariavelEntreDatas(variavelId, indicadorId, filters);
+
+        return { periodos_validos: todosPeriodos };
     }
 
     private async procuraCicloAnaliseDocumento(
