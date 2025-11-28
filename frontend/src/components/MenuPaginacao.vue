@@ -89,6 +89,8 @@
     <div
       v-if="totalRegistros"
       class="menu-de-paginacao__total-de-registros"
+      role="status"
+      aria-label="Total de registros"
     >
       {{ totalRegistros }} registro{{ totalRegistros === 1 ? '' : 's' }}
     </div>
