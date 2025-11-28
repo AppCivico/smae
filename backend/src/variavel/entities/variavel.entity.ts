@@ -144,6 +144,11 @@ export class FilterSVNPeriodoDto extends FilterPeriodoDto {
     @IsEnum(TipoUso, { message: 'Tipo de uso inválido' })
     @ApiProperty({ enum: TipoUso, required: false })
     uso?: TipoUso;
+
+    @IsOptional()
+    @IsBoolean()
+    @Transform((v) => v.value === 'true')
+    retornar_filhas?: boolean;
 }
 
 export class FilterVariavelDetalheDto {
@@ -214,11 +219,13 @@ export class SerieValorCategoricaComposta extends PickType(SerieValorNomimal, [
     'conferida',
     'valor_nominal',
 ] as const) {
-    @ApiProperty({
-        type: 'array',
-        items: { $ref: getSchemaPath(SerieValorCategoricaElemento) },
-    })
+    @ApiProperty({ type: 'array', items: { $ref: getSchemaPath(SerieValorCategoricaElemento) } })
     elementos: SerieValorCategoricaElemento[];
+}
+
+export class SerieFilhas {
+    variavel_id: number;
+    series: SerieValorNomimal[] | SerieIndicadorValorNominal[] | SerieValorCategoricaComposta[];
 }
 
 export class SeriesAgrupadas {
@@ -255,6 +262,11 @@ export class SeriesAgrupadas {
             '- `SerieValorCategoricaComposta`: valor com elementos de uma variável categórica\n',
     })
     series: SerieValorNomimal[] | SerieIndicadorValorNominal[] | SerieValorCategoricaComposta[];
+
+    /**
+     * opcional - array de variáveis filhas quando buscar_filhos=true
+     */
+    variaveis_filhas?: SerieFilhas[];
 }
 
 export type SerieIndicadorValores = Record<Serie, SerieIndicadorValorNominal | undefined>;
@@ -277,6 +289,9 @@ export class ValorSerieExistente {
      **/
     conferida?: boolean;
     elementos?: Prisma.JsonValue | null;
+
+    @ApiProperty({ description: 'ID da variável, apenas em variáveis, criado para uso interno na api' })
+    variavel_id?: number;
 }
 
 export class Iniciativa {

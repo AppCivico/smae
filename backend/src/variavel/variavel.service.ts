@@ -51,6 +51,8 @@ import {
     VariavelDetailComAuxiliaresDto,
     VariavelDetailDto,
     VariavelGlobalDetailDto,
+    VariavelResumo,
+    VariavelResumoInput,
 } from './dto/list-variavel.dto';
 import { UpdateVariavelDto } from './dto/update-variavel.dto';
 
@@ -60,6 +62,7 @@ import {
     FilterVariavelDetalheDto,
     SACicloFisicoDto,
     SerieIndicadorValorNominal,
+    SeriesAgrupadas,
     SerieValorCategoricaComposta,
     SerieValorCategoricaElemento,
     SerieValorNomimal,
@@ -2266,18 +2269,71 @@ export class VariavelService {
         return indicador;
     }
 
+    private async buscarVariaveisFilhas(variavelId: number): Promise<VariavelResumoInput[]> {
+        return await this.prisma.variavel.findMany({
+            where: { variavel_mae_id: variavelId, removido_em: null, tipo: 'Global' },
+            orderBy: [
+                { supraregional: 'asc' }, // falso primeiro
+                { regiao: { codigo: { sort: 'asc', nulls: 'last' } } },
+                { titulo: 'asc' },
+            ],
+            select: {
+                id: true,
+                suspendida_em: true,
+                variavel_categorica_id: true,
+                casas_decimais: true,
+                periodicidade: true,
+                acumulativa: true,
+                codigo: true,
+                titulo: true,
+                valor_base: true,
+                recalculando: true,
+                recalculo_erro: true,
+                recalculo_tempo: true,
+                variavel_mae_id: true,
+                unidade_medida: { select: { id: true, sigla: true, descricao: true } },
+            },
+        });
+    }
+
+    private formatarVariavelResumo(variavel: VariavelResumoInput): VariavelResumo {
+        return {
+            id: variavel.id,
+            suspendida: variavel.suspendida_em !== null,
+            variavel_categorica_id: variavel.variavel_categorica_id,
+            casas_decimais: variavel.casas_decimais,
+            periodicidade: variavel.periodicidade,
+            acumulativa: variavel.acumulativa,
+            codigo: variavel.codigo,
+            titulo: variavel.titulo,
+            valor_base: variavel.valor_base.toString(),
+            unidade_medida: {
+                id: variavel.unidade_medida.id,
+                sigla: variavel.unidade_medida.sigla,
+                descricao: variavel.unidade_medida.descricao,
+            },
+            variavel_mae_id: variavel.variavel_mae_id,
+            recalculando: variavel.recalculando,
+            recalculo_erro: variavel.recalculo_erro,
+            recalculo_tempo: variavel.recalculo_tempo,
+        };
+    }
+
     async getValorSerieExistente(
         variavelId: number,
         series: Serie[],
-        filters: FilterPeriodoDto
+        filters: FilterPeriodoDto,
+        extraVariaveis?: number[]
     ): Promise<ValorSerieExistente[]> {
         if (filters.ate_ciclo_corrente) {
             filters.data_fim = await this.util.ultimoPeriodoValido(variavelId);
         }
 
+        const variavelIds = extraVariaveis ? [variavelId, ...extraVariaveis] : [variavelId];
+
         return await this.prisma.serieVariavel.findMany({
             where: {
-                variavel_id: variavelId,
+                variavel_id: { in: variavelIds },
                 serie: { in: series },
                 AND: [
                     { data_valor: filters.data_inicio ? { gte: filters.data_inicio } : undefined },
@@ -2285,7 +2341,15 @@ export class VariavelService {
                     { data_valor: filters.data_valor }, // filtro fixo
                 ],
             },
-            select: { valor_nominal: true, id: true, data_valor: true, serie: true, conferida: true, elementos: true },
+            select: {
+                valor_nominal: true,
+                id: true,
+                data_valor: true,
+                serie: true,
+                conferida: true,
+                elementos: true,
+                variavel_id: true,
+            },
         });
     }
 
@@ -2337,7 +2401,15 @@ export class VariavelService {
         if (selfItem.length === 0) throw new NotFoundException('Variável não encontrada');
         const variavel = selfItem[0];
 
-        const series: Serie[] = [...ORDEM_SERIES_RETORNO];
+        if (filters.retornar_filhas) {
+            if (!filters.data_valor)
+                throw new BadRequestException('data_valor é obrigatório quando buscar_filhos=true');
+
+            if (!variavel.possui_variaveis_filhas)
+                throw new BadRequestException('Variável não possui variáveis filhas');
+        }
+
+        const ordemSeries: Serie[] = [...ORDEM_SERIES_RETORNO];
 
         const disableShuffle = await this.smaeConfigService.getConfigBooleanWithDefault('DISABLE_SHUFFLE', false);
 
@@ -2350,10 +2422,10 @@ export class VariavelService {
                 : null;
 
         if (filters.serie) {
-            series.length = 0;
+            ordemSeries.length = 0;
             for (const serie of ORDEM_SERIES_RETORNO) {
                 if (serie.toLowerCase().includes(filters.serie.toLowerCase())) {
-                    series.push(serie);
+                    ordemSeries.push(serie);
                 }
             }
             if (filters.serie == 'Realizado') filters.ate_ciclo_corrente = true;
@@ -2364,14 +2436,37 @@ export class VariavelService {
                 filters.ate_ciclo_corrente_inclusive = false;
             }
         }
-        console.log(series);
-        SeriesArrayShuffle(series, disableShuffle); // garante que o consumidor não está usando os valores das series cegamente
-        console.log(series);
-        console.log(`Séries solicitadas: ${series.join(', ')}`);
 
-        // TODO adicionar limpeza da serie para quem for ponto focal
-        const valoresExistentes = await this.getValorSerieExistente(variavelId, series, filters);
-        const porPeriodo = this.getValorSerieExistentePorPeriodo(valoresExistentes, variavelId, filters.uso, user);
+        SeriesArrayShuffle(ordemSeries, disableShuffle); // garante que o consumidor não está usando os valores das series cegamente
+
+        const variaveis_filhas = filters.retornar_filhas ? await this.buscarVariaveisFilhas(variavelId) : [];
+        const extraVariavelIds = variaveis_filhas.map((v) => v.id);
+
+        const valoresExistentes = await this.getValorSerieExistente(
+            variavelId,
+            ordemSeries,
+            filters,
+            extraVariavelIds.length > 0 ? extraVariavelIds : undefined
+        );
+        const porPeriodo = this.getValorSerieExistentePorPeriodo(
+            valoresExistentes.filter((v) => v.variavel_id === variavelId),
+            variavelId,
+            filters.uso,
+            user
+        );
+
+        // Build porPeriodo for children
+        const porPeriodoFilhas: Record<number, SerieValorPorPeriodo> = {};
+        if (filters.retornar_filhas) {
+            for (const filha of variaveis_filhas) {
+                porPeriodoFilhas[filha.id] = this.getValorSerieExistentePorPeriodo(
+                    valoresExistentes.filter((v) => v.variavel_id === filha.id),
+                    filha.id,
+                    filters.uso,
+                    user
+                );
+            }
+        }
 
         const result: ListSeriesAgrupadas = {
             variavel: {
@@ -2391,16 +2486,21 @@ export class VariavelService {
                 variavel_mae_id: variavel.variavel_mae_id,
             },
             linhas: [],
-            ordem_series: series,
+            ordem_series: ordemSeries,
         };
         if (result.variavel?.variavel_categorica_id === CONST_CRONO_VAR_CATEGORICA_ID) {
             result.variavel.variavel_categorica_id = null;
         }
 
+        // Add children to result
+        if (filters.retornar_filhas && variaveis_filhas.length > 0) {
+            result.variavel_filhas = variaveis_filhas.map((v) => this.formatarVariavelResumo(v));
+        }
+
         const [analisesCiclo, documentoCiclo] = await this.procuraCicloAnaliseDocumento(
             tipo,
             variavelId,
-            valoresExistentes
+            valoresExistentes.filter((v) => v.variavel_id === variavelId)
         );
 
         const mapAnalisesCiclo: Record<string, (typeof analisesCiclo)[0]> = {};
@@ -2448,11 +2548,11 @@ export class VariavelService {
                 variavel,
                 filters.uso,
                 user,
-                series
+                ordemSeries
             );
             let ciclo_fisico: SACicloFisicoDto | undefined = undefined;
 
-            if (series.indexOf('Realizado') > -1 && seriesExistentes[series.indexOf('Realizado')]) {
+            if (ordemSeries.indexOf('Realizado') > -1 && seriesExistentes[ordemSeries.indexOf('Realizado')]) {
                 if (isCurrentCycle)
                     this.logger.debug(`Ciclo corrente ${periodoYMD} já tem 'Realizado', desabilitando ciclo info.`);
                 canSkip = false;
@@ -2477,16 +2577,34 @@ export class VariavelService {
                 };
             }
 
-            result.linhas.push({
+            const linha: SeriesAgrupadas = {
                 periodo: periodoYMD.substring(0, 4 + 2 + 1),
                 agrupador: periodoYMD.substring(0, 4),
                 series: seriesExistentes,
                 ciclo_fisico: ciclo_fisico,
-            });
+            };
+
+            // Adiciona as séries das variáveis filhas
+            if (filters.retornar_filhas && variaveis_filhas.length > 0) {
+                linha.variaveis_filhas = variaveis_filhas.map((filha) => ({
+                    variavel_id: filha.id,
+                    series: this.populaSeriesExistentes(
+                        porPeriodoFilhas[filha.id],
+                        periodoYMD,
+                        filha.id,
+                        { ...filha, possui_variaveis_filhas: false, tipo: 'Global' },
+                        filters.uso,
+                        user,
+                        ordemSeries
+                    ),
+                }));
+            }
+
+            result.linhas.push(linha);
 
             if (isCurrentCycle && !prazoPassou && filters.suporta_ciclo_info) {
                 // Busca o 'Realizado'
-                const realizadoIndex = ORDEM_SERIES_RETORNO.indexOf('Realizado');
+                const realizadoIndex = ordemSeries.indexOf('Realizado');
                 if (realizadoIndex !== -1 && seriesExistentes[realizadoIndex]) {
                     const realizadoSerie = seriesExistentes[realizadoIndex] as SerieValorNomimal;
                     if (realizadoSerie) {

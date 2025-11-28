@@ -124,6 +124,11 @@ export class ListSeriesAgrupadas {
     ordem_series: Serie[];
 
     dados_auxiliares?: VariavelAuxiliarDto;
+
+    /**
+     * opcional - array de variáveis filhas quando buscar_filhos=true
+     */
+    variavel_filhas?: VariavelResumo[];
 }
 
 export class VariavelAuxiliarDto {
