@@ -169,23 +169,27 @@ const linkParaUltimaPagina = computed(() => (model.value
   }));
 
 async function irParaPagina(numero) {
-  emit('trocaDePaginaSolicitada', { pagina: Number(numero) });
+  const pagina = Number(numero);
+  emit('trocaDePaginaSolicitada', { pagina });
 
   if (model.value) {
-    model.value = Number(numero);
+    model.value = pagina;
   } else {
     navegando.value = true;
 
-    await router.push({
-      query: {
-        ...route.query,
-        [`${props.prefixo}token_paginacao`]: Number(numero) === 1
-          ? undefined
-          : props.tokenPaginacao || route.query[`${props.prefixo}token_paginacao`],
-        [`${props.prefixo}pagina`]: numero,
-      },
-    });
-    navegando.value = false;
+    try {
+      await router.push({
+        query: {
+          ...route.query,
+          [`${props.prefixo}token_paginacao`]: pagina === 1
+            ? undefined
+            : props.tokenPaginacao || route.query[`${props.prefixo}token_paginacao`],
+          [`${props.prefixo}pagina`]: numero,
+        },
+      });
+    } finally {
+      navegando.value = false;
+    }
   }
 }
 </script>
