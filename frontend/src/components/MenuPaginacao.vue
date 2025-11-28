@@ -170,6 +170,15 @@ const linkParaUltimaPagina = computed(() => (model.value
 
 async function irParaPagina(numero) {
   const pagina = Number(numero);
+
+  if (!Number.isFinite(pagina) || pagina < 1) {
+    return;
+  }
+
+  if (!props.temMais && pagina > props.paginas) {
+    return;
+  }
+
   emit('trocaDePaginaSolicitada', { pagina });
 
   if (model.value) {
@@ -184,7 +193,7 @@ async function irParaPagina(numero) {
           [`${props.prefixo}token_paginacao`]: pagina === 1
             ? undefined
             : props.tokenPaginacao || route.query[`${props.prefixo}token_paginacao`],
-          [`${props.prefixo}pagina`]: numero,
+          [`${props.prefixo}pagina`]: pagina,
         },
       });
     } finally {
