@@ -232,6 +232,10 @@
               v-for="(variavelDado, variavelDadoIndex) in variaveisDados"
               :key="`variavel-dado--${variavelDadoIndex}-${variavelDado.codigo}`"
             >
+              <Field
+                :name="`variaveis_dados[${variavelDadoIndex}].variavel_id`"
+                type="hidden"
+              />
               <td class="valores-variaveis-tabela__item valores-variaveis-tabela__item--codigo">
                 <div>
                   <strong>
@@ -305,11 +309,6 @@
                   disabled
                 />
               </td>
-
-              <Field
-                :name="`variaveis_dados[${variavelDadoIndex}].variavel_id`"
-                type="hidden"
-              />
             </tr>
           </tbody>
           <tfoot
@@ -713,21 +712,24 @@ function restaurarFormulario() {
     color: #B8C0CC;
   }
 
-  th, td {
+  th,
+  td {
     padding-right: 30px;
 
-    &:last-of-type {
+    &:last-child {
       padding-right: 0;
     }
   }
 
   tbody {
     tr {
+      th,
       td {
         padding-bottom: 30px;
       }
 
       &:nth-last-child(-n+2) {
+        th,
         td {
           padding-bottom: 0;
         }
