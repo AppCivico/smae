@@ -111,6 +111,21 @@ const endereçosConsolidadosPorToken = computed(() => ({
   ...endereçosTemporários.value,
 }));
 
+function obterSubprefeituraEDistrito(token) {
+  const endereco = endereçosConsolidadosPorToken.value[token];
+  if (!endereco?.camadas || !Array.isArray(endereco.camadas)) {
+    return { subprefeitura: '-', distrito: '-' };
+  }
+
+  const subprefeitura = endereco.camadas.find((c) => c.nivel_regionalizacao === 2);
+  const distrito = endereco.camadas.find((c) => c.nivel_regionalizacao === 3);
+
+  return {
+    subprefeitura: subprefeitura?.titulo || '-',
+    distrito: distrito?.titulo || '-',
+  };
+}
+
 function redefinirFormulário() {
   // Redefinição manual porque o `resetForm()` conflita com o model
   // e o resetField() não parece funcionar direito
@@ -292,6 +307,8 @@ const formularioSujo = useIsFormDirty();
       <col>
       <col>
       <col>
+      <col>
+      <col>
       <col class="col--number">
       <col class="col--botão-de-ação">
       <col class="col--botão-de-ação">
@@ -302,6 +319,8 @@ const formularioSujo = useIsFormDirty();
         <th />
         <th>Endereço</th>
         <th>Bairro</th>
+        <th>Subprefeitura</th>
+        <th>Distrito</th>
         <th class="cell--nowrap">
           <abbr title="Código de Endereçamento Postal">CEP</abbr>
         </th>
@@ -324,6 +343,12 @@ const formularioSujo = useIsFormDirty();
         </td>
         <td>
           {{ endereçosConsolidadosPorToken[token]?.endereco?.properties?.bairro || '-' }}
+        </td>
+        <td>
+          {{ obterSubprefeituraEDistrito(token).subprefeitura }}
+        </td>
+        <td>
+          {{ obterSubprefeituraEDistrito(token).distrito }}
         </td>
         <td class="cell--nowrap">
           {{ endereçosConsolidadosPorToken[token]?.endereco?.properties?.cep || '-' }}
