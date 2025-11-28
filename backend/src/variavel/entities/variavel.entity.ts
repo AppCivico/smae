@@ -61,6 +61,7 @@ export class VariavelItemDto {
     variavel_categorica_id: number | null;
     etapa: IdTituloDto | null;
     possui_variaveis_filhas: boolean;
+    tipo: TipoVariavel;
 
     recalculando: boolean;
     recalculo_erro: string | null;
