@@ -20,7 +20,7 @@
           :type="model ? 'button' : null"
           :to="linkDeRetrocesso"
           data-test="link-paginacao-anterior"
-          @click.capture="() => irParaPagina(paginaCorrente - 1)"
+          @click.prevent="() => irParaPagina(paginaCorrente - 1)"
         >
           <svg
             aria-hidden="true"
@@ -54,7 +54,7 @@
           :type="model ? 'button' : null"
           :to="linkParaUltimaPagina"
           aria-label="Última página"
-          @click.capture="() => irParaPagina(paginas)"
+          @click.prevent="() => irParaPagina(paginas)"
         >
           {{ paginas }}
         </component>
@@ -72,7 +72,7 @@
           :type="model ? 'button' : null"
           :to="linkDeAvanco"
           data-test="link-paginacao-seguinte"
-          @click.capture="() => irParaPagina(paginaCorrente + 1)"
+          @click.prevent="() => irParaPagina(paginaCorrente + 1)"
         >
           <span class="menu-de-paginacao__texto">
             Seguinte
