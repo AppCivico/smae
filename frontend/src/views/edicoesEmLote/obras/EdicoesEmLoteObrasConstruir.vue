@@ -382,10 +382,20 @@ async function handlePropertyChange(event, idx) {
                   :key="op"
                   :value="op"
                 >
-                  {{ op === 'Set' ? 'Substituir' : op === 'Add' ? 'Adicionar' : 'Remover' }}
+                  <template v-if="op === 'Set'">
+                    Substituir
+                  </template>
+
+                  <template v-else-if="op === 'Add'">
+                    Adicionar
+                  </template>
+
+                  <template v-else>
+                    Remover
+                  </template>
                 </option>
               </Field>
-              <!-- jesus -->
+
               <small
                 v-if="campoConfig(idx)?.meta?.explicacoes?.operacao?.[values.edicoes[idx].operacao]"
                 class="explicacao fb100"
