@@ -794,8 +794,8 @@ export class PainelEstrategicoService {
                 sum(COALESCE(orcr.soma_valor_liquidado, 0))::float AS valor_liquidado_total,
                 years.yr AS ano_referencia
             FROM generate_series(
-                DATE_PART('YEAR', CURRENT_DATE)::INT - 3,
-                DATE_PART('YEAR', CURRENT_DATE)::INT + 3
+                DATE_PART('YEAR', CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}')::INT - 3,
+                DATE_PART('YEAR', CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}')::INT + 3
             ) years(yr)
             JOIN projeto_base p ON (p.id IN (${projectIds}) OR ${hasProjetos} = -1)
             LEFT JOIN tarefa_custos tc ON tc.ano_referencia = years.yr AND tc.projeto_id = p.id
