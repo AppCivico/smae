@@ -1048,8 +1048,8 @@ BEGIN
         IF NEW.custo_estimado_anualizado IS NULL THEN
             NEW.custo_estimado := NULL;
         ELSE
-            SELECT SUM((value->>'valor')::numeric) INTO NEW.custo_estimado
-            FROM json_array_elements(NEW.custo_estimado_anualizado::json) AS value;
+            SELECT SUM((kv.val)::numeric) INTO NEW.custo_estimado
+            FROM json_each_text(NEW.custo_estimado_anualizado::json) AS kv(key, val);
         END IF;
     END IF;
 
@@ -1059,8 +1059,8 @@ BEGIN
         IF NEW.custo_real_anualizado IS NULL THEN
             NEW.custo_real := NULL;
         ELSE
-            SELECT SUM((value->>'valor')::numeric) INTO NEW.custo_real
-            FROM json_array_elements(NEW.custo_real_anualizado::json) AS value;
+            SELECT SUM((kv.val)::numeric) INTO NEW.custo_real
+            FROM json_each_text(NEW.custo_real_anualizado::json) AS kv(key, val);
         END IF;
     END IF;
 
