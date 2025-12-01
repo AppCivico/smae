@@ -213,8 +213,8 @@ export class PainelEstrategicoService {
         const sql = `
             WITH year_range AS (
                 SELECT generate_series(
-                    DATE_PART('YEAR', CURRENT_DATE)::INT - 3,
-                    DATE_PART('YEAR', CURRENT_DATE)::INT
+                    DATE_PART('YEAR', CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}')::INT - 3,
+                    DATE_PART('YEAR', CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}')::INT
                 ) AS ano
             ),
             project_counts AS (
@@ -223,8 +223,8 @@ export class PainelEstrategicoService {
                     DATE_PART('year', realizado_termino) as ano
                 FROM view_painel_estrategico_projeto
                 WHERE realizado_termino IS NOT NULL
-                    AND DATE_PART('year', realizado_termino) <= DATE_PART('YEAR', CURRENT_DATE)
-                    AND DATE_PART('year', realizado_termino) >= DATE_PART('YEAR', CURRENT_DATE) - 3
+                    AND DATE_PART('year', realizado_termino) <= DATE_PART('YEAR', CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}')
+                    AND DATE_PART('year', realizado_termino) >= DATE_PART('YEAR', CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}') - 3
                     AND projeto_id IN (${projetoIds})
                 GROUP BY DATE_PART('year', realizado_termino)
             )
