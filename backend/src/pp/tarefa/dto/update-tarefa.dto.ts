@@ -24,6 +24,7 @@ export class UpdateTarefaRealizadoDto extends PickType(CreateTarefaDto, [
     'duracao_real',
     'termino_real',
     'percentual_concluido',
+    'custo_real_anualizado',
 ] as const) {
     @Expose()
     custo_real: any;
@@ -35,4 +36,6 @@ export class UpdateTarefaRealizadoDto extends PickType(CreateTarefaDto, [
     termino_real: any;
     @Expose()
     percentual_concluido: any;
+    @Expose()
+    custo_real_anualizado: any;
 }

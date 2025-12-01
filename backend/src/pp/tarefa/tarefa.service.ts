@@ -18,6 +18,7 @@ import { ProjetoService } from '../projeto/projeto.service';
 import {
     CheckDependenciasDto,
     CreateTarefaDto,
+    CustoAnualizadoDto,
     FilterPPTarefa,
     TarefaCronogramaInput,
     TarefaDependenciaDto,
@@ -135,6 +136,7 @@ export class TarefaService {
 
         this.checkIntervalosPlanejado(dto);
         this.checkIntervalosRealizado(dto);
+        this.checkCustosAnualizados(dto);
 
         if (tarefaCronoInput.projeto_id)
             await this.utils.verifica_nivel_maximo_portfolio(tarefaCronoInput.projeto_id, dto.nivel);
@@ -231,13 +233,17 @@ export class TarefaService {
                     inicio_planejado: dto.inicio_planejado,
                     termino_planejado: dto.termino_planejado,
                     duracao_planejado: dto.duracao_planejado,
-                    custo_estimado: dto.custo_estimado,
+                    ...this.buildCustoUpdateDto(
+                        (dto as any).custo_estimado,
+                        (dto as any).custo_estimado_anualizado,
+                        (dto as any).custo_real,
+                        (dto as any).custo_real_anualizado
+                    ),
 
                     inicio_real: dto.inicio_real,
                     termino_real: dto.termino_real,
                     duracao_real: dto.duracao_real,
 
-                    custo_real: dto.custo_real,
                     eh_marco: dto.eh_marco,
 
                     numero: numero,
@@ -359,6 +365,8 @@ export class TarefaService {
                 inicio_real: Date2YMD.toStringOrNull(r.inicio_real) as any as Date,
                 termino_real: Date2YMD.toStringOrNull(r.termino_real) as any as Date,
                 atraso: CalculaAtraso.emDias(hoje, r.termino_planejado, r.termino_real),
+                custo_estimado_anualizado: this.buildAnualizado(r.custo_estimado_anualizado),
+                custo_real_anualizado: this.buildAnualizado(r.custo_real_anualizado),
             };
         });
 
@@ -367,6 +375,25 @@ export class TarefaService {
         this.logger.warn(`calculaAtrasoCronograma took ${Date.now() - antesCalc} ms`);
 
         return ret;
+    }
+
+    private buildAnualizado(data: Prisma.JsonValue): CustoAnualizadoDto[] | null {
+        if (data === null || data === undefined) return null;
+
+        // {"2024": 1000, "2025": 1500, ...}
+        const obj = data as Record<string, number>;
+        const keys = Object.keys(obj);
+        const arr: CustoAnualizadoDto[] = [];
+
+        // Put in order by year
+        for (const key of keys.sort((a, b) => parseInt(a) - parseInt(b))) {
+            arr.push({
+                ano: parseInt(key),
+                valor: obj[key],
+            });
+        }
+
+        return arr.length > 0 ? arr : null;
     }
 
     private calcPodeEditar(
@@ -466,6 +493,10 @@ export class TarefaService {
                 db_projecao_inicio: true,
                 db_projecao_termino: true,
                 recursos: true,
+                backup_custo_estimado: true,
+                backup_custo_real: true,
+                custo_real_anualizado: true,
+                custo_estimado_anualizado: true,
             },
         });
     }
@@ -1024,6 +1055,10 @@ export class TarefaService {
                     },
                 },
                 eh_marco: true,
+                custo_estimado_anualizado: true,
+                custo_real_anualizado: true,
+                backup_custo_estimado: true,
+                backup_custo_real: true,
             },
         });
 
@@ -1037,6 +1072,8 @@ export class TarefaService {
             inicio_real: Date2YMD.toStringOrNull(row.inicio_real) as any as Date,
             termino_real: Date2YMD.toStringOrNull(row.termino_real) as any as Date,
             termino_projetado: Date2YMD.toStringOrNull(row.db_projecao_termino) as any as Date,
+            custo_estimado_anualizado: this.buildAnualizado(row.custo_estimado_anualizado),
+            custo_real_anualizado: this.buildAnualizado(row.custo_real_anualizado),
             projeto: projeto,
         };
     }
@@ -1106,6 +1143,22 @@ export class TarefaService {
 
             this.checkIntervalosPlanejado(dto);
             this.checkIntervalosRealizado(dto);
+            const validationDto = { ...dto };
+            if ('custo_estimado_anualizado' in dto && dto.custo_estimado_anualizado !== undefined) {
+                if ((validationDto as UpdateTarefaDto).inicio_planejado === undefined)
+                    (validationDto as UpdateTarefaDto).inicio_planejado = tarefa.inicio_planejado;
+                if ((validationDto as UpdateTarefaDto).termino_planejado === undefined)
+                    (validationDto as UpdateTarefaDto).termino_planejado = tarefa.termino_planejado;
+            }
+
+            if ('custo_real_anualizado' in dto && dto.custo_real_anualizado !== undefined) {
+                if ((validationDto as UpdateTarefaRealizadoDto).inicio_real === undefined)
+                    (validationDto as UpdateTarefaRealizadoDto).inicio_real = tarefa.inicio_real;
+                if ((validationDto as UpdateTarefaRealizadoDto).termino_real === undefined)
+                    (validationDto as UpdateTarefaRealizadoDto).termino_real = tarefa.termino_real;
+            }
+
+            this.checkCustosAnualizados(validationDto);
 
             const permissoes = this.calcPodeEditar(tarefa, user);
 
@@ -1372,6 +1425,12 @@ export class TarefaService {
                 },
                 data: {
                     ...dto,
+                    ...this.buildCustoUpdateDto(
+                        (dto as any).custo_estimado,
+                        (dto as any).custo_estimado_anualizado,
+                        (dto as any).custo_real,
+                        (dto as any).custo_real_anualizado
+                    ),
                     dependencias: undefined,
                     atualizado_em: now,
                 },
@@ -2019,5 +2078,148 @@ export class TarefaService {
         });
 
         return resul;
+    }
+
+    private checkCustosAnualizados(dto: CreateTarefaDto | UpdateTarefaDto): void {
+        // Validar que não pode enviar ambos ao mesmo tempo
+        if (dto.custo_estimado_anualizado !== undefined && dto.custo_estimado !== undefined) {
+            throw new BadRequestException(
+                'Não é possível enviar custo_estimado e custo_estimado_anualizado simultaneamente. Use apenas custo_estimado_anualizado.'
+            );
+        }
+
+        if (dto.custo_real_anualizado !== undefined && dto.custo_real !== undefined) {
+            throw new BadRequestException(
+                'Não é possível enviar custo_real e custo_real_anualizado simultaneamente. Use apenas custo_real_anualizado.'
+            );
+        }
+
+        // Validar custo_estimado_anualizado
+        if (dto.custo_estimado_anualizado && dto.custo_estimado_anualizado.length > 0) {
+            if (!dto.inicio_planejado || !dto.termino_planejado) {
+                throw new BadRequestException(
+                    'Para usar custo_estimado_anualizado, as datas de início e término planejado devem estar preenchidas'
+                );
+            }
+
+            const anoInicio = DateTime.fromJSDate(dto.inicio_planejado).year;
+            const anoTermino = DateTime.fromJSDate(dto.termino_planejado).year;
+
+            // Verificar anos duplicados
+            const anos = dto.custo_estimado_anualizado.map((c) => c.ano);
+            const anosDuplicados = anos.filter((ano, index) => anos.indexOf(ano) !== index);
+            if (anosDuplicados.length > 0) {
+                throw new BadRequestException(
+                    `Anos duplicados encontrados em custo_estimado_anualizado: ${anosDuplicados.join(', ')}`
+                );
+            }
+
+            // Validar range de anos
+            const anosInvalidos = dto.custo_estimado_anualizado.filter((c) => c.ano < anoInicio || c.ano > anoTermino);
+            if (anosInvalidos.length > 0) {
+                throw new BadRequestException(
+                    `Os seguintes anos em custo_estimado_anualizado estão fora do período planejado (${anoInicio}-${anoTermino}): ${anosInvalidos.map((c) => c.ano).join(', ')}`
+                );
+            }
+        }
+
+        // Validar custo_real_anualizado
+        if (dto.custo_real_anualizado && dto.custo_real_anualizado.length > 0) {
+            if (!dto.inicio_real || !dto.termino_real) {
+                throw new BadRequestException(
+                    'Para usar custo_real_anualizado, as datas de início e término real devem estar preenchidas'
+                );
+            }
+
+            const anoInicio = DateTime.fromJSDate(dto.inicio_real).year;
+            const anoTermino = DateTime.fromJSDate(dto.termino_real).year;
+
+            // Verificar anos duplicados
+            const anos = dto.custo_real_anualizado.map((c) => c.ano);
+            const anosDuplicados = anos.filter((ano, index) => anos.indexOf(ano) !== index);
+            if (anosDuplicados.length > 0) {
+                throw new BadRequestException(
+                    `Anos duplicados encontrados em custo_real_anualizado: ${anosDuplicados.join(', ')}`
+                );
+            }
+
+            // Validar range de anos
+            const anosInvalidos = dto.custo_real_anualizado.filter((c) => c.ano < anoInicio || c.ano > anoTermino);
+            if (anosInvalidos.length > 0) {
+                throw new BadRequestException(
+                    `Os seguintes anos em custo_real_anualizado estão fora do período real (${anoInicio}-${anoTermino}): ${anosInvalidos.map((c) => c.ano).join(', ')}`
+                );
+            }
+        }
+    }
+
+    private buildCustoUpdateDto(
+        custo_estimado: number | null | undefined,
+        custo_estimado_anualizado: CustoAnualizadoDto[] | null | undefined,
+        custo_real: number | null | undefined,
+        custo_real_anualizado: CustoAnualizadoDto[] | null | undefined
+    ): {
+        custo_estimado: number | null | undefined;
+        custo_estimado_anualizado: object | undefined;
+        backup_custo_estimado: number | null | undefined;
+        custo_real: number | null | undefined;
+        custo_real_anualizado: object | undefined;
+        backup_custo_real: number | null | undefined;
+    } {
+        const result: any = {};
+
+        // já foi validado em checkCustosAnualizados
+
+        // Processar custo_estimado
+        if (custo_estimado !== undefined) {
+            result.custo_estimado = custo_estimado;
+            result.custo_estimado_anualizado = null;
+            result.backup_custo_estimado = null;
+        } else if (custo_estimado_anualizado !== undefined) {
+            if (custo_estimado_anualizado === null || custo_estimado_anualizado.length === 0) {
+                result.custo_estimado_anualizado = null;
+                result.custo_estimado = null;
+                result.backup_custo_estimado = null;
+            } else {
+                // Converter para formato do banco: {"2024": 1000, "2025": 1500}
+                const anualizado: Record<string, number> = {};
+                for (const item of custo_estimado_anualizado) {
+                    anualizado[item.ano.toString()] = item.valor;
+                }
+                result.custo_estimado_anualizado = anualizado;
+
+                result.backup_custo_estimado = null;
+
+                // custo_estimado será calculado pela trigger
+                // não setamos aqui para deixar a trigger fazer o trabalho
+            }
+        }
+
+        // Processar custo_real
+        if (custo_real !== undefined) {
+            result.custo_real = custo_real;
+            result.custo_real_anualizado = null;
+            result.backup_custo_real = null;
+        } else if (custo_real_anualizado !== undefined) {
+            if (custo_real_anualizado === null || custo_real_anualizado.length === 0) {
+                result.custo_real_anualizado = null;
+                result.custo_real = null;
+                result.backup_custo_real = null;
+            } else {
+                // Converter para formato do banco: {"2024": 1000, "2025": 1500}
+                const anualizado: Record<string, number> = {};
+                for (const item of custo_real_anualizado) {
+                    anualizado[item.ano.toString()] = item.valor;
+                }
+                result.custo_real_anualizado = anualizado;
+
+                result.backup_custo_real = null;
+
+                // custo_real será calculado pela trigger
+                // não setamos aqui para deixar a trigger fazer o trabalho
+            }
+        }
+
+        return result;
     }
 }
