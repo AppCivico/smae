@@ -769,7 +769,7 @@ function restaurarFormulario() {
   vertical-align: top;
 
   input {
-    width: 175px;
+    width: 12.5em;
   }
 }
 
