@@ -173,6 +173,6 @@ const conteudoEscolhido = computed<ConteudoOpcao>(() => {
 }
 
 .ciclo-atualizacao-editar {
-  max-width: 725px;
+  max-width: 51em;
 }
 </style>
