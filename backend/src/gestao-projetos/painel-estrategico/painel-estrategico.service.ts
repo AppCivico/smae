@@ -3,8 +3,12 @@ import { JwtService } from '@nestjs/jwt';
 import { Cron } from '@nestjs/schedule';
 import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
+import { IsCrontabDisabled } from '../../common/crontab-utils';
+import { SYSTEM_TIMEZONE } from '../../common/date2ymd';
+import { JOB_REFRESH_MV_LOCK } from '../../common/dto/locks';
 import { AnyPageTokenJwtBody, PaginatedWithPagesDto, PAGINATION_TOKEN_TTL } from '../../common/dto/paginated.dto';
 import { Object2Hash } from '../../common/object2hash';
+import { SmaeConfigService } from '../../common/services/smae-config.service';
 import { ReferenciasValidasBase } from '../../geo-loc/entities/geo-loc.entity';
 import { GeoLocService } from '../../geo-loc/geo-loc.service';
 import { Arr } from '../../mf/metas/dash/metas.service';
@@ -28,8 +32,6 @@ import {
     PainelEstrategicoResponseDto,
     PainelEstrategicoResumoOrcamentario,
 } from './entities/painel-estrategico-responses.dto';
-import { IsCrontabDisabled } from '../../common/crontab-utils';
-import { SYSTEM_TIMEZONE } from '../../common/date2ymd';
 
 @Injectable()
 export class PainelEstrategicoService {
@@ -37,7 +39,8 @@ export class PainelEstrategicoService {
         private readonly prisma: PrismaService,
         private readonly projetoService: ProjetoService,
         private readonly jwtService: JwtService,
-        private readonly geolocService: GeoLocService
+        private readonly geolocService: GeoLocService,
+        private readonly smaeConfigService: SmaeConfigService
     ) {}
 
     async buildPainel(filtro: PainelEstrategicoFilterDto, user: PessoaFromJwt): Promise<PainelEstrategicoResponseDto> {
@@ -1149,10 +1152,51 @@ export class PainelEstrategicoService {
     async refreshMaterializedView() {
         if (IsCrontabDisabled('task')) return;
         try {
-            Logger.log('Atualizando view painel estrategico projeto');
-            await this.prisma.$queryRaw`refresh materialized view view_painel_estrategico_projeto;`;
+            const CACHE_KEY = 'painel_estrategico_mv_last_refresh';
+            const now = new Date();
+
+            // vefica se a última atualização foi há menos de 1 minuto
+            const lastRefreshStr = await this.smaeConfigService.getConfig(CACHE_KEY);
+            if (lastRefreshStr) {
+                const lastRefresh = new Date(lastRefreshStr);
+                const timeDiffMs = now.getTime() - lastRefresh.getTime();
+                const oneMinuteMs = 60 * 1000;
+
+                if (timeDiffMs < oneMinuteMs) return;
+            }
+
+            process.env.INTERNAL_DISABLE_QUERY_LOG = '1';
+            await this.prisma.$transaction(
+                async (prisma: Prisma.TransactionClient) => {
+                    const lockPromise: Promise<{ locked: boolean }[]> =
+                        prisma.$queryRaw`SELECT pg_try_advisory_xact_lock(${JOB_REFRESH_MV_LOCK}) as locked`;
+
+                    // Immediately set the INTERNAL_DISABLE_QUERY_LOG to ''
+                    lockPromise.then(() => {
+                        process.env.INTERNAL_DISABLE_QUERY_LOG = '';
+                    });
+
+                    const locked = await lockPromise;
+                    if (!locked[0].locked) {
+                        return;
+                    }
+
+                    Logger.log('Atualizando view painel estrategico projeto');
+                    await prisma.$queryRaw`refresh materialized view view_painel_estrategico_projeto;`;
+
+                    await this.smaeConfigService.upsert(CACHE_KEY, now.toISOString());
+
+                    process.env.INTERNAL_DISABLE_QUERY_LOG = '1';
+                },
+                {
+                    maxWait: 15000,
+                    timeout: 60 * 1000,
+                    isolationLevel: 'ReadCommitted',
+                }
+            );
+            process.env.INTERNAL_DISABLE_QUERY_LOG = '';
         } catch (error) {
-            Logger.error(error);
+            Logger.error('Error refreshing materialized view:', error);
         }
     }
 }
