@@ -245,7 +245,7 @@ export class PainelEstrategicoService {
                 SELECT
                     date_trunc('month',
                         make_date(
-                            EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE ${SYSTEM_TIMEZONE})::int - 3,
+                            EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}')::int - 3,
                             1,
                             1
                         )
@@ -255,7 +255,7 @@ export class PainelEstrategicoService {
                     (data_ + interval '1 month')::date
                 FROM date_series
                 WHERE data_ < make_date(
-                    EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE ${SYSTEM_TIMEZONE})::int,
+                    EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}')::int,
                     12,
                     1
                 )
@@ -265,12 +265,12 @@ export class PainelEstrategicoService {
                     COUNT(DISTINCT projeto_id) as quantidade,
                     ano_termino as ano,
                     mes_termino as mes,
-                    EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE ${SYSTEM_TIMEZONE}) - ano_termino as linha,
+                    EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}') - ano_termino as linha,
                     mes_termino - 1 as coluna
                 FROM view_painel_estrategico_projeto
                 WHERE realizado_termino IS NOT NULL
-                    AND ano_termino <= EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE ${SYSTEM_TIMEZONE})
-                    AND ano_termino >= EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE ${SYSTEM_TIMEZONE}) - 3
+                    AND ano_termino <= EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}')
+                    AND ano_termino >= EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}') - 3
                     AND projeto_id IN (${projetoIds})
                 GROUP BY ano_termino, mes_termino
             ),
@@ -278,7 +278,7 @@ export class PainelEstrategicoService {
                 SELECT
                     EXTRACT(YEAR FROM data_) as ano,
                     EXTRACT(MONTH FROM data_) as mes,
-                    EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE ${SYSTEM_TIMEZONE}) - EXTRACT(YEAR FROM data_) as linha,
+                    EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}') - EXTRACT(YEAR FROM data_) as linha,
                     EXTRACT(MONTH FROM data_) - 1 as coluna
                 FROM date_series
             )
@@ -308,8 +308,8 @@ export class PainelEstrategicoService {
         const sql = `
             WITH year_range AS (
                 SELECT generate_series(
-                    EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE ${SYSTEM_TIMEZONE})::INT,
-                    EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE ${SYSTEM_TIMEZONE})::INT + 3
+                    EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}')::INT,
+                    EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}')::INT + 3
                 ) AS ano
             ),
             project_counts AS (
@@ -319,8 +319,8 @@ export class PainelEstrategicoService {
                 FROM view_painel_estrategico_projeto
                 WHERE realizado_termino IS NULL
                     AND previsao_termino IS NOT NULL
-                    AND ano_previsao >= EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE ${SYSTEM_TIMEZONE})
-                    AND ano_previsao <= EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE ${SYSTEM_TIMEZONE}) + 3
+                    AND ano_previsao >= EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}')
+                    AND ano_previsao <= EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}') + 3
                     AND projeto_id IN (${projetoIds})
                 GROUP BY ano_previsao
             )
@@ -341,7 +341,7 @@ export class PainelEstrategicoService {
                 SELECT
                     date_trunc('month',
                         make_date(
-                            EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE ${SYSTEM_TIMEZONE})::int - 3,
+                            EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}')::int - 3,
                             1,
                             1
                         )
@@ -351,7 +351,7 @@ export class PainelEstrategicoService {
                     (data_ + interval '1 month')::date
                 FROM date_series
                 WHERE data_ < date_trunc('month', make_date(
-                    EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE ${SYSTEM_TIMEZONE})::int + 3,
+                    EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}')::int + 3,
                     12,
                     1
                 ))
@@ -365,8 +365,8 @@ export class PainelEstrategicoService {
                 FROM view_painel_estrategico_projeto
                 WHERE realizado_termino IS NULL
                     AND previsao_termino IS NOT NULL
-                    AND ano_previsao >= EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE ${SYSTEM_TIMEZONE}) - 3
-                    AND ano_previsao <= EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE ${SYSTEM_TIMEZONE}) + 3
+                    AND ano_previsao >= EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}') - 3
+                    AND ano_previsao <= EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}') + 3
                     AND projeto_id IN (${projetoIds})
                 GROUP BY ano_previsao, previsao_termino  -- Changed this line
             ),
@@ -382,11 +382,11 @@ export class PainelEstrategicoService {
                 ad.ano::int,
                 ad.mes::int,
                 CASE
-                    WHEN ad.ano < EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE ${SYSTEM_TIMEZONE}) THEN -1
-                    WHEN ad.ano = EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE ${SYSTEM_TIMEZONE}) THEN 3
-                    WHEN ad.ano = EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE ${SYSTEM_TIMEZONE}) + 1 THEN 2
-                    WHEN ad.ano = EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE ${SYSTEM_TIMEZONE}) + 2 THEN 1
-                    WHEN ad.ano = EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE ${SYSTEM_TIMEZONE}) + 3 THEN 0
+                    WHEN ad.ano < EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}') THEN -1
+                    WHEN ad.ano = EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}') THEN 3
+                    WHEN ad.ano = EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}') + 1 THEN 2
+                    WHEN ad.ano = EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}') + 2 THEN 1
+                    WHEN ad.ano = EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}') + 3 THEN 0
                 END as linha,
                 ad.coluna::int
             FROM all_dates ad
@@ -471,7 +471,7 @@ export class PainelEstrategicoService {
     private async buildQuantidadesProjeto(projetoIds: number[]): Promise<PainelEstrategicoQuantidadesAnoCorrente> {
         const sql = `
             WITH ano_corrente AS (
-                SELECT EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE ${SYSTEM_TIMEZONE}) as ano
+                SELECT EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}') as ano
             ),
             contagens AS (
                 SELECT
@@ -922,7 +922,7 @@ export class PainelEstrategicoService {
                                      AND t.n_filhos_imediatos = 0
                                      AND t.removido_em IS NULL
                                      AND tc.removido_em IS NULL
-                                     AND (CAST(a.key AS numeric))::integer <= EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE ${SYSTEM_TIMEZONE})
+                                     AND (CAST(a.key AS numeric))::integer <= EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}')
                                   UNION ALL
                                   -- 2. Custos Padrão/Legado (atribuir o custo total ao ano de término planejado)
                                   SELECT COALESCE(t.custo_estimado, t.backup_custo_estimado) AS custo_anual
@@ -932,7 +932,7 @@ export class PainelEstrategicoService {
                                      AND t.n_filhos_imediatos = 0
                                      AND tc.removido_em IS NULL
                                      AND t.custo_estimado_anualizado IS NULL
-                                     AND t.termino_planejado <= CURRENT_DATE AT TIME ZONE ${SYSTEM_TIMEZONE}
+                                     AND t.termino_planejado <= CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}'
                              ) AS subquery
                          )::float AS valor_custo_planejado_hoje,
                          orc.soma_valor_empenho ::float as valor_empenhado_total,
