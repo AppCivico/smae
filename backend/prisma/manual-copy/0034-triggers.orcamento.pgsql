@@ -292,24 +292,43 @@ LANGUAGE plpgsql;
 
 
 CREATE OR REPLACE FUNCTION f_tgr_update_ano_projeto_tarefa_trigger()
-    RETURNS TRIGGER
-    AS $$
+RETURNS TRIGGER
+AS $$
 DECLARE
- tmp INTEGER;
+    projeto_id INTEGER;
 BEGIN
+    SELECT projeto_id INTO projeto_id
+    FROM tarefa_cronograma
+    WHERE id = NEW.tarefa_cronograma_id;
 
-    SELECT projeto_id into tmp
-    from tarefa_cronograma
-    where id = NEW.tarefa_cronograma_id;
+    IF projeto_id IS NULL THEN
+        RETURN NEW;
+    END IF;
 
-    if (tmp is not null) then
-        PERFORM atualiza_ano_orcamento_projeto(tmp);
-    end if;
+    IF TG_OP = 'INSERT' THEN
+        IF NEW.inicio_real IS NOT NULL
+           OR NEW.termino_real IS NOT NULL
+           OR NEW.inicio_planejado IS NOT NULL
+           OR NEW.termino_planejado IS NOT NULL
+        THEN
+            PERFORM atualiza_ano_orcamento_projeto(projeto_id);
+        END IF;
+
+    ELSIF TG_OP = 'UPDATE' THEN
+        IF EXTRACT(YEAR FROM OLD.inicio_real)       IS DISTINCT FROM EXTRACT(YEAR FROM NEW.inicio_real)
+           OR EXTRACT(YEAR FROM OLD.termino_real)   IS DISTINCT FROM EXTRACT(YEAR FROM NEW.termino_real)
+           OR EXTRACT(YEAR FROM OLD.inicio_planejado) IS DISTINCT FROM EXTRACT(YEAR FROM NEW.inicio_planejado)
+           OR EXTRACT(YEAR FROM OLD.termino_planejado) IS DISTINCT FROM EXTRACT(YEAR FROM NEW.termino_planejado)
+        THEN
+            PERFORM atualiza_ano_orcamento_projeto(projeto_id);
+        END IF;
+    END IF;
 
     RETURN NEW;
 END;
 $$
 LANGUAGE plpgsql;
+
 
 CREATE OR REPLACE FUNCTION f_tgr_update_ano_projeto_trigger()
     RETURNS TRIGGER

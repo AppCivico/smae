@@ -1,30 +1,3 @@
--- drop trigger trg_pp_tarefa_esticar_datas_do_pai_update on tarefa;
---CREATE TRIGGER trg_pp_tarefa_esticar_datas_do_pai_update AFTER UPDATE ON tarefa
---    FOR EACH ROW
---    WHEN (
---        (OLD.inicio_planejado IS DISTINCT FROM NEW.inicio_planejado)
---        OR
---        (OLD.termino_planejado IS DISTINCT FROM NEW.termino_planejado)
---        OR
---        (OLD.duracao_planejado IS DISTINCT FROM NEW.duracao_planejado)
---        OR
---        (OLD.inicio_real IS DISTINCT FROM NEW.inicio_real)
---        OR
---        (OLD.termino_real IS DISTINCT FROM NEW.termino_real)
---        OR
---        (OLD.duracao_real IS DISTINCT FROM NEW.duracao_real)
---        OR
---        (OLD.tarefa_pai_id IS DISTINCT FROM NEW.tarefa_pai_id)
---        OR
---        (OLD.removido_em IS DISTINCT FROM NEW.removido_em)
---        OR
---        (OLD.percentual_concluido IS DISTINCT FROM NEW.percentual_concluido)
---        OR
---        (OLD.custo_estimado IS DISTINCT FROM NEW.custo_estimado)
---        OR
---        (OLD.custo_real IS DISTINCT FROM NEW.custo_real)
---    )
---    EXECUTE FUNCTION f_trg_pp_tarefa_esticar_datas_do_pai();
 --
 --CREATE TRIGGER trg_pp_tarefa_esticar_datas_do_pai_insert AFTER INSERT ON tarefa
 --    FOR EACH ROW
@@ -206,6 +179,7 @@ LANGUAGE plpgsql;
 
 DROP FUNCTION IF exists atualiza_calendario_projeto(int);
 
+-- Atualizar atualiza_calendario_tarefa_cronograma para usar backup quando anualizado é null
 CREATE OR REPLACE FUNCTION atualiza_calendario_tarefa_cronograma(pTarefaCronoId int)
     RETURNS varchar
     AS $$
@@ -264,16 +238,16 @@ BEGIN
          ) = 0
         ),
         (
-         select sum(custo_estimado)
+         select sum(coalesce(custo_estimado, backup_custo_estimado))
          from tarefa t
          where t.tarefa_pai_id IS NULL and t.tarefa_cronograma_id = pTarefaCronoId and t.removido_em is null
-         and custo_estimado is not null
+         and coalesce(custo_estimado, backup_custo_estimado) is not null
         ),
         (
-         select sum(custo_real)
+         select sum(coalesce(custo_real, backup_custo_real))
          from tarefa t
          where t.tarefa_pai_id IS NULL and t.tarefa_cronograma_id = pTarefaCronoId and t.removido_em is null
-         and custo_real is not null
+         and coalesce(custo_real, backup_custo_real) is not null
         )
         into
             v_previsao_inicio,
@@ -637,18 +611,18 @@ BEGIN
              and t.removido_em is null
             ),
             (
-             select sum(custo_estimado)
+             select sum(coalesce(custo_estimado, backup_custo_estimado))
              from tarefa t
              where t.tarefa_pai_id = OLD.tarefa_pai_id
              and t.removido_em is null
-             and custo_estimado is not null
+             and coalesce(custo_estimado, backup_custo_estimado) is not null
             ),
             (
-             select sum(custo_real)
+             select sum(coalesce(custo_real, backup_custo_real))
              from tarefa t
              where t.tarefa_pai_id = OLD.tarefa_pai_id
              and t.removido_em is null
-             and custo_real is not null
+             and coalesce(custo_real, backup_custo_real) is not null
             )
             into
                 v_inicio_planejado,
@@ -768,18 +742,18 @@ BEGIN
              and t.removido_em is null
             ),
             (
-             select sum(custo_estimado)
+             select sum(coalesce(custo_estimado, backup_custo_estimado))
              from tarefa t
              where t.tarefa_pai_id = NEW.tarefa_pai_id
              and t.removido_em is null
-             and custo_estimado is not null
+             and coalesce(custo_estimado, backup_custo_estimado) is not null
             ),
             (
-             select sum(custo_real)
+             select sum(coalesce(custo_real, backup_custo_real))
              from tarefa t
              where t.tarefa_pai_id = NEW.tarefa_pai_id
              and t.removido_em is null
-             and custo_real is not null
+             and coalesce(custo_real, backup_custo_real) is not null
             )
             into
                 v_inicio_planejado,
@@ -1041,3 +1015,60 @@ WHERE t.removido_em IS NULL
     WHERE td.tarefa_id = t.id
   )
   AND (t.n_dep_inicio_planejado != 0 OR t.n_dep_termino_planejado != 0);
+
+
+-- recria a trigger
+DROP TRIGGER IF EXISTS trg_pp_tarefa_esticar_datas_do_pai_update ON tarefa;
+
+CREATE TRIGGER trg_pp_tarefa_esticar_datas_do_pai_update
+    AFTER UPDATE ON tarefa
+    FOR EACH ROW
+    WHEN (
+        old.inicio_planejado IS DISTINCT FROM new.inicio_planejado OR
+        old.termino_planejado IS DISTINCT FROM new.termino_planejado OR
+        old.duracao_planejado IS DISTINCT FROM new.duracao_planejado OR
+        old.inicio_real IS DISTINCT FROM new.inicio_real OR
+        old.termino_real IS DISTINCT FROM new.termino_real OR
+        old.duracao_real IS DISTINCT FROM new.duracao_real OR
+        old.tarefa_pai_id IS DISTINCT FROM new.tarefa_pai_id OR
+        old.removido_em IS DISTINCT FROM new.removido_em OR
+        old.percentual_concluido IS DISTINCT FROM new.percentual_concluido OR
+        old.custo_estimado IS DISTINCT FROM new.custo_estimado OR
+        old.custo_real IS DISTINCT FROM new.custo_real OR
+        old.custo_estimado_anualizado IS DISTINCT FROM new.custo_estimado_anualizado OR
+        old.custo_real_anualizado IS DISTINCT FROM new.custo_real_anualizado
+    )
+    EXECUTE FUNCTION f_trg_pp_tarefa_esticar_datas_do_pai();
+
+CREATE OR REPLACE FUNCTION f_trg_tarefa_sync_custo_anualizado() RETURNS trigger AS $$
+BEGIN
+    -- Se custo_estimado_anualizado foi modificado, recalcula custo_estimado
+    IF (TG_OP = 'INSERT' AND NEW.custo_estimado_anualizado IS NOT NULL) OR
+       (TG_OP = 'UPDATE' AND NEW.custo_estimado_anualizado IS DISTINCT FROM OLD.custo_estimado_anualizado) THEN
+        IF NEW.custo_estimado_anualizado IS NULL THEN
+            NEW.custo_estimado := NULL;
+        ELSE
+            SELECT SUM((value->>'valor')::numeric) INTO NEW.custo_estimado
+            FROM json_array_elements(NEW.custo_estimado_anualizado::json) AS value;
+        END IF;
+    END IF;
+
+    -- Se custo_real_anualizado foi modificado, recalcula custo_real
+    IF (TG_OP = 'INSERT' AND NEW.custo_real_anualizado IS NOT NULL) OR
+       (TG_OP = 'UPDATE' AND NEW.custo_real_anualizado IS DISTINCT FROM OLD.custo_real_anualizado) THEN
+        IF NEW.custo_real_anualizado IS NULL THEN
+            NEW.custo_real := NULL;
+        ELSE
+            SELECT SUM((value->>'valor')::numeric) INTO NEW.custo_real
+            FROM json_array_elements(NEW.custo_real_anualizado::json) AS value;
+        END IF;
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_tarefa_sync_custo_anualizado_before
+    BEFORE INSERT OR UPDATE ON tarefa
+    FOR EACH ROW
+    EXECUTE FUNCTION f_trg_tarefa_sync_custo_anualizado();

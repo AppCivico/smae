@@ -4397,6 +4397,12 @@ model Tarefa {
     custo_real     Float?
     eh_marco       Boolean @default(false)
 
+    custo_estimado_anualizado Json? @db.Json
+    custo_real_anualizado     Json? @db.Json
+
+    backup_custo_estimado Float?
+    backup_custo_real     Float?
+
     // calculado no caso dos nós, mas é o % realizado de fato, no caso das folhas
     // formula: soma (duracao prevista * nvl(percentual realizado, 0) / 100) / (soma das duracoes previstas)
     percentual_concluido Float?
