@@ -2,7 +2,7 @@ import { ApiHideProperty, ApiProperty, getSchemaPath, OmitType, PickType, refs }
 import { Periodicidade, Polaridade, Prisma, Serie, TipoVariavel } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsDate, IsEnum, IsOptional, IsString } from 'class-validator';
 import { IdSigla } from 'src/common/dto/IdSigla.dto';
 import { IsDateYMD } from '../../auth/decorators/date.decorator';
 import { DateTransform } from '../../auth/transforms/date.transform';
@@ -132,6 +132,15 @@ export class PeriodosValidosDto {
      * @example ["2023-01-01", "2023-02-01", "2023-03-01"]
      */
     periodos_validos: string[];
+
+    @IsDateYMD({ nullable: true })
+    ultimo_periodo_valido: DateYMD | null;
+
+    @IsDateYMD({ nullable: true })
+    proximo_periodo_abertura: DateYMD | null;
+
+    @ApiProperty({ type: 'string', format: 'date', isArray: true })
+    atrasos: DateYMD[];
 }
 
 export const TipoUso = { 'leitura': 'leitura', 'escrita': 'escrita' } as const;

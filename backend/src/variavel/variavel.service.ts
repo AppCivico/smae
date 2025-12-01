@@ -2638,7 +2638,7 @@ export class VariavelService {
         filters: FilterPeriodoDto,
         variavelId: number,
         user: PessoaFromJwt
-    ): Promise<{ periodos_validos: string[] }> {
+    ): Promise<PeriodosValidosDto> {
         const selfItem = await this.findAll(tipo, { id: variavelId });
         if (selfItem.length === 0) throw new NotFoundException('Variável não encontrada');
 
@@ -2650,7 +2650,22 @@ export class VariavelService {
 
         const todosPeriodos = await this.util.gerarPeriodoVariavelEntreDatas(variavelId, indicadorId, filters);
 
-        return { periodos_validos: todosPeriodos };
+        let proximo_periodo_abertura: string | null = null;
+        let ultimo_periodo_valido: string | null = null;
+        let atrasos: string[] = [];
+
+        const cicloCorrente = await this.prisma.variavelCicloCorrente.findUnique({
+            where: { variavel_id: variavelId },
+            select: { ultimo_periodo_valido: true, proximo_periodo_abertura: true, atrasos: true },
+        });
+
+        if (cicloCorrente) {
+            ultimo_periodo_valido = Date2YMD.toString(cicloCorrente.ultimo_periodo_valido);
+            proximo_periodo_abertura = Date2YMD.toString(cicloCorrente.proximo_periodo_abertura);
+            atrasos = cicloCorrente.atrasos.map((d) => Date2YMD.toString(d));
+        }
+
+        return { periodos_validos: todosPeriodos, proximo_periodo_abertura, ultimo_periodo_valido, atrasos };
     }
 
     private async procuraCicloAnaliseDocumento(

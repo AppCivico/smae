@@ -34,6 +34,7 @@ import {
     FilterPeriodoDto,
     FilterSVNPeriodoDto,
     FilterVariavelDetalheDto,
+    PeriodosValidosDto,
     SerieIndicadorValorNominal,
     SerieValorCategoricaComposta,
     SerieValorCategoricaElemento,
@@ -325,7 +326,7 @@ export class VariavelGlobalController {
         @Param() params: FindOneParams,
         @Query() filters: FilterPeriodoDto,
         @CurrentUser() user: PessoaFromJwt
-    ) {
+    ): Promise<PeriodosValidosDto> {
         return await this.variavelService.getPeriodosValidos(this.tipo, filters, params.id, user);
     }
 
