@@ -123,7 +123,7 @@ export class FilterPeriodoDto {
     @IsOptional()
     @IsBoolean()
     @Transform((v) => v.value === 'true')
-    suporta_ciclo_info?: Boolean;
+    suporta_ciclo_info?: boolean;
 }
 
 export class PeriodosValidosDto {
