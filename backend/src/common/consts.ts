@@ -1,4 +1,5 @@
-import { ModuloSistema } from '@prisma/client';
+import { OmitType } from '@nestjs/swagger';
+import { ModuloSistema, Serie } from '@prisma/client';
 import { ListaDePrivilegios } from './ListaDePrivilegios';
 
 export const CONST_BOT_USER_ID = -1;
@@ -31,3 +32,5 @@ export const CalcSistemasDisponiveis = (mostrar_pdm_antigo: boolean): (ModuloSis
     'MDO',
     'PlanoSetorial',
 ];
+
+export type SerieCore = Exclude<Serie, 'Previa'>;

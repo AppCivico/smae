@@ -5,7 +5,7 @@ import { IdNomeDto } from '../../common/dto/IdNome.dto';
 import { IdSigla, IdSiglaDescricao } from '../../common/dto/IdSigla.dto';
 import { IdTituloDto } from '../../common/dto/IdTitulo.dto';
 import { OrgaoReduzidoDto } from '../../orgao/entities/orgao.entity';
-import { SeriesAgrupadas, VariavelItemDto } from '../../variavel/entities/variavel.entity';
+import { SeriesAgrupadas, SerieValorNomimal, VariavelItemDto } from '../../variavel/entities/variavel.entity';
 import { VariaveisPeriodosDto } from './create-variavel.dto';
 
 export class ListVariavelDto {
@@ -129,6 +129,24 @@ export class ListSeriesAgrupadas {
      * opcional - array de variáveis filhas quando buscar_filhos=true
      */
     variavel_filhas?: VariavelResumo[];
+
+    /**
+     * Dados para a previa atual que pode ser editada ou vista
+     * Se null, nenhuma previa existe para o período relevante.
+     */
+    ultima_previa_indicador?: SerieValorNomimal | null;
+
+    /**
+     * Calculated permission flag for the frontend.
+     * True if the user can upsert the ultima_previa_indicador.
+     */
+    pode_editar_previa?: boolean;
+
+    /**
+     * Valor do ultimo "RealizadoAcumulado".
+     * Usado pelo frontend para calcular o delta nominal caso o usuário insira um valor acumulado.
+     */
+    valor_acumulado_anterior?: string | null;
 }
 
 export class VariavelAuxiliarDto {

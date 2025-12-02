@@ -15,6 +15,7 @@ import { OrgaoReduzidoDto } from '../../orgao/entities/orgao.entity';
 import { Regiao } from '../../regiao/entities/regiao.entity';
 import { UnidadeMedida } from '../../unidade-medida/entities/unidade-medida.entity';
 import { VariavelResumo } from '../dto/list-variavel.dto';
+import { SerieCore } from '../../common/consts';
 
 export class IndicadorVariavelOrigemDto {
     id: number;
@@ -215,7 +216,7 @@ export class SerieValorNomimal {
     elementos?: Prisma.JsonValue | null;
 }
 
-export type SerieIndicadorValorNomimal = Record<Serie, SerieValorNomimal | undefined>;
+export type SerieIndicadorValorNomimal = Record<SerieCore, SerieValorNomimal | undefined>;
 
 export class SerieValorPorPeriodo {
     [periodo: DateYMD]: SerieIndicadorValorNomimal;
@@ -286,7 +287,7 @@ export class SeriesAgrupadas {
     variaveis_filhas?: SerieFilhas[];
 }
 
-export type SerieIndicadorValores = Record<Serie, SerieIndicadorValorNominal | undefined>;
+export type SerieIndicadorValores = Record<SerieCore, SerieIndicadorValorNominal | undefined>;
 
 export class SerieIndicadorValorPorPeriodo {
     [periodo: DateYMD]: SerieIndicadorValores;
@@ -296,10 +297,12 @@ export class ValorSerieExistente {
     id: number;
     valor_nominal: Decimal | number;
     data_valor: Date;
-    serie: Serie;
+    serie: SerieCore;
+
     /**
-     * Apenas em indicadores
+     * Apenas em indicadores no momento
      **/
+    eh_previa?: boolean;
     ha_conferencia_pendente?: boolean;
     /**
      * Apenas em variaveis

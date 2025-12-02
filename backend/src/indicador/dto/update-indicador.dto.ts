@@ -1,8 +1,11 @@
-import { OmitType, PartialType } from '@nestjs/swagger';
+import { OmitType, PartialType, PickType } from '@nestjs/swagger';
 import { Transform, TransformFnParams, Type } from 'class-transformer';
 import {
+    arrayMaxSize,
     ArrayMaxSize,
+    IsArray,
     IsBoolean,
+    IsEnum,
     IsInt,
     IsNumberString,
     IsOptional,
@@ -12,6 +15,7 @@ import {
     ValidateNested,
 } from 'class-validator';
 import { CreateIndicadorDto } from './create-indicador.dto';
+import { IndicadorPreviaOpcao } from '@prisma/client';
 
 export class FormulaVariaveis {
     /**
@@ -154,4 +158,53 @@ export class UpdateIndicadorDto extends OmitType(PartialType(CreateIndicadorDto)
     @IsInt({ message: 'variavel_categoria_id precisa ser um número ou null' })
     @ValidateIf((object, value) => value !== null)
     variavel_categoria_id?: number | null;
+
+    /**
+     * Opção de tratamento de valor prévio para o indicador
+     */
+    @IsOptional()
+    @IsEnum(IndicadorPreviaOpcao, {
+        message: 'Opção de prévia inválida',
+    })
+    indicador_previa_opcao?: IndicadorPreviaOpcao;
+}
+
+export class IndicadorPreviaCategorica {
+    @IsNumberString({}, { message: 'Valor inválido. Use um número em formato de texto, como "100" ou "123,45"' })
+    @ValidateIf((object, value) => value !== '')
+    @Type(() => String)
+    valor: string;
+
+    /**
+     * ID do valor categórico (VariavelCategoricaValor.id)
+     */
+    @IsInt({ message: 'categorica_valor_id precisa ser um número' })
+    categorica_valor_id: number;
+}
+
+export class IndicadorPreviaUpsertDto {
+    /**
+     * Valor nominal (soma ou valor único)
+     * Se for categórica, este campo será ignorado na entrada e calculado automaticamente pelo backend.
+     */
+    @IsNumberString()
+    @ValidateIf((object, value) => value !== '')
+    valor: string;
+
+    /**
+     * Referência do token
+     */
+    @IsString()
+    referencia: string;
+
+    /**
+     * Elementos opcionais para indicadores categóricos.
+     * Obrigatório se o indicador for categórico.
+     */
+    @IsOptional()
+    @IsArray()
+    @ArrayMaxSize(1000, { message: 'Elementos opcionais para prévia precisa ter no máximo 1000 items' })
+    @ValidateNested({ each: true })
+    @Type(() => IndicadorPreviaCategorica)
+    elementos?: IndicadorPreviaCategorica[];
 }

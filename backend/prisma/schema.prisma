@@ -1439,6 +1439,11 @@ enum IndicadorTipo {
     Categorica
 }
 
+enum IndicadorPreviaOpcao {
+    NaoPermitir
+    PermitirPreenchimento
+}
+
 model Indicador {
     id                    Int           @id @default(autoincrement())
     meta_id               Int?
@@ -1473,6 +1478,8 @@ model Indicador {
     variavel_categoria_id Int?
 
     ha_avisos_data_fim Boolean @default(false)
+
+    indicador_previa_opcao IndicadorPreviaOpcao @default(NaoPermitir)
 
     recalculando    Boolean  @default(false)
     recalculo_erro  String?
@@ -1534,6 +1541,7 @@ enum Serie {
     PrevistoAcumulado
     Realizado
     RealizadoAcumulado
+    Previa
 }
 
 model UnidadeMedida {
@@ -2034,6 +2042,16 @@ model SerieIndicador {
     data_valor              DateTime @db.Date()
     valor_nominal           Float    @db.DoublePrecision
     ha_conferencia_pendente Boolean  @default(false)
+
+    eh_previa Boolean @default(false) // Indica se um valor eh derivado de uma 'Previa'
+
+    // Usado quando é Serie=Previa
+    criado_por_previa    Int?
+    data_criacao_previa  DateTime? @db.Timestamp(3)
+    previa_invalidada_em DateTime? @db.Timestamp(3)
+
+    // Suporte para valores de variáveis categóricas na Previa
+    elementos Json? @db.JsonB
 
     @@index([serie, indicador_id, data_valor], map: "idx_serie_indicador_indicador_id_data_valor")
     @@index([indicador_id, data_valor], map: "idx_indicador_indicador_id_data_valor")

@@ -25,6 +25,7 @@ DECLARE
     -- resultado em double precision pq já passou por toda a conta
     resultado double precision;
     vStart timestamp;
+    vPreviaRecord RECORD;
 BEGIN
     EXECUTE pg_advisory_xact_lock(pIndicador_id::bigint);
 
@@ -72,6 +73,7 @@ BEGIN
     END IF;
 
     -- Loop principal para processar séries (base e acumulada se usar fórmula)
+    -- Nota: 'Previa' não é processada aqui pois é input manual, apenas consumida no fallback
     FOR serieRecord IN
         WITH series AS (
             SELECT 'Realizado'::"Serie" as serie
@@ -97,6 +99,8 @@ BEGIN
     LOOP
 
         -- Limpa dados existentes para o período/série atual
+        -- Isso remove tanto valores normais (eh_previa=false) quanto valores sujos (eh_previa=true)
+        -- para garantir que o recálculo seja limpo. A série 'Previa' pura não é afetada por este delete.
         IF (pPeriodoStart IS NULL AND pPeriodoEnd IS NULL) THEN
             -- Apaga toda a série se nenhum período específico foi dado
             DELETE FROM serie_indicador
@@ -136,8 +140,20 @@ BEGIN
                 EXECUTE 'SELECT ' || r.formula INTO resultado;
 
                 IF (resultado IS NOT NULL) THEN
-                    INSERT INTO serie_indicador (indicador_id, serie, data_valor, valor_nominal, ha_conferencia_pendente)
-                        VALUES (pIndicador_id, r.serie, r.data_serie, resultado, r.ha_conferencia_pendente);
+                    -- Insere o dado calculado LIMPO (eh_previa = false)
+                    INSERT INTO serie_indicador (indicador_id, serie, data_valor, valor_nominal, ha_conferencia_pendente, eh_previa)
+                        VALUES (pIndicador_id, r.serie, r.data_serie, resultado, r.ha_conferencia_pendente, false);
+
+                    -- Lógica de Invalidação da Prévia:
+                    -- Se calculamos um valor Realizado com sucesso, qualquer prévia para esta data se torna inválida.
+                    IF r.serie = 'Realizado'::"Serie" THEN
+                        UPDATE serie_indicador
+                        SET previa_invalidada_em = now()
+                        WHERE indicador_id = pIndicador_id
+                          AND serie = 'Previa'::"Serie"
+                          AND data_valor = r.data_serie
+                          AND previa_invalidada_em IS NULL;
+                    END IF;
                 END IF;
             EXCEPTION
                 WHEN OTHERS THEN
@@ -146,6 +162,43 @@ BEGIN
                     -- Continua para o próximo período mesmo se um falhar
             END;
         END LOOP; -- fim loop recalculo por fórmula
+
+        -- =========================================================================
+        -- FALLBACK PARA PREVIA (Preenchimento de lacunas no Realizado)
+        -- =========================================================================
+        -- Se estivermos processando Realizado, verificamos se há Prévia válida onde o cálculo falhou (buracos)
+        IF serieRecord.serie = 'Realizado'::"Serie" THEN
+            FOR vPreviaRecord IN
+                SELECT si.data_valor, si.valor_nominal, si.elementos
+                FROM serie_indicador si
+                WHERE si.indicador_id = pIndicador_id
+                  AND si.serie = 'Previa'::"Serie"
+                  AND si.previa_invalidada_em IS NULL -- Apenas prévias válidas
+                  AND si.data_valor >= vInicio
+                  AND si.data_valor <= vFim -- Respeitar o intervalo de processamento
+                  AND NOT EXISTS (
+                      -- Garante que não vamos duplicar ou sobrescrever um Realizado calculado acima
+                      SELECT 1 FROM serie_indicador si2
+                      WHERE si2.indicador_id = pIndicador_id
+                      AND si2.serie = 'Realizado'::"Serie"
+                      AND si2.data_valor = si.data_valor
+                  )
+            LOOP
+                -- Insere o valor da Prévia como Realizado SUJO (eh_previa = true)
+                INSERT INTO serie_indicador (
+                    indicador_id, serie, data_valor, valor_nominal,
+                    ha_conferencia_pendente, eh_previa, elementos
+                ) VALUES (
+                    pIndicador_id,
+                    'Realizado'::"Serie",
+                    vPreviaRecord.data_valor,
+                    vPreviaRecord.valor_nominal,
+                    true, -- Assume pendência de conferência pois é um valor provisório
+                    true, -- Marca como derivado de prévia
+                    vPreviaRecord.elementos
+                );
+            END LOOP;
+        END IF;
 
         -- =========================================================================
         -- RECALCULO DO ACUMULADO (QUANDO NÃO USA A FÓRMULA - vAcumuladoUsaFormula = false)
@@ -182,14 +235,17 @@ BEGIN
                 AND serie = (serieRecord.serie::text || 'Acumulado')::"Serie";
 
             -- Calcula e insere a série acumulada até vFimIndicadorCalculo
-            INSERT INTO serie_indicador(indicador_id, serie, data_valor, valor_nominal, ha_conferencia_pendente)
+            INSERT INTO serie_indicador(indicador_id, serie, data_valor, valor_nominal, ha_conferencia_pendente, eh_previa)
             WITH theData AS (
                  SELECT
                      gs.gs as data_serie,
                      -- Soma o valor base do indicador com a soma acumulada da série base correspondente
                      round( vIndicadorBase + coalesce(sum(si.valor_nominal::numeric) OVER (order by gs.gs ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW), 0), vIndicadorNumeroCasas) as valor_acc,
                      -- Verifica se algum valor na janela acumulada tinha pendência de conferência
-                     count(1) FILTER (WHERE si.ha_conferencia_pendente) OVER (order by gs.gs ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) > 0 as ha_conferencia_pendente
+                     count(1) FILTER (WHERE si.ha_conferencia_pendente) OVER (order by gs.gs ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) > 0 as ha_conferencia_pendente,
+                     -- Copia o flag eh_previa do registro atual para o acumulado
+                     -- nao implementado: propagar a sujeira para o futuro, apenas copiar o estado do mês corrente, ja que esta desativado essa funcao
+                     coalesce(si.eh_previa, false) as eh_previa
                  FROM
                      -- Gera a série de datas DENTRO DO PERÍODO DE CÁLCULO AJUSTADO (vInicio a vFimIndicadorCalculo)
                      generate_series(vInicio, vFimIndicadorCalculo, vPeriodicidade) gs
@@ -203,7 +259,8 @@ BEGIN
                 (serieRecord.serie::text || 'Acumulado')::"Serie",
                 td.data_serie,
                 td.valor_acc,
-                td.ha_conferencia_pendente
+                td.ha_conferencia_pendente,
+                td.eh_previa
             FROM theData td
             WHERE td.valor_acc IS NOT NULL; -- Segurança, embora coalesce deva evitar nulls
 
