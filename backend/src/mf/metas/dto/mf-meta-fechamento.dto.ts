@@ -32,6 +32,11 @@ export class MfFechamentoDto {
     };
     meta_id: number;
 
+    reaberto_em?: Date;
+    reabertura_usuario?: {
+        nome_exibicao: string;
+    };
+
     id: number;
 }
 
@@ -50,6 +55,14 @@ export class FechamentoDto {
     meta_id: number;
 
     @IsString()
-    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Comentário' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Comentário' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     comentario: string;
+}
+
+export class ReaberturaDto {
+    @IsInt()
+    @Transform(({ value }: any) => +value)
+    meta_id: number;
 }

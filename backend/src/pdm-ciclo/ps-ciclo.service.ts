@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { Date2YMD } from '../common/date2ymd';
 import { TipoPdmType } from '../common/decorators/current-tipo-pdm';
@@ -182,7 +182,13 @@ export class PsCicloService {
                 where: { meta_id: metaId, ciclo_fisico_id: cicloId, ultima_revisao: true, removido_em: null },
             }),
             this.prisma.metaCicloFisicoFechamento.count({
-                where: { meta_id: metaId, ciclo_fisico_id: cicloId, ultima_revisao: true, removido_em: null },
+                where: {
+                    meta_id: metaId,
+                    ciclo_fisico_id: cicloId,
+                    ultima_revisao: true,
+                    removido_em: null,
+                    reaberto_em: null,
+                },
             }),
         ]);
 
@@ -632,5 +638,34 @@ export class PsCicloService {
         await this.analiseService.updateMetaAnaliseQualitativaDocumentoInterno(documentoId, dto, user);
 
         return { id: documentoId };
+    }
+
+    async reabrirMetaCiclo(
+        tipo: TipoPdmType,
+        pdmId: number,
+        cicloId: number,
+        meta_id: number,
+        user: PessoaFromJwt
+    ): Promise<void> {
+        // TODO: Verificar permissões
+
+        // Buscando linha fechamento atual para o ciclo.
+        const fechamento = await this.prisma.metaCicloFisicoFechamento.findFirst({
+            where: {
+                ciclo_fisico_id: cicloId,
+                removido_em: null,
+                ultima_revisao: true,
+                reaberto_em: null,
+                meta_id: meta_id,
+            },
+            select: { id: true },
+        });
+        if (!fechamento) {
+            throw new HttpException('Não existe fechamento para reabrir neste ciclo', 400);
+        }
+
+        await this.fechamentoService.reabrirMetaFechamentoInterno(fechamento.id, user);
+
+        return;
     }
 }

@@ -46,6 +46,10 @@ export class MetasFechamentoService {
                 ultima_revisao: true,
                 comentario: true,
                 criado_em: true,
+                reaberto_em: true,
+                pessoaReabertura: {
+                    select: { nome_exibicao: true },
+                },
                 meta_id: true,
                 referencia_data: true,
                 pessoaCriador: {
@@ -65,6 +69,10 @@ export class MetasFechamentoService {
                     meta_id: r.meta_id,
                     id: r.id,
                     criador: { nome_exibicao: r.pessoaCriador.nome_exibicao },
+                    reaberto_em: r.reaberto_em || undefined,
+                    reabertura_usuario: r.reaberto_em
+                        ? { nome_exibicao: r.pessoaReabertura!.nome_exibicao }
+                        : undefined,
                 };
             }),
         };
@@ -117,6 +125,51 @@ export class MetasFechamentoService {
             });
 
             return { id: cfq.id };
+        };
+
+        let ret;
+        if (prismaCtx) {
+            ret = await performWrite(prismaCtx);
+        } else {
+            ret = await this.prisma.$transaction(
+                async (prismaTx: Prisma.TransactionClient) => {
+                    return await performWrite(prismaTx);
+                },
+                {
+                    isolationLevel: 'Serializable',
+                    maxWait: 5000,
+                    timeout: 5000,
+                }
+            );
+        }
+        return ret;
+    }
+
+    async reabrirMetaFechamentoInterno(
+        id: number,
+        user: PessoaFromJwt,
+        prismaCtx?: Prisma.TransactionClient | undefined
+    ): Promise<RecordWithId> {
+        const now = new Date(Date.now());
+
+        const performWrite = async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+            const fechamento = await prismaTx.metaCicloFisicoFechamento.findUnique({
+                where: { id, reaberto_em: null, ultima_revisao: true },
+            });
+            if (!fechamento) {
+                throw new HttpException(`Fechamento não encontrado ou já reaberto.`, 400);
+            }
+
+            const ret = await prismaTx.metaCicloFisicoFechamento.update({
+                where: { id },
+                data: {
+                    reaberto_em: now,
+                    reaberto_por: user.id,
+                },
+                select: { id: true },
+            });
+
+            return { id: ret.id };
         };
 
         let ret;

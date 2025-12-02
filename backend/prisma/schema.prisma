@@ -515,6 +515,8 @@ model Pessoa {
     relTagPortProjetoQCriei   ProjetoPortfolioTag[] @relation("Criador")
     relTagPortProjetoQRemovi  ProjetoPortfolioTag[] @relation("Removedor")
 
+    metaCicloFisicoFechamentoQReabri MetaCicloFisicoFechamento[] @relation("reabertura")
+
     @@index([email])
     @@map("pessoa")
 }
@@ -2843,10 +2845,14 @@ model MetaCicloFisicoFechamento {
     removido_em  DateTime?
     removido_por Int?
 
-    ciclo_fisico    CicloFisico @relation(fields: [ciclo_fisico_id], references: [id])
-    meta            Meta        @relation(fields: [meta_id], references: [id])
-    pessoaCriador   Pessoa      @relation("criador", fields: [criado_por], references: [id])
-    pessoaRemovedor Pessoa?     @relation("removedor", fields: [removido_por], references: [id])
+    reaberto_em  DateTime?
+    reaberto_por Int?
+
+    ciclo_fisico     CicloFisico @relation(fields: [ciclo_fisico_id], references: [id])
+    meta             Meta        @relation(fields: [meta_id], references: [id])
+    pessoaCriador    Pessoa      @relation("criador", fields: [criado_por], references: [id])
+    pessoaRemovedor  Pessoa?     @relation("removedor", fields: [removido_por], references: [id])
+    pessoaReabertura Pessoa?     @relation("reabertura", fields: [reaberto_por], references: [id])
 
     @@index([meta_id, ultima_revisao])
     @@map("meta_ciclo_fisico_fechamento")

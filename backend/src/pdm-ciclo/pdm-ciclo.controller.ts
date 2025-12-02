@@ -12,7 +12,7 @@ import {
     CreateAnaliseQualitativaDto,
     UpdateAnaliseQualitativaDocumentoDto,
 } from '../mf/metas/dto/mf-meta-analise-quali.dto';
-import { FechamentoDto } from '../mf/metas/dto/mf-meta-fechamento.dto';
+import { FechamentoDto, ReaberturaDto } from '../mf/metas/dto/mf-meta-fechamento.dto';
 import { RiscoDto } from '../mf/metas/dto/mf-meta-risco.dto';
 import { RequestInfoDto } from '../mf/metas/dto/mf-meta.dto';
 import { FilterMonitCicloDto, FilterPdmCiclo, FilterPsCiclo, UpdatePdmCicloDto } from './dto/update-pdm-ciclo.dto';
@@ -246,5 +246,17 @@ export class PsCicloController {
             dto.meta_id,
             user
         );
+    }
+
+    @Post(':id/ciclo/:id2/reabrir')
+    @ApiBearerAuth('access-token')
+    @Roles(MetaSetorialController.WritePerm)
+    async reabrirMetaFechamento(
+        @Param() params: FindTwoParams,
+        @CurrentUser() user: PessoaFromJwt,
+        @TipoPDM() tipo: TipoPdmType,
+        @Body() dto: ReaberturaDto
+    ): Promise<void> {
+        return await this.psCicloService.reabrirMetaCiclo(tipo, +params.id, +params.id2, dto.meta_id, user);
     }
 }
