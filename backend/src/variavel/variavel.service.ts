@@ -2760,11 +2760,11 @@ export class VariavelService {
             const valor = existeValor?.[serie];
 
             if (valor) {
-                // qualquer variavel mãe é calculada server-side
-                if (ehServerSide) {
-                    seriesExistentes.push(this.referencia_boba(variavel.acumulativa, valor));
-                } else if ((serie === 'Previsto' || serie === 'Realizado') && variavel.variavel_categorica_id) {
+                if ((serie === 'Previsto' || serie === 'Realizado') && variavel.variavel_categorica_id) {
                     seriesExistentes.push(this.serieCategoricaComElementos(valor, variavel.id));
+                } else if (ehServerSide) {
+                    // qualquer variavel mãe é calculada server-side
+                    seriesExistentes.push(this.referencia_boba(variavel.acumulativa, valor));
                 } else if (serie === 'PrevistoAcumulado' || serie === 'RealizadoAcumulado') {
                     seriesExistentes.push(this.referencia_boba(variavel.acumulativa, valor));
                 } else {
@@ -2807,7 +2807,7 @@ export class VariavelService {
 
         const retorno: SerieValorNomimal = {
             valor_nominal: serie.valor_nominal,
-            referencia: serie.referencia,
+            referencia: serie.elementos ? 'SS' : serie.referencia,
             data_valor: serie.data_valor,
             ha_conferencia_pendente: serie.ha_conferencia_pendente,
             conferida: serie.conferida,
