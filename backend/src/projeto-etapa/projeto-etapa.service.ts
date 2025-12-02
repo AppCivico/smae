@@ -61,6 +61,7 @@ export class ProjetoEtapaService {
                 descricao: { equals: dto.descricao, mode: 'insensitive' },
                 removido_em: null,
                 eh_padrao: eh_padrao,
+                portfolio_id: eh_padrao ? null : dto.portfolio_id,
             },
         });
 
@@ -305,6 +306,7 @@ export class ProjetoEtapaService {
                     removido_em: null,
                     NOT: { id: id },
                     eh_padrao: dto.eh_padrao ?? self.eh_padrao,
+                    portfolio_id: (dto.eh_padrao ?? self.eh_padrao) ? null : (dto.portfolio_id ?? self.portfolio_id),
                 },
             });
 
