@@ -295,13 +295,13 @@ CREATE OR REPLACE FUNCTION f_tgr_update_ano_projeto_tarefa_trigger()
 RETURNS TRIGGER
 AS $$
 DECLARE
-    projeto_id INTEGER;
+    p_projeto_id INTEGER;
 BEGIN
-    SELECT projeto_id INTO projeto_id
+    SELECT projeto_id INTO p_projeto_id
     FROM tarefa_cronograma
     WHERE id = NEW.tarefa_cronograma_id;
 
-    IF projeto_id IS NULL THEN
+    IF p_projeto_id IS NULL THEN
         RETURN NEW;
     END IF;
 
@@ -311,7 +311,7 @@ BEGIN
            OR NEW.inicio_planejado IS NOT NULL
            OR NEW.termino_planejado IS NOT NULL
         THEN
-            PERFORM atualiza_ano_orcamento_projeto(projeto_id);
+            PERFORM atualiza_ano_orcamento_projeto(p_projeto_id);
         END IF;
 
     ELSIF TG_OP = 'UPDATE' THEN
@@ -320,7 +320,7 @@ BEGIN
            OR EXTRACT(YEAR FROM OLD.inicio_planejado) IS DISTINCT FROM EXTRACT(YEAR FROM NEW.inicio_planejado)
            OR EXTRACT(YEAR FROM OLD.termino_planejado) IS DISTINCT FROM EXTRACT(YEAR FROM NEW.termino_planejado)
         THEN
-            PERFORM atualiza_ano_orcamento_projeto(projeto_id);
+            PERFORM atualiza_ano_orcamento_projeto(p_projeto_id);
         END IF;
     END IF;
 
