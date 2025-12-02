@@ -974,6 +974,13 @@ watchEffect(() => {
                         etapa_id: r.etapa.id,
                         fase_id: rr.id,
                         subfase_id: rrr.id
+                      },
+                      query: {
+                        escape: {
+                          name: $route.name,
+                          params: $route.params,
+                          query: $route.query,
+                        }
                       }
                     }"
                   >
