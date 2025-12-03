@@ -35,12 +35,15 @@ const título = typeof route?.meta?.título === 'function'
     :is="as"
     class="título-da-página"
   >
-    <img
-      v-if="ícone"
-      class="título-da-página__ícone mr1"
-      :src="`${baseUrl}/download/${ícone}?inline=true`"
-      width="100"
-    >
+    <slot name="icone">
+      <img
+        v-if="ícone"
+        class="título-da-página__ícone mr1"
+        :src="`${baseUrl}/download/${ícone}?inline=true`"
+        width="100"
+      >
+    </slot>
+
     <slot>
       <template v-if="título">
         {{ prefixo }} {{ título }} {{ sufixo }}
@@ -58,6 +61,7 @@ const título = typeof route?.meta?.título === 'function'
 .título-da-página {
   display: flex;
   align-items: center;
+  gap: 1rem;
 }
 
 .título-da-página__ícone {
