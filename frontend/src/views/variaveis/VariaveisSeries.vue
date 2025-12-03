@@ -471,9 +471,9 @@ watch(SeriesAgrupadasPorAno, (novoValor) => {
         </div>
       </details>
 
-      <LoadingComponent v-if="chamadasPendentes.emFoco" />
+      <LoadingComponent v-if="chamadasPendentes.seriesAgrupadas" />
 
-      <ErrorComponent v-if="erros.emFoco" />
+      <ErrorComponent v-if="erros.seriesAgrupadas" />
 
       <FormErrorsList :errors="errors" />
 
