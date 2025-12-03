@@ -2138,6 +2138,7 @@ export class TarefaService {
             const anos = dto.custo_real_anualizado.map((c) => c.ano);
             const anosDuplicados = anos.filter((ano, index) => anos.indexOf(ano) !== index);
             console.log('============================');
+            console.log(dto);
             console.log(anos);
             console.log(anosDuplicados);
             console.log('============================');
