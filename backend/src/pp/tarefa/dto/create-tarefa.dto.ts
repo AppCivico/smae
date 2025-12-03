@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { TarefaDependenteTipo } from '@prisma/client';
-import { Transform, Type } from 'class-transformer';
+import { Expose, Transform, Type } from 'class-transformer';
 import {
     IsArray,
     IsBoolean,
@@ -23,11 +23,13 @@ import { IsOnlyDate } from '../../../common/decorators/IsDateOnly';
 import { MAX_LENGTH_DEFAULT, MAX_LENGTH_MEDIO } from 'src/common/consts';
 
 export class CustoAnualizadoDto {
+    @Expose()
     @IsInt({ message: 'Ano precisa ser inteiro' })
     @Min(1900, { message: 'Ano mínimo é 1900' })
     @Max(2100, { message: 'Ano máximo é 2100' })
     ano: number;
 
+    @Expose()
     @IsNumber(
         { maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false },
         { message: 'Valor: máximo 2 casas decimais' }

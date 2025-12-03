@@ -2137,11 +2137,6 @@ export class TarefaService {
             // Verificar anos duplicados
             const anos = dto.custo_real_anualizado.map((c) => c.ano);
             const anosDuplicados = anos.filter((ano, index) => anos.indexOf(ano) !== index);
-            console.log('============================');
-            console.log(dto);
-            console.log(anos);
-            console.log(anosDuplicados);
-            console.log('============================');
             if (anosDuplicados.length > 0) {
                 throw new BadRequestException(
                     `Anos duplicados encontrados em custo_real_anualizado: ${anosDuplicados.join(', ')}`
