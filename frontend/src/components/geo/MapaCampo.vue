@@ -317,11 +317,22 @@ const formularioSujo = useIsFormDirty();
     <thead>
       <tr>
         <th />
-        <th>Endereço</th>
-        <th>Bairro</th>
-        <th>Subprefeitura</th>
-        <th>Distrito</th>
-        <th class="cell--nowrap">
+        <th scope="col">
+          Endereço
+        </th>
+        <th scope="col">
+          Bairro
+        </th>
+        <th scope="col">
+          Subprefeitura
+        </th>
+        <th scope="col">
+          Distrito
+        </th>
+        <th
+          scope="col"
+          class="cell--nowrap"
+        >
           <abbr title="Código de Endereçamento Postal">CEP</abbr>
         </th>
         <th />
