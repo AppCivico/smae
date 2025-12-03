@@ -75,6 +75,8 @@ describe('MenuPaginacao', () => {
   });
 
   test('se o número de página muda quando inserimos um valor manualmente', async () => {
+    mockRouterPush.mockClear();
+
     const envelope = mount(Componente, {
       props: {
         paginas: 10,
@@ -105,7 +107,7 @@ describe('MenuPaginacao', () => {
     expect(mockRouterPush).toHaveBeenCalledWith(
       expect.objectContaining({
         query: expect.objectContaining({
-          pagina: '3',
+          pagina: 3,
         }),
       }),
     );
@@ -146,7 +148,7 @@ describe('MenuPaginacao', () => {
     expect(mockRouterPush).toHaveBeenCalledWith(
       expect.objectContaining({
         query: expect.objectContaining({
-          pagina: '1',
+          pagina: 1,
         }),
       }),
     );
