@@ -257,7 +257,7 @@ vue/singleline-html-element-content-newline -->
 
     <thead>
       <tr class="pl3 center mb05 tc300 w700 t12 uc">
-        <th class="cell-number">
+        <th class="cell--number">
           Número
         </th>
         <th class="cell--data">
