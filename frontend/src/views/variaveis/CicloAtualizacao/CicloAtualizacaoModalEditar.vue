@@ -161,7 +161,7 @@
 
         <AuxiliarDePreenchimento>
           <div class="flex g2 end mb1">
-            <div class="f1">
+            <div class="f1 mb1">
               <label class="label">Valor a aplicar</label>
               <input
                 v-if="!temCategorica"
@@ -238,12 +238,7 @@
               />
               <td class="valores-variaveis-tabela__item valores-variaveis-tabela__item--codigo">
                 <div>
-                  <strong>
-                    <svg
-                      width="12"
-                      height="12"
-                    ><use xlink:href="#i_right" /></svg>
-
+                  <strong class="block">
                     {{ variavelDado.codigo.id }}
                   </strong>
 
