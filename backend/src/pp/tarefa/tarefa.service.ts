@@ -2106,14 +2106,11 @@ export class TarefaService {
             const anoTermino = DateTime.fromJSDate(dto.termino_planejado).year;
 
             // Verificar anos duplicados
-            const anos = dto.custo_estimado_anualizado
-                .map((c) => c.ano)
-                .filter((ano) => ano !== undefined && ano !== null);
-            const anosUnicos = new Set(anos);
-            if (anosUnicos.size !== anos.length) {
-                const anosDuplicados = anos.filter((ano, index) => anos.indexOf(ano) !== index);
+            const anos = dto.custo_estimado_anualizado.map((c) => c.ano);
+            const anosDuplicados = anos.filter((ano, index) => anos.indexOf(ano) !== index);
+            if (anosDuplicados.length > 0) {
                 throw new BadRequestException(
-                    `Anos duplicados encontrados em custo_estimado_anualizado: ${[...new Set(anosDuplicados)].join(', ')}`
+                    `Anos duplicados encontrados em custo_estimado_anualizado: ${anosDuplicados.join(', ')}`
                 );
             }
 
@@ -2138,12 +2135,15 @@ export class TarefaService {
             const anoTermino = DateTime.fromJSDate(dto.termino_real).year;
 
             // Verificar anos duplicados
-            const anos = dto.custo_real_anualizado.map((c) => c.ano).filter((ano) => ano !== undefined && ano !== null);
-            const anosUnicos = new Set(anos);
-            if (anosUnicos.size !== anos.length) {
-                const anosDuplicados = anos.filter((ano, index) => anos.indexOf(ano) !== index);
+            const anos = dto.custo_real_anualizado.map((c) => c.ano);
+            const anosDuplicados = anos.filter((ano, index) => anos.indexOf(ano) !== index);
+            console.log('============================');
+            console.log(anos);
+            console.log(anosDuplicados);
+            console.log('============================');
+            if (anosDuplicados.length > 0) {
                 throw new BadRequestException(
-                    `Anos duplicados encontrados em custo_real_anualizado: ${[...new Set(anosDuplicados)].join(', ')}`
+                    `Anos duplicados encontrados em custo_real_anualizado: ${anosDuplicados.join(', ')}`
                 );
             }
 
