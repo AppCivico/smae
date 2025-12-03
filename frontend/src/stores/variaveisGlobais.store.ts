@@ -27,10 +27,12 @@ interface Estado {
   chamadasPendentes: ChamadasPendentes & {
     planosSimplificados: boolean;
     variaveisFilhasPorMae: { [key: string | number]: boolean };
+    seriesAgrupadas: boolean;
   };
   erros: Erros & {
     planosSimplificados: unknown;
     variaveisFilhasPorMae: { [key: string | number]: unknown };
+    seriesAgrupadas: unknown;
   };
 
   paginacao: Paginacao;
@@ -51,12 +53,14 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
       variaveisFilhasPorMae: {},
       planosSimplificados: false,
       emFoco: false,
+      seriesAgrupadas: false,
     },
     erros: {
       lista: null,
       variaveisFilhasPorMae: {},
       planosSimplificados: null,
       emFoco: null,
+      seriesAgrupadas: null,
     },
     paginacao: {
       tokenPaginacao: '',
@@ -193,7 +197,8 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
     },
 
     async buscarSerie(variavelId: number | string, params = {}): Promise<void> {
-      this.chamadasPendentes.emFoco = true;
+      this.chamadasPendentes.seriesAgrupadas = true;
+      this.erros.seriesAgrupadas = null;
 
       try {
         const resposta = await this.requestS.get(
@@ -205,9 +210,9 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
 
         this.seriesAgrupadas = resposta;
       } catch (erro: unknown) {
-        this.erros.emFoco = erro;
+        this.erros.seriesAgrupadas = erro;
       }
-      this.chamadasPendentes.emFoco = false;
+      this.chamadasPendentes.seriesAgrupadas = false;
     },
 
     async salvarSeries(params = {}): Promise<RecordWithId | boolean> {
