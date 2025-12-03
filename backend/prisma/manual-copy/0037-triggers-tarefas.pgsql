@@ -1035,8 +1035,8 @@ CREATE TRIGGER trg_pp_tarefa_esticar_datas_do_pai_update
         old.percentual_concluido IS DISTINCT FROM new.percentual_concluido OR
         old.custo_estimado IS DISTINCT FROM new.custo_estimado OR
         old.custo_real IS DISTINCT FROM new.custo_real OR
-        old.custo_estimado_anualizado IS DISTINCT FROM new.custo_estimado_anualizado OR
-        old.custo_real_anualizado IS DISTINCT FROM new.custo_real_anualizado
+        old.custo_estimado_anualizado::jsonb IS DISTINCT FROM new.custo_estimado_anualizado::jsonb OR
+        old.custo_real_anualizado::jsonb IS DISTINCT FROM new.custo_real_anualizado::jsonb
     )
     EXECUTE FUNCTION f_trg_pp_tarefa_esticar_datas_do_pai();
 
@@ -1068,6 +1068,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trg_tarefa_sync_custo_anualizado_before ON tarefa;
 CREATE TRIGGER trg_tarefa_sync_custo_anualizado_before
     BEFORE INSERT OR UPDATE ON tarefa
     FOR EACH ROW
