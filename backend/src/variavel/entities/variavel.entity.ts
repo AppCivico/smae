@@ -229,7 +229,7 @@ export class SerieValorNomimal {
      **/
     conferida?: boolean;
 
-    elementos?: SeriePreviaElementosDto;
+    elementos?: Prisma.JsonValue | null;
 }
 
 export type SerieIndicadorValorNomimal = Record<SerieCore, SerieValorNomimal | undefined>;
@@ -255,6 +255,15 @@ export class SerieValorCategoricaComposta extends PickType(SerieValorNomimal, [
 ] as const) {
     @ApiProperty({ type: 'array', items: { $ref: getSchemaPath(SerieValorCategoricaElemento) } })
     elementos: SerieValorCategoricaElemento[];
+}
+
+export class SeriePreviaValorCategoricaComposta extends PickType(SerieValorNomimal, [
+    'data_valor',
+    'referencia',
+    'valor_nominal',
+] as const) {
+    @ApiProperty({ type: 'array', items: { $ref: getSchemaPath(SerieValorCategoricaElemento) } })
+    elementos?: SeriePreviaElementosDto;
 }
 
 export class SerieFilhas {

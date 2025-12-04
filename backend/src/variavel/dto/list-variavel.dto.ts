@@ -5,7 +5,7 @@ import { IdNomeDto } from '../../common/dto/IdNome.dto';
 import { IdSigla, IdSiglaDescricao } from '../../common/dto/IdSigla.dto';
 import { IdTituloDto } from '../../common/dto/IdTitulo.dto';
 import { OrgaoReduzidoDto } from '../../orgao/entities/orgao.entity';
-import { SeriesAgrupadas, SerieValorNomimal, VariavelItemDto } from '../../variavel/entities/variavel.entity';
+import { SeriePreviaValorCategoricaComposta, SeriesAgrupadas, SerieValorNomimal, VariavelItemDto } from '../../variavel/entities/variavel.entity';
 import { VariaveisPeriodosDto } from './create-variavel.dto';
 import { VariavelCategoricaItem } from '../../variavel-categorica/dto/variavel-categorica.dto';
 
@@ -135,7 +135,7 @@ export class ListSeriesAgrupadas {
      * Dados para a previa atual que pode ser editada ou vista
      * Se null, nenhuma previa existe para o período relevante.
      */
-    ultima_previa_indicador?: SerieValorNomimal | null;
+    ultima_previa_indicador?: SeriePreviaValorCategoricaComposta | null;
 
     /**
      * Calculated permission flag for the frontend.
