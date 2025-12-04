@@ -219,21 +219,24 @@ const configuracaoGrafico = computed(() => {
 
       // Consolidar apenas "Realizado" e "Realizado Acumulado"
       if (nomeBase === 'Realizado' || nomeBase === 'Realizado Acumulado') {
-        // Verificar se o ponto atual é realmente prévia
-        let ehRealmentePrevia = ehPrevia;
-        if (ehPrevia) {
-          if (nomeBase === 'Realizado' && indiceRealizadoPrevia !== -1) {
-            ehRealmentePrevia = dataIndex >= indiceRealizadoPrevia;
-          }
-          if (nomeBase === 'Realizado Acumulado' && indiceRealizadoAcumuladoPrevia !== -1) {
-            ehRealmentePrevia = dataIndex >= indiceRealizadoAcumuladoPrevia;
-          }
+        // Verificar se o ponto atual é realmente prévia baseado no dataIndex
+        let ehRealmentePrevia = false;
+        if (nomeBase === 'Realizado' && indiceRealizadoPrevia !== -1) {
+          ehRealmentePrevia = dataIndex >= indiceRealizadoPrevia;
+        }
+        if (nomeBase === 'Realizado Acumulado' && indiceRealizadoAcumuladoPrevia !== -1) {
+          ehRealmentePrevia = dataIndex >= indiceRealizadoAcumuladoPrevia;
         }
 
         // Escolher valor correto (valores reais têm precedência sobre prévias)
         const dadosExistentes = seriesConsolidadas.get(nomeBase);
-        // Adicionar quando: não existe OU novo é real OU existente é prévia
-        if (!dadosExistentes || !ehRealmentePrevia || dadosExistentes.ehPrevia) {
+        // Adicionar quando: não existe OU (novo é real E existente é prévia)
+        // OU (novo é prévia E tem valor válido)
+        const deveAdicionar = !dadosExistentes
+          || (!ehRealmentePrevia && dadosExistentes.ehPrevia)
+          || (ehRealmentePrevia && valorExtraido !== null && valorExtraido !== undefined);
+
+        if (deveAdicionar) {
           seriesConsolidadas.set(nomeBase, {
             valor: valorExtraido,
             color: param.color,
