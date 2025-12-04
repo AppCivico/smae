@@ -29,16 +29,26 @@ const props = withDefaults(
 
 const emit = defineEmits<Emits>();
 
-function obterListaDeAnos(inicio: string, termino: string): number[] {
-  if (!(inicio && termino)) {
+function obterListaDeAnos(inicio: string, termino?: string): number[] {
+  if (!inicio) {
     return [];
   }
 
   const anoInicio = getYear(parseISO(inicio));
-  const anoTermino = getYear(parseISO(termino));
+  let anoTermino: number;
+
+  if (termino) {
+    anoTermino = getYear(parseISO(termino));
+  } else if (props.tipo === 'estimado') {
+    anoTermino = anoInicio + 10;
+  } else if (props.tipo === 'real') {
+    anoTermino = getYear(new Date());
+  } else {
+    throw new Error(`Tipo "${props.tipo}" não válido`);
+  }
 
   if (anoInicio === anoTermino) {
-    return [];
+    return [anoInicio];
   }
 
   return [...Array.from(
@@ -49,25 +59,9 @@ function obterListaDeAnos(inicio: string, termino: string): number[] {
 
 const listaDeAnos = ref<number[]>([]);
 
-function obterNameDoCampo(name: string, anualizado = false) {
-  const novoNome = `${name}_${props.tipo}`;
+// const usarValoresAnualizado = computed<boolean>(() => listaDeAnos.value.length > 1);
 
-  if (anualizado) {
-    return `${novoNome}_anualizado`;
-  }
-
-  return novoNome;
-}
-
-const usarValoresAnualizado = computed<boolean>(() => listaDeAnos.value.length > 1);
-
-const nomeDoCampo = computed(() => {
-  if (usarValoresAnualizado.value) {
-    return `custo_${props.tipo}_anualizado`;
-  }
-
-  return `custo_${props.tipo}`;
-});
+const nomeDoCampo = computed(() => `custo_${props.tipo}_anualizado`);
 
 const listaDeWatchers = {
   estimado: [
@@ -88,128 +82,12 @@ watch(
   { immediate: true },
 );
 
-watch(usarValoresAnualizado, () => {
-  emit('limpar-campos');
-}, { immediate: true });
+// watch(usarValoresAnualizado, () => {
+//   emit('limpar-campos');
+// }, { immediate: true });
 
 </script>
 
 <template>
-  <div class="flex g2 mb1">
-    <div
-      v-if="!usarValoresAnualizado"
-      class="f1 mb1"
-    >
-      <LabelFromYup
-        :name="nomeDoCampo"
-        :schema="$props.schema"
-      />
-      <MaskedFloatInput
-        v-if="!$props.values?.n_filhos_imediatos"
-        :name="nomeDoCampo"
-        :value="$props.values[nomeDoCampo]"
-        class="inputtext light mb1"
-      />
-      <input
-        v-else
-        type="text"
-        :name="nomeDoCampo"
-        :value="dinheiro(itemParaEdicao[nomeDoCampo])"
-        class="inputtext light mb1"
-        disabled
-      >
-      <ErrorMessage
-        class="error-msg mb1"
-        :name="nomeDoCampo"
-      />
-    </div>
-
-    <div
-      v-else
-      class="f1 mb1"
-    >
-      <legend class="label mt2 mb1">
-        {{ schema.fields[nomeDoCampo]?.spec.label }}
-      </legend>
-
-      <FieldArray
-        v-slot="{ fields, push, remove }"
-        :name="nomeDoCampo"
-      >
-        <div
-          v-for="(field, idx) in fields"
-          :key="`${nomeDoCampo}--${field.key}`"
-          class="flex g2"
-        >
-          <div class="f2 mb1">
-            <SmaeLabel
-              class="tc300"
-              :schema="schema.fields[nomeDoCampo].innerType"
-              name="ano"
-            />
-
-            <Field
-              :name="`${nomeDoCampo}[${idx}].ano`"
-              class="inputtext light mb1"
-              as="select"
-            >
-              <option value="">
-                Selecionar
-              </option>
-              <option
-                v-for="item in listaDeAnos"
-                :key="item"
-                :value="item"
-              >
-                {{ item }}
-              </option>
-            </Field>
-          </div>
-
-          <div class="f2 mb1">
-            <SmaeLabel
-              class="tc300"
-              :schema="schema.fields[nomeDoCampo].innerType"
-              name="ano"
-            />
-
-            <MaskedFloatInput
-              :name="`${nomeDoCampo}[${idx}].valor`"
-              :value="field.value?.valor"
-              class="inputtext light mb1"
-            />
-          </div>
-
-          <button
-            class="like-a__text addlink"
-            aria-label="excluir"
-            title="excluir"
-            type="button"
-            @click="() => {
-              remove(idx);
-            }"
-          >
-            <svg
-              width="20"
-              height="20"
-            ><use xlink:href="#i_remove" /></svg>
-          </button>
-        </div>
-
-        <button
-          class="like-a__text addlink"
-          type="button"
-          @click="push({
-            ano: null,
-            valor: 0
-          })"
-        >
-          <svg
-            width="20"
-            height="20"
-          ><use xlink:href="#i_+" /></svg>Adicionar valor estimado
-        </button>
-      </FieldArray>
-    </div>
-  </div>
+  a
 </template>

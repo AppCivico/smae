@@ -156,10 +156,10 @@ export default {
       {{ dateToField(linha.termino_real) }}
     </td>
     <td class="cell--number dado-estimado">
-      {{ typeof linha.custo_estimado === 'number' ? dinheiro(linha.custo_estimado) : '-' }}
+      {{ dinheiro(linha.custo_estimado || linha.backup_custo_estimado) || '-' }}
     </td>
     <td class="cell--number dado-efetivo">
-      {{ typeof linha.custo_real === 'number' ? dinheiro(linha.custo_real) : '-' }}
+      {{ dinheiro(linha.custo_real || linha.backup_custo_real) || '-' }}
     </td>
     <td class="cell--number">
       <template v-if="linha.atraso">

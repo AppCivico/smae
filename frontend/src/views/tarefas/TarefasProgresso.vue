@@ -1,12 +1,13 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import {
-  ErrorMessage, Field, Form,
+  ErrorMessage, Field, FieldArray, useForm,
 } from 'vee-validate';
+import { onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
-import schema from '@/consts/formSchemas/tarefa';
+import { criarSchemaTarefa } from '@/consts/formSchemas/tarefa';
 import addToDates from '@/helpers/addToDates';
 import dateToField from '@/helpers/dateToField';
 import subtractDates from '@/helpers/subtractDates';
@@ -14,7 +15,7 @@ import { useAlertStore } from '@/stores/alert.store';
 import { useEmailsStore } from '@/stores/envioEmail.store';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
 
-import CampoDeCustos from './components/CampoDeCustos.vue';
+import useCamposDeCustos from './composables/useCamposDeCustos';
 
 const alertStore = useAlertStore();
 const tarefasStore = useTarefasStore();
@@ -44,8 +45,23 @@ const props = defineProps({
   },
 });
 
-async function onSubmit(_, { controlledValues: carga }) {
+const schema = ref(criarSchemaTarefa('real'));
+
+const {
+  handleSubmit, errors, isSubmitting, setFieldValue, values, setValues,
+} = useForm({
+  initialValues: itemParaEdicao,
+  validationSchema: schema,
+});
+
+const { listaDeAnos, nomeDoCampoDeCusto, tipoDeCusto } = useCamposDeCustos({ values, tipo: 'real' });
+
+schema.value = criarSchemaTarefa('real', () => listaDeAnos.value);
+
+const onSubmit = handleSubmit.withControlled(async (carga) => {
   try {
+    carga.custo_real = undefined;
+
     const resposta = await tarefasStore.salvarItem(
       carga,
       props.tarefaId,
@@ -59,14 +75,17 @@ async function onSubmit(_, { controlledValues: carga }) {
   } catch (error) {
     alertStore.error(error);
   }
-}
+});
 
-async function iniciar() {
+watch(itemParaEdicao, () => {
+  setValues(itemParaEdicao.value);
+});
+
+onMounted(() => {
   emailsStore.buscarItem({ tarefa_id: props.tarefaId });
-}
-
-iniciar();
+});
 </script>
+
 <template>
   <div class="spacebetween">
 &nbsp;
@@ -185,12 +204,9 @@ iniciar();
     </SmaeLink>
   </div>
 
-  <Form
+  <form
     v-if="!tarefaId || emFoco"
-    v-slot="{ errors, isSubmitting, setFieldValue, values }"
     :disabled="chamadasPendentes.emFoco"
-    :initial-values="itemParaEdicao"
-    :validation-schema="schema"
     @submit="onSubmit"
   >
     <Field
@@ -300,15 +316,105 @@ iniciar();
       </button>
     </div>
 
-    <CampoDeCustos
-      :schema="schema"
-      :values="values"
-      tipo="real"
-      @limpar-campos="() => {
-        setFieldValue('custo_real', 0)
-        setFieldValue('custo_real_anualizado', [])
-      }"
-    />
+    <div v-if="values[`backup_custo_${tipoDeCusto}`]">
+      <SmaeLabel class="tc300">
+        Backup custo {{ tipoDeCusto }}
+      </SmaeLabel>
+
+      {{ dinheiro(values[`backup_custo_${tipoDeCusto}`], { style: 'currency'}) }}
+    </div>
+
+    <div class="flex g2 mb1">
+      <div class="f1 mb1">
+        <legend class="label mt2 mb1">
+          {{ schema.fields[nomeDoCampoDeCusto]?.spec.label }}
+        </legend>
+
+        <FieldArray
+          v-slot="{ fields, push, remove }"
+          :name="nomeDoCampoDeCusto"
+        >
+          <div
+            v-for="(field, idx) in fields"
+            :key="`${nomeDoCampoDeCusto}--${field.key}`"
+            class="flex g2"
+          >
+            <div class="f2 mb1">
+              <SmaeLabel
+                class="tc300"
+                :schema="schema.fields[nomeDoCampoDeCusto].innerType"
+                name="ano"
+              />
+
+              <Field
+                :name="`${nomeDoCampoDeCusto}[${idx}].ano`"
+                class="inputtext light mb1"
+                :class="{ 'error': errors[`${nomeDoCampoDeCusto}[${idx}].ano`] }"
+                as="select"
+              >
+                <option value="">
+                  Selecionar
+                </option>
+                <option
+                  v-for="item in listaDeAnos"
+                  :key="item"
+                  :value="item"
+                >
+                  {{ item }}
+                </option>
+              </Field>
+
+              <ErrorMessage
+                :name="`${nomeDoCampoDeCusto}[${idx}].ano`"
+              />
+            </div>
+
+            <div class="f2 mb1">
+              <SmaeLabel
+                class="tc300"
+                :schema="schema.fields[nomeDoCampoDeCusto].innerType"
+                name="valor"
+              />
+
+              <MaskedFloatInput
+                :name="`${nomeDoCampoDeCusto}[${idx}].valor`"
+                :value="field.value?.valor"
+                class="inputtext light mb1"
+              />
+            </div>
+
+            <button
+              class="like-a__text addlink"
+              aria-label="excluir"
+              title="excluir"
+              type="button"
+              @click="() => {
+                remove(idx);
+              }"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_remove" /></svg>
+            </button>
+          </div>
+
+          <button
+            class="like-a__text addlink"
+            type="button"
+            @click="push({
+              ano: null,
+              valor: 0
+            })"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_+" /></svg>Adicionar valor estimado
+          </button>
+        </FieldArray>
+      </div>
+    </div>
 
     <div class="flex g2">
       <div class="f1 mb1">
