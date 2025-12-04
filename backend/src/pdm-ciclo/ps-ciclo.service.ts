@@ -60,14 +60,27 @@ export class PsCicloService {
                     gt: params.apenas_futuro ? new Date(Date.now()) : undefined,
                 },
             },
+            include: {
+                MetaCicloFisicoFechamento: {
+                    where: {
+                        ultima_revisao: true,
+                        removido_em: null,
+                    },
+                },
+            },
             orderBy: [{ data_ciclo: 'desc' }],
         });
 
         const retorno = ciclos.map((ciclo) => {
+            // Para ser fechado, deve ter linha de fechamento para a meta e na linha não pode estar com reaberto_em
+            const fechado =
+                ciclo.MetaCicloFisicoFechamento.length > 0 && ciclo.MetaCicloFisicoFechamento[0].reaberto_em === null;
+
             return {
                 id: ciclo.id,
                 data_ciclo: Date2YMD.toString(ciclo.data_ciclo),
                 ativo: ciclo.ativo,
+                fechado: fechado,
             } satisfies CicloFisicoPSDto;
         });
 

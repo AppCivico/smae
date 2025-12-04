@@ -49,6 +49,7 @@ export class CicloFisicoPSDto {
     @IsDateYMD()
     data_ciclo: DateYMD;
     ativo: boolean;
+    fechado: boolean;
 }
 
 export class DadosCicloFisicoPSDto {
