@@ -163,7 +163,7 @@ BEGIN
 --                vFimCalculo::text;
 
             -- Insere os valores acumulados
-            INSERT INTO serie_variavel (variavel_id, serie, data_valor, valor_nominal)
+            INSERT INTO serie_variavel (variavel_id, serie, data_valor, valor_nominal, eh_previa)
             WITH theData AS (
                 SELECT
                     gs.gs AS data_serie,
@@ -171,7 +171,8 @@ BEGIN
                         -- Soma o valor base com a soma acumulada dos valores nominais da série base (Realizado ou Previsto)
                         vVariavelBase + coalesce(sum(sv.valor_nominal::numeric) OVER (ORDER BY gs.gs ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW), 0),
                         vVariavelNumeroCasas
-                    ) AS valor_acc
+                    ) AS valor_acc,
+                    sv.eh_previa
                 FROM
                     generate_series(vInicio, vFimCalculo, vPeriodicidade) gs
                 LEFT JOIN serie_variavel sv ON sv.variavel_id = pVariavelId
@@ -182,7 +183,8 @@ BEGIN
                 pVariavelId,
                 (serieRecord.serie::text || 'Acumulado')::"Serie",
                 td.data_serie,
-                td.valor_acc
+                td.valor_acc,
+                td.eh_previa
             FROM theData td
             WHERE td.valor_acc IS NOT NULL; -- Should not be necessary due to coalesce, but safe practice
 
@@ -194,12 +196,13 @@ BEGIN
             -- pontos fora do novo vFimCalculo (se aplicável por outras razões) seriam removidos.
 
             -- Copia os dados da série base para a série 'Acumulada' correspondente
-            INSERT INTO serie_variavel (variavel_id, serie, data_valor, valor_nominal)
+            INSERT INTO serie_variavel (variavel_id, serie, data_valor, valor_nominal, eh_previa)
             SELECT
                 pVariavelId,
                 (serieRecord.serie::text || 'Acumulado')::"Serie",
                 sv.data_valor,
-                sv.valor_nominal
+                sv.valor_nominal,
+                sv.eh_previa
             FROM serie_variavel sv
             WHERE sv.variavel_id = pVariavelId
                 AND sv.serie = serieRecord.serie

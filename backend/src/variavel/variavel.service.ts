@@ -24,7 +24,7 @@ import { Regiao } from 'src/regiao/entities/regiao.entity';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { LoggerWithLog } from '../common/LoggerWithLog';
 import { PrismaHelpers } from '../common/PrismaHelpers';
-import { CONST_CRONO_VAR_CATEGORICA_ID, CONST_VAR_SEM_UN_MEDIDA } from '../common/consts';
+import { CONST_CRONO_VAR_CATEGORICA_ID, CONST_VAR_SEM_UN_MEDIDA, SerieCore } from '../common/consts';
 import { Date2YMD, DateYMD, SYSTEM_TIMEZONE } from '../common/date2ymd';
 import { MIN_DTO_SAFE_NUM, VAR_CATEGORICA_AS_NULL } from '../common/dto/consts';
 import { AnyPageTokenJwtBody, PaginatedWithPagesDto, PAGINATION_TOKEN_TTL } from '../common/dto/paginated.dto';
@@ -73,14 +73,14 @@ import {
     VariavelGlobalItemDto,
     VariavelItemDto,
 } from './entities/variavel.entity';
-import { SerieCompactToken } from './serie.token.encoder';
+import { SerieCompactToken } from '../common/SerieCompactToken';
 import { VariavelUtilService } from './variavel.util.service';
 
 const SUPRA_SUFIXO = ' - Supra';
 /**
  * ordem que é populado na função populaSeriesExistentes, usada no serviço do VariavelFormulaCompostaService
  */
-export const ORDEM_SERIES_RETORNO: Serie[] = ['Previsto', 'PrevistoAcumulado', 'Realizado', 'RealizadoAcumulado'];
+export const ORDEM_SERIES_RETORNO: SerieCore[] = ['Previsto', 'PrevistoAcumulado', 'Realizado', 'RealizadoAcumulado'];
 
 const InicioFimErrMsg =
     'Inicio/Fim da medição da variável não pode ser nulo quando a periodicidade da variável é diferente do indicador';
@@ -2332,7 +2332,7 @@ export class VariavelService {
 
         const variavelIds = extraVariaveis ? [variavelId, ...extraVariaveis] : [variavelId];
 
-        return await this.prisma.serieVariavel.findMany({
+        return (await this.prisma.serieVariavel.findMany({
             where: {
                 variavel_id: { in: variavelIds },
                 serie: { in: series },
@@ -2351,7 +2351,7 @@ export class VariavelService {
                 elementos: true,
                 variavel_id: true,
             },
-        });
+        })) satisfies Array<Omit<ValorSerieExistente, 'serie'>> as ValorSerieExistente[];
     }
 
     getValorSerieExistentePorPeriodo(
@@ -2410,7 +2410,7 @@ export class VariavelService {
                 throw new BadRequestException('Variável não possui variáveis filhas');
         }
 
-        const ordemSeries: Serie[] = [...ORDEM_SERIES_RETORNO];
+        const ordemSeries: SerieCore[] = [...ORDEM_SERIES_RETORNO];
 
         const disableShuffle = await this.smaeConfigService.getConfigBooleanWithDefault('DISABLE_SHUFFLE', false);
 
@@ -2749,7 +2749,7 @@ export class VariavelService {
         },
         uso: TipoUso = 'escrita',
         user: PessoaFromJwt,
-        ordemSeries: Serie[]
+        ordemSeries: SerieCore[]
     ): SerieIndicadorValorNominal[] | SerieValorNomimal[] | SerieValorCategoricaComposta[] {
         const seriesExistentes: SerieValorNomimal[] = [];
 
@@ -2842,7 +2842,7 @@ export class VariavelService {
     private buildNonExistingSerieValor(
         periodo: DateYMD,
         variavelId: number,
-        serie: Serie,
+        serie: SerieCore,
         uso: TipoUso,
         user: PessoaFromJwt
     ): SerieValorNomimal {
@@ -2857,7 +2857,7 @@ export class VariavelService {
         periodo: DateYMD,
         id: number,
         variavelId: number,
-        serie: Serie,
+        serie: SerieCore,
         user: PessoaFromJwt
     ): string {
         // TODO opcionalmente adicionar o modificado_em aqui
@@ -2867,7 +2867,7 @@ export class VariavelService {
     private getEditNonExistingSerieJwt(
         variavelId: number,
         periodo: DateYMD,
-        serie: Serie,
+        serie: SerieCore,
         user: PessoaFromJwt
     ): string {
         return this.serieToken.encode({ serie, periodo, variavelId: variavelId, userId: BigInt(user.id) });
@@ -3860,6 +3860,10 @@ export async function AddTaskRecalcVariaveis(
             return;
         }
     } else {
+        if (options.variavelIds == undefined || options.variavelIds.length == 0) {
+            logger.warn(`variavelIds foi fornecido vazio, no-op mas poderia ser um erro dependendo do contexto`);
+            return;
+        }
         throw new Error('É necessário fornecer pdmId ou variavelIds');
     }
 
