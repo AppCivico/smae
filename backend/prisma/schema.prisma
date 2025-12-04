@@ -1478,6 +1478,7 @@ model Indicador {
     casas_decimais        Int?          @db.SmallInt
 
     variavel_categoria_id Int?
+    variavel_categoria    Variavel? @relation(fields: [variavel_categoria_id], references: [id])
 
     ha_avisos_data_fim Boolean @default(false)
 
@@ -1809,6 +1810,7 @@ model Variavel {
     VariavelGlobalCicloDocumento       VariavelGlobalCicloDocumento[]
     VariavelGlobalPedidoComplementacao VariavelGlobalPedidoComplementacao[]
     PsDashboardVariavel                PsDashboardVariavel[]
+    Indicador                          Indicador[]
 
     @@index([tipo, removido_em, variavel_mae_id])
     @@index([regiao_id])

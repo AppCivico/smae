@@ -1541,7 +1541,11 @@ export class IndicadorService {
             where: { id: indicadorId, removido_em: null },
             select: {
                 indicador_previa_opcao: true,
-                variavel_categoria_id: true,
+                variavel_categoria: {
+                    select: {
+                        variavel_categorica_id: true,
+                    },
+                },
                 meta_id: true,
                 atividade_id: true,
                 iniciativa_id: true,
@@ -1575,43 +1579,48 @@ export class IndicadorService {
             serieValor = null;
         } else {
             // Upsert request
-            if (indicador.variavel_categoria_id) {
+            if (indicador.variavel_categoria && indicador.variavel_categoria.variavel_categorica_id) {
                 if (!dto.elementos)
                     throw new BadRequestException('Para indicadores categóricos, é obrigatório enviar os elementos.');
 
                 // Busca os permitidos para exclusivamente o indicador escolhido
-                const allowedValues = await this.prisma.variavelCategoricaValor.findMany({
-                    where: { variavel_categorica_id: indicador.variavel_categoria_id, removido_em: null },
-                    select: { id: true },
+                const categoricaData = await this.prisma.variavelCategoricaValor.findMany({
+                    where: {
+                        variavel_categorica_id: indicador.variavel_categoria.variavel_categorica_id,
+                        removido_em: null,
+                    },
+                    select: { id: true, valor_variavel: true },
                 });
-                const allowedIds = new Set(allowedValues.map((v) => v.id));
-                const seenIds = new Set<number>();
+                const allowedValores = new Set(categoricaData.map((v) => v.valor_variavel));
+                const seenValores = new Set<number>();
                 let valorTotal = 0;
                 const elementosArray: number[][] = [];
 
                 for (const el of dto.elementos) {
-                    if (seenIds.has(el.categorica_valor_id))
+                    if (seenValores.has(el.categorica_valor))
                         throw new BadRequestException(
-                            `Valor categórico duplicado na requisição: ${el.categorica_valor_id}`
+                            `Valor categórico duplicado na requisição: ${el.categorica_valor}`
                         );
 
-                    seenIds.add(el.categorica_valor_id);
+                    seenValores.add(el.categorica_valor);
 
-                    // Verifica se o ID pertence à categoria do indicador
-                    if (!allowedIds.has(el.categorica_valor_id))
+                    // Verifica se o valor pertence à categoria do indicador
+                    if (!allowedValores.has(el.categorica_valor))
                         throw new BadRequestException(
-                            `O valor categórico ${el.categorica_valor_id} não pertence à categoria deste indicador.`
+                            `O valor categórico ${el.categorica_valor} não pertence à categoria deste indicador.`
                         );
 
                     const somaPraTerValor = +el.valor;
 
                     valorTotal += somaPraTerValor;
                     // Formato: [id, count]
-                    elementosArray.push([el.categorica_valor_id, somaPraTerValor]);
+                    const lookup = categoricaData.find((v) => v.valor_variavel === el.categorica_valor);
+                    if (!lookup) continue; // Segurança extra, não deveria acontecer por causa do allowedValores
+                    elementosArray.push([lookup.id, somaPraTerValor]);
                 }
 
                 serieValor = valorTotal;
-                serieElementos = { 'categorica': elementosArray };
+                serieElementos = { 'totais_categorica': elementosArray };
             } else {
                 if (dto.elementos && dto.elementos.length > 0) {
                     throw new BadRequestException('Este indicador não é categórico, não envie elementos.');

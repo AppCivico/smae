@@ -12,7 +12,7 @@ import {
     IsString,
     Matches,
     ValidateIf,
-    ValidateNested
+    ValidateNested,
 } from 'class-validator';
 import { CreateIndicadorDto } from './create-indicador.dto';
 
@@ -175,10 +175,10 @@ export class IndicadorPreviaCategorica {
     valor: string;
 
     /**
-     * ID do valor categórico (VariavelCategoricaValor.id)
+     * valor categórico (VariavelCategoricaValor.valor_variavel)
      */
-    @IsInt({ message: 'categorica_valor_id precisa ser um número' })
-    categorica_valor_id: number;
+    @IsInt({ message: 'categorica_valor precisa ser um número' })
+    categorica_valor: number;
 }
 
 export class IndicadorPreviaUpsertDto {
