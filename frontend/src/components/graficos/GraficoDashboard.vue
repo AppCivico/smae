@@ -23,19 +23,23 @@
   </div>
 </template>
 <script lang="ts" setup>
-import { BarChart, HeatmapChart, LineChart } from 'echarts/charts';
 import {
+  BarChart, CustomChart, HeatmapChart, LineChart, ScatterChart,
+} from 'echarts/charts';
+import {
+  DataZoomComponent,
   GridComponent,
   LegendComponent,
   MarkLineComponent,
   MarkPointComponent,
   TitleComponent,
+  ToolboxComponent,
   TooltipComponent,
   VisualMapComponent,
 } from 'echarts/components';
 import { use } from 'echarts/core';
+import type { EChartsCoreOption } from 'echarts/core';
 import { CanvasRenderer } from 'echarts/renderers';
-import type { ECBasicOption } from 'echarts/types/dist/shared';
 import { merge } from 'lodash';
 import type { VNode } from 'vue';
 import {
@@ -65,10 +69,14 @@ use([
   LegendComponent,
   GridComponent,
   BarChart,
+  CustomChart,
   LineChart,
   HeatmapChart,
+  ScatterChart,
   MarkLineComponent,
   MarkPointComponent,
+  DataZoomComponent,
+  ToolboxComponent,
 ]);
 
 provide(THEME_KEY, 'light');
@@ -83,14 +91,14 @@ const formatoPadraoDeEtiquetaDeEixo = {
 const slots = useSlots();
 
 const props = withDefaults(defineProps<{
-  option: ECBasicOption,
+  option: EChartsCoreOption,
   tooltipTemplate?:(params: TooltipOptions) => string
 }>(), {
   option: () => ({}),
   tooltipTemplate: undefined,
 });
 
-const definirPadroes = (opcoes: ECBasicOption) => (merge({
+const definirPadroes = (opcoes: EChartsCoreOption) => (merge({
   grid: {
     containLabel: true,
     right: 30,
@@ -118,7 +126,7 @@ const el = ref(null);
 const elementoPainelFlutuante = ref<HTMLElement | null>(null);
 const conteudoPainelFlutuante = ref<VNode[] | null>(null);
 
-const preparedOptions = computed((): ECBasicOption => {
+const preparedOptions = computed((): EChartsCoreOption => {
   const { tooltipTemplate } = props;
   if (!tooltipTemplate && !slots['painel-flutuante']) {
     return definirPadroes(props.option);
