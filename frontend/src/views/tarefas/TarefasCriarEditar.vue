@@ -15,7 +15,7 @@ import { useRoute, useRouter } from 'vue-router';
 
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import dependencyTypes from '@/consts/dependencyTypes';
-import schema from '@/consts/formSchemas/tarefa';
+import { criarSchemaTarefa } from '@/consts/formSchemas/tarefa';
 import addToDates from '@/helpers/addToDates';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
 import dinheiro from '@/helpers/dinheiro';
@@ -26,6 +26,7 @@ import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
 
 import CampoDeCustos from './components/CampoDeCustos.vue';
+import useCamposDeCustos from './composables/useCamposDeCustos';
 
 defineOptions({ inheritAttrs: false });
 
@@ -60,12 +61,18 @@ const props = defineProps({
   },
 });
 
+const schema = ref(criarSchemaTarefa('estimado'));
+
 const {
   errors, handleSubmit, isSubmitting, resetForm, setFieldValue, setValues, values,
 } = useForm({
   initialValues: itemParaEdicao.value,
   validationSchema: schema,
 });
+
+const { listaDeAnos, nomeDoCampoDeCusto, tipoDeCusto } = useCamposDeCustos({ tipo: 'estimado', values });
+
+schema.value = criarSchemaTarefa('estimado', () => listaDeAnos.value);
 
 const dependênciasValidadas = ref([]);
 
@@ -764,15 +771,105 @@ watch(itemParaEdicao, (novoValor) => {
       </button>
     </div>
 
-    <CampoDeCustos
-      :schema="schema"
-      :values="values"
-      tipo="estimado"
-      @limpar-campos="() => {
-        setFieldValue('custo_estimado', 0)
-        setFieldValue('custo_estimado_anualizado', [])
-      }"
-    />
+    <div v-if="values[`backup_custo_${tipoDeCusto}`]">
+      <SmaeLabel class="tc300">
+        Backup custo {{ tipoDeCusto }}
+      </SmaeLabel>
+
+      {{ dinheiro(values[`backup_custo_${tipoDeCusto}`], { style: 'currency'}) }}
+    </div>
+
+    <div class="flex g2 mb1">
+      <div class="f1 mb1">
+        <legend class="label mt2 mb1">
+          {{ schema.fields[nomeDoCampoDeCusto]?.spec.label }}
+        </legend>
+
+        <FieldArray
+          v-slot="{ fields, push, remove }"
+          :name="nomeDoCampoDeCusto"
+        >
+          <div
+            v-for="(field, idx) in fields"
+            :key="`${nomeDoCampoDeCusto}--${field.key}`"
+            class="flex g2"
+          >
+            <div class="f2 mb1">
+              <SmaeLabel
+                class="tc300"
+                :schema="schema.fields[nomeDoCampoDeCusto].innerType"
+                name="ano"
+              />
+
+              <Field
+                :name="`${nomeDoCampoDeCusto}[${idx}].ano`"
+                class="inputtext light mb1"
+                :class="{ 'error': errors[`${nomeDoCampoDeCusto}[${idx}].ano`] }"
+                as="select"
+              >
+                <option value="">
+                  Selecionar
+                </option>
+                <option
+                  v-for="item in listaDeAnos"
+                  :key="item"
+                  :value="item"
+                >
+                  {{ item }}
+                </option>
+              </Field>
+
+              <ErrorMessage
+                :name="`${nomeDoCampoDeCusto}[${idx}].ano`"
+              />
+            </div>
+
+            <div class="f2 mb1">
+              <SmaeLabel
+                class="tc300"
+                :schema="schema.fields[nomeDoCampoDeCusto].innerType"
+                name="valor"
+              />
+
+              <MaskedFloatInput
+                :name="`${nomeDoCampoDeCusto}[${idx}].valor`"
+                :value="field.value?.valor"
+                class="inputtext light mb1"
+              />
+            </div>
+
+            <button
+              class="like-a__text addlink"
+              aria-label="excluir"
+              title="excluir"
+              type="button"
+              @click="() => {
+                remove(idx);
+              }"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_remove" /></svg>
+            </button>
+          </div>
+
+          <button
+            class="like-a__text addlink"
+            type="button"
+            @click="push({
+              ano: null,
+              valor: 0
+            })"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_+" /></svg>Adicionar valor estimado
+          </button>
+        </FieldArray>
+      </div>
+    </div>
 
     <div
       v-if="values.dependencias?.length && !isEqual(values.dependencias, dependênciasValidadas)"

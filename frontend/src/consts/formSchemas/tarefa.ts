@@ -1,4 +1,3 @@
-import i18n from '@/consts/formSchemas/config/i18n';
 import {
   array,
   boolean,
@@ -10,6 +9,7 @@ import {
   setLocale,
   string,
 } from 'yup';
+import i18n from '@/consts/formSchemas/config/i18n';
 import {
   dataMax,
   dataMin,
@@ -17,18 +17,66 @@ import {
 
 setLocale(i18n);
 
-export default object()
-  .shape({
+export function criarSchemaTarefa(tipo?: 'real' | 'estimado', obterAnosDisponiveis?: () => number[]) {
+  return object().shape({
     atualizacao_do_realizado: boolean(),
     custo_estimado: number()
       .label('Previsão de custo')
-      .min(0)
       .nullable(),
-    custo_real: number()
-      .label('Custo real')
-      .min(0)
+    custo_estimado_anualizado: array()
+      .label('Custo estimado anualizado')
       .nullable()
+      .of(
+        object().shape({
+          ano: number()
+            .label('Ano')
+            .required()
+            .test('ano-valido', 'Ano selecionado não pertence ao período', (value) => {
+              if (!tipo || tipo === 'real' || !obterAnosDisponiveis) {
+                return true;
+              }
+
+              const anosDisponiveis = [...obterAnosDisponiveis()];
+
+              if (anosDisponiveis.length === 0) return true;
+              return value ? anosDisponiveis.includes(value) : true;
+            }),
+
+          valor: number()
+            .label('Valor')
+            .min(0)
+            .nullable()
+            .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
+        }),
+      ),
+    custo_real: mixed()
+      .label('Custo real')
       .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
+    custo_real_anualizado: array()
+      .label('Custo real anualizado')
+      .nullable()
+      .of(
+        object().shape({
+          ano: number()
+            .label('Ano')
+            .required()
+            .test('ano-valido', 'Ano selecionado não pertence ao período', (value) => {
+              if (!tipo || tipo === 'estimado' || !obterAnosDisponiveis) {
+                return true;
+              }
+
+              const anosDisponiveis = [...obterAnosDisponiveis()];
+
+              if (anosDisponiveis.length === 0) return true;
+              return value ? anosDisponiveis.includes(value) : true;
+            }),
+          valor: number()
+            .label('Valor')
+            .min(0)
+            .nullable()
+            .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
+        }),
+      ),
     dependencias: array()
       .label('Dependências')
       .of(
@@ -122,3 +170,6 @@ export default object()
       .min(ref('inicio_real'), 'Precisa ser posterior à data de início')
       .nullable(),
   });
+}
+
+export default criarSchemaTarefa();
