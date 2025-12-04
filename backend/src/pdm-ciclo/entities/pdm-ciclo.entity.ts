@@ -50,6 +50,7 @@ export class CicloFisicoPSDto {
     data_ciclo: DateYMD;
     ativo: boolean;
     fechado: boolean;
+    documentos_editaveis: DocumentoEditavelTipo[];
 }
 
 export class DadosCicloFisicoPSDto {

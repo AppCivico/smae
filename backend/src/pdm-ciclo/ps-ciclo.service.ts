@@ -72,16 +72,27 @@ export class PsCicloService {
             orderBy: [{ data_ciclo: 'desc' }],
         });
 
-        const retorno = ciclos.map((ciclo) => {
+        const retorno = ciclos.map(async (ciclo) => {
             // Para ser fechado, deve ter linha de fechamento para a meta e na linha não pode estar com reaberto_em
             const fechado =
                 ciclo.MetaCicloFisicoFechamento.length > 0 && ciclo.MetaCicloFisicoFechamento[0].reaberto_em === null;
+            // TODO: refatorar essa parte.
+            const reaberto = await this.verificaCicloInativoReaberto(pdm_id, ciclo.id, params.meta_id!);
+            if (params.meta_id && user) {
+                documentos_editaveis = await this.determinaDocumentosEditaveis(
+                    params.meta_id,
+                    ciclo.id,
+                    ciclo.ativo,
+                    reaberto
+                );
+            }
 
             return {
                 id: ciclo.id,
                 data_ciclo: Date2YMD.toString(ciclo.data_ciclo),
                 ativo: ciclo.ativo,
                 fechado: fechado,
+                documentos_editaveis: documentos_editaveis,
             } satisfies CicloFisicoPSDto;
         });
 
@@ -142,7 +153,7 @@ export class PsCicloService {
         }
 
         return {
-            linhas: retorno,
+            linhas: await Promise.all(retorno),
             ultima_revisao: ultimaRevisao,
             documentos_editaveis,
         };
