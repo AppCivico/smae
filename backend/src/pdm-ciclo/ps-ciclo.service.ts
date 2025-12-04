@@ -204,9 +204,10 @@ export class PsCicloService {
     private async determinaDocumentosEditaveis(
         metaId: number,
         cicloId: number,
-        cicloAtivo: boolean
+        cicloAtivo: boolean,
+        cicloReaberto: boolean
     ): Promise<DocumentoEditavelTipo[]> {
-        if (!cicloAtivo) return [];
+        if (!cicloAtivo && !cicloReaberto) return [];
 
         const [analiseExistente, riscoExistente, fechamentoExistente] = await Promise.all([
             this.prisma.metaCicloFisicoAnalise.count({
@@ -263,10 +264,11 @@ export class PsCicloService {
         await this.metaService.assertMetaWriteOrThrow(tipo, metaId, user, 'monitoramento', 'readwrite');
 
         const cicloAtivo = await this.verificaCicloAtivo(pdmId, cicloId);
+        let cicloReaberto;
         if (!cicloAtivo) {
             // Ciclo inativo pode ser atualizado, desde que tenha sido reaberto.
-            const reaberto = await this.verificaCicloInativoReaberto(pdmId, cicloId, metaId);
-            if (!reaberto) throw new BadRequestException('Não é possível editar um ciclo inativo');
+            cicloReaberto = await this.verificaCicloInativoReaberto(pdmId, cicloId, metaId);
+            if (!cicloReaberto) throw new BadRequestException('Não é possível editar um ciclo inativo');
         }
 
         if (verificarFechamento) {
@@ -274,7 +276,12 @@ export class PsCicloService {
         }
 
         if (tipoDocumento) {
-            const documentosEditaveis = await this.determinaDocumentosEditaveis(metaId, cicloId, cicloAtivo);
+            const documentosEditaveis = await this.determinaDocumentosEditaveis(
+                metaId,
+                cicloId,
+                cicloAtivo,
+                cicloReaberto
+            );
 
             if (!documentosEditaveis.includes(tipoDocumento)) {
                 const mensagens = {
