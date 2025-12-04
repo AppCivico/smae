@@ -1000,7 +1000,7 @@ export class IndicadorService {
         }
 
         // Adicionar a Previa (Comum a ambos os fluxos)
-        if (indicador.indicador_previa_opcao === 'PermitirPreenchimento' && result.dados_auxiliares?.categoricas) {
+        if (indicador.indicador_previa_opcao === 'PermitirPreenchimento') {
             const { proximoPeriodo, previaExistente } = await this.buscaProximaPrevia(id);
 
             result.pode_editar_previa = false;
@@ -1014,10 +1014,12 @@ export class IndicadorService {
                     result.ultima_previa_indicador = {
                         data_valor: Date2YMD.toString(proximoPeriodo),
                         valor_nominal: previaExistente.valor_nominal.toString(),
-                        elementos: this.mapCategoricaIdParaValor(
-                            result.dados_auxiliares.categorica_items,
-                            previaExistente.elementos
-                        ),
+                        elementos: result.dados_auxiliares?.categoricas
+                            ? this.mapCategoricaIdParaValor(
+                                  result.dados_auxiliares.categorica_items,
+                                  previaExistente.elementos
+                              )
+                            : undefined,
                         referencia: canWrite ? this.generateToken(id, proximoPeriodo, user) : '',
                     };
                 } else if (canWrite) {
@@ -1051,7 +1053,7 @@ export class IndicadorService {
             }
 
             // não precisa disso no frontend
-            delete result.dados_auxiliares.categorica_items;
+            delete result.dados_auxiliares?.categorica_items;
         }
 
         return result;
