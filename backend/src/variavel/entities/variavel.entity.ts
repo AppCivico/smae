@@ -159,6 +159,12 @@ export class FilterSVNPeriodoDto extends FilterPeriodoDto {
     incluir_auxiliares?: boolean;
 
     @IsOptional()
+    @IsBoolean()
+    @Transform((v) => v.value === 'true')
+    @ApiHideProperty()
+    incluir_auxiliares_completo?: boolean;
+
+    @IsOptional()
     @IsEnum(TipoUso, { message: 'Tipo de uso inválido' })
     @ApiProperty({ enum: TipoUso, required: false })
     uso?: TipoUso;

@@ -2615,6 +2615,8 @@ export class VariavelService {
             }
         }
 
+        if (filters.incluir_auxiliares_completo) filters.incluir_auxiliares = true;
+
         if (filters.incluir_auxiliares) {
             const categorica = result.variavel?.variavel_categorica_id
                 ? await this.vCatService.findAll({ id: result.variavel.variavel_categorica_id })
@@ -2628,6 +2630,10 @@ export class VariavelService {
             }
 
             result.dados_auxiliares = { categoricas: categoricas };
+
+            if (filters.incluir_auxiliares_completo) {
+                result.dados_auxiliares.categorica_items = categorica;
+            }
         }
 
         return result;

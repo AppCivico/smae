@@ -20,6 +20,14 @@ import { FormulaVariaveis, IndicadorPreviaUpsertDto, UpdateIndicadorDto } from '
 import { IndicadorDto } from './entities/indicador.entity';
 import { IndicadorFormulaCompostaEmUsoDto } from './entities/indicador.formula-composta.entity';
 import { IndicadorTokenData, SerieCompactToken } from '../common/SerieCompactToken';
+import { VariavelCategoricaItem } from '../variavel-categorica/dto/variavel-categorica.dto';
+import { IsArray } from 'class-validator';
+import { plainToClass } from 'class-transformer';
+
+class ElementoJsonDto {
+    @IsArray()
+    totais_categorica: number[][];
+}
 
 const FP = require('../../public/js/formula_parser.js');
 
@@ -994,7 +1002,7 @@ export class IndicadorService {
         }
 
         // Adicionar a Previa (Comum a ambos os fluxos)
-        if (indicador.indicador_previa_opcao === 'PermitirPreenchimento') {
+        if (indicador.indicador_previa_opcao === 'PermitirPreenchimento' && result.dados_auxiliares?.categoricas) {
             const { proximoPeriodo, previaExistente } = await this.buscaProximaPrevia(id);
 
             result.pode_editar_previa = false;
@@ -1008,7 +1016,10 @@ export class IndicadorService {
                     result.ultima_previa_indicador = {
                         data_valor: Date2YMD.toString(proximoPeriodo),
                         valor_nominal: previaExistente.valor_nominal.toString(),
-                        elementos: previaExistente.elementos,
+                        elementos: this.mapCategoricaIdParaValor(
+                            result.dados_auxiliares.categorica_items,
+                            previaExistente.elementos
+                        ),
                         referencia: canWrite ? this.generateToken(id, proximoPeriodo, user) : '',
                     };
                 } else if (canWrite) {
@@ -1043,6 +1054,42 @@ export class IndicadorService {
         }
 
         return result;
+    }
+
+    mapCategoricaIdParaValor(
+        categorica_items: VariavelCategoricaItem[] | null | undefined,
+        elementosDb: Prisma.JsonValue | null
+    ): object {
+        const elementos = plainToClass(ElementoJsonDto, elementosDb?.valueOf());
+
+        if (
+            typeof elementos == 'object' &&
+            typeof elementos.totais_categorica == 'object' &&
+            Array.isArray(elementos.totais_categorica) &&
+            categorica_items &&
+            categorica_items[0]
+        ) {
+            const categoricasMap = categorica_items[0].valores
+                .map((v) => ({ [v.id]: v.valor_variavel }))
+                .reduce((acc, cur) => ({ ...acc, ...cur }), {});
+
+            // convert from id based on categorica_items to label based on categorica_items
+            const resultado: Array<[number, number]> = [];
+
+            for (const item of elementos.totais_categorica) {
+                if (!Array.isArray(item) || item.length != 2) continue;
+
+                const itemId = item[0] as number;
+                const itemValue = item[1] as number;
+                const foundItem = categoricasMap[itemId];
+                if (foundItem) {
+                    resultado.push([foundItem, itemValue]);
+                }
+            }
+            elementos.totais_categorica = resultado;
+        }
+
+        return elementos;
     }
 
     private async buscaProximaPrevia(indicador_id: number) {
@@ -1544,11 +1591,19 @@ export class IndicadorService {
                 variavel_categoria: {
                     select: {
                         variavel_categorica_id: true,
+                        variaveis_filhas: {
+                            where: {
+                                removido_em: null,
+                                tipo: 'Global',
+                            },
+                            distinct: ['id'],
+                        },
                     },
                 },
                 meta_id: true,
                 atividade_id: true,
                 iniciativa_id: true,
+                regionalizavel: true,
             },
         });
 
@@ -1574,7 +1629,7 @@ export class IndicadorService {
 
         if (dto.valor === null) dto.valor = ''; // garantir que n seja null pra seguir a lógica abaixo
 
-        if (dto.valor === '') {
+        if (dto.valor === '' && !dto.elementos) {
             // Delete request
             serieValor = null;
         } else {
@@ -1620,7 +1675,21 @@ export class IndicadorService {
                 }
 
                 serieValor = valorTotal;
-                serieElementos = { 'totais_categorica': elementosArray };
+                serieElementos = { 'totais_categorica': elementosArray } satisfies ElementoJsonDto;
+
+                if (indicador.regionalizavel) {
+                    // não pode passar do número de variáveis filhas
+                    const maxRegions = indicador.variavel_categoria.variaveis_filhas.length;
+                    if (dto.elementos.length > maxRegions)
+                        throw new BadRequestException(
+                            `Para indicadores categóricos regionalizados, o número de elementos não pode exceder o número de regiões (${maxRegions}). Elementos enviados: ${dto.elementos.length}`
+                        );
+                } else {
+                    if (valorTotal > 1)
+                        throw new BadRequestException(
+                            `Para indicadores categóricos não regionalizados, a soma dos valores deve ser no máximo 1. Valor enviado: ${valorTotal}`
+                        );
+                }
             } else {
                 if (dto.elementos && dto.elementos.length > 0) {
                     throw new BadRequestException('Este indicador não é categórico, não envie elementos.');
