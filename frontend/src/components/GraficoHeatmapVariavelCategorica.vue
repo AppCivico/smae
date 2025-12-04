@@ -348,7 +348,7 @@ const atualizarDadosGrafico = () => {
               const x = api.value(0);
               const y = api.value(1);
 
-              if (x == null || y == null) return null;
+              if (x === null || x === undefined || y === null || y === undefined) return null;
 
               const coord = api.coord([x, y]);
               if (!coord) return null;
