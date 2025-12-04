@@ -1596,12 +1596,16 @@ export class IndicadorService {
                 variavel_categoria: {
                     select: {
                         variavel_categorica_id: true,
-                        variaveis_filhas: {
-                            where: {
-                                removido_em: null,
-                                tipo: 'Global',
+                        variavel_mae: {
+                            select: {
+                                variaveis_filhas: {
+                                    where: {
+                                        removido_em: null,
+                                        tipo: 'Global',
+                                    },
+                                    distinct: ['id'],
+                                },
                             },
-                            distinct: ['id'],
                         },
                     },
                 },
@@ -1682,12 +1686,12 @@ export class IndicadorService {
                 serieValor = valorTotal;
                 serieElementos = { 'totais_categorica': elementosArray } satisfies ElementoJsonDto;
 
-                if (indicador.regionalizavel) {
+                if (indicador.regionalizavel && indicador.variavel_categoria.variavel_mae) {
                     // não pode passar do número de variáveis filhas
-                    const maxRegions = indicador.variavel_categoria.variaveis_filhas.length;
-                    if (dto.elementos.length > maxRegions)
+                    const maxRegions = indicador.variavel_categoria.variavel_mae.variaveis_filhas.length;
+                    if (valorTotal > maxRegions)
                         throw new BadRequestException(
-                            `Para indicadores categóricos regionalizados, o número de elementos não pode exceder o número de regiões (${maxRegions}). Elementos enviados: ${dto.elementos.length}`
+                            `Para indicadores categóricos regionalizados, a soma dos valores deve ser no máximo o número de regiões (${maxRegions}). Valor enviado: ${valorTotal}`
                         );
                 } else {
                     if (valorTotal > 1)
