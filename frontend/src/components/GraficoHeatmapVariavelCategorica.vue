@@ -215,11 +215,6 @@ const preencherDadosHeatmap = () => {
       // Iterar TODAS as categorias conhecidas
       Object.keys(categorias.value).forEach((chaveCategoria) => {
         const indiceY = mapaCategorias[chaveCategoria];
-
-        if (indiceY === undefined) {
-          throw new Error(`Categoria ${chaveCategoria} não encontrada no mapa de categorias`);
-        }
-
         const temDadoPrevia = chaveCategoria in valoresPorCategoria;
         const contagem = temDadoPrevia ? valoresPorCategoria[chaveCategoria] : 0;
 
