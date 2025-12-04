@@ -76,10 +76,12 @@ export class PsCicloService {
             // Para ser fechado, deve ter linha de fechamento para a meta e na linha não pode estar com reaberto_em
             const fechado =
                 ciclo.MetaCicloFisicoFechamento.length > 0 && ciclo.MetaCicloFisicoFechamento[0].reaberto_em === null;
+
             // TODO: refatorar essa parte.
-            const reaberto = await this.verificaCicloInativoReaberto(pdm_id, ciclo.id, params.meta_id!);
-            if (params.meta_id && user) {
-                documentos_editaveis = await this.determinaDocumentosEditaveis(
+            let linha_documentos_editaveis: DocumentoEditavelTipo[] = [];
+            if (params.meta_id) {
+                const reaberto = await this.verificaCicloInativoReaberto(pdm_id, ciclo.id, params.meta_id);
+                linha_documentos_editaveis = await this.determinaDocumentosEditaveis(
                     params.meta_id,
                     ciclo.id,
                     ciclo.ativo,
@@ -92,7 +94,7 @@ export class PsCicloService {
                 data_ciclo: Date2YMD.toString(ciclo.data_ciclo),
                 ativo: ciclo.ativo,
                 fechado: fechado,
-                documentos_editaveis: documentos_editaveis,
+                documentos_editaveis: linha_documentos_editaveis,
             } satisfies CicloFisicoPSDto;
         });
 
@@ -218,12 +220,12 @@ export class PsCicloService {
         cicloAtivo: boolean,
         cicloReaberto?: boolean
     ): Promise<DocumentoEditavelTipo[]> {
-        if (!cicloAtivo && cicloReaberto !== undefined && !cicloReaberto) return [];
-
         if (cicloReaberto) {
             // Se o ciclo foi reaberto, todos os documentos podem ser editados novamente
             return ['analise', 'risco', 'fechamento'];
         }
+
+        if (!cicloAtivo) return [];
 
         const [analiseExistente, riscoExistente, fechamentoExistente] = await Promise.all([
             this.prisma.metaCicloFisicoAnalise.count({
