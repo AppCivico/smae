@@ -924,6 +924,7 @@ export class IndicadorService {
                 {
                     uso: 'leitura',
                     incluir_auxiliares: true,
+                    incluir_auxiliares_completo: true,
                 },
                 indicador.variavel_categoria_id,
                 user
@@ -1051,6 +1052,9 @@ export class IndicadorService {
                     result.valor_acumulado_anterior = indicador?.acumulado_valor_base?.toString() ?? null;
                 }
             }
+
+            // não precisa disso no frontend
+            delete result.dados_auxiliares.categorica_items;
         }
 
         return result;
@@ -1065,25 +1069,26 @@ export class IndicadorService {
         if (
             typeof elementos == 'object' &&
             typeof elementos.totais_categorica == 'object' &&
-            Array.isArray(elementos.totais_categorica) &&
-            categorica_items &&
-            categorica_items[0]
+            Array.isArray(elementos.totais_categorica)
         ) {
-            const categoricasMap = categorica_items[0].valores
-                .map((v) => ({ [v.id]: v.valor_variavel }))
-                .reduce((acc, cur) => ({ ...acc, ...cur }), {});
-
-            // convert from id based on categorica_items to label based on categorica_items
             const resultado: Array<[number, number]> = [];
+            // Se não tiver valor, melhor ficar vazio do que voltar com o ID
+            if (categorica_items && categorica_items[0]?.valores) {
+                const categoricasMap =
+                    categorica_items &&
+                    categorica_items[0].valores
+                        .map((v) => ({ [v.id]: v.valor_variavel }))
+                        .reduce((acc, cur) => ({ ...acc, ...cur }), {});
 
-            for (const item of elementos.totais_categorica) {
-                if (!Array.isArray(item) || item.length != 2) continue;
+                for (const item of elementos.totais_categorica) {
+                    if (!Array.isArray(item) || item.length != 2) continue;
 
-                const itemId = item[0] as number;
-                const itemValue = item[1] as number;
-                const foundItem = categoricasMap[itemId];
-                if (foundItem) {
-                    resultado.push([foundItem, itemValue]);
+                    const itemId = item[0] as number;
+                    const itemValue = item[1] as number;
+                    const foundItem = categoricasMap[itemId];
+                    if (foundItem) {
+                        resultado.push([foundItem, itemValue]);
+                    }
                 }
             }
             elementos.totais_categorica = resultado;
