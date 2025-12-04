@@ -65,6 +65,7 @@ export class PsCicloService {
                     where: {
                         ultima_revisao: true,
                         removido_em: null,
+                        meta_id: params.meta_id ? params.meta_id : undefined,
                     },
                 },
             },
