@@ -14,6 +14,8 @@ import { useAlertStore } from '@/stores/alert.store';
 import { useEmailsStore } from '@/stores/envioEmail.store';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
 
+import CampoDeCustos from './components/CampoDeCustos.vue';
+
 const alertStore = useAlertStore();
 const tarefasStore = useTarefasStore();
 const router = useRouter();
@@ -182,6 +184,7 @@ iniciar();
       <span v-else>Adicionar envio de e-mail</span>
     </SmaeLink>
   </div>
+
   <Form
     v-if="!tarefaId || emFoco"
     v-slot="{ errors, isSubmitting, setFieldValue, values }"
@@ -297,24 +300,17 @@ iniciar();
       </button>
     </div>
 
-    <div class="flex g2">
-      <div class="f1 mb1">
-        <LabelFromYup
-          name="custo_real"
-          :schema="schema"
-        />
-        <MaskedFloatInput
-          name="custo_real"
-          :value="values.custo_real"
-          :disabled="emFoco.n_filhos_imediatos > 0"
-          class="inputtext light mb1"
-        />
-        <ErrorMessage
-          class="error-msg mb1"
-          name="custo_real"
-        />
-      </div>
+    <CampoDeCustos
+      :schema="schema"
+      :values="values"
+      tipo="real"
+      @limpar-campos="() => {
+        setFieldValue('custo_real', 0)
+        setFieldValue('custo_real_anualizado', [])
+      }"
+    />
 
+    <div class="flex g2">
       <div class="f1 mb1">
         <LabelFromYup
           name="percentual_concluido"

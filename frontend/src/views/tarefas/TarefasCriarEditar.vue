@@ -25,6 +25,8 @@ import { useOrgansStore } from '@/stores/organs.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
 
+import CampoDeCustos from './components/CampoDeCustos.vue';
+
 defineOptions({ inheritAttrs: false });
 
 const alertStore = useAlertStore();
@@ -215,6 +217,7 @@ watch(itemParaEdicao, (novoValor) => {
   verificarDependenciasAoIniciar(novoValor);
 });
 </script>
+
 <template>
   <div class="flex spacebetween center mb2">
     <h1>
@@ -761,32 +764,15 @@ watch(itemParaEdicao, (novoValor) => {
       </button>
     </div>
 
-    <div class="flex g2">
-      <div class="f1 mb1">
-        <LabelFromYup
-          name="custo_estimado"
-          :schema="schema"
-        />
-        <MaskedFloatInput
-          v-if="!values?.n_filhos_imediatos"
-          name="custo_estimado"
-          :value="values.custo_estimado"
-          class="inputtext light mb1"
-        />
-        <input
-          v-else
-          type="text"
-          name="custo_estimado"
-          :value="dinheiro(itemParaEdicao.custo_estimado)"
-          class="inputtext light mb1"
-          disabled
-        >
-        <ErrorMessage
-          class="error-msg mb1"
-          name="custo_estimado"
-        />
-      </div>
-    </div>
+    <CampoDeCustos
+      :schema="schema"
+      :values="values"
+      tipo="estimado"
+      @limpar-campos="() => {
+        setFieldValue('custo_estimado', 0)
+        setFieldValue('custo_estimado_anualizado', [])
+      }"
+    />
 
     <div
       v-if="values.dependencias?.length && !isEqual(values.dependencias, dependênciasValidadas)"
