@@ -163,10 +163,12 @@ export class PsCicloService {
     /**
      * Verifica se ciclo inativo foi reaberto
      */
-    private async verificaCicloInativoReaberto(pdmId: number, cicloId: number): Promise<boolean> {
+    private async verificaCicloInativoReaberto(pdmId: number, cicloId: number, metaId: number): Promise<boolean> {
         const ciclo = await this.prisma.cicloFisico.findUnique({
             where: { id: cicloId, pdm_id: pdmId, pdm: { removido_em: null }, ativo: false },
-            include: { MetaCicloFisicoFechamento: { where: { ultima_revisao: true, removido_em: null } } },
+            include: {
+                MetaCicloFisicoFechamento: { where: { ultima_revisao: true, removido_em: null, meta_id: metaId } },
+            },
         });
         if (!ciclo) throw new BadRequestException('Ciclo não encontrado');
 
@@ -262,7 +264,7 @@ export class PsCicloService {
         const cicloAtivo = await this.verificaCicloAtivo(pdmId, cicloId);
         if (!cicloAtivo) {
             // Ciclo inativo pode ser atualizado, desde que tenha sido reaberto.
-            const reaberto = await this.verificaCicloInativoReaberto(pdmId, cicloId);
+            const reaberto = await this.verificaCicloInativoReaberto(pdmId, cicloId, metaId);
             if (!reaberto) throw new BadRequestException('Não é possível editar um ciclo inativo');
         }
 
