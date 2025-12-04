@@ -1,16 +1,21 @@
 import { BadRequestException, HttpException, Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { Periodicidade, Prisma, Serie } from '@prisma/client';
+import { plainToClass } from 'class-transformer';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { CONST_CRONO_VAR_CATEGORICA_ID } from '../common/consts';
 import { Date2YMD, DateYMD, SYSTEM_TIMEZONE } from '../common/date2ymd';
 import { PdmModoParaTipo, TipoPdmType } from '../common/decorators/current-tipo-pdm';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { IndicadorTokenData, SerieCompactToken } from '../common/SerieCompactToken';
 import { AddTaskRefreshMeta, MetaService } from '../meta/meta.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { VariavelCategoricaItem } from '../variavel-categorica/dto/variavel-categorica.dto';
 import { ListSeriesAgrupadas } from '../variavel/dto/list-variavel.dto';
 import {
+    ElementoJsonDto,
     SerieIndicadorValorNominal,
     SerieIndicadorValorPorPeriodo,
+    SeriePreviaElementosDto,
     ValorSerieExistente,
 } from '../variavel/entities/variavel.entity';
 import { AddTaskRecalcVariaveis, VariavelService } from '../variavel/variavel.service';
@@ -19,15 +24,7 @@ import { FilterIndicadorDto, FilterIndicadorSerieDto } from './dto/filter-indica
 import { FormulaVariaveis, IndicadorPreviaUpsertDto, UpdateIndicadorDto } from './dto/update-indicador.dto';
 import { IndicadorDto } from './entities/indicador.entity';
 import { IndicadorFormulaCompostaEmUsoDto } from './entities/indicador.formula-composta.entity';
-import { IndicadorTokenData, SerieCompactToken } from '../common/SerieCompactToken';
-import { VariavelCategoricaItem } from '../variavel-categorica/dto/variavel-categorica.dto';
-import { IsArray } from 'class-validator';
-import { plainToClass } from 'class-transformer';
-
-class ElementoJsonDto {
-    @IsArray()
-    totais_categorica: number[][];
-}
+import { IndicadorPreviaCategorica } from '../variavel/dto/create-variavel.dto';
 
 const FP = require('../../public/js/formula_parser.js');
 
@@ -1063,15 +1060,15 @@ export class IndicadorService {
     mapCategoricaIdParaValor(
         categorica_items: VariavelCategoricaItem[] | null | undefined,
         elementosDb: Prisma.JsonValue | null
-    ): object {
+    ): SeriePreviaElementosDto {
         const elementos = plainToClass(ElementoJsonDto, elementosDb?.valueOf());
 
+        const resultado: SeriePreviaElementosDto['totais_categorica'] = [];
         if (
             typeof elementos == 'object' &&
             typeof elementos.totais_categorica == 'object' &&
             Array.isArray(elementos.totais_categorica)
         ) {
-            const resultado: Array<[number, number]> = [];
             // Se não tiver valor, melhor ficar vazio do que voltar com o ID
             if (categorica_items && categorica_items[0]?.valores) {
                 const categoricasMap =
@@ -1087,14 +1084,16 @@ export class IndicadorService {
                     const itemValue = item[1] as number;
                     const foundItem = categoricasMap[itemId];
                     if (foundItem) {
-                        resultado.push([foundItem, itemValue]);
+                        resultado.push({ categorica_valor: foundItem, valor: String(itemValue) });
                     }
                 }
             }
-            elementos.totais_categorica = resultado;
         }
 
-        return elementos;
+        return {
+            ...elementos,
+            totais_categorica: resultado,
+        };
     }
 
     private async buscaProximaPrevia(indicador_id: number) {

@@ -2,7 +2,7 @@ import { ApiHideProperty, ApiProperty, getSchemaPath, OmitType, PickType, refs }
 import { Periodicidade, Polaridade, Prisma, Serie, TipoVariavel } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsDate, IsEnum, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsBoolean, IsDate, IsEnum, IsOptional, IsString } from 'class-validator';
 import { IdSigla } from 'src/common/dto/IdSigla.dto';
 import { IsDateYMD } from '../../auth/decorators/date.decorator';
 import { DateTransform } from '../../auth/transforms/date.transform';
@@ -16,6 +16,7 @@ import { Regiao } from '../../regiao/entities/regiao.entity';
 import { UnidadeMedida } from '../../unidade-medida/entities/unidade-medida.entity';
 import { VariavelResumo } from '../dto/list-variavel.dto';
 import { SerieCore } from '../../common/consts';
+import { IndicadorPreviaCategorica } from '../dto/create-variavel.dto';
 
 export class IndicadorVariavelOrigemDto {
     id: number;
@@ -189,6 +190,15 @@ export class SACicloFisicoDto {
     contagem_qualitativa?: number | null;
 }
 
+export class ElementoJsonDto {
+    @IsArray()
+    totais_categorica: number[][];
+}
+
+export class SeriePreviaElementosDto {
+    totais_categorica: IndicadorPreviaCategorica[];
+}
+
 export class SerieValorNomimal {
     /**
      * valor da serie lida
@@ -219,7 +229,7 @@ export class SerieValorNomimal {
      **/
     conferida?: boolean;
 
-    elementos?: Prisma.JsonValue | null;
+    elementos?: SeriePreviaElementosDto;
 }
 
 export type SerieIndicadorValorNomimal = Record<SerieCore, SerieValorNomimal | undefined>;

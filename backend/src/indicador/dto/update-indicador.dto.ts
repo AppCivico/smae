@@ -14,6 +14,7 @@ import {
     ValidateIf,
     ValidateNested,
 } from 'class-validator';
+import { IndicadorPreviaCategorica } from '../../variavel/dto/create-variavel.dto';
 import { CreateIndicadorDto } from './create-indicador.dto';
 
 export class FormulaVariaveis {
@@ -166,19 +167,6 @@ export class UpdateIndicadorDto extends OmitType(PartialType(CreateIndicadorDto)
         message: 'Opção de prévia inválida',
     })
     indicador_previa_opcao?: IndicadorPreviaOpcao;
-}
-
-export class IndicadorPreviaCategorica {
-    @IsNumberString({}, { message: 'Valor inválido. Use um número em formato de texto, como "100" ou "123,45"' })
-    @ValidateIf((object, value) => value !== '')
-    @Type(() => String)
-    valor: string;
-
-    /**
-     * valor categórico (VariavelCategoricaValor.valor_variavel)
-     */
-    @IsInt({ message: 'categorica_valor precisa ser um número' })
-    categorica_valor: number;
 }
 
 export class IndicadorPreviaUpsertDto {
