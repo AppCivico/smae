@@ -265,7 +265,7 @@ export class IndicadorPSController {
 
     @Patch('indicador/:id/previa')
     @ApiBearerAuth('access-token')
-    @Roles(MetaController.WritePerm)
+    @Roles(MetaSetorialController.WritePerm)
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.NO_CONTENT)
     async patchPrevia(

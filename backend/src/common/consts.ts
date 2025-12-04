@@ -1,4 +1,3 @@
-import { OmitType } from '@nestjs/swagger';
 import { ModuloSistema, Serie } from '@prisma/client';
 import { ListaDePrivilegios } from './ListaDePrivilegios';
 

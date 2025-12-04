@@ -1,7 +1,7 @@
-import { OmitType, PartialType, PickType } from '@nestjs/swagger';
+import { OmitType, PartialType } from '@nestjs/swagger';
+import { IndicadorPreviaOpcao } from '@prisma/client';
 import { Transform, TransformFnParams, Type } from 'class-transformer';
 import {
-    arrayMaxSize,
     ArrayMaxSize,
     IsArray,
     IsBoolean,
@@ -12,10 +12,9 @@ import {
     IsString,
     Matches,
     ValidateIf,
-    ValidateNested,
+    ValidateNested
 } from 'class-validator';
 import { CreateIndicadorDto } from './create-indicador.dto';
-import { IndicadorPreviaOpcao } from '@prisma/client';
 
 export class FormulaVariaveis {
     /**

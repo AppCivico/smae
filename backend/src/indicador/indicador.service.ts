@@ -1467,7 +1467,8 @@ export class IndicadorService {
             WITH indicador_info AS (
                 SELECT
                     i.periodicidade,
-                    i.inicio_medicao
+                    i.inicio_medicao,
+                    i.fim_medicao
                 FROM indicador i
                 WHERE i.id = ${indicadorId}
             ),
@@ -1484,6 +1485,7 @@ export class IndicadorService {
             ),
             proximo_periodo AS (
                 SELECT
+                    ii.fim_medicao,
                     CASE
                         WHEN lr.data_valor IS NOT NULL THEN
                             (lr.data_valor + periodicidade_intervalo(ii.periodicidade))::date
@@ -1496,6 +1498,7 @@ export class IndicadorService {
             SELECT
                 CASE
                     WHEN next_date > CURRENT_DATE AT TIME ZONE ${SYSTEM_TIMEZONE} THEN NULL
+                    WHEN fim_medicao IS NOT NULL AND next_date > fim_medicao THEN NULL
                     ELSE next_date
                 END as proximo_periodo
             FROM proximo_periodo;
@@ -1626,6 +1629,7 @@ export class IndicadorService {
                     indicador_id: indicadorId,
                     data_valor: dataReferencia,
                     serie: serie,
+                    previa_invalidada_em: null,
                 },
             });
 

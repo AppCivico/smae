@@ -183,7 +183,8 @@ BEGIN
                 pVariavelId,
                 (serieRecord.serie::text || 'Acumulado')::"Serie",
                 td.data_serie,
-                td.valor_acc
+                td.valor_acc,
+                td.eh_previa
             FROM theData td
             WHERE td.valor_acc IS NOT NULL; -- Should not be necessary due to coalesce, but safe practice
 

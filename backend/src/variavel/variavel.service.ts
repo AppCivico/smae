@@ -3860,6 +3860,10 @@ export async function AddTaskRecalcVariaveis(
             return;
         }
     } else {
+        if (options.variavelIds == undefined || options.variavelIds.length == 0) {
+            logger.warn(`variavelIds foi fornecido vazio, no-op mas poderia ser um erro dependendo do contexto`);
+            return;
+        }
         throw new Error('É necessário fornecer pdmId ou variavelIds');
     }
 

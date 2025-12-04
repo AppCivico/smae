@@ -168,36 +168,31 @@ BEGIN
         -- =========================================================================
         -- Se estivermos processando Realizado, verificamos se há Prévia válida onde o cálculo falhou (buracos)
         IF serieRecord.serie = 'Realizado'::"Serie" THEN
-            FOR vPreviaRecord IN
-                SELECT si.data_valor, si.valor_nominal, si.elementos
-                FROM serie_indicador si
-                WHERE si.indicador_id = pIndicador_id
-                  AND si.serie = 'Previa'::"Serie"
-                  AND si.previa_invalidada_em IS NULL -- Apenas prévias válidas
-                  AND si.data_valor >= vInicio
-                  AND si.data_valor <= vFim -- Respeitar o intervalo de processamento
-                  AND NOT EXISTS (
-                      -- Garante que não vamos duplicar ou sobrescrever um Realizado calculado acima
-                      SELECT 1 FROM serie_indicador si2
-                      WHERE si2.indicador_id = pIndicador_id
-                      AND si2.serie = 'Realizado'::"Serie"
-                      AND si2.data_valor = si.data_valor
-                  )
-            LOOP
-                -- Insere o valor da Prévia como Realizado SUJO (eh_previa = true)
-                INSERT INTO serie_indicador (
-                    indicador_id, serie, data_valor, valor_nominal,
-                    ha_conferencia_pendente, eh_previa, elementos
-                ) VALUES (
-                    pIndicador_id,
-                    'Realizado'::"Serie",
-                    vPreviaRecord.data_valor,
-                    vPreviaRecord.valor_nominal,
-                    true, -- Assume pendência de conferência pois é um valor provisório
-                    true, -- Marca como derivado de prévia
-                    vPreviaRecord.elementos
-                );
-            END LOOP;
+            -- Insere valores de Prévia válidos como Realizado SUJO (eh_previa = true) onde não há Realizado calculado
+            INSERT INTO serie_indicador (
+                indicador_id, serie, data_valor, valor_nominal,
+                ha_conferencia_pendente, eh_previa, elementos
+            )
+            SELECT
+                pIndicador_id,
+                'Realizado'::"Serie",
+                si.data_valor,
+                si.valor_nominal,
+                true, -- Assume pendência de conferência pois é um valor provisório
+                true, -- Marca como derivado de prévia
+                si.elementos
+            FROM serie_indicador si
+            WHERE si.indicador_id = pIndicador_id
+            AND si.serie = 'Previa'::"Serie"
+            AND si.previa_invalidada_em IS NULL
+            AND si.data_valor >= vInicio
+            AND si.data_valor <= vFim
+            AND NOT EXISTS (
+            SELECT 1 FROM serie_indicador si2
+            WHERE si2.indicador_id = pIndicador_id
+                AND si2.serie = 'Realizado'::"Serie"
+                AND si2.data_valor = si.data_valor
+            );
         END IF;
 
         -- =========================================================================
