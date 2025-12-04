@@ -145,17 +145,68 @@ function obterValorTabela(item, index) {
     return obterTooltipTexto(item, index);
   }
 
-  const valor = item.series[serieIndex].valor_nominal;
+  const serie = item.series[serieIndex];
+  const valor = serie.valor_nominal;
 
-  if (!valor) {
+  if (valor === null || valor === undefined) {
     return '-';
   }
 
-  if (temVariavelCategorica.value) {
-    return props.g.dados_auxiliares?.categoricas?.[valor] || valor;
+  const ehPrevia = serie.eh_previa === true;
+
+  const valorFormatado = temVariavelCategorica.value
+    ? props.g.dados_auxiliares?.categoricas?.[valor] || valor
+    : valor;
+
+  return ehPrevia ? `${valorFormatado} (Prévia)` : valorFormatado;
+}
+
+function obterValorPrevia() {
+  if (!props.g.ultima_previa_indicador) return null;
+
+  const previa = props.g.ultima_previa_indicador;
+
+  if (temVariavelCategorica.value && previa.elementos?.totais_categorica) {
+    const categorias = props.g.dados_auxiliares?.categoricas || {};
+    const valores = previa.elementos.totais_categorica
+      .map(({ categorica_valor, valor }) => {
+        const descricao = categorias[String(categorica_valor)] || categorica_valor;
+        return `- ${valor} ${descricao} (Prévia)`;
+      })
+      .join('\n');
+
+    return valores || '-';
   }
 
-  return valor;
+  const valor = previa.valor_nominal;
+  return valor !== null && valor !== undefined ? `${valor} (Prévia)` : '-';
+}
+
+function obterAgrupadorPrevia() {
+  if (!props.g.ultima_previa_indicador?.data_valor) return null;
+  // Pega o ano
+  return props.g.ultima_previa_indicador.data_valor.substring(0, 4);
+}
+
+function obterPeriodoPrevia() {
+  if (!props.g.ultima_previa_indicador?.data_valor) return null;
+  // Formato YYYY-MM (igual às linhas normais)
+  return props.g.ultima_previa_indicador.data_valor.substring(0, 7);
+}
+
+function linhaTemValor(linha) {
+  return linha.series.some((serie) => {
+    if (serie.elementos?.length > 0) return true;
+    return serie.valor_nominal !== null && serie.valor_nominal !== undefined && serie.valor_nominal !== '';
+  });
+}
+
+function filtrarLinhasComValor(linhas) {
+  return linhas.filter(linhaTemValor);
+}
+
+function filtrarGruposComValor(grupos) {
+  return grupos.filter(([ano, linhas]) => filtrarLinhasComValor(linhas).length > 0);
 }
 
 </script>
@@ -185,7 +236,7 @@ function obterValorTabela(item, index) {
 
   <template v-if="g?.linhas">
     <template
-      v-for="k in nestLinhas(g.linhas)"
+      v-for="k in filtrarGruposComValor(nestLinhas(g.linhas))"
       :key="k[0]"
     >
       <tr
@@ -204,7 +255,7 @@ function obterValorTabela(item, index) {
       </tr>
       <tbody>
         <tr
-          v-for="(val, i) in k[1]"
+          v-for="(val, i) in filtrarLinhasComValor(k[1])"
           :key="val.id ? val.id : i"
         >
           <td>
@@ -279,6 +330,36 @@ function obterValorTabela(item, index) {
               {{ obterValorTabela(val, 'RealizadoAcumulado') }}
             </span>
           </td>
+          <td style="white-space: nowrap; text-align: right;" />
+        </tr>
+
+        <!-- Linha de prévia do indicador dentro do ano correspondente -->
+        <tr v-if="g?.ultima_previa_indicador && obterAgrupadorPrevia() === k[0]">
+          <td>
+            <div class="flex center">
+              <div class="farol i1" />
+              <span>{{ obterPeriodoPrevia() }}</span>
+            </div>
+          </td>
+          <td>-</td>
+          <td>
+            <div
+              v-if="temVariavelCategorica"
+              class="tipinfo ml1"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_i" /></svg><div>
+                {{ obterValorPrevia() }}
+              </div>
+            </div>
+            <span v-else>
+              {{ obterValorPrevia() }}
+            </span>
+          </td>
+          <td>-</td>
+          <td>-</td>
           <td style="white-space: nowrap; text-align: right;" />
         </tr>
       </tbody>
