@@ -818,6 +818,7 @@ export class IndicadorService {
                 data_valor: Date2YMD.toString(serieValor.data_valor),
                 valor_nominal: serieValor.valor_nominal.toString(),
                 ha_conferencia_pendente: serieValor.ha_conferencia_pendente,
+                eh_previa: serieValor.eh_previa ? true : undefined,
             };
         }
 

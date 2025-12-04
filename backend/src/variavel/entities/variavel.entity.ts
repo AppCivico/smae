@@ -224,6 +224,8 @@ export class SerieValorNomimal {
      * Apenas em indicadores
      **/
     ha_conferencia_pendente?: boolean;
+
+    eh_previa?: boolean;
     /**
      * Apenas em variaveis
      **/
