@@ -209,6 +209,11 @@ export class PsCicloService {
     ): Promise<DocumentoEditavelTipo[]> {
         if (!cicloAtivo && cicloReaberto !== undefined && !cicloReaberto) return [];
 
+        if (cicloReaberto) {
+            // Se o ciclo foi reaberto, todos os documentos podem ser editados novamente
+            return ['analise', 'risco', 'fechamento'];
+        }
+
         const [analiseExistente, riscoExistente, fechamentoExistente] = await Promise.all([
             this.prisma.metaCicloFisicoAnalise.count({
                 where: { meta_id: metaId, ciclo_fisico_id: cicloId, ultima_revisao: true, removido_em: null },
