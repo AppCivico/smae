@@ -208,7 +208,7 @@ const configuracaoGrafico = computed(() => {
       html += `<div style="margin-bottom: 8px; font-weight: bold;">${periodo}</div>`;
     }
 
-    // Primeiro pass: identificar se temos dados de séries com prévia
+    // Primeiro passo: identificar se temos dados de séries com prévia
     const seriesConsolidadas = new Map();
 
     params.forEach((param) => {
@@ -253,7 +253,7 @@ const configuracaoGrafico = computed(() => {
       }
     });
 
-    // Segundo pass: renderizar séries consolidadas e não consolidadas
+    // Segundo passo: renderizar séries consolidadas e não consolidadas
     const seriesJaRenderizadas = new Set();
 
     params.forEach((param) => {
