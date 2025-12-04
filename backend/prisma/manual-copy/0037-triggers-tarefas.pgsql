@@ -1044,7 +1044,7 @@ CREATE OR REPLACE FUNCTION f_trg_tarefa_sync_custo_anualizado() RETURNS trigger 
 BEGIN
     -- Se custo_estimado_anualizado foi modificado, recalcula custo_estimado
     IF (TG_OP = 'INSERT' AND NEW.custo_estimado_anualizado IS NOT NULL) OR
-       (TG_OP = 'UPDATE' AND NEW.custo_estimado_anualizado IS DISTINCT FROM OLD.custo_estimado_anualizado) THEN
+       (TG_OP = 'UPDATE' AND NEW.custo_estimado_anualizado::jsonb IS DISTINCT FROM OLD.custo_estimado_anualizado::jsonb) THEN
         IF NEW.custo_estimado_anualizado IS NULL THEN
             NEW.custo_estimado := NULL;
         ELSE
@@ -1055,7 +1055,7 @@ BEGIN
 
     -- Se custo_real_anualizado foi modificado, recalcula custo_real
     IF (TG_OP = 'INSERT' AND NEW.custo_real_anualizado IS NOT NULL) OR
-       (TG_OP = 'UPDATE' AND NEW.custo_real_anualizado IS DISTINCT FROM OLD.custo_real_anualizado) THEN
+       (TG_OP = 'UPDATE' AND NEW.custo_real_anualizado::jsonb IS DISTINCT FROM OLD.custo_real_anualizado::jsonb) THEN
         IF NEW.custo_real_anualizado IS NULL THEN
             NEW.custo_real := NULL;
         ELSE
