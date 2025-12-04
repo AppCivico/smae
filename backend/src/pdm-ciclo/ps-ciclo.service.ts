@@ -353,7 +353,13 @@ export class PsCicloService {
         ]);
 
         // Determine quais documentos podem ser editados
-        const documentosEditaveis = await this.determinaDocumentosEditaveis(metaId, cicloId, cicloAtual.ativo);
+        const cicloReaberto = await this.verificaCicloInativoReaberto(pdmId, cicloId, metaId);
+        const documentosEditaveis = await this.determinaDocumentosEditaveis(
+            metaId,
+            cicloId,
+            cicloAtual.ativo,
+            cicloReaberto
+        );
 
         const atual: CicloRevisaoDto = {
             analise: analiseAtual.analises.length > 0 ? analiseAtual.analises[0] : null,
@@ -566,7 +572,13 @@ export class PsCicloService {
 
         // Determina documentos editáveis
         const cicloAtivo = await this.verificaCicloAtivo(pdmId, cicloId);
-        const documentos_editaveis = await this.determinaDocumentosEditaveis(metaId, cicloId, cicloAtivo);
+        const cicloReaberto = await this.verificaCicloInativoReaberto(pdmId, cicloId, metaId);
+        const documentos_editaveis = await this.determinaDocumentosEditaveis(
+            metaId,
+            cicloId,
+            cicloAtivo,
+            cicloReaberto
+        );
 
         return {
             corrente: currentData,
@@ -615,7 +627,13 @@ export class PsCicloService {
 
         // Determina documentos editáveis
         const cicloAtivo = await this.verificaCicloAtivo(pdmId, cicloId);
-        const documentos_editaveis = await this.determinaDocumentosEditaveis(metaId, cicloId, cicloAtivo);
+        const cicloReaberto = await this.verificaCicloInativoReaberto(pdmId, cicloId, metaId);
+        const documentos_editaveis = await this.determinaDocumentosEditaveis(
+            metaId,
+            cicloId,
+            cicloAtivo,
+            cicloReaberto
+        );
 
         return {
             corrente: currentData,
@@ -663,7 +681,13 @@ export class PsCicloService {
 
         // Determina documentos editáveis
         const cicloAtivo = await this.verificaCicloAtivo(pdmId, cicloId);
-        const documentos_editaveis = await this.determinaDocumentosEditaveis(metaId, cicloId, cicloAtivo);
+        const cicloReaberto = await this.verificaCicloInativoReaberto(pdmId, cicloId, metaId);
+        const documentos_editaveis = await this.determinaDocumentosEditaveis(
+            metaId,
+            cicloId,
+            cicloAtivo,
+            cicloReaberto
+        );
 
         return {
             corrente: currentData,
