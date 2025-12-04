@@ -170,7 +170,7 @@ export class PsCicloService {
                 MetaCicloFisicoFechamento: { where: { ultima_revisao: true, removido_em: null, meta_id: metaId } },
             },
         });
-        if (!ciclo) throw new BadRequestException('Ciclo não encontrado');
+        if (!ciclo) return false;
 
         if (ciclo.MetaCicloFisicoFechamento.length === 0) return ciclo.ativo;
 
