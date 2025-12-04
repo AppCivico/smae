@@ -18,6 +18,7 @@ import {
     GeoLocDto,
     GeoLocDtoByLatLong,
     GeolocalizacaoDto,
+    RegioesPorNivel,
     RetornoCreateEnderecoDto,
     RetornoGeoLoc,
 } from './entities/geo-loc.entity';
@@ -492,6 +493,9 @@ export class GeoLocService {
                         endereco_exibicao: true,
                         geom_geojson: true,
                         tipo: true,
+                        calc_regioes_nivel_1: true,
+                        calc_regioes_nivel_2: true,
+                        calc_regioes_nivel_3: true,
                         GeoEnderecoCamada: {
                             select: {
                                 geo_camada: {
@@ -507,11 +511,48 @@ export class GeoLocService {
                     },
                 });
 
+                // Fetch region data for regioes_calc
+                const allRegiaoIds = new Set<number>();
+                if (endereco.calc_regioes_nivel_1) endereco.calc_regioes_nivel_1.forEach((id) => allRegiaoIds.add(id));
+                if (endereco.calc_regioes_nivel_2) endereco.calc_regioes_nivel_2.forEach((id) => allRegiaoIds.add(id));
+                if (endereco.calc_regioes_nivel_3) endereco.calc_regioes_nivel_3.forEach((id) => allRegiaoIds.add(id));
+
+                const regiaoMap = new Map<number, { id: number; descricao: string }>();
+                if (allRegiaoIds.size > 0) {
+                    const regioes = await prismaTx.regiao.findMany({
+                        where: {
+                            id: { in: Array.from(allRegiaoIds) },
+                            removido_em: null,
+                        },
+                        select: {
+                            id: true,
+                            descricao: true,
+                        },
+                    });
+                    for (const regiao of regioes) {
+                        regiaoMap.set(regiao.id, { id: regiao.id, descricao: regiao.descricao });
+                    }
+                }
+
                 return {
                     endereco_exibicao: endereco.endereco_exibicao,
                     token: this.encodeToken({ id: endereco.id }),
                     tipo: endereco.tipo,
                     endereco: endereco.geom_geojson as any as GeoJSON,
+                    regioes_calc: {
+                        nivel_1:
+                            endereco.calc_regioes_nivel_1
+                                ?.map((id) => regiaoMap.get(id))
+                                .filter((r) => r !== undefined) || null,
+                        nivel_2:
+                            endereco.calc_regioes_nivel_2
+                                ?.map((id) => regiaoMap.get(id))
+                                .filter((r) => r !== undefined) || null,
+                        nivel_3:
+                            endereco.calc_regioes_nivel_3
+                                ?.map((id) => regiaoMap.get(id))
+                                .filter((r) => r !== undefined) || null,
+                    } satisfies RegioesPorNivel,
                     camadas: endereco.GeoEnderecoCamada.map((c) => {
                         return {
                             codigo: c.geo_camada.codigo,
@@ -699,6 +740,9 @@ export class GeoLocService {
                         endereco_exibicao: true,
                         geom_geojson: true,
                         tipo: true,
+                        calc_regioes_nivel_1: true,
+                        calc_regioes_nivel_2: true,
+                        calc_regioes_nivel_3: true,
                         GeoEnderecoCamada: {
                             select: {
                                 geo_camada: {
@@ -716,6 +760,32 @@ export class GeoLocService {
             },
         });
 
+        // Agrupa primeiro pra fazer 1 query só
+        const allRegiaoIds = new Set<number>();
+        for (const r of records) {
+            const endereco = r.geo_localizacao;
+            if (endereco.calc_regioes_nivel_1) endereco.calc_regioes_nivel_1.forEach((id) => allRegiaoIds.add(id));
+            if (endereco.calc_regioes_nivel_2) endereco.calc_regioes_nivel_2.forEach((id) => allRegiaoIds.add(id));
+            if (endereco.calc_regioes_nivel_3) endereco.calc_regioes_nivel_3.forEach((id) => allRegiaoIds.add(id));
+        }
+
+        const regiaoMap = new Map<number, { id: number; descricao: string }>();
+        if (allRegiaoIds.size > 0) {
+            const regioes = await this.prisma.regiao.findMany({
+                where: {
+                    id: { in: Array.from(allRegiaoIds) },
+                    removido_em: null,
+                },
+                select: {
+                    id: true,
+                    descricao: true,
+                },
+            });
+            for (const regiao of regioes) {
+                regiaoMap.set(regiao.id, { id: regiao.id, descricao: regiao.descricao });
+            }
+        }
+
         for (const r of records) {
             const endereco = r.geo_localizacao;
 
@@ -724,6 +794,17 @@ export class GeoLocService {
                 token: this.encodeToken({ id: endereco.id }),
                 tipo: endereco.tipo,
                 endereco: endereco.geom_geojson as any as GeoJSON,
+                regioes_calc: {
+                    nivel_1:
+                        endereco.calc_regioes_nivel_1?.map((id) => regiaoMap.get(id)).filter((r) => r !== undefined) ||
+                        null,
+                    nivel_2:
+                        endereco.calc_regioes_nivel_2?.map((id) => regiaoMap.get(id)).filter((r) => r !== undefined) ||
+                        null,
+                    nivel_3:
+                        endereco.calc_regioes_nivel_3?.map((id) => regiaoMap.get(id)).filter((r) => r !== undefined) ||
+                        null,
+                } satisfies RegioesPorNivel,
                 camadas: endereco.GeoEnderecoCamada.map((c) => {
                     return {
                         codigo: c.geo_camada.codigo,

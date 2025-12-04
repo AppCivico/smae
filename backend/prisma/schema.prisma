@@ -5244,6 +5244,11 @@ model GeoLocalizacao {
     lon               Float             @db.DoublePrecision
     criado_em         DateTime          @default(now()) @db.Timestamp(6)
 
+    calc_regioes_nivel_1 Int[] @default([])
+    calc_regioes_nivel_2 Int[] @default([])
+    calc_regioes_nivel_3 Int[] @default([])
+
+
     GeoEnderecoCamada     GeoLocalizacaoCamada[]
     GeoEnderecoReferencia GeoLocalizacaoReferencia[]
 
