@@ -541,7 +541,7 @@ export class GeoLocService {
                     token: this.encodeToken({ id: endereco.id }),
                     tipo: endereco.tipo,
                     endereco: endereco.geom_geojson as any as GeoJSON,
-                    regioes_calc: {
+                    regioes: {
                         nivel_1:
                             endereco.calc_regioes_nivel_1
                                 ?.map((id) => regiaoMap.get(id))
@@ -798,7 +798,7 @@ export class GeoLocService {
                 token: this.encodeToken({ id: endereco.id }),
                 tipo: endereco.tipo,
                 endereco: endereco.geom_geojson as any as GeoJSON,
-                regioes_calc: {
+                regioes: {
                     nivel_1:
                         endereco.calc_regioes_nivel_1?.map((id) => regiaoMap.get(id)).filter((r) => r !== undefined) ||
                         null,
