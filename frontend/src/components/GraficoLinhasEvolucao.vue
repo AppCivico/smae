@@ -199,7 +199,14 @@ const configuracaoGrafico = computed(() => {
   };
 
   const formatarTooltip = (params) => {
+    if (!params || params.length === 0) return '';
+
+    // Adicionar período/data do eixo X
+    const periodo = params[0]?.name || params[0]?.axisValue;
     let html = '<div style="padding: 8px;">';
+    if (periodo) {
+      html += `<div style="margin-bottom: 8px; font-weight: bold;">${periodo}</div>`;
+    }
 
     // Primeiro pass: identificar se temos dados de séries com prévia
     const seriesConsolidadas = new Map();
@@ -246,7 +253,9 @@ const configuracaoGrafico = computed(() => {
       }
     });
 
-    // Segundo pass: renderizar na ordem original
+    // Segundo pass: renderizar séries consolidadas e não consolidadas
+    const seriesJaRenderizadas = new Set();
+
     params.forEach((param) => {
       const { seriesName, value, color } = param;
 
@@ -262,8 +271,9 @@ const configuracaoGrafico = computed(() => {
 
       // Para séries consolidadas (Realizado e Realizado Acumulado)
       if (nomeBase === 'Realizado' || nomeBase === 'Realizado Acumulado') {
-        if (ehPrevia) {
-          return; // Pular séries de prévia, já tratamos
+        // Renderizar apenas uma vez por nomeBase
+        if (seriesJaRenderizadas.has(nomeBase)) {
+          return;
         }
 
         const dadosConsolidados = seriesConsolidadas.get(nomeBase);
@@ -277,6 +287,7 @@ const configuracaoGrafico = computed(() => {
               <strong>${nomeExibir}:</strong> ${valorFormatado}
             </div>
           `;
+          seriesJaRenderizadas.add(nomeBase);
         }
       } else {
         // Outras séries: comportamento original
