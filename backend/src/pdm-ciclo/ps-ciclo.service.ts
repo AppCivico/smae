@@ -189,6 +189,7 @@ export class PsCicloService {
                 ciclo_fisico_id: cicloId,
                 removido_em: null,
                 ultima_revisao: true,
+                reaberto_em: null,
             },
         });
 
