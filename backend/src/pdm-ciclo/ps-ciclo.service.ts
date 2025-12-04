@@ -153,7 +153,12 @@ export class PsCicloService {
      */
     private async verificaCicloAtivo(pdmId: number, cicloId: number): Promise<boolean> {
         const ciclo = await this.prisma.cicloFisico.findUnique({
-            where: { id: cicloId, pdm_id: pdmId, pdm: { removido_em: null } },
+            where: {
+                id: cicloId,
+                pdm_id: pdmId,
+                pdm: { removido_em: null },
+                MetaCicloFisicoFechamento: { none: { reaberto_em: null } },
+            },
         });
         if (!ciclo) throw new BadRequestException('Ciclo não encontrado');
 
