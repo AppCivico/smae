@@ -6,7 +6,10 @@
     :class="cicloAtual ? 'ciclo-atual' : 'ciclo-passado'"
     @toggle.prevent="handleToggle"
   >
-    <summary :class="cicloAtual ? 'ciclo-atual__summary' : ''">
+    <summary
+      class="flex flexwrap"
+      :class="cicloAtual ? 'ciclo-atual__summary' : ''"
+    >
       <div
         v-if="cicloAtual"
         class="titulo-monitoramento"
@@ -18,11 +21,24 @@
           {{ dateToTitle(ciclo.data_ciclo) }}
         </h2>
       </div>
-      <template v-else>
-        <h2 class="tc500 t20">
-          {{ dateToTitle(ciclo.data_ciclo) }}
-        </h2>
-      </template>
+
+      <h2
+        v-else
+        class="tc500 t20"
+      >
+        {{ dateToTitle(ciclo.data_ciclo) }}
+      </h2>
+
+      <button
+        v-if="ciclo.fechado"
+        type="button"
+        class="btn outline bgnone tcprimary mtauto align-end mlauto mr0"
+        :aria-busy="chamadasPendentes.reabrirCiclo"
+        :aria-disabled="chamadasPendentes.reabrirCiclo"
+        @click="reabrirCiclo()"
+      >
+        Reabrir ciclo
+      </button>
     </summary>
     <LoadingComponent
       v-if="chamadasPendentes.ciclosDetalhadosPorId[ciclo.id]"
@@ -44,10 +60,10 @@
             class="mb1"
           >
             <dt class="t12 uc w700 mb05 tc300">
-              <div class="flex spacebetween">
+              <div class="flex spacebetween center mb1">
                 Informações complementares
                 <SmaeLink
-                  v-if="cicloAtual && saoEditaveis.analise"
+                  v-if="!ciclo.fechado && ciclo.documentos_editaveis.includes('analise')"
                   :to="{
                     name: `.monitoramentoDeMetasAnaliseQualitativa`,
                     params: { cicloId: ciclo.id }
@@ -106,10 +122,10 @@
         <dl>
           <div class="mb1">
             <dt class="t12 uc w700 mb05 tc300">
-              <div class="flex spacebetween">
+              <div class="flex spacebetween center mb1">
                 Detalhamento
                 <SmaeLink
-                  v-if="cicloAtual && saoEditaveis.risco"
+                  v-if="!ciclo.fechado && ciclo.documentos_editaveis.includes('risco')"
                   :to="{
                     name: `.monitoramentoDeMetasAnaliseDeRisco`,
                     params: { cicloId: ciclo.id }
@@ -170,10 +186,10 @@
         <dl>
           <div class="mb1">
             <dt class="t12 uc w700 mb05 tc300">
-              <div class="flex spacebetween">
+              <div class="flex spacebetween center mb1">
                 Comentários
                 <SmaeLink
-                  v-if="cicloAtual && saoEditaveis.fechamento"
+                  v-if="!ciclo.fechado && ciclo.documentos_editaveis.includes('fechamento')"
                   :to="{
                     name: `.monitoramentoDeMetasRegistroDeFechamento`,
                     params: { cicloId: ciclo.id }
@@ -255,7 +271,6 @@ const monitoramentoDeMetasStore = useMonitoramentoDeMetasStore(route.meta.entida
 const estaAberto = ref(false);
 
 const {
-  saoEditaveis,
   chamadasPendentes,
   ciclosDetalhadosPorId,
 } = storeToRefs(monitoramentoDeMetasStore);
@@ -284,6 +299,36 @@ if (props.ciclo?.id) {
         },
       );
     }
+  });
+}
+
+function reabrirCiclo() {
+  if (chamadasPendentes.value.reabrirCiclo) return;
+
+  monitoramentoDeMetasStore.reabrirCiclo(
+    route.params.planoSetorialId,
+    props.ciclo.id,
+    {
+      meta_id: route.params.meta_id,
+    },
+  ).then((sucesso) => {
+    if (sucesso) {
+      // Atualizar tanto a lista quanto os detalhes do ciclo atual
+      monitoramentoDeMetasStore.buscarCiclo(
+        route.params.planoSetorialId,
+        props.ciclo.id,
+        {
+          meta_id: route.params.meta_id,
+        },
+      );
+      monitoramentoDeMetasStore.buscarListaDeCiclos(route.params.planoSetorialId, {
+        meta_id: route.params.meta_id,
+      });
+    } else {
+      throw new Error('Falha ao reabrir ciclo');
+    }
+  }).catch((erro) => {
+    console.error('Erro ao reabrir ciclo:', erro);
   });
 }
 

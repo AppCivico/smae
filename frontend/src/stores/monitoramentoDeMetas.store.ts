@@ -25,6 +25,7 @@ type ChamadasPendentes = {
   analiseEmFoco: boolean;
   riscoEmFoco: boolean;
   fechamentoEmFoco: boolean;
+  reabrirCiclo: boolean;
 
   documento: boolean;
 };
@@ -37,18 +38,13 @@ type Erros = {
   analiseEmFoco: unknown;
   riscoEmFoco: unknown;
   fechamentoEmFoco: unknown;
+  reabrirCiclo: unknown;
 
   documento: unknown;
 };
 
 type Estado = {
   listaDeCiclos: ListPSCicloDto['linhas'];
-
-  saoEditaveis: {
-    analise: boolean;
-    risco: boolean;
-    fechamento: boolean;
-  };
 
   ultimaRevisao: UltimaRevisao | null;
 
@@ -66,12 +62,6 @@ export const useMonitoramentoDeMetasStore = (prefixo: PrefixosValidos) => define
   state: (): Estado => ({
     listaDeCiclos: [],
 
-    saoEditaveis: {
-      fechamento: false,
-      analise: false,
-      risco: false,
-    },
-
     ultimaRevisao: null,
 
     ciclosDetalhadosPorId: {},
@@ -86,6 +76,7 @@ export const useMonitoramentoDeMetasStore = (prefixo: PrefixosValidos) => define
       analiseEmFoco: false,
       riscoEmFoco: false,
       fechamentoEmFoco: false,
+      reabrirCiclo: false,
       documento: false,
     },
 
@@ -95,6 +86,7 @@ export const useMonitoramentoDeMetasStore = (prefixo: PrefixosValidos) => define
       analiseEmFoco: null,
       riscoEmFoco: null,
       fechamentoEmFoco: null,
+      reabrirCiclo: null,
       documento: null,
     },
   }),
@@ -106,14 +98,7 @@ export const useMonitoramentoDeMetasStore = (prefixo: PrefixosValidos) => define
         const {
           linhas,
           ultima_revisao: ultimaRevisao,
-          documentos_editaveis: documentosEditaveis,
         } = await this.requestS.get(`${baseUrl}/plano-setorial/${pdmId}/ciclo`, params) as ListPSCicloDto;
-
-        if (Array.isArray(documentosEditaveis)) {
-          this.saoEditaveis.analise = documentosEditaveis.includes('analise');
-          this.saoEditaveis.risco = documentosEditaveis.includes('risco');
-          this.saoEditaveis.fechamento = documentosEditaveis.includes('fechamento');
-        }
 
         this.listaDeCiclos = linhas;
         this.ultimaRevisao = ultimaRevisao;
@@ -265,6 +250,24 @@ export const useMonitoramentoDeMetasStore = (prefixo: PrefixosValidos) => define
       } catch (erro) {
         this.erros.fechamentoEmFoco = erro;
         this.chamadasPendentes.fechamentoEmFoco = false;
+        return false;
+      }
+    },
+
+    // eslint-disable-next-line max-len
+    async reabrirCiclo(pdmId: ChaveGenerica, cicloId: ChaveGenerica, params: ParametrosDeRequisicao): Promise<boolean> {
+      this.chamadasPendentes.reabrirCiclo = true;
+
+      try {
+        await this.requestS.post(`${baseUrl}/plano-setorial/${pdmId}/ciclo/${cicloId}/reabrir`, params);
+
+        this.chamadasPendentes.reabrirCiclo = false;
+
+        this.erros.reabrirCiclo = null;
+        return true;
+      } catch (erro) {
+        this.erros.reabrirCiclo = erro;
+        this.chamadasPendentes.reabrirCiclo = false;
         return false;
       }
     },
