@@ -94,6 +94,7 @@ const anoInicial = ref(null);
 const anoFinal = ref(null);
 const dadosHeatmap = ref([]);
 const dadosPrevia = ref([]);
+const previasFiltradas = ref([]);
 const configuracaoGrafico = ref({});
 
 if (indiceRealizado.value === -1) {
@@ -252,12 +253,12 @@ const atualizarDadosGrafico = () => {
   });
 
   // Filtrar e remapear dados de prévia
-  let previasFiltradas = dadosPrevia.value.filter(([indiceX]) => {
+  const previasFiltradasLocal = dadosPrevia.value.filter(([indiceX]) => {
     const ano = datasEixoX.value[indiceX].split('/')[1];
     return ano >= anoInicial.value && ano <= anoFinal.value;
   });
 
-  previasFiltradas = previasFiltradas.map(([indiceX, indiceY]) => {
+  previasFiltradas.value = previasFiltradasLocal.map(([indiceX, indiceY]) => {
     const novoIndiceX = eixoXFiltrado.indexOf(datasEixoX.value[indiceX]);
     return [novoIndiceX, indiceY];
   });
@@ -334,7 +335,7 @@ const atualizarDadosGrafico = () => {
           },
         },
       },
-      ...(previasFiltradas.length > 0
+      ...(previasFiltradas.value.length > 0
         ? [
           {
             type: 'custom',
@@ -354,37 +355,58 @@ const atualizarDadosGrafico = () => {
               const cellWidth = nextXCoord ? Math.abs(nextXCoord[0] - coord[0]) : 50;
               const cellHeight = nextYCoord ? Math.abs(nextYCoord[1] - coord[1]) : 50;
 
-              // Posicionar no canto superior esquerdo com margem
-              const offsetX = -(cellWidth / 2) + 12;
-              const offsetY = -(cellHeight / 2) + 12;
-
+              // Criar padrão zebrado usando um retângulo com pattern
               return {
-                type: 'circle',
+                type: 'rect',
                 shape: {
-                  cx: coord[0] + offsetX,
-                  cy: coord[1] + offsetY,
-                  r: 6,
+                  x: coord[0] - (cellWidth / 2),
+                  y: coord[1] - (cellHeight / 2),
+                  width: cellWidth,
+                  height: cellHeight,
                 },
                 style: {
-                  fill: '#ffc107',
+                  fill: {
+                    type: 'pattern',
+                    image: (() => {
+                      const canvas = document.createElement('canvas');
+                      const size = 20; // Aumentar para ter listras mais visíveis
+                      canvas.width = size;
+                      canvas.height = size;
+                      const ctx = canvas.getContext('2d');
+
+                      // Desenhar listras diagonais
+                      ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+                      ctx.lineWidth = 3;
+                      ctx.lineCap = 'square';
+
+                      // Primeira listra (diagonal principal)
+                      ctx.beginPath();
+                      ctx.moveTo(0, size);
+                      ctx.lineTo(size, 0);
+                      ctx.stroke();
+
+                      // Segunda listra (para continuar o padrão nos cantos)
+                      ctx.beginPath();
+                      ctx.moveTo(-size, size);
+                      ctx.lineTo(0, 0);
+                      ctx.stroke();
+
+                      // Terceira listra (para continuar o padrão nos cantos)
+                      ctx.beginPath();
+                      ctx.moveTo(size, size * 2);
+                      ctx.lineTo(size * 2, size);
+                      ctx.stroke();
+
+                      return canvas;
+                    })(),
+                    repeat: 'repeat',
+                  },
                 },
+                silent: true, // Não interceptar eventos de mouse
                 z2: 100,
               };
             },
-            emphasis: {
-              style: {
-                strokeWidth: 2,
-                stroke: '#ffc107',
-              },
-            },
-            tooltip: {
-              formatter: () => `
-                <div class="projeto-tooltip" style="color: #333">
-                  <p class="projeto-tooltip__valor">Esta série contém prévia de dados</p>
-                </div>
-              `,
-            },
-            data: previasFiltradas,
+            data: previasFiltradas.value,
           },
         ]
         : []),
@@ -409,8 +431,8 @@ function formatarTooltip(param) {
   const [indiceX, indiceY, contagem] = param.data;
   const categoria = Object.values(categorias.value)[indiceY];
 
-  // Verificar se este ponto é prévia
-  const ehPrevia = dadosPrevia.value.some(
+  // Verificar se este ponto é prévia usando coordenadas filtradas
+  const ehPrevia = previasFiltradas.value.some(
     ([cX, cY]) => cX === indiceX && cY === indiceY,
   );
 
