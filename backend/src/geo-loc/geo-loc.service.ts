@@ -496,6 +496,7 @@ export class GeoLocService {
                         calc_regioes_nivel_1: true,
                         calc_regioes_nivel_2: true,
                         calc_regioes_nivel_3: true,
+                        calc_regioes_nivel_4: true,
                         GeoEnderecoCamada: {
                             select: {
                                 geo_camada: {
@@ -516,6 +517,7 @@ export class GeoLocService {
                 if (endereco.calc_regioes_nivel_1) endereco.calc_regioes_nivel_1.forEach((id) => allRegiaoIds.add(id));
                 if (endereco.calc_regioes_nivel_2) endereco.calc_regioes_nivel_2.forEach((id) => allRegiaoIds.add(id));
                 if (endereco.calc_regioes_nivel_3) endereco.calc_regioes_nivel_3.forEach((id) => allRegiaoIds.add(id));
+                if (endereco.calc_regioes_nivel_4) endereco.calc_regioes_nivel_4.forEach((id) => allRegiaoIds.add(id));
 
                 const regiaoMap = new Map<number, { id: number; descricao: string }>();
                 if (allRegiaoIds.size > 0) {
@@ -743,6 +745,7 @@ export class GeoLocService {
                         calc_regioes_nivel_1: true,
                         calc_regioes_nivel_2: true,
                         calc_regioes_nivel_3: true,
+                        calc_regioes_nivel_4: true,
                         GeoEnderecoCamada: {
                             select: {
                                 geo_camada: {
@@ -767,6 +770,7 @@ export class GeoLocService {
             if (endereco.calc_regioes_nivel_1) endereco.calc_regioes_nivel_1.forEach((id) => allRegiaoIds.add(id));
             if (endereco.calc_regioes_nivel_2) endereco.calc_regioes_nivel_2.forEach((id) => allRegiaoIds.add(id));
             if (endereco.calc_regioes_nivel_3) endereco.calc_regioes_nivel_3.forEach((id) => allRegiaoIds.add(id));
+            if (endereco.calc_regioes_nivel_4) endereco.calc_regioes_nivel_4.forEach((id) => allRegiaoIds.add(id));
         }
 
         const regiaoMap = new Map<number, { id: number; descricao: string }>();
@@ -804,6 +808,9 @@ export class GeoLocService {
                     nivel_3:
                         endereco.calc_regioes_nivel_3?.map((id) => regiaoMap.get(id)).filter((r) => r !== undefined) ||
                         null,
+                    nivel_4:
+                        endereco.calc_regioes_nivel_4?.map((id) => regiaoMap.get(id)).filter((r) => r !== undefined) ||
+                        null,
                 } satisfies RegioesPorNivel,
                 camadas: endereco.GeoEnderecoCamada.map((c) => {
                     return {
@@ -817,7 +824,7 @@ export class GeoLocService {
                         cor: c.geo_camada.config.cor,
                     };
                 }),
-            };
+            } satisfies RetornoCreateEnderecoDto;
 
             const id = r[referencia] as number;
             if (!id) {

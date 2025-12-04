@@ -14,6 +14,7 @@ export class RegioesPorNivel {
     nivel_1?: IdDesc[] | null;
     nivel_2?: IdDesc[] | null;
     nivel_3?: IdDesc[] | null;
+    nivel_4?: IdDesc[] | null;
 }
 
 export class GeoLocDto {

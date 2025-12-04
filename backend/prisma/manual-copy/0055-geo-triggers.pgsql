@@ -5,6 +5,7 @@ DECLARE
     v_regioes_nivel_1 INTEGER[];
     v_regioes_nivel_2 INTEGER[];
     v_regioes_nivel_3 INTEGER[];
+    v_regioes_nivel_4 INTEGER[];
 BEGIN
     WITH RECURSIVE
     -- Primeiro, obter todas as regiões diretamente vinculadas às camadas desta geo_localizacao
@@ -30,15 +31,17 @@ BEGIN
     SELECT
         COALESCE(array_agg(DISTINCT id) FILTER (WHERE nivel = 1), ARRAY[]::INTEGER[]),
         COALESCE(array_agg(DISTINCT id) FILTER (WHERE nivel = 2), ARRAY[]::INTEGER[]),
-        COALESCE(array_agg(DISTINCT id) FILTER (WHERE nivel = 3), ARRAY[]::INTEGER[])
-    INTO v_regioes_nivel_1, v_regioes_nivel_2, v_regioes_nivel_3
+        COALESCE(array_agg(DISTINCT id) FILTER (WHERE nivel = 3), ARRAY[]::INTEGER[]),
+        COALESCE(array_agg(DISTINCT id) FILTER (WHERE nivel = 4), ARRAY[]::INTEGER[])
+    INTO v_regioes_nivel_1, v_regioes_nivel_2, v_regioes_nivel_3, v_regioes_nivel_4
     FROM all_regions;
 
     UPDATE geo_localizacao
     SET
         calc_regioes_nivel_1 = v_regioes_nivel_1,
         calc_regioes_nivel_2 = v_regioes_nivel_2,
-        calc_regioes_nivel_3 = v_regioes_nivel_3
+        calc_regioes_nivel_3 = v_regioes_nivel_3,
+        calc_regioes_nivel_4 = v_regioes_nivel_4
     WHERE id = p_geo_localizacao_id;
 END;
 $$ LANGUAGE plpgsql;
