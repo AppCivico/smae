@@ -2,7 +2,7 @@
  * Determina a cor da faixa com base na configuração do ambiente e no host atual
  *
  * @param {string} bannerConfig - String de configuração que pode ser:
- *   - Um array JSON de objetos com propriedades 'sufix' e 'color' para correspondência baseada em host
+ *   - Um array JSON de objetos com propriedades 'prefix' e 'color' para correspondência baseada em host
  *   - Uma string de cor hexadecimal (com ou sem prefixo '#')
  * @param {boolean} isDevelopment - Se a aplicação está rodando em modo de desenvolvimento
  * @returns {string} String de cor hexadecimal com prefixo '#', ou string vazia se nenhuma faixa deve ser exibida
@@ -13,8 +13,8 @@
  *
  * @example
  * // Configuração baseada em host
- * const config = '[{"sufix": "dev.example.com", "color": "#ff0000"}]'
- * getBannerColor(config, false) // retorna '#ff0000' se o host terminar com 'dev.example.com'
+ * const config = '[{"prefix": "dev.example.com", "color": "#ff0000"}]'
+ * getBannerColor(config, false) // retorna '#ff0000' se o host iniciar com 'dev.example.com'
  */
 export function getBannerColor(bannerConfig, isDevelopment) {
   const host = window.location.host;
@@ -22,7 +22,7 @@ export function getBannerColor(bannerConfig, isDevelopment) {
   if (bannerConfig?.startsWith("[")) {
     try {
       const configs = JSON.parse(bannerConfig);
-      const match = configs.find((cfg) => host.endsWith(cfg.sufix));
+      const match = configs.find((cfg) => host.startsWith(cfg.prefix));
       if (match?.color) {
         return match.color.startsWith("#") ? match.color : `#${match.color}`;
       }
