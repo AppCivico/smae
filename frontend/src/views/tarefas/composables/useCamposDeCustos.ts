@@ -39,8 +39,6 @@ export default function useCamposDeCustos(props: Props) {
 
   const listaDeAnos = ref<number[]>([]);
 
-  // const usarValoresAnualizado = computed<boolean>(() => listaDeAnos.value.length > 1);
-
   const nomeDoCampoDeCusto = computed(() => `custo_${props.tipo}_anualizado`);
 
   const listaDeWatchers = {
