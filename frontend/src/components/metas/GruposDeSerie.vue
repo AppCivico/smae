@@ -206,7 +206,11 @@ function filtrarLinhasComValor(linhas) {
 }
 
 function filtrarGruposComValor(grupos) {
-  return grupos.filter(([ano, linhas]) => filtrarLinhasComValor(linhas).length > 0);
+  return grupos.filter(([ano, linhas]) => {
+    const temLinhasComValor = filtrarLinhasComValor(linhas).length > 0;
+    const temPrevia = props.g?.ultima_previa_indicador && obterAgrupadorPrevia() === ano;
+    return temLinhasComValor || temPrevia;
+  });
 }
 
 </script>
