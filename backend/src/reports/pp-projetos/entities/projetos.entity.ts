@@ -60,12 +60,12 @@ export class RelProjetosCronogramaDto {
     tarefa: string;
     inicio_planejado: string | null;
     termino_planejado: string | null;
-    custo_estimado: number | null;
+    custo_estimado: number | null | string;
     inicio_real: string | null;
     termino_real: string | null;
     duracao_real: number | null;
     percentual_concluido: number | null;
-    custo_real: number | null;
+    custo_real: number | null | string;
     dependencias: string | null;
 
     responsavel: IdNomeExibicaoDto | null;
