@@ -25,7 +25,6 @@ import { useOrgansStore } from '@/stores/organs.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
 
-import CampoDeCustos from './components/CampoDeCustos.vue';
 import useCamposDeCustos from './composables/useCamposDeCustos';
 
 defineOptions({ inheritAttrs: false });
@@ -865,7 +864,7 @@ watch(itemParaEdicao, (novoValor) => {
             <svg
               width="20"
               height="20"
-            ><use xlink:href="#i_+" /></svg>Adicionar valor estimado
+            ><use xlink:href="#i_+" /></svg>Adicionar valor {{ tipoDeCusto }}
           </button>
         </FieldArray>
       </div>
