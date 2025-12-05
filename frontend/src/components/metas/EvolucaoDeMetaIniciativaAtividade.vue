@@ -162,13 +162,12 @@
             <th>
               Realizado Acumulado
             </th>
-            <th />
           </tr>
         </thead>
 
         <tbody v-if="haChamadasPendentes">
           <tr>
-            <td colspan="6">
+            <td colspan="5">
               <LoadingComponent class="horizontal" />
             </td>
           </tr>

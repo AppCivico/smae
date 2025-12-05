@@ -241,7 +241,6 @@ watch([parentId, parentField], iniciar, { immediate: true });
                   <th style="width: 17.5%">
                     Realizado Acumulado
                   </th>
-                  <th style="width: 5%" />
                 </tr>
               </thead>
               <GruposDeSerie :g="ValoresInd[ind.id]" />

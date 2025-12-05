@@ -330,7 +330,6 @@ function filtrarGruposComValor(grupos) {
               {{ obterValorTabela(val, 'RealizadoAcumulado') }}
             </span>
           </td>
-          <td style="white-space: nowrap; text-align: right;" />
         </tr>
 
         <!-- Linha de prévia do indicador dentro do ano correspondente -->
@@ -360,7 +359,6 @@ function filtrarGruposComValor(grupos) {
           </td>
           <td>-</td>
           <td>-</td>
-          <td style="white-space: nowrap; text-align: right;" />
         </tr>
       </tbody>
     </template>
