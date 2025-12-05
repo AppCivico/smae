@@ -1,18 +1,22 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import {
-  ErrorMessage, Field, Form,
+  ErrorMessage, Field, FieldArray, useForm,
 } from 'vee-validate';
+import { onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
-import schema from '@/consts/formSchemas/tarefa';
+import schemaTarefa from '@/consts/formSchemas/tarefa';
 import addToDates from '@/helpers/addToDates';
 import dateToField from '@/helpers/dateToField';
+import dinheiro from '@/helpers/dinheiro';
 import subtractDates from '@/helpers/subtractDates';
 import { useAlertStore } from '@/stores/alert.store';
 import { useEmailsStore } from '@/stores/envioEmail.store';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
+
+import useCamposDeCustos from './useCamposDeCustos.composable';
 
 const alertStore = useAlertStore();
 const tarefasStore = useTarefasStore();
@@ -42,7 +46,20 @@ const props = defineProps({
   },
 });
 
-async function onSubmit(_, { controlledValues: carga }) {
+const schema = ref(schemaTarefa('real'));
+
+const {
+  handleSubmit, errors, isSubmitting, setFieldValue, values, setValues,
+} = useForm({
+  initialValues: itemParaEdicao,
+  validationSchema: schema,
+});
+
+const { listaDeAnos, nomeDoCampoDeCusto, tipoDeCusto } = useCamposDeCustos({ values, tipo: 'real' });
+
+schema.value = schemaTarefa('real', () => listaDeAnos.value);
+
+const onSubmit = handleSubmit.withControlled(async (carga) => {
   try {
     const resposta = await tarefasStore.salvarItem(
       carga,
@@ -57,14 +74,17 @@ async function onSubmit(_, { controlledValues: carga }) {
   } catch (error) {
     alertStore.error(error);
   }
-}
+});
 
-async function iniciar() {
+watch(itemParaEdicao, () => {
+  setValues(itemParaEdicao.value);
+});
+
+onMounted(() => {
   emailsStore.buscarItem({ tarefa_id: props.tarefaId });
-}
-
-iniciar();
+});
 </script>
+
 <template>
   <div class="spacebetween">
 &nbsp;
@@ -182,12 +202,10 @@ iniciar();
       <span v-else>Adicionar envio de e-mail</span>
     </SmaeLink>
   </div>
-  <Form
+
+  <form
     v-if="!tarefaId || emFoco"
-    v-slot="{ errors, isSubmitting, setFieldValue, values }"
     :disabled="chamadasPendentes.emFoco"
-    :initial-values="itemParaEdicao"
-    :validation-schema="schema"
     @submit="onSubmit"
   >
     <Field
@@ -297,24 +315,107 @@ iniciar();
       </button>
     </div>
 
-    <div class="flex g2">
-      <div class="f1 mb1">
-        <LabelFromYup
-          name="custo_real"
-          :schema="schema"
-        />
-        <MaskedFloatInput
-          name="custo_real"
-          :value="values.custo_real"
-          :disabled="emFoco.n_filhos_imediatos > 0"
-          class="inputtext light mb1"
-        />
-        <ErrorMessage
-          class="error-msg mb1"
-          name="custo_real"
-        />
-      </div>
+    <div v-if="values[`backup_custo_${tipoDeCusto}`]">
+      <SmaeLabel class="tc300">
+        Custo {{ tipoDeCusto }} total (Informe os valores anuais)
+      </SmaeLabel>
 
+      {{ dinheiro(values[`backup_custo_${tipoDeCusto}`], { style: 'currency'}) }}
+    </div>
+
+    <div class="flex g2 mb1">
+      <div class="f1 mb1">
+        <legend class="label mt2 mb1">
+          {{ schema.fields[nomeDoCampoDeCusto]?.spec.label }}
+        </legend>
+
+        <FieldArray
+          v-slot="{ fields, push, remove }"
+          :name="nomeDoCampoDeCusto"
+        >
+          <div
+            v-for="(field, idx) in fields"
+            :key="`${nomeDoCampoDeCusto}--${field.key}`"
+            class="flex g2"
+          >
+            <div class="f2 mb1">
+              <SmaeLabel
+                class="tc300"
+                :schema="schema.fields[nomeDoCampoDeCusto]?.innerType"
+                name="ano"
+              />
+
+              <Field
+                :name="`${nomeDoCampoDeCusto}[${idx}].ano`"
+                class="inputtext light mb1"
+                :class="{ 'error': errors[`${nomeDoCampoDeCusto}[${idx}].ano`] }"
+                as="select"
+              >
+                <option value="">
+                  Selecionar
+                </option>
+                <option
+                  v-for="item in listaDeAnos"
+                  :key="item"
+                  :value="item"
+                >
+                  {{ item }}
+                </option>
+              </Field>
+
+              <ErrorMessage
+                :name="`${nomeDoCampoDeCusto}[${idx}].ano`"
+              />
+            </div>
+
+            <div class="f2 mb1">
+              <SmaeLabel
+                class="tc300"
+                :schema="schema.fields[nomeDoCampoDeCusto]?.innerType"
+                name="valor"
+              />
+
+              <MaskedFloatInput
+                :name="`${nomeDoCampoDeCusto}[${idx}].valor`"
+                :value="field.value?.valor"
+                class="inputtext light mb1"
+              />
+            </div>
+
+            <button
+              class="like-a__text addlink"
+              aria-label="excluir"
+              title="excluir"
+              type="button"
+              @click="() => {
+                remove(idx);
+              }"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_remove" /></svg>
+            </button>
+          </div>
+
+          <button
+            class="like-a__text addlink"
+            type="button"
+            @click="push({
+              ano: '',
+              valor: 0
+            })"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_+" /></svg>Adicionar valor {{ tipoDeCusto }}
+          </button>
+        </FieldArray>
+      </div>
+    </div>
+
+    <div class="flex g2">
       <div class="f1 mb1">
         <LabelFromYup
           name="percentual_concluido"
@@ -358,7 +459,7 @@ iniciar();
       </button>
       <hr class="ml2 f1">
     </div>
-  </Form>
+  </form>
 
   <span
     v-if="chamadasPendentes?.emFoco"
