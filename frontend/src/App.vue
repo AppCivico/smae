@@ -10,8 +10,11 @@ import { useAuthStore } from '@/stores/auth.store';
 import useRotaAtual from './composables/useRotaAtual';
 import BarraDePendência from './components/BarraDeChamadaPendente.vue';
 import BotaoWiki from './components/BotaoWiki.vue';
+import useFaixaConstrucao from './composables/useEnvironmentBanner';
+import useRotaAtual from './composables/useRotaAtual';
 
 const { rotaAtual } = useRotaAtual();
+const { corDaFaixa } = useFaixaConstrucao();
 
 const gblLimiteDeSeleçãoSimultânea = Number.parseInt(
   import.meta.env.VITE_LIMITE_SELECAO,
@@ -45,16 +48,6 @@ onErrorCaptured((err) => {
     console.trace(err);
   }
 });
-
-let corDaFaixa = '';
-
-if (import.meta.env.VITE_COR_DA_FAIXA_DE_CONSTRUCAO || import.meta.env.DEV || ['localhost', '127.0.0.1'].includes(window.location.hostname)) {
-  corDaFaixa = import.meta.env.VITE_COR_DA_FAIXA_DE_CONSTRUCAO
-    ? `#${import.meta.env.VITE_COR_DA_FAIXA_DE_CONSTRUCAO}`
-    : '#f2ff00';
-
-  window.document.documentElement.classList.add('dev-environment');
-}
 </script>
 
 <template>
