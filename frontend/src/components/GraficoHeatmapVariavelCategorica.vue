@@ -98,6 +98,39 @@ const previasFiltradas = ref([]);
 const eixoXAtual = ref([]);
 const configuracaoGrafico = ref({});
 
+const canvasPadraoZebrado = (() => {
+  const canvas = document.createElement('canvas');
+  const size = 20;
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+
+  // Desenhar listras diagonais
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+  ctx.lineWidth = 3;
+  ctx.lineCap = 'square';
+
+  // Primeira listra (diagonal principal)
+  ctx.beginPath();
+  ctx.moveTo(0, size);
+  ctx.lineTo(size, 0);
+  ctx.stroke();
+
+  // Segunda listra (para continuar o padrão nos cantos)
+  ctx.beginPath();
+  ctx.moveTo(-size, size);
+  ctx.lineTo(0, 0);
+  ctx.stroke();
+
+  // Terceira listra (para continuar o padrão nos cantos)
+  ctx.beginPath();
+  ctx.moveTo(size, size * 2);
+  ctx.lineTo(size * 2, size);
+  ctx.stroke();
+
+  return canvas;
+})();
+
 if (indiceRealizado.value === -1) {
   console.error('Série "Realizado" não encontrada na ordem das séries.');
 }
@@ -354,7 +387,6 @@ const atualizarDadosGrafico = () => {
               const cellWidth = nextXCoord ? Math.abs(nextXCoord[0] - coord[0]) : 50;
               const cellHeight = nextYCoord ? Math.abs(nextYCoord[1] - coord[1]) : 50;
 
-              // Criar padrão zebrado usando um retângulo com pattern
               return {
                 type: 'rect',
                 shape: {
@@ -366,38 +398,7 @@ const atualizarDadosGrafico = () => {
                 style: {
                   fill: {
                     type: 'pattern',
-                    image: (() => {
-                      const canvas = document.createElement('canvas');
-                      const size = 20; // Aumentar para ter listras mais visíveis
-                      canvas.width = size;
-                      canvas.height = size;
-                      const ctx = canvas.getContext('2d');
-
-                      // Desenhar listras diagonais
-                      ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
-                      ctx.lineWidth = 3;
-                      ctx.lineCap = 'square';
-
-                      // Primeira listra (diagonal principal)
-                      ctx.beginPath();
-                      ctx.moveTo(0, size);
-                      ctx.lineTo(size, 0);
-                      ctx.stroke();
-
-                      // Segunda listra (para continuar o padrão nos cantos)
-                      ctx.beginPath();
-                      ctx.moveTo(-size, size);
-                      ctx.lineTo(0, 0);
-                      ctx.stroke();
-
-                      // Terceira listra (para continuar o padrão nos cantos)
-                      ctx.beginPath();
-                      ctx.moveTo(size, size * 2);
-                      ctx.lineTo(size * 2, size);
-                      ctx.stroke();
-
-                      return canvas;
-                    })(),
+                    image: canvasPadraoZebrado,
                     repeat: 'repeat',
                   },
                 },
