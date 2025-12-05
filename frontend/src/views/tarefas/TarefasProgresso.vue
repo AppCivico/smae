@@ -16,7 +16,7 @@ import { useAlertStore } from '@/stores/alert.store';
 import { useEmailsStore } from '@/stores/envioEmail.store';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
 
-import useCamposDeCustos from './composables/useCamposDeCustos';
+import useCamposDeCustos from './useCamposDeCustos.composable';
 
 const alertStore = useAlertStore();
 const tarefasStore = useTarefasStore();
@@ -61,8 +61,6 @@ schema.value = criarSchemaTarefa('real', () => listaDeAnos.value);
 
 const onSubmit = handleSubmit.withControlled(async (carga) => {
   try {
-    carga.custo_real = undefined;
-
     const resposta = await tarefasStore.salvarItem(
       carga,
       props.tarefaId,
@@ -319,7 +317,7 @@ onMounted(() => {
 
     <div v-if="values[`backup_custo_${tipoDeCusto}`]">
       <SmaeLabel class="tc300">
-        Backup custo {{ tipoDeCusto }}
+        Custo {{ tipoDeCusto }} total (Informe os valores anuais)
       </SmaeLabel>
 
       {{ dinheiro(values[`backup_custo_${tipoDeCusto}`], { style: 'currency'}) }}
@@ -343,7 +341,7 @@ onMounted(() => {
             <div class="f2 mb1">
               <SmaeLabel
                 class="tc300"
-                :schema="schema.fields[nomeDoCampoDeCusto].innerType"
+                :schema="schema.fields[nomeDoCampoDeCusto]?.innerType"
                 name="ano"
               />
 
@@ -373,7 +371,7 @@ onMounted(() => {
             <div class="f2 mb1">
               <SmaeLabel
                 class="tc300"
-                :schema="schema.fields[nomeDoCampoDeCusto].innerType"
+                :schema="schema.fields[nomeDoCampoDeCusto]?.innerType"
                 name="valor"
               />
 
@@ -404,7 +402,7 @@ onMounted(() => {
             class="like-a__text addlink"
             type="button"
             @click="push({
-              ano: null,
+              ano: '',
               valor: 0
             })"
           >
