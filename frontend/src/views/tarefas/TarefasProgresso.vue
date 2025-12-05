@@ -7,7 +7,7 @@ import { onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
-import { criarSchemaTarefa } from '@/consts/formSchemas/tarefa';
+import schemaTarefa from '@/consts/formSchemas/tarefa';
 import addToDates from '@/helpers/addToDates';
 import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
@@ -46,7 +46,7 @@ const props = defineProps({
   },
 });
 
-const schema = ref(criarSchemaTarefa('real'));
+const schema = ref(schemaTarefa('real'));
 
 const {
   handleSubmit, errors, isSubmitting, setFieldValue, values, setValues,
@@ -57,7 +57,7 @@ const {
 
 const { listaDeAnos, nomeDoCampoDeCusto, tipoDeCusto } = useCamposDeCustos({ values, tipo: 'real' });
 
-schema.value = criarSchemaTarefa('real', () => listaDeAnos.value);
+schema.value = schemaTarefa('real', () => listaDeAnos.value);
 
 const onSubmit = handleSubmit.withControlled(async (carga) => {
   try {
