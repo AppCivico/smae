@@ -10,6 +10,7 @@ import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import { criarSchemaTarefa } from '@/consts/formSchemas/tarefa';
 import addToDates from '@/helpers/addToDates';
 import dateToField from '@/helpers/dateToField';
+import dinheiro from '@/helpers/dinheiro';
 import subtractDates from '@/helpers/subtractDates';
 import { useAlertStore } from '@/stores/alert.store';
 import { useEmailsStore } from '@/stores/envioEmail.store';
@@ -410,7 +411,7 @@ onMounted(() => {
             <svg
               width="20"
               height="20"
-            ><use xlink:href="#i_+" /></svg>Adicionar valor estimado
+            ><use xlink:href="#i_+" /></svg>Adicionar valor {{ tipoDeCusto }}
           </button>
         </FieldArray>
       </div>
@@ -460,7 +461,7 @@ onMounted(() => {
       </button>
       <hr class="ml2 f1">
     </div>
-  </Form>
+  </form>
 
   <span
     v-if="chamadasPendentes?.emFoco"
