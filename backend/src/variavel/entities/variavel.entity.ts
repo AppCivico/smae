@@ -264,7 +264,6 @@ export class SeriePreviaValorCategoricaComposta extends PickType(SerieValorNomim
     'referencia',
     'valor_nominal',
 ] as const) {
-    @ApiProperty({ type: 'array', items: { $ref: getSchemaPath(SeriePreviaElementosDto) } })
     elementos?: SeriePreviaElementosDto;
 }
 
