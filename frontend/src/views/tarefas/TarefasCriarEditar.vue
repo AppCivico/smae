@@ -15,7 +15,7 @@ import { useRoute, useRouter } from 'vue-router';
 
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import dependencyTypes from '@/consts/dependencyTypes';
-import { criarSchemaTarefa } from '@/consts/formSchemas/tarefa';
+import schemaTarefa from '@/consts/formSchemas/tarefa';
 import addToDates from '@/helpers/addToDates';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
 import dinheiro from '@/helpers/dinheiro';
@@ -60,7 +60,7 @@ const props = defineProps({
   },
 });
 
-const schema = ref(criarSchemaTarefa('estimado'));
+const schema = ref(schemaTarefa('estimado'));
 
 const {
   errors, handleSubmit, isSubmitting, resetForm, setFieldValue, setValues, values,
@@ -71,7 +71,7 @@ const {
 
 const { listaDeAnos, nomeDoCampoDeCusto, tipoDeCusto } = useCamposDeCustos({ tipo: 'estimado', values });
 
-schema.value = criarSchemaTarefa('estimado', () => listaDeAnos.value);
+schema.value = schemaTarefa('estimado', () => listaDeAnos.value);
 
 const dependênciasValidadas = ref([]);
 
