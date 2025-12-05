@@ -302,16 +302,18 @@ if (props.ciclo?.id) {
   });
 }
 
-function reabrirCiclo() {
+async function reabrirCiclo() {
   if (chamadasPendentes.value.reabrirCiclo) return;
 
-  monitoramentoDeMetasStore.reabrirCiclo(
-    route.params.planoSetorialId,
-    props.ciclo.id,
-    {
-      meta_id: route.params.meta_id,
-    },
-  ).then((sucesso) => {
+  try {
+    const sucesso = await monitoramentoDeMetasStore.reabrirCiclo(
+      route.params.planoSetorialId,
+      props.ciclo.id,
+      {
+        meta_id: route.params.meta_id,
+      },
+    );
+
     if (sucesso) {
       // Atualizar tanto a lista quanto os detalhes do ciclo atual
       monitoramentoDeMetasStore.buscarCiclo(
@@ -327,9 +329,11 @@ function reabrirCiclo() {
     } else {
       throw new Error('Falha ao reabrir ciclo');
     }
-  }).catch((erro) => {
+  } catch (erro) {
     console.error('Erro ao reabrir ciclo:', erro);
-  });
+
+    throw erro;
+  }
 }
 
 onMounted(() => {
