@@ -221,11 +221,7 @@ const preencherDadosHeatmap = () => {
 
         // Sempre adicionar célula (mesmo com valor 0)
         dados.push([indiceX, indiceY, contagem]);
-
-        // Adicionar círculo amarelo se a categoria tem dado de prévia (mesmo que seja 0)
-        if (temDadoPrevia) {
-          previas.push([indiceX, indiceY]);
-        }
+        previas.push([indiceX, indiceY]);
       });
     }
   }
