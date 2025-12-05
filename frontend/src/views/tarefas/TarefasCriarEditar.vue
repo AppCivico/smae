@@ -25,7 +25,7 @@ import { useOrgansStore } from '@/stores/organs.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
 
-import useCamposDeCustos from './composables/useCamposDeCustos';
+import useCamposDeCustos from './useCamposDeCustos.composable';
 
 defineOptions({ inheritAttrs: false });
 
@@ -772,7 +772,7 @@ watch(itemParaEdicao, (novoValor) => {
 
     <div v-if="values[`backup_custo_${tipoDeCusto}`]">
       <SmaeLabel class="tc300">
-        Backup custo {{ tipoDeCusto }}
+        Custo {{ tipoDeCusto }} total (Informe os valores anuais)
       </SmaeLabel>
 
       {{ dinheiro(values[`backup_custo_${tipoDeCusto}`], { style: 'currency'}) }}
@@ -796,7 +796,7 @@ watch(itemParaEdicao, (novoValor) => {
             <div class="f2 mb1">
               <SmaeLabel
                 class="tc300"
-                :schema="schema.fields[nomeDoCampoDeCusto].innerType"
+                :schema="schema.fields[nomeDoCampoDeCusto]?.innerType"
                 name="ano"
               />
 
@@ -826,7 +826,7 @@ watch(itemParaEdicao, (novoValor) => {
             <div class="f2 mb1">
               <SmaeLabel
                 class="tc300"
-                :schema="schema.fields[nomeDoCampoDeCusto].innerType"
+                :schema="schema.fields[nomeDoCampoDeCusto]?.innerType"
                 name="valor"
               />
 
@@ -857,7 +857,7 @@ watch(itemParaEdicao, (novoValor) => {
             class="like-a__text addlink"
             type="button"
             @click="push({
-              ano: null,
+              ano: '',
               valor: 0
             })"
           >
