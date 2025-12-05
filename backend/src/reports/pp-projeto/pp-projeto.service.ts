@@ -218,18 +218,46 @@ export class PPProjetoService implements ReportableService {
             : { linhas: [] };
 
         const tarefasOut: RelProjetoCronogramaDto[] = tarefasRows.linhas.map((e) => {
+            // Tratando custos anualizados.
+            let custo_estimado: number | null | string = null;
+            let custo_real: number | null | string = null;
+
+            if (e.custo_estimado_anualizado && e.custo_estimado_anualizado.length > 0) {
+                // Retornamos no formato "ano: valor; ano: valor; ..."""
+                custo_estimado = e.custo_estimado_anualizado
+                    .filter((e) => e.valor !== null)
+                    .map((e) => {
+                        return `${e.ano}: ${e.valor}`;
+                    })
+                    .join('; ');
+            } else {
+                custo_estimado = e.backup_custo_estimado ? e.backup_custo_estimado : null;
+            }
+
+            if (e.custo_real_anualizado && e.custo_real_anualizado.length > 0) {
+                // Retornamos no formato "ano: valor; ano: valor; ..."""
+                custo_real = e.custo_real_anualizado
+                    .filter((e) => e.valor !== null)
+                    .map((e) => {
+                        return `${e.ano}: ${e.valor}`;
+                    })
+                    .join('; ');
+            } else {
+                custo_real = e.backup_custo_real ? e.backup_custo_real : null;
+            }
+
             return {
                 hirearquia: tarefasHierarquia[e.id],
                 tarefa: e.tarefa,
                 inicio_planejado: e.inicio_planejado?.toString() || '',
                 termino_planejado: e.termino_planejado?.toString() || '',
-                custo_estimado: e.custo_estimado,
+                custo_estimado: custo_estimado,
                 duracao_planejado: e.duracao_planejado,
                 inicio_real: e.inicio_real?.toString() || '',
                 termino_real: e.termino_real?.toString() || '',
                 duracao_real: e.duracao_real,
                 percentual_concluido: e.percentual_concluido,
-                custo_real: e.custo_real,
+                custo_real: custo_real,
             };
         });
 
