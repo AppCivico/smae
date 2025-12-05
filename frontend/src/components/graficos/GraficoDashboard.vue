@@ -1,6 +1,5 @@
 <template>
   <div
-    v-once
     v-bind="$attrs"
   >
     <v-chart
