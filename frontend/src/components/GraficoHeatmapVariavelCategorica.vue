@@ -95,6 +95,7 @@ const anoFinal = ref(null);
 const dadosHeatmap = ref([]);
 const dadosPrevia = ref([]);
 const previasFiltradas = ref([]);
+const eixoXAtual = ref([]);
 const configuracaoGrafico = ref({});
 
 if (indiceRealizado.value === -1) {
@@ -237,6 +238,8 @@ const atualizarDadosGrafico = () => {
     const ano = data.split('/')[1];
     return ano >= anoInicial.value && ano <= anoFinal.value;
   });
+
+  eixoXAtual.value = eixoXFiltrado;
 
   let dadosFiltrados = dadosHeatmap.value.filter(([indiceX]) => {
     const ano = datasEixoX.value[indiceX].split('/')[1];
@@ -432,7 +435,7 @@ function formatarTooltip(param) {
     ([cX, cY]) => cX === indiceX && cY === indiceY,
   );
 
-  const mesAno = datasEixoX.value[indiceX];
+  const mesAno = eixoXAtual.value[indiceX];
   const totalMes = totalContagemPorMes.value[mesAno] || 1;
   const percentual = ((contagem / totalMes) * 100).toFixed(2);
 
