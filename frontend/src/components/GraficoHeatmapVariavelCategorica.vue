@@ -93,7 +93,43 @@ const indiceRealizado = computed(() => props.valores.ordem_series.indexOf('Reali
 const anoInicial = ref(null);
 const anoFinal = ref(null);
 const dadosHeatmap = ref([]);
+const dadosPrevia = ref([]);
+const previasFiltradas = ref([]);
+const eixoXAtual = ref([]);
 const configuracaoGrafico = ref({});
+
+const canvasPadraoZebrado = (() => {
+  const canvas = document.createElement('canvas');
+  const size = 20;
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+
+  // Desenhar listras diagonais
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+  ctx.lineWidth = 3;
+  ctx.lineCap = 'square';
+
+  // Primeira listra (diagonal principal)
+  ctx.beginPath();
+  ctx.moveTo(0, size);
+  ctx.lineTo(size, 0);
+  ctx.stroke();
+
+  // Segunda listra (para continuar o padrão nos cantos)
+  ctx.beginPath();
+  ctx.moveTo(-size, size);
+  ctx.lineTo(0, 0);
+  ctx.stroke();
+
+  // Terceira listra (para continuar o padrão nos cantos)
+  ctx.beginPath();
+  ctx.moveTo(size, size * 2);
+  ctx.lineTo(size * 2, size);
+  ctx.stroke();
+
+  return canvas;
+})();
 
 if (indiceRealizado.value === -1) {
   console.error('Série "Realizado" não encontrada na ordem das séries.');
@@ -101,6 +137,8 @@ if (indiceRealizado.value === -1) {
 
 const datasEixoX = computed(() => {
   const datas = [];
+
+  // Adicionar datas das linhas normais
   props.valores.linhas.forEach(({ series }) => {
     const serieRealizado = series[indiceRealizado.value];
     if (serieRealizado && serieRealizado.elementos?.length) {
@@ -110,6 +148,15 @@ const datasEixoX = computed(() => {
       }
     }
   });
+
+  // Adicionar data de prévia se existir
+  if (props.valores.ultima_previa_indicador?.data_valor) {
+    const dataPrevia = dateToMonthYear(props.valores.ultima_previa_indicador.data_valor);
+    if (!datas.includes(dataPrevia)) {
+      datas.push(dataPrevia);
+    }
+  }
+
   return datas;
 });
 
@@ -163,6 +210,7 @@ const adicionarDadosHeatmap = (dados, contagemCategorias, indiceX) => {
 
 const preencherDadosHeatmap = () => {
   const dados = [];
+  const previas = [];
 
   const { mapaCategorias, chavesCategorias } = criarMapaCategorias();
 
@@ -186,7 +234,34 @@ const preencherDadosHeatmap = () => {
     }
   });
 
+  // Processar ultima_previa_indicador se existir
+  if (props.valores.ultima_previa_indicador?.elementos?.totais_categorica) {
+    const previa = props.valores.ultima_previa_indicador;
+    const dataFormatada = dateToMonthYear(previa.data_valor);
+    const indiceX = datasEixoX.value.indexOf(dataFormatada);
+
+    if (indiceX !== -1) {
+      // Criar mapa de valores de totais_categorica para acesso rápido
+      const valoresPorCategoria = {};
+      previa.elementos.totais_categorica.forEach(({ categorica_valor, valor }) => {
+        valoresPorCategoria[String(categorica_valor)] = Number(valor);
+      });
+
+      // Iterar TODAS as categorias conhecidas
+      Object.keys(categorias.value).forEach((chaveCategoria) => {
+        const indiceY = mapaCategorias[chaveCategoria];
+        const temDadoPrevia = chaveCategoria in valoresPorCategoria;
+        const contagem = temDadoPrevia ? valoresPorCategoria[chaveCategoria] : 0;
+
+        // Sempre adicionar célula (mesmo com valor 0)
+        dados.push([indiceX, indiceY, contagem]);
+        previas.push([indiceX, indiceY]);
+      });
+    }
+  }
+
   dadosHeatmap.value = dados;
+  dadosPrevia.value = previas;
 };
 
 const atualizarDadosGrafico = () => {
@@ -197,6 +272,8 @@ const atualizarDadosGrafico = () => {
     return ano >= anoInicial.value && ano <= anoFinal.value;
   });
 
+  eixoXAtual.value = eixoXFiltrado;
+
   let dadosFiltrados = dadosHeatmap.value.filter(([indiceX]) => {
     const ano = datasEixoX.value[indiceX].split('/')[1];
     return ano >= anoInicial.value && ano <= anoFinal.value;
@@ -205,6 +282,17 @@ const atualizarDadosGrafico = () => {
   dadosFiltrados = dadosFiltrados.map(([indiceX, indiceY, valor]) => {
     const novoIndiceX = eixoXFiltrado.indexOf(datasEixoX.value[indiceX]);
     return [novoIndiceX, indiceY, valor];
+  });
+
+  // Filtrar e remapear dados de prévia
+  const previasFiltradasLocal = dadosPrevia.value.filter(([indiceX]) => {
+    const ano = datasEixoX.value[indiceX].split('/')[1];
+    return ano >= anoInicial.value && ano <= anoFinal.value;
+  });
+
+  previasFiltradas.value = previasFiltradasLocal.map(([indiceX, indiceY]) => {
+    const novoIndiceX = eixoXFiltrado.indexOf(datasEixoX.value[indiceX]);
+    return [novoIndiceX, indiceY];
   });
 
   configuracaoGrafico.value = {
@@ -218,6 +306,7 @@ const atualizarDadosGrafico = () => {
       left: 'center',
       bottom: '15%',
       show: false,
+      seriesIndex: 0,
       inRange: {
         color: [
           '#d2dfe9',
@@ -278,6 +367,49 @@ const atualizarDadosGrafico = () => {
           },
         },
       },
+      ...(previasFiltradas.value.length > 0
+        ? [
+          {
+            type: 'custom',
+            coordinateSystem: 'cartesian2d',
+            renderItem(params, api) {
+              const x = api.value(0);
+              const y = api.value(1);
+
+              if (x === null || x === undefined || y === null || y === undefined) return null;
+
+              const coord = api.coord([x, y]);
+              if (!coord) return null;
+
+              const nextXCoord = api.coord([x + 1, y]);
+              const nextYCoord = api.coord([x, y + 1]);
+
+              const cellWidth = nextXCoord ? Math.abs(nextXCoord[0] - coord[0]) : 50;
+              const cellHeight = nextYCoord ? Math.abs(nextYCoord[1] - coord[1]) : 50;
+
+              return {
+                type: 'rect',
+                shape: {
+                  x: coord[0] - (cellWidth / 2),
+                  y: coord[1] - (cellHeight / 2),
+                  width: cellWidth,
+                  height: cellHeight,
+                },
+                style: {
+                  fill: {
+                    type: 'pattern',
+                    image: canvasPadraoZebrado,
+                    repeat: 'repeat',
+                  },
+                },
+                silent: true, // Não interceptar eventos de mouse
+                z2: 100,
+              };
+            },
+            data: previasFiltradas.value,
+          },
+        ]
+        : []),
     ],
   };
 };
@@ -298,13 +430,19 @@ const totalContagemPorMes = computed(() => {
 function formatarTooltip(param) {
   const [indiceX, indiceY, contagem] = param.data;
   const categoria = Object.values(categorias.value)[indiceY];
-  const mesAno = datasEixoX.value[indiceX];
+
+  // Verificar se este ponto é prévia usando coordenadas filtradas
+  const ehPrevia = previasFiltradas.value.some(
+    ([cX, cY]) => cX === indiceX && cY === indiceY,
+  );
+
+  const mesAno = eixoXAtual.value[indiceX];
   const totalMes = totalContagemPorMes.value[mesAno] || 1;
   const percentual = ((contagem / totalMes) * 100).toFixed(2);
 
   return `
     <div class="projeto-tooltip" style="color: #333">
-      <p class="projeto-tooltip__valor">${categoria}</p>
+      <p class="projeto-tooltip__valor">${categoria}${ehPrevia ? ' (Prévia)' : ''}</p>
       <p class="projeto-tooltip__valor">Contagem: ${contagem}</p>
       <p class="projeto-tooltip__valor">Percentual: ${percentual}%</p>
     </div>
