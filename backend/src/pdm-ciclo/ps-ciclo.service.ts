@@ -358,7 +358,7 @@ export class PsCicloService {
                 {
                     ciclo_fisico_id: cicloId,
                     meta_id: metaId,
-                    apenas_ultima_revisao: true,
+                    apenas_ultima_revisao: false,
                 },
                 null,
                 null
