@@ -56,6 +56,7 @@ export class MetasFechamentoService {
                     select: { nome_exibicao: true },
                 },
                 id: true,
+                historico: true,
             },
         });
 
@@ -73,6 +74,11 @@ export class MetasFechamentoService {
                     reabertura_usuario: r.reaberto_em
                         ? { nome_exibicao: r.pessoaReabertura!.nome_exibicao }
                         : undefined,
+                    historico: r.historico.map((h) => {
+                        return {
+                            comentario: h.comentario,
+                        };
+                    }),
                 };
             }),
         };

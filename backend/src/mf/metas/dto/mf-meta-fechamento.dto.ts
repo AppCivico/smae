@@ -59,6 +59,10 @@ export class FechamentoDto {
         message: `O campo 'Comentário' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
     })
     comentario: string;
+
+    historico?: {
+        comentario: string;
+    }[];
 }
 
 export class ReaberturaDto {
