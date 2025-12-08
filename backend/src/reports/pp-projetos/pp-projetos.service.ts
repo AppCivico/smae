@@ -260,6 +260,9 @@ class RetornoDbLoc {
     projeto_id: number;
     endereco: string;
     geojson: unknown;
+    distrito: string | null;
+    subprefeitura: string | null;
+    zona: string | null;
 }
 
 @Injectable()
@@ -1795,11 +1798,29 @@ export class PPProjetosService implements ReportableService {
             SELECT
                 projeto.id AS projeto_id,
                 geo.endereco_exibicao AS endereco,
-                geo.geom_geojson AS geojson
+                geo.geom_geojson AS geojson,
+                zona_agg.zona,
+                distrito_agg.distrito,
+                subprefeitura_agg.subprefeitura
             FROM projeto
             JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
             JOIN geo_localizacao_referencia geo_r ON geo_r.projeto_id = projeto.id AND geo_r.removido_em IS NULL
             JOIN geo_localizacao geo ON geo.id = geo_r.geo_localizacao_id
+            LEFT JOIN LATERAL (
+                SELECT STRING_AGG(DISTINCT r.descricao, '|') AS zona
+                FROM unnest(geo.calc_regioes_nivel_2) AS regiao_id
+                JOIN regiao r ON r.id = regiao_id
+            ) zona_agg ON true
+            LEFT JOIN LATERAL (
+                SELECT STRING_AGG(DISTINCT r.descricao, '|') AS distrito
+                FROM unnest(geo.calc_regioes_nivel_3) AS regiao_id
+                JOIN regiao r ON r.id = regiao_id
+            ) distrito_agg ON true
+            LEFT JOIN LATERAL (
+                SELECT STRING_AGG(DISTINCT r.descricao, '|') AS subprefeitura
+                FROM unnest(geo.calc_regioes_nivel_4) AS regiao_id
+                JOIN regiao r ON r.id = regiao_id
+            ) subprefeitura_agg ON true
             ${whereCond.whereString}
         `;
 
@@ -1822,6 +1843,9 @@ export class PPProjetosService implements ReportableService {
                 projeto_id: db.projeto_id,
                 endereco: db.endereco,
                 cep: geojson.properties.cep,
+                zona: db.zona,
+                distrito: db.distrito,
+                subprefeitura: db.subprefeitura,
             };
         });
     }

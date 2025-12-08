@@ -204,4 +204,7 @@ export class RelObrasGeolocDto {
     obra_id: number;
     endereco: string;
     cep: string;
+    distrito: string | null;
+    subprefeitura: string | null;
+    zona: string | null;
 }
