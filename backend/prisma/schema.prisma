@@ -2894,7 +2894,6 @@ model MetaCicloFisicoFechamentoHistorico {
     pessoaCriador             Pessoa                    @relation("criador", fields: [fechamento_criado_por], references: [id])
     pessoaReabertura          Pessoa                    @relation("reabertura", fields: [reaberto_por], references: [id])
 
-    @@index([meta_ciclo_fisico_fechamento_id])
     @@map("meta_ciclo_fisico_fechamento_historico")
 }
 
