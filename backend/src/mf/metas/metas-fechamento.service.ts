@@ -178,7 +178,7 @@ export class MetasFechamentoService {
             // Criando linha de histórico de reabertura
             await prismaTx.metaCicloFisicoFechamentoHistorico.create({
                 data: {
-                    meta_ciclo_fisico_fechamento_id: fechamento.ciclo_fisico_id,
+                    meta_ciclo_fisico_fechamento_id: id,
                     comentario: fechamento.comentario,
                     fechamento_criado_por: fechamento.criado_por,
                     fechamento_criado_em: fechamento.criado_em,
