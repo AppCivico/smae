@@ -5,7 +5,7 @@ RUN npm install
 COPY backend/src/common/ ../backend/src/common/
 COPY frontend/ .
 ENV VITE_API_URL=/api
-ENV VITE_COR_DA_FAIXA_DE_CONSTRUCAO=[{"prefix":"des-smae","color":"#FF00FF"},{"prefix":"hml-smae","color":"#FF00FF"},{"prefix":"smae-demo","color":"#FF00FF"}]
+ENV VITE_COR_DA_FAIXA_DE_CONSTRUCAO='[{"prefix":"des-smae","color":"#FFFF00"},{"prefix":"hml-smae","color":"#FFFF00"},{"prefix":"smae-demo","color":"#FFA500"}]'
 RUN npm run build
 
 FROM nginx:stable-alpine as production-stage
