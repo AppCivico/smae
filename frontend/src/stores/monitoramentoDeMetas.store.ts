@@ -1,3 +1,4 @@
+import type { ParametrosDeRequisicao } from '@/helpers/requestS';
 import type { RecordWithId } from '@back/common/dto/record-with-id.dto';
 import type {
   CicloFisicoPSDto,
@@ -9,7 +10,6 @@ import type {
   UltimaRevisao,
 } from '@back/pdm-ciclo/entities/pdm-ciclo.entity';
 import { defineStore } from 'pinia';
-import type { ParametrosDeRequisicao } from '@/helpers/requestS';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -25,7 +25,7 @@ type ChamadasPendentes = {
   analiseEmFoco: boolean;
   riscoEmFoco: boolean;
   fechamentoEmFoco: boolean;
-  reabrirCiclo: boolean;
+  reabrirCiclo: Record<ChaveGenerica, boolean>;
 
   documento: boolean;
 };
@@ -38,7 +38,7 @@ type Erros = {
   analiseEmFoco: unknown;
   riscoEmFoco: unknown;
   fechamentoEmFoco: unknown;
-  reabrirCiclo: unknown;
+  reabrirCiclo: Record<ChaveGenerica, unknown>;
 
   documento: unknown;
 };
@@ -76,7 +76,7 @@ export const useMonitoramentoDeMetasStore = (prefixo: PrefixosValidos) => define
       analiseEmFoco: false,
       riscoEmFoco: false,
       fechamentoEmFoco: false,
-      reabrirCiclo: false,
+      reabrirCiclo: {},
       documento: false,
     },
 
@@ -86,7 +86,7 @@ export const useMonitoramentoDeMetasStore = (prefixo: PrefixosValidos) => define
       analiseEmFoco: null,
       riscoEmFoco: null,
       fechamentoEmFoco: null,
-      reabrirCiclo: null,
+      reabrirCiclo: {},
       documento: null,
     },
   }),
@@ -256,18 +256,18 @@ export const useMonitoramentoDeMetasStore = (prefixo: PrefixosValidos) => define
 
     // eslint-disable-next-line max-len
     async reabrirCiclo(pdmId: ChaveGenerica, cicloId: ChaveGenerica, params: ParametrosDeRequisicao): Promise<boolean> {
-      this.chamadasPendentes.reabrirCiclo = true;
+      this.chamadasPendentes.reabrirCiclo[cicloId] = true;
 
       try {
         await this.requestS.post(`${baseUrl}/plano-setorial/${pdmId}/ciclo/${cicloId}/reabrir`, params);
 
-        this.chamadasPendentes.reabrirCiclo = false;
+        delete this.chamadasPendentes.reabrirCiclo[cicloId];
 
-        this.erros.reabrirCiclo = null;
+        delete this.erros.reabrirCiclo[cicloId];
         return true;
       } catch (erro) {
-        this.erros.reabrirCiclo = erro;
-        this.chamadasPendentes.reabrirCiclo = false;
+        this.erros.reabrirCiclo[cicloId] = erro;
+        delete this.chamadasPendentes.reabrirCiclo[cicloId];
         return false;
       }
     },

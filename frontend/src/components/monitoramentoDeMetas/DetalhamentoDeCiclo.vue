@@ -33,12 +33,18 @@
         v-if="ciclo.fechado"
         type="button"
         class="btn outline bgnone tcprimary mtauto align-end mlauto mr0"
-        :aria-busy="chamadasPendentes.reabrirCiclo"
-        :aria-disabled="chamadasPendentes.reabrirCiclo"
+        :aria-busy="chamadasPendentes.reabrirCiclo[ciclo.id]"
+        :aria-disabled="chamadasPendentes.reabrirCiclo[ciclo.id]"
         @click="reabrirCiclo()"
       >
         Reabrir ciclo
       </button>
+
+      <ErrorComponent
+        v-if="erros.reabrirCiclo[ciclo.id]"
+        :erro="erros.reabrirCiclo[ciclo.id]"
+        class="ml2"
+      />
     </summary>
     <LoadingComponent
       v-if="chamadasPendentes.ciclosDetalhadosPorId[ciclo.id]"
@@ -273,6 +279,7 @@ const estaAberto = ref(false);
 const {
   chamadasPendentes,
   ciclosDetalhadosPorId,
+  erros,
 } = storeToRefs(monitoramentoDeMetasStore);
 
 const detailsElem = ref(null);
@@ -303,7 +310,7 @@ if (props.ciclo?.id) {
 }
 
 async function reabrirCiclo() {
-  if (chamadasPendentes.value.reabrirCiclo) return;
+  if (chamadasPendentes.value.reabrirCiclo[props.ciclo.id]) return;
 
   try {
     const sucesso = await monitoramentoDeMetasStore.reabrirCiclo(
