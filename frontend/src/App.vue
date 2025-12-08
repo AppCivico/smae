@@ -12,7 +12,7 @@ import { useAuthStore } from '@/stores/auth.store';
 import BarraDePendência from './components/BarraDeChamadaPendente.vue';
 import BotaoWiki from './components/BotaoWiki.vue';
 import useFaixaConstrucao from './composables/useEnvironmentBanner';
-import useRotaAtual from './composables/useRotaAtual';
+
 
 const { rotaAtual } = useRotaAtual();
 const { corDaFaixa } = useFaixaConstrucao();
