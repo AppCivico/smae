@@ -567,7 +567,7 @@ watch(() => props.group, () => {
             v-slot="{ value, handleChange }"
             name="fim_medicao"
             class="inputtext light mb1"
-            :class="{ 'error': errors.inicio_medicao }"
+            :class="{ 'error': errors.fim_medicao }"
             placeholder="mm/aaaa"
           >
             <SmaeMonth
