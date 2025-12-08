@@ -582,6 +582,42 @@ watch(() => props.group, () => {
           </div>
         </div>
         <div
+          v-if="singleIndicadores.id"
+          class="f1"
+        >
+          <label class="label">
+            Preenchimento prévio
+            <span class="tvermelho">*</span>
+          </label>
+          <div class="flex center">
+            <Field
+              name="indicador_previa_opcao"
+              class="inputtext light mb1"
+              :class="{ 'error': errors.indicador_previa_opcao }"
+              as="select"
+            >
+              <option value="NaoPermitir">
+                Não permitir
+              </option>
+              <option value="PermitirPreenchimento">
+                Permitir
+              </option>
+            </Field>
+            <div class="tipinfo left ml1">
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_i" /></svg>
+              <div>
+                Permitir preenchimento dos valores do indicador antes do encerramento do ciclo
+              </div>
+            </div>
+          </div>
+          <div class="error-msg">
+            {{ errors.indicador_previa_opcao }}
+          </div>
+        </div>
+        <div
           v-if="values.indicador_tipo === 'Categorica'"
           class="f1 fb20em"
         >
