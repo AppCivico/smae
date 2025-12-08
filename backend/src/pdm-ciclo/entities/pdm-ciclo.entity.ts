@@ -81,6 +81,7 @@ export class ListPSCicloDto {
 export class CicloRevisaoDto {
     analise: MfAnaliseQualitativaDto | null;
     risco: MfRiscoDto | null;
+    historico_fechamentos: MfFechamentoDto[] | null;
     fechamento: MfFechamentoDto | null;
     @ApiProperty({
         type: ArquivoAnaliseQualitativaDocumentoDto,

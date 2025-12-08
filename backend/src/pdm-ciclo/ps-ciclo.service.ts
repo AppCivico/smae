@@ -378,7 +378,14 @@ export class PsCicloService {
             analise: analiseAtual.analises.length > 0 ? analiseAtual.analises[0] : null,
             arquivos: analiseAtual ? analiseAtual.arquivos : null,
             risco: riscoAtual.riscos.length > 0 ? riscoAtual.riscos[0] : null,
+
+            // TODO: combinar com o front para removermos o "fechamento" singular. e usar apenas a array.
+            // E remover o filter da array em histórico de fechamentos. !!E TAMBÉM MUDAR O NOME!!
             fechamento: fechamentoAtual.fechamentos.length > 0 ? fechamentoAtual.fechamentos[0] : null,
+            historico_fechamentos:
+                fechamentoAtual.fechamentos.length > 0
+                    ? fechamentoAtual.fechamentos.filter((e) => !e.ultima_revisao)
+                    : null,
         };
 
         const cicloAnterior = await this.prisma.cicloFisico.findFirst({
@@ -433,6 +440,10 @@ export class PsCicloService {
                 arquivos: analiseAnterior ? analiseAnterior.arquivos : null,
                 risco: riscoAnterior.riscos.length > 0 ? riscoAnterior.riscos[0] : null,
                 fechamento: fechamentoAnterior.fechamentos.length > 0 ? fechamentoAnterior.fechamentos[0] : null,
+                historico_fechamentos:
+                    fechamentoAnterior.fechamentos.length > 0
+                        ? fechamentoAnterior.fechamentos.filter((e) => !e.ultima_revisao)
+                        : null,
             };
         }
 
