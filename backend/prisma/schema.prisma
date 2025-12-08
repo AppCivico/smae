@@ -515,9 +515,7 @@ model Pessoa {
     relTagPortProjetoQCriei   ProjetoPortfolioTag[] @relation("Criador")
     relTagPortProjetoQRemovi  ProjetoPortfolioTag[] @relation("Removedor")
 
-    metaCicloFisicoFechamentoQReabri            MetaCicloFisicoFechamento[]          @relation("reabertura")
-    metaCicloFisicoFechamentoHistoricoQueCriei  MetaCicloFisicoFechamentoHistorico[] @relation("criador")
-    metaCicloFisicoFechamentoHistoricoQueReabri MetaCicloFisicoFechamentoHistorico[] @relation("reabertura")
+    metaCicloFisicoFechamentoQReabri MetaCicloFisicoFechamento[] @relation("reabertura")
 
     @@index([email])
     @@map("pessoa")
@@ -2870,31 +2868,14 @@ model MetaCicloFisicoFechamento {
     reaberto_em  DateTime?
     reaberto_por Int?
 
-    ciclo_fisico     CicloFisico                          @relation(fields: [ciclo_fisico_id], references: [id])
-    meta             Meta                                 @relation(fields: [meta_id], references: [id])
-    pessoaCriador    Pessoa                               @relation("criador", fields: [criado_por], references: [id])
-    pessoaRemovedor  Pessoa?                              @relation("removedor", fields: [removido_por], references: [id])
-    pessoaReabertura Pessoa?                              @relation("reabertura", fields: [reaberto_por], references: [id])
-    historico        MetaCicloFisicoFechamentoHistorico[]
+    ciclo_fisico     CicloFisico @relation(fields: [ciclo_fisico_id], references: [id])
+    meta             Meta        @relation(fields: [meta_id], references: [id])
+    pessoaCriador    Pessoa      @relation("criador", fields: [criado_por], references: [id])
+    pessoaRemovedor  Pessoa?     @relation("removedor", fields: [removido_por], references: [id])
+    pessoaReabertura Pessoa?     @relation("reabertura", fields: [reaberto_por], references: [id])
 
     @@index([meta_id, ultima_revisao])
     @@map("meta_ciclo_fisico_fechamento")
-}
-
-model MetaCicloFisicoFechamentoHistorico {
-    id                              Int      @id @default(autoincrement())
-    meta_ciclo_fisico_fechamento_id Int
-    comentario                      String?
-    fechamento_criado_em            DateTime @default(now()) @db.Timestamptz(6)
-    fechamento_criado_por           Int
-    reaberto_em                     DateTime
-    reaberto_por                    Int
-
-    metaCicloFisicoFechamento MetaCicloFisicoFechamento @relation(fields: [meta_ciclo_fisico_fechamento_id], references: [id])
-    pessoaCriador             Pessoa                    @relation("criador", fields: [fechamento_criado_por], references: [id])
-    pessoaReabertura          Pessoa                    @relation("reabertura", fields: [reaberto_por], references: [id])
-
-    @@map("meta_ciclo_fisico_fechamento_historico")
 }
 
 model VariavelCicloFisicoQualitativo {

@@ -56,7 +56,6 @@ export class MetasFechamentoService {
                     select: { nome_exibicao: true },
                 },
                 id: true,
-                historico: true,
             },
         });
 
@@ -74,11 +73,6 @@ export class MetasFechamentoService {
                     reabertura_usuario: r.reaberto_em
                         ? { nome_exibicao: r.pessoaReabertura!.nome_exibicao }
                         : undefined,
-                    historico: r.historico.map((h) => {
-                        return {
-                            comentario: h.comentario,
-                        };
-                    }),
                 };
             }),
         };
@@ -173,18 +167,6 @@ export class MetasFechamentoService {
                     reaberto_por: user.id,
                 },
                 select: { id: true },
-            });
-
-            // Criando linha de histórico de reabertura
-            await prismaTx.metaCicloFisicoFechamentoHistorico.create({
-                data: {
-                    meta_ciclo_fisico_fechamento_id: id,
-                    comentario: fechamento.comentario,
-                    fechamento_criado_por: fechamento.criado_por,
-                    fechamento_criado_em: fechamento.criado_em,
-                    reaberto_em: now,
-                    reaberto_por: user.id,
-                },
             });
 
             return { id: ret.id };
