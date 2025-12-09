@@ -335,35 +335,6 @@ function filtrarGruposComValor(grupos) {
             </span>
           </td>
         </tr>
-
-        <!-- Linha de prévia do indicador dentro do ano correspondente -->
-        <tr v-if="g?.ultima_previa_indicador && obterAgrupadorPrevia() === k[0]">
-          <td>
-            <div class="flex center">
-              <div class="farol i1" />
-              <span>{{ obterPeriodoPrevia() }}</span>
-            </div>
-          </td>
-          <td>-</td>
-          <td>
-            <div
-              v-if="temVariavelCategorica"
-              class="tipinfo ml1"
-            >
-              <svg
-                width="20"
-                height="20"
-              ><use xlink:href="#i_i" /></svg><div>
-                {{ obterValorPrevia() }}
-              </div>
-            </div>
-            <span v-else>
-              {{ obterValorPrevia() }}
-            </span>
-          </td>
-          <td>-</td>
-          <td>-</td>
-        </tr>
       </tbody>
     </template>
   </template>
