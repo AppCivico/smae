@@ -1,6 +1,6 @@
 <template>
   <details
-    :id="$attrs.id"
+    :id="$attrs.id || (ciclo.id ? `ciclo--${ciclo.id}` : null)"
     ref="detailsElem"
     :open="$props.open || $props.cicloAtual"
     :class="cicloAtual ? 'ciclo-atual' : 'ciclo-passado'"
@@ -212,27 +212,33 @@
               </div>
             </dt>
             <dd
-              class="t13 contentStyle"
-              v-html="fechamento?.comentario || '-'"
-            />
+              v-for="fechamento in listaDeFechamentos"
+              :key="fechamento.id"
+              class="t13 contentStyle mb2"
+            >
+              <div
+                class="mb1"
+                v-html="fechamento?.comentario || '-'"
+              />
+              <footer
+                v-if="fechamento?.criador?.nome_exibicao || fechamento?.criado_em"
+                class="tc600"
+              >
+                <p>
+                  Fechado
+                  <template v-if="fechamento.criador?.nome_exibicao">
+                    por <strong>{{ fechamento.criador.nome_exibicao }}</strong>
+                  </template>
+                  <template v-if="fechamento.criado_em">
+                    em <time :datetime="fechamento.criado_em">
+                      {{ dateToShortDate(fechamento.criado_em) }}
+                    </time>.
+                  </template>
+                </p>
+              </footer>
+            </dd>
           </div>
         </dl>
-        <footer
-          v-if="fechamento?.criador?.nome_exibicao || fechamento?.criado_em"
-          class="tc600"
-        >
-          <p>
-            Fechado
-            <template v-if="fechamento.criador?.nome_exibicao">
-              por <strong>{{ fechamento.criador.nome_exibicao }}</strong>
-            </template>
-            <template v-if="fechamento.criado_em">
-              em <time :datetime="fechamento.criado_em">
-                {{ dateToShortDate(fechamento.criado_em) }}
-              </time>.
-            </template>
-          </p>
-        </footer>
       </div>
     </div>
   </details>
@@ -288,7 +294,10 @@ const cicloDetalhes = computed(() => ciclosDetalhadosPorId.value?.[props.ciclo.i
 const analise = computed(() => cicloDetalhes.value?.analise || null);
 const analiseDocumentos = computed(() => cicloDetalhes.value?.arquivos || []);
 const risco = computed(() => cicloDetalhes.value?.risco || null);
-const fechamento = computed(() => cicloDetalhes.value?.fechamento || null);
+const listaDeFechamentos = computed(() => [].concat(
+  cicloDetalhes.value?.fechamento ? [cicloDetalhes.value.fechamento] : [],
+  cicloDetalhes.value?.historico_fechamentos || [],
+));
 
 function handleToggle(event) {
   estaAberto.value = event.target.open;
