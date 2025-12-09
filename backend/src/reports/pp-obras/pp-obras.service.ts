@@ -863,14 +863,14 @@ export class PPObrasService implements ReportableService {
             return {
                 obra_id: db.projeto_id,
                 distrito:
-                    db.nivel == 3
+                    db.nivel == 4
                         ? {
                               descricao: db.descricao,
                               sigla: db.sigla,
                           }
                         : null,
                 subprefeitura:
-                    db.nivel == 4
+                    db.nivel == 3
                         ? {
                               descricao: db.descricao,
                               sigla: db.sigla,
@@ -1214,15 +1214,15 @@ export class PPObrasService implements ReportableService {
                 JOIN regiao r ON r.id = regiao_id
             ) zona_agg ON true
             LEFT JOIN LATERAL (
-                SELECT STRING_AGG(DISTINCT r.descricao, '|') AS distrito
+                SELECT STRING_AGG(DISTINCT r.descricao, '|') AS subprefeitura
                 FROM unnest(geo.calc_regioes_nivel_3) AS regiao_id
                 JOIN regiao r ON r.id = regiao_id
-            ) distrito_agg ON true
+            ) subprefeitura_agg ON true
             LEFT JOIN LATERAL (
-                SELECT STRING_AGG(DISTINCT r.descricao, '|') AS subprefeitura
+                SELECT STRING_AGG(DISTINCT r.descricao, '|') AS distrito
                 FROM unnest(geo.calc_regioes_nivel_4) AS regiao_id
                 JOIN regiao r ON r.id = regiao_id
-            ) subprefeitura_agg ON true
+            ) distrito_agg ON true
         `;
     }
 
