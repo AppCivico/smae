@@ -964,8 +964,8 @@ export class PPProjetosService implements ReportableService {
         await this.gerarCsv('origens', origensFields, origensFieldNames, projetosIds, out, ctx, 90);
 
         // 11. Processar Geolocalização
-        const geolocFields = ['projeto_id', 'endereco_exibicao', 'geom_geojson'];
-        const geolocFieldNames = ['ID Projeto', 'Endereço', 'GeoJSON'];
+        const geolocFields = ['projeto_id', 'endereco', 'cep', 'zona', 'distrito', 'subprefeitura'];
+        const geolocFieldNames = ['ID Projeto', 'Endereço', 'CEP', 'Zona', 'Distrito', 'Subprefeitura'];
         await this.gerarCsv('geoloc', geolocFields, geolocFieldNames, projetosIds, out, ctx, 100);
 
         return [...out];
@@ -1809,17 +1809,17 @@ export class PPProjetosService implements ReportableService {
             LEFT JOIN LATERAL (
                 SELECT STRING_AGG(DISTINCT r.descricao, '|') AS zona
                 FROM unnest(geo.calc_regioes_nivel_2) AS regiao_id
-                JOIN regiao r ON r.id = regiao_id
+                LEFT JOIN regiao r ON r.id = regiao_id
             ) zona_agg ON true
             LEFT JOIN LATERAL (
                 SELECT STRING_AGG(DISTINCT r.descricao, '|') AS distrito
                 FROM unnest(geo.calc_regioes_nivel_3) AS regiao_id
-                JOIN regiao r ON r.id = regiao_id
+                LEFT JOIN regiao r ON r.id = regiao_id
             ) distrito_agg ON true
             LEFT JOIN LATERAL (
                 SELECT STRING_AGG(DISTINCT r.descricao, '|') AS subprefeitura
                 FROM unnest(geo.calc_regioes_nivel_4) AS regiao_id
-                JOIN regiao r ON r.id = regiao_id
+                LEFT JOIN regiao r ON r.id = regiao_id
             ) subprefeitura_agg ON true
             ${whereCond.whereString}
         `;

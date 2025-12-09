@@ -122,6 +122,15 @@ export class RelProjetoOrigemDto {
     atividade_titulo: string | null;
 }
 
+export class RelProjetoGeolocDto {
+    projeto_id: number;
+    endereco: string;
+    cep: string;
+    zona: string | null;
+    distrito: string | null;
+    subprefeitura: string | null;
+}
+
 export class PPProjetoRelatorioDto {
     detail: RelProjetoRelatorioDto;
     cronograma: RelProjetoCronogramaDto[];
@@ -132,4 +141,5 @@ export class PPProjetoRelatorioDto {
     contratos: RelProjetosContratosDto[];
     aditivos: RelProjetosAditivosDto[];
     origens: RelProjetoOrigemDto[];
+    enderecos: RelProjetoGeolocDto[];
 }
