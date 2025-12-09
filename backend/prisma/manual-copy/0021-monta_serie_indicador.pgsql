@@ -238,9 +238,8 @@ BEGIN
                      round( vIndicadorBase + coalesce(sum(si.valor_nominal::numeric) OVER (order by gs.gs ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW), 0), vIndicadorNumeroCasas) as valor_acc,
                      -- Verifica se algum valor na janela acumulada tinha pendência de conferência
                      count(1) FILTER (WHERE si.ha_conferencia_pendente) OVER (order by gs.gs ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) > 0 as ha_conferencia_pendente,
-                     -- Copia o flag eh_previa do registro atual para o acumulado
-                     -- nao implementado: propagar a sujeira para o futuro, apenas copiar o estado do mês corrente, ja que esta desativado essa funcao
-                     coalesce(si.eh_previa, false) as eh_previa
+                     -- Propaga o flag eh_previa para o futuro: uma vez que aparece um eh_previa=true, todos os subsequentes também terão eh_previa=true
+                     count(1) FILTER (WHERE si.eh_previa) OVER (order by gs.gs ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) > 0 as eh_previa
                  FROM
                      -- Gera a série de datas DENTRO DO PERÍODO DE CÁLCULO AJUSTADO (vInicio a vFimIndicadorCalculo)
                      generate_series(vInicio, vFimIndicadorCalculo, vPeriodicidade) gs
