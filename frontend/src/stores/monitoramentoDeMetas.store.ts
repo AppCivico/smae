@@ -124,8 +124,10 @@ export const useMonitoramentoDeMetasStore = (prefixo: PrefixosValidos) => define
       }
       this.chamadasPendentes.ciclosDetalhadosPorId[cicloId] = false;
     },
+
     limparCiclos() {
       this.ciclosDetalhadosPorId = {};
+      this.listaDeCiclos.splice(0);
     },
 
     // eslint-disable-next-line max-len
