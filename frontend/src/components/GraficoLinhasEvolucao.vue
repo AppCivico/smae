@@ -28,8 +28,7 @@ import Big from 'big.js';
 import { computed } from 'vue';
 
 import GraficoDashboard from '@/components/graficos/GraficoDashboard.vue';
-import NumeroComLegenda
-  from '@/components/painelEstrategico/NumeroComLegenda.vue';
+import NumeroComLegenda from '@/components/painelEstrategico/NumeroComLegenda.vue';
 import { dateToMonthYear } from '@/helpers/dateToDate';
 
 const props = defineProps({
@@ -45,6 +44,14 @@ const props = defineProps({
     default: () => ({}),
   },
 });
+
+const colorPalette = {
+  previsto: '#8eafc8',
+  previstoAcumulado: '#b5e48c',
+  realizado: '#437aa3',
+  realizadoAcumulado: '#4f8562',
+  meta: '#F2890D',
+};
 
 const temMeta = computed(() => props.indicador.meta_valor_nominal);
 
@@ -183,13 +190,18 @@ const configuracaoGrafico = computed(() => {
     if (indicePrevia === -1) return null;
 
     return {
-      name: `${nome} (Prévia)`,
+      name: `${nome} (prévia)`,
       type: 'line',
       data: serie.map((v, i) => (i >= indicePrevia - 1 ? v : null)),
       symbolSize: 10,
+      // showSymbol: true,
       smooth: true,
       connectNulls: true,
-      itemStyle: { color: cor },
+      itemStyle: {
+        color: cor,
+        borderType: 'dashed',
+      },
+
       lineStyle: {
         type: 'dashed',
         color: cor,
@@ -200,6 +212,13 @@ const configuracaoGrafico = computed(() => {
 
   const formatarTooltip = (params) => {
     if (!params || params.length === 0) return '';
+
+    const criarLinhaTooltip = (nome, valor, cor) => `
+      <div style="margin-bottom: 4px;">
+        <span style="display:inline-block;width:10px;height:10px;background-color:${cor};margin-right:5px;border-radius: 50%;"></span>
+        <strong>${nome}:</strong> ${formatarNumero(valor)}
+      </div>
+    `;
 
     // Adicionar período/data do eixo X
     const periodo = params[0]?.name || params[0]?.axisValue;
@@ -221,8 +240,8 @@ const configuracaoGrafico = computed(() => {
         valorExtraido = value;
       }
 
-      const ehPrevia = seriesName.includes('(Prévia)');
-      const nomeBase = ehPrevia ? seriesName.replace(' (Prévia)', '') : seriesName;
+      const ehPrevia = seriesName.includes('(prévia)');
+      const nomeBase = ehPrevia ? seriesName.replace(' (prévia)', '') : seriesName;
 
       // Consolidar apenas "Realizado" e "Realizado Acumulado"
       if (nomeBase === 'Realizado' || nomeBase === 'Realizado Acumulado') {
@@ -266,8 +285,8 @@ const configuracaoGrafico = computed(() => {
         valorExtraido = value;
       }
 
-      const ehPrevia = seriesName.includes('(Prévia)');
-      const nomeBase = ehPrevia ? seriesName.replace(' (Prévia)', '') : seriesName;
+      const ehPrevia = seriesName.includes('(prévia)');
+      const nomeBase = ehPrevia ? seriesName.replace(' (prévia)', '') : seriesName;
 
       // Para séries consolidadas (Realizado e Realizado Acumulado)
       if (nomeBase === 'Realizado' || nomeBase === 'Realizado Acumulado') {
@@ -278,27 +297,13 @@ const configuracaoGrafico = computed(() => {
 
         const dadosConsolidados = seriesConsolidadas.get(nomeBase);
         if (dadosConsolidados) {
-          const valorFormatado = formatarNumero(dadosConsolidados.valor);
-          const nomeExibir = dadosConsolidados.ehPrevia ? `${nomeBase} (Prévia)` : nomeBase;
-
-          html += `
-            <div style="margin-bottom: 4px;">
-              <span style="display:inline-block;width:10px;height:10px;background-color:${dadosConsolidados.color};margin-right:5px;"></span>
-              <strong>${nomeExibir}:</strong> ${valorFormatado}
-            </div>
-          `;
+          const nomeExibir = dadosConsolidados.ehPrevia ? `${nomeBase} (prévia)` : nomeBase;
+          html += criarLinhaTooltip(nomeExibir, dadosConsolidados.valor, dadosConsolidados.color);
           seriesJaRenderizadas.add(nomeBase);
         }
       } else {
         // Outras séries: comportamento original
-        const valorFormatado = formatarNumero(valorExtraido);
-
-        html += `
-          <div style="margin-bottom: 4px;">
-            <span style="display:inline-block;width:10px;height:10px;background-color:${color};margin-right:5px;"></span>
-            <strong>${seriesName}:</strong> ${valorFormatado}
-          </div>
-        `;
+        html += criarLinhaTooltip(seriesName, valorExtraido, color);
       }
     });
 
@@ -316,12 +321,26 @@ const configuracaoGrafico = computed(() => {
         'Previsto',
         'Previsto Acumulado',
         'Realizado',
-        ...(indiceRealizadoPrevia !== -1 ? ['Realizado (Prévia)'] : []),
+        ...(indiceRealizadoPrevia !== -1
+          ? [{
+            name: 'Realizado (prévia)',
+            itemStyle: {
+              borderType: 'dashed',
+            },
+          }]
+          : []),
         'Realizado Acumulado',
-        ...(indiceRealizadoAcumuladoPrevia !== -1 ? ['Realizado Acumulado (Prévia)'] : []),
+        ...(indiceRealizadoAcumuladoPrevia !== -1
+          ? [{
+            name: 'Realizado Acumulado (prévia)',
+            itemStyle: {
+              borderType: 'dashed',
+            },
+          }]
+          : []),
         ...(serieMeta ? ['Meta'] : []),
       ],
-      top: '5%',
+      // top: '5%',
     },
     toolbox: {
       show: false,
@@ -348,15 +367,15 @@ const configuracaoGrafico = computed(() => {
         symbolSize: 10,
         smooth: true,
         itemStyle: {
-          color: '#8eafc8',
+          color: colorPalette.previsto,
         },
         lineStyle: {
-          color: '#8eafc8',
+          color: colorPalette.previsto,
         },
         label: {
           show: false,
         },
-        markPoint: criarMarkPoint(seriePrevisto, '#8EAFC8'),
+        markPoint: criarMarkPoint(seriePrevisto, colorPalette.previsto),
       },
       {
         name: 'Previsto Acumulado',
@@ -365,15 +384,15 @@ const configuracaoGrafico = computed(() => {
         symbolSize: 10,
         smooth: true,
         itemStyle: {
-          color: '#b5e48c',
+          color: colorPalette.previstoAcumulado,
         },
         lineStyle: {
-          color: '#b5e48c',
+          color: colorPalette.previstoAcumulado,
         },
         label: {
           show: false,
         },
-        markPoint: criarMarkPoint(seriePrevistoAcumulado, '#B5E48C'),
+        markPoint: criarMarkPoint(seriePrevistoAcumulado, colorPalette.previstoAcumulado),
       },
       {
         name: 'Realizado',
@@ -384,17 +403,17 @@ const configuracaoGrafico = computed(() => {
         symbolSize: 10,
         smooth: true,
         itemStyle: {
-          color: '#437aa3',
+          color: colorPalette.realizado,
         },
         lineStyle: {
-          color: '#437aa3',
+          color: colorPalette.realizado,
         },
         label: {
           show: false,
         },
-        markPoint: criarMarkPoint(serieRealizado, '#437AA3'),
+        markPoint: criarMarkPoint(serieRealizado, colorPalette.realizado),
       },
-      ...[criarSeriePrevia('Realizado', serieRealizado, '#437aa3', indiceRealizadoPrevia)].filter(Boolean),
+      ...[criarSeriePrevia('Realizado', serieRealizado, colorPalette.realizado, indiceRealizadoPrevia)].filter(Boolean),
       {
         name: 'Realizado Acumulado',
         type: 'line',
@@ -404,10 +423,10 @@ const configuracaoGrafico = computed(() => {
         symbolSize: 10,
         smooth: true,
         itemStyle: {
-          color: '#4f8562',
+          color: colorPalette.realizadoAcumulado,
         },
         lineStyle: {
-          color: '#4f8562',
+          color: colorPalette.realizadoAcumulado,
         },
         label: {
           show: false,
@@ -416,12 +435,12 @@ const configuracaoGrafico = computed(() => {
           data: linhasAnos,
           symbol: 'none',
         },
-        markPoint: criarMarkPoint(serieRealizadoAcumulado, '#4F8562'),
+        markPoint: criarMarkPoint(serieRealizadoAcumulado, colorPalette.realizadoAcumulado),
       },
       ...[criarSeriePrevia(
         'Realizado Acumulado',
         serieRealizadoAcumulado,
-        '#4f8562',
+        colorPalette.realizadoAcumulado,
         indiceRealizadoAcumuladoPrevia,
       )].filter(Boolean),
       ...(serieMeta
@@ -433,11 +452,11 @@ const configuracaoGrafico = computed(() => {
             showSymbol: false,
             smooth: true,
             itemStyle: {
-              color: '#F2890D',
+              color: colorPalette.meta,
             },
             lineStyle: {
               type: 'dashed',
-              color: '#F2890D',
+              color: colorPalette.meta,
             },
           },
         ]
