@@ -98,6 +98,9 @@ async function iniciar(forcarAtualizacao = false) {
   }
 }
 
+const conferirSeHaValoresPreviosNoIndicador = (indId) => !!ValoresInd.value[indId]
+  ?.linhas?.some((linha) => linha?.series?.some((serie) => serie?.eh_previa));
+
 watch([parentId, parentField], iniciar, { immediate: true });
 </script>
 <template>
@@ -167,8 +170,25 @@ watch([parentId, parentField], iniciar, { immediate: true });
                   /> </svg>
                 <h2 class="mt1 mb1 ml1">
                   {{ ind.codigo }} - {{ ind.titulo }}
+                  <small
+                    v-if="conferirSeHaValoresPreviosNoIndicador(ind.id)"
+                    class="nowrap"
+                  >
+                    (inclui valores prévios <div
+                      class="tipinfo"
+                    >
+                      <svg
+                        width="16"
+                        height="16"
+                      ><use xlink:href="#i_i" /></svg><div>
+                        O gráfico e a tabela deste indicador incluem valores
+                        fornecidos manualmente antes do fechamento do ciclo.
+                      </div>
+                    </div>)
+                  </small>
                 </h2>
               </div>
+
               <div class="f0 ml2">
                 <!-- <select class="inputtext">
                       <option>Até mês corrente</option>
