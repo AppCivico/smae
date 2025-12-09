@@ -91,6 +91,7 @@ export const ProjetoStatusParaExibicao: Record<ProjetoStatus, string> = {
     MDO_Paralisada: 'Paralisada',
 } as const;
 
+const FEATURE_FLAG_MDO_AUTO_REGIAO = 'MDO_AUTO_REGIAO_FROM_GEO';
 export class ProjetoOrgaoParticipante {
     projeto_id: number;
     orgao_id: number;
@@ -397,16 +398,12 @@ export class ProjetoService {
         };
 
         function validaOutro() {
-            if (!origem_outro)
-                throw new HttpException('Deve ser enviado quando origem_tipo for Outro', 400);
+            if (!origem_outro) throw new HttpException('Deve ser enviado quando origem_tipo for Outro', 400);
 
             if (meta_id) throw new HttpException('Não deve ser enviado caso origem_tipo seja Outro', 400);
-            if (iniciativa_id)
-                throw new HttpException('Não deve ser enviado caso origem_tipo seja Outro', 400);
-            if (atividade_id)
-                throw new HttpException('Não deve ser enviado caso origem_tipo seja Outro', 400);
-            if (meta_codigo)
-                throw new HttpException('Não deve ser enviado caso origem_tipo seja Outro', 400);
+            if (iniciativa_id) throw new HttpException('Não deve ser enviado caso origem_tipo seja Outro', 400);
+            if (atividade_id) throw new HttpException('Não deve ser enviado caso origem_tipo seja Outro', 400);
+            if (meta_codigo) throw new HttpException('Não deve ser enviado caso origem_tipo seja Outro', 400);
 
             // força a limpeza no banco, pode ser que tenha vindo como undefined
             meta_id = atividade_id = iniciativa_id = meta_codigo = null;
@@ -415,8 +412,7 @@ export class ProjetoService {
         function validaPdmAntigo() {
             const errMsg = 'caso origem seja outro sistema de meta';
             if (!meta_codigo) throw new HttpException(`Meta código deve ser enviado ${errMsg}`, 400);
-            if (!origem_outro)
-                throw new HttpException(`Descrição da origem deve ser enviado ${errMsg}`, 400);
+            if (!origem_outro) throw new HttpException(`Descrição da origem deve ser enviado ${errMsg}`, 400);
 
             if (meta_id) throw new HttpException(`Meta não deve ser enviado ${errMsg}`, 400);
             if (iniciativa_id) throw new HttpException(`Iniciativa não deve ser enviado ${errMsg}`, 400);
@@ -428,7 +424,8 @@ export class ProjetoService {
 
         async function validaPdmSistema(self: ProjetoService) {
             if (!atividade_id && !iniciativa_id && !meta_id)
-                throw new HttpException('é obrigatório enviar meta_id|iniciativa_id|atividade_id quando origem_tipo=PdmSistema',
+                throw new HttpException(
+                    'é obrigatório enviar meta_id|iniciativa_id|atividade_id quando origem_tipo=PdmSistema',
                     400
                 );
 
@@ -468,10 +465,8 @@ export class ProjetoService {
                 iniciativa_id = atividade_id = null;
             }
 
-            if (origem_outro)
-                throw new HttpException('Não deve ser enviado caso origem_tipo seja PdmSistema', 400);
-            if (meta_codigo)
-                throw new HttpException('Não deve ser enviado caso origem_tipo seja PdmSistema', 400);
+            if (origem_outro) throw new HttpException('Não deve ser enviado caso origem_tipo seja PdmSistema', 400);
+            if (meta_codigo) throw new HttpException('Não deve ser enviado caso origem_tipo seja PdmSistema', 400);
 
             // força a limpeza no banco, pode ser que tenha vindo como undefined
             meta_codigo = origem_outro = null;
@@ -565,9 +560,7 @@ export class ProjetoService {
             });
             console.log({ pessoas, responsaveis_no_orgao_gestor });
             if (pessoas.length !== responsaveis_no_orgao_gestor.length)
-                throw new HttpException('Uma ou mais pessoas não foram encontradas no órgão gestor',
-                    400
-                );
+                throw new HttpException('Uma ou mais pessoas não foram encontradas no órgão gestor', 400);
         }
 
         return {
@@ -608,9 +601,7 @@ export class ProjetoService {
 
         const portfolio = portfolios.filter((r) => r.id == dto.portfolio_id)[0];
         if (!portfolio)
-            throw new HttpException('Portfolio não está liberado para criação de projetos para seu usuário',
-                400
-            );
+            throw new HttpException('Portfolio não está liberado para criação de projetos para seu usuário', 400);
 
         const { origem_tipo, meta_id, iniciativa_id, atividade_id, origem_outro, meta_codigo } =
             await this.processaOrigem(dto);
@@ -630,7 +621,8 @@ export class ProjetoService {
             // Caso o portfolio seja de modelo para clonagem.
             // Não permitir compartilhar com outros ports.
             if (portfolio.modelo_clonagem)
-                throw new HttpException('Não pode ser compartilhado pois pertence a um Portfolio de modelo de clonagem.',
+                throw new HttpException(
+                    'Não pode ser compartilhado pois pertence a um Portfolio de modelo de clonagem.',
                     400
                 );
 
@@ -643,8 +635,7 @@ export class ProjetoService {
         if (tipo == 'MDO') {
             if (!dto.orgao_origem_id) throw new HttpException('Campo obrigatório para obras', 400);
             if (!dto.grupo_tematico_id) throw new HttpException('Campo obrigatório para obras', 400);
-            if (!dto.tipo_intervencao_id)
-                throw new HttpException('Campo obrigatório para obras', 400);
+            if (!dto.tipo_intervencao_id) throw new HttpException('Campo obrigatório para obras', 400);
 
             await this.verificaGrupoTematico(dto);
         }
@@ -661,8 +652,7 @@ export class ProjetoService {
                 select: { id: true },
             });
 
-            if (tags.length !== dto.tags.length)
-                throw new HttpException('Uma ou mais tag não foi encontrada', 400);
+            if (tags.length !== dto.tags.length) throw new HttpException('Uma ou mais tag não foi encontrada', 400);
         }
 
         const created = await this.prisma.$transaction(
@@ -771,7 +761,7 @@ export class ProjetoService {
                 if (dto.origens_extra)
                     await CompromissoOrigemHelper.upsert(row.id, 'projeto', dto.origens_extra, prismaTx, user, now);
 
-                await this.upsertRegioes(dto, prismaTx, row.id, now, [], user, portfolio.nivel_regionalizacao);
+                await this.upsertRegioes(tipo, dto, prismaTx, row.id, now, [], user, portfolio.nivel_regionalizacao);
 
                 const self = await prismaTx.projeto.findFirstOrThrow({
                     where: { id: row.id },
@@ -807,6 +797,7 @@ export class ProjetoService {
     }
 
     private async upsertRegioes(
+        tipo: TipoProjeto,
         dto: CreateProjetoDto | UpdateProjetoDto,
         prismaTx: Prisma.TransactionClient,
         projeto_id: number,
@@ -816,6 +807,28 @@ export class ProjetoService {
         nivel_regionalizacao: number
     ) {
         if (!('regiao_ids' in dto) || dto.regiao_ids === undefined) return;
+        if (tipo === 'MDO') {
+            const autoRegiao = await this.smaeConfig.getConfig(FEATURE_FLAG_MDO_AUTO_REGIAO);
+            if (autoRegiao === 'true') {
+                // Verifica se há geolocalizações
+                const geoDto = new ReferenciasValidasBase();
+                geoDto.projeto_id = projeto_id;
+                const geolocalizacoes = await this.geolocService.carregaReferencias(geoDto);
+                const enderecos = geolocalizacoes.get(projeto_id) || [];
+
+                if (enderecos.length > 0) {
+                    this.logger.warn(
+                        `Projeto MDO ${projeto_id}: feature flag ativa e há ${enderecos.length} endereço(s). ` +
+                            `Campo regiao_ids será ignorado - regiões são calculadas automaticamente dos endereços.`
+                    );
+                    return; // Ignora as regiões informadas manualmente
+                } else {
+                    this.logger.verbose(
+                        `Projeto MDO ${projeto_id}: sem endereços, usando regiao_ids informadas manualmente`
+                    );
+                }
+            }
+        }
 
         if (dto.regiao_ids == null) dto.regiao_ids = [];
 
@@ -962,9 +975,7 @@ export class ProjetoService {
     private async checkPortCompartilhadoOrgaos(portPrincipal: PortfolioDto, portCompartilhados: PortfolioDto[]) {
         for (const portfolioCompartilhado of portCompartilhados) {
             if (portfolioCompartilhado.id == portPrincipal.id)
-                throw new HttpException('Portfolio compartilhado deve ser diferente do Portfolio principal.',
-                    400
-                );
+                throw new HttpException('Portfolio compartilhado deve ser diferente do Portfolio principal.', 400);
 
             if (
                 !portfolioCompartilhado.orgaos
@@ -973,7 +984,8 @@ export class ProjetoService {
                         return portPrincipal.orgaos.map((o) => o.id).includes(pco);
                     })
             )
-                throw new HttpException('Portfolio compartilhado deve conter ao menos um órgão em comum com o Portfolio principal.',
+                throw new HttpException(
+                    'Portfolio compartilhado deve conter ao menos um órgão em comum com o Portfolio principal.',
                     400
                 );
         }
@@ -2597,8 +2609,7 @@ export class ProjetoService {
         const portfolios = await this.portfolioService.findAll(tipo, user, true);
 
         const portfolio = portfolios.filter((r) => r.id == projeto.portfolio_id)[0];
-        if (!portfolio)
-            throw new HttpException('Portfolio não está liberado para o seu usuário editar', 400);
+        if (!portfolio) throw new HttpException('Portfolio não está liberado para o seu usuário editar', 400);
 
         const edit = dto.responsaveis_no_orgao_gestor
             ? {
@@ -2708,6 +2719,7 @@ export class ProjetoService {
                     select: { regiao_id: true },
                 });
                 await this.upsertRegioes(
+                    tipo,
                     dto,
                     prismaTx,
                     projeto.id,
@@ -2936,6 +2948,26 @@ export class ProjetoService {
                 const geo = await this.geolocService.upsertGeolocalizacao(geoDto, user, prismaTx, now);
 
                 await this.appendRegioesByGeoLoc(geo, self, portfolio, prismaTx, now, user);
+            }
+
+            if (tipo === 'MDO' && dto.geolocalizacao) {
+                const autoRegiao = await this.smaeConfig.getConfig(FEATURE_FLAG_MDO_AUTO_REGIAO);
+                if (autoRegiao === 'true') {
+                    // Verifica se o projeto tem endereços após o update
+                    const geoDto = new ReferenciasValidasBase();
+                    geoDto.projeto_id = projeto.id;
+                    const geolocalizacoes = await this.geolocService.carregaReferencias(geoDto);
+                    const enderecos = geolocalizacoes.get(projeto.id) || [];
+
+                    if (enderecos.length > 0) {
+                        this.logger.verbose(
+                            `Projeto MDO ${projeto.id}: feature flag ativa e há ${enderecos.length} endereço(s), ` +
+                                `regiões do campo regiao_ids serão ignoradas`
+                        );
+                        // As regiões já foram processadas no appendRegioesByGeoLoc
+                        // Ignora qualquer regiao_ids que tenha vindo no DTO
+                    }
+                }
             }
 
             // se já passou da fase do planejamento, então sim pode verificar se há necessidade de gerar
@@ -3752,14 +3784,16 @@ export class ProjetoService {
                 });
             const estaCompartilhado = projeto.portfolios_compartilhados?.some((p) => p.id == dto.portfolio_id);
             if (estaCompartilhado)
-                throw new HttpException('Projeto está compartilhado com o Portfolio destino.' +
+                throw new HttpException(
+                    'Projeto está compartilhado com o Portfolio destino.' +
                         ' Remova primeiro o compartilhamento, e poderá transferir o projeto.',
                     400
                 );
 
             // Nível de tarefas, do port novo, não pode ser menor.
             if (portfolioNovo.nivel_maximo_tarefa < portfolioAntigo.nivel_maximo_tarefa)
-                throw new HttpException('Portfolio novo deve ter nível máximo de tarefa maior ou igual ao portfolio original.',
+                throw new HttpException(
+                    'Portfolio novo deve ter nível máximo de tarefa maior ou igual ao portfolio original.',
                     400
                 );
 
@@ -3774,9 +3808,7 @@ export class ProjetoService {
                     portfolioAntigo.orcamento_execucao_disponivel_meses
                 )
             )
-                throw new HttpException('Portfolio novo deve ter mesmos meses disponíveis para orçamento.',
-                    400
-                );
+                throw new HttpException('Portfolio novo deve ter mesmos meses disponíveis para orçamento.', 400);
 
             // Por agora o órgão gestor não será modificado.
             // Portanto deve ser verificado se ele está presente nos órgãos do novo port.
@@ -4097,5 +4129,182 @@ export class ProjetoService {
             if (dto.mdo_programa_habitacional !== undefined) dto.mdo_programa_habitacional = null;
             if (dto.mdo_n_familias_beneficiadas !== undefined) dto.mdo_n_familias_beneficiadas = null;
         }
+    }
+
+    /**
+     * Recalcula as regiões de todos os projetos MDO baseado em suas geolocalizações
+     * Se o projeto tiver pelo menos um endereço (geolocalizacao), as regiões serão
+     * recalculadas baseadas nos endereços. Caso contrário, mantém as regiões informadas
+     * manualmente pelo usuário.
+     */
+    async recalcAllMDOProjectRegions(user: PessoaFromJwt): Promise<{
+        total_projetos: number;
+        projetos_atualizados: number;
+        projetos_sem_endereco: number;
+    }> {
+        const logger = LoggerWithLog('Projeto.recalcAllMDOProjectRegions');
+        logger.log('Iniciando recalculo de regiões para projetos MDO');
+
+        const now = new Date(Date.now());
+        let projetosAtualizados = 0;
+        let projetosSemEndereco = 0;
+
+        // Busca todos os projetos MDO não removidos
+        const projetosMDO = await this.prisma.projeto.findMany({
+            where: {
+                tipo: 'MDO',
+                removido_em: null,
+            },
+            select: {
+                id: true,
+                portfolio: {
+                    select: {
+                        id: true,
+                        nivel_regionalizacao: true,
+                    },
+                },
+                ProjetoRegiao: {
+                    where: { removido_em: null },
+                    select: { regiao_id: true },
+                },
+            },
+        });
+
+        logger.log(`Encontrados ${projetosMDO.length} projetos MDO para processar`);
+
+        await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+            for (const projeto of projetosMDO) {
+                try {
+                    // Busca geolocalizações do projeto
+                    const geoDto = new ReferenciasValidasBase();
+                    geoDto.projeto_id = projeto.id;
+                    const geolocalizacoes = await this.geolocService.carregaReferencias(geoDto);
+                    const enderecos = geolocalizacoes.get(projeto.id) || [];
+
+                    if (enderecos.length === 0) {
+                        logger.verbose(`Projeto ${projeto.id}: sem endereços, mantendo regiões manuais`);
+                        projetosSemEndereco++;
+                        continue;
+                    }
+
+                    logger.verbose(`Projeto ${projeto.id}: encontrados ${enderecos.length} endereços`);
+
+                    // Coleta todas as regiões dos endereços
+                    const novasRegioes = new Set<number>();
+
+                    for (const endereco of enderecos) {
+                        // Decodifica o token para pegar o ID
+                        const enderecoJwt = this.jwtService.verify(endereco.token) as { id: number };
+
+                        // Busca as regiões através das camadas
+                        const geolocalizacao = await prismaTx.geoLocalizacao.findUnique({
+                            where: { id: enderecoJwt.id },
+                            select: {
+                                GeoEnderecoCamada: {
+                                    select: {
+                                        geo_camada: {
+                                            select: {
+                                                GeoCamadaRegiao: {
+                                                    select: {
+                                                        regiao: {
+                                                            select: {
+                                                                id: true,
+                                                                nivel: true,
+                                                                parente_id: true,
+                                                            },
+                                                        },
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        });
+
+                        if (!geolocalizacao) continue;
+
+                        for (const camada of geolocalizacao.GeoEnderecoCamada) {
+                            for (const camadaRegiao of camada.geo_camada.GeoCamadaRegiao) {
+                                const regiao = camadaRegiao.regiao;
+
+                                const nivelPort = projeto.portfolio.nivel_regionalizacao;
+
+                                // Só adiciona se for do nível correto ou um nível abaixo
+                                if (regiao.nivel === nivelPort || regiao.nivel === nivelPort + 1) {
+                                    novasRegioes.add(regiao.id);
+
+                                    // Se for nível +1, adiciona também o pai
+                                    if (regiao.nivel === nivelPort + 1 && regiao.parente_id) {
+                                        novasRegioes.add(regiao.parente_id);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    const novasRegioesArray = Array.from(novasRegioes);
+
+                    if (novasRegioesArray.length === 0) {
+                        logger.verbose(`Projeto ${projeto.id}: nenhuma região válida encontrada nos endereços`);
+                        projetosSemEndereco++;
+                        continue;
+                    }
+
+                    // Compara com regiões existentes
+                    const regioesExistentes = projeto.ProjetoRegiao.map((r) => r.regiao_id).sort();
+                    const regioesNovas = novasRegioesArray.sort();
+
+                    if (JSON.stringify(regioesExistentes) === JSON.stringify(regioesNovas)) {
+                        logger.verbose(`Projeto ${projeto.id}: regiões já estão corretas`);
+                        continue;
+                    }
+
+                    logger.verbose(
+                        `Projeto ${projeto.id}: atualizando regiões de [${regioesExistentes}] para [${regioesNovas}]`
+                    );
+
+                    // Remove regiões antigas
+                    await prismaTx.projetoRegiao.updateMany({
+                        where: {
+                            projeto_id: projeto.id,
+                            removido_em: null,
+                        },
+                        data: {
+                            removido_em: now,
+                            removido_por: user.id,
+                        },
+                    });
+
+                    // Adiciona novas regiões
+                    for (const regiao_id of novasRegioesArray) {
+                        await prismaTx.projetoRegiao.create({
+                            data: {
+                                projeto_id: projeto.id,
+                                regiao_id: regiao_id,
+                                criado_em: now,
+                                criado_por: user.id,
+                            },
+                        });
+                    }
+
+                    projetosAtualizados++;
+                } catch (error) {
+                    this.logger.error(`Erro ao processar projeto ${projeto.id}: ${error}`);
+                    // Continua processando os demais
+                }
+            }
+
+            await logger.saveLogs(prismaTx, user.getLogData());
+        });
+
+        const resultado = {
+            total_projetos: projetosMDO.length,
+            projetos_atualizados: projetosAtualizados,
+            projetos_sem_endereco: projetosSemEndereco,
+        };
+
+        logger.log(`Recalculo concluído: ${JSON.stringify(resultado)}`);
+        return resultado;
     }
 }
