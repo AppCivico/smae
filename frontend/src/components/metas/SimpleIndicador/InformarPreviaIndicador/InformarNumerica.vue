@@ -6,30 +6,38 @@ import { computed, ref } from 'vue';
 
 import { ValorPrevioNumericaSchema as schema } from '@/consts/formSchemas/InformarPreviaIndicador.schema';
 
+type Campos = {
+  referencia: string,
+  valor: number
+};
+
 type Props = {
   valores: ListSeriesAgrupadas;
 };
 
-const props = defineProps<Props>();
-
 type Emit = {
-  (event: 'submit', values: any): void
+  (event: 'submit', values: Campos): void
 };
+
 const emit = defineEmits<Emit>();
+const props = defineProps<Props>();
 
 const opcoesPreenchimento = ['valor_acumulado', 'valor_nominal'] as const;
 const modoDePreenchimento = ref<typeof opcoesPreenchimento[number]>('valor_acumulado');
 
-const { values, handleSubmit } = useForm({
+const { values, handleSubmit, errors } = useForm<Campos>({
   validationSchema: schema,
   initialValues: {
     valor: 0,
+    referencia: props.valores.ultima_previa_indicador.referencia,
   },
 });
 
 const onSubmit = handleSubmit.withControlled((valoresControlados) => {
-  console.log(valoresControlados);
-  emit('submit', valoresControlados);
+  emit('submit', {
+    referencia: valoresControlados.referencia,
+    valor: `${valoresControlados.valor}`,
+  });
 });
 
 const somaAcumulada = computed(() => {
@@ -42,13 +50,18 @@ const somaAcumulada = computed(() => {
 </script>
 
 <template>
-  <div
-    class="informar-numerica flex"
-  >
+  <div class="informar-numerica flex">
     <form
       class="f1"
       @submit="onSubmit"
     >
+      <Field
+        name="referencia"
+        :value="$props.valores.ultima_previa_indicador.referencia"
+        class="inputtext light"
+        hidden
+      />
+
       <div>
         <SmaeLabel
           :schema="schema"
@@ -57,8 +70,8 @@ const somaAcumulada = computed(() => {
 
         <Field
           name="valor"
-          type="number"
           class="inputtext light"
+          :class="{ error: errors.valor }"
         />
 
         <legend
