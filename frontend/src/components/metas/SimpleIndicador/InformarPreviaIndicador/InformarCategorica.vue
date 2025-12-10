@@ -13,12 +13,18 @@ type Props = {
 
 const props = defineProps<Props>();
 
+type Emit = {
+  (event: 'submit', values: any): void
+};
+const emit = defineEmits<Emit>();
+
 const { handleSubmit } = useForm({
   validationSchema: schema,
 });
 
 const onSubmit = handleSubmit.withControlled((valoresControlados) => {
   console.log(Object.values(valoresControlados.valor_previo));
+  emit('submit', valoresControlados);
 });
 
 const dadosTabela = computed(() => {

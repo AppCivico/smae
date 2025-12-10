@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+// eslint-disable-next-line import/extensions
 import { ListSeriesAgrupadas } from '@back/variavel/dto/list-variavel.dto';
 import { Field, useForm } from 'vee-validate';
 import { computed, ref } from 'vue';
@@ -10,6 +11,11 @@ type Props = {
 };
 
 const props = defineProps<Props>();
+
+type Emit = {
+  (event: 'submit', values: any): void
+};
+const emit = defineEmits<Emit>();
 
 const opcoesPreenchimento = ['valor_acumulado', 'valor_nominal'] as const;
 const modoDePreenchimento = ref<typeof opcoesPreenchimento[number]>('valor_acumulado');
@@ -23,6 +29,7 @@ const { values, handleSubmit } = useForm({
 
 const onSubmit = handleSubmit.withControlled((valoresControlados) => {
   console.log(valoresControlados);
+  emit('submit', valoresControlados);
 });
 
 const somaAcumulada = computed(() => {
