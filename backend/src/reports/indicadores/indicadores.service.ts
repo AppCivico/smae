@@ -1247,7 +1247,7 @@ export class IndicadoresService implements ReportableService {
             this.escapeCsvField(flatItem['serie'] || ''),
             this.escapeCsvField(flatItem['data'] || ''),
             this.escapeCsvField(flatItem['valor'] || ''),
-            this.escapeCsvField(flatItem['eh_previa'] ? 'Sim' : 'Não'),
+            this.escapeCsvField(flatItem['eh_previa'] === null ? 'n/a' : flatItem['eh_previa'] ? 'Sim' : 'Não'),
         ];
 
         // For regions, add the valor_categorica field
