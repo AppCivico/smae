@@ -38,11 +38,11 @@ const configuracaoPorTipo = computed(() => {
     },
     categorica: {
       titulo: 'Informar valor prévio',
-      componente: InformarCategorica,
+      componente: InformarCategoricaRegionalizavel,
     },
     categorica_regionalizavel: {
       titulo: 'Informar valor prévio',
-      componente: InformarCategoricaRegionalizavel,
+      componente: InformarCategorica,
     },
   };
 

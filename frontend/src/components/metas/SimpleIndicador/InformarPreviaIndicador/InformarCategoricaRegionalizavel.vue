@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+// eslint-disable-next-line import/extensions
 import { ListSeriesAgrupadas } from '@back/variavel/dto/list-variavel.dto';
 import { ErrorMessage, Field, useForm } from 'vee-validate';
 import { computed } from 'vue';
@@ -11,6 +12,11 @@ type Props = {
 };
 
 const props = defineProps<Props>();
+
+type Emit = {
+  (event: 'submit', values: any): void
+};
+const emit = defineEmits<Emit>();
 
 const { handleSubmit, errors } = useForm({
   validationSchema: schema,
@@ -31,6 +37,7 @@ const opcoesCategoria = computed(() => {
 
 const onSubmit = handleSubmit.withControlled((valoresControlados) => {
   console.log(valoresControlados);
+  emit('submit', valoresControlados);
 });
 </script>
 
