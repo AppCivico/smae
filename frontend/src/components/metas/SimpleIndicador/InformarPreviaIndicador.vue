@@ -82,6 +82,7 @@ const configuracaoPorTipo = computed(() => {
 
     <component
       :is="configuracaoPorTipo.componente"
+      class="mt2"
       :indicador="props.indicador"
       :valores="props.valores"
     />
