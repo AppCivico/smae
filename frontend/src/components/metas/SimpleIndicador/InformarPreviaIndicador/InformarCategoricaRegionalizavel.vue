@@ -41,7 +41,10 @@ const onSubmit = handleSubmit.withControlled((valoresControlados) => {
       @submit="onSubmit"
     >
       <div>
-        <SmaeLabel name="qualificacao" />
+        <SmaeLabel
+          :schema="schema"
+          name="qualificacao"
+        />
 
         <Field
           name="qualificacao"
