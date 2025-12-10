@@ -13,3 +13,7 @@ export const ValorPrevioCategoricaSchema = object({
         }),
     ),
 });
+
+export const ValorPrevioNumericaSchema = object({
+  valor: number().label('valor'),
+});
