@@ -743,7 +743,7 @@ export class PsCicloService {
         meta_id: number,
         user: PessoaFromJwt
     ): Promise<void> {
-        // TODO: Verificar permissões
+        await this.verificaPermissaoEscritaBase(tipo, pdmId, meta_id, cicloId, user, true, 'analise');
 
         // Buscando linha fechamento atual para o ciclo.
         const fechamento = await this.prisma.metaCicloFisicoFechamento.findFirst({
