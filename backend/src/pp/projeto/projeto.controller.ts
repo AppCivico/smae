@@ -573,4 +573,11 @@ export class ProjetoMDOController {
     ): Promise<RecordWithId> {
         return await this.projetoService.transferPortfolio(this.tipo, params.id, transferProjetoPortfolio, user);
     }
+
+    @Post('sync-enderecos-para-regioes')
+    @ApiBearerAuth('access-token')
+    @Roles(['SMAE.superadmin'])
+    async recalcAllMDOProjectRegions(@CurrentUser() user: PessoaFromJwt): Promise<object> {
+        return await this.projetoService.recalcAllMDOProjectRegions(user);
+    }
 }

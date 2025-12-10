@@ -51,7 +51,12 @@ import { CompromissoOrigemHelper } from '../../common/helpers/CompromissoOrigem'
 import { HtmlSanitizer } from '../../common/html-sanitizer';
 import { Object2Hash } from '../../common/object2hash';
 import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../../geo-loc/entities/geo-loc.entity';
-import { GeoLocService, UpsertEnderecoDto } from '../../geo-loc/geo-loc.service';
+import {
+    GeoLocService,
+    UpsertEnderecoDto,
+    UpsertEnderecoIdDto,
+    UpsertEnderecoRegiaoDto,
+} from '../../geo-loc/geo-loc.service';
 import { ArquivoBaseDto } from '../../upload/dto/create-upload.dto';
 import { UpdateTarefaDto } from '../tarefa/dto/update-tarefa.dto';
 import { TarefaService } from '../tarefa/tarefa.service';
@@ -92,6 +97,7 @@ export const ProjetoStatusParaExibicao: Record<ProjetoStatus, string> = {
 } as const;
 
 const FEATURE_FLAG_MDO_AUTO_REGIAO = 'MDO_AUTO_REGIAO_FROM_GEO';
+const FEATURE_FLAG_MDO_DEFAULT = true;
 export class ProjetoOrgaoParticipante {
     projeto_id: number;
     orgao_id: number;
@@ -786,7 +792,7 @@ export class ProjetoService {
 
                 const geo = await this.geolocService.upsertGeolocalizacao(geoDto, user, prismaTx, now);
 
-                await this.appendRegioesByGeoLoc(geo, self, portfolio, prismaTx, now, user);
+                await this.appendRegioesByGeoLoc(geo, self, portfolio, prismaTx, now, user, tipo);
 
                 await logger.saveLogs(prismaTx, user.getLogData());
                 return row;
@@ -808,8 +814,11 @@ export class ProjetoService {
     ) {
         if (!('regiao_ids' in dto) || dto.regiao_ids === undefined) return;
         if (tipo === 'MDO') {
-            const autoRegiao = await this.smaeConfig.getConfig(FEATURE_FLAG_MDO_AUTO_REGIAO);
-            if (autoRegiao === 'true') {
+            const autoRegiao = await this.smaeConfig.getConfigBooleanWithDefault(
+                FEATURE_FLAG_MDO_AUTO_REGIAO,
+                FEATURE_FLAG_MDO_DEFAULT
+            );
+            if (autoRegiao) {
                 // Verifica se há geolocalizações
                 const geoDto = new ReferenciasValidasBase();
                 geoDto.projeto_id = projeto_id;
@@ -2947,12 +2956,15 @@ export class ProjetoService {
 
                 const geo = await this.geolocService.upsertGeolocalizacao(geoDto, user, prismaTx, now);
 
-                await this.appendRegioesByGeoLoc(geo, self, portfolio, prismaTx, now, user);
+                await this.appendRegioesByGeoLoc(geo, self, portfolio, prismaTx, now, user, tipo);
             }
 
             if (tipo === 'MDO' && dto.geolocalizacao) {
-                const autoRegiao = await this.smaeConfig.getConfig(FEATURE_FLAG_MDO_AUTO_REGIAO);
-                if (autoRegiao === 'true') {
+                const autoRegiao = await this.smaeConfig.getConfigBooleanWithDefault(
+                    FEATURE_FLAG_MDO_AUTO_REGIAO,
+                    FEATURE_FLAG_MDO_DEFAULT
+                );
+                if (autoRegiao) {
                     // Verifica se o projeto tem endereços após o update
                     const geoDto = new ReferenciasValidasBase();
                     geoDto.projeto_id = projeto.id;
@@ -3060,8 +3072,19 @@ export class ProjetoService {
         portfolio: PortfolioDto,
         prismaTx: Prisma.TransactionClient,
         now: Date,
-        user: PessoaFromJwt
+        user: PessoaFromJwt,
+        tipo?: TipoProjeto
     ) {
+        // Verifica se a sincronização automática de regiões MDO está ativada
+        if (tipo === 'MDO') {
+            const autoRegiao = await this.smaeConfig.getConfig(FEATURE_FLAG_MDO_AUTO_REGIAO);
+            if (autoRegiao === 'true') {
+                await this.syncRegioesFromAllEnderecos(geo.enderecos, self, portfolio, prismaTx, now, user);
+                return;
+            }
+        }
+
+        // Comportamento original: apenas adiciona regiões de novos endereços
         const regioesExistentes = self.ProjetoRegiao.map((r) => r.regiao_id);
         this.logger.verbose(JSON.stringify({ 'regioesExistentes': regioesExistentes }));
         for (const r of geo.novos_enderecos) {
@@ -3089,6 +3112,95 @@ export class ProjetoService {
                     },
                 });
             }
+        }
+    }
+
+    /**
+     * Sincroniza regiões do projeto baseado em TODAS as geolocalizações atuais.
+     * Atualiza apenas o que realmente mudou (remove órfãs, adiciona faltantes).
+     * Usado quando FEATURE_FLAG_MDO_AUTO_REGIAO está ativada para projetos MDO.
+     */
+    private async syncRegioesFromAllEnderecos(
+        enderecos: UpsertEnderecoIdDto[],
+        self: { id: number; ProjetoRegiao: { regiao_id: number }[] },
+        portfolio: PortfolioDto,
+        prismaTx: Prisma.TransactionClient,
+        now: Date,
+        user: PessoaFromJwt
+    ) {
+        const regioesFromGeo = new Set<number>();
+
+        // Coleta IDs das regiões dos endereços para buscar dados completos
+        const regiaoIds = new Set<number>();
+        for (const endereco of enderecos) {
+            for (const regiao of endereco.regioes) {
+                regiaoIds.add(regiao.id);
+            }
+        }
+
+        // Busca dados completos das regiões incluindo parente_id
+        const regioes = await prismaTx.regiao.findMany({
+            where: {
+                id: { in: Array.from(regiaoIds) },
+                removido_em: null,
+            },
+            select: {
+                id: true,
+                nivel: true,
+                parente_id: true,
+            },
+        });
+
+        // Coleta todas as regiões válidas de todos os endereços atuais
+        for (const regiao of regioes) {
+            // Apenas adiciona se for o nível correto ou um nível abaixo
+            if (
+                regiao.nivel === portfolio.nivel_regionalizacao ||
+                regiao.nivel === portfolio.nivel_regionalizacao + 1
+            ) {
+                regioesFromGeo.add(regiao.id);
+
+                // Se for nível +1, também adiciona o pai
+                if (regiao.nivel === portfolio.nivel_regionalizacao + 1 && regiao.parente_id) {
+                    regioesFromGeo.add(regiao.parente_id);
+                }
+            }
+        }
+
+        const regioesExistentes = self.ProjetoRegiao.map((r) => r.regiao_id);
+        const regioesFromGeoArray = Array.from(regioesFromGeo);
+
+        // Calcula o que realmente mudou
+        const toRemove = regioesExistentes.filter((id) => !regioesFromGeo.has(id));
+        const toAdd = regioesFromGeoArray.filter((id) => !regioesExistentes.includes(id));
+
+        if (toRemove.length === 0 && toAdd.length === 0) {
+            this.logger.verbose(`Projeto ${self.id}: regiões já estão sincronizadas com geolocalizações`);
+            return;
+        }
+
+        this.logger.verbose(
+            `Projeto ${self.id}: sincronizando regiões - removendo [${toRemove}], adicionando [${toAdd}]`
+        );
+
+        // Remove regiões que não correspondem mais a nenhuma geolocalização
+        for (const regiao_id of toRemove) {
+            await prismaTx.projetoRegiao.updateMany({
+                where: { projeto_id: self.id, regiao_id: regiao_id, removido_em: null },
+                data: { removido_em: now, removido_por: user.id },
+            });
+        }
+
+        // Adiciona novas regiões das geolocalizações
+        for (const regiao_id of toAdd) {
+            await prismaTx.projetoRegiao.create({
+                data: {
+                    projeto_id: self.id,
+                    regiao_id: regiao_id,
+                    criado_em: now,
+                    criado_por: user.id,
+                },
+            });
         }
     }
 
@@ -4172,8 +4284,8 @@ export class ProjetoService {
 
         logger.log(`Encontrados ${projetosMDO.length} projetos MDO para processar`);
 
-        await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
-            for (const projeto of projetosMDO) {
+        for (const projeto of projetosMDO) {
+            await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
                 try {
                     // Busca geolocalizações do projeto
                     const geoDto = new ReferenciasValidasBase();
@@ -4184,17 +4296,17 @@ export class ProjetoService {
                     if (enderecos.length === 0) {
                         logger.verbose(`Projeto ${projeto.id}: sem endereços, mantendo regiões manuais`);
                         projetosSemEndereco++;
-                        continue;
+                        return;
                     }
 
                     logger.verbose(`Projeto ${projeto.id}: encontrados ${enderecos.length} endereços`);
 
-                    // Coleta todas as regiões dos endereços
-                    const novasRegioes = new Set<number>();
+                    // Prepara estrutura compatível com syncRegioesFromAllEnderecos
+                    const enderecosComRegioes: UpsertEnderecoIdDto[] = [];
 
                     for (const endereco of enderecos) {
                         // Decodifica o token para pegar o ID
-                        const enderecoJwt = this.jwtService.verify(endereco.token) as { id: number };
+                        const enderecoJwt = this.jwtService.decode(endereco.token) as { id: number };
 
                         // Busca as regiões através das camadas
                         const geolocalizacao = await prismaTx.geoLocalizacao.findUnique({
@@ -4210,7 +4322,6 @@ export class ProjetoService {
                                                             select: {
                                                                 id: true,
                                                                 nivel: true,
-                                                                parente_id: true,
                                                             },
                                                         },
                                                     },
@@ -4224,79 +4335,75 @@ export class ProjetoService {
 
                         if (!geolocalizacao) continue;
 
+                        const regioes: UpsertEnderecoRegiaoDto[] = [];
                         for (const camada of geolocalizacao.GeoEnderecoCamada) {
                             for (const camadaRegiao of camada.geo_camada.GeoCamadaRegiao) {
                                 const regiao = camadaRegiao.regiao;
-
-                                const nivelPort = projeto.portfolio.nivel_regionalizacao;
-
-                                // Só adiciona se for do nível correto ou um nível abaixo
-                                if (regiao.nivel === nivelPort || regiao.nivel === nivelPort + 1) {
-                                    novasRegioes.add(regiao.id);
-
-                                    // Se for nível +1, adiciona também o pai
-                                    if (regiao.nivel === nivelPort + 1 && regiao.parente_id) {
-                                        novasRegioes.add(regiao.parente_id);
-                                    }
-                                }
+                                regioes.push({
+                                    id: regiao.id,
+                                    nivel: regiao.nivel,
+                                });
                             }
+                        }
+
+                        if (regioes.length > 0) {
+                            enderecosComRegioes.push({
+                                endereco_id: enderecoJwt.id,
+                                regioes: regioes,
+                            });
                         }
                     }
 
-                    const novasRegioesArray = Array.from(novasRegioes);
-
-                    if (novasRegioesArray.length === 0) {
+                    if (enderecosComRegioes.length === 0) {
                         logger.verbose(`Projeto ${projeto.id}: nenhuma região válida encontrada nos endereços`);
                         projetosSemEndereco++;
-                        continue;
+                        return;
                     }
 
-                    // Compara com regiões existentes
-                    const regioesExistentes = projeto.ProjetoRegiao.map((r) => r.regiao_id).sort();
-                    const regioesNovas = novasRegioesArray.sort();
+                    // Estrutura self compatível com syncRegioesFromAllEnderecos
+                    const self = {
+                        id: projeto.id,
+                        ProjetoRegiao: projeto.ProjetoRegiao.map((r) => ({ regiao_id: r.regiao_id })),
+                    };
 
-                    if (JSON.stringify(regioesExistentes) === JSON.stringify(regioesNovas)) {
-                        logger.verbose(`Projeto ${projeto.id}: regiões já estão corretas`);
-                        continue;
-                    }
+                    // Portfolio simplificado com apenas os campos necessários
+                    const portfolioSimplificado = {
+                        nivel_regionalizacao: projeto.portfolio.nivel_regionalizacao,
+                    } as PortfolioDto;
 
-                    logger.verbose(
-                        `Projeto ${projeto.id}: atualizando regiões de [${regioesExistentes}] para [${regioesNovas}]`
+                    // Usa o método syncRegioesFromAllEnderecos para processar
+                    const regioesAntes = self.ProjetoRegiao.length;
+                    await this.syncRegioesFromAllEnderecos(
+                        enderecosComRegioes,
+                        self,
+                        portfolioSimplificado,
+                        prismaTx,
+                        now,
+                        user
                     );
 
-                    // Remove regiões antigas
-                    await prismaTx.projetoRegiao.updateMany({
-                        where: {
-                            projeto_id: projeto.id,
-                            removido_em: null,
-                        },
-                        data: {
-                            removido_em: now,
-                            removido_por: user.id,
+                    // Verifica se houve mudança
+                    const projetoAtualizado = await prismaTx.projeto.findUnique({
+                        where: { id: projeto.id },
+                        select: {
+                            ProjetoRegiao: {
+                                where: { removido_em: null },
+                                select: { regiao_id: true },
+                            },
                         },
                     });
 
-                    // Adiciona novas regiões
-                    for (const regiao_id of novasRegioesArray) {
-                        await prismaTx.projetoRegiao.create({
-                            data: {
-                                projeto_id: projeto.id,
-                                regiao_id: regiao_id,
-                                criado_em: now,
-                                criado_por: user.id,
-                            },
-                        });
+                    if (projetoAtualizado && projetoAtualizado.ProjetoRegiao.length !== regioesAntes) {
+                        projetosAtualizados++;
                     }
-
-                    projetosAtualizados++;
                 } catch (error) {
                     this.logger.error(`Erro ao processar projeto ${projeto.id}: ${error}`);
                     // Continua processando os demais
                 }
-            }
 
-            await logger.saveLogs(prismaTx, user.getLogData());
-        });
+                await logger.saveLogs(prismaTx, user.getLogData());
+            });
+        }
 
         const resultado = {
             total_projetos: projetosMDO.length,
