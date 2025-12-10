@@ -113,16 +113,17 @@ const endereçosConsolidadosPorToken = computed(() => ({
 
 function obterSubprefeituraEDistrito(token) {
   const endereco = endereçosConsolidadosPorToken.value[token];
-  if (!endereco?.camadas || !Array.isArray(endereco.camadas)) {
+
+  if (!endereco?.regioes || typeof endereco.regioes !== 'object') {
     return { subprefeitura: '-', distrito: '-' };
   }
 
-  const subprefeitura = endereco.camadas.find((c) => c.nivel_regionalizacao === 2);
-  const distrito = endereco.camadas.find((c) => c.nivel_regionalizacao === 3);
+  const subprefeitura = endereco.regioes?.nivel_3?.[0];
+  const distrito = endereco.regioes?.nivel_4?.[0];
 
   return {
-    subprefeitura: subprefeitura?.titulo || '-',
-    distrito: distrito?.titulo || '-',
+    subprefeitura: subprefeitura?.descricao || '-',
+    distrito: distrito?.descricao || '-',
   };
 }
 
