@@ -170,21 +170,30 @@ const configuracaoGrafico = computed(() => {
     },
   }));
 
-  const criarMarkPoint = (serie, cor) => ({
-    data: [
-      {
-        name: 'Último Mês Preenchido',
-        coord: [categorias[ultimoMesPreenchidoIndex], serie[ultimoMesPreenchidoIndex]],
-        symbol: 'circle',
-        symbolSize: 12,
-        itemStyle: {
-          color: cor,
-          borderColor: cor,
-          borderWidth: 2,
-        },
-      },
-    ],
-  });
+  const criarMarkPoint = (serie, cor, nomeDaSerie = '') => {
+    const indiceLimite = nomeDaSerie.includes('Realizado')
+      ? indiceRealizadoAcumuladoPrevia
+      : indiceRealizadoPrevia;
+
+    return indiceLimite !== -1
+      && ultimoMesPreenchidoIndex >= indiceLimite
+      ? null
+      : {
+        data: [
+          {
+            name: 'Último Mês Preenchido',
+            coord: [categorias[ultimoMesPreenchidoIndex], serie[ultimoMesPreenchidoIndex]],
+            symbol: 'circle',
+            symbolSize: 12,
+            itemStyle: {
+              color: cor,
+              borderColor: cor,
+              borderWidth: 2,
+            },
+          },
+        ],
+      };
+  };
 
   const criarSeriePrevia = (nome, serie, cor, indicePrevia) => {
     if (indicePrevia === -1) return null;
@@ -192,10 +201,24 @@ const configuracaoGrafico = computed(() => {
     return {
       name: `${nome} (prévia)`,
       type: 'line',
-      data: serie.map((v, i) => (i >= indicePrevia - 1 ? v : null)),
+      data: serie.map((v, i) => {
+        if (i >= indicePrevia - 1) {
+          // Make the first point (at indicePrevia - 1) invisible
+          if (i === indicePrevia - 1) {
+            return {
+              value: v,
+              itemStyle: {
+                opacity: 0,
+              },
+            };
+          }
+          return v;
+        }
+        return null;
+      }),
       symbolSize: 10,
       smooth: true,
-      connectNulls: true,
+      connectNulls: false,
       itemStyle: {
         color: cor,
         borderType: 'dashed',
@@ -212,9 +235,9 @@ const configuracaoGrafico = computed(() => {
   const formatarTooltip = (params) => {
     if (!params || params.length === 0) return '';
 
-    const criarLinhaTooltip = (nome, valor, cor) => `
+    const criarLinhaTooltip = (nome, valor, cor, ehPrevia) => `
       <div style="margin-bottom: 4px;">
-        <span style="display:inline-block;width:10px;height:10px;background-color:${cor};margin-right:5px;border-radius: 50%;"></span>
+        <span style="display:inline-block;box-sizing:border-box;width:12px;height:12px;color:${cor};background-color:currentColor;margin-right:5px;border-radius: 50%; border-width: 2px; ${ehPrevia ? 'border-style: dashed; background-color: transparent;' : 'border-style: solid; background-color: currentColor;'}"></span>
         <strong>${nome}:</strong> ${formatarNumero(valor)}
       </div>
     `;
@@ -297,7 +320,12 @@ const configuracaoGrafico = computed(() => {
         const dadosConsolidados = seriesConsolidadas.get(nomeBase);
         if (dadosConsolidados) {
           const nomeExibir = dadosConsolidados.ehPrevia ? `${nomeBase} (prévia)` : nomeBase;
-          html += criarLinhaTooltip(nomeExibir, dadosConsolidados.valor, dadosConsolidados.color);
+          html += criarLinhaTooltip(
+            nomeExibir,
+            dadosConsolidados.valor,
+            dadosConsolidados.color,
+            dadosConsolidados.ehPrevia,
+          );
           seriesJaRenderizadas.add(nomeBase);
         }
       } else {
@@ -373,7 +401,7 @@ const configuracaoGrafico = computed(() => {
         label: {
           show: false,
         },
-        markPoint: criarMarkPoint(seriePrevisto, colorPalette.previsto),
+        markPoint: criarMarkPoint(seriePrevisto, colorPalette.previsto, 'Previsto'),
       },
       {
         name: 'Previsto Acumulado',
@@ -390,7 +418,7 @@ const configuracaoGrafico = computed(() => {
         label: {
           show: false,
         },
-        markPoint: criarMarkPoint(seriePrevistoAcumulado, colorPalette.previstoAcumulado),
+        markPoint: criarMarkPoint(seriePrevistoAcumulado, colorPalette.previstoAcumulado, 'Previsto Acumulado'),
       },
       {
         name: 'Realizado',
@@ -409,7 +437,7 @@ const configuracaoGrafico = computed(() => {
         label: {
           show: false,
         },
-        markPoint: criarMarkPoint(serieRealizado, colorPalette.realizado),
+        markPoint: criarMarkPoint(serieRealizado, colorPalette.realizado, 'Realizado'),
       },
       ...[criarSeriePrevia('Realizado', serieRealizado, colorPalette.realizado, indiceRealizadoPrevia)].filter(Boolean),
       {
@@ -433,7 +461,7 @@ const configuracaoGrafico = computed(() => {
           data: linhasAnos,
           symbol: 'none',
         },
-        markPoint: criarMarkPoint(serieRealizadoAcumulado, colorPalette.realizadoAcumulado),
+        markPoint: criarMarkPoint(serieRealizadoAcumulado, colorPalette.realizadoAcumulado, 'Realizado Acumulado'),
       },
       ...[criarSeriePrevia(
         'Realizado Acumulado',
