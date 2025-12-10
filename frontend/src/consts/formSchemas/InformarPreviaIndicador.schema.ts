@@ -19,5 +19,6 @@ export const ValorPrevioCategoricaRegionalizadaSchema = object({
 });
 
 export const ValorPrevioNumericaSchema = object({
-  valor: number().label('valor'),
+  valor: number().label('valor').required(),
+  referencia: string().label('referencia').required(),
 });

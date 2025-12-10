@@ -6,10 +6,13 @@ import type { ListSeriesAgrupadas } from '@back/variavel/dto/list-variavel.dto';
 import { computed } from 'vue';
 
 import { dateToMonthYear } from '@/helpers/dateToDate';
+import { useIndicadoresStore } from '@/stores/indicadores.store';
 
 import InformarCategorica from './InformarPreviaIndicador/InformarCategorica.vue';
 import InformarCategoricaRegionalizavel from './InformarPreviaIndicador/InformarCategoricaRegionalizavel.vue';
 import InformarNumerica from './InformarPreviaIndicador/InformarNumerica.vue';
+
+const indicadoresStore = useIndicadoresStore();
 
 type Props = {
   indicador: IndicadorDto;
@@ -17,6 +20,10 @@ type Props = {
 };
 
 const props = defineProps<Props>();
+
+async function enviarDados(dados: unknown) {
+  await indicadoresStore.indicarPrevia(props.indicador.id, dados);
+}
 
 const variavelTipo = computed(() => {
   if (props.indicador.indicador_tipo === 'Numerico') {
@@ -85,6 +92,7 @@ const configuracaoPorTipo = computed(() => {
       class="mt2"
       :indicador="props.indicador"
       :valores="props.valores"
+      @submit="enviarDados"
     />
   </div>
 </template>
