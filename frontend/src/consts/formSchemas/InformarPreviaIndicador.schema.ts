@@ -1,6 +1,6 @@
 /* eslint-disable import/prefer-default-export */
 import {
-  object, array, string, number,
+  object, array, number,
 } from './initSchema';
 
 export const ValorPrevioCategoricaSchema = object({
@@ -8,7 +8,7 @@ export const ValorPrevioCategoricaSchema = object({
     .of(
       object()
         .shape({
-          qualificacao: string().label('qualificação'),
+          qualificacao: number().label('qualificação'),
           quantidade: number().label('quantidade'),
         }),
     ),
