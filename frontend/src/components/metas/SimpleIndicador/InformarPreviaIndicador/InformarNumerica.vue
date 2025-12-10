@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 // eslint-disable-next-line import/extensions
 import type { ListSeriesAgrupadas } from '@back/variavel/dto/list-variavel.dto';
-import { Field, useForm } from 'vee-validate';
+import { ErrorMessage, Field, useForm } from 'vee-validate';
 import { computed, ref } from 'vue';
 
 import { ValorPrevioNumericaSchema as schema } from '@/consts/formSchemas/InformarPreviaIndicador.schema';
@@ -22,12 +22,12 @@ const emit = defineEmits<Emit>();
 const props = defineProps<Props>();
 
 const opcoesPreenchimento = ['valor_acumulado', 'valor_nominal'] as const;
-const modoDePreenchimento = ref<typeof opcoesPreenchimento[number]>('valor_acumulado');
+const modoDePreenchimento = ref<typeof opcoesPreenchimento[number]>('valor_nominal');
 
 const { values, handleSubmit, errors } = useForm<Campos>({
   validationSchema: schema,
   initialValues: {
-    valor: '0',
+    valor: '',
   },
 });
 
@@ -64,6 +64,8 @@ const somaAcumulada = computed(() => {
           class="inputtext light"
           :class="{ error: errors.valor }"
         />
+
+        <ErrorMessage name="valor" />
 
         <output
           v-if="modoDePreenchimento ==='valor_acumulado'"
