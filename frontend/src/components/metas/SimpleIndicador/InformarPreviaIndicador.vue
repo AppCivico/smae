@@ -22,7 +22,10 @@ type Props = {
 const props = defineProps<Props>();
 
 async function enviarDados(dados: unknown) {
-  await indicadoresStore.indicarPrevia(props.indicador.id, dados);
+  await indicadoresStore.indicarPrevia(props.indicador.id, {
+    referencia: props.valores.ultima_previa_indicador.referencia,
+    ...dados,
+  });
 }
 
 const variavelTipo = computed(() => {

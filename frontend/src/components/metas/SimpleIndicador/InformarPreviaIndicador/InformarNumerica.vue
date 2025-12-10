@@ -7,8 +7,7 @@ import { computed, ref } from 'vue';
 import { ValorPrevioNumericaSchema as schema } from '@/consts/formSchemas/InformarPreviaIndicador.schema';
 
 type Campos = {
-  referencia: string,
-  valor: number
+  valor: string
 };
 
 type Props = {
@@ -28,14 +27,12 @@ const modoDePreenchimento = ref<typeof opcoesPreenchimento[number]>('valor_acumu
 const { values, handleSubmit, errors } = useForm<Campos>({
   validationSchema: schema,
   initialValues: {
-    valor: 0,
-    referencia: props.valores.ultima_previa_indicador.referencia,
+    valor: '0',
   },
 });
 
 const onSubmit = handleSubmit.withControlled((valoresControlados) => {
   emit('submit', {
-    referencia: valoresControlados.referencia,
     valor: `${valoresControlados.valor}`,
   });
 });
@@ -55,13 +52,6 @@ const somaAcumulada = computed(() => {
       class="f1"
       @submit="onSubmit"
     >
-      <Field
-        name="referencia"
-        :value="$props.valores.ultima_previa_indicador.referencia"
-        class="inputtext light"
-        hidden
-      />
-
       <div>
         <SmaeLabel
           :schema="schema"
