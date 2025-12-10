@@ -24,7 +24,6 @@ export class PortfolioTagController {
     }
 
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroPortfolioTag.editar', 'CadastroPortfolioTag.inserir'])
     @Get()
     async findAll(
         @Query() filters: FilterPortfolioTagDto,
