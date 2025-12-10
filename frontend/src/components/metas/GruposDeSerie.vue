@@ -188,12 +188,6 @@ function obterAgrupadorPrevia() {
   return props.g.ultima_previa_indicador.data_valor.substring(0, 4);
 }
 
-function obterPeriodoPrevia() {
-  if (!props.g.ultima_previa_indicador?.data_valor) return null;
-  // Formato YYYY-MM (igual às linhas normais)
-  return props.g.ultima_previa_indicador.data_valor.substring(0, 7);
-}
-
 function linhaTemValor(linha) {
   return linha.series.some((serie) => {
     if (serie.elementos?.length > 0) return true;

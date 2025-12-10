@@ -194,7 +194,6 @@ const configuracaoGrafico = computed(() => {
       type: 'line',
       data: serie.map((v, i) => (i >= indicePrevia - 1 ? v : null)),
       symbolSize: 10,
-      // showSymbol: true,
       smooth: true,
       connectNulls: true,
       itemStyle: {
@@ -340,7 +339,6 @@ const configuracaoGrafico = computed(() => {
           : []),
         ...(serieMeta ? ['Meta'] : []),
       ],
-      // top: '5%',
     },
     toolbox: {
       show: false,
