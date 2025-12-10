@@ -229,6 +229,7 @@ export class IndicadoresService implements ReportableService {
             AND si.serie = series.serie
             AND si.data_valor = dt.dt::date
             AND si.eh_previa = true
+            AND si.previa_invalidada_em IS NULL
         ) as eh_previa
         from generate_series($1::date, $2::date, $3::interval) dt
         cross join (select 'Realizado'::"Serie" as serie UNION ALL select 'RealizadoAcumulado'::"Serie" as serie ) series
@@ -460,7 +461,14 @@ export class IndicadoresService implements ReportableService {
             series.serie,
             dt.dt::date,
             :JANELA:
-        ) AS valor_json
+        ) AS valor_json,
+        EXISTS (
+            SELECT 1 FROM serie_variavel sv
+            WHERE sv.variavel_id = v.id
+            AND sv.serie = series.serie
+            AND sv.data_valor = dt.dt::date
+            AND sv.eh_previa = true
+        ) as eh_previa
         from generate_series($1::date, $2::date, $3::interval) dt
         cross join (select 'Realizado'::"Serie" as serie UNION ALL select 'RealizadoAcumulado'::"Serie" as serie ) series
         join ${queryFromWhere}
@@ -909,7 +917,14 @@ export class IndicadoresService implements ReportableService {
                 series.serie,
                 dt.dt::date,
                 ${this.getJanelaExpression(params)}
-            ) AS valor_json
+            ) AS valor_json,
+            EXISTS (
+                SELECT 1 FROM serie_variavel sv
+                WHERE sv.variavel_id = v.id
+                AND sv.serie = series.serie
+                AND sv.data_valor = dt.dt::date
+                AND sv.eh_previa = true
+            ) as eh_previa
         FROM
             generate_series($1::date, $2::date, $3::interval) dt
         CROSS JOIN
@@ -1190,7 +1205,14 @@ export class IndicadoresService implements ReportableService {
             :JANELA:
         ),
         i.casas_decimais
-    )::text as valor
+    )::text as valor,
+    EXISTS (
+        SELECT 1 FROM serie_indicador si
+        WHERE si.indicador_id = i.id
+        AND si.serie = series.serie
+        AND si.data_valor = dt.dt::date
+        AND si.eh_previa = true
+    ) as eh_previa
     from generate_series($1::date, $2::date, $3::interval) dt
     cross join (select 'Realizado'::"Serie" as serie UNION ALL select 'RealizadoAcumulado'::"Serie" as serie ) series
     join ${queryFromWhere}
@@ -1347,212 +1369,6 @@ export class IndicadoresService implements ReportableService {
     }
 
     /**
-     * Generate CSV file for regioes by writing directly from database
-     */
-    private async generateRegioesCsv(
-        indicadoresIds: number[],
-        params: CreateRelIndicadorRegioesDto,
-        camposMetaIniAtv: any[],
-        filePath: string
-    ): Promise<void> {
-        // Create file stream
-        const fileStream = createWriteStream(filePath);
-
-        // Write header with additional fields for regioes
-        const regioesFields = [
-            { value: 'variavel.orgao.id', label: 'ID do órgão' },
-            { value: 'variavel.orgao.sigla', label: 'Sigla do órgão' },
-            { value: 'variavel.codigo', label: 'Código da Variável' },
-            { value: 'variavel.titulo', label: 'Título da Variável' },
-            { value: 'variavel.id', label: 'ID da Variável' },
-            { value: 'regiao_id', label: 'ID da região' },
-            { value: 'regiao_nivel_4.id', label: 'ID do Distrito' },
-            { value: 'regiao_nivel_4.codigo', label: 'Código do Distrito' },
-            { value: 'regiao_nivel_4.descricao', label: 'Descrição do Distrito' },
-            { value: 'regiao_nivel_3.id', label: 'ID do Subprefeitura' },
-            { value: 'regiao_nivel_3.codigo', label: 'Código da Subprefeitura' },
-            { value: 'regiao_nivel_3.descricao', label: 'Descrição da Subprefeitura' },
-            { value: 'regiao_nivel_2.id', label: 'ID da Região' },
-            { value: 'regiao_nivel_2.codigo', label: 'Código da Região' },
-            { value: 'regiao_nivel_2.descricao', label: 'Descrição da Região' },
-        ];
-
-        const header = [
-            ...camposMetaIniAtv.map((field) => (typeof field === 'object' ? field.label : field)),
-            ...regioesFields.map((field) => field.label),
-            'Data de Referência',
-            'Serie',
-            'Data',
-            'Valor',
-            'Valor Categórica',
-        ]
-            .map((h) => this.escapeCsvField(h))
-            .join(',');
-
-        fileStream.write(header + '\n');
-
-        // Process in transaction
-        await this.prisma.$transaction(
-            async (prismaTxn: Prisma.TransactionClient) => {
-                let queryFromWhere = `indicador i ON i.id IN (${indicadoresIds.join(',')})
-                join indicador_variavel iv ON iv.indicador_id = i.id
-                join variavel v ON v.id = iv.variavel_id
-                join orgao ON v.orgao_id = orgao.id
-                left join meta on meta.id = i.meta_id
-                left join iniciativa on iniciativa.id = i.iniciativa_id
-                left join atividade on atividade.id = i.atividade_id
-                left join iniciativa i2 on i2.id = atividade.iniciativa_id
-                left join meta m2 on m2.id = iniciativa.meta_id OR m2.id = i2.meta_id
-                left join pdm on pdm.id = meta.pdm_id or pdm.id = m2.pdm_id
-                where v.regiao_id is not null`;
-
-                if (Array.isArray(params.regioes)) {
-                    const numbers = params.regioes.map((n) => +n).join(',');
-                    queryFromWhere = `${queryFromWhere} AND v.regiao_id IN (${numbers})`;
-                }
-
-                const anoInicial = await this.capturaAnoSerieVariavelInicial(params, queryFromWhere);
-
-                const sql = `${CREATE_TEMP_TABLE} SELECT
-                pdm.nome as pdm_nome,
-                i.id as indicador_id,
-                i.codigo as indicador_codigo,
-                i.titulo as indicador_titulo,
-                COALESCE(i.meta_id, m2.id) as meta_id,
-                COALESCE(meta.titulo, m2.titulo) as meta_titulo,
-                COALESCE(meta.codigo, m2.codigo) as meta_codigo,
-                meta_tags_as_array(COALESCE(meta.id, m2.id)) as meta_tags,
-                COALESCE(i.iniciativa_id, i2.id) as iniciativa_id,
-                COALESCE(iniciativa.titulo, i2.titulo) as iniciativa_titulo,
-                COALESCE(iniciativa.codigo, i2.codigo) as iniciativa_codigo,
-                i.atividade_id,
-                atividade.titulo as atividade_titulo,
-                atividade.codigo as atividade_codigo,
-                :DATA: as "data",
-                dt.dt::date::text as "data_referencia",
-                series.serie,
-                v.id as variavel_id,
-                v.codigo as variavel_codigo,
-                v.titulo as variavel_titulo,
-                v.regiao_id as regiao_id,
-                orgao.id as orgao_id,
-                orgao.sigla as orgao_sigla,
-                valor_variavel_em_json(
-                    v.id,
-                    series.serie,
-                    dt.dt::date,
-                    :JANELA:
-                ) AS valor_json
-                from generate_series($1::date, $2::date, $3::interval) dt
-                cross join (select 'Realizado'::"Serie" as serie UNION ALL select 'RealizadoAcumulado'::"Serie" as serie ) series
-                join ${queryFromWhere}
-                AND dt.dt >= i.inicio_medicao AND dt.dt < i.fim_medicao + (select periodicidade_intervalo(i.periodicidade))
-                `;
-
-                const regioes = await this.prisma.regiao.findMany({
-                    where: { removido_em: null },
-                });
-
-                // Execute query based on params type
-                if (params.tipo == 'Mensal' && params.mes) {
-                    await this.rodaQueryMensalAnalitico(prismaTxn, sql, params.ano, params.mes);
-                    await this.writeRowsToFile(regioes, fileStream, prismaTxn, [...camposMetaIniAtv, ...regioesFields]);
-                } else if (params.periodo == 'Anual' && params.tipo == 'Analitico') {
-                    await this.rodaQueryAnualAnalitico(prismaTxn, sql, anoInicial);
-
-                    for (let ano = anoInicial + 1; ano <= params.ano; ano++) {
-                        await this.rodaQueryAnualAnalitico(prismaTxn, this.replaceCreateToInsert(sql), ano);
-                    }
-
-                    await this.writeRowsToFile(regioes, fileStream, prismaTxn, [...camposMetaIniAtv, ...regioesFields]);
-                } else if (params.periodo == 'Anual' && params.tipo == 'Consolidado') {
-                    await this.rodaQueryAnualConsolidado(prismaTxn, sql, params.ano);
-
-                    await this.writeRowsToFile(regioes, fileStream, prismaTxn, [...camposMetaIniAtv, ...regioesFields]);
-                } else if (params.periodo == 'Semestral' && params.tipo == 'Consolidado') {
-                    const tipo = params.semestre == 'Primeiro' ? 'Primeiro' : 'Segundo';
-                    const ano = params.ano;
-
-                    await this.rodaQuerySemestralConsolidado(tipo, ano, prismaTxn, sql);
-
-                    await this.writeRowsToFile(regioes, fileStream, prismaTxn, [...camposMetaIniAtv, ...regioesFields]);
-                } else if (params.periodo == 'Semestral' && params.tipo == 'Analitico') {
-                    const tipo = params.semestre == 'Primeiro' ? 'Primeiro' : 'Segundo';
-                    const ano = anoInicial;
-
-                    const semestreInicio = tipo === 'Segundo' ? ano + '-12-01' : ano + '-06-01';
-
-                    await this.rodaQuerySemestralAnalitico(prismaTxn, sql, semestreInicio, tipo);
-
-                    for (let ano = anoInicial + 1; ano <= params.ano; ano++) {
-                        const semestreInicio = tipo === 'Segundo' ? ano + '-12-01' : ano + '-06-01';
-
-                        await this.rodaQuerySemestralAnalitico(
-                            prismaTxn,
-                            this.replaceCreateToInsert(sql),
-                            semestreInicio,
-                            tipo
-                        );
-                    }
-
-                    await this.writeRowsToFile(regioes, fileStream, prismaTxn, [...camposMetaIniAtv, ...regioesFields]);
-                }
-            },
-            {
-                maxWait: 1000000,
-                timeout: 60 * 1000 * 15,
-                isolationLevel: 'Serializable',
-            }
-        );
-
-        // Close file stream
-        fileStream.end();
-    }
-
-    /**
-     * Write rows directly from database to file without storing in memory
-     */
-    private async writeRowsToFile(
-        regioesDb: Regiao[] | null,
-        fileStream: any,
-        prismaTxn: Prisma.TransactionClient,
-        fields: any[]
-    ): Promise<void> {
-        let offset: number = 0;
-        let has_more: boolean = true;
-
-        while (has_more) {
-            const data: RetornoDb[] | RetornoDbRegiao[] = await prismaTxn.$queryRawUnsafe(`
-                SELECT *
-                FROM _report_data
-                LIMIT ${BATCH_SIZE} OFFSET ${offset} -- ${this.invalidatePreparedStatement}`);
-
-            if (data.length === 0) {
-                has_more = false;
-                continue;
-            }
-
-            offset += data.length;
-
-            for (const row of data) {
-                if ('valor_json' in row && row.valor_json) {
-                    row.valor = row.valor_json.valor_nominal;
-                    row.valor_categorica = row.valor_json.valor_categorica;
-                }
-
-                // Process the row directly
-                const processedRow = this.processRowForCsv(row, regioesDb);
-
-                // Create CSV line
-                const csvLine = this.createCsvLine(processedRow, fields);
-
-                // Write directly to file
-                fileStream.write(csvLine + '\n');
-            }
-        }
-    }
-
-    /**
      * Process a database row into a flattened object for CSV output
      */
     private processRowForCsv(row: RetornoDb | RetornoDbRegiao, regioesDb: Regiao[] | null): Record<string, any> {
@@ -1580,6 +1396,7 @@ export class IndicadoresService implements ReportableService {
             serie: row.serie,
             valor: row.valor,
             valor_categorica: row.valor_categorica,
+            eh_previa: row.eh_previa || false,
 
             variavel: row.variavel_id
                 ? {
@@ -1682,11 +1499,13 @@ export class IndicadoresService implements ReportableService {
         const result: Record<string, any> = {};
 
         // Handle top-level properties
-        ['pdm_nome', 'data', 'data_referencia', 'serie', 'valor', 'valor_categorica', 'regiao_id', 'eh_previa'].forEach((key) => {
-            if (item[key] !== undefined) {
-                result[key] = item[key];
+        ['pdm_nome', 'data', 'data_referencia', 'serie', 'valor', 'valor_categorica', 'regiao_id', 'eh_previa'].forEach(
+            (key) => {
+                if (item[key] !== undefined) {
+                    result[key] = item[key];
+                }
             }
-        });
+        );
 
         // Process nested 'indicador' properties
         if (item.indicador) {
