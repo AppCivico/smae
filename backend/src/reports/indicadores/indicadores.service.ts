@@ -51,6 +51,7 @@ class RetornoDb {
     orgao_id: number;
     orgao_sigla: string;
     valor_categorica: string | null;
+    eh_previa: boolean;
 }
 
 type JsonRetornoDb = {
@@ -221,7 +222,14 @@ export class IndicadoresService implements ReportableService {
                 :JANELA:
             ),
             i.casas_decimais
-        )::text as valor
+        )::text as valor,
+        EXISTS (
+            SELECT 1 FROM serie_indicador si
+            WHERE si.indicador_id = i.id
+            AND si.serie = series.serie
+            AND si.data_valor = dt.dt::date
+            AND si.eh_previa = true
+        ) as eh_previa
         from generate_series($1::date, $2::date, $3::interval) dt
         cross join (select 'Realizado'::"Serie" as serie UNION ALL select 'RealizadoAcumulado'::"Serie" as serie ) series
         join ${queryFromWhere}
@@ -642,6 +650,7 @@ export class IndicadoresService implements ReportableService {
             'Serie',
             'Data',
             'Valor',
+            'É Prévia',
         ]
             .map((h) => this.escapeCsvField(h))
             .join(',');
@@ -678,7 +687,14 @@ export class IndicadoresService implements ReportableService {
                     ${this.getJanelaExpression(params)}
                 ),
                 i.casas_decimais
-            )::text as valor
+            )::text as valor,
+            EXISTS (
+                SELECT 1 FROM serie_indicador si
+                WHERE si.indicador_id = i.id
+                AND si.serie = series.serie
+                AND si.data_valor = dt.dt::date
+                AND si.eh_previa = true
+            ) as eh_previa
         FROM
             generate_series($1::date, $2::date, $3::interval) dt
         CROSS JOIN
@@ -1623,6 +1639,7 @@ export class IndicadoresService implements ReportableService {
             this.escapeCsvField(flatItem['serie'] || ''),
             this.escapeCsvField(flatItem['data'] || ''),
             this.escapeCsvField(flatItem['valor'] || ''),
+            this.escapeCsvField(flatItem['eh_previa'] ? 'Sim' : 'Não'),
         ];
 
         // For regions, add the valor_categorica field
@@ -1665,7 +1682,7 @@ export class IndicadoresService implements ReportableService {
         const result: Record<string, any> = {};
 
         // Handle top-level properties
-        ['pdm_nome', 'data', 'data_referencia', 'serie', 'valor', 'valor_categorica', 'regiao_id'].forEach((key) => {
+        ['pdm_nome', 'data', 'data_referencia', 'serie', 'valor', 'valor_categorica', 'regiao_id', 'eh_previa'].forEach((key) => {
             if (item[key] !== undefined) {
                 result[key] = item[key];
             }
@@ -1788,6 +1805,7 @@ export class IndicadoresService implements ReportableService {
                         data_referencia: row.data_referencia,
                         serie: row.serie,
                         valor: row.valor,
+                        eh_previa: row.eh_previa || false,
 
                         variavel: row.variavel_id
                             ? {

@@ -35,7 +35,7 @@ export class PSMonitoramentoMensal implements ReportableService {
         const indicadores = await this.indicadoresService.asJSON(
             {
                 ...params,
-                pdm_id: params.plano_setorial_id,
+                pdm_id: params.pdm_id ?? params.plano_setorial_id,
                 periodo: 'Geral',
                 tipo: 'Mensal',
             },
@@ -304,6 +304,7 @@ export class PSMonitoramentoMensal implements ReportableService {
                 { value: 'data_referencia', label: 'Data de Referencia' },
                 { value: 'valor_nominal', label: 'Valor Nominal' },
                 { value: 'valor_categorica', label: 'Valor Categórica' },
+                { value: 'eh_previa', label: 'É Prévia' },
                 { value: 'data_preenchimento', label: 'Data da Coleta' },
                 { value: 'analise_qualitativa_coleta', label: 'Analise Qualitativa Coleta' },
                 { value: 'analise_qualitativa_aprovador', label: 'Analise Qualitativa Conferidor' },
@@ -352,7 +353,7 @@ export class PSMonitoramentoMensal implements ReportableService {
         const indicadores = await this.indicadoresService.toFileOutput(
             {
                 ...params,
-                pdm_id: params.pdm_id,
+                pdm_id: params.pdm_id ?? params.plano_setorial_id,
                 periodo: 'Geral',
                 tipo: 'Mensal',
             },
