@@ -317,7 +317,7 @@ function filtrarGruposComValor(grupos) {
             </span>
           </td>
           <td>
-            <span v-if="!temVariavelAcumulada">
+            <span v-if="!temVariavelAcumulada || temVariavelCategorica">
               N/A
             </span>
 
@@ -326,7 +326,7 @@ function filtrarGruposComValor(grupos) {
             </span>
           </td>
           <td>
-            <span v-if="!temVariavelAcumulada">
+            <span v-if="!temVariavelAcumulada || temVariavelCategorica">
               N/A
             </span>
 
