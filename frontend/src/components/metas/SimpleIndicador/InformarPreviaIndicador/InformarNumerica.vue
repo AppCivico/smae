@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 // eslint-disable-next-line import/extensions
-import { ListSeriesAgrupadas } from '@back/variavel/dto/list-variavel.dto';
+import type { ListSeriesAgrupadas } from '@back/variavel/dto/list-variavel.dto';
 import { Field, useForm } from 'vee-validate';
 import { computed, ref } from 'vue';
 
@@ -42,7 +42,8 @@ const somaAcumulada = computed(() => {
     return 0;
   }
 
-  return Number(props.valores.valor_acumulado_anterior) + Number(values.valor);
+  const anterior = Number(props.valores.valor_acumulado_anterior) || 0;
+  return anterior + Number(values.valor);
 });
 </script>
 
@@ -64,12 +65,12 @@ const somaAcumulada = computed(() => {
           :class="{ error: errors.valor }"
         />
 
-        <legend
+        <span
           v-if="modoDePreenchimento ==='valor_acumulado'"
           class="informar-numerica__legenda"
         >
           Valor total acumulado: {{ somaAcumulada }}
-        </legend>
+        </span>
       </div>
 
       <div class="f1 flex g1 mt2">

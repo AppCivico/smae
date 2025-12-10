@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 // eslint-disable-next-line import/extensions
-import { IndicadorDto } from '@back/indicador/entities/indicador.entity';
+import type { IndicadorDto } from '@back/indicador/entities/indicador.entity';
 // eslint-disable-next-line import/extensions
 import type { ListSeriesAgrupadas } from '@back/variavel/dto/list-variavel.dto';
 import { computed } from 'vue';
@@ -8,8 +8,8 @@ import { computed } from 'vue';
 import { dateToMonthYear } from '@/helpers/dateToDate';
 import { useIndicadoresStore } from '@/stores/indicadores.store';
 
-import InformarCategorica from './InformarPreviaIndicador/InformarCategorica.vue';
-import InformarCategoricaRegionalizavel from './InformarPreviaIndicador/InformarCategoricaRegionalizavel.vue';
+import InformarCategoricaRegionalizavel from './InformarPreviaIndicador/InformarCategorica.vue';
+import InformarCategorica from './InformarPreviaIndicador/InformarCategoricaRegionalizavel.vue';
 import InformarNumerica from './InformarPreviaIndicador/InformarNumerica.vue';
 
 const indicadoresStore = useIndicadoresStore();
@@ -56,11 +56,11 @@ const configuracaoPorTipo = computed(() => {
     },
     categorica: {
       titulo: 'Informar valor prévio',
-      componente: InformarCategoricaRegionalizavel,
+      componente: InformarCategorica,
     },
     categorica_regionalizavel: {
       titulo: 'Informar valor prévio',
-      componente: InformarCategorica,
+      componente: InformarCategoricaRegionalizavel,
     },
   };
 
