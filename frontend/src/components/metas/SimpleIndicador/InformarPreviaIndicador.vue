@@ -8,8 +8,8 @@ import { computed } from 'vue';
 import { dateToMonthYear } from '@/helpers/dateToDate';
 import { useIndicadoresStore } from '@/stores/indicadores.store';
 
-import InformarCategoricaRegionalizavel from './InformarPreviaIndicador/InformarCategorica.vue';
-import InformarCategorica from './InformarPreviaIndicador/InformarCategoricaRegionalizavel.vue';
+import InformarCategorica from './InformarPreviaIndicador/InformarCategorica.vue';
+import InformarCategoricaRegionalizavel from './InformarPreviaIndicador/InformarCategoricaRegionalizavel.vue';
 import InformarNumerica from './InformarPreviaIndicador/InformarNumerica.vue';
 
 const indicadoresStore = useIndicadoresStore();

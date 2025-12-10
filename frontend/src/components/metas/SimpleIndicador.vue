@@ -209,7 +209,10 @@ iniciar();
       v-if="indicadorSelecionado"
       :indicador="indicadorSelecionado"
       :valores="ValoresInd[indicadorSelecionado.id]"
-      @fechar="exibirModalPrevia = false"
+      @fechar="() => {
+        exibirModalPrevia = false
+        iniciar(true)
+      }"
     />
   </SmallModal>
 </template>
