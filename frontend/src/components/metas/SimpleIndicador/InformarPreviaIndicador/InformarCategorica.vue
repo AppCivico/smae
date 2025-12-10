@@ -7,24 +7,44 @@ import { computed } from 'vue';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import { ValorPrevioCategoricaSchema as schema } from '@/consts/formSchemas/InformarPreviaIndicador.schema';
 
+type Campos = {
+  valor_previo: {
+    qualificacao: string
+    quantidade: string
+  }[]
+};
+
+type DadosARetornar = {
+  valor: '0'
+  elementos: {
+    categorica_valor: number,
+    valor: string
+  }[]
+};
+
 type Props = {
   valores: ListSeriesAgrupadas;
 };
 
-const props = defineProps<Props>();
-
 type Emit = {
-  (event: 'submit', values: any): void
+  (event: 'submit', values: DadosARetornar): void
 };
+
+const props = defineProps<Props>();
 const emit = defineEmits<Emit>();
 
-const { handleSubmit } = useForm({
+const { handleSubmit } = useForm<Campos>({
   validationSchema: schema,
 });
 
 const onSubmit = handleSubmit.withControlled((valoresControlados) => {
-  console.log(Object.values(valoresControlados.valor_previo));
-  emit('submit', valoresControlados);
+  emit('submit', {
+    valor: '0',
+    elementos: Object.values(valoresControlados.valor_previo).map((item) => ({
+      categorica_valor: Number(item.qualificacao),
+      valor: item.quantidade,
+    })),
+  });
 });
 
 const dadosTabela = computed(() => {
