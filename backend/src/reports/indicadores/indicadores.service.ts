@@ -461,14 +461,7 @@ export class IndicadoresService implements ReportableService {
             series.serie,
             dt.dt::date,
             :JANELA:
-        ) AS valor_json,
-        EXISTS (
-            SELECT 1 FROM serie_variavel sv
-            WHERE sv.variavel_id = v.id
-            AND sv.serie = series.serie
-            AND sv.data_valor = dt.dt::date
-            AND sv.eh_previa = true
-        ) as eh_previa
+        ) AS valor_json
         from generate_series($1::date, $2::date, $3::interval) dt
         cross join (select 'Realizado'::"Serie" as serie UNION ALL select 'RealizadoAcumulado'::"Serie" as serie ) series
         join ${queryFromWhere}
@@ -917,14 +910,7 @@ export class IndicadoresService implements ReportableService {
                 series.serie,
                 dt.dt::date,
                 ${this.getJanelaExpression(params)}
-            ) AS valor_json,
-            EXISTS (
-                SELECT 1 FROM serie_variavel sv
-                WHERE sv.variavel_id = v.id
-                AND sv.serie = series.serie
-                AND sv.data_valor = dt.dt::date
-                AND sv.eh_previa = true
-            ) as eh_previa
+            ) AS valor_json
         FROM
             generate_series($1::date, $2::date, $3::interval) dt
         CROSS JOIN
@@ -1171,201 +1157,6 @@ export class IndicadoresService implements ReportableService {
         }
 
         return rowCount;
-    }
-
-    /**
-     * Build direct query without using temp tables
-     */
-    private buildDirectQuery(queryFromWhere: string): string {
-        return `SELECT
-    pdm.nome as pdm_nome,
-    i.id as indicador_id,
-    i.codigo as indicador_codigo,
-    i.titulo as indicador_titulo,
-    COALESCE(i.meta_id, m2.id) as meta_id,
-    COALESCE(meta.titulo, m2.titulo) as meta_titulo,
-    COALESCE(meta.codigo, m2.codigo) as meta_codigo,
-    meta_tags_as_array(COALESCE(meta.id, m2.id)) as meta_tags,
-    COALESCE(i.iniciativa_id, i2.id) as iniciativa_id,
-    COALESCE(iniciativa.titulo, i2.titulo) as iniciativa_titulo,
-    COALESCE(iniciativa.codigo, i2.codigo) as iniciativa_codigo,
-    i.atividade_id,
-    atividade.titulo as atividade_titulo,
-    atividade.codigo as atividade_codigo,
-    i.complemento as indicador_complemento,
-    i.contexto as indicador_contexto,
-    :DATA: as "data",
-    dt.dt::date::text as "data_referencia",
-    series.serie,
-    round(
-        valor_indicador_em(
-            i.id,
-            series.serie,
-            dt.dt::date,
-            :JANELA:
-        ),
-        i.casas_decimais
-    )::text as valor,
-    EXISTS (
-        SELECT 1 FROM serie_indicador si
-        WHERE si.indicador_id = i.id
-        AND si.serie = series.serie
-        AND si.data_valor = dt.dt::date
-        AND si.eh_previa = true
-    ) as eh_previa
-    from generate_series($1::date, $2::date, $3::interval) dt
-    cross join (select 'Realizado'::"Serie" as serie UNION ALL select 'RealizadoAcumulado'::"Serie" as serie ) series
-    join ${queryFromWhere}
-    where dt.dt >= i.inicio_medicao AND dt.dt < i.fim_medicao + (select periodicidade_intervalo(i.periodicidade))`;
-    }
-
-    /**
-     * Process query results directly to file for Mensal Analitico
-     */
-    private async processQueryDirectlyToFile(
-        prismaTxn: Prisma.TransactionClient,
-        sql: string,
-        fileStream: any,
-        regioesDb: Regiao[] | null,
-        fields: any[],
-        ano: number,
-        mes: number
-    ): Promise<void> {
-        const query = sql
-            .replace(':JANELA:', "extract('month' from periodicidade_intervalo(i.periodicidade))::int")
-            .replace(':DATA:', 'dt.dt::date::text');
-
-        // Execute query and process results in batches
-        let offset = 0;
-        let hasMore = true;
-
-        while (hasMore) {
-            // We have to handle pagination ourselves since we're not using LIMIT/OFFSET in the SQL
-            const data: any = await prismaTxn.$queryRawUnsafe(
-                query + ` OFFSET ${offset} LIMIT ${BATCH_SIZE}`,
-                ano + '-' + mes + '-01',
-                ano + '-' + mes + '-01',
-                '1 month'
-            );
-
-            if (!data || data.length === 0) {
-                hasMore = false;
-                continue;
-            }
-
-            offset += data.length;
-
-            // Process and write each row
-            for (const row of data) {
-                if ('valor_json' in row && row.valor_json) {
-                    row.valor = row.valor_json.valor_nominal;
-                    row.valor_categorica = row.valor_json.valor_categorica;
-                }
-
-                // Process row and write to file
-                const processedRow = this.processRowForCsv(row, regioesDb);
-                const csvLine = this.createCsvLine(processedRow, fields);
-                fileStream.write(csvLine + '\n');
-            }
-        }
-    }
-
-    /**
-     * Process query results directly to file for Anual Analitico
-     */
-    private async processAnualAnaliticoDirectlyToFile(
-        prismaTxn: Prisma.TransactionClient,
-        sql: string,
-        fileStream: any,
-        regioesDb: Regiao[] | null,
-        fields: any[],
-        ano: number
-    ): Promise<void> {
-        const query = sql
-            .replace(':JANELA:', "extract('month' from periodicidade_intervalo(i.periodicidade))::int")
-            .replace(':DATA:', 'dt.dt::date::text');
-
-        // Execute query and process results in batches
-        let offset = 0;
-        let hasMore = true;
-
-        while (hasMore) {
-            const data: any = await prismaTxn.$queryRawUnsafe(
-                query + ` OFFSET ${offset} LIMIT ${BATCH_SIZE}`,
-                ano + '-01-01',
-                ano + '-12-01',
-                '1 month'
-            );
-
-            if (!data || data.length === 0) {
-                hasMore = false;
-                continue;
-            }
-
-            offset += data.length;
-
-            // Process and write each row
-            for (const row of data) {
-                if ('valor_json' in row && row.valor_json) {
-                    row.valor = row.valor_json.valor_nominal;
-                    row.valor_categorica = row.valor_json.valor_categorica;
-                }
-
-                // Process row and write to file
-                const processedRow = this.processRowForCsv(row, regioesDb);
-                const csvLine = this.createCsvLine(processedRow, fields);
-                fileStream.write(csvLine + '\n');
-            }
-        }
-    }
-
-    /**
-     * Process query results directly to file for Anual Consolidado
-     */
-    private async processAnualConsolidadoDirectlyToFile(
-        prismaTxn: Prisma.TransactionClient,
-        sql: string,
-        fileStream: any,
-        regioesDb: Regiao[] | null,
-        fields: any[],
-        ano: number
-    ): Promise<void> {
-        const query = sql
-            .replace(':JANELA:', '12')
-            .replace(':DATA:', "(dt.dt::date - '11 months'::interval)::date::text || '/' || (dt.dt::date)");
-
-        // Execute query and process results in batches
-        let offset = 0;
-        let hasMore = true;
-
-        while (hasMore) {
-            const data: any = await prismaTxn.$queryRawUnsafe(
-                query + ` OFFSET ${offset} LIMIT ${BATCH_SIZE}`,
-                ano + '-12-01',
-                ano + '-12-01',
-                '1 year'
-            );
-
-            if (!data || data.length === 0) {
-                hasMore = false;
-                continue;
-            }
-
-            offset += data.length;
-
-            // Process and write each row
-            for (const row of data) {
-                if ('valor_json' in row && row.valor_json) {
-                    row.valor = row.valor_json.valor_nominal;
-                    row.valor_categorica = row.valor_json.valor_categorica;
-                }
-
-                // Process row and write to file
-                const processedRow = this.processRowForCsv(row, regioesDb);
-                const csvLine = this.createCsvLine(processedRow, fields);
-                fileStream.write(csvLine + '\n');
-            }
-        }
     }
 
     /**
@@ -1624,7 +1415,7 @@ export class IndicadoresService implements ReportableService {
                         data_referencia: row.data_referencia,
                         serie: row.serie,
                         valor: row.valor,
-                        eh_previa: row.eh_previa || false,
+                        eh_previa: row.variavel_id ? null : row.eh_previa || false,
 
                         variavel: row.variavel_id
                             ? {
