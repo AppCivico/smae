@@ -89,7 +89,7 @@ BEGIN
             'valor_nominal',
             round(si.valor_nominal, v.casas_decimais),
             'atualizado_em',
-            COALESCE(si.atualizado_em, si.criado_em),
+            COALESCE(si.atualizado_em, '1970-01-01T00:00:00Z'::timestamptz),
             'valor_categorica',
             vcv.titulo
         ) into _valor

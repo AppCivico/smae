@@ -24,7 +24,6 @@ import { FilterIndicadorDto, FilterIndicadorSerieDto } from './dto/filter-indica
 import { FormulaVariaveis, IndicadorPreviaUpsertDto, UpdateIndicadorDto } from './dto/update-indicador.dto';
 import { IndicadorDto } from './entities/indicador.entity';
 import { IndicadorFormulaCompostaEmUsoDto } from './entities/indicador.formula-composta.entity';
-import { IndicadorPreviaCategorica } from '../variavel/dto/create-variavel.dto';
 
 const FP = require('../../public/js/formula_parser.js');
 

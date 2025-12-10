@@ -18,8 +18,7 @@ import {
     RelPsMonitRetorno,
 } from './entities/ps-monitoramento-mensal.entity';
 
-import { WriteCsvToFile, CsvWriterOptions } from 'src/common/helpers/CsvWriter';
-import { flatten } from '@json2csv/transforms';
+import { CsvWriterOptions, WriteCsvToFile } from 'src/common/helpers/CsvWriter';
 
 @Injectable()
 export class PSMonitoramentoMensal implements ReportableService {
