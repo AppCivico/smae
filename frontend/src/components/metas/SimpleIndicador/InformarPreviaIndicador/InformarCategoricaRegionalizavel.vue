@@ -11,14 +11,26 @@ type Props = {
   valores: ListSeriesAgrupadas;
 };
 
+type Campos = {
+  qualificacao: number | ''
+};
+
+type DadosARetornar = {
+  valor: '0'
+  elementos: {
+    categorica_valor: number,
+    valor: '1'
+  }[]
+};
+
 const props = defineProps<Props>();
 
 type Emit = {
-  (event: 'submit', values: any): void
+  (event: 'submit', values: DadosARetornar): void
 };
 const emit = defineEmits<Emit>();
 
-const { handleSubmit, errors } = useForm({
+const { handleSubmit, errors } = useForm<Campos>({
   validationSchema: schema,
   initialValues: {
     qualificacao: '',
@@ -36,8 +48,15 @@ const opcoesCategoria = computed(() => {
 });
 
 const onSubmit = handleSubmit.withControlled((valoresControlados) => {
-  console.log(valoresControlados);
-  emit('submit', valoresControlados);
+  emit('submit', {
+    valor: '0',
+    elementos: [
+      {
+        categorica_valor: Number(valoresControlados.qualificacao),
+        valor: '1',
+      },
+    ],
+  });
 });
 </script>
 
