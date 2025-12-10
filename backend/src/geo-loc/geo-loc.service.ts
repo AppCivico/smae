@@ -890,4 +890,63 @@ export class GeoLocService {
 
         return geoJson[0].geojson;
     }
+
+    async syncGeoCamadaRegioes(): Promise<{ created: number; checked: number }> {
+        let created = 0;
+        let checked = 0;
+
+        const geoCamadas = await this.prisma.geoCamada.findMany({
+            where: {
+                nivel_regionalizacao: { not: null },
+            },
+            select: {
+                id: true,
+                codigo: true,
+                nivel_regionalizacao: true,
+                GeoCamadaRegiao: {
+                    select: {
+                        regiao_id: true,
+                    },
+                },
+            },
+        });
+
+        for (const geoCamada of geoCamadas) {
+            checked++;
+
+            const existingRegiaoIds = new Set(geoCamada.GeoCamadaRegiao.map((r) => r.regiao_id));
+
+            const regioes = await this.prisma.regiao.findMany({
+                where: {
+                    nivel: geoCamada.nivel_regionalizacao!,
+                    codigo: geoCamada.codigo,
+                    removido_em: null,
+                },
+                select: { id: true },
+            });
+
+            const newRelations = regioes.filter((r) => !existingRegiaoIds.has(r.id));
+
+            if (newRelations.length > 0) {
+                await this.prisma.geoCamadaRegiao.createMany({
+                    data: newRelations.map((r) => ({
+                        geo_camada_id: geoCamada.id,
+                        regiao_id: r.id,
+                    })),
+                    skipDuplicates: true,
+                });
+
+                created += newRelations.length;
+                this.logger.log(
+                    `GeoCamada ${geoCamada.id} (codigo: ${geoCamada.codigo}): created ${newRelations.length} new region relations`
+                );
+            }
+        }
+
+        this.logger.log(
+            `syncGeoCamadaRegioes completed: checked ${checked} geoCamadas, created ${created} new relations`
+        );
+
+        return { created, checked };
+    }
 }

@@ -77,4 +77,11 @@ export class GeoLocController {
         await this.geoService.processGeoJsonSimplification();
         return 'OK';
     }
+
+    @Patch('camada/sync-regioes')
+    @ApiBearerAuth('access-token')
+    @Roles(['SMAE.superadmin'])
+    async syncRegioes(): Promise<object> {
+        return await this.geoService.syncGeoCamadaRegioes();
+    }
 }
