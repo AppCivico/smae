@@ -21,10 +21,10 @@ type Props = {
 
 const props = defineProps<Props>();
 
-async function enviarDados(dados: unknown) {
+async function enviarDados(dados: Record<string, unknown>) {
   await indicadoresStore.indicarPrevia(props.indicador.id, {
-    referencia: props.valores.ultima_previa_indicador.referencia,
     ...dados,
+    referencia: props.valores.ultima_previa_indicador.referencia,
   });
 }
 
