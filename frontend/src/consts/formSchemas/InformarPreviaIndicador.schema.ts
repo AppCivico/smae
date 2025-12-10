@@ -14,6 +14,10 @@ export const ValorPrevioCategoricaSchema = object({
     ),
 });
 
+export const ValorPrevioCategoricaRegionalizadaSchema = object({
+  qualificacao: number().label('Informar').required(),
+});
+
 export const ValorPrevioNumericaSchema = object({
   valor: number().label('valor'),
 });
