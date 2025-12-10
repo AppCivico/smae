@@ -1187,7 +1187,7 @@ export class IndicadoresService implements ReportableService {
             serie: row.serie,
             valor: row.valor,
             valor_categorica: row.valor_categorica,
-            eh_previa: row.eh_previa || false,
+            eh_previa: row.eh_previa,
 
             variavel: row.variavel_id
                 ? {
