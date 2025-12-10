@@ -175,7 +175,7 @@
         <GruposDeSerie
           v-else
           :g="Valores[(variavel.id as keyof {})]"
-          variavel="true"
+          eh-variavel
           :tem-variavel-acumulada="!!variavel.acumulativa"
         />
       </table>

@@ -18,7 +18,7 @@ const props = defineProps({
     type: Object,
     default: () => ({}),
   },
-  variavel: {
+  ehVariavel: {
     type: Boolean,
     default: false,
   },
@@ -266,7 +266,7 @@ function filtrarGruposComValor(grupos) {
             <div class="flex center">
               <component
                 :is="hasModal(val.ciclo_fisico) ? 'button' : 'span'"
-                v-if="variavel"
+                v-if="ehVariavel"
                 :type="hasModal(val.ciclo_fisico) ? 'button' : null"
                 class="mr1 like-a__text"
                 :style="{ color: hasModal(val.ciclo_fisico) ? '#94DA00' : '#B8C0CC' }"
