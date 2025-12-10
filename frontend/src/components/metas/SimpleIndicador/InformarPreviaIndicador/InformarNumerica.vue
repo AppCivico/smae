@@ -65,12 +65,12 @@ const somaAcumulada = computed(() => {
           :class="{ error: errors.valor }"
         />
 
-        <span
+        <output
           v-if="modoDePreenchimento ==='valor_acumulado'"
           class="informar-numerica__legenda"
         >
           Valor total acumulado: {{ somaAcumulada }}
-        </span>
+        </output>
       </div>
 
       <div class="f1 flex g1 mt2">
