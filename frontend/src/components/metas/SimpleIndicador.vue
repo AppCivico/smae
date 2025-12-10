@@ -125,8 +125,6 @@ iniciar();
           </SmaeLink>
         </div>
 
-        <h1>{{ ind.indicador_tipo }} - {{ ind.regionalizavel }}</h1>
-
         <div
           v-if="
             ind.indicador_previa_opcao === 'PermitirPreenchimento'
@@ -211,6 +209,7 @@ iniciar();
       v-if="indicadorSelecionado"
       :indicador="indicadorSelecionado"
       :valores="ValoresInd[indicadorSelecionado.id]"
+      @fechar="exibirModalPrevia = false"
     />
   </SmallModal>
 </template>

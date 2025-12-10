@@ -21,11 +21,19 @@ type Props = {
 
 const props = defineProps<Props>();
 
+type Emit = {
+  (event: 'fechar'): void;
+};
+
+const emit = defineEmits<Emit>();
+
 async function enviarDados(dados: Record<string, unknown>) {
   await indicadoresStore.indicarPrevia(props.indicador.id, {
     ...dados,
-    referencia: props.valores.ultima_previa_indicador.referencia,
+    referencia: (props.valores.ultima_previa_indicador as { referencia?: string })?.referencia,
   });
+
+  emit('fechar');
 }
 
 const variavelTipo = computed(() => {
