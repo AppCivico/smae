@@ -74,9 +74,11 @@ export class PortfolioTagService {
         let portfoliosId = [];
 
         if (filters?.portfolio_id) {
-            const portfolio = await this.portfolioService.findOne('PP', filters.portfolio_id, user);
-            if (!portfolio) throw new HttpException('Portfólio não encontrado ou sem permissão para acesso', 400);
-            portfoliosId = [filters.portfolio_id];
+            const portfolio = await this.portfolioService.findAll('PP', user, true, filters.portfolio_id);
+            if (!portfolio.length)
+                throw new HttpException(`Sem permissão para acesso ao portfólio id ${filters.portfolio_id}`, 403);
+
+            portfoliosId = [portfolio[0].id];
         } else {
             const portfolios = await this.portfolioService.findAll('PP', user, true);
             portfoliosId = portfolios.map((p) => p.id);
