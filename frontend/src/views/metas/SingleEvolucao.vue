@@ -172,7 +172,7 @@ watch([parentId, parentField], iniciar, { immediate: true });
                   {{ ind.codigo }} - {{ ind.titulo }}
                   <small
                     v-if="conferirSeHaValoresPreviosNoIndicador(ind.id)"
-                    class="nowrap"
+                    class="dib"
                   >
                     (inclui valores prévios <div
                       class="tipinfo"
