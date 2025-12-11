@@ -277,13 +277,14 @@ export class PsCicloService {
         cicloId: number,
         user: PessoaFromJwt,
         verificarFechamento = false,
-        tipoDocumento?: DocumentoEditavelTipo
+        tipoDocumento?: DocumentoEditavelTipo,
+        reabrindo_ciclo = false
     ): Promise<boolean> {
         await this.metaService.assertMetaWriteOrThrow(tipo, metaId, user, 'monitoramento', 'readwrite');
 
         const cicloAtivo = await this.verificaCicloAtivo(pdmId, cicloId);
         let cicloReaberto;
-        if (!cicloAtivo) {
+        if (!cicloAtivo && !reabrindo_ciclo) {
             // Ciclo inativo pode ser atualizado, desde que tenha sido reaberto.
             cicloReaberto = await this.verificaCicloInativoReaberto(pdmId, cicloId, metaId);
             if (!cicloReaberto) throw new BadRequestException('Não é possível editar um ciclo inativo');
@@ -743,7 +744,7 @@ export class PsCicloService {
         meta_id: number,
         user: PessoaFromJwt
     ): Promise<void> {
-        await this.verificaPermissaoEscritaBase(tipo, pdmId, meta_id, cicloId, user, false);
+        await this.verificaPermissaoEscritaBase(tipo, pdmId, meta_id, cicloId, user, false, undefined, true);
 
         // Buscando linha fechamento atual para o ciclo.
         const fechamento = await this.prisma.metaCicloFisicoFechamento.findFirst({
