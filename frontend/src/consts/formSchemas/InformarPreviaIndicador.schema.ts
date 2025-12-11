@@ -9,7 +9,7 @@ export const ValorPrevioCategoricaSchema = object({
       object()
         .shape({
           qualificacao: number().label('qualificação'),
-          quantidade: number().label('quantidade'),
+          quantidade: number().label('quantidade').nullableOuVazio(),
         }),
     ),
 });
@@ -19,5 +19,5 @@ export const ValorPrevioCategoricaRegionalizadaSchema = object({
 });
 
 export const ValorPrevioNumericaSchema = object({
-  valor: number().label('valor').required(),
+  valor: number().label('valor').nullableOuVazio(),
 });

@@ -1,107 +1,133 @@
 <script lang="ts" setup>
 // eslint-disable-next-line import/extensions
 import type { ListSeriesAgrupadas } from '@back/variavel/dto/list-variavel.dto';
-import { ErrorMessage, Field, useForm } from 'vee-validate';
+import { Field, useForm } from 'vee-validate';
 import { computed } from 'vue';
 
-import SmaeLabel from '@/components/camposDeFormulario/SmaeLabel.vue';
-import { ValorPrevioCategoricaRegionalizadaSchema as schema } from '@/consts/formSchemas/InformarPreviaIndicador.schema';
-
-type Props = {
-  valores: ListSeriesAgrupadas;
-};
+import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
+import { ValorPrevioCategoricaSchema as schema } from '@/consts/formSchemas/InformarPreviaIndicador.schema';
 
 type Campos = {
-  qualificacao: number | ''
+  valor_previo: {
+    qualificacao: string
+    quantidade: string
+  }[]
 };
 
 type DadosARetornar = {
   valor: '0'
   elementos: {
     categorica_valor: number,
-    valor: '1'
+    valor: string
   }[]
 };
 
-const props = defineProps<Props>();
+type Props = {
+  valores: ListSeriesAgrupadas;
+};
 
 type Emit = {
   (event: 'submit', values: DadosARetornar): void
 };
+
+const props = defineProps<Props>();
 const emit = defineEmits<Emit>();
 
-const { handleSubmit, errors } = useForm<Campos>({
+const { handleSubmit } = useForm<Campos>({
   validationSchema: schema,
-  initialValues: {
-    qualificacao: '',
-  },
-});
-
-const opcoesCategoria = computed(() => {
-  const categoricas = props.valores?.dados_auxiliares?.categoricas;
-  if (!categoricas) return [];
-
-  return Object.entries(categoricas).map(([chave, valor]) => ({
-    value: chave,
-    label: valor,
-  }));
 });
 
 const onSubmit = handleSubmit.withControlled((valoresControlados) => {
   emit('submit', {
     valor: '0',
-    elementos: [
-      {
-        categorica_valor: Number(valoresControlados.qualificacao),
-        valor: '1',
-      },
-    ],
+    elementos: Object.values(valoresControlados.valor_previo).map((item) => ({
+      categorica_valor: Number(item.qualificacao),
+      valor: item.quantidade || '',
+    })),
   });
+});
+
+const dadosTabela = computed(() => {
+  const categoricas = props.valores.dados_auxiliares?.categoricas;
+  if (!categoricas) return [];
+
+  return Object.entries(categoricas).map(([chave, valor]) => ({
+    chave,
+    qualificacao: valor,
+  }));
+});
+
+const colunas = computed(() => {
+  const type = schema.fields.valor_previo.innerType;
+  if (!type) {
+    return [];
+  }
+
+  return Object.keys(type.fields).map((item) => ({
+    chave: item,
+    label: type.fields[item].spec.label,
+  }));
 });
 </script>
 
 <template>
-  <div class="informar-categorica-regionalizavel flex">
-    <form
-      class="f1"
-      @submit="onSubmit"
+  <form
+    class="informar-categorica"
+    @submit="onSubmit"
+  >
+    <SmaeTable
+      class="informar-categorica__tabela"
+      :dados="dadosTabela"
+      :colunas="colunas"
     >
-      <div>
-        <SmaeLabel
-          :schema="schema"
-          name="qualificacao"
+      <template #celula:qualificacao="{ linha }">
+        <Field
+          :name="`valor_previo[${linha.chave}].qualificacao`"
+          :value="linha.chave"
+          hidden
         />
 
+        <span class="tabela-item tabela-item--qualificacao">{{ linha.qualificacao }}</span>
+      </template>
+
+      <template #celula:quantidade="{ linha }">
         <Field
-          name="qualificacao"
-          as="select"
+          :name="`valor_previo[${linha.chave}].quantidade`"
           class="inputtext light"
-          :class="{'error': errors.qualificacao}"
-        >
-          <option value="">
-            Selecione uma categoria
-          </option>
+        />
+      </template>
+    </SmaeTable>
 
-          <option
-            v-for="opcao in opcoesCategoria"
-            :key="opcao.value"
-            :value="opcao.value"
-          >
-            {{ opcao.label }}
-          </option>
-        </Field>
-
-        <ErrorMessage name="qualificacao" />
-      </div>
-
-      <div class="flex justifycenter mt2">
-        <button
-          class="btn"
-          type="submit"
-        >
-          Salvar
-        </button>
-      </div>
-    </form>
-  </div>
+    <div class="flex justifycenter mt2">
+      <button
+        class="btn"
+        type="submit"
+      >
+        Salvar
+      </button>
+    </div>
+  </form>
 </template>
+
+<style lang="less" scoped>
+.informar-categorica__tabela {
+  :deep(.smae-table__coluna) {
+    width: 50%;
+  }
+
+  :deep(tbody tr) {
+    background-color: transparent;
+  }
+
+  :deep(tbody tr:last-child) {
+    border-bottom: none;
+  }
+}
+
+.tabela-item--qualificacao {
+  color: #3B5881;
+  font-weight: 700;
+  font-size: 1.2rem;
+  text-transform: capitalize;
+}
+</style>

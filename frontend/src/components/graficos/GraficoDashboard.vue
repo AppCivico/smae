@@ -1,6 +1,10 @@
 <template>
   <div
     v-bind="$attrs"
+    tabindex="0"
+    class="envelope-do-grafico br8"
+    @focus="isFocused = true"
+    @blur="isFocused = false"
   >
     <v-chart
       v-if="option"
@@ -36,8 +40,8 @@ import {
   TooltipComponent,
   VisualMapComponent,
 } from 'echarts/components';
-import { use } from 'echarts/core';
 import type { EChartsCoreOption } from 'echarts/core';
+import { use } from 'echarts/core';
 import { CanvasRenderer } from 'echarts/renderers';
 import { merge } from 'lodash';
 import type { VNode } from 'vue';
@@ -124,15 +128,23 @@ const definirPadroes = (opcoes: EChartsCoreOption) => (merge({
 const el = ref(null);
 const elementoPainelFlutuante = ref<HTMLElement | null>(null);
 const conteudoPainelFlutuante = ref<VNode[] | null>(null);
+const isFocused = ref(false);
 
 const preparedOptions = computed((): EChartsCoreOption => {
   const { tooltipTemplate } = props;
+
+  // Remove dataZoom configuration when not focused
+  const baseOptions = { ...props.option };
+  if (!isFocused.value && baseOptions.dataZoom) {
+    delete baseOptions.dataZoom;
+  }
+
   if (!tooltipTemplate && !slots['painel-flutuante']) {
-    return definirPadroes(props.option);
+    return definirPadroes(baseOptions);
   }
 
   return {
-    ...definirPadroes(props.option),
+    ...definirPadroes(baseOptions),
     tooltip: {
       trigger: 'item',
       renderMode: 'html',
@@ -179,8 +191,17 @@ const preparedOptions = computed((): EChartsCoreOption => {
   };
 });
 </script>
+<style lang="less" scoped>
+.envelope-do-grafico {
+  flex-grow: 1;
 
-<style scoped>
+  &:focus {
+    outline: 1px solid @c400;
+    outline-style: solid !important;
+    outline-offset: 4px;
+  }
+}
+
 .chart {
   height: 400px;
 }

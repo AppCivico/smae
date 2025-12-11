@@ -32,18 +32,25 @@ const { values, handleSubmit, errors } = useForm<Campos>({
 });
 
 const onSubmit = handleSubmit.withControlled((valoresControlados) => {
-  emit('submit', {
-    valor: `${valoresControlados.valor}`,
-  });
-});
+  if (valoresControlados.valor === '') {
+    emit('submit', {
+      valor: '',
+    });
+    return;
+  }
 
-const somaAcumulada = computed(() => {
   if (modoDePreenchimento.value === 'valor_nominal') {
-    return 0;
+    emit('submit', {
+      valor: `${valoresControlados.valor}`,
+    });
+    return;
   }
 
   const anterior = Number(props.valores.valor_acumulado_anterior) || 0;
-  return anterior + Number(values.valor);
+
+  emit('submit', {
+    valor: `${Number(valoresControlados.valor) - anterior}`,
+  });
 });
 </script>
 
@@ -71,7 +78,7 @@ const somaAcumulada = computed(() => {
           v-if="modoDePreenchimento ==='valor_acumulado'"
           class="informar-numerica__legenda"
         >
-          Valor total acumulado: {{ somaAcumulada }}
+          Valor acumulado vigente: {{ props.valores.valor_acumulado_anterior }}
         </output>
       </div>
 
