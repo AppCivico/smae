@@ -82,12 +82,13 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
 import { storeToRefs } from 'pinia';
-import { useAlertStore } from '@/stores/alert.store';
-import { useAssuntosStore } from '@/stores/assuntosPs.store';
+import { ref } from 'vue';
+
 import LocalFilter from '@/components/LocalFilter.vue';
 import SmaeLink from '@/components/SmaeLink.vue';
+import { useAlertStore } from '@/stores/alert.store';
+import { useAssuntosStore } from '@/stores/assuntosPs.store';
 
 const alertStore = useAlertStore();
 const assuntosStore = useAssuntosStore();

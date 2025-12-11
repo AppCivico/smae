@@ -1,13 +1,14 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { reactive, ref, unref } from 'vue';
+import { useRoute } from 'vue-router';
+
 import { router } from '@/router';
 import {
   useAlertStore,
   useEditModalStore,
   useMetasStore, usePaineisStore,
 } from '@/stores';
-import { storeToRefs } from 'pinia';
-import { reactive, ref, unref } from 'vue';
-import { useRoute } from 'vue-router';
 
 const route = useRoute();
 const { painel_id } = route.params;

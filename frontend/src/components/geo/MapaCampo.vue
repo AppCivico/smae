@@ -12,8 +12,9 @@ import {
 import {
   computed, defineModel, defineOptions, nextTick, ref, toRef,
 } from 'vue';
-import SmallModal from '@/components/SmallModal.vue';
+
 import MapaExibir from '@/components/geo/MapaExibir.vue';
+import SmallModal from '@/components/SmallModal.vue';
 import { geoLocalização as schema } from '@/consts/formSchemas';
 import tiposDeLogradouro from '@/consts/tiposDeLogradouro';
 import requestS from '@/helpers/requestS.ts';
@@ -109,6 +110,22 @@ const endereçosConsolidadosPorToken = computed(() => ({
   ...props.geolocalizaçãoPorToken,
   ...endereçosTemporários.value,
 }));
+
+function obterSubprefeituraEDistrito(token) {
+  const endereco = endereçosConsolidadosPorToken.value[token];
+
+  if (!endereco?.regioes || typeof endereco.regioes !== 'object') {
+    return { subprefeitura: '-', distrito: '-' };
+  }
+
+  const subprefeitura = endereco.regioes?.nivel_3?.[0];
+  const distrito = endereco.regioes?.nivel_4?.[0];
+
+  return {
+    subprefeitura: subprefeitura?.descricao || '-',
+    distrito: distrito?.descricao || '-',
+  };
+}
 
 function redefinirFormulário() {
   // Redefinição manual porque o `resetForm()` conflita com o model
@@ -291,6 +308,8 @@ const formularioSujo = useIsFormDirty();
       <col>
       <col>
       <col>
+      <col>
+      <col>
       <col class="col--number">
       <col class="col--botão-de-ação">
       <col class="col--botão-de-ação">
@@ -299,9 +318,22 @@ const formularioSujo = useIsFormDirty();
     <thead>
       <tr>
         <th />
-        <th>Endereço</th>
-        <th>Bairro</th>
-        <th class="cell--nowrap">
+        <th scope="col">
+          Endereço
+        </th>
+        <th scope="col">
+          Bairro
+        </th>
+        <th scope="col">
+          Subprefeitura
+        </th>
+        <th scope="col">
+          Distrito
+        </th>
+        <th
+          scope="col"
+          class="cell--nowrap"
+        >
           <abbr title="Código de Endereçamento Postal">CEP</abbr>
         </th>
         <th />
@@ -323,6 +355,12 @@ const formularioSujo = useIsFormDirty();
         </td>
         <td>
           {{ endereçosConsolidadosPorToken[token]?.endereco?.properties?.bairro || '-' }}
+        </td>
+        <td>
+          {{ obterSubprefeituraEDistrito(token).subprefeitura }}
+        </td>
+        <td>
+          {{ obterSubprefeituraEDistrito(token).distrito }}
         </td>
         <td class="cell--nowrap">
           {{ endereçosConsolidadosPorToken[token]?.endereco?.properties?.cep || '-' }}

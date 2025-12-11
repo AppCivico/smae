@@ -466,6 +466,19 @@ function excluirObra(id, nome) {
   }, 'Remover');
 }
 
+const temEndereços = computed(
+  () => Array.isArray(values.geolocalizacao) && values.geolocalizacao.length > 0,
+);
+
+watch(() => values.geolocalizacao, (novoValor, valorAntigo) => {
+  const tinhaEnderecos = Array.isArray(valorAntigo) && valorAntigo.length > 0;
+  const temEnderecosAgora = Array.isArray(novoValor) && novoValor.length > 0;
+
+  if (!tinhaEnderecos && temEnderecosAgora) {
+    setFieldValue('regiao_ids', []);
+  }
+}, { deep: true });
+
 const formularioSujo = useIsFormDirty();
 
 watch(emFoco, () => {
@@ -1049,17 +1062,45 @@ watch(listaDeTiposDeIntervenção, () => {
         :schema="schema"
       />
 
-      <Field
-        v-slot="{ value, handleChange }"
-        name="regiao_ids"
-      >
-        <CampoDeRegioesAgrupadas
-          :model-value="value"
-          :valores-iniciais="itemParaEdicao.regiao_ids"
-          :nível="portfolioMdoStore.portfoliosPorId[values.portfolio_id]?.nivel_regionalizacao"
-          @update:model-value="handleChange"
-        />
-      </Field>
+      <div class="mb2">
+        <legend class="label mt2 mb1legend">
+          Localização
+        </legend>
+
+        <Field
+          v-slot="{ value, handleChange }"
+          name="geolocalizacao"
+        >
+          <MapaCampo
+            :model-value="value"
+            name="geolocalizacao"
+            :geolocalização-por-token="geolocalizaçãoPorToken"
+            @update:model-value="handleChange"
+          />
+        </Field>
+      </div>
+
+      <fieldset :disabled="temEndereços">
+        <p
+          v-if="temEndereços"
+          class="t13 tc500 mb1"
+        >
+          As regiões serão calculadas automaticamente com base nos endereços cadastrados.
+          Para editar a região manualmente, remova todos os endereços.
+        </p>
+
+        <Field
+          v-slot="{ value, handleChange }"
+          name="regiao_ids"
+        >
+          <CampoDeRegioesAgrupadas
+            :model-value="value"
+            :valores-iniciais="itemParaEdicao.regiao_ids"
+            :nível="portfolioMdoStore.portfoliosPorId[values.portfolio_id]?.nivel_regionalizacao"
+            @update:model-value="handleChange"
+          />
+        </Field>
+      </fieldset>
     </fieldset>
 
     <fieldset class="mb2">
@@ -1326,26 +1367,6 @@ watch(listaDeTiposDeIntervenção, () => {
         />
       </template>
     </CampoDePlanosMetasRelacionados>
-
-    <div
-      class="mb1"
-    >
-      <legend class="label mt2 mb1legend">
-        Localização
-      </legend>
-
-      <Field
-        v-slot="{ value, handleChange }"
-        name="geolocalizacao"
-      >
-        <MapaCampo
-          :model-value="value"
-          name="geolocalizacao"
-          :geolocalização-por-token="geolocalizaçãoPorToken"
-          @update:model-value="handleChange"
-        />
-      </Field>
-    </div>
 
     <fieldset>
       <div class="flex flexwrap g2">

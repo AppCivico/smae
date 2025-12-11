@@ -20,8 +20,9 @@
   </template>
 </template>
 <script lang="ts" setup>
-import isValidHtmlTag from '@/helpers/isValidHtmlTag';
 import { defineProps, onMounted, ref } from 'vue';
+
+import isValidHtmlTag from '@/helpers/isValidHtmlTag';
 
 defineOptions({
   inheritAttrs: false,

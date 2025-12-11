@@ -20,7 +20,7 @@ import {
 import { FilterIndicadorDto, FilterIndicadorSerieDto } from './dto/filter-indicador.dto';
 import { ListIndicadorDto } from './dto/list-indicador.dto';
 import { ListIndicadorFormulaCompostaItemDto } from './dto/list-indicador.formula-composta.dto';
-import { UpdateIndicadorDto } from './dto/update-indicador.dto';
+import { IndicadorPreviaUpsertDto, UpdateIndicadorDto } from './dto/update-indicador.dto';
 import { ListIndicadorFormulaCompostaEmUsoDto } from './entities/indicador.formula-composta.entity';
 import { IndicadorFormulaCompostaService } from './indicador.formula-composta.service';
 import { IndicadorService } from './indicador.service';
@@ -261,5 +261,19 @@ export class IndicadorPSController {
         @TipoPDM() tipo: TipoPdmType
     ): Promise<ListSeriesAgrupadas> {
         return await this.indicadorService.getSeriesIndicador(tipo, params.id, user, filters || {});
+    }
+
+    @Patch('indicador/:id/previa')
+    @ApiBearerAuth('access-token')
+    @Roles(MetaSetorialController.WritePerm)
+    @ApiNoContentResponse()
+    @HttpCode(HttpStatus.NO_CONTENT)
+    async patchPrevia(
+        @Param() params: FindOneParams,
+        @Body() dto: IndicadorPreviaUpsertDto,
+        @CurrentUser() user: PessoaFromJwt,
+        @TipoPDM() tipo: TipoPdmType
+    ): Promise<void> {
+        await this.indicadorService.upsertPrevia(tipo, +params.id, dto, user);
     }
 }

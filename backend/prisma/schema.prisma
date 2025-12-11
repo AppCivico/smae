@@ -515,6 +515,8 @@ model Pessoa {
     relTagPortProjetoQCriei   ProjetoPortfolioTag[] @relation("Criador")
     relTagPortProjetoQRemovi  ProjetoPortfolioTag[] @relation("Removedor")
 
+    metaCicloFisicoFechamentoQReabri MetaCicloFisicoFechamento[] @relation("reabertura")
+
     @@index([email])
     @@map("pessoa")
 }
@@ -1439,6 +1441,11 @@ enum IndicadorTipo {
     Categorica
 }
 
+enum IndicadorPreviaOpcao {
+    NaoPermitir
+    PermitirPreenchimento
+}
+
 model Indicador {
     id                    Int           @id @default(autoincrement())
     meta_id               Int?
@@ -1471,8 +1478,11 @@ model Indicador {
     casas_decimais        Int?          @db.SmallInt
 
     variavel_categoria_id Int?
+    variavel_categoria    Variavel? @relation(fields: [variavel_categoria_id], references: [id])
 
     ha_avisos_data_fim Boolean @default(false)
+
+    indicador_previa_opcao IndicadorPreviaOpcao @default(NaoPermitir)
 
     recalculando    Boolean  @default(false)
     recalculo_erro  String?
@@ -1534,6 +1544,7 @@ enum Serie {
     PrevistoAcumulado
     Realizado
     RealizadoAcumulado
+    Previa
 }
 
 model UnidadeMedida {
@@ -1799,6 +1810,7 @@ model Variavel {
     VariavelGlobalCicloDocumento       VariavelGlobalCicloDocumento[]
     VariavelGlobalPedidoComplementacao VariavelGlobalPedidoComplementacao[]
     PsDashboardVariavel                PsDashboardVariavel[]
+    Indicador                          Indicador[]
 
     @@index([tipo, removido_em, variavel_mae_id])
     @@index([regiao_id])
@@ -2034,6 +2046,16 @@ model SerieIndicador {
     data_valor              DateTime @db.Date()
     valor_nominal           Float    @db.DoublePrecision
     ha_conferencia_pendente Boolean  @default(false)
+
+    eh_previa Boolean @default(false) // Indica se um valor eh derivado de uma 'Previa'
+
+    // Usado quando é Serie=Previa
+    criado_por_previa    Int?
+    data_criacao_previa  DateTime? @db.Timestamp(3)
+    previa_invalidada_em DateTime? @db.Timestamp(3)
+
+    // Suporte para valores de variáveis categóricas na Previa
+    elementos Json? @db.JsonB
 
     @@index([serie, indicador_id, data_valor], map: "idx_serie_indicador_indicador_id_data_valor")
     @@index([indicador_id, data_valor], map: "idx_indicador_indicador_id_data_valor")
@@ -2843,10 +2865,14 @@ model MetaCicloFisicoFechamento {
     removido_em  DateTime?
     removido_por Int?
 
-    ciclo_fisico    CicloFisico @relation(fields: [ciclo_fisico_id], references: [id])
-    meta            Meta        @relation(fields: [meta_id], references: [id])
-    pessoaCriador   Pessoa      @relation("criador", fields: [criado_por], references: [id])
-    pessoaRemovedor Pessoa?     @relation("removedor", fields: [removido_por], references: [id])
+    reaberto_em  DateTime?
+    reaberto_por Int?
+
+    ciclo_fisico     CicloFisico @relation(fields: [ciclo_fisico_id], references: [id])
+    meta             Meta        @relation(fields: [meta_id], references: [id])
+    pessoaCriador    Pessoa      @relation("criador", fields: [criado_por], references: [id])
+    pessoaRemovedor  Pessoa?     @relation("removedor", fields: [removido_por], references: [id])
+    pessoaReabertura Pessoa?     @relation("reabertura", fields: [reaberto_por], references: [id])
 
     @@index([meta_id, ultima_revisao])
     @@map("meta_ciclo_fisico_fechamento")
@@ -4397,6 +4423,12 @@ model Tarefa {
     custo_real     Float?
     eh_marco       Boolean @default(false)
 
+    custo_estimado_anualizado Json? @db.Json
+    custo_real_anualizado     Json? @db.Json
+
+    backup_custo_estimado Float?
+    backup_custo_real     Float?
+
     // calculado no caso dos nós, mas é o % realizado de fato, no caso das folhas
     // formula: soma (duracao prevista * nvl(percentual realizado, 0) / 100) / (soma das duracoes previstas)
     percentual_concluido Float?
@@ -5211,6 +5243,11 @@ model GeoLocalizacao {
     lat               Float             @db.DoublePrecision
     lon               Float             @db.DoublePrecision
     criado_em         DateTime          @default(now()) @db.Timestamp(6)
+
+    calc_regioes_nivel_1 Int[] @default([])
+    calc_regioes_nivel_2 Int[] @default([])
+    calc_regioes_nivel_3 Int[] @default([])
+    calc_regioes_nivel_4 Int[] @default([])
 
     GeoEnderecoCamada     GeoLocalizacaoCamada[]
     GeoEnderecoReferencia GeoLocalizacaoReferencia[]

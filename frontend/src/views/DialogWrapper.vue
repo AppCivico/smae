@@ -1,7 +1,8 @@
 <script setup>
 import { onMounted, ref } from 'vue';
-import { useAlertStore } from '@/stores/alert.store';
 import { useRoute, useRouter } from 'vue-router';
+
+import { useAlertStore } from '@/stores/alert.store';
 
 const props = defineProps({
   rotaDeEscape: {

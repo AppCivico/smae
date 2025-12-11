@@ -6,14 +6,16 @@ import {
   ref, unref, watch,
 } from 'vue';
 import { useRoute } from 'vue-router';
+
+import SmaeMonth from '@/components/camposDeFormulario/SmaeMonth';
 import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
-import SmallModal from '@/components/SmallModal.vue';
 import EditorDeFormula from '@/components/metas/EditorDeFormula.vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import TabelaDeVariaveis from '@/components/metas/TabelaDeVariaveis.vue';
 import TabelaDeVariaveisCompostas from '@/components/metas/TabelaDeVariaveisCompostas.vue';
 import TabelaDeVariaveisCompostasEmUso from '@/components/metas/TabelaDeVariaveisCompostasEmUso.vue';
 import TabelaDeVariaveisEmUso from '@/components/metas/TabelaDeVariaveisEmUso.vue';
+import SmallModal from '@/components/SmallModal.vue';
 import AssociadorDeVariaveis from '@/components/variaveis/AssociadorDeVariaveis.vue';
 import { indicador as schema } from '@/consts/formSchemas';
 import { router } from '@/router';
@@ -30,7 +32,6 @@ import AddEditValoresComposta from '@/views/metas/AddEditValoresComposta.vue';
 import AddEditVariavel from '@/views/metas/AddEditVariavel.vue';
 import AddEditVariavelComposta from '@/views/metas/AddEditVariavelComposta.vue';
 import GerarVariaveisCompostas from '@/views/metas/GerarVariaveisCompostas.vue';
-import SmaeMonth from '@/components/camposDeFormulario/SmaeMonth';
 
 defineOptions({
   inheritAttrs: false,
@@ -566,7 +567,7 @@ watch(() => props.group, () => {
             v-slot="{ value, handleChange }"
             name="fim_medicao"
             class="inputtext light mb1"
-            :class="{ 'error': errors.inicio_medicao }"
+            :class="{ 'error': errors.fim_medicao }"
             placeholder="mm/aaaa"
           >
             <SmaeMonth
@@ -578,6 +579,42 @@ watch(() => props.group, () => {
           </Field>
           <div class="error-msg">
             {{ errors.fim_medicao }}
+          </div>
+        </div>
+        <div
+          v-if="singleIndicadores.id"
+          class="f1"
+        >
+          <label class="label">
+            Preenchimento prévio
+            <span class="tvermelho">*</span>
+          </label>
+          <div class="flex center">
+            <Field
+              name="indicador_previa_opcao"
+              class="inputtext light mb1"
+              :class="{ 'error': errors.indicador_previa_opcao }"
+              as="select"
+            >
+              <option value="NaoPermitir">
+                Não permitir
+              </option>
+              <option value="PermitirPreenchimento">
+                Permitir
+              </option>
+            </Field>
+            <div class="tipinfo left ml1">
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_i" /></svg>
+              <div>
+                Permitir preenchimento dos valores do indicador antes do encerramento do ciclo
+              </div>
+            </div>
+          </div>
+          <div class="error-msg">
+            {{ errors.indicador_previa_opcao }}
           </div>
         </div>
         <div

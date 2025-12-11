@@ -45,11 +45,12 @@
 </template>
 
 <script lang="ts" setup>
-import { computed } from 'vue';
 import { format } from 'date-fns';
+import { computed } from 'vue';
 
-import truncate from '@/helpers/texto/truncate';
 import SmaeLink from '@/components/SmaeLink.vue';
+import truncate from '@/helpers/texto/truncate';
+
 import type { IComunicadoGeralItem } from '../interfaces/ComunicadoGeralItemInterface';
 
 type Props = IComunicadoGeralItem;

@@ -240,6 +240,9 @@ class RetornoDbLoc {
     projeto_id: number;
     endereco: string;
     geojson: unknown;
+    distrito: string | null;
+    subprefeitura: string | null;
+    zona: string | null;
 }
 
 @Injectable()
@@ -382,7 +385,7 @@ export class PPObrasService implements ReportableService {
 
         out.push(
             await this.streamQueryToCSV(
-                ` ${this._queryDataObrasGeoLoc()} ${whereCond.whereString}`,
+                `${this._queryDataObrasGeoLoc()} ${whereCond.whereString} ${this._queryDataObrasGeoLocFilter()}`,
                 whereCond.queryParams,
                 'enderecos.csv'
             )
@@ -859,15 +862,15 @@ export class PPObrasService implements ReportableService {
         return input.map((db) => {
             return {
                 obra_id: db.projeto_id,
-                subprefeitura:
-                    db.nivel == 3
+                distrito:
+                    db.nivel == 4
                         ? {
                               descricao: db.descricao,
                               sigla: db.sigla,
                           }
                         : null,
-                distrito:
-                    db.nivel == 4
+                subprefeitura:
+                    db.nivel == 3
                         ? {
                               descricao: db.descricao,
                               sigla: db.sigla,
@@ -1197,16 +1200,70 @@ export class PPObrasService implements ReportableService {
         return `SELECT
                 projeto.id AS projeto_id,
                 geo.endereco_exibicao AS endereco,
-                geo.geom_geojson AS geojson
+                geo.geom_geojson AS geojson,
+                COALESCE(
+                    zona_agg_geo.zona,
+                    zona_agg_regiao.zona
+                ) AS zona,
+                COALESCE(
+                    distrito_agg_geo.distrito,
+                    distrito_agg_regiao.distrito
+                ) AS distrito,
+                COALESCE(
+                    subprefeitura_agg_geo.subprefeitura,
+                    subprefeitura_agg_regiao.subprefeitura
+                ) AS subprefeitura
             FROM projeto
             JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
-            JOIN geo_localizacao_referencia geo_r ON geo_r.projeto_id = projeto.id AND geo_r.removido_em IS NULL
-            JOIN geo_localizacao geo ON geo.id = geo_r.geo_localizacao_id
+            LEFT JOIN geo_localizacao_referencia geo_r ON geo_r.projeto_id = projeto.id AND geo_r.removido_em IS NULL
+            LEFT JOIN geo_localizacao geo ON geo.id = geo_r.geo_localizacao_id
+            LEFT JOIN LATERAL (
+                SELECT STRING_AGG(DISTINCT r.descricao, '|') AS zona
+                FROM unnest(geo.calc_regioes_nivel_2) AS regiao_id
+                JOIN regiao r ON r.id = regiao_id
+            ) zona_agg_geo ON geo.id IS NOT NULL
+            LEFT JOIN LATERAL (
+                SELECT STRING_AGG(DISTINCT r.descricao, '|') AS subprefeitura
+                FROM unnest(geo.calc_regioes_nivel_3) AS regiao_id
+                JOIN regiao r ON r.id = regiao_id
+            ) subprefeitura_agg_geo ON geo.id IS NOT NULL
+            LEFT JOIN LATERAL (
+                SELECT STRING_AGG(DISTINCT r.descricao, '|') AS distrito
+                FROM unnest(geo.calc_regioes_nivel_4) AS regiao_id
+                JOIN regiao r ON r.id = regiao_id
+            ) distrito_agg_geo ON geo.id IS NOT NULL
+            LEFT JOIN LATERAL (
+                SELECT STRING_AGG(DISTINCT r.descricao, '|') AS zona
+                FROM projeto_regiao pr2
+                JOIN regiao r ON r.id = pr2.regiao_id AND r.nivel = 2 AND r.removido_em IS NULL
+                WHERE pr2.projeto_id = projeto.id AND pr2.removido_em IS NULL
+            ) zona_agg_regiao ON geo_r.id IS NULL
+            LEFT JOIN LATERAL (
+                SELECT STRING_AGG(DISTINCT r.descricao, '|') AS subprefeitura
+                FROM projeto_regiao pr2
+                JOIN regiao r ON r.id = pr2.regiao_id AND r.nivel = 3 AND r.removido_em IS NULL
+                WHERE pr2.projeto_id = projeto.id AND pr2.removido_em IS NULL
+            ) subprefeitura_agg_regiao ON geo_r.id IS NULL
+            LEFT JOIN LATERAL (
+                SELECT STRING_AGG(DISTINCT r.descricao, '|') AS distrito
+                FROM projeto_regiao pr2
+                JOIN regiao r ON r.id = pr2.regiao_id AND r.nivel = 4 AND r.removido_em IS NULL
+                WHERE pr2.projeto_id = projeto.id AND pr2.removido_em IS NULL
+            ) distrito_agg_regiao ON geo_r.id IS NULL
         `;
     }
 
+    private _queryDataObrasGeoLocFilter() {
+        return `AND (
+            geo_r.id IS NOT NULL OR EXISTS (
+                SELECT 1 FROM projeto_regiao pr
+                WHERE pr.projeto_id = projeto.id AND pr.removido_em IS NULL
+            )
+        )`;
+    }
+
     private async queryDataObrasGeoloc(whereCond: WhereCond, out: RelObrasGeolocDto[]) {
-        const sql = `${this._queryDataObrasGeoLoc()} ${whereCond.whereString}`;
+        const sql = `${this._queryDataObrasGeoLoc()} ${whereCond.whereString} ${this._queryDataObrasGeoLocFilter()}`;
 
         const data: RetornoDbLoc[] = await this.prisma.$queryRawUnsafe(sql, ...whereCond.queryParams);
 
@@ -1221,12 +1278,15 @@ export class PPObrasService implements ReportableService {
         }
 
         return input.map((db) => {
-            const geojson = db.geojson as JSONGeo;
+            const geojson = db.geojson as JSONGeo | null;
 
             return {
                 obra_id: db.projeto_id,
-                endereco: db.endereco,
-                cep: geojson.properties.cep,
+                endereco: db.endereco ?? null,
+                cep: geojson?.properties?.cep ?? null,
+                zona: db.zona ?? null,
+                distrito: db.distrito ?? null,
+                subprefeitura: db.subprefeitura ?? null,
             };
         });
     }

@@ -1,6 +1,8 @@
 import { BadRequestException, HttpException, Injectable, Logger } from '@nestjs/common';
 import { CicloFase, Prisma, Serie } from '@prisma/client';
+import { SmaeConfigService } from 'src/common/services/smae-config.service';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
+import { SerieCore } from '../../common/consts';
 import { Date2YMD, DateYMD } from '../../common/date2ymd';
 import { IdTituloDto } from '../../common/dto/IdTitulo.dto';
 import { BatchRecordWithId, RecordWithId } from '../../common/dto/record-with-id.dto';
@@ -44,7 +46,6 @@ import {
     VariavelPedidoComplementacaoEmLoteDto,
     VariavelQtdeDto,
 } from './dto/mf-meta.dto';
-import { SmaeConfigService } from 'src/common/services/smae-config.service';
 
 type DadosCiclo = { variavelParticipa: boolean; id: number; ativo: boolean; meta_esta_na_coleta: boolean };
 
@@ -545,7 +546,7 @@ export class MetasService {
         // map pra variavel, depois a data, depois a serie
         const porVariavelIdDataSerie: Record<
             number,
-            Record<DateYMD, Record<Serie, (typeof seriesValores)[0] | null>>
+            Record<DateYMD, Record<SerieCore, (typeof seriesValores)[0] | null>>
         > = {};
         for (const r of seriesValores) {
             if (!porVariavelIdDataSerie[r.variavel_id]) porVariavelIdDataSerie[r.variavel_id] = {};
@@ -558,7 +559,7 @@ export class MetasService {
                     RealizadoAcumulado: null,
                 };
 
-            porVariavelIdDataSerie[r.variavel_id][Date2YMD.toString(r.data_valor)][r.serie] = r;
+            porVariavelIdDataSerie[r.variavel_id][Date2YMD.toString(r.data_valor)][r.serie as SerieCore] = r;
         }
 
         const ordem_series: Serie[] = ['Previsto', 'PrevistoAcumulado', 'Realizado', 'RealizadoAcumulado'];

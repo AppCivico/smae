@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { Date2YMD } from '../common/date2ymd';
 import { TipoPdmType } from '../common/decorators/current-tipo-pdm';
@@ -60,14 +60,41 @@ export class PsCicloService {
                     gt: params.apenas_futuro ? new Date(Date.now()) : undefined,
                 },
             },
+            include: {
+                MetaCicloFisicoFechamento: {
+                    where: {
+                        ultima_revisao: true,
+                        removido_em: null,
+                        meta_id: params.meta_id ? params.meta_id : undefined,
+                    },
+                },
+            },
             orderBy: [{ data_ciclo: 'desc' }],
         });
 
-        const retorno = ciclos.map((ciclo) => {
+        const retorno = ciclos.map(async (ciclo) => {
+            // Para ser fechado, deve ter linha de fechamento para a meta e na linha não pode estar com reaberto_em
+            const fechado =
+                ciclo.MetaCicloFisicoFechamento.length > 0 && ciclo.MetaCicloFisicoFechamento[0].reaberto_em === null;
+
+            // TODO: refatorar essa parte.
+            let linha_documentos_editaveis: DocumentoEditavelTipo[] = [];
+            if (params.meta_id) {
+                const reaberto = await this.verificaCicloInativoReaberto(pdm_id, ciclo.id, params.meta_id);
+                linha_documentos_editaveis = await this.determinaDocumentosEditaveis(
+                    params.meta_id,
+                    ciclo.id,
+                    ciclo.ativo,
+                    reaberto
+                );
+            }
+
             return {
                 id: ciclo.id,
                 data_ciclo: Date2YMD.toString(ciclo.data_ciclo),
                 ativo: ciclo.ativo,
+                fechado: fechado,
+                documentos_editaveis: linha_documentos_editaveis,
             } satisfies CicloFisicoPSDto;
         });
 
@@ -128,7 +155,7 @@ export class PsCicloService {
         }
 
         return {
-            linhas: retorno,
+            linhas: await Promise.all(retorno),
             ultima_revisao: ultimaRevisao,
             documentos_editaveis,
         };
@@ -147,6 +174,25 @@ export class PsCicloService {
     }
 
     /**
+     * Verifica se ciclo inativo foi reaberto
+     */
+    private async verificaCicloInativoReaberto(pdmId: number, cicloId: number, metaId: number): Promise<boolean> {
+        const ciclo = await this.prisma.cicloFisico.findUnique({
+            where: { id: cicloId, pdm_id: pdmId, pdm: { removido_em: null }, ativo: false },
+            include: {
+                MetaCicloFisicoFechamento: { where: { ultima_revisao: true, removido_em: null, meta_id: metaId } },
+            },
+        });
+        if (!ciclo) return false;
+
+        if (ciclo.MetaCicloFisicoFechamento.length === 0) return ciclo.ativo;
+
+        if (ciclo.MetaCicloFisicoFechamento[0].reaberto_em) return true;
+
+        return ciclo.ativo;
+    }
+
+    /**
      * Verifica se existe fechamento para a meta
      */
     private async verificaFechamento(metaId: number, cicloId: number): Promise<void> {
@@ -156,6 +202,7 @@ export class PsCicloService {
                 ciclo_fisico_id: cicloId,
                 removido_em: null,
                 ultima_revisao: true,
+                reaberto_em: null,
             },
         });
 
@@ -170,8 +217,14 @@ export class PsCicloService {
     private async determinaDocumentosEditaveis(
         metaId: number,
         cicloId: number,
-        cicloAtivo: boolean
+        cicloAtivo: boolean,
+        cicloReaberto?: boolean
     ): Promise<DocumentoEditavelTipo[]> {
+        if (cicloReaberto) {
+            // Se o ciclo foi reaberto, todos os documentos podem ser editados novamente
+            return ['analise', 'risco', 'fechamento'];
+        }
+
         if (!cicloAtivo) return [];
 
         const [analiseExistente, riscoExistente, fechamentoExistente] = await Promise.all([
@@ -182,7 +235,13 @@ export class PsCicloService {
                 where: { meta_id: metaId, ciclo_fisico_id: cicloId, ultima_revisao: true, removido_em: null },
             }),
             this.prisma.metaCicloFisicoFechamento.count({
-                where: { meta_id: metaId, ciclo_fisico_id: cicloId, ultima_revisao: true, removido_em: null },
+                where: {
+                    meta_id: metaId,
+                    ciclo_fisico_id: cicloId,
+                    ultima_revisao: true,
+                    removido_em: null,
+                    reaberto_em: null,
+                },
             }),
         ]);
 
@@ -218,13 +277,17 @@ export class PsCicloService {
         cicloId: number,
         user: PessoaFromJwt,
         verificarFechamento = false,
-        tipoDocumento?: DocumentoEditavelTipo
+        tipoDocumento?: DocumentoEditavelTipo,
+        reabrindo_ciclo = false
     ): Promise<boolean> {
         await this.metaService.assertMetaWriteOrThrow(tipo, metaId, user, 'monitoramento', 'readwrite');
 
         const cicloAtivo = await this.verificaCicloAtivo(pdmId, cicloId);
-        if (!cicloAtivo) {
-            throw new BadRequestException('Não é possível editar um ciclo inativo');
+        let cicloReaberto;
+        if (!cicloAtivo && !reabrindo_ciclo) {
+            // Ciclo inativo pode ser atualizado, desde que tenha sido reaberto.
+            cicloReaberto = await this.verificaCicloInativoReaberto(pdmId, cicloId, metaId);
+            if (!cicloReaberto) throw new BadRequestException('Não é possível editar um ciclo inativo');
         }
 
         if (verificarFechamento) {
@@ -232,7 +295,12 @@ export class PsCicloService {
         }
 
         if (tipoDocumento) {
-            const documentosEditaveis = await this.determinaDocumentosEditaveis(metaId, cicloId, cicloAtivo);
+            const documentosEditaveis = await this.determinaDocumentosEditaveis(
+                metaId,
+                cicloId,
+                cicloAtivo,
+                cicloReaberto
+            );
 
             if (!documentosEditaveis.includes(tipoDocumento)) {
                 const mensagens = {
@@ -291,7 +359,7 @@ export class PsCicloService {
                 {
                     ciclo_fisico_id: cicloId,
                     meta_id: metaId,
-                    apenas_ultima_revisao: true,
+                    apenas_ultima_revisao: false,
                 },
                 null,
                 null
@@ -299,13 +367,26 @@ export class PsCicloService {
         ]);
 
         // Determine quais documentos podem ser editados
-        const documentosEditaveis = await this.determinaDocumentosEditaveis(metaId, cicloId, cicloAtual.ativo);
+        const cicloReaberto = await this.verificaCicloInativoReaberto(pdmId, cicloId, metaId);
+        const documentosEditaveis = await this.determinaDocumentosEditaveis(
+            metaId,
+            cicloId,
+            cicloAtual.ativo,
+            cicloReaberto
+        );
 
         const atual: CicloRevisaoDto = {
             analise: analiseAtual.analises.length > 0 ? analiseAtual.analises[0] : null,
             arquivos: analiseAtual ? analiseAtual.arquivos : null,
             risco: riscoAtual.riscos.length > 0 ? riscoAtual.riscos[0] : null,
+
+            // TODO: combinar com o front para removermos o "fechamento" singular. e usar apenas a array.
+            // E remover o filter da array em histórico de fechamentos. !!E TAMBÉM MUDAR O NOME!!
             fechamento: fechamentoAtual.fechamentos.length > 0 ? fechamentoAtual.fechamentos[0] : null,
+            historico_fechamentos:
+                fechamentoAtual.fechamentos.length > 0
+                    ? fechamentoAtual.fechamentos.filter((e) => !e.ultima_revisao)
+                    : null,
         };
 
         const cicloAnterior = await this.prisma.cicloFisico.findFirst({
@@ -360,6 +441,10 @@ export class PsCicloService {
                 arquivos: analiseAnterior ? analiseAnterior.arquivos : null,
                 risco: riscoAnterior.riscos.length > 0 ? riscoAnterior.riscos[0] : null,
                 fechamento: fechamentoAnterior.fechamentos.length > 0 ? fechamentoAnterior.fechamentos[0] : null,
+                historico_fechamentos:
+                    fechamentoAnterior.fechamentos.length > 0
+                        ? fechamentoAnterior.fechamentos.filter((e) => !e.ultima_revisao)
+                        : null,
             };
         }
 
@@ -512,7 +597,13 @@ export class PsCicloService {
 
         // Determina documentos editáveis
         const cicloAtivo = await this.verificaCicloAtivo(pdmId, cicloId);
-        const documentos_editaveis = await this.determinaDocumentosEditaveis(metaId, cicloId, cicloAtivo);
+        const cicloReaberto = await this.verificaCicloInativoReaberto(pdmId, cicloId, metaId);
+        const documentos_editaveis = await this.determinaDocumentosEditaveis(
+            metaId,
+            cicloId,
+            cicloAtivo,
+            cicloReaberto
+        );
 
         return {
             corrente: currentData,
@@ -561,7 +652,13 @@ export class PsCicloService {
 
         // Determina documentos editáveis
         const cicloAtivo = await this.verificaCicloAtivo(pdmId, cicloId);
-        const documentos_editaveis = await this.determinaDocumentosEditaveis(metaId, cicloId, cicloAtivo);
+        const cicloReaberto = await this.verificaCicloInativoReaberto(pdmId, cicloId, metaId);
+        const documentos_editaveis = await this.determinaDocumentosEditaveis(
+            metaId,
+            cicloId,
+            cicloAtivo,
+            cicloReaberto
+        );
 
         return {
             corrente: currentData,
@@ -609,7 +706,13 @@ export class PsCicloService {
 
         // Determina documentos editáveis
         const cicloAtivo = await this.verificaCicloAtivo(pdmId, cicloId);
-        const documentos_editaveis = await this.determinaDocumentosEditaveis(metaId, cicloId, cicloAtivo);
+        const cicloReaberto = await this.verificaCicloInativoReaberto(pdmId, cicloId, metaId);
+        const documentos_editaveis = await this.determinaDocumentosEditaveis(
+            metaId,
+            cicloId,
+            cicloAtivo,
+            cicloReaberto
+        );
 
         return {
             corrente: currentData,
@@ -632,5 +735,34 @@ export class PsCicloService {
         await this.analiseService.updateMetaAnaliseQualitativaDocumentoInterno(documentoId, dto, user);
 
         return { id: documentoId };
+    }
+
+    async reabrirMetaCiclo(
+        tipo: TipoPdmType,
+        pdmId: number,
+        cicloId: number,
+        meta_id: number,
+        user: PessoaFromJwt
+    ): Promise<void> {
+        await this.verificaPermissaoEscritaBase(tipo, pdmId, meta_id, cicloId, user, false, undefined, true);
+
+        // Buscando linha fechamento atual para o ciclo.
+        const fechamento = await this.prisma.metaCicloFisicoFechamento.findFirst({
+            where: {
+                ciclo_fisico_id: cicloId,
+                removido_em: null,
+                ultima_revisao: true,
+                reaberto_em: null,
+                meta_id: meta_id,
+            },
+            select: { id: true },
+        });
+        if (!fechamento) {
+            throw new HttpException('Não existe fechamento para reabrir neste ciclo', 400);
+        }
+
+        await this.fechamentoService.reabrirMetaFechamentoInterno(fechamento.id, user);
+
+        return;
     }
 }

@@ -33,7 +33,7 @@ function obterPropriedadeNoObjeto(
         console.warn(`Propriedade "${itemCaminho}" não encontrada em:`, saida);
       }
 
-      break;
+      return undefined;
     }
 
     saida = saida[itemCaminho] as Record<string, unknown>;

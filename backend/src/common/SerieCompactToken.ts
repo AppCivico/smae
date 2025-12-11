@@ -1,27 +1,33 @@
 import { BadRequestException } from '@nestjs/common';
-import { Serie } from '@prisma/client';
 import * as crypto from 'crypto';
+import { SerieCore } from './consts';
 
 // Tipos de série compactados
 type CompactSerie = 'P_' | 'PA' | 'R_' | 'RA';
 
 export interface CompactTokenData {
-    serie: Serie;
+    serie: SerieCore;
     periodo: string; // DateYMD
     variavelId: number;
     id?: bigint; // bigint pra series que já existem
     userId: bigint; // User ID que pode usar o token
 }
 
+export interface IndicadorTokenData {
+    indicadorId: number;
+    dataValor: string; // DateYMD
+    userId: bigint;
+}
+
 export class SerieCompactToken {
-    private static SERIE_CODES: Record<Serie, CompactSerie> = {
+    private static SERIE_CODES: Record<SerieCore, CompactSerie> = {
         'Previsto': 'P_',
         'PrevistoAcumulado': 'PA',
         'Realizado': 'R_',
         'RealizadoAcumulado': 'RA',
     };
 
-    private static SERIE_DECODE: Record<CompactSerie, Serie> = {
+    private static SERIE_DECODE: Record<CompactSerie, SerieCore> = {
         'P_': 'Previsto',
         'PA': 'PrevistoAcumulado',
         'R_': 'Realizado',
@@ -179,5 +185,101 @@ export class SerieCompactToken {
         }
 
         return result;
+    }
+
+    encodeIndicator(data: IndicadorTokenData): string {
+        // Parse and validate the date
+        const match = data.dataValor.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+        if (!match) throw new Error('Invalid date format');
+
+        const [_, year, month, day] = match;
+        const yearNum = parseInt(year);
+        if (yearNum < 1900 || yearNum > 9999) throw new Error('Year out of range');
+
+        // Convert to base36
+        const yearBase36 = SerieCompactToken.toBase36(yearNum).padStart(3, '0');
+        const indicadorIdBase36 = SerieCompactToken.toBase36(data.indicadorId).padStart(6, '0');
+        const userIdBase36 = SerieCompactToken.toBase36(data.userId).padStart(7, '0');
+
+        // Combine parts with "I_" prefix to distinguish from serie tokens
+        const parts = [
+            'I_', // Prefix (2 chars)
+            yearBase36, // Year (3 chars)
+            month, // Month (2 chars)
+            day, // Day (2 chars)
+            indicadorIdBase36, // Indicador ID (6 chars)
+            userIdBase36, // User ID (7 chars)
+        ];
+
+        // Add checksum (6 chars)
+        const checksum = this.calculateSecureChecksum(parts, data.userId);
+        return [...parts, checksum].join('');
+    }
+
+    /*
+    I_1K80801000KC0000011A2FC
+    |  |  | |  |     |      |
+    |  |  | |  |     |      └─ Checksum (6 chars)
+    |  |  | |  |     └─ User ID (7 chars)
+    |  |  | |  └─ Indicador ID (6 chars)
+    |  |  | └─ Day (2 chars)
+    |  |  └─ Month (2 chars)
+    |  └─ Year base36 (3 chars)
+    └─ Prefix "I_" (2 chars)
+    */
+    decodeIndicator(token: string, currentUserId: bigint): IndicadorTokenData {
+        if (token.length !== 28) {
+            throw new BadRequestException('Tamanho inválido');
+        }
+
+        if (!token.startsWith('I_')) {
+            throw new BadRequestException('Token inválido');
+        }
+
+        // Extract parts
+        const prefix = token.slice(0, 2);
+        const yearBase36 = token.slice(2, 5);
+        const month = token.slice(5, 7);
+        const day = token.slice(7, 9);
+        const indicadorIdBase36 = token.slice(9, 15);
+        const userIdBase36 = token.slice(15, 22);
+        const checksum = token.slice(22);
+
+        // Decode userId and validate
+        const userId = BigInt(SerieCompactToken.fromBase36(userIdBase36, true));
+        if (userId !== currentUserId) {
+            throw new BadRequestException('Token criado por outro usuário');
+        }
+
+        // Validate checksum
+        const parts = [prefix, yearBase36, month, day, indicadorIdBase36, userIdBase36];
+        if (checksum !== this.calculateSecureChecksum(parts, userId)) {
+            throw new BadRequestException('Assinatura do token inválida');
+        }
+
+        // Convert year from base36
+        const year = SerieCompactToken.fromBase36(yearBase36);
+        if (typeof year !== 'number' || year < 1900 || year > 9999) {
+            throw new BadRequestException('Ano inválido');
+        }
+
+        // Validate month and day
+        const monthNum = parseInt(month, 10);
+        const dayNum = parseInt(day, 10);
+        if (isNaN(dayNum) || isNaN(monthNum) || monthNum < 1 || monthNum > 12 || dayNum < 1 || dayNum > 31) {
+            throw new BadRequestException('Data inválida');
+        }
+
+        // Decode indicadorId
+        const indicadorId = Number(SerieCompactToken.fromBase36(indicadorIdBase36));
+        if (isNaN(indicadorId)) {
+            throw new BadRequestException('Indicador inválido');
+        }
+
+        return {
+            indicadorId,
+            dataValor: `${year}-${month}-${day}`,
+            userId,
+        };
     }
 }

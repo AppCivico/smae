@@ -1,8 +1,9 @@
 <script lang="ts" setup>
-import { useRoute } from 'vue-router';
 import { storeToRefs } from 'pinia';
-import { useObrasStore } from '@/stores/obras.store';
+import { useRoute } from 'vue-router';
+
 import { useEdicoesEmLoteStore } from '@/stores/edicoesEmLote.store';
+import { useObrasStore } from '@/stores/obras.store';
 
 const route = useRoute();
 

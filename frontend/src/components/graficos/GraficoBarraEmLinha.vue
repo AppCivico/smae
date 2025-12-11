@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+
 import * as CardEnvelope from '../cardEnvelope';
 import NumeroComLegenda from '../painelEstrategico/NumeroComLegenda.vue';
 

@@ -50,19 +50,18 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, watch } from 'vue';
 import { storeToRefs } from 'pinia';
+import { computed, watch } from 'vue';
+import { useRoute } from 'vue-router';
 
+import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
+import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import { useAuthStore } from '@/stores/auth.store';
 import { useComunicadosGeraisStore } from '@/stores/comunicadosGerais.store';
 
-import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
-
-import { useRoute } from 'vue-router';
-import MenuPaginacao from '@/components/MenuPaginacao.vue';
+import type { IComunicadoGeralItem } from './interfaces/ComunicadoGeralItemInterface';
 import ComunicadoGeralItem from './partials/ComunicadoGeralItem.vue';
 import ComunicadosGeraisFiltros from './partials/ComunicadosGeraisFiltros.vue';
-import type { IComunicadoGeralItem } from './interfaces/ComunicadoGeralItemInterface';
 
 const authStore = useAuthStore();
 const comunicadosGeraisStore = useComunicadosGeraisStore();

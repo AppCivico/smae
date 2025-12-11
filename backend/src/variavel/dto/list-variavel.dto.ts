@@ -1,12 +1,13 @@
-import { ApiProperty, OmitType } from '@nestjs/swagger';
+import { ApiHideProperty, ApiProperty, OmitType } from '@nestjs/swagger';
 import { Periodicidade, Serie, TipoPdm } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { IdNomeDto } from '../../common/dto/IdNome.dto';
 import { IdSigla, IdSiglaDescricao } from '../../common/dto/IdSigla.dto';
 import { IdTituloDto } from '../../common/dto/IdTitulo.dto';
 import { OrgaoReduzidoDto } from '../../orgao/entities/orgao.entity';
-import { SeriesAgrupadas, VariavelItemDto } from '../../variavel/entities/variavel.entity';
+import { SeriePreviaValorCategoricaComposta, SeriesAgrupadas, SerieValorNomimal, VariavelItemDto } from '../../variavel/entities/variavel.entity';
 import { VariaveisPeriodosDto } from './create-variavel.dto';
+import { VariavelCategoricaItem } from '../../variavel-categorica/dto/variavel-categorica.dto';
 
 export class ListVariavelDto {
     linhas: VariavelItemDto[];
@@ -124,8 +125,34 @@ export class ListSeriesAgrupadas {
     ordem_series: Serie[];
 
     dados_auxiliares?: VariavelAuxiliarDto;
+
+    /**
+     * opcional - array de variáveis filhas quando buscar_filhos=true
+     */
+    variavel_filhas?: VariavelResumo[];
+
+    /**
+     * Dados para a previa atual que pode ser editada ou vista
+     * Se null, nenhuma previa existe para o período relevante.
+     */
+    ultima_previa_indicador?: SeriePreviaValorCategoricaComposta | null;
+
+    /**
+     * Calculated permission flag for the frontend.
+     * True if the user can upsert the ultima_previa_indicador.
+     */
+    pode_editar_previa?: boolean;
+
+    /**
+     * Valor do ultimo "RealizadoAcumulado".
+     * Usado pelo frontend para calcular o delta nominal caso o usuário insira um valor acumulado.
+     */
+    valor_acumulado_anterior?: string | null;
 }
 
 export class VariavelAuxiliarDto {
     categoricas: Record<string, string> | null;
+
+    @ApiHideProperty()
+    categorica_items?: VariavelCategoricaItem[] | null;
 }

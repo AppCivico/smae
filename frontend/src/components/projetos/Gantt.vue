@@ -185,8 +185,6 @@
 import { useResizeObserver } from '@vueuse/core';
 import dayjs from 'dayjs';
 import { debounce } from 'lodash';
-import { useRoute, useRouter } from 'vue-router';
-
 import {
   computed,
   nextTick,
@@ -195,8 +193,10 @@ import {
   useTemplateRef,
   watch,
 } from 'vue';
-import renderChart from '@/helpers/ganttChart';
+import { useRoute, useRouter } from 'vue-router';
+
 import dependencyTypes from '@/consts/dependencyTypes';
+import renderChart from '@/helpers/ganttChart';
 
 const route = useRoute();
 const router = useRouter();

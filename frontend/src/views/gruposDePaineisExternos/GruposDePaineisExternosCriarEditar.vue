@@ -1,10 +1,4 @@
 <script setup>
-import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
-import { grupoDeObservadores as schema } from '@/consts/formSchemas';
-import truncate from '@/helpers/texto/truncate';
-import { useAlertStore } from '@/stores/alert.store';
-import { useGruposPaineisExternos } from '@/stores/grupospaineisExternos.store.ts';
-import { useOrgansStore } from '@/stores/organs.store';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
@@ -14,6 +8,13 @@ import {
 } from 'vee-validate';
 import { ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
+import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
+import { grupoDeObservadores as schema } from '@/consts/formSchemas';
+import truncate from '@/helpers/texto/truncate';
+import { useAlertStore } from '@/stores/alert.store';
+import { useGruposPaineisExternos } from '@/stores/grupospaineisExternos.store.ts';
+import { useOrgansStore } from '@/stores/organs.store';
 
 const router = useRouter();
 const route = useRoute();

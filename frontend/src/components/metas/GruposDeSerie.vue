@@ -1,8 +1,10 @@
 <script setup>
-import SmallModal from '@/components/SmallModal.vue';
-import requestS from '@/helpers/requestS.ts';
 import { computed, defineProps, ref } from 'vue';
 import { useRoute } from 'vue-router';
+
+import SmallModal from '@/components/SmallModal.vue';
+import requestS from '@/helpers/requestS.ts';
+
 import CicloFisicoPdM from './CicloFisicoPdM.vue';
 import CicloFisicoPS from './CicloFisicoPS.vue';
 
@@ -16,7 +18,7 @@ const props = defineProps({
     type: Object,
     default: () => ({}),
   },
-  variavel: {
+  ehVariavel: {
     type: Boolean,
     default: false,
   },
@@ -143,17 +145,66 @@ function obterValorTabela(item, index) {
     return obterTooltipTexto(item, index);
   }
 
-  const valor = item.series[serieIndex].valor_nominal;
+  const serie = item.series[serieIndex];
+  const valor = serie.valor_nominal;
 
-  if (!valor) {
+  if (valor === null || valor === undefined) {
     return '-';
   }
 
-  if (temVariavelCategorica.value) {
-    return props.g.dados_auxiliares?.categoricas?.[valor] || valor;
+  const ehPrevia = serie.eh_previa === true;
+
+  const valorFormatado = temVariavelCategorica.value
+    ? props.g.dados_auxiliares?.categoricas?.[valor] || valor
+    : valor;
+
+  return ehPrevia ? `${valorFormatado} (Prévia)` : valorFormatado;
+}
+
+function obterValorPrevia() {
+  if (!props.g.ultima_previa_indicador) return null;
+
+  const previa = props.g.ultima_previa_indicador;
+
+  if (temVariavelCategorica.value && previa.elementos?.totais_categorica) {
+    const categorias = props.g.dados_auxiliares?.categoricas || {};
+    const valores = previa.elementos.totais_categorica
+      .map(({ categorica_valor, valor }) => {
+        const descricao = categorias[String(categorica_valor)] || categorica_valor;
+        return `- ${valor} ${descricao} (Prévia)`;
+      })
+      .join('\n');
+
+    return valores || '-';
   }
 
-  return valor;
+  const valor = previa.valor_nominal;
+  return valor !== null && valor !== undefined ? `${valor} (Prévia)` : '-';
+}
+
+function obterAgrupadorPrevia() {
+  if (!props.g.ultima_previa_indicador?.data_valor) return null;
+  // Pega o ano
+  return props.g.ultima_previa_indicador.data_valor.substring(0, 4);
+}
+
+function linhaTemValor(linha) {
+  return linha.series.some((serie) => {
+    if (serie.elementos?.length > 0) return true;
+    return serie.valor_nominal !== null && serie.valor_nominal !== undefined && serie.valor_nominal !== '';
+  });
+}
+
+function filtrarLinhasComValor(linhas) {
+  return linhas.filter(linhaTemValor);
+}
+
+function filtrarGruposComValor(grupos) {
+  return grupos.filter(([ano, linhas]) => {
+    const temLinhasComValor = filtrarLinhasComValor(linhas).length > 0;
+    const temPrevia = props.g?.ultima_previa_indicador && obterAgrupadorPrevia() === ano;
+    return temLinhasComValor || temPrevia;
+  });
 }
 
 </script>
@@ -183,7 +234,7 @@ function obterValorTabela(item, index) {
 
   <template v-if="g?.linhas">
     <template
-      v-for="k in nestLinhas(g.linhas)"
+      v-for="k in filtrarGruposComValor(nestLinhas(g.linhas))"
       :key="k[0]"
     >
       <tr
@@ -202,14 +253,14 @@ function obterValorTabela(item, index) {
       </tr>
       <tbody>
         <tr
-          v-for="(val, i) in k[1]"
+          v-for="(val, i) in filtrarLinhasComValor(k[1])"
           :key="val.id ? val.id : i"
         >
           <td>
             <div class="flex center">
               <component
                 :is="hasModal(val.ciclo_fisico) ? 'button' : 'span'"
-                v-if="variavel"
+                v-if="ehVariavel"
                 :type="hasModal(val.ciclo_fisico) ? 'button' : null"
                 class="mr1 like-a__text"
                 :style="{ color: hasModal(val.ciclo_fisico) ? '#94DA00' : '#B8C0CC' }"
@@ -260,7 +311,7 @@ function obterValorTabela(item, index) {
             </span>
           </td>
           <td>
-            <span v-if="!temVariavelAcumulada">
+            <span v-if="!temVariavelAcumulada || temVariavelCategorica">
               N/A
             </span>
 
@@ -269,7 +320,7 @@ function obterValorTabela(item, index) {
             </span>
           </td>
           <td>
-            <span v-if="!temVariavelAcumulada">
+            <span v-if="!temVariavelAcumulada || temVariavelCategorica">
               N/A
             </span>
 
@@ -277,7 +328,6 @@ function obterValorTabela(item, index) {
               {{ obterValorTabela(val, 'RealizadoAcumulado') }}
             </span>
           </td>
-          <td style="white-space: nowrap; text-align: right;" />
         </tr>
       </tbody>
     </template>

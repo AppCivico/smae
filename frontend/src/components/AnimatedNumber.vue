@@ -9,7 +9,6 @@
   </component>
 </template>
 <script setup lang="ts">
-import isValidHtmlTag from '@/helpers/isValidHtmlTag';
 import {
   computed,
   onBeforeUnmount,
@@ -17,6 +16,8 @@ import {
   ref,
   watch,
 } from 'vue';
+
+import isValidHtmlTag from '@/helpers/isValidHtmlTag';
 
 const props = defineProps({
   as: {

@@ -1,12 +1,13 @@
 <script setup>
-import { router } from '@/router';
-import { useAlertStore } from '@/stores/alert.store';
-import { useCiclosStore } from '@/stores/ciclos.store';
-import { useEditModalStore } from '@/stores/editModal.store';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { useRoute } from 'vue-router';
 import * as Yup from 'yup';
+
+import { router } from '@/router';
+import { useAlertStore } from '@/stores/alert.store';
+import { useCiclosStore } from '@/stores/ciclos.store';
+import { useEditModalStore } from '@/stores/editModal.store';
 
 const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();

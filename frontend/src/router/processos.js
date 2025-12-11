@@ -1,4 +1,5 @@
 import { defineAsyncComponent } from 'vue';
+
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import formatProcesso from '@/helpers/formatProcesso';
 import { useProcessosStore } from '@/stores/processos.store.ts';

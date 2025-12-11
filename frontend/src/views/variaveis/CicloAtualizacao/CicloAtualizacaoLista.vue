@@ -173,13 +173,15 @@
 <script lang="ts" setup>
 import { computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
+
 import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
 import RolagemHorizontal from '@/components/rolagem/RolagemHorizontal.vue';
 import SmaeLink from '@/components/SmaeLink.vue';
+import SmaeTooltip from '@/components/SmaeTooltip/SmaeTooltip.vue';
 import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
 import truncate from '@/helpers/texto/truncate';
 import { useCicloAtualizacaoStore, VariavelCiclo } from '@/stores/cicloAtualizacao.store';
-import SmaeTooltip from '@/components/SmaeTooltip/SmaeTooltip.vue';
+
 import CicloAtualizacaoListaFiltro from './partials/CicloAtualizacaoLista/CicloAtualizacaoListaFiltro.vue';
 
 export type AbasDisponiveis = 'Preenchimento' | 'Validacao' | 'Liberacao';

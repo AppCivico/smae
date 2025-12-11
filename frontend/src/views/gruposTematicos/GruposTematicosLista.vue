@@ -75,6 +75,7 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
+
 import { useAlertStore } from '@/stores/alert.store';
 import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';
 

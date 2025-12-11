@@ -1,8 +1,9 @@
 <script setup>
-import { onMounted } from 'vue';
 import { storeToRefs } from 'pinia';
-import MenuSecundario from '@/components/MenuSecundario.vue';
+import { onMounted } from 'vue';
+
 import { Nav } from '@/components';
+import MenuSecundario from '@/components/MenuSecundario.vue';
 import { useAuthStore } from '@/stores/auth.store';
 import { useEditModalStore } from '@/stores/editModal.store';
 import { useWikiStore } from '@/stores/wiki.store';

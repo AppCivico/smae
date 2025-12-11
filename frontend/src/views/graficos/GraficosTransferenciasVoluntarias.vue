@@ -456,11 +456,12 @@ import isEqual from 'lodash/isEqual';
 import { storeToRefs } from 'pinia';
 import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
 import AutocompleteField from '@/components/AutocompleteField2.vue';
-import MenuPaginacao from '@/components/MenuPaginacao.vue';
-import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import Grafico from '@/components/graficos/GraficoDashboard.vue';
 import ValorTransferencia from '@/components/graficos/ValorTransferencia.vue';
+import MenuPaginacao from '@/components/MenuPaginacao.vue';
+import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import combinadorDeListas from '@/helpers/combinadorDeListas';
 import dateToDate from '@/helpers/dateToDate';
 import dinheiro from '@/helpers/dinheiro';

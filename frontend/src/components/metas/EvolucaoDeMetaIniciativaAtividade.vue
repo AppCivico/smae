@@ -162,13 +162,12 @@
             <th>
               Realizado Acumulado
             </th>
-            <th />
           </tr>
         </thead>
 
         <tbody v-if="haChamadasPendentes">
           <tr>
-            <td colspan="6">
+            <td colspan="5">
               <LoadingComponent class="horizontal" />
             </td>
           </tr>
@@ -176,7 +175,7 @@
         <GruposDeSerie
           v-else
           :g="Valores[(variavel.id as keyof {})]"
-          variavel="true"
+          eh-variavel
           :tem-variavel-acumulada="!!variavel.acumulativa"
         />
       </table>
@@ -188,9 +187,10 @@ import type { Indicador } from '@back/indicador/entities/indicador.entity';
 import type { VariavelItemDto } from '@back/variavel/entities/variavel.entity';
 import { storeToRefs } from 'pinia';
 import { ref, watch, type PropType } from 'vue';
+
+import GraficoHeatmapVariavelCategorica from '@/components/GraficoHeatmapVariavelCategorica.vue';
 import GraficoLinhasEvolucao from '@/components/GraficoLinhasEvolucao.vue';
 import GruposDeSerie from '@/components/metas/GruposDeSerie.vue';
-import GraficoHeatmapVariavelCategorica from '@/components/GraficoHeatmapVariavelCategorica.vue';
 import dateToField from '@/helpers/dateToField';
 import { useAuthStore } from '@/stores/auth.store';
 import { useVariaveisStore } from '@/stores/variaveis.store';

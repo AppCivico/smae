@@ -1,6 +1,7 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import { onUnmounted, watch } from 'vue';
+
 import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { useObrasStore } from '@/stores/obras.store';
 import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store.ts';

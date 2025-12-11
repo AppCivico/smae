@@ -1,11 +1,12 @@
 <script>
 import { useRoute } from 'vue-router';
+
+import SmaeTooltip from '@/components/SmaeTooltip/SmaeTooltip.vue';
 import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
 import { useAlertStore } from '@/stores/alert.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
-import SmaeTooltip from '@/components/SmaeTooltip/SmaeTooltip.vue';
 
 export default {
   name: 'LinhaDeCronograma',
@@ -155,10 +156,10 @@ export default {
       {{ dateToField(linha.termino_real) }}
     </td>
     <td class="cell--number dado-estimado">
-      {{ typeof linha.custo_estimado === 'number' ? dinheiro(linha.custo_estimado) : '-' }}
+      {{ dinheiro(linha.custo_estimado || linha.backup_custo_estimado) || '-' }}
     </td>
     <td class="cell--number dado-efetivo">
-      {{ typeof linha.custo_real === 'number' ? dinheiro(linha.custo_real) : '-' }}
+      {{ dinheiro(linha.custo_real || linha.backup_custo_real) || '-' }}
     </td>
     <td class="cell--number">
       <template v-if="linha.atraso">

@@ -20,8 +20,8 @@ interface Estado {
 }
 
 type MãeComId = {
-  projetoId?: Number;
-  obraId?: Number;
+  projetoId?: number;
+  obraId?: number;
 } | undefined;
 
 function gerarCaminhoParaApi(mãeComId: MãeComId): string | null {

@@ -470,8 +470,8 @@ watch(itemParaEdicao, (novosValores) => {
     <div class="mb1">
       <label class="label">Filtrar por status</label>
       <select
-        class="inputtext light mb1"
         v-model="statusSelecionado"
+        class="inputtext light mb1"
       >
         <option value>
           Selecionar

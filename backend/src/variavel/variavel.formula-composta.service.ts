@@ -39,14 +39,7 @@ export class VariavelFormulaCompostaService {
         let indicadorId: number | null = null;
         if (tipo == 'PDM') {
             const indicador = await this.prisma.indicador.findFirst({
-                where: {
-                    FormulaComposta: {
-                        some: {
-                            desativado: false,
-                            formula_composta_id: formula_composta_id,
-                        },
-                    },
-                },
+                where: { FormulaComposta: { some: { desativado: false, formula_composta_id: formula_composta_id } } },
                 select: { id: true },
             });
             if (!indicador) throw new BadRequestException('Indicador não encontrado para a fórmula composta');
@@ -75,9 +68,7 @@ export class VariavelFormulaCompostaService {
 
         const fc_variaveis = await this.prisma.formulaCompostaVariavel.groupBy({
             by: ['variavel_id'],
-            where: {
-                formula_composta_id: formula_composta_id,
-            },
+            where: { formula_composta_id: formula_composta_id },
         });
 
         const variaveis = fc_variaveis.map((r) => r.variavel_id);
@@ -122,6 +113,8 @@ export class VariavelFormulaCompostaService {
                 recalculo_tempo: true,
                 variavel_mae_id: true,
                 unidade_medida: { select: { id: true, sigla: true, descricao: true } },
+                possui_variaveis_filhas: true,
+                tipo: true,
             },
         });
 
@@ -147,7 +140,8 @@ export class VariavelFormulaCompostaService {
                 variavelId,
                 variavel,
                 uso,
-                user
+                user,
+                ORDEM_SERIES_RETORNO
             );
 
             result.linhas.push({
@@ -175,16 +169,8 @@ export class VariavelFormulaCompostaService {
 
     async findAll(filter: FilterFormulaCompostaDto, user: PessoaFromJwt): Promise<PSFormulaCompostaDto[]> {
         const rows = await this.prisma.formulaComposta.findMany({
-            where: {
-                id: filter.id,
-                removido_em: null,
-                autogerenciavel: false,
-                criar_variavel: true,
-                tipo_pdm: 'PS',
-            },
-            orderBy: {
-                titulo: 'asc',
-            },
+            where: { id: filter.id, removido_em: null, autogerenciavel: false, criar_variavel: true, tipo_pdm: 'PS' },
+            orderBy: { titulo: 'asc' },
             select: {
                 id: true,
                 titulo: true,
@@ -197,22 +183,10 @@ export class VariavelFormulaCompostaService {
                 calc_regionalizavel: true,
                 calc_inicio_medicao: true,
                 calc_fim_medicao: true,
-                calc_orgao: {
-                    select: {
-                        id: true,
-                        sigla: true,
-                        descricao: true,
-                    },
-                },
+                calc_orgao: { select: { id: true, sigla: true, descricao: true } },
                 calc_codigo: true,
                 variavel_calc_erro: true,
-                variavel_calc: {
-                    select: {
-                        id: true,
-                        titulo: true,
-                        codigo: true,
-                    },
-                },
+                variavel_calc: { select: { id: true, titulo: true, codigo: true } },
             },
         });
 
@@ -251,12 +225,7 @@ export class VariavelFormulaCompostaService {
 
     async assertFormulaCompostaNaoGerenciada(id: number) {
         const item = await this.prisma.formulaComposta.findFirst({
-            where: {
-                id: id,
-                removido_em: null,
-                autogerenciavel: false,
-                tipo_pdm: 'PS',
-            },
+            where: { id: id, removido_em: null, autogerenciavel: false, tipo_pdm: 'PS' },
         });
         if (!item) throw new BadRequestException('Formula composta não encontrada');
     }
@@ -272,20 +241,11 @@ export class VariavelFormulaCompostaService {
         if (!formulaComposta.calc_fim_medicao) throw new HttpException('Falta data de fim de medição', 400);
 
         const variaveisDb = await this.prisma.variavel.findMany({
-            where: {
-                id: { in: dto.variavel_ids },
-                tipo: {
-                    in: ['Calculada', 'Global'],
-                },
-                removido_em: null,
-            },
+            where: { id: { in: dto.variavel_ids }, tipo: { in: ['Calculada', 'Global'] }, removido_em: null },
             select: { id: true, inicio_medicao: true, fim_medicao: true, titulo: true, codigo: true, tipo: true },
         });
         const alreadyInFC = await this.prisma.formulaCompostaRelVariavel.findMany({
-            where: {
-                variavel_id: { in: dto.variavel_ids },
-                formula_composta_id: id,
-            },
+            where: { variavel_id: { in: dto.variavel_ids }, formula_composta_id: id },
             select: { variavel_id: true },
         });
         const alreadyLinkedIds = new Set(alreadyInFC.map((item) => item.variavel_id));
@@ -346,12 +306,7 @@ export class VariavelFormulaCompostaService {
         await this.assertFormulaCompostaNaoGerenciada(id);
 
         const alreadyInIndicador = await this.prisma.indicadorVariavel.findFirst({
-            where: {
-                variavel_id: dto.variavel_id,
-                indicador_id: id,
-                desativado: false,
-                indicador_origem_id: null,
-            },
+            where: { variavel_id: dto.variavel_id, indicador_id: id, desativado: false, indicador_origem_id: null },
             select: { variavel_id: true },
         });
         // se não existe, já ta desvinculado
@@ -359,20 +314,14 @@ export class VariavelFormulaCompostaService {
 
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<void> => {
             const emUso = await prismaTx.formulaCompostaVariavel.count({
-                where: {
-                    variavel_id: dto.variavel_id,
-                    formula_composta_id: id,
-                },
+                where: { variavel_id: dto.variavel_id, formula_composta_id: id },
             });
             if (emUso > 0) {
                 throw new HttpException(`A variável ${dto.variavel_id} está em uso na fórmula composta ${id}`, 400);
             }
 
             await prismaTx.formulaCompostaRelVariavel.deleteMany({
-                where: {
-                    variavel_id: dto.variavel_id,
-                    formula_composta_id: id,
-                },
+                where: { variavel_id: dto.variavel_id, formula_composta_id: id },
             });
         });
 

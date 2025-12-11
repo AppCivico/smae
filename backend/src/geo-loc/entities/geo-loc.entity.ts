@@ -8,6 +8,14 @@ import { IsGeoJSON } from '../../auth/decorators/is-geojson.decorator';
 import { NumberArrayTransformOrUndef } from '../../auth/transforms/number-array.transform';
 import { NumberTransform, PositiveNumberTransform } from '../../auth/transforms/number.transform';
 import { MAX_LENGTH_DEFAULT } from 'src/common/consts';
+import { IdDesc } from '../../atividade/entities/atividade.entity';
+
+export class RegioesPorNivel {
+    nivel_1?: IdDesc[] | null;
+    nivel_2?: IdDesc[] | null;
+    nivel_3?: IdDesc[] | null;
+    nivel_4?: IdDesc[] | null;
+}
 
 export class GeoLocDto {
     @IsString()
@@ -124,6 +132,8 @@ export class RetornoCreateEnderecoDto {
     endereco: GeoJSON;
 
     camadas: GeoLocCamadaSimplesDto[];
+
+    regioes?: RegioesPorNivel;
 }
 
 export class GeolocalizacaoDto extends RetornoCreateEnderecoDto {}
@@ -186,6 +196,8 @@ export class FilterGeoJsonDto {
     nivel?: number[];
 
     @IsString()
-    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Tipo camada' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Tipo camada' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     tipo_camada: string;
 }

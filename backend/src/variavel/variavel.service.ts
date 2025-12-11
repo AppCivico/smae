@@ -24,7 +24,7 @@ import { Regiao } from 'src/regiao/entities/regiao.entity';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { LoggerWithLog } from '../common/LoggerWithLog';
 import { PrismaHelpers } from '../common/PrismaHelpers';
-import { CONST_CRONO_VAR_CATEGORICA_ID, CONST_VAR_SEM_UN_MEDIDA } from '../common/consts';
+import { CONST_CRONO_VAR_CATEGORICA_ID, CONST_VAR_SEM_UN_MEDIDA, SerieCore } from '../common/consts';
 import { Date2YMD, DateYMD, SYSTEM_TIMEZONE } from '../common/date2ymd';
 import { MIN_DTO_SAFE_NUM, VAR_CATEGORICA_AS_NULL } from '../common/dto/consts';
 import { AnyPageTokenJwtBody, PaginatedWithPagesDto, PAGINATION_TOKEN_TTL } from '../common/dto/paginated.dto';
@@ -51,6 +51,8 @@ import {
     VariavelDetailComAuxiliaresDto,
     VariavelDetailDto,
     VariavelGlobalDetailDto,
+    VariavelResumo,
+    VariavelResumoInput,
 } from './dto/list-variavel.dto';
 import { UpdateVariavelDto } from './dto/update-variavel.dto';
 
@@ -58,8 +60,10 @@ import {
     FilterPeriodoDto,
     FilterSVNPeriodoDto,
     FilterVariavelDetalheDto,
+    PeriodosValidosDto,
     SACicloFisicoDto,
     SerieIndicadorValorNominal,
+    SeriesAgrupadas,
     SerieValorCategoricaComposta,
     SerieValorCategoricaElemento,
     SerieValorNomimal,
@@ -69,21 +73,18 @@ import {
     VariavelGlobalItemDto,
     VariavelItemDto,
 } from './entities/variavel.entity';
-import { SerieCompactToken } from './serie.token.encoder';
+import { SerieCompactToken } from '../common/SerieCompactToken';
 import { VariavelUtilService } from './variavel.util.service';
 
 const SUPRA_SUFIXO = ' - Supra';
 /**
  * ordem que é populado na função populaSeriesExistentes, usada no serviço do VariavelFormulaCompostaService
  */
-export const ORDEM_SERIES_RETORNO: Serie[] = ['Previsto', 'PrevistoAcumulado', 'Realizado', 'RealizadoAcumulado'];
+export const ORDEM_SERIES_RETORNO: SerieCore[] = ['Previsto', 'PrevistoAcumulado', 'Realizado', 'RealizadoAcumulado'];
 
 const InicioFimErrMsg =
     'Inicio/Fim da medição da variável não pode ser nulo quando a periodicidade da variável é diferente do indicador';
-type VariavelGlobalLiberacao = {
-    referencia_data: Date;
-    variavel_id: number;
-};
+type VariavelGlobalLiberacao = { referencia_data: Date; variavel_id: number };
 type IndicadorInfo = {
     id: number;
     iniciativa_id: number | null;
@@ -110,19 +111,10 @@ export type VariavelComCategorica = {
     id: number;
     acumulativa: boolean;
     variavel_mae_id: number | null;
-    variavel_categorica: {
-        id: number;
-        tipo: TipoVariavelCategorica;
-        valores: VariavelCategoricaValor[];
-    } | null;
+    variavel_categorica: { id: number; tipo: TipoVariavelCategorica; valores: VariavelCategoricaValor[] } | null;
     tipo: TipoVariavel;
     orgao_proprietario_id: number | null;
-    VariavelGrupoResponsavelEquipe: {
-        grupo_responsavel_equipe: {
-            perfil: PerfilResponsavelEquipe;
-            id: number;
-        };
-    }[];
+    VariavelGrupoResponsavelEquipe: { grupo_responsavel_equipe: { perfil: PerfilResponsavelEquipe; id: number } }[];
 };
 
 function getMaxDiasPeriodicidade(periodicidade: Periodicidade): number {
@@ -160,55 +152,25 @@ export function GetVariavelWhereSet(filters: FilterVariavelDto) {
         // da na mesma colocar o else-if ou não, pois o banco vai gerar 0 resultados no caso de combinações
         // impossíveis
         if (filters.indicador_id)
-            firstSet.push({
-                indicador_variavel: {
-                    some: {
-                        desativado: false,
-                        indicador_id: filters.indicador_id,
-                    },
-                },
-            });
+            firstSet.push({ indicador_variavel: { some: { desativado: false, indicador_id: filters.indicador_id } } });
 
         if (filters.meta_id)
             firstSet.push({
-                indicador_variavel: {
-                    some: {
-                        desativado: false,
-                        indicador: {
-                            meta_id: filters.meta_id,
-                        },
-                    },
-                },
+                indicador_variavel: { some: { desativado: false, indicador: { meta_id: filters.meta_id } } },
             });
         if (filters.iniciativa_id)
             firstSet.push({
                 indicador_variavel: {
-                    some: {
-                        desativado: false,
-                        indicador: {
-                            iniciativa_id: filters.iniciativa_id,
-                        },
-                    },
+                    some: { desativado: false, indicador: { iniciativa_id: filters.iniciativa_id } },
                 },
             });
         if (filters.atividade_id)
             firstSet.push({
-                indicador_variavel: {
-                    some: {
-                        desativado: false,
-                        indicador: {
-                            atividade_id: filters.atividade_id,
-                        },
-                    },
-                },
+                indicador_variavel: { some: { desativado: false, indicador: { atividade_id: filters.atividade_id } } },
             });
         if (filters.formula_composta_id) {
             firstSet.push({
-                FormulaCompostaRelVariavel: {
-                    some: {
-                        formula_composta_id: filters.formula_composta_id,
-                    },
-                },
+                FormulaCompostaRelVariavel: { some: { formula_composta_id: filters.formula_composta_id } },
             });
         }
     }
@@ -239,9 +201,7 @@ export function GetVariavelWhereSet(filters: FilterVariavelDto) {
     ];
 
     if (filters.nivel_regionalizacao && !filters.regiao_id) {
-        firstSet.push({
-            regiao: { nivel: filters.nivel_regionalizacao },
-        });
+        firstSet.push({ regiao: { nivel: filters.nivel_regionalizacao } });
     }
 
     return permissionsBaseSet;
@@ -267,10 +227,7 @@ export class VariavelService {
         variavelId: number[]
     ): Promise<VariavelComCategorica[]> {
         const rows = await prismaTxn.variavel.findMany({
-            where: {
-                tipo: tipo,
-                id: { in: variavelId },
-            },
+            where: { tipo: tipo, id: { in: variavelId } },
             select: {
                 id: true,
                 acumulativa: true,
@@ -278,23 +235,10 @@ export class VariavelService {
                 variavel_mae_id: true,
                 VariavelGrupoResponsavelEquipe: {
                     where: { removido_em: null },
-                    select: {
-                        grupo_responsavel_equipe: {
-                            select: {
-                                perfil: true,
-                                id: true,
-                            },
-                        },
-                    },
+                    select: { grupo_responsavel_equipe: { select: { perfil: true, id: true } } },
                 },
                 orgao_proprietario_id: true,
-                variavel_categorica: {
-                    select: {
-                        id: true,
-                        tipo: true,
-                        valores: true,
-                    },
-                },
+                variavel_categorica: { select: { id: true, tipo: true, valores: true } },
             },
         });
         for (const v of rows) {
@@ -322,10 +266,7 @@ export class VariavelService {
     ): Promise<Prisma.VariavelResponsavelCreateManyInput[]> {
         const arr: Prisma.VariavelResponsavelCreateManyInput[] = [];
         for (const pessoaId of responsaveis) {
-            arr.push({
-                variavel_id: variableId,
-                pessoa_id: pessoaId,
-            });
+            arr.push({ variavel_id: variableId, pessoa_id: pessoaId });
         }
         return arr;
     }
@@ -422,11 +363,7 @@ export class VariavelService {
                 await logger.saveLogs(prismaTx, user.getLogData());
                 return ret;
             },
-            {
-                isolationLevel: 'Serializable',
-                maxWait: 60 * 1000,
-                timeout: 120 * 1000,
-            }
+            { isolationLevel: 'Serializable', maxWait: 60 * 1000, timeout: 120 * 1000 }
         );
 
         return { id: created.id };
@@ -442,11 +379,7 @@ export class VariavelService {
             Qualitativa: 'QUALI',
         };
 
-        const deparaAmbienteVariavel: Record<TipoVariavel, string> = {
-            Global: '',
-            Calculada: 'CALC',
-            PDM: 'PDM',
-        };
+        const deparaAmbienteVariavel: Record<TipoVariavel, string> = { Global: '', Calculada: 'CALC', PDM: 'PDM' };
 
         const deparaPeriodicidade: Record<Periodicidade, string> = {
             Mensal: '01',
@@ -468,10 +401,7 @@ export class VariavelService {
                 const tryUpdate = await this.prisma.variavelNumeroSequencial.upsert({
                     where: { ano_referencia: ano },
                     update: { sequencial: { increment: 1 } },
-                    create: {
-                        ano_referencia: ano,
-                        sequencial: 1,
-                    },
+                    create: { ano_referencia: ano, sequencial: 1 },
                     select: { sequencial: true },
                 });
                 contador = tryUpdate.sequencial;
@@ -558,11 +488,7 @@ export class VariavelService {
                 const ids: number[] = [];
 
                 const regions = await this.prisma.regiao.findMany({
-                    where: {
-                        id: { in: dto.regioes },
-                        pdm_codigo_sufixo: { not: null },
-                        removido_em: null,
-                    },
+                    where: { id: { in: dto.regioes }, pdm_codigo_sufixo: { not: null }, removido_em: null },
                     select: { pdm_codigo_sufixo: true, descricao: true, id: true },
                 });
 
@@ -576,11 +502,7 @@ export class VariavelService {
                     variavelMae = await this.performVariavelSave(
                         tipo,
                         prismaTxn,
-                        {
-                            ...dto,
-                            titulo: dto.titulo,
-                            possui_variaveis_filhas: true,
-                        },
+                        { ...dto, titulo: dto.titulo, possui_variaveis_filhas: true },
                         indicador,
                         responsaveis,
                         logger,
@@ -646,11 +568,7 @@ export class VariavelService {
                 await logger.saveLogs(prismaTxn, user.getLogData());
                 return ids.map((n) => ({ id: n }));
             },
-            {
-                isolationLevel: 'Serializable',
-                maxWait: 60 * 1000,
-                timeout: 120 * 1000,
-            }
+            { isolationLevel: 'Serializable', maxWait: 60 * 1000, timeout: 120 * 1000 }
         );
 
         return created;
@@ -680,16 +598,10 @@ export class VariavelService {
 
         const varDb = await prismaTxn.variavel.findMany({
             where: { id: { in: todasVariaveis }, regiao_id: { not: null } },
-            select: {
-                regiao_id: true,
-                id: true,
-            },
+            select: { regiao_id: true, id: true },
         });
         const mae = variavel_mae_id
-            ? await prismaTxn.variavel.findFirst({
-                  where: { id: variavel_mae_id },
-                  select: { id: true, titulo: true },
-              })
+            ? await prismaTxn.variavel.findFirst({ where: { id: variavel_mae_id }, select: { id: true, titulo: true } })
             : undefined;
         const titulo = mae?.titulo ?? undefined;
 
@@ -757,19 +669,8 @@ export class VariavelService {
                 codigo: codigo,
                 variavel_mae_id: variavelMaeId,
                 OR: [
-                    indicador_id
-                        ? {
-                              tipo: 'PDM',
-                              indicador_variavel: {
-                                  some: {
-                                      indicador_id: indicador_id,
-                                  },
-                              },
-                          }
-                        : {},
-                    {
-                        tipo: 'Global',
-                    },
+                    indicador_id ? { tipo: 'PDM', indicador_variavel: { some: { indicador_id: indicador_id } } } : {},
+                    { tipo: 'Global' },
                 ],
             },
         });
@@ -830,11 +731,7 @@ export class VariavelService {
                 VariavelAssuntoVariavel: {
                     createMany:
                         Array.isArray(dto.assuntos) && dto.assuntos.length > 0
-                            ? {
-                                  data: dto.assuntos.map((assunto_id) => ({
-                                      assunto_variavel_id: assunto_id,
-                                  })),
-                              }
+                            ? { data: dto.assuntos.map((assunto_id) => ({ assunto_variavel_id: assunto_id })) }
                             : undefined,
                 },
             },
@@ -907,11 +804,7 @@ export class VariavelService {
     private getPeriodTuples(
         p: VariaveisPeriodosDto | null,
         periodo: Periodicidade
-    ): {
-        periodo_preenchimento: number[];
-        periodo_validacao: number[];
-        periodo_liberacao: number[];
-    } {
+    ): { periodo_preenchimento: number[]; periodo_validacao: number[]; periodo_liberacao: number[] } {
         const periodo_preenchimento: number[] = [];
         const periodo_validacao: number[] = [];
         const periodo_liberacao: number[] = [];
@@ -977,10 +870,7 @@ export class VariavelService {
 
     async resyncIndicadorVariavel(indicador: IndicadorInfo, variavel_id: number, prisma: Prisma.TransactionClient) {
         await prisma.indicadorVariavel.deleteMany({
-            where: {
-                variavel_id: variavel_id,
-                NOT: { indicador_origem_id: null },
-            },
+            where: { variavel_id: variavel_id, NOT: { indicador_origem_id: null } },
         });
 
         this.logger.log(`resyncIndicadorVariavel: variavel ${variavel_id}, indicador: ${JSON.stringify(indicador)}`);
@@ -989,23 +879,14 @@ export class VariavelService {
         // iniciativa
         if (indicador.atividade_id) {
             const atividade = await prisma.atividade.findFirstOrThrow({
-                where: {
-                    id: indicador.atividade_id,
-                },
+                where: { id: indicador.atividade_id },
                 select: {
                     compoe_indicador_iniciativa: true,
                     iniciativa: {
                         select: {
                             compoe_indicador_meta: true,
                             meta_id: true,
-                            Indicador: {
-                                where: {
-                                    removido_em: null,
-                                },
-                                select: {
-                                    id: true,
-                                },
-                            },
+                            Indicador: { where: { removido_em: null }, select: { id: true } },
                         },
                     },
                 },
@@ -1035,10 +916,7 @@ export class VariavelService {
                         `resyncIndicadorVariavel: iniciativa da atividade compoe_indicador_meta, buscando indicador da meta`
                     );
                     const indicadorDaMeta = await this.prisma.indicador.findFirst({
-                        where: {
-                            removido_em: null,
-                            meta_id: atividade.iniciativa.meta_id,
-                        },
+                        where: { removido_em: null, meta_id: atividade.iniciativa.meta_id },
                         select: { id: true },
                     });
                     if (!indicadorDaMeta) {
@@ -1052,33 +930,17 @@ export class VariavelService {
                             indicador_origem_id: indicadorDaIniciativa.id,
                         };
                         this.logger.log(`resyncIndicadorVariavel: criando ${JSON.stringify(data)}`);
-                        await prisma.indicadorVariavel.create({
-                            data: data,
-                        });
+                        await prisma.indicadorVariavel.create({ data: data });
                     }
                 }
             }
         } else if (indicador.iniciativa_id) {
             // praticamente a mesma coisa, porém começa já na iniciativa
             const iniciativa = await prisma.iniciativa.findFirstOrThrow({
-                where: {
-                    id: indicador.iniciativa_id,
-                },
+                where: { id: indicador.iniciativa_id },
                 select: {
                     compoe_indicador_meta: true,
-                    meta: {
-                        select: {
-                            id: true,
-                            indicador: {
-                                where: {
-                                    removido_em: null,
-                                },
-                                select: {
-                                    id: true,
-                                },
-                            },
-                        },
-                    },
+                    meta: { select: { id: true, indicador: { where: { removido_em: null }, select: { id: true } } } },
                 },
             });
             this.logger.log(`resyncIndicadorVariavel: iniciativa encontrada ${JSON.stringify(iniciativa)}`);
@@ -1149,6 +1011,7 @@ export class VariavelService {
             },
             select: {
                 id: true,
+                tipo: true,
                 titulo: true,
                 codigo: true,
                 acumulativa: true,
@@ -1160,13 +1023,7 @@ export class VariavelService {
                 variavel_mae_id: true,
                 mostrar_monitoramento: true,
                 polaridade: true,
-                unidade_medida: {
-                    select: {
-                        id: true,
-                        descricao: true,
-                        sigla: true,
-                    },
-                },
+                unidade_medida: { select: { id: true, descricao: true, sigla: true } },
                 ano_base: true,
                 valor_base: true,
                 periodicidade: true,
@@ -1174,13 +1031,7 @@ export class VariavelService {
                 recalculando: true,
                 recalculo_erro: true,
                 recalculo_tempo: true,
-                orgao: {
-                    select: {
-                        id: true,
-                        descricao: true,
-                        sigla: true,
-                    },
-                },
+                orgao: { select: { id: true, descricao: true, sigla: true } },
                 regiao: {
                     select: {
                         id: true,
@@ -1200,57 +1051,23 @@ export class VariavelService {
                             select: {
                                 id: true,
                                 titulo: true,
-                                meta: {
-                                    select: {
-                                        id: true,
-                                        titulo: true,
-                                    },
-                                },
-                                iniciativa: {
-                                    select: {
-                                        id: true,
-                                        titulo: true,
-                                    },
-                                },
-                                atividade: {
-                                    select: {
-                                        id: true,
-                                        titulo: true,
-                                    },
-                                },
+                                meta: { select: { id: true, titulo: true } },
+                                iniciativa: { select: { id: true, titulo: true } },
+                                atividade: { select: { id: true, titulo: true } },
                             },
                         },
                         indicador: {
                             select: {
                                 id: true,
                                 titulo: true,
-                                meta: {
-                                    select: {
-                                        id: true,
-                                        titulo: true,
-                                    },
-                                },
-                                iniciativa: {
-                                    select: {
-                                        id: true,
-                                        titulo: true,
-                                    },
-                                },
-                                atividade: {
-                                    select: {
-                                        id: true,
-                                        titulo: true,
-                                    },
-                                },
+                                meta: { select: { id: true, titulo: true } },
+                                iniciativa: { select: { id: true, titulo: true } },
+                                atividade: { select: { id: true, titulo: true } },
                             },
                         },
                     },
                 },
-                variavel_responsavel: {
-                    select: {
-                        pessoa: { select: { id: true, nome_exibicao: true } },
-                    },
-                },
+                variavel_responsavel: { select: { pessoa: { select: { id: true, nome_exibicao: true } } } },
                 variavel_categorica_id: true,
                 // Apenas utilizado para fornecer boolean de se possui filhas.
                 possui_variaveis_filhas: true,
@@ -1259,30 +1076,18 @@ export class VariavelService {
 
         const variaveisCrono = listActive.filter((v) => v.variavel_categorica_id === CONST_CRONO_VAR_CATEGORICA_ID);
         const etapaDoCrono = await this.prisma.etapa.findMany({
-            where: {
-                variavel_id: { in: variaveisCrono.map((v) => v.id) },
-            },
-            select: {
-                id: true,
-                variavel_id: true,
-                titulo: true,
-            },
+            where: { variavel_id: { in: variaveisCrono.map((v) => v.id) } },
+            select: { id: true, variavel_id: true, titulo: true },
         });
 
         const mapEtapa = etapaDoCrono.reduce((acc: Record<string, any>, etapa: any) => {
-            acc[etapa.variavel_id!] = {
-                id: etapa.id,
-                titulo: etapa.titulo ?? '',
-            };
+            acc[etapa.variavel_id!] = { id: etapa.id, titulo: etapa.titulo ?? '' };
             return acc;
         }, {});
 
         const ret = listActive.map((row) => {
             const responsaveis = row.variavel_responsavel.map((responsavel) => {
-                return {
-                    id: responsavel.pessoa.id,
-                    nome_exibicao: responsavel.pessoa.nome_exibicao,
-                };
+                return { id: responsavel.pessoa.id, nome_exibicao: responsavel.pessoa.nome_exibicao };
             });
 
             let indicador_variavel: typeof row.indicador_variavel = [];
@@ -1307,6 +1112,7 @@ export class VariavelService {
                 casas_decimais: row.casas_decimais,
                 codigo: row.codigo,
                 id: row.id,
+                tipo: row.tipo,
                 mostrar_monitoramento: row.mostrar_monitoramento,
                 unidade_medida: {
                     descricao: row.unidade_medida.descricao,
@@ -1374,22 +1180,14 @@ export class VariavelService {
         //const permissionsSet: TODO: filtrar por plano do user? etc
         const filterSet = this.getVariavelGlobalWhereSet(filters, palavrasChave);
         const linhas = await this.prisma.viewVariavelGlobal.findMany({
-            where: {
-                AND: filterSet,
-                variavel_mae_id: filters.variavel_mae_id ?? null,
-            },
+            where: { AND: filterSet, variavel_mae_id: filters.variavel_mae_id ?? null },
             include: {
                 orgao: { select: { id: true, sigla: true, descricao: true } },
                 variavel: {
                     select: {
                         supraregional: true,
                         variavel_categorica_id: true,
-                        medicao_orgao: {
-                            select: {
-                                id: true,
-                                sigla: true,
-                            },
-                        },
+                        medicao_orgao: { select: { id: true, sigla: true } },
                     },
                 },
                 orgao_proprietario: { select: { id: true, sigla: true, descricao: true } },
@@ -1420,13 +1218,8 @@ export class VariavelService {
         }
 
         const planos = await this.prisma.pdm.findMany({
-            where: {
-                id: { in: linhas.map((r) => r.planos).flat() },
-            },
-            select: {
-                id: true,
-                nome: true,
-            },
+            where: { id: { in: linhas.map((r) => r.planos).flat() } },
+            select: { id: true, nome: true },
         });
         const planoById = (pId: number): { id: number; nome: string } => {
             const plano = planos.find((p) => p.id === pId);
@@ -1467,11 +1260,7 @@ export class VariavelService {
                     codigo: r.codigo,
                     titulo: r.titulo,
                     planos: r.planos.map(planoById).sort((a, b) => a.nome.localeCompare(b.nome)),
-                    orgao: r.orgao ?? {
-                        descricao: 'Sem órgão',
-                        id: MIN_DTO_SAFE_NUM,
-                        sigla: 'SEM',
-                    },
+                    orgao: r.orgao ?? { descricao: 'Sem órgão', id: MIN_DTO_SAFE_NUM, sigla: 'SEM' },
                     orgao_proprietario: r.orgao_proprietario ?? {
                         descricao: 'Sem órgão',
                         id: MIN_DTO_SAFE_NUM,
@@ -1497,10 +1286,7 @@ export class VariavelService {
                           } satisfies Regiao)
                         : null,
                     orgao_responsal_coleta: r.variavel.medicao_orgao
-                        ? {
-                              id: r.variavel.medicao_orgao.id,
-                              sigla: r.variavel.medicao_orgao.sigla,
-                          }
+                        ? { id: r.variavel.medicao_orgao.id, sigla: r.variavel.medicao_orgao.sigla }
                         : null,
                 };
             }),
@@ -1534,9 +1320,7 @@ export class VariavelService {
 
         globalSet.push({
             // Filtro por palavras-chave com tsvector
-            id: {
-                in: ids != undefined ? ids : undefined,
-            },
+            id: { in: ids != undefined ? ids : undefined },
             planos: filters.plano_setorial_id ? { has: filters.plano_setorial_id } : undefined,
             tipo: { in: ['Calculada', 'Global'] },
 
@@ -1546,10 +1330,7 @@ export class VariavelService {
                 NOT: filters.not_indicador_id
                     ? {
                           indicador_variavel: {
-                              some: {
-                                  indicador_id: filters.not_indicador_id,
-                                  indicador_origem_id: null,
-                              },
+                              some: { indicador_id: filters.not_indicador_id, indicador_origem_id: null },
                           },
                       }
                     : undefined,
@@ -1564,16 +1345,10 @@ export class VariavelService {
         issued_at: Date,
         user: PessoaFromJwt,
         ids: number[] | undefined
-    ): Promise<{
-        jwt: string;
-        body: AnyPageTokenJwtBody;
-    }> {
+    ): Promise<{ jwt: string; body: AnyPageTokenJwtBody }> {
         const filterSet = this.getVariavelGlobalWhereSet(filters, ids);
         const total_rows = await this.prisma.viewVariavelGlobal.count({
-            where: {
-                AND: filterSet,
-                variavel_mae_id: filters.variavel_mae_id ?? null,
-            },
+            where: { AND: filterSet, variavel_mae_id: filters.variavel_mae_id ?? null },
         });
 
         const body = {
@@ -1583,10 +1358,7 @@ export class VariavelService {
             total_rows,
         } satisfies AnyPageTokenJwtBody;
 
-        return {
-            jwt: this.jwtService.sign(body),
-            body,
-        };
+        return { jwt: this.jwtService.sign(body), body };
     }
 
     async buscaIdsPalavraChave(input: string | undefined): Promise<number[] | undefined> {
@@ -1681,16 +1453,10 @@ export class VariavelService {
                     valor_base: true,
                     periodicidade: true,
                     acumulativa: true,
-                    VariavelAssuntoVariavel: {
-                        select: {
-                            assunto_variavel_id: true,
-                        },
-                    },
+                    VariavelAssuntoVariavel: { select: { assunto_variavel_id: true } },
                     VariavelGrupoResponsavelEquipe: {
                         where: { removido_em: null },
-                        select: {
-                            grupo_responsavel_equipe_id: true,
-                        },
+                        select: { grupo_responsavel_equipe_id: true },
                     },
                 },
             });
@@ -1786,12 +1552,7 @@ export class VariavelService {
                             id: true,
                             titulo: true,
                             supraregional: true,
-                            regiao: {
-                                select: {
-                                    id: true,
-                                    descricao: true,
-                                },
-                            },
+                            regiao: { select: { id: true, descricao: true } },
                         },
                     },
                 },
@@ -1806,10 +1567,7 @@ export class VariavelService {
 
                 varsFilhasUpdates.push(
                     prismaTxn.variavel.updateMany({
-                        where: {
-                            id: variavelFilha.id,
-                            removido_em: null,
-                        },
+                        where: { id: variavelFilha.id, removido_em: null },
                         data: {
                             titulo: titulo,
                             acumulativa: dto.acumulativa,
@@ -1843,15 +1601,8 @@ export class VariavelService {
             await Promise.all(varsFilhasUpdates);
 
             await prismaTxn.formulaComposta.updateMany({
-                where: {
-                    removido_em: null,
-                    variavel_mae_id: variavelId,
-                    autogerenciavel: true,
-                },
-                data: {
-                    titulo: dto.titulo,
-                    atualizar_calc: true,
-                },
+                where: { removido_em: null, variavel_mae_id: variavelId, autogerenciavel: true },
+                data: { titulo: dto.titulo, atualizar_calc: true },
             });
 
             // se mudar o fim do período, tem que atualizar os indicadores pois ha o novo campo de aviso
@@ -1920,16 +1671,9 @@ export class VariavelService {
                         [col]: { equals: dto[col], mode: 'insensitive' },
                         NOT: variavelId ? { id: variavelId } : undefined,
                         OR: [
-                            {
-                                tipo: 'Global',
-                            },
+                            { tipo: 'Global' },
                             indicador_id
-                                ? {
-                                      tipo: 'PDM',
-                                      indicador_variavel: {
-                                          some: { indicador_id: indicador_id },
-                                      },
-                                  }
+                                ? { tipo: 'PDM', indicador_variavel: { some: { indicador_id: indicador_id } } }
                                 : {},
                         ],
                     },
@@ -1955,18 +1699,8 @@ export class VariavelService {
         dataFim?: Date
     ) {
         const [indicadorInfo, variavelInfo] = await Promise.all([
-            this.prisma.indicador.findFirst({
-                where: { id: indicadorId },
-                select: {
-                    periodicidade: true,
-                },
-            }),
-            this.prisma.variavel.findFirst({
-                where: { id: variavelId },
-                select: {
-                    periodicidade: true,
-                },
-            }),
+            this.prisma.indicador.findFirst({ where: { id: indicadorId }, select: { periodicidade: true } }),
+            this.prisma.variavel.findFirst({ where: { id: variavelId }, select: { periodicidade: true } }),
         ]);
         if (!indicadorInfo || !variavelInfo) throw new HttpException('Variável ou indicador não encontrados', 400);
 
@@ -1985,11 +1719,7 @@ export class VariavelService {
         //Recupera as series que serao excluidas
         const seriesAfetadas = await prismaTxn.serieVariavel.findMany({
             where: {
-                NOT: {
-                    data_valor: {
-                        in: periodoValido.map((data) => Date2YMD.fromString(data)),
-                    },
-                },
+                NOT: { data_valor: { in: periodoValido.map((data) => Date2YMD.fromString(data)) } },
                 variavel_id: variavelId,
             },
         });
@@ -2017,11 +1747,7 @@ export class VariavelService {
         //Exclui os registros invalidos
         await prismaTxn.serieVariavel.deleteMany({
             where: {
-                NOT: {
-                    data_valor: {
-                        in: periodoValido.map((data) => Date2YMD.fromString(data)),
-                    },
-                },
+                NOT: { data_valor: { in: periodoValido.map((data) => Date2YMD.fromString(data)) } },
                 variavel_id: variavelId,
             },
         });
@@ -2044,18 +1770,8 @@ export class VariavelService {
         updated: { valor_base: Prisma.Decimal; fim_medicao: Date | null }
     ) {
         const indicadoresQUsam = await prismaTxn.indicadorVariavel.findMany({
-            where: {
-                variavel_id: variavelId,
-                desativado: false,
-            },
-            select: {
-                indicador_id: true,
-                indicador: {
-                    select: {
-                        fim_medicao: true,
-                    },
-                },
-            },
+            where: { variavel_id: variavelId, desativado: false },
+            select: { indicador_id: true, indicador: { select: { fim_medicao: true } } },
         });
 
         // na tabela de indicador_variavel, o indicador_id pode repetir (ou era só na formula? mas just in case)
@@ -2067,13 +1783,8 @@ export class VariavelService {
 
             const avisoDataFim = updated.fim_medicao ? iv.indicador.fim_medicao > updated.fim_medicao : false;
             await prismaTxn.indicadorVariavel.updateMany({
-                where: {
-                    indicador_id: iv.indicador_id,
-                    variavel_id: variavelId,
-                },
-                data: {
-                    aviso_data_fim: avisoDataFim,
-                },
+                where: { indicador_id: iv.indicador_id, variavel_id: variavelId },
+                data: { aviso_data_fim: avisoDataFim },
             });
         }
 
@@ -2083,16 +1794,7 @@ export class VariavelService {
     private async verificaEscritaNaMeta(variavelId: number, user: PessoaFromJwt) {
         const indicadorViaVar = await this.prisma.indicadorVariavel.findFirst({
             where: { variavel_id: variavelId, indicador_origem_id: null },
-            select: {
-                indicador: {
-                    select: {
-                        id: true,
-                        meta_id: true,
-                        atividade_id: true,
-                        iniciativa_id: true,
-                    },
-                },
-            },
+            select: { indicador: { select: { id: true, meta_id: true, atividade_id: true, iniciativa_id: true } } },
         });
 
         if (!indicadorViaVar)
@@ -2111,8 +1813,7 @@ export class VariavelService {
     }
 
     private checkPeriodoVariavelGlobal(dto: UpdateVariavelDto) {
-        if (!dto.inicio_medicao)
-            throw new HttpException('Início da medição é obrigatório para variáveis globais', 400);
+        if (!dto.inicio_medicao) throw new HttpException('Início da medição é obrigatório para variáveis globais', 400);
 
         if (dto.fim_medicao && dto.inicio_medicao && dto.fim_medicao < dto.inicio_medicao)
             throw new HttpException('Fim da medição deve ser maior que o início', 400);
@@ -2141,10 +1842,7 @@ export class VariavelService {
 
             if (dto.variavel_categorica_id) {
                 const existentes = await prismaTxn.serieVariavel.count({
-                    where: {
-                        variavel_id: variavelId,
-                        variavel_categorica_id: dto.variavel_categorica_id,
-                    },
+                    where: { variavel_id: variavelId, variavel_categorica_id: dto.variavel_categorica_id },
                 });
                 if (existentes > 0)
                     throw new BadRequestException(
@@ -2156,10 +1854,7 @@ export class VariavelService {
                 });
 
                 const serieValores = await prismaTxn.serieVariavel.groupBy({
-                    where: {
-                        variavel_id: variavelId,
-                        serie: { in: ['Realizado', 'Previsto'] },
-                    },
+                    where: { variavel_id: variavelId, serie: { in: ['Realizado', 'Previsto'] } },
                     by: ['valor_nominal'],
                 });
 
@@ -2193,14 +1888,8 @@ export class VariavelService {
             }
         } else if (dto.variavel_categorica_id === null && old_variavel_categorica_id !== null) {
             await prismaTxn.serieVariavel.updateMany({
-                where: {
-                    variavel_id: variavelId,
-                    variavel_categorica_id: old_variavel_categorica_id,
-                },
-                data: {
-                    variavel_categorica_id: null,
-                    variavel_categorica_valor_id: null,
-                },
+                where: { variavel_id: variavelId, variavel_categorica_id: old_variavel_categorica_id },
+                data: { variavel_categorica_id: null, variavel_categorica_valor_id: null },
             });
 
             this.logger.debug(`variavel_categorica_id foi removido, valores em serie-variavel mantidos`);
@@ -2212,9 +1901,7 @@ export class VariavelService {
 
             if (assuntoSorted.join(',') !== currentAssuntos.join(',')) {
                 this.logger.debug(`Assuntos diferentes, atualizando`);
-                await prismaTxn.variavelAssuntoVariavel.deleteMany({
-                    where: { variavel_id: variavelId },
-                });
+                await prismaTxn.variavelAssuntoVariavel.deleteMany({ where: { variavel_id: variavelId } });
                 await prismaTxn.variavelAssuntoVariavel.createMany({
                     data: assuntoSorted.map((assunto_id) => ({
                         variavel_id: variavelId,
@@ -2223,9 +1910,7 @@ export class VariavelService {
                 });
             }
         } else if (dto.assuntos == null) {
-            await prismaTxn.variavelAssuntoVariavel.deleteMany({
-                where: { variavel_id: variavelId },
-            });
+            await prismaTxn.variavelAssuntoVariavel.deleteMany({ where: { variavel_id: variavelId } });
         }
     }
 
@@ -2254,11 +1939,7 @@ export class VariavelService {
 
     private async validaEquipeResponsavel(
         dto: UpdateVariavelDto,
-        antigo: {
-            liberacao_orgao_id: number;
-            medicao_orgao_id: number;
-            validacao_orgao_id: number;
-        }
+        antigo: { liberacao_orgao_id: number; medicao_orgao_id: number; validacao_orgao_id: number }
     ) {
         const medicao_orgao_id = dto.medicao_orgao_id ?? antigo.medicao_orgao_id;
         const validacao_orgao_id = dto.validacao_orgao_id ?? antigo.validacao_orgao_id;
@@ -2275,11 +1956,7 @@ export class VariavelService {
                     ],
                 },
             },
-            select: {
-                id: true,
-                perfil: true,
-                orgao_id: true,
-            },
+            select: { id: true, perfil: true, orgao_id: true },
         });
 
         if (Array.isArray(dto.medicao_grupo_ids)) {
@@ -2517,15 +2194,8 @@ export class VariavelService {
         await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient) => {
                 const refEmUso = await prismaTx.indicadorFormulaVariavel.findMany({
-                    where: {
-                        variavel_id: variavelId,
-                        indicador: {
-                            removido_em: null,
-                        },
-                    },
-                    select: {
-                        indicador: { select: { codigo: true, titulo: true } },
-                    },
+                    where: { variavel_id: variavelId, indicador: { removido_em: null } },
+                    select: { indicador: { select: { codigo: true, titulo: true } } },
                 });
 
                 for (const ref of refEmUso) {
@@ -2535,14 +2205,7 @@ export class VariavelService {
                 }
 
                 const refFormulaComposta = await prismaTx.formulaComposta.findMany({
-                    where: {
-                        removido_em: null,
-                        FormulaCompostaVariavel: {
-                            some: {
-                                variavel_id: variavelId,
-                            },
-                        },
-                    },
+                    where: { removido_em: null, FormulaCompostaVariavel: { some: { variavel_id: variavelId } } },
                     select: { titulo: true },
                 });
                 for (const ref of refFormulaComposta) {
@@ -2552,37 +2215,23 @@ export class VariavelService {
                 }
 
                 await prismaTx.variavelGrupoResponsavelEquipe.updateMany({
-                    where: {
-                        removido_em: null,
-                        variavel: { id: variavelId },
-                    },
-                    data: {
-                        removido_em: now,
-                    },
+                    where: { removido_em: null, variavel: { id: variavelId } },
+                    data: { removido_em: now },
                 });
 
                 await prismaTx.variavel.update({
                     where: { id: variavelId },
-                    data: {
-                        removido_em: now,
-                        removido_por: user.id,
-                    },
+                    data: { removido_em: now, removido_por: user.id },
                     select: { id: true },
                 });
 
-                await prismaTx.indicadorVariavel.deleteMany({
-                    where: { variavel_id: variavelId },
-                });
+                await prismaTx.indicadorVariavel.deleteMany({ where: { variavel_id: variavelId } });
 
                 await AddTaskRecalcVariaveis(prismaTx, { variavelIds: [variavelId] });
 
                 await logger.saveLogs(prismaTx, user.getLogData());
             },
-            {
-                isolationLevel: 'Serializable',
-                maxWait: 15000,
-                timeout: 25000,
-            }
+            { isolationLevel: 'Serializable', maxWait: 15000, timeout: 25000 }
         );
 
         return { id: variavelId };
@@ -2621,21 +2270,72 @@ export class VariavelService {
         return indicador;
     }
 
+    private async buscarVariaveisFilhas(variavelId: number): Promise<VariavelResumoInput[]> {
+        return await this.prisma.variavel.findMany({
+            where: { variavel_mae_id: variavelId, removido_em: null, tipo: 'Global' },
+            orderBy: [
+                { supraregional: 'asc' }, // falso primeiro
+                { regiao: { codigo: { sort: 'asc', nulls: 'last' } } },
+                { titulo: 'asc' },
+            ],
+            select: {
+                id: true,
+                suspendida_em: true,
+                variavel_categorica_id: true,
+                casas_decimais: true,
+                periodicidade: true,
+                acumulativa: true,
+                codigo: true,
+                titulo: true,
+                valor_base: true,
+                recalculando: true,
+                recalculo_erro: true,
+                recalculo_tempo: true,
+                variavel_mae_id: true,
+                unidade_medida: { select: { id: true, sigla: true, descricao: true } },
+            },
+        });
+    }
+
+    private formatarVariavelResumo(variavel: VariavelResumoInput): VariavelResumo {
+        return {
+            id: variavel.id,
+            suspendida: variavel.suspendida_em !== null,
+            variavel_categorica_id: variavel.variavel_categorica_id,
+            casas_decimais: variavel.casas_decimais,
+            periodicidade: variavel.periodicidade,
+            acumulativa: variavel.acumulativa,
+            codigo: variavel.codigo,
+            titulo: variavel.titulo,
+            valor_base: variavel.valor_base.toString(),
+            unidade_medida: {
+                id: variavel.unidade_medida.id,
+                sigla: variavel.unidade_medida.sigla,
+                descricao: variavel.unidade_medida.descricao,
+            },
+            variavel_mae_id: variavel.variavel_mae_id,
+            recalculando: variavel.recalculando,
+            recalculo_erro: variavel.recalculo_erro,
+            recalculo_tempo: variavel.recalculo_tempo,
+        };
+    }
+
     async getValorSerieExistente(
         variavelId: number,
         series: Serie[],
-        filters: FilterPeriodoDto
+        filters: FilterPeriodoDto,
+        extraVariaveis?: number[]
     ): Promise<ValorSerieExistente[]> {
         if (filters.ate_ciclo_corrente) {
             filters.data_fim = await this.util.ultimoPeriodoValido(variavelId);
         }
 
-        return await this.prisma.serieVariavel.findMany({
+        const variavelIds = extraVariaveis ? [variavelId, ...extraVariaveis] : [variavelId];
+
+        return (await this.prisma.serieVariavel.findMany({
             where: {
-                variavel_id: variavelId,
-                serie: {
-                    in: series,
-                },
+                variavel_id: { in: variavelIds },
+                serie: { in: series },
                 AND: [
                     { data_valor: filters.data_inicio ? { gte: filters.data_inicio } : undefined },
                     { data_valor: filters.data_fim ? { lte: filters.data_fim } : undefined },
@@ -2649,8 +2349,9 @@ export class VariavelService {
                 serie: true,
                 conferida: true,
                 elementos: true,
+                variavel_id: true,
             },
-        });
+        })) satisfies Array<Omit<ValorSerieExistente, 'serie'>> as ValorSerieExistente[];
     }
 
     getValorSerieExistentePorPeriodo(
@@ -2701,10 +2402,17 @@ export class VariavelService {
         if (selfItem.length === 0) throw new NotFoundException('Variável não encontrada');
         const variavel = selfItem[0];
 
-        const series: Serie[] = [...ORDEM_SERIES_RETORNO];
+        if (filters.retornar_filhas) {
+            if (!filters.data_valor)
+                throw new BadRequestException('data_valor é obrigatório quando buscar_filhos=true');
+
+            if (!variavel.possui_variaveis_filhas)
+                throw new BadRequestException('Variável não possui variáveis filhas');
+        }
+
+        const ordemSeries: SerieCore[] = [...ORDEM_SERIES_RETORNO];
 
         const disableShuffle = await this.smaeConfigService.getConfigBooleanWithDefault('DISABLE_SHUFFLE', false);
-        SeriesArrayShuffle(series, disableShuffle); // garante que o consumidor não está usando os valores das series cegamente
 
         const cicloCorrente =
             filters.serie == 'Realizado' || filters.ate_ciclo_corrente
@@ -2715,10 +2423,10 @@ export class VariavelService {
                 : null;
 
         if (filters.serie) {
-            series.length = 0;
+            ordemSeries.length = 0;
             for (const serie of ORDEM_SERIES_RETORNO) {
                 if (serie.toLowerCase().includes(filters.serie.toLowerCase())) {
-                    series.push(serie);
+                    ordemSeries.push(serie);
                 }
             }
             if (filters.serie == 'Realizado') filters.ate_ciclo_corrente = true;
@@ -2730,9 +2438,36 @@ export class VariavelService {
             }
         }
 
-        // TODO adicionar limpeza da serie para quem for ponto focal
-        const valoresExistentes = await this.getValorSerieExistente(variavelId, series, filters);
-        const porPeriodo = this.getValorSerieExistentePorPeriodo(valoresExistentes, variavelId, filters.uso, user);
+        SeriesArrayShuffle(ordemSeries, disableShuffle); // garante que o consumidor não está usando os valores das series cegamente
+
+        const variaveis_filhas = filters.retornar_filhas ? await this.buscarVariaveisFilhas(variavelId) : [];
+        const extraVariavelIds = variaveis_filhas.map((v) => v.id);
+
+        const valoresExistentes = await this.getValorSerieExistente(
+            variavelId,
+            ordemSeries,
+            filters,
+            extraVariavelIds.length > 0 ? extraVariavelIds : undefined
+        );
+        const porPeriodo = this.getValorSerieExistentePorPeriodo(
+            valoresExistentes.filter((v) => v.variavel_id === variavelId),
+            variavelId,
+            filters.uso,
+            user
+        );
+
+        // Build porPeriodo for children
+        const porPeriodoFilhas: Record<number, SerieValorPorPeriodo> = {};
+        if (filters.retornar_filhas) {
+            for (const filha of variaveis_filhas) {
+                porPeriodoFilhas[filha.id] = this.getValorSerieExistentePorPeriodo(
+                    valoresExistentes.filter((v) => v.variavel_id === filha.id),
+                    filha.id,
+                    filters.uso,
+                    user
+                );
+            }
+        }
 
         const result: ListSeriesAgrupadas = {
             variavel: {
@@ -2752,16 +2487,21 @@ export class VariavelService {
                 variavel_mae_id: variavel.variavel_mae_id,
             },
             linhas: [],
-            ordem_series: ORDEM_SERIES_RETORNO,
+            ordem_series: ordemSeries,
         };
         if (result.variavel?.variavel_categorica_id === CONST_CRONO_VAR_CATEGORICA_ID) {
             result.variavel.variavel_categorica_id = null;
         }
 
+        // Add children to result
+        if (filters.retornar_filhas && variaveis_filhas.length > 0) {
+            result.variavel_filhas = variaveis_filhas.map((v) => this.formatarVariavelResumo(v));
+        }
+
         const [analisesCiclo, documentoCiclo] = await this.procuraCicloAnaliseDocumento(
             tipo,
             variavelId,
-            valoresExistentes
+            valoresExistentes.filter((v) => v.variavel_id === variavelId)
         );
 
         const mapAnalisesCiclo: Record<string, (typeof analisesCiclo)[0]> = {};
@@ -2808,11 +2548,12 @@ export class VariavelService {
                 variavelId,
                 variavel,
                 filters.uso,
-                user
+                user,
+                ordemSeries
             );
             let ciclo_fisico: SACicloFisicoDto | undefined = undefined;
 
-            if (seriesExistentes[ORDEM_SERIES_RETORNO.indexOf('Realizado')]) {
+            if (ordemSeries.indexOf('Realizado') > -1 && seriesExistentes[ordemSeries.indexOf('Realizado')]) {
                 if (isCurrentCycle)
                     this.logger.debug(`Ciclo corrente ${periodoYMD} já tem 'Realizado', desabilitando ciclo info.`);
                 canSkip = false;
@@ -2837,16 +2578,34 @@ export class VariavelService {
                 };
             }
 
-            result.linhas.push({
+            const linha: SeriesAgrupadas = {
                 periodo: periodoYMD.substring(0, 4 + 2 + 1),
                 agrupador: periodoYMD.substring(0, 4),
                 series: seriesExistentes,
                 ciclo_fisico: ciclo_fisico,
-            });
+            };
+
+            // Adiciona as séries das variáveis filhas
+            if (filters.retornar_filhas && variaveis_filhas.length > 0) {
+                linha.variaveis_filhas = variaveis_filhas.map((filha) => ({
+                    variavel_id: filha.id,
+                    series: this.populaSeriesExistentes(
+                        porPeriodoFilhas[filha.id],
+                        periodoYMD,
+                        filha.id,
+                        { ...filha, possui_variaveis_filhas: false, tipo: 'Global' },
+                        filters.uso,
+                        user,
+                        ordemSeries
+                    ),
+                }));
+            }
+
+            result.linhas.push(linha);
 
             if (isCurrentCycle && !prazoPassou && filters.suporta_ciclo_info) {
                 // Busca o 'Realizado'
-                const realizadoIndex = ORDEM_SERIES_RETORNO.indexOf('Realizado');
+                const realizadoIndex = ordemSeries.indexOf('Realizado');
                 if (realizadoIndex !== -1 && seriesExistentes[realizadoIndex]) {
                     const realizadoSerie = seriesExistentes[realizadoIndex] as SerieValorNomimal;
                     if (realizadoSerie) {
@@ -2855,6 +2614,8 @@ export class VariavelService {
                 }
             }
         }
+
+        if (filters.incluir_auxiliares_completo) filters.incluir_auxiliares = true;
 
         if (filters.incluir_auxiliares) {
             const categorica = result.variavel?.variavel_categorica_id
@@ -2868,12 +2629,49 @@ export class VariavelService {
                     .reduce((acc, cur) => ({ ...acc, ...cur }), {});
             }
 
-            result.dados_auxiliares = {
-                categoricas: categoricas,
-            };
+            result.dados_auxiliares = { categoricas: categoricas };
+
+            if (filters.incluir_auxiliares_completo) {
+                result.dados_auxiliares.categorica_items = categorica;
+            }
         }
 
         return result;
+    }
+
+    async getPeriodosValidos(
+        tipo: TipoVariavel,
+        filters: FilterPeriodoDto,
+        variavelId: number,
+        user: PessoaFromJwt
+    ): Promise<PeriodosValidosDto> {
+        const selfItem = await this.findAll(tipo, { id: variavelId });
+        if (selfItem.length === 0) throw new NotFoundException('Variável não encontrada');
+
+        let indicadorId: number | null = null;
+        if (tipo === 'PDM') {
+            const indicadorViaVar = await this.getIndicadorViaVariavel(variavelId);
+            indicadorId = indicadorViaVar.id;
+        }
+
+        const todosPeriodos = await this.util.gerarPeriodoVariavelEntreDatas(variavelId, indicadorId, filters);
+
+        let proximo_periodo_abertura: string | null = null;
+        let ultimo_periodo_valido: string | null = null;
+        let atrasos: string[] = [];
+
+        const cicloCorrente = await this.prisma.variavelCicloCorrente.findUnique({
+            where: { variavel_id: variavelId },
+            select: { ultimo_periodo_valido: true, proximo_periodo_abertura: true, atrasos: true },
+        });
+
+        if (cicloCorrente) {
+            ultimo_periodo_valido = Date2YMD.toString(cicloCorrente.ultimo_periodo_valido);
+            proximo_periodo_abertura = Date2YMD.toString(cicloCorrente.proximo_periodo_abertura);
+            atrasos = cicloCorrente.atrasos.map((d) => Date2YMD.toString(d));
+        }
+
+        return { periodos_validos: todosPeriodos, proximo_periodo_abertura, ultimo_periodo_valido, atrasos };
     }
 
     private async procuraCicloAnaliseDocumento(
@@ -2886,24 +2684,12 @@ export class VariavelService {
         if (tipo == TipoVariavel.PDM) {
             return await Promise.all([
                 this.prisma.variavelCicloFisicoQualitativo.findMany({
-                    where: {
-                        variavel_id: variavelId,
-                        referencia_data: { in: dataValores },
-                        removido_em: null,
-                    },
+                    where: { variavel_id: variavelId, referencia_data: { in: dataValores }, removido_em: null },
                     distinct: ['referencia_data'],
-                    select: {
-                        id: true,
-                        referencia_data: true,
-                        analise_qualitativa: true,
-                    },
+                    select: { id: true, referencia_data: true, analise_qualitativa: true },
                 }),
                 this.prisma.variavelCicloFisicoDocumento.groupBy({
-                    where: {
-                        variavel_id: variavelId,
-                        removido_em: null,
-                        referencia_data: { in: dataValores },
-                    },
+                    where: { variavel_id: variavelId, removido_em: null, referencia_data: { in: dataValores } },
                     by: ['referencia_data'],
                     _count: true,
                 }),
@@ -2956,74 +2742,59 @@ export class VariavelService {
         }
     }
 
-    populaSeriesExistentes(
+    public populaSeriesExistentes(
         porPeriodo: SerieValorPorPeriodo,
         periodoYMD: string,
         variavelId: number,
-        variavel: { acumulativa: boolean; variavel_categorica_id: number | null; id: number },
+        variavel: {
+            acumulativa: boolean;
+            variavel_categorica_id: number | null;
+            id: number;
+            possui_variaveis_filhas: boolean;
+            tipo: TipoVariavel;
+        },
         uso: TipoUso = 'escrita',
-        user: PessoaFromJwt
+        user: PessoaFromJwt,
+        ordemSeries: SerieCore[]
     ): SerieIndicadorValorNominal[] | SerieValorNomimal[] | SerieValorCategoricaComposta[] {
         const seriesExistentes: SerieValorNomimal[] = [];
 
         const existeValor = porPeriodo[periodoYMD];
-        if (
-            existeValor &&
-            (existeValor.Previsto ||
-                existeValor.PrevistoAcumulado ||
-                existeValor.Realizado ||
-                existeValor.RealizadoAcumulado)
-        ) {
-            if (existeValor.Previsto) {
-                seriesExistentes.push(
-                    variavel.variavel_categorica_id
-                        ? this.serieCategoricaComElementos(existeValor.Previsto, variavel.id)
-                        : existeValor.Previsto
-                );
-            } else {
-                seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'Previsto', uso, user));
-            }
 
-            if (existeValor.PrevistoAcumulado) {
-                seriesExistentes.push(this.referencia_boba(variavel.acumulativa, existeValor.PrevistoAcumulado));
-            } else {
-                seriesExistentes.push(
-                    this.referencia_boba(
-                        variavel.acumulativa,
-                        this.buildNonExistingSerieValor(periodoYMD, variavelId, 'PrevistoAcumulado', uso, user)
-                    )
-                );
-            }
+        const ehServerSide = variavel.possui_variaveis_filhas || variavel.tipo == 'Calculada';
+        for (const serie of ordemSeries) {
+            const valor = existeValor?.[serie];
 
-            if (existeValor.Realizado) {
-                seriesExistentes.push(
-                    variavel.variavel_categorica_id
-                        ? this.serieCategoricaComElementos(existeValor.Realizado, variavel.id)
-                        : existeValor.Realizado
-                );
+            if (valor) {
+                if ((serie === 'Previsto' || serie === 'Realizado') && variavel.variavel_categorica_id) {
+                    seriesExistentes.push(this.serieCategoricaComElementos(valor, variavel.id));
+                } else if (ehServerSide) {
+                    // qualquer variavel mãe é calculada server-side
+                    seriesExistentes.push(this.referencia_boba(variavel.acumulativa, valor));
+                } else if (serie === 'PrevistoAcumulado' || serie === 'RealizadoAcumulado') {
+                    seriesExistentes.push(this.referencia_boba(variavel.acumulativa, valor));
+                } else {
+                    seriesExistentes.push(valor);
+                }
             } else {
-                seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'Realizado', uso, user));
+                if (ehServerSide) {
+                    seriesExistentes.push(
+                        this.referencia_boba(
+                            variavel.acumulativa,
+                            this.buildNonExistingSerieValor(periodoYMD, variavelId, serie, uso, user)
+                        )
+                    );
+                } else if (serie === 'PrevistoAcumulado' || serie === 'RealizadoAcumulado') {
+                    seriesExistentes.push(
+                        this.referencia_boba(
+                            variavel.acumulativa,
+                            this.buildNonExistingSerieValor(periodoYMD, variavelId, serie, uso, user)
+                        )
+                    );
+                } else {
+                    seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, serie, uso, user));
+                }
             }
-
-            if (existeValor.RealizadoAcumulado) {
-                seriesExistentes.push(this.referencia_boba(variavel.acumulativa, existeValor.RealizadoAcumulado));
-            } else {
-                seriesExistentes.push(
-                    this.referencia_boba(
-                        variavel.acumulativa,
-                        this.buildNonExistingSerieValor(periodoYMD, variavelId, 'RealizadoAcumulado', uso, user)
-                    )
-                );
-            }
-        } else {
-            seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'Previsto', uso, user));
-            seriesExistentes.push(
-                this.buildNonExistingSerieValor(periodoYMD, variavelId, 'PrevistoAcumulado', uso, user)
-            );
-            seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'Realizado', uso, user));
-            seriesExistentes.push(
-                this.buildNonExistingSerieValor(periodoYMD, variavelId, 'RealizadoAcumulado', uso, user)
-            );
         }
 
         if (uso == 'leitura') {
@@ -3042,7 +2813,7 @@ export class VariavelService {
 
         const retorno: SerieValorNomimal = {
             valor_nominal: serie.valor_nominal,
-            referencia: serie.referencia,
+            referencia: serie.elementos ? 'SS' : serie.referencia,
             data_valor: serie.data_valor,
             ha_conferencia_pendente: serie.ha_conferencia_pendente,
             conferida: serie.conferida,
@@ -3050,10 +2821,7 @@ export class VariavelService {
 
         if (!serie.elementos || typeof serie.elementos !== 'object') {
             retorno.elementos = [
-                {
-                    variavel_id: variavelId,
-                    categoria: serie.valor_nominal,
-                } satisfies SerieValorCategoricaElemento,
+                { variavel_id: variavelId, categoria: serie.valor_nominal } satisfies SerieValorCategoricaElemento,
             ];
 
             return retorno;
@@ -3063,10 +2831,7 @@ export class VariavelService {
         if (!elementosParsed.categorica) return retorno;
 
         retorno.elementos = elementosParsed.categorica.map((e) => {
-            return {
-                variavel_id: e[0],
-                categoria: e[1].toString(),
-            } satisfies SerieValorCategoricaElemento;
+            return { variavel_id: e[0], categoria: e[1].toString() } satisfies SerieValorCategoricaElemento;
         });
 
         return retorno;
@@ -3083,7 +2848,7 @@ export class VariavelService {
     private buildNonExistingSerieValor(
         periodo: DateYMD,
         variavelId: number,
-        serie: Serie,
+        serie: SerieCore,
         uso: TipoUso,
         user: PessoaFromJwt
     ): SerieValorNomimal {
@@ -3098,31 +2863,20 @@ export class VariavelService {
         periodo: DateYMD,
         id: number,
         variavelId: number,
-        serie: Serie,
+        serie: SerieCore,
         user: PessoaFromJwt
     ): string {
         // TODO opcionalmente adicionar o modificado_em aqui
-        return this.serieToken.encode({
-            serie,
-            periodo,
-            variavelId,
-            id: BigInt(id),
-            userId: BigInt(user.id),
-        });
+        return this.serieToken.encode({ serie, periodo, variavelId, id: BigInt(id), userId: BigInt(user.id) });
     }
 
     private getEditNonExistingSerieJwt(
         variavelId: number,
         periodo: DateYMD,
-        serie: Serie,
+        serie: SerieCore,
         user: PessoaFromJwt
     ): string {
-        return this.serieToken.encode({
-            serie,
-            periodo,
-            variavelId: variavelId,
-            userId: BigInt(user.id),
-        });
+        return this.serieToken.encode({ serie, periodo, variavelId: variavelId, userId: BigInt(user.id) });
     }
 
     private validarValoresJwt(valores: SerieUpsert[], user: PessoaFromJwt): ValidatedUpsert[] {
@@ -3154,10 +2908,7 @@ export class VariavelService {
             if (decoded.id !== undefined) (referenciaDecoded as any).id = Number(decoded.id);
 
             // garantia que o tipo é ou string, ou um texto em branco
-            valids.push({
-                valor: typeof asText === 'string' ? asText : '',
-                referencia: referenciaDecoded,
-            });
+            valids.push({ valor: typeof asText === 'string' ? asText : '', referencia: referenciaDecoded });
         }
         this.logger.debug(JSON.stringify({ log: 'validation', valids }));
         return valids;
@@ -3337,20 +3088,7 @@ export class VariavelService {
                                 prismaTxn.serieVariavel.updateMany({
                                     where: {
                                         id: valor.referencia.id,
-                                        AND: [
-                                            {
-                                                OR: [
-                                                    {
-                                                        valor_nominal: {
-                                                            not: valor.valor,
-                                                        },
-                                                    },
-                                                    {
-                                                        conferida: false,
-                                                    },
-                                                ],
-                                            },
-                                        ],
+                                        AND: [{ OR: [{ valor_nominal: { not: valor.valor } }, { conferida: false }] }],
                                     },
                                     data: updateOrCreateData,
                                 })
@@ -3387,10 +3125,7 @@ export class VariavelService {
                                         ...updateOrCreateData,
                                         serie: acumuladoSerie,
                                     },
-                                    create: {
-                                        ...updateOrCreateData,
-                                        serie: acumuladoSerie,
-                                    },
+                                    create: { ...updateOrCreateData, serie: acumuladoSerie },
                                 })
                             );
                         }
@@ -3406,11 +3141,7 @@ export class VariavelService {
                     await prismaTxn.serieVariavel.deleteMany({
                         where: {
                             OR: createList.map((e) => {
-                                return {
-                                    data_valor: e.data_valor,
-                                    variavel_id: e.variavel_id,
-                                    serie: e.serie,
-                                };
+                                return { data_valor: e.data_valor, variavel_id: e.variavel_id, serie: e.serie };
                             }),
                         },
                     });
@@ -3424,18 +3155,12 @@ export class VariavelService {
                             idsToBeRemoved
                         );
 
-                    await prismaTxn.serieVariavel.deleteMany({
-                        where: {
-                            id: { in: idsToBeRemoved },
-                        },
-                    });
+                    await prismaTxn.serieVariavel.deleteMany({ where: { id: { in: idsToBeRemoved } } });
                 }
 
                 if (createList.length) {
                     logger.log(`Criando ${createList.length} novos valores de série...`);
-                    await prismaTxn.serieVariavel.createMany({
-                        data: createList,
-                    });
+                    await prismaTxn.serieVariavel.createMany({ data: createList });
                     if (globais.length)
                         for (const v of createList) {
                             if (v.serie !== 'Realizado') continue;
@@ -3485,10 +3210,7 @@ export class VariavelService {
                 }
                 await logger.saveLogs(prismaTxn, user.getLogData());
             },
-            {
-                maxWait: 15000,
-                timeout: 35000,
-            }
+            { maxWait: 15000, timeout: 35000 }
         );
     }
 
@@ -3502,14 +3224,8 @@ export class VariavelService {
         user: PessoaFromJwt
     ) {
         const variaveisFilhas = await prismaTxn.variavel.findMany({
-            where: {
-                variavel_mae_id: variavelMaeId,
-                removido_em: null,
-                tipo: 'Global',
-            },
-            select: {
-                id: true,
-            },
+            where: { variavel_mae_id: variavelMaeId, removido_em: null, tipo: 'Global' },
+            select: { id: true },
         });
 
         const statusSeries = await prismaTxn.serieVariavel.findMany({
@@ -3518,11 +3234,7 @@ export class VariavelService {
                 data_valor: { in: mesesParaLiberar.map((e) => e.referencia_data) },
                 serie: 'Realizado',
             },
-            select: {
-                variavel_id: true,
-                data_valor: true,
-                conferida: true,
-            },
+            select: { variavel_id: true, data_valor: true, conferida: true },
         });
 
         const conferidoStatus: Record<number, Record<DateYMD, boolean>> = {};
@@ -3577,15 +3289,9 @@ export class VariavelService {
         for (const data in mesesResultado) {
             const aprovado = mesesResultado[data];
             if (aprovado) {
-                ajusteLiberacao.push({
-                    referencia_data: Date2YMD.fromString(data),
-                    variavel_id: variavelMaeId,
-                });
+                ajusteLiberacao.push({ referencia_data: Date2YMD.fromString(data), variavel_id: variavelMaeId });
             } else {
-                ajusteRemocao.push({
-                    referencia_data: Date2YMD.fromString(data),
-                    variavel_id: variavelMaeId,
-                });
+                ajusteRemocao.push({ referencia_data: Date2YMD.fromString(data), variavel_id: variavelMaeId });
             }
         }
 
@@ -3606,19 +3312,10 @@ export class VariavelService {
                 removido_em: null,
                 fase: 'Liberacao',
                 OR: mesesParaAprovar.map((e) => {
-                    return {
-                        variavel_id: e.variavel_id,
-                        referencia_data: e.referencia_data,
-                    };
+                    return { variavel_id: e.variavel_id, referencia_data: e.referencia_data };
                 }),
             },
-            select: {
-                id: true,
-                variavel_id: true,
-                referencia_data: true,
-                eh_liberacao_auto: true,
-                aprovada: true,
-            },
+            select: { id: true, variavel_id: true, referencia_data: true, eh_liberacao_auto: true, aprovada: true },
         });
         const toInsert = mesesParaAprovar.filter((e) => {
             return !alreadyApproved.some(
@@ -3657,12 +3354,8 @@ export class VariavelService {
                 )}`
             );
             await prismaTxn.variavelGlobalCicloAnalise.updateMany({
-                where: {
-                    id: { in: toUpdate.map((item) => item.id) },
-                },
-                data: {
-                    eh_liberacao_auto: true,
-                },
+                where: { id: { in: toUpdate.map((item) => item.id) } },
+                data: { eh_liberacao_auto: true },
             });
         }
     }
@@ -3679,40 +3372,26 @@ export class VariavelService {
         await prismaTxn.variavelGlobalCicloAnalise.updateMany({
             where: {
                 OR: mesesParaRemover.map((e) => {
-                    return {
-                        variavel_id: e.variavel_id,
-                        referencia_data: e.referencia_data,
-                    };
+                    return { variavel_id: e.variavel_id, referencia_data: e.referencia_data };
                 }),
                 removido_em: null,
                 fase: 'Liberacao',
                 ultima_revisao: true,
             },
-            data: {
-                removido_em: now,
-                removido_por: user.id,
-                ultima_revisao: false,
-            },
+            data: { removido_em: now, removido_por: user.id, ultima_revisao: false },
         });
 
         // caso tenha alguma validação já feita, remove também
         await prismaTxn.variavelGlobalCicloAnalise.updateMany({
             where: {
                 OR: mesesParaRemover.map((e) => {
-                    return {
-                        variavel_id: e.variavel_id,
-                        referencia_data: e.referencia_data,
-                    };
+                    return { variavel_id: e.variavel_id, referencia_data: e.referencia_data };
                 }),
                 removido_em: null,
                 fase: 'Validacao',
                 ultima_revisao: true,
             },
-            data: {
-                removido_em: now,
-                removido_por: user.id,
-                ultima_revisao: false,
-            },
+            data: { removido_em: now, removido_por: user.id, ultima_revisao: false },
         });
     }
 
@@ -3724,17 +3403,10 @@ export class VariavelService {
         logger.log(`Variáveis globais: buscando meses para remover liberação...`);
         const dbRows = await prismaTxn.serieVariavel.findMany({
             where: { id: { in: idsToBeRemoved }, serie: 'Realizado' },
-            select: {
-                variavel_id: true,
-                data_valor: true,
-            },
+            select: { variavel_id: true, data_valor: true },
         });
         const mesesParaRemover = dbRows.map(
-            (e) =>
-                ({
-                    variavel_id: e.variavel_id,
-                    referencia_data: e.data_valor,
-                }) satisfies VariavelGlobalLiberacao
+            (e) => ({ variavel_id: e.variavel_id, referencia_data: e.data_valor }) satisfies VariavelGlobalLiberacao
         );
         logger.log(`Variáveis globais: meses para remover liberação: ${JSON.stringify(mesesParaRemover)}`);
         return mesesParaRemover;
@@ -3743,26 +3415,13 @@ export class VariavelService {
     async recalc_series_dependentes(variaveis: number[], prismaTxn: Prisma.TransactionClient) {
         this.logger.log(`called recalc_series_dependentes (${JSON.stringify(variaveis)})`);
         const afetadas = await prismaTxn.variavel.findMany({
-            where: {
-                id: { in: variaveis },
-                removido_em: null,
-            },
+            where: { id: { in: variaveis }, removido_em: null },
             select: {
                 id: true,
                 acumulativa: true,
                 FormulaCompostaVariavel: {
-                    where: {
-                        formula_composta: {
-                            NOT: { variavel_calc_id: null },
-                        },
-                    },
-                    select: {
-                        formula_composta: {
-                            select: {
-                                variavel_calc_id: true,
-                            },
-                        },
-                    },
+                    where: { formula_composta: { NOT: { variavel_calc_id: null } } },
+                    select: { formula_composta: { select: { variavel_calc_id: true } } },
                 },
             },
         });
@@ -3784,18 +3443,14 @@ export class VariavelService {
         const indicadoresViaCalc = await prismaTxn.formulaComposta.findMany({
             where: {
                 removido_em: null,
-                FormulaCompostaVariavel: {
-                    some: { variavel_id: { in: variaveis } },
-                },
+                FormulaCompostaVariavel: { some: { variavel_id: { in: variaveis } } },
                 variavel_calc_id: { not: null },
             },
             select: { id: true, variavel_calc_id: true },
         });
 
         const indicadoresFV = await prismaTxn.indicadorFormulaVariavel.findMany({
-            where: {
-                variavel_id: { in: [...variaveis, ...indicadoresViaCalc.map((r) => r.variavel_calc_id!)] },
-            },
+            where: { variavel_id: { in: [...variaveis, ...indicadoresViaCalc.map((r) => r.variavel_calc_id!)] } },
             distinct: ['indicador_id'],
             select: { indicador_id: true },
         });
@@ -3806,9 +3461,7 @@ export class VariavelService {
                     some: {
                         formula_composta: {
                             removido_em: null,
-                            FormulaCompostaVariavel: {
-                                some: { variavel_id: { in: variaveis } },
-                            },
+                            FormulaCompostaVariavel: { some: { variavel_id: { in: variaveis } } },
                         },
                     },
                 },
@@ -3844,9 +3497,7 @@ export class VariavelService {
     }
 
     async getMetaIdDaVariavel(variavel_id: number, prismaTxn: Prisma.TransactionClient): Promise<number> {
-        const result: {
-            meta_id: number;
-        }[] = await prismaTxn.$queryRaw`
+        const result: { meta_id: number }[] = await prismaTxn.$queryRaw`
             select coalesce(
 
                 -- busca pela diretamente na meta
@@ -3889,9 +3540,7 @@ export class VariavelService {
         formula_composta_id: number,
         prismaTxn: Prisma.TransactionClient
     ): Promise<number> {
-        const result: {
-            meta_id: number;
-        }[] = await prismaTxn.$queryRaw`
+        const result: { meta_id: number }[] = await prismaTxn.$queryRaw`
             select coalesce(
                 -- busca pela diretamente na meta
                 (
@@ -3931,9 +3580,7 @@ export class VariavelService {
     }
 
     async getMetaIdDoIndicador(indicador_id: number, prismaTxn: Prisma.TransactionClient): Promise<number> {
-        const result: {
-            meta_id: number;
-        }[] = await prismaTxn.$queryRaw`
+        const result: { meta_id: number }[] = await prismaTxn.$queryRaw`
             select coalesce(
                 -- busca pela diretamente na meta
                 (
@@ -3976,19 +3623,9 @@ export class VariavelService {
         now: Date,
         tipo: TipoVariavel = 'PDM'
     ): Promise<RecordWithId> {
-        const indicador = await prismaTxn.indicador.findFirstOrThrow({
-            where: { id: dto.indicador_id },
-        });
+        const indicador = await prismaTxn.indicador.findFirstOrThrow({ where: { id: dto.indicador_id } });
         const jaEmUso = await prismaTxn.variavel.count({
-            where: {
-                removido_em: null,
-                codigo: codigo,
-                indicador_variavel: {
-                    some: {
-                        indicador_id: indicador.id,
-                    },
-                },
-            },
+            where: { removido_em: null, codigo: codigo, indicador_variavel: { some: { indicador_id: indicador.id } } },
         });
         if (jaEmUso > 0) throw new HttpException(`Código ${codigo} já está em uso no indicador.`, 400);
 
@@ -4017,11 +3654,7 @@ export class VariavelService {
         });
 
         await prismaTxn.indicadorVariavel.create({
-            data: {
-                variavel_id: variavel.id,
-                indicador_id: dto.indicador_id,
-                desativado: false,
-            },
+            data: { variavel_id: variavel.id, indicador_id: dto.indicador_id, desativado: false },
         });
 
         return { id: variavel.id };
@@ -4053,40 +3686,18 @@ export class VariavelService {
                 metodologia: true,
                 dado_aberto: true,
                 descricao: true,
-                orgao_proprietario: {
-                    select: {
-                        id: true,
-                        sigla: true,
-                        descricao: true,
-                    },
-                },
+                orgao_proprietario: { select: { id: true, sigla: true, descricao: true } },
                 medicao_orgao_id: true,
                 validacao_orgao_id: true,
                 liberacao_orgao_id: true,
 
-                medicao_orgao: {
-                    select: { id: true, sigla: true },
-                },
-                validacao_orgao: {
-                    select: { id: true, sigla: true },
-                },
-                liberacao_orgao: {
-                    select: { id: true, sigla: true },
-                },
+                medicao_orgao: { select: { id: true, sigla: true } },
+                validacao_orgao: { select: { id: true, sigla: true } },
+                liberacao_orgao: { select: { id: true, sigla: true } },
 
                 VariavelGrupoResponsavelEquipe: {
-                    where: {
-                        removido_em: null,
-                    },
-                    select: {
-                        grupo_responsavel_equipe: {
-                            select: {
-                                id: true,
-                                titulo: true,
-                                perfil: true,
-                            },
-                        },
-                    },
+                    where: { removido_em: null },
+                    select: { grupo_responsavel_equipe: { select: { id: true, titulo: true, perfil: true } } },
                 },
             },
         });
@@ -4186,17 +3797,9 @@ export class VariavelService {
 
     async findAllPdms(): Promise<PdmSimplesDto[]> {
         const rows = await this.prisma.pdm.findMany({
-            where: {
-                removido_em: null,
-            },
-            select: {
-                id: true,
-                nome: true,
-                tipo: true,
-            },
-            orderBy: {
-                nome: 'asc',
-            },
+            where: { removido_em: null },
+            select: { id: true, nome: true, tipo: true },
+            orderBy: { nome: 'asc' },
         });
         return rows;
     }
@@ -4263,6 +3866,10 @@ export async function AddTaskRecalcVariaveis(
             return;
         }
     } else {
+        if (options.variavelIds == undefined || options.variavelIds.length == 0) {
+            logger.warn(`variavelIds foi fornecido vazio, no-op mas poderia ser um erro dependendo do contexto`);
+            return;
+        }
         throw new Error('É necessário fornecer pdmId ou variavelIds');
     }
 

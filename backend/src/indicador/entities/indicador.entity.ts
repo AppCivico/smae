@@ -1,4 +1,4 @@
-import { IndicadorTipo, Periodicidade, Polaridade } from '@prisma/client';
+import { IndicadorPreviaOpcao, IndicadorTipo, Periodicidade, Polaridade } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { FormulaVariaveis } from '../dto/update-indicador.dto';
 import { IsDateYMD } from '../../auth/decorators/date.decorator';
@@ -34,4 +34,5 @@ export class IndicadorDto {
     recalculo_tempo: Decimal | null;
     variavel_categoria_id: number | null;
     indicador_tipo: IndicadorTipo;
+    indicador_previa_opcao: IndicadorPreviaOpcao;
 }

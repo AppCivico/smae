@@ -56,13 +56,13 @@ export class RelProjetoCronogramaDto {
     tarefa: string;
     inicio_planejado: string | null;
     termino_planejado: string | null;
-    custo_estimado: number | null;
+    custo_estimado: string | number | null;
     duracao_planejado: number | null;
     inicio_real: string | null;
     termino_real: string | null;
     duracao_real: number | null;
     percentual_concluido: number | null;
-    custo_real: number | null;
+    custo_real: string | number | null;
 }
 
 export class RelProjetoRiscoDto {
@@ -122,6 +122,15 @@ export class RelProjetoOrigemDto {
     atividade_titulo: string | null;
 }
 
+export class RelProjetoGeolocDto {
+    projeto_id: number;
+    endereco: string;
+    cep: string;
+    zona: string | null;
+    distrito: string | null;
+    subprefeitura: string | null;
+}
+
 export class PPProjetoRelatorioDto {
     detail: RelProjetoRelatorioDto;
     cronograma: RelProjetoCronogramaDto[];
@@ -132,4 +141,5 @@ export class PPProjetoRelatorioDto {
     contratos: RelProjetosContratosDto[];
     aditivos: RelProjetosAditivosDto[];
     origens: RelProjetoOrigemDto[];
+    enderecos: RelProjetoGeolocDto[];
 }

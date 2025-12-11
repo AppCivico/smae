@@ -1,8 +1,9 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+
 import statuses from '@/consts/riskStatuses';
 import arrayToValueAndLabel from '@/helpers/arrayToValueAndLabel';
 import { useRiscosStore } from '@/stores/riscos.store.ts';
-import { storeToRefs } from 'pinia';
 
 const listaDeStatuses = arrayToValueAndLabel(statuses);
 

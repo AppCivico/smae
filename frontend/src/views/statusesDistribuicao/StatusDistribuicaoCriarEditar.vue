@@ -92,17 +92,18 @@
 </template>
 
 <script setup>
-import { statusDistribuicaoWorkflow as schema } from '@/consts/formSchemas';
-import tiposStatusDistribuicao from '@/consts/tiposStatusDistribuicao';
-import { useAlertStore } from '@/stores/alert.store';
-import { useStatusDistribuicaoWorflowStore } from '@/stores/statusDistribuicaoWorkflow.store';
-import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage, Field, Form, useForm,
 } from 'vee-validate';
 import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
+import { statusDistribuicaoWorkflow as schema } from '@/consts/formSchemas';
+import tiposStatusDistribuicao from '@/consts/tiposStatusDistribuicao';
+import { useAlertStore } from '@/stores/alert.store';
+import { useStatusDistribuicaoWorflowStore } from '@/stores/statusDistribuicaoWorkflow.store';
+import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
 
 const router = useRouter();
 const route = useRoute();

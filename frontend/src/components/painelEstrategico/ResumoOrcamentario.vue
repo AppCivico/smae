@@ -1,7 +1,8 @@
 <script setup>
 import { defineProps } from 'vue';
-import dinheiro from '@/helpers/dinheiro';
+
 import AnimatedNumber from '@/components/AnimatedNumber.vue';
+import dinheiro from '@/helpers/dinheiro';
 
 defineProps({
   planejadoTotal: {

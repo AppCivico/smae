@@ -5,7 +5,7 @@ import { TarefaCronogramaDto } from 'src/common/dto/TarefaCronograma.dto';
 import { DateTransform } from '../../../auth/transforms/date.transform';
 import { IdSiglaDescricao } from '../../../common/dto/IdSigla.dto';
 import { IdTituloNivelMaxRegDto, ProjetoDetailDto } from '../../projeto/entities/projeto.entity';
-import { TarefaDependenciaDto } from '../dto/create-tarefa.dto';
+import { CustoAnualizadoDto, TarefaDependenciaDto } from '../dto/create-tarefa.dto';
 import { IsDateYMD } from '../../../auth/decorators/date.decorator';
 
 export class TarefaItemDto {
@@ -51,6 +51,12 @@ export class TarefaItemDto {
 
     pode_editar: boolean;
     pode_editar_realizado: boolean;
+
+    backup_custo_estimado: number | null;
+    backup_custo_real: number | null;
+
+    custo_estimado_anualizado: CustoAnualizadoDto[] | null;
+    custo_real_anualizado: CustoAnualizadoDto[] | null;
 }
 
 export class TarefaItemDbDto extends TarefaItemDto {

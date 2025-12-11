@@ -12,13 +12,13 @@ export default (rota: RouteLocation, parametrosSobrescritos = {}) => {
   let parametrosViaQueryString;
 
   if (typeof rota.query?.escape === 'string') {
-    if (isUrlValid(rota.query?.escape)) {
+    if (isUrlValid(rota.query.escape)) {
       parametrosViaQueryString = { path: rota.query.escape };
     } else {
       parametrosViaQueryString = { name: rota.query.escape };
     }
-  } else if (rota.query?.escape && typeof rota.query?.escape === 'object') {
-    parametrosViaQueryString = rota.query?.escape;
+  } else if (rota.query?.escape && typeof rota.query.escape === 'object') {
+    parametrosViaQueryString = rota.query.escape;
   }
 
   const rotaFinal:RouteLocationNamedRaw = merge(

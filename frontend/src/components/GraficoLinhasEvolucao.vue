@@ -24,11 +24,11 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
 import Big from 'big.js';
+import { computed } from 'vue';
+
 import GraficoDashboard from '@/components/graficos/GraficoDashboard.vue';
-import NumeroComLegenda
-  from '@/components/painelEstrategico/NumeroComLegenda.vue';
+import NumeroComLegenda from '@/components/painelEstrategico/NumeroComLegenda.vue';
 import { dateToMonthYear } from '@/helpers/dateToDate';
 
 const props = defineProps({
@@ -44,6 +44,14 @@ const props = defineProps({
     default: () => ({}),
   },
 });
+
+const colorPalette = {
+  previsto: '#8eafc8',
+  previstoAcumulado: '#b5e48c',
+  realizado: '#437aa3',
+  realizadoAcumulado: '#4f8562',
+  meta: '#F2890D',
+};
 
 const temMeta = computed(() => props.indicador.meta_valor_nominal);
 
@@ -84,6 +92,11 @@ const dadosProcessados = computed(() => {
     return valor !== null ? valor.toNumber() : null;
   });
 
+  const encontrarPrimeiroIndicePrevia = (indice) => {
+    if (indice === -1) return -1;
+    return data.findIndex((linha) => linha.series[indice]?.eh_previa === true);
+  };
+
   const meta = props.indicador?.meta_valor_nominal
     ? Number(props.indicador.meta_valor_nominal)
     : null;
@@ -117,6 +130,8 @@ const dadosProcessados = computed(() => {
     serieMeta: meta !== null ? categorias.map(() => meta) : null,
     anos,
     ultimoMesPreenchidoIndex,
+    indiceRealizadoPrevia: encontrarPrimeiroIndicePrevia(idxRealizado),
+    indiceRealizadoAcumuladoPrevia: encontrarPrimeiroIndicePrevia(idxRealizadoAcumulado),
   };
 });
 
@@ -135,6 +150,8 @@ const configuracaoGrafico = computed(() => {
     serieMeta,
     anos,
     ultimoMesPreenchidoIndex,
+    indiceRealizadoPrevia,
+    indiceRealizadoAcumuladoPrevia,
   } = dadosProcessados.value;
 
   if (!props.valores?.linhas?.length || !props.valores?.ordem_series?.length) {
@@ -153,36 +170,214 @@ const configuracaoGrafico = computed(() => {
     },
   }));
 
-  const criarMarkPoint = (serie, cor) => ({
-    data: [
-      {
-        name: 'Último Mês Preenchido',
-        coord: [categorias[ultimoMesPreenchidoIndex], serie[ultimoMesPreenchidoIndex]],
-        symbol: 'circle',
-        symbolSize: 12,
-        itemStyle: {
-          color: cor,
-          borderColor: cor,
-          borderWidth: 2,
-        },
+  const criarMarkPoint = (serie, cor, nomeDaSerie = '') => {
+    const indiceLimite = nomeDaSerie.includes('Realizado')
+      ? indiceRealizadoAcumuladoPrevia
+      : indiceRealizadoPrevia;
+
+    return indiceLimite !== -1
+      && ultimoMesPreenchidoIndex >= indiceLimite
+      ? null
+      : {
+        data: [
+          {
+            name: 'Último Mês Preenchido',
+            coord: [categorias[ultimoMesPreenchidoIndex], serie[ultimoMesPreenchidoIndex]],
+            symbol: 'circle',
+            symbolSize: 12,
+            itemStyle: {
+              color: cor,
+              borderColor: cor,
+              borderWidth: 2,
+            },
+          },
+        ],
+      };
+  };
+
+  const criarSeriePrevia = (nome, serie, cor, indicePrevia) => {
+    if (indicePrevia === -1) return null;
+
+    return {
+      name: `${nome} (prévia)`,
+      type: 'line',
+      data: serie.map((v, i) => {
+        if (i >= indicePrevia - 1) {
+          // Make the first point (at indicePrevia - 1) invisible
+          if (i === indicePrevia - 1) {
+            return {
+              value: v,
+              itemStyle: {
+                opacity: 0,
+              },
+            };
+          }
+          return v;
+        }
+        return null;
+      }),
+      symbolSize: 10,
+      smooth: true,
+      connectNulls: false,
+      itemStyle: {
+        color: cor,
+        borderType: 'dashed',
       },
-    ],
-  });
+
+      lineStyle: {
+        type: 'dashed',
+        color: cor,
+      },
+      label: { show: false },
+    };
+  };
+
+  const formatarTooltip = (params) => {
+    if (!params || params.length === 0) return '';
+
+    const criarLinhaTooltip = (nome, valor, cor, ehPrevia) => `
+      <div style="margin-bottom: 4px;">
+        <span style="display:inline-block;box-sizing:border-box;width:12px;height:12px;color:${cor};background-color:currentColor;margin-right:5px;border-radius: 50%; border-width: 2px; ${ehPrevia ? 'border-style: dashed; background-color: transparent;' : 'border-style: solid; background-color: currentColor;'}"></span>
+        <strong>${nome}:</strong> ${formatarNumero(valor)}
+      </div>
+    `;
+
+    // Adicionar período/data do eixo X
+    const periodo = params[0]?.name || params[0]?.axisValue;
+    let html = '<div style="padding: 8px;">';
+    if (periodo) {
+      html += `<div style="margin-bottom: 8px; font-weight: bold;">${periodo}</div>`;
+    }
+
+    // Primeiro passo: identificar se temos dados de séries com prévia
+    const seriesConsolidadas = new Map();
+
+    params.forEach((param) => {
+      const { seriesName, value, dataIndex } = param;
+
+      let valorExtraido;
+      if (Array.isArray(value)) {
+        valorExtraido = value[1] !== undefined ? value[1] : value[0];
+      } else {
+        valorExtraido = value;
+      }
+
+      const ehPrevia = seriesName.includes('(prévia)');
+      const nomeBase = ehPrevia ? seriesName.replace(' (prévia)', '') : seriesName;
+
+      // Consolidar apenas "Realizado" e "Realizado Acumulado"
+      if (nomeBase === 'Realizado' || nomeBase === 'Realizado Acumulado') {
+        // Verificar se o ponto atual é realmente prévia baseado no dataIndex
+        let ehRealmentePrevia = false;
+        if (nomeBase === 'Realizado' && indiceRealizadoPrevia !== -1) {
+          ehRealmentePrevia = dataIndex >= indiceRealizadoPrevia;
+        }
+        if (nomeBase === 'Realizado Acumulado' && indiceRealizadoAcumuladoPrevia !== -1) {
+          ehRealmentePrevia = dataIndex >= indiceRealizadoAcumuladoPrevia;
+        }
+
+        // Escolher valor correto (valores reais têm precedência sobre prévias)
+        const dadosExistentes = seriesConsolidadas.get(nomeBase);
+        // Adicionar quando: não existe OU (novo é real E existente é prévia)
+        // OU (novo é prévia E tem valor válido)
+        const deveAdicionar = !dadosExistentes
+          || (!ehRealmentePrevia && dadosExistentes.ehPrevia)
+          || (ehRealmentePrevia && valorExtraido !== null && valorExtraido !== undefined);
+
+        if (deveAdicionar) {
+          seriesConsolidadas.set(nomeBase, {
+            valor: valorExtraido,
+            color: param.color,
+            ehPrevia: ehRealmentePrevia,
+          });
+        }
+      }
+    });
+
+    // Segundo passo: renderizar séries consolidadas e não consolidadas
+    const seriesJaRenderizadas = new Set();
+
+    params.forEach((param) => {
+      const { seriesName, value, color } = param;
+
+      let valorExtraido;
+      if (Array.isArray(value)) {
+        valorExtraido = value[1] !== undefined ? value[1] : value[0];
+      } else {
+        valorExtraido = value;
+      }
+
+      const ehPrevia = seriesName.includes('(prévia)');
+      const nomeBase = ehPrevia ? seriesName.replace(' (prévia)', '') : seriesName;
+
+      // Para séries consolidadas (Realizado e Realizado Acumulado)
+      if (nomeBase === 'Realizado' || nomeBase === 'Realizado Acumulado') {
+        // Renderizar apenas uma vez por nomeBase
+        if (seriesJaRenderizadas.has(nomeBase)) {
+          return;
+        }
+
+        const dadosConsolidados = seriesConsolidadas.get(nomeBase);
+        if (dadosConsolidados) {
+          const nomeExibir = dadosConsolidados.ehPrevia ? `${nomeBase} (prévia)` : nomeBase;
+          html += criarLinhaTooltip(
+            nomeExibir,
+            dadosConsolidados.valor,
+            dadosConsolidados.color,
+            dadosConsolidados.ehPrevia,
+          );
+          seriesJaRenderizadas.add(nomeBase);
+        }
+      } else {
+        // Outras séries: comportamento original
+        html += criarLinhaTooltip(seriesName, valorExtraido, color);
+      }
+    });
+
+    html += '</div>';
+    return html;
+  };
 
   return {
     tooltip: {
       trigger: 'axis',
+      formatter: formatarTooltip,
     },
     legend: {
       data: [
         'Previsto',
         'Previsto Acumulado',
         'Realizado',
+        ...(indiceRealizadoPrevia !== -1
+          ? [{
+            name: 'Realizado (prévia)',
+            itemStyle: {
+              borderType: 'dashed',
+            },
+          }]
+          : []),
         'Realizado Acumulado',
+        ...(indiceRealizadoAcumuladoPrevia !== -1
+          ? [{
+            name: 'Realizado Acumulado (prévia)',
+            itemStyle: {
+              borderType: 'dashed',
+            },
+          }]
+          : []),
         ...(serieMeta ? ['Meta'] : []),
       ],
-      top: '5%',
     },
+    toolbox: {
+      show: false,
+    },
+    dataZoom: [
+      {
+        type: 'inside',
+        start: 0,
+        end: 100,
+      },
+    ],
     xAxis: {
       type: 'category',
       data: categorias,
@@ -198,15 +393,15 @@ const configuracaoGrafico = computed(() => {
         symbolSize: 10,
         smooth: true,
         itemStyle: {
-          color: '#8eafc8',
+          color: colorPalette.previsto,
         },
         lineStyle: {
-          color: '#8eafc8',
+          color: colorPalette.previsto,
         },
         label: {
           show: false,
         },
-        markPoint: criarMarkPoint(seriePrevisto, '#8EAFC8'),
+        markPoint: criarMarkPoint(seriePrevisto, colorPalette.previsto, 'Previsto'),
       },
       {
         name: 'Previsto Acumulado',
@@ -215,44 +410,49 @@ const configuracaoGrafico = computed(() => {
         symbolSize: 10,
         smooth: true,
         itemStyle: {
-          color: '#b5e48c',
+          color: colorPalette.previstoAcumulado,
         },
         lineStyle: {
-          color: '#b5e48c',
+          color: colorPalette.previstoAcumulado,
         },
         label: {
           show: false,
         },
-        markPoint: criarMarkPoint(seriePrevistoAcumulado, '#B5E48C'),
+        markPoint: criarMarkPoint(seriePrevistoAcumulado, colorPalette.previstoAcumulado, 'Previsto Acumulado'),
       },
       {
         name: 'Realizado',
         type: 'line',
-        data: serieRealizado,
+        data: indiceRealizadoPrevia !== -1
+          ? serieRealizado.map((v, i) => (i < indiceRealizadoPrevia ? v : null))
+          : serieRealizado,
         symbolSize: 10,
         smooth: true,
         itemStyle: {
-          color: '#437aa3',
+          color: colorPalette.realizado,
         },
         lineStyle: {
-          color: '#437aa3',
+          color: colorPalette.realizado,
         },
         label: {
           show: false,
         },
-        markPoint: criarMarkPoint(serieRealizado, '#437AA3'),
+        markPoint: criarMarkPoint(serieRealizado, colorPalette.realizado, 'Realizado'),
       },
+      ...[criarSeriePrevia('Realizado', serieRealizado, colorPalette.realizado, indiceRealizadoPrevia)].filter(Boolean),
       {
         name: 'Realizado Acumulado',
         type: 'line',
-        data: serieRealizadoAcumulado,
+        data: indiceRealizadoAcumuladoPrevia !== -1
+          ? serieRealizadoAcumulado.map((v, i) => (i < indiceRealizadoAcumuladoPrevia ? v : null))
+          : serieRealizadoAcumulado,
         symbolSize: 10,
         smooth: true,
         itemStyle: {
-          color: '#4f8562',
+          color: colorPalette.realizadoAcumulado,
         },
         lineStyle: {
-          color: '#4f8562',
+          color: colorPalette.realizadoAcumulado,
         },
         label: {
           show: false,
@@ -261,8 +461,14 @@ const configuracaoGrafico = computed(() => {
           data: linhasAnos,
           symbol: 'none',
         },
-        markPoint: criarMarkPoint(serieRealizadoAcumulado, '#4F8562'),
+        markPoint: criarMarkPoint(serieRealizadoAcumulado, colorPalette.realizadoAcumulado, 'Realizado Acumulado'),
       },
+      ...[criarSeriePrevia(
+        'Realizado Acumulado',
+        serieRealizadoAcumulado,
+        colorPalette.realizadoAcumulado,
+        indiceRealizadoAcumuladoPrevia,
+      )].filter(Boolean),
       ...(serieMeta
         ? [
           {
@@ -272,11 +478,11 @@ const configuracaoGrafico = computed(() => {
             showSymbol: false,
             smooth: true,
             itemStyle: {
-              color: '#F2890D',
+              color: colorPalette.meta,
             },
             lineStyle: {
               type: 'dashed',
-              color: '#F2890D',
+              color: colorPalette.meta,
             },
           },
         ]

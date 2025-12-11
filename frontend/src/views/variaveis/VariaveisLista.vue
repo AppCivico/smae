@@ -1,4 +1,8 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { ref, watchEffect } from 'vue';
+import { useRoute } from 'vue-router';
+
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
 import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import SmallModal from '@/components/SmallModal.vue';
@@ -7,9 +11,7 @@ import TabelaDeVariaveisGlobais from '@/components/variaveis/TabelaDeVariaveisGl
 import { useAlertStore } from '@/stores/alert.store';
 import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store.ts';
 import VariaveisSeries from '@/views/variaveis/VariaveisSeries.vue';
-import { storeToRefs } from 'pinia';
-import { ref, watchEffect } from 'vue';
-import { useRoute } from 'vue-router';
+import VariaveisSeriesFilhas from '@/views/variaveis/VariaveisSeriesFilhas.vue';
 
 const route = useRoute();
 
@@ -18,14 +20,16 @@ const variaveisGlobaisStore = useVariaveisGlobaisStore();
 
 const variavelCujosValoresSeraoExibidos = ref(0);
 const tipoDeValor = ref('Previsto');
+const editandoValoresDeFilhas = ref(false);
 
 const {
   lista, chamadasPendentes, paginacao,
 } = storeToRefs(variaveisGlobaisStore);
 
-function abrirEdicaoValores(idDaVariavel, tipo) {
+function abrirEdicaoValores(idDaVariavel, tipo, ehMae = false) {
   variavelCujosValoresSeraoExibidos.value = idDaVariavel;
   tipoDeValor.value = tipo;
+  editandoValoresDeFilhas.value = ehMae;
 }
 
 async function excluirVariavel(id, nome) {
@@ -129,14 +133,11 @@ watchEffect(() => {
 
       <td>
         <button
-          v-if="
-            variavel?.pode_editar_valor
-              && !variavel?.possui_variaveis_filhas
-              && variavel?.tipo !== 'Calculada'
-          "
+          v-if="variavel?.pode_editar_valor
+            && variavel?.tipo !== 'Calculada'"
           type="button"
           class="tipinfo tprimary like-a__text"
-          @click="abrirEdicaoValores(variavel.id, 'Previsto')"
+          @click="abrirEdicaoValores(variavel.id, 'Previsto', variavel?.possui_variaveis_filhas)"
         >
           <svg
             width="20"
@@ -145,16 +146,14 @@ watchEffect(() => {
           <div>Preencher valores Previstos e Acumulados</div>
         </button>
       </td>
+
       <td>
         <button
-          v-if="
-            variavel?.pode_editar_valor
-              && !variavel?.possui_variaveis_filhas
-              && variavel?.tipo !== 'Calculada'
-          "
+          v-if="variavel?.pode_editar_valor
+            && variavel?.tipo !== 'Calculada'"
           type="button"
           class="tipinfo tprimary like-a__text"
-          @click="abrirEdicaoValores(variavel.id, 'Realizado')"
+          @click="abrirEdicaoValores(variavel.id, 'Realizado', variavel?.possui_variaveis_filhas)"
         >
           <svg
             width="20"
@@ -202,14 +201,26 @@ watchEffect(() => {
     v-bind="paginacao"
   />
 
-  <SmallModal
-    v-if="variavelCujosValoresSeraoExibidos && tipoDeValor"
-    @close="abrirEdicaoValores(0, '')"
-  >
-    <VariaveisSeries
-      :variavel-id="variavelCujosValoresSeraoExibidos"
-      :tipo-de-valor="tipoDeValor"
-      @close="abrirEdicaoValores(0, '')"
-    />
-  </SmallModal>
+  <template v-if="variavelCujosValoresSeraoExibidos && tipoDeValor">
+    <SmallModal
+      v-if="editandoValoresDeFilhas"
+      @close="abrirEdicaoValores(0, '', false)"
+    >
+      <VariaveisSeriesFilhas
+        :variavel-id="variavelCujosValoresSeraoExibidos"
+        :tipo-de-valor="tipoDeValor"
+        @close="abrirEdicaoValores(0, '', false)"
+      />
+    </SmallModal>
+    <SmallModal
+      v-else
+      @close="abrirEdicaoValores(0, '', false)"
+    >
+      <VariaveisSeries
+        :variavel-id="variavelCujosValoresSeraoExibidos"
+        :tipo-de-valor="tipoDeValor"
+        @close="abrirEdicaoValores(0, '', false)"
+      />
+    </SmallModal>
+  </template>
 </template>

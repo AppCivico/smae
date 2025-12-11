@@ -1,19 +1,20 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { Form, Field } from 'vee-validate';
 import {
   ref, unref, onMounted, onUpdated,
 } from 'vue';
-import { Dashboard } from '@/components';
-import { Form, Field } from 'vee-validate';
-import * as Yup from 'yup';
 import { useRoute } from 'vue-router';
+import * as Yup from 'yup';
+
+import { Dashboard } from '@/components';
 import { router } from '@/router';
-import { storeToRefs } from 'pinia';
 import {
   useEditModalStore, useAlertStore, usePdMStore, usePaineisStore, usePaineisGruposStore,
 } from '@/stores';
-import { default as SelecionarMetas } from '@/views/paineis/SelecionarMetas.vue';
-import { default as EditarMeta } from '@/views/paineis/EditarMeta.vue';
 import { default as EditarDetalhe } from '@/views/paineis/EditarDetalhe.vue';
+import { default as EditarMeta } from '@/views/paineis/EditarMeta.vue';
+import { default as SelecionarMetas } from '@/views/paineis/SelecionarMetas.vue';
 
 const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();

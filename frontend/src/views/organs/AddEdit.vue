@@ -1,4 +1,5 @@
 <script setup>
+import { vMaska } from 'maska';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
@@ -6,8 +7,8 @@ import {
   Form,
   useIsFormDirty,
 } from 'vee-validate';
-import { vMaska } from 'maska';
 import { useRoute } from 'vue-router';
+
 import { Dashboard } from '@/components';
 import { órgão as schema } from '@/consts/formSchemas';
 import { router } from '@/router';

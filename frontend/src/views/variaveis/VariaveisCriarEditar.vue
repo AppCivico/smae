@@ -1,21 +1,22 @@
 <script setup>
 import { storeToRefs } from 'pinia';
-import { useRoute, useRouter } from 'vue-router';
-import {
-  computed, onUnmounted, ref, watch,
-} from 'vue';
 import {
   ErrorMessage, Field, useForm, useIsFormDirty,
 } from 'vee-validate';
-import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
-import SmaeMonth from '@/components/camposDeFormulario/SmaeMonth';
-import AutocompleteField from '@/components/AutocompleteField2.vue';
+import {
+  computed, onUnmounted, ref, watch,
+} from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
 import AgrupadorDeAutocomplete from '@/components/AgrupadorDeAutocomplete.vue';
-import escaparDaRota from '@/helpers/escaparDaRota';
+import AutocompleteField from '@/components/AutocompleteField2.vue';
+import SmaeMonth from '@/components/camposDeFormulario/SmaeMonth';
+import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import { variavelGlobal as schemaCriacao, variavelGlobalParaGeracao as schemaGeracao } from '@/consts/formSchemas';
 import niveisRegionalizacao from '@/consts/niveisRegionalizacao';
 import periodicidades from '@/consts/periodicidades';
 import polaridadeDeVariaveis from '@/consts/polaridadeDeVariaveis';
+import escaparDaRota from '@/helpers/escaparDaRota';
 import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
 import truncate from '@/helpers/texto/truncate';
 import { useAlertStore } from '@/stores/alert.store';

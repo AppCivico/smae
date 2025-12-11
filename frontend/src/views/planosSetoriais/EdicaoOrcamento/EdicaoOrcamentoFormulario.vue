@@ -1,14 +1,15 @@
 <script setup lang="ts">
-import { watch } from 'vue';
 import {
   ErrorMessage,
   Field, FieldArray, useForm, useIsFormDirty,
 } from 'vee-validate';
+import { watch } from 'vue';
+
+import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CheckClose from '@/components/CheckClose.vue';
 import TituloDaPagina from '@/components/TituloDaPagina.vue';
-import AutocompleteField from '@/components/AutocompleteField2.vue';
-import months from '@/consts/months';
 import { permissaoEdicaoOrcamento as schema } from '@/consts/formSchemas';
+import months from '@/consts/months';
 
 const mesesDisponíveis = months.map((x, i) => ({ nome: x, id: i + 1 }));
 const camposSelecaoConfig = ['previsao_custo_disponivel', 'planejado_disponivel', 'execucao_disponivel'];

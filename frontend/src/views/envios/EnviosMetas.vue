@@ -1,8 +1,9 @@
 <script setup>
-import TransitionExpand from '@/components/TransitionExpand.vue';
-import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
 import { ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
+import TransitionExpand from '@/components/TransitionExpand.vue';
+import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
 
 const route = useRoute();
 const router = useRouter();

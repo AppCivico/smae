@@ -1,4 +1,13 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage, Field, useForm, useIsFormDirty,
+} from 'vee-validate';
+import {
+  computed, reactive, watch,
+} from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
 import SmallModal from '@/components/SmallModal.vue';
 import { arquivo as schemaDoFormulário } from '@/consts/formSchemas';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
@@ -8,14 +17,6 @@ import {
   useDocumentTypesStore,
 } from '@/stores';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store.ts';
-import { storeToRefs } from 'pinia';
-import {
-  ErrorMessage, Field, useForm, useIsFormDirty,
-} from 'vee-validate';
-import {
-  computed, reactive, watch,
-} from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 

@@ -91,6 +91,7 @@
 <script lang="ts" setup>
 import { cloneDeep } from 'lodash';
 import { watch, computed, ref } from 'vue';
+
 import AutocompleteField2 from './AutocompleteField2.vue';
 
 type Items = (string | number)[];

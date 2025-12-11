@@ -27,13 +27,14 @@
 </template>
 
 <script lang="ts" setup>
-import GraficoDashboard from '@/components/graficos/GraficoDashboard.vue';
-import dinheiro from '@/helpers/dinheiro';
 import type {
   PainelEstrategicoExecucaoOrcamentariaAno,
 } from '@back/gestao-projetos/painel-estrategico/entities/painel-estrategico-responses.dto';
 import type { DefaultLabelFormatterCallbackParams } from 'echarts';
 import { computed, ref } from 'vue';
+
+import GraficoDashboard from '@/components/graficos/GraficoDashboard.vue';
+import dinheiro from '@/helpers/dinheiro';
 
 const props = defineProps({
   execucaoOrcamentaria: {

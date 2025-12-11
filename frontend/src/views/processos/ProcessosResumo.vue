@@ -1,7 +1,8 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+
 import { processo as schema } from '@/consts/formSchemas';
 import formatProcesso from '@/helpers/formatProcesso';
-import { storeToRefs } from 'pinia';
 import { useProcessosStore } from '@/stores/processos.store.ts';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 

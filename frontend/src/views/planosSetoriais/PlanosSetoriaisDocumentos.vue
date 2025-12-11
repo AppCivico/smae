@@ -4,6 +4,7 @@ import {
   defineOptions,
 } from 'vue';
 import { useRoute } from 'vue-router';
+
 import ErrorComponent from '@/components/ErrorComponent.vue';
 import GerenciadorDeArquivos from '@/components/GerenciadorDeArquivos.vue';
 import LoadingComponent from '@/components/LoadingComponent.vue';

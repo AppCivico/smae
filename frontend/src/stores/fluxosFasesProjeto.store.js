@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 export const useFluxosFasesProjetosStore = defineStore('fluxosFasesProjetos', {

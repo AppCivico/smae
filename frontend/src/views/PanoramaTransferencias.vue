@@ -1,10 +1,11 @@
 <script setup>
+import { cloneDeep } from 'lodash';
+import { storeToRefs } from 'pinia';
 import {
   computed, onUnmounted, ref, watch,
 } from 'vue';
-import { cloneDeep } from 'lodash';
-import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
+
 import { Dashboard } from '@/components';
 import QuadroNotas from '@/components/notas/QuadroNotas.vue';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';

@@ -1,7 +1,8 @@
 <script setup>
-import FeedbackEmptyList from '@/components/FeedbackEmptyList.vue';
-import { computed, ref } from 'vue';
 import { storeToRefs } from 'pinia';
+import { computed, ref } from 'vue';
+
+import FeedbackEmptyList from '@/components/FeedbackEmptyList.vue';
 import { usePanoramaStore } from '@/stores/panorama.store.ts';
 
 const panoramaStore = usePanoramaStore();

@@ -1,8 +1,9 @@
 <script setup>
 import { computed } from 'vue';
-import dinheiro from '@/helpers/dinheiro';
-import { dateToShortDate } from '@/helpers/dateToDate';
+
 import combinadorDeListas from '@/helpers/combinadorDeListas';
+import { dateToShortDate } from '@/helpers/dateToDate';
+import dinheiro from '@/helpers/dinheiro';
 
 const props = defineProps({
   recurso: {

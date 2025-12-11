@@ -11,6 +11,7 @@ import {
   ref, watch, watchEffect,
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
 import EnvioDeArquivos from '@/components/monitoramentoDeMetas/EnvioDeArquivos.vue';
 import ListaDeDocumentos from '@/components/monitoramentoDeMetas/ListaDeDocumentos.vue';
 import SmallModal from '@/components/SmallModal.vue';

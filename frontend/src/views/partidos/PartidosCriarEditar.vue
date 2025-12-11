@@ -1,13 +1,14 @@
 <script setup>
-import { partido as schema } from '@/consts/formSchemas';
-import { useAlertStore } from '@/stores/alert.store';
-import { usePartidosStore } from '@/stores/partidos.store';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage, Field, useForm, useIsFormDirty,
 } from 'vee-validate';
 import { watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
+import { partido as schema } from '@/consts/formSchemas';
+import { useAlertStore } from '@/stores/alert.store';
+import { usePartidosStore } from '@/stores/partidos.store';
 
 const router = useRouter();
 const route = useRoute();

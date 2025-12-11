@@ -282,6 +282,10 @@ details[open] summary {
   text-transform: uppercase;
 }
 
+.nc {
+  text-transform: none;
+}
+
 .vhidden {
   color: transparent;
   position: absolute;
@@ -1606,7 +1610,7 @@ body:has(dialog[open].editModal-dialog) {
   }
 
   .editModal--tamanho-ajustavel {
-    max-width: initial;
+    max-width: fit-content;
   }
 }
 

@@ -1,12 +1,13 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { computed, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import LocalFilter from '@/components/LocalFilter.vue';
 import TabelaDeProjetos from '@/components/projetos/TabelaDeProjetos.vue';
 import statuses from '@/consts/projectStatuses';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
-import { storeToRefs } from 'pinia';
-import { computed, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 
 const projetosStore = useProjetosStore();
 const {

@@ -1,6 +1,7 @@
 <script setup>
-import { useContratosStore } from '@/stores/contratos.store.ts';
 import { useRoute } from 'vue-router';
+
+import { useContratosStore } from '@/stores/contratos.store.ts';
 
 const route = useRoute();
 

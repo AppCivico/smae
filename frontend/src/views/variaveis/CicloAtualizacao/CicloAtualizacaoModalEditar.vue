@@ -161,7 +161,7 @@
 
         <AuxiliarDePreenchimento>
           <div class="flex g2 end mb1">
-            <div class="f1">
+            <div class="f1 mb1">
               <label class="label">Valor a aplicar</label>
               <input
                 v-if="!temCategorica"
@@ -232,14 +232,13 @@
               v-for="(variavelDado, variavelDadoIndex) in variaveisDados"
               :key="`variavel-dado--${variavelDadoIndex}-${variavelDado.codigo}`"
             >
+              <Field
+                :name="`variaveis_dados[${variavelDadoIndex}].variavel_id`"
+                type="hidden"
+              />
               <td class="valores-variaveis-tabela__item valores-variaveis-tabela__item--codigo">
                 <div>
-                  <strong>
-                    <svg
-                      width="12"
-                      height="12"
-                    ><use xlink:href="#i_right" /></svg>
-
+                  <strong class="block">
                     {{ variavelDado.codigo.id }}
                   </strong>
 
@@ -264,8 +263,9 @@
                   type="number"
                   :name="`variaveis_dados[${variavelDadoIndex}].valor_realizado`"
                   :disabled="!forumlariosAExibir.cadastro.liberado"
-                  @update:model-value="atualizarVariavelAcululado(variavelDadoIndex, $event)"
+                  @update:model-value="atualizarVariavelAcumulado(variavelDadoIndex, $event)"
                 />
+
                 <Field
                   v-else
                   :class="[
@@ -288,6 +288,11 @@
                     {{ variaveisCategoricasValor.descricao && truncate(`- ${variaveisCategoricasValor.descricao}`, 55) }}
                   </option>
                 </Field>
+
+                <ErrorMessage
+                  v-if="errors[`variaveis_dados[${variavelDadoIndex}].valor_realizado`]"
+                  :name="`variaveis_dados[${variavelDadoIndex}].valor_realizado`"
+                />
               </td>
 
               <td
@@ -305,11 +310,6 @@
                   disabled
                 />
               </td>
-
-              <Field
-                :name="`variaveis_dados[${variavelDadoIndex}].variavel_id`"
-                type="hidden"
-              />
             </tr>
           </tbody>
           <tfoot
@@ -369,16 +369,18 @@
 
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
-import { computed, ref } from 'vue';
 import { ErrorMessage, Field, useForm } from 'vee-validate';
+import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
+
+import AuxiliarDePreenchimento from '@/components/AuxiliarDePreenchimento.vue';
+import UploadArquivos, { ArquivoAdicionado } from '@/components/UploadArquivos.vue';
+import { cicloAtualizacaoModalEditarSchema } from '@/consts/formSchemas';
+import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
+import truncate from '@/helpers/texto/truncate';
 import { useCicloAtualizacaoStore } from '@/stores/cicloAtualizacao.store';
 import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store';
-import truncate from '@/helpers/texto/truncate';
-import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
-import { cicloAtualizacaoModalEditarSchema } from '@/consts/formSchemas';
-import UploadArquivos, { ArquivoAdicionado } from '@/components/UploadArquivos.vue';
-import AuxiliarDePreenchimento from '@/components/AuxiliarDePreenchimento.vue';
+
 import useCicloAtualizacao from './composables/useCicloAtualizacao';
 
 type VariaveisDados = {
@@ -437,7 +439,10 @@ const dataCicloAtualizacao = computed<string | null>(() => (
   dateIgnorarTimezone(dataReferencia)
 ));
 
-const schema = computed(() => cicloAtualizacaoModalEditarSchema(fasePosicao.value));
+const schema = computed(() => cicloAtualizacaoModalEditarSchema(
+  fasePosicao.value,
+  emFoco.value?.variavel.casas_decimais,
+));
 
 const {
   handleSubmit, errors, setFieldValue, values, validateField,
@@ -556,14 +561,14 @@ function temErro(caminho: string) {
   return erro[caminho];
 }
 
-function atualizarVariavelAcululado(variavelIndex: number, valor: string) {
+function atualizarVariavelAcumulado(variavelIndex: number, valor: string) {
   const valorVariavelInicial = Number(emFoco.value?.valores[variavelIndex].valor_realizado);
-  const valorVariavelAcululadoInicial = Number(
+  const valorVariavelAcumuladoInicial = Number(
     emFoco.value?.valores[variavelIndex].valor_realizado_acumulado,
   );
   const novoValor = Number(valor);
 
-  const novoValorAcumulado = (valorVariavelAcululadoInicial - valorVariavelInicial) + novoValor;
+  const novoValorAcumulado = (valorVariavelAcumuladoInicial - valorVariavelInicial) + novoValor;
 
   setFieldValue(
     `variaveis_dados[${variavelIndex}].valor_realizado_acumulado` as any,
@@ -711,21 +716,23 @@ function restaurarFormulario() {
     color: #B8C0CC;
   }
 
-  th, td {
+  th,
+  td {
     padding-right: 30px;
 
-    &:last-of-type {
+    &:last-child {
       padding-right: 0;
     }
   }
 
   tbody {
     tr {
+      th,
       td {
         padding-bottom: 30px;
       }
 
-      &:nth-last-child(-n+2) {
+      &:nth-last-child(-n+1) {
         td {
           padding-bottom: 0;
         }
@@ -754,8 +761,10 @@ function restaurarFormulario() {
 
 .valores-variaveis-tabela__item--valor_realizado,
 .valores-variaveis-tabela__item--valor_realizado_acumulado {
+  vertical-align: top;
+
   input {
-    width: 125px;
+    width: 12.5em;
   }
 }
 

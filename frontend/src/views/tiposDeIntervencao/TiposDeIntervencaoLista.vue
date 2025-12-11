@@ -78,9 +78,10 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
+
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import { useAlertStore } from '@/stores/alert.store';
 import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
-import TituloDaPagina from '@/components/TituloDaPagina.vue';
 
 const route = useRoute();
 const alertStore = useAlertStore();

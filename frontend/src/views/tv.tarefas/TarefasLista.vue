@@ -1,7 +1,8 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+
 import { useAlertStore } from '@/stores/alert.store';
 import { useWorkflowTarefasStore } from '@/stores/workflowTarefas.store';
-import { storeToRefs } from 'pinia';
 
 const workflowTarefas = useWorkflowTarefasStore();
 const { listaOrdenada: lista, chamadasPendentes, erro } = storeToRefs(workflowTarefas);

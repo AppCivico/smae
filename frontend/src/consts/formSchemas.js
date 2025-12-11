@@ -4429,13 +4429,28 @@ export const cicloAtualizacaoModalAdicionarSchema = (posicao) => {
   });
 };
 
-export const cicloAtualizacaoModalEditarSchema = (posicao) => {
+export const cicloAtualizacaoModalEditarSchema = (posicao, casasDecimais = 0) => {
   const schemaCampos = {
     variaveis_dados: array().of(
       object().shape({
         valor_realizado: string()
           .label('valor realizado')
-          .required(),
+          .required()
+          .test('casas-decimais', (value, { createError }) => {
+            if (!value) return true;
+
+            const valorNumerico = value.replace(',', '.');
+            const partesDecimais = valorNumerico.split('.')[1];
+            const numeroCasasDecimais = partesDecimais ? partesDecimais.length : 0;
+
+            if (numeroCasasDecimais > casasDecimais) {
+              return createError({
+                message: `O valor deve ter no máximo ${casasDecimais} casas decimais`,
+              });
+            }
+
+            return true;
+          }),
         valor_realizado_acumulado: string()
           .label('valor realizado acumulado')
           .required(),

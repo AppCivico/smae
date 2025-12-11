@@ -239,16 +239,17 @@
 </template>
 
 <script setup>
-import { variávelCategórica as schema } from '@/consts/formSchemas';
-import tipoDeVariaveisCategoricas from '@/consts/tipoDeVariaveisCategoricas';
-import { useAlertStore } from '@/stores/alert.store';
-import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage, Field, FieldArray, useForm, useIsFormDirty,
 } from 'vee-validate';
 import { watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
+import { variávelCategórica as schema } from '@/consts/formSchemas';
+import tipoDeVariaveisCategoricas from '@/consts/tipoDeVariaveisCategoricas';
+import { useAlertStore } from '@/stores/alert.store';
+import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store';
 
 const router = useRouter();
 const route = useRoute();

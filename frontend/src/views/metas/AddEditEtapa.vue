@@ -5,10 +5,13 @@ import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, useForm } from 'vee-validate';
 import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
+
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import MapaCampo from '@/components/geo/MapaCampo.vue';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import { etapa as schema } from '@/consts/formSchemas';
 import { router } from '@/router';
+import { useAuthStore } from '@/stores';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAtividadesStore } from '@/stores/atividades.store';
 import { useCronogramasStore } from '@/stores/cronogramas.store';
@@ -18,9 +21,8 @@ import { useEtapasStore } from '@/stores/etapas.store';
 import { useIniciativasStore } from '@/stores/iniciativas.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { useRegionsStore } from '@/stores/regions.store';
+
 import temDescendenteEmOutraRegião from './auxiliares/temDescendenteEmOutraRegiao.ts';
-import TituloDaPagina from '@/components/TituloDaPagina.vue';
-import { useAuthStore } from '@/stores';
 
 defineOptions({ inheritAttrs: false });
 
@@ -42,7 +44,6 @@ const parentVar = atividade_id ?? iniciativa_id ?? meta_id ?? false;
 const parentField = atividade_id ? 'atividade_id' : iniciativa_id ? 'iniciativa_id' : meta_id ? 'meta_id' : false;
 const currentEdit = route.path.slice(0, route.path.indexOf('/cronograma') + 11);
 
-const authStore = useAuthStore();
 const MetasStore = useMetasStore();
 const { activePdm, singleMeta } = storeToRefs(MetasStore);
 MetasStore.getPdM();

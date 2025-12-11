@@ -1,8 +1,9 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+
 import EstruturaAnalíticaProjeto from '@/components/projetos/EstruturaAnaliticaProjeto.vue';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
-import { storeToRefs } from 'pinia';
 
 const projetosStore = useProjetosStore();
 const tarefasStore = useTarefasStore();

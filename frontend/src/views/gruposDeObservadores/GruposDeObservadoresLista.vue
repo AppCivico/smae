@@ -1,9 +1,10 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
+
 import { useAlertStore } from '@/stores/alert.store';
-import { useOrgansStore } from '@/stores/organs.store';
 import { useObservadoresStore } from '@/stores/observadores.store.ts';
+import { useOrgansStore } from '@/stores/organs.store';
 
 const { meta } = useRoute();
 

@@ -1,22 +1,27 @@
 import { BadRequestException, HttpException, Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { Periodicidade, Prisma, Serie } from '@prisma/client';
+import { plainToClass } from 'class-transformer';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { CONST_CRONO_VAR_CATEGORICA_ID } from '../common/consts';
-import { Date2YMD, DateYMD } from '../common/date2ymd';
+import { Date2YMD, DateYMD, SYSTEM_TIMEZONE } from '../common/date2ymd';
 import { PdmModoParaTipo, TipoPdmType } from '../common/decorators/current-tipo-pdm';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { IndicadorTokenData, SerieCompactToken } from '../common/SerieCompactToken';
 import { AddTaskRefreshMeta, MetaService } from '../meta/meta.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { VariavelCategoricaItem } from '../variavel-categorica/dto/variavel-categorica.dto';
 import { ListSeriesAgrupadas } from '../variavel/dto/list-variavel.dto';
 import {
+    ElementoJsonDto,
     SerieIndicadorValorNominal,
     SerieIndicadorValorPorPeriodo,
+    SeriePreviaElementosDto,
     ValorSerieExistente,
 } from '../variavel/entities/variavel.entity';
 import { AddTaskRecalcVariaveis, VariavelService } from '../variavel/variavel.service';
 import { CreateIndicadorDto, LinkIndicadorVariavelDto, UnlinkIndicadorVariavelDto } from './dto/create-indicador.dto';
 import { FilterIndicadorDto, FilterIndicadorSerieDto } from './dto/filter-indicador.dto';
-import { FormulaVariaveis, UpdateIndicadorDto } from './dto/update-indicador.dto';
+import { FormulaVariaveis, IndicadorPreviaUpsertDto, UpdateIndicadorDto } from './dto/update-indicador.dto';
 import { IndicadorDto } from './entities/indicador.entity';
 import { IndicadorFormulaCompostaEmUsoDto } from './entities/indicador.formula-composta.entity';
 
@@ -25,6 +30,7 @@ const FP = require('../../public/js/formula_parser.js');
 @Injectable()
 export class IndicadorService {
     private readonly logger = new Logger(IndicadorService.name);
+    private readonly serieToken = new SerieCompactToken(process.env.SESSION_JWT_SECRET + 'for-indicador');
 
     constructor(
         private readonly prisma: PrismaService,
@@ -303,9 +309,7 @@ export class IndicadorService {
                 if (!uniqueRef[fv.referencia]) {
                     uniqueRef[fv.referencia] = true;
                 } else {
-                    throw new HttpException(`${fv.referencia} duplicada, utilize apenas uma vez!`,
-                        400
-                    );
+                    throw new HttpException(`${fv.referencia} duplicada, utilize apenas uma vez!`, 400);
                 }
 
                 if (variables.includes(fv.variavel_id) == false) variables.push(+fv.variavel_id);
@@ -343,7 +347,8 @@ export class IndicadorService {
 
         for (const neededRef of Object.keys(neededRefs)) {
             if (!uniqueRef[neededRef]) {
-                throw new HttpException(`Referencia ${neededRef} enviada na formula não foi declarada nas variáveis.`,
+                throw new HttpException(
+                    `Referencia ${neededRef} enviada na formula não foi declarada nas variáveis.`,
                     400
                 );
             }
@@ -362,7 +367,8 @@ export class IndicadorService {
                 });
 
                 if (!formulaCompostaCount) {
-                    throw new HttpException(`Referencia de fórmula composta @_${formulaCompostaId} enviada na formula não foi encontrada no indicador.`,
+                    throw new HttpException(
+                        `Referencia de fórmula composta @_${formulaCompostaId} enviada na formula não foi encontrada no indicador.`,
                         400
                     );
                 }
@@ -468,6 +474,7 @@ export class IndicadorService {
                 ha_avisos_data_fim: true,
                 variavel_categoria_id: true,
                 indicador_tipo: true,
+                indicador_previa_opcao: true,
             },
             orderBy: { criado_em: 'desc' },
         });
@@ -495,6 +502,7 @@ export class IndicadorService {
             iniciativa_id: true,
             meta_id: true,
             variavel_categoria_id: true,
+            indicador_previa_opcao: true,
             formula_variaveis: {
                 select: {
                     variavel_id: true,
@@ -509,17 +517,17 @@ export class IndicadorService {
                 },
             },
         };
-        const indicador = await this.prisma.indicador.findFirst({
+        const indicadorOld = await this.prisma.indicador.findFirst({
             where: { id: id, removido_em: null },
             select: indicadorSelectData,
         });
-        if (!indicador) throw new HttpException('indicador não encontrado', 400);
+        if (!indicadorOld) throw new HttpException('indicador não encontrado', 400);
 
         const metaRow = await this.prisma.view_pdm_meta_iniciativa_atividade.findFirstOrThrow({
             where: {
-                meta_id: indicador.meta_id ?? undefined,
-                atividade_id: indicador.atividade_id ?? undefined,
-                iniciativa_id: indicador.iniciativa_id ?? undefined,
+                meta_id: indicadorOld.meta_id ?? undefined,
+                atividade_id: indicadorOld.atividade_id ?? undefined,
+                iniciativa_id: indicadorOld.iniciativa_id ?? undefined,
             },
             select: { meta_id: true },
         });
@@ -528,7 +536,7 @@ export class IndicadorService {
         const formula_variaveis = dto.formula_variaveis;
         delete dto.formula_variaveis;
         let formula: string = dto.formula ? dto.formula : '';
-        const antigaFormulaCompilada = indicador.formula_compilada || '';
+        const antigaFormulaCompilada = indicadorOld.formula_compilada || '';
         if (dto.formula_variaveis && !dto.formula) {
             formula = antigaFormulaCompilada;
         }
@@ -546,6 +554,7 @@ export class IndicadorService {
         //const oldVersion = IndicadorService.getIndicadorHash(indicador);
         //this.logger.debug({ oldVersion });
 
+        const now = new Date(Date.now());
         await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
                 if (dto.variavel_categoria_id !== undefined) {
@@ -572,11 +581,28 @@ export class IndicadorService {
                     }
                 }
 
+                if (
+                    dto.indicador_previa_opcao &&
+                    dto.indicador_previa_opcao !== indicadorOld.indicador_previa_opcao &&
+                    indicadorOld.indicador_previa_opcao == 'PermitirPreenchimento'
+                ) {
+                    await prismaTx.serieIndicador.updateMany({
+                        where: {
+                            indicador_id: id,
+                            serie: 'Previa',
+                            previa_invalidada_em: null,
+                        },
+                        data: {
+                            previa_invalidada_em: now,
+                        },
+                    });
+                }
+
                 const indicador = await prismaTx.indicador.update({
                     where: { id: id },
                     data: {
                         atualizado_por: user.id,
-                        atualizado_em: new Date(Date.now()),
+                        atualizado_em: now,
                         ...(dto as any), // hack pra enganar o TS que quer validar o campo que já apagamos (formula_variaveis)
                         formula_compilada: formula_compilada,
                         acumulado_usa_formula:
@@ -791,6 +817,7 @@ export class IndicadorService {
                 data_valor: Date2YMD.toString(serieValor.data_valor),
                 valor_nominal: serieValor.valor_nominal.toString(),
                 ha_conferencia_pendente: serieValor.ha_conferencia_pendente,
+                eh_previa: serieValor.eh_previa ? true : undefined,
             };
         }
 
@@ -838,7 +865,7 @@ export class IndicadorService {
     }
 
     private async getValorSerieExistente(indicadorId: number, series: Serie[]): Promise<ValorSerieExistente[]> {
-        return await this.prisma.serieIndicador.findMany({
+        return (await this.prisma.serieIndicador.findMany({
             where: {
                 indicador_id: +indicadorId,
                 serie: {
@@ -851,9 +878,10 @@ export class IndicadorService {
                 data_valor: true,
                 valor_nominal: true,
                 ha_conferencia_pendente: true,
+                eh_previa: true,
             },
             orderBy: [{ serie: 'asc' }, { data_valor: 'asc' }],
-        });
+        })) satisfies Array<Omit<ValorSerieExistente, 'serie'>> as ValorSerieExistente[];
     }
 
     async getSeriesIndicador(
@@ -870,6 +898,11 @@ export class IndicadorService {
                 fim_medicao: true,
                 periodicidade: true,
                 variavel_categoria_id: true,
+                indicador_previa_opcao: true,
+                meta_id: true,
+                iniciativa_id: true,
+                atividade_id: true,
+                acumulado_valor_base: true,
             },
         });
         if (!indicador) throw new HttpException('Indicador não encontrado', 404);
@@ -879,94 +912,242 @@ export class IndicadorService {
             filters.data_fim = indicador.fim_medicao;
         }
 
-        if (indicador.variavel_categoria_id === CONST_CRONO_VAR_CATEGORICA_ID) {
-            indicador.variavel_categoria_id = null;
-        }
-        // caso seja variável categórica, pega a série de proxy
-        if (indicador.variavel_categoria_id) {
-            const proxy = await this.variavelService.getSeriePrevistoRealizado(
+        let result: ListSeriesAgrupadas;
+
+        // Proxy pra variável categórica (fluxo especial)
+        if (indicador.variavel_categoria_id && indicador.variavel_categoria_id !== CONST_CRONO_VAR_CATEGORICA_ID) {
+            result = await this.variavelService.getSeriePrevistoRealizado(
                 tipoParam == 'PDM_AS_PS' || tipoParam == '_PS' ? 'Global' : 'PDM',
                 {
                     uso: 'leitura',
                     incluir_auxiliares: true,
+                    incluir_auxiliares_completo: true,
                 },
                 indicador.variavel_categoria_id,
                 user
             );
-            return proxy;
-        }
+        } else {
+            // Fluxo normal de Indicador
+            result = {
+                variavel: undefined,
+                linhas: [],
+                ordem_series: ['Previsto', 'PrevistoAcumulado', 'Realizado', 'RealizadoAcumulado'],
+            };
 
-        const result: ListSeriesAgrupadas = {
-            variavel: undefined,
-            linhas: [],
-            ordem_series: ['Previsto', 'PrevistoAcumulado', 'Realizado', 'RealizadoAcumulado'],
-        };
+            const valoresExistentes = await this.getValorSerieExistente(indicador.id, [
+                'Previsto',
+                'PrevistoAcumulado',
+                'Realizado',
+                'RealizadoAcumulado',
+            ]);
+            const porPeriodo = this.getValorSerieExistentePorPeriodo(valoresExistentes);
 
-        const valoresExistentes = await this.getValorSerieExistente(indicador.id, [
-            'Previsto',
-            'PrevistoAcumulado',
-            'Realizado',
-            'RealizadoAcumulado',
-        ]);
-        const porPeriodo = this.getValorSerieExistentePorPeriodo(valoresExistentes);
+            const todosPeriodos = await this.gerarPeriodosEntreDatas(
+                indicador.inicio_medicao,
+                indicador.fim_medicao,
+                indicador.periodicidade,
+                filters
+            );
 
-        const todosPeriodos = await this.gerarPeriodosEntreDatas(
-            indicador.inicio_medicao,
-            indicador.fim_medicao,
-            indicador.periodicidade,
-            filters
-        );
+            for (const periodoYMD of todosPeriodos) {
+                const seriesExistentes: SerieIndicadorValorNominal[] = [];
 
-        for (const periodoYMD of todosPeriodos) {
-            const seriesExistentes: SerieIndicadorValorNominal[] = [];
+                const existeValor = porPeriodo[periodoYMD];
+                if (
+                    existeValor &&
+                    (existeValor.Previsto ||
+                        existeValor.PrevistoAcumulado ||
+                        existeValor.Realizado ||
+                        existeValor.RealizadoAcumulado)
+                ) {
+                    if (existeValor.Previsto) {
+                        seriesExistentes.push(existeValor.Previsto);
+                    } else {
+                        seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD)); // 'Previsto'
+                    }
 
-            const existeValor = porPeriodo[periodoYMD];
-            if (
-                existeValor &&
-                (existeValor.Previsto ||
-                    existeValor.PrevistoAcumulado ||
-                    existeValor.Realizado ||
-                    existeValor.RealizadoAcumulado)
-            ) {
-                if (existeValor.Previsto) {
-                    seriesExistentes.push(existeValor.Previsto);
+                    if (existeValor.PrevistoAcumulado) {
+                        seriesExistentes.push(existeValor.PrevistoAcumulado);
+                    } else {
+                        seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD)); // 'PrevistoAcumulado'
+                    }
+
+                    if (existeValor.Realizado) {
+                        seriesExistentes.push(existeValor.Realizado);
+                    } else {
+                        seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD)); // 'Realizado'
+                    }
+
+                    if (existeValor.RealizadoAcumulado) {
+                        seriesExistentes.push(existeValor.RealizadoAcumulado);
+                    } else {
+                        seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD)); // 'RealizadoAcumulado'
+                    }
                 } else {
                     seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD)); // 'Previsto'
-                }
-
-                if (existeValor.PrevistoAcumulado) {
-                    seriesExistentes.push(existeValor.PrevistoAcumulado);
-                } else {
                     seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD)); // 'PrevistoAcumulado'
-                }
-
-                if (existeValor.Realizado) {
-                    seriesExistentes.push(existeValor.Realizado);
-                } else {
                     seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD)); // 'Realizado'
-                }
-
-                if (existeValor.RealizadoAcumulado) {
-                    seriesExistentes.push(existeValor.RealizadoAcumulado);
-                } else {
                     seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD)); // 'RealizadoAcumulado'
                 }
-            } else {
-                seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD)); // 'Previsto'
-                seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD)); // 'PrevistoAcumulado'
-                seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD)); // 'Realizado'
-                seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD)); // 'RealizadoAcumulado'
+
+                result.linhas.push({
+                    periodo: periodoYMD.substring(0, 4 + 2 + 1),
+                    // TODO: botar o label de acordo com a periodicidade"
+                    agrupador: periodoYMD.substring(0, 4),
+                    series: seriesExistentes,
+                });
+            }
+        }
+
+        // Adicionar a Previa (Comum a ambos os fluxos)
+        if (indicador.indicador_previa_opcao === 'PermitirPreenchimento') {
+            const { proximoPeriodo, previaExistente } = await this.buscaProximaPrevia(id);
+
+            result.pode_editar_previa = false;
+            if (proximoPeriodo) {
+                const meta = await this.loadMetaFromIndicator(tipoParam, indicador, user);
+                const canWrite = meta.pode_editar;
+
+                result.pode_editar_previa = canWrite;
+
+                if (previaExistente) {
+                    result.ultima_previa_indicador = {
+                        data_valor: Date2YMD.toString(proximoPeriodo),
+                        valor_nominal: previaExistente.valor_nominal.toString(),
+                        elementos: result.dados_auxiliares?.categoricas
+                            ? this.mapCategoricaIdParaValor(
+                                  result.dados_auxiliares.categorica_items,
+                                  previaExistente.elementos
+                              )
+                            : undefined,
+                        referencia: canWrite ? this.generateToken(id, proximoPeriodo, user) : '',
+                    };
+                } else if (canWrite) {
+                    // Empty placeholder for frontend to know it can create
+                    result.ultima_previa_indicador = {
+                        data_valor: Date2YMD.toString(proximoPeriodo),
+                        valor_nominal: '',
+                        referencia: this.generateToken(id, proximoPeriodo, user),
+                    };
+                }
+
+                // Busca o ultimo valor acumulado consolidado (ignorando previas sujas anteriores, se houver)
+                const ultimoAcumulado = await this.prisma.serieIndicador.findFirst({
+                    where: {
+                        indicador_id: id,
+                        serie: 'RealizadoAcumulado',
+                        eh_previa: false,
+                    },
+                    orderBy: { data_valor: 'desc' },
+                    select: { valor_nominal: true },
+                    take: 1,
+                });
+
+                // Se não existir acumulado, verifica valor base ou padrão para null/0
+                if (ultimoAcumulado) {
+                    result.valor_acumulado_anterior = ultimoAcumulado.valor_nominal.toString();
+                } else {
+                    // Se o indicador tem um valor base configurado para início de acumulado
+                    result.valor_acumulado_anterior = indicador?.acumulado_valor_base?.toString() ?? null;
+                }
             }
 
-            result.linhas.push({
-                periodo: periodoYMD.substring(0, 4 + 2 + 1),
-                // TODO: botar o label de acordo com a periodicidade"
-                agrupador: periodoYMD.substring(0, 4),
-                series: seriesExistentes,
-            });
+            // não precisa disso no frontend
+            delete result.dados_auxiliares?.categorica_items;
         }
 
         return result;
+    }
+
+    mapCategoricaIdParaValor(
+        categorica_items: VariavelCategoricaItem[] | null | undefined,
+        elementosDb: Prisma.JsonValue | null
+    ): SeriePreviaElementosDto {
+        const elementos = plainToClass(ElementoJsonDto, elementosDb?.valueOf());
+
+        const resultado: SeriePreviaElementosDto['totais_categorica'] = [];
+        if (
+            typeof elementos == 'object' &&
+            typeof elementos.totais_categorica == 'object' &&
+            Array.isArray(elementos.totais_categorica)
+        ) {
+            // Se não tiver valor, melhor ficar vazio do que voltar com o ID
+            if (categorica_items && categorica_items[0]?.valores) {
+                const categoricasMap =
+                    categorica_items &&
+                    categorica_items[0].valores
+                        .map((v) => ({ [v.id]: v.valor_variavel }))
+                        .reduce((acc, cur) => ({ ...acc, ...cur }), {});
+
+                for (const item of elementos.totais_categorica) {
+                    if (!Array.isArray(item) || item.length != 2) continue;
+
+                    const itemId = item[0] as number;
+                    const itemValue = item[1] as number;
+                    const foundItem = categoricasMap[itemId];
+                    if (foundItem) {
+                        resultado.push({ categorica_valor: foundItem, valor: String(itemValue) });
+                    }
+                }
+            }
+        }
+
+        return {
+            ...elementos,
+            totais_categorica: resultado,
+        };
+    }
+
+    private async buscaProximaPrevia(indicador_id: number) {
+        const previaExistente = await this.prisma.serieIndicador.findFirst({
+            where: {
+                indicador_id: indicador_id,
+                serie: 'Previa',
+                previa_invalidada_em: null,
+            },
+            orderBy: { data_valor: 'desc' },
+            select: {
+                data_valor: true,
+                valor_nominal: true,
+                elementos: true,
+            },
+            take: 1,
+        });
+
+        const proximoPeriodo = previaExistente
+            ? previaExistente.data_valor
+            : await this.getProximoPeriodo(indicador_id);
+        return { proximoPeriodo, previaExistente };
+    }
+
+    private async loadMetaFromIndicator(
+        tipoParam: TipoPdmType,
+        indicador: {
+            meta_id: number | null;
+            iniciativa_id: number | null;
+            atividade_id: number | null;
+        },
+        user: PessoaFromJwt
+    ) {
+        const metaRow = await this.prisma.view_pdm_meta_iniciativa_atividade.findFirst({
+            where: {
+                meta_id: indicador.meta_id ?? undefined,
+                atividade_id: indicador.atividade_id ?? undefined,
+                iniciativa_id: indicador.iniciativa_id ?? undefined,
+            },
+            select: { meta_id: true },
+        });
+
+        if (!metaRow) throw new Error('Meta não encontrada para verificação de permissão.');
+
+        const meta = await this.metaService.assertMetaWriteOrThrow(
+            tipoParam,
+            metaRow.meta_id,
+            user,
+            'indicador',
+            'readonly'
+        );
+        return meta;
     }
 
     private buildNonExistingSerieValor(periodo: DateYMD): SerieIndicadorValorNominal {
@@ -1332,5 +1513,251 @@ export class IndicadorService {
             Secular: 1200,
         };
         return periodicidadeMap[periodicidade];
+    }
+
+    async getProximoPeriodo(indicadorId: number): Promise<Date | null> {
+        const result = await this.prisma.$queryRaw<Array<{ proximo_periodo: Date | null }>>`
+            WITH indicador_info AS (
+                SELECT
+                    i.periodicidade,
+                    i.inicio_medicao,
+                    i.fim_medicao
+                FROM indicador i
+                WHERE i.id = ${indicadorId}
+            ),
+            last_realizado AS (
+                SELECT
+                    si.data_valor
+                FROM serie_indicador si
+                WHERE
+                    si.indicador_id = ${indicadorId}
+                    AND si.serie = 'Realizado'
+                    AND si.eh_previa = false
+                ORDER BY si.data_valor DESC
+                LIMIT 1
+            ),
+            proximo_periodo AS (
+                SELECT
+                    ii.fim_medicao,
+                    CASE
+                        WHEN lr.data_valor IS NOT NULL THEN
+                            (lr.data_valor + periodicidade_intervalo(ii.periodicidade))::date
+                        ELSE
+                            ii.inicio_medicao
+                    END as next_date
+                FROM indicador_info ii
+                LEFT JOIN last_realizado lr ON true
+            )
+            SELECT
+                CASE
+                    WHEN next_date > CURRENT_DATE AT TIME ZONE ${SYSTEM_TIMEZONE} THEN NULL
+                    WHEN fim_medicao IS NOT NULL AND next_date > fim_medicao THEN NULL
+                    ELSE next_date
+                END as proximo_periodo
+            FROM proximo_periodo;
+        `;
+
+        if (!result[0]?.proximo_periodo) return null;
+
+        return result[0].proximo_periodo;
+    }
+
+    generateToken(indicadorId: number, dataValor: Date, user: PessoaFromJwt): string {
+        return this.serieToken.encodeIndicator({
+            dataValor: Date2YMD.toString(dataValor),
+            indicadorId,
+            userId: BigInt(user.id),
+        });
+    }
+
+    decodeToken(token: string, user: PessoaFromJwt): IndicadorTokenData {
+        const payload = this.serieToken.decodeIndicator(token, BigInt(user.id));
+
+        return payload;
+    }
+
+    async upsertPrevia(
+        tipoParam: TipoPdmType,
+        indicadorId: number,
+        dto: IndicadorPreviaUpsertDto,
+        user: PessoaFromJwt
+    ): Promise<void> {
+        const tokenData = this.serieToken.decodeIndicator(dto.referencia, BigInt(user.id));
+
+        if (tokenData.indicadorId !== indicadorId) {
+            throw new BadRequestException('Token não pertence a este indicador.');
+        }
+        const dataReferencia = Date2YMD.fromString(tokenData.dataValor);
+
+        // Indicador e permissões
+        const indicador = await this.prisma.indicador.findUniqueOrThrow({
+            where: { id: indicadorId, removido_em: null },
+            select: {
+                indicador_previa_opcao: true,
+                variavel_categoria: {
+                    select: {
+                        variavel_categorica_id: true,
+                        variavel_mae: {
+                            select: {
+                                variaveis_filhas: {
+                                    where: {
+                                        removido_em: null,
+                                        tipo: 'Global',
+                                    },
+                                    distinct: ['id'],
+                                },
+                            },
+                        },
+                    },
+                },
+                meta_id: true,
+                atividade_id: true,
+                iniciativa_id: true,
+                regionalizavel: true,
+            },
+        });
+
+        // o proximo período precisa bater com a referencia que tá no token
+        // e se não existir, é pq está já no futuro (realizado completo) ou não tem mais períodos
+        const { proximoPeriodo } = await this.buscaProximaPrevia(indicadorId);
+        if (!proximoPeriodo || Date2YMD.toString(proximoPeriodo) !== Date2YMD.toString(dataReferencia)) {
+            throw new BadRequestException('A prévia só pode ser preenchida para o próximo período válido.');
+        }
+
+        if (indicador.indicador_previa_opcao !== 'PermitirPreenchimento') {
+            throw new BadRequestException('Este indicador não permite preenchimento de prévia.');
+        }
+
+        // vai que ele pegou o token mas perdeu o acesso depois
+        const meta = await this.loadMetaFromIndicator(tipoParam, indicador, user);
+        const canWrite = meta.pode_editar;
+        if (!canWrite) throw new BadRequestException('Usuário não tem permissão para editar este indicador.');
+
+        // Lógica para Valor e Elementos Categóricos
+        let serieValor: number | null = null;
+        let serieElementos: Prisma.JsonValue | null = null;
+
+        if (dto.valor === null) dto.valor = ''; // garantir que n seja null pra seguir a lógica abaixo
+
+        if (dto.valor === '' && !dto.elementos) {
+            // Delete request
+            serieValor = null;
+        } else {
+            // Upsert request
+            if (indicador.variavel_categoria && indicador.variavel_categoria.variavel_categorica_id) {
+                if (!dto.elementos)
+                    throw new BadRequestException('Para indicadores categóricos, é obrigatório enviar os elementos.');
+
+                // Busca os permitidos para exclusivamente o indicador escolhido
+                const categoricaData = await this.prisma.variavelCategoricaValor.findMany({
+                    where: {
+                        variavel_categorica_id: indicador.variavel_categoria.variavel_categorica_id,
+                        removido_em: null,
+                    },
+                    select: { id: true, valor_variavel: true },
+                });
+                const allowedValores = new Set(categoricaData.map((v) => v.valor_variavel));
+                const seenValores = new Set<number>();
+                let valorTotal = 0;
+                const elementosArray: number[][] = [];
+
+                for (const el of dto.elementos) {
+                    if (seenValores.has(el.categorica_valor))
+                        throw new BadRequestException(
+                            `Valor categórico duplicado na requisição: ${el.categorica_valor}`
+                        );
+
+                    seenValores.add(el.categorica_valor);
+
+                    // Verifica se o valor pertence à categoria do indicador
+                    if (!allowedValores.has(el.categorica_valor))
+                        throw new BadRequestException(
+                            `O valor categórico ${el.categorica_valor} não pertence à categoria deste indicador.`
+                        );
+
+                    const somaPraTerValor = +el.valor;
+
+                    valorTotal += somaPraTerValor;
+                    // Formato: [id, count]
+                    const lookup = categoricaData.find((v) => v.valor_variavel === el.categorica_valor);
+                    if (!lookup) continue; // Segurança extra, não deveria acontecer por causa do allowedValores
+                    elementosArray.push([lookup.id, somaPraTerValor]);
+                }
+
+                serieValor = valorTotal;
+                serieElementos = { 'totais_categorica': elementosArray } satisfies ElementoJsonDto;
+
+                if (indicador.regionalizavel && indicador.variavel_categoria.variavel_mae) {
+                    // não pode passar do número de variáveis filhas
+                    const maxRegions = indicador.variavel_categoria.variavel_mae.variaveis_filhas.length;
+                    if (valorTotal > maxRegions)
+                        throw new BadRequestException(
+                            `Para indicadores categóricos regionalizados, a soma dos valores deve ser no máximo o número de regiões (${maxRegions}). Valor enviado: ${valorTotal}`
+                        );
+                } else {
+                    if (valorTotal > 1)
+                        throw new BadRequestException(
+                            `Para indicadores categóricos não regionalizados, a soma dos valores deve ser no máximo 1. Valor enviado: ${valorTotal}`
+                        );
+                }
+            } else {
+                if (dto.elementos && dto.elementos.length > 0) {
+                    throw new BadRequestException('Este indicador não é categórico, não envie elementos.');
+                }
+                serieValor = +dto.valor;
+            }
+        }
+
+        const now = new Date();
+        const serie: Serie = 'Previa';
+        // Finalmente, atualiza a série
+        await this.prisma.$transaction(async (prismaTx) => {
+            const previaExistente = await prismaTx.serieIndicador.findFirst({
+                where: {
+                    indicador_id: indicadorId,
+                    data_valor: dataReferencia,
+                    serie: serie,
+                    previa_invalidada_em: null,
+                },
+            });
+
+            if (serieValor === null) {
+                // DELETE
+                if (previaExistente) {
+                    await this.invalidaPreviaExistente(prismaTx, previaExistente.id, now);
+                }
+            } else {
+                // "Upsert"
+                if (previaExistente) await this.invalidaPreviaExistente(prismaTx, previaExistente.id, now);
+
+                await prismaTx.serieIndicador.create({
+                    data: {
+                        valor_nominal: serieValor,
+                        data_valor: dataReferencia,
+                        indicador_id: indicadorId,
+                        serie: serie,
+                        eh_previa: false, // Como é 'serie=Previa', 'eh_previa' fica falso, ele é para 'Realizado'
+                        ha_conferencia_pendente: false,
+                        criado_por_previa: user.id,
+                        data_criacao_previa: now,
+                        previa_invalidada_em: null,
+                        elementos: serieElementos as object,
+                    },
+                });
+            }
+
+            await prismaTx.$executeRaw`SELECT refresh_serie_indicador(${indicadorId}::int, null)`;
+        });
+    }
+
+    private async invalidaPreviaExistente(prismaTx: Prisma.TransactionClient, serieId: number, now: Date) {
+        await prismaTx.serieIndicador.updateMany({
+            where: {
+                id: serieId,
+                serie: 'Previa',
+                previa_invalidada_em: null,
+            },
+            data: { previa_invalidada_em: now },
+        });
     }
 }

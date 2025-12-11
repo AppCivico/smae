@@ -2,7 +2,7 @@ import { ApiHideProperty, ApiProperty, getSchemaPath, OmitType, PickType, refs }
 import { Periodicidade, Polaridade, Prisma, Serie, TipoVariavel } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsBoolean, IsDate, IsEnum, IsOptional, IsString } from 'class-validator';
 import { IdSigla } from 'src/common/dto/IdSigla.dto';
 import { IsDateYMD } from '../../auth/decorators/date.decorator';
 import { DateTransform } from '../../auth/transforms/date.transform';
@@ -15,6 +15,8 @@ import { OrgaoReduzidoDto } from '../../orgao/entities/orgao.entity';
 import { Regiao } from '../../regiao/entities/regiao.entity';
 import { UnidadeMedida } from '../../unidade-medida/entities/unidade-medida.entity';
 import { VariavelResumo } from '../dto/list-variavel.dto';
+import { SerieCore } from '../../common/consts';
+import { IndicadorPreviaCategorica } from '../dto/create-variavel.dto';
 
 export class IndicadorVariavelOrigemDto {
     id: number;
@@ -61,6 +63,7 @@ export class VariavelItemDto {
     variavel_categorica_id: number | null;
     etapa: IdTituloDto | null;
     possui_variaveis_filhas: boolean;
+    tipo: TipoVariavel;
 
     recalculando: boolean;
     recalculo_erro: string | null;
@@ -122,7 +125,24 @@ export class FilterPeriodoDto {
     @IsOptional()
     @IsBoolean()
     @Transform((v) => v.value === 'true')
-    suporta_ciclo_info?: Boolean;
+    suporta_ciclo_info?: boolean;
+}
+
+export class PeriodosValidosDto {
+    /**
+     * Lista de períodos válidos em formato YYYY-MM-DD
+     * @example ["2023-01-01", "2023-02-01", "2023-03-01"]
+     */
+    periodos_validos: string[];
+
+    @IsDateYMD({ nullable: true })
+    ultimo_periodo_valido: DateYMD | null;
+
+    @IsDateYMD({ nullable: true })
+    proximo_periodo_abertura: DateYMD | null;
+
+    @ApiProperty({ type: 'string', format: 'date', isArray: true })
+    atrasos: DateYMD[];
 }
 
 export const TipoUso = { 'leitura': 'leitura', 'escrita': 'escrita' } as const;
@@ -140,9 +160,20 @@ export class FilterSVNPeriodoDto extends FilterPeriodoDto {
     incluir_auxiliares?: boolean;
 
     @IsOptional()
+    @IsBoolean()
+    @Transform((v) => v.value === 'true')
+    @ApiHideProperty()
+    incluir_auxiliares_completo?: boolean;
+
+    @IsOptional()
     @IsEnum(TipoUso, { message: 'Tipo de uso inválido' })
     @ApiProperty({ enum: TipoUso, required: false })
     uso?: TipoUso;
+
+    @IsOptional()
+    @IsBoolean()
+    @Transform((v) => v.value === 'true')
+    retornar_filhas?: boolean;
 }
 
 export class FilterVariavelDetalheDto {
@@ -157,6 +188,15 @@ export class SACicloFisicoDto {
     analise: string;
     tem_documentos: boolean;
     contagem_qualitativa?: number | null;
+}
+
+export class ElementoJsonDto {
+    @IsArray()
+    totais_categorica: number[][];
+}
+
+export class SeriePreviaElementosDto {
+    totais_categorica: IndicadorPreviaCategorica[];
 }
 
 export class SerieValorNomimal {
@@ -184,6 +224,8 @@ export class SerieValorNomimal {
      * Apenas em indicadores
      **/
     ha_conferencia_pendente?: boolean;
+
+    eh_previa?: boolean;
     /**
      * Apenas em variaveis
      **/
@@ -192,7 +234,7 @@ export class SerieValorNomimal {
     elementos?: Prisma.JsonValue | null;
 }
 
-export type SerieIndicadorValorNomimal = Record<Serie, SerieValorNomimal | undefined>;
+export type SerieIndicadorValorNomimal = Record<SerieCore, SerieValorNomimal | undefined>;
 
 export class SerieValorPorPeriodo {
     [periodo: DateYMD]: SerieIndicadorValorNomimal;
@@ -213,11 +255,21 @@ export class SerieValorCategoricaComposta extends PickType(SerieValorNomimal, [
     'conferida',
     'valor_nominal',
 ] as const) {
-    @ApiProperty({
-        type: 'array',
-        items: { $ref: getSchemaPath(SerieValorCategoricaElemento) },
-    })
+    @ApiProperty({ type: 'array', items: { $ref: getSchemaPath(SerieValorCategoricaElemento) } })
     elementos: SerieValorCategoricaElemento[];
+}
+
+export class SeriePreviaValorCategoricaComposta extends PickType(SerieValorNomimal, [
+    'data_valor',
+    'referencia',
+    'valor_nominal',
+] as const) {
+    elementos?: SeriePreviaElementosDto;
+}
+
+export class SerieFilhas {
+    variavel_id: number;
+    series: SerieValorNomimal[] | SerieIndicadorValorNominal[] | SerieValorCategoricaComposta[];
 }
 
 export class SeriesAgrupadas {
@@ -254,9 +306,14 @@ export class SeriesAgrupadas {
             '- `SerieValorCategoricaComposta`: valor com elementos de uma variável categórica\n',
     })
     series: SerieValorNomimal[] | SerieIndicadorValorNominal[] | SerieValorCategoricaComposta[];
+
+    /**
+     * opcional - array de variáveis filhas quando buscar_filhos=true
+     */
+    variaveis_filhas?: SerieFilhas[];
 }
 
-export type SerieIndicadorValores = Record<Serie, SerieIndicadorValorNominal | undefined>;
+export type SerieIndicadorValores = Record<SerieCore, SerieIndicadorValorNominal | undefined>;
 
 export class SerieIndicadorValorPorPeriodo {
     [periodo: DateYMD]: SerieIndicadorValores;
@@ -266,16 +323,21 @@ export class ValorSerieExistente {
     id: number;
     valor_nominal: Decimal | number;
     data_valor: Date;
-    serie: Serie;
+    serie: SerieCore;
+
     /**
-     * Apenas em indicadores
+     * Apenas em indicadores no momento
      **/
+    eh_previa?: boolean;
     ha_conferencia_pendente?: boolean;
     /**
      * Apenas em variaveis
      **/
     conferida?: boolean;
     elementos?: Prisma.JsonValue | null;
+
+    @ApiProperty({ description: 'ID da variável, apenas em variáveis, criado para uso interno na api' })
+    variavel_id?: number;
 }
 
 export class Iniciativa {

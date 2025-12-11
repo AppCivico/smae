@@ -1,6 +1,7 @@
 <script setup>
-import NumeroComLegenda from '@/components/painelEstrategico/NumeroComLegenda.vue';
 import { defineProps } from 'vue';
+
+import NumeroComLegenda from '@/components/painelEstrategico/NumeroComLegenda.vue';
 
 defineProps({
   metas: {

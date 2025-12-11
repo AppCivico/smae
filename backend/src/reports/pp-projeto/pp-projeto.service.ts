@@ -22,6 +22,7 @@ import {
     RelProjetoAcompanhamentoDto,
     RelProjetoCronogramaDto,
     RelProjetoEncaminhamentoDto,
+    RelProjetoGeolocDto,
     RelProjetoOrigemDto,
     RelProjetoPlanoAcaoDto,
     RelProjetoRelatorioDto,
@@ -87,6 +88,15 @@ class RetornoDbOrigens {
     iniciativa_titulo: string | null;
     atividade_id: number | null;
     atividade_titulo: string | null;
+}
+
+class RetornoDbLoc {
+    projeto_id: number;
+    endereco: string;
+    geojson: unknown;
+    distrito: string | null;
+    subprefeitura: string | null;
+    zona: string | null;
 }
 
 @Injectable()
@@ -218,18 +228,46 @@ export class PPProjetoService implements ReportableService {
             : { linhas: [] };
 
         const tarefasOut: RelProjetoCronogramaDto[] = tarefasRows.linhas.map((e) => {
+            // Tratando custos anualizados.
+            let custo_estimado: number | null | string = null;
+            let custo_real: number | null | string = null;
+
+            if (e.custo_estimado_anualizado && e.custo_estimado_anualizado.length > 0) {
+                // Retornamos no formato "ano: valor; ano: valor; ..."""
+                custo_estimado = e.custo_estimado_anualizado
+                    .filter((e) => e.valor !== null)
+                    .map((e) => {
+                        return `${e.ano}: ${e.valor}`;
+                    })
+                    .join('; ');
+            } else {
+                custo_estimado = e.backup_custo_estimado ? e.backup_custo_estimado : null;
+            }
+
+            if (e.custo_real_anualizado && e.custo_real_anualizado.length > 0) {
+                // Retornamos no formato "ano: valor; ano: valor; ..."""
+                custo_real = e.custo_real_anualizado
+                    .filter((e) => e.valor !== null)
+                    .map((e) => {
+                        return `${e.ano}: ${e.valor}`;
+                    })
+                    .join('; ');
+            } else {
+                custo_real = e.backup_custo_real ? e.backup_custo_real : null;
+            }
+
             return {
                 hirearquia: tarefasHierarquia[e.id],
                 tarefa: e.tarefa,
-                inicio_planejado: e.inicio_planejado?.toString() || '',
-                termino_planejado: e.termino_planejado?.toString() || '',
-                custo_estimado: e.custo_estimado,
+                inicio_planejado: e.inicio_planejado ? Date2YMD.toString(e.inicio_planejado) : '',
+                termino_planejado: e.termino_planejado ? Date2YMD.toString(e.termino_planejado) : '',
+                custo_estimado: custo_estimado,
                 duracao_planejado: e.duracao_planejado,
-                inicio_real: e.inicio_real?.toString() || '',
-                termino_real: e.termino_real?.toString() || '',
+                inicio_real: e.inicio_real ? Date2YMD.toString(e.inicio_real) : '',
+                termino_real: e.termino_real ? Date2YMD.toString(e.termino_real) : '',
                 duracao_real: e.duracao_real,
                 percentual_concluido: e.percentual_concluido,
-                custo_real: e.custo_real,
+                custo_real: custo_real,
             };
         });
 
@@ -295,9 +333,11 @@ export class PPProjetoService implements ReportableService {
         const out_contratos: RelProjetosContratosDto[] = [];
         const out_aditivos: RelProjetosAditivosDto[] = [];
         const out_origens: RelProjetoOrigemDto[] = [];
+        const out_enderecos: RelProjetoGeolocDto[] = [];
         await this.queryDataContratos(projetoRow.id, out_contratos);
         await this.queryDataAditivos(projetoRow.id, out_aditivos);
         await this.queryDataOrigens(projetoRow.id, out_origens);
+        await this.queryDataProjetosGeoloc(projetoRow.id, out_enderecos);
 
         return {
             detail: detail,
@@ -309,6 +349,7 @@ export class PPProjetoService implements ReportableService {
             contratos: out_contratos,
             aditivos: out_aditivos,
             origens: out_origens,
+            enderecos: out_enderecos,
         };
     }
 
@@ -612,6 +653,14 @@ export class PPProjetoService implements ReportableService {
         toCsvOut('contratos.csv', dados.contratos);
         toCsvOut('aditivos.csv', dados.aditivos);
         toCsvOut('origens.csv', dados.origens);
+        toCsvOut('enderecos.csv', dados.enderecos, [
+            { value: 'projeto_id', label: 'ID Projeto' },
+            { value: 'endereco', label: 'Endereço' },
+            { value: 'cep', label: 'CEP' },
+            { value: 'zona', label: 'Zona' },
+            { value: 'distrito', label: 'Distrito' },
+            { value: 'subprefeitura', label: 'Subprefeitura' },
+        ]);
 
         await ctx.progress(99);
 
@@ -629,6 +678,63 @@ export class PPProjetoService implements ReportableService {
             },
             ...out,
         ];
+    }
+
+    private async queryDataProjetosGeoloc(projetoId: number, out: RelProjetoGeolocDto[]) {
+        const sql = `
+            SELECT
+                projeto.id AS projeto_id,
+                geo.endereco_exibicao AS endereco,
+                geo.geom_geojson AS geojson,
+                zona_agg.zona,
+                distrito_agg.distrito,
+                subprefeitura_agg.subprefeitura
+            FROM projeto
+            JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
+            JOIN geo_localizacao_referencia geo_r ON geo_r.projeto_id = projeto.id AND geo_r.removido_em IS NULL
+            JOIN geo_localizacao geo ON geo.id = geo_r.geo_localizacao_id
+            LEFT JOIN LATERAL (
+                SELECT STRING_AGG(DISTINCT r.descricao, '|') AS zona
+                FROM unnest(geo.calc_regioes_nivel_2) AS regiao_id
+                LEFT JOIN regiao r ON r.id = regiao_id
+            ) zona_agg ON true
+            LEFT JOIN LATERAL (
+                SELECT STRING_AGG(DISTINCT r.descricao, '|') AS subprefeitura
+                FROM unnest(geo.calc_regioes_nivel_3) AS regiao_id
+                LEFT JOIN regiao r ON r.id = regiao_id
+            ) subprefeitura_agg ON true
+            LEFT JOIN LATERAL (
+                SELECT STRING_AGG(DISTINCT r.descricao, '|') AS distrito
+                FROM unnest(geo.calc_regioes_nivel_4) AS regiao_id
+                LEFT JOIN regiao r ON r.id = regiao_id
+            ) distrito_agg ON true
+            WHERE projeto.id = $1
+        `;
+
+        const data: RetornoDbLoc[] = await this.prisma.$queryRawUnsafe(sql, projetoId);
+
+        out.push(...this.convertRowsLoc(data));
+    }
+
+    private convertRowsLoc(input: RetornoDbLoc[]): RelProjetoGeolocDto[] {
+        interface JSONGeo {
+            properties: {
+                cep: string;
+            };
+        }
+
+        return input.map((db) => {
+            const geojson = db.geojson as JSONGeo;
+
+            return {
+                projeto_id: db.projeto_id,
+                endereco: db.endereco,
+                cep: geojson.properties.cep,
+                zona: db.zona,
+                distrito: db.distrito,
+                subprefeitura: db.subprefeitura,
+            };
+        });
     }
 
     getClassFileName(): string {

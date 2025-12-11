@@ -1,7 +1,9 @@
 <script setup>
+import { ref } from 'vue';
+
 import dateToField from '@/helpers/dateToField';
 import truncate from '@/helpers/texto/truncate';
-import { ref } from 'vue';
+
 import oArquivoEhEditavel from './ArvoreDeArquivos.helpers/oArquivoEhEditavel';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -121,7 +123,6 @@ const éPossívelAbrir = (item) => !item.children?.length
           @editar="($params) => $emit('editar', $params)"
         >
           <template v-if="arquivosAgrupadosPorCaminho?.[item.caminho]">
-
             <li
               v-for="arquivo, j in arquivosAgrupadosPorCaminho[item.caminho]"
               :key="`diretorio--${item.id || i}__arquivo--${arquivo.id || j}`"

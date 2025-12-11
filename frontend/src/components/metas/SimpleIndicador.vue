@@ -2,15 +2,19 @@
 import { storeToRefs } from 'pinia';
 import { computed, nextTick, ref } from 'vue';
 import { useRoute } from 'vue-router';
+
 // eslint-disable-next-line import/no-named-default
-import OverlayIndisponivel from '@/components/OverlayIndisponivel.vue';
-import GraficoLinhasEvolucao from '@/components/GraficoLinhasEvolucao.vue';
 import GraficoHeatmapVariavelCategorica from '@/components/GraficoHeatmapVariavelCategorica.vue';
+import GraficoLinhasEvolucao from '@/components/GraficoLinhasEvolucao.vue';
+import OverlayIndisponivel from '@/components/OverlayIndisponivel.vue';
+import SmallModal from '@/components/SmallModal.vue';
 import rolarTelaPara from '@/helpers/rolarTelaPara.ts';
 import { useAuthStore } from '@/stores/auth.store';
 import { useIndicadoresStore } from '@/stores/indicadores.store';
 import { usePdMStore } from '@/stores/pdm.store';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
+
+import InformarPreviaIndicador from './SimpleIndicador/InformarPreviaIndicador.vue';
 
 const route = useRoute();
 
@@ -38,6 +42,14 @@ const activePdm = computed(() => {
 
 const contagemDeRecarregamentos = ref(0);
 const numeroMaximoDeRecarregamentos = ref(2);
+
+const exibirModalPrevia = ref(false);
+const indicadorSelecionado = ref(null);
+
+function abrirModalPrevia(indicador) {
+  indicadorSelecionado.value = indicador;
+  exibirModalPrevia.value = true;
+}
 
 async function iniciar(forcarAtualizacao = false) {
   contagemDeRecarregamentos.value += 1;
@@ -112,6 +124,23 @@ iniciar();
             </svg>
           </SmaeLink>
         </div>
+
+        <div
+          v-if="
+            ind.indicador_previa_opcao === 'PermitirPreenchimento'
+              && ValoresInd?.[ind.id]?.pode_editar_previa
+          "
+          class="flex justifyright"
+        >
+          <button
+            type="button"
+            class="btn"
+            @click="abrirModalPrevia(ind)"
+          >
+            Informar prévia
+          </button>
+        </div>
+
         <div class="relative">
           <OverlayIndisponivel
             v-if="ind.recalculando"
@@ -170,4 +199,20 @@ iniciar();
       </div>
     </div>
   </div>
+
+  <SmallModal
+    :active="exibirModalPrevia"
+    has-close-button
+    @close="exibirModalPrevia = false"
+  >
+    <InformarPreviaIndicador
+      v-if="indicadorSelecionado"
+      :indicador="indicadorSelecionado"
+      :valores="ValoresInd[indicadorSelecionado.id]"
+      @fechar="() => {
+        exibirModalPrevia = false
+        iniciar(true)
+      }"
+    />
+  </SmallModal>
 </template>

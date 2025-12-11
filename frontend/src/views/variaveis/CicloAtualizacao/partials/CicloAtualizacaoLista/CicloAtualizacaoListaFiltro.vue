@@ -1,4 +1,13 @@
 <script setup lang="ts">
+import type { EquipeRespItemDto } from '@back/equipe-resp/entities/equipe-resp.entity.ts';
+import type { MetaItemDto } from '@back/meta/entities/meta.entity';
+import { storeToRefs } from 'pinia';
+import { ErrorMessage, Field, useForm } from 'vee-validate';
+import {
+  computed, onMounted, onUnmounted, watch,
+} from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
 import { cicloAtualizacaoFiltrosSchema as schema } from '@/consts/formSchemas';
 import maskMonth from '@/helpers/maskMonth';
@@ -9,14 +18,6 @@ import { usePsMetasStore } from '@/stores/metasPs.store';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store';
 import type { PlanosSimplificadosPorTipo } from '@/stores/variaveisGlobais.store';
 import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store';
-import type { EquipeRespItemDto } from '@back/equipe-resp/entities/equipe-resp.entity.ts';
-import type { MetaItemDto } from '@back/meta/entities/meta.entity';
-import { storeToRefs } from 'pinia';
-import { ErrorMessage, Field, useForm } from 'vee-validate';
-import {
-  computed, onMounted, onUnmounted, watch,
-} from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 
 defineOptions({
   inheritAttrs: false,
@@ -68,6 +69,14 @@ const {
   initialValues: route.query,
 });
 
+function ordenarEquipesPorOrgaoETitulo(a: EquipeRespItemDto, b: EquipeRespItemDto): number {
+  const siglaDaEquipeA = a.orgao?.sigla || '';
+  const siglaDaEquipeB = b.orgao?.sigla || '';
+  const comparacaoPorSigla = siglaDaEquipeA.localeCompare(siglaDaEquipeB);
+
+  return comparacaoPorSigla !== 0 ? comparacaoPorSigla : a.titulo.localeCompare(b.titulo);
+}
+
 const equipes = computed(() => (equipesStore.lista as EquipeRespItemDto[])
   .filter((item) => {
     switch (route.query.aba) {
@@ -83,7 +92,8 @@ const equipes = computed(() => (equipesStore.lista as EquipeRespItemDto[])
       default:
         return true;
     }
-  }));
+  })
+  .sort(ordenarEquipesPorOrgaoETitulo));
 
 const campos = computed<FieldsProps[]>(() => [
   { class: 'fb20em', nome: 'codigo', tipo: 'text' },

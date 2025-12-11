@@ -1,11 +1,12 @@
 <script setup>
 import { storeToRefs } from 'pinia';
-import { defineProps, ref, onMounted  } from 'vue';
-import dinheiro from '@/helpers/dinheiro';
+import { defineProps, ref, onMounted } from 'vue';
+
 import { planoDeAção as schema } from '@/consts/formSchemas';
-import { usePlanosDeAçãoStore } from '@/stores/planosDeAcao.store.ts';
 import dateToField from '@/helpers/dateToField';
+import dinheiro from '@/helpers/dinheiro';
 import requestS from '@/helpers/requestS.ts';
+import { usePlanosDeAçãoStore } from '@/stores/planosDeAcao.store.ts';
 
 const planosDeAçãoStore = usePlanosDeAçãoStore();
 const { emFoco } = storeToRefs(planosDeAçãoStore);
@@ -28,7 +29,7 @@ async function iniciar(planoId) {
   try {
     planoAcaoLinhas.value = await requestS.get(
       `${baseUrl}/projeto/${props.projetoId}/plano-acao-monitoramento`,
-      { plano_acao_id: planoId }
+      { plano_acao_id: planoId },
     );
   } catch (error) {
     console.error('Erro ao buscar dados:', error);
@@ -44,12 +45,22 @@ onMounted(() => {
   <div class="flex spacebetween center mb2">
     <TítuloDePágina>Resumo do plano de ação</TítuloDePágina>
     <hr class="ml2 f1">
-    <router-link class="btn big ml2" title="Editar plano de ação" :to="{ name: 'planosDeAçãoEditar' }">Editar
+    <router-link
+      class="btn big ml2"
+      title="Editar plano de ação"
+      :to="{ name: 'planosDeAçãoEditar' }"
+    >
+      Editar
     </router-link>
   </div>
 
-  <div v-if="emFoco" class="boards">
-    <h2 class="label mt2 mb2">RESPONSÁVEL</h2>
+  <div
+    v-if="emFoco"
+    class="boards"
+  >
+    <h2 class="label mt2 mb2">
+      RESPONSÁVEL
+    </h2>
     <div class="flex g2 mb1">
       <div class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
@@ -94,8 +105,8 @@ onMounted(() => {
         </dt>
         <dd class="t13">
           {{ emFoco?.prazo_contramedida
-          ? dateToField(emFoco?.prazo_contramedida)
-          : '-'
+            ? dateToField(emFoco?.prazo_contramedida)
+            : '-'
           }}
         </dd>
       </div>
@@ -106,8 +117,8 @@ onMounted(() => {
         </dt>
         <dd class="t13">
           {{ emFoco?.data_termino
-          ? dateToField(emFoco?.data_termino)
-          : '-'
+            ? dateToField(emFoco?.data_termino)
+            : '-'
           }}
         </dd>
       </div>
@@ -151,7 +162,10 @@ onMounted(() => {
         <col>
       </colgroup>
       <tbody>
-        <tr v-for="(linha, index) in planoAcaoLinhas.linhas" :key="index">
+        <tr
+          v-for="(linha, index) in planoAcaoLinhas.linhas"
+          :key="index"
+        >
           <td>{{ dateToField(linha.data_afericao) || "-" }}</td>
           <td>{{ linha.descricao }}</td>
         </tr>
@@ -166,5 +180,4 @@ onMounted(() => {
   <div v-else>
     <span class="spinner">Carregando</span>
   </div>
-
 </template>

@@ -1,12 +1,13 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { computed, defineOptions, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
 import LocalFilter from '@/components/LocalFilter.vue';
 import { acompanhamento as schema } from '@/consts/formSchemas';
 import dateToField from '@/helpers/dateToField';
 import { useAcompanhamentosStore } from '@/stores/acompanhamentos.store.ts';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
-import { storeToRefs } from 'pinia';
-import { computed, defineOptions, ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 
 defineOptions({ inheritAttrs: false });
 
@@ -250,7 +251,7 @@ vue/singleline-html-element-content-newline -->
 
     <thead>
       <tr class="pl3 center mb05 tc300 w700 t12 uc">
-        <th class="cell-number">
+        <th class="cell--number">
           Número
         </th>
         <th class="cell--data">

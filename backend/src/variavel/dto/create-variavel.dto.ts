@@ -294,3 +294,16 @@ export class CreateGeradorVariavelPDMDto extends IntersectionType(CreateGeradorV
     })
     declare codigo: string;
 }
+
+export class IndicadorPreviaCategorica {
+    @IsNumberString({}, { message: 'Valor inválido. Use um número em formato de texto, como "100" ou "123,45"' })
+    @ValidateIf((object, value) => value !== '')
+    @Type(() => String)
+    valor: string;
+
+    /**
+     * valor categórico (VariavelCategoricaValor.valor_variavel)
+     */
+    @IsInt({ message: 'categorica_valor precisa ser um número' })
+    categorica_valor: number;
+}

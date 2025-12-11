@@ -1,10 +1,4 @@
 <script setup>
-import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
-import { processoDeObras as schema } from '@/consts/formSchemas';
-import formatProcesso from '@/helpers/formatProcesso';
-import { useAlertStore } from '@/stores/alert.store';
-import { useProcessosStore } from '@/stores/processos.store.ts';
-import { useTarefasStore } from '@/stores/tarefas.store.ts';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
@@ -13,8 +7,14 @@ import {
   useIsFormDirty,
 } from 'vee-validate';
 import { watch } from 'vue';
-
 import { useRoute, useRouter } from 'vue-router';
+
+import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
+import { processoDeObras as schema } from '@/consts/formSchemas';
+import formatProcesso from '@/helpers/formatProcesso';
+import { useAlertStore } from '@/stores/alert.store';
+import { useProcessosStore } from '@/stores/processos.store.ts';
+import { useTarefasStore } from '@/stores/tarefas.store.ts';
 
 const alertStore = useAlertStore();
 const processosStore = useProcessosStore();
@@ -179,12 +179,12 @@ resetForm();
           :schema="schema"
         />
         <SmaeText
+          v-model="carga.descricao"
           name="descricao"
           as="textarea"
           rows="5"
           class="inputtext light mb1"
           maxlength="2048"
-          v-model="carga.descricao"
           anular-vazio
           :class="{ 'error': errors.descricao }"
         />
@@ -201,12 +201,12 @@ resetForm();
           :schema="schema"
         />
         <SmaeText
+          v-model="carga.comentarios"
           name="comentarios"
           as="textarea"
           rows="5"
           class="inputtext light mb1"
           maxlength="2048"
-          v-model="carga.comentarios"
           anular-vazio
           :class="{ 'error': errors.comentarios }"
         />
@@ -223,12 +223,12 @@ resetForm();
           :schema="schema"
         />
         <SmaeText
+          v-model="carga.observacoes"
           name="observacoes"
           as="textarea"
           rows="5"
           class="inputtext light mb1"
           maxlength="2048"
-          v-model="carga.observacoes"
           anular-vazio
           :class="{ 'error': errors.observacoes }"
         />

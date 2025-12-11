@@ -1,13 +1,14 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { Field, Form } from 'vee-validate';
+import { computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
 import { relatórioDePrevisãoDeCustoPortfolioObras as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useObrasStore } from '@/stores/obras.store';
 import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store.ts';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
-import { storeToRefs } from 'pinia';
-import { Field, Form } from 'vee-validate';
-import { computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 
 const obrasStore = useObrasStore();
 const alertStore = useAlertStore();

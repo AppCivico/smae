@@ -156,16 +156,18 @@
   </form>
 </template>
 <script setup lang="ts">
+import type { Indicador } from '@back/indicador/entities/indicador.entity';
+import { storeToRefs } from 'pinia';
+import type { PropType } from 'vue';
+import { computed, ref } from 'vue';
+
 import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import FiltroDeDeVariaveis from '@/components/variaveis/FiltroDeDeVariaveis.vue';
 import TabelaDeVariaveisGlobais from '@/components/variaveis/TabelaDeVariaveisGlobais.vue';
 import EnvioParaObjeto from '@/helpers/EnvioParaObjeto';
 import requestS from '@/helpers/requestS';
 import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store';
-import type { Indicador } from '@back/indicador/entities/indicador.entity';
-import { storeToRefs } from 'pinia';
-import type { PropType } from 'vue';
-import { computed, ref } from 'vue';
+
 import LoadingComponent from '../LoadingComponent.vue';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;

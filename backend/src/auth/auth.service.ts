@@ -185,7 +185,7 @@ export class AuthService {
             pessoa.senha_bloqueada_em &&
             Date.now() - pessoa.senha_bloqueada_em.getTime() < 60 * 1000
         )
-            throw new BadRequestException('Solicitação já foi efetuada recentemente. Conferia seu e-mail.');
+            throw new BadRequestException('Solicitação já foi efetuada recentemente. Confira seu e-mail.');
 
         await this.pessoaService.criaNovaSenha(pessoa, true);
     }

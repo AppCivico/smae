@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { TarefaDependenteTipo } from '@prisma/client';
-import { Transform, Type } from 'class-transformer';
+import { Expose, Transform, Type } from 'class-transformer';
 import {
     IsArray,
     IsBoolean,
@@ -21,6 +21,22 @@ import { GraphvizServiceFormat } from 'src/graphviz/graphviz.service';
 import { DateTransform } from '../../../auth/transforms/date.transform';
 import { IsOnlyDate } from '../../../common/decorators/IsDateOnly';
 import { MAX_LENGTH_DEFAULT, MAX_LENGTH_MEDIO } from 'src/common/consts';
+
+export class CustoAnualizadoDto {
+    @Expose()
+    @IsInt({ message: 'Ano precisa ser inteiro' })
+    @Min(1900, { message: 'Ano mínimo é 1900' })
+    @Max(2100, { message: 'Ano máximo é 2100' })
+    ano: number;
+
+    @Expose()
+    @IsNumber(
+        { maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false },
+        { message: 'Valor: máximo 2 casas decimais' }
+    )
+    @Min(0, { message: 'Valor deve ser maior ou igual a zero' })
+    valor: number;
+}
 
 export class TarefaDependenciaDto {
     @IsInt({ message: 'precisa ser inteiro' })
@@ -95,7 +111,9 @@ export class CreateTarefaDto {
      */
     @IsString({ message: 'precisa ser um texto, mesmo que vazio' })
     @MinLength(0)
-    @MaxLength(MAX_LENGTH_DEFAULT, { message: `O campo 'Recursos' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres` })
+    @MaxLength(MAX_LENGTH_DEFAULT, {
+        message: `O campo 'Recursos' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    })
     recursos: string;
 
     /**
@@ -151,18 +169,12 @@ export class CreateTarefaDto {
     duracao_real?: number | null;
 
     @IsOptional()
-    @IsNumber(
-        { maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false },
-        { message: 'máximo 2 casas decimais' }
-    )
+    @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false }, { message: 'máximo 2 casas decimais' })
     @ValidateIf((object, value) => value !== null)
     custo_estimado?: number | null;
 
     @IsOptional()
-    @IsNumber(
-        { maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false },
-        { message: 'máximo 2 casas decimais' }
-    )
+    @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false }, { message: 'máximo 2 casas decimais' })
     @ValidateIf((object, value) => value !== null)
     custo_real?: number | null;
 
@@ -188,6 +200,20 @@ export class CreateTarefaDto {
     @Type(() => Boolean)
     @ValidateIf((object, value) => value !== null)
     eh_marco?: boolean;
+
+    @IsOptional()
+    @IsArray({ message: 'custo_estimado_anualizado precisa ser um array' })
+    @ValidateNested({ each: true })
+    @Type(() => CustoAnualizadoDto)
+    @ValidateIf((object, value) => value !== null)
+    custo_estimado_anualizado?: CustoAnualizadoDto[] | null;
+
+    @IsOptional()
+    @IsArray({ message: 'custo_real_anualizado precisa ser um array' })
+    @ValidateNested({ each: true })
+    @Type(() => CustoAnualizadoDto)
+    @ValidateIf((object, value) => value !== null)
+    custo_real_anualizado?: CustoAnualizadoDto[] | null;
 }
 
 export class FilterPPTarefa {}

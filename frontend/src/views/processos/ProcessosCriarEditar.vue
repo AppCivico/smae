@@ -1,10 +1,4 @@
 <script setup>
-import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
-import { processo as schema } from '@/consts/formSchemas';
-import formatProcesso from '@/helpers/formatProcesso';
-import { useAlertStore } from '@/stores/alert.store';
-import { useProcessosStore } from '@/stores/processos.store.ts';
-import { useTarefasStore } from '@/stores/tarefas.store.ts';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
@@ -13,8 +7,14 @@ import {
   useIsFormDirty,
 } from 'vee-validate';
 import { watch } from 'vue';
-
 import { useRoute, useRouter } from 'vue-router';
+
+import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
+import { processo as schema } from '@/consts/formSchemas';
+import formatProcesso from '@/helpers/formatProcesso';
+import { useAlertStore } from '@/stores/alert.store';
+import { useProcessosStore } from '@/stores/processos.store.ts';
+import { useTarefasStore } from '@/stores/tarefas.store.ts';
 
 const alertStore = useAlertStore();
 const processosStore = useProcessosStore();

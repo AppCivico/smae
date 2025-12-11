@@ -3,8 +3,12 @@ import { JwtService } from '@nestjs/jwt';
 import { Cron } from '@nestjs/schedule';
 import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
+import { IsCrontabDisabled } from '../../common/crontab-utils';
+import { SYSTEM_TIMEZONE } from '../../common/date2ymd';
+import { JOB_REFRESH_MV_LOCK } from '../../common/dto/locks';
 import { AnyPageTokenJwtBody, PaginatedWithPagesDto, PAGINATION_TOKEN_TTL } from '../../common/dto/paginated.dto';
 import { Object2Hash } from '../../common/object2hash';
+import { SmaeConfigService } from '../../common/services/smae-config.service';
 import { ReferenciasValidasBase } from '../../geo-loc/entities/geo-loc.entity';
 import { GeoLocService } from '../../geo-loc/geo-loc.service';
 import { Arr } from '../../mf/metas/dash/metas.service';
@@ -28,7 +32,6 @@ import {
     PainelEstrategicoResponseDto,
     PainelEstrategicoResumoOrcamentario,
 } from './entities/painel-estrategico-responses.dto';
-import { IsCrontabDisabled } from '../../common/crontab-utils';
 
 @Injectable()
 export class PainelEstrategicoService {
@@ -36,7 +39,8 @@ export class PainelEstrategicoService {
         private readonly prisma: PrismaService,
         private readonly projetoService: ProjetoService,
         private readonly jwtService: JwtService,
-        private readonly geolocService: GeoLocService
+        private readonly geolocService: GeoLocService,
+        private readonly smaeConfigService: SmaeConfigService
     ) {}
 
     async buildPainel(filtro: PainelEstrategicoFilterDto, user: PessoaFromJwt): Promise<PainelEstrategicoResponseDto> {
@@ -212,8 +216,8 @@ export class PainelEstrategicoService {
         const sql = `
             WITH year_range AS (
                 SELECT generate_series(
-                    DATE_PART('YEAR', CURRENT_DATE)::INT - 3,
-                    DATE_PART('YEAR', CURRENT_DATE)::INT
+                    DATE_PART('YEAR', CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}')::INT - 3,
+                    DATE_PART('YEAR', CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}')::INT
                 ) AS ano
             ),
             project_counts AS (
@@ -222,8 +226,8 @@ export class PainelEstrategicoService {
                     DATE_PART('year', realizado_termino) as ano
                 FROM view_painel_estrategico_projeto
                 WHERE realizado_termino IS NOT NULL
-                    AND DATE_PART('year', realizado_termino) <= DATE_PART('YEAR', CURRENT_DATE)
-                    AND DATE_PART('year', realizado_termino) >= DATE_PART('YEAR', CURRENT_DATE) - 3
+                    AND DATE_PART('year', realizado_termino) <= DATE_PART('YEAR', CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}')
+                    AND DATE_PART('year', realizado_termino) >= DATE_PART('YEAR', CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}') - 3
                     AND projeto_id IN (${projetoIds})
                 GROUP BY DATE_PART('year', realizado_termino)
             )
@@ -244,7 +248,7 @@ export class PainelEstrategicoService {
                 SELECT
                     date_trunc('month',
                         make_date(
-                            EXTRACT(YEAR FROM CURRENT_DATE)::int - 3,
+                            EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}')::int - 3,
                             1,
                             1
                         )
@@ -254,7 +258,7 @@ export class PainelEstrategicoService {
                     (data_ + interval '1 month')::date
                 FROM date_series
                 WHERE data_ < make_date(
-                    EXTRACT(YEAR FROM CURRENT_DATE)::int,
+                    EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}')::int,
                     12,
                     1
                 )
@@ -264,12 +268,12 @@ export class PainelEstrategicoService {
                     COUNT(DISTINCT projeto_id) as quantidade,
                     ano_termino as ano,
                     mes_termino as mes,
-                    EXTRACT(YEAR FROM CURRENT_DATE) - ano_termino as linha,
+                    EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}') - ano_termino as linha,
                     mes_termino - 1 as coluna
                 FROM view_painel_estrategico_projeto
                 WHERE realizado_termino IS NOT NULL
-                    AND ano_termino <= EXTRACT(YEAR FROM CURRENT_DATE)
-                    AND ano_termino >= EXTRACT(YEAR FROM CURRENT_DATE) - 3
+                    AND ano_termino <= EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}')
+                    AND ano_termino >= EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}') - 3
                     AND projeto_id IN (${projetoIds})
                 GROUP BY ano_termino, mes_termino
             ),
@@ -277,7 +281,7 @@ export class PainelEstrategicoService {
                 SELECT
                     EXTRACT(YEAR FROM data_) as ano,
                     EXTRACT(MONTH FROM data_) as mes,
-                    EXTRACT(YEAR FROM CURRENT_DATE) - EXTRACT(YEAR FROM data_) as linha,
+                    EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}') - EXTRACT(YEAR FROM data_) as linha,
                     EXTRACT(MONTH FROM data_) - 1 as coluna
                 FROM date_series
             )
@@ -307,8 +311,8 @@ export class PainelEstrategicoService {
         const sql = `
             WITH year_range AS (
                 SELECT generate_series(
-                    EXTRACT(YEAR FROM CURRENT_DATE)::INT,
-                    EXTRACT(YEAR FROM CURRENT_DATE)::INT + 3
+                    EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}')::INT,
+                    EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}')::INT + 3
                 ) AS ano
             ),
             project_counts AS (
@@ -318,8 +322,8 @@ export class PainelEstrategicoService {
                 FROM view_painel_estrategico_projeto
                 WHERE realizado_termino IS NULL
                     AND previsao_termino IS NOT NULL
-                    AND ano_previsao >= EXTRACT(YEAR FROM CURRENT_DATE)
-                    AND ano_previsao <= EXTRACT(YEAR FROM CURRENT_DATE) + 3
+                    AND ano_previsao >= EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}')
+                    AND ano_previsao <= EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}') + 3
                     AND projeto_id IN (${projetoIds})
                 GROUP BY ano_previsao
             )
@@ -340,7 +344,7 @@ export class PainelEstrategicoService {
                 SELECT
                     date_trunc('month',
                         make_date(
-                            EXTRACT(YEAR FROM CURRENT_DATE)::int - 3,
+                            EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}')::int - 3,
                             1,
                             1
                         )
@@ -350,7 +354,7 @@ export class PainelEstrategicoService {
                     (data_ + interval '1 month')::date
                 FROM date_series
                 WHERE data_ < date_trunc('month', make_date(
-                    EXTRACT(YEAR FROM CURRENT_DATE)::int + 3,
+                    EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}')::int + 3,
                     12,
                     1
                 ))
@@ -364,8 +368,8 @@ export class PainelEstrategicoService {
                 FROM view_painel_estrategico_projeto
                 WHERE realizado_termino IS NULL
                     AND previsao_termino IS NOT NULL
-                    AND ano_previsao >= EXTRACT(YEAR FROM CURRENT_DATE) - 3
-                    AND ano_previsao <= EXTRACT(YEAR FROM CURRENT_DATE) + 3
+                    AND ano_previsao >= EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}') - 3
+                    AND ano_previsao <= EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}') + 3
                     AND projeto_id IN (${projetoIds})
                 GROUP BY ano_previsao, previsao_termino  -- Changed this line
             ),
@@ -381,11 +385,11 @@ export class PainelEstrategicoService {
                 ad.ano::int,
                 ad.mes::int,
                 CASE
-                    WHEN ad.ano < EXTRACT(YEAR FROM CURRENT_DATE) THEN -1
-                    WHEN ad.ano = EXTRACT(YEAR FROM CURRENT_DATE) THEN 3
-                    WHEN ad.ano = EXTRACT(YEAR FROM CURRENT_DATE) + 1 THEN 2
-                    WHEN ad.ano = EXTRACT(YEAR FROM CURRENT_DATE) + 2 THEN 1
-                    WHEN ad.ano = EXTRACT(YEAR FROM CURRENT_DATE) + 3 THEN 0
+                    WHEN ad.ano < EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}') THEN -1
+                    WHEN ad.ano = EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}') THEN 3
+                    WHEN ad.ano = EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}') + 1 THEN 2
+                    WHEN ad.ano = EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}') + 2 THEN 1
+                    WHEN ad.ano = EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}') + 3 THEN 0
                 END as linha,
                 ad.coluna::int
             FROM all_dates ad
@@ -470,7 +474,7 @@ export class PainelEstrategicoService {
     private async buildQuantidadesProjeto(projetoIds: number[]): Promise<PainelEstrategicoQuantidadesAnoCorrente> {
         const sql = `
             WITH ano_corrente AS (
-                SELECT EXTRACT(YEAR FROM CURRENT_DATE) as ano
+                SELECT EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}') as ano
             ),
             contagens AS (
                 SELECT
@@ -728,40 +732,57 @@ export class PainelEstrategicoService {
         }
 
         const sql = `
-            WITH projeto_base AS (
-                SELECT pr.id,
-                       pr.orgao_responsavel_id
-                FROM projeto pr
-                WHERE pr.removido_em IS NULL
-                  AND pr.arquivado = FALSE
-                  AND pr.tipo = 'PP'
-                  ${strPortfolio}
-                  ${strOrgao}
-                UNION
-                SELECT p.id,
-                       p.orgao_responsavel_id
-                FROM projeto p,
-                     portfolio_projeto_compartilhado pp
-                WHERE pp.projeto_id = p.id
-                  AND pp.removido_em IS NULL
-                  AND p.removido_em IS NULL
-                  AND p.arquivado = FALSE
-                  AND p.tipo = 'PP'
-                  ${strPortfolio2}
-                  ${strOrgao2}
-            ),
-            tarefa_custos AS (
-                SELECT sum(t.custo_estimado) AS previsao_custo,
-                       date_part('year', t.termino_planejado) AS ano_referencia,
-                       tc.projeto_id
-                FROM tarefa_cronograma tc
-                JOIN tarefa t ON t.tarefa_cronograma_id = tc.id
-                WHERE tc.removido_em IS NULL
-                  AND t.n_filhos_imediatos = 0
-                  AND t.removido_em IS NULL
-              GROUP BY date_part('year', t.termino_planejado), tc.projeto_id
-            ),
-            orc_realizado as (
+                        WITH projeto_base AS (
+                                SELECT pr.id,
+                                             pr.orgao_responsavel_id
+                                FROM projeto pr
+                                WHERE pr.removido_em IS NULL
+                                    AND pr.arquivado = FALSE
+                                    AND pr.tipo = 'PP'
+                                    ${strPortfolio}
+                                    ${strOrgao}
+                                UNION
+                                SELECT p.id,
+                                             p.orgao_responsavel_id
+                                FROM projeto p,
+                                         portfolio_projeto_compartilhado pp
+                                WHERE pp.projeto_id = p.id
+                                    AND pp.removido_em IS NULL
+                                    AND p.removido_em IS NULL
+                                    AND p.arquivado = FALSE
+                                    AND p.tipo = 'PP'
+                                    ${strPortfolio2}
+                                    ${strOrgao2}
+                        ),
+                        tarefa_custos AS (
+                            -- 1. Custos Anualizados (desagregar o JSON e atribuir o valor por ano)
+                            SELECT
+                                    (CAST(a.value AS numeric)) AS previsao_custo,
+                                    (CAST(a.key AS numeric)) AS ano_referencia,
+                                    tc.projeto_id
+                            FROM tarefa_cronograma tc
+                            JOIN tarefa t ON t.tarefa_cronograma_id = tc.id
+                            CROSS JOIN LATERAL json_each_text(t.custo_estimado_anualizado::json) AS a(key, value)
+                            WHERE tc.removido_em IS NULL
+                                AND t.n_filhos_imediatos = 0
+                                AND t.removido_em IS NULL
+                                AND t.custo_estimado_anualizado IS NOT NULL
+                            UNION ALL
+                            -- 2. Custos Padrão/Legado (atribuir o custo total ao ano de término planejado)
+                            SELECT
+                                    COALESCE(t.custo_estimado, t.backup_custo_estimado) AS previsao_custo,
+                                    date_part('year', t.termino_planejado) AS ano_referencia,
+                                    tc.projeto_id
+                            FROM tarefa_cronograma tc
+                            JOIN tarefa t ON t.tarefa_cronograma_id = tc.id
+                            WHERE tc.removido_em IS NULL
+                                AND t.n_filhos_imediatos = 0
+                                AND t.removido_em IS NULL
+                                AND t.custo_estimado_anualizado IS NULL
+                                AND COALESCE(t.custo_estimado, t.backup_custo_estimado) IS NOT NULL
+                                AND t.termino_planejado IS NOT NULL
+                        ),
+                        orc_realizado as (
                 SELECT sum(orcr.soma_valor_empenho) AS soma_valor_empenho,
                          sum(orcr.soma_valor_liquidado) AS soma_valor_liquidado,
                          ano_referencia,
@@ -776,8 +797,8 @@ export class PainelEstrategicoService {
                 sum(COALESCE(orcr.soma_valor_liquidado, 0))::float AS valor_liquidado_total,
                 years.yr AS ano_referencia
             FROM generate_series(
-                DATE_PART('YEAR', CURRENT_DATE)::INT - 3,
-                DATE_PART('YEAR', CURRENT_DATE)::INT + 3
+                DATE_PART('YEAR', CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}')::INT - 3,
+                DATE_PART('YEAR', CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}')::INT + 3
             ) years(yr)
             JOIN projeto_base p ON (p.id IN (${projectIds}) OR ${hasProjetos} = -1)
             LEFT JOIN tarefa_custos tc ON tc.ano_referencia = years.yr AND tc.projeto_id = p.id
@@ -892,13 +913,30 @@ export class PainelEstrategicoService {
                                and tc.removido_em is null
                          )::float AS valor_custo_planejado_total,
                          (
-                            select sum(t.custo_estimado)
-                            from tarefa_cronograma tc
-                             inner join tarefa t on t.tarefa_cronograma_id = tc.id and t.removido_em is null
-                            where not exists(select tarefa_pai_id from tarefa where tarefa_pai_id = t.id and removido_em is null)
-                            and tc.projeto_id = p.id
-                            and tc.removido_em is null
-                            and t.termino_planejado <= current_date
+                             SELECT SUM(custo_anual)
+                             FROM (
+                                -- 1. Custos Anualizados (desagregar o JSON e atribuir o valor por ano)
+                                SELECT CAST(a.value AS numeric) AS custo_anual
+                                  FROM tarefa_cronograma tc
+                                  JOIN tarefa t ON t.tarefa_cronograma_id = tc.id
+                                  CROSS JOIN LATERAL json_each_text(t.custo_estimado_anualizado::json) AS a(key, value)
+                                  WHERE t.custo_estimado_anualizado IS NOT NULL
+                                     AND tc.projeto_id = p.id
+                                     AND t.n_filhos_imediatos = 0
+                                     AND t.removido_em IS NULL
+                                     AND tc.removido_em IS NULL
+                                     AND (CAST(a.key AS numeric))::integer <= EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}')
+                                  UNION ALL
+                                  -- 2. Custos Padrão/Legado (atribuir o custo total ao ano de término planejado)
+                                  SELECT COALESCE(t.custo_estimado, t.backup_custo_estimado) AS custo_anual
+                                  FROM tarefa_cronograma tc
+                                  INNER JOIN tarefa t ON t.tarefa_cronograma_id = tc.id AND t.removido_em IS NULL
+                                  WHERE tc.projeto_id = p.id
+                                     AND t.n_filhos_imediatos = 0
+                                     AND tc.removido_em IS NULL
+                                     AND t.custo_estimado_anualizado IS NULL
+                                     AND t.termino_planejado <= CURRENT_DATE AT TIME ZONE '${SYSTEM_TIMEZONE}'
+                             ) AS subquery
                          )::float AS valor_custo_planejado_hoje,
                          orc.soma_valor_empenho ::float as valor_empenhado_total,
                          orc.soma_valor_liquidado::float as valor_liquidado_total,
@@ -1114,10 +1152,51 @@ export class PainelEstrategicoService {
     async refreshMaterializedView() {
         if (IsCrontabDisabled('task')) return;
         try {
-            Logger.log('Atualizando view painel estrategico projeto');
-            await this.prisma.$queryRaw`refresh materialized view view_painel_estrategico_projeto;`;
+            const CACHE_KEY = 'painel_estrategico_mv_last_refresh';
+            const now = new Date();
+
+            // vefica se a última atualização foi há menos de 1 minuto
+            const lastRefreshStr = await this.smaeConfigService.getConfig(CACHE_KEY);
+            if (lastRefreshStr) {
+                const lastRefresh = new Date(lastRefreshStr);
+                const timeDiffMs = now.getTime() - lastRefresh.getTime();
+                const oneMinuteMs = 60 * 1000;
+
+                if (timeDiffMs < oneMinuteMs) return;
+            }
+
+            process.env.INTERNAL_DISABLE_QUERY_LOG = '1';
+            await this.prisma.$transaction(
+                async (prisma: Prisma.TransactionClient) => {
+                    const lockPromise: Promise<{ locked: boolean }[]> =
+                        prisma.$queryRaw`SELECT pg_try_advisory_xact_lock(${JOB_REFRESH_MV_LOCK}) as locked`;
+
+                    // Immediately set the INTERNAL_DISABLE_QUERY_LOG to ''
+                    lockPromise.then(() => {
+                        process.env.INTERNAL_DISABLE_QUERY_LOG = '';
+                    });
+
+                    const locked = await lockPromise;
+                    if (!locked[0].locked) {
+                        return;
+                    }
+
+                    Logger.log('Atualizando view painel estrategico projeto');
+                    await prisma.$queryRaw`refresh materialized view view_painel_estrategico_projeto;`;
+
+                    await this.smaeConfigService.upsert(CACHE_KEY, now.toISOString());
+
+                    process.env.INTERNAL_DISABLE_QUERY_LOG = '1';
+                },
+                {
+                    maxWait: 15000,
+                    timeout: 60 * 1000,
+                    isolationLevel: 'ReadCommitted',
+                }
+            );
+            process.env.INTERNAL_DISABLE_QUERY_LOG = '';
         } catch (error) {
-            Logger.error(error);
+            Logger.error('Error refreshing materialized view:', error);
         }
     }
 }

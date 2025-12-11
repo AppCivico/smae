@@ -1,36 +1,41 @@
-import { defineStore } from 'pinia';
+import type { ValoresSelecionados } from '@/components/AgrupadorDeAutocomplete';
 import type { PaginatedWithPagesDto } from '@back/common/dto/paginated.dto';
 import type { RecordWithId } from '@back/common/dto/record-with-id.dto';
 import type {
   ListPdmSimplesDto,
   ListSeriesAgrupadas, VariavelDetailComAuxiliaresDto, VariavelDetailDto, VariavelGlobalDetailDto,
 } from '@back/variavel/dto/list-variavel.dto';
-import type { VariavelGlobalItemDto } from '@back/variavel/entities/variavel.entity';
-import type { ValoresSelecionados } from '@/components/AgrupadorDeAutocomplete.vue';
+import type { PeriodosValidosDto, VariavelGlobalItemDto } from '@back/variavel/entities/variavel.entity';
+import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 type Variavel = VariavelDetailDto & VariavelGlobalDetailDto & VariavelDetailComAuxiliaresDto ;
 
 export type PlanosSimplificadosPorTipo = {
-  [key: string]: ListPdmSimplesDto['linhas']
+  [key: string]: ListPdmSimplesDto['linhas'];
 };
 
 interface Estado {
   lista: VariavelGlobalItemDto[];
   emFoco: Variavel | null;
   seriesAgrupadas: ListSeriesAgrupadas | null;
+  dadosDosPeriodosValidos: PeriodosValidosDto | null;
   variaveisFilhasPorMae: { [key: string | number]: VariavelGlobalItemDto[] };
 
   planosSimplificados: ListPdmSimplesDto['linhas'];
 
   chamadasPendentes: ChamadasPendentes & {
     planosSimplificados: boolean;
+    dadosDosPeriodosValidos: boolean;
     variaveisFilhasPorMae: { [key: string | number]: boolean };
+    seriesAgrupadas: boolean;
   };
   erros: Erros & {
     planosSimplificados: unknown;
+    dadosDosPeriodosValidos: unknown;
     variaveisFilhasPorMae: { [key: string | number]: unknown };
+    seriesAgrupadas: unknown;
   };
 
   paginacao: Paginacao;
@@ -43,6 +48,7 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
     lista: [],
     emFoco: null,
     seriesAgrupadas: null,
+    dadosDosPeriodosValidos: null,
     variaveisFilhasPorMae: {},
     planosSimplificados: [],
 
@@ -50,13 +56,17 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
       lista: false,
       variaveisFilhasPorMae: {},
       planosSimplificados: false,
+      dadosDosPeriodosValidos: false,
       emFoco: false,
+      seriesAgrupadas: false,
     },
     erros: {
       lista: null,
       variaveisFilhasPorMae: {},
       planosSimplificados: null,
+      dadosDosPeriodosValidos: null,
       emFoco: null,
+      seriesAgrupadas: null,
     },
     paginacao: {
       tokenPaginacao: '',
@@ -193,7 +203,8 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
     },
 
     async buscarSerie(variavelId: number | string, params = {}): Promise<void> {
-      this.chamadasPendentes.emFoco = true;
+      this.chamadasPendentes.seriesAgrupadas = true;
+      this.erros.seriesAgrupadas = null;
 
       try {
         const resposta = await this.requestS.get(
@@ -205,9 +216,26 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
 
         this.seriesAgrupadas = resposta;
       } catch (erro: unknown) {
-        this.erros.emFoco = erro;
+        this.erros.seriesAgrupadas = erro;
       }
-      this.chamadasPendentes.emFoco = false;
+      this.chamadasPendentes.seriesAgrupadas = false;
+    },
+
+    async buscarPeriodosValidos(variavelMaeId: number | string, params = {}): Promise<void> {
+      this.chamadasPendentes.dadosDosPeriodosValidos = true;
+      this.erros.dadosDosPeriodosValidos = null;
+
+      try {
+        const resposta = await this.requestS.get(
+          `${baseUrl}/variavel/${variavelMaeId}/periodos-validos`,
+          params,
+        ) as PeriodosValidosDto;
+
+        this.dadosDosPeriodosValidos = resposta;
+      } catch (erro: unknown) {
+        this.erros.dadosDosPeriodosValidos = erro;
+      }
+      this.chamadasPendentes.dadosDosPeriodosValidos = false;
     },
 
     async salvarSeries(params = {}): Promise<RecordWithId | boolean> {

@@ -124,6 +124,11 @@ class RetornoDbCronograma {
     responsavel_nome_exibicao: string;
 
     atraso?: number;
+
+    backup_custo_estimado?: number;
+    backup_custo_real?: number;
+    custo_estimado_anualizado?: JSON;
+    custo_real_anualizado?: JSON;
 }
 
 class RetornoDbRiscos {
@@ -255,6 +260,9 @@ class RetornoDbLoc {
     projeto_id: number;
     endereco: string;
     geojson: unknown;
+    distrito: string | null;
+    subprefeitura: string | null;
+    zona: string | null;
 }
 
 @Injectable()
@@ -956,8 +964,8 @@ export class PPProjetosService implements ReportableService {
         await this.gerarCsv('origens', origensFields, origensFieldNames, projetosIds, out, ctx, 90);
 
         // 11. Processar Geolocalização
-        const geolocFields = ['projeto_id', 'endereco_exibicao', 'geom_geojson'];
-        const geolocFieldNames = ['ID Projeto', 'Endereço', 'GeoJSON'];
+        const geolocFields = ['projeto_id', 'endereco', 'cep', 'zona', 'distrito', 'subprefeitura'];
+        const geolocFieldNames = ['ID Projeto', 'Endereço', 'CEP', 'Zona', 'Distrito', 'Subprefeitura'];
         await this.gerarCsv('geoloc', geolocFields, geolocFieldNames, projetosIds, out, ctx, 100);
 
         return [...out];
@@ -1231,7 +1239,11 @@ export class PPProjetosService implements ReportableService {
                 FROM tarefa_dependente td
                 JOIN tarefa t2 ON t2.id = td.dependencia_tarefa_id AND t2.removido_em IS NULL
                 WHERE td.tarefa_id = t.id
-            ) as dependencias
+            ) as dependencias,
+            t.custo_estimado_anualizado,
+            t.custo_real_anualizado,
+            t.backup_custo_estimado,
+            t.backup_custo_real
             FROM projeto
             LEFT JOIN tarefa_cronograma tc ON tc.projeto_id = projeto.id AND tc.removido_em IS NULL
             LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
@@ -1283,6 +1295,51 @@ export class PPProjetosService implements ReportableService {
                 }
             }
 
+            // Tratando custo real e custo estimado anualizados.
+            // Esses campos tem regras que olham para a duração da tarefa. Mas aqui podemos apenas verificar se estão definidos.
+            // Caso a tarefa seja anualizada, teremos valores nesses campos. E caso não tenham, utilizaremos os backups.
+            let custo_real: number | string | null;
+            let custo_estimado: number | string | null;
+            if (db.custo_real_anualizado !== null && db.custo_real_anualizado !== undefined) {
+                // JSON que segue o padrão {"2023" : 0} ou {"2025" : null}
+                // Vamos exibir como "$ano: valor"
+                const custoRealAnualizadoObj = db.custo_real_anualizado as Record<string, any>;
+                const anoKeys = Object.keys(custoRealAnualizadoObj);
+                const custoRealParts = anoKeys.map((ano) => {
+                    const valor = custoRealAnualizadoObj[ano];
+                    // Se o valor do ano for null, usar backup (sem estrutura de ano) ou null
+                    if (valor !== null) {
+                        return `${ano}: ${valor}`;
+                    } else if (db.backup_custo_real !== null && db.backup_custo_real !== undefined) {
+                        return db.backup_custo_real;
+                    } else {
+                        return null;
+                    }
+                });
+                custo_real = custoRealParts.filter((v) => v !== null).join(' ; ');
+            } else {
+                custo_real = db.backup_custo_real ?? null;
+            }
+
+            if (db.custo_estimado_anualizado !== null && db.custo_estimado_anualizado !== undefined) {
+                const custoEstimadoAnualizadoObj = db.custo_estimado_anualizado as Record<string, any>;
+                const anoKeys = Object.keys(custoEstimadoAnualizadoObj);
+                const custoEstimadoParts = anoKeys.map((ano) => {
+                    const valor = custoEstimadoAnualizadoObj[ano];
+                    // Se o valor do ano for null, usar backup (sem estrutura de ano) ou null
+                    if (valor !== null) {
+                        return `${ano}: ${valor}`;
+                    } else if (db.backup_custo_estimado !== null && db.backup_custo_estimado !== undefined) {
+                        return db.backup_custo_estimado;
+                    } else {
+                        return null;
+                    }
+                });
+                custo_estimado = custoEstimadoParts.filter((v) => v !== null).join(' ; ');
+            } else {
+                custo_estimado = db.backup_custo_estimado ?? null;
+            }
+
             out.push({
                 projeto_id: db.projeto_id,
                 projeto_codigo: db.projeto_codigo,
@@ -1293,12 +1350,12 @@ export class PPProjetosService implements ReportableService {
                 tarefa: db.tarefa,
                 inicio_planejado: db.inicio_planejado ? Date2YMD.toString(db.inicio_planejado) : null,
                 termino_planejado: db.termino_planejado ? Date2YMD.toString(db.termino_planejado) : null,
-                custo_estimado: db.custo_estimado ? db.custo_estimado : null,
+                custo_estimado: custo_estimado,
                 inicio_real: db.inicio_real ? Date2YMD.toString(db.inicio_real) : null,
                 termino_real: db.termino_real ? Date2YMD.toString(db.termino_real) : null,
                 duracao_real: db.duracao_real ? db.duracao_real : null,
                 percentual_concluido: db.percentual_concluido ? db.percentual_concluido : null,
-                custo_real: db.custo_real ? db.custo_real : null,
+                custo_real: custo_real,
                 dependencias: db.dependencias
                     ? db.dependencias
                           .split('/')
@@ -1741,11 +1798,29 @@ export class PPProjetosService implements ReportableService {
             SELECT
                 projeto.id AS projeto_id,
                 geo.endereco_exibicao AS endereco,
-                geo.geom_geojson AS geojson
+                geo.geom_geojson AS geojson,
+                zona_agg.zona,
+                distrito_agg.distrito,
+                subprefeitura_agg.subprefeitura
             FROM projeto
             JOIN portfolio ON projeto.portfolio_id = portfolio.id AND portfolio.removido_em IS NULL
             JOIN geo_localizacao_referencia geo_r ON geo_r.projeto_id = projeto.id AND geo_r.removido_em IS NULL
             JOIN geo_localizacao geo ON geo.id = geo_r.geo_localizacao_id
+            LEFT JOIN LATERAL (
+                SELECT STRING_AGG(DISTINCT r.descricao, '|') AS zona
+                FROM unnest(geo.calc_regioes_nivel_2) AS regiao_id
+                LEFT JOIN regiao r ON r.id = regiao_id
+            ) zona_agg ON true
+            LEFT JOIN LATERAL (
+                SELECT STRING_AGG(DISTINCT r.descricao, '|') AS subprefeitura
+                FROM unnest(geo.calc_regioes_nivel_3) AS regiao_id
+                LEFT JOIN regiao r ON r.id = regiao_id
+            ) subprefeitura_agg ON true
+            LEFT JOIN LATERAL (
+                SELECT STRING_AGG(DISTINCT r.descricao, '|') AS distrito
+                FROM unnest(geo.calc_regioes_nivel_4) AS regiao_id
+                LEFT JOIN regiao r ON r.id = regiao_id
+            ) distrito_agg ON true
             ${whereCond.whereString}
         `;
 
@@ -1768,6 +1843,9 @@ export class PPProjetosService implements ReportableService {
                 projeto_id: db.projeto_id,
                 endereco: db.endereco,
                 cep: geojson.properties.cep,
+                zona: db.zona,
+                distrito: db.distrito,
+                subprefeitura: db.subprefeitura,
             };
         });
     }

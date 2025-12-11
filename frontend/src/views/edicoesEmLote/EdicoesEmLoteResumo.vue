@@ -1,13 +1,14 @@
 <script lang="ts" setup>
-import { computed, onMounted } from 'vue';
-import { storeToRefs } from 'pinia';
-import { useRoute } from 'vue-router';
 import type { TipoOperacao } from '@back/task/run_update/dto/create-run-update.dto';
+import { storeToRefs } from 'pinia';
+import { computed, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
+
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
-import { useEdicoesEmLoteStore } from '@/stores/edicoesEmLote.store';
 import tiposDeOperacoesEmLote from '@/consts/tiposDeOperacoesEmLote';
 import combinadorDeListas from '@/helpers/combinadorDeListas';
 import dateToDate from '@/helpers/dateToDate';
+import { useEdicoesEmLoteStore } from '@/stores/edicoesEmLote.store';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 

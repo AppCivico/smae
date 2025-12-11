@@ -20,7 +20,7 @@
           :type="model ? 'button' : null"
           :to="linkDeRetrocesso"
           data-test="link-paginacao-anterior"
-          @click="(ev) => irParaPagina(paginaCorrente - 1)"
+          @click.prevent="() => irParaPagina(paginaCorrente - 1)"
         >
           <svg
             aria-hidden="true"
@@ -50,11 +50,11 @@
       >
         <component
           :is="model ? 'button' : 'router-link'"
-          class="menu-de-paginacao__link"
+          class="menu-de-paginacao__link menu-de-paginacao__link--total-de-paginas"
           :type="model ? 'button' : null"
           :to="linkParaUltimaPagina"
           aria-label="Última página"
-          @click="(ev) => irParaPagina(paginas)"
+          @click.prevent="() => irParaPagina(paginas)"
         >
           {{ paginas }}
         </component>
@@ -72,7 +72,7 @@
           :type="model ? 'button' : null"
           :to="linkDeAvanco"
           data-test="link-paginacao-seguinte"
-          @click="(ev) => irParaPagina(paginaCorrente + 1)"
+          @click.prevent="() => irParaPagina(paginaCorrente + 1)"
         >
           <span class="menu-de-paginacao__texto">
             Seguinte
@@ -85,6 +85,15 @@
         </component>
       </li>
     </ul>
+
+    <output
+      v-if="totalRegistros"
+      class="menu-de-paginacao__total-de-registros"
+      role="status"
+      aria-label="Total de registros"
+    >
+      {{ totalRegistros }} registro{{ totalRegistros === 1 ? '' : 's' }}
+    </output>
   </nav>
 </template>
 <script setup>
@@ -160,25 +169,36 @@ const linkParaUltimaPagina = computed(() => (model.value
   }));
 
 async function irParaPagina(numero) {
-  emit('trocaDePaginaSolicitada', { pagina: Number(numero) });
-  // Não faz nada pois o componente é um router-link
-  if (!model.value) return;
+  const pagina = Number(numero);
+
+  if (!Number.isFinite(pagina) || pagina < 1) {
+    return;
+  }
+
+  if (!props.temMais && pagina > props.paginas) {
+    return;
+  }
+
+  emit('trocaDePaginaSolicitada', { pagina });
 
   if (model.value) {
-    model.value = Number(numero);
+    model.value = pagina;
   } else {
     navegando.value = true;
 
-    await router.push({
-      query: {
-        ...route.query,
-        [`${props.prefixo}token_paginacao`]: numero === 1
-          ? undefined
-          : props.tokenPaginacao || route.query[`${props.prefixo}token_paginacao`],
-        [`${props.prefixo}pagina`]: numero,
-      },
-    });
-    navegando.value = false;
+    try {
+      await router.push({
+        query: {
+          ...route.query,
+          [`${props.prefixo}token_paginacao`]: pagina === 1
+            ? undefined
+            : props.tokenPaginacao || route.query[`${props.prefixo}token_paginacao`],
+          [`${props.prefixo}pagina`]: pagina,
+        },
+      });
+    } finally {
+      navegando.value = false;
+    }
   }
 }
 </script>
@@ -187,14 +207,20 @@ async function irParaPagina(numero) {
   text-transform: uppercase;
   font-weight: 700;
   background-color: @c50;
+  padding: 1rem;
+  gap: 1em;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+  align-items: center;
 }
 
 .menu-de-paginacao__lista {
-  padding: 1rem;
-  display:  flex;
+  display: flex;
   gap: 2rem;
   justify-content: center;
   align-items: center;
+  flex-grow: 1;
 }
 
 .menu-de-paginacao__item {
@@ -220,7 +246,7 @@ async function irParaPagina(numero) {
 
   &:before {
     content: 'de';
-     min-width: 0;
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     flex-grow: 1;
@@ -228,8 +254,7 @@ async function irParaPagina(numero) {
   }
 }
 
-.menu-de-paginacao__item--seguinte {
-}
+.menu-de-paginacao__item--seguinte {}
 
 .menu-de-paginacao__link {
   display: flex;
@@ -254,20 +279,34 @@ async function irParaPagina(numero) {
   flex-basis: 0;
 }
 
+.menu-de-paginacao__link--total-de-paginas {
+  display: inline-block;
+}
+
+.menu-de-paginacao__link--total-de-paginas,
+.menu-de-paginacao__campo {
+  max-width: 100%;
+  min-width: 3em;
+  text-align: center;
+  padding: 0.5em;
+}
+
 .menu-de-paginacao__campo {
   background-color: @c100;
   border-color: @c100;
   border-style: solid;
   border-width: 1px;
   width: 100%;
-  max-width: 100%;
-  min-width: 3em;
-  text-align: center;
   border-radius: 4px;
-  padding: 0.5em;
 
   &[aria-busy='true'] {
     border-color: @amarelo;
   }
+}
+
+.menu-de-paginacao__total-de-registros {
+  margin-left: auto;
+  margin-right: auto;
+  font-size: smaller;
 }
 </style>

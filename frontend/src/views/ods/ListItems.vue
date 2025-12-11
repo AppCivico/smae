@@ -4,7 +4,6 @@ import { reactive, ref } from 'vue';
 
 import { Dashboard } from '@/components';
 import TituloDaPagina from '@/components/TituloDaPagina.vue';
-
 import { useAlertStore, useAuthStore, useODSStore } from '@/stores';
 
 const ODSStore = useODSStore();

@@ -1,11 +1,12 @@
 <script setup>
-import { computed } from 'vue';
 import { storeToRefs } from 'pinia';
+import { computed } from 'vue';
+
+import LoadingComponent from '@/components/LoadingComponent.vue';
+import { localizarData, localizarDataHorario } from '@/helpers/dateToDate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
-import { localizarData, localizarDataHorario } from '@/helpers/dateToDate';
-import LoadingComponent from '@/components/LoadingComponent.vue';
 
 const alertStore = useAlertStore();
 const relatoriosStore = useRelatoriosStore();

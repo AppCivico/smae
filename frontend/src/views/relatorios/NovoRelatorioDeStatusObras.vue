@@ -1,11 +1,12 @@
 <script setup>
+import { Field, Form } from 'vee-validate';
+import { useRoute, useRouter } from 'vue-router';
+
 import { relatórioDeStatusObra as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useObrasStore } from '@/stores/obras.store';
 import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store.ts';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
-import { Field, Form } from 'vee-validate';
-import { useRoute, useRouter } from 'vue-router';
 
 const alertStore = useAlertStore();
 const portfolioObrasStore = usePortfolioObraStore();

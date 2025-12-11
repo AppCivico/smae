@@ -1,8 +1,9 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+
 import { liçãoAprendida as schema } from '@/consts/formSchemas';
 import { useLiçõesAprendidasStore } from '@/stores/licoesAprendidas.store.ts';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
-import { storeToRefs } from 'pinia';
 
 const licoesAprendidasStore = useLiçõesAprendidasStore();
 const {

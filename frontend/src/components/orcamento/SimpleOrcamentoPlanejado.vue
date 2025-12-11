@@ -1,16 +1,18 @@
 <script setup>
 // eslint-disable-next-line import/no-named-default
-import { default as LinhaPlanejado } from '@/components/orcamento/LinhaPlanejado.vue';
-import formataValor from '@/helpers/formataValor';
-import { useOrcamentosStore } from '@/stores/orcamentos.store';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
+import { useRoute } from 'vue-router';
+
+import { default as LinhaPlanejado } from '@/components/orcamento/LinhaPlanejado.vue';
+import formataValor from '@/helpers/formataValor';
 import { useObrasStore } from '@/stores/obras.store';
+import { useOrcamentosStore } from '@/stores/orcamentos.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
+
 import FiltroPorOrgaoEUnidade from './FiltroPorOrgaoEUnidade.vue';
 import agrupaFilhos from './helpers/agrupaFilhos';
 import somaItems from './helpers/somaItems';
-import { useRoute } from 'vue-router';
 
 const route = useRoute();
 

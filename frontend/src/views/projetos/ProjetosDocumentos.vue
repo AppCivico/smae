@@ -1,7 +1,8 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+
 import DocumentosDoProjeto from '@/components/projetos/DocumentosDoProjeto.vue';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
-import { storeToRefs } from 'pinia';
 
 defineProps({
   projetoId: {

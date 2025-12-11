@@ -1,12 +1,15 @@
 <template>
   <details
-    :id="$attrs.id"
+    :id="$attrs.id || (ciclo.id ? `ciclo--${ciclo.id}` : null)"
     ref="detailsElem"
     :open="$props.open || $props.cicloAtual"
     :class="cicloAtual ? 'ciclo-atual' : 'ciclo-passado'"
     @toggle.prevent="handleToggle"
   >
-    <summary :class="cicloAtual ? 'ciclo-atual__summary' : ''">
+    <summary
+      class="flex flexwrap"
+      :class="cicloAtual ? 'ciclo-atual__summary' : ''"
+    >
       <div
         v-if="cicloAtual"
         class="titulo-monitoramento"
@@ -18,11 +21,30 @@
           {{ dateToTitle(ciclo.data_ciclo) }}
         </h2>
       </div>
-      <template v-else>
-        <h2 class="tc500 t20">
-          {{ dateToTitle(ciclo.data_ciclo) }}
-        </h2>
-      </template>
+
+      <h2
+        v-else
+        class="tc500 t20"
+      >
+        {{ dateToTitle(ciclo.data_ciclo) }}
+      </h2>
+
+      <button
+        v-if="ciclo.fechado"
+        type="button"
+        class="btn outline bgnone tcprimary mtauto align-end mlauto mr0"
+        :aria-busy="chamadasPendentes.reabrirCiclo[ciclo.id]"
+        :aria-disabled="chamadasPendentes.reabrirCiclo[ciclo.id]"
+        @click="reabrirCiclo()"
+      >
+        Reabrir ciclo
+      </button>
+
+      <ErrorComponent
+        v-if="erros.reabrirCiclo[ciclo.id]"
+        :erro="erros.reabrirCiclo[ciclo.id]"
+        class="ml2"
+      />
     </summary>
     <LoadingComponent
       v-if="chamadasPendentes.ciclosDetalhadosPorId[ciclo.id]"
@@ -44,10 +66,10 @@
             class="mb1"
           >
             <dt class="t12 uc w700 mb05 tc300">
-              <div class="flex spacebetween">
+              <div class="flex spacebetween center mb1">
                 Informações complementares
                 <SmaeLink
-                  v-if="cicloAtual && saoEditaveis.analise"
+                  v-if="!ciclo.fechado && ciclo.documentos_editaveis.includes('analise')"
                   :to="{
                     name: `.monitoramentoDeMetasAnaliseQualitativa`,
                     params: { cicloId: ciclo.id }
@@ -106,10 +128,10 @@
         <dl>
           <div class="mb1">
             <dt class="t12 uc w700 mb05 tc300">
-              <div class="flex spacebetween">
+              <div class="flex spacebetween center mb1">
                 Detalhamento
                 <SmaeLink
-                  v-if="cicloAtual && saoEditaveis.risco"
+                  v-if="!ciclo.fechado && ciclo.documentos_editaveis.includes('risco')"
                   :to="{
                     name: `.monitoramentoDeMetasAnaliseDeRisco`,
                     params: { cicloId: ciclo.id }
@@ -170,10 +192,10 @@
         <dl>
           <div class="mb1">
             <dt class="t12 uc w700 mb05 tc300">
-              <div class="flex spacebetween">
+              <div class="flex spacebetween center mb1">
                 Comentários
                 <SmaeLink
-                  v-if="cicloAtual && saoEditaveis.fechamento"
+                  v-if="!ciclo.fechado && ciclo.documentos_editaveis.includes('fechamento')"
                   :to="{
                     name: `.monitoramentoDeMetasRegistroDeFechamento`,
                     params: { cicloId: ciclo.id }
@@ -190,41 +212,48 @@
               </div>
             </dt>
             <dd
-              class="t13 contentStyle"
-              v-html="fechamento?.comentario || '-'"
-            />
+              v-for="fechamento in listaDeFechamentos"
+              :key="fechamento.id"
+              class="t13 contentStyle mb2"
+            >
+              <div
+                class="mb1"
+                v-html="fechamento?.comentario || '-'"
+              />
+              <footer
+                v-if="fechamento?.criador?.nome_exibicao || fechamento?.criado_em"
+                class="tc600"
+              >
+                <p>
+                  Fechado
+                  <template v-if="fechamento.criador?.nome_exibicao">
+                    por <strong>{{ fechamento.criador.nome_exibicao }}</strong>
+                  </template>
+                  <template v-if="fechamento.criado_em">
+                    em <time :datetime="fechamento.criado_em">
+                      {{ dateToShortDate(fechamento.criado_em) }}
+                    </time>.
+                  </template>
+                </p>
+              </footer>
+            </dd>
           </div>
         </dl>
-        <footer
-          v-if="fechamento?.criador?.nome_exibicao || fechamento?.criado_em"
-          class="tc600"
-        >
-          <p>
-            Fechado
-            <template v-if="fechamento.criador?.nome_exibicao">
-              por <strong>{{ fechamento.criador.nome_exibicao }}</strong>
-            </template>
-            <template v-if="fechamento.criado_em">
-              em <time :datetime="fechamento.criado_em">
-                {{ dateToShortDate(fechamento.criado_em) }}
-              </time>.
-            </template>
-          </p>
-        </footer>
       </div>
     </div>
   </details>
 </template>
 <script setup>
-import ListaDeDocumentos from '@/components/monitoramentoDeMetas/ListaDeDocumentos.vue';
-import { dateToShortDate } from '@/helpers/dateToDate';
-import dateToTitle from '@/helpers/dateToTitle';
-import { useMonitoramentoDeMetasStore } from '@/stores/monitoramentoDeMetas.store';
 import { storeToRefs } from 'pinia';
 import {
   computed, onMounted, ref, watch,
 } from 'vue';
 import { useRoute } from 'vue-router';
+
+import ListaDeDocumentos from '@/components/monitoramentoDeMetas/ListaDeDocumentos.vue';
+import { dateToShortDate } from '@/helpers/dateToDate';
+import dateToTitle from '@/helpers/dateToTitle';
+import { useMonitoramentoDeMetasStore } from '@/stores/monitoramentoDeMetas.store';
 
 const route = useRoute();
 
@@ -254,9 +283,9 @@ const monitoramentoDeMetasStore = useMonitoramentoDeMetasStore(route.meta.entida
 const estaAberto = ref(false);
 
 const {
-  saoEditaveis,
   chamadasPendentes,
   ciclosDetalhadosPorId,
+  erros,
 } = storeToRefs(monitoramentoDeMetasStore);
 
 const detailsElem = ref(null);
@@ -265,7 +294,10 @@ const cicloDetalhes = computed(() => ciclosDetalhadosPorId.value?.[props.ciclo.i
 const analise = computed(() => cicloDetalhes.value?.analise || null);
 const analiseDocumentos = computed(() => cicloDetalhes.value?.arquivos || []);
 const risco = computed(() => cicloDetalhes.value?.risco || null);
-const fechamento = computed(() => cicloDetalhes.value?.fechamento || null);
+const listaDeFechamentos = computed(() => [].concat(
+  cicloDetalhes.value?.fechamento ? [cicloDetalhes.value.fechamento] : [],
+  cicloDetalhes.value?.historico_fechamentos || [],
+));
 
 function handleToggle(event) {
   estaAberto.value = event.target.open;
@@ -284,6 +316,42 @@ if (props.ciclo?.id) {
       );
     }
   });
+}
+
+async function reabrirCiclo() {
+  if (chamadasPendentes.value.reabrirCiclo[props.ciclo.id]) return;
+
+  try {
+    const sucesso = await monitoramentoDeMetasStore.reabrirCiclo(
+      route.params.planoSetorialId,
+      props.ciclo.id,
+      {
+        meta_id: route.params.meta_id,
+      },
+    );
+
+    if (sucesso) {
+      // Atualizar tanto a lista quanto os detalhes do ciclo exibido
+      if (estaAberto.value) {
+        monitoramentoDeMetasStore.buscarCiclo(
+          route.params.planoSetorialId,
+          props.ciclo.id,
+          {
+            meta_id: route.params.meta_id,
+          },
+        );
+      }
+      monitoramentoDeMetasStore.buscarListaDeCiclos(route.params.planoSetorialId, {
+        meta_id: route.params.meta_id,
+      });
+    } else {
+      throw new Error('Falha ao reabrir ciclo');
+    }
+  } catch (erro) {
+    console.error('Erro ao reabrir ciclo:', erro);
+
+    throw erro;
+  }
 }
 
 onMounted(() => {

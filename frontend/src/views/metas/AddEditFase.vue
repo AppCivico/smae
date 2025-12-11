@@ -3,6 +3,7 @@ import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, Form } from 'vee-validate';
 import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
+
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import MapaCampo from '@/components/geo/MapaCampo.vue';
 import { fase as schema } from '@/consts/formSchemas';
@@ -11,6 +12,7 @@ import {
   useAlertStore, useCronogramasStore, useEditModalStore, useEtapasStore, useRegionsStore,
 } from '@/stores';
 import { useEquipesStore } from '@/stores/equipes.store';
+
 import temDescendenteEmOutraRegião from './auxiliares/temDescendenteEmOutraRegiao.ts';
 
 const editModalStore = useEditModalStore();

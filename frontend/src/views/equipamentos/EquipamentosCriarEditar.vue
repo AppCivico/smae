@@ -62,12 +62,13 @@
 </template>
 
 <script setup>
-import { equipamento as schema } from '@/consts/formSchemas';
-import { useAlertStore } from '@/stores/alert.store';
-import { useEquipamentosStore } from '@/stores/equipamentos.store';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, Form } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
+
+import { equipamento as schema } from '@/consts/formSchemas';
+import { useAlertStore } from '@/stores/alert.store';
+import { useEquipamentosStore } from '@/stores/equipamentos.store';
 
 const router = useRouter();
 const route = useRoute();

@@ -23,28 +23,28 @@ describe('obterPropriedadeNoObjeto', () => {
     expect(resultado).toBe('Alice');
   });
 
-  it('deve retornar objeto para uma propriedade inexistente', () => {
+  it('deve retornar undefined para uma propriedade inexistente', () => {
     const objeto = { nome: 'Alice', idade: 30 };
     const resultado = obterPropriedadeNoObjeto('altura', objeto);
-    expect(resultado).toStrictEqual({ nome: 'Alice', idade: 30 });
+    expect(resultado).toBeUndefined();
   });
 
-  it('deve retornar o objeto pai para uma propriedade aninhada inexistente', () => {
+  it('deve retornar undefined para uma propriedade aninhada inexistente', () => {
     const objeto = { equipe: { pessoa: { humana: { nome: 'Alice' } } } };
     const resultado = obterPropriedadeNoObjeto('equipe.pessoa.humana.altura', objeto);
-    expect(resultado).toStrictEqual({ nome: 'Alice' });
+    expect(resultado).toBeUndefined();
   });
 
-  it('não deve se confundir com propriedades homônimas no caso de um nível inexistente', () => {
+  it('deve retornar undefined quando um nível intermediário não existe', () => {
     const objeto = { equipe: { humana: { nome: 'Alice' } } };
     const resultado = obterPropriedadeNoObjeto('equipe.pessoa.humana.nome', objeto);
-    expect(resultado).toStrictEqual({ humana: { nome: 'Alice' } });
+    expect(resultado).toBeUndefined();
   });
 
-  it('deve lidar com objetos vazios', () => {
+  it('deve retornar undefined para propriedade em objeto vazio', () => {
     const objeto = {};
     const resultado = obterPropriedadeNoObjeto('nome', objeto);
-    expect(resultado).toStrictEqual({});
+    expect(resultado).toBeUndefined();
   });
 
   it('deve lidar com objetos nulos', () => {
@@ -58,13 +58,13 @@ describe('obterPropriedadeNoObjeto', () => {
     const resultado = obterPropriedadeNoObjeto('nome.idade', objeto);
     expect(consoleSpyOnWarning).toHaveBeenCalledOnce();
     expect(consoleSpyOnWarning).toHaveBeenLastCalledWith('Propriedade "idade" não encontrada em:', 'Alice');
-    expect(resultado).toBe('Alice');
+    expect(resultado).toBeUndefined();
   });
 
   it('deve permitir ignorar alertas de propriedades não encontradas', () => {
     const objeto = { nome: 'Alice', idade: 30 };
     const resultado = obterPropriedadeNoObjeto('altura', objeto, true);
     expect(consoleSpyOnWarning).not.toHaveBeenCalled();
-    expect(resultado).toStrictEqual({ nome: 'Alice', idade: 30 });
+    expect(resultado).toBeUndefined();
   });
 });

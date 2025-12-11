@@ -128,5 +128,10 @@ export const useIndicadoresStore = defineStore('Indicadores', {
         this.ValoresInd[id] = { error };
       }
     },
+    async indicarPrevia(id, dados) {
+      const r = await this.requestS.patch(`${baseUrl}/indicador/${id}/previa`, dados);
+
+      return r;
+    },
   },
 });

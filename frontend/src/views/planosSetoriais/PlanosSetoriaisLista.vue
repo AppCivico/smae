@@ -1,12 +1,13 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { ref } from 'vue';
+import { useRoute } from 'vue-router';
+
 import LocalFilter from '@/components/LocalFilter.vue';
 import { planoSetorial as schema } from '@/consts/formSchemas';
 import truncate from '@/helpers/texto/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store.ts';
-import { storeToRefs } from 'pinia';
-import { ref } from 'vue';
-import { useRoute } from 'vue-router';
 
 const route = useRoute();
 
@@ -57,11 +58,13 @@ if (!lista.length) {
     tabindex="0"
   >
     <table class="tablemain mt2">
-      <col>
-      <col>
-      <col>
-      <col class="col--minimum">
-      <col>
+      <colgroup>
+        <col>
+        <col>
+        <col>
+        <col class="col--minimum">
+        <col>
+      </colgroup>
       <thead>
         <tr>
           <th>

@@ -175,11 +175,13 @@
   </div>
 </template>
 <script setup lang="ts">
+import { storeToRefs } from 'pinia';
+import { ref } from 'vue';
+
 import { variavelGlobal as schema } from '@/consts/formSchemas';
 import niveisRegionalizacao from '@/consts/niveisRegionalizacao';
 import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store.ts';
-import { storeToRefs } from 'pinia';
-import { ref } from 'vue';
+
 import LinhaDeVariaveis from './LinhaDeVariaveis.vue';
 
 const variaveisGlobaisStore = useVariaveisGlobaisStore();
