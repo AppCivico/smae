@@ -2084,71 +2084,85 @@ export class TarefaService {
         // Validar que não pode enviar ambos ao mesmo tempo
         if (dto.custo_estimado_anualizado !== undefined && dto.custo_estimado !== undefined) {
             throw new BadRequestException(
-                'Não é possível enviar custo_estimado e custo_estimado_anualizado simultaneamente. Use apenas custo_estimado_anualizado.'
+                'Não é possível enviar custo estimado e custo estimado anualizado simultaneamente. Use apenas custo estimado anualizado.'
             );
         }
 
         if (dto.custo_real_anualizado !== undefined && dto.custo_real !== undefined) {
             throw new BadRequestException(
-                'Não é possível enviar custo_real e custo_real_anualizado simultaneamente. Use apenas custo_real_anualizado.'
+                'Não é possível enviar custo real e custo real anualizado simultaneamente. Use apenas custo real anualizado.'
             );
         }
 
         // Validar custo_estimado_anualizado
         if (dto.custo_estimado_anualizado && dto.custo_estimado_anualizado.length > 0) {
-            if (!dto.inicio_planejado || !dto.termino_planejado) {
-                throw new BadRequestException(
-                    'Para usar custo_estimado_anualizado, as datas de início e término planejado devem estar preenchidas'
-                );
-            }
-
-            const anoInicio = DateTime.fromJSDate(dto.inicio_planejado).year;
-            const anoTermino = DateTime.fromJSDate(dto.termino_planejado).year;
-
             // Verificar anos duplicados
             const anos = dto.custo_estimado_anualizado.map((c) => c.ano);
             const anosDuplicados = anos.filter((ano, index) => anos.indexOf(ano) !== index);
             if (anosDuplicados.length > 0) {
                 throw new BadRequestException(
-                    `Anos duplicados encontrados em custo_estimado_anualizado: ${anosDuplicados.join(', ')}`
+                    `Anos duplicados encontrados em custo estimado anualizado: ${anosDuplicados.join(', ')}`
                 );
             }
 
-            // Validar range de anos
-            const anosInvalidos = dto.custo_estimado_anualizado.filter((c) => c.ano < anoInicio || c.ano > anoTermino);
-            if (anosInvalidos.length > 0) {
-                throw new BadRequestException(
-                    `Os seguintes anos em custo_estimado_anualizado estão fora do período planejado (${anoInicio}-${anoTermino}): ${anosInvalidos.map((c) => c.ano).join(', ')}`
-                );
+            // Validar range de anos conforme as datas preenchidas
+            if (dto.inicio_planejado || dto.termino_planejado) {
+                const anoInicio = dto.inicio_planejado ? DateTime.fromJSDate(dto.inicio_planejado).year : null;
+                const anoTermino = dto.termino_planejado ? DateTime.fromJSDate(dto.termino_planejado).year : null;
+
+                const anosInvalidos = dto.custo_estimado_anualizado.filter((c) => {
+                    if (anoInicio !== null && c.ano < anoInicio) return true;
+                    if (anoTermino !== null && c.ano > anoTermino) return true;
+                    return false;
+                });
+
+                if (anosInvalidos.length > 0) {
+                    const periodo =
+                        anoInicio && anoTermino
+                            ? `${anoInicio}-${anoTermino}`
+                            : anoInicio
+                              ? `>= ${anoInicio}`
+                              : `<= ${anoTermino}`;
+                    throw new BadRequestException(
+                        `Os seguintes anos em custo estimado anualizado estão fora do período planejado (${periodo}): ${anosInvalidos.map((c) => c.ano).join(', ')}`
+                    );
+                }
             }
         }
 
         // Validar custo_real_anualizado
         if (dto.custo_real_anualizado && dto.custo_real_anualizado.length > 0) {
-            if (!dto.inicio_real || !dto.termino_real) {
-                throw new BadRequestException(
-                    'Para usar custo_real_anualizado, as datas de início e término real devem estar preenchidas'
-                );
-            }
-
-            const anoInicio = DateTime.fromJSDate(dto.inicio_real).year;
-            const anoTermino = DateTime.fromJSDate(dto.termino_real).year;
-
             // Verificar anos duplicados
             const anos = dto.custo_real_anualizado.map((c) => c.ano);
             const anosDuplicados = anos.filter((ano, index) => anos.indexOf(ano) !== index);
             if (anosDuplicados.length > 0) {
                 throw new BadRequestException(
-                    `Anos duplicados encontrados em custo_real_anualizado: ${anosDuplicados.join(', ')}`
+                    `Anos duplicados encontrados em custo real anualizado: ${anosDuplicados.join(', ')}`
                 );
             }
 
-            // Validar range de anos
-            const anosInvalidos = dto.custo_real_anualizado.filter((c) => c.ano < anoInicio || c.ano > anoTermino);
-            if (anosInvalidos.length > 0) {
-                throw new BadRequestException(
-                    `Os seguintes anos em custo_real_anualizado estão fora do período real (${anoInicio}-${anoTermino}): ${anosInvalidos.map((c) => c.ano).join(', ')}`
-                );
+            // Validar range de anos conforme as datas preenchidas
+            if (dto.inicio_real || dto.termino_real) {
+                const anoInicio = dto.inicio_real ? DateTime.fromJSDate(dto.inicio_real).year : null;
+                const anoTermino = dto.termino_real ? DateTime.fromJSDate(dto.termino_real).year : null;
+
+                const anosInvalidos = dto.custo_real_anualizado.filter((c) => {
+                    if (anoInicio !== null && c.ano < anoInicio) return true;
+                    if (anoTermino !== null && c.ano > anoTermino) return true;
+                    return false;
+                });
+
+                if (anosInvalidos.length > 0) {
+                    const periodo =
+                        anoInicio && anoTermino
+                            ? `${anoInicio}-${anoTermino}`
+                            : anoInicio
+                              ? `>= ${anoInicio}`
+                              : `<= ${anoTermino}`;
+                    throw new BadRequestException(
+                        `Os seguintes anos em custo real anualizado estão fora do período real (${periodo}): ${anosInvalidos.map((c) => c.ano).join(', ')}`
+                    );
+                }
             }
         }
     }
