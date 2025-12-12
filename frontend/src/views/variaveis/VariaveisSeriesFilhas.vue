@@ -162,7 +162,12 @@ watch(() => props.variavelId, (novoId) => {
   periodoSelecionado.value = '';
 
   variaveisGlobaisStore
-    .buscarPeriodosValidos(novoId, { ate_ciclo_corrente: true })
+    .buscarPeriodosValidos(
+      novoId,
+      props.tipoDeValor === 'Realizado'
+        ? { ate_ciclo_corrente: true }
+        : {},
+    )
     .then(() => {
       if (dadosDosPeriodosValidos.value?.ultimo_periodo_valido) {
         periodoSelecionado.value = dadosDosPeriodosValidos.value.ultimo_periodo_valido;
