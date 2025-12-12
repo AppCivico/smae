@@ -65,7 +65,7 @@ const {
   resetForm,
   setFieldValue,
 } = useForm({
-  initialValues: analiseEmFoco.value,
+  initialValues: analiseEmFocoParaEdicao.value,
   validationSchema: schema,
 });
 
@@ -151,6 +151,8 @@ watchEffect(() => {
     <CheckClose :formulario-sujo="formularioSujo" />
   </div>
 
+  <ErrorComponent :erro="erros.analiseEmFoco" />
+
   <form
     class="flex column g2"
     :disabled="isSubmitting"
@@ -169,7 +171,7 @@ watchEffect(() => {
     <div class="titulo-monitoramento">
       <h2 class="tc500 t20 titulo-monitoramento__text">
         <span class="w400">
-          Ciclo Atual: {{ dateToTitle(cicloAtivo?.data_ciclo) }}
+          Ciclo: {{ dateToTitle(analiseEmFoco?.corrente?.analises[0]?.referencia_data) }}
         </span>
       </h2>
     </div>
@@ -288,6 +290,8 @@ watchEffect(() => {
       <hr class="ml2 f1">
     </div>
   </form>
+
+  <ErrorComponent :erro="erros.analiseEmFoco" />
 
   <SmallModal
     v-if="exibirSeletorDeArquivo"

@@ -38,8 +38,10 @@ export function useSeriesFilhasAgrupadasParaEdicao(
     ) {
       vf.series.forEach((serie, j: number) => {
         const valorNominal = 'valor_nominal' in serie
+          && serie.valor_nominal !== ''
           ? Number(serie.valor_nominal)
           : NaN;
+
         const seriesKey = ordemSeries[j];
 
         if (seriesKey && acc[seriesKey]) {
