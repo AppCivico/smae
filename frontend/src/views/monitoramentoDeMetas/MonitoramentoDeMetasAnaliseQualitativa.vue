@@ -65,7 +65,7 @@ const {
   resetForm,
   setFieldValue,
 } = useForm({
-  initialValues: analiseEmFoco.value,
+  initialValues: analiseEmFocoParaEdicao.value,
   validationSchema: schema,
 });
 
