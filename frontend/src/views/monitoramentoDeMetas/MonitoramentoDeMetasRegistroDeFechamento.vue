@@ -123,7 +123,7 @@ watchEffect(() => {
     <div class="titulo-monitoramento">
       <h2 class="tc500 t20 titulo-monitoramento__text">
         <span class="w400">
-          Ciclo Atual: {{ dateToTitle(cicloAtivo?.data_ciclo) }}
+          Ciclo: {{ dateToTitle(fechamentoEmFoco?.corrente.fechamentos[0]?.referencia_data) }}
         </span>
       </h2>
     </div>
