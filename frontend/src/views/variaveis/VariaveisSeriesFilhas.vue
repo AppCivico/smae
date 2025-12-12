@@ -532,8 +532,8 @@ onUnmounted(() => {
       </form>
     </template>
 
-    <div v-else>
-      <p class="w600 t18 tc">
+    <div v-else-if="!chamadasPendentes.seriesAgrupadas">
+      <p class="w600 tc">
         Não há séries disponíveis
       </p>
     </div>
