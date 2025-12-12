@@ -79,6 +79,23 @@ const {
 
 const formularioSujo = useIsFormDirty();
 
+const tituloIntroducao = (() => {
+  switch (props.tipoDeValor) {
+    case 'Previsto':
+      return {
+        titulo: 'Editar valores previstos',
+        introducao: 'Preencher valores previstos para cada variável filha.',
+      };
+    case 'Realizado':
+      return {
+        titulo: 'Editar valores realizados',
+        introducao: 'Preencher valores realizados para cada variável filha.',
+      };
+    default:
+      throw new Error(`tipoDeValor desconhecido: ${props.tipoDeValor}`);
+  }
+})();
+
 const soma = computed(() => ({
   fornecidos: cargaControlada?.value?.valores?.reduce(
     (acc, cur) => acc
@@ -145,7 +162,12 @@ watch(() => props.variavelId, (novoId) => {
   periodoSelecionado.value = '';
 
   variaveisGlobaisStore
-    .buscarPeriodosValidos(novoId, { ate_ciclo_corrente: true })
+    .buscarPeriodosValidos(
+      novoId,
+      props.tipoDeValor === 'Realizado'
+        ? { ate_ciclo_corrente: true }
+        : {},
+    )
     .then(() => {
       if (dadosDosPeriodosValidos.value?.ultimo_periodo_valido) {
         periodoSelecionado.value = dadosDosPeriodosValidos.value.ultimo_periodo_valido;
@@ -187,7 +209,7 @@ onUnmounted(() => {
 </script>
 <template>
   <header class="flex g2 spacebetween center mb2">
-    <h2>Edição retroativa</h2>
+    <h2>{{ tituloIntroducao.titulo }}</h2>
 
     <hr class="f1">
 
@@ -217,6 +239,10 @@ onUnmounted(() => {
       - {{ seriesAgrupadas?.variavel?.titulo }}
     </span>
   </TituloDePagina>
+
+  <p class="mb1">
+    {{ tituloIntroducao.introducao }}
+  </p>
 
   <ErrorComponent
     v-if="erros.dadosDosPeriodosValidos"
