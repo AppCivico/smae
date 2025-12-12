@@ -151,6 +151,8 @@ watchEffect(() => {
     <CheckClose :formulario-sujo="formularioSujo" />
   </div>
 
+  <ErrorComponent :erro="erros.analiseEmFoco" />
+
   <form
     class="flex column g2"
     :disabled="isSubmitting"
@@ -288,6 +290,8 @@ watchEffect(() => {
       <hr class="ml2 f1">
     </div>
   </form>
+
+  <ErrorComponent :erro="erros.analiseEmFoco" />
 
   <SmallModal
     v-if="exibirSeletorDeArquivo"
