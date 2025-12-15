@@ -3077,8 +3077,11 @@ export class ProjetoService {
     ) {
         // Verifica se a sincronização automática de regiões MDO está ativada
         if (tipo === 'MDO') {
-            const autoRegiao = await this.smaeConfig.getConfig(FEATURE_FLAG_MDO_AUTO_REGIAO);
-            if (autoRegiao === 'true') {
+            const autoRegiao = await this.smaeConfig.getConfigBooleanWithDefault(
+                FEATURE_FLAG_MDO_AUTO_REGIAO,
+                FEATURE_FLAG_MDO_DEFAULT
+            );
+            if (autoRegiao) {
                 await this.syncRegioesFromAllEnderecos(geo.enderecos, self, portfolio, prismaTx, now, user);
                 return;
             }
