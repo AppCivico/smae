@@ -822,12 +822,10 @@ export class ProjetoService {
                 // Verifica se há geolocalizações
                 const geoDto = new ReferenciasValidasBase();
                 geoDto.projeto_id = projeto_id;
-                const geolocalizacoes = await this.geolocService.carregaReferencias(geoDto, prismaTx);
-                const enderecos = geolocalizacoes.get(projeto_id) || [];
-
-                if (enderecos.length > 0) {
+                const numeroGeoLoc = await this.geolocService.contaReferencias(geoDto, prismaTx);
+                if (numeroGeoLoc) {
                     this.logger.warn(
-                        `Projeto MDO ${projeto_id}: feature flag ativa e há ${enderecos.length} endereço(s). ` +
+                        `Projeto MDO ${projeto_id}: feature flag ativa e há ${numeroGeoLoc} endereço(s). ` +
                             `Campo regiao_ids será ignorado - regiões são calculadas automaticamente dos endereços.`
                     );
                     return; // Ignora as regiões informadas manualmente
@@ -2722,6 +2720,52 @@ export class ProjetoService {
                 await CompromissoOrigemHelper.upsert(projetoId, 'projeto', dto.origens_extra, prismaTx, user, now);
             }
 
+            // PRECISA ser antes do processamento de regiao_ids
+            // Se houver geolocalizacao, processar primeiro para popular os endereços do projeto há problemas
+            if (dto.geolocalizacao) {
+                const geoDto = new CreateGeoEnderecoReferenciaDto();
+                geoDto.projeto_id = projeto.id;
+                geoDto.tokens = dto.geolocalizacao;
+                geoDto.tipo = 'Endereco';
+
+                const geo = await this.geolocService.upsertGeolocalizacao(geoDto, user, prismaTx, now);
+
+                // Construct a temporary 'self' object from the loaded 'projeto'
+                // so we don't need to wait for prisma.update
+                const currentRegionsMock = {
+                    id: projetoId,
+                    ProjetoRegiao: projeto.regioes.map((r) => ({ regiao_id: r.id })),
+                };
+                let enableSync = false;
+
+                if (tipo === 'MDO') {
+                    enableSync = await this.smaeConfig.getConfigBooleanWithDefault(
+                        FEATURE_FLAG_MDO_AUTO_REGIAO,
+                        FEATURE_FLAG_MDO_DEFAULT
+                    );
+                }
+                if (enableSync) {
+                    // Não deve continuar com o fluxo normal de regiao_ids se tiver mais de um endereço
+                    if (geo.enderecos && geo.enderecos.length > 0) delete dto.regiao_ids;
+
+                    // Auto-Sync, não chama o appendRegioesByGeoLoc
+                    this.logger.verbose(
+                        `Projeto MDO ${projeto.id}: feature flag ativa e há ${geo.enderecos.length} endereço(s), ` +
+                            `sincronizando regiões automaticamente dos endereços`
+                    );
+                    await this.syncRegioesFromAllEnderecos(
+                        geo.enderecos,
+                        currentRegionsMock,
+                        portfolio,
+                        prismaTx,
+                        now,
+                        user
+                    );
+                } else {
+                    await this.appendRegioesByGeoLoc(geo, currentRegionsMock, portfolio, prismaTx, now, user, tipo);
+                }
+            }
+
             if ('regiao_ids' in dto) {
                 const regioes = await prismaTx.projetoRegiao.findMany({
                     where: { projeto_id: projetoId, removido_em: null },
@@ -2946,34 +2990,6 @@ export class ProjetoService {
                     where: { id: self.projeto_etapa_id, removido_em: null, tipo_projeto: tipo },
                     select: { id: true },
                 });
-            }
-
-            if (dto.geolocalizacao) {
-                const geoDto = new CreateGeoEnderecoReferenciaDto();
-                geoDto.projeto_id = projeto.id;
-                geoDto.tokens = dto.geolocalizacao;
-                geoDto.tipo = 'Endereco';
-
-                const geo = await this.geolocService.upsertGeolocalizacao(geoDto, user, prismaTx, now);
-                let enableSync = false;
-
-                if (tipo === 'MDO') {
-                    enableSync = await this.smaeConfig.getConfigBooleanWithDefault(
-                        FEATURE_FLAG_MDO_AUTO_REGIAO,
-                        FEATURE_FLAG_MDO_DEFAULT
-                    );
-                }
-
-                if (enableSync) {
-                    // Auto-Sync, não chama o appendRegioesByGeoLoc
-                    this.logger.verbose(
-                        `Projeto MDO ${projeto.id}: feature flag ativa e há ${geo.enderecos.length} endereço(s), ` +
-                            `sincronizando regiões automaticamente dos endereços`
-                    );
-                    await this.syncRegioesFromAllEnderecos(geo.enderecos, self, portfolio, prismaTx, now, user);
-                } else {
-                    await this.appendRegioesByGeoLoc(geo, self, portfolio, prismaTx, now, user, tipo);
-                }
             }
 
             // se já passou da fase do planejamento, então sim pode verificar se há necessidade de gerar

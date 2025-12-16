@@ -721,6 +721,25 @@ export class GeoLocService {
         return { enderecos: enderecos, novos_enderecos: novos };
     }
 
+    async contaReferencias(dto: FindGeoEnderecoReferenciaDto, prismaTx?: Prisma.TransactionClient): Promise<number> {
+        dto.validaReferencia();
+
+        const prisma = prismaTx ? prismaTx : this.prisma;
+
+        const referencia = dto.referencia();
+
+        const records = await prisma.geoLocalizacaoReferencia.count({
+            where: {
+                removido_em: null,
+
+                [referencia]:
+                    dto[referencia] && Array.isArray(dto[referencia]) ? { in: dto[referencia] } : dto[referencia],
+            },
+        });
+
+        return records;
+    }
+
     async carregaReferencias(
         dto: FindGeoEnderecoReferenciaDto,
         prismaTx?: Prisma.TransactionClient
