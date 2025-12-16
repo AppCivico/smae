@@ -3183,15 +3183,15 @@ export class ProjetoService {
         );
 
         // Remove regiões que não correspondem mais a nenhuma geolocalização
-        for (const regiao_id of toRemove) {
-            await prismaTx.projetoRegiao.updateMany({
-                where: { projeto_id: self.id, regiao_id: regiao_id, removido_em: null },
-                data: { removido_em: now, removido_por: user.id },
-            });
-        }
+        await prismaTx.projetoRegiao.updateMany({
+            where: { projeto_id: self.id, regiao_id: { in: toRemove }, removido_em: null },
+            data: { removido_em: now, removido_por: user.id },
+        });
+
+        const uniqueToAdd = Array.from(new Set(toAdd));
 
         // Adiciona novas regiões das geolocalizações
-        for (const regiao_id of toAdd) {
+        for (const regiao_id of uniqueToAdd) {
             await prismaTx.projetoRegiao.create({
                 data: {
                     projeto_id: self.id,
