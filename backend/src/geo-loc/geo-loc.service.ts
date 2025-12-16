@@ -466,7 +466,8 @@ export class GeoLocService {
         const now = new Date(Date.now());
         return await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RetornoCreateEnderecoDto> => {
-                const endereco = await prismaTx.geoLocalizacao.create({
+                // Primeiro cria pra trigger ter as camadas associadas
+                const created = await prismaTx.geoLocalizacao.create({
                     data: {
                         endereco_exibicao,
                         lat,
@@ -488,6 +489,12 @@ export class GeoLocService {
                               }
                             : undefined,
                     },
+                    select: { id: true },
+                });
+
+                // busca o registro completo
+                const endereco = await prismaTx.geoLocalizacao.findUnique({
+                    where: { id: created.id },
                     select: {
                         id: true,
                         endereco_exibicao: true,
@@ -511,6 +518,8 @@ export class GeoLocService {
                         },
                     },
                 });
+
+                if (!endereco) throw new InternalServerErrorException('Erro ao buscar geolocalização criada.');
 
                 // Fetch region data for regioes_calc
                 const allRegiaoIds = new Set<number>();
@@ -552,6 +561,10 @@ export class GeoLocService {
                                 .filter((r) => r !== undefined) || null,
                         nivel_3:
                             endereco.calc_regioes_nivel_3
+                                ?.map((id) => regiaoMap.get(id))
+                                .filter((r) => r !== undefined) || null,
+                        nivel_4:
+                            endereco.calc_regioes_nivel_4
                                 ?.map((id) => regiaoMap.get(id))
                                 .filter((r) => r !== undefined) || null,
                     } satisfies RegioesPorNivel,
@@ -721,14 +734,37 @@ export class GeoLocService {
         return { enderecos: enderecos, novos_enderecos: novos };
     }
 
-    async carregaReferencias(dto: FindGeoEnderecoReferenciaDto): Promise<Map<number, GeolocalizacaoDto[]>> {
+    async contaReferencias(dto: FindGeoEnderecoReferenciaDto, prismaTx?: Prisma.TransactionClient): Promise<number> {
         dto.validaReferencia();
 
+        const prisma = prismaTx ? prismaTx : this.prisma;
+
+        const referencia = dto.referencia();
+
+        const records = await prisma.geoLocalizacaoReferencia.count({
+            where: {
+                removido_em: null,
+
+                [referencia]:
+                    dto[referencia] && Array.isArray(dto[referencia]) ? { in: dto[referencia] } : dto[referencia],
+            },
+        });
+
+        return records;
+    }
+
+    async carregaReferencias(
+        dto: FindGeoEnderecoReferenciaDto,
+        prismaTx?: Prisma.TransactionClient
+    ): Promise<Map<number, GeolocalizacaoDto[]>> {
+        dto.validaReferencia();
+
+        const prisma = prismaTx ? prismaTx : this.prisma;
         const ret = new Map<number, GeolocalizacaoDto[]>();
 
         const referencia = dto.referencia();
 
-        const records = await this.prisma.geoLocalizacaoReferencia.findMany({
+        const records = await prisma.geoLocalizacaoReferencia.findMany({
             where: {
                 removido_em: null,
 
@@ -775,7 +811,7 @@ export class GeoLocService {
 
         const regiaoMap = new Map<number, { id: number; descricao: string }>();
         if (allRegiaoIds.size > 0) {
-            const regioes = await this.prisma.regiao.findMany({
+            const regioes = await prisma.regiao.findMany({
                 where: {
                     id: { in: Array.from(allRegiaoIds) },
                     removido_em: null,
@@ -948,5 +984,35 @@ export class GeoLocService {
         );
 
         return { created, checked };
+    }
+
+    /**
+     * Converte GeolocalizacaoDto[] (de carregaReferencias) para UpsertEnderecoIdDto[]
+     */
+    mapGeolocalizacao2UpsertEndereco(
+        enderecos: { token: string; regioes?: RegioesPorNivel | undefined }[]
+    ): UpsertEnderecoIdDto[] {
+        return enderecos.map((endereco) => {
+            const decoded = this.jwtService.decode(endereco.token) as { id: number };
+            const regioes: UpsertEnderecoRegiaoDto[] = [];
+
+            if (endereco.regioes?.nivel_1) {
+                endereco.regioes.nivel_1.forEach((r) => regioes.push({ id: r.id, nivel: 1 }));
+            }
+            if (endereco.regioes?.nivel_2) {
+                endereco.regioes.nivel_2.forEach((r) => regioes.push({ id: r.id, nivel: 2 }));
+            }
+            if (endereco.regioes?.nivel_3) {
+                endereco.regioes.nivel_3.forEach((r) => regioes.push({ id: r.id, nivel: 3 }));
+            }
+            if (endereco.regioes?.nivel_4) {
+                endereco.regioes.nivel_4.forEach((r) => regioes.push({ id: r.id, nivel: 4 }));
+            }
+
+            return {
+                endereco_id: decoded.id,
+                regioes,
+            };
+        });
     }
 }
