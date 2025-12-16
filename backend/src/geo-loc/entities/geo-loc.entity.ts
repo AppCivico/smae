@@ -133,7 +133,7 @@ export class RetornoCreateEnderecoDto {
 
     camadas: GeoLocCamadaSimplesDto[];
 
-    regioes?: RegioesPorNivel;
+    regioes: RegioesPorNivel;
 }
 
 export class GeolocalizacaoDto extends RetornoCreateEnderecoDto {}
