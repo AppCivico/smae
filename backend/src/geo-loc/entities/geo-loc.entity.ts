@@ -11,10 +11,10 @@ import { MAX_LENGTH_DEFAULT } from 'src/common/consts';
 import { IdDesc } from '../../atividade/entities/atividade.entity';
 
 export class RegioesPorNivel {
-    nivel_1?: IdDesc[] | null;
-    nivel_2?: IdDesc[] | null;
-    nivel_3?: IdDesc[] | null;
-    nivel_4?: IdDesc[] | null;
+    nivel_1: IdDesc[] | null;
+    nivel_2: IdDesc[] | null;
+    nivel_3: IdDesc[] | null;
+    nivel_4: IdDesc[] | null;
 }
 
 export class GeoLocDto {

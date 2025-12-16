@@ -563,6 +563,10 @@ export class GeoLocService {
                             endereco.calc_regioes_nivel_3
                                 ?.map((id) => regiaoMap.get(id))
                                 .filter((r) => r !== undefined) || null,
+                        nivel_4:
+                            endereco.calc_regioes_nivel_4
+                                ?.map((id) => regiaoMap.get(id))
+                                .filter((r) => r !== undefined) || null,
                     } satisfies RegioesPorNivel,
                     camadas: endereco.GeoEnderecoCamada.map((c) => {
                         return {
