@@ -721,14 +721,18 @@ export class GeoLocService {
         return { enderecos: enderecos, novos_enderecos: novos };
     }
 
-    async carregaReferencias(dto: FindGeoEnderecoReferenciaDto): Promise<Map<number, GeolocalizacaoDto[]>> {
+    async carregaReferencias(
+        dto: FindGeoEnderecoReferenciaDto,
+        prismaTx?: Prisma.TransactionClient
+    ): Promise<Map<number, GeolocalizacaoDto[]>> {
         dto.validaReferencia();
 
+        const prisma = prismaTx ? prismaTx : this.prisma;
         const ret = new Map<number, GeolocalizacaoDto[]>();
 
         const referencia = dto.referencia();
 
-        const records = await this.prisma.geoLocalizacaoReferencia.findMany({
+        const records = await prisma.geoLocalizacaoReferencia.findMany({
             where: {
                 removido_em: null,
 
@@ -775,7 +779,7 @@ export class GeoLocService {
 
         const regiaoMap = new Map<number, { id: number; descricao: string }>();
         if (allRegiaoIds.size > 0) {
-            const regioes = await this.prisma.regiao.findMany({
+            const regioes = await prisma.regiao.findMany({
                 where: {
                     id: { in: Array.from(allRegiaoIds) },
                     removido_em: null,

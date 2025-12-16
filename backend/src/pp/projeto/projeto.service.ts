@@ -822,7 +822,7 @@ export class ProjetoService {
                 // Verifica se há geolocalizações
                 const geoDto = new ReferenciasValidasBase();
                 geoDto.projeto_id = projeto_id;
-                const geolocalizacoes = await this.geolocService.carregaReferencias(geoDto);
+                const geolocalizacoes = await this.geolocService.carregaReferencias(geoDto, prismaTx);
                 const enderecos = geolocalizacoes.get(projeto_id) || [];
 
                 if (enderecos.length > 0) {
@@ -2968,7 +2968,7 @@ export class ProjetoService {
                     // Verifica se o projeto tem endereços após o update
                     const geoDto = new ReferenciasValidasBase();
                     geoDto.projeto_id = projeto.id;
-                    const geolocalizacoes = await this.geolocService.carregaReferencias(geoDto);
+                    const geolocalizacoes = await this.geolocService.carregaReferencias(geoDto, prismaTx);
                     const enderecos = geolocalizacoes.get(projeto.id) || [];
 
                     if (enderecos.length > 0) {
@@ -4289,7 +4289,7 @@ export class ProjetoService {
                     // Busca geolocalizações do projeto
                     const geoDto = new ReferenciasValidasBase();
                     geoDto.projeto_id = projeto.id;
-                    const geolocalizacoes = await this.geolocService.carregaReferencias(geoDto);
+                    const geolocalizacoes = await this.geolocService.carregaReferencias(geoDto, prismaTx);
                     const enderecos = geolocalizacoes.get(projeto.id) || [];
 
                     if (enderecos.length === 0) {
