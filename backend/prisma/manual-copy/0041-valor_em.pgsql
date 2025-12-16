@@ -83,16 +83,26 @@ CREATE OR REPLACE FUNCTION valor_variavel_em_json(pVariavelId int, pSerie "Serie
     AS $$
 DECLARE
     _valor jsonb;
+    _valor_nominal numeric(95, 60);
+    _atualizado_em timestamptz;
+    _valor_categorica_titulo text;
+    _casas_decimais int;
+    _elementos jsonb;
+    _categorica_valores jsonb;
 BEGIN
+    -- Busca o registro da série com todos os dados necessários
     SELECT
-        jsonb_build_object(
-            'valor_nominal',
-            round(si.valor_nominal, v.casas_decimais),
-            'atualizado_em',
-            COALESCE(si.atualizado_em, '1970-01-01T00:00:00Z'::timestamptz),
-            'valor_categorica',
-            vcv.titulo
-        ) into _valor
+        si.valor_nominal,
+        si.atualizado_em,
+        vcv.titulo,
+        v.casas_decimais,
+        si.elementos
+    INTO
+        _valor_nominal,
+        _atualizado_em,
+        _valor_categorica_titulo,
+        _casas_decimais,
+        _elementos
     FROM
         serie_variavel si
     LEFT JOIN variavel v ON v.id = si.variavel_id
@@ -104,6 +114,40 @@ BEGIN
         AND conferida = true
     ORDER BY si.data_valor desc
     LIMIT 1;
+
+    -- Se não encontrou registro, retorna NULL
+    IF _valor_nominal IS NULL THEN
+        RETURN NULL;
+    END IF;
+
+    -- Se tem elementos categóricos (variável calculada), constrói os valores categóricos
+    IF _elementos IS NOT NULL AND _elementos ? 'categorica' THEN
+        SELECT jsonb_agg(
+            jsonb_build_object(
+                'id', vcv.id,
+                'titulo', vcv.titulo,
+                'valor_variavel', vcv.valor_variavel,
+                'variavel_id', (elem->>0)::int
+            )
+            ORDER BY vcv.valor_variavel
+        )
+        INTO _categorica_valores
+        FROM jsonb_array_elements(_elementos->'categorica') elem
+        LEFT JOIN variavel_categorica_valor vcv ON vcv.id = (elem->>1)::int AND vcv.removido_em IS NULL;
+    END IF;
+
+    -- Constrói o resultado
+    _valor := jsonb_build_object(
+        'valor_nominal',
+        round(_valor_nominal, COALESCE(_casas_decimais, 2)),
+        'atualizado_em',
+        COALESCE(_atualizado_em, '1970-01-01T00:00:00Z'::timestamptz),
+        'valor_categorica',
+        _valor_categorica_titulo,
+        'valores_categorica',
+        _categorica_valores
+    );
+
     RETURN _valor;
 END
 $$
