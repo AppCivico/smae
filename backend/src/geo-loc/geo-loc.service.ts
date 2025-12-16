@@ -466,7 +466,8 @@ export class GeoLocService {
         const now = new Date(Date.now());
         return await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RetornoCreateEnderecoDto> => {
-                const endereco = await prismaTx.geoLocalizacao.create({
+                // Primeiro cria pra trigger ter as camadas associadas
+                const created = await prismaTx.geoLocalizacao.create({
                     data: {
                         endereco_exibicao,
                         lat,
@@ -488,6 +489,12 @@ export class GeoLocService {
                               }
                             : undefined,
                     },
+                    select: { id: true },
+                });
+
+                // busca o registro completo
+                const endereco = await prismaTx.geoLocalizacao.findUnique({
+                    where: { id: created.id },
                     select: {
                         id: true,
                         endereco_exibicao: true,
@@ -511,6 +518,8 @@ export class GeoLocService {
                         },
                     },
                 });
+
+                if (!endereco) throw new InternalServerErrorException('Erro ao buscar geolocalização criada.');
 
                 // Fetch region data for regioes_calc
                 const allRegiaoIds = new Set<number>();
