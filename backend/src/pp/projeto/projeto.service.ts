@@ -2974,10 +2974,18 @@ export class ProjetoService {
                     if (enderecos.length > 0) {
                         this.logger.verbose(
                             `Projeto MDO ${projeto.id}: feature flag ativa e há ${enderecos.length} endereço(s), ` +
-                                `regiões do campo regiao_ids serão ignoradas`
+                                `sincronizando regiões automaticamente dos endereços`
                         );
-                        // As regiões já foram processadas no appendRegioesByGeoLoc
-                        // Ignora qualquer regiao_ids que tenha vindo no DTO
+                        const enderecosConvertidos = this.geolocService.mapGeolocalizacao2UpsertEndereco(enderecos);
+
+                        await this.syncRegioesFromAllEnderecos(
+                            enderecosConvertidos,
+                            self,
+                            portfolio,
+                            prismaTx,
+                            now,
+                            user
+                        );
                     }
                 }
             }
@@ -3075,18 +3083,6 @@ export class ProjetoService {
         user: PessoaFromJwt,
         tipo?: TipoProjeto
     ) {
-        // Verifica se a sincronização automática de regiões MDO está ativada
-        if (tipo === 'MDO') {
-            const autoRegiao = await this.smaeConfig.getConfigBooleanWithDefault(
-                FEATURE_FLAG_MDO_AUTO_REGIAO,
-                FEATURE_FLAG_MDO_DEFAULT
-            );
-            if (autoRegiao) {
-                await this.syncRegioesFromAllEnderecos(geo.enderecos, self, portfolio, prismaTx, now, user);
-                return;
-            }
-        }
-
         // Comportamento original: apenas adiciona regiões de novos endereços
         const regioesExistentes = self.ProjetoRegiao.map((r) => r.regiao_id);
         this.logger.verbose(JSON.stringify({ 'regioesExistentes': regioesExistentes }));
@@ -4297,68 +4293,6 @@ export class ProjetoService {
                     const enderecos = geolocalizacoes.get(projeto.id) || [];
 
                     if (enderecos.length === 0) {
-                        logger.verbose(`Projeto ${projeto.id}: sem endereços, mantendo regiões manuais`);
-                        projetosSemEndereco++;
-                        return;
-                    }
-
-                    logger.verbose(`Projeto ${projeto.id}: encontrados ${enderecos.length} endereços`);
-
-                    // Prepara estrutura compatível com syncRegioesFromAllEnderecos
-                    const enderecosComRegioes: UpsertEnderecoIdDto[] = [];
-
-                    for (const endereco of enderecos) {
-                        // Decodifica o token para pegar o ID
-                        const enderecoJwt = this.jwtService.decode(endereco.token) as { id: number };
-
-                        // Busca as regiões através das camadas
-                        const geolocalizacao = await prismaTx.geoLocalizacao.findUnique({
-                            where: { id: enderecoJwt.id },
-                            select: {
-                                GeoEnderecoCamada: {
-                                    select: {
-                                        geo_camada: {
-                                            select: {
-                                                GeoCamadaRegiao: {
-                                                    select: {
-                                                        regiao: {
-                                                            select: {
-                                                                id: true,
-                                                                nivel: true,
-                                                            },
-                                                        },
-                                                    },
-                                                },
-                                            },
-                                        },
-                                    },
-                                },
-                            },
-                        });
-
-                        if (!geolocalizacao) continue;
-
-                        const regioes: UpsertEnderecoRegiaoDto[] = [];
-                        for (const camada of geolocalizacao.GeoEnderecoCamada) {
-                            for (const camadaRegiao of camada.geo_camada.GeoCamadaRegiao) {
-                                const regiao = camadaRegiao.regiao;
-                                regioes.push({
-                                    id: regiao.id,
-                                    nivel: regiao.nivel,
-                                });
-                            }
-                        }
-
-                        if (regioes.length > 0) {
-                            enderecosComRegioes.push({
-                                endereco_id: enderecoJwt.id,
-                                regioes: regioes,
-                            });
-                        }
-                    }
-
-                    if (enderecosComRegioes.length === 0) {
-                        logger.verbose(`Projeto ${projeto.id}: nenhuma região válida encontrada nos endereços`);
                         projetosSemEndereco++;
                         return;
                     }
@@ -4368,6 +4302,9 @@ export class ProjetoService {
                         id: projeto.id,
                         ProjetoRegiao: projeto.ProjetoRegiao.map((r) => ({ regiao_id: r.regiao_id })),
                     };
+
+                    const enderecosComRegioes = this.geolocService.mapGeolocalizacao2UpsertEndereco(enderecos);
+                    logger.verbose(`Projeto ${projeto.id}: encontrados ${enderecos.length} endereços`);
 
                     // Portfolio simplificado com apenas os campos necessários
                     const portfolioSimplificado = {

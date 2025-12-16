@@ -949,4 +949,34 @@ export class GeoLocService {
 
         return { created, checked };
     }
+
+    /**
+     * Converte GeolocalizacaoDto[] (de carregaReferencias) para UpsertEnderecoIdDto[]
+     */
+    mapGeolocalizacao2UpsertEndereco(
+        enderecos: { token: string; regioes?: RegioesPorNivel | undefined }[]
+    ): UpsertEnderecoIdDto[] {
+        return enderecos.map((endereco) => {
+            const decoded = this.jwtService.decode(endereco.token) as { id: number };
+            const regioes: UpsertEnderecoRegiaoDto[] = [];
+
+            if (endereco.regioes?.nivel_1) {
+                endereco.regioes.nivel_1.forEach((r) => regioes.push({ id: r.id, nivel: 1 }));
+            }
+            if (endereco.regioes?.nivel_2) {
+                endereco.regioes.nivel_2.forEach((r) => regioes.push({ id: r.id, nivel: 2 }));
+            }
+            if (endereco.regioes?.nivel_3) {
+                endereco.regioes.nivel_3.forEach((r) => regioes.push({ id: r.id, nivel: 3 }));
+            }
+            if (endereco.regioes?.nivel_4) {
+                endereco.regioes.nivel_4.forEach((r) => regioes.push({ id: r.id, nivel: 4 }));
+            }
+
+            return {
+                endereco_id: decoded.id,
+                regioes,
+            };
+        });
+    }
 }
