@@ -2955,38 +2955,26 @@ export class ProjetoService {
                 geoDto.tipo = 'Endereco';
 
                 const geo = await this.geolocService.upsertGeolocalizacao(geoDto, user, prismaTx, now);
+                let enableSync = false;
 
-                await this.appendRegioesByGeoLoc(geo, self, portfolio, prismaTx, now, user, tipo);
-            }
+                if (tipo === 'MDO') {
+                    enableSync = await this.smaeConfig.getConfigBooleanWithDefault(
+                        FEATURE_FLAG_MDO_AUTO_REGIAO,
+                        FEATURE_FLAG_MDO_DEFAULT
+                    );
+                }
 
-            if (tipo === 'MDO' && dto.geolocalizacao) {
-                const autoRegiao = await this.smaeConfig.getConfigBooleanWithDefault(
-                    FEATURE_FLAG_MDO_AUTO_REGIAO,
-                    FEATURE_FLAG_MDO_DEFAULT
-                );
-                if (autoRegiao) {
-                    // Verifica se o projeto tem endereços após o update
-                    const geoDto = new ReferenciasValidasBase();
-                    geoDto.projeto_id = projeto.id;
-                    const geolocalizacoes = await this.geolocService.carregaReferencias(geoDto, prismaTx);
-                    const enderecos = geolocalizacoes.get(projeto.id) || [];
-
-                    if (enderecos.length > 0) {
+                if (enableSync) {
+                    // Auto-Sync, não chama o appendRegi
+                    if (geo.enderecos.length > 0) {
                         this.logger.verbose(
-                            `Projeto MDO ${projeto.id}: feature flag ativa e há ${enderecos.length} endereço(s), ` +
+                            `Projeto MDO ${projeto.id}: feature flag ativa e há ${geo.enderecos.length} endereço(s), ` +
                                 `sincronizando regiões automaticamente dos endereços`
                         );
-                        const enderecosConvertidos = this.geolocService.mapGeolocalizacao2UpsertEndereco(enderecos);
-
-                        await this.syncRegioesFromAllEnderecos(
-                            enderecosConvertidos,
-                            self,
-                            portfolio,
-                            prismaTx,
-                            now,
-                            user
-                        );
+                        await this.syncRegioesFromAllEnderecos(geo.enderecos, self, portfolio, prismaTx, now, user);
                     }
+                } else {
+                    await this.appendRegioesByGeoLoc(geo, self, portfolio, prismaTx, now, user, tipo);
                 }
             }
 
