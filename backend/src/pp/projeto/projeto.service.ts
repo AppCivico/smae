@@ -2965,14 +2965,12 @@ export class ProjetoService {
                 }
 
                 if (enableSync) {
-                    // Auto-Sync, não chama o appendRegi
-                    if (geo.enderecos.length > 0) {
-                        this.logger.verbose(
-                            `Projeto MDO ${projeto.id}: feature flag ativa e há ${geo.enderecos.length} endereço(s), ` +
-                                `sincronizando regiões automaticamente dos endereços`
-                        );
-                        await this.syncRegioesFromAllEnderecos(geo.enderecos, self, portfolio, prismaTx, now, user);
-                    }
+                    // Auto-Sync, não chama o appendRegioesByGeoLoc
+                    this.logger.verbose(
+                        `Projeto MDO ${projeto.id}: feature flag ativa e há ${geo.enderecos.length} endereço(s), ` +
+                            `sincronizando regiões automaticamente dos endereços`
+                    );
+                    await this.syncRegioesFromAllEnderecos(geo.enderecos, self, portfolio, prismaTx, now, user);
                 } else {
                     await this.appendRegioesByGeoLoc(geo, self, portfolio, prismaTx, now, user, tipo);
                 }
