@@ -40,6 +40,7 @@ export default function useCamposDeCustos(props: Props) {
   const listaDeAnos = ref<number[]>([]);
 
   const nomeDoCampoDeCusto = computed(() => `custo_${props.tipo}_anualizado`);
+  const nomeDoCampoDeCustoAgrupado = computed(() => `custo_${props.tipo}`);
 
   const listaDeWatchers = {
     estimado: [
@@ -64,5 +65,6 @@ export default function useCamposDeCustos(props: Props) {
     listaDeAnos,
     nomeDoCampoDeCusto,
     tipoDeCusto: props.tipo,
+    nomeDoCampoDeCustoAgrupado,
   };
 }

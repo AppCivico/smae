@@ -3,7 +3,12 @@ import { storeToRefs } from 'pinia';
 import {
   ErrorMessage, Field, FieldArray, useForm,
 } from 'vee-validate';
-import { onMounted, ref, watch } from 'vue';
+import {
+  computed,
+  onMounted,
+  ref,
+  watch,
+} from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
@@ -55,9 +60,13 @@ const {
   validationSchema: schema,
 });
 
-const { listaDeAnos, nomeDoCampoDeCusto, tipoDeCusto } = useCamposDeCustos({ values, tipo: 'real' });
+const {
+  listaDeAnos, nomeDoCampoDeCusto, tipoDeCusto, nomeDoCampoDeCustoAgrupado,
+} = useCamposDeCustos({ values, tipo: 'real' });
 
 schema.value = schemaTarefa('real', () => listaDeAnos.value);
+
+const tarefaComFilhos = computed(() => emFoco.value.n_filhos_imediatos !== 0);
 
 const onSubmit = handleSubmit.withControlled(async (carga) => {
   try {
@@ -350,6 +359,7 @@ onMounted(() => {
                 class="inputtext light mb1"
                 :class="{ 'error': errors[`${nomeDoCampoDeCusto}[${idx}].ano`] }"
                 as="select"
+                :disabled="tarefaComFilhos"
               >
                 <option value="">
                   Selecionar
@@ -379,6 +389,7 @@ onMounted(() => {
                 :name="`${nomeDoCampoDeCusto}[${idx}].valor`"
                 :value="field.value?.valor"
                 class="inputtext light mb1"
+                :disabled="tarefaComFilhos"
               />
             </div>
 
@@ -387,6 +398,7 @@ onMounted(() => {
               aria-label="excluir"
               title="excluir"
               type="button"
+              :disabled="tarefaComFilhos"
               @click="() => {
                 remove(idx);
               }"
@@ -401,6 +413,7 @@ onMounted(() => {
           <button
             class="like-a__text addlink"
             type="button"
+            :disabled="tarefaComFilhos"
             @click="push({
               ano: '',
               valor: 0
@@ -411,6 +424,18 @@ onMounted(() => {
               height="20"
             ><use xlink:href="#i_+" /></svg>Adicionar valor {{ tipoDeCusto }}
           </button>
+
+          <div
+            v-if="tarefaComFilhos"
+            class="mt1"
+          >
+            <span>
+              Custo {{ tipoDeCusto }}: {{ dinheiro(
+                emFoco[nomeDoCampoDeCustoAgrupado],
+                { style: 'currency'}
+              ) }}
+            </span>
+          </div>
         </FieldArray>
       </div>
     </div>
