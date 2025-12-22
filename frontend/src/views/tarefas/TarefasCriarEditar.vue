@@ -62,6 +62,12 @@ const props = defineProps({
 
 const schema = ref(schemaTarefa('estimado'));
 
+const tarefaComFilhos = computed(() => {
+  console.log(emFoco.value);
+
+  return emFoco.value.n_filhos_imediatos !== 0;
+});
+
 const {
   errors, handleSubmit, isSubmitting, resetForm, setFieldValue, setValues, values,
 } = useForm({
@@ -69,7 +75,12 @@ const {
   validationSchema: schema,
 });
 
-const { listaDeAnos, nomeDoCampoDeCusto, tipoDeCusto } = useCamposDeCustos({ tipo: 'estimado', values });
+const {
+  listaDeAnos,
+  nomeDoCampoDeCusto,
+  tipoDeCusto,
+  nomeDoCampoDeCustoAgrupado,
+} = useCamposDeCustos({ tipo: 'estimado', values });
 
 schema.value = schemaTarefa('estimado', () => listaDeAnos.value);
 
@@ -805,6 +816,7 @@ watch(itemParaEdicao, (novoValor) => {
                 class="inputtext light mb1"
                 :class="{ 'error': errors[`${nomeDoCampoDeCusto}[${idx}].ano`] }"
                 as="select"
+                :disabled="tarefaComFilhos"
               >
                 <option value="">
                   Selecionar
@@ -834,6 +846,7 @@ watch(itemParaEdicao, (novoValor) => {
                 :name="`${nomeDoCampoDeCusto}[${idx}].valor`"
                 :value="field.value?.valor"
                 class="inputtext light mb1"
+                :disabled="tarefaComFilhos"
               />
             </div>
 
@@ -842,6 +855,8 @@ watch(itemParaEdicao, (novoValor) => {
               aria-label="excluir"
               title="excluir"
               type="button"
+              dis
+              :disabled="tarefaComFilhos"
               @click="() => {
                 remove(idx);
               }"
@@ -856,6 +871,7 @@ watch(itemParaEdicao, (novoValor) => {
           <button
             class="like-a__text addlink"
             type="button"
+            :disabled="tarefaComFilhos"
             @click="push({
               ano: '',
               valor: 0
@@ -866,6 +882,18 @@ watch(itemParaEdicao, (novoValor) => {
               height="20"
             ><use xlink:href="#i_+" /></svg>Adicionar valor {{ tipoDeCusto }}
           </button>
+
+          <div
+            v-if="tarefaComFilhos"
+            class="mt1"
+          >
+            <span>
+              Custo {{ tipoDeCusto }}: {{ dinheiro(
+                emFoco[nomeDoCampoDeCustoAgrupado] || 0,
+                { style: 'currency'}
+              ) }}
+            </span>
+          </div>
         </FieldArray>
       </div>
     </div>

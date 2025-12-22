@@ -431,7 +431,7 @@ onMounted(() => {
           >
             <span>
               Custo {{ tipoDeCusto }}: {{ dinheiro(
-                emFoco[nomeDoCampoDeCustoAgrupado],
+                emFoco[nomeDoCampoDeCustoAgrupado] || 0,
                 { style: 'currency'}
               ) }}
             </span>
