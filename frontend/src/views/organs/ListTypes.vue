@@ -38,13 +38,13 @@ async function checkDelete({ id, descricao }) {
     <div class="flex spacebetween center mb2">
       <h1>Tipos de Orgão</h1>
       <hr class="ml2 f1">
-      <router-link
+      <SmaeLink
         v-if="perm?.CadastroTipoOrgao?.inserir"
-        to="/orgaos/tipos/novo"
+        :to="{ name: 'orgaos.tipos.novo' }"
         class="btn big ml1"
       >
         Novo tipo
-      </router-link>
+      </SmaeLink>
     </div>
     <div class="flex center mb2">
       <div class="f2 search">
@@ -76,15 +76,15 @@ async function checkDelete({ id, descricao }) {
             <td>{{ item.descricao }}</td>
             <td style="white-space: nowrap; text-align: right;">
               <template v-if="perm?.CadastroTipoOrgao?.editar">
-                <router-link
-                  :to="`/orgaos/tipos/editar/${item.id}`"
+                <SmaeLink
+                  :to="{ name: 'orgaos.tipos.editar', params: { id: item.id} }"
                   class="tprimary"
                 >
                   <svg
                     width="20"
                     height="20"
                   ><use xlink:href="#i_edit" /></svg>
-                </router-link>
+                </SmaeLink>
 
                 <template v-if="perm?.CadastroTipoOrgao?.remover">
                   <button

@@ -4,14 +4,13 @@ import {
   ErrorMessage, Field, useForm, useIsFormDirty,
 } from 'vee-validate';
 import { watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRouter } from 'vue-router';
 
 import { partido as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { usePartidosStore } from '@/stores/partidos.store';
 
 const router = useRouter();
-const route = useRoute();
 const props = defineProps({
   partidoId: {
     type: Number,
@@ -73,7 +72,7 @@ watch(itemParaEdicao, (novoValor) => {
 </script>
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>{{ route?.meta?.título || 'Partido' }}</h1>
+    <TituloDaPagina />
     <hr class="ml2 f1">
     <CheckClose :formulario-sujo="formularioSujo" />
   </div>

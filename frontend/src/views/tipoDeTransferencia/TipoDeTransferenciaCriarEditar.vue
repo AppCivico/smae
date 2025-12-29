@@ -29,9 +29,10 @@ const props = defineProps({
 });
 
 const alertStore = useAlertStore();
-const itemParaEdicao = computed(() => lista.value.find((x) => x.id === Number(route.params.tipoId)) || {
-  id: 0, nome: '', categoria: null, esfera: null,
-});
+const itemParaEdicao = computed(() => lista.value.find((x) => x.id === Number(route.params.tipoId))
+  || {
+    id: 0, nome: '', categoria: null, esfera: null,
+  });
 
 async function onSubmit(values) {
   try {
@@ -48,7 +49,7 @@ async function onSubmit(values) {
     if (r) {
       alertStore.success(msg);
       tipoDeTransferencia.$reset();
-      router.push({ name: 'tipoDeTransferenciaListar' });
+      router.push({ name: 'tipoDeTransferencia.listar' });
     }
   } catch (error) {
     alertStore.error(error);
@@ -63,7 +64,7 @@ if (props.tipoId) {
 
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>{{ route?.meta?.título || 'Tipo de Trasferência' }}</h1>
+    <TituloDaPagina />
     <hr class="ml2 f1">
     <CheckClose />
   </div>

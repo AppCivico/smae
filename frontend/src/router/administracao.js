@@ -9,9 +9,12 @@ import {
   useDocumentTypesStore,
 } from '@/stores';
 import { useAssuntosStore } from '@/stores/assuntosPs.store';
+import { useClassificacaoStore } from '@/stores/classificacao.store';
 import { useFontesStore } from '@/stores/fontesPs.store';
 import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';
 import { useModalidadeDeContratacaoStore } from '@/stores/modalidadeDeContratacao.store';
+import { usePartidosStore } from '@/stores/partidos.store';
+import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
 import { useTipoDeVinculoStore } from '@/stores/tipoDeVinculo.store';
 import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
 import { Administracao } from '@/views';
@@ -91,7 +94,7 @@ const rotasParaMenuSecundário = [
       'categorias.lista',
       'classificacao',
       'gerenciarRegiões',
-      'tipoDeTransferenciaListar',
+      'tipoDeTransferencia.listar',
       'tipoDeVinculo.listar',
       'projeto.etapasListar',
       'mdo.etapasListar',
@@ -166,6 +169,7 @@ export default [
             component: PartidosCriarEditar,
             meta: {
               título: 'Novo partido',
+              rotasParaMigalhasDePão: ['partidosListar'],
             },
           },
           {
@@ -178,9 +182,17 @@ export default [
                 partidoId: Number.parseInt(params.partidoId, 10) || undefined,
               },
             }),
-
             meta: {
-              título: 'Editar partido',
+              título: () => {
+                const { emFoco } = usePartidosStore();
+
+                if (!emFoco) {
+                  return 'Editar partido';
+                }
+
+                return emFoco.nome;
+              },
+              rotasParaMigalhasDePão: ['partidosListar'],
             },
           },
         ],
@@ -426,7 +438,7 @@ export default [
         },
         children: [
           {
-            name: 'tipoDeTransferenciaListar',
+            name: 'tipoDeTransferencia.listar',
             path: '',
             component: TipoDeTransferenciaLista,
             meta: {
@@ -434,16 +446,17 @@ export default [
             },
           },
           {
-            name: 'tipoDeTransferenciaCriar',
+            name: 'tipoDeTransferencia.criar',
             path: 'novo',
             component: TipoDeTransferenciaCriarEditar,
             meta: {
               título: 'Novo Tipo de Transferência',
+              rotasParaMigalhasDePão: ['tipoDeTransferencia.listar'],
             },
           },
           {
             path: ':tipoId',
-            name: 'tipoDeTransferenciaEditar',
+            name: 'tipoDeTransferencia.editar',
             component: TipoDeTransferenciaCriarEditar,
             props: ({ params }) => ({
               ...params,
@@ -451,7 +464,16 @@ export default [
             }),
 
             meta: {
-              título: 'Editar Tipo de Transferência',
+              título: () => {
+                const { emFoco } = useTipoDeTransferenciaStore();
+
+                if (!emFoco) {
+                  return 'Editar Tipo de Transferência';
+                }
+
+                return emFoco.nome;
+              },
+              rotasParaMigalhasDePão: ['tipoDeTransferencia.listar'],
             },
           },
         ],
@@ -712,11 +734,11 @@ export default [
             },
           },
           {
-            path: 'editar/:id',
+            path: ':id',
             component: AddEditOrganTypes,
             name: 'orgaos.tipos.editar',
             meta: {
-              título: 'Editar tipo de Orgão',
+              título: () => useOrgansStore()?.tempOrganTypes?.descricao || 'Editar tipo de Orgão',
               rotasParaMigalhasDePão: ['orgaos.tipos'],
             },
           },
@@ -848,11 +870,27 @@ export default [
         name: 'classificacao.novo',
         path: 'novo',
         component: ClassificacaoCriarEditar,
+        meta: {
+          título: 'Nova classificação',
+          rotasParaMigalhasDePão: ['classificacao'],
+        },
       },
       {
         name: 'classificacao.editar',
         path: ':classificacaoId',
         component: ClassificacaoCriarEditar,
+        meta: {
+          título: () => {
+            const { emFoco } = useClassificacaoStore();
+
+            if (!emFoco) {
+              return 'Editar classificação';
+            }
+
+            return emFoco.nome;
+          },
+          rotasParaMigalhasDePão: ['classificacao'],
+        },
       },
     ],
   },
