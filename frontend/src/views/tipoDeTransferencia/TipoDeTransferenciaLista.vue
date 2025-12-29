@@ -33,7 +33,7 @@ tipoDeTransferencia.buscarTudo();
     <h1>{{ route?.meta?.título || 'Tipo de Transferência' }}</h1>
     <hr class="ml2 f1">
     <router-link
-      :to="{ name: 'tipoDeTransferenciaCriar' }"
+      :to="{ name: 'tipoDeTransferencia.criar' }"
       class="btn big ml1"
     >
       Novo Tipo de Transferência
@@ -77,7 +77,7 @@ tipoDeTransferencia.buscarTudo();
         </td>
         <td>
           <router-link
-            :to="{ name: 'tipoDeTransferenciaEditar', params: { tipoId: item.id } }"
+            :to="{ name: 'tipoDeTransferencia.editar', params: { tipoId: item.id } }"
             class="tprimary"
           >
             <svg

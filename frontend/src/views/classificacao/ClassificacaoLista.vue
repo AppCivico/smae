@@ -40,6 +40,17 @@
         <td>{{ item.transferencia_tipo.esfera }}</td>
         <td>{{ item.transferencia_tipo.nome }}</td>
         <td>
+          <SmaeLink
+            :to="{ name: 'classificacao.editar', params: { classificacaoId: item.id } }"
+            class="tprimary"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_edit" /></svg>
+          </SmaeLink>
+        </td>
+        <td>
           <button
             class="like-a__text"
             aria-label="excluir"
@@ -49,19 +60,8 @@
             <svg
               width="20"
               height="20"
-            ><use xlink:href="#i_remove" /></svg>
+            ><use xlink:href="#i_waste" /></svg>
           </button>
-        </td>
-        <td>
-          <router-link
-            :to="{ name: 'classificacao.editar', params: { classificacaoId: item.id } }"
-            class="tprimary"
-          >
-            <svg
-              width="20"
-              height="20"
-            ><use xlink:href="#i_edit" /></svg>
-          </router-link>
         </td>
       </tr>
       <tr v-if="erro">
