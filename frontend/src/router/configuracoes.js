@@ -2,6 +2,7 @@ import { defineAsyncComponent } from 'vue';
 
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import { useEquipesStore } from '@/stores/equipes.store';
+import { useEtiquetasStore } from '@/stores/etiquetaMdo.store';
 import { useProjetoEtiquetasStore } from '@/stores/projetoEtiqueta.store';
 import ConfiguracoesRaiz from '@/views/ConfiguracoesRaiz.vue';
 import EtapasCriarEditar from '@/views/etapasProjeto/EtapasCriarEditar.vue';
@@ -88,7 +89,7 @@ const rotasParaMenuPrincipal = [
   'projeto.portfolio.listar',
   'mdo.portfolio.listar',
   'gerenciarPainéisDeMetas',
-  'mdoEtiquetasListar',
+  'mdoEtiquetas.listar',
   'mdoProgramaHabitacionalListar',
   'mdoEmpreendimentosListar',
   'parlamentaresListar',
@@ -592,11 +593,11 @@ export default [
           entidadeMãe: 'mdo',
           rotaPrescindeDeChave: true,
           limitarÀsPermissões: ['ProjetoTagMDO.inserir'],
-          rotasParaMenuSecundário: ['mdoEtiquetasListar'],
+          rotasParaMenuSecundário: ['mdoEtiquetas.listar'],
         },
         children: [
           {
-            name: 'mdoEtiquetasListar',
+            name: 'mdoEtiquetas.listar',
             path: '',
             component: () => import('@/views/mdo.etiquetas/EtiquetasLista.vue'),
             meta: {
@@ -604,17 +605,17 @@ export default [
             },
           },
           {
-            name: 'mdoEtiquetasCriar',
+            name: 'mdoEtiquetas.criar',
             path: 'novo',
             component: () => import('@/views/mdo.etiquetas/EtiquetasCriarEditar.vue'),
             meta: {
               título: 'Nova etiqueta',
-              rotasParaMigalhasDePão: ['mdoEtiquetasListar'],
+              rotasParaMigalhasDePão: ['mdoEtiquetas.listar'],
             },
           },
           {
             path: ':etiquetaId',
-            name: 'mdoEtiquetasEditar',
+            name: 'mdoEtiquetas.editar',
             component: () => import('@/views/mdo.etiquetas/EtiquetasCriarEditar.vue'),
             props: ({ params }) => ({
               ...params,
@@ -624,8 +625,16 @@ export default [
             }),
 
             meta: {
-              título: 'Editar etiqueta',
-              rotasParaMigalhasDePão: ['mdoEtiquetasListar'],
+              título: () => {
+                const { emFoco } = useEtiquetasStore();
+
+                if (!emFoco) {
+                  return 'Editar Etiqueta';
+                }
+
+                return emFoco.descricao;
+              },
+              rotasParaMigalhasDePão: ['mdoEtiquetas.listar'],
             },
           },
         ],
