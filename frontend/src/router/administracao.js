@@ -15,6 +15,7 @@ import { useFontesStore } from '@/stores/fontesPs.store';
 import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';
 import { useModalidadeDeContratacaoStore } from '@/stores/modalidadeDeContratacao.store';
 import { usePartidosStore } from '@/stores/partidos.store';
+import { useTipoDeAditivosStore } from '@/stores/tipoDeAditivos.store';
 import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
 import { useTipoDeVinculoStore } from '@/stores/tipoDeVinculo.store';
 import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
@@ -103,7 +104,7 @@ const rotasParaMenuSecundário = [
       'gruposTematicosObras',
       'tiposDeIntervencao',
       'equipamentosLista',
-      'tipoDeAditivosListar',
+      'tipoDeAditivos.listar',
       'variaveisCategoricas.listar',
       'categoriaAssunto.listar',
       'assunto.listar',
@@ -995,25 +996,33 @@ export default [
     children: [
       {
         path: '',
-        name: 'tipoDeAditivosListar',
+        name: 'tipoDeAditivos.listar',
         component: () => import('@/views/tipoDeAditivo/AditivosLista.vue'),
       },
       {
         path: 'novo',
         component: () => import('@/views/tipoDeAditivo/AditivosCriarEditar.vue'),
-        name: 'tipoDeAditivosCriar',
+        name: 'tipoDeAditivos.criar',
         meta: {
           título: 'Novo tipo de aditivo',
-          rotasParaMigalhasDePão: ['tipoDeAditivosListar'],
+          rotasParaMigalhasDePão: ['tipoDeAditivos.listar'],
         },
       },
       {
         path: ':aditivoId',
         component: () => import('@/views/tipoDeAditivo/AditivosCriarEditar.vue'),
-        name: 'tipoDeAditivosEditar',
+        name: 'tipoDeAditivos.editar',
         meta: {
-          título: 'Editar tipo de aditivo',
-          rotasParaMigalhasDePão: ['tipoDeAditivosListar'],
+          título: () => {
+            const { itemParaEdicao } = useTipoDeAditivosStore();
+
+            if (!itemParaEdicao) {
+              return 'Editar tipo de aditivo';
+            }
+
+            return itemParaEdicao.nome;
+          },
+          rotasParaMigalhasDePão: ['tipoDeAditivos.listar'],
         },
       },
     ],

@@ -1,10 +1,13 @@
 <template>
   <MigalhasDePão class="mb1" />
   <div class="flex spacebetween center mb2">
-    <h1> <span v-if="!aditivoId">Novo</span> Aditivo</h1>
+    <TituloDaPagina />
+
     <hr class="ml2 f1">
+
     <CheckClose />
   </div>
+
   <Form
     v-slot="{ errors, isSubmitting }"
     :validation-schema="schema"
@@ -106,6 +109,7 @@ import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, Form } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
 
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import { tipoDeAditivo as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useTipoDeAditivosStore } from '@/stores/tipoDeAditivos.store';
@@ -141,7 +145,7 @@ async function onSubmit(values) {
     if (response) {
       alertStore.success(msg);
       aditivosStore.$reset();
-      router.push({ name: 'tipoDeAditivosListar' });
+      router.push({ name: 'tipoDeAditivos.listar' });
     }
   } catch (error) {
     alertStore.error(error);
