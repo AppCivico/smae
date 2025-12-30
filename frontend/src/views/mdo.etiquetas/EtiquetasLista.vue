@@ -1,14 +1,17 @@
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>{{ route?.meta?.título || "Etiquetas" }}</h1>
+    <TituloDaPagina />
+
     <hr class="ml2 f1">
+
     <router-link
-      :to="{ name: 'mdoEtiquetasCriar' }"
+      :to="{ name: 'mdoEtiquetas.criar' }"
       class="btn big ml1"
     >
       Nova etiqueta
     </router-link>
   </div>
+
   <table class="tablemain">
     <col>
     <col class="col--botão-de-ação">
@@ -28,7 +31,7 @@
         <td>{{ item.descricao }}</td>
         <td>
           <router-link
-            :to="{ name: 'mdoEtiquetasEditar', params: { etiquetaId: item.id } }"
+            :to="{ name: 'mdoEtiquetas.editar', params: { etiquetaId: item.id } }"
             class="tprimary"
           >
             <svg
