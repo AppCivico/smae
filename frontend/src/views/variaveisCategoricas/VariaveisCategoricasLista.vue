@@ -3,7 +3,7 @@
     <TítuloDePágina />
     <hr class="ml2 f1">
     <router-link
-      :to="{ name: 'variaveisCategoricasCriar' }"
+      :to="{ name: 'variaveisCategoricas.criar' }"
       class="btn big ml1"
     >
       Novo tipo de variável categórica
@@ -46,7 +46,7 @@
         <td>
           <router-link
             v-if="item.pode_editar"
-            :to="{ name: 'variaveisCategoricasEditar', params: { variavelId: item.id } }"
+            :to="{ name: 'variaveisCategoricas.editar', params: { variavelId: item.id } }"
             class="tprimary"
           >
             <svg

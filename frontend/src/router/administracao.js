@@ -18,6 +18,7 @@ import { usePartidosStore } from '@/stores/partidos.store';
 import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
 import { useTipoDeVinculoStore } from '@/stores/tipoDeVinculo.store';
 import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
+import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store';
 import { Administracao } from '@/views';
 import BancadasCriarEditar from '@/views/bancada/BancadasCriarEditar.vue';
 import BancadasLista from '@/views/bancada/BancadasLista.vue';
@@ -103,7 +104,7 @@ const rotasParaMenuSecundário = [
       'tiposDeIntervencao',
       'equipamentosLista',
       'tipoDeAditivosListar',
-      'variaveisCategoricasListar',
+      'variaveisCategoricas.listar',
       'categoriaAssunto.listar',
       'assunto.listar',
       'modalidadesListar',
@@ -1027,7 +1028,7 @@ export default [
     },
     children: [
       {
-        name: 'variaveisCategoricasListar',
+        name: 'variaveisCategoricas.listar',
         path: '',
         component: () => import('@/views/variaveisCategoricas/VariaveisCategoricasLista.vue'),
         meta: {
@@ -1035,19 +1036,19 @@ export default [
         },
       },
       {
-        name: 'variaveisCategoricasCriar',
+        name: 'variaveisCategoricas.criar',
         path: 'novo',
         component: () => import(
           '@/views/variaveisCategoricas/VariaveisCategoricasCriarEditar.vue'
         ),
         meta: {
           título: 'Novo tipo de variável categórica',
-          rotasParaMigalhasDePão: ['variaveisCategoricasListar'],
+          rotasParaMigalhasDePão: ['variaveisCategoricas.listar'],
         },
       },
       {
         path: ':variavelId',
-        name: 'variaveisCategoricasEditar',
+        name: 'variaveisCategoricas.editar',
         component: () => import(
           '@/views/variaveisCategoricas/VariaveisCategoricasCriarEditar.vue'
         ),
@@ -1059,8 +1060,16 @@ export default [
         }),
 
         meta: {
-          título: 'Editar tipo de variável categórica',
-          rotasParaMigalhasDePão: ['variaveisCategoricasListar'],
+          título: () => {
+            const { itemParaEdicao } = useVariaveisCategoricasStore();
+
+            if (!itemParaEdicao) {
+              return 'Editar tipo de variável categórica';
+            }
+
+            return itemParaEdicao.titulo;
+          },
+          rotasParaMigalhasDePão: ['variaveisCategoricas.listar'],
         },
       },
     ],

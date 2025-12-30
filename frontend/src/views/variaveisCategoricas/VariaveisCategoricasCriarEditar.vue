@@ -295,7 +295,7 @@ async function onSubmit() {
 
     if (response) {
       alertStore.success(msg);
-      router.push({ name: 'variaveisCategoricasListar' });
+      router.push({ name: 'variaveisCategoricas.listar' });
     }
   } catch (error) {
     alertStore.error(error);
