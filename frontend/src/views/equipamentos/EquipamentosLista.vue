@@ -1,6 +1,6 @@
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>{{ route?.meta?.título || "Equipamentos" }}</h1>
+    <TituloDaPagina />
     <hr class="ml2 f1">
     <router-link
       :to="{ name: 'equipamentosCriar' }"
@@ -11,9 +11,6 @@
   </div>
   <table class="tablemain">
     <colgroup>
-      <col>
-      <col class="col--botão-de-ação">
-      <col class="col--botão-de-ação">
       <col>
       <col class="col--botão-de-ação">
       <col class="col--botão-de-ação">
@@ -31,6 +28,7 @@
         :key="item.id"
       >
         <td>{{ item.nome }}</td>
+
         <td>
           <router-link
             :to="{ name: 'equipamentoEditar', params: { equipamentoId: item.id } }"
@@ -42,6 +40,7 @@
             ><use xlink:href="#i_edit" /></svg>
           </router-link>
         </td>
+
         <td>
           <button
             class="like-a__text"
@@ -52,20 +51,23 @@
             <svg
               width="20"
               height="20"
-            ><use xlink:href="#i_remove" /></svg>
+            ><use xlink:href="#i_waste" /></svg>
           </button>
         </td>
       </tr>
+
       <tr v-if="chamadasPendentes.lista">
         <td colspan="3">
           Carregando
         </td>
       </tr>
+
       <tr v-else-if="erro.lista">
         <td colspan="3">
           Erro: {{ erro.lista }}
         </td>
       </tr>
+
       <tr v-else-if="!lista.length">
         <td colspan="3">
           Nenhum resultado encontrado.
@@ -79,6 +81,7 @@
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
 
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import { useAlertStore } from '@/stores/alert.store';
 import { useEquipamentosStore } from '@/stores/equipamentos.store';
 

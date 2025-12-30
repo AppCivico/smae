@@ -6,6 +6,7 @@ import * as Yup from 'yup';
 
 import { Dashboard } from '@/components';
 import MigalhasDePao from '@/components/MigalhasDePao.vue';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import { router } from '@/router';
 import { useAlertStore, useOrgansStore } from '@/stores';
 
@@ -57,7 +58,7 @@ async function checkClose() {
     <MigalhasDePao class="mb1" />
 
     <div class="flex spacebetween center mb2">
-      <h1>{{ title }}</h1>
+      <TituloDaPagina />
       <hr class="ml2 f1">
       <button
         class="btn round ml2"

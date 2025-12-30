@@ -10,6 +10,7 @@ import {
 } from '@/stores';
 import { useAssuntosStore } from '@/stores/assuntosPs.store';
 import { useClassificacaoStore } from '@/stores/classificacao.store';
+import { useEquipamentosStore } from '@/stores/equipamentos.store';
 import { useFontesStore } from '@/stores/fontesPs.store';
 import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';
 import { useModalidadeDeContratacaoStore } from '@/stores/modalidadeDeContratacao.store';
@@ -305,7 +306,6 @@ export default [
             component: EquipamentosLista,
             meta: {
               título: 'Equipamentos',
-              rotasParaMigalhasDePão: ['cadastrosBasicos'],
             },
           },
           {
@@ -314,7 +314,7 @@ export default [
             component: EquipamentosCriarEditar,
             meta: {
               título: 'Novo equipamento',
-              rotasParaMigalhasDePão: ['cadastrosBasicos', 'equipamentosLista'],
+              rotasParaMigalhasDePão: ['equipamentosLista'],
             },
           },
           {
@@ -329,8 +329,16 @@ export default [
               },
             }),
             meta: {
-              título: 'Editar equipamento',
-              rotasParaMigalhasDePão: ['cadastrosBasicos', 'equipamentosLista'],
+              título: () => {
+                const { itemParaEdicao } = useEquipamentosStore();
+
+                if (!itemParaEdicao) {
+                  return 'Editar equipamento';
+                }
+
+                return itemParaEdicao.nome;
+              },
+              rotasParaMigalhasDePão: ['equipamentosLista'],
             },
           },
         ],
