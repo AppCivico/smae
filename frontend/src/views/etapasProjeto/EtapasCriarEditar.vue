@@ -5,6 +5,7 @@ import {
 } from 'vee-validate';
 import {
   computed, defineOptions, onMounted, ref,
+  watch,
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -108,7 +109,7 @@ const emFoco = computed(() => {
 });
 
 const {
-  errors, handleSubmit, isSubmitting, values, setFieldValue,
+  errors, handleSubmit, isSubmitting, resetForm,
 } = useForm({
   initialValues: emFoco,
   validationSchema: schema,
@@ -164,7 +165,12 @@ const onSubmit = handleSubmit(async (carga) => {
     alertStore.error(error);
   }
 });
+
+watch(emFoco, () => {
+  resetForm({ values: emFoco.value });
+});
 </script>
+
 <template>
   <div class="flex spacebetween center mb2">
     <TituloDaPagina />

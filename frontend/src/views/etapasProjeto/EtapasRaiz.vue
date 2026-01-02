@@ -30,7 +30,5 @@ onUnmounted(() => {
 });
 </script>
 <template>
-  <MigalhasDePao />
-
   <router-view />
 </template>

@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import { nextTick } from 'vue';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -53,6 +54,7 @@ export const useEtapasProjetosStore = (prefixo) => defineStore(prefixo ? `${pref
     async buscarPorId(id) {
       if (this.lista.length === 0) {
         await this.buscarEtapasPadrao();
+        await nextTick();
       }
 
       this.emFoco = this.etapasPorId[id];
