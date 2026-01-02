@@ -5,6 +5,7 @@ import { useEmpreendimentosStore } from '@/stores/empreendimentos.store';
 import { useEquipesStore } from '@/stores/equipes.store';
 import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
 import { useEtiquetasStore } from '@/stores/etiquetaMdo.store';
+import { useGruposPaineisExternos } from '@/stores/grupospaineisExternos.store';
 import { useObservadoresStore } from '@/stores/observadores.store.ts';
 import { useProgramaHabitacionalStore } from '@/stores/programaHabitacional.store';
 import { useProjetoEtiquetasStore } from '@/stores/projetoEtiqueta.store';
@@ -450,7 +451,7 @@ export default [
           limitarÀsPermissões: 'CadastroPainelExterno.',
           rotasParaMenuSecundário: [
             'paineisExternosListar',
-            'grupospaineisExternosListar',
+            'grupospaineisExternos.listar',
           ],
         },
         children: [
@@ -1058,12 +1059,12 @@ export default [
           limitarÀsPermissões: 'CadastroPainelExterno.',
           rotasParaMenuSecundário: [
             'paineisExternosListar',
-            'grupospaineisExternosListar',
+            'grupospaineisExternos.listar',
           ],
         },
         children: [
           {
-            name: 'grupospaineisExternosListar',
+            name: 'grupospaineisExternos.listar',
             path: '',
             component: GruposDePaineisExternosLista,
             meta: {
@@ -1071,17 +1072,17 @@ export default [
             },
           },
           {
-            name: 'grupospaineisExternosCriar',
+            name: 'grupospaineisExternos.criar',
             path: 'novo',
             component: GruposDePaineisExternosCriarEditar,
             meta: {
               título: 'Novo Grupo de Painéis Externos',
-              rotasParaMigalhasDePão: ['grupospaineisExternosListar'],
+              rotasParaMigalhasDePão: ['grupospaineisExternos.listar'],
             },
           },
           {
             path: ':gruposPaineisExternosId',
-            name: 'gruposPaineisExternosEditar',
+            name: 'gruposPaineisExternos.editar',
             component: GruposDePaineisExternosCriarEditar,
             props: ({ params }) => ({
               ...params,
@@ -1092,8 +1093,12 @@ export default [
               },
             }),
             meta: {
-              título: 'Editar grupo de painel externo',
-              rotasParaMigalhasDePão: ['grupospaineisExternosListar'],
+              título: () => {
+                const { emFoco } = useGruposPaineisExternos();
+
+                return emFoco?.titulo || 'Editar grupo de painel externo';
+              },
+              rotasParaMigalhasDePão: ['grupospaineisExternos.listar'],
             },
           },
         ],
