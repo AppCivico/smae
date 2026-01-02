@@ -708,7 +708,7 @@ export default [
             meta: {
               título: () => {
                 const { itemParaEdicao } = useEmpreendimentosStore();
-                return itemParaEdicao.nome || 'Editar empreendimento';
+                return itemParaEdicao?.nome || 'Editar empreendimento';
               },
               rotasParaMigalhasDePão: ['mdo.empreendimentos.listar'],
             },

@@ -7,7 +7,5 @@ tiposDeAtendimentoStore.$reset();
 tiposDeAtendimentoStore.buscarTudo();
 </script>
 <template>
-  <MigalhasDePao />
-
   <router-view />
 </template>
