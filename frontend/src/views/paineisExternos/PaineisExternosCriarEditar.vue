@@ -62,10 +62,13 @@ GruposPaineisExternos.buscarTudo();
 
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>{{ route?.meta?.título || 'Painel Externo' }}</h1>
+    <TituloDaPagina />
+
     <hr class="ml2 f1">
+
     <CheckClose />
   </div>
+
   <Form
     v-slot="{ errors, isSubmitting, values }"
     :validation-schema="schema"
