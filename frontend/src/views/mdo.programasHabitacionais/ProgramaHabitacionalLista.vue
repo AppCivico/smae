@@ -1,13 +1,15 @@
 <template>
   <div class="flex spacebetween center mb2">
     <TítuloDePágina />
+
     <hr class="ml2 f1">
-    <router-link
-      :to="{ name: 'mdoProgramaHabitacionalCriar' }"
+
+    <SmaeLink
+      :to="{ name: 'mdoProgramaHabitacional.criar' }"
       class="btn big ml1"
     >
       Novo programa habitacional
-    </router-link>
+    </SmaeLink>
   </div>
 
   <table class="tablemain">
@@ -28,9 +30,9 @@
       >
         <td>{{ item.nome }}</td>
         <td>
-          <router-link
+          <SmaeLink
             :to="{
-              name: 'mdoProgramaHabitacionalEditar',
+              name: 'mdoProgramaHabitacional.editar',
               params: { programaHabitacionalId: item.id }
             }"
             class="tprimary"
@@ -39,7 +41,7 @@
               width="20"
               height="20"
             ><use xlink:href="#i_edit" /></svg>
-          </router-link>
+          </SmaeLink>
         </td>
         <td>
           <button
@@ -51,7 +53,7 @@
             <svg
               width="20"
               height="20"
-            ><use xlink:href="#i_remove" /></svg>
+            ><use xlink:href="#i_waste" /></svg>
           </button>
         </td>
       </tr>

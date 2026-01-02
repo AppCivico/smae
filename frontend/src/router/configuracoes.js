@@ -3,6 +3,7 @@ import { defineAsyncComponent } from 'vue';
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import { useEquipesStore } from '@/stores/equipes.store';
 import { useEtiquetasStore } from '@/stores/etiquetaMdo.store';
+import { useProgramaHabitacionalStore } from '@/stores/programaHabitacional.store';
 import { useProjetoEtiquetasStore } from '@/stores/projetoEtiqueta.store';
 import ConfiguracoesRaiz from '@/views/ConfiguracoesRaiz.vue';
 import EtapasCriarEditar from '@/views/etapasProjeto/EtapasCriarEditar.vue';
@@ -90,7 +91,7 @@ const rotasParaMenuPrincipal = [
   'mdo.portfolio.listar',
   'gerenciarPainéisDeMetas',
   'mdoEtiquetas.listar',
-  'mdoProgramaHabitacionalListar',
+  'mdoProgramaHabitacional.listar',
   'mdoEmpreendimentosListar',
   'parlamentaresListar',
   'paineisExternosListar',
@@ -700,31 +701,31 @@ export default [
           entidadeMãe: 'mdo',
           rotaPrescindeDeChave: true,
           limitarÀsPermissões: ['ProjetoProgramaMDO.'],
-          rotasParaMenuSecundário: ['mdoProgramaHabitacionalListar'],
+          rotasParaMenuSecundário: ['mdoProgramaHabitacional.listar'],
         },
         children: [
           {
-            name: 'mdoProgramaHabitacionalListar',
+            name: 'mdoProgramaHabitacional.listar',
             path: '',
             component: () => import(
               '@/views/mdo.programasHabitacionais/ProgramaHabitacionalLista.vue'
             ),
           },
           {
-            name: 'mdoProgramaHabitacionalCriar',
+            name: 'mdoProgramaHabitacional.criar',
             path: 'novo',
             component: () => import(
               '@/views/mdo.programasHabitacionais/ProgramaHabitacionalCriarEditar.vue'
             ),
             meta: {
               título: 'Novo programa habitacional',
-              rotasParaMigalhasDePão: ['mdoProgramaHabitacionalListar'],
+              rotasParaMigalhasDePão: ['mdoProgramaHabitacional.listar'],
               limitarÀsPermissões: ['ProjetoProgramaMDO.inserir'],
             },
           },
           {
             path: ':programaHabitacionalId',
-            name: 'mdoProgramaHabitacionalEditar',
+            name: 'mdoProgramaHabitacional.editar',
             component: () => import(
               '@/views/mdo.programasHabitacionais/ProgramaHabitacionalCriarEditar.vue'
             ),
@@ -738,8 +739,12 @@ export default [
             }),
 
             meta: {
-              título: 'Editar programa habitacional',
-              rotasParaMigalhasDePão: ['mdoProgramaHabitacionalListar'],
+              título: () => {
+                const { itemParaEdicao } = useProgramaHabitacionalStore();
+
+                return itemParaEdicao?.nome || 'Editar programa habitacional';
+              },
+              rotasParaMigalhasDePão: ['mdoProgramaHabitacional.listar'],
               limitarÀsPermissões: ['ProjetoProgramaMDO.editar'],
             },
           },
