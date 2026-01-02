@@ -3,6 +3,7 @@ import { defineAsyncComponent } from 'vue';
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import { useEquipesStore } from '@/stores/equipes.store';
 import { useEtiquetasStore } from '@/stores/etiquetaMdo.store';
+import { useObservadoresStore } from '@/stores/observadores.store.ts';
 import { useProgramaHabitacionalStore } from '@/stores/programaHabitacional.store';
 import { useProjetoEtiquetasStore } from '@/stores/projetoEtiqueta.store';
 import ConfiguracoesRaiz from '@/views/ConfiguracoesRaiz.vue';
@@ -363,7 +364,11 @@ export default [
                 }),
 
                 meta: {
-                  título: 'Editar Novo grupo de observadores',
+                  entidadeMãe: 'mdo',
+                  título() {
+                    const { emFoco } = useObservadoresStore(this.entidadeMãe);
+                    return emFoco?.titulo || 'Editar grupo de observadores';
+                  },
                   rotasParaMigalhasDePão: [
                     'mdo.gruposObservadores.listar',
                   ],
@@ -1138,7 +1143,11 @@ export default [
             }),
 
             meta: {
-              título: 'Editar Novo grupo de observadores',
+              entidadeMãe: 'projeto',
+              título() {
+                const { emFoco } = useObservadoresStore(this.entidadeMãe);
+                return emFoco?.titulo || 'Editar grupo de observadores';
+              },
               rotasParaMigalhasDePão: [
                 'projeto.gruposObservadores.listar',
               ],
