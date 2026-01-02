@@ -1,6 +1,7 @@
 import { defineAsyncComponent } from 'vue';
 
 import LoadingComponent from '@/components/LoadingComponent.vue';
+import { useEmpreendimentosStore } from '@/stores/empreendimentos.store';
 import { useEquipesStore } from '@/stores/equipes.store';
 import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
 import { useEtiquetasStore } from '@/stores/etiquetaMdo.store';
@@ -94,7 +95,7 @@ const rotasParaMenuPrincipal = [
   'gerenciarPainéisDeMetas',
   'mdoEtiquetas.listar',
   'mdoProgramaHabitacional.listar',
-  'mdoEmpreendimentosListar',
+  'mdo.empreendimentos.listar',
   'parlamentaresListar',
   'paineisExternosListar',
   'equipesListar',
@@ -665,29 +666,29 @@ export default [
             'CadastroEmpreendimentoMDO.',
           ],
           rotasParaMenuSecundário: [
-            'mdoEmpreendimentosListar',
+            'mdo.empreendimentos.listar',
           ],
         },
         children: [
           {
-            name: 'mdoEmpreendimentosListar',
+            name: 'mdo.empreendimentos.listar',
             path: '',
             component: () => import('@/views/mdo.empreendimentos/EmpreendimentosLista.vue'),
           },
           {
-            name: 'mdoEmpreendimentosCriar',
+            name: 'mdo.empreendimentos.criar',
             path: 'novo',
             component: () => import(
               '@/views/mdo.empreendimentos/EmpreendimentosCriarEditar.vue'
             ),
             meta: {
               título: 'Novo empreendimento',
-              rotasParaMigalhasDePão: ['mdoEmpreendimentosListar'],
+              rotasParaMigalhasDePão: ['mdo.empreendimentos.listar'],
             },
           },
           {
             path: ':empreendimentoId',
-            name: 'mdoEmpreendimentosEditar',
+            name: 'mdo.empreendimentos.editar',
             component: () => import(
               '@/views/mdo.empreendimentos/EmpreendimentosCriarEditar.vue'
             ),
@@ -699,8 +700,11 @@ export default [
               },
             }),
             meta: {
-              título: 'Editar empreendimento',
-              rotasParaMigalhasDePão: ['mdoEmpreendimentosListar'],
+              título: () => {
+                const { itemParaEdicao } = useEmpreendimentosStore();
+                return itemParaEdicao.nome || 'Editar empreendimento';
+              },
+              rotasParaMigalhasDePão: ['mdo.empreendimentos.listar'],
             },
           },
         ],

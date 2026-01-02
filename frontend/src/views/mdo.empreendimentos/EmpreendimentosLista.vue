@@ -1,13 +1,15 @@
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>{{ route?.meta?.título || "Empreendimentos" }}</h1>
+    <TituloDaPagina />
+
     <hr class="ml2 f1">
-    <router-link
-      :to="{ name: 'mdoEmpreendimentosCriar' }"
+
+    <SmaeLink
+      :to="{ name: 'mdo.empreendimentos.criar' }"
       class="btn big ml1"
     >
       Novo empreendimento
-    </router-link>
+    </SmaeLink>
   </div>
   <table class="tablemain">
     <col>
@@ -30,15 +32,15 @@
         <td>{{ item.identificador }}</td>
         <td>{{ item.nome }}</td>
         <td>
-          <router-link
-            :to="{ name: 'mdoEmpreendimentosEditar', params: { empreendimentoId: item.id } }"
+          <SmaeLink
+            :to="{ name: 'mdo.empreendimentos.editar', params: { empreendimentoId: item.id } }"
             class="tprimary"
           >
             <svg
               width="20"
               height="20"
             ><use xlink:href="#i_edit" /></svg>
-          </router-link>
+          </SmaeLink>
         </td>
         <td>
           <button
@@ -50,7 +52,7 @@
             <svg
               width="20"
               height="20"
-            ><use xlink:href="#i_remove" /></svg>
+            ><use xlink:href="#i_waste" /></svg>
           </button>
         </td>
       </tr>
