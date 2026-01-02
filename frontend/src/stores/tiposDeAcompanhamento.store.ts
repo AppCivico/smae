@@ -20,6 +20,7 @@ type ChamadasPendentes = {
 
 type Estado = {
   lista: Lista;
+  emFoco: AcompanhamentoTipo | null;
   chamadasPendentes: ChamadasPendentes;
   erro: null | unknown;
 };
@@ -44,6 +45,7 @@ function caminhoParaApi() {
 export const useTiposDeAcompanhamentoStore = defineStore('tiposDeAcompanhamento', {
   state: (): Estado => ({
     lista: [],
+    emFoco: null,
 
     chamadasPendentes: {
       lista: false,
@@ -68,6 +70,16 @@ export const useTiposDeAcompanhamentoStore = defineStore('tiposDeAcompanhamento'
         this.chamadasPendentes.lista = false;
         this.chamadasPendentes.emFoco = false;
       }
+    },
+
+    async buscarPorId(id: number): Promise<AcompanhamentoTipo | null> {
+      if (this.lista.length === 0) {
+        await this.buscarTudo();
+      }
+
+      this.emFoco = this.tiposPorId[id] || null;
+
+      return this.emFoco;
     },
 
     async excluirItem(id: number): Promise<boolean> {
@@ -105,10 +117,10 @@ export const useTiposDeAcompanhamentoStore = defineStore('tiposDeAcompanhamento'
     },
   },
   getters: {
-    tiposPorId: ({ lista }: Estado) => lista
+    tiposPorId: ({ lista }: Estado): TipoDeAcompanhamentoPorId => lista
       .reduce((acc:TipoDeAcompanhamentoPorId, cur:AcompanhamentoTipo) => ({
         ...acc,
         [cur.id]: cur,
-      }), {}),
+      }), {} as TipoDeAcompanhamentoPorId),
   },
 });
