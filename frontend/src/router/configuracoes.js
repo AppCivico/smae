@@ -7,6 +7,7 @@ import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
 import { useEtiquetasStore } from '@/stores/etiquetaMdo.store';
 import { useGruposPaineisExternos } from '@/stores/grupospaineisExternos.store';
 import { useObservadoresStore } from '@/stores/observadores.store.ts';
+import { usePaineisExternosStore } from '@/stores/paineisExternos.store';
 import { useProgramaHabitacionalStore } from '@/stores/programaHabitacional.store';
 import { useProjetoEtiquetasStore } from '@/stores/projetoEtiqueta.store';
 import ConfiguracoesRaiz from '@/views/ConfiguracoesRaiz.vue';
@@ -98,7 +99,7 @@ const rotasParaMenuPrincipal = [
   'mdoProgramaHabitacional.listar',
   'mdo.empreendimentos.listar',
   'parlamentaresListar',
-  'paineisExternosListar',
+  'paineisExternos.listar',
   'equipesListar',
   'Workflow',
   'programaDeMetas.planosSetoriaisListar',
@@ -450,13 +451,13 @@ export default [
           rotaPrescindeDeChave: true,
           limitarÀsPermissões: 'CadastroPainelExterno.',
           rotasParaMenuSecundário: [
-            'paineisExternosListar',
+            'paineisExternos.listar',
             'grupospaineisExternos.listar',
           ],
         },
         children: [
           {
-            name: 'paineisExternosListar',
+            name: 'paineisExternos.listar',
             path: '',
             component: PaineisExternosLista,
             meta: {
@@ -467,7 +468,7 @@ export default [
             },
           },
           {
-            name: 'paineisExternosCriar',
+            name: 'paineisExternos.criar',
             path: 'novo',
             component: PaineisExternosCriarEditar,
             meta: {
@@ -475,12 +476,12 @@ export default [
                 'CadastroPainelExterno.inserir',
               ],
               título: 'Novo painel externo',
-              rotasParaMigalhasDePão: ['paineisExternosListar'],
+              rotasParaMigalhasDePão: ['paineisExternos.listar'],
             },
           },
           {
             path: ':painelId',
-            name: 'paineisExternosEditar',
+            name: 'paineisExternos.editar',
             component: PaineisExternosCriarEditar,
             props: ({ params }) => ({
               ...params,
@@ -493,8 +494,12 @@ export default [
               limitarÀsPermissões: [
                 'CadastroPainelExterno.editar',
               ],
-              título: 'Editar painel externo',
-              rotasParaMigalhasDePão: ['paineisExternosListar'],
+              título: () => {
+                const { emFoco } = usePaineisExternosStore();
+
+                return emFoco?.titulo || 'Editar painel externo';
+              },
+              rotasParaMigalhasDePão: ['paineisExternos.listar'],
             },
           },
         ],
@@ -1058,7 +1063,7 @@ export default [
           rotaPrescindeDeChave: true,
           limitarÀsPermissões: 'CadastroPainelExterno.',
           rotasParaMenuSecundário: [
-            'paineisExternosListar',
+            'paineisExternos.listar',
             'grupospaineisExternos.listar',
           ],
         },
