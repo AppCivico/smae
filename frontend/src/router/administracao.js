@@ -19,6 +19,7 @@ import { usePartidosStore } from '@/stores/partidos.store';
 import { useTipoDeAditivosStore } from '@/stores/tipoDeAditivos.store';
 import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
 import { useTipoDeVinculoStore } from '@/stores/tipoDeVinculo.store';
+import { useTiposDeAcompanhamentoStore } from '@/stores/tiposDeAcompanhamento.store';
 import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
 import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store';
 import { Administracao } from '@/views';
@@ -90,7 +91,7 @@ const TiposDeAcompanhamentoRaiz = defineAsyncComponent({
 const rotasParaMenuSecundário = [
   {
     rotas: [
-      'tipoDeAcompanhamentoListar',
+      'tipoDeAcompanhamento.listar',
       'orgaos.listar',
       'orgaos.tipos',
       'tipoDocumento.listar',
@@ -403,7 +404,7 @@ export default [
 
         children: [
           {
-            name: 'tipoDeAcompanhamentoListar',
+            name: 'tipoDeAcompanhamento.listar',
             path: '',
             component: TiposDeAcompanhamentoLista,
             meta: {
@@ -411,17 +412,18 @@ export default [
             },
           },
           {
-            name: 'tipoDeAcompanhamentoCriar',
+            name: 'tipoDeAcompanhamento.criar',
             path: 'novo',
             component: TiposDeAcompanhamentoCriarEditar,
             meta: {
               título: 'Novo tipo de acompanhamento',
-              rotaDeEscape: 'tipoDeAcompanhamentoListar',
+              rotaDeEscape: 'tipoDeAcompanhamento.listar',
+              rotasParaMigalhasDePão: ['tipoDeAcompanhamento.listar'],
             },
           },
           {
             path: ':tipoDeAtendimentoId',
-            name: 'tipoDeAcompanhamentoEditar',
+            name: 'tipoDeAcompanhamento.editar',
             component: TiposDeAcompanhamentoCriarEditar,
             props: ({ params }) => ({
               ...params,
@@ -432,8 +434,12 @@ export default [
             }),
 
             meta: {
-              título: 'Editar tipo de acompanhamento',
-              rotaDeEscape: 'tipoDeAcompanhamentoListar',
+              título: () => {
+                const { emFoco } = useTiposDeAcompanhamentoStore();
+                return emFoco?.nome || 'Editar tipo de acompanhamento';
+              },
+              rotaDeEscape: 'tipoDeAcompanhamento.listar',
+              rotasParaMigalhasDePão: ['tipoDeAcompanhamento.listar'],
             },
           },
         ],

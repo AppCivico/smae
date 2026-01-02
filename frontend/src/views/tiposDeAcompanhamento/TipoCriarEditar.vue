@@ -5,8 +5,8 @@ import {
   Field,
   Form,
 } from 'vee-validate';
-import { computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 
 import { tipoDeAcompanhamento as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
@@ -15,12 +15,11 @@ import { useTiposDeAcompanhamentoStore } from '@/stores/tiposDeAcompanhamento.st
 const alertStore = useAlertStore();
 const tiposDeAcompanhamentoStore = useTiposDeAcompanhamentoStore();
 const router = useRouter();
-const route = useRoute();
 
 const {
   chamadasPendentes,
   erro,
-  tiposPorId,
+  emFoco,
 } = storeToRefs(tiposDeAcompanhamentoStore);
 
 const props = defineProps({
@@ -30,7 +29,11 @@ const props = defineProps({
   },
 });
 
-const emFoco = computed(() => tiposPorId.value[route.params.tipoDeAtendimentoId] || null);
+onMounted(async () => {
+  if (props.tipoDeAtendimentoId) {
+    await tiposDeAcompanhamentoStore.buscarPorId(props.tipoDeAtendimentoId);
+  }
+});
 
 async function onSubmit(_, { controlledValues }) {
   const carga = controlledValues;
@@ -48,7 +51,7 @@ async function onSubmit(_, { controlledValues }) {
       alertStore.success(msg);
       tiposDeAcompanhamentoStore.$reset();
       tiposDeAcompanhamentoStore.buscarTudo();
-      router.push({ name: 'tipoDeAcompanhamentoListar' });
+      router.push({ name: 'tipoDeAcompanhamento.listar' });
     }
   } catch (error) {
     alertStore.error(error);
@@ -58,18 +61,7 @@ async function onSubmit(_, { controlledValues }) {
 </script>
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>
-      <div
-        v-if="tipoDeAtendimentoId"
-        class="t12 uc w700 tamarelo"
-      >
-        {{ 'Editar acompanhamento' }}
-      </div>
-      {{ emFoco?.nome
-        ? emFoco?.nome
-        : (tipoDeAtendimentoId ? 'Acompanhamento' : 'Novo registro de acompanhamento')
-      }}
-    </h1>
+    <TituloDaPagina />
 
     <hr class="ml2 f1">
 
