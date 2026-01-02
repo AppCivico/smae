@@ -2,6 +2,7 @@ import { defineAsyncComponent } from 'vue';
 
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import { useEquipesStore } from '@/stores/equipes.store';
+import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
 import { useEtiquetasStore } from '@/stores/etiquetaMdo.store';
 import { useObservadoresStore } from '@/stores/observadores.store.ts';
 import { useProgramaHabitacionalStore } from '@/stores/programaHabitacional.store';
@@ -422,7 +423,15 @@ export default [
                 }),
                 meta: {
                   título: 'Editar etapa da obra',
-                  tituloParaMigalhaDePao: 'Editar etapa',
+                  tituloParaMigalhaDePao() {
+                    const { emFoco } = useEtapasProjetosStore(this.entidadeMãe);
+
+                    if (!emFoco) {
+                      return 'Editar etapa da obra';
+                    }
+
+                    return emFoco.descricao;
+                  },
                   rotasParaMigalhasDePão: ['mdo.etapas.listar'],
                   rotaDeEscape: 'mdo.etapas.listar',
                 },
