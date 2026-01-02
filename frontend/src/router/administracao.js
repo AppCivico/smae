@@ -11,6 +11,7 @@ import {
 import { useAssuntosStore } from '@/stores/assuntosPs.store';
 import { useClassificacaoStore } from '@/stores/classificacao.store';
 import { useEquipamentosStore } from '@/stores/equipamentos.store';
+import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
 import { useFontesStore } from '@/stores/fontesPs.store';
 import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';
 import { useModalidadeDeContratacaoStore } from '@/stores/modalidadeDeContratacao.store';
@@ -611,7 +612,6 @@ export default [
             component: EtapasLista,
             meta: {
               título: 'Etapas padrão',
-              rotasParaMigalhasDePão: ['cadastrosBasicos'],
             },
           },
           {
@@ -620,7 +620,7 @@ export default [
             component: EtapasCriarEditar,
             meta: {
               título: 'Nova etapa padrão',
-              rotasParaMigalhasDePão: ['cadastrosBasicos', 'mdo.etapasListar'],
+              rotasParaMigalhasDePão: ['mdo.etapasListar'],
               rotaDeEscape: 'mdo.etapasListar',
             },
           },
@@ -635,8 +635,16 @@ export default [
               },
             }),
             meta: {
-              título: 'Editar etapa padrão',
-              rotasParaMigalhasDePão: ['cadastrosBasicos', 'mdo.etapasListar'],
+              título() {
+                const { emFoco } = useEtapasProjetosStore(this.entidadeMãe);
+
+                if (!emFoco) {
+                  return 'Editar etapa padrão';
+                }
+
+                return emFoco.descricao;
+              },
+              rotasParaMigalhasDePão: ['mdo.etapasListar'],
               rotaDeEscape: 'mdo.etapasListar',
             },
           },
