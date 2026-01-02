@@ -7,6 +7,7 @@ import { watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
+import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import { grupoDeObservadores as schema } from '@/consts/formSchemas';
 import truncate from '@/helpers/texto/truncate';
 import { useAlertStore } from '@/stores/alert.store';
@@ -87,8 +88,10 @@ watch(itemParaEdicao, (novosValores) => {
 
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>{{ route.meta.título || "Portfólios" }}</h1>
+    <TituloDaPagina />
+
     <hr class="ml2 f1">
+
     <CheckClose
       :formulario-sujo="formularioSujo"
       :rota-de-escape="route.meta.rotaDeEscape"
