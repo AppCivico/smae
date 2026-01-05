@@ -155,7 +155,11 @@
                 type="text"
                 name="valor_realizado"
                 :disabled="!forumlariosAExibir.cadastro.liberado"
-                @update:model-value="atualizarVariavelAcumulado"
+                @update:model-value="(v) => {
+                  setFieldValue('valor_realizado', v.replace(',', '.'))
+
+                  atualizarVariavelAcumulado()
+                }"
               />
               <Field
                 v-else
@@ -330,7 +334,10 @@ const dataCicloAtualizacao = computed<string | null>(() => (
   dateIgnorarTimezone(dataReferencia)
 ));
 
-const schema = computed(() => cicloAtualizacaoModalAdicionarSchema(fasePosicao.value));
+const schema = computed(() => cicloAtualizacaoModalAdicionarSchema(
+  fasePosicao.value,
+  emFoco.value?.variavel.casas_decimais,
+));
 
 const variaveis = computed<VariavelConfiguracaoItem[]>(() => {
   if (!emFoco.value) {
@@ -349,12 +356,16 @@ const variaveis = computed<VariavelConfiguracaoItem[]>(() => {
   ];
 });
 
-const { handleSubmit, setFieldValue, values } = useForm({
+const {
+  handleSubmit, setFieldValue, values, errors,
+} = useForm({
   validationSchema: schema.value,
   initialValues: obterVariavelInicial(),
 });
 
-function atualizarVariavelAcumulado(valor: string) {
+function atualizarVariavelAcumulado() {
+  const valor = values.valor_realizado?.replace(',', '.');
+
   const valorAtual = emFoco.value?.valores[0];
 
   if (!valorAtual) {
