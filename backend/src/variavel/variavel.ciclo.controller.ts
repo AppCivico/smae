@@ -10,6 +10,7 @@ import {
     ListVariavelGlobalCicloDto,
     FilterVariavelAnaliseQualitativaGetDto,
     VariavelAnaliseQualitativaResponseDto,
+    VariavelCicloFaseCountDto,
 } from './dto/variavel.ciclo.dto';
 import { SerieIndicadorValorNominal, SerieValorNomimal } from './entities/variavel.entity';
 import { VariavelCicloService } from './variavel.ciclo.service';
@@ -32,6 +33,16 @@ export class VariavelCicloGlobalController {
         return {
             linhas: await this.variavelCicloService.getVariavelCiclo(filters, user),
         };
+    }
+
+    @Get('plano-setorial-variavel-ciclo/total')
+    @ApiBearerAuth('access-token')
+    @Roles([...VariavelGlobalController.WritePerm, ...MetaSetorialController.ReadPerm])
+    async getVariavelCicloCount(
+        @Query() filters: FilterVariavelGlobalCicloDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<VariavelCicloFaseCountDto> {
+        return this.variavelCicloService.getVariavelCicloCount(filters, user);
     }
 
     @ApiExtraModels(SerieValorNomimal, SerieIndicadorValorNominal)

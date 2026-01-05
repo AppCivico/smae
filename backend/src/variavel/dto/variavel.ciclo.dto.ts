@@ -281,3 +281,19 @@ export class VariavelAnaliseQualitativaResponseDto {
 
     possui_variaveis_filhas: boolean;
 }
+
+export class VariavelCicloFaseCountItemDto {
+    @ApiProperty({ description: 'Fase do ciclo', enum: VariavelFase })
+    fase: VariavelFase;
+
+    @ApiProperty({ description: 'Quantidade de variáveis em aberto na fase' })
+    quantidade: number;
+}
+
+export class VariavelCicloFaseCountDto {
+    @ApiProperty({ type: [VariavelCicloFaseCountItemDto] })
+    linhas: VariavelCicloFaseCountItemDto[];
+
+    @ApiProperty({ description: 'Total geral de variáveis em aberto' })
+    total: number;
+}

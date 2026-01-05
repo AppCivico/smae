@@ -22,6 +22,7 @@ import {
     UpsertVariavelGlobalCicloDocumentoDto,
     VariavelAnaliseDocumento,
     VariavelAnaliseQualitativaResponseDto,
+    VariavelCicloFaseCountDto,
     VariavelGlobalAnaliseItemDto,
     VariavelGlobalCicloDto,
     VariavelValorDto,
@@ -1472,5 +1473,50 @@ export class VariavelCicloService {
                 sv_sincronizado_em: new Date(),
             },
         });
+    }
+
+    /**
+     * Retorna a contagem de variáveis em aberto por fase do ciclo
+     * Utiliza a mesma lógica de permissões e filtros do getVariavelCiclo
+     */
+    async getVariavelCicloCount(
+        filters: FilterVariavelGlobalCicloDto,
+        user: PessoaFromJwt
+    ): Promise<VariavelCicloFaseCountDto> {
+        const whereFilter = await this.getPermissionSet(filters, user);
+
+        // Agrupa por fase e conta as variáveis
+        const countByFase = await this.prisma.variavelCicloCorrente.groupBy({
+            by: ['fase'],
+            where: {
+                ultimo_periodo_valido: filters.referencia,
+                variavel: {
+                    AND: whereFilter,
+                },
+                eh_corrente: true,
+                ...buildMetaIniAtvFilter(filters),
+            },
+            _count: {
+                variavel_id: true,
+            },
+        });
+
+        // Ordena as fases na ordem correta do fluxo
+        const faseOrder: Record<VariavelFase, number> = {
+            Preenchimento: 1,
+            Validacao: 2,
+            Liberacao: 3,
+        };
+
+        const linhas = countByFase
+            .map((item) => ({
+                fase: item.fase,
+                quantidade: item._count.variavel_id,
+            }))
+            .sort((a, b) => faseOrder[a.fase] - faseOrder[b.fase]);
+
+        const total = linhas.reduce((acc, item) => acc + item.quantidade, 0);
+
+        return { linhas, total };
     }
 }
