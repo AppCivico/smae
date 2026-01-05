@@ -74,6 +74,7 @@ import { DotacaoBuscaModule } from './dotacao-busca/dotacao-busca.module';
 import { TipoVinculoModule } from './casa-civil/tipo-vinculo/tipo-vinculo.module';
 import { VinculoModule } from './casa-civil/vinculo/vinculo.module';
 import { PortfolioTagModule } from './pp/portfolio-tag/portfolio-tag.module';
+import { TipoEncerramentoModule } from './projeto-tipo-encerramento/tipo-orgao.module';
 
 // Hacks pro JS
 /*
@@ -121,6 +122,7 @@ import { PortfolioTagModule } from './pp/portfolio-tag/portfolio-tag.module';
         WorkflowFluxoTarefaModule,
         WorkflowAndamentoModule,
         WorkflowAndamentoFaseModule,
+        TipoEncerramentoModule,
         BlocoNotasModule,
         DashTransferenciaModule,
         PessoaPrivilegioModule,

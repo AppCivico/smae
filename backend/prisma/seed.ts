@@ -27,6 +27,8 @@ const prisma = new PrismaClient({ log: ['query'] });
 const ModuloDescricao: Record<string, [string, ModuloSistema | ModuloSistema[] | null]> = {
     CadastroOrgao: ['Órgãos', 'SMAE'],
     CadastroTipoOrgao: ['Tipos de Órgãos', 'SMAE'],
+    CadastroProjetoTipoEncerramento: ['Tipos de Encerramento de Projeto', 'SMAE'],
+    CadastroProjetoTipoEncerramentoMDO: ['Tipos de Encerramento de Obra', 'MDO'],
     CadastroPessoa: ['Pessoas', 'SMAE'],
     CadastroFonteRecurso: ['Fontes de Recurso', 'SMAE'],
     CadastroTipoDocumento: ['Tipos de Arquivo', 'SMAE'],
@@ -635,6 +637,16 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['CadastroPortfolioTag.listar', 'Listar Tags de Portfólio'],
         ['CadastroPortfolioTag.remover', 'Excluir Tags de Portfólio'],
     ],
+    CadastroProjetoTipoEncerramento: [
+        ['CadastroProjetoTipoEncerramento.inserir', 'Incluir Tipo de Encerramento de Projeto'],
+        ['CadastroProjetoTipoEncerramento.editar', 'Editar Tipo de Encerramento de Projeto'],
+        ['CadastroProjetoTipoEncerramento.remover', 'Excluir Tipo de Encerramento de Projeto'],
+    ],
+    CadastroProjetoTipoEncerramentoMDO: [
+        ['CadastroProjetoTipoEncerramentoMDO.inserir', 'Incluir Tipo de Encerramento de Obra'],
+        ['CadastroProjetoTipoEncerramentoMDO.editar', 'Editar Tipo de Encerramento de Obra'],
+        ['CadastroProjetoTipoEncerramentoMDO.remover', 'Excluir Tipo de Encerramento de Obra'],
+    ],
 };
 
 const todosPrivilegios: ListaDePrivilegios[] = [];
@@ -859,6 +871,10 @@ const MDOCadastroBasico: ListaDePrivilegios[] = [
     'ProjetoProgramaMDO.inserir',
     'ProjetoProgramaMDO.editar',
     'ProjetoProgramaMDO.remover',
+
+    'CadastroProjetoTipoEncerramentoMDO.inserir',
+    'CadastroProjetoTipoEncerramentoMDO.editar',
+    'CadastroProjetoTipoEncerramentoMDO.remover',
 ] as const;
 
 const PPCadastroBasico: ListaDePrivilegios[] = [
@@ -877,6 +893,10 @@ const PPCadastroBasico: ListaDePrivilegios[] = [
     'CadastroPortfolioTag.inserir',
     'CadastroPortfolioTag.editar',
     'CadastroPortfolioTag.remover',
+
+    'CadastroProjetoTipoEncerramento.inserir',
+    'CadastroProjetoTipoEncerramento.editar',
+    'CadastroProjetoTipoEncerramento.remover',
 ] as const;
 
 const PerfilAcessoConfig: PerfilConfigArray = [
