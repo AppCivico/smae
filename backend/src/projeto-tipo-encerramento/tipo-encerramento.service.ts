@@ -2,7 +2,7 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { TipoProjeto } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateTipoEncerramentoDto, UpdateTipoEncerramentoDto } from './dto/tipo-encerramento.dto';
+import { CreateTipoEncerramentoDto, FilterTipoEncerramentoDto, UpdateTipoEncerramentoDto } from './dto/tipo-encerramento.dto';
 
 @Injectable()
 export class TipoEncerramentoService {
@@ -33,11 +33,12 @@ export class TipoEncerramentoService {
         return created;
     }
 
-    async findAll(tipo: TipoProjeto) {
+    async findAll(tipo: TipoProjeto, filters: FilterTipoEncerramentoDto) {
         const listActive = await this.prisma.projetoTipoEncerramento.findMany({
             where: {
                 tipo: tipo,
                 removido_em: null,
+                id: filters.id,
             },
             select: { id: true, descricao: true, habilitar_info_adicional: true },
             orderBy: { descricao: 'asc' },

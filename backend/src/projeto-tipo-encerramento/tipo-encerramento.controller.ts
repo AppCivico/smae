@@ -1,4 +1,16 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    HttpCode,
+    HttpStatus,
+    NotFoundException,
+    Param,
+    Patch,
+    Post,
+    Query,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -9,6 +21,8 @@ import {
     ListTipoEncerramentoDto,
     CreateTipoEncerramentoDto,
     UpdateTipoEncerramentoDto,
+    FilterTipoEncerramentoDto,
+    TipoEncerramentoDto,
 } from './dto/tipo-encerramento.dto';
 import { TipoEncerramentoService } from './tipo-encerramento.service';
 import { TipoProjeto } from '@prisma/client';
@@ -31,8 +45,16 @@ export class ProjetoTipoEncerramentoController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    async findAll(): Promise<ListTipoEncerramentoDto> {
-        return { linhas: await this.tipoOrgaoService.findAll(this.tipo) };
+    async findAll(@Query() filters: FilterTipoEncerramentoDto): Promise<ListTipoEncerramentoDto> {
+        return { linhas: await this.tipoOrgaoService.findAll(this.tipo, filters) };
+    }
+
+    @ApiBearerAuth('access-token')
+    @Get(':id')
+    async findOne(@Param() params: FindOneParams): Promise<TipoEncerramentoDto> {
+        const linhas = await this.tipoOrgaoService.findAll(this.tipo, { id: +params.id });
+        if (linhas.length === 0) throw new NotFoundException('Registro não encontrado');
+        return linhas[0];
     }
 
     @Patch(':id')
@@ -75,8 +97,16 @@ export class ObraTipoEncerramentoController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    async findAll(): Promise<ListTipoEncerramentoDto> {
-        return { linhas: await this.tipoOrgaoService.findAll(this.tipo) };
+    async findAll(@Query() filters: FilterTipoEncerramentoDto): Promise<ListTipoEncerramentoDto> {
+        return { linhas: await this.tipoOrgaoService.findAll(this.tipo, filters) };
+    }
+
+    @ApiBearerAuth('access-token')
+    @Get(':id')
+    async findOne(@Param() params: FindOneParams): Promise<TipoEncerramentoDto> {
+        const linhas = await this.tipoOrgaoService.findAll(this.tipo, { id: +params.id });
+        if (linhas.length === 0) throw new NotFoundException('Registro não encontrado');
+        return linhas[0];
     }
 
     @Patch(':id')

@@ -1,7 +1,7 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
-import { IsBoolean, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsBoolean, IsInt, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 import { MAX_LENGTH_MEDIO } from 'src/common/consts';
-import { Transform } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 
 export class CreateTipoEncerramentoDto {
     @IsString({ message: 'descrição: Precisa ser alfanumérico' })
@@ -27,3 +27,14 @@ export class ListTipoEncerramentoDto {
 }
 
 export class UpdateTipoEncerramentoDto extends PartialType(CreateTipoEncerramentoDto) {}
+
+export class FilterTipoEncerramentoDto {
+    /**
+     * Filtrar por id?
+     * @example ""
+     */
+    @IsOptional()
+    @IsInt({ message: 'id' })
+    @Type(() => Number)
+    id?: number;
+}
