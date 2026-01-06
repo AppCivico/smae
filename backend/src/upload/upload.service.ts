@@ -358,7 +358,7 @@ export class UploadService {
         return decoded.arquivo_id;
     }
 
-    getDownloadToken(id: number, expiresIn: string): Download {
+    getDownloadToken(id: number, expiresIn: string | undefined): Download {
         if (!expiresIn) expiresIn = '60 minutes';
 
         return {

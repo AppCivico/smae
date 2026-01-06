@@ -1206,24 +1206,49 @@ model Regiao {
     @@map("regiao")
 }
 
+enum arquivo_preview_status {
+    pendente // Task criada, aguardando processamento
+    executando // Task em execução
+    concluido // Preview gerado com sucesso
+    erro // Erro durante a geração
+    sem_suporte // Arquivo não suportado (gotenberg falhou)
+    pulado // Arquivo muito grande ou é ZIP
+}
+
+enum arquivo_preview_tipo {
+    redimensionamento // Para imagens - apenas redimensiona
+    conversao_pdf // Para documentos - converte para PDF
+}
+
 model Arquivo {
     id   Int    @id @default(autoincrement())
     tipo String
 
-    criador                         Pessoa?                           @relation("Criador", fields: [criado_por], references: [id])
-    criado_por                      Int?
-    criado_em                       DateTime                          @default(now()) @db.Timestamptz(6)
-    atualizador                     Pessoa?                           @relation("Atualizador", fields: [atualizado_por], references: [id])
-    atualizado_por                  Int?
-    atualizado_em                   DateTime?
-    caminho                         String
-    nome_original                   String
-    mime_type                       String?
-    tamanho_bytes                   Int
-    descricao                       String?                           @ignore
-    tipo_documento_id               Int?
-    diretorio_caminho               String?
-    TipoDocumento                   TipoDocumento?                    @relation(fields: [tipo_documento_id], references: [id])
+    criador           Pessoa?        @relation("Criador", fields: [criado_por], references: [id])
+    criado_por        Int?
+    criado_em         DateTime       @default(now()) @db.Timestamptz(6)
+    atualizador       Pessoa?        @relation("Atualizador", fields: [atualizado_por], references: [id])
+    atualizado_por    Int?
+    atualizado_em     DateTime?
+    caminho           String
+    nome_original     String
+    mime_type         String?
+    tamanho_bytes     Int
+    descricao         String?        @ignore
+    tipo_documento_id Int?
+    diretorio_caminho String?
+    TipoDocumento     TipoDocumento? @relation(fields: [tipo_documento_id], references: [id])
+
+    // Campos de preview
+    preview_status arquivo_preview_status @default(pulado)
+    preview_tipo   arquivo_preview_tipo?
+
+    preview_erro_mensagem String? /// Mensagem de erro caso o preview falhe
+    preview_arquivo_id    Int?      @unique /// FK para o arquivo de preview gerado (self-reference)
+    preview_task_id       Int?
+    preview_criado_em     DateTime? @db.Timestamptz(6)
+    preview_atualizado_em DateTime? @db.Timestamptz(6)
+
     Tag                             Tag[]
     Regiao                          Regiao[]
     ArquivoDocumento                PdmDocumento[]
@@ -1233,6 +1258,9 @@ model Arquivo {
     Relatorio                       Relatorio[]
     projeto_documentos              ProjetoDocumento[]
     fotosParlamentar                Parlamentar[]
+    preview_arquivo                 Arquivo?                          @relation("ArquivoPreview", fields: [preview_arquivo_id], references: [id], onDelete: SetNull)
+    preview_de                      Arquivo?                          @relation("ArquivoPreview")
+    preview_task                    task_queue?                       @relation("ArquivoPreviewTask", fields: [preview_task_id], references: [id], onDelete: SetNull)
 
     ImportacaoLogInput                  ImportacaoOrcamento[]                 @relation("input")
     ImportacaoLogOutput                 ImportacaoOrcamento[]                 @relation("output")
@@ -5064,6 +5092,7 @@ enum task_type {
     run_update
     backup_api_log_day
     restore_api_log_day
+    gerar_preview_documento
 }
 
 enum task_status {
@@ -5102,6 +5131,7 @@ model task_queue {
     AtualizacaoEmLote    AtualizacaoEmLote[]
     task_buffer          task_buffer?
     ApiRequestLogControl ApiRequestLogControl[]
+    arquivo_previews     Arquivo[]              @relation("ArquivoPreviewTask")
 
     @@index([status])
     @@index([criado_em])

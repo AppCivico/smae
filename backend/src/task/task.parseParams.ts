@@ -58,6 +58,9 @@ export function ParseParams(taskType: task_type, value: any): any {
         case 'backup_api_log_day':
             theClass = CreateApiLogDayDto;
             break;
+        case 'gerar_preview_documento':
+            throw 'Not implemented yet: ParseParams gerar_preview_documento';
+            break;
         default:
             taskType satisfies never;
     }

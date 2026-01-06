@@ -13,6 +13,7 @@ import {
     UpdateAnaliseQualitativaDocumentoDto,
 } from './../metas/dto/mf-meta-analise-quali.dto';
 import { ArquivoBaseDto } from '../../upload/dto/create-upload.dto';
+import { BuildArquivoBaseDto, PrismaArquivoComPreviewSelect } from '../../upload/arquivo-preview.helper';
 
 @Injectable()
 export class MetasAnaliseQualiService {
@@ -83,12 +84,7 @@ export class MetasAnaliseQualiService {
                 id: true,
                 descricao: true,
                 arquivo: {
-                    select: {
-                        id: true,
-                        tamanho_bytes: true,
-                        nome_original: true,
-                        diretorio_caminho: true,
-                    },
+                    select: PrismaArquivoComPreviewSelect,
                 },
             },
         });
@@ -100,11 +96,10 @@ export class MetasAnaliseQualiService {
                     criador: { nome_exibicao: r.pessoaCriador.nome_exibicao },
                     criado_em: r.criado_em,
                     descricao: r.descricao,
-                    arquivo: {
-                        ...r.arquivo,
-                        descricao: null,
-                        ...this.uploadService.getDownloadToken(r.arquivo.id, '180 minutes'),
-                    } satisfies ArquivoBaseDto,
+                    arquivo: BuildArquivoBaseDto(
+                        r.arquivo,
+                        (id, expiresIn) => this.uploadService.getDownloadToken(id, expiresIn).download_token
+                    ),
                 };
             }),
             analises: analisesResult.map((r) => {

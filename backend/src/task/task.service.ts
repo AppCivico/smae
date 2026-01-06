@@ -762,6 +762,8 @@ export class TaskService {
             case 'restore_api_log_day':
                 service = this.apiLogRestoreService;
                 break;
+            case 'gerar_preview_documento':
+                throw 'Not implemented yet: serviceFromTaskType gerar_preview_documento';
             default:
                 task_type satisfies never;
         }

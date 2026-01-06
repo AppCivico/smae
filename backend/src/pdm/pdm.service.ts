@@ -31,6 +31,7 @@ import { UpdatePdmDto } from './dto/update-pdm.dto';
 import { ListPdm } from './entities/list-pdm.entity';
 import { PdmItemDocumentDto } from './entities/pdm-document.entity';
 import { PdmCicloService } from './pdm.ciclo.service';
+import { BuildArquivoBaseDto, PrismaArquivoComPreviewSelect } from '../upload/arquivo-preview.helper';
 
 const MAPA_PERFIL_PERMISSAO: Record<PdmPerfilTipo, PerfilResponsavelEquipe> = {
     ADMIN: 'AdminPS',
@@ -770,9 +771,7 @@ export class PdmService {
                 },
             });
             if (similarExists > 0)
-                throw new HttpException('Descrição igual ou semelhante já existe em outro registro ativo',
-                    400
-                );
+                throw new HttpException('Descrição igual ou semelhante já existe em outro registro ativo', 400);
         }
 
         let arquivo_logo_id: number | undefined | null;
@@ -1178,12 +1177,7 @@ export class PdmService {
                 id: true,
                 descricao: true,
                 arquivo: {
-                    select: {
-                        id: true,
-                        tamanho_bytes: true,
-                        nome_original: true,
-                        diretorio_caminho: true,
-                    },
+                    select: PrismaArquivoComPreviewSelect,
                 },
             },
         });
@@ -1192,14 +1186,10 @@ export class PdmService {
             return {
                 id: d.id,
                 descricao: d.descricao,
-                arquivo: {
-                    id: d.arquivo.id,
-                    tamanho_bytes: d.arquivo.tamanho_bytes,
-                    descricao: null,
-                    nome_original: d.arquivo.nome_original,
-                    diretorio_caminho: d.arquivo.diretorio_caminho,
-                    download_token: this.uploadService.getDownloadToken(d.arquivo.id, '1d').download_token,
-                } satisfies ArquivoBaseDto,
+                arquivo: BuildArquivoBaseDto(
+                    d.arquivo,
+                    (id, expiresIn) => this.uploadService.getDownloadToken(id, expiresIn).download_token
+                ),
             } satisfies PdmItemDocumentDto;
         });
 
