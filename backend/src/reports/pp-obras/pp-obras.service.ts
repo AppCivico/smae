@@ -321,11 +321,34 @@ export class PPObrasService implements ReportableService {
             )
         );
 
+        const cronogramaFields = [
+            'projeto_id',
+            'projeto_codigo',
+            'id',
+            'hierarquia',
+            'numero',
+            'nivel',
+            'tarefa',
+            'inicio_planejado',
+            'termino_planejado',
+            'custo_estimado',
+            'inicio_real',
+            'termino_real',
+            'duracao_real',
+            'percentual_concluido',
+            'custo_real',
+            'dependencias',
+            'atraso',
+            'responsavel_id',
+            'responsavel_nome_exibicao',
+        ];
+
         out.push(
             await this.streamQueryToCSV(
                 `${this._queryDataCronograma()} ${whereCond.whereString}`,
                 whereCond.queryParams,
-                'cronograma.csv'
+                'cronograma.csv',
+                cronogramaFields
             )
         );
 
@@ -399,12 +422,20 @@ export class PPObrasService implements ReportableService {
         return out;
     }
 
-    private async streamQueryToCSV(query: string, params: any[], filename: string): Promise<FileOutput> {
-        const parser = new AsyncParser({
+    private async streamQueryToCSV(
+        query: string,
+        params: any[],
+        filename: string,
+        fields?: string[]
+    ): Promise<FileOutput> {
+        const parserOptions = {
             ...DefaultCsvOptions,
             transforms: defaultTransform,
             withBOM: true,
-        });
+            ...(fields ? { fields } : {}),
+        };
+
+        const parser = new AsyncParser(parserOptions);
 
         const chunks: Buffer[] = [];
 
