@@ -111,6 +111,15 @@ watchEffect(() => {
       <col class="col--botão-de-ação">
     </template>
 
+    <template #finalLinhaCabecalho>
+      <td />
+      <td />
+      <td />
+      <td />
+      <td />
+      <td />
+    </template>
+
     <template #finalLinhaVariavel="{ variavel }">
       <td>
         <SmaeLink
@@ -171,18 +180,20 @@ watchEffect(() => {
             params: { variavelId: variavel.id },
             query: { escape: { query: $route.query } }
           }"
-          class="tprimary"
+          class="tipinfo left tprimary"
         >
           <svg
             width="20"
             height="20"
           ><use xlink:href="#i_edit" /></svg>
+          <div>Editar variável "{{ variavel.titulo }}"</div>
         </SmaeLink>
       </td>
+
       <td>
         <button
           v-if="variavel?.pode_excluir"
-          class="like-a__text"
+          class="tipinfo left like-a__text"
           aria-label="excluir"
           title="excluir"
           @click="excluirVariavel(variavel.id, variavel.titulo)"
@@ -191,6 +202,7 @@ watchEffect(() => {
             width="20"
             height="20"
           ><use xlink:href="#i_remove" /></svg>
+          <div>Excluir variável "{{ variavel.titulo }}"</div>
         </button>
       </td>
     </template>
