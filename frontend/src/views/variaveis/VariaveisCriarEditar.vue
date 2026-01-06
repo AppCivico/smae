@@ -1097,20 +1097,22 @@ onUnmounted(() => {
       <fieldset v-if="gerarMultiplasVariaveis">
         <div class="flex spacebetween g2 mb1">
           <div class="f1 fb15em mb1 mt2">
-            <label class="block">
-              <Field
-                name="criar_formula_composta"
-                type="checkbox"
-                :value="true"
-                :unchecked-value="false"
-              />
-              <LabelFromYup
-                name="criar_formula_composta"
-                as="span"
-                :schema="schema"
-                :class="{ error: errors.criar_formula_composta }"
-              />
-            </label>
+            <SmaeLabel
+              name="criar_formula_composta"
+              class="flex g1 center"
+              :schema="schema"
+              :class="{ error: errors.criar_formula_composta }"
+            >
+              <template #prepend>
+                <Field
+                  name="criar_formula_composta"
+                  type="checkbox"
+                  :value="true"
+                  :unchecked-value="false"
+                />
+              </template>
+            </SmaeLabel>
+
             <ErrorMessage
               class="error-msg"
               name="criar_formula_composta"
@@ -1154,7 +1156,7 @@ onUnmounted(() => {
           </div>
 
           <hr class="f1 mt3">
-          <label class="mt2">
+          <label class="mt1 flex center">
             <input
               v-model="estãoTodasAsRegiõesSelecionadas"
               type="checkbox"
@@ -1225,18 +1227,21 @@ onUnmounted(() => {
 
         <div class="flex flexwrap g2 mb1">
           <div class="mb2 mt2">
-            <label class="block">
-              <Field
-                name="supraregional"
-                type="checkbox"
-                :value="true"
-              /><LabelFromYup
-                name="supraregional"
-                :schema="schema"
-                as="span"
-                :class="{ error: errors.supraregional }"
-              />
-            </label>
+            <SmaeLabel
+              name="supraregional"
+              :schema="schema"
+              class="flex center g1"
+              :class="{ error: errors.supraregional }"
+            >
+              <template #prepend>
+                <Field
+                  name="supraregional"
+                  type="checkbox"
+                  :value="true"
+                />
+              </template>
+            </SmaeLabel>
+
             <ErrorMessage
               class="error-msg"
               name="supraregional"
