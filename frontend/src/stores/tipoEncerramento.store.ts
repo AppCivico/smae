@@ -85,7 +85,7 @@ export const useTipoEncerramentoStore = defineStore('tipoEncerramento', {
         this.chamadasPendentes.lista = true;
         this.erro.lista = null;
 
-        const resposta = await this.requestS.get(`${obterRota()}`, params) as ListTipoEncerramentoDto;
+        const resposta = await this.requestS.get(obterRota(), params) as ListTipoEncerramentoDto;
         this.lista = resposta.linhas;
       } catch (erro: unknown) {
         this.erro.lista = erro;
@@ -115,7 +115,7 @@ export const useTipoEncerramentoStore = defineStore('tipoEncerramento', {
         if (id) {
           await this.requestS.patch(`${obterRota()}/${id}`, params);
         } else {
-          await this.requestS.post(`${obterRota()}`, params);
+          await this.requestS.post(obterRota(), params);
         }
       } catch (erro: unknown) {
         this.erro.emFoco = erro;
