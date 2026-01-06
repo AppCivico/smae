@@ -686,6 +686,17 @@ export const fonte = object()
       .required(),
   });
 
+export const tipoEncerramento = object()
+  .shape({
+    descricao: string()
+      .max(1000)
+      .label('Descrição')
+      .nullable(),
+    habilitar_info_adicional: boolean()
+      .label('Habilitar informações adicionais')
+      .default(false),
+  });
+
 export const geoLocalização = object()
 // shape() necessário para não cair num ciclo infinito na validação de coordenadas
   .shape({
