@@ -111,8 +111,20 @@ async function onSubmit(values) {
   </Form>
 </template>
 <style lang="less" scoped>
+form {
+  input:-webkit-autofill {
+    background-color: inherit !important;
+    -webkit-text-fill-color: inherit !important;
+  }
+}
+
 .password-field {
   position: relative;
+
+  // Prevenir o ícone de "mostrar senha" no input de senha do Edge
+  input[type="password"]::-ms-reveal {
+    display: none;
+  }
 }
 
 .password-field__input {
