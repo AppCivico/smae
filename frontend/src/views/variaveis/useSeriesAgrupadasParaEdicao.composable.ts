@@ -1,5 +1,4 @@
 import type { ListSeriesAgrupadas, VariavelResumo } from '@back/variavel/dto/list-variavel.dto';
-import { SerieFilhas } from '@back/variavel/entities/variavel.entity';
 import type { ComputedRef, MaybeRef } from 'vue';
 import { computed, toValue } from 'vue';
 
@@ -19,7 +18,7 @@ export function useSeriesFilhasAgrupadasParaEdicao(
   const seriesFilhas = computed(() => {
     const data = toValue(seriesAgrupadas);
 
-    const base: SeriesPorTipo = data?.ordem_series.reduce((acc, cur) => {
+    const seriesPorTipo: SeriesPorTipo = data?.ordem_series.reduce((acc, cur) => {
       if (!acc[cur]) {
         acc[cur] = [];
       }
@@ -31,36 +30,30 @@ export function useSeriesFilhasAgrupadasParaEdicao(
       return acc;
     }, {} as Record<number, VariavelResumo>) || {};
 
-    function processVariavelFilha(
-      vf: SerieFilhas,
-      ordemSeries: string[],
-      acc: SeriesPorTipo,
-    ) {
-      vf.series.forEach((serie, j: number) => {
-        const valorNominal = 'valor_nominal' in serie
-          && serie.valor_nominal !== ''
-          ? Number(serie.valor_nominal)
-          : NaN;
+    if (Array.isArray(data?.linhas)) {
+      data.linhas.forEach((linha) => {
+        linha
+          .variaveis_filhas?.forEach((vf) => {
+            vf.series.forEach((serie, j: number) => {
+              const valorNominal = 'valor_nominal' in serie && serie.valor_nominal !== ''
+                ? Number(serie.valor_nominal)
+                : NaN;
 
-        const seriesKey = ordemSeries[j];
+              const tipo = data.ordem_series[j];
 
-        if (seriesKey && acc[seriesKey]) {
-          acc[seriesKey].push({
-            variavel: filhasPorId?.[vf.variavel_id],
-            referencia: 'referencia' in serie ? String(serie.referencia) : '',
-            valor: Number.isFinite(valorNominal) ? valorNominal : '',
+              if (tipo && seriesPorTipo[tipo]) {
+                seriesPorTipo[tipo].push({
+                  variavel: filhasPorId?.[vf.variavel_id],
+                  referencia: 'referencia' in serie ? String(serie.referencia) : '',
+                  valor: Number.isFinite(valorNominal) ? valorNominal : '',
+                });
+              }
+            });
           });
-        }
       });
     }
 
-    return Array.isArray(data?.linhas)
-      ? data.linhas.reduce((acc, cur) => {
-        cur.variaveis_filhas?.forEach((vf) => processVariavelFilha(vf, data.ordem_series, acc));
-
-        return acc;
-      }, base)
-      : base;
+    return seriesPorTipo;
   });
 
   return {
