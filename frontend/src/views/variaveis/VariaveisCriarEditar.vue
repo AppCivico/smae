@@ -110,7 +110,7 @@ const {
 
 const agrupadorSelecionado = computed(() => itemParaEdicao.value.assuntos_mapeados);
 
-const estãoTodasAsRegiõesSelecionadas = computed({
+const estaoTodasAsRegioesSelecionadas = computed({
   get: () => {
     if (!values.regioes) {
       return false;
@@ -1141,12 +1141,12 @@ onUnmounted(() => {
                 :value="null"
               />
               <option
-                v-for="nível in Object.values(niveisRegionalizacao)"
-                :key="nível.id"
-                :value="nível.id"
-                :disabled="!regiõesPorNívelOrdenadas?.[nível.id]?.length"
+                v-for="nivel in Object.values(niveisRegionalizacao)"
+                :key="nivel.id"
+                :value="nivel.id"
+                :disabled="!regiõesPorNívelOrdenadas?.[nivel.id]?.length"
               >
-                {{ nível.nome }}
+                {{ nivel.nome }}
               </option>
             </Field>
             <ErrorMessage
@@ -1158,14 +1158,14 @@ onUnmounted(() => {
           <hr class="f1 mt3">
           <label class="mt1 flex center">
             <input
-              v-model="estãoTodasAsRegiõesSelecionadas"
+              v-model="estaoTodasAsRegioesSelecionadas"
               type="checkbox"
               :disabled="!regiõesPorNívelOrdenadas?.[values.nivel_regionalizacao]?.length"
               class="interruptor"
               aria-labelledby="selecionar-todas-as-regiões"
             >
             <span
-              v-if="estãoTodasAsRegiõesSelecionadas"
+              v-if="estaoTodasAsRegioesSelecionadas"
               id="selecionar-todas-as-regiões"
             >
               Limpar seleção
