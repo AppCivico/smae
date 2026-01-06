@@ -424,8 +424,8 @@ watch(() => props.group, () => {
               if (values.indicador_tipo && indicadorId) {
                 setFieldValue('formula', '')
                 setFieldValue('formula_variaveis', [])
-                formula.value = ''
-                variaveisFormula.value = []
+                formula = ''
+                variaveisFormula = []
               }
             }"
           >
