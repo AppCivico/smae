@@ -8037,9 +8037,10 @@ model DistribuicaoRecursoVinculo {
 }
 
 model ProjetoTipoEncerramento {
-    id        Int         @id @default(autoincrement())
-    descricao String
-    tipo      TipoProjeto @default(PP)
+    id                       Int         @id @default(autoincrement())
+    descricao                String
+    tipo                     TipoProjeto @default(PP)
+    habilitar_info_adicional Boolean     @default(false)
 
     criado_por     Int?
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)
