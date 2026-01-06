@@ -19,6 +19,7 @@ import { usePartidosStore } from '@/stores/partidos.store';
 import { useTipoDeAditivosStore } from '@/stores/tipoDeAditivos.store';
 import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
 import { useTipoDeVinculoStore } from '@/stores/tipoDeVinculo.store';
+import { useTipoEncerramentoStore } from '@/stores/tipoEncerramento.store';
 import { useTiposDeAcompanhamentoStore } from '@/stores/tiposDeAcompanhamento.store';
 import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
 import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store';
@@ -101,6 +102,7 @@ const rotasParaMenuSecundário = [
       'gerenciarRegiões',
       'tipoDeTransferencia.listar',
       'tipoDeVinculo.listar',
+      'tipoEncerramento.listar',
       'projeto.etapasListar',
       'mdo.etapasListar',
       'gruposTematicosObras',
@@ -198,6 +200,54 @@ export default [
                 return emFoco.nome;
               },
               rotasParaMigalhasDePão: ['partidosListar'],
+            },
+          },
+        ],
+      },
+      {
+        path: '/tipo-encerramento',
+        component: () => import('@/views/TipoEncerramento/TipoEncerramentoRaiz.vue'),
+        meta: {
+          // limitarÀsPermissões: 'TipoEncerramento.',
+          título: 'Tipos de encerramento',
+          rotasParaMenuSecundário,
+        },
+        children: [
+          {
+            name: 'tipoEncerramento.listar',
+            path: '',
+            component: () => import('@/views/TipoEncerramento/TipoEncerramentoLista.vue'),
+            meta: {
+              título: 'Tipos de encerramento',
+            },
+          },
+          {
+            name: 'tipoEncerramento.novo',
+            path: 'novo',
+            component: () => import('@/views/TipoEncerramento/TipoEncerramentoCriarEditar.vue'),
+            meta: {
+              título: 'Novo tipo de encerramento',
+              rotasParaMigalhasDePão: ['tipoEncerramento.listar'],
+              rotaDeEscape: 'tipoEncerramento.listar',
+            },
+          },
+          {
+            path: ':tipoEncerramentoId',
+            name: 'tipoEncerramento.editar',
+            component: () => import('@/views/TipoEncerramento/TipoEncerramentoCriarEditar.vue'),
+            props: ({ params }) => ({
+              ...params,
+              ...{
+                tipoEncerramentoId: Number.parseInt(params.tipoEncerramentoId, 10) || undefined,
+              },
+            }),
+            meta: {
+              título: () => {
+                const { emFoco } = useTipoEncerramentoStore();
+                return emFoco?.descricao || 'Editar tipo de encerramento';
+              },
+              rotasParaMigalhasDePão: ['tipoEncerramento.listar'],
+              rotaDeEscape: 'tipoEncerramento.listar',
             },
           },
         ],
