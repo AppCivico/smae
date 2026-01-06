@@ -244,13 +244,11 @@ export class AnaliseQualitativaDto {
     eh_liberacao_auto: boolean;
 }
 
-export class VariavelAnaliseDocumento extends PickType(ArquivoBaseDto, [
-    'id',
-    'nome_original',
-    'download_token',
-    'descricao',
-]) {
-    descricao: string | null;
+// Change VariavelAnaliseDocumento to extend ArquivoBaseDto instead of picking properties
+export class VariavelAnaliseDocumento extends ArquivoBaseDto {
+    // Override descricao to make it required (not deprecated here)
+    declare descricao: string | null;
+    // Add variavel-specific fields
     fase: VariavelFase;
     pode_editar: boolean;
 }
@@ -296,4 +294,43 @@ export class VariavelCicloFaseCountDto {
 
     @ApiProperty({ description: 'Total geral de variáveis em aberto' })
     total: number;
+}
+
+export class VariavelDocumentosGlobalDto {
+    variavel_id: number;
+    variavel_codigo: string;
+    variavel_titulo: string;
+    documentos: VariavelAnaliseDocumentoComCicloDto[];
+}
+
+export class VariavelAnaliseDocumentoComCicloDto extends VariavelAnaliseDocumento {
+    ciclo_fisico_id?: number;
+    ciclo_data?: string;
+    referencia_data: string;
+}
+
+export class ListaDocumentosPorVariavelGlobalDto {
+    variaveis: VariavelDocumentosGlobalDto[];
+}
+
+export class FilterDocumentosPorVariavelGlobalDto {
+    @IsInt()
+    @IsOptional()
+    @Transform(({ value }: any) => +value)
+    meta_id?: number;
+
+    @IsInt()
+    @IsOptional()
+    @Transform(({ value }: any) => +value)
+    iniciativa_id?: number;
+
+    @IsInt()
+    @IsOptional()
+    @Transform(({ value }: any) => +value)
+    atividade_id?: number;
+
+    @IsInt()
+    @IsOptional()
+    @Transform(({ value }: any) => +value)
+    pdm_id?: number;
 }

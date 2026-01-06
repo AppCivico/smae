@@ -3,26 +3,36 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { PerfilResponsavelEquipe, Prisma, VariavelCicloCorrente, VariavelFase } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
-import { IsCrontabEnabled } from '../common/crontab-utils';
-import { LoggerWithLog } from '../common/LoggerWithLog';
 import { CONST_BOT_USER_ID } from '../common/consts';
+import { IsCrontabEnabled } from '../common/crontab-utils';
 import { Date2YMD, SYSTEM_TIMEZONE } from '../common/date2ymd';
 import { IdTituloDto } from '../common/dto/IdTitulo.dto';
 import { JOB_CICLO_VARIAVEL } from '../common/dto/locks';
+import { LoggerWithLog } from '../common/LoggerWithLog';
+import { AddTaskRefreshMeta } from '../meta/meta.service';
 import { TEMPO_EXPIRACAO_ARQUIVO } from '../mf/metas/metas.service';
 import { PrismaService } from '../prisma/prisma.service';
+import {
+    BuildArquivoBaseDto,
+    PrismaArquivoComPreviewPayload,
+    PrismaArquivoComPreviewSelect,
+} from '../upload/arquivo-preview.helper';
 import { UploadService } from '../upload/upload.service';
 import { VariavelResumo, VariavelResumoInput } from './dto/list-variavel.dto';
 import {
     AnaliseQualitativaDto,
     BatchAnaliseQualitativaDto,
+    FilterDocumentosPorVariavelGlobalDto,
     FilterVariavelAnaliseQualitativaGetDto,
     FilterVariavelGlobalCicloDto,
+    ListaDocumentosPorVariavelGlobalDto,
     PSPedidoComplementacaoDto,
     UpsertVariavelGlobalCicloDocumentoDto,
     VariavelAnaliseDocumento,
+    VariavelAnaliseDocumentoComCicloDto,
     VariavelAnaliseQualitativaResponseDto,
     VariavelCicloFaseCountDto,
+    VariavelDocumentosGlobalDto,
     VariavelGlobalAnaliseItemDto,
     VariavelGlobalCicloDto,
     VariavelValorDto,
@@ -35,7 +45,6 @@ import {
     VariavelService,
 } from './variavel.service';
 import { VariavelUtilService } from './variavel.util.service';
-import { AddTaskRefreshMeta } from '../meta/meta.service';
 
 interface ICicloCorrente {
     variavel: {
@@ -57,16 +66,11 @@ interface ValorSerieInterface {
     valor_nominal: { toString: () => string };
 }
 
-interface UploadArquivoInterface {
-    arquivo: {
-        id: number;
-        tamanho_bytes: number;
-        nome_original: string;
-        diretorio_caminho: string | null;
-    };
+type UploadArquivoInterface = {
+    arquivo: PrismaArquivoComPreviewPayload;
     descricao: string | null;
     fase: VariavelFase;
-}
+};
 
 interface IUltimaAnaliseValor {
     variavel_id: number;
@@ -896,7 +900,7 @@ export class VariavelCicloService {
                 referencia_data: data_referencia,
                 removido_em: null,
             },
-            select: { arquivo: true, descricao: true, fase: true },
+            select: { arquivo: { select: PrismaArquivoComPreviewSelect }, descricao: true, fase: true },
         });
 
         // Processar e formatar os resultados
@@ -1063,13 +1067,13 @@ export class VariavelCicloService {
 
     private formatarUploads(uploads: UploadArquivoInterface[]): VariavelAnaliseDocumento[] {
         return uploads.map((upload) => {
-            const arquivo = upload.arquivo;
-            const token = this.uploadService.getDownloadToken(arquivo.id, TEMPO_EXPIRACAO_ARQUIVO);
+            const baseDto = BuildArquivoBaseDto(
+                upload.arquivo,
+                (id, expiresIn) => this.uploadService.getDownloadToken(id, expiresIn).download_token
+            );
             return {
-                download_token: token.download_token,
+                ...baseDto,
                 descricao: upload.descricao,
-                id: arquivo.id,
-                nome_original: arquivo.nome_original,
                 fase: upload.fase,
                 // no momento, sempre pode editar pois quem subiu pode editar, e os supervisores podem editar tudo, então
                 // não há necessidade de verificar permissões
@@ -1518,5 +1522,144 @@ export class VariavelCicloService {
         const total = linhas.reduce((acc, item) => acc + item.quantidade, 0);
 
         return { linhas, total };
+    }
+
+    async getDocumentosPorVariavel(
+        filters: FilterDocumentosPorVariavelGlobalDto,
+        user: PessoaFromJwt
+    ): Promise<ListaDocumentosPorVariavelGlobalDto> {
+        // Valida que ao menos um parâmetro foi informado
+        if (!filters.meta_id && !filters.iniciativa_id && !filters.atividade_id && !filters.pdm_id) {
+            throw new BadRequestException(
+                'É necessário informar ao menos um dos parâmetros: meta_id, iniciativa_id, atividade_id ou pdm_id'
+            );
+        }
+
+        const whereFilter = await this.getPermissionSet({}, user);
+
+        // Busca todas as variáveis que batem com os filtros de meta/iniciativa/atividade
+        const variaveis = await this.prisma.variavel.findMany({
+            where: {
+                AND: whereFilter,
+                tipo: 'Global',
+                ...buildMetaIniAtvFilter(filters),
+            },
+            select: {
+                id: true,
+                codigo: true,
+                titulo: true,
+                variavel_mae_id: true,
+            },
+            orderBy: [{ codigo: 'asc' }],
+        });
+
+        if (variaveis.length === 0) {
+            return { variaveis: [] };
+        }
+
+        // Separa variáveis mães de variáveis filhas
+        const parentVariavelIds = new Set<number>();
+        const childToParentMap = new Map<number, number>();
+
+        for (const variavel of variaveis) {
+            if (variavel.variavel_mae_id) {
+                childToParentMap.set(variavel.id, variavel.variavel_mae_id);
+                parentVariavelIds.add(variavel.variavel_mae_id);
+            } else {
+                parentVariavelIds.add(variavel.id);
+            }
+        }
+
+        // Busca informações das variáveis mães que não foram retornadas na primeira consulta
+        const missingParentIds = Array.from(parentVariavelIds).filter((id) => !variaveis.some((v) => v.id === id));
+
+        let parentVariaveis: Array<{ id: number; codigo: string; titulo: string }> = [];
+        if (missingParentIds.length > 0) {
+            parentVariaveis = await this.prisma.variavel.findMany({
+                where: {
+                    id: { in: missingParentIds },
+                    tipo: 'Global',
+                    removido_em: null,
+                },
+                select: {
+                    id: true,
+                    codigo: true,
+                    titulo: true,
+                },
+            });
+        }
+
+        // Obtém todos os documentos apenas para as variáveis mães
+        const documentos = await this.prisma.variavelGlobalCicloDocumento.findMany({
+            where: {
+                variavel_id: { in: Array.from(parentVariavelIds) },
+                removido_em: null,
+            },
+            orderBy: [{ variavel_id: 'asc' }, { referencia_data: 'desc' }, { criado_em: 'desc' }],
+            select: {
+                id: true,
+                variavel_id: true,
+                criado_em: true,
+                descricao: true,
+                fase: true,
+                referencia_data: true,
+                pessoaCriador: {
+                    select: { nome_exibicao: true },
+                },
+                arquivo: { select: PrismaArquivoComPreviewSelect },
+            },
+        });
+
+        // Monta a resposta - agrupa pelo 'dono' real do documento (mãe se for filha, ou a própria se for mãe)
+        const variaveisComDocumentos: VariavelDocumentosGlobalDto[] = [];
+
+        // Cria um mapa com as informações de todas as variáveis (originais + mães buscadas separadamente)
+        const allVariaveisMap = new Map<number, { codigo: string; titulo: string }>();
+        for (const v of [...variaveis, ...parentVariaveis]) {
+            if (!allVariaveisMap.has(v.id)) {
+                allVariaveisMap.set(v.id, { codigo: v.codigo, titulo: v.titulo });
+            }
+        }
+
+        // Processa cada variável retornada na consulta inicial
+        for (const variavel of variaveis) {
+            // Determine which variable holds the documents
+            const documentHolderId = variavel.variavel_mae_id || variavel.id;
+            const docsVariavel = documentos.filter((d) => d.variavel_id === documentHolderId);
+
+            if (docsVariavel.length > 0) {
+                // Obtém as informações do 'dono' do documento (pode ser a mãe)
+                const holderInfo = allVariaveisMap.get(documentHolderId);
+
+                if (!holderInfo) continue; // Shouldn't happen, but safety check
+
+                // Verifica se já adicionamos esta variável mãe à resposta
+                if (variaveisComDocumentos.some((v) => v.variavel_id === documentHolderId)) {
+                    continue;
+                }
+
+                variaveisComDocumentos.push({
+                    variavel_id: documentHolderId,
+                    variavel_codigo: holderInfo.codigo,
+                    variavel_titulo: holderInfo.titulo,
+                    documentos: docsVariavel.map((doc) => {
+                        const baseDto = BuildArquivoBaseDto(
+                            doc.arquivo,
+                            (id, expiresIn) => this.uploadService.getDownloadToken(id, expiresIn).download_token
+                        );
+                        baseDto.diretorio_caminho = `${holderInfo.codigo}/${Date2YMD.toString(doc.referencia_data)}`;
+                        return {
+                            ...baseDto,
+                            descricao: doc.descricao,
+                            fase: doc.fase,
+                            pode_editar: true,
+                            referencia_data: Date2YMD.toString(doc.referencia_data),
+                        } satisfies VariavelAnaliseDocumentoComCicloDto;
+                    }),
+                });
+            }
+        }
+
+        return { variaveis: variaveisComDocumentos };
     }
 }

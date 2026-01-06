@@ -11,6 +11,8 @@ import {
     FilterVariavelAnaliseQualitativaGetDto,
     VariavelAnaliseQualitativaResponseDto,
     VariavelCicloFaseCountDto,
+    FilterDocumentosPorVariavelGlobalDto,
+    ListaDocumentosPorVariavelGlobalDto,
 } from './dto/variavel.ciclo.dto';
 import { SerieIndicadorValorNominal, SerieValorNomimal } from './entities/variavel.entity';
 import { VariavelCicloService } from './variavel.ciclo.service';
@@ -74,5 +76,15 @@ export class VariavelCicloGlobalController {
         const data = await this.variavelCicloService.sincronizaSerieVariavel(logger);
 
         return `Sincronização de série de variáveis concluída com sucesso. ${data.message}`;
+    }
+
+    @Get('plano-setorial-variavel-ciclo/documentos-por-variavel')
+    @ApiBearerAuth('access-token')
+    @Roles([...VariavelGlobalController.WritePerm, ...MetaSetorialController.ReadPerm])
+    async getDocumentosPorVariavel(
+        @Query() filters: FilterDocumentosPorVariavelGlobalDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<ListaDocumentosPorVariavelGlobalDto> {
+        return this.variavelCicloService.getDocumentosPorVariavel(filters, user);
     }
 }
