@@ -4,7 +4,11 @@ import {
   ErrorMessage, Field, useForm, useIsFormDirty,
 } from 'vee-validate';
 import {
-  computed, onUnmounted, ref, watch,
+  computed,
+  nextTick,
+  onUnmounted,
+  ref,
+  watch,
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -80,6 +84,7 @@ const {
   emFoco,
   erros,
   itemParaEdicao,
+  variaveisFilhasPorMae,
 } = storeToRefs(variaveisGlobaisStore);
 
 const props = defineProps({
@@ -180,6 +185,72 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
 
 const formularioSujo = useIsFormDirty();
 
+async function definirCamposParaClonagem() {
+  if (props.variavelId || !route.query.copiar_de || !emFoco.value) {
+    return;
+  }
+
+  resetField('titulo', { value: `Cópia de ${emFoco.value.titulo}` });
+
+  if (!emFoco.value.possui_variaveis_filhas) {
+    return;
+  }
+
+  // a partir daqui definindo campos de geração de filhas
+  gerarMultiplasVariaveis.value = true;
+
+  if (!variaveisFilhasPorMae.value[route.query.copiar_de]?.length) {
+    await variaveisGlobaisStore.buscarFilhas(route.query.copiar_de);
+  }
+
+  const filhasDaOriginal = variaveisFilhasPorMae.value[route.query.copiar_de] || [];
+
+  if (filhasDaOriginal.length) {
+    let incluirSupraregional = false;
+    let criarCompostas = false;
+    const regioesPorNivel = {};
+    let nivelAplicavel = null;
+
+    // Correndo o array apenas uma vez para definir os campos necessários
+    filhasDaOriginal.forEach((filha) => {
+      if (!incluirSupraregional && filha.supraregional) {
+        incluirSupraregional = true;
+      }
+
+      if (!criarCompostas && filha.tipo?.toLowerCase() === 'calculada') {
+        criarCompostas = true;
+      }
+
+      const nivel = filha.regiao?.nivel;
+
+      if (nivel) {
+        if (!regioesPorNivel[nivel]) {
+          regioesPorNivel[nivel] = [];
+        }
+
+        regioesPorNivel[nivel].push(filha.regiao.id);
+
+        // só o maior nível de regionalização interessa aqui
+        if (
+          nivelAplicavel === null
+          || nivel > nivelAplicavel
+        ) {
+          nivelAplicavel = nivel;
+        }
+      }
+    });
+
+    resetField('criar_formula_composta', { value: criarCompostas });
+    resetField('nivel_regionalizacao', { value: nivelAplicavel });
+    resetField('supraregional', { value: incluirSupraregional });
+
+    // aguardando pelos campos de regiões estarem disponíveis na UI
+    // e evitar que o seu desenho limpe o valor definido aqui
+    await nextTick();
+    resetField('regioes', { value: regioesPorNivel[nivelAplicavel] });
+  }
+}
+
 async function iniciar() {
   ÓrgãosStore.getAll();
   assuntosStore.buscarTudo();
@@ -208,7 +279,9 @@ watch(itemParaEdicao, (novoValor) => {
   resetForm({
     initialValues: novoValor,
   });
-}/* , { immediate: true } */);
+
+  definirCamposParaClonagem();
+}, { immediate: true });
 
 watch(gerarMultiplasVariaveis, (novoValor) => {
   if (!novoValor) {

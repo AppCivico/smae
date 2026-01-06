@@ -101,9 +101,10 @@ watchEffect(() => {
 
   <TabelaDeVariaveisGlobais
     aria-labelledby="titulo-da-pagina"
-    numero-de-colunas-extras="5"
+    numero-de-colunas-extras="6"
   >
     <template #definicaoUltimasColunas>
+      <col class="col--botão-de-ação">
       <col class="col--botão-de-ação">
       <col class="col--botão-de-ação">
       <col class="col--botão-de-ação">
@@ -120,7 +121,7 @@ watchEffect(() => {
       <td />
     </template>
 
-    <template #finalLinhaVariavel="{ variavel }">
+    <template #finalLinhaVariavel="{ variavel, ehFilha }">
       <td>
         <SmaeLink
           type="button"
@@ -170,6 +171,26 @@ watchEffect(() => {
           ><use xlink:href="#i_check" /></svg>
           <div>Preencher valores Realizados Retroativos</div>
         </button>
+      </td>
+
+      <td>
+        <SmaeLink
+          v-if="!ehFilha"
+          :to="{
+            name: 'variaveisCriar',
+            query: {
+              copiar_de: variavel.id,
+              escape: { query: $route.query }
+            }
+          }"
+          class="tipinfo tprimary"
+        >
+          <svg
+            width="20"
+            height="20"
+          ><use xlink:href="#i_copy" /></svg>
+          <div>Clonar variável "{{ variavel.titulo }}"</div>
+        </SmaeLink>
       </td>
 
       <td>

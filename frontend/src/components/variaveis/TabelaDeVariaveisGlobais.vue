@@ -142,6 +142,7 @@
                 :variavel="filha"
                 :mae="item"
                 :agrupador="k"
+                :eh-filha="true"
               />
 
               <LinhaDeVariaveis :linha="filha" />
@@ -149,6 +150,7 @@
               <slot
                 name="finalLinhaVariavel"
                 :variavel="filha"
+                :eh-filha="true"
               />
             </tr>
           </template>
