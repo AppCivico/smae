@@ -719,6 +719,7 @@ onUnmounted(() => {
             :class="{ error: errors.inicio_medicao }"
           >
             <SmaeMonth
+              class="light"
               dia-prefixo="1"
               placeholder="MM/YYYY"
               :model-value="value"
@@ -745,6 +746,7 @@ onUnmounted(() => {
             :class="{ error: errors.fim_medicao }"
           >
             <SmaeMonth
+              class="light"
               dia-prefixo="1"
               placeholder="MM/YYYY"
               :model-value="value"
@@ -945,7 +947,7 @@ onUnmounted(() => {
     <fieldset>
       <div class="flex flexwrap g2 mb1">
         <div class="f1 fb15em mb1">
-          <label class="flex flexcenter">
+          <label class="flex center">
             <Field
               name="acumulativa"
               type="checkbox"
@@ -967,7 +969,7 @@ onUnmounted(() => {
           />
         </div>
         <div class="f1 fb15em mb1">
-          <label class="flex flexcenter">
+          <label class="flex center">
             <Field
               name="dado_aberto"
               type="checkbox"
