@@ -2581,7 +2581,14 @@ export class ProjetoService {
             dto.status = undefined;
         }
 
-        // ges
+        // Se receber orgao_colaborador_id e mudar, limpa o colaboradores_no_orgao se não for enviado
+        if (
+            dto.orgao_colaborador_id !== undefined &&
+            dto.orgao_colaborador_id !== projeto.orgao_colaborador?.id &&
+            dto.colaboradores_no_orgao === undefined
+        ) {
+            dto.colaboradores_no_orgao = [];
+        }
 
         if ('grupo_tematico_id' in dto) {
             await this.verificaGrupoTematico(dto, projeto.grupo_tematico?.id);
