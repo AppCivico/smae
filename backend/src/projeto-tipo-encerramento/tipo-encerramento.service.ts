@@ -25,6 +25,7 @@ export class TipoEncerramentoService {
                 criado_em: new Date(Date.now()),
                 descricao: dto.descricao,
                 tipo: tipo,
+                habilitar_info_adicional: dto.habilitar_info_adicional ?? false,
             },
             select: { id: true },
         });
@@ -38,7 +39,7 @@ export class TipoEncerramentoService {
                 tipo: tipo,
                 removido_em: null,
             },
-            select: { id: true, descricao: true },
+            select: { id: true, descricao: true, habilitar_info_adicional: true },
             orderBy: { descricao: 'asc' },
         });
 
