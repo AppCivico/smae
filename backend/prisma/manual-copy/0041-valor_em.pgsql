@@ -8,15 +8,18 @@ DECLARE
     _elementos jsonb;
     _casas_decimais int;
     _variavel_categorica_id int;
+    _variavel_categoria_id int;
     _categorica_valores jsonb;
 BEGIN
     -- Busca metadata do indicador (casas_decimais e variavel_categorica_id)
     SELECT
         i.casas_decimais,
-        v.variavel_categorica_id
+        v.variavel_categorica_id,
+        i.variavel_categoria_id
     INTO
         _casas_decimais,
-        _variavel_categorica_id
+        _variavel_categorica_id,
+        _variavel_categoria_id
     FROM indicador i
     LEFT JOIN variavel v ON v.id = i.variavel_categoria_id
     WHERE i.id = pIndicador_id;
@@ -61,6 +64,52 @@ BEGIN
         JOIN variavel_categorica_valor vcv ON vcv.id = (elem->>0)::int
         WHERE vcv.variavel_categorica_id = _variavel_categorica_id
           AND vcv.removido_em IS NULL;
+    ELSIF _variavel_categoria_id IS NOT NULL THEN
+        -- busca na serie_variavel diretamente
+        -- estrutura: [[variavel_id, quantidade], ...] onde variavel_id aponta para variáveis que têm serie_variavel.variavel_categorica_valor_id
+        SELECT jsonb_agg(
+            jsonb_build_object(
+                'id', vcv.id,
+                'titulo', vcv.titulo,
+                'valor_variavel', vcv.valor_variavel,
+                'quantidade', sum_qty
+            )
+            ORDER BY vcv.valor_variavel
+        )
+        INTO _categorica_valores
+        FROM (
+            SELECT 
+                sv_child.variavel_categorica_valor_id,
+                SUM((elem->1)::text::int) as sum_qty
+            FROM (
+                SELECT sv.elementos
+                FROM serie_variavel sv
+                WHERE sv.variavel_id = _variavel_categoria_id
+                    AND sv.serie = pSerie
+                    AND sv.data_valor <= pPeriodo
+                    AND sv.data_valor > (pPeriodo - (janela || ' months')::interval)::date
+                    AND sv.conferida = true
+                ORDER BY sv.data_valor DESC
+                LIMIT 1
+            ) latest_sv
+            CROSS JOIN LATERAL jsonb_array_elements((latest_sv.elementos::jsonb)->'categorica') elem
+            LEFT JOIN LATERAL (
+                SELECT sv2.variavel_categorica_valor_id
+                FROM serie_variavel sv2
+                WHERE sv2.variavel_id = (elem->0)::text::int
+                    AND sv2.serie = pSerie
+                    AND sv2.data_valor <= pPeriodo
+                    AND sv2.data_valor > (pPeriodo - (janela || ' months')::interval)::date
+                    AND sv2.conferida = true
+                ORDER BY sv2.data_valor DESC
+                LIMIT 1
+            ) sv_child ON true
+            WHERE sv_child.variavel_categorica_valor_id IS NOT NULL
+            GROUP BY sv_child.variavel_categorica_valor_id
+        ) grouped
+        JOIN variavel_categorica_valor vcv ON vcv.id = grouped.variavel_categorica_valor_id
+            AND vcv.variavel_categorica_id = _variavel_categorica_id
+            AND vcv.removido_em IS NULL;
     END IF;
 
     _result := jsonb_build_object(
