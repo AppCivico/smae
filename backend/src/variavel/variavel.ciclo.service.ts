@@ -178,7 +178,11 @@ export async function getVariavelPermissionsWhere(
     return { AND: whereConditions };
 }
 
-function buildMetaIniAtvFilter(filters: FilterVariavelGlobalCicloDto) {
+function buildMetaIniAtvFilter(filters: FilterVariavelGlobalCicloDto): {
+    view_dashboard_variavel_corrente?: {
+        some: object;
+    };
+} {
     if (filters.atividade_id)
         return {
             view_dashboard_variavel_corrente: {
@@ -216,6 +220,7 @@ function buildMetaIniAtvFilter(filters: FilterVariavelGlobalCicloDto) {
                 },
             },
         };
+
     return {};
 }
 
@@ -1528,7 +1533,7 @@ export class VariavelCicloService {
         filters: FilterDocumentosPorVariavelGlobalDto,
         user: PessoaFromJwt
     ): Promise<ListaDocumentosPorVariavelGlobalDto> {
-        // Valida que ao menos um parâmetro foi informado
+        // Valida que pelo menos um parâmetro foi informado
         if (!filters.meta_id && !filters.iniciativa_id && !filters.atividade_id && !filters.pdm_id) {
             throw new BadRequestException(
                 'É necessário informar ao menos um dos parâmetros: meta_id, iniciativa_id, atividade_id ou pdm_id'
@@ -1537,12 +1542,33 @@ export class VariavelCicloService {
 
         const whereFilter = await this.getPermissionSet({}, user);
 
-        // Busca todas as variáveis que batem com os filtros de meta/iniciativa/atividade
+        // Consulta a view para obter todas as variáveis associadas a meta/ini/atv (não apenas o ciclo atual)
+        const viewResults = await this.prisma.view_dashboard_variavel_corrente.findMany({
+            where: {
+                ...buildMetaIniAtvFilter(filters).view_dashboard_variavel_corrente?.some,
+            },
+            distinct: ['variavel_ciclo_corrente_id'],
+            select: {
+                variavel_ciclo_corrente: {
+                    select: {
+                        variavel_id: true,
+                    },
+                },
+            },
+        });
+
+        const variavelIdsFromView = [...new Set(viewResults.map((v) => v.variavel_ciclo_corrente.variavel_id))];
+
+        if (variavelIdsFromView.length === 0) {
+            return { variaveis: [] };
+        }
+
+        // Agora consulta as variáveis com filtro de permissão E os IDs da view
         const variaveis = await this.prisma.variavel.findMany({
             where: {
                 AND: whereFilter,
                 tipo: 'Global',
-                ...buildMetaIniAtvFilter(filters),
+                id: { in: variavelIdsFromView },
             },
             select: {
                 id: true,
@@ -1557,7 +1583,7 @@ export class VariavelCicloService {
             return { variaveis: [] };
         }
 
-        // Separa variáveis mães de variáveis filhas
+        // Separa variáveis pai das variáveis filhas
         const parentVariavelIds = new Set<number>();
         const childToParentMap = new Map<number, number>();
 
@@ -1570,7 +1596,7 @@ export class VariavelCicloService {
             }
         }
 
-        // Busca informações das variáveis mães que não foram retornadas na primeira consulta
+        // Busca informações das variáveis pai que ainda não temos
         const missingParentIds = Array.from(parentVariavelIds).filter((id) => !variaveis.some((v) => v.id === id));
 
         let parentVariaveis: Array<{ id: number; codigo: string; titulo: string }> = [];
@@ -1589,7 +1615,7 @@ export class VariavelCicloService {
             });
         }
 
-        // Obtém todos os documentos apenas para as variáveis mães
+        // Obtém TODOS os documentos das variáveis pai (sem filtro por eh_corrente)
         const documentos = await this.prisma.variavelGlobalCicloDocumento.findMany({
             where: {
                 variavel_id: { in: Array.from(parentVariavelIds) },
@@ -1610,10 +1636,10 @@ export class VariavelCicloService {
             },
         });
 
-        // Monta a resposta - agrupa pelo 'dono' real do documento (mãe se for filha, ou a própria se for mãe)
+        // Constrói a resposta
         const variaveisComDocumentos: VariavelDocumentosGlobalDto[] = [];
 
-        // Cria um mapa com as informações de todas as variáveis (originais + mães buscadas separadamente)
+        // Cria um mapa com todas as informações das variáveis (originais + pais buscados)
         const allVariaveisMap = new Map<number, { codigo: string; titulo: string }>();
         for (const v of [...variaveis, ...parentVariaveis]) {
             if (!allVariaveisMap.has(v.id)) {
@@ -1621,19 +1647,17 @@ export class VariavelCicloService {
             }
         }
 
-        // Processa cada variável retornada na consulta inicial
         for (const variavel of variaveis) {
-            // Determine which variable holds the documents
             const documentHolderId = variavel.variavel_mae_id || variavel.id;
             const docsVariavel = documentos.filter((d) => d.variavel_id === documentHolderId);
 
             if (docsVariavel.length > 0) {
-                // Obtém as informações do 'dono' do documento (pode ser a mãe)
+                // Obtém as informações do detentor dos documentos (pode ser a variável pai)
                 const holderInfo = allVariaveisMap.get(documentHolderId);
 
-                if (!holderInfo) continue; // Shouldn't happen, but safety check
+                if (!holderInfo) continue;
 
-                // Verifica se já adicionamos esta variável mãe à resposta
+                // Verifica se já adicionamos esta variável pai
                 if (variaveisComDocumentos.some((v) => v.variavel_id === documentHolderId)) {
                     continue;
                 }
@@ -1647,7 +1671,12 @@ export class VariavelCicloService {
                             doc.arquivo,
                             (id, expiresIn) => this.uploadService.getDownloadToken(id, expiresIn).download_token
                         );
-                        baseDto.diretorio_caminho = `${holderInfo.codigo}/${Date2YMD.toString(doc.referencia_data)}`;
+
+                        // Formato: "Titulo da Variável/MM-YYYY"
+                        const dataReferencia = DateTime.fromJSDate(doc.referencia_data, { zone: SYSTEM_TIMEZONE });
+                        const mesAno = dataReferencia.toFormat('MM-yyyy');
+                        baseDto.diretorio_caminho = `${holderInfo.titulo}/${mesAno}`;
+
                         return {
                             ...baseDto,
                             descricao: doc.descricao,
