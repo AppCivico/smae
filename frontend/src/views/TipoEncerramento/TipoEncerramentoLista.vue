@@ -17,6 +17,8 @@ function buscarDados(): void {
 async function excluirItem({ id }: { id: number }): Promise<void> {
   try {
     await tipoEncerramentoStore.excluirItem(id);
+    tipoEncerramentoStore.$reset();
+
     buscarDados();
   } catch (e) {
     // eslint-disable-next-line no-console
@@ -25,8 +27,6 @@ async function excluirItem({ id }: { id: number }): Promise<void> {
 }
 
 onMounted(() => {
-  tipoEncerramentoStore.$reset();
-
   buscarDados();
 });
 </script>
