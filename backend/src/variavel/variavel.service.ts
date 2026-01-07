@@ -1552,6 +1552,7 @@ export class VariavelService {
                             id: true,
                             titulo: true,
                             supraregional: true,
+                            valor_base: true,
                             regiao: { select: { id: true, descricao: true } },
                         },
                     },
@@ -1559,11 +1560,41 @@ export class VariavelService {
             });
 
             // Caso tenha filhas, deve atualizar as configs delas.
+            // Monta um mapa de valores_base individuais por filha_id
+            const valoresBaseFilhasMap = new Map<number, number>();
+            let algumValorBaseFilhaAlterado = false;
+
+            if (Array.isArray(dto.valores_base_filhas)) {
+                const filhasIds = updated.variaveis_filhas.map((f) => f.id);
+                for (const filhaValor of dto.valores_base_filhas) {
+                    if (!filhasIds.includes(filhaValor.filha_id)) {
+                        throw new BadRequestException(
+                            `Variável filha ${filhaValor.filha_id} não encontrada ou não pertence a esta variável mãe`
+                        );
+                    }
+                    valoresBaseFilhasMap.set(filhaValor.filha_id, filhaValor.valor_base);
+
+                    // Verifica se o valor realmente mudou
+                    const filhaAtual = updated.variaveis_filhas.find((f) => f.id === filhaValor.filha_id);
+                    if (
+                        filhaAtual &&
+                        Number(filhaAtual.valor_base).toString() !== Number(filhaValor.valor_base).toString()
+                    ) {
+                        algumValorBaseFilhaAlterado = true;
+                    }
+                }
+            }
+
             const varsFilhasUpdates = [];
             for (const variavelFilha of updated.variaveis_filhas) {
                 let titulo = dto.titulo;
                 if (variavelFilha.regiao) titulo += ' - ' + variavelFilha.regiao.descricao;
                 else if (variavelFilha.supraregional) titulo += SUPRA_SUFIXO;
+
+                // Usa valor_base individual se fornecido, senão usa o valor_base geral
+                const valorBaseFilha = valoresBaseFilhasMap.has(variavelFilha.id)
+                    ? valoresBaseFilhasMap.get(variavelFilha.id)
+                    : dto.valor_base;
 
                 varsFilhasUpdates.push(
                     prismaTxn.variavel.updateMany({
@@ -1574,7 +1605,7 @@ export class VariavelService {
                             mostrar_monitoramento: dto.mostrar_monitoramento,
                             unidade_medida_id: dto.unidade_medida_id,
                             ano_base: dto.ano_base,
-                            valor_base: dto.valor_base,
+                            valor_base: valorBaseFilha,
                             periodicidade: dto.periodicidade,
                             orgao_id: dto.orgao_id,
                             variavel_categorica_id: dto.variavel_categorica_id,
@@ -1640,6 +1671,7 @@ export class VariavelService {
 
             let recalc = Number(self.valor_base).toString() !== Number(updated.valor_base).toString();
             if (self.acumulativa != updated.acumulativa) recalc = true;
+            if (algumValorBaseFilhaAlterado) recalc = true;
 
             if (recalc) {
                 logger.log(`Valor base alterado de ${self.valor_base} para ${updated.valor_base}`);
