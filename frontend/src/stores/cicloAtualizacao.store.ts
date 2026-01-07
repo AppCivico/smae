@@ -1,10 +1,11 @@
-import { defineStore } from 'pinia';
+import type { PaginatedDto } from '@back/common/dto/paginated.dto';
 import type {
   FilterVariavelGlobalCicloDto,
   VariavelAnaliseQualitativaResponseDto,
+  VariavelCicloFaseCountDto,
   VariavelGlobalCicloDto,
 } from '@back/variavel/dto/variavel.ciclo.dto';
-import type { PaginatedDto } from '@back/common/dto/paginated.dto';
+import { defineStore } from 'pinia';
 import { useFileStore } from './file.store';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -20,11 +21,20 @@ export type VariavelCiclo = VariavelGlobalCicloDto;
 
 interface Estado {
   dados: VariavelGlobalCicloDto[];
+  contagemDeVariaveis: VariavelCicloFaseCountDto | null;
   temMais: boolean;
   tokenProximaPagina: string | null;
   erro: null | unknown;
   emFoco: VariavelAnaliseQualitativaResponseDto | null;
   carregando: boolean;
+  chamadasPendentes: {
+    contagemDeVariaveis: boolean;
+    emFoco: boolean;
+  };
+  erros: {
+    contagemDeVariaveis: null | unknown;
+    emFoco: null | unknown;
+  };
 }
 
 type Paginacao = {
@@ -59,9 +69,18 @@ export const useCicloAtualizacaoStore = (prefixo = '') => defineStore(prefixo ? 
     erro: null,
     temMais: false,
     dados: [],
+    contagemDeVariaveis: null,
     tokenProximaPagina: null,
     emFoco: null,
     carregando: false,
+    chamadasPendentes: {
+      contagemDeVariaveis: false,
+      emFoco: false,
+    },
+    erros: {
+      contagemDeVariaveis: null,
+      emFoco: null,
+    },
   }),
   actions: {
     async getCiclosAtualizacao({
@@ -102,6 +121,22 @@ export const useCicloAtualizacaoStore = (prefixo = '') => defineStore(prefixo ? 
         this.carregando = false;
       }
     },
+    async obterContagemDeVariaveisPorFase(): Promise<void> {
+      this.chamadasPendentes.contagemDeVariaveis = true;
+      this.erros.contagemDeVariaveis = null;
+
+      try {
+        const resposta = await this.requestS.get(
+          `${baseUrl}/plano-setorial-variavel-ciclo/total`,
+        ) as VariavelCicloFaseCountDto;
+
+        this.contagemDeVariaveis = resposta;
+      } catch (err) {
+        this.erros.contagemDeVariaveis = err;
+      } finally {
+        this.chamadasPendentes.contagemDeVariaveis = false;
+      }
+    },
     async enviarDados(dados: DadosASeremEnviados) {
       try {
         const dadosASeremEnviados = {
@@ -126,6 +161,11 @@ export const useCicloAtualizacaoStore = (prefixo = '') => defineStore(prefixo ? 
     ciclosAtualizacao(state): VariavelGlobalCicloDto[] {
       return state.dados;
     },
+    contagemDeVariaveisPorFase: ({ contagemDeVariaveis }) => contagemDeVariaveis?.linhas
+      .reduce((acc, item) => {
+        acc[item.fase] = item.quantidade;
+        return acc;
+      }, {} as Record<string, number>) || {},
     paginacao(state): Paginacao {
       return {
         paginas: 2,
