@@ -230,7 +230,8 @@ async function definirCamposParaClonagem() {
 
         regioesPorNivel[nivel].push(filha.regiao.id);
 
-        // só o maior nível de regionalização interessa aqui
+        // só o maior nível de regionalização interessa aqui, porque os níveis
+        // abaixo deste são gerados automaticamente pelo backend
         if (
           nivelAplicavel === null
           || nivel > nivelAplicavel
