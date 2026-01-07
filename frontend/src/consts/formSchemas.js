@@ -691,7 +691,7 @@ export const tipoEncerramento = object()
     descricao: string()
       .max(1000)
       .label('Descrição')
-      .nullable(),
+      .required(),
     habilitar_info_adicional: boolean()
       .label('Habilitar informações adicionais')
       .default(false),

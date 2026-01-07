@@ -76,6 +76,8 @@ import {
   ListUsers,
 } from '@/views/users';
 
+import tiparPropsDeRota from './helpers/tiparPropsDeRota';
+
 const TiposDeAcompanhamentoLista = defineAsyncComponent({
   loader: () => import('@/views/tiposDeAcompanhamento/TiposLista.vue'),
   loadingComponent: LoadingComponent,
@@ -208,8 +210,8 @@ export default [
         path: '/tipo-encerramento',
         component: () => import('@/views/TipoEncerramento/TipoEncerramentoRaiz.vue'),
         meta: {
-          // limitarÀsPermissões: 'TipoEncerramento.',
-          título: 'Tipos de encerramento',
+          limitarÀsPermissões: 'CadastroProjetoTipoEncerramento.',
+          título: 'Justificativa de encerramento',
           rotasParaMenuSecundário,
         },
         children: [
@@ -217,16 +219,13 @@ export default [
             name: 'tipoEncerramento.listar',
             path: '',
             component: () => import('@/views/TipoEncerramento/TipoEncerramentoLista.vue'),
-            meta: {
-              título: 'Tipos de encerramento',
-            },
           },
           {
             name: 'tipoEncerramento.novo',
             path: 'novo',
             component: () => import('@/views/TipoEncerramento/TipoEncerramentoCriarEditar.vue'),
             meta: {
-              título: 'Novo tipo de encerramento',
+              título: 'Nova justificativa de encerramento',
               rotasParaMigalhasDePão: ['tipoEncerramento.listar'],
               rotaDeEscape: 'tipoEncerramento.listar',
             },
@@ -235,16 +234,11 @@ export default [
             path: ':tipoEncerramentoId',
             name: 'tipoEncerramento.editar',
             component: () => import('@/views/TipoEncerramento/TipoEncerramentoCriarEditar.vue'),
-            props: ({ params }) => ({
-              ...params,
-              ...{
-                tipoEncerramentoId: Number.parseInt(params.tipoEncerramentoId, 10) || undefined,
-              },
-            }),
+            props: tiparPropsDeRota,
             meta: {
               título: () => {
                 const { emFoco } = useTipoEncerramentoStore();
-                return emFoco?.descricao || 'Editar tipo de encerramento';
+                return emFoco?.descricao || 'Editar justificativa de encerramento';
               },
               rotasParaMigalhasDePão: ['tipoEncerramento.listar'],
               rotaDeEscape: 'tipoEncerramento.listar',

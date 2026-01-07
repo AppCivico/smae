@@ -11,7 +11,6 @@ const tipoEncerramentoStore = useTipoEncerramentoStore();
 const { lista } = storeToRefs(tipoEncerramentoStore);
 
 function buscarDados(): void {
-  tipoEncerramentoStore.$reset();
   tipoEncerramentoStore.buscarTudo();
 }
 
@@ -26,6 +25,8 @@ async function excluirItem({ id }: { id: number }): Promise<void> {
 }
 
 onMounted(() => {
+  tipoEncerramentoStore.$reset();
+
   buscarDados();
 });
 </script>
