@@ -142,7 +142,11 @@ watch(
         <li
           v-for="nomeDaAba in abas"
           :key="nomeDaAba"
-          class="pt1 pb1"
+          class="pt1 pb1 abas-lista__item"
+          :class="{
+            'abas-lista__item--aberta': abaAberta === (dadosConsolidadosPorId?.[nomeDaAba]?.hash
+              || nomeDaAba)
+          }"
           v-bind="atributosDeCadaAba?.[nomeDaAba]"
         >
           <router-link
@@ -226,6 +230,19 @@ watch(
   > li:not([hidden]) ~ li {
     border-left: 1px solid @c400;
     padding-left: 2rem;
+  }
+
+  sup.info {
+    border-radius: 999em;
+    background-color: @c400;
+    color: @branco;
+    padding: 0 0.25em;
+    height: 1.25em;
+    line-height: 1.25em;
+  }
+
+  .abas-lista__item--aberta sup.info {
+    background-color: @c600;
   }
 }
 
