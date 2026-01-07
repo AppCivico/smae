@@ -241,8 +241,10 @@ export default [
               },
             }),
             meta: {
-              título: () => useGruposTematicosStore()?.emFoco?.nome
-                || 'Editar Grupo Temático',
+              título: () => {
+                const { emFoco } = useGruposTematicosStore();
+                return emFoco?.nome || 'Editar Grupo Temático';
+              },
               rotasParaMigalhasDePão: ['gruposTematicosObras'],
             },
           },

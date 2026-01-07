@@ -1,13 +1,15 @@
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>{{ route?.meta?.título || "Grupos temáticos" }}</h1>
+    <TituloDaPagina />
+
     <hr class="ml2 f1">
-    <router-link
+
+    <SmaeLink
       :to="{ name: 'grupoTematicoCriar' }"
       class="btn big ml1"
     >
       Novo grupo
-    </router-link>
+    </SmaeLink>
   </div>
   <table class="tablemain">
     <colgroup>
@@ -29,7 +31,7 @@
       >
         <td>{{ item.nome }}</td>
         <td>
-          <router-link
+          <SmaeLink
             :to="{ name: 'grupoTematicoEditar', params: { grupoTematicoId: item.id } }"
             class="tprimary"
           >
@@ -37,7 +39,7 @@
               width="20"
               height="20"
             ><use xlink:href="#i_edit" /></svg>
-          </router-link>
+          </SmaeLink>
         </td>
         <td>
           <button
