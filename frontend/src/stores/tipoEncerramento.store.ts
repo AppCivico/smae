@@ -1,34 +1,14 @@
 import { defineStore } from 'pinia';
+
+import { ListTipoEncerramentoDto, TipoEncerramentoDto } from '@back/projeto-tipo-encerramento/dto/tipo-encerramento.dto';
+
 import { useAuthStore } from './auth.store';
-
-interface TipoEncerramentoDto {
-  id: number;
-  descricao: string;
-  habilitar_info_adicional: boolean;
-  [key: string]: unknown;
-}
-
-interface ListTipoEncerramentoDto {
-  linhas: TipoEncerramentoDto[];
-}
-
-interface ChamadasPendentes {
-  lista: boolean;
-  emFoco: boolean;
-  excluir: boolean;
-}
-
-interface Erro {
-  lista: null | unknown;
-  emFoco: null | unknown;
-  excluir: null | unknown;
-}
 
 interface Estado {
   lista: TipoEncerramentoDto[];
   emFoco: TipoEncerramentoDto | null;
   chamadasPendentes: ChamadasPendentes;
-  erro: Erro;
+  erro: Erros;
 }
 
 function obterRota() {
@@ -53,12 +33,10 @@ export const useTipoEncerramentoStore = defineStore('tipoEncerramento', {
     chamadasPendentes: {
       lista: false,
       emFoco: false,
-      excluir: false,
     },
     erro: {
       lista: null,
       emFoco: null,
-      excluir: null,
     },
   }),
   actions: {
@@ -67,12 +45,9 @@ export const useTipoEncerramentoStore = defineStore('tipoEncerramento', {
         this.chamadasPendentes.emFoco = true;
         this.erro.emFoco = null;
 
-        if (this.lista.length === 0) {
-          await this.buscarTudo();
-        }
+        const resposta = await this.requestS.get(`${obterRota()}/${tipoEncerramentoId}`) as TipoEncerramentoDto;
 
-        const item = this.lista.find((x) => x.id === tipoEncerramentoId);
-        this.emFoco = item || null;
+        this.emFoco = resposta;
       } catch (erro: unknown) {
         this.erro.emFoco = erro;
       } finally {
@@ -95,16 +70,7 @@ export const useTipoEncerramentoStore = defineStore('tipoEncerramento', {
     },
 
     async excluirItem(id: number) {
-      try {
-        this.chamadasPendentes.excluir = true;
-        this.erro.excluir = null;
-
-        await this.requestS.delete(`${obterRota()}/${id}`);
-      } catch (erro: unknown) {
-        this.erro.excluir = erro;
-      } finally {
-        this.chamadasPendentes.excluir = false;
-      }
+      await this.requestS.delete(`${obterRota()}/${id}`);
     },
 
     async salvarItem(params = {}, id = 0) {
