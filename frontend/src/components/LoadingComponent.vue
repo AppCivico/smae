@@ -21,6 +21,7 @@ defineProps({
     :is="as"
     class="main-loading"
     :class="{ 'main-loading--sobrepoe-conteudo': sobrepoeConteudo }"
+    aria-busy="true"
   >
     <slot>
       carregando
