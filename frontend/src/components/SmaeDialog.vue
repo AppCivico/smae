@@ -1,8 +1,17 @@
 <script lang="ts" setup>
-import { onMounted, ref } from 'vue';
+import {
+  computed,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  watch,
+} from 'vue';
 import { useRouter } from 'vue-router';
 
 import { useAlertStore } from '@/stores/alert.store';
+
+import { useDialogRegistry } from './useDialogRegistry.composable';
 
 defineOptions({
   inheritAttrs: false,
@@ -35,10 +44,16 @@ const props = defineProps({
 
 const router = useRouter();
 const alertStore = useAlertStore();
+const dialogRegistry = useDialogRegistry(props.id);
 
 const dialogRef = ref<HTMLDialogElement | null>(null);
 
-function fecharDialogo() {
+// Computed para verificar se o diálogo deve estar visível
+const dialogoEstaAberto = computed(
+  () => router.currentRoute.value.query.dialogo === String(props.id),
+);
+
+function limparQuery() {
   const query = structuredClone(router.currentRoute.value.query);
 
   delete query.dialogo;
@@ -47,21 +62,64 @@ function fecharDialogo() {
     delete query[parametro];
   });
 
-  if (props.confirmarFechamento) {
-    alertStore.confirmAction('Deseja sair sem salvar as alterações?', router.replace({ query }));
+  return query;
+}
 
-    return;
-  }
+function fecharDialogo() {
+  const query = limparQuery();
 
+  dialogRef.value?.close();
   router.replace({ query });
   emit('close');
 }
 
-onMounted(() => {
-  // Abre o dialog como modal ao montar
+function acionarFechamento() {
+  if (props.confirmarFechamento) {
+    alertStore.confirmAction('Deseja sair sem salvar as alterações?', () => {
+      fecharDialogo();
+    });
+
+    return;
+  }
+
+  fecharDialogo();
+}
+
+// Função para abrir o diálogo
+async function abrirDialogo() {
+  // Aguarda o próximo tick para garantir que o elemento foi renderizado
+  await nextTick();
+
   if (dialogRef.value) {
     dialogRef.value.showModal();
   }
+}
+
+// Watch para abrir o diálogo quando a rota mudar
+watch(
+  dialogoEstaAberto,
+  (estaAberto) => {
+    if (estaAberto) {
+      abrirDialogo();
+    }
+  },
+  { immediate: true },
+);
+
+onMounted(() => {
+  // Registra o diálogo para detectar duplicatas
+  dialogRegistry.register();
+
+  // Valida se o elemento #modais existe no DOM
+  if (import.meta.env.DEV && !document.getElementById('modais')) {
+    // eslint-disable-next-line no-console
+    console.warn('[SmaeDialog] Elemento #modais não encontrado no DOM');
+  }
+});
+
+onBeforeUnmount(() => {
+  // Remove o diálogo do registro
+  dialogRegistry.unregister();
 });
 
 </script>
@@ -70,12 +128,13 @@ onMounted(() => {
     to="#modais"
   >
     <dialog
-      v-if="$route.query.dialogo === String(props.id)"
-      :id="String(props.id)"
+      v-if="dialogoEstaAberto"
+      :id="`smae-dialog-${props.id}`"
       ref="dialogRef"
       :class="{ 'editModal--tamanho-ajustavel': tamanhoAjustavel }"
       v-bind="$attrs"
-      @click.self="fecharDialogo"
+      @click.self="acionarFechamento"
+      @cancel.prevent="acionarFechamento"
     >
       <TituloDaPagina>
         <slot name="titulo">
@@ -85,7 +144,8 @@ onMounted(() => {
         <button
           type="button"
           class="btn round botao-fechar-dialogo"
-          @click="fecharDialogo"
+          aria-label="Fechar diálogo"
+          @click="acionarFechamento"
         >
           <svg
             width="12"
