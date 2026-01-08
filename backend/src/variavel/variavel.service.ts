@@ -1,5 +1,6 @@
 import {
     BadRequestException,
+    ForbiddenException,
     forwardRef,
     HttpException,
     Inject,
@@ -75,6 +76,7 @@ import {
 } from './entities/variavel.entity';
 import { SerieCompactToken } from '../common/SerieCompactToken';
 import { VariavelUtilService } from './variavel.util.service';
+import { UpdateVariavelFilhasDto } from './dto/update-valores-base-filhas.dto';
 
 const SUPRA_SUFIXO = ' - Supra';
 /**
@@ -3843,6 +3845,68 @@ export class VariavelService {
             orderBy: { nome: 'asc' },
         });
         return rows;
+    }
+
+    async updateFilha(
+        variavelMaeId: number,
+        filhaId: number,
+        dto: UpdateVariavelFilhasDto,
+        user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        const logger = LoggerWithLog('Atualização de valor base de filha');
+
+        const variavelMaeDetail = await this.findAllGlobal(
+            { id: variavelMaeId, ordem_direcao: 'asc', ordem_coluna: 'id' },
+            user
+        );
+        if (!variavelMaeDetail.linhas.length || !variavelMaeDetail.linhas[0].pode_editar) {
+            throw new ForbiddenException('Usuário não tem permissão para editar esta variável mãe');
+        }
+
+        const variavelFilha = await this.prisma.variavel.findFirst({
+            where: {
+                id: filhaId,
+                variavel_mae_id: variavelMaeId,
+                removido_em: null,
+                tipo: 'Global',
+            },
+            select: { id: true, valor_base: true },
+        });
+
+        if (!variavelFilha) {
+            throw new BadRequestException('Variável filha não encontrada ou não pertence à variável mãe informada');
+        }
+
+        const now = new Date(Date.now());
+        const recalcValorBase = Number(variavelFilha.valor_base).toString() !== Number(dto.valor_base).toString();
+
+        await this.prisma.$transaction(
+            async (prismaTxn: Prisma.TransactionClient) => {
+                await prismaTxn.variavel.update({
+                    where: { id: filhaId },
+                    data: {
+                        valor_base: dto.valor_base,
+                        atualizado_em: now,
+                        atualizado_por: user.id,
+                    },
+                });
+
+                // Recalculate dependent series if value changed
+                if (recalcValorBase && dto.valor_base !== undefined) {
+                    logger.log(
+                        `Valor base da variável ${filhaId} atualizado de ${variavelFilha.valor_base} para ${dto.valor_base}`
+                    );
+
+                    logger.log(`Recalculando séries dependentes da variável ${filhaId}`);
+                    await this.recalc_series_dependentes([filhaId], prismaTxn);
+                }
+
+                await logger.saveLogs(prismaTxn, user.getLogData());
+            },
+            { isolationLevel: 'ReadCommitted', maxWait: 5000, timeout: 10000 }
+        );
+
+        return { id: filhaId };
     }
 }
 

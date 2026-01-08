@@ -27,6 +27,7 @@ import {
     VariavelGlobalDetailDto,
 } from './dto/list-variavel.dto';
 import { UpdateVariavelDto } from './dto/update-variavel.dto';
+import { UpdateVariavelFilhasDto } from './dto/update-valores-base-filhas.dto';
 import {
     VariavelGlobalRelacionamentoDto,
 } from './relacionados/dto/variavel.relacionamento.dto';
@@ -230,6 +231,20 @@ export class VariavelGlobalController {
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
         return await this.variavelService.update(this.tipo, +params.id, dto, user);
+    }
+
+    @Patch('variavel/:id/filha/:filhaId')
+    @ApiBearerAuth('access-token')
+    @Roles(VariavelGlobalController.WritePerm)
+    @ApiNoContentResponse()
+    @HttpCode(HttpStatus.OK)
+    async updateFilha(
+        @Param('id') variavelMaeId: number,
+        @Param('filhaId') filhaId: number,
+        @Body() dto: UpdateVariavelFilhasDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        return await this.variavelService.updateFilha(+variavelMaeId, +filhaId, dto, user);
     }
 
     @Delete('variavel/:id')
