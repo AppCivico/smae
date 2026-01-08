@@ -15,15 +15,10 @@ function buscarDados(): void {
 }
 
 async function excluirItem({ id }: { id: number }): Promise<void> {
-  try {
-    await tipoEncerramentoStore.excluirItem(id);
-    tipoEncerramentoStore.$reset();
+  await tipoEncerramentoStore.excluirItem(id);
+  tipoEncerramentoStore.$reset();
 
-    buscarDados();
-  } catch (e) {
-    // eslint-disable-next-line no-console
-    console.error('Falha ao tentar excluir tipo de encerramento', e);
-  }
+  buscarDados();
 }
 
 onMounted(() => {
