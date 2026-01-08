@@ -6,7 +6,7 @@ import { ApiPaginatedWithPagesResponse } from '../auth/decorators/paginated.deco
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { ListaDePrivilegios } from '../common/ListaDePrivilegios';
-import { FindOneParams } from '../common/decorators/find-params';
+import { FindOneParams, FindTwoParams } from '../common/decorators/find-params';
 import { PaginatedWithPagesDto } from '../common/dto/paginated.dto';
 import { BatchRecordWithId, RecordWithId } from '../common/dto/record-with-id.dto';
 import { MetaController, MetaSetorialController } from '../meta/meta.controller';
@@ -17,7 +17,11 @@ import {
     CreateVariavelBaseDto,
     CreateVariavelPDMDto,
 } from './dto/create-variavel.dto';
-import { FilterVariavelDto, FilterVariavelGlobalDto, FilterVariavelRelacionamentosDto } from './dto/filter-variavel.dto';
+import {
+    FilterVariavelDto,
+    FilterVariavelGlobalDto,
+    FilterVariavelRelacionamentosDto,
+} from './dto/filter-variavel.dto';
 import {
     ListPdmSimplesDto,
     ListSeriesAgrupadas,
@@ -28,9 +32,7 @@ import {
 } from './dto/list-variavel.dto';
 import { UpdateVariavelDto } from './dto/update-variavel.dto';
 import { UpdateVariavelFilhasDto } from './dto/update-valores-base-filhas.dto';
-import {
-    VariavelGlobalRelacionamentoDto,
-} from './relacionados/dto/variavel.relacionamento.dto';
+import { VariavelGlobalRelacionamentoDto } from './relacionados/dto/variavel.relacionamento.dto';
 import {
     FilterPeriodoDto,
     FilterSVNPeriodoDto,
@@ -233,18 +235,17 @@ export class VariavelGlobalController {
         return await this.variavelService.update(this.tipo, +params.id, dto, user);
     }
 
-    @Patch('variavel/:id/filha/:filhaId')
+    @Patch('variavel/:id/filha/:id2')
     @ApiBearerAuth('access-token')
     @Roles(VariavelGlobalController.WritePerm)
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.OK)
     async updateFilha(
-        @Param('id') variavelMaeId: number,
-        @Param('filhaId') filhaId: number,
+        @Param() params: FindTwoParams,
         @Body() dto: UpdateVariavelFilhasDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        return await this.variavelService.updateFilha(+variavelMaeId, +filhaId, dto, user);
+        return await this.variavelService.updateFilha(params.id, params.id2, dto, user);
     }
 
     @Delete('variavel/:id')
