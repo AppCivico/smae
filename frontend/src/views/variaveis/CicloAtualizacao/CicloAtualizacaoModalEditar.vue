@@ -41,9 +41,9 @@
               as="textarea"
               name="analise_qualitativa_liberador"
               :disabled="!forumlariosAExibir.liberacao.liberado"
+              :schema="schema"
               anular-vazio
               rows="3"
-              maxlength="1000"
             />
 
             <ErrorMessage
@@ -67,9 +67,9 @@
               as="textarea"
               name="analise_qualitativa_aprovador"
               :disabled="!forumlariosAExibir.aprovacao.liberado || fase === 'liberacao'"
+              :schema="schema"
               anular-vazio
               rows="3"
-              maxlength="1000"
             />
 
             <ErrorMessage
@@ -109,9 +109,9 @@
               as="textarea"
               name="pedido_complementacao"
               :disabled="!values.solicitar_complementacao"
+              :schema="schema"
               anular-vazio
               rows="3"
-              maxlength="1000"
             />
 
             <ErrorMessage
@@ -137,9 +137,9 @@
               :disabled="!forumlariosAExibir.cadastro.liberado
                 || fase === 'aprovacao'
                 || fase === 'liberacao'"
+              :schema="schema"
               anular-vazio
               rows="3"
-              maxlength="1000"
             />
           </div>
         </article>
