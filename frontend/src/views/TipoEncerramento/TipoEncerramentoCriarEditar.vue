@@ -1,66 +1,3 @@
-<template>
-  <CabecalhoDePagina />
-
-  <form @submit="onSubmit">
-    <div class="flex g2 mb1">
-      <div class="f1">
-        <SmaeLabel
-          name="descricao"
-          :schema="schema"
-        />
-
-        <Field
-          name="descricao"
-          as="textarea"
-          maxlength="1000"
-          rows="4"
-          class="inputtext light mb1"
-        />
-
-        <ErrorMessage
-          class="error-msg mb1"
-          name="descricao"
-        />
-      </div>
-    </div>
-
-    <div class="flex g2 mb1">
-      <div class="f1">
-        <label class="label flex center">
-          <Field
-            name="habilitar_info_adicional"
-            type="checkbox"
-            :value="true"
-            :unchecked-value="false"
-            class="inputcheckbox"
-          />
-
-          <SmaeLabel
-            class="mb0"
-            name="habilitar_info_adicional"
-            :schema="schema"
-            as="span"
-          />
-        </label>
-
-        <ErrorMessage
-          class="error-msg mb1"
-          name="habilitar_info_adicional"
-        />
-      </div>
-    </div>
-
-    <div class="flex justifycenter center mb2">
-      <button
-        class="btn big"
-        type="submit"
-      >
-        Salvar
-      </button>
-    </div>
-  </form>
-</template>
-
 <script setup lang="ts">
 import { storeToRefs } from 'pinia';
 import {
@@ -123,3 +60,76 @@ onMounted(() => {
   }
 });
 </script>
+
+<template>
+  <CabecalhoDePagina />
+
+  <form
+    class="flex column g1"
+    @submit="onSubmit"
+  >
+    <div class="flex g2">
+      <div class="f1">
+        <SmaeLabel
+          name="descricao"
+          :schema="schema"
+        />
+
+        <Field
+          v-slot="{ field, handleChange, value }"
+          name="descricao"
+        >
+          <SmaeText
+            :model-value="value"
+            :name="field.name"
+            as="textarea"
+            rows="5"
+            class="inputtext light"
+            maxlength="500"
+            @update:model-value="handleChange"
+          />
+        </Field>
+
+        <ErrorMessage
+          class="error-msg"
+          name="descricao"
+        />
+      </div>
+    </div>
+
+    <div class="flex g2">
+      <div class="f1">
+        <label class="label flex center">
+          <Field
+            name="habilitar_info_adicional"
+            type="checkbox"
+            :value="true"
+            :unchecked-value="false"
+            class="inputcheckbox"
+          />
+
+          <SmaeLabel
+            class="mb0"
+            name="habilitar_info_adicional"
+            :schema="schema"
+            as="span"
+          />
+        </label>
+
+        <ErrorMessage
+          class="error-msg"
+          name="habilitar_info_adicional"
+        />
+      </div>
+    </div>
+
+    <div class="flex justifycenter center">
+      <button
+        class="btn big"
+        type="submit"
+      >
+        Salvar
+      </button>
+    </div>
+  </form>
+</template>
