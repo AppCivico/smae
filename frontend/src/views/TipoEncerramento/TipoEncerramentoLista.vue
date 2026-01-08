@@ -5,9 +5,12 @@ import { onMounted } from 'vue';
 import CabecalhoDePagina from '@/components/CabecalhoDePagina.vue';
 import SmaeTable from '@/components/SmaeTable/SmaeTable.vue';
 import { tipoEncerramento as schema } from '@/consts/formSchemas';
+import { useAuthStore } from '@/stores/auth.store';
 import { useTipoEncerramentoStore } from '@/stores/tipoEncerramento.store';
 
-const tipoEncerramentoStore = useTipoEncerramentoStore();
+const { sistemaEscolhido } = useAuthStore();
+
+const tipoEncerramentoStore = useTipoEncerramentoStore(sistemaEscolhido);
 const { lista } = storeToRefs(tipoEncerramentoStore);
 
 function buscarDados(): void {

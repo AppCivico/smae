@@ -7,6 +7,7 @@ import {
   useOrgansStore,
   useResourcesStore,
   useDocumentTypesStore,
+  useAuthStore,
 } from '@/stores';
 import { useAssuntosStore } from '@/stores/assuntosPs.store';
 import { useClassificacaoStore } from '@/stores/classificacao.store';
@@ -237,7 +238,9 @@ export default [
             props: tiparPropsDeRota,
             meta: {
               título: () => {
-                const { emFoco } = useTipoEncerramentoStore();
+                const { sistemaEscolhido } = useAuthStore();
+
+                const { emFoco } = useTipoEncerramentoStore(sistemaEscolhido);
                 return emFoco?.descricao || 'Editar justificativa de encerramento';
               },
               rotasParaMigalhasDePão: ['tipoEncerramento.listar'],

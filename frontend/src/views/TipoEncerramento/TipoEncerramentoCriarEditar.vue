@@ -8,9 +8,11 @@ import { useRoute, useRouter } from 'vue-router';
 
 import { tipoEncerramento as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
+import { useAuthStore } from '@/stores/auth.store';
 import { useTipoEncerramentoStore } from '@/stores/tipoEncerramento.store';
 
-const tipoEncerramentoStore = useTipoEncerramentoStore();
+const { sistemaEscolhido } = useAuthStore();
+const tipoEncerramentoStore = useTipoEncerramentoStore(sistemaEscolhido);
 const { emFoco } = storeToRefs(tipoEncerramentoStore);
 
 const route = useRoute();
@@ -99,22 +101,22 @@ onMounted(() => {
 
     <div class="flex g2">
       <div class="f1">
-        <label class="label flex center">
-          <Field
-            name="habilitar_info_adicional"
-            type="checkbox"
-            :value="true"
-            :unchecked-value="false"
-            class="inputcheckbox"
-          />
-
-          <SmaeLabel
-            class="mb0"
-            name="habilitar_info_adicional"
-            :schema="schema"
-            as="span"
-          />
-        </label>
+        <SmaeLabel
+          class="mb0"
+          name="habilitar_info_adicional"
+          :schema="schema"
+        >
+          <template #prepend>
+            <Field
+              id="habilitar_info_adicional"
+              name="habilitar_info_adicional"
+              type="checkbox"
+              :value="true"
+              :unchecked-value="false"
+              class="mr05 inputcheckbox"
+            />
+          </template>
+        </SmaeLabel>
 
         <ErrorMessage
           class="error-msg"
@@ -123,13 +125,6 @@ onMounted(() => {
       </div>
     </div>
 
-    <div class="flex justifycenter center">
-      <button
-        class="btn big"
-        type="submit"
-      >
-        Salvar
-      </button>
-    </div>
+    <SmaeFieldsetSubmit />
   </form>
 </template>
