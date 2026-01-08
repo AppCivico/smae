@@ -208,7 +208,7 @@
 
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
-import { computed, watch } from 'vue';
+import { computed, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
@@ -325,7 +325,9 @@ function obterPrimeiroEUlticoAtraso(atrasos: string[] | null): string {
   return `${dateIgnorarTimezone(primeiro, 'dd/MM/yyyy')} ⋯ ${dateIgnorarTimezone(ultimo, 'dd/MM/yyyy')}`;
 }
 
-cicloAtualizacaoStore.obterContagemDeVariaveisPorFase();
+onMounted(() => {
+  cicloAtualizacaoStore.obterContagemDeVariaveisPorFase();
+});
 
 watch(() => route.query, (query) => {
   const { aba, ...params } = query;
