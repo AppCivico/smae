@@ -26,6 +26,7 @@ interface Estado {
   tokenProximaPagina: string | null;
   erro: null | unknown;
   emFoco: VariavelAnaliseQualitativaResponseDto | null;
+  // Obsoleto. Trocar pelo `chamadasPendentes`
   carregando: boolean;
   chamadasPendentes: {
     contagemDeVariaveis: boolean;
@@ -72,6 +73,7 @@ export const useCicloAtualizacaoStore = (prefixo = '') => defineStore(prefixo ? 
     contagemDeVariaveis: null,
     tokenProximaPagina: null,
     emFoco: null,
+    // Obsoleto. Trocar pelo `chamadasPendentes`
     carregando: false,
     chamadasPendentes: {
       contagemDeVariaveis: false,
@@ -108,6 +110,7 @@ export const useCicloAtualizacaoStore = (prefixo = '') => defineStore(prefixo ? 
     },
     async obterCicloPorId(id: string, dataReferencia: string): Promise<void> {
       this.emFoco = null;
+      // Obsoleto. Trocar pelo `chamadasPendentes`
       this.carregando = true;
 
       try {
@@ -118,6 +121,7 @@ export const useCicloAtualizacaoStore = (prefixo = '') => defineStore(prefixo ? 
 
         this.emFoco = resposta;
       } finally {
+        // Obsoleto. Trocar pelo `chamadasPendentes`
         this.carregando = false;
       }
     },
@@ -146,6 +150,7 @@ export const useCicloAtualizacaoStore = (prefixo = '') => defineStore(prefixo ? 
             descricao: item.descricao,
           })),
         };
+        // Obsoleto. Trocar pelo `chamadasPendentes`
         this.carregando = true;
 
         await this.requestS.patch(
@@ -153,6 +158,7 @@ export const useCicloAtualizacaoStore = (prefixo = '') => defineStore(prefixo ? 
           dadosASeremEnviados,
         );
       } finally {
+        // Obsoleto. Trocar pelo `chamadasPendentes`
         this.carregando = false;
       }
     },
@@ -178,6 +184,7 @@ export const useCicloAtualizacaoStore = (prefixo = '') => defineStore(prefixo ? 
       return !!state.emFoco?.variavel.variavel_categorica_id;
     },
     bloqueado(state): boolean {
+      // Obsoleto. Trocar pelo `chamadasPendentes`
       return state.carregando || fileStore.carregando;
     },
   },
