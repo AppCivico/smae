@@ -6,7 +6,7 @@ import { IdSigla, IdSiglaDescricao } from '../../common/dto/IdSigla.dto';
 import { IdTituloDto } from '../../common/dto/IdTitulo.dto';
 import { OrgaoReduzidoDto } from '../../orgao/entities/orgao.entity';
 import { SeriePreviaValorCategoricaComposta, SeriesAgrupadas, SerieValorNomimal, VariavelItemDto } from '../../variavel/entities/variavel.entity';
-import { VariaveisPeriodosDto } from './create-variavel.dto';
+import { ValorBaseFilhaDto, VariaveisPeriodosDto } from './create-variavel.dto';
 import { VariavelCategoricaItem } from '../../variavel-categorica/dto/variavel-categorica.dto';
 
 export class ListVariavelDto {
@@ -49,6 +49,8 @@ export class VariavelGlobalDetailDto extends OmitType(VariavelDetailDto, ['respo
     medicao_orgao_id: number | null;
     validacao_orgao_id: number | null;
     liberacao_orgao_id: number | null;
+
+    valores_base_filhas?: ValorBaseFilhaDto[];
 }
 
 export class VariavelResumoInput {

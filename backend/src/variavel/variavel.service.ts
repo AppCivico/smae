@@ -3799,6 +3799,11 @@ export class VariavelService {
                 }
             }
 
+            const variaveisFilhas = await this.prisma.variavel.findMany({
+                where: { variavel_mae_id: id, removido_em: null, tipo: 'Global' },
+                select: { id: true, valor_base: true },
+            });
+
             const globalDetailDto: VariavelGlobalDetailDto = {
                 ...detailDto,
                 medicao_orgao_id: detalhes.medicao_orgao_id,
@@ -3819,6 +3824,10 @@ export class VariavelService {
                 liberacao_grupo_ids: detalhes.VariavelGrupoResponsavelEquipe.filter(
                     (e) => e.grupo_responsavel_equipe.perfil === 'Liberacao'
                 ).map((e) => e.grupo_responsavel_equipe.id),
+                valores_base_filhas: variaveisFilhas.map((v) => ({
+                    filha_id: v.id,
+                    valor_base: v.valor_base.toNumber(),
+                })),
             };
 
             return globalDetailDto;
