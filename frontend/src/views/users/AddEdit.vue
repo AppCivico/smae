@@ -1,5 +1,6 @@
 <script setup>
 // Em 2024-10-28, o desenvolvedor responsável pelo back end orientou a usar essa variável
+// eslint-disable-next-line import/no-unresolved
 import { CONST_PERFIL_PARTICIPANTE_EQUIPE, LISTA_PRIV_ADMIN } from '@back/common/consts';
 import { kebabCase } from 'lodash';
 import { storeToRefs } from 'pinia';
@@ -118,6 +119,10 @@ const perfisPorModulo = computed(() => (Array.isArray(accessProfiles.value)
       : [cur.modulos_sistemas];
 
     modulosSistemasDessePerfil.forEach((modulo) => {
+      if (!usuarioLogado.value.sistemas_disponiveis.includes(modulo)) {
+        return;
+      }
+
       if (!acc[modulo]) {
         const idDoModulo = kebabCase(modulo);
 
