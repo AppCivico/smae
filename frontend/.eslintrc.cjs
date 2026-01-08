@@ -51,6 +51,12 @@ module.exports = {
         props: false,
       },
     ],
+    'vue/block-order': [
+      'error',
+      {
+        order: ['script', 'template', 'style'],
+      },
+    ],
   },
   settings: {
     'import/resolver': {
