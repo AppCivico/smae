@@ -145,8 +145,9 @@ export class TermoEncerramentoService {
                 },
             });
 
-            // Processa o ícone
-            const iconeArquivoId = await this.processarIcone(dto, versaoAnterior?.icone_arquivo_id ?? null);
+            // Se não há versão anterior, usa o ícone do snapshot (que pode vir do portfolio)
+            const iconeBaseId = versaoAnterior?.icone_arquivo_id ?? snapshotAtual.icone_arquivo_id;
+            const iconeArquivoId = this.processarIcone(dto, iconeBaseId);
 
             // Valida justificativa e complemento
             await this.validarJustificativa(dto, versaoAnterior?.justificativa_complemento ?? null, prismaTx);

@@ -37,9 +37,8 @@ export class UpsertTermoEncerramentoDto {
 
     @ApiPropertyOptional({ description: 'Data de término planejado (YYYY-MM-DD)' })
     @IsOptional()
-@IsOnlyDate()
-@Transform(DateTransform)
-
+    @IsOnlyDate()
+    @Transform(DateTransform)
     previsao_termino?: Date | null;
 
     @ApiPropertyOptional({ description: 'Data de início real (YYYY-MM-DD)' })
