@@ -172,6 +172,7 @@ export default {
             título: 'Encerramento',
             rotas: [
               'liçõesAprendidasListar',
+              'termoEncerramento.resumo',
             ],
           };
 
@@ -302,6 +303,27 @@ export default {
         riscos,
         acompanhamentos,
         licoesAprendidas,
+        {
+          path: 'termo-encerramento',
+          children: [
+            {
+              name: 'termoEncerramento.resumo',
+              path: '',
+              component: import('@/views/TermoEncerramentoProjeto/TermoEncerramentoProjetoResumo.vue'),
+              meta: {
+                título: 'Termo encerramento resumo',
+              },
+            },
+            {
+              name: 'termoEncerramento.editar',
+              path: 'editar',
+              component: import('@/views/TermoEncerramentoProjeto/TermoEncerramentoProjetoCriarEditar.vue'),
+              meta: {
+                título: 'Termo encerramento editar',
+              },
+            },
+          ],
+        },
 
         {
           path: 'documentos',
