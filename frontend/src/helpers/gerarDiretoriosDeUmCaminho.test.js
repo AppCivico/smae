@@ -38,9 +38,9 @@ describe('gerarDiretoriosDeUmCaminho', () => {
     expect(resultado).toEqual(esperado);
   });
 
-  it('deve retornar diretorio corrente quando o caminho for vazio', () => {
-    const caminho = '';
-    const esperado = ['./'];
+  it('deve retornar vazio quando o caminho for o diretório corrente', () => {
+    const caminho = './';
+    const esperado = [''];
     const resultado = gerarDiretoriosDeUmCaminho(caminho);
     expect(resultado).toEqual(esperado);
   });
@@ -48,10 +48,9 @@ describe('gerarDiretoriosDeUmCaminho', () => {
   it('deve lidar corretamente com caminhos relativos explícitos', () => {
     const caminho = './var/logs/app/';
     const esperado = [
-      './',
-      './var/',
-      './var/logs/',
-      './var/logs/app/',
+      'var/',
+      'var/logs/',
+      'var/logs/app/',
     ];
     const resultado = gerarDiretoriosDeUmCaminho(caminho);
     expect(resultado).toEqual(esperado);
@@ -60,10 +59,9 @@ describe('gerarDiretoriosDeUmCaminho', () => {
   it('deve lidar corretamente com caminhos relativos implícitos', () => {
     const caminho = 'var/logs/app/';
     const esperado = [
-      './',
-      './var/',
-      './var/logs/',
-      './var/logs/app/',
+      'var/',
+      'var/logs/',
+      'var/logs/app/',
     ];
     const resultado = gerarDiretoriosDeUmCaminho(caminho);
     expect(resultado).toEqual(esperado);

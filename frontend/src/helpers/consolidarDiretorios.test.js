@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import consolidarDiretorios from './consolidarDiretorios';
 
+// Ao editar os resultados esperados, lembre-se de que a ordem importa nos testes
 const esperado = [
   {
     id: '_barra_',
@@ -50,11 +51,24 @@ const esperado = [
     nome: 'info',
     pai: '_barra_var_barra_logs_barra_app_barra_',
   },
+  {
+    id: 'var_barra_',
+    caminho: 'var/',
+    nome: 'var',
+    pai: null,
+  },
+  {
+    id: 'var_barra_logs_barra_',
+    caminho: 'var/logs/',
+    nome: 'logs',
+    pai: 'var_barra_',
+  },
 ];
 
 describe('consolidarDiretorios', () => {
-  it('deve consolidar diretÃ³rios removendo duplicatas e mantendo a hierarquia', () => {
+  it('deve consolidar diretórios removendo duplicatas e mantendo a hierarquia', () => {
     const entradas = [
+      './var/logs/',
       '/var/logs/app/',
       '/var/logs/app/error/',
       '/var/logs/app/info/',
@@ -71,8 +85,22 @@ describe('consolidarDiretorios', () => {
     expect(resultado).toEqual([]);
   });
 
+  it('deve retornar vazio quando a entrada apontar para o diretório corrente', () => {
+    const entradas = [
+      './',
+    ];
+    const resultado = consolidarDiretorios(entradas);
+    expect(resultado).toEqual([{
+      caminho: '',
+      id: '',
+      nome: '.',
+      pai: null,
+    }]);
+  });
+
   it('deve lidar corretamente com entradas sem barras finais', () => {
     const entradas = [
+      './var/logs',
       '/var/logs/app',
       '/var/logs/app/error/',
       '/var/logs/app/error',

@@ -7,6 +7,7 @@ import LoadingComponent from '@/components/LoadingComponent.vue';
 import LocalFilter from '@/components/LocalFilter.vue';
 import consolidarDiretorios from '@/helpers/consolidarDiretorios';
 import createDataTree from '@/helpers/createDataTree.ts';
+import normalizarCaminho from '@/helpers/normalizarCaminho.ts';
 import requestS from '@/helpers/requestS.ts';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -63,24 +64,17 @@ const arquivosOrdenados = computed(() => props.arquivos.slice()
   .sort((a, b) => {
     if (a[ordenadoPor.value] || b[ordenadoPor.value]) {
       return ordem.value === 'crescente'
-        ? (a[ordenadoPor.value] || '').localeCompare((b[ordenadoPor.value] || ''))
-        : (b[ordenadoPor.value] || '').localeCompare((a[ordenadoPor.value] || ''));
+        ? (a[ordenadoPor.value] ?? '').localeCompare((b[ordenadoPor.value] ?? ''))
+        : (b[ordenadoPor.value] ?? '').localeCompare((a[ordenadoPor.value] ?? ''));
     }
     return 0;
   }));
 
-const arquivosAgrupadosPorCaminho = computed(() => listaFiltradaPorTermoDeBusca.value
-  .reduce((acc, cur) => {
-    const caminho = cur?.arquivo?.diretorio_caminho.endsWith('/')
-      ? cur.arquivo.diretorio_caminho
-      : `${cur?.arquivo?.diretorio_caminho}/`;
-
-    acc[caminho] = !acc[caminho]
-      ? [cur]
-      : acc[caminho].concat([cur]);
-    return acc;
-  }, {})
-  || {});
+const arquivosAgrupadosPorCaminho = computed(() => Object
+  .groupBy(
+    listaFiltradaPorTermoDeBusca.value,
+    (item) => normalizarCaminho(item.arquivo.diretorio_caminho),
+  ));
 
 const diretoriosConsolidados = computed(() => consolidarDiretorios(
   [].concat(

@@ -1,11 +1,12 @@
+import normalizarCaminho from './normalizarCaminho.ts';
+
 export default (caminho = '') => {
-  let caminhoNormalizado = !caminho.startsWith('/')
-    && !caminho.startsWith('./')
-    ? `./${caminho}`
-    : caminho;
+  if (!caminho || caminho === './') {
+    return [''];
+  }
 
   // remover barra final para simplificar o `for()`
-  caminhoNormalizado = caminhoNormalizado.replace(/\/$/, '');
+  const caminhoNormalizado = normalizarCaminho(caminho).replace(/\/$/, '');
 
   const caminhos = [];
   const segmentos = caminhoNormalizado.split('/');
