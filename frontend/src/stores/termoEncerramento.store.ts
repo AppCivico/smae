@@ -1,75 +1,46 @@
 import { defineStore } from 'pinia';
 
-import { useAuthStore } from './auth.store';
+// eslint-disable-next-line import/extensions
+import { TermoEncerramentoDetalheDto } from '@back/pp/termo-encerramento/dto/termo-encerramento.dto.ts';
 
-interface TermoEncerramentoDto {
-  id: number;
-  projeto_id: number;
-  orgao_responsavel?: string;
-  portfolio_id?: number;
-  objeto?: string;
-  data_inicio_planejado?: string;
-  data_termino_planejado?: string;
-  data_inicio_real?: string;
-  data_termino_real?: string;
-  custo_planejado?: number;
-  valor_executado_real?: number;
-  status_final?: string;
-  etapa_projeto?: string;
-  justificativa_encerramento_id?: number;
-  responsavel_encerramento_id?: number;
-  data_encerramento?: string;
-  assinatura?: string;
-  criado_em?: string;
-  atualizado_em?: string;
-}
-
-interface ListTermoEncerramentoDto {
-  linhas: TermoEncerramentoDto[];
-}
+import { ModuloSistema } from '@/consts/modulosDoSistema';
 
 interface ChamadasPendentes {
-  lista: boolean;
   emFoco: boolean;
 }
 
 interface Erros {
-  lista: unknown;
   emFoco: unknown;
 }
 
 interface Estado {
-  lista: TermoEncerramentoDto[];
-  emFoco: TermoEncerramentoDto | null;
+  emFoco: TermoEncerramentoDetalheDto | null;
   chamadasPendentes: ChamadasPendentes;
   erro: Erros;
 }
 
-function obterRota() {
-  const { sistemaEscolhido } = useAuthStore();
-
+function obterRota(
+  sistemaEscolhido: ModuloSistema.MDO | ModuloSistema.Projetos,
+) {
   switch (sistemaEscolhido) {
-    case 'Projetos':
-      return `${import.meta.env.VITE_API_URL}/termo-encerramento`;
+    case ModuloSistema.Projetos:
+      return `${import.meta.env.VITE_API_URL}/projeto`;
 
-    case 'MDO':
-      return `${import.meta.env.VITE_API_URL}/obra-termo-encerramento`;
+    case ModuloSistema.MDO:
+      return `${import.meta.env.VITE_API_URL}/obra`;
 
     default:
       throw new Error('Módulo não habilitado');
   }
 }
 
-export const useTermoEncerramentoStore = (sistemaEscolhido: string) => defineStore(`${sistemaEscolhido}.termoEncerramento`, {
+export const useTermoEncerramentoStore = (sistemaEscolhido: ModuloSistema.MDO | ModuloSistema.Projetos) => defineStore(`${sistemaEscolhido}.termoEncerramento`, {
   state: (): Estado => ({
-    lista: [],
     emFoco: null,
     chamadasPendentes: {
-      lista: false,
       emFoco: false,
     },
     erro: {
-      lista: null,
       emFoco: null,
     },
   }),
@@ -80,8 +51,12 @@ export const useTermoEncerramentoStore = (sistemaEscolhido: string) => defineSto
         this.erro.emFoco = null;
 
         const resposta = (await this.requestS.get(
-          `${obterRota()}/${termoEncerramentoId}`,
-        )) as TermoEncerramentoDto;
+          `${obterRota(
+            sistemaEscolhido,
+          )}/${termoEncerramentoId}/termo-encerramento`,
+        )) as TermoEncerramentoDetalheDto;
+
+        console.log('resposta', resposta);
 
         this.emFoco = resposta;
       } catch (erro: unknown) {
@@ -91,43 +66,56 @@ export const useTermoEncerramentoStore = (sistemaEscolhido: string) => defineSto
       }
     },
 
-    async buscarTudo(params = {}): Promise<void> {
-      try {
-        this.chamadasPendentes.lista = true;
-        this.erro.lista = null;
-
-        const resposta = (await this.requestS.get(
-          obterRota(),
-          params,
-        )) as ListTermoEncerramentoDto;
-        this.lista = resposta.linhas;
-      } catch (erro: unknown) {
-        this.erro.lista = erro;
-      } finally {
-        this.chamadasPendentes.lista = false;
-      }
-    },
-
     async excluirItem(id: number) {
-      await this.requestS.delete(`${obterRota()}/${id}`);
+      await this.requestS.delete(`${obterRota(sistemaEscolhido)}/${id}`);
     },
 
-    async salvarItem(params = {}, id = 0) {
+    async salvarItem(params: any = {}, id = 0) {
       try {
         this.chamadasPendentes.emFoco = true;
         this.erro.emFoco = null;
 
-        if (id) {
-          await this.requestS.patch(`${obterRota()}/${id}`, params);
-        } else {
-          await this.requestS.post(obterRota(), params);
-        }
+        const requestParams = {
+          ...params,
+          sobrescrever_icone: true,
+          icone_upload_token: params.icone || null,
+        };
+        delete requestParams.icone;
+
+        await this.requestS.patch(`${obterRota(sistemaEscolhido)}/${id}`, requestParams);
       } catch (erro: unknown) {
         this.erro.emFoco = erro;
         throw erro;
       } finally {
         this.chamadasPendentes.emFoco = false;
       }
+    },
+
+    async uploadIcone(file: File): Promise<string> {
+      try {
+        const formData = new FormData();
+        formData.append('tipo', 'LOGO_PDM');
+        formData.append('arquivo', file);
+
+        const resposta = (await this.requestS.upload(
+          `${import.meta.env.VITE_API_URL}/upload`,
+          formData,
+        )) as { upload_token: string };
+
+        return resposta.upload_token;
+      } catch (erro: unknown) {
+        this.erro.emFoco = erro;
+        throw erro;
+      } finally {
+        this.chamadasPendentes.emFoco = false;
+      }
+    },
+  },
+  getters: {
+    itemParaEdicao({ emFoco }) {
+      return {
+        ...emFoco,
+      };
     },
   },
 })();

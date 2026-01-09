@@ -9,7 +9,7 @@ if (!['Projetos', 'MDO'].includes(sistemaEscolhido)) {
 </script>
 
 <template>
-  <SmaeLink :to="{ name: 'termoEncerramento.editar' }">
+  <SmaeLink :to="{ name: '.termoEncerramento.editar' }">
     Editar
   </SmaeLink>
 </template>

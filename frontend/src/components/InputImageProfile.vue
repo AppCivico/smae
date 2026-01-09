@@ -1,3 +1,41 @@
+<script setup>
+import { defineProps, ref, watch } from 'vue';
+
+const props = defineProps({
+  modelValue: {
+    type: String,
+    default: '',
+  },
+});
+
+const imgSrc = ref(props.modelValue);
+
+watch(() => props.modelValue, (newValue, oldValue) => {
+  if (newValue && newValue !== oldValue) {
+    imgSrc.value = newValue;
+  }
+});
+
+const emit = defineEmits(['update:modelValue']);
+
+const handleFile = (file) => {
+  const fileUrl = URL.createObjectURL(file);
+  imgSrc.value = fileUrl;
+  emit('update:modelValue', file);
+};
+
+const uploadImageFile = (event) => {
+  const [file] = event.target.files;
+  handleFile(file);
+};
+
+const handleDrop = (event) => {
+  event.preventDefault();
+  const file = event.dataTransfer.files[0];
+  handleFile(file);
+};
+</script>
+
 <template>
   <div
     class="input-image-profile"
@@ -28,44 +66,6 @@
     </label>
   </div>
 </template>
-
-<script setup>
-import { defineProps, ref, watch } from 'vue';
-
-const props = defineProps({
-  modelValue: {
-    type: String,
-    default: '',
-  },
-});
-
-const imgSrc = ref(props.modelValue);
-
-watch(() => props.modelValue, (newValue, oldValue) => {
-  if (newValue !== oldValue) {
-    imgSrc.value = newValue;
-  }
-});
-
-const emit = defineEmits(['update:modelValue']);
-
-const uploadImageFile = (event) => {
-  const [file] = event.target.files;
-  handleFile(file);
-};
-
-const handleDrop = (event) => {
-  event.preventDefault();
-  const file = event.dataTransfer.files[0];
-  handleFile(file);
-};
-
-const handleFile = (file) => {
-  const fileUrl = URL.createObjectURL(file);
-  imgSrc.value = fileUrl;
-  emit('update:modelValue', file);
-};
-</script>
 
 <style scoped lang="less">
 .input-image-profile{

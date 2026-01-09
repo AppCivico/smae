@@ -3,7 +3,7 @@ import { defineStore } from 'pinia';
 // eslint-disable-next-line import/extensions
 import { ListTipoEncerramentoDto, TipoEncerramentoDto } from '@back/projeto-tipo-encerramento/dto/tipo-encerramento.dto';
 
-import { useAuthStore } from './auth.store';
+import { ModuloSistema } from '@/consts/modulosDoSistema';
 
 interface Estado {
   lista: TipoEncerramentoDto[];
@@ -12,14 +12,14 @@ interface Estado {
   erro: Erros;
 }
 
-function obterRota() {
-  const { sistemaEscolhido } = useAuthStore();
-
+function obterRota(
+  sistemaEscolhido: ModuloSistema.MDO | ModuloSistema.Projetos,
+) {
   switch (sistemaEscolhido) {
-    case 'Projetos':
+    case ModuloSistema.Projetos:
       return `${import.meta.env.VITE_API_URL}/projeto-tipo-encerramento`;
 
-    case 'MDO':
+    case ModuloSistema.MDO:
       return `${import.meta.env.VITE_API_URL}/obra-tipo-encerramento`;
 
     default:
@@ -27,7 +27,7 @@ function obterRota() {
   }
 }
 
-export const useTipoEncerramentoStore = (sistemaEscolhido: string) => defineStore(`${sistemaEscolhido}.tipoEncerramento`, {
+export const useTipoEncerramentoStore = (sistemaEscolhido: ModuloSistema.MDO | ModuloSistema.Projetos) => defineStore(`${sistemaEscolhido}.tipoEncerramento`, {
   state: (): Estado => ({
     lista: [],
     emFoco: null,
@@ -47,7 +47,7 @@ export const useTipoEncerramentoStore = (sistemaEscolhido: string) => defineStor
         this.erro.emFoco = null;
 
         const resposta = (await this.requestS.get(
-          `${obterRota()}/${tipoEncerramentoId}`,
+          `${obterRota(sistemaEscolhido)}/${tipoEncerramentoId}`,
         )) as TipoEncerramentoDto;
 
         this.emFoco = resposta;
@@ -64,7 +64,7 @@ export const useTipoEncerramentoStore = (sistemaEscolhido: string) => defineStor
         this.erro.lista = null;
 
         const resposta = (await this.requestS.get(
-          obterRota(),
+          obterRota(sistemaEscolhido),
           params,
         )) as ListTipoEncerramentoDto;
         this.lista = resposta.linhas;
@@ -76,7 +76,7 @@ export const useTipoEncerramentoStore = (sistemaEscolhido: string) => defineStor
     },
 
     async excluirItem(id: number) {
-      await this.requestS.delete(`${obterRota()}/${id}`);
+      await this.requestS.delete(`${obterRota(sistemaEscolhido)}/${id}`);
     },
 
     async salvarItem(params = {}, id = 0) {
@@ -85,9 +85,9 @@ export const useTipoEncerramentoStore = (sistemaEscolhido: string) => defineStor
         this.erro.emFoco = null;
 
         if (id) {
-          await this.requestS.patch(`${obterRota()}/${id}`, params);
+          await this.requestS.patch(`${obterRota(sistemaEscolhido)}/${id}`, params);
         } else {
-          await this.requestS.post(obterRota(), params);
+          await this.requestS.post(obterRota(sistemaEscolhido), params);
         }
       } catch (erro: unknown) {
         this.erro.emFoco = erro;

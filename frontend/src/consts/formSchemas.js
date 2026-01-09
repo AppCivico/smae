@@ -699,78 +699,62 @@ export const tipoEncerramento = object()
 
 export const termoEncerramento = object()
   .shape({
-    projeto_id: number()
-      .label('Projeto')
-      .required('Selecione um projeto'),
-    orgao_responsavel: string()
-      .label('Órgão responsável')
-      .max(500)
+    icone: object()
       .nullable(),
-    portfolio_id: number()
-      .label('Portfólio')
+    nome_projeto: string()
+      .label('Nome do projeto')
+      .nullable(),
+    orgao_responsavel_nome: string()
+      .label('Órgão responsável')
+      .nullable(),
+    portfolios_nomes: string()
+      .label('Portfólios')
       .nullable(),
     objeto: string()
       .label('Objeto')
-      .max(5000)
       .nullable(),
-    data_inicio_planejado: date()
-      .label('Data de início planejado')
+    previsao_inicio: date()
+      .label('Previsão de início')
       .max(dataMax)
       .min(dataMin)
       .nullable(),
-    data_termino_planejado: date()
-      .label('Data de término planejado')
+    previsao_termino: date()
+      .label('Previsão de término')
       .max(dataMax)
       .min(dataMin)
       .nullable(),
-    // .test('data_fim_maior', 'Data de término deve ser posterior à data de início', function (value) {
-    //   const { data_inicio_planejado } = this.parent;
-    //   if (!data_inicio_planejado || !value) return true;
-    //   return isAfter(new Date(value), new Date(data_inicio_planejado)) || value === data_inicio_planejado;
-    // })
-
     data_inicio_real: date()
       .label('Data de início real')
       .max(dataMax)
       .min(dataMin)
       .nullable(),
-    data_termino_real: date()
-      .label('Data de término real')
+    data_encerramento: date()
+      .label('Data de encerramento')
       .max(dataMax)
       .min(dataMin)
-      .nullable()
-      .test('data_fim_maior', 'Data de término deve ser posterior à data de início', function (value) {
-        const { data_inicio_real } = this.parent;
-        if (!data_inicio_real || !value) return true;
-        return isAfter(new Date(value), new Date(data_inicio_real)) || value === data_inicio_real;
-      }),
-    custo_planejado: number()
-      .label('Custo planejado')
+      .nullable(),
+    previsao_custo: number()
+      .label('Previsão de custo')
       .min(0)
       .nullable()
       .transform((v, o) => (o === '' ? null : v)),
-    valor_executado_real: number()
-      .label('Valor executado real')
+    valor_executado_total: number()
+      .label('Valor executado total')
       .min(0)
       .nullable()
       .transform((v, o) => (o === '' ? null : v)),
     status_final: string()
       .label('Status final')
       .nullable(),
-    etapa_projeto: string()
-      .label('Etapa do projeto')
+    etapa_nome: string()
+      .label('Etapa')
       .max(500)
       .nullable(),
-    justificativa_encerramento_id: number()
+    justificativa_id: number()
       .label('Justificativa do encerramento')
       .nullable(),
-    responsavel_encerramento_id: number()
+    responsavel_encerramento_nome: string()
       .label('Responsável pelo encerramento')
-      .nullable(),
-    data_encerramento: date()
-      .label('Data')
-      .max(dataMax)
-      .min(dataMin)
       .nullable(),
     assinatura: string()
       .label('Assinatura')

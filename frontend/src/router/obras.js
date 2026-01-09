@@ -1,5 +1,7 @@
+import { ModuloSistema } from '@/consts/modulosDoSistema';
 import { useObrasStore } from '@/stores/obras.store';
 
+import tiparPropsDeRota from './helpers/tiparPropsDeRota';
 import obrasAcompanhamentos from './obras.acompanhamentos';
 import obrasContratos from './obras.contratos';
 import obrasOrcamentos from './obras.orcamentos';
@@ -90,6 +92,12 @@ export default {
               'obrasOrçamentoCusto',
               'obrasOrçamentoPlanejado',
               'obrasOrçamentoRealizado',
+            ],
+          },
+          {
+            título: 'Encerramento',
+            rotas: [
+              `${ModuloSistema.MDO}.termoEncerramento.resumo`,
             ],
           },
         ],
@@ -293,6 +301,48 @@ export default {
         obrasProcessos,
         obrasContratos,
         obrasOrcamentos,
+        {
+          path: 'termo-encerramento',
+          meta: {
+            entidadeMãe: ModuloSistema.MDO,
+          },
+          children: [
+            {
+              name: `${ModuloSistema.MDO}.termoEncerramento.resumo`,
+              path: '',
+              component: import('@/views/TermoEncerramentoProjeto/TermoEncerramentoProjetoResumo.vue'),
+              props: (route) => ({
+                ...tiparPropsDeRota(route),
+                escopoId: route.params.obraId,
+              }),
+              meta: {
+                rotasParaMigalhasDePão: [
+                  'obrasListar',
+                  'obrasResumo',
+                  `${ModuloSistema.MDO}.termoEncerramento.resumo`,
+                ],
+                título: 'Termo encerramento resumo',
+              },
+            },
+            {
+              name: `${ModuloSistema.MDO}.termoEncerramento.editar`,
+              path: 'editar',
+              component: import('@/views/TermoEncerramentoProjeto/TermoEncerramentoProjetoCriarEditar.vue'),
+              props: (route) => ({
+                ...tiparPropsDeRota(route),
+                escopoId: route.params.obraId,
+              }),
+              meta: {
+                rotasParaMigalhasDePão: [
+                  'obrasListar',
+                  'obrasResumo',
+                  `${ModuloSistema.MDO}.termoEncerramento.resumo`,
+                ],
+                título: 'Termo encerramento editar',
+              },
+            },
+          ],
+        },
       ],
     },
   ],
