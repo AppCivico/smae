@@ -12,6 +12,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  nivel: {
+    type: Number,
+    default: 0,
+  },
   apenasLeitura: {
     type: Boolean,
     default: false,
@@ -88,7 +92,13 @@ const éPossívelAbrir = (item) => !item.children?.length
           </label>
 
           <strong class="arvore-de-arquivos__nome">
-            {{ item.nome }}
+            <slot
+              name="nome-diretorio"
+              :diretorio="item"
+              :nivel="$props.nivel"
+            >
+              {{ item.nome }}
+            </slot>
           </strong>
 
           <SmaeLink
@@ -111,6 +121,7 @@ const éPossívelAbrir = (item) => !item.children?.length
         <ArvoreDeArquivos
           :key="`diretorio--${item.id || i}__arvore`"
           :aninhado="true"
+          :nivel="nivel + 1"
           :lista-de-diretórios="item.children"
           :tem-arquivos="!!arquivosAgrupadosPorCaminho?.[item.caminho]?.length"
           :arquivos-agrupados-por-caminho="arquivosAgrupadosPorCaminho"
@@ -121,6 +132,18 @@ const éPossívelAbrir = (item) => !item.children?.length
           @apagar="($params) => $emit('apagar', $params)"
           @editar="($params) => $emit('editar', $params)"
         >
+          <template #nome-diretorio="slotProps">
+            <slot
+              name="nome-diretorio"
+              v-bind="slotProps"
+            />
+          </template>
+          <template #nome-arquivo="slotProps">
+            <slot
+              name="nome-arquivo"
+              v-bind="slotProps"
+            />
+          </template>
           <template v-if="arquivosAgrupadosPorCaminho?.[item.caminho]">
             <li
               v-for="arquivo, j in arquivosAgrupadosPorCaminho[item.caminho]"
@@ -136,7 +159,13 @@ const éPossívelAbrir = (item) => !item.children?.length
                   download
                   class="arvore-de-arquivos__descricao"
                 >
-                  {{ arquivo?.descricao || arquivo?.arquivo?.nome_original }}
+                  <slot
+                    name="nome-arquivo"
+                    :arquivo="arquivo"
+                    :nivel="$props.nivel"
+                  >
+                    {{ arquivo?.descricao || arquivo?.arquivo?.nome_original }}
+                  </slot>
                 </component>
 
                 <small

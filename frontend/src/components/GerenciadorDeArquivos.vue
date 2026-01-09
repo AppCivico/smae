@@ -160,7 +160,20 @@ watchEffect(async () => {
       :rota-de-edição="props.rotaDeEdição"
       @apagar="($params) => $emit('apagar', $params)"
       @editar="($params) => $emit('editar', $params)"
-    />
+    >
+      <template #nome-diretorio="slotProps">
+        <slot
+          name="nome-diretorio"
+          v-bind="slotProps"
+        />
+      </template>
+      <template #nome-arquivo="slotProps">
+        <slot
+          name="nome-arquivo"
+          v-bind="slotProps"
+        />
+      </template>
+    </Arvore>
 
     <SmaeLink
       v-if="props.rotaDeAdição && !$props.apenasLeitura"
