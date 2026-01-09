@@ -20,6 +20,7 @@ import {
     CONST_PERFIL_CASA_CIVIL,
     CONST_PERFIL_COLAB_OBRA_NO_ORGAO,
     CONST_PERFIL_GESTOR_OBRA,
+    CONST_PERFIL_COORDENADOR_EQUIPE,
 } from '../src/common/consts';
 import { JOB_LOCK_NUMBER } from '../src/common/dto/locks';
 const prisma = new PrismaClient({ log: ['query'] });
@@ -1313,15 +1314,18 @@ PerfilAcessoConfig.push(
     {
         nome: atualizarNomePerfil('Responsável em equipes', ['Colaborador de Grupo de Variáveis']),
         descricao: 'Gerenciar as equipes onde é responsável',
-        privilegios: ['CadastroGrupoVariavel.colaborador_responsavel', 'SMAE.GrupoVariavel.colaborador'],
+        privilegios: ['CadastroGrupoVariavel.colaborador_responsavel'],
     },
 
     {
+        nome: atualizarNomePerfil(CONST_PERFIL_COORDENADOR_EQUIPE, ['Coordenador de Grupo de Variáveis']),
+        descricao: DESC_EQUIPE,
+        privilegios: ['SMAE.GrupoVariavel.colaborador'],
+    },
+    {
         nome: atualizarNomePerfil(CONST_PERFIL_PARTICIPANTE_EQUIPE, ['Participante de Grupo de Variáveis']),
         descricao: DESC_EQUIPE,
-        privilegios: [
-            'SMAE.GrupoVariavel.participante', // informativo para saber que pode participar, filtro das pessSMAE.liberar_pdm_as_psas
-        ],
+        privilegios: ['SMAE.GrupoVariavel.participante'],
     }
 );
 

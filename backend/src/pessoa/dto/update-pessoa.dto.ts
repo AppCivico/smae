@@ -1,7 +1,7 @@
 import { PartialType } from '@nestjs/swagger';
 import { IsBoolean, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
-import { CreatePessoaDto } from './create-pessoa.dto';
 import { MAX_LENGTH_DEFAULT } from 'src/common/consts';
+import { CreatePessoaDto } from './create-pessoa.dto';
 
 export class UpdatePessoaDto extends PartialType(CreatePessoaDto) {
     /**

@@ -721,4 +721,97 @@ export class EquipeRespService {
             );
         }
     }
+    /**
+     * Busca IDs das equipes onde a pessoa é colaborador
+     */
+    async findIdsPorColaborador(pessoaId: number): Promise<number[]> {
+        const rows = await this.prisma.grupoResponsavelEquipe.findMany({
+            where: {
+                removido_em: null,
+                GrupoResponsavelEquipeColaborador: {
+                    some: {
+                        removido_em: null,
+                        pessoa_id: pessoaId,
+                    },
+                },
+            },
+            select: {
+                id: true,
+            },
+        });
+
+        return rows.map((r) => r.id);
+    }
+
+    /**
+     * Atualiza as equipes onde a pessoa é colaborador/responsável
+     * Diferente de participantes, colaboradores devem estar no MESMO órgão da equipe
+     */
+    async atualizaEquipeColaborador(
+        pessoaId: number,
+        equipes: number[],
+        prismaTx: Prisma.TransactionClient,
+        orgao_id: number
+    ): Promise<void> {
+        const equipesAtuais = await prismaTx.grupoResponsavelEquipeResponsavel.findMany({
+            where: {
+                pessoa_id: pessoaId,
+                removido_em: null,
+            },
+            select: {
+                grupo_responsavel_equipe_id: true,
+                orgao_id: true,
+            },
+        });
+
+        const currentIds = equipesAtuais.map((t) => t.grupo_responsavel_equipe_id);
+
+        // Remove das equipes que não estão mais na lista
+        for (const teamId of currentIds) {
+            if (!equipes.includes(teamId)) {
+                await prismaTx.grupoResponsavelEquipeResponsavel.updateMany({
+                    where: {
+                        pessoa_id: pessoaId,
+                        grupo_responsavel_equipe_id: teamId,
+                        removido_em: null,
+                    },
+                    data: {
+                        removido_em: new Date(Date.now()),
+                    },
+                });
+            }
+        }
+
+        // Adiciona nas novas equipes
+        for (const teamId of equipes) {
+            if (!currentIds.includes(teamId)) {
+                const team = await prismaTx.grupoResponsavelEquipe.findFirst({
+                    where: { id: teamId, removido_em: null },
+                    select: { orgao_id: true, titulo: true },
+                });
+
+                if (!team) {
+                    throw new BadRequestException(`Equipe ID ${teamId} não foi encontrada.`);
+                }
+
+                // Colaboradores devem estar no MESMO órgão da equipe (não hierárquico)
+                if (team.orgao_id !== orgao_id) {
+                    throw new BadRequestException(
+                        `Não é possível adicionar a pessoa como colaborador na equipe "${team.titulo}", pois o órgão da pessoa (ID ${orgao_id}) não é o mesmo da equipe (ID ${team.orgao_id}). Colaboradores devem pertencer ao mesmo órgão da equipe.`
+                    );
+                }
+
+                await prismaTx.grupoResponsavelEquipeResponsavel.create({
+                    data: {
+                        grupo_responsavel_equipe_id: teamId,
+                        pessoa_id: pessoaId,
+                        orgao_id: orgao_id,
+                    },
+                });
+            }
+        }
+
+        // Recalcula os perfis de PDM da pessoa (igual ao participante)
+        await this.recalculaPessoaPdmTipos(pessoaId, prismaTx);
+    }
 }

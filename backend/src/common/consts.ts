@@ -9,6 +9,7 @@ export const CONST_VAR_SEM_UN_MEDIDA = -1;
 export const CONST_COD_NOTA_DIST_RECURSO = 'Aviso de distribuição de recurso';
 export const CONST_COD_NOTA_TRANSF_GOV = 'Transfere Gov';
 export const CONST_PERFIL_PARTICIPANTE_EQUIPE = 'Participante em equipes';
+export const CONST_PERFIL_COORDENADOR_EQUIPE = 'Coordenador em equipes';
 // não mude essa string sem atualizar o seed!
 export const CONST_PERFIL_CASA_CIVIL = 'Gestor(a) Transferências Voluntárias';
 
