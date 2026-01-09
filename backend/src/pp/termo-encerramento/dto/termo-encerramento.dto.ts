@@ -1,6 +1,8 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { PosicaoLogotipo } from '@prisma/client';
+import { Transform } from 'class-transformer';
 import { IsBoolean, IsEnum, IsNumber, IsOptional, IsString, MaxLength, ValidateIf } from 'class-validator';
+import { DateTransform } from '../../../auth/transforms/date.transform';
 import { IsOnlyDate } from '../../../common/decorators/IsDateOnly';
 import { MAX_LENGTH_DEFAULT, MAX_LENGTH_MEDIO } from '../../../common/consts';
 
@@ -29,24 +31,28 @@ export class UpsertTermoEncerramentoDto {
     @ApiPropertyOptional({ description: 'Data de início planejado (YYYY-MM-DD)' })
     @IsOptional()
     @IsOnlyDate()
+    @Transform(DateTransform)
     @ValidateIf((object, value) => value !== null)
     previsao_inicio?: Date | null;
 
     @ApiPropertyOptional({ description: 'Data de término planejado (YYYY-MM-DD)' })
     @IsOptional()
-    @IsOnlyDate()
-    @ValidateIf((object, value) => value !== null)
+@IsOnlyDate()
+@Transform(DateTransform)
+
     previsao_termino?: Date | null;
 
     @ApiPropertyOptional({ description: 'Data de início real (YYYY-MM-DD)' })
     @IsOptional()
     @IsOnlyDate()
+    @Transform(DateTransform)
     @ValidateIf((object, value) => value !== null)
     data_inicio_real?: Date | null;
 
     @ApiPropertyOptional({ description: 'Data de término real (YYYY-MM-DD)' })
     @IsOptional()
     @IsOnlyDate()
+    @Transform(DateTransform)
     @ValidateIf((object, value) => value !== null)
     data_termino_real?: Date | null;
 
@@ -87,6 +93,7 @@ export class UpsertTermoEncerramentoDto {
     @ApiPropertyOptional({ description: 'Data do encerramento (YYYY-MM-DD)' })
     @IsOptional()
     @IsOnlyDate()
+    @Transform(DateTransform)
     @ValidateIf((object, value) => value !== null)
     data_encerramento?: Date | null;
 
