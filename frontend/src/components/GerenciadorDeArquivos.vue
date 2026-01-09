@@ -71,7 +71,9 @@ const arquivosOrdenados = computed(() => props.arquivos.slice()
 
 const arquivosAgrupadosPorCaminho = computed(() => listaFiltradaPorTermoDeBusca.value
   .reduce((acc, cur) => {
-    const caminho = (cur?.arquivo?.diretorio_caminho || '/');
+    const caminho = cur?.arquivo?.diretorio_caminho.endsWith('/')
+      ? cur.arquivo.diretorio_caminho
+      : `${cur?.arquivo?.diretorio_caminho}/`;
 
     acc[caminho] = !acc[caminho]
       ? [cur]
