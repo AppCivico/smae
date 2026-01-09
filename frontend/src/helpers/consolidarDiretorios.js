@@ -3,10 +3,10 @@ import gerarDiretoriosDeUmCaminho from './gerarDiretoriosDeUmCaminho';
 const deduplicarCaminhos = (caminhos) => Array.from(new Set(caminhos));
 
 // tornar ID dos diretorios um parâmetro HTML amigável
-const normalizarId = (caminho) => caminho.replace(/\//g, '_barra_');
+const normalizarId = (caminho) => caminho.replace(/\//g, '_barra_').replace(/\./g, '_ponto_');
 
 const definirPai = (caminho) => {
-  if (caminho === '/') {
+  if (caminho === '/' || !caminho.length) {
     return null;
   }
 
@@ -21,6 +21,9 @@ const definirNome = (caminho) => {
   if (caminho === '/') {
     return '/';
   }
+  if (!caminho.length) {
+    return '.';
+  }
 
   const caminhoSemBarraFinal = caminho.replace(/\/$/, '');
   const posicaoUltimaBarra = caminhoSemBarraFinal.lastIndexOf('/');
@@ -33,6 +36,7 @@ export default ((caminhos = []) => {
 
   // novas duplicatas podem surgir ao gerar os diretórios a partir dos caminhos
   const diretoriosConsolidados = deduplicarCaminhos(
+    // retorna os caminhos já normalizados
     caminhosUnicos.flatMap((caminho) => gerarDiretoriosDeUmCaminho(caminho)),
   );
 
