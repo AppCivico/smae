@@ -4311,7 +4311,10 @@ export const comunicadosGeraisFiltrosSchema = object().shape({
 
 function obterCicloAtaulizacaoCamposCompartilhados(posicao) {
   const schemaCampos = {
-    analise_qualitativa: string().label('análise qualitativa da coleta').max(1000).required(),
+    analise_qualitativa: string()
+      .label('análise qualitativa da coleta')
+      .max(1000)
+      .required(),
   };
 
   if (posicao !== 1) {
