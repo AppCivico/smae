@@ -68,6 +68,14 @@ function emitValue(e: Event, trim = false) {
 }
 
 const max = computed(() => {
+  if (import.meta.env.DEV && (props.maxlength || props.maxLength)) {
+    console.warn(
+      `[SmaeText] Evite usar "maxlength" ou "maxLength" no campo "${props.name}". `
+      + 'Prefira usar ":schema" para que o componente extraia o limite automaticamente do schema Yup. '
+      + 'Isso evita duplicação de lógica e garante consistência.',
+    );
+  }
+
   if (props.maxlength) {
     return Number(props.maxlength);
   }

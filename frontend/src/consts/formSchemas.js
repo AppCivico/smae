@@ -4311,7 +4311,10 @@ export const comunicadosGeraisFiltrosSchema = object().shape({
 
 function obterCicloAtaulizacaoCamposCompartilhados(posicao) {
   const schemaCampos = {
-    analise_qualitativa: string().label('análise qualitativa da coleta').required(),
+    analise_qualitativa: string()
+      .label('análise qualitativa da coleta')
+      .max(1000)
+      .required(),
   };
 
   if (posicao !== 1) {
@@ -4321,18 +4324,21 @@ function obterCicloAtaulizacaoCamposCompartilhados(posicao) {
       );
     schemaCampos.pedido_complementacao = string()
       .label('Pedido de complementação')
+      .max(1000)
       .when('solicitar_complementacao', (solicitarComplementacao, field) => (solicitarComplementacao ? field.required() : field.nullable()));
   }
 
   if (posicao >= 2) {
     schemaCampos.analise_qualitativa_aprovador = string()
       .label('análise qualitativa da conferência')
+      .max(1000)
       .when('solicitar_complementacao', (solicitarComplementacao, field) => (solicitarComplementacao ? field.nullable() : field.required()));
   }
 
   if (posicao >= 3) {
     schemaCampos.analise_qualitativa_liberador = string()
       .label('análise qualitativa do liberador')
+      .max(1000)
       .when('solicitar_complementacao', (solicitarComplementacao, field) => (solicitarComplementacao ? field.nullable() : field.required()));
   }
 
