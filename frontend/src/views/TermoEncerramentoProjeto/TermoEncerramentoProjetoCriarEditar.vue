@@ -364,13 +364,13 @@ onMounted(async () => {
 
       <div class="f1">
         <SmaeLabel
-          name="data_termino_real"
+          name="data_encerramento"
           :schema="schema"
         />
 
         <Field
           v-slot="{ field, handleChange, value }"
-          name="data_termino_real"
+          name="data_encerramento"
         >
           <SmaeDateInput
             class="inputtext light"
@@ -383,7 +383,7 @@ onMounted(async () => {
 
         <ErrorMessage
           class="error-msg"
-          name="data_termino_real"
+          name="data_encerramento"
         />
       </div>
     </div>
