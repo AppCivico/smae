@@ -1,10 +1,12 @@
 import { defineAsyncComponent } from 'vue';
 
 import LoadingComponent from '@/components/LoadingComponent.vue';
+import { ModuloSistema } from '@/consts/modulosDoSistema';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import ProjetosRaiz from '@/views/projetos/ProjetosRaiz.vue';
 
 import acompanhamentos from './acompanhamentos';
+import tiparPropsDeRota from './helpers/tiparPropsDeRota';
 import licoesAprendidas from './licoesAprendidas';
 import processos from './processos';
 import contratos from './projetos.contratos';
@@ -132,9 +134,7 @@ export default {
           'Projeto.administrador_no_orgao',
           'Projeto.administrador',
         ],
-        rotasParaMigalhasDePão: [
-          'projetosListar',
-        ],
+        rotasParaMigalhasDePão: ['projetosListar'],
       },
     },
 
@@ -169,10 +169,10 @@ export default {
           };
 
           const rotasDeEncerramento = {
-            título: 'Encerramento',
+            título: 'Encerramento 1',
             rotas: [
               'liçõesAprendidasListar',
-              'termoEncerramento.resumo',
+              `${ModuloSistema.Projetos}.termoEncerramento.resumo`,
             ],
           };
 
@@ -193,10 +193,7 @@ export default {
           ];
         },
 
-        rotasParaMigalhasDePão: [
-          'projetosListar',
-          'projetosResumo',
-        ],
+        rotasParaMigalhasDePão: ['projetosListar', 'projetosResumo'],
       },
 
       children: [
@@ -246,10 +243,7 @@ export default {
             projetoId: Number.parseInt(params.projetoId, 10) || undefined,
           }),
           meta: {
-            rotasParaMigalhasDePão: [
-              'projetosListar',
-              'projetosResumo',
-            ],
+            rotasParaMigalhasDePão: ['projetosListar', 'projetosResumo'],
             título: () => {
               const projetoStoreEmFoco = useProjetosStore()?.emFoco?.nome;
               if (!projetoStoreEmFoco) {
@@ -305,26 +299,50 @@ export default {
         licoesAprendidas,
         {
           path: 'termo-encerramento',
+          meta: {
+            entidadeMãe: ModuloSistema.Projetos,
+          },
           children: [
             {
-              name: 'termoEncerramento.resumo',
+              name: `${ModuloSistema.Projetos}.termoEncerramento.resumo`,
               path: '',
-              component: import('@/views/TermoEncerramentoProjeto/TermoEncerramentoProjetoResumo.vue'),
+              props: (route) => ({
+                ...tiparPropsDeRota(route),
+                escopoId: route.params.projetoId,
+              }),
+              component: import(
+                '@/views/TermoEncerramentoProjeto/TermoEncerramentoProjetoResumo.vue'
+              ),
               meta: {
                 título: 'Termo encerramento resumo',
+                rotasParaMigalhasDePão: [
+                  'projetosListar',
+                  'projetosResumo',
+                  `${ModuloSistema.Projetos}.termoEncerramento.resumo`,
+                ],
               },
             },
             {
-              name: 'termoEncerramento.editar',
+              name: `${ModuloSistema.Projetos}.termoEncerramento.editar`,
               path: 'editar',
-              component: import('@/views/TermoEncerramentoProjeto/TermoEncerramentoProjetoCriarEditar.vue'),
+              props: (route) => ({
+                ...tiparPropsDeRota(route),
+                escopoId: route.params.projetoId,
+              }),
+              component: import(
+                '@/views/TermoEncerramentoProjeto/TermoEncerramentoProjetoCriarEditar.vue'
+              ),
               meta: {
                 título: 'Termo encerramento editar',
+                rotasParaMigalhasDePão: [
+                  'projetosListar',
+                  'projetosResumo',
+                  `${ModuloSistema.Projetos}.termoEncerramento.resumo`,
+                ],
               },
             },
           ],
         },
-
         {
           path: 'documentos',
           name: 'projetosDocumentos',
