@@ -3832,6 +3832,7 @@ export const variável = (singleIndicadores) => object()
     ano_base: string()
       .nullable(),
     atraso_meses: number()
+      .label('Defasagem da medição (meses)')
       .min(0)
       .integer(),
     casas_decimais: string()
