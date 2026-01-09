@@ -1494,6 +1494,39 @@ export class VariavelCicloService {
     ): Promise<VariavelCicloFaseCountDto> {
         const whereFilter = await this.getPermissionSet(filters, user);
 
+        // Busca as equipes do usuário para verificar permissão de edição
+        const minhasEquipes = await user.getEquipesColaborador(this.prisma);
+
+        // Se o usuário não tem equipes, não pode editar nada, retorna zero
+        if (minhasEquipes.length === 0) {
+            return { linhas: [], total: 0 };
+        }
+
+        const mapPerfil: Record<VariavelFase, PerfilResponsavelEquipe> = {
+            Liberacao: 'Liberacao',
+            Preenchimento: 'Medicao',
+            Validacao: 'Validacao',
+        };
+
+        // Cria filtro OR dinâmico para garantir que o usuário tenha equipe com o perfil correto para a fase
+        const editPermissionFilter: Prisma.VariavelCicloCorrenteWhereInput = {
+            OR: Object.entries(mapPerfil).map(([fase, perfil]) => ({
+                fase: fase as VariavelFase,
+                variavel: {
+                    VariavelGrupoResponsavelEquipe: {
+                        some: {
+                            removido_em: null,
+                            grupo_responsavel_equipe: {
+                                id: { in: minhasEquipes },
+                                perfil: perfil,
+                                removido_em: null,
+                            },
+                        },
+                    },
+                },
+            })),
+        };
+
         // Agrupa por fase e conta as variáveis
         const countByFase = await this.prisma.variavelCicloCorrente.groupBy({
             by: ['fase'],
@@ -1504,6 +1537,7 @@ export class VariavelCicloService {
                 },
                 eh_corrente: true,
                 ...buildMetaIniAtvFilter(filters),
+                AND: [editPermissionFilter], // Adiciona o filtro de edição
             },
             _count: {
                 variavel_id: true,
