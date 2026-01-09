@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PerfilResponsavelEquipe, Prisma } from '@prisma/client';
-import { CONST_PERFIL_PARTICIPANTE_EQUIPE } from 'src/common/consts';
+import { CONST_PERFIL_PARTICIPANTE_EQUIPE, CONST_PERFIL_COORDENADOR_EQUIPE } from 'src/common/consts';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { PessoaPrivilegioService } from '../auth/pessoaPrivilegio.service';
 import { LoggerWithLog } from '../common/LoggerWithLog';
@@ -72,18 +72,28 @@ export class EquipeRespService {
                     }
                 }
 
-                const pComPriv2 = await this.pessoaPrivService.pessoasComPriv(
+                const pEnviadosColab = await this.pessoaPrivService.pessoasComPriv([], dto.colaboradores);
+                const pComPrivColab = await this.pessoaPrivService.pessoasComPriv(
                     ['SMAE.GrupoVariavel.colaborador'],
                     dto.colaboradores
                 );
                 for (const pessoaId of dto.colaboradores) {
-                    const pessoa = pComPriv2.filter((r) => r.pessoa_id == pessoaId)[0];
-                    if (!pessoa)
-                        throw new BadRequestException(`Pessoa ID ${pessoaId} não pode ser colaborador do grupo.`);
+                    const pessoa = pEnviadosColab.filter((r) => r.pessoa_id == pessoaId)[0];
+                    if (!pessoa) throw new BadRequestException(`Pessoa ID ${pessoaId} não encontrada.`);
                     if (pessoa.orgao_id !== orgao_id)
                         throw new BadRequestException(
                             `Pessoa ID ${pessoaId} não pode ser colaborador do grupo, pois não está no órgão responsável (colaboradores devem estar no mesmo órgão da equipe).`
                         );
+
+                    // Auto-adiciona o perfil de coordenador se não tiver
+                    const temPriv = pComPrivColab.filter((r) => r.pessoa_id == pessoaId)[0];
+                    if (!temPriv) {
+                        await this.pessoaPrivService.adicionaPerfilAcesso(
+                            pessoaId,
+                            CONST_PERFIL_COORDENADOR_EQUIPE,
+                            prismaTx
+                        );
+                    }
                 }
 
                 const gp = await prismaTx.grupoResponsavelEquipe.create({
@@ -109,7 +119,7 @@ export class EquipeRespService {
                 });
                 await prismaTx.grupoResponsavelEquipeResponsavel.createMany({
                     data: dto.colaboradores.map((pessoaId) => {
-                        const pessoa = pComPriv2.filter((r) => r.pessoa_id == pessoaId)[0];
+                        const pessoa = pEnviadosColab.filter((r) => r.pessoa_id == pessoaId)[0];
 
                         return {
                             grupo_responsavel_equipe_id: gp.id,
@@ -538,7 +548,10 @@ export class EquipeRespService {
                     },
                 });
 
-                const pComPriv = await this.pessoaPrivService.pessoasComPriv(
+                // Busca todas as pessoas enviadas (para pegar orgao_id)
+                const pEnviadosColab = await this.pessoaPrivService.pessoasComPriv([], dto.colaboradores);
+                // Busca quem já tem o privilégio
+                const pComPrivColab = await this.pessoaPrivService.pessoasComPriv(
                     ['SMAE.GrupoVariavel.colaborador'],
                     dto.colaboradores
                 );
@@ -564,16 +577,25 @@ export class EquipeRespService {
                 }
 
                 for (const pessoaId of dto.colaboradores) {
-                    const pessoa = pComPriv.filter((r) => r.pessoa_id == pessoaId)[0];
-                    if (!pessoa)
-                        throw new BadRequestException(`Pessoa ID ${pessoaId} não pode ser colaborador do grupo.`);
+                    const pessoa = pEnviadosColab.filter((r) => r.pessoa_id == pessoaId)[0];
+                    if (!pessoa) throw new BadRequestException(`Pessoa ID ${pessoaId} não encontrada.`);
                     if (pessoa.orgao_id !== orgao_id)
                         throw new BadRequestException(
                             `Pessoa ID ${pessoaId} não pode ser colaborador do grupo, pois não está no órgão responsável (colaboradores devem estar no mesmo órgão da equipe).`
                         );
 
+                    // Auto-adiciona o perfil de coordenador se não tiver
+                    const temPriv = pComPrivColab.filter((r) => r.pessoa_id == pessoaId)[0];
+                    if (!temPriv) {
+                        await this.pessoaPrivService.adicionaPerfilAcesso(
+                            pessoaId,
+                            CONST_PERFIL_COORDENADOR_EQUIPE,
+                            prismaTx
+                        );
+                    }
+
                     if (!keptRecord.includes(pessoaId)) {
-                        // O participante é novo, crie um novo registro
+                        // O colaborador é novo, crie um novo registro
                         logger.log(`Novo colaborador: ${pessoa.pessoa_id}`);
                         await prismaTx.grupoResponsavelEquipeResponsavel.create({
                             data: {
