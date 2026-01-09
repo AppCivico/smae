@@ -48,15 +48,15 @@ const props = defineProps({
 
 defineEmits(['apagar', 'editar']);
 
-const diretórios = ref([]);
+const diretorios = ref([]);
 const listaFiltradaPorTermoDeBusca = ref([]);
 const chamadasPendentes = ref({
-  diretórios: false,
+  diretorios: false,
 });
 const ordenadoPor = ref('descricao');
 const ordem = ref('crescente');
 const erros = ref({
-  diretórios: null,
+  diretorios: null,
 });
 
 const arquivosOrdenados = computed(() => props.arquivos.slice()
@@ -80,45 +80,36 @@ const arquivosAgrupadosPorCaminho = computed(() => listaFiltradaPorTermoDeBusca.
   }, {})
   || {});
 
-const diretóriosConsolidados = computed(() => consolidarDiretorios(
-  props.arquivos,
-  diretórios.value,
+const diretoriosConsolidados = computed(() => consolidarDiretorios(
+  [].concat(
+    diretorios.value.map((dir) => dir.caminho),
+    props.arquivos.map((arq) => arq.arquivo?.diretorio_caminho || '/'),
+  ),
 ));
 
-const árvoreDeDiretórios = computed(() => createDataTree(
-  diretóriosConsolidados.value
-    .reduce((acc, cur) => acc.concat(
-      cur.replace('/', '')
-        .split('/')
-        .map((segmento, index, segmentos) => ({
-          id: segmento || '/',
-          pai: !segmento ? null : (segmentos[index - 1] || '/'),
-          caminho: segmento ? `${cur.split(segmento)[0] + segmento}/` : '/',
-        }))
-        .filter((x) => !acc.some((y) => y.id === x.id)),
-    ), []),
-  { parentPropertyName: 'pai' },
-) || []);
+const árvoreDeDiretórios = computed(() => createDataTree(diretoriosConsolidados.value, { parentPropertyName: 'pai' }) || []);
 
+// Buscar lista de diretórios. Só é necessário se formos mostrar possíveis
+// vazios, se não podemos extrair todos dos arquivos.
 watchEffect(async () => {
-  erros.value.diretórios = null;
+  erros.value.diretorios = null;
 
   if (props.parâmetrosDeDiretórios) {
-    chamadasPendentes.value.diretórios = true;
+    chamadasPendentes.value.diretorios = true;
 
     try {
       const { linhas } = typeof props.parâmetrosDeDiretórios === 'object'
         ? await requestS.get(`${baseUrl}/diretorio`, props.parâmetrosDeDiretórios)
         : await requestS.get(`${baseUrl}/diretorio`);
 
-      diretórios.value = linhas;
+      diretorios.value = linhas;
     } catch (erro) {
-      erros.value.diretórios = erro;
+      erros.value.diretorios = erro;
     } finally {
-      chamadasPendentes.value.diretórios = false;
+      chamadasPendentes.value.diretorios = false;
     }
   } else {
-    diretórios.value.splice(0);
+    diretorios.value.splice(0);
   }
 });
 </script>

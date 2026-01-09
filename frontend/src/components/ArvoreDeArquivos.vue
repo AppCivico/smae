@@ -2,7 +2,6 @@
 import { ref } from 'vue';
 
 import dateToField from '@/helpers/dateToField';
-import truncate from '@/helpers/texto/truncate';
 
 import oArquivoEhEditavel from './ArvoreDeArquivos.helpers/oArquivoEhEditavel';
 
@@ -89,7 +88,7 @@ const éPossívelAbrir = (item) => !item.children?.length
           </label>
 
           <strong class="arvore-de-arquivos__nome">
-            {{ item.id }}
+            {{ item.nome }}
           </strong>
 
           <SmaeLink
