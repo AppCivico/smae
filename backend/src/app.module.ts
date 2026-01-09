@@ -75,6 +75,7 @@ import { TipoVinculoModule } from './casa-civil/tipo-vinculo/tipo-vinculo.module
 import { VinculoModule } from './casa-civil/vinculo/vinculo.module';
 import { PortfolioTagModule } from './pp/portfolio-tag/portfolio-tag.module';
 import { TipoEncerramentoModule } from './projeto-tipo-encerramento/tipo-encerramento.module';
+import { TermoEncerramentoModule } from './pp/termo-encerramento/termo-encerramento.module';
 
 // Hacks pro JS
 /*
@@ -122,6 +123,7 @@ import { TipoEncerramentoModule } from './projeto-tipo-encerramento/tipo-encerra
         WorkflowFluxoTarefaModule,
         WorkflowAndamentoModule,
         WorkflowAndamentoFaseModule,
+        TermoEncerramentoModule,
         TipoEncerramentoModule,
         BlocoNotasModule,
         DashTransferenciaModule,

@@ -40,9 +40,12 @@ model Pessoa {
     ProjetoOrigemQAtualizei CompromissoOrigem[] @relation("Atualizador")
     ProjetoOrigemQRemovi    CompromissoOrigem[] @relation("Removedor")
 
-    ProjetoTipoQcriei     ProjetoTipoEncerramento[] @relation("Criador")
-    ProjetoTipoQatualizei ProjetoTipoEncerramento[] @relation("Atualizador")
-    ProjetoTipoQremovi    ProjetoTipoEncerramento[] @relation("Removedor")
+    ProjetoTipoQcriei           ProjetoTipoEncerramento[]  @relation("Criador")
+    ProjetoTipoQatualizei       ProjetoTipoEncerramento[]  @relation("Atualizador")
+    ProjetoTipoQremovi          ProjetoTipoEncerramento[]  @relation("Removedor")
+    CriouTermosEncerramento     ProjetoTermoEncerramento[] @relation("CriadorTermo")
+    AtualizouTermosEncerramento ProjetoTermoEncerramento[] @relation("AtualizadorTermo")
+    RemoveuTermosEncerramento   ProjetoTermoEncerramento[] @relation("RemovedorTermo")
 
     atualizador         Pessoa?             @relation("AtualizadorPessoas", fields: [atualizado_por], references: [id])
     criador             Pessoa?             @relation("CriadorPessoas", fields: [criado_por], references: [id])
@@ -1248,6 +1251,8 @@ model Arquivo {
     preview_task_id       Int?
     preview_criado_em     DateTime? @db.Timestamptz(6)
     preview_atualizado_em DateTime? @db.Timestamptz(6)
+
+    IconeTermosEncerramento ProjetoTermoEncerramento[] @relation("icone_termo")
 
     Tag                             Tag[]
     Regiao                          Regiao[]
@@ -3679,6 +3684,8 @@ model Portfolio {
     nivel_maximo_tarefa  Int @default(5) @db.SmallInt
     nivel_regionalizacao Int @default(1) @db.SmallInt
 
+    icone_impressao Int?
+
     orcamento_execucao_disponivel_meses Int[] @default([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
 
     descricao    String    @default("")
@@ -3799,6 +3806,8 @@ model Projeto {
     atualizado_em  DateTime? @db.Timestamptz(6)
     atualizado_por Int?
     atualizador    Pessoa?   @relation("Atualizador", fields: [atualizado_por], references: [id])
+
+    TermosEncerramento ProjetoTermoEncerramento[]
 
     codigo                    String? // abre apenas depois de priorizado
     previsao_custo            Float?
@@ -8083,5 +8092,91 @@ model ProjetoTipoEncerramento {
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
+    termos ProjetoTermoEncerramento[]
+
     @@map("projeto_tipo_encerramento")
+}
+
+enum PosicaoLogotipo {
+    Esquerda
+    Centro
+    Direita
+}
+
+model ProjetoTermoEncerramento {
+    id Int @id @default(autoincrement())
+
+    projeto_id Int
+    projeto    Projeto @relation(fields: [projeto_id], references: [id])
+
+    // Icone (FK para o Arquivo)
+    icone_arquivo_id Int?
+    icone            Arquivo? @relation("icone_termo", fields: [icone_arquivo_id], references: [id])
+
+    // Salvo no momento da criação para garantir que a versão imprimível não mude se o projeto mudar
+    nome_projeto           String
+    orgao_responsavel_nome String
+    portfolios_nomes       String // Concat string of portfolios
+    objeto                 String /// HTML
+
+    // --- Editaveis Datas & Custos (Calculados de Projeto/Cronograma/Orcamento) ---
+
+    // "Data de inicio planejado" (origem = cronograma)
+    previsao_inicio DateTime? @db.Date()
+
+    // "Data de término planejado" (origem = cronograma)
+    previsao_termino DateTime? @db.Date()
+
+    // "Data de inicio real" (origem = cronograma)
+    data_inicio_real DateTime? @db.Date()
+
+    // "Data de término real" (origem = escopo ou, se não tiver, cronograma)
+    data_termino_real DateTime? @db.Date()
+
+    // "custo planejado" (origem: Custo Total Planejado do cronograma)
+    previsao_custo Float?
+
+    // "valor executado total" (origem: Total Geral Empenhado da execução orçamentária)
+    valor_executado_total Float?
+
+    // --- Campos livres ---
+
+    status_final String // Snapshot of the status enum/string
+    etapa_nome   String // Snapshot of the etapa
+
+    // "Justificativa para encerramento (cadastro básico)"
+    justificativa_id Int?
+    justificativa    ProjetoTipoEncerramento? @relation(fields: [justificativa_id], references: [id])
+
+    // "Texto livre (2k de caracteres)" - depends on the boolean of the justification
+    justificativa_complemento String?
+
+    responsavel_encerramento_nome String
+    data_encerramento             DateTime @db.Date()
+    assinatura                    String?
+
+    // --- Não impresso ---
+
+    posicao_logotipo PosicaoLogotipo @default(Esquerda)
+
+    // --- Versão & Auditoria ---
+
+    ultima_versao Boolean? @default(true)
+
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+    criado_por Int
+
+    atualizado_em  DateTime? @db.Timestamptz(6)
+    atualizado_por Int?
+
+    removido_em  DateTime?
+    removido_por Int?
+
+    criador     Pessoa  @relation("CriadorTermo", fields: [criado_por], references: [id])
+    atualizador Pessoa? @relation("AtualizadorTermo", fields: [atualizado_por], references: [id])
+    removedor   Pessoa? @relation("RemovedorTermo", fields: [removido_por], references: [id])
+
+    @@unique([projeto_id, ultima_versao])
+    @@index([projeto_id, removido_em])
+    @@map("projeto_termo_encerramento")
 }
