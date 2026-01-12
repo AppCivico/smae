@@ -160,7 +160,7 @@ onBeforeUnmount(() => {
         </button>
       </TituloDaPagina>
 
-      <slot />
+      <slot :fechar-dialogo="fecharDialogo" />
     </dialog>
   </Teleport>
 </template>
