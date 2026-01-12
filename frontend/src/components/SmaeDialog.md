@@ -51,6 +51,28 @@
 ### `default`
 
 - **Descrição:** Conteúdo principal do diálogo.
+- **Scoped Slot Props:**
+  - `fecharDialogo` (Function): Função para fechar o diálogo programaticamente. Útil para fechar o diálogo após uma ação bem-sucedida (ex: salvar um formulário).
+
+**Exemplo de uso do scoped slot:**
+
+```vue
+<SmaeDialog id="meu-dialogo" titulo="Formulário">
+  <template #default="{ fecharDialogo }">
+    <form @submit.prevent="salvar(fecharDialogo)">
+      <input type="text" />
+      <button type="submit">Salvar</button>
+    </form>
+  </template>
+</SmaeDialog>
+
+<script setup>
+async function salvar(fecharFn) {
+  await api.salvar();
+  fecharFn(); // Fecha o diálogo após salvar
+}
+</script>
+```
 
 ### `titulo`
 
