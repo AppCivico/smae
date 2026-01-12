@@ -288,6 +288,7 @@ export class ImportacaoOrcamentoService {
             return {
                 pode_editar: false,
                 ...r,
+                icone_impressao: null,
                 orgaos: r.orgaos.map((rr) => rr.orgao),
             };
         });
