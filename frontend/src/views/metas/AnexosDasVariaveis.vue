@@ -45,6 +45,10 @@ function iniciar() {
     params.atividade_id = props.atividade_id;
   }
 
+  if (Object.keys(params).length === 0) {
+    return;
+  }
+
   anexosPorVariavelStore.buscarTudo(params);
 }
 
