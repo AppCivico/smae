@@ -1,7 +1,11 @@
 <script setup>
 // Em 2024-10-28, o desenvolvedor responsável pelo back end orientou a usar essa variável
 // eslint-disable-next-line import/no-unresolved, import/no-extraneous-dependencies
-import { CONST_PERFIL_PARTICIPANTE_EQUIPE, LISTA_PRIV_ADMIN } from '@back/common/consts';
+import {
+  CONST_PERFIL_PARTICIPANTE_EQUIPE,
+  CONST_PERFIL_COORDENADOR_EQUIPE,
+  LISTA_PRIV_ADMIN,
+} from '@back/common/consts';
 import { kebabCase } from 'lodash';
 import { storeToRefs } from 'pinia';
 import {
@@ -444,7 +448,10 @@ onMounted(async () => {
             class="inputtext light mb1"
             :class="{ 'error': errors.orgao_id }"
             :disabled="bloquearCampoOrgao"
-            @change="resetField('equipes', { value: [] })"
+            @change="() => {
+              resetField('equipes', { value: [] });
+              resetField('equipes_responsavel', { value: [] });
+            }"
           >
             <option value="">
               Selecionar
@@ -584,7 +591,7 @@ onMounted(async () => {
                       class="lista-de-perfis__item"
                     >
                       <strong class="block mb1">
-                        {{ tipoDePerfil[chave].nome || chave }}
+                        {{ tipoDePerfil[chave]?.nome || chave }}
                       </strong>
                       <ul class="lista-de-perfis mb2">
                         <li
@@ -601,6 +608,55 @@ onMounted(async () => {
                               name="equipes"
                               type="checkbox"
                               :class="{ 'error': errors.equipes }"
+                              :disabled="(!perfil.pode_editar) || undefined"
+                              :value="equipe.id"
+                            />
+                            {{ equipe.titulo }}
+                          </label>
+                        </li>
+                      </ul>
+                    </li>
+                  </ul>
+                </TransitionExpand>
+
+                <TransitionExpand
+                  v-if="perfil.nome === CONST_PERFIL_COORDENADOR_EQUIPE"
+                >
+                  <ErrorComponent v-if="erroDeEquipes">
+                    {{ erroDeEquipes }}
+                  </ErrorComponent>
+                  <ul
+                    v-if="values.perfil_acesso_ids?.includes(perfil.id) && equipesDisponiveis"
+                    :aria-busy="chamadasPendentesDeEquipes"
+                    class="lista-de-perfis"
+                  >
+                    <li
+                      v-for="(perfilDeEquipe, chave) in equipesDisponiveis"
+                      :key="chave"
+                      class="lista-de-perfis__item"
+                    >
+                      <strong class="block mb1">
+                        {{ tipoDePerfil[chave]?.nome || chave }}
+                      </strong>
+                      <ul class="lista-de-perfis mb2">
+                        <li
+                          v-for="equipe in perfilDeEquipe"
+                          :key="equipe.id"
+                          class="lista-de-perfis__item"
+                        >
+                          <label
+                            class="block mb1 perfil"
+                            :for="`${modulo.id}__${perfil.id}__${chave}__${
+                              equipe.id
+                            }__responsavel`"
+                          >
+                            <Field
+                              :id="`${modulo.id}__${perfil.id}__${chave}__${
+                                equipe.id
+                              }__responsavel`"
+                              name="equipes_responsavel"
+                              type="checkbox"
+                              :class="{ 'error': errors.equipes_responsavel }"
                               :disabled="(!perfil.pode_editar) || undefined"
                               :value="equipe.id"
                             />
