@@ -169,7 +169,7 @@ export default {
           };
 
           const rotasDeEncerramento = {
-            título: 'Encerramento 1',
+            título: 'Encerramento',
             rotas: [
               'liçõesAprendidasListar',
               `${ModuloSistema.Projetos}.termoEncerramento.resumo`,
