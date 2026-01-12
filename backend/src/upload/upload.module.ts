@@ -3,9 +3,9 @@ import { JwtModule } from '@nestjs/jwt';
 import { PrismaModule } from '../prisma/prisma.module';
 import { StorageService } from './storage-service';
 import { UploadController } from './upload.controller';
-import { UploadService } from './upload.service';
 import { UploadDiretorioController } from './upload.diretorio.controller';
 import { UploadDiretorioService } from './upload.diretorio.service';
+import { UploadService } from './upload.service';
 
 @Module({
     imports: [
@@ -13,7 +13,7 @@ import { UploadDiretorioService } from './upload.diretorio.service';
         JwtModule.register({
             secret: process.env.SESSION_JWT_SECRET,
             signOptions: {},
-        }),
+        })
     ],
     controllers: [UploadController, UploadDiretorioController],
     providers: [UploadService, StorageService, UploadDiretorioService],

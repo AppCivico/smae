@@ -4,15 +4,20 @@ import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { Date2YMD } from '../../common/date2ymd';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { PrismaService } from '../../prisma/prisma.service';
+import { UploadService } from '../../upload/upload.service';
 import { ProjetoGetPermissionSet } from '../projeto/projeto.service';
 import { CreatePortfolioDto } from './dto/create-portfolio.dto';
 import { UpdatePortfolioDto } from './dto/update-portfolio.dto';
-import { PortfolioDto, PortfolioOneDto } from './entities/portfolio.entity';
+import { PortfolioDto, PortfolioIconeDto, PortfolioOneDto } from './entities/portfolio.entity';
+import { TipoUpload } from '../../upload/entities/tipo-upload';
 
 @Injectable()
 export class PortfolioService {
     private readonly logger = new Logger(PortfolioService.name);
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly uploadService: UploadService
+    ) {}
 
     async create(tipoProjeto: TipoProjeto, dto: CreatePortfolioDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const similarExists = await this.prisma.portfolio.count({
@@ -38,6 +43,8 @@ export class PortfolioService {
         const now = new Date(Date.now());
         const created = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+                const iconeArquivoId = await this.processarIcone(dto, null);
+
                 const row = await prismaTx.portfolio.create({
                     data: {
                         tipo_projeto: tipoProjeto,
@@ -50,6 +57,7 @@ export class PortfolioService {
                         orcamento_execucao_disponivel_meses: dto.orcamento_execucao_disponivel_meses,
                         nivel_regionalizacao: dto.nivel_regionalizacao,
                         modelo_clonagem: dto.modelo_clonagem,
+                        icone_impressao: iconeArquivoId || undefined,
                     },
                     select: { id: true },
                 });
@@ -116,6 +124,7 @@ export class PortfolioService {
                 data_criacao: true,
                 orcamento_execucao_disponivel_meses: true,
                 nivel_regionalizacao: true,
+                icone_impressao: true,
                 PortfolioGrupoPortfolio: {
                     where: { removido_em: null },
                     select: {
@@ -130,6 +139,7 @@ export class PortfolioService {
             data_criacao: Date2YMD.toStringOrNull(r.data_criacao),
             grupo_portfolio: r.PortfolioGrupoPortfolio.map((rr) => rr.grupo_portfolio_id),
             orgaos: r.orgaos.map((rr) => rr.orgao_id),
+            icone_impressao: r.icone_impressao ? this.montarIconeDto({ id: r.icone_impressao }) : null,
         };
     }
 
@@ -208,6 +218,7 @@ export class PortfolioService {
                 nivel_maximo_tarefa: true,
                 nivel_regionalizacao: true,
                 modelo_clonagem: true,
+                icone_impressao: true,
                 orgaos: {
                     select: {
                         orgao: {
@@ -237,6 +248,7 @@ export class PortfolioService {
                 pode_editar: pode_editar,
                 ...r,
                 orgaos: r.orgaos.map((rr) => rr.orgao),
+                icone_impressao: r.icone_impressao ? this.montarIconeDto({ id: r.icone_impressao }) : null,
             };
         });
     }
@@ -327,6 +339,15 @@ export class PortfolioService {
         const now = new Date(Date.now());
         const created = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+                // Busca ícone anterior
+                const portfolioAnterior = await prismaTx.portfolio.findFirstOrThrow({
+                    where: { id },
+                    select: { icone_impressao: true },
+                });
+
+                // Processa o ícone
+                const iconeArquivoId = await this.processarIcone(dto, portfolioAnterior.icone_impressao);
+
                 const row = await prismaTx.portfolio.update({
                     where: { id: id },
                     data: {
@@ -338,6 +359,7 @@ export class PortfolioService {
                         data_criacao: dto.data_criacao,
                         orcamento_execucao_disponivel_meses: dto.orcamento_execucao_disponivel_meses,
                         nivel_regionalizacao: dto.nivel_regionalizacao,
+                        icone_impressao: iconeArquivoId,
                     },
                     select: { id: true },
                 });
@@ -443,5 +465,49 @@ export class PortfolioService {
         });
 
         return created;
+    }
+
+    /**
+     * Processa o token de upload/download do ícone.
+     * Retorna o ID do arquivo ou null.
+     */
+    private async processarIcone(
+        dto: CreatePortfolioDto | UpdatePortfolioDto,
+        iconeAnteriorId: number | null
+    ): Promise<number | null> {
+        // Se não enviou nada sobre ícone, mantém o anterior
+        if (dto.icone_upload_token === undefined) {
+            return iconeAnteriorId;
+        }
+
+        // Se quer remover o ícone
+        if (dto.icone_upload_token === null) {
+            return null;
+        }
+
+        // Se enviou um token
+        if (dto.icone_upload_token) {
+            const novoIconeId = this.uploadService.checkUploadOrDownloadToken(dto.icone_upload_token);
+
+            const arquivo = await this.uploadService.getById(novoIconeId);
+            if (!arquivo || arquivo.tipo !== TipoUpload.ICONE_PORTFOLIO)
+                throw new BadRequestException('Ícone para impressão: arquivo com tipo inválido.');
+
+            return novoIconeId;
+        }
+
+        return iconeAnteriorId;
+    }
+
+    /**
+     * Monta o DTO do ícone com download token.
+     */
+    private montarIconeDto(icone: { id: number } | null): PortfolioIconeDto | null {
+        if (!icone) return null;
+
+        return {
+            id: icone.id,
+            download_token: this.uploadService.getDownloadToken(icone.id, '1 days').download_token,
+        };
     }
 }

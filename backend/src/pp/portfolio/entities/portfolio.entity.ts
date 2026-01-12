@@ -1,6 +1,11 @@
 import { IsDateYMD } from '../../../auth/decorators/date.decorator';
 import { IdSiglaDescricao } from '../../../common/dto/IdSigla.dto';
 
+export class PortfolioIconeDto {
+    id: number;
+    download_token: string;
+}
+
 export class PortfolioDto {
     id: number;
     titulo: string;
@@ -9,6 +14,7 @@ export class PortfolioDto {
     modelo_clonagem: boolean;
     orgaos: IdSiglaDescricao[];
     pode_editar: boolean;
+    icone_impressao: PortfolioIconeDto | null;
 }
 
 export class PortfolioOneDto {
@@ -23,6 +29,7 @@ export class PortfolioOneDto {
     orcamento_execucao_disponivel_meses: number[];
     grupo_portfolio: number[];
     modelo_clonagem: boolean;
+    icone_impressao: PortfolioIconeDto | null;
 }
 
 export class ListPortfolioDto {

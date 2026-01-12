@@ -76,4 +76,13 @@ export class CreatePortfolioDto {
     @IsOptional()
     @IsBoolean()
     modelo_clonagem?: boolean;
+
+    /**
+     * Token do upload do ícone para impressão (ou download_token existente para manter o mesmo)
+     * Para remover o ícone, envie sobrescrever_icone=true e icone_upload_token=null
+     */
+    @IsOptional()
+    @ValidateIf((object, value) => value !== null)
+    @IsString({ message: 'icone_upload_token: deve ser uma string' })
+    icone_upload_token?: string | null;
 }

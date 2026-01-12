@@ -146,10 +146,19 @@ export class UploadService {
         return arquivoId;
     }
 
+    async getById(id: number) {
+        return this.prisma.arquivo.findFirstOrThrow({
+            where: { id: id },
+        });
+    }
+
     private async checkSizeAndFileType(createUploadDto: CreateUploadDto, file: Express.Multer.File) {
         if (createUploadDto.tipo === TipoUpload.SHAPEFILE) {
             this.checkShapeFile(file);
-        } else if (createUploadDto.tipo === TipoUpload.ICONE_TAG) {
+        } else if (
+            createUploadDto.tipo === TipoUpload.ICONE_TAG ||
+            createUploadDto.tipo === TipoUpload.ICONE_PORTFOLIO
+        ) {
             if (file.size > 204800) {
                 throw new HttpException('O arquivo de ícone precisa ser menor que 200 kilobytes.', 400);
             } else if (/\.(png|jpg|jpeg|svg)$/i.test(file.originalname) == false) {
