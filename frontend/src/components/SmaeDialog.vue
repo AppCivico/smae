@@ -17,7 +17,11 @@ defineOptions({
   inheritAttrs: false,
 });
 
-const emit = defineEmits(['close']);
+type Emits = {
+  (event: 'fechar'): void;
+};
+
+const emit = defineEmits<Emits>();
 
 const props = defineProps({
   id: {
