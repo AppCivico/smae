@@ -66,7 +66,7 @@ const esperado = [
 ];
 
 describe('consolidarDiretorios', () => {
-  it('deve consolidar diretórios removendo duplicatas e mantendo a hierarquia', () => {
+  it('deve consolidar diretÃ³rios removendo duplicatas e mantendo a hierarquia', () => {
     const entradas = [
       './var/logs/',
       '/var/logs/app/',
@@ -85,7 +85,7 @@ describe('consolidarDiretorios', () => {
     expect(resultado).toEqual([]);
   });
 
-  it('deve retornar vazio quando a entrada apontar para o diretório corrente', () => {
+  it('deve retornar um item representando o diretÃ³rio corrente quando a entrada apontar para \'./\'', () => {
     const entradas = [
       './',
     ];
