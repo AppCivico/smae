@@ -5,12 +5,15 @@
  * @link https://stackoverflow.com/questions/42984889/global-types-in-typescript
  */
 
+import type { RecordWithId as RecordWithIdImport } from '@back/common/dto/record-with-id.dto';
 import type { ArquivoBaseDto } from '@back/upload/dto/create-upload.dto';
 import 'vue-router';
 
 export { };
 
 declare global {
+  type RecordWithId = RecordWithIdImport;
+
   interface ImportMetaEnv {
     readonly VITE_EXPOR_ERROS: string;
     readonly DEV: boolean;

@@ -1,5 +1,4 @@
 import dateTimeToDate from '@/helpers/dateTimeToDate';
-import type { RecordWithId } from '@back/common/dto/record-with-id.dto';
 import type {
   DadosCodTituloMetaDto,
   ListDadosMetaIniciativaAtividadesDto,
