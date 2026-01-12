@@ -1,4 +1,9 @@
-export default {
+export type NivelRegionalizacao = {
+  id: number;
+  nome: string;
+};
+
+const niveisRegionalizacao: Record<string, NivelRegionalizacao> = {
   1: {
     id: 1,
     nome: 'Município',
@@ -16,3 +21,5 @@ export default {
     nome: 'Distrito',
   },
 };
+
+export default niveisRegionalizacao;
