@@ -5,6 +5,7 @@
  * @link https://stackoverflow.com/questions/42984889/global-types-in-typescript
  */
 
+import type { ArquivoBaseDto } from '@back/upload/dto/create-upload.dto';
 import 'vue-router';
 
 export { };
@@ -42,6 +43,13 @@ declare global {
     paginaCorrente: number;
     temMais: boolean;
     totalRegistros: number;
+  };
+
+  type Documento = {
+    arquivo: ArquivoBaseDto;
+    id: number;
+    descricao: string | null;
+    data: Date | null;
   };
 }
 /**
