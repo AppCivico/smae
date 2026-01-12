@@ -1,4 +1,4 @@
-import { HttpException, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, Logger } from '@nestjs/common';
 import { PosicaoLogotipo, Prisma, TipoProjeto } from '@prisma/client';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
@@ -7,6 +7,7 @@ import { UploadService } from '../../upload/upload.service';
 import { ProjetoStatusParaExibicao } from '../projeto/projeto.service';
 import { UpsertTermoEncerramentoDto } from './dto/termo-encerramento.dto';
 import { TermoEncerramentoDetalheDto, TermoEncerramentoIconeDto } from './dto/termo-encerramento.entity';
+import { TipoUpload } from '../../upload/entities/tipo-upload';
 
 // Tipo auxiliar para o snapshot calculado
 type SnapshotCalculado = Omit<
@@ -147,7 +148,7 @@ export class TermoEncerramentoService {
 
             // Se não há versão anterior, usa o ícone do snapshot (que pode vir do portfolio)
             const iconeBaseId = versaoAnterior?.icone_arquivo_id ?? snapshotAtual.icone_arquivo_id;
-            const iconeArquivoId = this.processarIcone(dto, iconeBaseId);
+            const iconeArquivoId = await this.processarIcone(dto, iconeBaseId);
 
             // Valida justificativa e complemento
             await this.validarJustificativa(dto, versaoAnterior?.justificativa_complemento ?? null, prismaTx);
@@ -350,7 +351,10 @@ export class TermoEncerramentoService {
      * Processa o token de upload/download do ícone.
      * Retorna o ID do arquivo ou null.
      */
-    private processarIcone(dto: UpsertTermoEncerramentoDto, iconeAnteriorId: number | null): number | null {
+    private async processarIcone(
+        dto: UpsertTermoEncerramentoDto,
+        iconeAnteriorId: number | null
+    ): Promise<number | null> {
         // Se não enviou nada sobre ícone, mantém o anterior
         if (dto.icone_upload_token === undefined && !dto.sobrescrever_icone) {
             return iconeAnteriorId;
@@ -359,6 +363,13 @@ export class TermoEncerramentoService {
         // Se quer remover o ícone
         if (dto.icone_upload_token === null && dto.sobrescrever_icone) {
             return null;
+        }
+
+        if (dto.icone_upload_token === undefined || dto.icone_upload_token === null) {
+            throw new HttpException(
+                'Para remover o ícone, envie icone_upload_token=null junto com sobrescrever_icone=true',
+                400
+            );
         }
 
         // Se enviou um token
@@ -376,6 +387,10 @@ export class TermoEncerramentoService {
                     'Para trocar o ícone existente, envie sobrescrever_icone=true junto com o novo token',
                     400
                 );
+            }
+            const arquivo = await this.uploadService.getById(novoIconeId);
+            if (!arquivo || arquivo.tipo !== TipoUpload.ICONE_PORTFOLIO) {
+                throw new BadRequestException('O arquivo enviado não é um ícone válido.');
             }
 
             return novoIconeId;
