@@ -162,8 +162,8 @@ class RetornoDbPlanosAcao {
     custo_percentual?: number;
     responsavel?: string;
     data_termino?: Date;
-    contramedida_texto: string;
-    medidas_de_contingencia_texto: string;
+    contramedida_texto: string | null;
+    medidas_de_contingencia_texto: string | null;
 }
 
 class RetornoDbPlanosAcaoMonitoramentos {
