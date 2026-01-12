@@ -84,6 +84,8 @@ export class RelProjetoPlanoAcaoDto {
     medidas_de_contingencia: string;
     prazo_contramedida: string | null;
     responsavel: string | null;
+    contramedida_texto: string;
+    medidas_de_contingencia_texto: string;
 }
 
 export class RelProjetoAcompanhamentoDto {
@@ -99,6 +101,9 @@ export class RelProjetoAcompanhamentoDto {
     pauta: string | null;
     cronograma_paralisado: boolean;
     riscos: string | null;
+    pauta_texto: string | null;
+    detalhamento_texto: string | null;
+    pontos_atencao_texto: string | null;
 }
 
 export class RelProjetoEncaminhamentoDto {

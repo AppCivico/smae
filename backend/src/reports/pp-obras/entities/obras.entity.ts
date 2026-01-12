@@ -106,6 +106,9 @@ export class RelObrasAcompanhamentosDto {
     detalhamento_status: string | null;
     pontos_atencao: string | null;
     riscos: string | null;
+    pauta_texto: string | null;
+    detalhamento_texto: string | null;
+    pontos_atencao_texto: string | null;
 }
 
 export class RelObrasRegioesDto {

@@ -12,6 +12,7 @@ import { TarefaService } from 'src/pp/tarefa/tarefa.service';
 import { TarefaUtilsService } from 'src/pp/tarefa/tarefa.service.utils';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { Date2YMD } from '../../common/date2ymd';
+import { Html2Text } from '../../common/Html2Text';
 import { ProjetoGetPermissionSet, ProjetoService } from '../../pp/projeto/projeto.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { DefaultCsvOptions, FileOutput, Path2FileName, ReportableService } from '../utils/utils.service';
@@ -229,6 +230,9 @@ class RetornoDbAcompanhamentos {
     detalhamento_status: string | null;
     pontos_atencao: string | null;
     riscos: string | null;
+    pauta_texto: string | null;
+    detalhamento_texto: string | null;
+    pontos_atencao_texto: string | null;
 }
 
 class RetornoDbObrasSEI {
@@ -1154,6 +1158,9 @@ export class PPObrasService implements ReportableService {
                 projeto_acompanhamento.observacao,
                 projeto_acompanhamento.detalhamento_status,
                 projeto_acompanhamento.pontos_atencao,
+                projeto_acompanhamento.pauta AS pauta_texto,
+                projeto_acompanhamento.detalhamento AS detalhamento_texto,
+                projeto_acompanhamento.pontos_atencao AS pontos_atencao_texto,
                 (
                     SELECT string_agg(r.codigo::text, '|')
                     FROM projeto_acompanhamento_risco ar
@@ -1195,6 +1202,9 @@ export class PPObrasService implements ReportableService {
                 detalhamento_status: db.detalhamento_status ? db.detalhamento_status : null,
                 pontos_atencao: db.pontos_atencao ? db.pontos_atencao : null,
                 riscos: db.riscos ? db.riscos : null,
+                pauta_texto: Html2Text(db.pauta),
+                detalhamento_texto: Html2Text(db.detalhamento),
+                pontos_atencao_texto: Html2Text(db.pontos_atencao),
             };
         });
     }
