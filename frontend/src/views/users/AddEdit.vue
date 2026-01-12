@@ -1,6 +1,6 @@
 <script setup>
 // Em 2024-10-28, o desenvolvedor responsável pelo back end orientou a usar essa variável
-// eslint-disable-next-line import/no-unresolved
+// eslint-disable-next-line import/no-unresolved, import/no-extraneous-dependencies
 import { CONST_PERFIL_PARTICIPANTE_EQUIPE, LISTA_PRIV_ADMIN } from '@back/common/consts';
 import { kebabCase } from 'lodash';
 import { storeToRefs } from 'pinia';
@@ -112,6 +112,13 @@ const equipesDisponiveis = computed(() => orgaoSelecionadoComAscendentes.value
     return acc;
   }, {}));
 
+// ficou meio complexo, mas precisamos validar a lista de permissões do backend
+// com o objeto de permissões que recebemos da store, dessa forma se a lista
+// de admins mudar no back não precisamos atualizar nada no front
+const podeEditarMódulos = computed(() => Object.entries(permissions.value || {})
+  .flatMap(([modulo, permissoes]) => Object.keys(permissoes).map((permissao) => `${modulo}.${permissao}`))
+  .some((permission) => LISTA_PRIV_ADMIN.includes(permission)));
+
 const perfisPorModulo = computed(() => (Array.isArray(accessProfiles.value)
   ? accessProfiles.value.reduce((acc, cur) => {
     const modulosSistemasDessePerfil = Array.isArray(cur.modulos_sistemas)
@@ -119,7 +126,16 @@ const perfisPorModulo = computed(() => (Array.isArray(accessProfiles.value)
       : [cur.modulos_sistemas];
 
     modulosSistemasDessePerfil.forEach((modulo) => {
-      if (!usuarioLogado.value.sistemas_disponiveis.includes(modulo)) {
+      // SMAE só aparece para admins os outros módulos devem estar em sistemas_disponiveis
+      let deveExibir = false;
+
+      if (modulo === 'SMAE') {
+        deveExibir = podeEditarMódulos.value;
+      } else if (usuarioLogado.value.sistemas_disponiveis) {
+        deveExibir = usuarioLogado.value.sistemas_disponiveis.includes(modulo);
+      }
+
+      if (!deveExibir) {
         return;
       }
 
@@ -180,14 +196,6 @@ const modulosPermitidosValue = computed(() => {
 
   return [...new Set([...permitidos, 'SMAE'])];
 });
-
-// ficou meio complexo, mas precisamos validar a lista de permissões do backend
-// com o objeto de permissões que recebemos da store, dessa forma se a lista
-// de admins mudar no back não precisamos atualizar nada no front
-const podeEditarMódulos = computed(() => Object.entries(permissions.value || {})
-  .flatMap(([modulo, permissoes]) => Object.keys(permissoes).map((permissao) => `${modulo}.${permissao}`))
-  .some((permission) => LISTA_PRIV_ADMIN.includes(permission)));
-
 const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
   const carga = controlledValues;
 
