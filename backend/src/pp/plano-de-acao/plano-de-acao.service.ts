@@ -1,5 +1,7 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
+import { HtmlSanitizer } from '../../common/html-sanitizer';
+import { Html2Text } from '../../common/Html2Text';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PlanoAcao, PlanoAcaoDetailDto } from '../plano-de-acao/entities/plano-acao.entity';
@@ -36,7 +38,8 @@ export class PlanoAcaoService {
         const plano_acao = await this.prisma.planoAcao.create({
             data: {
                 ...dto,
-                medidas_de_contingencia: dto.medidas_de_contingencia || '',
+                contramedida: HtmlSanitizer(dto.contramedida),
+                medidas_de_contingencia: HtmlSanitizer(dto.medidas_de_contingencia || ''),
 
                 criado_em: new Date(Date.now()),
                 criado_por: user.id,
@@ -91,6 +94,8 @@ export class PlanoAcaoService {
                 ...row,
                 prazo_contramedida: Date2YMD.toStringOrNull(row.prazo_contramedida),
                 data_termino: Date2YMD.toStringOrNull(row.data_termino),
+                contramedida_texto: Html2Text(row.contramedida),
+                medidas_de_contingencia_texto: Html2Text(row.medidas_de_contingencia),
             };
         });
     }
@@ -128,6 +133,8 @@ export class PlanoAcaoService {
             ...plano_acao,
             prazo_contramedida: Date2YMD.toStringOrNull(plano_acao.prazo_contramedida),
             data_termino: Date2YMD.toStringOrNull(plano_acao.data_termino),
+            contramedida_texto: Html2Text(plano_acao.contramedida),
+            medidas_de_contingencia_texto: Html2Text(plano_acao.medidas_de_contingencia),
         };
     }
 
@@ -136,6 +143,8 @@ export class PlanoAcaoService {
             where: { id: plano_acao_id },
             data: {
                 ...dto,
+                contramedida: dto.contramedida ? HtmlSanitizer(dto.contramedida) : undefined,
+                medidas_de_contingencia: dto.medidas_de_contingencia ? HtmlSanitizer(dto.medidas_de_contingencia) : undefined,
 
                 atualizado_em: new Date(Date.now()),
                 atualizado_por: user.id,

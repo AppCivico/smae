@@ -6,6 +6,7 @@ import { ProjetoDetailDto } from 'src/pp/projeto/entities/projeto.entity';
 import { RiscoService } from 'src/pp/risco/risco.service';
 import { TarefaService } from 'src/pp/tarefa/tarefa.service';
 import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
+import { Html2Text } from '../../common/Html2Text';
 import { ProjetoService, ProjetoStatusParaExibicao } from '../../pp/projeto/projeto.service';
 import { ProjetoRiscoStatus } from '../../pp/risco/entities/risco.entity';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -295,6 +296,8 @@ export class PPProjetoService implements ReportableService {
                 prazo_contramedida: e.prazo_contramedida,
                 responsavel: e.responsavel,
                 medidas_de_contingencia: e.medidas_de_contingencia,
+                contramedida_texto: Html2Text(e.contramedida),
+                medidas_de_contingencia_texto: Html2Text(e.medidas_de_contingencia),
             };
         });
 
@@ -313,6 +316,9 @@ export class PPProjetoService implements ReportableService {
                 pauta: a.pauta,
                 cronograma_paralisado: a.cronograma_paralisado,
                 riscos: a.risco ? a.risco.map((r) => r.codigo).join('|') : null,
+                pauta_texto: Html2Text(a.pauta),
+                detalhamento_texto: Html2Text(a.detalhamento),
+                pontos_atencao_texto: Html2Text(a.pontos_atencao),
             };
         });
 

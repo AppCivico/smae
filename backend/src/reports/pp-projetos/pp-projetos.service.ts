@@ -1,5 +1,6 @@
 import { BadRequestException, Inject, Injectable, forwardRef } from '@nestjs/common';
 import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
+import { Html2Text } from '../../common/Html2Text';
 import { ProjetoGetPermissionSet, ProjetoService, ProjetoStatusParaExibicao } from '../../pp/projeto/projeto.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Readable } from 'stream';
@@ -161,6 +162,8 @@ class RetornoDbPlanosAcao {
     custo_percentual?: number;
     responsavel?: string;
     data_termino?: Date;
+    contramedida_texto: string | null;
+    medidas_de_contingencia_texto: string | null;
 }
 
 class RetornoDbPlanosAcaoMonitoramentos {
@@ -200,6 +203,9 @@ class RetornoDbAcompanhamentos {
     detalhamento_status: string | null;
     pontos_atencao: string | null;
     riscos: string | null;
+    pauta_texto: string | null;
+    detalhamento_texto: string | null;
+    pontos_atencao_texto: string | null;
 }
 
 class RetornoDbAditivos {
@@ -1454,7 +1460,9 @@ export class PPProjetosService implements ReportableService {
             plano_acao.custo,
             plano_acao.custo_percentual,
             plano_acao.responsavel,
-            plano_acao.data_termino
+            plano_acao.data_termino,
+            plano_acao.contramedida AS contramedida_texto,
+            plano_acao.medidas_de_contingencia AS medidas_de_contingencia_texto
         FROM projeto
           JOIN projeto_risco ON projeto_risco.projeto_id = projeto.id AND projeto_risco.removido_em IS NULL
           JOIN plano_acao ON plano_acao.projeto_risco_id = projeto_risco.id AND plano_acao.removido_em IS NULL
@@ -1481,6 +1489,8 @@ export class PPProjetosService implements ReportableService {
                 custo_percentual: db.custo_percentual ? db.custo_percentual : null,
                 responsavel: db.responsavel ? db.responsavel : null,
                 data_termino: db.data_termino ? Date2YMD.toString(db.data_termino) : null,
+                contramedida_texto: Html2Text(db.contramedida),
+                medidas_de_contingencia_texto: Html2Text(db.medidas_de_contingencia),
             };
         });
     }
@@ -1578,6 +1588,9 @@ export class PPProjetosService implements ReportableService {
             projeto_acompanhamento.observacao,
             projeto_acompanhamento.detalhamento_status,
             projeto_acompanhamento.pontos_atencao,
+            projeto_acompanhamento.pauta AS pauta_texto,
+            projeto_acompanhamento.detalhamento AS detalhamento_texto,
+            projeto_acompanhamento.pontos_atencao AS pontos_atencao_texto,
             (
                 SELECT string_agg(r.codigo::text, '|')
                 FROM projeto_acompanhamento_risco ar
@@ -1614,6 +1627,9 @@ export class PPProjetosService implements ReportableService {
                 detalhamento_status: db.detalhamento_status ? db.detalhamento_status : null,
                 pontos_atencao: db.pontos_atencao ? db.pontos_atencao : null,
                 riscos: db.riscos ? db.riscos : null,
+                pauta_texto: Html2Text(db.pauta),
+                detalhamento_texto: Html2Text(db.detalhamento),
+                pontos_atencao_texto: Html2Text(db.pontos_atencao),
             };
         });
     }

@@ -50,7 +50,9 @@ export class AcompanhamentoService {
                 if (projetoPortfolio.tipo != 'PP' && dto.risco && dto.risco.length > 0)
                     throw new HttpException('Apenas Gestão de Projetos podem ter riscos', 400);
 
+                dto.pauta = HtmlSanitizer(dto.pauta);
                 dto.detalhamento = HtmlSanitizer(dto.detalhamento);
+                dto.pontos_atencao = HtmlSanitizer(dto.pontos_atencao);
 
                 // Definindo a ordem do acompanhamento.
                 // A ordem leva em consideração acompanhamentos removidos.
@@ -352,7 +354,9 @@ export class AcompanhamentoService {
         if (self.projeto.tipo != 'PP' && dto.risco && dto.risco.length > 0)
             throw new HttpException('Apenas Gestão de Projetos podem ter riscos', 400);
 
+        dto.pauta = HtmlSanitizer(dto.pauta);
         dto.detalhamento = HtmlSanitizer(dto.detalhamento);
+        dto.pontos_atencao = HtmlSanitizer(dto.pontos_atencao);
 
         const updated = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
