@@ -1,6 +1,5 @@
 import type { ValoresSelecionados } from '@/components/AgrupadorDeAutocomplete';
 import type { PaginatedWithPagesDto } from '@back/common/dto/paginated.dto';
-import type { RecordWithId } from '@back/common/dto/record-with-id.dto';
 import type {
   ListPdmSimplesDto,
   ListSeriesAgrupadas, VariavelDetailComAuxiliaresDto, VariavelDetailDto, VariavelGlobalDetailDto,

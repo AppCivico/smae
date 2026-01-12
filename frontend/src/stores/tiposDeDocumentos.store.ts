@@ -1,4 +1,4 @@
-import type { RecordWithId } from '@back/common/dto/record-with-id.dto';
+
 import type { CreateTipoDocumentoDto } from '@back/tipo-documento/dto/create-tipo-documento.dto';
 import type { ListTipoDocumentoDto } from '@back/tipo-documento/dto/list-tipo-documento.dto';
 import type { TipoDocumentoDto } from '@back/tipo-documento/entities/tipo-documento.entity';

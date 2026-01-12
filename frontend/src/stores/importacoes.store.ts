@@ -1,6 +1,5 @@
 import dateToDate from '@/helpers/dateToDate';
 import type { PaginatedDto } from '@back/common/dto/paginated.dto';
-import type { RecordWithId } from '@back/common/dto/record-with-id.dto';
 import type { ImportacaoOrcamentoDto, ListImportacaoOrcamentoDto } from '@back/importacao-orcamento/entities/importacao-orcamento.entity';
 import type { PortfolioDto } from '@back/pp/portfolio/entities/portfolio.entity';
 import { defineStore } from 'pinia';
