@@ -18,7 +18,7 @@ defineOptions({
 });
 
 type Emits = {
-  (event: 'fechar'): void;
+  (event: 'dialogo-fechado'): void;
 };
 
 const emit = defineEmits<Emits>();
@@ -74,7 +74,7 @@ function fecharDialogo() {
 
   dialogRef.value?.close();
   router.replace({ query });
-  emit('close');
+  emit('dialogo-fechado');
 }
 
 function acionarFechamento() {

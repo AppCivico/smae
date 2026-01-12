@@ -37,7 +37,7 @@
 
 ## Eventos
 
-### `@close`
+### `@dialogo-fechado`
 
 - **Descrição:** Emitido quando o diálogo é efetivamente fechado.
 - **Quando é emitido:**
