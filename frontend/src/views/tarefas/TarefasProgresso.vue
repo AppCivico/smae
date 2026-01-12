@@ -54,7 +54,7 @@ const props = defineProps({
 const schema = ref(schemaTarefa('real'));
 
 const {
-  handleSubmit, errors, isSubmitting, setFieldValue, values, setValues,
+  handleSubmit, errors, isSubmitting, setFieldValue, values, resetForm,
 } = useForm({
   initialValues: itemParaEdicao,
   validationSchema: schema,
@@ -85,8 +85,8 @@ const onSubmit = handleSubmit.withControlled(async (carga) => {
   }
 });
 
-watch(itemParaEdicao, () => {
-  setValues(itemParaEdicao.value);
+watch(itemParaEdicao, (val) => {
+  resetForm({ values: val });
 });
 
 onMounted(() => {
