@@ -36,7 +36,7 @@ onMounted(() => {
         :to="{ name: 'tipoEncerramento.novo' }"
         class="btn big ml1"
       >
-        Novo tipo de encerramento
+        nova justificativa de encerramento
       </SmaeLink>
     </template>
   </CabecalhoDePagina>

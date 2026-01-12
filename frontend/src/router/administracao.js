@@ -212,7 +212,7 @@ export default [
         component: () => import('@/views/TipoEncerramento/TipoEncerramentoRaiz.vue'),
         meta: {
           limitarÀsPermissões: 'CadastroProjetoTipoEncerramento.',
-          título: 'Justificativa de encerramento',
+          título: 'Justificativas de Encerramento',
           rotasParaMenuSecundário,
         },
         children: [
