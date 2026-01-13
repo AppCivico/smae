@@ -4,8 +4,9 @@ import {
   ErrorMessage,
   Field,
   FieldArray,
-  Form,
+  useForm,
 } from 'vee-validate';
+import { watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
@@ -25,6 +26,13 @@ const tiposDeAcompanhamentoStore = useTiposDeAcompanhamentoStore();
 const router = useRouter();
 const route = useRoute();
 
+defineProps({
+  acompanhamentoId: {
+    type: [Number, String],
+    default: null,
+  },
+});
+
 const {
   chamadasPendentes,
   emFoco,
@@ -32,7 +40,19 @@ const {
   itemParaEdicao,
 } = storeToRefs(acompanhamentosStore);
 
-async function onSubmit(_, { controlledValues }) {
+const {
+  errors,
+  handleSubmit,
+  isSubmitting,
+  resetForm,
+  setFieldValue,
+  values,
+} = useForm({
+  initialValues: itemParaEdicao,
+  validationSchema: schema,
+});
+
+const onSubmit = handleSubmit(async (_, { controlledValues }) => {
   const carga = controlledValues;
 
   if (!carga.risco) {
@@ -60,7 +80,7 @@ async function onSubmit(_, { controlledValues }) {
   } catch (error) {
     alertStore.error(error);
   }
-}
+});
 
 function excluirAcompanhamento(id) {
   alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
@@ -81,6 +101,12 @@ function excluirAcompanhamento(id) {
 if (!riscosStore?.lista?.length) {
   riscosStore.buscarTudo();
 }
+
+watch(itemParaEdicao, (novoItem) => {
+  resetForm({
+    values: novoItem,
+  });
+});
 </script>
 <template>
   <div class="flex spacebetween center mb2">
@@ -102,12 +128,8 @@ if (!riscosStore?.lista?.length) {
     <CheckClose />
   </div>
 
-  <Form
+  <form
     v-if="!acompanhamentoId || emFoco"
-    v-slot="{ errors, isSubmitting, setFieldValue, values }"
-    :disabled="chamadasPendentes.emFoco"
-    :initial-values="itemParaEdicao"
-    :validation-schema="schema"
     @submit="onSubmit"
   >
     <div class="flex flexwrap g2 mb1">
@@ -172,6 +194,7 @@ if (!riscosStore?.lista?.length) {
             name="apresentar_no_relatorio"
             type="checkbox"
             :value="true"
+            :unchecked-value="false"
             class="inputcheckbox"
           />
           <span :class="{ 'error': errors.apresentar_no_relatorio }">
@@ -186,6 +209,7 @@ if (!riscosStore?.lista?.length) {
             name="cronograma_paralisado"
             type="checkbox"
             :value="true"
+            :unchecked-value="false"
             class="inputcheckbox"
           />
           <span :class="{ 'error': errors.cronograma_paralisado }">
@@ -376,18 +400,17 @@ if (!riscosStore?.lista?.length) {
                   Novo
                   {{ schema.fields.acompanhamentos.innerType.fields.encaminhamento.spec.label }}
                 </template>
-              &nbsp;<span
-                v-if="schema.fields.acompanhamentos.innerType.fields.encaminhamento.spec.presence
-                  === 'required'"
-                class="tvermelho"
-              >*</span>
+                &nbsp;<span
+                  v-if="schema.fields.acompanhamentos.innerType.fields.encaminhamento.spec.presence
+                    === 'required'"
+                  class="tvermelho"
+                >*</span>
               </label>
               <SmaeText
                 :name="`acompanhamentos[${idx}].encaminhamento`"
                 as="textarea"
                 rows="5"
                 class="inputtext light mb1"
-                :max-length="2048"
                 :schema="schema"
                 :model-value="fields[idx]?.value?.encaminhamento"
                 anular-vazio
@@ -412,7 +435,7 @@ if (!riscosStore?.lista?.length) {
               <Field
                 :id="`acompanhamentos[${idx}].responsavel`"
                 :name="`acompanhamentos[${idx}].responsavel`"
-                required
+                :required="schema.fields.acompanhamentos.innerType.fields.responsavel.spec.presence === 'required'"
                 type="text"
                 class="inputtext light mb1"
                 :class="{
@@ -459,7 +482,7 @@ if (!riscosStore?.lista?.length) {
                 :id="`acompanhamentos[${idx}].prazo_realizado`"
                 :name="`acompanhamentos[${idx}].prazo_realizado`"
                 type="date"
-                required
+                :required="schema.fields.acompanhamentos.innerType.fields.prazo_realizado.spec.presence === 'required'"
                 class="inputtext light mb1"
                 :class="{ 'error': errors[`acompanhamentos[${idx}].prazo_realizado`] }"
                 @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
@@ -589,7 +612,7 @@ if (!riscosStore?.lista?.length) {
       </button>
       <hr class="ml2 f1">
     </div>
-  </Form>
+  </form>
 
   <div
     v-if="chamadasPendentes?.emFoco"
