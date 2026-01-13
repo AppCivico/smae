@@ -6,6 +6,7 @@ import { useRoute } from 'vue-router';
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
 import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import SmallModal from '@/components/SmallModal.vue';
+import DialogoValorBase from '@/components/variaveis/DialogoValorBase.vue';
 import FiltroDeDeVariaveis from '@/components/variaveis/FiltroDeDeVariaveis.vue';
 import TabelaDeVariaveisGlobais from '@/components/variaveis/TabelaDeVariaveisGlobais.vue';
 import { useAlertStore } from '@/stores/alert.store';
@@ -121,7 +122,7 @@ watchEffect(() => {
       <td />
     </template>
 
-    <template #finalLinhaVariavel="{ variavel, ehFilha }">
+    <template #finalLinhaVariavel="{ variavel, ehFilha, mae }">
       <td>
         <SmaeLink
           type="button"
@@ -209,6 +210,28 @@ watchEffect(() => {
           ><use xlink:href="#i_edit" /></svg>
           <div>Editar variável "{{ variavel.titulo }}"</div>
         </SmaeLink>
+
+        <SmaeLink
+          v-if="ehFilha
+            && variavel.tipo === 'Global'
+            && mae?.pode_editar_valor
+            && mae?.pode_editar"
+          :to="{
+            query: {
+              ...$route.query,
+              dialogo: 'editar-valor-base',
+              variavel_filha_id: variavel.id,
+              variavel_mae_id: mae?.id,
+            }
+          }"
+          class="tipinfo left tprimary"
+        >
+          <svg
+            width="20"
+            height="20"
+          ><use xlink:href="#i_edit" /></svg>
+          <div>Editar valor base "{{ variavel.titulo }}"</div>
+        </SmaeLink>
       </td>
 
       <td>
@@ -256,4 +279,6 @@ watchEffect(() => {
       />
     </SmallModal>
   </template>
+
+  <DialogoValorBase />
 </template>

@@ -188,6 +188,7 @@ function buscarFilhas(id: number) {
                 name="finalLinhaVariavel"
                 :variavel="filha"
                 :eh-filha="true"
+                :mae="item"
               />
             </tr>
           </template>
