@@ -47,6 +47,14 @@ const metasEdicaoEmLote = {
   mdo_previsao_inauguracao: {
     permite_edicao_em_massa: true,
   },
+  orgao_colaborador_id: {
+    permite_edicao_em_massa: true,
+    storeKey: 'órgãos',
+    fetchAction: 'getAll',
+    listState: 'organs',
+    optionValue: 'id',
+    optionLabel: (item) => `${item.sigla} - ${item.descricao}`,
+  },
   orgao_executor_id: {
     permite_edicao_em_massa: true,
     storeKey: 'órgãos',
