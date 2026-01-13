@@ -787,12 +787,28 @@ export class PPObrasService implements ReportableService {
                 t.tarefa,
                 t.inicio_planejado,
                 t.termino_planejado,
-                t.custo_estimado,
+                CASE
+                    WHEN t.custo_estimado_anualizado IS NOT NULL THEN
+                        (
+                            SELECT string_agg(key || ': ' || value::text, ' ; ' ORDER BY key)
+                            FROM json_each_text(t.custo_estimado_anualizado::json)
+                            WHERE value::text != 'null'
+                        )
+                    ELSE t.backup_custo_estimado::text
+                END AS custo_estimado,
                 t.inicio_real,
                 t.termino_real,
                 t.duracao_real,
                 t.percentual_concluido,
-                t.custo_real,
+                CASE
+                    WHEN t.custo_real_anualizado IS NOT NULL THEN
+                        (
+                            SELECT string_agg(key || ': ' || value::text, ' ; ' ORDER BY key)
+                            FROM json_each_text(t.custo_real_anualizado::json)
+                            WHERE value::text != 'null'
+                        )
+                    ELSE t.backup_custo_real::text
+                END AS custo_real,
                 (
                     SELECT
                       string_agg(json_build_object('id', td.dependencia_tarefa_id, 'tipo', td.tipo, 'latencia', td.latencia) #>> '{}', '/')
@@ -845,6 +861,7 @@ export class PPObrasService implements ReportableService {
             // Caso a tarefa seja anualizada, teremos valores nesses campos. E caso não tenham, utilizaremos os backups.
             let custo_real: number | string | null;
             let custo_estimado: number | string | null;
+
             if (db.custo_real_anualizado !== null && db.custo_real_anualizado !== undefined) {
                 // JSON que segue o padrão {"2023" : 0} ou {"2025" : null}
                 // Vamos exibir como "$ano: valor"
