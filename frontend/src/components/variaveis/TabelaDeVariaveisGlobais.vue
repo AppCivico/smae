@@ -1,3 +1,40 @@
+<script setup lang="ts">
+import { storeToRefs } from 'pinia';
+import { ref } from 'vue';
+
+import { variavelGlobal as schema } from '@/consts/formSchemas';
+import niveisRegionalizacao from '@/consts/niveisRegionalizacao';
+import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store.ts';
+
+import LinhaDeVariaveis from './LinhaDeVariaveis.vue';
+
+const variaveisGlobaisStore = useVariaveisGlobaisStore();
+
+const {
+  lista, chamadasPendentes, erros, variaveisFilhasPorMae, filhasPorMaePorNivelDeRegiao,
+} = storeToRefs(variaveisGlobaisStore);
+
+defineProps({
+  numeroDeColunasExtras: {
+    type: [
+      Number,
+      String,
+    ],
+    default: 0,
+    validator: (value) => !!(Number(value)),
+  },
+});
+
+const variavelAberta = ref<number>(0);
+
+function buscarFilhas(id: number) {
+  if (!variaveisFilhasPorMae.value[id]) {
+    variaveisGlobaisStore.buscarFilhas(id);
+  }
+
+  variavelAberta.value = variavelAberta.value === id ? 0 : id;
+}
+</script>
 <template>
   <div
     role="region"
@@ -176,43 +213,6 @@
     </table>
   </div>
 </template>
-<script setup lang="ts">
-import { storeToRefs } from 'pinia';
-import { ref } from 'vue';
-
-import { variavelGlobal as schema } from '@/consts/formSchemas';
-import niveisRegionalizacao from '@/consts/niveisRegionalizacao';
-import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store.ts';
-
-import LinhaDeVariaveis from './LinhaDeVariaveis.vue';
-
-const variaveisGlobaisStore = useVariaveisGlobaisStore();
-
-const {
-  lista, chamadasPendentes, erros, variaveisFilhasPorMae, filhasPorMaePorNivelDeRegiao,
-} = storeToRefs(variaveisGlobaisStore);
-
-defineProps({
-  numeroDeColunasExtras: {
-    type: [
-      Number,
-      String,
-    ],
-    default: 0,
-    validator: (value) => !!(Number(value)),
-  },
-});
-
-const variavelAberta = ref<number>(0);
-
-function buscarFilhas(id: number) {
-  if (!variaveisFilhasPorMae.value[id]) {
-    variaveisGlobaisStore.buscarFilhas(id);
-  }
-
-  variavelAberta.value = variavelAberta.value === id ? 0 : id;
-}
-</script>
 <style lang="less" scoped>
 .variavel-mae--aberta {
   border-top: 2px solid @c600;
