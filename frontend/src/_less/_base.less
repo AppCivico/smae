@@ -1539,11 +1539,23 @@ body:has(dialog[open].editModal-dialog) {
   overflow: hidden;
 }
 
+.modal() {
+  background: @branco;
+  color: @primary;
+  display: block;
+  position: relative;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0px 8px 16px rgba(21, 39, 65, 0.1);
+  border: none;
+
+  &.small {
+    max-width: 500px;
+  }
+}
 // Dialog nativo para modais
 .editModal-dialog {
-  border: none;
-  border-radius: 8px;
-  padding: 2rem;
+  .modal();
   width: 80%;
   max-width: 665px;
   max-height: 90vh;
@@ -1555,13 +1567,7 @@ body:has(dialog[open].editModal-dialog) {
   }
 
   .editModal {
-    background: @branco;
-    color: @primary;
-    display: block;
-
-    &.small {
-      max-width: 500px;
-    }
+    .modal();
   }
 }
 
@@ -1591,22 +1597,12 @@ body:has(dialog[open].editModal-dialog) {
   }
 
   .editModal {
-    position: relative;
-    background: @branco;
-    color: @primary;
-    padding: 2rem;
-    border-radius: 8px;
-    box-shadow: 0px 8px 16px rgba(21, 39, 65, 0.1);
-    display: block;
+    .modal();
     justify-content: space-between;
     gap: 1em;
     width: 80%;
     max-width: 665px;
     margin: auto;
-
-    &.small {
-      max-width: 500px;
-    }
   }
 
   .editModal--tamanho-ajustavel {

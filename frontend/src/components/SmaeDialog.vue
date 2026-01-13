@@ -135,6 +135,7 @@ onBeforeUnmount(() => {
       v-if="dialogoEstaAberto"
       :id="`smae-dialog-${props.id}`"
       ref="dialogRef"
+      class="editModal-dialog"
       :class="{ 'editModal--tamanho-ajustavel': tamanhoAjustavel }"
       v-bind="$attrs"
       @click.self="acionarFechamento"
