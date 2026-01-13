@@ -27,7 +27,7 @@ function obterRota(
       return `${import.meta.env.VITE_API_URL}/projeto`;
 
     case ModuloSistema.MDO:
-      return `${import.meta.env.VITE_API_URL}/obra`;
+      return `${import.meta.env.VITE_API_URL}/projeto`;
 
     default:
       throw new Error('Módulo não habilitado');
@@ -56,8 +56,6 @@ export const useTermoEncerramentoStore = (sistemaEscolhido: ModuloSistema.MDO | 
           )}/${termoEncerramentoId}/termo-encerramento`,
         )) as TermoEncerramentoDetalheDto;
 
-        console.log('resposta', resposta);
-
         this.emFoco = resposta;
       } catch (erro: unknown) {
         this.erro.emFoco = erro;
@@ -67,7 +65,7 @@ export const useTermoEncerramentoStore = (sistemaEscolhido: ModuloSistema.MDO | 
     },
 
     async excluirItem(id: number) {
-      await this.requestS.delete(`${obterRota(sistemaEscolhido)}/${id}`);
+      await this.requestS.delete(`${obterRota(sistemaEscolhido)}/${id}/termo-encerramento`);
     },
 
     async salvarItem(params: any = {}, id = 0) {
@@ -75,14 +73,16 @@ export const useTermoEncerramentoStore = (sistemaEscolhido: ModuloSistema.MDO | 
         this.chamadasPendentes.emFoco = true;
         this.erro.emFoco = null;
 
-        const requestParams = {
-          ...params,
-          sobrescrever_icone: true,
-          icone_upload_token: params.icone || null,
-        };
-        delete requestParams.icone;
+        const requestParams = { ...params };
 
-        await this.requestS.patch(`${obterRota(sistemaEscolhido)}/${id}`, requestParams);
+        if (requestParams.icone) {
+          requestParams.sobrescrever_icone = true;
+          requestParams.icone_upload_token = requestParams.icone || undefined;
+
+          delete requestParams.icone;
+        }
+
+        await this.requestS.patch(`${obterRota(sistemaEscolhido)}/${id}/termo-encerramento`, requestParams);
       } catch (erro: unknown) {
         this.erro.emFoco = erro;
         throw erro;
@@ -94,7 +94,7 @@ export const useTermoEncerramentoStore = (sistemaEscolhido: ModuloSistema.MDO | 
     async uploadIcone(file: File): Promise<string> {
       try {
         const formData = new FormData();
-        formData.append('tipo', 'LOGO_PDM');
+        formData.append('tipo', 'ICONE_PORTFOLIO');
         formData.append('arquivo', file);
 
         const resposta = (await this.requestS.upload(
@@ -115,6 +115,7 @@ export const useTermoEncerramentoStore = (sistemaEscolhido: ModuloSistema.MDO | 
     itemParaEdicao({ emFoco }) {
       return {
         ...emFoco,
+        icone: emFoco?.icone && `${import.meta.env.VITE_API_URL}/download/${emFoco.icone.download_token}`,
       };
     },
   },

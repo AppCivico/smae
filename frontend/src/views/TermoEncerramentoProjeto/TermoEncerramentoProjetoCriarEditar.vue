@@ -13,6 +13,8 @@ import InputImageProfile from '@/components/InputImageProfile.vue';
 import { termoEncerramento as schema } from '@/consts/formSchemas';
 import { ModuloSistema } from '@/consts/modulosDoSistema';
 import { useAlertStore } from '@/stores/alert.store';
+import { usePortfolioStore } from '@/stores/portfolios.store';
+import { useProjetosStore } from '@/stores/projetos.store';
 import { useTermoEncerramentoStore } from '@/stores/termoEncerramento.store';
 import { useTipoEncerramentoStore } from '@/stores/tipoEncerramento.store';
 
@@ -26,16 +28,22 @@ const route = useRoute();
 const router = useRouter();
 const alertStore = useAlertStore();
 
+// @ts-expect-error - VITE_API_URL está definido no ambiente
+const baseUrl = `${import.meta.env.VITE_API_URL}`;
+
 type ModulosAceitos = ModuloSistema.MDO | ModuloSistema.Projetos;
 
 const termoEncerramentoStore = useTermoEncerramentoStore(route.meta.entidadeMãe as ModulosAceitos);
 const tipoEncerramentoStore = useTipoEncerramentoStore(route.meta.entidadeMãe as ModulosAceitos);
 
+const projetosStore = useProjetosStore();
+const portfoliosStore = usePortfolioStore();
+
 const { itemParaEdicao } = storeToRefs(termoEncerramentoStore);
 const { lista: listaJustificativas } = storeToRefs(tipoEncerramentoStore);
 
 const {
-  handleSubmit, resetForm,
+  handleSubmit, resetForm, setFieldValue,
 } = useForm({
   validationSchema: schema,
 });
@@ -52,8 +60,35 @@ async function handleIconeChange(file: unknown) {
   return uploadToken;
 }
 
+async function verificarIcone(termoEncerramento: typeof itemParaEdicao.value) {
+  if (!termoEncerramento || termoEncerramento.icone) return;
+
+  const projetoId = termoEncerramento.projeto_id;
+
+  if (projetosStore.emFoco?.id !== projetoId) {
+    await projetosStore.buscarItem(projetoId);
+  }
+
+  const projeto = projetosStore.emFoco;
+  if (!projeto) return;
+
+  if (portfoliosStore.emFoco?.id !== projeto.portfolio_id) {
+    await portfoliosStore.buscarItem(projeto.portfolio_id);
+  }
+
+  const portfolio = portfoliosStore.emFoco;
+
+  if (portfolio?.icone_impressao) {
+    setFieldValue('icone', `${baseUrl}/download/${portfolio.icone_impressao.download_token}`);
+  }
+}
+
 const onSubmit = handleSubmit.withControlled(async (formValues) => {
   try {
+    if (!iconeAtualizado.value) {
+      delete formValues.icone;
+    }
+
     await termoEncerramentoStore.salvarItem(formValues, props.escopoId);
     alertStore.success('Termo de encerramento atualizado com sucesso!');
 
@@ -64,9 +99,12 @@ const onSubmit = handleSubmit.withControlled(async (formValues) => {
 });
 
 watch(itemParaEdicao, (novoValor) => {
-  if (novoValor) {
-    resetForm({ values: novoValor });
+  if (!novoValor) {
+    return;
   }
+
+  resetForm({ values: novoValor });
+  verificarIcone(novoValor);
 }, { immediate: true });
 
 onMounted(async () => {
@@ -259,13 +297,13 @@ onMounted(async () => {
 
       <div class="f1">
         <SmaeLabel
-          name="data_encerramento"
+          name="data_termino_real"
           :schema="schema"
         />
 
         <Field
           v-slot="{ field, handleChange, value }"
-          name="data_encerramento"
+          name="data_termino_real"
         >
           <SmaeDateInput
             class="inputtext light"
@@ -278,7 +316,7 @@ onMounted(async () => {
 
         <ErrorMessage
           class="error-msg"
-          name="data_encerramento"
+          name="data_termino_real"
         />
       </div>
     </div>
