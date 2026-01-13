@@ -2,6 +2,7 @@
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { arquivo_preview_status, arquivo_preview_tipo } from '@prisma/client';
+import { IsString } from 'class-validator';
 
 /**
  * DTO para informações de preview de um arquivo
@@ -202,6 +203,7 @@ export class SolicitarPreviewDto {
         description: 'Token de upload ou download do arquivo',
         example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
     })
+    @IsString()
     token: string;
 }
 

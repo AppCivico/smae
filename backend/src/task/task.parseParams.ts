@@ -59,7 +59,7 @@ export function ParseParams(taskType: task_type, value: any): any {
             theClass = CreateApiLogDayDto;
             break;
         case 'gerar_preview_documento':
-            throw 'Not implemented yet: ParseParams gerar_preview_documento';
+            // No params class for this task yet.
             break;
         default:
             taskType satisfies never;

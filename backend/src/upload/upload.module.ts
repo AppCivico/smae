@@ -5,6 +5,8 @@ import { StorageService } from './storage-service';
 import { UploadController } from './upload.controller';
 import { UploadDiretorioController } from './upload.diretorio.controller';
 import { UploadDiretorioService } from './upload.diretorio.service';
+import { GotenbergService } from './gotenberg.service';
+import { PreviewService } from './preview.service';
 import { UploadService } from './upload.service';
 
 @Module({
@@ -13,10 +15,10 @@ import { UploadService } from './upload.service';
         JwtModule.register({
             secret: process.env.SESSION_JWT_SECRET,
             signOptions: {},
-        })
+        }),
     ],
     controllers: [UploadController, UploadDiretorioController],
-    providers: [UploadService, StorageService, UploadDiretorioService],
-    exports: [UploadService],
+    providers: [UploadService, StorageService, UploadDiretorioService, GotenbergService, PreviewService],
+    exports: [UploadService, GotenbergService, PreviewService],
 })
 export class UploadModule {}

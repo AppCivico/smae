@@ -15,11 +15,13 @@ import { RefreshVariavelModule } from './refresh_variavel/refresh-variavel.modul
 import { RunReportModule } from './run_report/run-report.module';
 import { RunUpdateModule } from './run_update/run-update.module';
 import { ApiLogModule } from 'src/api-logs/api-log.module';
+import { UploadModule } from 'src/upload/upload.module';
 
 @Module({
     imports: [
         PrismaModule,
         forwardRef(() => ApiLogModule),
+        forwardRef(() => UploadModule),
         forwardRef(() => EchoModule),
         forwardRef(() => RefreshMvModule),
         forwardRef(() => RefreshMetaModule),

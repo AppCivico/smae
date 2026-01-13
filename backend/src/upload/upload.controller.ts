@@ -24,6 +24,7 @@ import { PatchDiretorioDto } from './dto/diretorio.dto';
 import { DownloadOptions } from './dto/download-options';
 import { Upload } from './entities/upload.entity';
 import { UploadService } from './upload.service';
+import { SolicitarPreviewDto, SolicitarPreviewResponseDto } from './dto/arquivo-preview.dto';
 
 interface RestoreDescriptionResponse {
     total: number;
@@ -120,5 +121,14 @@ export class UploadController {
             ...result,
             message: `Successfully restored ${result.restored} descriptions of ${result.total} records. Skipped: ${result.skipped}, Errors: ${result.errors}.`,
         };
+    }
+
+    @Post('solicitar-preview')
+    @ApiBearerAuth('access-token')
+    async solicitarPreview(
+        @Body() dto: SolicitarPreviewDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<SolicitarPreviewResponseDto> {
+        return await this.uploadService.solicitarPreview(dto.token, user.id);
     }
 }

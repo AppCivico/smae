@@ -28,6 +28,7 @@ import { TaskContext } from './task.context';
 import { ApiLogBackupService } from 'src/api-logs/backup/api-log-backup.service';
 import { ApiLogRestoreService } from 'src/api-logs/restore/api-log-restore.service';
 import { SmaeConfigService } from 'src/common/services/smae-config.service';
+import { PreviewService } from 'src/upload/preview.service';
 
 export class TaskRetryService {
     static calculateNextRetryTime(retryCount: number, retryConfig: RetryConfigDto): Date {
@@ -198,7 +199,10 @@ export class TaskService {
         private readonly apiLogBackupService: ApiLogBackupService,
         //
         @Inject(forwardRef(() => ApiLogRestoreService))
-        private readonly apiLogRestoreService: ApiLogRestoreService
+        private readonly apiLogRestoreService: ApiLogRestoreService,
+        //
+        @Inject(forwardRef(() => PreviewService))
+        private readonly previewService: PreviewService
     ) {
         this.enabled = IsCrontabEnabled('task');
         this.logger.debug(`task crontab enabled? ${this.enabled}`);
@@ -763,7 +767,8 @@ export class TaskService {
                 service = this.apiLogRestoreService;
                 break;
             case 'gerar_preview_documento':
-                throw 'Not implemented yet: serviceFromTaskType gerar_preview_documento';
+                service = this.previewService;
+                break;
             default:
                 task_type satisfies never;
         }

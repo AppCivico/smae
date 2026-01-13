@@ -1,0 +1,283 @@
+import { Injectable, Logger } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
+import * as sharp from 'sharp';
+import { PrismaService } from '../prisma/prisma.service';
+import { StorageService } from './storage-service';
+import { UploadService } from './upload.service';
+import { PreviewConfig } from './arquivo-preview.helper';
+import { GotenbergService } from './gotenberg.service';
+import { TaskableService } from '../task/entities/task.entity';
+
+@Injectable()
+export class PreviewService implements TaskableService {
+    private readonly logger = new Logger(PreviewService.name);
+
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly storage: StorageService,
+        private readonly uploadService: UploadService,
+        private readonly gotenbergService: GotenbergService
+    ) {}
+
+    async processPreviewTask(taskId: number, params: any): Promise<void> {
+        const arquivoId = params.arquivo_id;
+        const tipoPreview = params.tipo_preview;
+
+        this.logger.log(`Processing preview for arquivo ${arquivoId}, type: ${tipoPreview}`);
+
+        try {
+            // Update status to 'executando'
+            await this.prisma.arquivo.update({
+                where: { id: arquivoId },
+                data: {
+                    preview_status: 'executando',
+                    preview_atualizado_em: new Date(),
+                },
+            });
+
+            const arquivo = await this.prisma.arquivo.findUnique({
+                where: { id: arquivoId },
+                select: {
+                    id: true,
+                    caminho: true,
+                    nome_original: true,
+                    mime_type: true,
+                    criado_por: true,
+                },
+            });
+
+            if (!arquivo) {
+                throw new Error('Arquivo not found');
+            }
+
+            let previewArquivoId: number;
+
+            if (tipoPreview === 'redimensionamento') {
+                previewArquivoId = await this.processImageResize(arquivo);
+            } else if (tipoPreview === 'conversao_pdf') {
+                previewArquivoId = await this.processPdfConversion(arquivo);
+            } else {
+                throw new Error(`Unknown preview type: ${tipoPreview}`);
+            }
+
+            // Update to 'concluido'
+            await this.prisma.arquivo.update({
+                where: { id: arquivoId },
+                data: {
+                    preview_status: 'concluido',
+                    preview_arquivo_id: previewArquivoId,
+                    preview_atualizado_em: new Date(),
+                },
+            });
+
+            this.logger.log(`Preview generated successfully for arquivo ${arquivoId}`);
+        } catch (error) {
+            this.logger.error(`Error generating preview for arquivo ${arquivoId}:`, error);
+
+            const isGotenbergError = error.message?.includes('Gotenberg') || error.message?.includes('conversion');
+
+            await this.prisma.arquivo.update({
+                where: { id: arquivoId },
+                data: {
+                    preview_status: isGotenbergError ? 'sem_suporte' : 'erro',
+                    preview_erro_mensagem: error.message || 'Unknown error',
+                    preview_atualizado_em: new Date(),
+                },
+            });
+
+            throw error;
+        }
+    }
+
+    private async processImageResize(arquivo: any): Promise<number> {
+        // Download original file
+        const stream = await this.storage.getStream(arquivo.caminho);
+        const chunks: Buffer[] = [];
+        for await (const chunk of stream) {
+            chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+        }
+        const buffer = Buffer.concat(chunks);
+
+        // Resize image
+        const resizedBuffer = await sharp(buffer)
+            .resize(PreviewConfig.PREVIEW_IMAGEM_LARGURA_MAX, null, {
+                withoutEnlargement: true,
+                fit: 'inside',
+            })
+            .jpeg({ quality: PreviewConfig.PREVIEW_IMAGEM_QUALIDADE })
+            .toBuffer();
+
+        // Upload preview
+        const previewId = await this.uploadPreview(
+            arquivo.id,
+            arquivo.nome_original,
+            resizedBuffer,
+            'image/jpeg',
+            arquivo.criado_por
+        );
+
+        return previewId;
+    }
+
+    private async processPdfConversion(arquivo: any): Promise<number> {
+        // Download original file from storage
+        const stream = await this.storage.getStream(arquivo.caminho);
+        const chunks: Buffer[] = [];
+        for await (const chunk of stream) {
+            chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+        }
+        const buffer = Buffer.concat(chunks);
+
+        // Convert to PDF using Gotenberg
+        const pdfBuffer = await this.gotenbergService.convertToPdf(buffer, arquivo.nome_original, arquivo.mime_type, {
+            // Optional: Add conversion options
+            quality: 90,
+            losslessImageCompression: false,
+        });
+
+        // Upload preview
+        const previewId = await this.uploadPreview(
+            arquivo.id,
+            arquivo.nome_original,
+            pdfBuffer,
+            'application/pdf',
+            arquivo.criado_por
+        );
+
+        return previewId;
+    }
+
+    private async uploadPreview(
+        originalArquivoId: number,
+        originalFilename: string,
+        buffer: Buffer,
+        mimeType: string,
+        userId: number | null
+    ): Promise<number> {
+        const arquivoId = await this.nextSequence();
+
+        const key = [
+            'uploads',
+            'preview_documento',
+            'original-arquivo-id',
+            String(originalArquivoId),
+            new Date(Date.now()).toISOString(),
+            'arquivo-id-' + String(arquivoId),
+            'preview-' + originalFilename.replace(/\s/g, '-').replace(/[^\w-\\.0-9_]*/gi, ''),
+        ].join('/');
+
+        await this.storage.putBlob(key, buffer, {
+            'Content-Type': mimeType,
+            'x-user-id': userId || 'sistema',
+            'x-tipo': 'PREVIEW_DOCUMENTO',
+            'x-original-arquivo-id': String(originalArquivoId),
+        });
+
+        await this.prisma.arquivo.create({
+            data: {
+                id: arquivoId,
+                criado_por: userId,
+                criado_em: new Date(),
+                caminho: key,
+                nome_original: 'preview-' + originalFilename,
+                mime_type: mimeType,
+                tamanho_bytes: buffer.length,
+                tipo: 'PREVIEW_DOCUMENTO',
+            },
+        });
+
+        return arquivoId;
+    }
+
+    private async nextSequence(): Promise<number> {
+        const nextVal: any[] = await this.prisma.$queryRaw`select nextval('arquivo_id_seq'::regclass) as id`;
+        return Number(nextVal[0].id);
+    }
+
+    /**
+     * TaskableService implementation - execute the preview generation job
+     */
+    async executeJob(params: any, jobId: string): Promise<any> {
+        const arquivoId = params.arquivo_id;
+        const tipoPreview = params.tipo_preview;
+
+        this.logger.log(`[Job ${jobId}] Processing preview for arquivo ${arquivoId}, type: ${tipoPreview}`);
+
+        try {
+            // Update status to 'executando'
+            await this.prisma.arquivo.update({
+                where: { id: arquivoId },
+                data: {
+                    preview_status: 'executando',
+                    preview_atualizado_em: new Date(),
+                },
+            });
+
+            const arquivo = await this.prisma.arquivo.findUnique({
+                where: { id: arquivoId },
+                select: {
+                    id: true,
+                    caminho: true,
+                    nome_original: true,
+                    mime_type: true,
+                    criado_por: true,
+                },
+            });
+
+            if (!arquivo) {
+                throw new Error('Arquivo not found');
+            }
+
+            let previewArquivoId: number;
+
+            if (tipoPreview === 'redimensionamento') {
+                previewArquivoId = await this.processImageResize(arquivo);
+            } else if (tipoPreview === 'conversao_pdf') {
+                previewArquivoId = await this.processPdfConversion(arquivo);
+            } else {
+                throw new Error(`Unknown preview type: ${tipoPreview}`);
+            }
+
+            // Update to 'concluido'
+            await this.prisma.arquivo.update({
+                where: { id: arquivoId },
+                data: {
+                    preview_status: 'concluido',
+                    preview_arquivo_id: previewArquivoId,
+                    preview_atualizado_em: new Date(),
+                },
+            });
+
+            this.logger.log(`[Job ${jobId}] Preview generated successfully for arquivo ${arquivoId}`);
+
+            return {
+                success: true,
+                arquivo_id: arquivoId,
+                preview_arquivo_id: previewArquivoId,
+                tipo_preview: tipoPreview,
+            };
+        } catch (error) {
+            this.logger.error(`[Job ${jobId}] Error generating preview for arquivo ${arquivoId}:`, error);
+
+            const isGotenbergError = error.message?.includes('Gotenberg') || error.message?.includes('conversion');
+
+            await this.prisma.arquivo.update({
+                where: { id: arquivoId },
+                data: {
+                    preview_status: isGotenbergError ? 'sem_suporte' : 'erro',
+                    preview_erro_mensagem: error.message || 'Unknown error',
+                    preview_atualizado_em: new Date(),
+                },
+            });
+
+            throw error;
+        }
+    }
+
+    /**
+     * TaskableService implementation - convert job output to JSON
+     */
+    outputToJson(executeOutput: any, _inputParams: any, _jobId: string): JSON {
+        return JSON.stringify(executeOutput) as any;
+    }
+}

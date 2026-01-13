@@ -42,8 +42,14 @@ const ZipContentTypes = [
     'application/x-zip',
 ];
 import * as MinioJS from 'minio';
+import { deveGerarPreview } from './arquivo-preview.helper';
+import { SolicitarPreviewResponseDto } from './dto/arquivo-preview.dto';
+import { arquivo_preview_status } from '@prisma/client';
+
 @Injectable()
 export class UploadService {
+    private readonly logger = new Logger(UploadService.name);
+
     constructor(
         private readonly jwtService: JwtService,
         private readonly prisma: PrismaService,
@@ -143,7 +149,70 @@ export class UploadService {
             select: { id: true },
         });
 
+        // Schedule preview task if applicable
+        await this.agendarPreviewSeNecessario(
+            arquivoId,
+            String(createUploadDto.tipo),
+            'size' in file ? file.size : file.buffer.length,
+            originalname,
+            ct,
+            user.id
+        );
+
         return arquivoId;
+    }
+
+    private async agendarPreviewSeNecessario(
+        arquivoId: number,
+        tipo: string,
+        tamanhoBytes: number,
+        nomeOriginal: string,
+        mimeType: string,
+        userId: number
+    ): Promise<void> {
+        const resultado = deveGerarPreview(tipo, tamanhoBytes, nomeOriginal, mimeType);
+
+        if (!resultado.gerar) {
+            // Mark as 'pulado' if it's DOCUMENTO but won't generate
+            if (tipo === 'DOCUMENTO') {
+                await this.prisma.arquivo.update({
+                    where: { id: arquivoId },
+                    data: {
+                        preview_status: 'pulado',
+                        preview_erro_mensagem: resultado.motivo,
+                        preview_atualizado_em: new Date(),
+                    },
+                });
+            }
+            return;
+        }
+
+        // Create task in queue
+        const task = await this.prisma.task_queue.create({
+            data: {
+                type: 'gerar_preview_documento',
+                status: 'pending',
+                pessoa_id: userId,
+                params: {
+                    arquivo_id: arquivoId,
+                    tipo_preview: resultado.tipoPreview,
+                },
+            },
+        });
+
+        // Update arquivo with task reference
+        await this.prisma.arquivo.update({
+            where: { id: arquivoId },
+            data: {
+                preview_status: 'pendente',
+                preview_tipo: resultado.tipoPreview,
+                preview_task_id: task.id,
+                preview_criado_em: new Date(),
+                preview_atualizado_em: new Date(),
+            },
+        });
+
+        Logger.log(`Preview scheduled for arquivo ${arquivoId}, task ${task.id}, type: ${resultado.tipoPreview}`);
     }
 
     async getById(id: number) {
@@ -575,5 +644,123 @@ export class UploadService {
             Logger.error('Error in restoreDescriptionsFromMetadata:', error);
             throw error;
         }
+    }
+
+    async solicitarPreview(token: string, userId: number): Promise<SolicitarPreviewResponseDto> {
+        // Decode token to get arquivo_id
+        console.log('=====================');
+
+        console.log(token);
+        console.log('=====================');
+
+        const arquivoId = this.checkUploadOrDownloadToken(token);
+
+        // Get arquivo details
+        const arquivo = await this.prisma.arquivo.findUnique({
+            where: { id: arquivoId },
+            select: {
+                id: true,
+                tipo: true,
+                tamanho_bytes: true,
+                nome_original: true,
+                mime_type: true,
+                preview_status: true,
+                preview_task_id: true,
+                preview_tipo: true,
+            },
+        });
+
+        if (!arquivo) {
+            return {
+                aceito: false,
+                mensagem: 'Arquivo não encontrado',
+                status: 'erro' as arquivo_preview_status,
+            };
+        }
+
+        // Check if preview can be generated for this file
+        const resultado = deveGerarPreview(
+            arquivo.tipo,
+            arquivo.tamanho_bytes,
+            arquivo.nome_original,
+            arquivo.mime_type || ''
+        );
+
+        if (!resultado.gerar) {
+            return {
+                aceito: false,
+                mensagem: resultado.motivo || 'Preview não suportado para este tipo de arquivo',
+                status: arquivo.preview_status || ('pulado' as arquivo_preview_status),
+            };
+        }
+
+        // Check current preview status
+        if (arquivo.preview_status === 'concluido') {
+            return {
+                aceito: false,
+                mensagem: 'Preview já foi gerado anteriormente',
+                status: 'concluido' as arquivo_preview_status,
+            };
+        }
+
+        if (arquivo.preview_status === 'executando') {
+            return {
+                aceito: false,
+                mensagem: 'Preview está sendo gerado no momento',
+                status: 'executando' as arquivo_preview_status,
+            };
+        }
+
+        if (arquivo.preview_status === 'pendente' && arquivo.preview_task_id) {
+            // Check if task is still pending
+            const task = await this.prisma.task_queue.findUnique({
+                where: { id: arquivo.preview_task_id },
+                select: { status: true },
+            });
+
+            if (task && (task.status === 'pending' || task.status === 'running')) {
+                return {
+                    aceito: false,
+                    mensagem: 'Preview já está agendado para geração',
+                    status: 'pendente' as arquivo_preview_status,
+                };
+            }
+        }
+
+        // Schedule or reschedule preview task
+        const task = await this.prisma.task_queue.create({
+            data: {
+                type: 'gerar_preview_documento',
+                status: 'pending',
+                pessoa_id: userId,
+                params: {
+                    arquivo_id: arquivoId,
+                    tipo_preview: resultado.tipoPreview,
+                },
+            },
+        });
+
+        // Update arquivo with task reference
+        await this.prisma.arquivo.update({
+            where: { id: arquivoId },
+            data: {
+                preview_status: 'pendente',
+                preview_tipo: resultado.tipoPreview,
+                preview_task_id: task.id,
+                preview_criado_em: arquivo.preview_status ? undefined : new Date(),
+                preview_atualizado_em: new Date(),
+                preview_erro_mensagem: null, // Clear previous error if any
+            },
+        });
+
+        this.logger.log(
+            `Preview manually requested for arquivo ${arquivoId} by user ${userId}, task ${task.id}, type: ${resultado.tipoPreview}`
+        );
+
+        return {
+            aceito: true,
+            mensagem: `Preview ${arquivo.preview_status === 'erro' ? 'reagendado' : 'agendado'} para geração`,
+            status: 'pendente' as arquivo_preview_status,
+        };
     }
 }
