@@ -1,4 +1,4 @@
-import he from 'he';
+import * as he from 'he';
 
 // 1. Definir Regex fora para garantir comportamento de compilação única
 const STRIP_SCRIPTS = /<(style|script)[^>]*>[\s\S]*?<\/\1>/gi;
