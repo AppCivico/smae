@@ -1621,7 +1621,7 @@ export class OrcamentoRealizadoService {
                     mesInclude &&
                     (!ultimoControleAbertura ||
                         ultimoControleAbertura.referencia_dia_abertura !== pdm.orcamento_dia_abertura ||
-                        ultimoControleAbertura.ano_referencia !== anoReabertura ||
+                        ultimoControleAbertura.ano_referencia !== anoAtual ||
                         ultimoControleAbertura.referencia_mes !== mesAtual)
                 ) {
                     const now = new Date(Date.now());
@@ -1659,12 +1659,16 @@ export class OrcamentoRealizadoService {
                 );
             }
 
-            // Verificação de fechamento, se abriu e passou do dia 20, vai fechar assim que bater esse dia
-            // não importa que mês que abriu
+            // Verificação de fechamento - só fecha se o mês anterior estava na configuração de meses disponíveis
+            const mesAnteriorParaFechar = mesAtual === 1 ? 12 : mesAtual - 1;
+            const configParaFechamento = mesAtual === 1 ? configOrcamentoAbertura : configOrcamentoCorrente;
+            const deveFechar = configParaFechamento?.execucao_disponivel_meses.includes(mesAnteriorParaFechar) ?? false;
+
             this.logger.debug(
-                `Verificando fechamento da meta ${meta.id}, diaAtual (${diaAtual}) >= pdm.orcamento_dia_fechamento ${pdm.orcamento_dia_fechamento}, ultimoControleFechamento=${JSON.stringify(ultimoControleFechamento)}`
+                `Verificando fechamento da meta ${meta.id}, diaAtual (${diaAtual}) >= pdm.orcamento_dia_fechamento ${pdm.orcamento_dia_fechamento}, deveFechar=${deveFechar}, mesAnteriorParaFechar=${mesAnteriorParaFechar}, ultimoControleFechamento=${JSON.stringify(ultimoControleFechamento)}`
             );
             if (
+                deveFechar &&
                 diaAtual >= pdm.orcamento_dia_fechamento &&
                 (!ultimoControleFechamento ||
                     ultimoControleFechamento.referencia_dia_fechamento !== pdm.orcamento_dia_fechamento ||
