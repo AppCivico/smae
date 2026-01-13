@@ -1,6 +1,6 @@
 <script setup>
 import { storeToRefs } from 'pinia';
-import { ref, watchEffect } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import FormularioQueryString from '@/components/FormularioQueryString.vue';
@@ -42,31 +42,36 @@ async function excluirVariavel(id, nome) {
   }, 'Remover');
 }
 
-watchEffect(() => {
-  variaveisGlobaisStore.buscarTudo({
-    assuntos: route.query.assuntos,
-    codigo: route.query.codigo,
-    descricao: route.query.descricao,
-    meta_id: route.query.meta_id,
-    medicao_orgao_id: route.query.medicao_orgao_id,
-    orgao_proprietario_id: route.query.orgao_proprietario_id,
-    nivel_regionalizacao: route.query.nivel_regionalizacao,
-    palavra_chave: route.query.palavra_chave,
-    periodicidade: route.query.periodicidade,
-    plano_setorial_id: route.query.plano_setorial_id,
-    regiao_id: route.query.regiao_id,
-    titulo: route.query.titulo,
-    variavel_categorica_id: route.query.variavel_categorica_id,
+// Extrai apenas os parâmetros relevantes em um computed
+// Isso cria uma "barreira" de reatividade - mudanças em outros parâmetros não afetam este computed
+const parametrosDeBusca = computed(() => ({
+  assuntos: route.query.assuntos,
+  codigo: route.query.codigo,
+  descricao: route.query.descricao,
+  meta_id: route.query.meta_id,
+  medicao_orgao_id: route.query.medicao_orgao_id,
+  orgao_proprietario_id: route.query.orgao_proprietario_id,
+  nivel_regionalizacao: route.query.nivel_regionalizacao,
+  palavra_chave: route.query.palavra_chave,
+  periodicidade: route.query.periodicidade,
+  plano_setorial_id: route.query.plano_setorial_id,
+  regiao_id: route.query.regiao_id,
+  titulo: route.query.titulo,
+  variavel_categorica_id: route.query.variavel_categorica_id,
+  pagina: route.query.pagina,
+  ipp: route.query.ipp,
+  token_paginacao: route.query.token_paginacao,
+  ordem_coluna: route.query.ordem_coluna,
+  ordem_direcao: route.query.ordem_direcao,
+}));
 
-    pagina: route.query.pagina,
+// String serializada dos parâmetros para comparação estável
+const parametrosSerializados = computed(() => JSON.stringify(parametrosDeBusca.value));
 
-    ipp: route.query.ipp,
-    token_paginacao: route.query.token_paginacao,
-
-    ordem_coluna: route.query.ordem_coluna,
-    ordem_direcao: route.query.ordem_direcao,
-  });
-});
+// Watch na string serializada - só dispara quando os VALORES mudam, não quando o objeto é recriado
+watch(parametrosSerializados, () => {
+  variaveisGlobaisStore.buscarTudo(parametrosDeBusca.value);
+}, { immediate: true });
 </script>
 <template>
   <CabecalhoDePagina class="mb2">
