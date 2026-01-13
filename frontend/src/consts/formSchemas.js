@@ -3823,6 +3823,10 @@ export const usuário = object()
     perfil_acesso_ids: array()
       .label('Perfil de acesso')
       .required('Selecione ao menos uma permissão'),
+    equipes: array()
+      .label('Equipes como participante'),
+    equipes_responsavel: array()
+      .label('Equipes como coordenador'),
   });
 
 export const variável = (singleIndicadores) => object()
