@@ -84,10 +84,10 @@ const max = computed(() => {
     return Number(props.maxLength);
   }
 
-  if (props.schema) {
+  if (props.schema && props.name) {
     const dados = buscarDadosDoYup(props.schema, props.name);
 
-    if (Array.isArray(dados.tests)) {
+    if (Array.isArray(dados?.tests)) {
       const maxTest = dados.tests.find((test: Test) => test.OPTIONS.name === 'max');
 
       if (maxTest) {
