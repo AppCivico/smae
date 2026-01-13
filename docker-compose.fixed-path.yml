@@ -98,6 +98,7 @@ services:
       TRANSFEREGOV_API_TRANSFERENCIAS_PREFIX: "${TRANSFEREGOV_API_TRANSFERENCIAS_PREFIX}" # "http://smae_transferegov_transferencias:80/"
       DOTACAO_SOF_SIMULTANEIDADE: "${DOTACAO_SOF_SIMULTANEIDADE}"
       API_HOST_NAME: "${API_HOST_NAME}"
+      GOTENBERG_URL: "http://gotenberg:3000"
     networks:
       #- postgres
       #- minio
@@ -109,8 +110,28 @@ services:
     depends_on:
       - db
       - minio
+      - gotenberg
     #- smae_orcamento
     #- smae_geoloc
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "2"
+        max-size: 100MB
+
+  # RAM ~ 300mb max
+  gotenberg:
+    container_name: "${API_CONTAINER_NAME}_gotenberg"
+    image: gotenberg/gotenberg:8
+    restart: unless-stopped
+    command:
+      - "gotenberg"
+      - "--api-timeout=30s"
+      - "--api-port-from-env=GOTENBERG_API_PORT"
+    environment:
+      GOTENBERG_API_PORT: 3000
+    networks:
+      - smae_network
     logging:
       driver: "json-file"
       options:

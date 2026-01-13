@@ -48,7 +48,7 @@ export class GotenbergService {
 
     constructor() {
         // Get Gotenberg URL from environment variable or use default
-        this.gotenbergUrl = process.env.GOTENBERG_URL || 'http://0.0.0.0:3000';
+        this.gotenbergUrl = process.env.GOTENBERG_URL || 'http://gotenberg:3000';
     }
 
     /**
