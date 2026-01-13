@@ -118,6 +118,27 @@ services:
         max-size: 100MB
 
   # RAM ~ 300mb max
+  gotenberg:
+    container_name: "${API_CONTAINER_NAME}_gotenberg"
+    build:
+      context: ./gotenberg/
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    command:
+      - "gotenberg"
+      - "--api-timeout=30s"
+      - "--api-port-from-env=GOTENBERG_API_PORT"
+    environment:
+      GOTENBERG_API_PORT: 3000
+    networks:
+      - smae_network
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "2"
+        max-size: 100MB
+
+  # RAM ~ 300mb max
   smae_orcamento:
     container_name: "${API_CONTAINER_NAME}_orcamento"
     build:
@@ -368,6 +389,11 @@ services:
       - BACKUP_KEEP_MONTHS=12
       - HEALTHCHECK_PORT=8080
 
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> 8ed09228f4 (Add gotenberg Dockerfile)
 networks:
   smae_network:
     driver_opts:
