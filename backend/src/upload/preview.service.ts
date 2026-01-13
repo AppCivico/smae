@@ -120,6 +120,8 @@ export class PreviewService implements TaskableService {
     }
 
     private async processPdfConversion(arquivo: any): Promise<number> {
+        this.logger.log(`Starting PDF conversion for arquivo ${arquivo.id}, mime_type: ${arquivo.mime_type}`);
+
         // Download original file from storage
         const stream = await this.storage.getStream(arquivo.caminho);
         const chunks: Buffer[] = [];
@@ -128,12 +130,16 @@ export class PreviewService implements TaskableService {
         }
         const buffer = Buffer.concat(chunks);
 
+        this.logger.log(`Downloaded file buffer, size: ${buffer.length} bytes`);
+
         // Convert to PDF using Gotenberg
         const pdfBuffer = await this.gotenbergService.convertToPdf(buffer, arquivo.nome_original, arquivo.mime_type, {
             // Optional: Add conversion options
             quality: 90,
             losslessImageCompression: false,
         });
+
+        this.logger.log(`Conversion completed, PDF buffer size: ${pdfBuffer.length} bytes`);
 
         // Upload preview
         const previewId = await this.uploadPreview(
@@ -156,6 +162,11 @@ export class PreviewService implements TaskableService {
     ): Promise<number> {
         const arquivoId = await this.nextSequence();
 
+        // Remove original extension and add appropriate extension based on output mimeType
+        const extension = this.getExtensionFromMimeType(mimeType);
+        const filenameWithoutExt = originalFilename.replace(/\.[^/.]+$/, '');
+        const previewFilename = `preview-${filenameWithoutExt}${extension}`;
+
         const key = [
             'uploads',
             'preview_documento',
@@ -163,7 +174,7 @@ export class PreviewService implements TaskableService {
             String(originalArquivoId),
             new Date(Date.now()).toISOString(),
             'arquivo-id-' + String(arquivoId),
-            'preview-' + originalFilename.replace(/\s/g, '-').replace(/[^\w-\\.0-9_]*/gi, ''),
+            previewFilename.replace(/\s/g, '-').replace(/[^\w-\\.0-9_]*/gi, ''),
         ].join('/');
 
         await this.storage.putBlob(key, buffer, {
@@ -179,7 +190,7 @@ export class PreviewService implements TaskableService {
                 criado_por: userId,
                 criado_em: new Date(),
                 caminho: key,
-                nome_original: 'preview-' + originalFilename,
+                nome_original: previewFilename,
                 mime_type: mimeType,
                 tamanho_bytes: buffer.length,
                 tipo: 'PREVIEW_DOCUMENTO',
@@ -187,6 +198,48 @@ export class PreviewService implements TaskableService {
         });
 
         return arquivoId;
+    }
+
+    /**
+     * Get file extension from MIME type
+     * @param mimeType The MIME type
+     * @returns The file extension including the dot
+     */
+    private getExtensionFromMimeType(mimeType: string): string {
+        const mimeToExt: Record<string, string> = {
+            // Images
+            'image/jpeg': '.jpg',
+            'image/jpg': '.jpg',
+            'image/png': '.png',
+            'image/gif': '.gif',
+            'image/webp': '.webp',
+            'image/svg+xml': '.svg',
+            'image/bmp': '.bmp',
+            'image/tiff': '.tiff',
+            // Documents
+            'application/pdf': '.pdf',
+            'application/msword': '.doc',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
+            'application/vnd.ms-excel': '.xls',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': '.xlsx',
+            'application/vnd.ms-powerpoint': '.ppt',
+            'application/vnd.openxmlformats-officedocument.presentationml.presentation': '.pptx',
+            'application/vnd.oasis.opendocument.text': '.odt',
+            'application/vnd.oasis.opendocument.spreadsheet': '.ods',
+            'application/vnd.oasis.opendocument.presentation': '.odp',
+            // Text
+            'text/plain': '.txt',
+            'text/csv': '.csv',
+            'text/html': '.html',
+            'text/rtf': '.rtf',
+            'application/rtf': '.rtf',
+            // Other
+            'application/zip': '.zip',
+            'application/json': '.json',
+            'application/xml': '.xml',
+        };
+
+        return mimeToExt[mimeType] || '.bin';
     }
 
     private async nextSequence(): Promise<number> {

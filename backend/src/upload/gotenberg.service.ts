@@ -48,7 +48,7 @@ export class GotenbergService {
 
     constructor() {
         // Get Gotenberg URL from environment variable or use default
-        this.gotenbergUrl = process.env.GOTENBERG_URL || 'http://gotenberg:3000';
+        this.gotenbergUrl = process.env.GOTENBERG_URL || 'http://0.0.0.0:3000';
     }
 
     /**
@@ -130,6 +130,14 @@ export class GotenbergService {
 
             const pdfBuffer = response.body;
 
+            // Validate that we got a PDF back
+            if (!this.isPdfBuffer(pdfBuffer)) {
+                this.logger.error(
+                    `Gotenberg did not return a valid PDF for "${filename}". Response length: ${pdfBuffer.length}`
+                );
+                throw new Error('Gotenberg conversion did not produce a valid PDF');
+            }
+
             this.logger.log(`Successfully converted "${filename}" to PDF (${pdfBuffer.length} bytes)`);
 
             return pdfBuffer;
@@ -138,6 +146,8 @@ export class GotenbergService {
 
             if (error.response) {
                 const errorText = error.response.body?.toString() || error.message;
+                const contentType = error.response.headers['content-type'];
+                this.logger.error(`Gotenberg response content-type: ${contentType}`);
                 throw new Error(`Gotenberg conversion failed with status ${error.response.statusCode}: ${errorText}`);
             }
 
@@ -298,6 +308,20 @@ export class GotenbergService {
         }
 
         return null;
+    }
+
+    /**
+     * Check if a buffer contains a PDF by checking the PDF header
+     * @param buffer The buffer to check
+     * @returns boolean
+     */
+    private isPdfBuffer(buffer: Buffer): boolean {
+        if (!buffer || buffer.length < 5) {
+            return false;
+        }
+        // Check for PDF magic number: %PDF-
+        const header = buffer.slice(0, 5).toString('ascii');
+        return header === '%PDF-';
     }
 
     /**
