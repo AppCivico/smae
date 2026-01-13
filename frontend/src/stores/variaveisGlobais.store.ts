@@ -201,6 +201,29 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
       }
     },
 
+    async salvarFilha(
+      variavelMaeId: number,
+      variavelFilhaId: number,
+      params = {},
+    ): Promise<RecordWithId | boolean> {
+      this.chamadasPendentes.emFoco = true;
+
+      try {
+        const resposta = await this.requestS.patch(
+          `${baseUrl}/variavel/${variavelMaeId}/filha/${variavelFilhaId}`,
+          params,
+        ) as RecordWithId;
+
+        this.chamadasPendentes.emFoco = false;
+        this.erros.emFoco = null;
+        return resposta;
+      } catch (erro) {
+        this.erros.emFoco = erro;
+        this.chamadasPendentes.emFoco = false;
+        return false;
+      }
+    },
+
     async buscarSerie(variavelId: number | string, params = {}): Promise<void> {
       this.chamadasPendentes.seriesAgrupadas = true;
       this.erros.seriesAgrupadas = null;
