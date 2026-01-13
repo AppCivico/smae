@@ -249,14 +249,17 @@ watch(itemParaEdicao, (novoItem) => {
           :schema="schema"
         />
         <SmaeText
-          v-model="values.pauta"
+          :model-value="values.pauta"
+          :schema="schema"
           name="pauta"
           as="textarea"
           rows="5"
           class="inputtext light mb1"
           maxlength="2048"
           anular-vazio
-          :class="{ 'error': errors.pauta }"
+          :class="{
+            error: errors.pauta
+          }"
         />
         <ErrorMessage
           name="pauta"
@@ -272,14 +275,17 @@ watch(itemParaEdicao, (novoItem) => {
           :schema="schema"
         />
         <SmaeText
-          v-model="values.detalhamento"
+          :schema="schema"
+          :model-value="values.detalhamento"
           name="detalhamento"
           as="textarea"
           rows="5"
           class="inputtext light mb1"
           maxlength="2048"
           anular-vazio
-          :class="{ 'error': errors.detalhamento }"
+          :class="{
+            error: errors.detalhamento
+          }"
         />
         <ErrorMessage
           name="detalhamento"
@@ -301,14 +307,17 @@ watch(itemParaEdicao, (novoItem) => {
           :schema="schema"
         />
         <SmaeText
-          v-model="values.observacao"
+          :schema="schema"
+          :model-value="values.observacao"
           name="observacao"
           as="textarea"
           rows="5"
           class="inputtext light mb1"
           maxlength="2048"
           anular-vazio
-          :class="{ 'error': errors.observacao }"
+          :class="{
+            error: errors.observacao
+          }"
         />
         <ErrorMessage
           name="observacao"
@@ -352,7 +361,8 @@ watch(itemParaEdicao, (novoItem) => {
           :schema="schema"
         />
         <SmaeText
-          v-model="values.pontos_atencao"
+          :schema="schema"
+          :model-value="values.pontos_atencao"
           name="pontos_atencao"
           as="textarea"
           rows="5"
@@ -414,8 +424,9 @@ watch(itemParaEdicao, (novoItem) => {
                 :schema="schema"
                 :model-value="fields[idx]?.value?.encaminhamento"
                 anular-vazio
-                :class="{ 'error': errors[`acompanhamentos[${idx}].encaminhamento`] }"
-                @update:model-value="handleChange"
+                :class="{
+                  error: errors[`acompanhamentos[${idx}].encaminhamento`]
+                }"
               />
               <ErrorMessage
                 :name="`acompanhamentos[${idx}].encaminhamento`"
