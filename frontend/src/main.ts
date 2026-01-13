@@ -23,6 +23,7 @@ import requestS from '@/helpers/requestS';
 import consoleNaTemplate from '@/plugins/consoleNaTemplate';
 import App from './App.vue';
 import CabecalhoDePagina from './components/CabecalhoDePagina.vue';
+import ResumoSessao from './components/ResumoSessao.vue';
 import { router } from './router';
 
 const app = createApp(App);
@@ -119,6 +120,7 @@ app.component('TítuloDePágina', TítuloDePágina);
 app.component('TituloDePagina', TítuloDePágina);
 app.component('TituloDaPagina', TítuloDePágina);
 app.component('CabecalhoDePagina', CabecalhoDePagina);
+app.component('ResumoSessao', ResumoSessao);
 
 app.use(pinia);
 app.use(router);
