@@ -32,6 +32,10 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  subtitulo: {
+    type: String,
+    default: '',
+  },
   tamanhoAjustavel: {
     type: Boolean,
     default: false,
@@ -141,25 +145,43 @@ onBeforeUnmount(() => {
       @click.self="acionarFechamento"
       @cancel.prevent="acionarFechamento"
     >
-      <TituloDaPagina>
-        <slot name="titulo">
-          {{ titulo }}
-        </slot>
+      <header
+        class="mb2"
+      >
+        <div class="flex spacebetween center g1">
+          <TituloDaPagina>
+            <slot name="titulo">
+              {{ titulo }}
+            </slot>
+          </TituloDaPagina>
 
-        <button
-          type="button"
-          class="btn round botao-fechar-dialogo"
-          aria-label="Fechar diálogo"
-          @click="acionarFechamento"
-        >
-          <svg
-            width="12"
-            height="12"
+          <hr class="f1">
+
+          <button
+            type="button"
+            class="btn round botao-fechar-dialogo"
+            aria-label="Fechar diálogo"
+            @click="acionarFechamento"
           >
-            <use xlink:href="#i_x" />
-          </svg>
-        </button>
-      </TituloDaPagina>
+            <svg
+              width="12"
+              height="12"
+            >
+              <use xlink:href="#i_x" />
+            </svg>
+          </button>
+        </div>
+
+        <p
+          v-if="!!$props.subtitulo || !!$slots.subtitulo?.()"
+          role="doc-subtitle"
+          class="t12 uc w700 tamarelo"
+        >
+          <slot name="subtitulo">
+            {{ $props.subtitulo }}
+          </slot>
+        </p>
+      </header>
 
       <slot :fechar-dialogo="fecharDialogo" />
     </dialog>
