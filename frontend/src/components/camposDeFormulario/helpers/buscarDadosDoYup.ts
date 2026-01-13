@@ -9,13 +9,16 @@ export default (schema:AnyObjectSchema, caminho:string) => {
     return schema.fields[caminho];
   }
 
-  return caminho.split('.').reduce((acc, key, i, array) => (!array[i + 1]
-    ? acc[key]
-    : (
-      acc?.[key]?.fields
-      || acc?.[key]?.innerType?.fields
-      || acc?.[key]
+  return caminho.split('.').reduce((acc, key, i, array) => {
+    const chaveLimpa = key.replace(/\[(\d+)\]$/, '');
+
+    return !array[i + 1]
+      ? acc[chaveLimpa]
+      : (
+        acc?.[chaveLimpa]?.fields
+      || acc?.[chaveLimpa]?.innerType?.fields
+      || acc?.[chaveLimpa]
       || acc
-    )
-  ), (schema?.fields || {})) || null;
+      );
+  }, (schema?.fields || {})) || null;
 };
