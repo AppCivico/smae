@@ -122,7 +122,9 @@ services:
   # RAM ~ 300mb max
   gotenberg:
     container_name: "${API_CONTAINER_NAME}_gotenberg"
-    image: gotenberg/gotenberg:8
+    build:
+      context: ./gotenberg/
+      dockerfile: Dockerfile
     restart: unless-stopped
     command:
       - "gotenberg"
@@ -389,7 +391,7 @@ services:
       - BACKUP_KEEP_MONTHS=12
       - HEALTHCHECK_PORT=8080
 
-  
+
 
 networks:
   smae_network:

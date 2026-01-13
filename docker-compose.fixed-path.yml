@@ -122,7 +122,9 @@ services:
   # RAM ~ 300mb max
   gotenberg:
     container_name: "${API_CONTAINER_NAME}_gotenberg"
-    image: gotenberg/gotenberg:8
+    build:
+      context: ./gotenberg/
+      dockerfile: Dockerfile
     restart: unless-stopped
     command:
       - "gotenberg"
