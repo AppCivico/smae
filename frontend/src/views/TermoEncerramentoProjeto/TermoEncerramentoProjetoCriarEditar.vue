@@ -2,7 +2,7 @@
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, useForm } from 'vee-validate';
 import {
-  onMounted, ref, watch,
+  computed, onMounted, ref, watch,
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -43,12 +43,22 @@ const { itemParaEdicao } = storeToRefs(termoEncerramentoStore);
 const { lista: listaJustificativas } = storeToRefs(tipoEncerramentoStore);
 
 const {
-  handleSubmit, resetForm, setFieldValue,
+  handleSubmit, resetForm, setFieldValue, values,
 } = useForm({
   validationSchema: schema,
 });
 
 const iconeAtualizado = ref<boolean>(false);
+
+const classeAlinhamentoIcone = computed(() => {
+  const alinhamentoIcone = {
+    Esquerda: 'justifyleft',
+    Centro: 'justifycenter',
+    Direita: 'justifyright',
+  };
+
+  return alinhamentoIcone[values.posicao_logotipo as keyof typeof alinhamentoIcone] || 'justify-start';
+});
 
 async function handleIconeChange(file: unknown) {
   if (!file || typeof file !== 'object' || file.constructor.name !== 'File') {
@@ -121,18 +131,61 @@ onMounted(async () => {
     class="flex column g2"
     @submit="onSubmit"
   >
-    <Field
-      v-slot="{ handleChange, value }"
-      name="icone"
+    <div
+      class="flex"
+      :class="classeAlinhamentoIcone"
     >
-      <InputImageProfile
-        :model-value="iconeAtualizado ? undefined : value"
-        @update:model-value="async (file) => {
-          const token = await handleIconeChange(file);
-          handleChange(token);
-        }"
-      />
-    </Field>
+      <Field
+        v-slot="{ handleChange, value }"
+        name="icone"
+      >
+        <InputImageProfile
+          :model-value="iconeAtualizado ? undefined : value"
+          @update:model-value="async (file) => {
+            const token = await handleIconeChange(file);
+            handleChange(token);
+          }"
+        />
+      </Field>
+    </div>
+
+    <div class="flex g2 flexwrap">
+      <div class="f1">
+        <SmaeLabel
+          name="posicao_logotipo"
+          :schema="schema"
+        />
+
+        <Field
+          name="posicao_logotipo"
+          as="select"
+          class="inputtext light"
+        >
+          <option value="">
+            Selecionar
+          </option>
+
+          <option
+            v-for="posicao in [
+              'Esquerda',
+              'Centro',
+              'Direita',
+            ]"
+            :key="`posicao--${posicao}`"
+            :value="posicao"
+          >
+            {{ posicao }}
+          </option>
+        </Field>
+
+        <ErrorMessage
+          class="error-msg"
+          name="posicao_logotipo"
+        />
+      </div>
+
+      <div class="f1" />
+    </div>
 
     <div class="flex g2 flexwrap">
       <div class="f1">

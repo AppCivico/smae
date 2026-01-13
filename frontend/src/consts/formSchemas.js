@@ -701,6 +701,9 @@ export const termoEncerramento = object()
   .shape({
     icone: object()
       .nullable(),
+    posicao_logotipo: string()
+      .label('Posição do logotipo')
+      .nullable(),
     nome_projeto: string()
       .label('Nome do projeto')
       .nullable(),
