@@ -54,6 +54,13 @@ const metasEdicaoEmLote = {
     listState: 'organs',
     optionValue: 'id',
     optionLabel: (item) => `${item.sigla} - ${item.descricao}`,
+    operacoes_permitidas: ['Set'],
+    explicacoes: {
+      operacao: {
+        Set: 'Substitui o item existente',
+      },
+      campo: 'A edição do órgão colaborador implica na exclusão dos colaboradores da obra',
+    },
   },
   orgao_executor_id: {
     permite_edicao_em_massa: true,
