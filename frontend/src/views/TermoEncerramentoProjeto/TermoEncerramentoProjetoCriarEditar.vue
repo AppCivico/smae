@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ProjetoStatusParaExibicao } from '@back/pp/projeto/projeto.service.ts';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, useForm } from 'vee-validate';
 import {
@@ -12,6 +13,7 @@ import SmaeNumberInput from '@/components/camposDeFormulario/SmaeNumberInput.vue
 import InputImageProfile from '@/components/InputImageProfile.vue';
 import { termoEncerramento as schema } from '@/consts/formSchemas';
 import { ModuloSistema } from '@/consts/modulosDoSistema';
+import projectStatuses from '@/consts/projectStatuses';
 import { useAlertStore } from '@/stores/alert.store';
 import { usePortfolioStore } from '@/stores/portfolios.store';
 import { useProjetosStore } from '@/stores/projetos.store';
@@ -428,6 +430,8 @@ onMounted(async () => {
 
     <div class="flex g2 flexwrap">
       <div class="f1">
+        @see
+
         <SmaeLabel
           name="status_final"
           :schema="schema"
@@ -443,15 +447,11 @@ onMounted(async () => {
           </option>
 
           <option
-            v-for="status in [
-              'Concluído',
-              'Cancelado',
-              'Suspenso',
-            ]"
-            :key="`status--${status}`"
-            :value="status"
+            v-for="(status) in projectStatuses"
+            :key="`status--${status.valor}`"
+            :value="status.nome"
           >
-            {{ status }}
+            {{ status.nome }}
           </option>
         </Field>
 

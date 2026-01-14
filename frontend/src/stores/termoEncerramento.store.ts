@@ -26,9 +26,6 @@ function obterRota(
     case ModuloSistema.Projetos:
       return `${import.meta.env.VITE_API_URL}/projeto`;
 
-    case ModuloSistema.MDO:
-      return `${import.meta.env.VITE_API_URL}/projeto`;
-
     default:
       throw new Error('Módulo não habilitado');
   }
