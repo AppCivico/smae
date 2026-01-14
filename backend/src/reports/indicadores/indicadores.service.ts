@@ -44,6 +44,7 @@ class RetornoDb {
     indicador_titulo: string;
     indicador_contexto: string;
     indicador_complemento: string;
+    indicador_tipo: string;
 
     variavel_id?: number;
     variavel_codigo?: string;
@@ -221,6 +222,7 @@ export class IndicadoresService implements ReportableService {
         i.id as indicador_id,
         i.codigo as indicador_codigo,
         i.titulo as indicador_titulo,
+        i.indicador_tipo as indicador_tipo,
         COALESCE(i.meta_id, m2.id) as meta_id,
         COALESCE(meta.titulo, m2.titulo) as meta_titulo,
         COALESCE(meta.codigo, m2.codigo) as meta_codigo,
@@ -246,6 +248,7 @@ export class IndicadoresService implements ReportableService {
         cross join (select 'Realizado'::"Serie" as serie UNION ALL select 'RealizadoAcumulado'::"Serie" as serie ) series
         join ${queryFromWhere}
         where dt.dt >= i.inicio_medicao AND dt.dt < i.fim_medicao + (select periodicidade_intervalo(i.periodicidade))
+        AND NOT (i.indicador_tipo = 'Categorica' AND series.serie = 'RealizadoAcumulado')
         `;
 
         await this.prisma.$transaction(
@@ -448,6 +451,7 @@ export class IndicadoresService implements ReportableService {
         i.id as indicador_id,
         i.codigo as indicador_codigo,
         i.titulo as indicador_titulo,
+        i.indicador_tipo as indicador_tipo,
         COALESCE(i.meta_id, m2.id) as meta_id,
         COALESCE(meta.titulo, m2.titulo) as meta_titulo,
         COALESCE(meta.codigo, m2.codigo) as meta_codigo,
@@ -477,6 +481,7 @@ export class IndicadoresService implements ReportableService {
         cross join (select 'Realizado'::"Serie" as serie UNION ALL select 'RealizadoAcumulado'::"Serie" as serie ) series
         join ${queryFromWhere}
         AND dt.dt >= i.inicio_medicao AND dt.dt < i.fim_medicao + (select periodicidade_intervalo(i.periodicidade))
+        AND NOT (i.indicador_tipo = 'Categorica' AND series.serie = 'RealizadoAcumulado')
         `;
 
         const regioes = await this.prisma.regiao.findMany({
@@ -677,6 +682,7 @@ export class IndicadoresService implements ReportableService {
             i.id as indicador_id,
             i.codigo as indicador_codigo,
             i.titulo as indicador_titulo,
+            i.indicador_tipo as indicador_tipo,
             COALESCE(i.meta_id, m2.id) as meta_id,
             COALESCE(meta.titulo, m2.titulo) as meta_titulo,
             COALESCE(meta.codigo, m2.codigo) as meta_codigo,
@@ -718,6 +724,7 @@ export class IndicadoresService implements ReportableService {
             pdm ON pdm.id = meta.pdm_id OR pdm.id = m2.pdm_id
         WHERE
             dt.dt >= i.inicio_medicao AND dt.dt < i.fim_medicao + (select periodicidade_intervalo(i.periodicidade))
+            AND NOT (i.indicador_tipo = 'Categorica' AND series.serie = 'RealizadoAcumulado')
         `;
 
         try {
@@ -1305,6 +1312,7 @@ export class IndicadoresService implements ReportableService {
                 contexto: row.indicador_contexto,
                 complemento: row.indicador_complemento,
                 id: +row.indicador_id,
+                tipo: row.indicador_tipo,
             },
             meta: row.meta_id ? { codigo: row.meta_codigo, titulo: row.meta_titulo, id: +row.meta_id } : null,
             meta_tags: row.meta_tags ? row.meta_tags : null,
@@ -1408,7 +1416,7 @@ export class IndicadoresService implements ReportableService {
             this.escapeCsvField(flatItem['data_referencia'] || ''),
             this.escapeCsvField(flatItem['serie'] || ''),
             this.escapeCsvField(flatItem['data'] || ''),
-            this.escapeCsvField(flatItem['valor'] || ''),
+            this.escapeCsvField(flatItem['indicador.tipo'] === 'Categorica' ? '' : flatItem['valor'] || ''),
             this.escapeCsvField(flatItem['eh_previa'] ? 'Sim' : 'Não'),
             this.escapeCsvField(valoresCategoricaStr),
         ];

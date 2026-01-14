@@ -10,16 +10,19 @@ DECLARE
     _variavel_categorica_id int;
     _variavel_categoria_id int;
     _categorica_valores jsonb;
+    _periodicidade "Periodicidade";
 BEGIN
     -- Busca metadata do indicador (casas_decimais e variavel_categorica_id)
     SELECT
         i.casas_decimais,
         v.variavel_categorica_id,
-        i.variavel_categoria_id
+        i.variavel_categoria_id,
+        i.periodicidade
     INTO
         _casas_decimais,
         _variavel_categorica_id,
-        _variavel_categoria_id
+        _variavel_categoria_id,
+        _periodicidade
     FROM indicador i
     LEFT JOIN variavel v ON v.id = i.variavel_categoria_id
     WHERE i.id = pIndicador_id;
@@ -64,7 +67,7 @@ BEGIN
         JOIN variavel_categorica_valor vcv ON vcv.id = (elem->>0)::int
         WHERE vcv.variavel_categorica_id = _variavel_categorica_id
           AND vcv.removido_em IS NULL;
-    ELSIF _variavel_categoria_id IS NOT NULL THEN
+    ELSIF _variavel_categoria_id IS NOT NULL AND _periodicidade != 'Mensal' THEN
         -- busca na serie_variavel diretamente
         -- estrutura: [[variavel_id, quantidade], ...] onde variavel_id aponta para variáveis que têm serie_variavel.variavel_categorica_valor_id
         SELECT jsonb_agg(
@@ -110,6 +113,37 @@ BEGIN
         JOIN variavel_categorica_valor vcv ON vcv.id = grouped.variavel_categorica_valor_id
             AND vcv.variavel_categorica_id = _variavel_categorica_id
             AND vcv.removido_em IS NULL;
+        ELSIF _variavel_categoria_id IS NOT NULL AND _periodicidade = 'Mensal' THEN
+            -- Buscando no serie_variavel, vamos utilizar variavel_categorica_valor_id
+            SELECT jsonb_agg(
+                jsonb_build_object(
+                    'id', vcv_id,
+                    'titulo', vcv_titulo,
+                    'valor_variavel', vcv_valor_variavel,
+                    'quantidade', total_count
+                )
+                ORDER BY vcv_valor_variavel
+            )
+            INTO _categorica_valores
+            FROM (
+                SELECT 
+                    vcv.id as vcv_id,
+                    vcv.titulo as vcv_titulo,
+                    vcv.valor_variavel as vcv_valor_variavel,
+                    COUNT(*) as total_count
+                FROM serie_variavel sv
+                JOIN variavel_categorica_valor vcv ON vcv.id = sv.variavel_categorica_valor_id
+                    AND vcv.variavel_categorica_id = _variavel_categorica_id
+                    AND vcv.removido_em IS NULL
+                WHERE sv.variavel_id = _variavel_categoria_id
+                    AND sv.serie = pSerie
+                    AND sv.data_valor <= pPeriodo
+                    AND sv.data_valor > (pPeriodo - (janela || ' months')::interval)::date
+                    AND sv.conferida = true
+                GROUP BY vcv.id, vcv.titulo, vcv.valor_variavel, sv.data_valor
+                ORDER BY sv.data_valor DESC
+                LIMIT 1
+            ) latest_sv;
     END IF;
 
     _result := jsonb_build_object(
