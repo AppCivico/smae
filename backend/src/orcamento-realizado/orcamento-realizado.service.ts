@@ -1526,39 +1526,91 @@ export class OrcamentoRealizadoService {
 
         const logger = LoggerWithLog('Orçamento Realizado: Automação de Abertura/Fechamento');
 
-        await this.prisma.$transaction(
-            async (prismaTx: Prisma.TransactionClient) => {
-                logger.log(`Iniciando verificação de abertura/fechamento do orçamento realizado`);
-                logger.debug(`Adquirindo lock para abertura/fechamento do orçamento realizado das metas`);
-                const locked: {
-                    locked: boolean;
-                }[] = await prismaTx.$queryRaw`SELECT
-                pg_try_advisory_xact_lock(${JOB_PDM_ORCAMENTO_CONCLUIDO}) as locked
-            `;
-                if (!locked[0].locked) {
-                    logger.debug(`Já está em processamento...`);
-                    return;
+        // Search for all PDMs first
+        logger.log(`Iniciando verificação de abertura/fechamento do orçamento realizado`);
+        const pdms = await this.prisma.pdm.findMany({
+            where: { ativo: true },
+            select: { id: true },
+        });
+        logger.log(`Encontrados ${pdms.length} PDMs ativos para processar`);
+        if (!pdms.length) {
+            logger.log(`Nenhum PDM ativo encontrado, encerrando processamento`);
+            return;
+        }
+
+        let saveLog = true;
+        try {
+            await this.prisma.$transaction(
+                async (prismaTx: Prisma.TransactionClient) => {
+                    logger.debug(`Adquirindo lock para abertura/fechamento do orçamento realizado das metas`);
+                    const locked: {
+                        locked: boolean;
+                    }[] = await prismaTx.$queryRaw`SELECT
+                    pg_try_advisory_xact_lock(${JOB_PDM_ORCAMENTO_CONCLUIDO}) as locked
+                `;
+                    if (!locked[0].locked) {
+                        saveLog = false;
+                        logger.debug(`Já está em processamento...`);
+                        return;
+                    }
+
+                    // Processa cada PDM individualmente, para isolar falhas
+                    for (const pdm of pdms) {
+                        const pdmLogger = LoggerWithLog(`Orçamento Realizado: Automação PDM ${pdm.id}`);
+
+                        try {
+                            await this.prisma.$transaction(
+                                async (pdmTx: Prisma.TransactionClient) => {
+                                    pdmLogger.log(`Iniciando processamento do PDM ${pdm.id}`);
+                                    await this.verificaOrcamentoAberturaFechamento(pdmLogger, pdm.id);
+
+                                    await pdmLogger.saveLogs(pdmTx, {
+                                        pessoa_id: -1,
+                                        ip: '0.0.0.0',
+                                    });
+                                    pdmLogger.log(`PDM ${pdm.id} processado com sucesso`);
+                                },
+                                {
+                                    maxWait: 30000,
+                                    timeout: 60 * 1000 * 10,
+                                    isolationLevel: 'Serializable',
+                                }
+                            );
+                        } catch (error) {
+                            logger.error(`Erro ao processar PDM ${pdm.id}: ${error}`);
+                            pdmLogger.error(`Erro no processamento: ${error}`);
+                            // Save PDM logger even on error (without transaction)
+                            try {
+                                await pdmLogger.saveLogs(this.prisma, {
+                                    pessoa_id: -1,
+                                    ip: '0.0.0.0',
+                                });
+                            } catch (saveError) {
+                                logger.error(`Erro ao salvar logs do PDM ${pdm.id}: ${saveError}`);
+                            }
+                        }
+                    }
+
+                    logger.log(`Verificação concluída com sucesso`);
+                },
+                {
+                    maxWait: 30000,
+                    timeout: 60 * 1000 * 15,
+                    isolationLevel: 'Serializable',
                 }
-
-                const pdms = await this.prisma.pdm.findMany({
-                    where: { ativo: true },
-                    select: { id: true },
-                });
-                for (const pdm of pdms) await this.verificaOrcamentoAberturaFechamento(logger, pdm.id);
-
-                // Salvar logs da execução
-                await logger.saveLogs(prismaTx, {
-                    pessoa_id: -1,
-                    ip: '0.0.0.0',
-                });
-                logger.log(`Verificação concluída com sucesso`);
-            },
-            {
-                maxWait: 30000,
-                timeout: 60 * 1000 * 15,
-                isolationLevel: 'Serializable',
+            );
+        } finally {
+            // Save main logger outside transaction, even if it fails
+            try {
+                if (saveLog)
+                    await logger.saveLogs(this.prisma, {
+                        pessoa_id: -1,
+                        ip: '0.0.0.0',
+                    });
+            } catch (error) {
+                this.logger.error(`Erro ao salvar logs principais: ${error}`);
             }
-        );
+        }
     }
 
     async verificaOrcamentoAberturaFechamento(logger: LoggerWithLog, pdmId: number) {
