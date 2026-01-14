@@ -1,10 +1,18 @@
 <script setup>
-import { defineProps, ref, watch } from 'vue';
+import {
+  defineProps, ref, useId, watch,
+} from 'vue';
+
+const elementId = useId();
 
 const props = defineProps({
   modelValue: {
     type: String,
     default: '',
+  },
+  labelBotao: {
+    type: String,
+    default: 'carregar foto',
   },
 });
 
@@ -19,6 +27,10 @@ watch(() => props.modelValue, (newValue, oldValue) => {
 const emit = defineEmits(['update:modelValue']);
 
 const handleFile = (file) => {
+  if (imgSrc.value) {
+    URL.revokeObjectURL(imgSrc.value);
+  }
+
   const fileUrl = URL.createObjectURL(file);
   imgSrc.value = fileUrl;
   emit('update:modelValue', file);
@@ -51,7 +63,7 @@ const handleDrop = (event) => {
         >
       </div>
       <input
-        id="shapefile"
+        :id="elementId"
         type="file"
         accept=".jpg,.png,.jpeg"
         class="input-image-profile__input"
@@ -61,7 +73,7 @@ const handleDrop = (event) => {
         <svg
           width="20"
           height="20"
-        ><use xlink:href="#i_+" /></svg><span>Carregar foto</span>
+        ><use xlink:href="#i_+" /></svg><span class="flex">{{ $props.labelBotao }}</span>
       </p>
     </label>
   </div>
@@ -97,9 +109,11 @@ const handleDrop = (event) => {
     }
 
     &__label{
-      max-width: 140px;
-      max-height: 250px;
-      margin: 15px auto;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      margin: 15px 0;
+      white-space: nowrap;
     }
 }
 </style>

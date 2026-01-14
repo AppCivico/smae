@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ProjetoStatusParaExibicao } from '@back/pp/projeto/projeto.service.ts';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, useForm } from 'vee-validate';
 import {
@@ -23,7 +22,6 @@ import { useTipoEncerramentoStore } from '@/stores/tipoEncerramento.store';
 type Props = {
   escopoId: number;
 };
-
 const props = defineProps<Props>();
 
 const route = useRoute();
@@ -59,7 +57,8 @@ const classeAlinhamentoIcone = computed(() => {
     Direita: 'justifyright',
   };
 
-  return alinhamentoIcone[values.posicao_logotipo as keyof typeof alinhamentoIcone] || 'justify-start';
+  return alinhamentoIcone[values.posicao_logotipo as keyof typeof alinhamentoIcone]
+    || alinhamentoIcone.Esquerda;
 });
 
 async function handleIconeChange(file: unknown) {
@@ -143,6 +142,7 @@ onMounted(async () => {
       >
         <InputImageProfile
           :model-value="iconeAtualizado ? undefined : value"
+          label-botao="carregar ícone"
           @update:model-value="async (file) => {
             const token = await handleIconeChange(file);
             handleChange(token);
@@ -430,8 +430,6 @@ onMounted(async () => {
 
     <div class="flex g2 flexwrap">
       <div class="f1">
-        @see
-
         <SmaeLabel
           name="status_final"
           :schema="schema"

@@ -25,10 +25,6 @@ const linhasMapeadas = computed<SessaoDeDetalheLinhas>(() => (
   props.linhas.map((linha) => linha.filter((item) => !item.esconder))
 ));
 
-function valorEhArray(valor: PossiveisValores): boolean {
-  return !!Array.isArray(valor);
-}
-
 function obterLinhas(quantidadeLinhas: number): number {
   if (props.quantidadeColunas) {
     return props.quantidadeColunas;
@@ -83,7 +79,7 @@ function obterLinhas(quantidadeLinhas: number): number {
         </h5>
 
         <h6
-          v-if="!valorEhArray(item.valor)"
+          v-if="!Array.isArray(item.valor)"
           class="resumo-sessao__item-valor"
         >
           {{ item.valor }}
