@@ -4,58 +4,117 @@ import { computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 
 import type { SessaoDeDetalheLinhas } from '@/components/ResumoSessao.vue';
-import { ModuloSistema } from '@/consts/modulosDoSistema';
 import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
 import dinheiro from '@/helpers/dinheiro';
 import removerHtml from '@/helpers/html/removerHtml';
+import { usePortfolioStore } from '@/stores/portfolios.store';
+import { useProjetosStore } from '@/stores/projetos.store';
 import { useTermoEncerramentoStore } from '@/stores/termoEncerramento.store';
 
 type Props = {
   escopoId: number;
 };
 
-type SessaoDeDetalheOptions = 'datas' | 'custos' | 'status' | 'encerramento';
-
-type SessaoDeDetalhe = {
-  [key in SessaoDeDetalheOptions]: {
-    titulo?: string,
-    linhas: SessaoDeDetalheLinhas,
-    quantidadeColunas?: number
-  }
+type SessaoResumo = {
+  titulo?: string;
+  linhas: SessaoDeDetalheLinhas;
+  quantidadeColunas?: number;
 };
 
 const props = defineProps<Props>();
 
 const route = useRoute();
 
+// @ts-expect-error - VITE_API_URL está definido no ambiente
+const BASE_URL = `${import.meta.env.VITE_API_URL}`;
+
 const termoEncerramentoStore = useTermoEncerramentoStore(route.meta.entidadeMãe);
+const projetosStore = useProjetosStore();
+const portfoliosStore = usePortfolioStore();
 
 const {
   emFoco,
   chamadasPendentes,
 } = storeToRefs(termoEncerramentoStore);
 
-onMounted(async () => {
-  await termoEncerramentoStore.buscarItem(props.escopoId);
+const classeAlinhamentoIcone = computed(() => {
+  const alinhamentoIcone = {
+    Esquerda: 'justifyleft',
+    Centro: 'justifycenter',
+    Direita: 'justifyright',
+  };
+
+  return alinhamentoIcone[emFoco.value?.posicao_logotipo as keyof typeof alinhamentoIcone] || 'justify-start';
 });
 
-function formatarData(data: Date | string | null): string {
-  if (!data) return '-';
+const urlIcone = computed(() => {
+  if (!emFoco.value?.icone) return null;
+
+  if (emFoco.value.icone.download_token.includes('http')) {
+    return emFoco.value.icone;
+  }
+
+  return `${BASE_URL}/download/${emFoco.value.icone.download_token}`;
+});
+
+async function verificarIcone() {
+  if (!emFoco.value || emFoco.value.icone) return;
+
+  const projetoId = emFoco.value.projeto_id;
+
+  if (projetosStore.emFoco?.id !== projetoId) {
+    await projetosStore.buscarItem(projetoId);
+  }
+
+  const projeto = projetosStore.emFoco;
+  if (!projeto) return;
+
+  if (portfoliosStore.emFoco?.id !== projeto.portfolio_id) {
+    await portfoliosStore.buscarItem(projeto.portfolio_id);
+  }
+
+  const portfolio = portfoliosStore.emFoco;
+
+  if (portfolio?.icone_impressao) {
+    if (emFoco.value) {
+      emFoco.value.icone = portfolio.icone_impressao.download_token;
+    }
+  }
+}
+
+onMounted(async () => {
+  await termoEncerramentoStore.buscarItem(props.escopoId);
+  await verificarIcone();
+});
+
+function formatarData(data: Date | string | null): string | null {
+  if (!data) {
+    return '-';
+  }
+
   return dateIgnorarTimezone(String(data), 'dd/MM/yyyy');
 }
 
 function formatarMoeda(valor: number | null): string {
-  if (valor === null || valor === undefined) return '-';
+  if (valor === null || valor === undefined) {
+    return '-';
+  }
+
   return dinheiro(valor, { style: 'currency' });
 }
 
 function formatarTexto(texto: string | null): string {
-  if (!texto) return '-';
+  if (!texto) {
+    return '-';
+  }
+
   return texto;
 }
 
 function formatarJustificativa(): string {
-  if (!emFoco.value?.justificativa) return '-';
+  if (!emFoco.value?.justificativa) {
+    return '-';
+  }
 
   let resultado = emFoco.value.justificativa.descricao;
 
@@ -69,7 +128,7 @@ function formatarJustificativa(): string {
   return resultado;
 }
 
-const sessaoPrincipal = computed(() => {
+const sessaoPrincipal = computed<SessaoResumo[]>(() => {
   if (!emFoco.value) {
     return [];
   }
@@ -92,7 +151,7 @@ const sessaoPrincipal = computed(() => {
   ];
 });
 
-const sessoes = computed<SessaoDeDetalhe | null>(() => {
+const sessoes = computed<SessaoDeDetalheLinhas | null>(() => {
   if (!emFoco.value) {
     return null;
   }
@@ -137,11 +196,28 @@ const sessoes = computed<SessaoDeDetalhe | null>(() => {
 <template>
   <header class="flex spacebetween center mb2 g2">
     <TítuloDePágina />
+
     <hr class="f1">
-    <SmaeLink :to="{ name: '.termoEncerramento.editar' }">
+
+    <SmaeLink
+      :to="{ name: '.termoEncerramento.editar' }"
+      class="btn big"
+    >
       Editar
     </SmaeLink>
   </header>
+
+  <div
+    v-if="urlIcone"
+    class="flex mb2"
+    :class="classeAlinhamentoIcone"
+  >
+    <img
+      :src="urlIcone"
+      alt="Ícone do termo de encerramento"
+      class="icone-termo"
+    >
+  </div>
 
   <section
     v-if="sessoes"
@@ -167,5 +243,11 @@ const sessoes = computed<SessaoDeDetalhe | null>(() => {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+}
+
+.icone-termo {
+  max-width: 200px;
+  max-height: 200px;
+  object-fit: contain;
 }
 </style>

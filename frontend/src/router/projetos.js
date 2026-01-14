@@ -301,6 +301,15 @@ export default {
           path: 'termo-encerramento',
           meta: {
             entidadeMãe: ModuloSistema.Projetos,
+            limitarÀsPermissões: [
+              'Projeto.administrador',
+              'Projeto.administrador_no_orgao',
+              'SMAE.gestor_de_projeto',
+              'SMAE.colaborador_de_projeto',
+              'SMAE.gestor_de_projeto',
+              'SMAE.colaborador_de_projeto',
+              'SMAE.espectador_de_projeto',
+            ],
           },
           children: [
             {
@@ -314,11 +323,10 @@ export default {
                 '@/views/TermoEncerramentoProjeto/TermoEncerramentoProjetoResumo.vue'
               ),
               meta: {
-                título: 'Termo encerramento resumo',
+                título: 'Termo de Encerramento',
                 rotasParaMigalhasDePão: [
                   'projetosListar',
                   'projetosResumo',
-                  `${ModuloSistema.Projetos}.termoEncerramento.resumo`,
                 ],
               },
             },
@@ -333,7 +341,8 @@ export default {
                 '@/views/TermoEncerramentoProjeto/TermoEncerramentoProjetoCriarEditar.vue'
               ),
               meta: {
-                título: 'Termo encerramento editar',
+                título: 'Editar termo de encerramento',
+                tituloParaMigalhaDePao: 'Editar',
                 rotasParaMigalhasDePão: [
                   'projetosListar',
                   'projetosResumo',
