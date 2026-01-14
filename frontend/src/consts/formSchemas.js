@@ -727,6 +727,10 @@ export const termoEncerramento = object()
     justificativa_id: number()
       .label('Justificativa do encerramento')
       .nullable(),
+    justificativa_complemento: string()
+      .label('Informações adicionais')
+      .max(2000)
+      .nullable(),
     nome_projeto: string()
       .label('Nome do projeto')
       .nullable(),

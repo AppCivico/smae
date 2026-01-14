@@ -347,6 +347,7 @@ export default {
               meta: {
                 título: 'Editar termo de encerramento',
                 tituloParaMigalhaDePao: 'Editar',
+                rotaDeEscape: `${ModuloSistema.Projetos}.termoEncerramento.resumo`,
                 rotasParaMigalhasDePão: [
                   'projetosListar',
                   'projetosResumo',
