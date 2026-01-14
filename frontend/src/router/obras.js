@@ -93,12 +93,6 @@ export default {
               'obrasOrçamentoRealizado',
             ],
           },
-          {
-            título: 'Encerramento',
-            rotas: [
-              `${ModuloSistema.MDO}.termoEncerramento.resumo`,
-            ],
-          },
         ],
       },
       children: [

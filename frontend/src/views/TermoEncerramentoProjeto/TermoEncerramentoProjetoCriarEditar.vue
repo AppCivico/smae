@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ProjetoStatusParaExibicao } from '@back/pp/projeto/projeto.service.ts';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, useForm } from 'vee-validate';
 import {
@@ -443,8 +442,6 @@ onMounted(async () => {
 
     <div class="flex g2 flexwrap">
       <div class="f1">
-        @see
-
         <SmaeLabel
           name="status_final"
           :schema="schema"

@@ -193,7 +193,10 @@ export default {
           ];
         },
 
-        rotasParaMigalhasDePão: ['projetosListar', 'projetosResumo'],
+        rotasParaMigalhasDePão: [
+          'projetosListar',
+          'projetosResumo',
+        ],
       },
 
       children: [
@@ -243,7 +246,10 @@ export default {
             projetoId: Number.parseInt(params.projetoId, 10) || undefined,
           }),
           meta: {
-            rotasParaMigalhasDePão: ['projetosListar', 'projetosResumo'],
+            rotasParaMigalhasDePão: [
+              'projetosListar',
+              'projetosResumo',
+            ],
             título: () => {
               const projetoStoreEmFoco = useProjetosStore()?.emFoco?.nome;
               if (!projetoStoreEmFoco) {
