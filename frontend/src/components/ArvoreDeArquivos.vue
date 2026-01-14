@@ -103,7 +103,7 @@ const éPossívelAbrir = (item) => !item.children?.length
 
           <SmaeLink
             v-if="props.rotaDeAdição && !apenasLeitura"
-            class="like-a__text arvore-de-arquivos__adicionar"
+            class="tipinfo left like-a__text arvore-de-arquivos__adicionar"
             :aria-label="`adicionar arquivo em ${item.caminho}`"
             :to="{
               ...props.rotaDeAdição,
@@ -116,6 +116,7 @@ const éPossívelAbrir = (item) => !item.children?.length
               width="20"
               height="20"
             ><use xlink:href="#i_+" /></svg>
+            <div>Adicionar arquivo à "{{ item.caminho }}"</div>
           </SmaeLink>
         </span>
         <ArvoreDeArquivos
@@ -177,7 +178,7 @@ const éPossívelAbrir = (item) => !item.children?.length
 
                 <SmaeLink
                   v-if="props.rotaDeEdição && !apenasLeitura"
-                  class="like-a__text arvore-de-arquivos__editar"
+                  class="tipinfo left like-a__text arvore-de-arquivos__editar"
                   :aria-label="`editar propriedades de ${arquivo?.arquivo?.nome_original}`"
                   :to="{
                     ...props.rotaDeEdição,
@@ -190,11 +191,12 @@ const éPossívelAbrir = (item) => !item.children?.length
                     width="20"
                     height="20"
                   ><use xlink:href="#i_edit" /></svg>
+                  <div>Editar "{{ arquivo?.arquivo?.nome_original }}"</div>
                 </SmaeLink>
                 <button
                   v-if="oArquivoEhEditavel(apenasLeitura, arquivo.pode_editar)"
                   type="button"
-                  class="like-a__text arvore-de-arquivos__apagar"
+                  class="tipinfo left like-a__text arvore-de-arquivos__apagar"
                   aria-label="apagar"
                   @click="$emit('apagar', {
                     id: arquivo?.id,
@@ -205,6 +207,7 @@ const éPossívelAbrir = (item) => !item.children?.length
                     width="20"
                     height="20"
                   ><use xlink:href="#i_waste" /></svg>
+                  <div>Apagar "{{ arquivo?.arquivo?.nome_original }}"</div>
                 </button>
 
               </span>
