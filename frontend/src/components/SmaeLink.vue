@@ -33,7 +33,10 @@ const props = defineProps({
     default: false,
   },
   download: {
-    type: Boolean,
+    type: [
+      Boolean,
+      String,
+    ],
     default: undefined,
   },
 });
@@ -80,6 +83,8 @@ const propriedadesManipuladas = computed(() => {
     v-bind="$attrs"
     :href="$props.to"
     target="_blank"
+    :download="$props.download"
+    rel="noopener noreferrer"
   >
     <slot />
   </a>
