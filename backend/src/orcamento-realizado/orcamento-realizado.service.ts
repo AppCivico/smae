@@ -4,8 +4,8 @@ import { Prisma } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { SmaeConfigService } from 'src/common/services/smae-config.service';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
-import { LoggerWithLog } from '../common/LoggerWithLog';
 import { FormataNotaEmpenho } from '../common/FormataNotaEmpenho';
+import { LoggerWithLog } from '../common/LoggerWithLog';
 import { TipoPdmType } from '../common/decorators/current-tipo-pdm';
 import { JOB_PDM_ORCAMENTO_CONCLUIDO } from '../common/dto/locks';
 import { BatchRecordWithId, RecordWithId } from '../common/dto/record-with-id.dto';
@@ -1544,7 +1544,7 @@ export class OrcamentoRealizadoService {
                 // Salvar logs da execução
                 await logger.saveLogs(prismaTx, {
                     pessoa_id: -1,
-                    ip: 'cron',
+                    ip: '0.0.0.0',
                 });
                 logger.log(`Verificação concluída com sucesso`);
             },

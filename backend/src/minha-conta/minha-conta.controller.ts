@@ -56,6 +56,7 @@ export class MinhaContaController {
                 orgao_id: user.orgao_id,
                 flags: user.flags,
                 modulos_sobrescritos,
+                ip: user.ip,
             } satisfies SessaoDto,
         };
     }

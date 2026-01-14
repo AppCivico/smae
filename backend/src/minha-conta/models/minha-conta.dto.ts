@@ -1,10 +1,7 @@
 import { ApiProperty, PickType } from '@nestjs/swagger';
 import { ModuloSistema } from '@prisma/client';
-import { PessoaFromJwtBase } from '../../auth/models/PessoaFromJwtBase';
-import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
-import { Transform } from 'class-transformer';
-import { DateTransform } from '../../auth/transforms/date.transform';
 import { IsDateYMD } from '../../auth/decorators/date.decorator';
+import { PessoaFromJwtBase } from '../../auth/models/PessoaFromJwtBase';
 
 export class SessaoDto extends PickType(PessoaFromJwtBase, [
     'id',
@@ -14,6 +11,7 @@ export class SessaoDto extends PickType(PessoaFromJwtBase, [
     'sistemas',
     'orgao_id',
     'flags',
+    'ip',
 ]) {
     @ApiProperty({ description: 'Lista de Módulos', enum: ModuloSistema, enumName: 'ModuloSistema' })
     sistemas_disponiveis: ModuloSistema[];
