@@ -6,8 +6,10 @@ LOG_DIR="/usr/src/app/logs"
 LOG_FILE="$LOG_DIR/app.log"
 MAX_LOG_SIZE=$((10 * 1024 * 1024)) # 10MB
 RESTART_TRIGGER_FILE="/tmp/restart-api"
-USE_FILE_LOG="${USE_FILE_LOG:-0}" # Default to 0 if not set
+USE_FILE_LOG="${USE_FILE_LOG:-1}" # Default to 1 if not set
 
+export USE_FILE_LOG
+export LOG_FILE
 # --- State ---
 NODE_PID=""
 LOG_ROTATOR_PID=""
