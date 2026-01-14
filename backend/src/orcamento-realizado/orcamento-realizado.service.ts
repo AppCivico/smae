@@ -1607,28 +1607,21 @@ export class OrcamentoRealizadoService {
         });
         logger.log(`Encontradas ${metas.length} metas ativas para processar`);
 
-        const configOrcamentoCorrente = await this.prisma.pdmOrcamentoConfig.findFirst({
+        // Busca a configuração para o ano do orçamento que está sendo gerenciado
+        const configOrcamento = await this.prisma.pdmOrcamentoConfig.findFirst({
             where: {
                 pdm: { ativo: true },
-                ano_referencia: anoAtual,
+                ano_referencia: anoBudget, // Usa o ano do orçamento (2025 em Jan/2026)
             },
         });
 
-        const configOrcamentoAbertura =
-            mesAtual === 1
-                ? await this.prisma.pdmOrcamentoConfig.findFirst({
-                      where: {
-                          pdm: { ativo: true },
-                          ano_referencia: anoAtual - 1,
-                      },
-                  })
-                : configOrcamentoCorrente;
-
-        if (!configOrcamentoAbertura) {
-            logger.warn(`Não encontrado configuração para o ano ${anoBudget}`);
+        if (!configOrcamento) {
+            logger.warn(`Não encontrada configuração para o ano ${anoBudget}`);
+            logger.log(`Ignorando processamento automático de abertura/fechamento`);
             return;
         }
         logger.log(`Configuração de orçamento carregada para o ano ${anoBudget}`);
+        logger.debug(`Meses disponíveis na configuração: ${JSON.stringify(configOrcamento.execucao_disponivel_meses)}`);
 
         for (const meta of metas) {
             // Obter o último registro de controle de conclusão
@@ -1640,64 +1633,68 @@ export class OrcamentoRealizadoService {
             )[0];
 
             // ============= LÓGICA DE ABERTURA =============
-            if (configOrcamentoAbertura) {
-                const mesInclude = configOrcamentoAbertura.execucao_disponivel_meses.includes(mesBudget);
-                logger.debug(
-                    `Meta ${meta.id}: Verificando abertura: mesBudget=${mesBudget}, incluído=${mesInclude}, ` +
-                        `ultimoControle=${JSON.stringify(ultimoControleAbertura)}`
-                );
+            const mesInclude = configOrcamento.execucao_disponivel_meses.includes(mesBudget);
+            logger.debug(
+                `Meta ${meta.id}: Verificando abertura: mesBudget=${mesBudget}, incluído=${mesInclude}, ` +
+                    `ultimoControle=${JSON.stringify(ultimoControleAbertura)}`
+            );
 
-                if (
-                    mesInclude &&
-                    (!ultimoControleAbertura ||
-                        ultimoControleAbertura.referencia_dia_abertura !== pdm.orcamento_dia_abertura ||
-                        ultimoControleAbertura.ano_referencia !== anoAtual ||
-                        ultimoControleAbertura.referencia_mes !== mesAtual)
-                ) {
-                    logger.log(`Meta ${meta.id}: Abrindo orçamento ${mesBudget}/${anoBudget}`);
-                    const now = new Date(Date.now());
-                    await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient): Promise<void> => {
-                        // Abrir o orçamento para o ano do budget (ex: 2025)
-                        await this.updateOrcamentoConcluido(
-                            prismaTxn,
-                            meta,
-                            anoBudget, // Ano do orçamento (2025 em Jan/2026)
-                            false, // execucao_concluida
-                            botUser,
-                            now
-                        );
+            if (
+                mesInclude &&
+                diaAtual >= pdm.orcamento_dia_abertura &&
+                (!ultimoControleAbertura ||
+                    ultimoControleAbertura.referencia_dia_abertura !== pdm.orcamento_dia_abertura ||
+                    ultimoControleAbertura.ano_referencia !== anoAtual ||
+                    ultimoControleAbertura.referencia_mes !== mesAtual)
+            ) {
+                logger.log(`Meta ${meta.id}: Abrindo orçamento ${mesBudget}/${anoBudget}`);
+                const now = new Date(Date.now());
+                await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient): Promise<void> => {
+                    // Abrir o orçamento para o ano do budget (ex: 2025)
+                    await this.updateOrcamentoConcluido(
+                        prismaTxn,
+                        meta,
+                        anoBudget, // Ano do orçamento (2025 em Jan/2026)
+                        false, // execucao_concluida
+                        botUser,
+                        now
+                    );
 
-                        // Registrar a ação no ano atual (ex: 2026)
-                        await prismaTxn.pdmOrcamentoRealizadoControleConcluido.create({
-                            data: {
-                                meta_id: meta.id,
-                                ano_referencia: anoAtual, // Ano da ação (2026 em Jan/2026)
-                                criado_em: now,
-                                referencia_mes: mesAtual,
-                                referencia_dia_abertura: pdm.orcamento_dia_abertura,
-                                execucao_concluida: false,
-                            },
-                        });
-
-                        return;
+                    // Registrar a ação no ano atual (ex: 2026)
+                    await prismaTxn.pdmOrcamentoRealizadoControleConcluido.create({
+                        data: {
+                            meta_id: meta.id,
+                            ano_referencia: anoAtual, // Ano da ação (2026 em Jan/2026)
+                            criado_em: now,
+                            referencia_mes: mesAtual,
+                            referencia_dia_abertura: pdm.orcamento_dia_abertura,
+                            execucao_concluida: false,
+                        },
                     });
-                }
+
+                    return;
+                });
             } else {
-                logger.log(
-                    `Não há configuração para o ano anterior ${anoAtual - 1}, ignorando abertura automática de janeiro`
-                );
+                if (!mesInclude) {
+                    logger.debug(
+                        `Meta ${meta.id}: Mês ${mesBudget} não está nos meses disponíveis, ignorando abertura`
+                    );
+                } else if (diaAtual < pdm.orcamento_dia_abertura) {
+                    logger.debug(
+                        `Meta ${meta.id}: Dia atual ${diaAtual} < dia de abertura ${pdm.orcamento_dia_abertura}, aguardando`
+                    );
+                } else {
+                    logger.debug(`Meta ${meta.id}: Abertura já foi processada para este período`);
+                }
             }
 
             // ============= LÓGICA DE FECHAMENTO =============
-            // Verificação de fechamento - só fecha se o mês anterior estava na configuração de meses disponíveis
-            const mesAnteriorParaFechar = mesAtual === 1 ? 12 : mesAtual - 1;
-            const configParaFechamento = mesAtual === 1 ? configOrcamentoAbertura : configOrcamentoCorrente;
-            const deveFechar = configParaFechamento?.execucao_disponivel_meses.includes(mesAnteriorParaFechar) ?? false;
+            // Verifica se o mês do orçamento está na configuração de meses disponíveis
+            const deveFechar = configOrcamento.execucao_disponivel_meses.includes(mesBudget);
 
             logger.debug(
-                `Meta ${meta.id}: Verificando fechamento, diaAtual=${diaAtual} >= ` +
-                    `dia_fechamento=${pdm.orcamento_dia_fechamento}, deveFechar=${deveFechar}, ` +
-                    `mesAnteriorParaFechar=${mesAnteriorParaFechar}`
+                `Meta ${meta.id}: Verificando fechamento: mesBudget=${mesBudget}, diaAtual=${diaAtual} >= ` +
+                    `dia_fechamento=${pdm.orcamento_dia_fechamento}, deveFechar=${deveFechar}`
             );
 
             if (
@@ -1735,6 +1732,18 @@ export class OrcamentoRealizadoService {
 
                     return;
                 });
+            } else {
+                if (!deveFechar) {
+                    logger.debug(
+                        `Meta ${meta.id}: Mês ${mesBudget} não está nos meses disponíveis, ignorando fechamento`
+                    );
+                } else if (diaAtual < pdm.orcamento_dia_fechamento) {
+                    logger.debug(
+                        `Meta ${meta.id}: Dia atual ${diaAtual} < dia de fechamento ${pdm.orcamento_dia_fechamento}, aguardando`
+                    );
+                } else {
+                    logger.debug(`Meta ${meta.id}: Fechamento já foi processado para este período`);
+                }
             }
         }
     }
