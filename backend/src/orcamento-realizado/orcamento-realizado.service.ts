@@ -1539,7 +1539,12 @@ export class OrcamentoRealizadoService {
                     logger.debug(`Já está em processamento...`);
                     return;
                 }
-                await this.verificaOrcamentoAberturaFechamento(logger);
+
+                const pdms = await this.prisma.pdm.findMany({
+                    where: { ativo: true },
+                    select: { id: true },
+                });
+                for (const pdm of pdms) await this.verificaOrcamentoAberturaFechamento(logger, pdm.id);
 
                 // Salvar logs da execução
                 await logger.saveLogs(prismaTx, {
@@ -1556,7 +1561,7 @@ export class OrcamentoRealizadoService {
         );
     }
 
-    async verificaOrcamentoAberturaFechamento(logger: LoggerWithLog) {
+    async verificaOrcamentoAberturaFechamento(logger: LoggerWithLog, pdmId: number) {
         // Obter a data atual
         const hoje = new Date();
         const diaAtual = hoje.getDate();
@@ -1573,7 +1578,7 @@ export class OrcamentoRealizadoService {
 
         // Obter as informações do PDM
         const pdm = await this.prisma.pdm.findFirst({
-            where: { ativo: true },
+            where: { ativo: true, id: pdmId },
         });
         if (!pdm) {
             logger.warn('Nenhum PDM ativo encontrado');
