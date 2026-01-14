@@ -1827,6 +1827,9 @@ export const portfolio = object({
         .label('Pessoa')
         .required(),
     ),
+  icone_impressao: string()
+    .label('Ícone para impressão')
+    .nullable(),
   nivel_maximo_tarefa: number()
     .label('Nível máximo de aninhamento de tarefas')
     .min(1)
