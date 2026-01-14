@@ -4,6 +4,7 @@ import { computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 
 import type { SessaoDeDetalheLinhas } from '@/components/ResumoSessao.vue';
+import { termoEncerramento as schema } from '@/consts/formSchemas';
 import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
 import dinheiro from '@/helpers/dinheiro';
 import removerHtml from '@/helpers/html/removerHtml';
@@ -137,15 +138,28 @@ const sessaoPrincipal = computed<SessaoResumo[]>(() => {
     {
       linhas: [
         [
-          { label: 'Projeto', valor: formatarTexto(emFoco.value.nome_projeto) },
-          { label: 'Órgão Responsável', valor: formatarTexto(emFoco.value.orgao_responsavel_nome) },
-          { label: 'Portfólio', valor: formatarTexto(emFoco.value.portfolios_nomes) },
+          {
+            label: schema.fields.nome_projeto.spec.label,
+            valor: formatarTexto(emFoco.value.nome_projeto),
+          },
+          {
+            label: schema.fields.orgao_responsavel_nome.spec.label,
+            valor: formatarTexto(emFoco.value.orgao_responsavel_nome),
+          },
+          {
+            label: schema.fields.portfolios_nomes.spec.label,
+            valor: formatarTexto(emFoco.value.portfolios_nomes),
+          },
         ],
       ],
     },
     {
       linhas: [
-        [{ label: 'Objeto', valor: removerHtml(emFoco.value.objeto), col: 3 }],
+        [{
+          label: schema.fields.objeto.spec.label,
+          valor: removerHtml(emFoco.value.objeto),
+          col: 3,
+        }],
       ],
     },
   ];
@@ -158,36 +172,64 @@ const sessoes = computed<SessaoDeDetalheLinhas | null>(() => {
 
   return [
     [
-      { label: 'Data de início planejado', valor: formatarData(emFoco.value.previsao_inicio) },
-      { label: 'Data de término planejado', valor: formatarData(emFoco.value.previsao_termino) },
+      {
+        label: schema.fields.previsao_inicio.spec.label,
+        valor: formatarData(emFoco.value.previsao_inicio),
+      },
+      {
+        label: schema.fields.previsao_termino.spec.label,
+        valor: formatarData(emFoco.value.previsao_termino),
+      },
     ],
     [
-      { label: 'Data de início real', valor: formatarData(emFoco.value.data_inicio_real) },
-      { label: 'Data de término real', valor: formatarData(emFoco.value.data_termino_real) },
+      {
+        label: schema.fields.data_inicio_real.spec.label,
+        valor: formatarData(emFoco.value.data_inicio_real),
+      },
+      {
+        label: schema.fields.data_termino_real.spec.label,
+        valor: formatarData(emFoco.value.data_termino_real),
+      },
     ],
     [
-      { label: 'Data de início planejado', valor: formatarData(emFoco.value.previsao_inicio) },
-      { label: 'Data de término planejado', valor: formatarData(emFoco.value.previsao_termino) },
+      {
+        label: schema.fields.previsao_custo.spec.label,
+        valor: formatarMoeda(emFoco.value.previsao_custo),
+      },
+      {
+        label: schema.fields.valor_executado_total.spec.label,
+        valor: formatarMoeda(emFoco.value.valor_executado_total),
+      },
     ],
     [
-      { label: 'Data de início real', valor: formatarData(emFoco.value.data_inicio_real) },
-      { label: 'Data de término real', valor: formatarData(emFoco.value.data_termino_real) },
+      {
+        label: schema.fields.status_final.spec.label,
+        valor: formatarTexto(emFoco.value.status_final),
+      },
+      {
+        label: schema.fields.etapa_nome.spec.label,
+        valor: formatarTexto(emFoco.value.etapa_nome),
+      },
     ],
     [
-      { label: 'Custo planejado', valor: formatarMoeda(emFoco.value.previsao_custo) },
-      { label: 'Custo executado real', valor: formatarMoeda(emFoco.value.valor_executado_total) },
+      {
+        label: schema.fields.justificativa_id.spec.label,
+        valor: formatarJustificativa(),
+      },
+      {
+        label: schema.fields.responsavel_encerramento_nome.spec.label,
+        valor: formatarTexto(emFoco.value.responsavel_encerramento_nome),
+      },
     ],
     [
-      { label: 'Status final', valor: formatarTexto(emFoco.value.status_final) },
-      { label: 'Etapa do projeto', valor: formatarTexto(emFoco.value.etapa_nome) },
-    ],
-    [
-      { label: 'Justificativa do encerramento', valor: formatarJustificativa() },
-      { label: 'Responsável pelo encerramento', valor: formatarTexto(emFoco.value.responsavel_encerramento_nome) },
-    ],
-    [
-      { label: 'Data', valor: formatarData(emFoco.value.data_encerramento) },
-      { label: 'Assinatura', valor: formatarTexto(emFoco.value.assinatura) },
+      {
+        label: schema.fields.data_encerramento.spec.label,
+        valor: formatarData(emFoco.value.data_encerramento),
+      },
+      {
+        label: schema.fields.assinatura.spec.label,
+        valor: formatarTexto(emFoco.value.assinatura),
+      },
     ],
   ];
 });
