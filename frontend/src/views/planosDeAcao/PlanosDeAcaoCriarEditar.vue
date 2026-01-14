@@ -9,6 +9,7 @@ import { useRoute, useRouter } from 'vue-router';
 
 import SmaeText from '@/components/camposDeFormulario/SmaeText';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
+import TextEditor from '@/components/TextEditor.vue';
 import TituloDaPagina from '@/components/TituloDaPagina.vue';
 import { planoDeAção as schema } from '@/consts/formSchemas';
 import truncate from '@/helpers/texto/truncate';
@@ -121,17 +122,12 @@ iniciar();
           name="contramedida"
           :schema="schema"
         />
-
-        <SmaeText
+        <Field
+          v-slot="{ field }"
           name="contramedida"
-          as="textarea"
-          rows="5"
-          class="inputtext light mb1"
-          :schema="schema"
-          :model-value="values.contramedida"
-          anular-vazio
-          :class="{ 'error': errors.contramedida }"
-        />
+        >
+          <TextEditor v-bind="field" />
+        </Field>
         <ErrorMessage
           name="contramedida"
           class="error-msg"
@@ -311,16 +307,12 @@ iniciar();
           name="medidas_de_contingencia"
           :schema="schema"
         />
-        <SmaeText
+        <Field
+          v-slot="{ field }"
           name="medidas_de_contingencia"
-          as="textarea"
-          rows="5"
-          class="inputtext light mb1"
-          :schema="schema"
-          :model-value="values.medidas_de_contingencia"
-          anular-vazio
-          :class="{ 'error': errors.medidas_de_contingencia }"
-        />
+        >
+          <TextEditor v-bind="field" />
+        </Field>
         <ErrorMessage
           name="medidas_de_contingencia"
           class="error-msg"

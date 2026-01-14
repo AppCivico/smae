@@ -1,3 +1,4 @@
+import removerHtml from '@/helpers/html/removerHtml';
 import { usePlanosDeAçãoStore } from '@/stores/planosDeAcao.store';
 import { useRiscosStore } from '@/stores/riscos.store.ts';
 import PlanosDeAçãoCriarEditar from '@/views/planosDeAcao/PlanosDeAcaoCriarEditar.vue';
@@ -157,7 +158,7 @@ export default {
                 return 'Resumo plano de ação';
               }
 
-              return `${emFoco.contramedida}`;
+              return removerHtml(emFoco.contramedida);
             },
             rotasParaMigalhasDePão: [
               'projetosListar',

@@ -66,9 +66,10 @@ onMounted(() => {
         <dt class="t12 uc w700 mb05 tamarelo">
           {{ schema.fields.contramedida.spec.label }}
         </dt>
-        <dd class="t13">
-          {{ emFoco?.contramedida || '-' }}
-        </dd>
+        <dd
+          class="t13 contentStyle"
+          v-html="emFoco?.contramedida || '-'"
+        />
       </div>
       <div class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
@@ -150,9 +151,10 @@ onMounted(() => {
     <dt class="t12 uc w700 mb05 tamarelo">
       {{ schema.fields.medidas_de_contingencia.spec.label }}
     </dt>
-    <dd class="t13">
-      <p>{{ emFoco?.medidas_de_contingencia || '-' }}</p>
-    </dd>
+    <dd
+      class="t13 contentStyle"
+      v-html="emFoco?.medidas_de_contingencia || '-'"
+    />
   </div>
 
   <div v-if="planoAcaoLinhas && planoAcaoLinhas.linhas && planoAcaoLinhas.linhas.length > 0">
