@@ -1,9 +1,11 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, Form } from 'vee-validate';
+import { ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import AutocompleteField from '@/components/AutocompleteField2.vue';
+import InputImageProfile from '@/components/InputImageProfile/InputImageProfile.vue';
 import { portfolio as schema } from '@/consts/formSchemas';
 import months from '@/consts/months';
 import niveisRegionalizacao from '@/consts/niveisRegionalizacao';
@@ -34,7 +36,19 @@ const {
   erro: erroNosDadosDeObservadores,
 } = storeToRefs(observadoresStore);
 
+const iconeAtualizado = ref(false);
+
 portfolioStore.$reset();
+
+async function handleIconeChange(file) {
+  if (!file || typeof file !== 'object' || file.constructor.name !== 'File') {
+    return file;
+  }
+
+  iconeAtualizado.value = true;
+  const uploadToken = await portfolioStore.uploadIcone(file);
+  return uploadToken;
+}
 
 async function onSubmit(values) {
   try {
@@ -43,10 +57,16 @@ async function onSubmit(values) {
       ? 'Dados salvos com sucesso!'
       : 'Item adicionado com sucesso!';
 
+    const submitValues = { ...values };
+
+    if (!iconeAtualizado.value) {
+      delete submitValues.icone_impressao;
+    }
+
     if (props.portfolioId) {
-      r = await portfolioStore.salvarItem(values, props.portfolioId);
+      r = await portfolioStore.salvarItem(submitValues, props.portfolioId);
     } else {
-      r = await portfolioStore.salvarItem(values);
+      r = await portfolioStore.salvarItem(submitValues);
     }
     if (r) {
       alertStore.success(msg);
@@ -70,11 +90,7 @@ observadoresStore.buscarTudo();
 </script>
 
 <template>
-  <div class="flex spacebetween center mb2">
-    <h1>{{ route?.meta?.título || 'Portfolios' }}</h1>
-    <hr class="ml2 f1">
-    <CheckClose />
-  </div>
+  <CabecalhoDePagina />
 
   <Form
     v-if="órgãosComoLista?.length"
@@ -83,6 +99,34 @@ observadoresStore.buscarTudo();
     :initial-values="itemParaEdicao"
     @submit="onSubmit"
   >
+    <div class="flex g2">
+      <div class="f1 mb1">
+        <LabelFromYup
+          name="icone_impressao"
+          :schema="schema"
+        />
+
+        <Field
+          v-slot="{ handleChange, value }"
+          name="icone_impressao"
+        >
+          <InputImageProfile
+            :model-value="iconeAtualizado ? undefined : value"
+            label-botao="carregar ícone"
+            @update:model-value="async (file) => {
+              const token = await handleIconeChange(file);
+              handleChange(token);
+            }"
+          />
+        </Field>
+
+        <ErrorMessage
+          name="icone_impressao"
+          class="error-msg"
+        />
+      </div>
+    </div>
+
     <div class="flex g2 mb1">
       <div class="f1">
         <LabelFromYup

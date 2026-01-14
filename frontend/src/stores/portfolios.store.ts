@@ -1,4 +1,3 @@
-import dateTimeToDate from '@/helpers/dateTimeToDate';
 import type {
   ListPortfolioDto,
   PortfolioDto,
@@ -6,6 +5,7 @@ import type {
 } from '@back/pp/portfolio/entities/portfolio.entity';
 import { range } from 'lodash';
 import { defineStore } from 'pinia';
+import dateTimeToDate from '@/helpers/dateTimeToDate';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -91,15 +91,22 @@ export const usePortfolioStore = defineStore('portfolios', {
       }
     },
 
-    async salvarItem(params = {}, id = 0): Promise<boolean> {
+    async salvarItem(params: Record<string, unknown> = {}, id = 0): Promise<boolean> {
       this.chamadasPendentes.emFoco = true;
       this.erro = null;
 
       try {
+        const requestParams = { ...params };
+
+        if (requestParams.icone_impressao) {
+          requestParams.icone_upload_token = requestParams.icone_impressao;
+          delete requestParams.icone_impressao;
+        }
+
         if (id) {
-          await this.requestS.patch(`${baseUrl}/portfolio/${id}`, params);
+          await this.requestS.patch(`${baseUrl}/portfolio/${id}`, requestParams);
         } else {
-          await this.requestS.post(`${baseUrl}/portfolio`, params);
+          await this.requestS.post(`${baseUrl}/portfolio`, requestParams);
         }
 
         this.chamadasPendentes.emFoco = false;
@@ -108,6 +115,28 @@ export const usePortfolioStore = defineStore('portfolios', {
         this.erro = erro;
         this.chamadasPendentes.emFoco = false;
         return false;
+      }
+    },
+
+    async uploadIcone(file: File): Promise<string> {
+      try {
+        this.chamadasPendentes.emFoco = true;
+
+        const formData = new FormData();
+        formData.append('tipo', 'ICONE_PORTFOLIO');
+        formData.append('arquivo', file);
+
+        const resposta = (await this.requestS.upload(
+          `${baseUrl}/upload`,
+          formData,
+        )) as { upload_token: string };
+
+        return resposta.upload_token;
+      } catch (erro: unknown) {
+        this.erro = erro;
+        throw erro;
+      } finally {
+        this.chamadasPendentes.emFoco = false;
       }
     },
   },
@@ -125,6 +154,9 @@ export const usePortfolioStore = defineStore('portfolios', {
         && Array.isArray(emFoco.orcamento_execucao_disponivel_meses)
           ? emFoco.orcamento_execucao_disponivel_meses
           : range(1, 13),
+      icone_impressao: emFoco?.icone_impressao
+        ? `${baseUrl}/download/${emFoco.icone_impressao.download_token}`
+        : null,
     }),
 
     portfoliosPorId: ({
