@@ -240,8 +240,6 @@ const éPossívelAbrir = (item) => !item.children?.length
   }
 
   button {
-    margin-right: 0.5rem;
-    margin-left: 0.5rem;
   }
 
   .arvore-de-arquivos__item {
