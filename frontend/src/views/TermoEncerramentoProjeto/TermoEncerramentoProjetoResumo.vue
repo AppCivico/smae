@@ -49,10 +49,10 @@ const classeAlinhamentoIcone = computed(() => {
 });
 
 const urlIcone = computed(() => {
-  if (!emFoco.value?.icone) return null;
+  if (!emFoco.value?.icone?.download_token) return null;
 
   if (emFoco.value.icone.download_token.includes('http')) {
-    return emFoco.value.icone;
+    return emFoco.value.icone.download_token;
   }
 
   return `${BASE_URL}/download/${emFoco.value.icone.download_token}`;
@@ -78,7 +78,7 @@ async function verificarIcone() {
 
   if (portfolio?.icone_impressao) {
     if (emFoco.value) {
-      emFoco.value.icone = portfolio.icone_impressao.download_token;
+      emFoco.value.icone = portfolio.icone_impressao;
     }
   }
 }
@@ -236,18 +236,16 @@ const sessoes = computed<SessaoDeDetalheLinhas | null>(() => {
 </script>
 
 <template>
-  <header class="flex spacebetween center mb2 g2">
-    <TítuloDePágina />
-
-    <hr class="f1">
-
-    <SmaeLink
-      :to="{ name: '.termoEncerramento.editar' }"
-      class="btn big"
-    >
-      Editar
-    </SmaeLink>
-  </header>
+  <CabecalhoDePagina>
+    <template #acoes>
+      <SmaeLink
+        :to="{ name: '.termoEncerramento.editar' }"
+        class="btn big"
+      >
+        Editar
+      </SmaeLink>
+    </template>
+  </CabecalhoDePagina>
 
   <div
     v-if="urlIcone"

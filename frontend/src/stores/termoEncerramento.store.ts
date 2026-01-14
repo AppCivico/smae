@@ -16,7 +16,7 @@ interface Erros {
 interface Estado {
   emFoco: TermoEncerramentoDetalheDto | null;
   chamadasPendentes: ChamadasPendentes;
-  erro: Erros;
+  erros: Erros;
 }
 
 function obterRota(
@@ -37,7 +37,7 @@ export const useTermoEncerramentoStore = (sistemaEscolhido: ModuloSistema.MDO | 
     chamadasPendentes: {
       emFoco: false,
     },
-    erro: {
+    erros: {
       emFoco: null,
     },
   }),
@@ -45,7 +45,7 @@ export const useTermoEncerramentoStore = (sistemaEscolhido: ModuloSistema.MDO | 
     async buscarItem(termoEncerramentoId: number): Promise<void> {
       try {
         this.chamadasPendentes.emFoco = true;
-        this.erro.emFoco = null;
+        this.erros.emFoco = null;
 
         const resposta = (await this.requestS.get(
           `${obterRota(
@@ -55,7 +55,7 @@ export const useTermoEncerramentoStore = (sistemaEscolhido: ModuloSistema.MDO | 
 
         this.emFoco = resposta;
       } catch (erro: unknown) {
-        this.erro.emFoco = erro;
+        this.erros.emFoco = erro;
       } finally {
         this.chamadasPendentes.emFoco = false;
       }
@@ -68,7 +68,7 @@ export const useTermoEncerramentoStore = (sistemaEscolhido: ModuloSistema.MDO | 
     async salvarItem(params: any = {}, id = 0) {
       try {
         this.chamadasPendentes.emFoco = true;
-        this.erro.emFoco = null;
+        this.erros.emFoco = null;
 
         const requestParams = { ...params };
 
@@ -81,7 +81,7 @@ export const useTermoEncerramentoStore = (sistemaEscolhido: ModuloSistema.MDO | 
 
         await this.requestS.patch(`${obterRota(sistemaEscolhido)}/${id}/termo-encerramento`, requestParams);
       } catch (erro: unknown) {
-        this.erro.emFoco = erro;
+        this.erros.emFoco = erro;
         throw erro;
       } finally {
         this.chamadasPendentes.emFoco = false;
@@ -90,6 +90,8 @@ export const useTermoEncerramentoStore = (sistemaEscolhido: ModuloSistema.MDO | 
 
     async uploadIcone(file: File): Promise<string> {
       try {
+        this.chamadasPendentes.emFoco = true;
+
         const formData = new FormData();
         formData.append('tipo', 'ICONE_PORTFOLIO');
         formData.append('arquivo', file);
@@ -101,7 +103,7 @@ export const useTermoEncerramentoStore = (sistemaEscolhido: ModuloSistema.MDO | 
 
         return resposta.upload_token;
       } catch (erro: unknown) {
-        this.erro.emFoco = erro;
+        this.erros.emFoco = erro;
         throw erro;
       } finally {
         this.chamadasPendentes.emFoco = false;
