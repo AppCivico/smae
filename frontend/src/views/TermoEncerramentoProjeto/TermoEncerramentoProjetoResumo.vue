@@ -88,30 +88,6 @@ onMounted(async () => {
   await verificarIcone();
 });
 
-function formatarData(data: Date | string | null): string | null {
-  if (!data) {
-    return '-';
-  }
-
-  return dateIgnorarTimezone(String(data), 'dd/MM/yyyy');
-}
-
-function formatarMoeda(valor: number | null): string {
-  if (valor === null || valor === undefined) {
-    return '-';
-  }
-
-  return dinheiro(valor, { style: 'currency' });
-}
-
-function formatarTexto(texto: string | null): string {
-  if (!texto) {
-    return '-';
-  }
-
-  return texto;
-}
-
 function formatarJustificativa(): string {
   if (!emFoco.value?.justificativa) {
     return '-';
@@ -140,15 +116,15 @@ const sessaoPrincipal = computed<SessaoResumo[]>(() => {
         [
           {
             label: schema.fields.nome_projeto.spec.label,
-            valor: formatarTexto(emFoco.value.nome_projeto),
+            valor: emFoco.value.nome_projeto,
           },
           {
             label: schema.fields.orgao_responsavel_nome.spec.label,
-            valor: formatarTexto(emFoco.value.orgao_responsavel_nome),
+            valor: emFoco.value.orgao_responsavel_nome,
           },
           {
             label: schema.fields.portfolios_nomes.spec.label,
-            valor: formatarTexto(emFoco.value.portfolios_nomes),
+            valor: emFoco.value.portfolios_nomes,
           },
         ],
       ],
@@ -174,41 +150,41 @@ const sessoes = computed<SessaoDeDetalheLinhas | null>(() => {
     [
       {
         label: schema.fields.previsao_inicio.spec.label,
-        valor: formatarData(emFoco.value.previsao_inicio),
+        valor: dateIgnorarTimezone(emFoco.value.previsao_inicio, 'dd/MM/yyyy'),
       },
       {
         label: schema.fields.previsao_termino.spec.label,
-        valor: formatarData(emFoco.value.previsao_termino),
+        valor: dateIgnorarTimezone(emFoco.value.previsao_termino, 'dd/MM/yyyy'),
       },
     ],
     [
       {
         label: schema.fields.data_inicio_real.spec.label,
-        valor: formatarData(emFoco.value.data_inicio_real),
+        valor: dateIgnorarTimezone(emFoco.value.data_inicio_real, 'dd/MM/yyyy'),
       },
       {
         label: schema.fields.data_termino_real.spec.label,
-        valor: formatarData(emFoco.value.data_termino_real),
+        valor: dateIgnorarTimezone(emFoco.value.data_termino_real, 'dd/MM/yyyy'),
       },
     ],
     [
       {
         label: schema.fields.previsao_custo.spec.label,
-        valor: formatarMoeda(emFoco.value.previsao_custo),
+        valor: dinheiro(emFoco.value.previsao_custo, { style: 'currency' }),
       },
       {
         label: schema.fields.valor_executado_total.spec.label,
-        valor: formatarMoeda(emFoco.value.valor_executado_total),
+        valor: dinheiro(emFoco.value.valor_executado_total, { style: 'currency' }),
       },
     ],
     [
       {
         label: schema.fields.status_final.spec.label,
-        valor: formatarTexto(emFoco.value.status_final),
+        valor: emFoco.value.status_final,
       },
       {
         label: schema.fields.etapa_nome.spec.label,
-        valor: formatarTexto(emFoco.value.etapa_nome),
+        valor: emFoco.value.etapa_nome,
       },
     ],
     [
@@ -218,17 +194,17 @@ const sessoes = computed<SessaoDeDetalheLinhas | null>(() => {
       },
       {
         label: schema.fields.responsavel_encerramento_nome.spec.label,
-        valor: formatarTexto(emFoco.value.responsavel_encerramento_nome),
+        valor: emFoco.value.responsavel_encerramento_nome,
       },
     ],
     [
       {
         label: schema.fields.data_encerramento.spec.label,
-        valor: formatarData(emFoco.value.data_encerramento),
+        valor: dateIgnorarTimezone(emFoco.value.data_encerramento, 'dd/MM/yyyy'),
       },
       {
         label: schema.fields.assinatura.spec.label,
-        valor: formatarTexto(emFoco.value.assinatura),
+        valor: emFoco.value.assinatura,
       },
     ],
   ];
