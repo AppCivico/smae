@@ -43,7 +43,7 @@ function dateToDate(d, options = {}) {
     !podeUsarDateStyle
     && (options.dateStyle || options.timeStyle)
   ) {
-    console.warn('Existem configurações conflitatentes com configuração de data.', options);
+    console.warn('Existem configurações conflitantes com configuração de data.', options);
     delete options.dateStyle;
     delete options.timeStyle;
   }
