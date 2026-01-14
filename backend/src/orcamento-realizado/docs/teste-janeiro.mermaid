@@ -1,0 +1,57 @@
+sequenceDiagram
+    participant Cron as Cron Job (6h)
+    participant Sistema as Sistema
+    participant DB as Banco de Dados
+    participant Config as pdmOrcamentoConfig
+    participant Controle as PdmOrcamentoRealizadoControleConcluido
+    participant Ciclo as pdmOrcamentoRealizadoConfig
+
+    Note over Cron,Ciclo: Data: 15 de Janeiro de 2026
+
+    Cron->>Sistema: Trigger automático
+    Sistema->>DB: Adquire lock (JOB_PDM_ORCAMENTO_CONCLUIDO)
+
+    rect rgb(240, 248, 255)
+        Note over Sistema: Captura Dados Temporais
+        Sistema->>Sistema: anoAtual = 2026 (ano da ação)
+        Sistema->>Sistema: mesAtual = 1
+        Sistema->>Sistema: diaAtual = 15
+        Sistema->>Sistema: mesBudget = 12 (mês anterior)
+        Sistema->>Sistema: anoBudget = 2025 (ano do orçamento)
+    end
+
+    Sistema->>DB: Busca PDM ativo
+    DB-->>Sistema: PDM (dia_abertura=1, dia_fechamento=20)
+
+    Sistema->>Config: Busca config para ano 2025
+    Config-->>Sistema: execucao_disponivel_meses: [3,6,9,12]
+
+    Sistema->>DB: Busca metas ativas
+    Sistema->>Controle: Busca controles de ano=2026
+    Controle-->>Sistema: [] (vazio - primeira execução de 2026)
+
+    rect rgb(255, 250, 240)
+        Note over Sistema: Verificação de ABERTURA
+        Sistema->>Sistema: Mês 12 está em [3,6,9,12]? ✓
+        Sistema->>Sistema: Dia 15 ≥ dia_abertura(1)? ✓
+        Sistema->>Sistema: Já foi aberto este ano? ✗ (não há controle)
+        Note over Sistema: DECISÃO: ABRIR orçamento de Dez/2025
+    end
+
+    Sistema->>Ciclo: UPDATE pdmOrcamentoRealizadoConfig
+    Note right of Ciclo: ano_referencia = 2025<br/>execucao_concluida = false<br/>(ABRE o orçamento de 2025)
+
+    Sistema->>Controle: INSERT PdmOrcamentoRealizadoControleConcluido
+    Note right of Controle: ano_referencia = 2026<br/>referencia_mes = 1<br/>referencia_dia_abertura = 1<br/>(REGISTRA ação em 2026)
+
+    rect rgb(255, 245, 245)
+        Note over Sistema: Verificação de FECHAMENTO
+        Sistema->>Sistema: Mês 12 está em [3,6,9,12]? ✓
+        Sistema->>Sistema: Dia 15 ≥ dia_fechamento(20)? ✗
+        Note over Sistema: DECISÃO: NÃO fechar ainda (aguardar dia 20)
+    end
+
+    Sistema->>DB: Libera lock
+    Sistema->>Cron: Finaliza execução
+
+    Note over Cron,Ciclo: Próxima execução: 6 horas depois

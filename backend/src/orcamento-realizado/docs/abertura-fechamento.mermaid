@@ -1,0 +1,67 @@
+graph TB
+    subgraph "Tabelas do Sistema"
+        T1[pdmOrcamentoConfig<br/>Configuração de Meses Disponíveis<br/>ano_referencia = Ano do Orçamento]
+        T2[PdmOrcamentoRealizadoControleConcluido<br/>Controle de Automação<br/>ano_referencia = Ano da Ação]
+        T3[pdmOrcamentoRealizadoConfig<br/>Status do Ciclo<br/>ano_referencia = Ano do Orçamento]
+    end
+
+    subgraph "Processo de Automação"
+        CRON[Cron Job<br/>A cada 6 horas]
+        LOCK[Adquire Lock PostgreSQL<br/>Previne execução concorrente]
+        DATA[Captura Data Atual<br/>anoAtual, mesAtual, diaAtual]
+        CALC[Calcula Variáveis<br/>mesBudget = mês anterior<br/>anoBudget = ano do orçamento]
+
+        CRON --> LOCK
+        LOCK --> DATA
+        DATA --> CALC
+    end
+
+    subgraph "Validações"
+        PDM[Busca PDM Ativo]
+        CONFIG[Busca pdmOrcamentoConfig<br/>para anoBudget]
+        METAS[Busca Metas Ativas<br/>+ Controles do anoAtual]
+
+        CALC --> PDM
+        PDM --> CONFIG
+        CONFIG --> METAS
+    end
+
+    subgraph "Loop por Meta"
+        CHECK_OPEN{Deve Abrir?<br/>1. mesBudget está na config?<br/>2. diaAtual ≥ dia_abertura?<br/>3. Não foi aberto ainda?}
+        CHECK_CLOSE{Deve Fechar?<br/>1. mesBudget está na config?<br/>2. diaAtual ≥ dia_fechamento?<br/>3. Não foi fechado ainda?}
+
+        METAS --> CHECK_OPEN
+        METAS --> CHECK_CLOSE
+    end
+
+    subgraph "Ação: Abertura"
+        OPEN_CYCLE[Atualiza pdmOrcamentoRealizadoConfig<br/>ano_referencia = anoBudget<br/>execucao_concluida = false]
+        OPEN_LOG[Cria PdmOrcamentoRealizadoControleConcluido<br/>ano_referencia = anoAtual<br/>referencia_mes = mesAtual<br/>referencia_dia_abertura]
+
+        CHECK_OPEN -->|SIM| OPEN_CYCLE
+        OPEN_CYCLE --> OPEN_LOG
+        OPEN_LOG --> T3
+        OPEN_LOG --> T2
+    end
+
+    subgraph "Ação: Fechamento"
+        CLOSE_CYCLE[Atualiza pdmOrcamentoRealizadoConfig<br/>ano_referencia = anoBudget<br/>execucao_concluida = true]
+        CLOSE_LOG[Cria PdmOrcamentoRealizadoControleConcluido<br/>ano_referencia = anoAtual<br/>referencia_mes = mesAtual<br/>referencia_dia_fechamento]
+
+        CHECK_CLOSE -->|SIM| CLOSE_CYCLE
+        CLOSE_CYCLE --> CLOSE_LOG
+        CLOSE_LOG --> T3
+        CLOSE_LOG --> T2
+    end
+
+    CHECK_OPEN -->|NÃO| CHECK_CLOSE
+    CHECK_CLOSE -->|NÃO| FIM[Fim do Loop]
+
+    T1 -.->|Consulta| CONFIG
+    T2 -.->|Consulta| METAS
+
+    style T1 fill:#e1f5ff
+    style T2 fill:#fff4e1
+    style T3 fill:#e8f5e9
+    style CHECK_OPEN fill:#fff9c4
+    style CHECK_CLOSE fill:#fff9c4
