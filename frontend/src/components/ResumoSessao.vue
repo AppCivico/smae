@@ -4,7 +4,7 @@ import { computed } from 'vue';
 type PossiveisValores = string | number | null | any;
 
 type SessaoDeDetalheLinha = {
-  label: string
+  label: string | undefined
   valor?: PossiveisValores
   col?: number
   esconder?: boolean
@@ -73,7 +73,9 @@ function obterLinhas(quantidadeLinhas: number): number {
         :key="`resumo-item--${linhaIndex}-${itemIndex}`"
         class="flex column g1 resumo-sessao__item"
         :style="{
-          'flex': item.col ? `0 0 calc(${item.col * 100 / obterLinhas(linha.length)}% - 1rem)` : `0 0 calc(${100 / obterLinhas(linha.length)}% - 1rem)`,
+          'flex': item.col ?
+            `0 0 calc(${item.col * 100 / obterLinhas(linha.length)}% - 1rem)`
+            : `0 0 calc(${100 / obterLinhas(linha.length)}% - 1rem)`,
         }"
       >
         <h5 class="resumo-sessao__item-label tamarelo">

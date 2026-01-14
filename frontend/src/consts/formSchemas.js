@@ -699,30 +699,12 @@ export const tipoEncerramento = object()
 
 export const termoEncerramento = object()
   .shape({
-    icone: object()
+    assinatura: string()
+      .label('Assinatura')
+      .max(500)
       .nullable(),
-    posicao_logotipo: string()
-      .label('Posição do logotipo')
-      .nullable(),
-    nome_projeto: string()
-      .label('Nome do projeto')
-      .nullable(),
-    orgao_responsavel_nome: string()
-      .label('Órgão responsável')
-      .nullable(),
-    portfolios_nomes: string()
-      .label('Portfólios')
-      .nullable(),
-    objeto: string()
-      .label('Objeto')
-      .nullable(),
-    previsao_inicio: date()
-      .label('Previsão de início')
-      .max(dataMax)
-      .min(dataMin)
-      .nullable(),
-    previsao_termino: date()
-      .label('Previsão de término')
+    data_encerramento: date()
+      .label('Data de encerramento')
       .max(dataMax)
       .min(dataMin)
       .nullable(),
@@ -736,38 +718,56 @@ export const termoEncerramento = object()
       .max(dataMax)
       .min(dataMin)
       .nullable(),
-    data_encerramento: date()
-      .label('Data de encerramento')
-      .max(dataMax)
-      .min(dataMin)
+    etapa_nome: string()
+      .label('Etapa')
+      .max(500)
+      .nullable(),
+    icone: object()
+      .nullable(),
+    justificativa_id: number()
+      .label('Justificativa do encerramento')
+      .nullable(),
+    nome_projeto: string()
+      .label('Nome do projeto')
+      .nullable(),
+    objeto: string()
+      .label('Objeto')
+      .nullable(),
+    orgao_responsavel_nome: string()
+      .label('Órgão responsável')
+      .nullable(),
+    portfolios_nomes: string()
+      .label('Portfólios')
+      .nullable(),
+    posicao_logotipo: string()
+      .label('Posição do logotipo')
       .nullable(),
     previsao_custo: number()
       .label('Previsão de custo')
       .min(0)
       .nullable()
       .transform((v, o) => (o === '' ? null : v)),
+    previsao_inicio: date()
+      .label('Previsão de início')
+      .max(dataMax)
+      .min(dataMin)
+      .nullable(),
+    previsao_termino: date()
+      .label('Previsão de término')
+      .max(dataMax)
+      .min(dataMin)
+      .nullable(),
+    responsavel_encerramento_nome: string()
+      .label('Responsável pelo encerramento')
+      .nullable(),
+    status_final: string()
+      .label('Status final')
+      .nullable(),
     valor_executado_total: number()
       .label('Valor executado total')
       .min(0)
       .nullable()
       .transform((v, o) => (o === '' ? null : v)),
-    status_final: string()
-      .label('Status final')
-      .nullable(),
-    etapa_nome: string()
-      .label('Etapa')
-      .max(500)
-      .nullable(),
-    justificativa_id: number()
-      .label('Justificativa do encerramento')
-      .nullable(),
-    responsavel_encerramento_nome: string()
-      .label('Responsável pelo encerramento')
-      .nullable(),
-    assinatura: string()
-      .label('Assinatura')
-      .max(500)
-      .nullable(),
   });
 
 export const geoLocalização = object()
