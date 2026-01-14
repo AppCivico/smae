@@ -256,7 +256,10 @@ watch(itemParaEdicao, (novoItem) => {
           v-slot="{ field }"
           name="pauta"
         >
-          <TextEditor v-bind="field" />
+          <TextEditor
+            v-bind="field"
+            :class="{ error: errors.pauta }"
+          />
         </Field>
         <ErrorMessage
           name="pauta"
@@ -275,7 +278,10 @@ watch(itemParaEdicao, (novoItem) => {
           v-slot="{ field }"
           name="detalhamento"
         >
-          <TextEditor v-bind="field" />
+          <TextEditor
+            v-bind="field"
+            :class="{ error: errors.detalhamento }"
+          />
         </Field>
         <ErrorMessage
           name="detalhamento"
@@ -354,7 +360,10 @@ watch(itemParaEdicao, (novoItem) => {
           v-slot="{ field }"
           name="pontos_atencao"
         >
-          <TextEditor v-bind="field" />
+          <TextEditor
+            v-bind="field"
+            :class="{ error: errors.pontos_atencao }"
+          />
         </Field>
         <ErrorMessage
           name="pontos_atencao"

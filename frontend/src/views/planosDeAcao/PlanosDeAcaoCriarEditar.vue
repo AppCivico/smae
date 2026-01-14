@@ -126,7 +126,10 @@ iniciar();
           v-slot="{ field }"
           name="contramedida"
         >
-          <TextEditor v-bind="field" />
+          <TextEditor
+            v-bind="field"
+            :class="{ error: errors.contramedida }"
+          />
         </Field>
         <ErrorMessage
           name="contramedida"
@@ -311,7 +314,10 @@ iniciar();
           v-slot="{ field }"
           name="medidas_de_contingencia"
         >
-          <TextEditor v-bind="field" />
+          <TextEditor
+            v-bind="field"
+            :class="{ error: errors.medidas_de_contingencia }"
+          />
         </Field>
         <ErrorMessage
           name="medidas_de_contingencia"
