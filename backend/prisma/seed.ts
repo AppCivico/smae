@@ -556,7 +556,6 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['SMAE.loga_direto_na_analise', 'Acesso direto à parte de análise ao fazer login'],
         ['PerfilAcesso.administrador', 'Gerenciar Perfil de Acesso'],
         ['SMAE.gestor_distribuicao_recurso', 'Visão limitada, para gestor de distribuição de recurso'],
-        ['SMAE.GrupoVariavel.colaborador', 'Pode ser colaborador de grupos de variáveis'],
         ['SMAE.AtualizacaoEmLote', 'Acesso a ferramenta de atualização em lote'],
         ['SMAE.gerente_de_projeto', 'Editar os responsáveis de projetos após a fase de planejamento'],
     ],
@@ -567,6 +566,7 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
     ParticipanteEquipe: [
         // era só do config, mas para ele ficar em dois módulos ao mesmo tempo, precisa de um namespace separado
         ['SMAE.GrupoVariavel.participante', 'Pode participar de grupos de variáveis'],
+        ['SMAE.GrupoVariavel.colaborador', 'Pode ser colaborador de grupos de variáveis'],
     ],
     CadastroGrupoVariavel: [
         ['CadastroGrupoVariavel.administrador', 'Gerenciar todas as equipes'],
