@@ -61,6 +61,17 @@ const classeAlinhamentoIcone = computed(() => {
     || alinhamentoIcone.Esquerda;
 });
 
+const habilitarInfoAdicional = computed(() => {
+  if (!values.justificativa_id) {
+    return false;
+  }
+
+  const justificativaSelecionada = listaJustificativas.value.find(
+    (j) => j.id === values.justificativa_id,
+  );
+  return justificativaSelecionada?.habilitar_info_adicional || false;
+});
+
 async function handleIconeChange(file: unknown) {
   if (!file || typeof file !== 'object' || file.constructor.name !== 'File') {
     return file;
@@ -439,6 +450,7 @@ onMounted(async () => {
           name="status_final"
           as="select"
           class="inputtext light"
+          disabled
         >
           <option value="">
             Selecionar
@@ -469,6 +481,7 @@ onMounted(async () => {
           name="etapa_nome"
           type="text"
           class="inputtext light"
+          disabled
         />
         <ErrorMessage
           class="error-msg"
@@ -508,6 +521,43 @@ onMounted(async () => {
         />
       </div>
 
+      <div class="f1" />
+    </div>
+
+    <div
+      v-if="habilitarInfoAdicional"
+      class="flex g2 flexwrap"
+    >
+      <div class="f1">
+        <SmaeLabel
+          name="justificativa_complemento"
+          :schema="schema"
+        />
+
+        <Field
+          v-slot="{ field, handleChange, value }"
+          name="justificativa_complemento"
+        >
+          <SmaeText
+            as="textarea"
+            rows="5"
+            class="inputtext light mb1"
+            :schema="schema"
+            :name="field.name"
+            :model-value="value"
+            anular-vazio
+            @update:model-value="handleChange"
+          />
+        </Field>
+
+        <ErrorMessage
+          class="error-msg"
+          name="justificativa_complemento"
+        />
+      </div>
+    </div>
+
+    <div class="flex g2 flexwrap">
       <div class="f1">
         <SmaeLabel
           name="responsavel_encerramento_nome"
@@ -524,6 +574,8 @@ onMounted(async () => {
           name="responsavel_encerramento_nome"
         />
       </div>
+
+      <div class="f1" />
     </div>
 
     <div class="flex g2 flexwrap">
