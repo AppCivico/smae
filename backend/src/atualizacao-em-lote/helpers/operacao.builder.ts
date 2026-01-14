@@ -34,6 +34,7 @@ const COLUMN_LABELS: Record<string, string> = {
     orgao_gestor_id: 'Órgão Gestor',
     orgao_origem_id: 'Órgão de Origem',
     orgao_executor_id: 'Órgão Executor',
+    orgao_colaborador_id: 'Órgão Colaborador',
 
     // Campos de gestão
     secretario_executivo: 'Secretário Executivo',
