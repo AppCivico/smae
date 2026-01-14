@@ -82,7 +82,7 @@ function obterLinhas(quantidadeLinhas: number): number {
           v-if="!Array.isArray(item.valor)"
           class="resumo-sessao__item-valor"
         >
-          {{ item.valor }}
+          {{ item.valor || '-' }}
         </h6>
 
         <ul
