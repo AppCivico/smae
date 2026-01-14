@@ -105,9 +105,10 @@ export default {
         <dt class="t12 uc w700 mb05 tamarelo">
           {{ schema.fields.pauta.spec.label }}
         </dt>
-        <dd class="t13">
-          {{ emFoco?.pauta || '-' }}
-        </dd>
+        <dd
+          class="t13 contentStyle"
+          v-html="emFoco?.pauta || '-'"
+        />
       </div>
     </div>
 
@@ -116,9 +117,10 @@ export default {
         <dt class="t12 uc w700 mb05 tamarelo">
           {{ schema.fields.detalhamento.spec.label }}
         </dt>
-        <dd class="t13">
-          {{ emFoco?.detalhamento || '-' }}
-        </dd>
+        <dd
+          class="t13 contentStyle"
+          v-html="emFoco?.detalhamento || '-'"
+        />
       </div>
     </div>
 
@@ -155,9 +157,10 @@ export default {
         <dt class="t12 uc w700 mb05 tamarelo">
           {{ schema.fields.pontos_atencao.spec.label }}
         </dt>
-        <dd class="t13">
-          {{ emFoco?.pontos_atencao || '-' }}
-        </dd>
+        <dd
+          class="t13 contentStyle"
+          v-html="emFoco?.pontos_atencao || '-'"
+        />
       </div>
     </div>
 

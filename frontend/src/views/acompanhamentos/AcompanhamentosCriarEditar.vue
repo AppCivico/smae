@@ -11,6 +11,7 @@ import { watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
+import TextEditor from '@/components/TextEditor.vue';
 import { acompanhamento as schema } from '@/consts/formSchemas';
 import dateToField from '@/helpers/dateToField';
 import truncate from '@/helpers/texto/truncate';
@@ -251,19 +252,12 @@ watch(itemParaEdicao, (novoItem) => {
           name="pauta"
           :schema="schema"
         />
-        <SmaeText
-          :model-value="values.pauta"
-          :schema="schema"
+        <Field
+          v-slot="{ field }"
           name="pauta"
-          as="textarea"
-          rows="5"
-          class="inputtext light mb1"
-          maxlength="2048"
-          anular-vazio
-          :class="{
-            error: errors.pauta
-          }"
-        />
+        >
+          <TextEditor v-bind="field" />
+        </Field>
         <ErrorMessage
           name="pauta"
           class="error-msg"
@@ -277,19 +271,12 @@ watch(itemParaEdicao, (novoItem) => {
           name="detalhamento"
           :schema="schema"
         />
-        <SmaeText
-          :schema="schema"
-          :model-value="values.detalhamento"
+        <Field
+          v-slot="{ field }"
           name="detalhamento"
-          as="textarea"
-          rows="5"
-          class="inputtext light mb1"
-          maxlength="2048"
-          anular-vazio
-          :class="{
-            error: errors.detalhamento
-          }"
-        />
+        >
+          <TextEditor v-bind="field" />
+        </Field>
         <ErrorMessage
           name="detalhamento"
           class="error-msg"
@@ -363,17 +350,12 @@ watch(itemParaEdicao, (novoItem) => {
           name="pontos_atencao"
           :schema="schema"
         />
-        <SmaeText
-          :schema="schema"
-          :model-value="values.pontos_atencao"
+        <Field
+          v-slot="{ field }"
           name="pontos_atencao"
-          as="textarea"
-          rows="5"
-          class="inputtext light mb1"
-          maxlength="2048"
-          anular-vazio
-          :class="{ 'error': errors.pontos_atencao }"
-        />
+        >
+          <TextEditor v-bind="field" />
+        </Field>
         <ErrorMessage
           name="pontos_atencao"
           class="error-msg"
@@ -449,7 +431,8 @@ watch(itemParaEdicao, (novoItem) => {
               <Field
                 :id="`acompanhamentos[${idx}].responsavel`"
                 :name="`acompanhamentos[${idx}].responsavel`"
-                :required="schema.fields.acompanhamentos.innerType.fields.responsavel.spec.presence === 'required'"
+                :required="schema.fields.acompanhamentos.innerType.fields
+                  .responsavel.spec.presence === 'required'"
                 type="text"
                 class="inputtext light mb1"
                 :class="{
@@ -496,9 +479,12 @@ watch(itemParaEdicao, (novoItem) => {
                 :id="`acompanhamentos[${idx}].prazo_realizado`"
                 :name="`acompanhamentos[${idx}].prazo_realizado`"
                 type="date"
-                :required="schema.fields.acompanhamentos.innerType.fields.prazo_realizado.spec.presence === 'required'"
+                :required="schema.fields.acompanhamentos.innerType.fields
+                  .prazo_realizado.spec.presence === 'required'"
                 class="inputtext light mb1"
-                :class="{ 'error': errors[`acompanhamentos[${idx}].prazo_realizado`] }"
+                :class="{
+                  'error': errors[`acompanhamentos[${idx}].prazo_realizado`]
+                }"
                 @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
                 @update:model-value="($v) => {
                   setFieldValue(`acompanhamentos[${idx}].prazo_realizado`, $v || null);
