@@ -5,6 +5,7 @@ import {
   Field,
   FieldArray,
   useForm,
+  useIsFormDirty,
 } from 'vee-validate';
 import { watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -102,6 +103,8 @@ if (!riscosStore?.lista?.length) {
   riscosStore.buscarTudo();
 }
 
+const formularioSujo = useIsFormDirty();
+
 watch(itemParaEdicao, (novoItem) => {
   resetForm({
     values: novoItem,
@@ -125,7 +128,7 @@ watch(itemParaEdicao, (novoItem) => {
 
     <hr class="ml2 f1">
 
-    <CheckClose />
+    <CheckClose :formulario-sujo="formularioSujo" />
   </div>
 
   <form

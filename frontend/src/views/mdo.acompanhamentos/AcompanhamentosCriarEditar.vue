@@ -4,8 +4,10 @@ import {
   ErrorMessage,
   Field,
   FieldArray,
-  Form,
+  useForm,
+  useIsFormDirty,
 } from 'vee-validate';
+import { watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import SmaeText from '@/components/camposDeFormulario/SmaeText/SmaeText.vue';
@@ -53,7 +55,19 @@ const props = defineProps({
   },
 });
 
-async function onSubmit(_, { controlledValues }) {
+const {
+  errors,
+  handleSubmit,
+  isSubmitting,
+  resetForm,
+  setFieldValue,
+  values,
+} = useForm({
+  initialValues: itemParaEdicao,
+  validationSchema: schema,
+});
+
+const onSubmit = handleSubmit(async (_, { controlledValues }) => {
   const carga = controlledValues;
 
   if (!carga.cronograma_paralisado) {
@@ -79,7 +93,7 @@ async function onSubmit(_, { controlledValues }) {
   } catch (error) {
     alertStore.error(error);
   }
-}
+});
 
 function excluirAcompanhamento(id) {
   alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
@@ -94,6 +108,14 @@ function excluirAcompanhamento(id) {
     }
   }, 'Remover');
 }
+
+const formularioSujo = useIsFormDirty();
+
+watch(itemParaEdicao, (novoItem) => {
+  resetForm({
+    values: novoItem,
+  });
+});
 </script>
 <template>
   <div class="flex spacebetween center mb2">
@@ -112,15 +134,17 @@ function excluirAcompanhamento(id) {
 
     <hr class="ml2 f1">
 
-    <CheckClose />
+    <CheckClose :formulario-sujo="formularioSujo" />
   </div>
 
-  <Form
+  <pre
+    v-ScrollLockDebug
+    class="debug"
+    style="position: sticky; top: 1em; background: white; z-index: 10; height: 25em;"
+  >values: {{ values }}</pre>
+
+  <form
     v-if="!acompanhamentoId || emFoco"
-    v-slot="{ errors, isSubmitting, setFieldValue, values }"
-    :disabled="chamadasPendentes.emFoco"
-    :initial-values="itemParaEdicao"
-    :validation-schema="schema"
     @submit="onSubmit"
   >
     <div class="flex flexwrap g2 mb1">
@@ -188,6 +212,7 @@ function excluirAcompanhamento(id) {
             name="apresentar_no_relatorio"
             type="checkbox"
             :value="true"
+            :unchecked-value="false"
             class="inputcheckbox"
           />
           <span :class="{ 'error': errors.apresentar_no_relatorio }">
@@ -202,6 +227,7 @@ function excluirAcompanhamento(id) {
             name="cronograma_paralisado"
             type="checkbox"
             :value="true"
+            :unchecked-value="false"
             class="inputcheckbox"
           />
           <span :class="{ 'error': errors.cronograma_paralisado }">
@@ -246,7 +272,6 @@ function excluirAcompanhamento(id) {
           as="textarea"
           rows="5"
           class="inputtext light mb1"
-          maxlength="2048"
           :schema="schema"
           :model-value="values.pauta"
           anular-vazio
@@ -270,7 +295,6 @@ function excluirAcompanhamento(id) {
           as="textarea"
           rows="5"
           class="inputtext light mb1"
-          maxlength="2048"
           :schema="schema"
           :model-value="values.detalhamento"
           anular-vazio
@@ -295,14 +319,17 @@ function excluirAcompanhamento(id) {
           name="observacao"
           :schema="schema"
         />
-        <Field
-          id="observacao"
+        <SmaeText
+          :schema="schema"
+          :model-value="values.observacao"
           name="observacao"
           as="textarea"
           rows="5"
           class="inputtext light mb1"
-          maxlength="2048"
-          :class="{ 'error': errors.observacao }"
+          anular-vazio
+          :class="{
+            error: errors.observacao
+          }"
         />
         <ErrorMessage
           name="observacao"
@@ -322,15 +349,20 @@ function excluirAcompanhamento(id) {
         <LabelFromYup
           name="detalhamento_status"
           :schema="schema"
+          for="detalhamento_status"
         />
-        <Field
+        <SmaeText
           id="detalhamento_status"
+          :schema="schema"
+          :model-value="values.detalhamento_status"
           name="detalhamento_status"
           as="textarea"
           rows="5"
           class="inputtext light mb1"
-          maxlength="2048"
-          :class="{ 'error': errors.detalhamento_status }"
+          anular-vazio
+          :class="{
+            error: errors.detalhamento_status
+          }"
         />
         <ErrorMessage
           name="detalhamento_status"
@@ -350,11 +382,10 @@ function excluirAcompanhamento(id) {
           as="textarea"
           rows="5"
           class="inputtext light mb1"
-          maxlength="2048"
           :schema="schema"
           :model-value="values.pontos_atencao"
           anular-vazio
-          :class="{ 'error': errors.pontos_atencao }"
+          :class="{ error: errors.pontos_atencao }"
         />
         <ErrorMessage
           name="pontos_atencao"
@@ -369,7 +400,7 @@ function excluirAcompanhamento(id) {
       </legend>
 
       <FieldArray
-        v-slot="{ fields, push, remove, handleChange }"
+        v-slot="{ fields, push, remove }"
         name="acompanhamentos"
       >
         <div
@@ -406,12 +437,12 @@ function excluirAcompanhamento(id) {
                 as="textarea"
                 rows="5"
                 class="inputtext light mb1"
-                :max-length="2048"
                 :schema="schema"
                 :model-value="fields[idx]?.value?.encaminhamento"
                 anular-vazio
-                :class="{ 'error': errors[`acompanhamentos[${idx}].encaminhamento`] }"
-                @update:model-value="handleChange"
+                :class="{
+                  error: errors[`acompanhamentos[${idx}].encaminhamento`]
+                }"
               />
               <ErrorMessage
                 :name="`acompanhamentos[${idx}].encaminhamento`"
@@ -431,7 +462,7 @@ function excluirAcompanhamento(id) {
               <Field
                 :id="`acompanhamentos[${idx}].responsavel`"
                 :name="`acompanhamentos[${idx}].responsavel`"
-                required
+                :required="schema.fields.acompanhamentos.innerType.fields.responsavel.spec.presence === 'required'"
                 type="text"
                 class="inputtext light mb1"
                 :class="{
@@ -454,7 +485,7 @@ function excluirAcompanhamento(id) {
                 :id="`acompanhamentos[${idx}].prazo_encaminhamento`"
                 :name="`acompanhamentos[${idx}].prazo_encaminhamento`"
                 type="date"
-                required
+                :required="schema.fields.acompanhamentos.innerType.fields.prazo_encaminhamento.spec.presence === 'required'"
                 class="inputtext light mb1"
                 :class="{ 'error': errors[`acompanhamentos[${idx}].prazo_encaminhamento`] }"
                 @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
@@ -478,7 +509,7 @@ function excluirAcompanhamento(id) {
                 :id="`acompanhamentos[${idx}].prazo_realizado`"
                 :name="`acompanhamentos[${idx}].prazo_realizado`"
                 type="date"
-                required
+                :required="schema.fields.acompanhamentos.innerType.fields.prazo_realizado.spec.presence === 'required'"
                 class="inputtext light mb1"
                 :class="{ 'error': errors[`acompanhamentos[${idx}].prazo_realizado`] }"
                 @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
@@ -535,7 +566,7 @@ function excluirAcompanhamento(id) {
       </button>
       <hr class="ml2 f1">
     </div>
-  </Form>
+  </form>
 
   <div
     v-if="chamadasPendentes?.emFoco"
