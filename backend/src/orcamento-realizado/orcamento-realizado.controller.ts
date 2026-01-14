@@ -111,6 +111,16 @@ export class OrcamentoRealizadoController {
         await this.orcamentoRealizadoService.remove(this.tipo, +params.id, user);
         return '';
     }
+
+    @Post('cron/executar')
+    @ApiBearerAuth('access-token')
+    @Roles(['CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp'])
+    @ApiNoContentResponse()
+    @HttpCode(HttpStatus.ACCEPTED)
+    async executarCron(@CurrentUser() user: PessoaFromJwt) {
+        await this.orcamentoRealizadoService.handleCron();
+        return '';
+    }
 }
 
 @ApiTags('Orçamento - Realizado')
@@ -213,6 +223,16 @@ export class OrcamentoRealizadoPSController {
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt, @TipoPDM() tipo: TipoPdmType) {
         await this.orcamentoRealizadoService.remove(tipo, +params.id, user);
+        return '';
+    }
+
+    @Post('cron/executar')
+    @ApiBearerAuth('access-token')
+    @Roles(['SMAE.superadmin'])
+    @ApiNoContentResponse()
+    @HttpCode(HttpStatus.ACCEPTED)
+    async executarCron(@CurrentUser() user: PessoaFromJwt, @TipoPDM() tipo: TipoPdmType) {
+        await this.orcamentoRealizadoService.handleCron();
         return '';
     }
 }
