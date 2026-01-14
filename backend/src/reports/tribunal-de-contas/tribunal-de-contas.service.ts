@@ -1,6 +1,9 @@
 import { HttpException, Injectable } from '@nestjs/common';
+import { CampoVinculo } from '@prisma/client';
+import { CsvWriterOptions, WriteCsvToFile } from 'src/common/helpers/CsvWriter';
 import { Date2YMD } from '../../common/date2ymd';
 import { PrismaService } from '../../prisma/prisma.service';
+import { ReportContext } from '../relatorios/helpers/reports.contexto';
 import {
     DefaultCsvOptions,
     DefaultTransforms,
@@ -10,10 +13,6 @@ import {
 } from '../utils/utils.service';
 import { CreateRelTribunalDeContasDto } from './dto/create-tribunal-de-contas.dto';
 import { RelatorioTribunalDeContasDto, RelTribunalDeContasDto } from './entities/tribunal-de-contas.entity';
-import { ReportContext } from '../relatorios/helpers/reports.contexto';
-import { CsvWriterOptions, WriteCsvToFile } from 'src/common/helpers/CsvWriter';
-import { flatten } from '@json2csv/transforms';
-import { CampoVinculo } from '@prisma/client';
 @Injectable()
 export class TribunalDeContasService implements ReportableService {
     constructor(private readonly prisma: PrismaService) {}
