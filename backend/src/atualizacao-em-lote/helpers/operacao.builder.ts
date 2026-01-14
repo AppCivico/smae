@@ -30,11 +30,13 @@ const COLUMN_LABELS: Record<string, string> = {
 
     // Organização
     orgao_responsavel_id: 'Órgão Responsável',
-    responsavel_id: 'Responsável',
     orgao_gestor_id: 'Órgão Gestor',
     orgao_origem_id: 'Órgão de Origem',
     orgao_executor_id: 'Órgão Executor',
     orgao_colaborador_id: 'Órgão Colaborador',
+
+    // Pessoas
+    responsavel_id: 'Responsável',
 
     // Campos de gestão
     secretario_executivo: 'Secretário Executivo',
@@ -246,6 +248,7 @@ async function formatValueForDisplay(
         case 'orgao_gestor_id':
         case 'orgao_executor_id':
         case 'orgao_origem_id':
+        case 'orgao_colaborador_id':
             try {
                 const orgao = await prisma.orgao.findUnique({
                     where: { id: value },
