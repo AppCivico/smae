@@ -235,6 +235,18 @@ const sessoes = computed<SessaoDeDetalheLinhas | null>(() => {
     >
   </div>
 
+  <div
+    v-if="urlIcone"
+    class="flex mb2"
+    :class="classeAlinhamentoIcone"
+  >
+    <img
+      :src="urlIcone"
+      alt="Ícone do termo de encerramento"
+      class="icone-termo"
+    >
+  </div>
+
   <section
     v-if="sessoes"
     class="termo-encerramento-resumo"
