@@ -9,7 +9,7 @@ import { useRoute, useRouter } from 'vue-router';
 import CabecalhoDePagina from '@/components/CabecalhoDePagina.vue';
 import SmaeDateInput from '@/components/camposDeFormulario/SmaeDateInput.vue';
 import SmaeNumberInput from '@/components/camposDeFormulario/SmaeNumberInput.vue';
-import InputImageProfile from '@/components/InputImageProfile.vue';
+import InputImageProfile from '@/components/InputImageProfile/InputImageProfile.vue';
 import { termoEncerramento as schema } from '@/consts/formSchemas';
 import { ModuloSistema } from '@/consts/modulosDoSistema';
 import projectStatuses from '@/consts/projectStatuses';
@@ -364,13 +364,13 @@ onMounted(async () => {
 
       <div class="f1">
         <SmaeLabel
-          name="data_encerramento"
+          name="data_termino_real"
           :schema="schema"
         />
 
         <Field
           v-slot="{ field, handleChange, value }"
-          name="data_encerramento"
+          name="data_termino_real"
         >
           <SmaeDateInput
             class="inputtext light"
@@ -383,7 +383,7 @@ onMounted(async () => {
 
         <ErrorMessage
           class="error-msg"
-          name="data_encerramento"
+          name="data_termino_real"
         />
       </div>
     </div>
