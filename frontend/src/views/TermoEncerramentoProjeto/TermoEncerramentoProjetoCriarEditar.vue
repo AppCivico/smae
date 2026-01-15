@@ -8,8 +8,8 @@ import { useRoute, useRouter } from 'vue-router';
 
 import CabecalhoDePagina from '@/components/CabecalhoDePagina.vue';
 import SmaeDateInput from '@/components/camposDeFormulario/SmaeDateInput.vue';
-import SmaeNumberInput from '@/components/camposDeFormulario/SmaeNumberInput.vue';
 import InputImageProfile from '@/components/InputImageProfile/InputImageProfile.vue';
+import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import { termoEncerramento as schema } from '@/consts/formSchemas';
 import { ModuloSistema } from '@/consts/modulosDoSistema';
 import projectStatuses from '@/consts/projectStatuses';
@@ -399,11 +399,10 @@ onMounted(async () => {
           v-slot="{ field, handleChange, value }"
           name="previsao_custo"
         >
-          <SmaeNumberInput
+          <MaskedFloatInput
             class="inputtext light"
-            :model-value="value"
+            :value="value"
             :name="field.name"
-            converter-para="number"
             @update:model-value="handleChange"
           />
         </Field>
@@ -424,11 +423,10 @@ onMounted(async () => {
           v-slot="{ field, handleChange, value }"
           name="valor_executado_total"
         >
-          <SmaeNumberInput
+          <MaskedFloatInput
             class="inputtext light"
-            :model-value="value"
+            :value="value"
             :name="field.name"
-            converter-para="number"
             @update:model-value="handleChange"
           />
         </Field>
