@@ -3,19 +3,16 @@ import {
   computed, defineAsyncComponent, ref, watchEffect,
 } from 'vue';
 
-import LoadingComponent from '@/components/LoadingComponent.vue';
 import LocalFilter from '@/components/LocalFilter.vue';
 import consolidarDiretorios from '@/helpers/consolidarDiretorios';
 import createDataTree from '@/helpers/createDataTree.ts';
 import normalizarCaminho from '@/helpers/normalizarCaminho.ts';
 import requestS from '@/helpers/requestS.ts';
 
-const baseUrl = `${import.meta.env.VITE_API_URL}`;
+import Arvore from './ArvoreDeArquivos.vue';
+import DialogoDePrevia from './DialogoDePrevia.vue';
 
-const Arvore = defineAsyncComponent({
-  loader: () => import('./ArvoreDeArquivos.vue'),
-  loadingComponent: LoadingComponent,
-});
+const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 const props = defineProps({
   arquivos: {
@@ -75,6 +72,13 @@ const arquivosAgrupadosPorCaminho = computed(() => Object
     listaFiltradaPorTermoDeBusca.value,
     (item) => normalizarCaminho(item.arquivo.diretorio_caminho),
   ));
+
+const arquivosPorId = computed(() => props.arquivos
+  .reduce((acc, cur) => {
+    acc[cur.id] = cur;
+    return acc;
+  }, {})
+  || {});
 
 const diretoriosConsolidados = computed(() => consolidarDiretorios(
   [].concat(
@@ -184,6 +188,8 @@ watchEffect(async () => {
       </svg>
       Adicionar arquivo
     </SmaeLink>
+
+    <DialogoDePrevia :arquivos-por-id="arquivosPorId" />
   </div>
 </template>
 <style lang="less">

@@ -175,6 +175,47 @@ const éPossívelAbrir = (item) => !item.children?.length
                 >
                   {{ dateToField(arquivo?.data) }}
                 </small>
+                <SmaeLink
+                  v-if="arquivo?.arquivo?.preview"
+                  :desabilitar="!arquivo?.arquivo?.preview?.download_token"
+                  exibir-desabilitado
+                  class="tipinfo left like-a__text arvore-de-arquivos__editar"
+                  :class="`arvore-de-arquivos__link-previa--${arquivo?.arquivo?.preview?.status}`"
+                  :aria-label="`exibir uma amostra de ${arquivo?.arquivo?.nome_original}`"
+                  :to="{
+                    query: {
+                      ...$route.query,
+                      dialogo: 'previa-arquivo',
+                      arquivo_id: arquivo?.id
+                    },
+                  }"
+                >
+                  <svg
+                    width="20"
+                    height="20"
+                  ><use
+                    :xlink:href="arquivo?.arquivo?.preview?.download_token
+                      ? '#i_eye'
+                      : '#i_eye-off'"
+                  /></svg>
+                  <div v-if="arquivo?.arquivo?.preview?.erro_mensagem">
+                    {{ arquivo?.arquivo?.preview?.erro_mensagem }}
+                  </div>
+                  <div v-else-if="arquivo?.arquivo?.preview?.status === 'pendente'">
+                    Pré-visualização de "{{ arquivo?.arquivo?.nome_original }}"
+                    pendente
+                  </div>
+                  <div v-else-if="arquivo?.arquivo?.preview?.status === 'executando'">
+                    Pré-visualização de "{{ arquivo?.arquivo?.nome_original }}"
+                    sendo gerada
+                  </div>
+                  <div v-else-if="arquivo?.arquivo?.preview?.download_token">
+                    Visualizar "{{ arquivo?.arquivo?.nome_original }}"
+                  </div>
+                  <div v-else>
+                    Visualização de "{{ arquivo?.arquivo?.nome_original }}" indisponível
+                  </div>
+                </SmaeLink>
 
                 <SmaeLink
                   v-if="props.rotaDeEdição && !apenasLeitura"
@@ -353,5 +394,24 @@ const éPossívelAbrir = (item) => !item.children?.length
 
     margin-right: 0;
   }
+// pendente: Task criada, aguardando execução
+// executando: Task em execução
+// concluido: Preview gerado com sucesso
+// erro: Erro durante a geração
+// sem_suporte: Tipo de arquivo não suportado
+// pulado: Arquivo muito grande ou é ZIP
+.arvore-de-arquivos__link-previa--pendente,
+.arvore-de-arquivos__link-previa--executando,
+.arvore-de-arquivos__link-previa--erro,
+.arvore-de-arquivos__link-previa--sem_suporte,
+.arvore-de-arquivos__link-previa--pulado {
+  svg {
+    opacity: 0.65;
+  }
+
+  div {
+    opacity: 1;
+  }
+}
 }
 </style>
