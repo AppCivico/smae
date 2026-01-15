@@ -36,8 +36,8 @@ defineProps({
       <button
         class="btn big"
         type="submit"
-        :area-disabled="$props.erros && Object.keys($props.erros)?.length"
-        :area-busy="$props.estaCarregando"
+        :aria-disabled="$props.erros && Object.keys($props.erros)?.length"
+        :aria-busy="$props.estaCarregando"
       >
         Gravar
       </button>
