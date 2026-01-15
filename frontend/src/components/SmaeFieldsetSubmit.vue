@@ -51,7 +51,7 @@ defineProps({
     flex-grow: 1;
     content: '';
     height: 1.5px;
-    background-color: @c300;
+    background-color: @c100;
   }
 }
 </style>
