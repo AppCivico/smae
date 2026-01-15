@@ -26,6 +26,7 @@ const props = defineProps<Props>();
 
 const route = useRoute();
 const router = useRouter();
+
 const alertStore = useAlertStore();
 
 // @ts-expect-error - VITE_API_URL está definido no ambiente
