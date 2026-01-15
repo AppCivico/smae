@@ -1708,7 +1708,7 @@ export class VariavelCicloService {
 
                         // Formato: "Titulo da Variável/MM-YYYY"
                         const dataReferencia = DateTime.fromJSDate(doc.referencia_data, { zone: 'UTC' });
-                        const mesAno = dataReferencia.toFormat('MM-yyyy');
+                        const mesAno = dataReferencia.toFormat('LLL yyyy', { locale: 'pt-BR' });
                         baseDto.diretorio_caminho = `${holderInfo.titulo}/${mesAno}`;
 
                         return {
