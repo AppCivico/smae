@@ -153,6 +153,123 @@ export class PreviewService implements TaskableService {
         return previewId;
     }
 
+    private async processJsonConversion(arquivo: any): Promise<number> {
+        this.logger.log(`Starting JSON conversion for arquivo ${arquivo.id}`);
+
+        // Download original JSON file from storage
+        const stream = await this.storage.getStream(arquivo.caminho);
+        const chunks: Buffer[] = [];
+        for await (const chunk of stream) {
+            chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+        }
+        const buffer = Buffer.concat(chunks);
+
+        this.logger.log(`Downloaded JSON file buffer, size: ${buffer.length} bytes`);
+
+        try {
+            // Parse and format JSON
+            const jsonString = buffer.toString('utf-8');
+            const jsonObject = JSON.parse(jsonString);
+            const formattedJson = JSON.stringify(jsonObject, null, 2);
+
+            // Create HTML with syntax highlighting
+            const htmlContent = this.createJsonHtml(formattedJson, arquivo.nome_original);
+
+            // Convert to PDF using Gotenberg
+            const pdfBuffer = await this.gotenbergService.convertHtmlToPdf(htmlContent, {
+                printBackground: true,
+                marginTop: 0.5,
+                marginBottom: 0.5,
+                marginLeft: 0.5,
+                marginRight: 0.5,
+            });
+
+            this.logger.log(`JSON conversion completed, PDF buffer size: ${pdfBuffer.length} bytes`);
+
+            // Upload preview
+            const previewId = await this.uploadPreview(
+                arquivo.id,
+                arquivo.nome_original,
+                pdfBuffer,
+                'application/pdf',
+                arquivo.criado_por
+            );
+
+            return previewId;
+        } catch (error) {
+            this.logger.error(`Error parsing or converting JSON for arquivo ${arquivo.id}:`, error);
+            throw new Error(`JSON conversion failed: ${error.message}`);
+        }
+    }
+
+    private createJsonHtml(jsonString: string, filename: string): string {
+        // Escape HTML and add syntax highlighting
+        const highlighted = this.syntaxHighlightJson(jsonString);
+
+        return `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <style>
+                    body { 
+                        font-family: 'Courier New', monospace; 
+                        background: #1e1e1e;
+                        color: #d4d4d4;
+                        padding: 20px;
+                        margin: 0;
+                    }
+                    .filename { 
+                        color: #4ec9b0; 
+                        margin-bottom: 10px;
+                        font-size: 14px;
+                    }
+                    pre { 
+                        margin: 0;
+                        white-space: pre-wrap;
+                        word-wrap: break-word;
+                    }
+                    .json-key { color: #9cdcfe; }
+                    .json-string { color: #ce9178; }
+                    .json-number { color: #b5cea8; }
+                    .json-boolean { color: #569cd6; }
+                    .json-null { color: #569cd6; }
+                </style>
+            </head>
+            <body>
+                <div class="filename">${this.escapeHtml(filename)}</div>
+                <pre>${highlighted}</pre>
+            </body>
+            </html>
+        `;
+    }
+
+    private syntaxHighlightJson(json: string): string {
+        json = this.escapeHtml(json);
+        json = json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?)/g, (match) => {
+            let cls = 'json-string';
+            if (/:$/.test(match)) {
+                cls = 'json-key';
+            }
+            return `<span class="${cls}">${match}</span>`;
+        });
+        json = json.replace(/\b(true|false)\b/g, '<span class="json-boolean">$1</span>');
+        json = json.replace(/\bnull\b/g, '<span class="json-null">null</span>');
+        json = json.replace(/\b-?\d+\.?\d*\b/g, '<span class="json-number">$&</span>');
+        return json;
+    }
+
+    private escapeHtml(text: string): string {
+        const map: Record<string, string> = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;',
+        };
+        return text.replace(/[&<>"']/g, (m) => map[m]);
+    }
+
     private async uploadPreview(
         originalArquivoId: number,
         originalFilename: string,
@@ -287,6 +404,8 @@ export class PreviewService implements TaskableService {
                 previewArquivoId = await this.processImageResize(arquivo);
             } else if (tipoPreview === 'conversao_pdf') {
                 previewArquivoId = await this.processPdfConversion(arquivo);
+            } else if (tipoPreview === 'conversao_json') {
+                previewArquivoId = await this.processJsonConversion(arquivo);
             } else {
                 throw new Error(`Unknown preview type: ${tipoPreview}`);
             }
