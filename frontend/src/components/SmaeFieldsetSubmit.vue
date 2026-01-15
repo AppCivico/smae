@@ -39,7 +39,7 @@ defineProps({
         :area-disabled="$props.erros && Object.keys($props.erros)?.length"
         :area-busy="$props.estaCarregando"
       >
-        Enviar
+        Gravar
       </button>
     </slot>
   </component>
