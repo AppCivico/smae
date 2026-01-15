@@ -83,6 +83,10 @@ async function verificarIcone() {
   }
 }
 
+function imprimirDocumento() {
+  window.print();
+}
+
 onMounted(async () => {
   await termoEncerramentoStore.buscarItem(props.escopoId);
   await verificarIcone();
@@ -197,6 +201,13 @@ const sessoes = computed<SessaoDeDetalheLinhas | null>(() => {
 <template>
   <CabecalhoDePagina>
     <template #acoes>
+      <button
+        type="button"
+        class="btn outline bgnone tcprimary big"
+        @click="imprimirDocumento"
+      >
+        Imprimir
+      </button>
       <SmaeLink
         :to="{ name: '.termoEncerramento.editar' }"
         class="btn big"
