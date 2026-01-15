@@ -714,7 +714,7 @@ export const termoEncerramento = object()
       .min(dataMin)
       .nullable(),
     data_termino_real: date()
-      .label('Data de termino real')
+      .label('Data de término real')
       .max(dataMax)
       .min(dataMin)
       .nullable(),
