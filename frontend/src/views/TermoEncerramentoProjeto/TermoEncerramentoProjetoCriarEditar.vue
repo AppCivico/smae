@@ -447,22 +447,9 @@ onMounted(async () => {
 
         <Field
           name="status_final"
-          as="select"
           class="inputtext light"
           disabled
-        >
-          <option value="">
-            Selecionar
-          </option>
-
-          <option
-            v-for="(status) in projectStatuses"
-            :key="`status--${status.valor}`"
-            :value="status.nome"
-          >
-            {{ status.nome }}
-          </option>
-        </Field>
+        />
 
         <ErrorMessage
           class="error-msg"
