@@ -323,7 +323,7 @@ export default {
                 ...tiparPropsDeRota(route),
                 escopoId: route.params.projetoId,
               }),
-              component: import(
+              component: () => import(
                 '@/views/TermoEncerramentoProjeto/TermoEncerramentoProjetoResumo.vue'
               ),
               meta: {
@@ -341,7 +341,7 @@ export default {
                 ...tiparPropsDeRota(route),
                 escopoId: route.params.projetoId,
               }),
-              component: import(
+              component: () => import(
                 '@/views/TermoEncerramentoProjeto/TermoEncerramentoProjetoCriarEditar.vue'
               ),
               meta: {
