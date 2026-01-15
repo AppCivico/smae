@@ -39,7 +39,7 @@ defineProps({
         :aria-disabled="$props.erros && Object.keys($props.erros)?.length"
         :aria-busy="$props.estaCarregando"
       >
-        Gravar
+        Salvar
       </button>
     </slot>
   </component>

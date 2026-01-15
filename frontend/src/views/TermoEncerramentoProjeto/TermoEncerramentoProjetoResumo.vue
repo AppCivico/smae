@@ -88,23 +88,6 @@ onMounted(async () => {
   await verificarIcone();
 });
 
-function formatarJustificativa(): string {
-  if (!emFoco.value?.justificativa) {
-    return '-';
-  }
-
-  let resultado = emFoco.value.justificativa.descricao;
-
-  if (
-    emFoco.value.justificativa.habilitar_info_adicional
-    && emFoco.value.justificativa_complemento
-  ) {
-    resultado += `\n\nComplemento: ${emFoco.value.justificativa_complemento}`;
-  }
-
-  return resultado;
-}
-
 const sessaoPrincipal = computed<SessaoResumo[]>(() => {
   if (!emFoco.value) {
     return [];
@@ -190,7 +173,7 @@ const sessoes = computed<SessaoDeDetalheLinhas | null>(() => {
     [
       {
         label: schema.fields.justificativa_id.spec.label,
-        valor: formatarJustificativa(),
+        valor: emFoco.value.justificativa?.descricao,
       },
       {
         label: schema.fields.responsavel_encerramento_nome.spec.label,
