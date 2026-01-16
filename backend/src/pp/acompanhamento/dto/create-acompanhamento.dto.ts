@@ -14,7 +14,7 @@ import {
 } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 import { DateTransform } from '../../../auth/transforms/date.transform';
-import { MAX_LENGTH_LONG, MAX_LENGTH_MEDIO } from 'src/common/consts';
+import { MAX_LENGTH_HTML, MAX_LENGTH_LONG, MAX_LENGTH_MEDIO } from 'src/common/consts';
 
 export class ProjetoAcompanhamentoDto {
     @IsOptional()
@@ -48,7 +48,7 @@ export class ProjetoAcompanhamentoDto {
 export class CreateProjetoAcompanhamentoDto {
     @IsOptional()
     @IsString()
-    @MaxLength(MAX_LENGTH_MEDIO, { message: `O campo "Pauta" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres` })
+    @MaxLength(MAX_LENGTH_HTML, { message: `O campo "Pauta" pode ser no máximo ${MAX_LENGTH_HTML} caracteres` })
     pauta?: string;
 
     @IsOnlyDate()
@@ -64,8 +64,8 @@ export class CreateProjetoAcompanhamentoDto {
 
     @IsOptional()
     @IsString()
-    @MaxLength(MAX_LENGTH_LONG, {
-        message: `O campo "Detalhamento" pode ser no máximo ${MAX_LENGTH_LONG} caracteres`,
+    @MaxLength(MAX_LENGTH_HTML, {
+        message: `O campo "Detalhamento" pode ser no máximo ${MAX_LENGTH_HTML} caracteres`,
     })
     detalhamento?: string;
 
@@ -90,8 +90,8 @@ export class CreateProjetoAcompanhamentoDto {
 
     @IsOptional()
     @IsString()
-    @MaxLength(MAX_LENGTH_MEDIO, {
-        message: `O campo "Pontas de atenção" pode ser no máximo ${MAX_LENGTH_MEDIO} caracteres`,
+    @MaxLength(MAX_LENGTH_HTML, {
+        message: `O campo "Pontas de atenção" pode ser no máximo ${MAX_LENGTH_HTML} caracteres`,
     })
     pontos_atencao?: string;
 

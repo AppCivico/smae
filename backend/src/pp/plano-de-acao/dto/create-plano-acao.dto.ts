@@ -2,7 +2,7 @@ import { Transform } from 'class-transformer';
 import { IsInt, IsNumber, IsOptional, IsString, Max, MaxLength, Min, ValidateIf } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 import { DateTransform } from '../../../auth/transforms/date.transform';
-import { MAX_LENGTH_DEFAULT, MAX_LENGTH_MEDIO } from 'src/common/consts';
+import { MAX_LENGTH_DEFAULT, MAX_LENGTH_HTML, MAX_LENGTH_MEDIO } from 'src/common/consts';
 
 export class CreatePlanoAcaoDto {
     @IsInt()
@@ -19,8 +19,8 @@ export class CreatePlanoAcaoDto {
     responsavel?: string;
 
     @IsString()
-    @MaxLength(MAX_LENGTH_MEDIO, {
-        message: `O campo 'Contramedida' deve ter no máximo ${MAX_LENGTH_MEDIO} caracteres`,
+    @MaxLength(MAX_LENGTH_HTML, {
+        message: `O campo 'Contramedida' deve ter no máximo ${MAX_LENGTH_HTML} caracteres`,
     })
     contramedida: string;
 
@@ -31,17 +31,11 @@ export class CreatePlanoAcaoDto {
 
     @IsOptional()
     @ValidateIf((object, value) => value !== null)
-    @IsNumber(
-        { maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false },
-        { message: 'até duas casas decimais' }
-    )
+    @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false }, { message: 'até duas casas decimais' })
     @Min(0, { message: 'Valor Empenhado precisa ser positivo ou zero' })
     custo: number | null;
 
-    @IsNumber(
-        { maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false },
-        { message: 'até duas casas decimais' }
-    )
+    @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false }, { message: 'até duas casas decimais' })
     @IsOptional()
     @ValidateIf((object, value) => value !== null)
     @Min(0, { message: 'Valor Empenhado precisa ser positivo ou zero' })
@@ -50,8 +44,8 @@ export class CreatePlanoAcaoDto {
 
     @IsOptional()
     @IsString()
-    @MaxLength(MAX_LENGTH_DEFAULT, {
-        message: `O campo 'Medidas de Contingência' deve ter no máximo ${MAX_LENGTH_DEFAULT} caracteres`,
+    @MaxLength(MAX_LENGTH_HTML, {
+        message: `O campo 'Medidas de Contingência' deve ter no máximo ${MAX_LENGTH_HTML} caracteres`,
     })
     medidas_de_contingencia: string | undefined;
 
