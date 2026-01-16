@@ -394,24 +394,25 @@ const éPossívelAbrir = (item) => !item.children?.length
 
     margin-right: 0;
   }
-// pendente: Task criada, aguardando execução
-// executando: Task em execução
-// concluido: Preview gerado com sucesso
-// erro: Erro durante a geração
-// sem_suporte: Tipo de arquivo não suportado
-// pulado: Arquivo muito grande ou é ZIP
-.arvore-de-arquivos__link-previa--pendente,
-.arvore-de-arquivos__link-previa--executando,
-.arvore-de-arquivos__link-previa--erro,
-.arvore-de-arquivos__link-previa--sem_suporte,
-.arvore-de-arquivos__link-previa--pulado {
-  svg {
-    opacity: 0.65;
-  }
 
-  div {
-    opacity: 1;
+  // pendente: Task criada, aguardando execução
+  // executando: Task em execução
+  // concluido: Preview gerado com sucesso
+  // erro: Erro durante a geração
+  // sem_suporte: Tipo de arquivo não suportado
+  // pulado: Arquivo muito grande ou é ZIP
+  .arvore-de-arquivos__link-previa--pendente,
+  .arvore-de-arquivos__link-previa--executando,
+  .arvore-de-arquivos__link-previa--erro,
+  .arvore-de-arquivos__link-previa--sem_suporte,
+  .arvore-de-arquivos__link-previa--pulado {
+    svg {
+      opacity: 0.65;
+    }
+
+    div {
+      opacity: 1;
+    }
   }
-}
 }
 </style>
