@@ -2763,6 +2763,8 @@ table {
     display: inline-block;
     min-width: 1.5rem;
     text-align: center;
+    border: 0;
+    background: transparent;
 
     &:hover {
       color: @c100;
@@ -2770,6 +2772,10 @@ table {
 
     &.is-active {
       color: @amarelo;
+    }
+
+    &.mono {
+      font-family: 'Roboto Mono', monospace;
     }
   }
 }
