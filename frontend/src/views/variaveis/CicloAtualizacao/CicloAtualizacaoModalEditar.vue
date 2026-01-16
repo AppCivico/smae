@@ -1,372 +1,4 @@
 <!-- eslint-disable max-len -->
-<template>
-  <div class="ciclo-atualizacao-modal-editar">
-    <div class="editar-subtitulo flex">
-      <svg
-        class="editar-subtitulo__icone"
-        width="32"
-        height="32"
-      ><use xlink:href="#i_indicador" /></svg>
-
-      <div class="editar-subtitulo__conteudo">
-        <h3 class="editar-subtitulo__conteudo-variavel">
-          <strong>{{ emFoco?.variavel.codigo }}</strong> - {{ emFoco?.variavel.titulo }}
-        </h3>
-
-        <h4 class="editar-subtitulo__conteudo-data">
-          {{ dataCicloAtualizacao }}
-        </h4>
-      </div>
-    </div>
-
-    <form
-      class="mt1 flex column"
-      @submit.prevent="carregando && !Object.keys(errors).length && validarEEnviar()"
-    >
-      <hr>
-
-      <section :class="`formularios formularios--${fase}`">
-        <article
-          v-if="forumlariosAExibir.liberacao.exibir"
-          class="mt2 formulario formulario--liberacao"
-        >
-          <div class="formulario__item">
-            <LabelFromYup
-              name="analise_qualitativa_liberador"
-              :schema="schema"
-            />
-
-            <SmaeText
-              class="inputtext light f1"
-              as="textarea"
-              name="analise_qualitativa_liberador"
-              :disabled="!forumlariosAExibir.liberacao.liberado"
-              :schema="schema"
-              anular-vazio
-              rows="3"
-            />
-
-            <ErrorMessage
-              name="analise_qualitativa_liberador"
-            />
-          </div>
-        </article>
-
-        <article
-          v-if="forumlariosAExibir.aprovacao.exibir"
-          class="mt2 formulario formulario--aprovacao"
-        >
-          <div class="formulario__item">
-            <LabelFromYup
-              name="analise_qualitativa_aprovador"
-              :schema="schema"
-            />
-
-            <SmaeText
-              class="inputtext light f1"
-              as="textarea"
-              name="analise_qualitativa_aprovador"
-              :disabled="!forumlariosAExibir.aprovacao.liberado || fase === 'liberacao'"
-              :schema="schema"
-              anular-vazio
-              rows="3"
-            />
-
-            <ErrorMessage
-              name="analise_qualitativa_aprovador"
-            />
-          </div>
-        </article>
-
-        <article
-          v-if="fase !== 'cadastro'"
-          class="mt2 formulario formulario--complementacao"
-        >
-          <div class="flex g025 center formulario__item">
-            <Field
-              class="inputcheckbox"
-              type="checkbox"
-              name="solicitar_complementacao"
-              :value="true"
-              :unchecked-value="false"
-            />
-
-            <LabelFromYup
-              class="mb0"
-              name="solicitar_complementacao"
-              :schema="schema"
-            />
-          </div>
-
-          <div class="formulario__item mt1">
-            <LabelFromYup
-              name="pedido_complementacao"
-              :schema="schema"
-            />
-
-            <SmaeText
-              class="inputtext light f1"
-              as="textarea"
-              name="pedido_complementacao"
-              :disabled="!values.solicitar_complementacao"
-              :schema="schema"
-              anular-vazio
-              rows="3"
-            />
-
-            <ErrorMessage
-              name="pedido_complementacao"
-            />
-          </div>
-        </article>
-
-        <article
-          v-if="forumlariosAExibir.cadastro.exibir"
-          class="mt2 formulario formulario--cadastro mt1"
-        >
-          <div class="mt2 formulario__item">
-            <LabelFromYup
-              name="analise_qualitativa"
-              :schema="schema"
-            />
-
-            <SmaeText
-              class="inputtext light f1"
-              as="textarea"
-              name="analise_qualitativa"
-              :disabled="!forumlariosAExibir.cadastro.liberado
-                || fase === 'aprovacao'
-                || fase === 'liberacao'"
-              :schema="schema"
-              anular-vazio
-              rows="3"
-            />
-          </div>
-        </article>
-      </section>
-
-      <article class="upload-arquivos mt1">
-        <UploadArquivos
-          :arquivos="arquivosLocais"
-          label="Adicionar documentos comprobatórios ou complementares"
-          @novo-arquivo="adicionarNovoArquivo"
-          @remover-arquivo="removerArquivo"
-        />
-      </article>
-
-      <article class="valores-variaveis mt4">
-        <h2 class="valores-variaveis__titulo">
-          Valores de variáveis
-        </h2>
-
-        <AuxiliarDePreenchimento>
-          <div class="flex g2 end mb1">
-            <div class="f1 mb1">
-              <label class="label">Valor a aplicar</label>
-              <input
-                v-if="!temCategorica"
-                v-model="valorPadrao"
-                type="number"
-                class="inputtext light mb1"
-              >
-              <select
-                v-else
-                v-model="valorPadrao"
-                class="inputtext light"
-              >
-                <option value="">
-                  -
-                </option>
-
-                <option
-                  v-for="variaveisCategoricasValor in variaveisCategoricasValores"
-                  :key="`ciclo-variavel-categorica--${variaveisCategoricasValor.id}`"
-                  :value="variaveisCategoricasValor.valor_variavel"
-                >
-                  {{ variaveisCategoricasValor.titulo }}
-                  {{ variaveisCategoricasValor.descricao && truncate(`- ${variaveisCategoricasValor.descricao}`, 55) }}
-                </option>
-              </select>
-            </div>
-            <button
-              type="button"
-              class="f0 mb1 btn bgnone outline tcprimary"
-              @click="preencherVaziosCom(valorPadrao)"
-            >
-              Preencher vazios
-            </button>
-
-            <button
-              type="reset"
-              form="form"
-              class="f0 mb1 pl0 pr0 btn bgnone"
-              @click="limparFormulario"
-            >
-              &times; limpar tudo
-            </button>
-
-            <button
-              type="reset"
-              class="f0 mb1 pl0 pr0 btn bgnone"
-              @click.prevent="restaurarFormulario"
-            >
-              &excl; restaurar
-            </button>
-          </div>
-        </AuxiliarDePreenchimento>
-
-        <table class="valores-variaveis-tabela mt4">
-          <thead>
-            <tr>
-              <th>Código</th>
-              <th>Referência</th>
-              <th>Valor realizado</th>
-              <th v-if="emFoco?.variavel.acumulativa">
-                Valor realizado acumulado
-              </th>
-            </tr>
-          </thead>
-
-          <tbody>
-            <tr
-              v-for="(variavelDado, variavelDadoIndex) in variaveisDados"
-              :key="`variavel-dado--${variavelDadoIndex}-${variavelDado.codigo}`"
-            >
-              <Field
-                :name="`variaveis_dados[${variavelDadoIndex}].variavel_id`"
-                type="hidden"
-              />
-              <td class="valores-variaveis-tabela__item valores-variaveis-tabela__item--codigo">
-                <div>
-                  <strong class="block">
-                    {{ variavelDado.codigo.id }}
-                  </strong>
-
-                  - {{ variavelDado.codigo.texto }}
-                </div>
-              </td>
-
-              <th class="valores-variaveis-tabela__item valores-variaveis-tabela__item--referencia">
-                {{ variavelDado.referencia }}
-              </th>
-
-              <td
-                class="valores-variaveis-tabela__item valores-variaveis-tabela__item--valor_realizado"
-              >
-                <Field
-                  v-if="!temCategorica"
-                  v-model="variaveisDadosValores[variavelDadoIndex].valor_realizado"
-                  :class="[
-                    'inputtext light',
-                    {'error': temErro(`variaveis_dados[${variavelDadoIndex}].valor_realizado`)}
-                  ]"
-                  type="number"
-                  :name="`variaveis_dados[${variavelDadoIndex}].valor_realizado`"
-                  :disabled="!forumlariosAExibir.cadastro.liberado"
-                  @update:model-value="atualizarVariavelAcumulado(variavelDadoIndex, $event)"
-                />
-
-                <Field
-                  v-else
-                  :class="[
-                    'inputtext light',
-                    {'error': temErro(`variaveis_dados[${variavelDadoIndex}].valor_realizado`)}
-                  ]"
-                  as="select"
-                  :name="`variaveis_dados[${variavelDadoIndex}].valor_realizado`"
-                >
-                  <option value="">
-                    -
-                  </option>
-
-                  <option
-                    v-for="variaveisCategoricasValor in variaveisCategoricasValores"
-                    :key="`ciclo-variavel-categorica--${variaveisCategoricasValor.id}`"
-                    :value="variaveisCategoricasValor.valor_variavel"
-                  >
-                    {{ variaveisCategoricasValor.titulo }}
-                    {{ variaveisCategoricasValor.descricao && truncate(`- ${variaveisCategoricasValor.descricao}`, 55) }}
-                  </option>
-                </Field>
-
-                <ErrorMessage
-                  v-if="errors[`variaveis_dados[${variavelDadoIndex}].valor_realizado`]"
-                  :name="`variaveis_dados[${variavelDadoIndex}].valor_realizado`"
-                />
-              </td>
-
-              <td
-                v-if="emFoco?.variavel.acumulativa"
-                class="valores-variaveis-tabela__item valores-variaveis-tabela__item--valor_realizado_acumulado"
-              >
-                <Field
-                  v-model="variaveisDadosValores[variavelDadoIndex].valor_realizado_acumulado"
-                  :name="`variaveis_dados[${variavelDadoIndex}].valor_realizado_acumulado`"
-                  class="inputtext light f1"
-                  :class="{
-                    error: temErro(`variaveis_dados[${variavelDadoIndex}].valor_realizado_acumulado`)
-                  }"
-                  type="number"
-                  disabled
-                />
-              </td>
-            </tr>
-          </tbody>
-          <tfoot
-            v-if="!temCategorica"
-          >
-            <tr
-              class="valores-variaveis-tabela__linha-calculada"
-            >
-              <td />
-              <td />
-              <td>
-                <output>
-                  {{ valoresCalculados.valor_realizado }}
-                </output>
-              </td>
-              <td
-                v-if="emFoco?.variavel.acumulativa"
-              >
-                <output>
-                  {{ valoresCalculados.valor_realizado_acumulado }}
-                </output>
-              </td>
-            </tr>
-          </tfoot>
-        </table>
-      </article>
-
-      <SmaeFieldsetSubmit :erros="aprovar ? errors : null">
-        <button
-          type="button"
-          class="btn outline bgnone tcprimary"
-          :disabled="bloqueado"
-          :aria-busy="carregando"
-          @click.prevent="aprovar = false; enviar()"
-        >
-          {{
-            values.solicitar_complementacao ?
-              'salvar e solicitar complementação' : botoesLabel.salvar
-          }}
-        </button>
-
-        <button
-          v-if="!values.solicitar_complementacao"
-          type="submit"
-          class="btn"
-          :disabled="bloqueado"
-          :aria-disabled="!!Object.keys(errors).length"
-          :aria-busy="carregando"
-          @click.prevent="!Object.keys(errors).length && validarEEnviar()"
-        >
-          {{ botoesLabel.salvarESubmeter }}
-        </button>
-      </SmaeFieldsetSubmit>
-    </form>
-  </div>
-</template>
-
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, useForm } from 'vee-validate';
@@ -412,7 +44,13 @@ const {
 } = storeToRefs(cicloAtualizacaoStore);
 
 const {
-  fase, forumlariosAExibir, botoesLabel, fasePosicao, dataReferencia, obterValorAnalise,
+  fase,
+  forumlariosAExibir,
+  botoesLabel,
+  fasePosicao,
+  dataReferencia,
+  valorAnalise,
+  temConteudo,
 } = useCicloAtualizacao();
 
 const valorInicialVariaveis = emFoco.value?.valores.map((item) => ({
@@ -427,11 +65,9 @@ function obterVariavelInicial() {
     variaveis_dados: valorInicialVariaveis,
   };
 
-  const analises = obterValorAnalise();
-
   return {
     ...valorInicial,
-    ...analises,
+    ...valorAnalise.value,
   };
 }
 
@@ -621,6 +257,384 @@ function restaurarFormulario() {
   });
 }
 </script>
+
+<template>
+  <div class="ciclo-atualizacao-modal-editar">
+    <div class="editar-subtitulo flex">
+      <svg
+        class="editar-subtitulo__icone"
+        width="32"
+        height="32"
+      ><use xlink:href="#i_indicador" /></svg>
+
+      <div class="editar-subtitulo__conteudo">
+        <h3 class="editar-subtitulo__conteudo-variavel">
+          <strong>{{ emFoco?.variavel.codigo }}</strong> - {{ emFoco?.variavel.titulo }}
+        </h3>
+
+        <h4 class="editar-subtitulo__conteudo-data">
+          {{ dataCicloAtualizacao }}
+        </h4>
+      </div>
+    </div>
+
+    <form
+      class="mt1 flex column"
+      @submit.prevent="carregando && !Object.keys(errors).length && validarEEnviar()"
+    >
+      <hr>
+
+      <section :class="`formularios formularios--${fase}`">
+        <article
+          v-if="forumlariosAExibir.liberacao.exibir"
+          class="mt2 formulario formulario--liberacao"
+        >
+          <div class="formulario__item">
+            <LabelFromYup
+              name="analise_qualitativa_liberador"
+              :schema="schema"
+            />
+
+            <SmaeText
+              class="inputtext light f1"
+              as="textarea"
+              name="analise_qualitativa_liberador"
+              :disabled="!forumlariosAExibir.liberacao.liberado"
+              :schema="schema"
+              anular-vazio
+              rows="3"
+            />
+
+            <ErrorMessage
+              name="analise_qualitativa_liberador"
+            />
+          </div>
+        </article>
+
+        <article
+          v-if="forumlariosAExibir.aprovacao.exibir"
+          class="mt2 formulario formulario--aprovacao"
+        >
+          <div class="formulario__item">
+            <LabelFromYup
+              name="analise_qualitativa_aprovador"
+              :schema="schema"
+            />
+
+            <SmaeText
+              class="inputtext light f1"
+              as="textarea"
+              name="analise_qualitativa_aprovador"
+              :disabled="
+                !forumlariosAExibir.aprovacao.liberado || (
+                  fase === 'liberacao'
+                  && temConteudo(valorAnalise.analise_qualitativa_aprovador)
+                )"
+              :schema="schema"
+              anular-vazio
+              rows="3"
+            />
+
+            <ErrorMessage
+              name="analise_qualitativa_aprovador"
+            />
+          </div>
+        </article>
+
+        <article
+          v-if="fase !== 'cadastro'"
+          class="mt2 formulario formulario--complementacao"
+        >
+          <div class="flex g025 center formulario__item">
+            <Field
+              class="inputcheckbox"
+              type="checkbox"
+              name="solicitar_complementacao"
+              :value="true"
+              :unchecked-value="false"
+            />
+
+            <LabelFromYup
+              class="mb0"
+              name="solicitar_complementacao"
+              :schema="schema"
+            />
+          </div>
+
+          <div class="formulario__item mt1">
+            <LabelFromYup
+              name="pedido_complementacao"
+              :schema="schema"
+            />
+
+            <SmaeText
+              class="inputtext light f1"
+              as="textarea"
+              name="pedido_complementacao"
+              :disabled="!values.solicitar_complementacao"
+              :schema="schema"
+              anular-vazio
+              rows="3"
+            />
+
+            <ErrorMessage
+              name="pedido_complementacao"
+            />
+          </div>
+        </article>
+
+        <article
+          v-if="forumlariosAExibir.cadastro.exibir"
+          class="mt2 formulario formulario--cadastro mt1"
+        >
+          <div class="mt2 formulario__item">
+            <LabelFromYup
+              name="analise_qualitativa"
+              :schema="schema"
+            />
+
+            <SmaeText
+              class="inputtext light f1"
+              as="textarea"
+              name="analise_qualitativa"
+              :disabled="!forumlariosAExibir.cadastro.liberado
+                || fase === 'aprovacao'
+                || fase === 'liberacao'"
+              :schema="schema"
+              anular-vazio
+              rows="3"
+            />
+          </div>
+        </article>
+      </section>
+
+      <article class="upload-arquivos mt1">
+        <UploadArquivos
+          :arquivos="arquivosLocais"
+          label="Adicionar documentos comprobatórios ou complementares"
+          @novo-arquivo="adicionarNovoArquivo"
+          @remover-arquivo="removerArquivo"
+        />
+      </article>
+
+      <article class="valores-variaveis mt4">
+        <h2 class="valores-variaveis__titulo">
+          Valores de variáveis
+        </h2>
+
+        <AuxiliarDePreenchimento>
+          <div class="flex g2 end mb1">
+            <div class="f1 mb1">
+              <label class="label">Valor a aplicar</label>
+              <input
+                v-if="!temCategorica"
+                v-model="valorPadrao"
+                type="number"
+                class="inputtext light mb1"
+              >
+              <select
+                v-else
+                v-model="valorPadrao"
+                class="inputtext light"
+              >
+                <option value="">
+                  -
+                </option>
+
+                <option
+                  v-for="variaveisCategoricasValor in variaveisCategoricasValores"
+                  :key="`ciclo-variavel-categorica--${variaveisCategoricasValor.id}`"
+                  :value="variaveisCategoricasValor.valor_variavel"
+                >
+                  {{ variaveisCategoricasValor.titulo }}
+                  {{
+                    variaveisCategoricasValor.descricao
+                      && truncate(`- ${variaveisCategoricasValor.descricao}`, 55)
+                  }}
+                </option>
+              </select>
+            </div>
+            <button
+              type="button"
+              class="f0 mb1 btn bgnone outline tcprimary"
+              @click="preencherVaziosCom(valorPadrao)"
+            >
+              Preencher vazios
+            </button>
+
+            <button
+              type="reset"
+              form="form"
+              class="f0 mb1 pl0 pr0 btn bgnone"
+              @click="limparFormulario"
+            >
+              &times; limpar tudo
+            </button>
+
+            <button
+              type="reset"
+              class="f0 mb1 pl0 pr0 btn bgnone"
+              @click.prevent="restaurarFormulario"
+            >
+              &excl; restaurar
+            </button>
+          </div>
+        </AuxiliarDePreenchimento>
+
+        <table class="valores-variaveis-tabela mt4">
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Referência</th>
+              <th>Valor realizado</th>
+              <th v-if="emFoco?.variavel.acumulativa">
+                Valor realizado acumulado
+              </th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr
+              v-for="(variavelDado, variavelDadoIndex) in variaveisDados"
+              :key="`variavel-dado--${variavelDadoIndex}-${variavelDado.codigo}`"
+            >
+              <Field
+                :name="`variaveis_dados[${variavelDadoIndex}].variavel_id`"
+                type="hidden"
+              />
+              <td class="valores-variaveis-tabela__item valores-variaveis-tabela__item--codigo">
+                <div>
+                  <strong class="block">
+                    {{ variavelDado.codigo.id }}
+                  </strong>
+
+                  - {{ variavelDado.codigo.texto }}
+                </div>
+              </td>
+
+              <th class="valores-variaveis-tabela__item valores-variaveis-tabela__item--referencia">
+                {{ variavelDado.referencia }}
+              </th>
+
+              <td
+                class="valores-variaveis-tabela__item valores-variaveis-tabela__item--valor_realizado"
+              >
+                <Field
+                  v-if="!temCategorica"
+                  v-model="variaveisDadosValores[variavelDadoIndex].valor_realizado"
+                  :class="[
+                    'inputtext light',
+                    {'error': temErro(`variaveis_dados[${variavelDadoIndex}].valor_realizado`)}
+                  ]"
+                  type="number"
+                  :name="`variaveis_dados[${variavelDadoIndex}].valor_realizado`"
+                  :disabled="!forumlariosAExibir.cadastro.liberado"
+                  @update:model-value="atualizarVariavelAcumulado(variavelDadoIndex, $event)"
+                />
+
+                <Field
+                  v-else
+                  :class="[
+                    'inputtext light',
+                    {'error': temErro(`variaveis_dados[${variavelDadoIndex}].valor_realizado`)}
+                  ]"
+                  as="select"
+                  :name="`variaveis_dados[${variavelDadoIndex}].valor_realizado`"
+                >
+                  <option value="">
+                    -
+                  </option>
+
+                  <option
+                    v-for="variaveisCategoricasValor in variaveisCategoricasValores"
+                    :key="`ciclo-variavel-categorica--${variaveisCategoricasValor.id}`"
+                    :value="variaveisCategoricasValor.valor_variavel"
+                  >
+                    {{ variaveisCategoricasValor.titulo }}
+                    {{
+                      variaveisCategoricasValor.descricao
+                        && truncate(`- ${variaveisCategoricasValor.descricao}`, 55)
+                    }}
+                  </option>
+                </Field>
+
+                <ErrorMessage
+                  v-if="errors[`variaveis_dados[${variavelDadoIndex}].valor_realizado`]"
+                  :name="`variaveis_dados[${variavelDadoIndex}].valor_realizado`"
+                />
+              </td>
+
+              <td
+                v-if="emFoco?.variavel.acumulativa"
+                class="valores-variaveis-tabela__item valores-variaveis-tabela__item--valor_realizado_acumulado"
+              >
+                <Field
+                  v-model="variaveisDadosValores[variavelDadoIndex].valor_realizado_acumulado"
+                  :name="`variaveis_dados[${variavelDadoIndex}].valor_realizado_acumulado`"
+                  class="inputtext light f1"
+                  :class="{
+                    error: temErro(`variaveis_dados[${variavelDadoIndex}].valor_realizado_acumulado`)
+                  }"
+                  type="number"
+                  disabled
+                />
+              </td>
+            </tr>
+          </tbody>
+          <tfoot
+            v-if="!temCategorica"
+          >
+            <tr
+              class="valores-variaveis-tabela__linha-calculada"
+            >
+              <td />
+              <td />
+              <td>
+                <output>
+                  {{ valoresCalculados.valor_realizado }}
+                </output>
+              </td>
+              <td
+                v-if="emFoco?.variavel.acumulativa"
+              >
+                <output>
+                  {{ valoresCalculados.valor_realizado_acumulado }}
+                </output>
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </article>
+
+      <SmaeFieldsetSubmit :erros="aprovar ? errors : null">
+        <button
+          type="button"
+          class="btn outline bgnone tcprimary"
+          :disabled="bloqueado"
+          :aria-busy="carregando"
+          @click.prevent="aprovar = false; enviar()"
+        >
+          {{
+            values.solicitar_complementacao ?
+              'salvar e solicitar complementação' : botoesLabel.salvar
+          }}
+        </button>
+
+        <button
+          v-if="!values.solicitar_complementacao"
+          type="submit"
+          class="btn"
+          :disabled="bloqueado"
+          :aria-disabled="!!Object.keys(errors).length"
+          :aria-busy="carregando"
+          @click.prevent="!Object.keys(errors).length && validarEEnviar()"
+        >
+          {{ botoesLabel.salvarESubmeter }}
+        </button>
+      </SmaeFieldsetSubmit>
+    </form>
+  </div>
+</template>
 
 <style lang="less" scoped>
 .editar-subtitulo {

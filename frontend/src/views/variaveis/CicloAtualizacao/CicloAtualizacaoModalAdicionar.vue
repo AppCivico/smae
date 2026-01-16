@@ -1,3 +1,169 @@
+<script lang="ts" setup>
+import { storeToRefs } from 'pinia';
+import { ErrorMessage, Field, useForm } from 'vee-validate';
+import { computed, ref } from 'vue';
+import { useRoute } from 'vue-router';
+
+import UploadArquivos, { ArquivoAdicionado } from '@/components/UploadArquivos.vue';
+import { cicloAtualizacaoModalAdicionarSchema } from '@/consts/formSchemas';
+import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
+import { useCicloAtualizacaoStore } from '@/stores/cicloAtualizacao.store';
+import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store';
+
+import useCicloAtualizacao from './composables/useCicloAtualizacao';
+
+type VariavelConfiguracaoItem = {
+  label: string
+  valor: string | number
+};
+
+type Emits = {
+  (event: 'enviado'): void
+};
+
+const $emit = defineEmits<Emits>();
+
+const cicloAtualizacaoStore = useCicloAtualizacaoStore(useRoute().meta.entidadeMãe);
+const variaveisCategoricasStore = useVariaveisCategoricasStore();
+
+const { emFoco, bloqueado, temCategorica } = storeToRefs(cicloAtualizacaoStore);
+
+const {
+  fase,
+  fasePosicao,
+  botoesLabel,
+  forumlariosAExibir,
+  dataReferencia,
+  valorAnalise,
+  temConteudo,
+} = useCicloAtualizacao();
+
+const arquivosLocais = ref<ArquivoAdicionado[]>(emFoco.value?.uploads || []);
+
+function obterVariavelInicial() {
+  const valorInicial = {
+    solicitar_complementacao: false,
+    valor_realizado: emFoco.value?.valores[0]?.valor_realizado,
+    valor_realizado_acumulado: emFoco.value?.variavel.acumulativa
+      ? emFoco.value?.valores[0]?.valor_realizado_acumulado : 0,
+  };
+
+  return {
+    ...valorInicial,
+    ...valorAnalise.value,
+  };
+}
+
+const variaveisCategoricasValores = computed(() => {
+  if (!variaveisCategoricasStore.emFoco) {
+    return [];
+  }
+
+  return variaveisCategoricasStore.emFoco.valores;
+});
+
+const dataCicloAtualizacao = computed<string | null>(() => (
+  dateIgnorarTimezone(dataReferencia)
+));
+
+const schema = computed(() => cicloAtualizacaoModalAdicionarSchema(
+  fasePosicao.value,
+  emFoco.value?.variavel.casas_decimais,
+));
+
+const variaveis = computed<VariavelConfiguracaoItem[]>(() => {
+  if (!emFoco.value) {
+    return [];
+  }
+
+  return [
+    {
+      label: 'UNIDADE DE MEDIDA',
+      valor: emFoco ? `${emFoco.value.variavel.unidade_medida.sigla} (${emFoco.value.variavel.unidade_medida.descricao})` : '-',
+    },
+    {
+      label: 'NÚMERO DE CASAS DECIMAIS',
+      valor: emFoco.value.variavel.casas_decimais,
+    },
+  ];
+});
+
+const {
+  handleSubmit, setFieldValue, values, errors,
+} = useForm({
+  validationSchema: schema.value,
+  initialValues: obterVariavelInicial(),
+});
+
+function atualizarVariavelAcumulado() {
+  const valor = values.valor_realizado?.replace(',', '.');
+
+  const valorAtual = emFoco.value?.valores[0];
+
+  if (!valorAtual) {
+    throw new Error('Valor atual não encontrado');
+  }
+
+  const valorVariavelInicial = Number(valorAtual.valor_realizado);
+  const valorVariavelAcumuladoInicial = Number(
+    valorAtual.valor_realizado_acumulado,
+  );
+  const novoValor = Number(valor);
+
+  const novoValorAcumulado = (valorVariavelAcumuladoInicial - valorVariavelInicial) + novoValor;
+
+  setFieldValue(
+    'valor_realizado_acumulado',
+    novoValorAcumulado.toString(),
+  );
+}
+
+const submit = ({ aprovar = false }) => {
+  handleSubmit.withControlled(async (valores: any) => {
+    if (!emFoco.value) {
+      throw new Error('Erro ao tentar submeter dados');
+    }
+
+    let analiseFase = 'analise_qualitativa';
+    if (fase.value === 'aprovacao') {
+      analiseFase = 'analise_qualitativa_aprovador';
+    } else if (fase.value === 'liberacao') {
+      analiseFase = 'analise_qualitativa_liberador';
+    }
+
+    await cicloAtualizacaoStore.enviarDados({
+      variavel_id: emFoco.value.variavel.id,
+      analise_qualitativa: !valores.solicitar_complementacao ? valores[analiseFase] : undefined,
+      aprovar,
+      data_referencia: dataReferencia,
+      uploads: arquivosLocais.value,
+      valores: [{
+        variavel_id: emFoco.value.variavel.id,
+        valor_realizado: valores.valor_realizado,
+        valor_realizado_acumulado: valores.valor_realizado_acumulado,
+      }],
+      pedido_complementacao: valores.solicitar_complementacao
+        ? valores.pedido_complementacao : undefined,
+    });
+
+    $emit('enviado');
+  })();
+};
+
+function adicionarNovoArquivo({ nome_original, download_token, descricao }: ArquivoAdicionado) {
+  arquivosLocais.value.push({
+    nome_original,
+    download_token,
+    descricao,
+  });
+}
+
+function removerArquivo(arquivoIndex: number) {
+  arquivosLocais.value.splice(arquivoIndex, 1);
+}
+
+</script>
+
 <template>
   <div class="ciclo-atualizacao-modal-adicionar">
     <div class="adicionar-subtitulo flex">
@@ -83,7 +249,11 @@
               :model-value="values.analise_qualitativa_aprovador"
               as="textarea"
               name="analise_qualitativa_aprovador"
-              :disabled="!forumlariosAExibir.aprovacao.liberado || fase === 'liberacao'"
+              :disabled="
+                !forumlariosAExibir.aprovacao.liberado|| (
+                  fase === 'liberacao'
+                  && temConteudo(valorAnalise.analise_qualitativa_aprovador)
+                )"
               :schema="schema"
               anular-vazio
               rows="3"
@@ -269,168 +439,6 @@
     </form>
   </div>
 </template>
-
-<script lang="ts" setup>
-import { storeToRefs } from 'pinia';
-import { ErrorMessage, Field, useForm } from 'vee-validate';
-import { computed, ref } from 'vue';
-import { useRoute } from 'vue-router';
-
-import UploadArquivos, { ArquivoAdicionado } from '@/components/UploadArquivos.vue';
-import { cicloAtualizacaoModalAdicionarSchema } from '@/consts/formSchemas';
-import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
-import { useCicloAtualizacaoStore } from '@/stores/cicloAtualizacao.store';
-import { useVariaveisCategoricasStore } from '@/stores/variaveisCategoricas.store';
-
-import useCicloAtualizacao from './composables/useCicloAtualizacao';
-
-type VariavelConfiguracaoItem = {
-  label: string
-  valor: string | number
-};
-
-type Emits = {
-  (event: 'enviado'): void
-};
-
-const $emit = defineEmits<Emits>();
-
-const cicloAtualizacaoStore = useCicloAtualizacaoStore(useRoute().meta.entidadeMãe);
-const variaveisCategoricasStore = useVariaveisCategoricasStore();
-
-const { emFoco, bloqueado, temCategorica } = storeToRefs(cicloAtualizacaoStore);
-
-const {
-  fase, fasePosicao, botoesLabel, forumlariosAExibir, dataReferencia, obterValorAnalise,
-} = useCicloAtualizacao();
-
-const arquivosLocais = ref<ArquivoAdicionado[]>(emFoco.value?.uploads || []);
-
-function obterVariavelInicial() {
-  const valorInicial = {
-    solicitar_complementacao: false,
-    valor_realizado: emFoco.value?.valores[0]?.valor_realizado,
-    valor_realizado_acumulado: emFoco.value?.variavel.acumulativa
-      ? emFoco.value?.valores[0]?.valor_realizado_acumulado : 0,
-  };
-
-  const analises = obterValorAnalise();
-
-  return {
-    ...valorInicial,
-    ...analises,
-  };
-}
-
-const variaveisCategoricasValores = computed(() => {
-  if (!variaveisCategoricasStore.emFoco) {
-    return [];
-  }
-
-  return variaveisCategoricasStore.emFoco.valores;
-});
-
-const dataCicloAtualizacao = computed<string | null>(() => (
-  dateIgnorarTimezone(dataReferencia)
-));
-
-const schema = computed(() => cicloAtualizacaoModalAdicionarSchema(
-  fasePosicao.value,
-  emFoco.value?.variavel.casas_decimais,
-));
-
-const variaveis = computed<VariavelConfiguracaoItem[]>(() => {
-  if (!emFoco.value) {
-    return [];
-  }
-
-  return [
-    {
-      label: 'UNIDADE DE MEDIDA',
-      valor: emFoco ? `${emFoco.value.variavel.unidade_medida.sigla} (${emFoco.value.variavel.unidade_medida.descricao})` : '-',
-    },
-    {
-      label: 'NÚMERO DE CASAS DECIMAIS',
-      valor: emFoco.value.variavel.casas_decimais,
-    },
-  ];
-});
-
-const {
-  handleSubmit, setFieldValue, values, errors,
-} = useForm({
-  validationSchema: schema.value,
-  initialValues: obterVariavelInicial(),
-});
-
-function atualizarVariavelAcumulado() {
-  const valor = values.valor_realizado?.replace(',', '.');
-
-  const valorAtual = emFoco.value?.valores[0];
-
-  if (!valorAtual) {
-    throw new Error('Valor atual não encontrado');
-  }
-
-  const valorVariavelInicial = Number(valorAtual.valor_realizado);
-  const valorVariavelAcumuladoInicial = Number(
-    valorAtual.valor_realizado_acumulado,
-  );
-  const novoValor = Number(valor);
-
-  const novoValorAcumulado = (valorVariavelAcumuladoInicial - valorVariavelInicial) + novoValor;
-
-  setFieldValue(
-    'valor_realizado_acumulado',
-    novoValorAcumulado.toString(),
-  );
-}
-
-const submit = ({ aprovar = false }) => {
-  handleSubmit.withControlled(async (valores: any) => {
-    if (!emFoco.value) {
-      throw new Error('Erro ao tentar submeter dados');
-    }
-
-    let analiseFase = 'analise_qualitativa';
-    if (fase.value === 'aprovacao') {
-      analiseFase = 'analise_qualitativa_aprovador';
-    } else if (fase.value === 'liberacao') {
-      analiseFase = 'analise_qualitativa_liberador';
-    }
-
-    await cicloAtualizacaoStore.enviarDados({
-      variavel_id: emFoco.value.variavel.id,
-      analise_qualitativa: !valores.solicitar_complementacao ? valores[analiseFase] : undefined,
-      aprovar,
-      data_referencia: dataReferencia,
-      uploads: arquivosLocais.value,
-      valores: [{
-        variavel_id: emFoco.value.variavel.id,
-        valor_realizado: valores.valor_realizado,
-        valor_realizado_acumulado: valores.valor_realizado_acumulado,
-      }],
-      pedido_complementacao: valores.solicitar_complementacao
-        ? valores.pedido_complementacao : undefined,
-    });
-
-    $emit('enviado');
-  })();
-};
-
-function adicionarNovoArquivo({ nome_original, download_token, descricao }: ArquivoAdicionado) {
-  arquivosLocais.value.push({
-    nome_original,
-    download_token,
-    descricao,
-  });
-}
-
-function removerArquivo(arquivoIndex: number) {
-  arquivosLocais.value.splice(arquivoIndex, 1);
-}
-
-</script>
 
 <style lang="less" scoped>
 .adicionar-subtitulo {
