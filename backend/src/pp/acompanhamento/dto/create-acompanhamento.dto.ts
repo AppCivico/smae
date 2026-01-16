@@ -64,8 +64,9 @@ export class CreateProjetoAcompanhamentoDto {
 
     @IsOptional()
     @IsString()
-    @MaxLength(MAX_LENGTH_HTML, {
-        message: `O campo "Detalhamento" pode ser no máximo ${MAX_LENGTH_HTML} caracteres`,
+    // esse foi mantido pq ele é maior que o HTML mesmo
+    @MaxLength(MAX_LENGTH_LONG, {
+        message: `O campo "Detalhamento" pode ser no máximo ${MAX_LENGTH_LONG} caracteres`,
     })
     detalhamento?: string;
 
