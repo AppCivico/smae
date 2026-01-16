@@ -67,7 +67,7 @@ watch(() => [props.modelValue, props.value], ([newModelValue, newValue]) => {
     >N</a>
     <a
       :disabled="!editor.can().chain().focus().toggleItalic().run()"
-      class="editorbt i"
+      class="editorbt i mono"
       :class="{ 'is-active': editor.isActive('italic') }"
       @click="editor.chain().focus().toggleItalic().run()"
     >I</a>
