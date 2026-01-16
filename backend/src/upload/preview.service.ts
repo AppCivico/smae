@@ -132,10 +132,10 @@ export class PreviewService implements TaskableService {
 
         this.logger.log(`Downloaded file buffer, size: ${buffer.length} bytes`);
 
-        // Convert to PDF using Gotenberg
+        // Convert to PDF using Gotenberg (only first page for preview)
         const pdfBuffer = await this.gotenbergService.convertToPdf(buffer, arquivo.nome_original, arquivo.mime_type, {
-            // Optional: Add conversion options
-            quality: 90,
+            nativePageRanges: '1',
+            quality: 60,
             losslessImageCompression: false,
         });
 
@@ -172,8 +172,15 @@ export class PreviewService implements TaskableService {
             const jsonObject = JSON.parse(jsonString);
             const formattedJson = JSON.stringify(jsonObject, null, 2);
 
+            // Truncate to fit one page (approximately 50 lines)
+            const truncatedJson = this.truncateJsonForPreview(formattedJson, 50);
+
             // Create HTML with syntax highlighting
-            const htmlContent = this.createJsonHtml(formattedJson, arquivo.nome_original);
+            const htmlContent = this.createJsonHtml(
+                truncatedJson.content,
+                arquivo.nome_original,
+                truncatedJson.wasTruncated
+            );
 
             // Convert to PDF using Gotenberg
             const pdfBuffer = await this.gotenbergService.convertHtmlToPdf(htmlContent, {
@@ -202,7 +209,36 @@ export class PreviewService implements TaskableService {
         }
     }
 
-    private createJsonHtml(jsonString: string, filename: string): string {
+    private truncateJsonForPreview(jsonString: string, maxLines: number): { content: string; wasTruncated: boolean } {
+        const lines = jsonString.split('\n');
+
+        if (lines.length <= maxLines) {
+            return { content: jsonString, wasTruncated: false };
+        }
+
+        // Take first maxLines and try to close JSON properly
+        const truncatedLines = lines.slice(0, maxLines);
+
+        // Add ellipsis comment
+        truncatedLines.push('  // ... (content truncated for preview)');
+
+        // Count opening braces/brackets to try to close properly
+        const content = truncatedLines.join('\n');
+        const openBraces = (content.match(/\{/g) || []).length - (content.match(/\}/g) || []).length;
+        const openBrackets = (content.match(/\[/g) || []).length - (content.match(/\]/g) || []).length;
+
+        // Add closing braces/brackets
+        let closingChars = '';
+        for (let i = 0; i < openBrackets; i++) closingChars += ']';
+        for (let i = 0; i < openBraces; i++) closingChars += '}';
+
+        return {
+            content: content + (closingChars ? '\n' + closingChars : ''),
+            wasTruncated: true,
+        };
+    }
+
+    private createJsonHtml(jsonString: string, filename: string, wasTruncated: boolean = false): string {
         // Escape HTML and add syntax highlighting
         const highlighted = this.syntaxHighlightJson(jsonString);
 
