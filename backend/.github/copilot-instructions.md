@@ -7,18 +7,18 @@
 
 ### 1. `ultima_revisao` Column Pattern
 
-**ALWAYS set `ultima_revisao = NULL` (NOT `false`) when marking old records as superseded.**
+**ALWAYS set `ultima_revisao = NULL` (NOT `false`) when marking old records as superseded if the column is nullable.**
 
 ❌ **WRONG:**
 ```sql
-UPDATE variavel_global_ciclo_analise
+UPDATE pdm_orcamento_realizado_config
 SET ultima_revisao = false  -- WRONG! Will cause conflicts
 WHERE ...;
 ```
 
 ✅ **CORRECT:**
 ```sql
-UPDATE variavel_global_ciclo_analise
+UPDATE pdm_orcamento_realizado_config
 SET ultima_revisao = NULL  -- Correct! Allows multiple historical records
 WHERE ...;
 ```
