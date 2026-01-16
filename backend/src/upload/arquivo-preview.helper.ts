@@ -144,6 +144,11 @@ export function determinarTipoPreview(nomeOriginal: string, mimeType: string | n
         return 'redimensionamento';
     }
 
+    // Verifica se é JSON
+    if (extensao === 'json' || mimeType === 'application/json') {
+        return 'conversao_json';
+    }
+
     // Verifica se é um tipo sem suporte
     if (PreviewConfig.EXTENSOES_SEM_SUPORTE.includes(extensao as any)) {
         return null;
