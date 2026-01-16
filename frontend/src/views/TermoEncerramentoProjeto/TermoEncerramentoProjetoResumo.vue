@@ -243,6 +243,15 @@ const sessoes = computed<SessaoDeDetalheLinhas | null>(() => {
       :linhas="sessoes"
       :quantidade-colunas="3"
     />
+
+    <div class="assinatura-impressao">
+      <p
+        v-if="emFoco?.assinatura"
+        class="nome-assinante"
+      >
+        {{ emFoco.assinatura }}
+      </p>
+    </div>
   </section>
 
   <LoadingComponent v-else-if="chamadasPendentes.emFoco" />
@@ -259,5 +268,32 @@ const sessoes = computed<SessaoDeDetalheLinhas | null>(() => {
   max-width: 200px;
   max-height: 200px;
   object-fit: contain;
+}
+
+.assinatura-impressao {
+  display: none;
+  text-align: center;
+  margin-top: 10rem;
+  page-break-before: avoid;
+  page-break-inside: avoid;
+
+  &::before {
+    content: '';
+    display: block;
+    width: 300px;
+    margin: 0 auto;
+    border-top: 1px solid #000;
+  }
+
+  .nome-assinante {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media print {
+  .assinatura-impressao {
+    display: block;
+  }
 }
 </style>
