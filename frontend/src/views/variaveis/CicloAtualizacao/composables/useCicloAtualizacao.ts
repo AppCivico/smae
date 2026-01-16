@@ -84,49 +84,37 @@ export default function useCicloAtualizacao() {
     };
   });
 
-  function obterValorAnalise() {
-    type Analises = {
-      analisePreenchimento?: string;
-      analiseAprovador?: string;
-      analiseLiberador?: string;
-    };
-
-    const analises: Analises = {};
-
+  const valorAnalise = computed(() => {
     const analisePreenchimento = emFoco.value?.analises?.find(
       (item) => item.fase === 'Preenchimento',
     );
-    if (analisePreenchimento) {
-      analises.analisePreenchimento = analisePreenchimento.analise_qualitativa;
-    }
 
     const analiseAprovador = emFoco.value?.analises?.find(
       (item) => item.fase === 'Validacao',
     );
-    if (analiseAprovador) {
-      analises.analiseAprovador = analiseAprovador.analise_qualitativa;
-    }
 
     const analiseLiberador = emFoco.value?.analises?.find(
       (item) => item.fase === 'Liberacao',
     );
-    if (analiseLiberador) {
-      analises.analiseLiberador = analiseLiberador.analise_qualitativa;
-    }
 
     return {
-      analise_qualitativa: analises.analisePreenchimento,
-      analise_qualitativa_aprovador: analises.analiseAprovador,
-      analise_qualitativa_liberador: analises.analiseLiberador,
+      analise_qualitativa: analisePreenchimento?.analise_qualitativa,
+      analise_qualitativa_aprovador: analiseAprovador?.analise_qualitativa,
+      analise_qualitativa_liberador: analiseLiberador?.analise_qualitativa,
     };
+  });
+
+  function temConteudo(valor: string | undefined | null): boolean {
+    return !!valor?.trim();
   }
 
   return {
-    obterValorAnalise,
+    valorAnalise,
     botoesLabel,
     fase,
     fasePosicao,
     forumlariosAExibir,
     dataReferencia: route.params.dataReferencia as string,
+    temConteudo,
   };
 }
