@@ -307,9 +307,8 @@ BEGIN
                   AND fase = 'Preenchimento' AND ultima_revisao = true AND removido_em IS NULL
                 ORDER BY criado_em DESC LIMIT 1;
 
-                -- Set existing records as not the latest revision before inserting new one
                 UPDATE variavel_global_ciclo_analise
-                SET ultima_revisao = NULL
+                SET ultima_revisao = FALSE
                 WHERE variavel_id = p_variavel_id
                   AND referencia_data = v_ultimo_periodo_valido
                   AND fase = 'Validacao'
@@ -390,9 +389,8 @@ BEGIN
                     ORDER BY criado_em DESC LIMIT 1;
                 END IF;
 
-                -- Set existing records as not the latest revision before inserting new one
                 UPDATE variavel_global_ciclo_analise
-                SET ultima_revisao = NULL
+                SET ultima_revisao = FALSE
                 WHERE variavel_id = p_variavel_id
                   AND referencia_data = v_ultimo_periodo_valido
                   AND fase = 'Liberacao'
