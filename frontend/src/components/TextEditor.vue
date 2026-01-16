@@ -1,4 +1,5 @@
 <script setup>
+import Underline from '@tiptap/extension-underline';
 import StarterKit from '@tiptap/starter-kit';
 import { Editor, EditorContent } from '@tiptap/vue-3';
 import {
@@ -28,6 +29,7 @@ onMounted(() => {
   editor.value = new Editor({
     extensions: [
       StarterKit,
+      Underline,
     ],
     content: props.modelValue || props.value,
     onUpdate: () => {
@@ -69,6 +71,12 @@ watch(() => [props.modelValue, props.value], ([newModelValue, newValue]) => {
       :class="{ 'is-active': editor.isActive('italic') }"
       @click="editor.chain().focus().toggleItalic().run()"
     >It</a>
+    <a
+      :disabled="!editor.can().chain().focus().toggleUnderline().run()"
+      class="editorbt u"
+      :class="{ 'is-active': editor.isActive('underline') }"
+      @click="editor.chain().focus().toggleUnderline().run()"
+    >U</a>
     <a
       :disabled="!editor.can().chain().focus().toggleStrike().run()"
       class="editorbt c"
