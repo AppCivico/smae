@@ -59,52 +59,60 @@ watch(() => [props.modelValue, props.value], ([newModelValue, newValue]) => {
     v-if="editor"
     class="menueditor"
   >
-    <a
+    <button
+      type="button"
       :disabled="!editor.can().chain().focus().toggleBold().run()"
       class="editorbt w700"
       :class="{ 'is-active': editor.isActive('bold') }"
       @click="editor.chain().focus().toggleBold().run()"
-    >N</a>
-    <a
+    >N</button>
+    <button
+      type="button"
       :disabled="!editor.can().chain().focus().toggleItalic().run()"
       class="editorbt i mono"
       :class="{ 'is-active': editor.isActive('italic') }"
       @click="editor.chain().focus().toggleItalic().run()"
-    >I</a>
-    <a
+    >I</button>
+    <button
+      type="button"
       :disabled="!editor.can().chain().focus().toggleUnderline().run()"
       class="editorbt u"
       :class="{ 'is-active': editor.isActive('underline') }"
       @click="editor.chain().focus().toggleUnderline().run()"
-    >S</a>
-    <a
+    >U</button>
+    <button
+      type="button"
       :disabled="!editor.can().chain().focus().toggleStrike().run()"
       class="editorbt c"
       :class="{ 'is-active': editor.isActive('strike') }"
       @click="editor.chain().focus().toggleStrike().run()"
-    >abc</a>
+    >S</button>
 
-    <a
+    <button
+      type="button"
       class="editorbt"
       :class="{ 'is-active': editor.isActive('bulletList') }"
       @click="editor.chain().focus().toggleBulletList().run()"
-    >&bull;</a>
-    <a
+    >&bull;</button>
+    <button
+      type="button"
       class="editorbt"
       :class="{ 'is-active': editor.isActive('orderedList') }"
       @click="editor.chain().focus().toggleOrderedList().run()"
-    >1.</a>
-    <a
+    >1.</button>
+    <button
+      type="button"
       class="editorbt c"
       @click="editor.chain().focus().setHardBreak().run()"
-    >&crarr;</a>
+    >&crarr;</button>
 
-    <a
+    <button
+      type="button"
       class="editorbt"
       @click="editor.chain().focus().unsetAllMarks().clearNodes().run()"
     >
       Limpar formatação
-    </a>
+    </button>
   </div>
   <div
     class="contentStyle"
