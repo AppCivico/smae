@@ -70,19 +70,19 @@ watch(() => [props.modelValue, props.value], ([newModelValue, newValue]) => {
       class="editorbt i"
       :class="{ 'is-active': editor.isActive('italic') }"
       @click="editor.chain().focus().toggleItalic().run()"
-    >It</a>
+    >I</a>
     <a
       :disabled="!editor.can().chain().focus().toggleUnderline().run()"
       class="editorbt u"
       :class="{ 'is-active': editor.isActive('underline') }"
       @click="editor.chain().focus().toggleUnderline().run()"
-    >U</a>
+    >S</a>
     <a
       :disabled="!editor.can().chain().focus().toggleStrike().run()"
       class="editorbt c"
       :class="{ 'is-active': editor.isActive('strike') }"
       @click="editor.chain().focus().toggleStrike().run()"
-    >S</a>
+    >abc</a>
 
     <a
       class="editorbt"
