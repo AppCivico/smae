@@ -2355,13 +2355,18 @@ export class VariavelService {
                 FROM _suspend_values_global
                 RETURNING variavel_id
             )
-            SELECT DISTINCT ir.variavel_id, sv.ciclo_owner_id
-            FROM ins_real ir
-            JOIN _suspend_values_global sv ON sv.variavel_id = ir.variavel_id
+            SELECT DISTINCT variavel_id FROM ins_real
         `;
 
         const filledVarIds = affectedVars.map((r) => r.variavel_id);
-        const cycleOwnerIds = [...new Set(affectedVars.map((r) => r.ciclo_owner_id))];
+
+        // Busca TODOS os cycle owners dos jobs, não apenas dos valores inseridos
+        // Isso é necessário porque mesmo sem valores inseridos (ex: Realizado sem valor anterior),
+        // precisamos verificar se todas as filhas estão suspensas para fechar o ciclo da mãe
+        const allCycleOwners = await prismaTx.$queryRaw<{ ciclo_owner_id: number }[]>`
+            SELECT DISTINCT ciclo_owner_id FROM _suspend_jobs_global
+        `;
+        const cycleOwnerIds = [...new Set(allCycleOwners.map((r) => r.ciclo_owner_id))];
 
         if (filledVarIds.length > 0) {
             console.log('Variáveis globais suspensas processadas:', filledVarIds);
@@ -2369,12 +2374,14 @@ export class VariavelService {
             // 4. Dispara recálculos
             await this.recalc_series_dependentes(filledVarIds, prismaTx);
             await this.recalc_indicador_usando_variaveis(filledVarIds, prismaTx);
-
-            // 5. Verifica se variáveis mãe devem ter ciclo fechado automaticamente
-            // (quando todas as filhas estão suspensas)
-            await this.autoCloseParentCyclesIfAllChildrenSuspended(cycleOwnerIds, prismaTx);
         } else {
-            console.log('Nenhuma variável global suspensa para processar');
+            console.log('Nenhuma variável global suspensa para processar valores');
+        }
+
+        // 5. Verifica se variáveis mãe devem ter ciclo fechado automaticamente
+        // (quando todas as filhas estão suspensas) - executa mesmo sem valores inseridos
+        if (cycleOwnerIds.length > 0) {
+            await this.autoCloseParentCyclesIfAllChildrenSuspended(cycleOwnerIds, prismaTx);
         }
 
         return filledVarIds;
