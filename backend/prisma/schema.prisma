@@ -2007,19 +2007,26 @@ model VariavelSuspensaControle {
     variavel_id Int
     variavel    Variavel @relation(fields: [variavel_id], references: [id])
 
-    ciclo_fisico_base_id     Int
-    ciclo_fisico_corrente_id Int
+    // Campos para variáveis PDM (legacy)
+    ciclo_fisico_base_id     Int?
+    ciclo_fisico_corrente_id Int?
 
-    ciclo_fisico_base     CicloFisico @relation("CicloFisicoBase", fields: [ciclo_fisico_base_id], references: [id])
-    ciclo_fisico_corrente CicloFisico @relation("CicloFisicoCorrente", fields: [ciclo_fisico_corrente_id], references: [id])
+    ciclo_fisico_base     CicloFisico? @relation("CicloFisicoBase", fields: [ciclo_fisico_base_id], references: [id])
+    ciclo_fisico_corrente CicloFisico? @relation("CicloFisicoCorrente", fields: [ciclo_fisico_corrente_id], references: [id])
+
+    // Campo para variáveis globais - data de referência do ciclo
+    ciclo_referencia DateTime? @db.Date
 
     serie        Serie
     valor_antigo Decimal? @db.Decimal(65, 30)
     valor_novo   Decimal? @db.Decimal(65, 30)
 
-    processado_em DateTime @db.Timestamptz(6)
+    processado_em DateTime @default(now()) @db.Timestamptz(6)
 
+    // Índice único para PDM (legacy) - quando ciclo_fisico_corrente_id não é nulo
     @@unique([variavel_id, ciclo_fisico_corrente_id, serie])
+    // Índice único para variáveis globais - quando ciclo_referencia não é nulo
+    @@index([variavel_id, serie, ciclo_referencia])
     @@map("variavel_suspensa_controle")
 }
 

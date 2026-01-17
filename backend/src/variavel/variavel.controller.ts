@@ -352,4 +352,17 @@ export class VariavelGlobalController {
     async processaVariaveisSuspensas(): Promise<number[]> {
         return await this.variavelService.processVariaveisSuspensasController();
     }
+
+    /**
+     * Processa variáveis globais suspensas manualmente.
+     * Este endpoint é usado para forçar o processamento fora do cron job.
+     * Para variáveis acumulativas: valor = 0
+     * Para variáveis não acumulativas: copia o valor do período anterior
+     */
+    @Post('processa-variaveis-globais-suspensas')
+    @ApiBearerAuth('access-token')
+    @Roles([...VariavelGlobalController.WritePerm])
+    async processaVariaveisGlobaisSuspensas(): Promise<number[]> {
+        return await this.variavelService.processVariaveisGlobaisSuspensasController();
+    }
 }
