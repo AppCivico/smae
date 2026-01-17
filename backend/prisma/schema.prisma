@@ -2026,7 +2026,7 @@ model VariavelSuspensaControle {
     // Índice único para PDM (legacy) - quando ciclo_fisico_corrente_id não é nulo
     @@unique([variavel_id, ciclo_fisico_corrente_id, serie])
     // Índice único para variáveis globais - quando ciclo_referencia não é nulo
-    @@index([variavel_id, serie, ciclo_referencia])
+    @@unique([variavel_id, serie, ciclo_referencia])
     @@map("variavel_suspensa_controle")
 }
 
