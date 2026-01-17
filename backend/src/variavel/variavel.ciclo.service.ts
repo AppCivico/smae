@@ -1049,7 +1049,8 @@ export class VariavelCicloService {
     private formatarValores(
         variavel: VariavelResumoInput & { variaveis_filhas: VariavelResumoInput[] },
         valores: ValorSerieInterface[],
-        formValues?: IUltimaAnaliseValor[]
+        formValues?: IUltimaAnaliseValor[],
+        incluirMaeSemFilhasAtivas: boolean = false
     ): VariavelValorDto[] {
         const valoresMap = new Map<number, VariavelValorDto>();
 
@@ -1057,7 +1058,16 @@ export class VariavelCicloService {
         // e não devem aparecer na listagem para o usuário preencher
         const filhasNaoSuspensas = variavel.variaveis_filhas.filter((f) => f.suspendida_em === null);
         const todasVariaveis = [...filhasNaoSuspensas];
-        if (todasVariaveis.length === 0) todasVariaveis.push(variavel); // Se não tem filhas ativas, adiciona a mãe
+
+        // Lógica para adicionar a variável mãe:
+        // - Se não tem filhas (variável standalone): sempre adiciona a mãe
+        // - Se tem filhas mas todas estão suspensas: só adiciona se incluirMaeSemFilhasAtivas=true
+        //   (por padrão, retorna lista vazia - validação rejeitaria submissão de variável com filhas)
+        if (variavel.variaveis_filhas.length === 0) {
+            todasVariaveis.push(variavel); // Variável sem filhas
+        } else if (todasVariaveis.length === 0 && incluirMaeSemFilhasAtivas) {
+            todasVariaveis.push(variavel); // Todas filhas suspensas, mas param permite
+        }
 
         // caso a variável não tenha filhas, mas o formValues tenha, adiciona a variável mãe
         if (variavel.variaveis_filhas.length === 0 && Array.isArray(formValues) && formValues.length === 1) {

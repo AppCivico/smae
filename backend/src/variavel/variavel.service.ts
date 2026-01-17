@@ -33,7 +33,7 @@ import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { IsArrayContentsChanged } from '../common/helpers/IsArrayContentsEqual';
 import { Object2Hash } from '../common/object2hash';
 import { SeriesArrayShuffle } from '../common/shuffleArray';
-import { MetaService } from '../meta/meta.service';
+import { AddTaskRefreshMeta, MetaService } from '../meta/meta.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { VariavelCategoricaService } from '../variavel-categorica/variavel-categorica.service';
 import { NonExistingSerieJwt, SerieUpsert, ValidatedUpsert } from './dto/batch-serie-upsert.dto';
@@ -1392,19 +1392,10 @@ export class VariavelService {
         if (selfBefUpdate.variavel_categorica_id === CONST_CRONO_VAR_CATEGORICA_ID)
             throw new HttpException('Variável do tipo Cronograma não pode ser atualizada', 400);
 
-        // Variáveis filhas só podem ter o status de suspensão alterado diretamente
-        // Outras alterações devem ser feitas através da variável mãe
+        // Variáveis filhas devem usar método dedicado para atualização
+        // Apenas suspensão pode ser alterada diretamente em filhas
         if (selfBefUpdate.variavel_mae_id) {
-            const allowedFieldsForChildren = ['suspendida'];
-            const receivedFields = Object.keys(dto).filter((k) => dto[k as keyof UpdateVariavelDto] !== undefined);
-            const hasDisallowedFields = receivedFields.some((f) => !allowedFieldsForChildren.includes(f));
-
-            if (hasDisallowedFields) {
-                throw new HttpException(
-                    'Variável filha só pode ter o status de suspensão alterado diretamente. Outras alterações devem ser feitas pela variável mãe.',
-                    400
-                );
-            }
+            return await this.updateSuspensaoFilha(tipo, variavelId, dto, user);
         }
 
         await this.validaEquipeResponsavel(dto, {
@@ -2273,6 +2264,8 @@ export class VariavelService {
         // Para acumulativas: valor = 0
         // Para não acumulativas: copia valor nominal e campos categóricos
         // Nota: data_ciclo_target (ultimo_periodo_valido) já é o período de dados, não precisa subtrair atraso
+        // Nota: Para RealizadoAcumulado sem valor anterior, defaulta para 0
+        // Para Realizado sem valor anterior, fica NULL (será ignorado no INSERT)
         await prismaTx.$executeRaw`
             CREATE TEMP TABLE _suspend_values_global ON COMMIT DROP AS
             SELECT
@@ -2282,7 +2275,8 @@ export class VariavelService {
                 j.data_ciclo_target,
                 CASE
                     WHEN j.acumulativa = true THEN 0
-                    ELSE COALESCE(last_val.valor_nominal, 0)
+                    WHEN last_val.valor_nominal IS NULL AND j.serie = 'RealizadoAcumulado' THEN 0
+                    ELSE last_val.valor_nominal
                 END as valor_novo,
                 last_val.valor_nominal as valor_copiado,
 
@@ -2350,6 +2344,7 @@ export class VariavelService {
                     variavel_categorica_valor_id,
                     elementos
                 FROM _suspend_values_global
+                WHERE valor_novo IS NOT NULL
                 ON CONFLICT (serie, variavel_id, data_valor)
                 DO UPDATE SET
                     valor_nominal = EXCLUDED.valor_nominal,
@@ -2457,6 +2452,12 @@ export class VariavelService {
                     pedido_complementacao: false,
                 },
             });
+
+            // Atualiza o estado do ciclo e enfileira tarefas de recálculo
+            // (mirroring marcaLiberacaoEnviada flow)
+            await prismaTx.$executeRaw`SELECT f_atualiza_variavel_ciclo_corrente(${owner.id}::int)::text`;
+            await AddTaskRefreshMeta(prismaTx, { variavel_id: owner.id });
+            await AddTaskRecalcVariaveis(prismaTx, { variavelIds: [owner.id] });
         }
     }
 
@@ -4097,6 +4098,109 @@ export class VariavelService {
         }
 
         return detailDto;
+    }
+
+    /**
+     * Método dedicado para atualizar suspensão de variáveis filhas
+     * Apenas o campo `suspendida` pode ser alterado em variáveis filhas
+     */
+    async updateSuspensaoFilha(
+        tipo: TipoVariavel,
+        filhaId: number,
+        dto: UpdateVariavelDto,
+        user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        // Valida que apenas suspendida está sendo alterado
+        const allowedFields = ['suspendida'];
+        const providedFields = Object.keys(dto).filter((key) => (dto as Record<string, unknown>)[key] !== undefined);
+        const invalidFields = providedFields.filter((f) => !allowedFields.includes(f));
+
+        if (invalidFields.length > 0) {
+            throw new BadRequestException(
+                `Variáveis filhas só podem ter o campo 'suspendida' alterado. Campos inválidos: ${invalidFields.join(', ')}`
+            );
+        }
+
+        if (dto.suspendida === undefined) {
+            throw new BadRequestException('Campo suspendida é obrigatório para atualização de variável filha');
+        }
+
+        const logger = LoggerWithLog('Atualização de suspensão de variável filha');
+
+        const filha = await this.prisma.variavel.findFirst({
+            where: { id: filhaId, removido_em: null, tipo: tipo },
+            select: {
+                id: true,
+                variavel_mae_id: true,
+                suspendida_em: true,
+                mostrar_monitoramento: true,
+            },
+        });
+
+        if (!filha || !filha.variavel_mae_id) {
+            throw new BadRequestException('Variável filha não encontrada ou não possui mãe');
+        }
+
+        // Verifica permissão através da variável mãe
+        const maeDetail = await this.findAllGlobal({ id: filha.variavel_mae_id, ordem_direcao: 'asc', ordem_coluna: 'id' }, user);
+        if (!maeDetail.linhas.length || !maeDetail.linhas[0].pode_editar) {
+            throw new ForbiddenException('Usuário não tem permissão para editar esta variável');
+        }
+
+        const now = new Date(Date.now());
+        const currentSuspendida = filha.suspendida_em !== null;
+        const newSuspendida = dto.suspendida;
+
+        if (newSuspendida === currentSuspendida) {
+            return { id: filhaId }; // Nada a fazer
+        }
+
+        await this.prisma.$transaction(
+            async (prismaTxn: Prisma.TransactionClient) => {
+                let mostrar_monitoramento: boolean;
+
+                if (newSuspendida === true) {
+                    // Suspendendo: esconde do monitoramento
+                    mostrar_monitoramento = false;
+                    logger.log(`Variável filha ${filhaId} suspensa`);
+                } else {
+                    // Reativando: restaura estado anterior
+                    const prevLog = await prismaTxn.variavelSuspensaoLog.findFirst({
+                        where: { variavel_id: filhaId },
+                        orderBy: { criado_em: 'desc' },
+                        select: { previo_status_mostrar_monitoramento: true },
+                        take: 1,
+                    });
+                    mostrar_monitoramento = prevLog?.previo_status_mostrar_monitoramento ?? true;
+                    logger.log(`Variável filha ${filhaId} reativada`);
+                }
+
+                await prismaTxn.variavel.update({
+                    where: { id: filhaId },
+                    data: {
+                        suspendida_em: newSuspendida ? now : null,
+                        mostrar_monitoramento: mostrar_monitoramento,
+                        atualizado_em: now,
+                        atualizado_por: user.id,
+                    },
+                });
+
+                await prismaTxn.variavelSuspensaoLog.create({
+                    data: {
+                        variavel_id: filhaId,
+                        pessoa_id: user.id,
+                        suspendida: newSuspendida,
+                        criado_em: now,
+                        previo_status_mostrar_monitoramento: filha.mostrar_monitoramento,
+                    },
+                });
+
+                await logger.saveLogs(prismaTxn, user.getLogData());
+            },
+            { isolationLevel: 'ReadCommitted', maxWait: 5000, timeout: 10000 }
+        );
+
+        return { id: filhaId };
     }
 
     async findAllPdms(): Promise<PdmSimplesDto[]> {
