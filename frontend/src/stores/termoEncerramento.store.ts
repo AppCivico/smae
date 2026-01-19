@@ -72,9 +72,9 @@ export const useTermoEncerramentoStore = (sistemaEscolhido: ModuloSistema.MDO | 
 
         const requestParams = { ...params };
 
-        if (requestParams.icone) {
+        if (requestParams.icone || requestParams.icone === null) {
           requestParams.sobrescrever_icone = true;
-          requestParams.icone_upload_token = requestParams.icone || undefined;
+          requestParams.icone_upload_token = requestParams.icone || null;
 
           delete requestParams.icone;
         }
