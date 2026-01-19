@@ -344,7 +344,6 @@ export class PreviewService implements TaskableService {
             </head>
             <body>
                 <div class="filename">${this.escapeHtml(filename)}</div>
-                ${isTruncated ? `<div class="truncated-notice">Preview showing first ${maxRows} of ${lines.length} rows</div>` : ''}
                 <table>
                     ${tableRows}
                 </table>
