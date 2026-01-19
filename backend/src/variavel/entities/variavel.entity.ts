@@ -92,6 +92,7 @@ export class VariavelGlobalItemDto extends PickType(VariavelItemDto, [
     pode_editar_valor: boolean;
     pode_excluir: boolean;
     orgao_responsal_coleta: IdSigla | null;
+    mostrar_monitoramento: boolean;
 }
 
 export class FilterPeriodoDto {

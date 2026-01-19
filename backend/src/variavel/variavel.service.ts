@@ -1190,6 +1190,7 @@ export class VariavelService {
                         supraregional: true,
                         variavel_categorica_id: true,
                         medicao_orgao: { select: { id: true, sigla: true } },
+                        mostrar_monitoramento: true,
                     },
                 },
                 orgao_proprietario: { select: { id: true, sigla: true, descricao: true } },
@@ -1290,6 +1291,7 @@ export class VariavelService {
                     orgao_responsal_coleta: r.variavel.medicao_orgao
                         ? { id: r.variavel.medicao_orgao.id, sigla: r.variavel.medicao_orgao.sigla }
                         : null,
+                    mostrar_monitoramento: r.variavel.mostrar_monitoramento,
                 };
             }),
         };
@@ -1471,7 +1473,62 @@ export class VariavelService {
             });
             const currentSuspendida = self.suspendida_em !== null;
 
-            if (suspendida !== undefined && suspendida !== currentSuspendida) {
+            // Verifica se estamos tentando suspender uma variável mãe com filhas, se estiver,
+            // suspende as filhas Global ao invés da mãe, mas marca o mostrar_monitoramento da mãe como false
+            const hasChildren = selfBefUpdate.variaveis_filhas.length > 0;
+
+            if (suspendida === true && !currentSuspendida && hasChildren) {
+                logger.log(`Variável ${variavelId} possui filhas. Suspendendo filhas Global ao invés da mãe.`);
+
+                const globalChildren = await prismaTxn.variavel.findMany({
+                    where: {
+                        variavel_mae_id: variavelId,
+                        tipo: 'Global',
+                        removido_em: null,
+                    },
+                    select: {
+                        id: true,
+                        titulo: true,
+                        mostrar_monitoramento: true,
+                        suspendida_em: true,
+                    },
+                });
+
+                // suspendendo as filhas globais
+                const promises: Promise<any>[] = [];
+                for (const child of globalChildren) {
+                    const childCurrentSuspendida = child.suspendida_em !== null;
+
+                    if (!childCurrentSuspendida) {
+                        promises.push(
+                            this.handleSuspensaoChange(
+                                prismaTxn,
+                                child.id,
+                                true,
+                                child.mostrar_monitoramento,
+                                now,
+                                user,
+                                logger
+                            )
+                        );
+
+                        promises.push(
+                            prismaTxn.variavel.update({
+                                where: { id: child.id },
+                                data: {
+                                    suspendida_em: now,
+                                    mostrar_monitoramento: false,
+                                },
+                            })
+                        );
+                    }
+                }
+                await Promise.all(promises);
+
+                // Não suspende a mãe, apenas marca o mostrar_monitoramento como false
+                dto.suspendida = undefined;
+                dto.mostrar_monitoramento = false;
+            } else if (suspendida !== undefined && suspendida !== currentSuspendida) {
                 dto.mostrar_monitoramento = await this.handleSuspensaoChange(
                     prismaTxn,
                     variavelId,
@@ -1548,7 +1605,7 @@ export class VariavelService {
                         ? this.getPeriodTuples(dto.periodos, dto.periodicidade ?? self.periodicidade)
                         : {}),
 
-                    suspendida_em: suspendida ? now : null,
+                    ...(dto.suspendida !== undefined ? { suspendida_em: dto.suspendida ? now : null } : {}),
                 },
                 select: {
                     valor_base: true,
@@ -1631,7 +1688,8 @@ export class VariavelService {
                                 ? this.getPeriodTuples(dto.periodos, dto.periodicidade ?? self.periodicidade)
                                 : {}),
 
-                            suspendida_em: suspendida ? now : null,
+                            // Não passa por cima, se estamos suspendendo a mãe, as filhas já foram todas suspensas
+                            // Então nunca usar dto.suspendida aqui
                         },
                     })
                 );
@@ -4241,6 +4299,17 @@ export class VariavelService {
                     where: { id: filhaId },
                     data: updateData,
                 });
+
+                // Auto reverter: se alguma filha for reativada e a mãe estiver com monitoramento desligado, reativa o monitoramento da mãe
+                if (newSuspendida === false && variavelMaeDetail.linhas[0].mostrar_monitoramento === false) {
+                    logger.log(
+                        `Filha ${filhaId} da variável ${variavelMaeId} foi reativada. Retornar o estado de monitoramento da mãe.`
+                    );
+                    await prismaTxn.variavel.update({
+                        where: { id: variavelMaeId },
+                        data: { mostrar_monitoramento: true },
+                    });
+                }
 
                 if (recalcValorBase) {
                     logger.log(`Recalculando séries dependentes da variável ${filhaId}`);
