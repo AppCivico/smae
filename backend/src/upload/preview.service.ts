@@ -128,13 +128,20 @@ export class PreviewService implements TaskableService {
         for await (const chunk of stream) {
             chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
         }
-        const buffer = Buffer.concat(chunks);
+        let buffer = Buffer.concat(chunks);
 
         this.logger.log(`Downloaded file buffer, size: ${buffer.length} bytes`);
 
+        // For CSV files, truncate content to fit one page
+        if (arquivo.mime_type === 'text/csv' || arquivo.nome_original.toLowerCase().endsWith('.csv')) {
+            const csvContent = buffer.toString('utf-8');
+            const truncated = this.truncateCsvForPreview(csvContent, 40); // ~40 rows fits on one page
+            buffer = Buffer.from(truncated, 'utf-8');
+            this.logger.log(`CSV truncated to fit one page, new size: ${buffer.length} bytes`);
+        }
+
         // Convert to PDF using Gotenberg (only first page for preview)
         const pdfBuffer = await this.gotenbergService.convertToPdf(buffer, arquivo.nome_original, arquivo.mime_type, {
-            singlePage: true,
             quality: 60,
             losslessImageCompression: false,
             nativePageRanges: '1',
@@ -208,6 +215,19 @@ export class PreviewService implements TaskableService {
             this.logger.error(`Error parsing or converting JSON for arquivo ${arquivo.id}:`, error);
             throw new Error(`JSON conversion failed: ${error.message}`);
         }
+    }
+
+    private truncateCsvForPreview(csvContent: string, maxRows: number): string {
+        const lines = csvContent.split('\n');
+
+        if (lines.length <= maxRows) {
+            return csvContent;
+        }
+
+        // Keep header and first N-1 rows, then add a truncation notice
+        const truncatedLines = lines.slice(0, maxRows);
+        truncatedLines.push(`"... ${lines.length - maxRows} more rows (truncated for preview) ..."`);
+        return truncatedLines.join('\n');
     }
 
     private truncateJsonForPreview(jsonString: string, maxLines: number): { content: string; wasTruncated: boolean } {

@@ -39,11 +39,6 @@ export interface GotenbergConversionOptions {
      * Specify if images are exported to PDF using lossless compression
      */
     losslessImageCompression?: boolean;
-
-    /**
-     * Define whether to print the entire content in one single page.
-     */
-    singlePage?: boolean;
 }
 
 @Injectable()
@@ -125,10 +120,6 @@ export class GotenbergService {
 
             if (options.losslessImageCompression !== undefined) {
                 formData.append('losslessImageCompression', String(options.losslessImageCompression));
-            }
-
-            if (options.singlePage !== undefined) {
-                formData.append('singlePage', String(options.singlePage));
             }
 
             // Make the request to Gotenberg
