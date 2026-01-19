@@ -78,11 +78,11 @@ const variaveis = computed<VariavelConfiguracaoItem[]>(() => {
 
   return [
     {
-      label: 'UNIDADE DE MEDIDA',
+      label: 'unidade de medida',
       valor: emFoco ? `${emFoco.value.variavel.unidade_medida.sigla} (${emFoco.value.variavel.unidade_medida.descricao})` : '-',
     },
     {
-      label: 'NÚMERO DE CASAS DECIMAIS',
+      label: 'número de casas decimais',
       valor: emFoco.value.variavel.casas_decimais,
     },
   ];
