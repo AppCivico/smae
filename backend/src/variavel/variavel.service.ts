@@ -111,6 +111,7 @@ interface CicloDocumento {
 
 export type VariavelComCategorica = {
     id: number;
+    casas_decimais: number | null;
     acumulativa: boolean;
     variavel_mae_id: number | null;
     variavel_categorica: { id: number; tipo: TipoVariavelCategorica; valores: VariavelCategoricaValor[] } | null;
@@ -240,6 +241,7 @@ export class VariavelService {
                     select: { grupo_responsavel_equipe: { select: { perfil: true, id: true } } },
                 },
                 orgao_proprietario_id: true,
+                casas_decimais: true,
                 variavel_categorica: { select: { id: true, tipo: true, valores: true } },
             },
         });
@@ -1389,6 +1391,8 @@ export class VariavelService {
                 variavel_mae_id: true,
                 orgao_proprietario_id: true,
                 variaveis_filhas: { select: { id: true, titulo: true } },
+                casas_decimais: true,
+                valor_base: true,
             },
         });
         if (selfBefUpdate.variavel_categorica_id === CONST_CRONO_VAR_CATEGORICA_ID)
@@ -1399,6 +1403,16 @@ export class VariavelService {
         if (selfBefUpdate.variavel_mae_id) {
             throw new BadRequestException(
                 'Edição de variáveis filhas não permitida por este endpoint. Use o endpoint específico para variáveis filhas (updateFilha).'
+            );
+        }
+
+        // Validar alteração de casas_decimais
+        if (dto.casas_decimais !== undefined && dto.casas_decimais !== selfBefUpdate.casas_decimais) {
+            await this.validarAlteracaoCasasDecimais(
+                variavelId,
+                selfBefUpdate.casas_decimais,
+                dto.casas_decimais,
+                selfBefUpdate.valor_base
             );
         }
 
@@ -1742,6 +1756,53 @@ export class VariavelService {
         });
 
         return { id: variavelId };
+    }
+
+    private async validarAlteracaoCasasDecimais(
+        variavelId: number,
+        casasDecimaisAtual: number,
+        novasCasasDecimais: number,
+        valorBase: Prisma.Decimal | null
+    ) {
+        // Se está aumentando as casas decimais, não há problema
+        if (novasCasasDecimais >= casasDecimaisAtual) return;
+
+        const problemas: string[] = [];
+
+        // Verificar valor_base
+        if (valorBase !== null) {
+            const valorBaseNum = Number(valorBase);
+            const valorArredondado = Number(valorBase.toFixed(novasCasasDecimais));
+
+            if (valorBaseNum !== valorArredondado) {
+                problemas.push(
+                    `O valor base (${valorBase.toString()}) possui mais casas decimais que o novo limite de ${novasCasasDecimais}`
+                );
+            }
+        }
+
+        // Verificar valores na serie_variavel
+        const registrosComProblema = await this.prisma.$queryRaw<Array<{ total: bigint }>>`
+            SELECT COUNT(*) as total
+            FROM serie_variavel sv
+            WHERE sv.variavel_id = ${variavelId}
+              AND sv.valor_nominal IS NOT NULL
+              AND ROUND(sv.valor_nominal, ${novasCasasDecimais}) <> sv.valor_nominal
+        `;
+
+        const totalProblemas = Number(registrosComProblema[0]?.total || 0);
+        if (totalProblemas > 0) {
+            problemas.push(
+                `${totalProblemas} registro(s) na série possui(em) valores com mais casas decimais que o novo limite de ${novasCasasDecimais}`
+            );
+        }
+
+        if (problemas.length > 0) {
+            throw new HttpException(
+                `Não é possível reduzir casas decimais de ${casasDecimaisAtual} para ${novasCasasDecimais}:\n${problemas.join('\n')}`,
+                400
+            );
+        }
     }
 
     private async checkDup(dto: UpdateVariavelDto, variavelId: number | undefined, indicador_id: number | undefined) {
