@@ -127,6 +127,10 @@ export class GotenbergService {
                 formData.append('losslessImageCompression', String(options.losslessImageCompression));
             }
 
+            if (options.singlePage !== undefined) {
+                formData.append('singlePage', String(options.singlePage));
+            }
+
             // Make the request to Gotenberg
             const response = await got.post(url, {
                 body: formData,

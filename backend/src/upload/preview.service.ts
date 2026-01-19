@@ -137,6 +137,7 @@ export class PreviewService implements TaskableService {
             singlePage: true,
             quality: 60,
             losslessImageCompression: false,
+            nativePageRanges: '1',
         });
 
         this.logger.log(`Conversion completed, PDF buffer size: ${pdfBuffer.length} bytes`);
