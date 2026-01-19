@@ -470,6 +470,7 @@ watch(() => activePdm.value.id, async (novoValor) => {
           </label>
 
           <SmaeText
+            v-model="values.contexto"
             name="contexto"
             as="textarea"
             anular-vazio
@@ -492,6 +493,7 @@ watch(() => activePdm.value.id, async (novoValor) => {
           <label class="label">{{ activePdm.rotulo_complementacao_meta }}</label>
 
           <SmaeText
+            v-model="values.complemento"
             anular-vazio
             as="textarea"
             name="complemento"
