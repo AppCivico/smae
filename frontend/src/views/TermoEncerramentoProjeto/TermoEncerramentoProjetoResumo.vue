@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia';
 import { computed, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 import type { SessaoDeDetalheLinhas } from '@/components/ResumoSessao.vue';
 import { termoEncerramento as schema } from '@/consts/formSchemas';
 import dateIgnorarTimezone from '@/helpers/dateIgnorarTimezone';
 import dinheiro from '@/helpers/dinheiro';
 import removerHtml from '@/helpers/html/removerHtml';
+import { useAlertStore } from '@/stores/alert.store';
 import { usePortfolioStore } from '@/stores/portfolios.store';
 import { useProjetosStore } from '@/stores/projetos.store';
 import { useTermoEncerramentoStore } from '@/stores/termoEncerramento.store';
@@ -25,6 +26,9 @@ type SessaoResumo = {
 const props = defineProps<Props>();
 
 const route = useRoute();
+const router = useRouter();
+
+const alertStore = useAlertStore();
 
 // @ts-expect-error - VITE_API_URL está definido no ambiente
 const BASE_URL = `${import.meta.env.VITE_API_URL}`;
@@ -87,9 +91,24 @@ function imprimirDocumento() {
   window.print();
 }
 
-onMounted(async () => {
+async function iniciar() {
   await termoEncerramentoStore.buscarItem(props.escopoId);
   await verificarIcone();
+}
+
+function excluirTermo() {
+  alertStore.confirmAction('Deseja excluir este termo de encerramento?', async () => {
+    await termoEncerramentoStore.excluirItem(props.escopoId);
+    alertStore.success('Termo de encerramento excluído com sucesso!');
+
+    termoEncerramentoStore.$reset();
+
+    iniciar();
+  }, 'Excluir');
+}
+
+onMounted(() => {
+  iniciar();
 });
 
 const sessaoPrincipal = computed<SessaoResumo[]>(() => {
@@ -228,6 +247,15 @@ const sessoes = computed<SessaoDeDetalheLinhas | null>(() => {
       class="icone-termo"
     >
   </div>
+
+  <button
+    v-if="emFoco?.id"
+    type="button"
+    class="btn big"
+    @click="excluirTermo"
+  >
+    Excluir
+  </button>
 
   <section
     v-if="sessoes"
