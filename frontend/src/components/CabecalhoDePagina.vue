@@ -1,3 +1,15 @@
+<script setup lang="ts">
+defineOptions({
+  inheritAttrs: false,
+});
+
+defineProps({
+  formularioSujo: {
+    type: Boolean,
+    default: false,
+  },
+});
+</script>
 <template>
   <header
     class="flex flexwrap spacebetween center g2 mb2 cabecalho"
@@ -27,18 +39,6 @@
     />
   </header>
 </template>
-<script setup lang="ts">
-defineOptions({
-  inheritAttrs: false,
-});
-
-defineProps({
-  formularioSujo: {
-    type: Boolean,
-    default: false,
-  },
-});
-</script>
 <style scoped lang="less">
 .cabecalho > {
   :deep(*) {
