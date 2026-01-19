@@ -39,6 +39,11 @@ export interface GotenbergConversionOptions {
      * Specify if images are exported to PDF using lossless compression
      */
     losslessImageCompression?: boolean;
+
+    /**
+     * Define whether to print the entire content in one single page.
+     */
+    singlePage?: boolean;
 }
 
 @Injectable()

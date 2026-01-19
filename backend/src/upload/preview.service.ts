@@ -134,7 +134,7 @@ export class PreviewService implements TaskableService {
 
         // Convert to PDF using Gotenberg (only first page for preview)
         const pdfBuffer = await this.gotenbergService.convertToPdf(buffer, arquivo.nome_original, arquivo.mime_type, {
-            nativePageRanges: '1',
+            singlePage: 'true',
             quality: 60,
             losslessImageCompression: false,
         });
