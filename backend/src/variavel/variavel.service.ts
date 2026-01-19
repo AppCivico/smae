@@ -2333,41 +2333,87 @@ export class VariavelService {
         const specificVarFilter = targetVariavelId ? Prisma.sql`AND v.id = ${targetVariavelId}` : Prisma.sql``;
 
         // 1. Identifica jobs: Variáveis suspensas com ciclos abertos
+        // Gera TODOS os ciclos faltantes usando busca_periodos_variavel
+        // Filtra apenas registros de controle ativos (removido_em IS NULL)
         // Considera apenas variáveis tipo Global, não removidas, suspensas,
         // que ainda não tiveram a liberação enviada e não foram processadas neste ciclo
         await prismaTx.$executeRaw`
             CREATE TEMP TABLE _suspend_jobs_global ON COMMIT DROP AS
+            WITH eligible_vars AS (
+                -- Seleciona variáveis suspensas elegíveis
+                SELECT
+                    v.id as variavel_id,
+                    v.variavel_mae_id,
+                    v.acumulativa,
+                    v.variavel_categorica_id as var_categorica_id,
+                    v.suspendida_em,
+                    vcc.ultimo_periodo_valido,
+                    vcc.variavel_id as ciclo_owner_id,
+                    vcc.liberacao_enviada
+                FROM variavel v
+                JOIN variavel_ciclo_corrente vcc ON vcc.variavel_id = COALESCE(v.variavel_mae_id, v.id)
+                WHERE
+                    v.tipo = 'Global'
+                    AND v.removido_em IS NULL
+                    AND v.suspendida_em IS NOT NULL
+                    AND v.suspendida_em <= vcc.ultimo_periodo_valido
+                    AND v.possui_variaveis_filhas = false
+                    AND vcc.liberacao_enviada = false
+                    ${specificVarFilter}
+            ),
+            cycle_ranges AS (
+                -- Busca os períodos válidos para cada variável usando busca_periodos_variavel
+                SELECT
+                    ev.variavel_id,
+                    ev.variavel_mae_id,
+                    ev.acumulativa,
+                    ev.var_categorica_id,
+                    ev.ciclo_owner_id,
+                    g.periodicidade,
+                    g.min as inicio,
+                    g.max as fim,
+                    ev.ultimo_periodo_valido
+                FROM eligible_vars ev
+                CROSS JOIN LATERAL busca_periodos_variavel(ev.variavel_id) AS g
+            ),
+            all_cycles AS (
+                -- Gera todos os ciclos entre início e fim usando GENERATE_SERIES
+                SELECT
+                    cr.variavel_id,
+                    cr.variavel_mae_id,
+                    cr.acumulativa,
+                    cr.var_categorica_id,
+                    cr.ciclo_owner_id,
+                    cycle_date::date as data_ciclo_target
+                FROM cycle_ranges cr
+                CROSS JOIN GENERATE_SERIES(cr.inicio, cr.fim, cr.periodicidade) AS cycle_date
+                WHERE cycle_date::date <= cr.ultimo_periodo_valido
+                    AND cycle_date::date < now()::date
+            )
+            -- Filtra apenas ciclos que ainda não foram processados (ou foram removidos)
             SELECT
-                v.id as variavel_id,
-                v.variavel_mae_id,
-                v.acumulativa,
-                v.variavel_categorica_id as var_categorica_id,
-                vcc.ultimo_periodo_valido as data_ciclo_target,
-                vcc.variavel_id as ciclo_owner_id,
+                ac.variavel_id,
+                ac.variavel_mae_id,
+                ac.acumulativa,
+                ac.var_categorica_id,
+                ac.data_ciclo_target,
+                ac.ciclo_owner_id,
                 s.serie
-            FROM variavel v
-            JOIN variavel_ciclo_corrente vcc ON vcc.variavel_id = COALESCE(v.variavel_mae_id, v.id)
+            FROM all_cycles ac
             CROSS JOIN (SELECT unnest(enum_range(NULL::"Serie")) as serie) s
             LEFT JOIN variavel_suspensa_controle ctrl
-                ON ctrl.variavel_id = v.id
-                AND ctrl.ciclo_referencia = vcc.ultimo_periodo_valido
+                ON ctrl.variavel_id = ac.variavel_id
+                AND ctrl.ciclo_referencia = ac.data_ciclo_target
                 AND ctrl.serie = s.serie
-            WHERE
-                v.tipo = 'Global'
-                AND v.removido_em IS NULL
-                AND v.suspendida_em IS NOT NULL
-                AND v.suspendida_em <= vcc.ultimo_periodo_valido
-                AND v.possui_variaveis_filhas = false
-                AND vcc.liberacao_enviada = false
-                AND s.serie IN ('Realizado', 'RealizadoAcumulado')
+                AND ctrl.removido_em IS NULL
+            WHERE s.serie IN ('Realizado', 'RealizadoAcumulado')
                 AND ctrl.id IS NULL
-                ${specificVarFilter}
         `;
 
-        // 2. Calcula valores e carrega metadados do período anterior
+        // 2. Calcula valores usando LOCF para múltiplos ciclos
+        // Implementa LOCF chain - para cada ciclo target, busca o último valor anterior
         // Para acumulativas: valor = 0
-        // Para não acumulativas: copia valor nominal e campos categóricos
-        // Nota: data_ciclo_target (ultimo_periodo_valido) já é o período de dados, não precisa subtrair atraso
+        // Para não acumulativas: copia o último valor nominal disponível antes do ciclo
         // Nota: Para RealizadoAcumulado sem valor anterior, defaulta para 0
         // Para Realizado sem valor anterior, fica NULL (será ignorado no INSERT)
         await prismaTx.$executeRaw`
@@ -2479,6 +2525,20 @@ export class VariavelService {
 
         const filledVarIds = affectedVars.map((r) => r.variavel_id);
 
+        // Logging para rastrear processamento multi-ciclo
+        // Conta quantos ciclos foram processados por variável
+        const cycleStats = await prismaTx.$queryRaw<
+            { variavel_id: number; num_ciclos: number; min_ciclo: Date; max_ciclo: Date }[]
+        >`
+            SELECT
+                variavel_id,
+                COUNT(DISTINCT data_ciclo_target) as num_ciclos,
+                MIN(data_ciclo_target) as min_ciclo,
+                MAX(data_ciclo_target) as max_ciclo
+            FROM _suspend_jobs_global
+            GROUP BY variavel_id
+        `;
+
         // Busca TODOS os cycle owners dos jobs, não apenas dos valores inseridos
         // Isso é necessário porque mesmo sem valores inseridos (ex: Realizado sem valor anterior),
         // precisamos verificar se todas as filhas estão suspensas para fechar o ciclo da mãe
@@ -2489,6 +2549,13 @@ export class VariavelService {
 
         if (filledVarIds.length > 0) {
             console.log('Variáveis globais suspensas processadas:', filledVarIds);
+            for (const stat of cycleStats) {
+                if (stat.num_ciclos <= 1) continue;
+                console.log(
+                    `Variável ${stat.variavel_id}: ${stat.num_ciclos} ciclos processados ` +
+                        `(${stat.min_ciclo.toISOString().split('T')[0]} a ${stat.max_ciclo.toISOString().split('T')[0]})`
+                );
+            }
 
             // 4. Dispara recálculos
             await this.recalc_series_dependentes(filledVarIds, prismaTx);
@@ -4243,6 +4310,25 @@ export class VariavelService {
             });
             mostrar_monitoramento = prevLog?.previo_status_mostrar_monitoramento ?? true;
             logger.log(`Variável ${variavelId} reativada`);
+
+            // Marca todos os registros de controle como removidos quando a variável é dessuspensa
+            // Isso permite que os ciclos sejam reprocessados se a variável for suspensa novamente
+            const updated = await prismaTxn.variavelSuspensaControle.updateMany({
+                where: {
+                    variavel_id: variavelId,
+                    removido_em: null,
+                },
+                data: {
+                    removido_em: now,
+                    removido_por: user.id,
+                },
+            });
+
+            if (updated.count > 0) {
+                logger.log(
+                    `Marcados ${updated.count} registros de controle como removidos para variável ${variavelId}`
+                );
+            }
         }
 
         await prismaTxn.variavelSuspensaoLog.create({

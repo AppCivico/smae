@@ -2022,12 +2022,16 @@ model VariavelSuspensaControle {
     valor_antigo Decimal? @db.Decimal(65, 30)
     valor_novo   Decimal? @db.Decimal(65, 30)
 
+    removido_em    DateTime? @db.Timestamptz(6)
+    removido_por   Int?
+
     processado_em DateTime @default(now()) @db.Timestamptz(6)
 
     // Índice único para PDM (legacy) - quando ciclo_fisico_corrente_id não é nulo
     @@unique([variavel_id, ciclo_fisico_corrente_id, serie])
     // Índice único para variáveis globais - quando ciclo_referencia não é nulo
     @@unique([variavel_id, serie, ciclo_referencia])
+    @@index([variavel_id, removido_em])
     @@map("variavel_suspensa_controle")
 }
 
