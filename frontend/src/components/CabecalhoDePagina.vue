@@ -29,7 +29,7 @@ defineProps({
       <slot name="titulo" />
     </TituloDePagina>
 
-    <hr class="f1">
+    <hr class="f1" />
 
     <slot name="acoes" />
 
@@ -56,6 +56,7 @@ defineProps({
 
   :deep(h1) {
     flex-basis: min-content;
+    flex-grow: 10;
   }
 
   hr {
