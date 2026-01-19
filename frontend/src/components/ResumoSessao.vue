@@ -63,6 +63,7 @@ function obterLinhas(quantidadeLinhas: number): number {
       v-for="(linha, linhaIndex) in linhasMapeadas"
       :key="`resumo-linha--${linhaIndex}`"
       class="resumo-sessao__linha"
+      :class="linha.length === 1 && 'resumo-sessao__linha--full'"
     >
       <div
         v-for="(item, itemIndex) in linha"
@@ -116,6 +117,10 @@ function obterLinhas(quantidadeLinhas: number): number {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 2rem 0;
+}
+
+.resumo-sessao__linha--full {
+  grid-template-columns: 1fr;
 }
 
 .resumo-sessao__item {
