@@ -98,7 +98,7 @@ export const usePortfolioStore = defineStore('portfolios', {
       try {
         const requestParams = { ...params };
 
-        if (requestParams.icone_impressao) {
+        if (requestParams.icone_impressao || requestParams.icone_impressao === null) {
           requestParams.icone_upload_token = requestParams.icone_impressao;
           delete requestParams.icone_impressao;
         }
