@@ -1190,7 +1190,7 @@ export class VariavelService {
                         supraregional: true,
                         variavel_categorica_id: true,
                         medicao_orgao: { select: { id: true, sigla: true } },
-                        mostrar_monitoramento: true,
+                        suspendida_em: true,
                     },
                 },
                 orgao_proprietario: { select: { id: true, sigla: true, descricao: true } },
@@ -1291,7 +1291,7 @@ export class VariavelService {
                     orgao_responsal_coleta: r.variavel.medicao_orgao
                         ? { id: r.variavel.medicao_orgao.id, sigla: r.variavel.medicao_orgao.sigla }
                         : null,
-                    mostrar_monitoramento: r.variavel.mostrar_monitoramento,
+                    suspendida_em: r.variavel.suspendida_em,
                 };
             }),
         };
@@ -1525,9 +1525,8 @@ export class VariavelService {
                 }
                 await Promise.all(promises);
 
-                // Não suspende a mãe, apenas marca o mostrar_monitoramento como false
-                dto.suspendida = undefined;
-                dto.mostrar_monitoramento = false;
+                // marca o mostrar_monitoramento como false
+                dto.mostrar_monitoramento = true;
             } else if (suspendida !== undefined && suspendida !== currentSuspendida) {
                 dto.mostrar_monitoramento = await this.handleSuspensaoChange(
                     prismaTxn,
@@ -1605,7 +1604,7 @@ export class VariavelService {
                         ? this.getPeriodTuples(dto.periodos, dto.periodicidade ?? self.periodicidade)
                         : {}),
 
-                    ...(dto.suspendida !== undefined ? { suspendida_em: dto.suspendida ? now : null } : {}),
+                    ...(suspendida !== undefined ? { suspendida_em: dto.suspendida ? now : null } : {}),
                 },
                 select: {
                     valor_base: true,
@@ -4311,7 +4310,7 @@ export class VariavelService {
                             variavel_mae_id: variavelMaeId,
                             tipo: 'Global',
                             removido_em: null,
-                            mostrar_monitoramento: true,
+                            suspendida_em: null,
                         },
                         select: { id: true },
                     });
@@ -4319,29 +4318,29 @@ export class VariavelService {
                     if (!algumaFilhaComMonitoramentoLigado) {
                         const mae = await prismaTxn.variavel.findFirst({
                             where: { id: variavelMaeId, removido_em: null },
-                            select: { id: true, mostrar_monitoramento: true },
+                            select: { id: true, suspendida_em: true },
                         });
 
-                        if (mae?.mostrar_monitoramento === true) {
+                        if (mae?.suspendida_em === null) {
                             logger.log(
                                 `Todas as filhas da variável ${variavelMaeId} ficaram sem monitoramento. Desligando monitoramento da mãe.`
                             );
                             await prismaTxn.variavel.update({
                                 where: { id: variavelMaeId },
-                                data: { mostrar_monitoramento: false },
+                                data: { suspendida_em: now },
                             });
                         }
                     }
                 }
 
                 // Auto reverter: se alguma filha for reativada e a mãe estiver com monitoramento desligado, reativa o monitoramento da mãe
-                if (newSuspendida === false && variavelMaeDetail.linhas[0].mostrar_monitoramento === false) {
+                if (newSuspendida === false && variavelMaeDetail.linhas[0].suspendida_em !== null) {
                     logger.log(
                         `Filha ${filhaId} da variável ${variavelMaeId} foi reativada. Retornar o estado de monitoramento da mãe.`
                     );
                     await prismaTxn.variavel.update({
                         where: { id: variavelMaeId },
-                        data: { mostrar_monitoramento: true },
+                        data: { suspendida_em: null },
                     });
                 }
 
