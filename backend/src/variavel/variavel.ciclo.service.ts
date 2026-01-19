@@ -53,6 +53,7 @@ interface ICicloCorrente {
         variaveis_filhas: {
             id: number;
             titulo?: string;
+            suspendida_em?: Date | null;
         }[];
     };
     fase: VariavelFase;
@@ -371,7 +372,7 @@ export class VariavelCicloService {
                         titulo: true,
                         variaveis_filhas: {
                             where: { removido_em: null, tipo: 'Global' },
-                            select: { id: true },
+                            select: { id: true, titulo: true, suspendida_em: true },
                         },
                     },
                 },
@@ -471,8 +472,11 @@ export class VariavelCicloService {
                 if (dto.aprovar) {
                     conferida = true;
 
-                    // Verifica se todas as filhas estão conferidas ou serão atualizadas neste batch
-                    const filhaIds = cicloCorrente.variavel.variaveis_filhas.map((child) => child.id);
+                    // Verifica se todas as filhas NÃO SUSPENSAS estão conferidas ou serão atualizadas neste batch
+                    // Filhas suspensas são preenchidas automaticamente pelo sistema
+                    const filhaIds = cicloCorrente.variavel.variaveis_filhas
+                        .filter((child) => child.suspendida_em === null)
+                        .map((child) => child.id);
                     await this.verificaStatusConferenciaFilhas(filhaIds, prismaTxn, dto);
 
                     await this.marcaLiberacaoEnviada(cicloCorrente.variavel.id, prismaTxn);
@@ -564,22 +568,39 @@ export class VariavelCicloService {
             throw new BadRequestException('Valores duplicados para a mesma variável não são permitidos');
         }
 
+        // Filtra filhas não suspensas - apenas essas precisam ter valores informados
+        // Variáveis suspensas têm seus valores preenchidos automaticamente pelo sistema
+        const filhasNaoSuspensas = cicloCorrente.variavel.variaveis_filhas.filter((f) => f.suspendida_em === null);
+        const filhasSuspensas = cicloCorrente.variavel.variaveis_filhas.filter((f) => f.suspendida_em !== null);
+
         if (cicloCorrente.variavel.variaveis_filhas.length > 0) {
             // Validações para variáveis COM filhas
             if (valorGlobalOuMae.length > 0) {
                 throw new BadRequestException('Variáveis com filhas não podem ter valores próprios');
             }
-            // Garante que a estrutura esteja sempre completa, mesmo se os valores estiverem vazios antes da aprovação
-            if (valorFilhas.length != cicloCorrente.variavel.variaveis_filhas.length) {
+
+            // Garante que valores de filhas suspensas não sejam enviados
+            const suspensasIds = new Set(filhasSuspensas.map((v) => v.id));
+            for (const valor of valorFilhas) {
+                if (valor.variavel_id && suspensasIds.has(valor.variavel_id)) {
+                    const filhaSuspensa = filhasSuspensas.find((f) => f.id === valor.variavel_id);
+                    throw new BadRequestException(
+                        `A variável filha "${filhaSuspensa?.titulo ?? valor.variavel_id}" está suspensa e não deve receber valores. ` +
+                            'Os valores são preenchidos automaticamente pelo sistema.'
+                    );
+                }
+            }
+
+            // Garante que a estrutura esteja sempre completa para filhas NÃO suspensas
+            if (valorFilhas.length != filhasNaoSuspensas.length) {
                 throw new BadRequestException(
-                    `Quantidade de valores (${valorFilhas.length}) fornecidos para as variáveis filhas não confere com o esperado (${
-                        cicloCorrente.variavel.variaveis_filhas.length
-                    }). Todos devem ser enviados.`
+                    `Quantidade de valores (${valorFilhas.length}) fornecidos para as variáveis filhas não confere com o esperado (${filhasNaoSuspensas.length}). ` +
+                        `Todas as filhas não suspensas devem ser enviadas.`
                 );
             }
 
-            // Verificação detalhada para garantir que todas as variáveis filhas tenham valores correspondentes
-            const filhasSet = new Set(cicloCorrente.variavel.variaveis_filhas.map((v) => v.id));
+            // Verificação detalhada para garantir que todas as variáveis filhas NÃO suspensas tenham valores correspondentes
+            const filhasSet = new Set(filhasNaoSuspensas.map((v) => v.id));
             for (const valor of valorFilhas) {
                 if (!valor.variavel_id) continue; // Não deveria acontecer devido ao filtro, mas just in case
                 if (!filhasSet.has(valor.variavel_id)) {
@@ -589,11 +610,10 @@ export class VariavelCicloService {
                 }
                 filhasSet.delete(valor.variavel_id); // Rastreia quais foram fornecidas
             }
-            // Esta verificação teoricamente já está coberta pela verificação do tamanho, mas é uma boa salvaguarda caso alguém
-            // tente enviar valores de filhas que não estão na lista
+            // Esta verificação teoricamente já está coberta pela verificação do tamanho, mas é uma boa salvaguarda
             if (filhasSet.size > 0) {
                 throw new BadRequestException(
-                    `Valores não fornecidos para as variáveis filhas: ${Array.from(filhasSet).join(', ')}`
+                    `Valores não fornecidos para as variáveis filhas não suspensas: ${Array.from(filhasSet).join(', ')}`
                 );
             }
         } else {
@@ -1008,11 +1028,18 @@ export class VariavelCicloService {
               }
             : null;
 
+        // Conta filhas suspensas para informar o frontend
+        const filhasSuspensas = variavel.variaveis_filhas.filter((f) => f.suspendida_em !== null);
+        const filhasNaoSuspensas = variavel.variaveis_filhas.filter((f) => f.suspendida_em === null);
+
         return {
             fase: cicloCorrente.fase,
             pedido_complementacao,
             variavel: this.formatarVariavelResumo(variavel),
             possui_variaveis_filhas: variavel.variaveis_filhas.length > 0,
+            // Informações sobre filhas suspensas para o frontend
+            filhas_suspensas_count: filhasSuspensas.length,
+            filhas_nao_suspensas_count: filhasNaoSuspensas.length,
             analises,
             valores: valoresFormatados,
             uploads: uploadsFormatados,
@@ -1022,12 +1049,25 @@ export class VariavelCicloService {
     private formatarValores(
         variavel: VariavelResumoInput & { variaveis_filhas: VariavelResumoInput[] },
         valores: ValorSerieInterface[],
-        formValues?: IUltimaAnaliseValor[]
+        formValues?: IUltimaAnaliseValor[],
+        incluirMaeSemFilhasAtivas: boolean = false
     ): VariavelValorDto[] {
         const valoresMap = new Map<number, VariavelValorDto>();
 
-        const todasVariaveis = [...variavel.variaveis_filhas];
-        if (todasVariaveis.length === 0) todasVariaveis.push(variavel); // Se não tem filhas, adiciona a mãe
+        // Filtra filhas suspensas - elas são preenchidas automaticamente pelo sistema
+        // e não devem aparecer na listagem para o usuário preencher
+        const filhasNaoSuspensas = variavel.variaveis_filhas.filter((f) => f.suspendida_em === null);
+        const todasVariaveis = [...filhasNaoSuspensas];
+
+        // Lógica para adicionar a variável mãe:
+        // - Se não tem filhas (variável standalone): sempre adiciona a mãe
+        // - Se tem filhas mas todas estão suspensas: só adiciona se incluirMaeSemFilhasAtivas=true
+        //   (por padrão, retorna lista vazia - validação rejeitaria submissão de variável com filhas)
+        if (variavel.variaveis_filhas.length === 0) {
+            todasVariaveis.push(variavel); // Variável sem filhas
+        } else if (todasVariaveis.length === 0 && incluirMaeSemFilhasAtivas) {
+            todasVariaveis.push(variavel); // Todas filhas suspensas, mas param permite
+        }
 
         // caso a variável não tenha filhas, mas o formValues tenha, adiciona a variável mãe
         if (variavel.variaveis_filhas.length === 0 && Array.isArray(formValues) && formValues.length === 1) {
@@ -1237,6 +1277,15 @@ export class VariavelCicloService {
 
                 for (const variavel of variaveis) {
                     await this.processVariavel(variavel.id, logger);
+                }
+
+                // Processa variáveis globais suspensas - copia valores automaticamente
+                // Para variáveis acumulativas: valor = 0
+                // Para variáveis não acumulativas: copia o valor do período anterior
+                logger.log('Iniciando processamento de variáveis suspensas');
+                const suspensasProcessadas = await this.variavelService.processVariaveisGlobaisSuspensas(prismaTx);
+                if (suspensasProcessadas.length > 0) {
+                    logger.log(`Variáveis suspensas processadas: ${suspensasProcessadas.length}`);
                 }
 
                 // Busca as variáveis marcadas para sincronização

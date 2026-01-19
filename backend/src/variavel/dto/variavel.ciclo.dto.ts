@@ -271,13 +271,19 @@ export class VariavelAnaliseQualitativaResponseDto {
     @ApiProperty({ description: 'Ultimo pedido de complementacao' })
     pedido_complementacao: PSPedidoComplementacaoDto | null;
 
-    @ApiProperty({ description: 'Valores da variável e suas filhas', type: [VariavelValorDto] })
+    @ApiProperty({ description: 'Valores da variável e suas filhas (exclui filhas suspensas)', type: [VariavelValorDto] })
     valores: VariavelValorDto[];
 
     @ApiProperty({ description: 'Uploads associados', type: [VariavelAnaliseDocumento] })
     uploads: VariavelAnaliseDocumento[];
 
     possui_variaveis_filhas: boolean;
+
+    @ApiProperty({ description: 'Quantidade de variáveis filhas suspensas (preenchidas automaticamente pelo sistema)' })
+    filhas_suspensas_count: number;
+
+    @ApiProperty({ description: 'Quantidade de variáveis filhas não suspensas (que precisam ser preenchidas)' })
+    filhas_nao_suspensas_count: number;
 }
 
 export class VariavelCicloFaseCountItemDto {
