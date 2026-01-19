@@ -4,6 +4,7 @@ import { storeToRefs } from 'pinia';
 import { defineProps } from 'vue';
 import { useRoute } from 'vue-router';
 
+import dateToField from '@/helpers/dateToField';
 import truncate from '@/helpers/texto/truncate';
 import { useAuthStore } from '@/stores/auth.store';
 
@@ -25,7 +26,19 @@ const authStore = useAuthStore();
 const { temPermissãoPara } = storeToRefs(authStore);
 </script>
 <template>
-  <td class="cell--nowrap">
+  <td class="cell--nowrap tr">
+    <span
+      v-if="$props.linha?.suspendida || $props.linha?.suspendida_em"
+      class="tipinfo right"
+    >
+      <svg
+        width="24"
+        height="24"
+        color="#F2890D"
+      ><use xlink:href="#i_alert" /></svg><div>
+        Suspensa do monitoramento físico em {{ dateToField($props.linha?.suspendida_em) }}
+      </div>
+    </span>
     {{ $props.linha?.codigo }}
   </td>
   <th>

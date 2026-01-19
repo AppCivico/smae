@@ -235,7 +235,7 @@ watch(parametrosSerializados, () => {
             width="20"
             height="20"
           ><use xlink:href="#i_edit" /></svg>
-          <div>Editar valor base "{{ variavel.titulo }}"</div>
+          <div>Editar variável "{{ variavel.titulo }}"</div>
         </SmaeLink>
       </td>
 
@@ -285,5 +285,5 @@ watch(parametrosSerializados, () => {
     </SmallModal>
   </template>
 
-  <DialogoValorBase />
+  <DialogoValorBase @sucesso="variaveisGlobaisStore.buscarTudo(parametrosDeBusca);" />
 </template>

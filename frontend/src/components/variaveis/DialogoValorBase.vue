@@ -2,11 +2,12 @@
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
+  Field,
   useForm,
 } from 'vee-validate';
 import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import { number, object } from 'yup';
+import { boolean, number, object } from 'yup';
 
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import SmaeDialog from '@/components/SmaeDialog.vue';
@@ -49,6 +50,9 @@ const schema = object({
     .label('Valor base')
     .min(0)
     .required('Valor base é obrigatório'),
+  suspendida: boolean()
+    .label('Suspender variável')
+    .nullable(),
 });
 
 const {
@@ -60,6 +64,7 @@ const {
   validationSchema: schema,
   initialValues: {
     valor_base: emFoco.value?.valor_base || null,
+    suspendida: emFoco.value?.suspendida || false,
   },
 });
 
@@ -117,6 +122,7 @@ watch([dialogoEstaAberto, variavelFilhaId], async ([dialogoAberto, filhaId]) => 
     resetForm({
       values: {
         valor_base: emFoco.value?.valor_base || null,
+        suspendida: emFoco.value?.suspendida || false,
       },
     });
   }
@@ -126,7 +132,7 @@ watch([dialogoEstaAberto, variavelFilhaId], async ([dialogoAberto, filhaId]) => 
 <template>
   <SmaeDialog
     :id="DIALOG_ID"
-    titulo="Editar valor base"
+    titulo="Edição de variável filha"
     :parametros-associados="[
       'variavel_filha_id',
       'variavelFilhaId',
@@ -166,6 +172,28 @@ watch([dialogoEstaAberto, variavelFilhaId], async ([dialogoAberto, filhaId]) => 
           <ErrorMessage
             class="error-msg"
             name="valor_base"
+          />
+        </div>
+
+        <div class="mb2">
+          <label class="flex center g1">
+            <Field
+              name="suspendida"
+              type="checkbox"
+              :value="true"
+              :unchecked-value="false"
+            />
+            <SmaeLabel
+              class="mb0"
+              name="suspendida"
+              as="span"
+              :schema="schema"
+              :class="{ error: errors.suspendida }"
+            />
+          </label>
+          <ErrorMessage
+            class="error-msg"
+            name="suspendida"
           />
         </div>
 
