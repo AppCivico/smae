@@ -3,6 +3,7 @@ import { storeToRefs } from 'pinia';
 
 import GerenciadorDeArquivos from '@/components/GerenciadorDeArquivos.vue';
 import LoadingComponent from '@/components/LoadingComponent.vue';
+import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import { useAnexosPorVariavelStore } from '@/stores/AnexosPorVariavel.store.ts';
 
 defineOptions({
@@ -55,6 +56,8 @@ function iniciar() {
 iniciar();
 </script>
 <template>
+  <MigalhasDeMetas class="mb1" />
+
   <CabecalhoDePagina />
 
   <LoadingComponent v-if="chamadasPendentes?.lista" />
