@@ -593,10 +593,10 @@ export class PPProjetoService implements ReportableService {
                 { value: 'codigo_risco', label: 'Codigo Risco' },
                 { value: 'contramedida', label: 'Contramedida' },
                 { value: 'contramedida_texto', label: 'Contramedida Texto' },
-                { value: 'medidas_de_contingencia_texto', label: 'Medidas de Contingencia Texto' },
                 { value: 'prazo_contramedida', label: 'Prazo Contramedida' },
                 { value: 'responsavel', label: 'Responsavel' },
                 { value: 'medidas_de_contingencia', label: 'Medidas de Contingencia' },
+                { value: 'medidas_de_contingencia_texto', label: 'Medidas de Contingencia Texto' },
             ]);
         }
         await ctx.progress(70);
