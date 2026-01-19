@@ -4264,6 +4264,9 @@ export class VariavelService {
             dto.valor_base !== undefined &&
             Number(variavelFilha.valor_base).toString() !== Number(dto.valor_base).toString();
 
+        // Flag para saber se houve alteração real no estado de suspensão (evita query extra quando só muda valor_base)
+        const suspendidaMudou = newSuspendida !== undefined && newSuspendida !== currentSuspendida;
+
         await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient) => {
                 const updateData: any = {
@@ -4272,12 +4275,12 @@ export class VariavelService {
                 };
 
                 // Verifica mudanças na suspensão
-                if (newSuspendida !== undefined && newSuspendida !== currentSuspendida) {
+                if (suspendidaMudou) {
                     updateData.suspendida_em = newSuspendida ? now : null;
                     updateData.mostrar_monitoramento = await this.handleSuspensaoChange(
                         prismaTxn,
                         filhaId,
-                        newSuspendida,
+                        newSuspendida!,
                         variavelFilha.mostrar_monitoramento,
                         now,
                         user,
@@ -4299,6 +4302,37 @@ export class VariavelService {
                     where: { id: filhaId },
                     data: updateData,
                 });
+
+                // Se uma filha foi suspensa e agora TODAS as filhas estão sem monitoramento,
+                // desligar o monitoramento da mãe também (para refletir que "a variável inteira" está suspensa no monitoramento).
+                if (suspendidaMudou && newSuspendida === true) {
+                    const algumaFilhaComMonitoramentoLigado = await prismaTxn.variavel.findFirst({
+                        where: {
+                            variavel_mae_id: variavelMaeId,
+                            tipo: 'Global',
+                            removido_em: null,
+                            mostrar_monitoramento: true,
+                        },
+                        select: { id: true },
+                    });
+
+                    if (!algumaFilhaComMonitoramentoLigado) {
+                        const mae = await prismaTxn.variavel.findFirst({
+                            where: { id: variavelMaeId, removido_em: null },
+                            select: { id: true, mostrar_monitoramento: true },
+                        });
+
+                        if (mae?.mostrar_monitoramento === true) {
+                            logger.log(
+                                `Todas as filhas da variável ${variavelMaeId} ficaram sem monitoramento. Desligando monitoramento da mãe.`
+                            );
+                            await prismaTxn.variavel.update({
+                                where: { id: variavelMaeId },
+                                data: { mostrar_monitoramento: false },
+                            });
+                        }
+                    }
+                }
 
                 // Auto reverter: se alguma filha for reativada e a mãe estiver com monitoramento desligado, reativa o monitoramento da mãe
                 if (newSuspendida === false && variavelMaeDetail.linhas[0].mostrar_monitoramento === false) {
