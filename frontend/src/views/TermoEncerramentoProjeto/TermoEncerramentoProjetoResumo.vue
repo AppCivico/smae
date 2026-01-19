@@ -97,9 +97,9 @@ async function iniciar() {
 }
 
 function excluirTermo() {
-  alertStore.confirmAction('Deseja excluir este termo de encerramento?', async () => {
+  alertStore.confirmAction('Deseja resetar o termo de encerramento para padrão?', async () => {
     await termoEncerramentoStore.excluirItem(props.escopoId);
-    alertStore.success('Termo de encerramento excluído com sucesso!');
+    alertStore.success('Termo de encerramento resetado com sucesso!');
 
     termoEncerramentoStore.$reset();
 
