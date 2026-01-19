@@ -2296,6 +2296,7 @@ export class VariavelService {
                 AND v.removido_em IS NULL
                 AND v.suspendida_em IS NOT NULL
                 AND v.suspendida_em <= vcc.ultimo_periodo_valido
+                AND v.possui_variaveis_filhas = false
                 AND vcc.liberacao_enviada = false
                 AND s.serie IN ('Realizado', 'RealizadoAcumulado')
                 AND ctrl.id IS NULL
