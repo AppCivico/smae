@@ -37,12 +37,12 @@ const {
 
 function iniciar() {
   const params: Record<string, number> = {};
-  if (props.meta_id) {
-    params.meta_id = props.meta_id;
+  if (props.atividade_id) {
+    params.atividade_id = props.atividade_id;
   } else if (props.iniciativa_id) {
     params.iniciativa_id = props.iniciativa_id;
-  } else if (props.atividade_id) {
-    params.atividade_id = props.atividade_id;
+  } else if (props.meta_id) {
+    params.meta_id = props.meta_id;
   }
 
   if (Object.keys(params).length === 0) {
