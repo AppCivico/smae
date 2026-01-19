@@ -1539,6 +1539,14 @@ export class VariavelService {
                 }
                 await Promise.all(promises);
 
+                // Trigger processamento assíncrono para cada filha suspensa após transação completar
+                const suspendedChildIds = globalChildren.filter((c) => c.suspendida_em === null).map((c) => c.id);
+                if (suspendedChildIds.length > 0) {
+                    logger.log(
+                        `Agendado processamento de variáveis suspensas para filhas: ${suspendedChildIds.join(', ')}`
+                    );
+                }
+
                 // marca o mostrar_monitoramento como false
                 dto.mostrar_monitoramento = true;
             } else if (suspendida !== undefined && suspendida !== currentSuspendida) {
@@ -1551,6 +1559,11 @@ export class VariavelService {
                     user,
                     logger
                 );
+
+                // Trigger processamento se variável foi suspensa
+                if (suspendida === true && !hasChildren) {
+                    logger.log(`Agendado processamento de variável suspensa: ${variavelId}`);
+                }
             }
 
             await this.updateCategorica(selfBefUpdate.variavel_categorica_id, dto, prismaTxn, variavelId, self);
@@ -1754,6 +1767,32 @@ export class VariavelService {
             }
             await logger.saveLogs(prismaTxn, user.getLogData());
         });
+
+        // Trigger processamento assíncrono de variáveis suspensas após transação completar
+        if (dto.suspendida === true) {
+            const targetIds = [variavelId];
+            // Se tiver filhas, precisamos processar todas as filhas que foram suspensas
+            if (selfBefUpdate.variaveis_filhas.length > 0) {
+                targetIds.push(...selfBefUpdate.variaveis_filhas.map((f) => f.id));
+            }
+
+            for (const targetId of targetIds) {
+                this.processVariaveisGlobaisSuspensas(this.prisma, targetId)
+                    .then((processedIds) => {
+                        if (processedIds.length > 0) {
+                            this.logger.log(
+                                `Processamento automático concluído para variável ${targetId}: ${processedIds.length} períodos processados`
+                            );
+                        }
+                    })
+                    .catch((error) => {
+                        this.logger.error(
+                            `Erro ao processar variável suspensa ${targetId}: ${error.message}`,
+                            error.stack
+                        );
+                    });
+            }
+        }
 
         return { id: variavelId };
     }
@@ -4413,6 +4452,7 @@ export class VariavelService {
 
         // Flag para saber se houve alteração real no estado de suspensão (evita query extra quando só muda valor_base)
         const suspendidaMudou = newSuspendida !== undefined && newSuspendida !== currentSuspendida;
+        const foiSuspendida = suspendidaMudou && newSuspendida === true;
 
         await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient) => {
@@ -4501,6 +4541,22 @@ export class VariavelService {
             },
             { isolationLevel: 'ReadCommitted', maxWait: 5000, timeout: 10000 }
         );
+
+        // Trigger processamento assíncrono de variáveis suspensas após transação completar
+        // Não aguarda o resultado para não bloquear a resposta
+        if (foiSuspendida) {
+            this.processVariaveisGlobaisSuspensas(this.prisma, filhaId)
+                .then((processedIds) => {
+                    if (processedIds.length > 0) {
+                        this.logger.log(
+                            `Processamento automático concluído para variável ${filhaId}: ${processedIds.length} períodos processados`
+                        );
+                    }
+                })
+                .catch((error) => {
+                    this.logger.error(`Erro ao processar variável suspensa ${filhaId}: ${error.message}`, error.stack);
+                });
+        }
 
         return { id: filhaId };
     }
