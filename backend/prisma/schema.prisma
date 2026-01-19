@@ -1222,6 +1222,7 @@ enum arquivo_preview_tipo {
     redimensionamento // Para imagens - apenas redimensiona
     conversao_pdf // Para documentos - converte para PDF
     conversao_json // Para JSON, converte para html e depois para PDF
+    conversao_csv // Para CSV, converte para html e depois para PDF
 }
 
 model Arquivo {
@@ -2022,8 +2023,8 @@ model VariavelSuspensaControle {
     valor_antigo Decimal? @db.Decimal(65, 30)
     valor_novo   Decimal? @db.Decimal(65, 30)
 
-    removido_em    DateTime? @db.Timestamptz(6)
-    removido_por   Int?
+    removido_em  DateTime? @db.Timestamptz(6)
+    removido_por Int?
 
     processado_em DateTime @default(now()) @db.Timestamptz(6)
 

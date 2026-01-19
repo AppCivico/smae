@@ -56,6 +56,10 @@ export class PreviewService implements TaskableService {
                 previewArquivoId = await this.processImageResize(arquivo);
             } else if (tipoPreview === 'conversao_pdf') {
                 previewArquivoId = await this.processPdfConversion(arquivo);
+            } else if (tipoPreview === 'conversao_csv') {
+                previewArquivoId = await this.processCsvConversion(arquivo);
+            } else if (tipoPreview === 'conversao_json') {
+                previewArquivoId = await this.processJsonConversion(arquivo);
             } else {
                 throw new Error(`Unknown preview type: ${tipoPreview}`);
             }
@@ -128,17 +132,9 @@ export class PreviewService implements TaskableService {
         for await (const chunk of stream) {
             chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
         }
-        let buffer = Buffer.concat(chunks);
+        const buffer = Buffer.concat(chunks);
 
         this.logger.log(`Downloaded file buffer, size: ${buffer.length} bytes`);
-
-        // For CSV files, truncate content to fit one page
-        if (arquivo.mime_type === 'text/csv' || arquivo.nome_original.toLowerCase().endsWith('.csv')) {
-            const csvContent = buffer.toString('utf-8');
-            const truncated = this.truncateCsvForPreview(csvContent, 40); // ~40 rows fits on one page
-            buffer = Buffer.from(truncated, 'utf-8');
-            this.logger.log(`CSV truncated to fit one page, new size: ${buffer.length} bytes`);
-        }
 
         // Convert to PDF using Gotenberg (only first page for preview)
         const pdfBuffer = await this.gotenbergService.convertToPdf(buffer, arquivo.nome_original, arquivo.mime_type, {
@@ -159,6 +155,51 @@ export class PreviewService implements TaskableService {
         );
 
         return previewId;
+    }
+
+    private async processCsvConversion(arquivo: any): Promise<number> {
+        this.logger.log(`Starting CSV conversion for arquivo ${arquivo.id}`);
+
+        // Download original CSV file from storage
+        const stream = await this.storage.getStream(arquivo.caminho);
+        const chunks: Buffer[] = [];
+        for await (const chunk of stream) {
+            chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+        }
+        const buffer = Buffer.concat(chunks);
+
+        this.logger.log(`Downloaded CSV file buffer, size: ${buffer.length} bytes`);
+
+        try {
+            // Parse CSV
+            const csvContent = buffer.toString('utf-8');
+            const htmlContent = this.createCsvHtml(csvContent, arquivo.nome_original, 30); // ~30 rows fit on one page
+
+            // Convert to PDF using Gotenberg
+            const pdfBuffer = await this.gotenbergService.convertHtmlToPdf(htmlContent, {
+                printBackground: true,
+                marginTop: 0.3,
+                marginBottom: 0.3,
+                marginLeft: 0.3,
+                marginRight: 0.3,
+            });
+
+            this.logger.log(`CSV conversion completed, PDF buffer size: ${pdfBuffer.length} bytes`);
+
+            // Upload preview
+            const previewId = await this.uploadPreview(
+                arquivo.id,
+                arquivo.nome_original,
+                pdfBuffer,
+                'application/pdf',
+                arquivo.criado_por
+            );
+
+            return previewId;
+        } catch (error) {
+            this.logger.error(`Error parsing or converting CSV for arquivo ${arquivo.id}:`, error);
+            throw new Error(`CSV conversion failed: ${error.message}`);
+        }
     }
 
     private async processJsonConversion(arquivo: any): Promise<number> {
@@ -215,6 +256,101 @@ export class PreviewService implements TaskableService {
             this.logger.error(`Error parsing or converting JSON for arquivo ${arquivo.id}:`, error);
             throw new Error(`JSON conversion failed: ${error.message}`);
         }
+    }
+
+    private createCsvHtml(csvContent: string, filename: string, maxRows: number): string {
+        const lines = csvContent.split('\n').filter((line) => line.trim());
+        const isTruncated = lines.length > maxRows;
+        const displayLines = isTruncated ? lines.slice(0, maxRows) : lines;
+
+        // Parse CSV rows
+        const rows = displayLines.map((line) => {
+            // Simple CSV parsing (handles quoted fields)
+            const fields: string[] = [];
+            let current = '';
+            let inQuotes = false;
+
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    fields.push(current.trim());
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            fields.push(current.trim());
+            return fields;
+        });
+
+        // Build HTML table
+        const tableRows = rows
+            .map((fields, index) => {
+                const tag = index === 0 ? 'th' : 'td';
+                const cells = fields
+                    .map((field) => `<${tag}>${this.escapeHtml(field.replace(/^"|"$/g, ''))}</${tag}>`)
+                    .join('');
+                return `<tr>${cells}</tr>`;
+            })
+            .join('\n');
+
+        return `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        margin: 0;
+                        padding: 10px;
+                        font-size: 9px;
+                    }
+                    .filename {
+                        font-weight: bold;
+                        margin-bottom: 5px;
+                        font-size: 11px;
+                    }
+                    .truncated-notice {
+                        color: #d32f2f;
+                        font-style: italic;
+                        margin-bottom: 5px;
+                        font-size: 9px;
+                    }
+                    table {
+                        border-collapse: collapse;
+                        width: 100%;
+                        font-size: 8px;
+                    }
+                    th, td {
+                        border: 1px solid #ddd;
+                        padding: 3px 5px;
+                        text-align: left;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        max-width: 150px;
+                    }
+                    th {
+                        background-color: #f5f5f5;
+                        font-weight: bold;
+                    }
+                    tr:nth-child(even) {
+                        background-color: #fafafa;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="filename">${this.escapeHtml(filename)}</div>
+                ${isTruncated ? `<div class="truncated-notice">Preview showing first ${maxRows} of ${lines.length} rows</div>` : ''}
+                <table>
+                    ${tableRows}
+                </table>
+            </body>
+            </html>
+        `;
     }
 
     private truncateCsvForPreview(csvContent: string, maxRows: number): string {
@@ -461,6 +597,8 @@ export class PreviewService implements TaskableService {
                 previewArquivoId = await this.processImageResize(arquivo);
             } else if (tipoPreview === 'conversao_pdf') {
                 previewArquivoId = await this.processPdfConversion(arquivo);
+            } else if (tipoPreview === 'conversao_csv') {
+                previewArquivoId = await this.processCsvConversion(arquivo);
             } else if (tipoPreview === 'conversao_json') {
                 previewArquivoId = await this.processJsonConversion(arquivo);
             } else {
