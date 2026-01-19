@@ -1,3 +1,29 @@
+<script setup lang="ts">
+import type { VariavelGlobalItemDto, VariavelItemDto } from '@back/variavel/entities/variavel.entity';
+import { storeToRefs } from 'pinia';
+import { defineProps } from 'vue';
+import { useRoute } from 'vue-router';
+
+import truncate from '@/helpers/texto/truncate';
+import { useAuthStore } from '@/stores/auth.store';
+
+defineOptions({
+  inheritAttrs: false,
+});
+
+defineProps({
+  linha: {
+    type: Object as () => VariavelGlobalItemDto | VariavelItemDto,
+    default: null,
+  },
+});
+
+const route = useRoute();
+
+const authStore = useAuthStore();
+
+const { temPermissãoPara } = storeToRefs(authStore);
+</script>
 <template>
   <td class="cell--nowrap">
     {{ $props.linha?.codigo }}
@@ -55,29 +81,3 @@
     </template>
   </td>
 </template>
-<script setup lang="ts">
-import type { VariavelGlobalItemDto, VariavelItemDto } from '@back/variavel/entities/variavel.entity';
-import { storeToRefs } from 'pinia';
-import { defineProps } from 'vue';
-import { useRoute } from 'vue-router';
-
-import truncate from '@/helpers/texto/truncate';
-import { useAuthStore } from '@/stores/auth.store';
-
-defineOptions({
-  inheritAttrs: false,
-});
-
-defineProps({
-  linha: {
-    type: Object as () => VariavelGlobalItemDto | VariavelItemDto,
-    default: null,
-  },
-});
-
-const route = useRoute();
-
-const authStore = useAuthStore();
-
-const { temPermissãoPara } = storeToRefs(authStore);
-</script>
