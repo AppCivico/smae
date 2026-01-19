@@ -227,6 +227,16 @@ const sessoes = computed<SessaoDeDetalheLinhas | null>(() => {
       >
         Imprimir
       </button>
+
+      <button
+        v-if="emFoco?.id"
+        type="button"
+        class="btn outline bgnone tcprimary big"
+        @click="excluirTermo"
+      >
+        Resetar
+      </button>
+
       <SmaeLink
         :to="{ name: '.termoEncerramento.editar' }"
         class="btn big"
@@ -247,15 +257,6 @@ const sessoes = computed<SessaoDeDetalheLinhas | null>(() => {
       class="icone-termo"
     >
   </div>
-
-  <button
-    v-if="emFoco?.id"
-    type="button"
-    class="btn big"
-    @click="excluirTermo"
-  >
-    Excluir
-  </button>
 
   <section
     v-if="sessoes"
