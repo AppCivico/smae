@@ -14,6 +14,10 @@ const props = defineProps({
     type: String,
     default: 'carregar foto',
   },
+  exibirBotaoExcluir: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const imgSrc = ref(props.modelValue);
@@ -24,7 +28,7 @@ watch(() => props.modelValue, (newValue, oldValue) => {
   }
 });
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(['update:modelValue', 'excluir']);
 
 const handleFile = (file) => {
   if (imgSrc.value) {
@@ -45,6 +49,16 @@ const handleDrop = (event) => {
   event.preventDefault();
   const file = event.dataTransfer.files[0];
   handleFile(file);
+};
+
+const excluirImagem = () => {
+  if (imgSrc.value) {
+    URL.revokeObjectURL(imgSrc.value);
+  }
+
+  imgSrc.value = null;
+
+  emit('update:modelValue', null);
 };
 </script>
 
@@ -76,12 +90,25 @@ const handleDrop = (event) => {
         ><use xlink:href="#i_+" /></svg><span class="flex">{{ $props.labelBotao }}</span>
       </p>
     </label>
+
+    <button
+      v-if="exibirBotaoExcluir && imgSrc"
+      type="button"
+      class="like-a__text addlink input-image-profile__botao-excluir"
+      @click="excluirImagem"
+    >
+      <svg
+        width="20"
+        height="20"
+      ><use xlink:href="#i_remove" /></svg>
+    </button>
   </div>
 </template>
 
 <style scoped lang="less">
 .input-image-profile{
     display: flex;
+    gap: .5rem;
 
     &__container {
       display: flex;
@@ -114,6 +141,11 @@ const handleDrop = (event) => {
       justify-content: center;
       margin: 15px 0;
       white-space: nowrap;
+    }
+
+    &__botao-excluir{
+      align-self: flex-start;
+      padding: 10px;
     }
 }
 </style>

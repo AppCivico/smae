@@ -74,11 +74,12 @@ const habilitarInfoAdicional = computed(() => {
 });
 
 async function handleIconeChange(file: unknown) {
+  iconeAtualizado.value = true;
+
   if (!file || typeof file !== 'object' || file.constructor.name !== 'File') {
     return file;
   }
 
-  iconeAtualizado.value = true;
   const uploadToken = await termoEncerramentoStore.uploadIcone(file as File);
   return uploadToken;
 }
@@ -153,6 +154,7 @@ onMounted(async () => {
         name="icone"
       >
         <InputImageProfile
+          exibir-botao-excluir
           :model-value="iconeAtualizado ? undefined : value"
           label-botao="carregar ícone"
           @update:model-value="async (file) => {
