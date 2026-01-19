@@ -41,11 +41,12 @@ const iconeAtualizado = ref(false);
 portfolioStore.$reset();
 
 async function handleIconeChange(file) {
+  iconeAtualizado.value = true;
+
   if (!file || typeof file !== 'object' || file.constructor.name !== 'File') {
-    return file;
+    return null;
   }
 
-  iconeAtualizado.value = true;
   const uploadToken = await portfolioStore.uploadIcone(file);
   return uploadToken;
 }
@@ -111,6 +112,7 @@ observadoresStore.buscarTudo();
           name="icone_impressao"
         >
           <InputImageProfile
+            exibir-botao-excluir
             :model-value="iconeAtualizado ? undefined : value"
             label-botao="carregar ícone"
             @update:model-value="async (file) => {
