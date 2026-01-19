@@ -1850,8 +1850,14 @@ body:has(dialog[open].editModal-dialog) {
 }
 
 // apenas para abrigar as regras comuns a todos os checkboxes e radios, porque
-// LESS não tem [**placeholder selectors** como no SASS](https://sass-lang.com/documentation/style-rules/placeholder-selectors/)
-.input-checkbox-and-radio {
+// LESS não tem [**placeholder selectors** como no
+// SASS](https://sass-lang.com/documentation/style-rules/placeholder-selectors/)
+.input-checkbox-and-radio() {
+  form div:has(> label > &) {
+    display: flex;
+    align-items: center;
+  }
+
   appearance: none;
   width: 1.285714rem;
   height: 1.285714rem;
@@ -1899,9 +1905,10 @@ body:has(dialog[open].editModal-dialog) {
 }
 
 input[type='checkbox'] {
-  .input-checkbox-and-radio;
+  .input-checkbox-and-radio();
 
   border-radius: 4px;
+  flex-shrink: 0;
 
   &:hover {
     background-image: url("@{u}check--amarelo.svg");
@@ -1995,7 +2002,7 @@ input[type='checkbox'] {
 }
 
 input[type='radio'] {
-  .input-checkbox-and-radio;
+  .input-checkbox-and-radio();
 
   border-radius: 50%;
   border-width: 1.5px;
