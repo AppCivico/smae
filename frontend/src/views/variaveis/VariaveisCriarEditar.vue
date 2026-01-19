@@ -407,28 +407,61 @@ onUnmounted(() => {
             name="fonte_id"
           />
         </div>
-
-        <div
+        <template
           v-if="variavelId"
-          class="f1 fb15em"
         >
-          <label
-            for="codigo"
-            class="label"
+          <div
+            class="f1 fb10em"
           >
-            Código
-          </label>
-          <input
-            id="codigo"
-            name="codigo"
-            type="text"
-            class="inputtext light mb1"
-            :class="{ error: errors.codigo }"
-            :value="emFoco?.codigo"
-            aria-disabled="true"
-            readonly
-          >
-        </div>
+            <label
+              for="codigo"
+              class="label"
+            >
+              Código
+            </label>
+            <input
+              id="codigo"
+              name="codigo"
+              type="text"
+              class="inputtext light mb1"
+              :class="{ error: errors.codigo }"
+              :value="emFoco?.codigo"
+              aria-disabled="true"
+              readonly
+            >
+          </div>
+          <div class="f1 fb10em">
+            <label class="flex center">
+              <Field
+                name="suspendida"
+                type="checkbox"
+                :value="true"
+                :unchecked-value="false"
+              />
+              <LabelFromYup
+                class="mb0"
+                name="suspendida"
+                as="span"
+                :schema="schema"
+                :class="{ error: errors.suspendida }"
+              >
+                <template v-if="emFoco?.possui_variaveis_filhas">
+                  Suspender todas as filhas
+                </template>
+                <template
+                  v-if="emFoco?.possui_variaveis_filhas"
+                  #balaoInformativo
+                >
+                  Suspender variáveis filhas e retirar do monitoramento físico
+                </template>
+              </LabelFromYup>
+            </label>
+            <ErrorMessage
+              class="error-msg"
+              name="suspendida"
+            />
+          </div>
+        </template>
       </div>
 
       <div class="flex flexwrap g2 mb1">

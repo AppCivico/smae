@@ -355,6 +355,7 @@ export const useVariaveisGlobaisStore = defineStore('variaveisGlobais', {
             liberacao_fim: null,
           },
       polaridade: emFoco?.polaridade || null,
+      suspendida: !!emFoco?.suspendida,
       titulo: emFoco?.titulo || '',
       unidade_medida_id: emFoco?.unidade_medida?.id || null,
       validacao_grupo_ids: Array.isArray(emFoco?.validacao_grupo_ids)

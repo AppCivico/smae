@@ -4147,6 +4147,11 @@ export const variavelGlobal = object({
     .required()
     .oneOf([...Object.keys(polaridadeDeVariaveis), null])
     .when('variavel_categorica_id', variavelGlobalEhNumberica),
+  suspendida: boolean()
+    .label('suspender variável do ciclo')
+    .meta({
+      balaoInformativo: 'Suspender variável e retirar do monitoramento físico.',
+    }),
   titulo: string()
     .label('Nome')
     .max(256)
