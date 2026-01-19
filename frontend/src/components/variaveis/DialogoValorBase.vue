@@ -85,14 +85,10 @@ const onSubmit = handleSubmit(async (valoresControlados) => {
   }
 
   try {
-    const cargaManipulada = {
-      valor_base: valoresControlados.valor_base,
-    };
-
     const resposta = await variaveisGlobaisStore.salvarFilha(
       variavelMaeId.value,
       variavelFilhaId.value,
-      cargaManipulada,
+      valoresControlados,
     );
     if (resposta) {
       alertStore.success('Valor base atualizado com sucesso!');
