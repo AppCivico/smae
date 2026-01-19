@@ -3638,7 +3638,7 @@ export class VariavelService {
                     aprovada: false,
                     ultima_revisao: true,
                     criado_por: user.id,
-                    valores: {},
+                    valores: [],
                 })),
             });
         }
