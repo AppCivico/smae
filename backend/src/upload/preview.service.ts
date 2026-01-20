@@ -136,14 +136,31 @@ export class PreviewService implements TaskableService {
 
         this.logger.log(`Downloaded file buffer, size: ${buffer.length} bytes`);
 
-        // Convert to PDF using Gotenberg (only first page for preview)
-        const pdfBuffer = await this.gotenbergService.convertToPdf(buffer, arquivo.nome_original, arquivo.mime_type, {
+        // Determine if this is a DOCX file that should be limited to 5 pages
+        const isDocx =
+            arquivo.mime_type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+            arquivo.mime_type === 'application/msword';
+
+        // Determine page limit: DOCX gets 5 pages, others get 1 page
+        const pageLimit = isDocx ? '1-5' : '1';
+
+        // Convert to PDF using Gotenberg (full document first)
+        let pdfBuffer = await this.gotenbergService.convertToPdf(buffer, arquivo.nome_original, arquivo.mime_type, {
             quality: 60,
             losslessImageCompression: false,
-            nativePageRanges: '1',
         });
 
-        this.logger.log(`Conversion completed, PDF buffer size: ${pdfBuffer.length} bytes`);
+        this.logger.log(`Initial conversion completed, PDF buffer size: ${pdfBuffer.length} bytes`);
+
+        // Extract only the needed pages for preview
+        this.logger.log(`Extracting pages ${pageLimit} for preview...`);
+        try {
+            pdfBuffer = await this.gotenbergService.extractPdfPages(pdfBuffer, pageLimit);
+            this.logger.log(`Page extraction completed, final PDF buffer size: ${pdfBuffer.length} bytes`);
+        } catch (error) {
+            // If extraction fails (e.g., document has fewer pages than requested), use the full conversion
+            this.logger.warn(`Could not extract pages, using full PDF: ${error.message}`);
+        }
 
         // Upload preview
         const previewId = await this.uploadPreview(

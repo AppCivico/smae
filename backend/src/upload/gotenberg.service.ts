@@ -91,6 +91,7 @@ export class GotenbergService {
             console.log(formData);
             console.log(filename);
             console.log(mimeType);
+            console.log('options:', options);
             console.log('===================');
 
             // Add optional parameters
@@ -99,6 +100,7 @@ export class GotenbergService {
             }
 
             if (options.nativePageRanges) {
+                this.logger.log(`Applying nativePageRanges: ${options.nativePageRanges}`);
                 formData.append('nativePageRanges', options.nativePageRanges);
             }
 
@@ -322,6 +324,53 @@ export class GotenbergService {
         // Check for PDF magic number: %PDF-
         const header = buffer.slice(0, 5).toString('ascii');
         return header === '%PDF-';
+    }
+
+    /**
+     * Extract specific pages from a PDF
+     * @param pdfBuffer The PDF buffer
+     * @param pageRanges Page ranges to extract (e.g., '1-5', '1-3,5,7-9')
+     * @returns Promise<Buffer> The extracted pages as a new PDF Buffer
+     */
+    async extractPdfPages(pdfBuffer: Buffer, pageRanges: string): Promise<Buffer> {
+        this.logger.log(`Extracting pages ${pageRanges} from PDF`);
+
+        try {
+            const url = `${this.gotenbergUrl}/forms/pdfengines/split`;
+
+            const formData = new FormData();
+
+            // Add the PDF file
+            formData.append('files', pdfBuffer, {
+                filename: 'document.pdf',
+                contentType: 'application/pdf',
+            });
+
+            // Use 'pages' mode to extract specific pages
+            formData.append('splitMode', 'pages');
+            formData.append('splitSpan', pageRanges);
+            formData.append('splitUnify', 'true'); // Unify extracted pages into single file
+
+            const response = await got.post(url, {
+                body: formData,
+                responseType: 'buffer',
+            });
+
+            const extractedBuffer = response.body;
+
+            this.logger.log(`Successfully extracted pages (${extractedBuffer.length} bytes)`);
+
+            return extractedBuffer;
+        } catch (error) {
+            this.logger.error('Error extracting PDF pages:', error);
+
+            if (error.response) {
+                const errorText = error.response.body?.toString() || error.message;
+                throw new Error(`Gotenberg split failed with status ${error.response.statusCode}: ${errorText}`);
+            }
+
+            throw new Error(`Gotenberg split failed: ${error.message}`);
+        }
     }
 
     /**
