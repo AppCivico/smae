@@ -1319,7 +1319,7 @@ PerfilAcessoConfig.push(
 
     {
         nome: atualizarNomePerfil(CONST_PERFIL_COORDENADOR_EQUIPE, ['Coordenador de Grupo de Variáveis']),
-        descricao: DESC_EQUIPE,
+        descricao: 'Coordena equipes; possui privilégio de colaborador no mesmo órgão da equipe',
         privilegios: ['SMAE.GrupoVariavel.colaborador'],
     },
     {
