@@ -346,11 +346,11 @@ export class VariavelGlobalController {
         return await this.variavelService.getPeriodosValidos(this.tipo, filters, params.id, user);
     }
 
-    @Post('processa-variaveis-suspensas')
+    @Post('processa-variaveis-suspensas-pdm-legacy')
     @ApiBearerAuth('access-token')
     @Roles([...VariavelGlobalController.WritePerm])
     async processaVariaveisSuspensas(): Promise<number[]> {
-        return await this.variavelService.processVariaveisSuspensasController();
+        return await this.variavelService.processVariaveisSuspensasSync();
     }
 
     /**
@@ -362,7 +362,7 @@ export class VariavelGlobalController {
     @Post('processa-variaveis-globais-suspensas')
     @ApiBearerAuth('access-token')
     @Roles([...VariavelGlobalController.WritePerm])
-    async processaVariaveisGlobaisSuspensas(): Promise<number[]> {
-        return await this.variavelService.processVariaveisGlobaisSuspensasController();
+    async processaVariaveisGlobaisSuspensas(@Query('variavel_id') variavelId?: number): Promise<number[]> {
+        return await this.variavelService.processVariaveisGlobaisSuspensasSync(variavelId);
     }
 }

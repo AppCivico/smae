@@ -2204,7 +2204,7 @@ export class VariavelService {
         return variavelCategorica;
     }
 
-    async processVariaveisSuspensasController() {
+    async processVariaveisSuspensasSync() {
         return await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<number[]> => {
             return await this.processVariaveisSuspensas(prismaTx);
         });
@@ -2356,10 +2356,10 @@ export class VariavelService {
      * Também verifica se todas as filhas de uma variável mãe estão suspensas,
      * e nesse caso, fecha o ciclo automaticamente.
      */
-    async processVariaveisGlobaisSuspensasController(): Promise<number[]> {
+    async processVariaveisGlobaisSuspensasSync(targetVariavelId?: number): Promise<number[]> {
         return await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<number[]> => {
-                return await this.processVariaveisGlobaisSuspensas(prismaTx);
+                return await this.processVariaveisGlobaisSuspensas(prismaTx, targetVariavelId);
             },
             { timeout: 5 * 60 * 1000 }
         );
